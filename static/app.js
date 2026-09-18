@@ -164,6 +164,13 @@ const REF_ROUTES = { todos: "todo", messages: "message", questions: "question", 
 // A reference inside a panel opens that resource OVER the page, never navigating away from what you are reading.
 // One funnel for every chip: it reads the href the chip already carries, so nothing needs a second source of truth.
 // A reference whose kind has no panel — a skill, a session, a commit — is left alone and still navigates.
+// THE JOURNAL OPENS IN A TAB OF ITS OWN, NEVER IN THE ONE THE WINDOW SITS ON. A named target
+// ("journal") reuses any tab that happens to carry that name — including the page under the
+// window, if it was opened that way — and navigating it away takes the window with it.
+function openJournalTab(url) {
+  window.open(url, "_blank", "noopener");
+}
+
 function openRef(event, href) {
   if (!href || event.metaKey || event.ctrlKey || event.shiftKey || event.button) return;
   // THE CHAT-ONLY WINDOW OPENS NOTHING OVER ITSELF. It is 430 pixels of conversation floating on
@@ -171,7 +178,7 @@ function openRef(event, href) {
   // viewer is a tab away, so the row opens THERE, in the journal's own window.
   if (CHAT_ONLY) {
     event.preventDefault();
-    window.open(`${location.origin}/${href}`, "journal");
+    openJournalTab(`${location.origin}/${href}`);
     return;
   }
   const parts = String(href).replace(/^#\//, "").split("/");
@@ -607,7 +614,7 @@ function openImages(event, files, i, at) {
   // anything over 430 pixels of conversation
   if (CHAT_ONLY) {
     const one = (files || [])[i || 0];
-    if (one) window.open(one.url, "journal");
+    if (one) openJournalTab(one.url);
     return;
   }
   OVERLAY.kind = "image";
@@ -623,7 +630,7 @@ function openFile(event, file) {
   if (event && (event.metaKey || event.ctrlKey || event.shiftKey || event.button)) return;
   if (event) event.preventDefault();
   if (CHAT_ONLY) {
-    if (file && file.url) window.open(file.url, "journal");
+    if (file && file.url) openJournalTab(file.url);
     return;
   }
   OVERLAY.kind = "file";
@@ -784,7 +791,7 @@ const StatusBar = {
       // the chat-only window opens nothing over itself: the row opens in the journal's own tab, like every ref
       if (CHAT_ONLY && w) {
         const href = refHref(w.todo ? `todo:${w.todo}` : `work:${w.n}`, env.value);
-        if (href) window.open(`${location.origin}/${href}`, "journal");
+        if (href) openJournalTab(`${location.origin}/${href}`);
         return;
       }
       if (w && w.todo) { OVERLAY.kind = "todo"; OVERLAY.n = w.todo; }
@@ -4719,7 +4726,7 @@ const EnvHome = {
     const peek = (kind, n) => {
       if (CHAT_ONLY) {
         const href = refHref(`${kind}:${n}`, props.env);
-        if (href) window.open(`${location.origin}/${href}`, "journal");
+        if (href) openJournalTab(`${location.origin}/${href}`);
         return;
       }
       view.kind = kind; view.n = n; INSPECTOR_TRAIL.current = `${kind}:${n}`;
