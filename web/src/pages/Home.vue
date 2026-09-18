@@ -2,7 +2,7 @@
 import {computed, ref} from "vue";
 import SwitchCase from "../kit/SwitchCase.vue";
 import {route} from "../route.js";
-import {open} from "../store.js";
+import {open, types, unreadByUser} from "../store.js";
 import Thread from "../chat/Thread.vue";
 import Notice from "../chat/Notice.vue";
 import AgentBar from "../chat/AgentBar.vue";
@@ -12,6 +12,11 @@ import RailNotes from "./RailNotes.vue";
 
 const tab = ref("waiting");
 const notices = computed(() => open("notice"));
+const tabs = computed(() => [
+    ["waiting", "Waiting on you", types.value.filter((t) => t.attention).flatMap((t) => unreadByUser(t.name)).length, true],
+    ["todos", "To-dos", open("todo").length, false],
+    ["notes", "Notifications", unreadByUser("notification").length, true],
+]);
 </script>
 
 <template>
@@ -27,14 +32,7 @@ const notices = computed(() => open("notice"));
             <div class="home-divider" role="separator" aria-orientation="vertical" />
             <div class="home-rail">
                 <div class="rail-tabs" role="tablist">
-                    <template
-                        v-for="[key, label, n] in [
-                            ['waiting', 'Waiting on you'],
-                            ['todos', 'To-dos'],
-                            ['notes', 'Notifications'],
-                        ]"
-                        :key="key"
-                    >
+                    <template v-for="[key, label, n, warm] in tabs" :key="key">
                         <button
                             type="button"
                             role="tab"
@@ -43,6 +41,7 @@ const notices = computed(() => open("notice"));
                             @click="tab = key"
                         >
                             {{ label }}
+                            <span :class="['rail-tab-n', {hot: n && warm}]">{{ n }}</span>
                         </button>
                     </template>
                 </div>
@@ -143,6 +142,17 @@ const notices = computed(() => open("notice"));
     gap: 14px;
     border-bottom: 1px solid var(--border);
     background: #111215;
+}
+
+.rail-tab-n {
+    font-size: 11px;
+    color: var(--text-3);
+    font-variant-numeric: tabular-nums;
+}
+
+.rail-tab.on .rail-tab-n,
+.rail-tab-n.hot {
+    color: var(--accent-text);
 }
 
 .rail-tab {
