@@ -782,21 +782,24 @@ const SeatBand = {
   },
   template: `
     <template v-if="env && SHELL.activity">
-      <div v-if="noChannel" class=chat-alert role=alert>
+      <!-- THE WHOLE BAND IS THE BUTTON, like the plan bar and the status bar: a click anywhere on it
+           opens the running sessions, and the word at its end only says what the click does. -->
+      <button v-if="noChannel" type=button class=chat-alert role=alert @click="openAssign">
         <Icon name="warn"/>
         <div class=chat-alert-text>
           <strong>This session was not started through the journal.</strong>
-          It does not hear what you write here while it is idle. Stop it and start it with <code>journal claude</code> or <code>journal codex</code>.
+          It does not hear what you write here while it is idle. Stop it and start it with <code>journal claude</code> or <code>journal codex</code>, or assign a session that was.
         </div>
-      </div>
-      <div v-else-if="noAgent" class=chat-alert role=alert>
+        <span class=chat-alert-go>Assign agent</span>
+      </button>
+      <button v-else-if="noAgent" type=button class=chat-alert role=alert @click="openAssign">
         <Icon name="warn"/>
         <div class=chat-alert-text>
           <strong>No agent is on this environment.</strong>
           Nothing you write here is read until a running session takes it — start one with <code>journal claude</code>, or assign one.
         </div>
-        <button type=button class=chat-alert-go @click="openAssign">Assign agent</button>
-      </div>
+        <span class=chat-alert-go>Assign agent</span>
+      </button>
       <template v-if="assign.open">
         <div class=quick-scrim @click="closeAssign"></div>
         <div class=assign-dialog role=dialog aria-label="Assign an agent">
