@@ -801,6 +801,30 @@
   .app.chat-only .side, .app.chat-only .home-rail, .app.chat-only .activity-dock,
   .app.chat-only .project-strip, .app.chat-only .top { display: none; }
   .app.chat-only .home-main { flex: 1; min-width: 0; }
+  /* THE ACTIVE PLAN, under the status bar and on every page: the same slim height as the bar above it */
+  .planbar { display: flex; align-items: center; gap: 10px; height: 30px; padding: 0 14px;
+    border-bottom: 1px solid var(--line, #1d2026); background: var(--bg-2, #101216);
+    color: var(--text-2); font-size: 11.5px; text-decoration: none; }
+  .planbar:hover { background: rgba(255, 255, 255, .03); color: var(--text); }
+  .planbar-n { flex: none; font-weight: 500; color: var(--accent-text); }
+  .planbar-title { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .planbar-phase { flex: none; margin-left: auto; color: var(--text-3); font-size: 11px; }
+  .planbar-track { flex: none; width: 96px; height: 4px; border-radius: 3px; overflow: hidden;
+    background: var(--line, #22252b); }
+  .planbar-track > span { display: block; height: 100%; border-radius: 3px; background: var(--accent);
+    transition: width .3s ease; }
+  /* A NARROW BAR KEEPS THE WORK AND DROPS THE COMMAND. In the extension's window the bar is 420px
+     wide: the command runs the sentence off the end, and what the agent is working on is the half
+     worth keeping. */
+  @media (max-width: 620px) {
+    .statusbar-text .statusbar-running { display: none; }
+    /* and the work itself gives way rather than running off the end */
+    .statusbar-text .statusbar-line { flex: 0 1 auto; max-width: 100%; }
+    .planbar-phase { display: none; }
+  }
+  /* the extension's window is the chat and nothing else: no room for the command either */
+  .app.chat-only .statusbar-text .statusbar-running { display: none; }
+  .app.chat-only .statusbar-text .statusbar-line { flex: 0 1 auto; max-width: 100%; }
   /* the bar's own menu: what you want of THIS conversation — its words and its files */
   .bar-menu { position: relative; flex: none; }
   .bar-dots { padding: 2px 6px; border: 1px solid transparent; border-radius: 6px; background: none;

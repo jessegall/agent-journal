@@ -599,7 +599,20 @@ const StatusBar = {
       else if (w) { OVERLAY.kind = "work"; OVERLAY.n = w.n; }
       else if (view.value.href) location.hash = view.value.href;
     };
-    return { env, view, said, running, SHELL, openCurrent, facts };
+    // THE ACTIVE PLAN IS A STRIP UNDER THE BAR, on every page. It used to be a card in the rail,
+    // which is on the home alone and beside everything else waiting on the user — but a plan is not
+    // waiting on anybody: it is what the work is inside, and it belongs where the work is said.
+    const strip = computed(() => {
+      const p = plans.data ? plans.data.find((one) => one.status === "active") : null;
+      if (!p) return null;
+      const done = p.phases_done || 0;
+      const total = p.phases_total || 0;
+      return { n: p.n, title: p.title, done, total,
+               phase: total ? `phase ${Math.min(done + 1, total)} of ${total}` : "",
+               width: total ? `${(100 * done) / total}%` : "0%",
+               href: `#/env/${env.value}/plans/${p.n}` };
+    });
+    return { env, view, said, running, SHELL, openCurrent, facts, strip };
   },
   template: `
     <div v-if="env && SHELL.activity" :class="['statusbar', {held: view.held}]">
@@ -635,7 +648,14 @@ const StatusBar = {
           @click="SHELL.setAuto && SHELL.setAuto(!SHELL.activity.auto)"><span :class="['switch', 'worded', {on: SHELL.activity.auto}]">
             <span class=switch-word>auto</span><span class=knob></span></span></button>
       </span>
-    </div>`,
+    </div>
+    <a v-if="strip" class=planbar :href="strip.href" :title="'Plan ' + strip.n + ': ' + strip.title">
+      <span class=planbar-n>Plan {{ strip.n }}</span>
+      <span class=planbar-title>{{ strip.title }}</span>
+      <span v-if="strip.phase" class=planbar-phase>{{ strip.phase }}</span>
+      <span class=planbar-track role=progressbar :aria-valuenow="strip.done" :aria-valuemax="strip.total"
+        :aria-label="strip.done + ' of ' + strip.total + ' phases done'"><span :style="{ width: strip.width }"></span></span>
+    </a>`,
 };
 
 // THE BARS DO NOT BELONG TO THE PAGE. Every view rendered its own TopBar, so the crumbs, the search
@@ -4386,6 +4406,7 @@ const EnvHome = {
       .sort((a, b) => (LIVE_PLAN[a.status] - LIVE_PLAN[b.status]) || a.n - b.n));
     const reloadPlans = () => { plans.reload(); changed(); };
     const plan = computed(() => livePlans.value.find((p) => p.status === "active") || null);
+    const railPlans = computed(() => livePlans.value.filter((p) => p.status !== "active"));
     const held = computed(() => !!(plan.value && plan.value.held));
     const continuePlan = () => send("POST", `/api/env/${props.env}/plans/${plan.value.n}/proceed`).then(reloadPlans);
     const goPlan = () => { if (plan.value) location.hash = `#/env/${props.env}/plans/${plan.value.n}`; };
@@ -4565,7 +4586,7 @@ const EnvHome = {
     });
     onUnmounted(() => { if (INSPECTOR_TRAIL.owner === trailOwner) Object.assign(INSPECTOR_TRAIL, { owner: null, items: [], current: null }); });
 
-    return { view, peek, unpeek, reloadAll, queue, dismiss, SLOTS, SHELL, lead, held, heldCard, clear, plan, continuePlan, goPlan, livePlans, reloadPlans, workLines, parkedLines, finishedLines, finishedMore, liveCrew, crewOpen, waitingCount,
+    return { view, peek, unpeek, reloadAll, queue, dismiss, SLOTS, SHELL, lead, held, heldCard, clear, plan, continuePlan, goPlan, livePlans, railPlans, reloadPlans, workLines, parkedLines, finishedLines, finishedMore, liveCrew, crewOpen, waitingCount,
              tab, TABS, openTodos, todoGroups, unread, shownNotes, noteTab, NOTE_TABS, todoStatus, openNote, readNote, readAll, noteHref, noteTint, goto,
              barMenu, closeBarMenu, chatFiles, chatHits, goTurn, openChatFile };
   },
@@ -4634,8 +4655,10 @@ const EnvHome = {
         <Thread :env="env"/>
       </section>
       <div class=home-rail>
-      <section v-if="livePlans.length" class=home-section>
-        <PlanCards :env="env" :plans="livePlans" :reloaded="reloadPlans" :peek="peek"/>
+      <!-- the ACTIVE plan is the strip under the status bar now; what is left here is a draft
+           waiting to be started or a plan parked, which really are waiting on the user -->
+      <section v-if="railPlans.length" class=home-section>
+        <PlanCards :env="env" :plans="railPlans" :reloaded="reloadPlans" :peek="peek"/>
       </section>
       <div class=rail-tabs role=tablist>
         <button v-for="t in TABS" :key="t.key" type=button role=tab :aria-selected="tab === t.key"
