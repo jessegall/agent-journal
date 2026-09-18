@@ -73,7 +73,15 @@ document.getElementById("point").addEventListener("click", () => {
     tell((got && got.why) || "This page cannot be pointed at.", "bad");
   });
 });
-document.getElementById("chat").addEventListener("click", () => {
+document.getElementById("chat").addEventListener("click", async () => {
+  // THIS CLICK IS THE ONE CHANCE TO ASK: a permission request needs a gesture, and the window coming
+  // back after a reload of this site needs the permission. Declining only means it will not come back.
+  await new Promise((res) => chrome.runtime.sendMessage({ kind: "origin" }, async (got) => {
+    if (got && got.origin && !/^http:\/\/(127\.0\.0\.1|localhost)/.test(got.origin)) {
+      try { await chrome.permissions.request({ origins: [`${got.origin}/*`] }); } catch (e) { /* declined, or not askable */ }
+    }
+    res();
+  }));
   chrome.runtime.sendMessage({ kind: "chat" }, (got) => {
     if (got && got.ok) return window.close();
     tell((got && got.why) || "This page cannot hold the chat window.", "bad");

@@ -25,7 +25,8 @@ then the environment inside it.
   journal and the environment, and each is a switch: click one to pick another. Beside the clip in
   its write box, a crosshair points at an element of the page under the window (the same as Alt+P)
   and a camera sends a picture of one. The – in the bar folds the window down to the bar and the
-  agent's status line, and opens it back up. Alt+J again, Esc, or ×
+  agent's status line, and opens it back up. A window left open on a site comes back when that
+  site reloads (opening it asks for the site once, so that it can). Alt+J again, Esc, or ×
   closes it.
 - **Send a test message** in the popup posts one message with no pointing involved. If the test
   lands and pointing does not, the pointer is at fault; if neither lands, the popup says why.

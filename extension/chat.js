@@ -4,10 +4,13 @@
 (() => {
   const ID = "__journal-chat-window";
   const old = document.getElementById(ID);
+  const tellBackground = (kind) => { try { chrome.runtime.sendMessage({ kind }, () => chrome.runtime.lastError); } catch (e) { /* the extension is gone; nothing to remember */ } };
   if (old) {                                        // the shortcut toggles: press it again to close
     old.remove();
+    tellBackground("closed");
     return;
   }
+  tellBackground("opened");
   // THE JOURNAL'S OWN PAGE IS THE ONE PLACE THE CHAT ALREADY IS — unless it has just handed it over,
   // which is exactly when the window is what was asked for. The page says which by its own state.
 
@@ -206,10 +209,11 @@
     box.w = Math.max(320, from.w + dx);
     box.h = Math.max(260, from.h + dy);
   }));
-  shade.querySelector(".x").addEventListener("click", () => host.remove());
+  shade.querySelector(".x").addEventListener("click", () => { host.remove(); tellBackground("closed"); });
   document.addEventListener("keydown", function esc(e) {
     if (e.key === "Escape" && document.getElementById(ID)) {
       host.remove();
+      tellBackground("closed");
       document.removeEventListener("keydown", esc, true);
     }
   }, true);
