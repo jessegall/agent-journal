@@ -5164,23 +5164,18 @@ const EnvHome = {
       // value, and the label is only there to say which fact it is.
       // AN ICON PER FACT, so the bar reads as five things rather than one run-on line. The icons are
       // the set's own: whatever a fact IS elsewhere in the viewer is what marks it here.
+      // THE BAR AFTER THE USER'S MOCKUP (message 174): the agent and its model's short name in one
+      // word, the branch, the running time, the context as a small bar with its percent — then a
+      // divider and the counts. No session id, no compaction count: the agent page has them.
+      const name = session && session.name ? session.name : agent ? AGENT_NAMES[agent.agent] || "Claude Code" : "No agent";
+      const model = agent && agent.model ? modelShort(agent.model) : "";
       const rows = [
-        { label: "agent", icon: "agents",
-          value: session && session.name ? session.name : agent ? AGENT_NAMES[agent.agent] || "Claude Code" : "No agent" },
-        { label: "model", icon: "style", value: agent && agent.model ? agent.model : "" },
-        { label: "session", icon: "activity", value: agent ? agent.session : "" },
-        { label: "running", icon: "reminders", value: agent && agent.started ? spanText(Date.now() - Date.parse(agent.started)) : "" },
-        // WHAT IT HAS OPEN, not what exists: a session works from the skills it has loaded, and the
-        // count is the fastest way to see it is working from none of them.
-        { label: "context", icon: "files", value: agent && agent.context ? `${agent.context.share}%` : "" },
-        // HOW OFTEN THIS SESSION HAS LOST ITS WINDOW. It is the one fact here that says why the agent
-        // may not remember something said an hour ago, and it is counted from the transcript itself.
-        { label: agent && agent.compactions === 1 ? "compacted once" : `compacted ${agent && agent.compactions} times`,
-          icon: "collapse", value: agent && agent.compactions ? String(agent.compactions) : "" },
-        // THE BRANCH IS THE AGENT'S FACT, not the page's: which checkout this session is working in,
-        // beside which model it is and how full its window is. A subagent in a worktree is on another
-        // branch entirely, and its own line says so.
+        { label: "agent", icon: "agents", value: model ? `${name} · ${model}` : name },
+        // THE BRANCH IS THE AGENT'S FACT, not the page's: which checkout this session is working in.
+        // A subagent in a worktree is on another branch entirely, and its own line says so.
         { label: "branch", icon: "branch", value: branch ? branch.name : "", href: (branch && branch.url) || "" },
+        { label: "running", icon: "reminders", value: agent && agent.started ? spanText(Date.now() - Date.parse(agent.started)) : "" },
+        { label: "context", icon: "", value: agent && agent.context ? `${agent.context.share}%` : "", bar: agent && agent.context ? agent.context.share : null },
       ].filter((r) => r.value);
       // the session is an agent with a page of its own, the same page a subagent's line opens —
       // it was the one name here you could not click
@@ -5453,8 +5448,11 @@ const EnvHome = {
               <Icon :name="r.icon"/>{{ r.value }}</a>
             <a v-else-if="r.href" class=agent-fact :href="r.href" target=_blank rel=noopener
               :title="r.label + ' — open it'"><Icon :name="r.icon"/>{{ r.value }}</a>
+            <span v-else-if="r.bar !== undefined && r.bar !== null" class="agent-fact agent-context" :title="'context ' + r.value + ' full'">
+              <span class=agent-context-bar><span :style="{ width: r.bar + '%' }"></span></span>{{ r.value }}</span>
             <span v-else class=agent-fact :title="r.label"><Icon :name="r.icon"/>{{ r.value }}</span>
           </template>
+          <span class=agent-facts-divider></span>
           <!-- ZERO IS THE NUMBER WORTH SEEING, so this is here whether or not anything is open. Its
                menu is FIXED rather than absolute: this row scrolls sideways, and an overflow
                container clips a dropdown that hangs out of it. -->
@@ -6130,6 +6128,12 @@ const Commit = {
 // ─────────────────────────────────────────────────────────────── one agent
 //: what the agent bar calls each agent the hooks know
 const AGENT_NAMES = { claude: "Claude Code", codex: "Codex" };
+
+// a model's short name for the bar: claude-opus-5 is opus, claude-sonnet-5 sonnet, gpt-5.5 stays
+function modelShort(model) {
+  const m = String(model || "").match(/^claude-(opus|sonnet|haiku|fable)/);
+  return m ? m[1] : String(model || "");
+}
 const AGENT_STATUS = { working: "Working", idle: "Idle", ended: "Ended", finished: "Finished" };
 const TRANSCRIPT_WHO = { human: "You", text: "Agent", tool_result: "Tool result", injected: "Journal", task: "Task",
                          peer: "Another session", superseded: "You, edited" };
