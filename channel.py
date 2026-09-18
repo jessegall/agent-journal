@@ -67,7 +67,12 @@ def _session() -> str | None:
     if not stem:
         return None
     seen = state.get(ROOT, "seen_at", 0, stem=stem) or 0
-    return stem if seen >= STARTED[0] - TRUST_SECONDS else None
+    if seen < STARTED[0] - TRUST_SECONDS:
+        return None
+    # the stamp lives here, not in _watch: _watch is the __main__ of a server started before this
+    # line existed and is never reloaded, while this function is read fresh from disk at every poll
+    state.put(ROOT, "channel_seen", int(time.time()), stem=stem)
+    return stem
 
 
 #: WHAT ARRIVED AND ITS NUMBER, NEVER HALF OF WHAT IT SAYS. Every line here used to carry the

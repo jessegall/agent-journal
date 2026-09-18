@@ -893,6 +893,15 @@ check("a background shell is listed with what it ran, and reported over when not
       [("python3 test_serve.py", True, True)])
 state.put(root, "background_shells", [], stem=_run_stem)
 check("and nothing recorded is an empty list, not a guess", _act.shells_now(root, _run_stem), [])
+# WHETHER THE SESSION HAS A CHANNEL. The channel server stamps its session every poll; a stamp gone
+# quiet means plain `claude` started it and nothing written in the viewer reaches it while idle.
+state.put(root, "channel_seen", int(time.time()), stem=_run_stem)
+check("a session the channel stamped just now has a channel", _act.channel_now(root, _run_stem), True)
+state.put(root, "channel_seen", int(time.time()) - 120, stem=_run_stem)
+state.put(root, "started_at", int(time.time()), stem=_run_stem)
+check("a session too young to have been polled is not judged yet", _act.channel_now(root, _run_stem), None)
+state.put(root, "started_at", int(time.time()) - 120, stem=_run_stem)
+check("an older session with no stamp has no channel", _act.channel_now(root, _run_stem), False)
 
 # HOW OFTEN THE SESSION HAS BEEN COMPACTED is counted at every session start from the transcript's
 # own boundaries, so the bar can say why the agent may not remember an hour ago.

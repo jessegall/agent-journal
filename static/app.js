@@ -397,6 +397,8 @@ const Icon = {
       <path v-else-if="name === 'style'" d="M5.5 4.5 2.5 8l3 3.5M10.5 4.5l3 3.5-3 3.5M9 3.5l-2 9"/>
       <!-- a terminal: the prompt mark and the line you type on, which is what a shell looks like -->
       <path v-else-if="name === 'terminal'" d="M2 3.5h12v9H2zM4.8 6.4 6.9 8l-2.1 1.6M8.4 10h3"/>
+      <!-- a warning: the triangle, its bar, and the dot under it -->
+      <path v-else-if="name === 'warn'" d="M8 2.6 14 13H2zM8 6.6v3.2M8 11.6v.1"/>
       <!-- skills: a closed book seen from its spine side — a cover, its pages, and the band down the
            spine. The open-book pair of curves was two shapes fighting for twelve pixels. -->
       <path v-else-if="name === 'book'" d="M4 2.5h8.5v11H4a1.5 1.5 0 0 1 0-3h8.5M4 2.5a1.5 1.5 0 0 0 0 3h8.5"/>
@@ -4639,6 +4641,8 @@ const EnvHome = {
     // into a list; this is one line the user keeps seeing until they take it down themselves.
     const notices = useFetch(url("/notices"));
     const upNotices = computed(() => (notices.data || []).filter((x) => !x.closed));
+    // false only: an older server sends nothing, and a session too young to have polled sends null
+    const noChannel = computed(() => !!(SHELL.activity && SHELL.activity.agent) && SHELL.activity.agent.channel === false);
     const closeNotice = (x) => send("POST", `/api/env/${props.env}/notices/${x.n}/close`)
       .then(() => { notices.reload(); window.dispatchEvent(new CustomEvent("journal:changed")); })
       .catch(() => {});
@@ -4897,7 +4901,7 @@ const EnvHome = {
 
     return { view, peek, unpeek, reloadAll, queue, dismiss, SLOTS, SHELL, lead, held, heldCard, clear, plan, continuePlan, goPlan, livePlans, railPlans, reloadPlans, workLines, parkedLines, finishedLines, finishedMore, liveCrew, crewOpen, skillsOpen, shellsOpen, shells, spanText, skillsAt, openSkills, skills, waitingCount,
              tab, TABS, openTodos, todoGroups, unread, shownNotes, noteTab, NOTE_TABS, todoStatus, openNote, readNote, readAll, noteHref, noteTint, goto, swapping, swapTabs,
-             barMenu, closeBarMenu, chatFiles, chatHits, goTurn, openChatFile, DETACHED, detach, EXTENSION, railStyle, onDivider, dragging, CHAT_ONLY, upNotices, closeNotice };
+             barMenu, closeBarMenu, chatFiles, chatHits, goTurn, openChatFile, DETACHED, detach, EXTENSION, railStyle, onDivider, dragging, CHAT_ONLY, upNotices, closeNotice, noChannel };
   },
   template: `
     <TopBar :crumbs="[env, 'Home']"/>
@@ -4907,6 +4911,15 @@ const EnvHome = {
       <!-- THE AGENT BAR BELONGS TO THE CHAT, NOT TO THE PAGE. It is the agent's own state — which
            model, which session, how long, how full — and the rail beside it is not the agent's, so
            a bar spanning both said that state was the whole page's. -->
+      <!-- THE LOUD ONE. A session started as plain \`claude\` has no channel: nothing you write here
+           reaches it until its next turn, and the chat looks the same either way. -->
+      <div v-if="noChannel" class=chat-alert role=alert>
+        <Icon name="warn"/>
+        <div class=chat-alert-text>
+          <strong>This session was not started through the journal.</strong>
+          It does not hear what you write here while it is idle. Stop it and start it with <code>journal claude</code>.
+        </div>
+      </div>
       <div class=agent-bar>
         <div class=agent-facts>
           <template v-for="(r, i) in lead.rows" :key="r.label">

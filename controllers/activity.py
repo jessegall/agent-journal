@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import re
+import time
 from pathlib import Path
 
 from controller import Controller, Payload, Result
@@ -26,6 +27,8 @@ MESSAGES = {
 REPLY_TAG = re.compile(r"^\[![a-z]+\]\s*")
 
 TEXT_MAX = 100
+#: the channel stamps its session every poll (3s); this long without one and the server is gone
+CHANNEL_QUIET = 30
 TITLE_MAX = 200
 AGENT, USER = "Agent", "You"
 
@@ -81,6 +84,17 @@ def context_use(path: Path | None, window: int) -> dict | None:
 
 #: path -> (file size, text): the column polls every few seconds, and the transcript only grows
 _SAID: dict = {}
+
+
+def channel_now(root: Path, stem: str) -> bool | None:
+    """Is the journal's channel server alive for this session? None while the session is too young to tell."""
+    import state
+    now = time.time()
+    seen = state.get(root, "channel_seen", 0, stem=stem) or 0
+    if now - seen <= CHANNEL_QUIET:
+        return True
+    started = state.get(root, "started_at", 0, stem=stem) or 0
+    return None if now - started <= CHANNEL_QUIET else False
 
 
 def session_started(path) -> str:
@@ -256,7 +270,9 @@ class ActivityController(Controller):
                         # which skills this session has open: the bar counts them and names them on a click
                         "skills": state.get(root, "skills_open", [], stem=stem) or [],
                         # the background shells it started, and whether each is still going
-                        "shells": shells_now(root, stem)}
+                        "shells": shells_now(root, stem),
+                        # False: no channel server is polling for this session, so it hears nothing while idle
+                        "channel": channel_now(root, stem)}
         return None
 
     @staticmethod

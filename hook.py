@@ -3659,6 +3659,7 @@ def on_session_start(conf: dict, payload: dict, ctx: Ctx) -> int:
     source = payload.get("source") or "startup"
     _floor(ctx)
     state.put(ROOT, "session_started", source, stem=ctx.stem)
+    state.put(ROOT, "started_at", int(time.time()), stem=ctx.stem)
     # A LOOP DOES NOT SURVIVE ITS PROCESS. A resumed or restarted session starts with none,
     # whatever the runtime file remembers; only a compaction keeps the process, and the loop.
     if source in ("resume", "startup"):
