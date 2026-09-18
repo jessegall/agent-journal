@@ -5806,7 +5806,7 @@ const Agent = {
               :href="s.readable ? '#/env/' + env + '/skills/' + s.name : null" :title="s.description || null" @click="pickSkill($event, s)">
               <span class=title>{{ s.name }}<span v-if="s.always" class=skill-always>every start</span></span>
               <span class=num>{{ s.source }}</span>
-              <span :class="['agent-work-status', {open: s.loaded}]">{{ s.loaded ? (s.loaded === 1 ? 'Once' : s.loaded + ' times') : '—' }}</span>
+              <span :class="['agent-work-status', {open: s.loaded}]">{{ s.loaded ? 'Loaded' : '—' }}</span>
             </component>
           </div>
         </div>
@@ -5831,7 +5831,7 @@ const SkillRow = {
       <component :is="s.readable ? 'a' : 'div'" class=skills-open :href="s.readable ? '#/env/' + env + '/skills/' + s.name : null"
         :title="s.description || null" @click="open($event, s)">
         <span class=skills-name><span class=skills-dot></span><span class=skills-name-text>{{ s.name }}</span></span>
-        <span class=skills-state>{{ s.loaded ? (s.loaded === 1 ? 'Loaded' : 'Loaded ' + s.loaded + '×') : '' }}</span>
+        <span class=skills-state>{{ s.loaded ? 'Loaded' : '' }}</span>
         <span class=skills-where>{{ s.source }}</span>
       </component>
       <button type=button class=skills-ask :disabled="asked === s.name" :title="'Ask the agent to load ' + s.name + ' now'" @click="ask(s)">
