@@ -10,7 +10,8 @@ KEY = "reactions"
 
 #: THE WHOLE SET. A reaction is a gesture, not a vocabulary: six are enough to mean yes, thanks,
 #: nice, funny, seen and please — and a fixed set is one the other side can always render.
-FACES = ("👍", "❤️", "🎉", "😄", "👀", "🙏")
+#: the first six are what the picker shows at a glance; the two after them are a scroll away
+FACES = ("👍", "❤️", "🎉", "😄", "👀", "🙏", "👎", "💔")
 
 MESSAGES = {
     "needs_turn": 'a reaction needs the turn it is on: journal react <message number> "👍"',

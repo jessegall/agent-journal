@@ -4170,7 +4170,7 @@ const Thread = {
     // WHAT EITHER SIDE PUT ON A TURN. Kept beside the thread rather than inside it: the turns come
     // from the transcript and the inbox, and a face is neither — it is one small thing on top.
     const faces = useFetch(() => props.env && `/api/env/${props.env}/reactions`);
-    const FACES = ["👍", "❤️", "🎉", "😄", "👀", "🙏"];
+    const FACES = ["👍", "❤️", "🎉", "😄", "👀", "🙏", "👎", "💔"];
     const picking = ref("");
     const reactionsOn = (t) => {
       const key = turnAnchor(t) || t.key;
@@ -4642,8 +4642,11 @@ const Thread = {
              the buttons back — as does taking the pointer off the turn. -->
         <div v-if="t.kind !== 'receipt'" :class="['thread-tools', {picking: picking === (anchor(t) || t.key)}]">
           <template v-if="picking === (anchor(t) || t.key)">
-            <button v-for="f in FACES" :key="'pick' + f" type=button class=thread-face-pick
-              :title="'React ' + f" @click.stop="react(t, f)">{{ f }}</button>
+            <!-- six faces wide, the rest a scroll away: the bar keeps its width whatever the list grows to -->
+            <div class=thread-face-row>
+              <button v-for="f in FACES" :key="'pick' + f" type=button class=thread-face-pick
+                :title="'React ' + f" @click.stop="react(t, f)">{{ f }}</button>
+            </div>
             <button type=button class=thread-tool title="Never mind" aria-label="Never mind"
               @click.stop="picking = ''"><Icon name="close"/></button>
           </template>

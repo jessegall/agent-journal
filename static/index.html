@@ -973,7 +973,9 @@
   .thread-face.mine { border-color: color-mix(in srgb, var(--accent) 60%, transparent);
     background: color-mix(in srgb, var(--accent) 16%, var(--raised)); }
   .thread-face-n { font-size: 10.5px; color: var(--text-3); font-variant-numeric: tabular-nums; }
-  .thread-face-pick { background: transparent; padding: 0 4px; border: 0; }
+  .thread-face-pick { flex: none; background: transparent; padding: 0 4px; border: 0; }
+  .thread-face-row { display: flex; gap: 1px; max-width: 144px; overflow-x: auto; overflow-y: hidden; scrollbar-width: none; }
+  .thread-face-row::-webkit-scrollbar { height: 0; }
   .thread-face-pick:hover { background: rgba(255, 255, 255, .08); border: 0; }
   /* the tools bar holding faces is the same bar, only wider: it grows leftwards from its own edge */
   .thread-tools.picking { gap: 1px; padding: 1px 3px; }
