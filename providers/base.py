@@ -43,7 +43,7 @@ class Provider(ABC):
         row = agents.by_session(self.session_of(payload))
         uses = int(row.data.get("uses") or 0) + (event == "PreToolUse")
         context = self.context(payload)
-        agents.update(row.n, status=STATUS[event], event=event, tool=payload.get("tool_name") or "", command=self.gist(payload) if event == "PreToolUse" else row.data.get("command", ""),
+        agents.update(row.n, status=STATUS[event], event=event, tool=payload.get("tool_name") or "", command=self.gist(payload) or row.data.get("command", ""),
                       cwd=str(payload.get("cwd") or row.data.get("cwd") or ""),
                       at=time.time(), provider=self.name, uses=uses, transcript=str(payload.get("transcript_path") or row.data.get("transcript") or ""),
                       model=self.model(payload) or row.data.get("model") or "", started=row.data.get("started") or time.time(),
@@ -85,11 +85,7 @@ class Provider(ABC):
         return tool == "Bash" and not JOURNAL_COMMAND.search(command) and bool(WRITING_COMMANDS.search(command))
 
     def gist(self, payload: dict) -> str:
-        tool = payload.get("tool_name") or ""
-        inputs = payload.get("tool_input") or {}
-        what = inputs.get("command") or inputs.get("file_path") or inputs.get("pattern") or inputs.get("url") or inputs.get("description") or ""
-        what = str(what).strip().split("\n")[0]
-        return f"{tool} {Path(what).name if tool in ('Edit', 'Write', 'Read', 'MultiEdit') and what else what}".strip()[:160]
+        return str((payload.get("tool_input") or {}).get("command") or "").strip()[:400]
 
     def refusal(self, why: str) -> dict:
         return {"decision": "block", "reason": why} if why else {}

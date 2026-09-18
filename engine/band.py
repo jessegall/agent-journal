@@ -15,7 +15,7 @@ ACCENT = f"{ESC}[38;2;163;168;240m"
 DIM = f"{ESC}[38;2;131;134;142m"
 RESET = f"{ESC}[0m"
 STATES = {"idle": "●", "working": "◐", "waiting": "◔", "stopped": "○"}
-BRAND = "◆ AGENT JOURNAL"
+BRAND = "AGENT JOURNAL"
 GRADIENT = ((36, 38, 78), (94, 99, 222), (36, 38, 78))
 
 

@@ -39,22 +39,55 @@ async function openNote(n) {
             <p>{{ sub === "unread" ? "Nothing new." : "Nothing has been read yet." }}</p>
         </div>
     </template>
-    <div class="rail-list">
-        <template v-for="n in shown" :key="n.n">
-            <button type="button" :class="['rail-row', 'note-row', {read: n.seen.includes('user')}]" @click="openNote(n)">
-                <span class="rail-note-head">
-                    <span class="rail-row-title">{{ n.title }}</span>
-                    <span class="rail-row-state">{{ age(n.created) }}</span>
-                </span>
-                <template v-if="n.abstract">
-                    <span class="rail-note-text">{{ n.abstract }}</span>
-                </template>
-            </button>
-        </template>
-    </div>
+    <TransitionGroup name="qrow" tag="div" class="rail-list">
+        <button
+            v-for="n in shown"
+            :key="n.n"
+            type="button"
+            :class="['rail-row', 'note-row', {read: n.seen.includes('user')}]"
+            @click="openNote(n)"
+        >
+            <span class="rail-note-head">
+                <span class="rail-row-title">{{ n.title }}</span>
+                <span class="rail-row-state">{{ age(n.created) }}</span>
+            </span>
+            <template v-if="n.abstract">
+                <span class="rail-note-text">{{ n.abstract }}</span>
+            </template>
+        </button>
+    </TransitionGroup>
 </template>
 
 <style scoped>
+.qrow-enter-active {
+    transition:
+        opacity 0.24s ease-out,
+        transform 0.24s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.qrow-enter-from {
+    opacity: 0;
+    transform: translateY(-8px);
+}
+
+.qrow-leave-active {
+    position: absolute;
+    left: 0;
+    right: 0;
+    transition:
+        opacity 0.16s ease-in,
+        transform 0.16s ease-in;
+}
+
+.qrow-leave-to {
+    opacity: 0;
+    transform: translateY(8px);
+}
+
+.qrow-move {
+    transition: transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
 .rail-tabs {
     position: sticky;
     top: 33px;
@@ -125,6 +158,7 @@ async function openNote(n) {
 }
 
 .rail-list {
+    position: relative;
     display: flex;
     flex-direction: column;
 }
