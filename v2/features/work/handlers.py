@@ -1,8 +1,9 @@
 from v2.controllers.types import CONTROLLERS
-from v2.features import on
+from v2.features import on, trigger
 from v2.resources.base import SYSTEM
 
 FEATURE = "work"
+DEFAULT = {"on": trigger.IDLE}
 
 
 def started(event, record) -> None:
@@ -26,6 +27,18 @@ def ended(event, record) -> None:
         todos.complete(int(n), how=f"work {work.n} ended")
 
 
+def remind(event, record) -> None:
+    agent = CONTROLLERS["agent"](record, actor=SYSTEM).load(event.n)
+    if not trigger.due(record, agent, FEATURE, DEFAULT):
+        return
+    trigger.fired(record, agent, FEATURE)
+    for w in CONTROLLERS["work"](record, actor=SYSTEM).all():
+        if not w.completed:
+            CONTROLLERS["nudge"](record, actor=SYSTEM).create(f"work {w.n} open", session=agent.title)
+            return
+
+
 def register() -> None:
     on(FEATURE, "work.created", started)
     on(FEATURE, "work.completed", ended)
+    on(FEATURE, "agent.updated", remind)

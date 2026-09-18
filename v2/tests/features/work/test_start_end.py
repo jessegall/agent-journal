@@ -5,6 +5,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[4]))
 from v2 import features  # noqa: E402
 from v2.controllers.types import CONTROLLERS  # noqa: E402
 from v2.resources.base import AGENT, SYSTEM, USER  # noqa: E402
+from v2.tests.features.kit import idle, nudges  # noqa: E402
 from v2.tests.kit import check, done, fresh  # noqa: E402
 
 features.unload()
@@ -33,6 +34,15 @@ works.complete(work3.n, "done", todo=True)
 check("a row already complete is left alone", [e.action for e in record.events() if e.type == "todo"].count("completed"), 1)
 plain = works.create("work with no to-do")
 check("work with no to-do: the feature does nothing", [e for e in record.events() if e.n == plain.n and e.type == "work"][-1].action, "created")
+
+# ON IDLE the open work is said, once per idle stretch
+record = fresh()
+idle(record)
+check("nothing open: nothing said", nudges(record), [])
+CONTROLLERS["work"](record, actor=AGENT).create("the header")
+idle(record)
+idle(record)
+check("open work is said at each idle", nudges(record), ["work 1 open", "work 1 open"])
 
 # SWITCHED OFF per environment
 record = fresh()
