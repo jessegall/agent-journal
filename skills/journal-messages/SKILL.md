@@ -150,7 +150,10 @@ when the hooks report a Stop (or the agent has printed nothing for a few seconds
 no half-typed line, it types one line — "The user left message 12 on main…" — and presses Enter.
 Read it as a line from the user's side of the record. The stop queue's holds — an untagged
 message, open work, the next to-do under auto mode — come the same way, typed, and the stop
-hook holds nothing while the launcher has the seat. One started as plain `claude` hears nothing
+hook holds nothing while the launcher has the seat. A Codex session hears the viewer exactly
+this way and no other: its hooks (`.codex/hooks.json`) report its stops to the launcher, and
+the launcher types into it; with `--quiet`, or under plain `codex`, it hears the viewer only at
+its next stop, through the hooks. One started as plain `claude` hears nothing
 while idle, and the viewer says so: a warning band above the agent bar, there until a session
 under the launcher holds the environment. An environment no running session holds gets
 the same band with an **Assign agent** button: the user picks one of the running sessions and
