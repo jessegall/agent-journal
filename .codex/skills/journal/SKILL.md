@@ -540,7 +540,7 @@ Never the token itself: the name of the variable that holds it.  Scope: project.
     journal connection update <n> [--title …] [--abstract …] [--brief …] [--outcome …] [--set key=value…]
 
 ### environment — One line of work with its own record: messages, to-dos, pins, plans, settings
-A session works one environment at a time; switch takes one that is free, claim takes a held one with a reason.  Scope: project. Seen by: user, agent.
+A session works one environment at a time; switch takes one that is free, claim takes a held one with a reason.  Scope: project. Seen by: nobody.
     journal environment all [--deleted]
     journal environment attach <n> <path> [--what …]
     journal environment claim <n> <why>
