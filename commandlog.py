@@ -131,6 +131,7 @@ DESCRIBE = {
     "reminders:add": "Writing a reminder",
     "notifications:add": "Sending you a notification",
     "notices:add": "Pinning a line to the chat",
+    "codex:": "Starting Codex under the journal",
     "browser:": "Asking the page you are on",
     "browser:ask": "Asking the page you are on",
     "browser:list": "Reading what the page was asked",

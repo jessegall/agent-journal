@@ -1,0 +1,132 @@
+from __future__ import annotations
+
+import fcntl
+import os
+import pty
+import select
+import signal
+import struct
+import sys
+import termios
+import tty
+from pathlib import Path
+
+#: how long the agent must print nothing before the launcher takes it to be idle
+IDLE_SECONDS = 3.0
+
+
+class Launcher:
+    """An agent run under a pseudo-terminal, with the launcher between it and the real one.
+
+    THE LAUNCHER IS THE ORCHESTRATOR'S SEAT. Everything the user types goes to the agent and
+    everything the agent prints comes back, byte for byte, with the window size passed through —
+    so the agent cannot tell it is not on the terminal itself. What the seat adds is a place
+    outside the agent from which to watch it (is it printing, when did it last, has the user
+    a half-typed line) and to speak to it, by typing, without a hook inside the agent's turn.
+    """
+
+    def __init__(self, command: list[str], cwd: Path | None = None):
+        self.command = command
+        self.cwd = cwd
+        self.pid = 0
+        self.fd = -1
+        self.last_output = 0.0
+        self.typed = b""            # the user's line so far, since the last Enter
+        self.outputs: list = []    # who wants the agent's output besides the terminal
+        self.ticks: list = []      # who wants a moment of quiet, called once per select timeout
+
+    def start(self) -> None:
+        pid, fd = pty.fork()
+        if pid == 0:
+            if self.cwd:
+                os.chdir(self.cwd)
+            os.execvp(self.command[0], self.command)
+        self.pid, self.fd = pid, fd
+        self._resize()
+
+    def _resize(self, *_) -> None:
+        try:
+            size = fcntl.ioctl(sys.stdout.fileno(), termios.TIOCGWINSZ, b"\0" * 8)
+            fcntl.ioctl(self.fd, termios.TIOCSWINSZ, size)
+        except OSError:
+            pass
+
+    def write(self, data: bytes) -> None:
+        """Into the agent, as if typed."""
+        while data:
+            n = os.write(self.fd, data)
+            data = data[n:]
+
+    def type_line(self, text: str) -> None:
+        """A whole line, ended with Enter, typed into the agent."""
+        self.write(text.encode() + b"\r")
+
+    def idle_for(self) -> float:
+        import time
+        return time.time() - self.last_output if self.last_output else 0.0
+
+    def user_mid_line(self) -> bool:
+        return bool(self.typed.strip())
+
+    def run(self) -> int:
+        """Relay until the agent exits; the terminal is put back however this ends."""
+        import time
+        stdin = sys.stdin.fileno()
+        stdout = sys.stdout.fileno()
+        saved = None
+        try:
+            saved = termios.tcgetattr(stdin)
+            tty.setraw(stdin)
+        except termios.error:
+            saved = None                                 # not a tty: relay without raw mode
+        signal.signal(signal.SIGWINCH, self._resize)
+        self.last_output = time.time()
+        try:
+            while True:
+                try:
+                    ready, _, _ = select.select([self.fd, stdin], [], [], 0.5)
+                except InterruptedError:
+                    continue
+                if self.fd in ready:
+                    try:
+                        data = os.read(self.fd, 65536)
+                    except OSError:
+                        break                            # the agent is gone
+                    if not data:
+                        break
+                    os.write(stdout, data)
+                    self.last_output = time.time()
+                    for want in self.outputs:
+                        want(data)
+                if stdin in ready:
+                    data = os.read(stdin, 65536)
+                    if not data:
+                        break
+                    self.write(data)
+                    self._note_typed(data)
+                if not ready:
+                    for tick in self.ticks:
+                        tick(self)
+        finally:
+            signal.signal(signal.SIGWINCH, signal.SIG_DFL)
+            if saved is not None:
+                termios.tcsetattr(stdin, termios.TCSADRAIN, saved)
+        _, status = os.waitpid(self.pid, 0)
+        return os.waitstatus_to_exitcode(status)
+
+    def _note_typed(self, data: bytes) -> None:
+        """What the user has on the line: Enter clears it, backspace shortens it, Ctrl-C and Escape drop it."""
+        for b in data:
+            if b in (10, 13, 3, 27):
+                self.typed = b""
+            elif b in (8, 127):
+                self.typed = self.typed[:-1]
+            else:
+                self.typed += bytes([b])
+
+
+def run(command: list[str], cwd: Path | None = None, ticks: list | None = None) -> int:
+    seat = Launcher(command, cwd)
+    seat.ticks = list(ticks or [])
+    seat.start()
+    return seat.run()
