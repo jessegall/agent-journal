@@ -84,7 +84,7 @@ def parser() -> argparse.ArgumentParser:
     add_query(cmds, "nothing", "decide that nothing here needs pinning", lambda ctx: decided(ctx), ("why", {}))
     add_query(cmds, "version", "the version", lambda ctx: VERSION)
     for name in DRIVERS:
-        add_query(cmds, name, f"start {name} under the supervisor, on this environment; every other word is passed to it", lambda ctx, name=name: supervise(ctx, name))
+        add_query(cmds, name, f"start {name} supervised, on this environment; everything after the word is forwarded to {name}", lambda ctx, name=name: supervise(ctx, name))
     add_query(cmds, "serve", "the web viewer", lambda ctx: serve_forever(ctx), ("--port", {"type": int, "default": 8430}))
     add_query(cmds, "upgrade", "pull the package, wire the hooks, write the skills, run the migrations", lambda ctx: upgrade_here(ctx))
     return top
