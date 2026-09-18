@@ -4,6 +4,22 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.163.0 — The command reads like a build log; plans wait in the rail
+
+**The status bar's command is a log row.** A ring turns while it runs and a check or a cross
+marks it over; the command, then the last line it printed rolling in as it lands, then the clock,
+frozen at what it took. Click the row and the output opens under the bar — what the command
+printed, as it printed it; Escape or the row closes it. The hook keeps the tail of every
+command's output and whether it failed. A time limit wrapped around a command (`perl -e 'alarm…'`)
+is not shown as the command.
+
+**A plan waits on you in the rail, not in a bar.** The plan bar is the plan being worked and
+nothing else; a draft to approve, a parked plan and a finished plan are cards under Waiting on
+you. A finished plan's card has no button: opening it, or closing it with its X, is the
+acknowledgement.
+
+**Rule 12: a plan's title is a name**, two to five words; the goal carries the sentence.
+
 ## 1.162.1 — A finished plan waits for you; a finished command keeps its clock
 
 **The plan bar stays until you acknowledge the plan.** The listing dropped every finished plan

@@ -176,7 +176,8 @@ def running_now(root: Path, stem: str) -> dict | None:
     if got.get("ended"):
         if time.time() - float(got["ended"]) > QUIET_AFTER:
             return None
-        return {"what": got["what"], "seconds": int(max(0, float(got.get("took") or 0))), "done": True}
+        return {"what": got["what"], "seconds": int(max(0, float(got.get("took") or 0))), "done": True,
+                "output": got.get("output") or "", "failed": bool(got.get("failed"))}
     return {"what": got["what"], "seconds": int(max(0, time.time() - float(got["at"])))}
 
 

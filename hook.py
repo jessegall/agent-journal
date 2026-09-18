@@ -2573,8 +2573,12 @@ def _running_end(payload: dict, ctx: Ctx) -> None:
         state.put(ROOT, RUNNING, None, stem=ctx.stem)
         return
     took = time.time() - float(got["at"])
+    # WHAT IT PRINTED, THE TAIL OF IT: the bar shows the last line the way a build log does, and opens
+    # to the rest. Kept small — the transcript has the whole thing.
+    output = _response_text(payload)[-OUTPUT_KEEP:]
     state.put(ROOT, RUNNING, {"what": got.get("what") or "", "at": got["at"], "took": round(took, 1),
-                              "ended": time.time()}, stem=ctx.stem)
+                              "ended": time.time(), "output": output,
+                              "failed": _response_failed(payload)}, stem=ctx.stem)
     import commandlog
     if took < commandlog.LONG_SECONDS:
         return
@@ -2957,6 +2961,38 @@ def _stall(conf: dict, ctx: Ctx) -> str | None:
     mark["said"] = 1
     state.put(ROOT, "stall", mark, stem=ctx.stem)
     return say("stall", calls=mark["calls"], n=t["n"], title=t["title"])
+
+
+#: how much of a command's output the running-command record keeps
+OUTPUT_KEEP = 6000
+
+
+def _response_text(payload: dict) -> str:
+    """What the tool printed, as text: stdout and stderr of a command, the text of anything else."""
+    r = payload.get("tool_response")
+    if isinstance(r, str):
+        return r
+    if isinstance(r, dict):
+        parts = []
+        for key in ("stdout", "stderr", "content", "output", "text"):
+            v = r.get(key)
+            if isinstance(v, str) and v:
+                parts.append(v)
+            elif isinstance(v, list):
+                parts.extend(x.get("text", "") for x in v if isinstance(x, dict))
+        return "\n".join(x for x in parts if x)
+    return ""
+
+
+def _response_failed(payload: dict) -> bool:
+    """Did the command fail? A non-zero exit, or the harness saying so."""
+    r = payload.get("tool_response")
+    if isinstance(r, dict):
+        code = r.get("exit_code", r.get("exitCode"))
+        if isinstance(code, int):
+            return code != 0
+        return bool(r.get("is_error") or r.get("interrupted"))
+    return False
 
 
 def _response_size(payload: dict) -> int:
