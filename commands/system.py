@@ -411,7 +411,8 @@ class Channel(Command):
 
 class Claude(Command):
     signature = ("claude {prompt*? : what to ask Claude first} {--continue} {--resume= : a session id} "
-                 "{--dry-run}")
+                 "{--pty : run it under the journal's launcher, which types the viewer's news in instead of the channel pushing it} "
+                 "{--quiet : with --pty, never type} {--dry-run}")
     passthrough = True
 
     def run(self, p: Parsed) -> int:
@@ -419,10 +420,15 @@ class Claude(Command):
         import shlex
         import shutil
         import sys
-        added, shown = install_channel()
-        if added:
-            fmt.say(render(TEXT["claude_added"], path=shown))
-        command = ["claude", "--dangerously-load-development-channels", "server:journal"]
+        # UNDER THE LAUNCHER THERE IS NO CHANNEL TO LOAD: the seat outside the agent types what the
+        # channel would have pushed, so the flag — and the server it names — are left out.
+        pty_mode = bool(p.option("pty"))
+        command = ["claude"]
+        if not pty_mode:
+            added, shown = install_channel()
+            if added:
+                fmt.say(render(TEXT["claude_added"], path=shown))
+            command += ["--dangerously-load-development-channels", "server:journal"]
         if p.option("continue"):
             command.append("--continue")
         if p.option("resume"):
@@ -451,6 +457,11 @@ class Claude(Command):
         # was not on a tty, and why the viewer's url would not have either.
         sys.stdout.flush()
         sys.stderr.flush()
+        if pty_mode:
+            import launch
+            import state
+            return launch.run(command, cwd=project(), root=root(), env=state.current_track(root()) or "",
+                              quiet=bool(p.option("quiet")))
         os.execvp("claude", command)
 
 
