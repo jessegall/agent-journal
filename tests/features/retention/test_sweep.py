@@ -4,7 +4,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 import features  # noqa: E402
-from controllers.types import CONTROLLERS  # noqa: E402
+from controllers.types import Reports, Todos  # noqa: E402
 from resources.base import AGENT, USER  # noqa: E402
 from tests.features.kit import report  # noqa: E402
 from tests.kit import check, done, fresh  # noqa: E402
@@ -21,8 +21,8 @@ def age(c, n, **fields):
 
 
 record = fresh()
-reports = CONTROLLERS["report"](record, actor=AGENT)
-todos = CONTROLLERS["todo"](record, actor=USER)
+reports = Reports(record, actor=AGENT)
+todos = Todos(record, actor=USER)
 fresh_report = reports.create("checked today")
 old_report = reports.create("checked a month ago")
 age(reports, old_report.n, created=time.time() - 30 * 86400)
@@ -36,9 +36,9 @@ check("a fresh report stays", reports.load(fresh_report.n).completed, 0.0)
 check("a to-do closed past its keep days is archived, an open one never", ([t.n for t in todos.all()], [e.data["why"] for e in record.events() if e.type == "todo" and e.action == "deleted"]), ([open_row.n], ["archived 7 days after it was closed"]))
 kept = fresh()
 kept.set_setting("keep", {"report": 0})
-r = CONTROLLERS["report"](kept, actor=AGENT).create("kept forever")
-age(CONTROLLERS["report"](kept), r.n, created=time.time() - 300 * 86400)
+r = Reports(kept, actor=AGENT).create("kept forever")
+age(Reports(kept), r.n, created=time.time() - 300 * 86400)
 report(kept, "idle", "Stop")
-check("keep 0 leaves reports listed", CONTROLLERS["report"](kept).load(r.n).completed, 0.0)
+check("keep 0 leaves reports listed", Reports(kept).load(r.n).completed, 0.0)
 
 done()

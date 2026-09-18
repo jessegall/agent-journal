@@ -6,7 +6,7 @@ import {agent, types} from "../store.js";
 
 const STEP = 700;
 const sentence = (words) => spoken(words, types.value);
-const data = computed(() => (agent.value && agent.value.data.status === "working" ? agent.value.data : null));
+const data = computed(() => (agent.value && ["working", "compacting"].includes(agent.value.data.status) ? agent.value.data : null));
 const ticks = ref(0);
 const timer = setInterval(() => (ticks.value += 1), 1000);
 const seen = {at: 0};
@@ -51,7 +51,12 @@ const line = computed(() => {
     const parts = gists(run.what, sentence);
     if (!parts.length) return null;
     const secs = Math.floor((run.done || Date.now() / 1000) - run.at);
-    return {key: parts[parts.length - 1], text: parts[parts.length - 1], what: run.what, clock: clock(secs), done: !!run.done};
+    const changed = run.changed || {};
+    const delta = Object.entries(changed)
+        .filter(([, n]) => n)
+        .map(([k, n]) => `${k} ${n}`)
+        .join(" · ");
+    return {key: parts[parts.length - 1], text: parts[parts.length - 1], what: run.what, clock: clock(secs), done: !!run.done, delta};
 });
 </script>
 
@@ -60,6 +65,9 @@ const line = computed(() => {
         <Transition name="roll">
             <span v-if="line" :key="line.key" :class="['statusbar-run-line', {done: line.done}]" :title="line.what">
                 <span class="statusbar-run-text">{{ line.text }}</span>
+                <template v-if="line.delta">
+                    <span class="statusbar-run-delta">{{ line.delta }}</span>
+                </template>
                 <span class="statusbar-running-slot">
                     <Transition name="clock">
                         <span v-if="line.clock" class="statusbar-running-for">{{ line.clock }}</span>
@@ -105,6 +113,14 @@ const line = computed(() => {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+}
+
+.statusbar-run-delta {
+    flex: none;
+    margin-left: 10px;
+    font-size: 9.5px;
+    letter-spacing: 0.02em;
+    color: var(--text-4);
 }
 
 .statusbar-running-slot {

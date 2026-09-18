@@ -7,7 +7,7 @@ from pathlib import Path
 
 HERE = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(HERE))
-from controllers.types import CONTROLLERS  # noqa: E402
+from controllers.types import Agents, Todos  # noqa: E402
 from engine.record import Record  # noqa: E402
 from install import install  # noqa: E402
 from providers import PROVIDERS  # noqa: E402
@@ -56,7 +56,7 @@ for name in PROVIDERS:
     payload = json.dumps({"hook_event_name": "Stop", "session_id": "s-9", "transcript_path": "/t/s-9.jsonl"})
     p = subprocess.run(command.split(), input=payload, capture_output=True, text=True, timeout=60, cwd=project,
                        env={**os.environ, "PATH": os.defpath})
-    row = CONTROLLERS["agent"](Record(project / ".journal", "main"), actor=SYSTEM).by_session("s-9")
+    row = Agents(Record(project / ".journal", "main"), actor=SYSTEM).by_session("s-9")
     check(f"{name}: the installed hook command runs and writes the status", (p.returncode, row.data.get("status"), row.data.get("provider")), (0, "idle", name))
     from engine.sessions import Sessions  # noqa: E402
     check(f"{name}: the session is bound to the default environment on its first report", Sessions(project / ".journal").environment("s-9"), "main")
@@ -69,7 +69,7 @@ old = project / ".journal" / "environments" / "main"
 from install import upgrade  # noqa: E402
 said = upgrade(project)
 check("upgrade wires, writes skills and runs the migrations, and says so", (any("skills" in l for l in said), said[-1]), (True, "migrations run: m0001_the_old_record"))
-check("the old row is a v2 to-do with its number", CONTROLLERS["todo"](Record(project / ".journal", "main")).load(3).title, "an old row")
+check("the old row is a v2 to-do with its number", Todos(Record(project / ".journal", "main")).load(3).title, "an old row")
 check("a second upgrade migrates nothing", upgrade(project)[-1], "record already in shape")
 alias = project / ".journal" / "journal"
 p = subprocess.run([str(alias), "version"], capture_output=True, text=True, timeout=20)

@@ -50,8 +50,12 @@ const close = () => (route.value.open ? unpeek() : go(route.value.env, props.typ
     z-index: 20;
 }
 .reader.small,
-.reader.wide {
-    background: rgba(0, 0, 0, 0.35);
+.reader.wide,
+.reader.document,
+.reader.plan,
+.reader.agent {
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(3px);
 }
 .inspector {
     position: absolute;
@@ -69,9 +73,14 @@ const close = () => (route.value.open ? unpeek() : go(route.value.env, props.typ
 }
 .page {
     position: absolute;
-    inset: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: min(1180px, 68%);
     overflow: auto;
+    border-left: 1px solid var(--border);
     background: var(--bg);
+    box-shadow: -24px 0 60px rgba(0, 0, 0, 0.45);
 }
 .page > :deep(.body) {
     max-width: 800px;
@@ -97,9 +106,7 @@ const close = () => (route.value.open ? unpeek() : go(route.value.env, props.typ
 
 .reader-enter-active .page,
 .reader-leave-active .page {
-    transition:
-        opacity 0.2s ease,
-        transform 0.24s cubic-bezier(0.2, 0.8, 0.2, 1);
+    transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 .reader-enter-from,
@@ -114,8 +121,7 @@ const close = () => (route.value.open ? unpeek() : go(route.value.env, props.typ
 
 .reader-enter-from .page,
 .reader-leave-to .page {
-    opacity: 0;
-    transform: translateY(8px);
+    transform: translateX(100%);
 }
 
 .reader-leave-active :deep(.document-body),

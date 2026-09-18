@@ -11,6 +11,7 @@ const changing = ref(false);
 const options = computed(() => props.resource.data.options || []);
 const pick = computed(() => props.resource.data.pick || 0);
 const settled = computed(() => !!props.resource.completed && !changing.value);
+const ownWords = computed(() => settled.value && !options.value.some((o) => o.title === props.resource.outcome));
 
 async function submit(text) {
     if (!text.trim()) return;
@@ -44,11 +45,15 @@ async function submit(text) {
             </button>
         </template>
         <template v-if="settled">
-            <div class="answer">
-                <span class="answer-label">Your answer</span>
-                <span class="answer-text">{{ resource.outcome }}</span>
+            <template v-if="ownWords">
+                <div class="answer">
+                    <span class="answer-label">Your answer</span>
+                    <span class="answer-text">{{ resource.outcome }}</span>
+                </div>
+            </template>
+            <div class="after">
+                <Btn small @click="changing = true">Change answer</Btn>
             </div>
-            <Btn small @click="changing = true">Change answer</Btn>
         </template>
         <template v-else>
             <form class="own" @submit.prevent="submit(own)">
@@ -134,6 +139,11 @@ async function submit(text) {
 .answer-text {
     padding: 9px 12px;
     white-space: pre-wrap;
+}
+
+.after {
+    display: flex;
+    justify-content: flex-end;
 }
 
 .own {

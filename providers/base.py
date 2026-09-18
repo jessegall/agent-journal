@@ -5,19 +5,23 @@ import time
 from abc import ABC, abstractmethod
 from pathlib import Path
 
-from controllers.types import CONTROLLERS
-from engine.actors import IDLE, STOPPED, WORKING
+from controllers.types import Agents, Nudges
+from engine.actors import COMPACTING, IDLE, STOPPED, WORKING
 from engine.record import Record
 from engine.transcript import Turn
 from resources.base import AGENT, SYSTEM
 
 STATUS = {"SessionStart": IDLE, "Stop": IDLE, "UserPromptSubmit": WORKING, "PreToolUse": WORKING,
-          "PostToolUse": WORKING, "SessionEnd": STOPPED}
+          "PostToolUse": WORKING, "PreCompact": COMPACTING, "SessionEnd": STOPPED}
 EVENTS = tuple(STATUS)
 WRITES = ("Edit", "Write", "MultiEdit", "NotebookEdit")
 WRITING_COMMANDS = re.compile(r"(^|[;&|]\s*)(rm|mv|cp|git (commit|push|rm|mv)|sed -i|tee|touch|mkdir|npm install|pip install)\b|(?<![\d&])>>?\s*(?!/dev/null|&)\S")
 RING = 12
 JOURNAL_COMMAND = re.compile(r"(^|[;&|]\s*)(\S*journal(\.py)?)\s")
+
+
+def start_file(root: Path, env: str, compacted: bool = False) -> Path:
+    return root / "runtime" / f"{'compact' if compacted else 'start'}-{env}.md"
 
 
 def gate_file(root: Path, env: str, session: str) -> Path:
@@ -40,7 +44,7 @@ class Provider(ABC):
         event = payload.get("hook_event_name") or ""
         if event not in STATUS or (root / "runtime" / "off").is_file():
             return {}
-        agents = CONTROLLERS["agent"](Record(root, env), actor=SYSTEM)
+        agents = Agents(Record(root, env), actor=SYSTEM)
         row = agents.by_session(self.session_of(payload))
         uses = int(row.data.get("uses") or 0) + (event == "PreToolUse")
         context = self.context(payload)
@@ -53,20 +57,23 @@ class Provider(ABC):
         if event == "PreToolUse" and self.writes(payload):
             return self.refusal(self.gate(root, env, row.title))
         if event == "SessionStart":
-            return self.handover(event, self.start(root, env))
+            return self.handover(event, self.start(root, env, self.compacted(payload)))
         if event in ("PostToolUse", "UserPromptSubmit"):
             return self.handover(event, self.whispered(root, env, row.title))
         return {}
 
     def whispered(self, root: Path, env: str, session: str) -> str:
-        nudges = CONTROLLERS["nudge"](Record(root, env), actor=AGENT)
+        nudges = Nudges(Record(root, env), actor=AGENT)
         mine = [n for n in nudges.unread() if n.data.get("private") and n.data.get("session") == session]
         for n in mine:
             nudges.read(n.n)
         return "\n".join(dict.fromkeys(f"{n.title}{' — ' + n.brief if n.brief else ''}" for n in mine))
 
-    def start(self, root: Path, env: str) -> str:
-        f = root / "runtime" / f"start-{env}.md"
+    def compacted(self, payload: dict) -> bool:
+        return False
+
+    def start(self, root: Path, env: str, compacted: bool = False) -> str:
+        f = start_file(root, env, compacted)
         return f.read_text() if f.is_file() else ""
 
     def handover(self, event: str, text: str) -> dict:

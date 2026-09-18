@@ -3,7 +3,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 import features  # noqa: E402
-from controllers.types import CONTROLLERS  # noqa: E402
+from controllers.types import Todos, Works  # noqa: E402
 from resources.base import AGENT, SYSTEM, USER  # noqa: E402
 from tests.features.kit import idle, nudges  # noqa: E402
 from tests.kit import check, done, fresh  # noqa: E402
@@ -13,8 +13,8 @@ features.load()
 
 # WORK STARTED FOR A TO-DO links the two and marks the row started, as SYSTEM
 record = fresh()
-todos = CONTROLLERS["todo"](record, actor=USER)
-works = CONTROLLERS["work"](record, actor=AGENT)
+todos = Todos(record, actor=USER)
+works = Works(record, actor=AGENT)
 todo = todos.create("a row to work")
 work = works.create("the work for it", todo=todo.n)
 check("work created for a to-do: linked to it", works.load(work.n).refs, [todo.ref])
@@ -39,7 +39,7 @@ check("work with no to-do: the feature does nothing", [e for e in record.events(
 record = fresh()
 idle(record)
 check("nothing open: nothing said", nudges(record), [])
-CONTROLLERS["work"](record, actor=AGENT).create("the header")
+Works(record, actor=AGENT).create("the header")
 idle(record)
 idle(record)
 check("open work is said at each idle", nudges(record), ["work 1 open", "work 1 open"])
@@ -47,8 +47,8 @@ check("open work is said at each idle", nudges(record), ["work 1 open", "work 1 
 # SWITCHED OFF per environment
 record = fresh()
 record.set_setting("features", {"work": False})
-todo = CONTROLLERS["todo"](record, actor=USER).create("a row")
-work = CONTROLLERS["work"](record, actor=AGENT).create("work", todo=todo.n)
-check("work switched off: nothing is linked", CONTROLLERS["work"](record).load(work.n).refs, [])
+todo = Todos(record, actor=USER).create("a row")
+work = Works(record, actor=AGENT).create("work", todo=todo.n)
+check("work switched off: nothing is linked", Works(record).load(work.n).refs, [])
 
 done()

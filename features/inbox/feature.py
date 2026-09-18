@@ -1,4 +1,4 @@
-from controllers.types import CONTROLLERS
+from controllers.types import Agents, Messages
 from features import trigger
 from features.base import Feature, on
 from resources.base import AGENT, SYSTEM
@@ -13,11 +13,11 @@ class Inbox(Feature):
     patience = 5
 
     def unread(self, record) -> list:
-        return CONTROLLERS["message"](record, actor=SYSTEM).unread(AGENT)
+        return Messages(record, actor=SYSTEM).unread(AGENT)
 
     @on("message.created")
     def arrived(self, event, record) -> None:
-        for agent in CONTROLLERS["agent"](record, actor=SYSTEM).all():
+        for agent in Agents(record, actor=SYSTEM).all():
             trigger.write(record, agent, self.name, uses=int(agent.data.get("uses") or 0) - self.trigger["every"])
 
     @on("agent.updated")

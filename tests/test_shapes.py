@@ -2,7 +2,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from controllers.types import CONTROLLERS  # noqa: E402
+from controllers.types import Questions, Todos  # noqa: E402
 from engine.manifest import manifest  # noqa: E402
 from resources.base import USER  # noqa: E402
 from resources.shapes import Options, Reasoned, Shape  # noqa: E402
@@ -30,13 +30,13 @@ check("shapes compose: fields and labels from every mixin plus its own", (sorted
 
 # THE CONTROLLER VALIDATES what a type's shape declares, and leaves the rest of data free
 record = fresh()
-questions = CONTROLLERS["question"](record, actor=USER)
+questions = Questions(record, actor=USER)
 q = questions.create("which way", options=[{"title": "left", "description": "shorter"}, {"title": "right"}], pick=1, anything="free")
 check("well-shaped options and a pick are kept, and free data too", (q.data["options"][1], q.data["pick"], q.data["anything"]), ({"title": "right"}, 1, "free"))
 check("options that are not rows are refused", refused(lambda: questions.create("q", options="left, right")), "options is a list of rows")
 check("a row's column of the wrong kind is refused", refused(lambda: questions.create("q", options=[{"title": 3}])), "options.title is a text")
 check("a pick that is not a number is refused", refused(lambda: questions.update(q.n, pick="first")), "pick is a number")
-check("a flag takes only a bool", refused(lambda: CONTROLLERS["todo"](record).create("t")) == "" and "flag" in str(Twice.fields["extra"]), True)
+check("a flag takes only a bool", refused(lambda: Todos(record).create("t")) == "" and "flag" in str(Twice.fields["extra"]), True)
 
 # THE MANIFEST carries every type's fields and labels
 m = manifest()

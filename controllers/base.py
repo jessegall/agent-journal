@@ -133,15 +133,15 @@ class Controller:
         return self.save(r, "linked", to=ref, off=True)
 
     def comment(self, n: int, text: str) -> Resource:
-        from controllers.types import CONTROLLERS
+        from controllers.types import Comments, Reactions
         parent = self.load(n)
-        made = CONTROLLERS["comment"](self.record, actor=self.actor).create(titled(text), brief=text.strip(), about=parent.ref)
+        made = Comments(self.record, actor=self.actor).create(titled(text), brief=text.strip(), about=parent.ref)
         self.save(parent, "commented", comment=made.n)
         return made
 
     def comments(self, n: int) -> list[Resource]:
-        from controllers.types import CONTROLLERS
-        return CONTROLLERS["comment"](self.record, actor=self.actor).linked_to(f"{self.type}:{n}")
+        from controllers.types import Comments, Reactions
+        return Comments(self.record, actor=self.actor).linked_to(f"{self.type}:{n}")
 
     def folder(self, n: int) -> Path:
         self.load(n)
@@ -231,9 +231,9 @@ class Controller:
     def react(self, n: int, face: str) -> Resource | None:
         if face not in FACES:
             raise Refused(f"a reaction is one of {' '.join(FACES)}")
-        from controllers.types import CONTROLLERS
+        from controllers.types import Comments, Reactions
         r = self.load(n)
-        reactions = CONTROLLERS["reaction"](self.record, actor=self.actor)
+        reactions = Reactions(self.record, actor=self.actor)
         for made in reactions.linked_to(r.ref):
             if made.data.get("face") == face and self.actor in made.seen[:1]:
                 reactions.force_delete(made.n)

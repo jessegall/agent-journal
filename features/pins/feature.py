@@ -2,7 +2,7 @@ from features import trigger
 from features.base import Recital
 
 
-class Pins(Recital):
+class PinsFeature(Recital):
     name = "pins"
     type = "pin"
     title_ = "Pins"

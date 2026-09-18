@@ -1,7 +1,7 @@
 import subprocess
 from pathlib import Path
 
-from controllers.types import CONTROLLERS
+from controllers.types import Agents, Works
 from features.base import Feature, on
 from resources.base import SYSTEM
 
@@ -45,12 +45,24 @@ class Files(Feature):
         agent = self.agent(event, record)
         if agent.data.get("event") != "PostToolUse" or not agent.data.get("wrote"):
             return
-        works = CONTROLLERS["work"](record, actor=SYSTEM)
+        works = Works(record, actor=SYSTEM)
         for work in self.standing(record, "work")[:1]:
             project = record.root.parent
             file = agent.data.get("file") or ""
             only = str(Path(file).resolve().relative_to(project.resolve())) if file and file.startswith(str(project)) else ""
             files = {f["path"]: f for f in work.data.get("changed") or []}
+            before = {f["path"]: (f["added"], f["removed"]) for f in files.values()}
+            delta = {"edited": 0, "created": 0, "deleted": 0}
             for f in changed(project, only):
                 files[f["path"]] = f
+                if f["path"] not in before and f["created"]:
+                    delta["created"] += 1
+                elif before.get(f["path"]) != (f["added"], f["removed"]):
+                    delta["edited"] += 1
+            for path in [p for p in before if p not in {f["path"] for f in changed(project, only)} and (only in ("", p)) and not (project / p).exists()]:
+                delta["deleted"] += 1
             works.update(work.n, changed=list(files.values()), commits=committed(project, work.created))
+            running = dict(agent.data.get("running") or {})
+            if running and any(delta.values()):
+                agents = Agents(record, actor=SYSTEM)
+                agents.update(agent.n, running={**running, "changed": delta})

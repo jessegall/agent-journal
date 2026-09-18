@@ -3,7 +3,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 import features  # noqa: E402
-from controllers.types import CONTROLLERS  # noqa: E402
+from controllers.types import Docs, Plans, Todos  # noqa: E402
 from features.auto.next import next  # noqa: E402
 from resources.base import AGENT, SYSTEM, USER  # noqa: E402
 from tests.kit import check, done, fresh, refused  # noqa: E402
@@ -14,10 +14,10 @@ features.load()
 
 
 record = fresh()
-todos = CONTROLLERS["todo"](record, actor=USER)
+todos = Todos(record, actor=USER)
 rows = [todos.create(t).n for t in ("one", "two", "three", "four", "five")]
-by_agent = CONTROLLERS["plan"](record, actor=AGENT)
-by_user = CONTROLLERS["plan"](record, actor=USER)
+by_agent = Plans(record, actor=AGENT)
+by_user = Plans(record, actor=USER)
 
 # WRITING ONE: phases in order, --before in the middle, rows in one phase each
 plan = by_agent.create("Port everything", goal="it all runs on v2")
@@ -76,7 +76,7 @@ by_agent.abandon(other.n, "no longer wanted")
 check("abandoned, with the why, and the row stays open", (by_agent.load(other.n).data["status"], [e for e in record.events() if e.type == "plan"][-1].data["why"], todos.load(row).completed), ("abandoned", "no longer wanted", 0.0))
 
 # FROM A DOC: its "Phase …" sections become phases, and the plan links the doc
-docs = CONTROLLERS["doc"](record, actor=AGENT)
+docs = Docs(record, actor=AGENT)
 doc = docs.create("A design", abstract="what is true when done", brief="the approach")
 docs.section(doc.n, "Phase 1 — The record", "files first")
 docs.section(doc.n, "Notes", "not a phase")

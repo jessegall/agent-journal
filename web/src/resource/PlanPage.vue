@@ -116,10 +116,10 @@ async function run(action, body = {}) {
     color: var(--text-2);
 }
 .status.active {
-    color: var(--good);
+    color: var(--progress);
 }
 .status.waiting {
-    color: var(--warn);
+    color: var(--blocking);
 }
 .grow {
     flex: 1;
@@ -180,7 +180,7 @@ async function run(action, body = {}) {
     font-weight: 500;
 }
 .cp {
-    color: var(--warn);
+    color: var(--blocking);
     font-size: 11.5px;
 }
 .progress {

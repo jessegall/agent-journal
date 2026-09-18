@@ -104,7 +104,7 @@ onUnmounted(() => window.removeEventListener("keydown", onEscape));
     width: 7px;
     height: 7px;
     border-radius: 50%;
-    background: #6fae7d;
+    background: var(--progress);
 }
 
 .away-title {

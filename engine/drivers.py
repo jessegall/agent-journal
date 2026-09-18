@@ -47,7 +47,7 @@ class Driver(ABC):
     def last_report(self) -> dict | None:
         from controllers.types import CONTROLLERS
         from resources.base import SYSTEM
-        rows = [r for r in CONTROLLERS["agent"](self.record, actor=SYSTEM).all()
+        rows = [r for r in Agents(self.record, actor=SYSTEM).all()
                 if r.data.get("event") and (r.title == self.session or (r.data.get("provider") == self.name and float(r.data.get("at") or 0) >= self.born - 1))]
         return {**rows[-1].data, "session": rows[-1].title} if rows else None
 

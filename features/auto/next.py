@@ -1,15 +1,15 @@
-from controllers.types import CONTROLLERS
+from controllers.types import Questions, Todos
 from features.plans.query import held
 from resources.base import SYSTEM
 from resources.shapes import LEVELS
 
 
 def open_rows(record) -> list:
-    return [t for t in CONTROLLERS["todo"](record, actor=SYSTEM).all() if not t.completed]
+    return [t for t in Todos(record, actor=SYSTEM).all() if not t.completed]
 
 
 def asked(record, todo) -> bool:
-    return any(not q.completed and todo.ref in q.refs for q in CONTROLLERS["question"](record, actor=SYSTEM).all())
+    return any(not q.completed and todo.ref in q.refs for q in Questions(record, actor=SYSTEM).all())
 
 
 def waiting_on(record, todo, rows: list) -> bool:

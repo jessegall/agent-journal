@@ -2,17 +2,17 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from controllers.types import CONTROLLERS  # noqa: E402
+from controllers.types import Messages, Notices, Reactions  # noqa: E402
 from resources.base import AGENT, USER  # noqa: E402
 from tests.kit import check, done, fresh, refused  # noqa: E402
 
 
 
 record = fresh()
-messages = CONTROLLERS["message"](record, actor=AGENT)
+messages = Messages(record, actor=AGENT)
 m = messages.create("a reply worth a face")
-by_user = CONTROLLERS["message"](record, actor=USER)
-reactions = CONTROLLERS["reaction"](record)
+by_user = Messages(record, actor=USER)
+reactions = Reactions(record)
 
 # A REACTION is one face by one actor on one message, linked to it; the same face again takes it off
 by_user.react(m.n, "👍")
@@ -27,11 +27,11 @@ check("a face outside the nine is refused", refused(lambda: by_user.react(m.n, "
 check("the user's reactions are events the agent is told of: put on (born linked), taken off", [e.action for e in record.events() if e.type == "reaction" and e.actor == USER], ["created", "created", "deleted"])
 
 # A NOTICE is one line kept until closed, with a tone and a link
-notices = CONTROLLERS["notice"](record, actor=AGENT)
+notices = Notices(record, actor=AGENT)
 n = notices.create("the migration is running, do not deploy", tone="warn", link="https://example/pr/1", label="Open the PR")
 check("a notice carries its tone, link and label", (n.data["tone"], n.data["link"], n.data["label"]), ("warn", "https://example/pr/1", "Open the PR"))
 check("the notice's words: close", notices.named("complete"), "close")
-CONTROLLERS["notice"](record, actor=USER).method("close")(n.n)
+Notices(record, actor=USER).method("close")(n.n)
 check("the user's X closes it", bool(notices.load(n.n).completed), True)
 
 done()

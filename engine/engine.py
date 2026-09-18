@@ -6,7 +6,7 @@ from pathlib import Path
 from controllers.types import CONTROLLERS
 import features
 from engine import bus
-from engine.actors import Actor, Agent, IDLE, STOPPED, System, User, WAITING, WORKING
+from engine.actors import Actor, Agent, COMPACTING, IDLE, STOPPED, System, User, WAITING, WORKING
 from engine.record import Record
 from engine.sessions import Sessions
 from providers import PROVIDERS
@@ -101,7 +101,7 @@ class Engine:
                 return "probe: nothing came back, stopped"
             self.probed_at = 0.0
             return "probe: working"
-        if silent and self.agent.state() in (WORKING, WAITING):
+        if silent and self.agent.state() in (WORKING, WAITING, COMPACTING):
             driver.interrupt()
             self.probed_at = time.time()
             return "silent for two minutes: probing with Ctrl-C"

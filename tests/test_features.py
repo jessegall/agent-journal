@@ -7,7 +7,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 import features  # noqa: E402
-from controllers.types import CONTROLLERS  # noqa: E402
+from controllers.types import Todos, Works  # noqa: E402
 from engine import bus  # noqa: E402
 from engine.record import Record  # noqa: E402
 from resources.base import AGENT, USER  # noqa: E402
@@ -40,12 +40,12 @@ check("the manifest carries every feature", sorted(manifest()["features"]), load
 # THE SWITCH: a feature is off per environment through settings; another environment keeps it
 record = fresh()
 record.set_setting("features", {"work": False})
-todo = CONTROLLERS["todo"](record, actor=USER).create("a row")
-work = CONTROLLERS["work"](record, actor=AGENT).create("work", todo=todo.n)
-check("a feature switched off in one environment does nothing there", CONTROLLERS["work"](record).load(work.n).refs, [])
+todo = Todos(record, actor=USER).create("a row")
+work = Works(record, actor=AGENT).create("work", todo=todo.n)
+check("a feature switched off in one environment does nothing there", Works(record).load(work.n).refs, [])
 other = fresh()
-w = CONTROLLERS["work"](other, actor=AGENT).create("work", todo=CONTROLLERS["todo"](other, actor=USER).create("row").n)
-check("another environment keeps the feature on", CONTROLLERS["work"](other).load(w.n).refs, ["todo:1"])
+w = Works(other, actor=AGENT).create("work", todo=Todos(other, actor=USER).create("row").n)
+check("another environment keeps the feature on", Works(other).load(w.n).refs, ["todo:1"])
 
 # THROUGH HTTP: an event posted to the server reaches the same feature
 root = Path(tempfile.mkdtemp())
@@ -62,7 +62,7 @@ def post(path, body):
 
 post("/api/t/todo", {"title": "a row"})
 post("/api/t/work", {"title": "the work", "todo": 1, "actor": AGENT})
-check("posted through HTTP: the feature linked the work to the to-do", CONTROLLERS["work"](Record(root, "t")).load(1).refs, ["todo:1"])
+check("posted through HTTP: the feature linked the work to the to-do", Works(Record(root, "t")).load(1).refs, ["todo:1"])
 server.shutdown()
 
 done()

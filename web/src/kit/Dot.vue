@@ -1,7 +1,13 @@
 <script setup>
 import {computed} from "vue";
 
-const COLOR = {started: "#5b8def", blocked: "#d9a441", done: "#3ecf74", asked: "#a78bfa", open: "#8b8e96"};
+const COLOR = {
+    started: "var(--progress)",
+    blocked: "var(--blocking)",
+    done: "var(--progress)",
+    asked: "var(--blocking)",
+    open: "var(--open)",
+};
 const props = defineProps({kind: {type: String, default: "open"}});
 const color = computed(() => COLOR[props.kind] || COLOR.open);
 </script>

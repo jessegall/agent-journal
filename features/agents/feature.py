@@ -1,6 +1,6 @@
 import time
 
-from controllers.types import CONTROLLERS
+from controllers.types import Agents, CONTROLLERS, Todos
 from features.base import Feature, on
 from resources.base import SYSTEM
 
@@ -14,7 +14,7 @@ class Subagents(Feature):
     help_ = "A subagent is lent an environment (journal environment <n> grant) and names itself with --agent on every command; its rows carry that mark in the same record. agents.lapse (minutes, 20) is how long it may go silent before an assignment clears."
 
     def rows(self, record):
-        return CONTROLLERS["agent"](record, actor=SYSTEM)
+        return Agents(record, actor=SYSTEM)
 
     @on("created")
     def alive(self, event, record) -> None:
@@ -29,7 +29,7 @@ class Subagents(Feature):
 
     @on("todo.updated")
     def reported(self, event, record) -> None:
-        todos = CONTROLLERS["todo"](record, actor=SYSTEM)
+        todos = Todos(record, actor=SYSTEM)
         todo = todos.load(event.n)
         said = todo.data.get("reported") or {}
         if not said or said.get("told"):
@@ -42,7 +42,7 @@ class Subagents(Feature):
     @on("agent.updated")
     def lapsed(self, event, record) -> None:
         limit = record.setting("agents", {}).get("lapse", LAPSE_MINUTES) * 60
-        todos = CONTROLLERS["todo"](record, actor=SYSTEM)
+        todos = Todos(record, actor=SYSTEM)
         rows = {a.title: a for a in self.rows(record).all() if a.data.get("status") == "subagent"}
         for t in todos.all():
             who = t.data.get("assigned")

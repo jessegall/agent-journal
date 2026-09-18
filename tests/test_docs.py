@@ -3,14 +3,14 @@ import tempfile
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from controllers.types import CONTROLLERS  # noqa: E402
+from controllers.types import Connections, Docs, Reports, Tools  # noqa: E402
 from resources.base import AGENT, USER  # noqa: E402
 from tests.kit import check, done, fresh, refused  # noqa: E402
 
 
 
 record = fresh()
-docs = CONTROLLERS["doc"](record, actor=AGENT)
+docs = Docs(record, actor=AGENT)
 
 # A DOC: parts as sections, attachments beside them, final as its complete, found by name or number
 d = docs.create("The engine, the loop from A to Z", abstract="what each piece is", brief="Four parts.")
@@ -32,7 +32,7 @@ newer = docs.create("The engine, the loop rewritten", supersedes=d.n)
 check("superseded: the old is closed saying by which, the new links it", (docs.load(d.n).outcome, newer.refs), (f"superseded by doc {newer.n}", [d.ref]))
 
 # A REPORT becomes a doc when it turns out to be one
-reports = CONTROLLERS["report"](record, actor=AGENT)
+reports = Reports(record, actor=AGENT)
 r = reports.create("what the four agents found", abstract="asked to review", brief="findings")
 reports.section(r.n, "Fine", "the record")
 made = reports.doc(r.n)
@@ -40,11 +40,11 @@ check("the doc carries the report's words and parts; the report is archived sayi
 check("archive is the report's complete", reports.named("complete"), "archive")
 
 # TOOLS run from the project root; CONNECTIONS name a variable, never a token
-tools = CONTROLLERS["tool"](record, actor=AGENT)
+tools = Tools(record, actor=AGENT)
 t = tools.create("say hello", abstract="prints its arguments", entry="printf %s", usage="journal tool 1 run <words>")
 check("a tool runs its entry with the arguments given", tools.run(t.n, "hi")["out"], "hi")
 check("a tool's entry is text", refused(lambda: tools.create("bad", entry=3)), "entry is a text")
-c = CONTROLLERS["connection"](record, actor=USER).create("Sentry", variable="SENTRY_TOKEN")
+c = Connections(record, actor=USER).create("Sentry", variable="SENTRY_TOKEN")
 check("a connection holds the variable's name", c.data, {"variable": "SENTRY_TOKEN"})
 
 done()

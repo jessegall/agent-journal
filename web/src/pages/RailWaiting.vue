@@ -6,13 +6,13 @@ import {peek, route} from "../route.js";
 import {focusTurn, meta, types, unreadByUser} from "../store.js";
 
 const TINT = {
-    question: "#a78bfa",
-    plan: "#5b8def",
-    report: "#3ecf74",
-    doc: "#8b8e96",
-    pin: "#d9a441",
-    rule: "#d9a441",
-    reminder: "#d9a441",
+    question: "var(--blocking)",
+    plan: "var(--progress)",
+    report: "var(--open)",
+    doc: "var(--open)",
+    pin: "var(--open)",
+    rule: "var(--open)",
+    reminder: "var(--open)",
 };
 const cards = computed(() => types.value.filter((t) => t.attention).flatMap((t) => unreadByUser(t.name)));
 

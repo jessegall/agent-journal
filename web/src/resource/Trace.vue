@@ -108,7 +108,7 @@ const commits = computed(() => props.resource.data.commits || []);
 
 .trace-add {
     flex: none;
-    color: #3ecf74;
+    color: var(--progress);
     font-variant-numeric: tabular-nums;
 }
 

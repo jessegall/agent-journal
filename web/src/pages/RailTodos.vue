@@ -7,7 +7,7 @@ import {peek, route} from "../route.js";
 import {open, rows} from "../store.js";
 
 const groups = computed(() => {
-    const named = {started: "In progress", asked: "Waiting on you", blocked: "Blocked", open: "Open"};
+    const named = {started: "In progress", blocked: "Blocked", asked: "Waiting on you", open: "Open"};
     const of = (r) =>
         r.data.blocked
             ? "blocked"
@@ -18,7 +18,9 @@ const groups = computed(() => {
                 : "open";
     const buckets = {};
     for (const r of open("todo")) (buckets[of(r)] ||= []).push(r);
-    return Object.entries(buckets).map(([key, list]) => ({key, label: named[key], rows: list}));
+    return Object.keys(named)
+        .filter((key) => buckets[key])
+        .map((key) => ({key, label: named[key], rows: buckets[key]}));
 });
 </script>
 
@@ -37,9 +39,11 @@ const groups = computed(() => {
             </div>
             <template v-for="t in g.rows" :key="t.n">
                 <button type="button" :class="['rail-row', {sel: route.page === 'todo' && route.n === t.n}]" @click="peek('todo', t.n)">
-                    <Dot :kind="g.key" />
-                    <PriorityIcon :value="Number(t.data.priority ?? 100)" />
-                    <span class="rail-row-n">#{{ t.n }}</span>
+                    <span class="rail-row-marks">
+                        <Dot :kind="g.key" />
+                        <PriorityIcon :value="Number(t.data.priority ?? 100)" />
+                        <span class="rail-row-n">#{{ t.n }}</span>
+                    </span>
                     <span class="rail-row-title">{{ t.title }}</span>
                 </button>
             </template>
@@ -98,11 +102,12 @@ const groups = computed(() => {
 
 .rail-row {
     display: flex;
-    align-items: center;
-    gap: 9px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 3px;
     width: 100%;
     min-height: 36px;
-    padding: 0 var(--rail-gutter);
+    padding: 7px var(--rail-gutter);
     border: 0;
     border-bottom: 1px solid var(--border);
     background: none;
@@ -133,5 +138,15 @@ const groups = computed(() => {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+}
+.rail-row-marks {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+}
+
+.rail-row-title {
+    white-space: normal;
+    line-height: 1.35;
 }
 </style>

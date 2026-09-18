@@ -17,7 +17,7 @@ const adding = ref(false);
 const all = computed(() => rows(props.type));
 const shown = computed(() => (archive.value ? all.value.filter((r) => r.completed) : open(props.type)));
 const groups = computed(() => {
-    const named = {started: "In progress", asked: "Waiting on you", blocked: "Blocked"};
+    const named = {started: "In progress", blocked: "Blocked", asked: "Waiting on you"};
     const of = (r) =>
         r.data.blocked
             ? "blocked"
@@ -28,11 +28,14 @@ const groups = computed(() => {
                 : "open";
     const buckets = {};
     for (const r of shown.value) (buckets[of(r)] ||= []).push(r);
-    return Object.entries(buckets).map(([k, list]) => ({
-        key: k,
-        title: named[k] || (archive.value ? word(props.type, "complete").replace(/^\w/, (c) => c.toUpperCase()) : "Open"),
-        list,
-    }));
+    return [...Object.keys(named), "open"]
+        .filter((k) => buckets[k])
+        .map((k) => [k, buckets[k]])
+        .map(([k, list]) => ({
+            key: k,
+            title: named[k] || (archive.value ? word(props.type, "complete").replace(/^\w/, (c) => c.toUpperCase()) : "Open"),
+            list,
+        }));
 });
 
 async function select(n) {

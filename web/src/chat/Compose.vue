@@ -188,7 +188,7 @@ async function go() {
     display: flex;
     flex-wrap: wrap;
     gap: 6px;
-    padding: 10px 10px 0;
+    padding: 10px 10px 4px;
 }
 
 .chip {

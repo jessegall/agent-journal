@@ -11,6 +11,7 @@ const state = computed(() => (agent.value && agent.value.data.status !== "stoppe
 const named = (w) => (w.data.todo ? `to-do ${w.data.todo} · ${w.title}` : w.title);
 const line = computed(() => {
     if (state.value === "stopped") return "no agent is on this environment";
+    if (state.value === "compacting") return "compacting its context — it carries on after";
     const works = rows("work");
     const open = works.find((w) => !w.completed);
     if (open) return `on ${named(open)}`;

@@ -1,9 +1,9 @@
-from controllers.types import ACTIVE, CONTROLLERS, WAITING
+from controllers.types import ACTIVE, Plans, WAITING
 from resources.base import SYSTEM
 
 
 def running(record) -> list:
-    return [p for p in CONTROLLERS["plan"](record, actor=SYSTEM).all() if p.data.get("status") in (ACTIVE, WAITING)]
+    return [p for p in Plans(record, actor=SYSTEM).all() if p.data.get("status") in (ACTIVE, WAITING)]
 
 
 def current_phase(plan) -> dict | None:
@@ -13,7 +13,7 @@ def current_phase(plan) -> dict | None:
 
 
 def held(record, todo) -> bool:
-    for plan in CONTROLLERS["plan"](record, actor=SYSTEM).all():
+    for plan in Plans(record, actor=SYSTEM).all():
         if todo.ref not in plan.refs:
             continue
         phase = current_phase(plan)

@@ -3,7 +3,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from controllers.types import CONTROLLERS  # noqa: E402
+from controllers.types import Environments  # noqa: E402
 from engine.sessions import Sessions  # noqa: E402
 from resources.base import AGENT  # noqa: E402
 from tests.kit import check, done, fresh, refused  # noqa: E402
@@ -12,8 +12,8 @@ from tests.kit import check, done, fresh, refused  # noqa: E402
 
 record = fresh()
 sessions = Sessions(record.root)
-one = CONTROLLERS["environment"](record, actor=AGENT, session="claude-1")
-two = CONTROLLERS["environment"](record, actor=AGENT, session="claude-2")
+one = Environments(record, actor=AGENT, session="claude-1")
+two = Environments(record, actor=AGENT, session="claude-2")
 
 # PREPARE makes the folder; a name is one word; twice is refused
 env = one.method("prepare")("repentance")
@@ -21,7 +21,7 @@ check("prepared: a project resource, with its folder", (env.title, env.scope, (r
 check("the same name again is refused", refused(lambda: one.create("repentance")), "environment 'repentance' exists: switch to it")
 
 # SWITCH binds the session; a held environment refuses another session; CLAIM takes it with a reason and evicts
-check("a controller with no session cannot bind", refused(lambda: CONTROLLERS["environment"](record).switch(env.n)), "no session to bind: say which with --session")
+check("a controller with no session cannot bind", refused(lambda: Environments(record).switch(env.n)), "no session to bind: say which with --session")
 one.switch(env.n)
 check("bound: the session's file says where, and the environment says who", (sessions.environment("claude-1"), one.load(env.n).data["holder"]), ("repentance", "claude-1"))
 check("held by a live session: another is refused", refused(lambda: two.switch(env.n)), "environment 'repentance' is taken by session claude-1: claim it with a reason, or work another")
