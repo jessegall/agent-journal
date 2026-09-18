@@ -20,6 +20,7 @@ from engine.manifest import manifest
 from engine.record import Record
 from providers import PROVIDERS
 from resources.base import USER, Refused
+from resources.types import Ask
 
 WEB = Path(__file__).resolve().parents[1] / "web" / "dist"
 JSON = "application/json"
@@ -106,8 +107,8 @@ def shaped(r) -> dict:
 
 
 def settings(record: Record) -> dict:
-    return {"features": {name: f.enabled(record) for name, f in features.FEATURES.items()},
-            "triggers": record.setting("triggers", {}), "keep": record.setting("keep", {})}
+    return {Record.features: {name: f.enabled(record) for name, f in features.FEATURES.items()},
+            Record.triggers: record.triggers, Record.keep: record.keep}
 
 
 def static(path: str) -> Reply:
@@ -209,7 +210,7 @@ def post_driver(req: Request) -> Reply:
 @route("POST", "/api/{env}/browser/pending")
 def post_pending(req: Request) -> Reply:
     asks = Asks(req.record(), actor=USER).pending()
-    return Reply(200, {"data": [{"n": a.n, "op": a.data.get("op"), "args": a.data.get("args") or []} for a in asks]})
+    return Reply(200, {"data": [{"n": a.n, Ask.op: a.op, Ask.args: a.args} for a in asks]})
 
 
 @route("POST", "/api/{env}/browser/{n}/result")
@@ -225,10 +226,10 @@ def get_files(req: Request) -> Reply:
     for type_ in CONTROLLERS:
         c = CONTROLLERS[type_](record, actor=USER)
         for r in c.all():
-            for name in r.data.get("files") or {}:
+            for name in r.files:
                 f = c.folder(r.n) / name
                 if f.is_file():
-                    out.append({"type": type_, "n": r.n, "title": r.title, "name": name, "what": (r.data.get("files") or {}).get(name, ""), "size": f.stat().st_size,
+                    out.append({"type": type_, "n": r.n, "title": r.title, "name": name, "what": r.files.get(name, ""), "size": f.stat().st_size,
                                 "at": f.stat().st_mtime, "image": (mimetypes.guess_type(name)[0] or "").startswith("image/"),
                                 "url": f"/api/{record.env}/{type_}/{r.n}/files/{name}"})
     return Reply(200, sorted(out, key=lambda x: -x["at"]))
@@ -237,8 +238,8 @@ def get_files(req: Request) -> Reply:
 @route("GET", "/api/{env}/agent/{n}/transcript")
 def get_transcript(req: Request) -> Reply:
     row = Agents(req.record(), actor=USER).load(int(req.params["n"]))
-    provider = PROVIDERS.get(row.data.get("provider", ""))
-    turns = provider().transcript(Path(row.data.get("transcript") or "")) if provider and row.data.get("transcript") else []
+    provider = PROVIDERS.get(row.provider)
+    turns = provider().transcript(Path(row.transcript)) if provider and row.transcript else []
     since = int(req.query.get("since") or 0)
     return Reply(200, [{"line": t.line, "who": t.who, "text": t.text} for t in turns if t.line > since][-int(req.query.get("last") or 300):])
 

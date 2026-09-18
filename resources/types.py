@@ -1,5 +1,5 @@
 from resources.base import AGENT, DOCUMENT, PROJECT, USER, WIDE, Resource
-from resources.shapes import TEXT, Options, Ranked, Reasoned, Shape, Traced
+from resources.shapes import TEXT, Field, Options, Ranked, Reasoned, Shape, Traced, names
 
 
 class Message(Shape, Resource):
@@ -14,6 +14,12 @@ class Message(Shape, Resource):
 
 class Todo(Ranked, Resource):
     type = "todo"
+    status = Field()
+    work = Field()
+    assigned = Field()
+    blocked = Field()
+    reported = Field()
+    after = Field()
     handed = "TO-DOS waiting — delayed work, not an instruction to start any of it"
     counted = True
     icon = "circle"
@@ -26,6 +32,8 @@ class Todo(Ranked, Resource):
 
 class Work(Traced, Resource):
     type = "work"
+    todo = Field()
+    status = Field()
     handed = "STILL OPEN, from this or an earlier session"
     icon = "play"
     notify = (USER,)
@@ -38,6 +46,9 @@ class Work(Traced, Resource):
 
 class Plan(Shape, Resource):
     type = "plan"
+    status = Field()
+    phases = Field(default=list)
+    current = Field(default=1)
     handed = "PLANS running"
     attention = True
     icon = "flag"
@@ -50,6 +61,7 @@ class Plan(Shape, Resource):
 
 class Doc(Shape, Resource):
     type = "doc"
+    status = Field()
     handed = "DOCS catalogued — read one before you re-investigate what it settles"
     lent = False
     attention = True
@@ -87,6 +99,7 @@ class Pin(Reasoned, Resource):
 
 class Rule(Reasoned, Resource):
     type = "rule"
+    injected = Field()
     handed = "RULES, in force on every environment"
     lent = False
     attention = True
@@ -124,6 +137,7 @@ class Question(Options, Resource):
 
 class Suggestion(Options, Resource):
     type = "suggestion"
+    decision = Field()
     handed = "SUGGESTIONS waiting on the user"
     attention = True
     icon = "up"
@@ -147,6 +161,29 @@ class Comment(Shape, Resource):
 
 class AgentRow(Shape, Resource):
     type = "agent"
+    status = Field()
+    event = Field()
+    tool = Field()
+    file = Field()
+    wrote = Field()
+    cwd = Field()
+    at = Field(default=0)
+    provider = Field(default="")
+    uses = Field(default=0)
+    transcript = Field(default="")
+    model = Field(default="")
+    started = Field()
+    context = Field(default=0)
+    skills = Field(default=list)
+    shells = Field(default=0)
+    subagents = Field(default=0)
+    running = Field(default=dict)
+    commands = Field(default=list)
+    branch = Field()
+    branch_url = Field()
+    env = Field()
+    active = Field()
+    decided = Field()
     icon = "bot"
     title_ = "Agent"
     abstract_ = "A session of Claude or Codex, and what it is doing right now"
@@ -179,6 +216,7 @@ class Notice(Shape, Resource):
 
 class Reaction(Shape, Resource):
     type = "reaction"
+    face = Field()
     mirror = True
     icon = "smile"
     title_ = "Reaction"
@@ -194,7 +232,8 @@ class Tool(Shape, Resource):
     title_ = "Tool"
     abstract_ = "A script kept for a job that comes back, catalogued so the next agent runs it instead of writing it again"
     help_ = "A tool names its entry (how to run it), its usage and what it does; run executes it from the project root."
-    fields = {"entry": TEXT, "usage": TEXT}
+    entry = Field(TEXT)
+    usage = Field(TEXT)
     scope = PROJECT
 
 
@@ -206,7 +245,9 @@ class Style(Reasoned, Resource):
     title_ = "Coding style"
     abstract_ = "One rule of the project's coding style, on one subject, written as a skill"
     help_ = "A style rule names its subject and its decision; the style feature writes the skill for it."
-    fields = {"subject": TEXT, "decision": TEXT, "when": TEXT}
+    subject = Field(TEXT)
+    decision = Field(TEXT)
+    when = Field(TEXT)
     scope = PROJECT
 
 
@@ -217,7 +258,7 @@ class Connection(Shape, Resource):
     title_ = "Connection"
     abstract_ = "A service the project can reach, and which variable holds its token"
     help_ = "Never the token itself: the name of the variable that holds it."
-    fields = {"variable": TEXT}
+    variable = Field(TEXT)
     scope = PROJECT
 
 
@@ -232,11 +273,12 @@ class Environment(Shape, Resource):
     scope = PROJECT
     nav = False
     notify = ()
-    notify = ()
 
 
 class Ask(Shape, Resource):
     type = "browser"
+    op = Field()
+    args = Field(default=list)
     mirror = True
     icon = "open"
     title_ = "Browser ask"
@@ -248,6 +290,8 @@ class Ask(Shape, Resource):
 
 class Nudge(Shape, Resource):
     type = "nudge"
+    private = Field()
+    session = Field()
     mirror = True
     icon = "arrow"
     title_ = "Nudge"
@@ -257,6 +301,10 @@ class Nudge(Shape, Resource):
     notify = (AGENT,)
     spoken = True
 
+
+PHASE = names("title", "when", "checkpoint", "brief", "todos")
+RUNNING = names("what", "at", "done", "changed")
+COMMAND = names("what", "at")
 
 TYPES = {c.type: c for c in (Message, Todo, Work, Plan, Doc, Report, Pin, Rule, Reminder, Question, Suggestion, Comment, AgentRow, Notification, Notice, Reaction, Tool, Style, Connection, Environment, Ask, Nudge)}
 PRIORITY = ("message", "question", "suggestion", "comment", "plan", "todo", "report", "doc", "pin", "rule", "reminder", "notice", "reaction", "style", "tool", "connection", "environment", "work", "agent", "notification", "browser", "nudge")

@@ -18,7 +18,7 @@ class RulesFeature(Recital):
 
     @on("rule")
     def inject(self, event, record) -> None:
-        injected = [r for r in self.standing(record, "rule") if r.data.get("injected")]
+        injected = [r for r in self.standing(record, "rule") if r.injected]
         target = record.root.parent / "CLAUDE.md"
         had = target.read_text() if target.is_file() else ""
         stripped = BLOCK.sub("\n", had).strip("\n")

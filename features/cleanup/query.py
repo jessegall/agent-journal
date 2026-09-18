@@ -50,11 +50,11 @@ def evidence(record) -> list[dict]:
 
 
 def read(record) -> list:
-    record.set_setting("cleanup_read_at", time.time())
+    record.cleanup_read_at = time.time()
     return [r for type_ in ("rule", "pin") for r in CONTROLLERS[type_](record, actor=SYSTEM).all() if not r.completed]
 
 
 def read_owed(record, days: int = 7) -> bool:
     events = record.events()
-    since = float(record.setting("cleanup_read_at", 0)) or (events[0].at if events else time.time())
+    since = float(record.cleanup_read_at) or (events[0].at if events else time.time())
     return time.time() - since > days * 86400

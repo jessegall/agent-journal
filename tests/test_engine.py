@@ -13,6 +13,7 @@ from engine.engine import Engine  # noqa: E402
 from engine.record import Record  # noqa: E402
 from resources.base import AGENT, SYSTEM, USER  # noqa: E402
 from resources.types import PRIORITY, TYPES  # noqa: E402
+from resources.types import AgentRow  # noqa: E402
 from tests.kit import check, done  # noqa: E402
 
 
@@ -37,7 +38,7 @@ class Fake(Driver):
         self.sent.append(text)
 
     def last_report(self):
-        return self.report
+        return AgentRow(title=self.report.pop("session", ""), data=self.report) if self.report else None
 
     def quiet_for(self):
         return self.quiet

@@ -20,7 +20,7 @@ class Retention(Feature):
         if not agent:
             return
         for type_, default in self.keep.items():
-            days = record.setting("keep", {}).get(type_, default)
+            days = record.keep.get(type_, default)
             if not days:
                 continue
             c = CONTROLLERS[type_](record, actor=SYSTEM)

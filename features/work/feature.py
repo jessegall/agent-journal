@@ -2,9 +2,10 @@ from controllers.types import Todos, Works
 from features import trigger
 from features.base import Feature, on
 from resources.base import SYSTEM
+from resources.types import Work
 
 
-class Work(Feature):
+class WorkFeature(Feature):
     name = "work"
     title_ = "Work"
     abstract_ = "Work started for a to-do is linked to it; work ended --todo closes the row; open work is said on idle"
@@ -14,7 +15,7 @@ class Work(Feature):
     @on("work.created")
     def started(self, event, record) -> None:
         works = Works(record, actor=SYSTEM)
-        n = works.load(event.n).data.get("todo")
+        n = works.load(event.n).todo
         if not n:
             return
         todos = Todos(record, actor=SYSTEM)
@@ -25,8 +26,8 @@ class Work(Feature):
     @on("work.completed")
     def ended(self, event, record) -> None:
         work = Works(record, actor=SYSTEM).load(event.n)
-        n = work.data.get("todo")
-        if not n or not event.data.get("todo"):
+        n = work.todo
+        if not n or not event.data.get(Work.todo):
             return
         todos = Todos(record, actor=SYSTEM)
         if not todos.load(int(n)).completed:

@@ -10,7 +10,34 @@ from engine import bus
 from resources.base import ACTIONS, ACTORS, PROJECT, Event
 
 
+class Setting:
+    def __init__(self, default=None):
+        self.default = default
+
+    def __set_name__(self, owner, name: str) -> None:
+        self.name = name
+
+    def __get__(self, obj, owner=None):
+        if obj is None:
+            return self.name
+        got = obj.setting(self.name)
+        return (self.default() if callable(self.default) else self.default) if got is None else got
+
+    def __set__(self, obj, value) -> None:
+        obj.set_setting(self.name, value)
+
+
 class Record:
+    features = Setting(dict)
+    triggers = Setting(dict)
+    keep = Setting(dict)
+    batch = Setting(dict)
+    inbox = Setting(dict)
+    status = Setting(dict)
+    agents = Setting(dict)
+    cleanup_read_at = Setting(0)
+    SETTINGS = ("features", "triggers", "keep", "batch", "inbox", "status", "agents")
+
     def __init__(self, root: Path, env: str):
         self.root = Path(root)
         self.env = env

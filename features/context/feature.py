@@ -12,10 +12,10 @@ class Context(Feature):
     @on("agent.updated")
     def ask(self, event, record) -> None:
         agent = self.agent(event, record)
-        if agent.data.get("decided"):
+        if agent.decided:
             return self.release(record)
         if self.due(record, agent):
-            pct = agent.data.get("context")
+            pct = agent.context
             self.hold(record, f"context {pct}% full — decide before any other write — journal pin, journal rule, or journal nothing \"<why>\"")
             self.nudge(record, agent, f"context {pct}% full, decide", "pin what a later reader would get wrong without, rule what binds every environment, or nothing \"<why>\"")
 

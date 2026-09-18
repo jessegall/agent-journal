@@ -40,13 +40,13 @@ class Feature(ABC):
             bus.on(pattern, handler, enabled=self.enabled)
 
     def enabled(self, record) -> bool:
-        return record.setting("features", {}).get(self.name, self.default)
+        return record.features.get(self.name, self.default)
 
     def enable(self, record) -> None:
-        record.set_setting("features", {**record.setting("features", {}), self.name: True})
+        record.features = {**record.features, self.name: True}
 
     def disable(self, record) -> None:
-        record.set_setting("features", {**record.setting("features", {}), self.name: False})
+        record.features = {**record.features, self.name: False}
 
     def agent(self, event, record):
         return Agents(record, actor=SYSTEM).load(event.n)

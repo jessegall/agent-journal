@@ -5,7 +5,7 @@ from pathlib import Path
 from controllers.types import Agents, CONTROLLERS, Notifications
 from engine.record import Record
 from resources.base import AGENT, SYSTEM, USER, Event
-from resources.types import TYPES
+from resources.types import AgentRow, TYPES
 
 STOPPED, IDLE, WORKING, WAITING, COMPACTING = "stopped", "idle", "working", "waiting", "compacting"
 STATES = (STOPPED, IDLE, WORKING, WAITING, COMPACTING)
@@ -83,7 +83,7 @@ class Agent(Actor):
         return self.pending[-1].id if self.pending else self.cursor()
 
     def flush(self) -> str:
-        batch = {**BATCH, **(self.record.setting("batch", {}) or {})}
+        batch = {**BATCH, **self.record.batch}
         if not self.pending or (time.time() - self.pending_at < batch["quiet"] and len(self.pending) < batch["size"]):
             return ""
         line = render(self.pending, self.record)
@@ -100,22 +100,22 @@ class Agent(Actor):
         quiet = self.driver.quiet_for()
         if last is None:
             return IDLE if quiet >= self.driver.QUIET else WORKING
-        status = last.get("status", "")
+        status = last.status or ""
         if status == STOPPED:
             return STOPPED
         if status == IDLE:
             return IDLE if quiet >= 1.0 else WORKING
         if status == COMPACTING:
             return COMPACTING
-        if last.get("event") == "PreToolUse" and quiet >= 5.0:
+        if last.event == "PreToolUse" and quiet >= 5.0:
             return WAITING
         return WORKING
 
     def mark(self, status: str, event: str, **more) -> None:
         agents = Agents(self.record, actor=SYSTEM)
-        last = self.driver.last_report() or {}
-        row = agents.by_session(last.get("session") or self.driver.session)
-        agents.update(row.n, **{**row.data, "at": time.time(), **more, "status": status or row.data.get("status", ""), "event": event or row.data.get("event", "")})
+        last = self.driver.last_report()
+        row = agents.by_session((last and last.title) or self.driver.session)
+        agents.update(row.n, **{**row.data, **more, AgentRow.at: more.get(AgentRow.at) or time.time(), AgentRow.status: status or row.status or "", AgentRow.event: event or row.event or ""})
 
     def is_idle(self) -> bool:
         return self.state() == IDLE

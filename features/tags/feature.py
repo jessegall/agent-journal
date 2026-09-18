@@ -9,10 +9,10 @@ TAG = re.compile(r"^\s*(?:\*\*)?\[!(?:discovery|correction|blocked|info|reply)\]
 
 
 def last_said(record, agent) -> str:
-    provider = PROVIDERS.get(agent.data.get("provider", ""))
-    if not provider or not agent.data.get("transcript"):
+    provider = PROVIDERS.get(agent.provider)
+    if not provider or not agent.transcript:
         return ""
-    turns = provider().transcript(agent.data["transcript"])
+    turns = provider().transcript(agent.transcript)
     said = [t for t in turns if t.who == "agent"]
     return said[-1].text if said else ""
 

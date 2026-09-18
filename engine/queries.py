@@ -1,6 +1,6 @@
-from controllers.types import CONTROLLERS
+from controllers.types import ACTIVE, CONTROLLERS, WAITING
 from resources.base import SYSTEM
-from resources.types import PRIORITY, TYPES
+from resources.types import PHASE, PRIORITY, Plan, TYPES
 
 
 def standing(record, type_: str) -> list:
@@ -27,14 +27,14 @@ def status(record) -> str:
 
 
 def handed(record, type_: str) -> list:
-    return [r for r in standing(record, type_) if r.data.get("status", "active") in ("active", "waiting")]
+    return [r for r in standing(record, type_) if r.data.get(Plan.status, ACTIVE) in (ACTIVE, WAITING)]
 
 
 def describe(r) -> str:
-    if "phases" in r.data:
-        i = r.data.get("current", 1)
-        phase = r.data["phases"][i - 1]["title"] if 0 < i <= len(r.data["phases"]) else ""
-        return f"{r.title} is {r.data.get('status')} — phase {i}, {phase}"
+    if isinstance(r, Plan):
+        i = r.current
+        phase = r.phases[i - 1][PHASE.title] if 0 < i <= len(r.phases) else ""
+        return f"{r.title} is {r.status} — phase {i}, {phase}"
     return f"{r.title}  ({r.abstract})" if r.abstract else r.title
 
 

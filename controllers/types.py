@@ -9,10 +9,11 @@ from controllers.base import Controller
 from engine.record import Record
 from engine.sessions import Sessions
 from resources import types
+from resources.base import AGENT, SECTION, SYSTEM, Refused, check_title, names
 from resources.shapes import LEVELS
-from resources.base import AGENT, SYSTEM, Refused, check_title
+from resources.types import PHASE
 
-
+UPLOAD = names("name", "data")
 
 
 class Messages(Controller):
@@ -23,15 +24,15 @@ class Messages(Controller):
 
     def file(self, n: int, name: str, into: str = "keep"):
         r = self.load(n)
-        if name not in (r.data.get("files") or {}):
+        if name not in r.files:
             raise Refused(f"message {n} has no file {name}")
         if into == "keep":
-            r.data["files"][name] = "kept"
+            r.files[name] = "kept"
             return self.save(r, "updated", kept=name)
         kind, _, num = into.partition(" ")
         docs = CONTROLLERS[kind](self.record, actor=self.actor)
         docs.attach(int(num), str(self.folder(n) / name), f"from message {n}")
-        r.data["files"][name] = f"filed into {kind} {num}"
+        r.files[name] = f"filed into {kind} {num}"
         return self.save(r, "updated", filed=name, into=into)
 
     def archive(self, n: int, why: str):
@@ -120,16 +121,16 @@ class Todos(Controller):
         return self.update(n, priority=LEVELS.get(level, int(level) if level.lstrip("-").isdigit() else 0))
 
     def all(self, deleted: bool = False) -> list:
-        return sorted(super().all(deleted), key=lambda t: (-int(t.data.get("priority") or LEVELS["default"]), t.n))
+        return sorted(super().all(deleted), key=lambda t: (-int(t.priority or LEVELS["default"]), t.n))
 
 
 class Works(Controller):
     resource = types.Work
 
     def create(self, title: str, abstract: str = "", brief: str = "", **data):
-        if data.get("todo"):
-            row = Todos(self.record, actor=self.actor).load(int(data["todo"]))
-            held = row.data.get("assigned") or ""
+        if data.get(types.Work.todo):
+            row = Todos(self.record, actor=self.actor).load(int(data[types.Work.todo]))
+            held = row.assigned or ""
             if held and held != self.agent:
                 raise Refused(f"todo {row.n} is assigned to {held}; nobody else may take it")
         return super().create(title, abstract, brief, **data)
@@ -148,40 +149,40 @@ class Plans(Controller):
         source = Docs(self.record, actor=self.actor).load(int(doc))
         plan = self.create(source.title, brief=source.brief, goal=source.abstract)
         for s in source.sections:
-            if s["title"].lower().startswith("phase"):
-                self.phase(plan.n, s["title"].split(":", 1)[-1].split("—", 1)[-1].strip() or s["title"], brief=s["body"])
+            if s[SECTION.title].lower().startswith("phase"):
+                self.phase(plan.n, s[SECTION.title].split(":", 1)[-1].split("—", 1)[-1].strip() or s[SECTION.title], brief=s[SECTION.body])
         return self.link(plan.n, source.ref)
 
     def phases(self, n: int) -> list[dict]:
-        return self.load(n).data["phases"]
+        return self.load(n).phases
 
     def phase(self, n: int, title: str, when: str = "", checkpoint: bool = False, brief: str = "", before: int = 0):
         r = self.load(n)
-        made = {"title": check_title(title), "when": check_title(when) if when else "", "checkpoint": bool(checkpoint), "brief": brief, "todos": []}
-        r.data["phases"].insert(int(before) - 1 if before else len(r.data["phases"]), made)
-        return self.save(r, "updated", phase=r.data["phases"].index(made) + 1)
+        made = {PHASE.title: check_title(title), PHASE.when: check_title(when) if when else "", PHASE.checkpoint: bool(checkpoint), PHASE.brief: brief, PHASE.todos: []}
+        r.phases.insert(int(before) - 1 if before else len(r.phases), made)
+        return self.save(r, "updated", phase=r.phases.index(made) + 1)
 
     def rephrase(self, n: int, p: int, title: str | None = None, when: str | None = None, checkpoint: bool | None = None, brief: str | None = None):
         r = self.load(n)
         phase = self._phase(r, p)
-        for key, value in (("title", title), ("when", when), ("checkpoint", checkpoint), ("brief", brief)):
+        for key, value in ((PHASE.title, title), (PHASE.when, when), (PHASE.checkpoint, checkpoint), (PHASE.brief, brief)):
             if value is not None:
-                phase[key] = check_title(value) if key in ("title", "when") and value else value
+                phase[key] = check_title(value) if key in (PHASE.title, PHASE.when) and value else value
         return self.save(r, "updated", phase=int(p))
 
     def place(self, n: int, p: int, todos: list, move: bool = False, off: bool = False):
         r = self.load(n)
         phase = self._phase(r, p)
         for t in (int(x) for x in todos):
-            elsewhere = next((i + 1 for i, ph in enumerate(r.data["phases"]) if t in ph["todos"]), 0)
+            elsewhere = next((i + 1 for i, ph in enumerate(r.phases) if t in ph[PHASE.todos]), 0)
             if off:
-                phase["todos"] = [x for x in phase["todos"] if x != t]
+                phase[PHASE.todos] = [x for x in phase[PHASE.todos] if x != t]
                 continue
             if elsewhere and elsewhere != int(p) and not move:
                 raise Refused(f"todo {t} already sits in phase {elsewhere} of plan {n}; --move takes it out of there")
-            for ph in r.data["phases"]:
-                ph["todos"] = [x for x in ph["todos"] if x != t]
-            phase["todos"].append(t)
+            for ph in r.phases:
+                ph[PHASE.todos] = [x for x in ph[PHASE.todos] if x != t]
+            phase[PHASE.todos].append(t)
         for t in todos:
             ref = f"todo:{int(t)}"
             r.refs = [x for x in r.refs if x != ref] if off else r.refs + [ref] * (ref not in r.refs)
@@ -189,36 +190,36 @@ class Plans(Controller):
 
     def ready(self, n: int):
         r = self.load(n)
-        for i, ph in enumerate(r.data["phases"], 1):
-            if not ph["todos"]:
+        for i, ph in enumerate(r.phases, 1):
+            if not ph[PHASE.todos]:
                 raise Refused(f"plan {n} cannot be ready: phase {i} has no to-dos")
         return self._status(r, READY, DRAFT)
 
     def activate(self, n: int):
         self._user_only("activate")
         r = self.load(n)
-        if any(x.data.get("status") in (ACTIVE, WAITING) for x in self.all() if x.n != n):
+        if any(x.status in (ACTIVE, WAITING) for x in self.all() if x.n != n):
             raise Refused("one plan is active at a time on an environment")
         return self._status(r, ACTIVE, DRAFT, READY)
 
     def resume(self, n: int):
         self._user_only("continue")
         r = self.load(n)
-        r.data["current"] += 1
+        r.current += 1
         return self._status(r, ACTIVE, WAITING)
 
     def abandon(self, n: int, why: str = ""):
         return self._status(self.load(n), ABANDONED, DRAFT, READY, ACTIVE, WAITING, why=why)
 
     def _status(self, r, to: str, *allowed: str, **event):
-        if r.data.get("status") not in allowed:
-            raise Refused(f"plan {r.n} is {r.data.get('status')}, not one that can become {to}")
-        r.data["status"] = to
+        if r.status not in allowed:
+            raise Refused(f"plan {r.n} is {r.status}, not one that can become {to}")
+        r.status = to
         return self.save(r, "updated", status=to, **event)
 
     def _phase(self, r, p: int) -> dict:
         try:
-            return r.data["phases"][int(p) - 1]
+            return r.phases[int(p) - 1]
         except IndexError:
             raise Refused(f"plan {r.n} has no phase {p}")
 
@@ -252,7 +253,7 @@ class Reports(Controller):
         docs = Docs(self.record, actor=self.actor)
         made = docs.create(r.title, r.abstract, r.brief, **r.data)
         for s in r.sections:
-            made = docs.section(made.n, s["title"], s["body"])
+            made = docs.section(made.n, s[SECTION.title], s[SECTION.body])
         self.complete(n, how=f"became doc {made.n}")
         return made
 
@@ -299,7 +300,7 @@ class Suggestions(Controller):
         waiting = [s for s in self.all() if not s.completed]
         if len(waiting) >= OPEN_SUGGESTIONS:
             raise Refused(f"{OPEN_SUGGESTIONS} suggestions already wait on the user: {', '.join(str(s.n) for s in waiting)}")
-        declined = [s for s in self.all() if s.data.get("decision") == DECLINE.lower() and s.title.lower() == title.lower()]
+        declined = [s for s in self.all() if s.decision == DECLINE.lower() and s.title.lower() == title.lower()]
         if declined and not data.pop("despite", None):
             s = declined[-1]
             raise Refused(f"suggestion {s.n} was declined{': ' + s.outcome if s.outcome else ''}; --set despite=true --set because=\"<what changed>\" to propose it again")
@@ -346,7 +347,7 @@ class Tools(Controller):
     def run(self, n: int, *args: str):
         tool = self.load(n)
         project = self.record.root.parent
-        done = subprocess.run([*tool.data["entry"].split(), *args], cwd=project, capture_output=True, text=True, timeout=600)
+        done = subprocess.run([*tool.entry.split(), *args], cwd=project, capture_output=True, text=True, timeout=600)
         return {"code": done.returncode, "out": done.stdout, "err": done.stderr}
 
 
@@ -470,8 +471,8 @@ class Asks(Controller):
         r = self.complete(n, text, ok=ok)
         for f in files or []:
             with tempfile.TemporaryDirectory() as folder:
-                path = Path(folder) / Path(f["name"]).name
-                path.write_bytes(base64.b64decode(f["data"].split(",", 1)[-1]))
+                path = Path(folder) / Path(f[UPLOAD.name]).name
+                path.write_bytes(base64.b64decode(f[UPLOAD.data].split(",", 1)[-1]))
                 self.attach(n, str(path))
         return self.load(n)
 

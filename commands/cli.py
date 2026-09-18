@@ -17,6 +17,7 @@ from engine.sessions import Sessions, allowed
 from engine.transcript import conversation, search, user
 from providers import PROVIDERS
 from resources.base import AGENT, Refused, SYSTEM
+from resources.types import AgentRow
 
 HIDDEN = ("path", "numbers", "load", "save", "named", "method", "sessions")
 VERSION = next((f.read_text().strip() for f in (Path(__file__).resolve().parents[1] / "VERSION", Path(__file__).resolve().parents[1] / "VERSION") if f.is_file()), "0")
@@ -54,8 +55,8 @@ def add_query(cmds, name: str, help_: str, fn, *flags) -> None:
 
 def transcript(record, session: str):
     row = Agents(record, actor=SYSTEM).by_session(session)
-    provider = PROVIDERS.get(row.data.get("provider", ""))
-    return provider().transcript(row.data.get("transcript", "")) if provider else []
+    provider = PROVIDERS.get(row.provider)
+    return provider().transcript(row.transcript) if provider else []
 
 
 def say(turns) -> str:
@@ -129,8 +130,8 @@ def settings_text(ctx) -> str:
     out = [f"settings on {record.env} ({record.home / 'settings.json'})"]
     for name, f in features.FEATURES.items():
         out.append(f"  features.{name:<14} {'on' if f.enabled(record) else 'off'}   {f.trigger or ''}")
-    for key in ("triggers", "keep", "batch", "inbox", "agents"):
-        if record.setting(key):
+    for key in Record.SETTINGS:
+        if key != Record.features and record.setting(key):
             out.append(f"  {key}: {record.setting(key)}")
     out.append("  change one: journal settings are written by the viewer's Settings page, or POST /api/<env>/settings")
     return "\n".join(out)
@@ -169,7 +170,7 @@ def serve_forever(ctx) -> str:
 def decided(ctx) -> str:
     agents = Agents(ctx["record"], actor=SYSTEM)
     row = agents.by_session(ctx["session"] or "cli")
-    agents.update(row.n, **{**row.data, "decided": ctx["why"]})
+    agents.update(row.n, **{**row.data, AgentRow.decided: ctx["why"]})
     return f"noted: {ctx['why']}"
 
 
