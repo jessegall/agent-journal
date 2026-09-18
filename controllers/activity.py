@@ -60,10 +60,24 @@ def say(message: str, /, **values) -> str:
     return render(MESSAGES[message], **values)
 
 
+def seat_now(root: Path, stem: str) -> dict | None:
+    """What the launcher sees of this session from outside — working or idle, and what it last
+    printed — when a launcher holds it; None for a session on no seat."""
+    import state
+    if not channel_now(root, stem):
+        return None
+    got = state.get(root, "seat", None, stem=stem)
+    return got if isinstance(got, dict) else None
+
+
 def agent_working(root: Path, stem: str) -> bool:
-    """Is the session busy right now? Its last hook event says: a Stop means it is waiting for the user.
+    """Is the session busy right now? A seated session's launcher says, from the pty and the hooks'
+    reports together. Otherwise its last hook event says: a Stop means it is waiting for the user.
     A long tool call fires nothing until it ends, so its last event stays the PreToolUse that started it."""
     import state
+    seat = seat_now(root, stem)
+    if seat is not None:
+        return bool(seat.get("working"))
     return state.get(root, "last_event", "", stem=stem) not in ("Stop", "")
 
 
@@ -273,7 +287,9 @@ class ActivityController(Controller):
                         # the background shells it started, and whether each is still going
                         "shells": shells_now(root, stem),
                         # False: no launcher holds this session, so it hears nothing while idle
-                        "channel": channel_now(root, stem)}
+                        "channel": channel_now(root, stem),
+                        # the last words the agent printed, as its launcher saw them; "" off a seat
+                        "printed": ((seat_now(root, stem) or {}).get("printed") or "")[-TITLE_MAX:]}
         return None
 
     @staticmethod

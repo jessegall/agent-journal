@@ -739,6 +739,85 @@ function quoted(said) {
 // it mounts afresh on every page, and without these it would have nothing to say until its fetches land
 const AGENT_STATE = reactive({});
 
+// THE LOUD ONE, ON EVERY PAGE. A session started as plain \`claude\` has no seat: nothing the user
+// writes reaches it until its next turn, and the chat looks the same either way. Nobody holding the
+// environment looks the same too, and the user is the one person who may move a session there, so
+// that band carries the dialog of running ones. Under the top bar and above the status bar, so a
+// user on any page sees it before they read what the agent is doing.
+const SeatBand = {
+  components: { Icon },
+  setup() {
+    const env = computed(() => SHELL.env);
+    // false only: an older server sends nothing, and a session too young to have polled sends null
+    const noChannel = computed(() => !!(SHELL.activity && SHELL.activity.agent) && SHELL.activity.agent.channel === false);
+    // NOBODY HOLDS THIS ENVIRONMENT: the chat looks the same, and nothing you write here is read.
+    // The user is the one person who may move a session, so the way out is a dialog of the running ones.
+    const noAgent = computed(() => !!SHELL.activity && !SHELL.activity.agent);
+    const assign = reactive({ open: false, sessions: null, busy: "", error: "" });
+    const openAssign = async () => {
+      Object.assign(assign, { open: true, sessions: null, busy: "", error: "" });
+      try {
+        const got = await fetch(`/api/env/${env.value}/environment`).then((r) => r.json());
+        assign.sessions = (got.sessions || []).filter((x) => x.env !== env.value);
+      } catch (e) {
+        assign.error = e.message;
+      }
+    };
+    const closeAssign = () => { assign.open = false; };
+    const assignTo = async (x) => {
+      if (assign.busy) return;
+      assign.busy = x.id;
+      try {
+        const body = await postJSON(`/api/env/${env.value}/environment/assign`, { session: x.id });
+        flash(body.message || `Session ${x.short} is on ${env.value} now.`);
+        assign.open = false;
+        changed();
+      } catch (e) {
+        assign.error = e.message;
+      } finally {
+        assign.busy = "";
+      }
+    };
+    return { env, SHELL, noChannel, noAgent, assign, openAssign, closeAssign, assignTo };
+  },
+  template: `
+    <template v-if="env && SHELL.activity">
+      <div v-if="noChannel" class=chat-alert role=alert>
+        <Icon name="warn"/>
+        <div class=chat-alert-text>
+          <strong>This session was not started through the journal.</strong>
+          It does not hear what you write here while it is idle. Stop it and start it with <code>journal claude</code> or <code>journal codex</code>.
+        </div>
+      </div>
+      <div v-else-if="noAgent" class=chat-alert role=alert>
+        <Icon name="warn"/>
+        <div class=chat-alert-text>
+          <strong>No agent is on this environment.</strong>
+          Nothing you write here is read until a running session takes it — start one with <code>journal claude</code>, or assign one.
+        </div>
+        <button type=button class=chat-alert-go @click="openAssign">Assign agent</button>
+      </div>
+      <template v-if="assign.open">
+        <div class=quick-scrim @click="closeAssign"></div>
+        <div class=assign-dialog role=dialog aria-label="Assign an agent">
+          <div class=assign-head><Icon name="agents"/><span>Which running session takes <b>{{ env }}</b>?</span>
+            <button type=button class=quick-key @click="closeAssign">esc</button></div>
+          <p v-if="assign.error" class="assign-note error">{{ assign.error }}</p>
+          <p v-else-if="!assign.sessions" class=assign-note>Looking…</p>
+          <p v-else-if="!assign.sessions.length" class=assign-note>No other session is running. Start one with <code>journal claude</code>.</p>
+          <div v-else class=assign-rows>
+            <button v-for="x in assign.sessions" :key="x.id" type=button class=assign-row :disabled="!!assign.busy" @click="assignTo(x)">
+              <span :class="['assign-dot', {live: x.channel}]"></span>
+              <span class=assign-id>{{ x.short }}</span>
+              <span class=assign-env>{{ x.env ? 'on ' + x.env : 'on no environment' }}</span>
+              <span class=assign-seen>{{ x.seen }}</span>
+            </button>
+          </div>
+        </div>
+      </template>
+    </template>`,
+};
+
 const StatusBar = {
   components: { Icon },
   setup() {
@@ -993,7 +1072,7 @@ const TopBar = {
 };
 
 const TopBarView = {
-  components: { Icon, StatusBar, NoteRow },
+  components: { Icon, StatusBar, SeatBand, NoteRow },
   setup() {
     const crumbs = computed(() => CRUMBS.value || []);
     const action = computed(() => TOP_ACTION.value);
@@ -1140,6 +1219,7 @@ const TopBarView = {
         </template>
       </div>
     </div>
+    <SeatBand/>
     <StatusBar/>`,
 };
 
@@ -4917,38 +4997,8 @@ const EnvHome = {
     // into a list; this is one line the user keeps seeing until they take it down themselves.
     const notices = useFetch(url("/notices"));
     const upNotices = computed(() => (notices.data || []).filter((x) => !x.closed));
-    // false only: an older server sends nothing, and a session too young to have polled sends null
-    const noChannel = computed(() => !!(SHELL.activity && SHELL.activity.agent) && SHELL.activity.agent.channel === false);
-    // NOBODY HOLDS THIS ENVIRONMENT: the chat looks the same, and nothing you write here is read.
-    // The user is the one person who may move a session, so the way out is a dialog of the running ones.
-    const noAgent = computed(() => !!SHELL.activity && !SHELL.activity.agent);
-    const assign = reactive({ open: false, sessions: null, busy: "", error: "" });
-    const openAssign = async () => {
-      Object.assign(assign, { open: true, sessions: null, busy: "", error: "" });
-      try {
-        const got = await fetch(`/api/env/${props.env}/environment`).then((r) => r.json());
-        assign.sessions = (got.sessions || []).filter((x) => x.env !== props.env);
-      } catch (e) {
-        assign.error = e.message;
-      }
-    };
-    const closeAssign = () => { assign.open = false; };
     // a strip scrolled sideways to read the end comes back to its start when the pointer leaves it
     const stripHome = (e) => { e.currentTarget.scrollTo({ left: 0, behavior: "smooth" }); };
-    const assignTo = async (x) => {
-      if (assign.busy) return;
-      assign.busy = x.id;
-      try {
-        const body = await postJSON(`/api/env/${props.env}/environment/assign`, { session: x.id });
-        flash(body.message || `Session ${x.short} is on ${props.env} now.`);
-        assign.open = false;
-        changed();
-      } catch (e) {
-        assign.error = e.message;
-      } finally {
-        assign.busy = "";
-      }
-    };
     const closeNotice = (x) => send("POST", `/api/env/${props.env}/notices/${x.n}/close`)
       .then(() => { notices.reload(); window.dispatchEvent(new CustomEvent("journal:changed")); })
       .catch(() => {});
@@ -5212,7 +5262,7 @@ const EnvHome = {
 
     return { view, peek, unpeek, reloadAll, queue, dismiss, SLOTS, SHELL, lead, held, heldCard, clear, plan, continuePlan, goPlan, livePlans, railPlans, reloadPlans, workLines, parkedLines, finishedLines, finishedMore, liveCrew, crewOpen, skillsOpen, shellsOpen, shells, spanText, skillsAt, openSkills, skills, waitingCount,
              tab, TABS, openTodos, todoGroups, unread, shownNotes, noteTab, NOTE_TABS, todoStatus, openNote, readNote, readAll, noteHref, noteTint, goto, swapping, swapTabs,
-             barMenu, closeBarMenu, chatFiles, chatHits, goTurn, openChatFile, DETACHED, detach, EXTENSION, railStyle, onDivider, dragging, CHAT_ONLY, upNotices, closeNotice, noChannel, noAgent, assign, openAssign, closeAssign, assignTo, chatTab, CHAT_TABS, pickChatTab, stripHome };
+             barMenu, closeBarMenu, chatFiles, chatHits, goTurn, openChatFile, DETACHED, detach, EXTENSION, railStyle, onDivider, dragging, CHAT_ONLY, upNotices, closeNotice, chatTab, CHAT_TABS, pickChatTab, stripHome };
   },
   template: `
     <TopBar :crumbs="[env, 'Home']"/>
@@ -5300,41 +5350,6 @@ const EnvHome = {
           </BarDrop>
         </div>
       </div>
-      <!-- THE LOUD ONE. A session started as plain \`claude\` has no seat: nothing you write here
-           reaches it until its next turn, and the chat looks the same either way. -->
-      <div v-if="noChannel" class=chat-alert role=alert>
-        <Icon name="warn"/>
-        <div class=chat-alert-text>
-          <strong>This session was not started through the journal.</strong>
-          It does not hear what you write here while it is idle. Stop it and start it with <code>journal claude</code> or <code>journal codex</code>.
-        </div>
-      </div>
-      <div v-else-if="noAgent" class=chat-alert role=alert>
-        <Icon name="warn"/>
-        <div class=chat-alert-text>
-          <strong>No agent is on this environment.</strong>
-          Nothing you write here is read until a running session takes it — start one with <code>journal claude</code>, or assign one.
-        </div>
-        <button type=button class=chat-alert-go @click="openAssign">Assign agent</button>
-      </div>
-      <template v-if="assign.open">
-        <div class=quick-scrim @click="closeAssign"></div>
-        <div class=assign-dialog role=dialog aria-label="Assign an agent">
-          <div class=assign-head><Icon name="agents"/><span>Which running session takes <b>{{ env }}</b>?</span>
-            <button type=button class=quick-key @click="closeAssign">esc</button></div>
-          <p v-if="assign.error" class="assign-note error">{{ assign.error }}</p>
-          <p v-else-if="!assign.sessions" class=assign-note>Looking…</p>
-          <p v-else-if="!assign.sessions.length" class=assign-note>No other session is running. Start one with <code>journal claude</code>.</p>
-          <div v-else class=assign-rows>
-            <button v-for="x in assign.sessions" :key="x.id" type=button class=assign-row :disabled="!!assign.busy" @click="assignTo(x)">
-              <span :class="['assign-dot', {live: x.channel}]"></span>
-              <span class=assign-id>{{ x.short }}</span>
-              <span class=assign-env>{{ x.env ? 'on ' + x.env : 'on no environment' }}</span>
-              <span class=assign-seen>{{ x.seen }}</span>
-            </button>
-          </div>
-        </div>
-      </template>
       <!-- ONLY THE X TAKES IT DOWN. Clicking the line does nothing, so a notice cannot be dismissed
            by the click that was meant to read it. -->
       <TransitionGroup name=qrow>
