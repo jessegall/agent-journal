@@ -55,7 +55,8 @@ async function target({ fresh = false } = {}) {
   const found = await journals({ fresh });
   if (!found.length) return { why: "No journal viewer is running. Start one with `journal serve`." };
   const chosen = await kept(["url", "env"], {});
-  const one = found.find((j) => j.url === chosen.url) || found[0];
+  const same = (a, b) => String(a || "").replace(/\/+$/, "") === String(b || "").replace(/\/+$/, "");
+  const one = found.find((j) => same(j.url, chosen.url)) || found[0];
   const names = await environments(one.url);
   if (!names.length) return { why: `${one.project} answered, but it has no environment to write to.` };
   const env = names.includes(chosen.env) ? chosen.env : names[0];
@@ -234,7 +235,8 @@ chrome.runtime.onMessage.addListener((msg, sender, reply) => {
       };
     },
     pick: async () => {
-      await keep({ url: msg.url, env: msg.env || "" });
+      // the viewer writes a journal's url with a trailing slash, this file without: one form is kept
+      await keep({ url: String(msg.url || "").replace(/\/+$/, ""), env: msg.env || "" });
       return { ok: true };
     },
   }[msg.kind];
