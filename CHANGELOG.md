@@ -4,6 +4,15 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 1.162.1 — A finished plan waits for you; a finished command keeps its clock
+
+**The plan bar stays until you acknowledge the plan.** The listing dropped every finished plan
+the moment its last phase closed, so the bar — with its Acknowledge button — went with it and a
+plan was never seen finished. A done plan is on the list, and in the bar, until acknowledged.
+
+**The status bar's command keeps its clock when it ends**, standing still at what it took, a step
+quieter, for the few seconds before the line rolls away.
+
 ## 1.162.0 — The skills where Codex loads them
 
 **`journal codex`, `journal install` and `journal update` put the ten skills under

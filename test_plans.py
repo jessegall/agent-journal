@@ -111,7 +111,11 @@ check("a done plan takes no more changes", (code, "is done" in out), (1, True))
 code, out = j("plans", "abandon", "2", "again")
 check("abandoning twice is refused", (code, "already abandoned" in out), (1, True))
 code, out = j("plans")
-check("the list hides done and abandoned plans", ("No plans yet." in out), True)
+check("a finished plan stays listed until the user acknowledges it; the abandoned one is hidden",
+      ("(done)" in out, "again" in out), (True, False))
+plans.acknowledge(root, 1, AT, source="web", track="default")   # the user's word, from the viewer
+code, out = j("plans")
+check("acknowledged, it is history: the list hides done and abandoned plans", ("No plans yet." in out), True)
 code, out = j("plans", "--all")
 check("and --all shows them", ("ship plans (done)" in out, "another (abandoned)" in out), (True, True))
 code, out = j("plans", "show", "1")
