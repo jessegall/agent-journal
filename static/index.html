@@ -1927,6 +1927,17 @@
     justify-content: center; border-radius: 6px; color: var(--text-2); background: transparent; cursor: pointer; }
   .compose-attach:hover { background: var(--hover); color: var(--text); }
   .compose-attach .ico { width: 20px; height: 20px; }
+  /* THE CHAT'S BOX FLOATS: a soft grey border, rounder, the text with room under it, and one row at the
+     foot — the paperclip left, Send right (message 175) */
+  .compose-box.floating { border-color: #3b3e46; border-radius: 12px; background: #141518; }
+  .compose-box.floating:focus-within { border-color: #4a4e58; }
+  .compose-box.floating .box-area { min-height: 64px; padding: 12px 14px 4px; font-size: 13.5px; }
+  .compose-foot { display: flex; align-items: center; gap: 6px; padding: 4px 8px 8px 10px; }
+  .compose-foot .compose-attach .ico { width: 18px; height: 18px; }
+  .compose-send { margin-left: auto; height: 32px; padding: 0 16px; border: 0; border-radius: 8px; background: var(--accent); color: #fff;
+    font: inherit; font-size: 13px; font-weight: 500; cursor: pointer; }
+  .compose-send:hover { filter: brightness(1.08); }
+  .compose-send:disabled { opacity: .45; cursor: default; filter: none; }
 
   /* actions on a resource, and the small forms they open */
   .actions { display: flex; flex-direction: column; gap: 10px; }

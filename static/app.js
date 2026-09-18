@@ -1572,7 +1572,7 @@ const Compose = {
         <span class=compose-quote-label>Commenting on</span>
         <div class=compose-quote-text><p v-for="(l, i) in quoteLines" :key="i">{{ l }}</p></div>
       </div>
-      <div :class="['compose-box', {attachable: attach}]">
+      <div :class="['compose-box', {attachable: attach && !bare, floating: bare}]">
         <!-- UP IN AN EMPTY BOX GOES BACK TO THE LAST THING SAID, the way a shell goes back through
              its history. With anything typed the arrow moves the caret, which is what it is for. -->
         <textarea ref=area class=box-area v-model="draft.text" rows=3 :placeholder="placeholder" :aria-label="submit"
@@ -1580,7 +1580,16 @@ const Compose = {
           @keydown.up="onUp && !draft.text.trim() && ($event.preventDefault(), onUp())"
           @keydown.down="onDown && ($event.preventDefault(), onDown(draft.text))"
           @keydown.meta.enter.prevent="go" @keydown.ctrl.enter.prevent="go"></textarea>
-        <div v-if="attach || (tools && tools.length)" class=compose-tools>
+        <!-- THE CHAT'S BOX (message 175): the paperclip at the bottom left and Send at the bottom right, inside the box -->
+        <div v-if="bare" class=compose-foot>
+          <button v-for="t in (tools || [])" :key="t.icon" type=button class=compose-attach :title="t.title" :aria-label="t.title" @click="t.go">
+            <Icon :name="t.icon"/></button>
+          <label v-if="attach" class=compose-attach title="Attach files" aria-label="Attach files">
+            <Icon name="paperclip"/><input type=file multiple hidden @change="picked">
+          </label>
+          <button type=submit class=compose-send :disabled="draft.sending || !draft.text.trim()">{{ submit }}</button>
+        </div>
+        <div v-else-if="attach || (tools && tools.length)" class=compose-tools>
           <!-- what the box can reach for besides words: files, and whatever the page it sits on offers -->
           <button v-for="t in (tools || [])" :key="t.icon" type=button class=compose-attach :title="t.title" :aria-label="t.title" @click="t.go">
             <Icon :name="t.icon"/></button>
@@ -4923,7 +4932,7 @@ const Thread = {
           <span class=thread-answering-text>{{ answering.text }}</span>
           <button type=button class=thread-answering-x title="Not replying to it after all" @click="unreply">×</button>
         </div>
-        <Compose placeholder="Write to the agent…" submit="Send" :send="post" :attach="true" :bare="true" :onUp="editLast" :onDown="dropEdit"
+        <Compose placeholder="Message the agent" submit="Send" :send="post" :attach="true" :bare="true" :onUp="editLast" :onDown="dropEdit"
           :tools="pageTools"/>
       </div>
       <div ref=root :class="['thread-scroll', {focusing: !!lit}]" @scroll.passive="watchScroll">
