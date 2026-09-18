@@ -82,6 +82,16 @@ by_agent.place(other.n, 1, row)
 by_agent.abandon(other.n, "no longer wanted")
 check("abandoned, with the why, and the row stays open", (by_agent.load(other.n).data["status"], record.events()[-1].data["why"], todos.load(row).completed), ("abandoned", "no longer wanted", 0.0))
 
+# FROM A DOC: its "Phase …" sections become phases, and the plan links the doc
+docs = CONTROLLERS["doc"](record, actor=AGENT)
+doc = docs.create("A design", abstract="what is true when done", brief="the approach")
+docs.section(doc.n, "Phase 1 — The record", "files first")
+docs.section(doc.n, "Notes", "not a phase")
+docs.section(doc.n, "Phase 2: The engine", "then the loop")
+drafted = by_agent.from_doc(doc.n)
+check("from-doc: a draft with the doc's phases, goal and link", (drafted.data["status"], [p["title"] for p in drafted.data["phases"]], drafted.data["goal"], drafted.refs),
+      ("draft", ["The record", "The engine"], "what is true when done", [doc.ref]))
+
 # THE WORDS: place answers to todos, resume to continue
 check("the type's own words", (by_agent.named("place"), by_agent.named("resume"), by_agent.named("complete")), ("todos", "continue", "acknowledge"))
 check("continue resolves to resume", by_user.method("continue").__name__, "resume")
