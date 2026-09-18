@@ -214,13 +214,28 @@ const NoteRow = {
   setup(props) {
     const tint = computed(() => noteTint(props.note));
     const href = computed(() => noteHref(props.note, props.env));
-    return { tint, href };
+    // A NOTIFICATION IS A HEADLINE AND A LINE, not one grey sentence. "Committed: <subject> (sha)"
+    // is three facts written as one; split where the writer already split it and the row reads at a
+    // glance — what happened, which thing, and then the words.
+    const said = computed(() => {
+      const whole = String((props.note && props.note.text) || "").trim();
+      const cut = whole.indexOf(": ");
+      const head = cut > 0 && cut <= 28 ? whole.slice(0, cut) : "";
+      let body = head ? whole.slice(cut + 2) : whole;
+      const sha = /\(([0-9a-f]{7,40})\)\s*$/.exec(body);
+      if (sha) body = body.slice(0, sha.index).trim();
+      const label = (props.note && props.note.about_label) || "";
+      const num = /(\d+(?:\.\d+)?)\s*$/.exec(label);
+      return { head, body, ref: sha ? sha[1].slice(0, 7) : num ? `#${num[1]}` : "" };
+    });
+    return { tint, href, said };
   },
   template: `
     <button type=button :class="['rail-row', 'wrap', {tinted: tint, read: note.read}]"
       :style="{ '--tint': tint || null }" :disabled="!href"
       :title="href ? 'Open ' + (note.about_label || 'it') : null" @click="open($event, note)">
-      <span class=rail-row-title>{{ note.text }}</span>
+      <span v-if="said.head" class=rail-note-head>{{ said.head }}<span v-if="said.ref" class=rail-note-ref>{{ said.ref }}</span></span>
+      <span class=rail-row-title>{{ said.body }}</span>
       <span class=rail-row-state>{{ note.age || 'just now' }}</span>
     </button>`,
 };
@@ -364,6 +379,8 @@ const Icon = {
       <template v-if="name === 'todos'"><circle cx="8" cy="8" r="5.75"/><path d="M5.6 8.1l1.7 1.7 3.2-3.5"/></template>
       <path v-else-if="name === 'pins'" d="M8 14V9.5M5 2.5h6M6 2.5v3.5L4 9.5h8L10 6V2.5"/>
       <path v-else-if="name === 'style'" d="M5.5 4.5 2.5 8l3 3.5M10.5 4.5l3 3.5-3 3.5M9 3.5l-2 9"/>
+      <!-- skills: a book, because that is what a skill is — the thing you open rather than remember -->
+      <path v-else-if="name === 'book'" d="M3 3.5h4a2 2 0 0 1 2 2v7a1.6 1.6 0 0 0-1.6-1.4H3zM13 3.5H9a2 2 0 0 0-2 2v7a1.6 1.6 0 0 1 1.6-1.4H13z"/>
       <!-- auto: a play mark, the user's own call. The loop said refresh and the play-against-rows
            version was three glyphs' worth of detail in twelve pixels. -->
       <path v-else-if="name === 'auto'" d="M5 3.4 12.4 8 5 12.6z" fill="currentColor" stroke-width="1"/>
@@ -4584,6 +4601,10 @@ const EnvHome = {
         { label: "model", icon: "style", value: agent && agent.model ? agent.model : "" },
         { label: "session", icon: "activity", value: agent ? agent.session : "" },
         { label: "running", icon: "reminders", value: agent && agent.started ? spanText(Date.now() - Date.parse(agent.started)) : "" },
+        // WHAT IT HAS OPEN, not what exists: a session works from the skills it has loaded, and the
+        // count is the fastest way to see it is working from none of them.
+        { label: "skills", icon: "book", value: agent && agent.skills && agent.skills.length ? String(agent.skills.length) : "",
+          skills: (agent && agent.skills) || [] },
         { label: "context", icon: "files", value: agent && agent.context ? `${agent.context.share}%` : "" },
         // HOW OFTEN THIS SESSION HAS LOST ITS WINDOW. It is the one fact here that says why the agent
         // may not remember something said an hour ago, and it is counted from the transcript itself.
@@ -4602,6 +4623,7 @@ const EnvHome = {
     // folded by default: a list that GROWS must never push the conversation down, which is the whole
     // reason these facts left the space above the thread in the first place
     const crewOpen = ref(false);
+    const skillsOpen = ref(false);
     // ─── the divider between the conversation and the rail
     // THE RAIL'S WIDTH IS THE READER'S. It is clamp(288px, 27%, 400px) by default, and dragging the
     // rule between the two columns writes a width this browser remembers. SNAPPING BACK MATTERS MORE
@@ -4798,7 +4820,7 @@ const EnvHome = {
     });
     onUnmounted(() => { if (INSPECTOR_TRAIL.owner === trailOwner) Object.assign(INSPECTOR_TRAIL, { owner: null, items: [], current: null }); });
 
-    return { view, peek, unpeek, reloadAll, queue, dismiss, SLOTS, SHELL, lead, held, heldCard, clear, plan, continuePlan, goPlan, livePlans, railPlans, reloadPlans, workLines, parkedLines, finishedLines, finishedMore, liveCrew, crewOpen, waitingCount,
+    return { view, peek, unpeek, reloadAll, queue, dismiss, SLOTS, SHELL, lead, held, heldCard, clear, plan, continuePlan, goPlan, livePlans, railPlans, reloadPlans, workLines, parkedLines, finishedLines, finishedMore, liveCrew, crewOpen, skillsOpen, waitingCount,
              tab, TABS, openTodos, todoGroups, unread, shownNotes, noteTab, NOTE_TABS, todoStatus, openNote, readNote, readAll, noteHref, noteTint, goto, swapping, swapTabs,
              barMenu, closeBarMenu, chatFiles, chatHits, goTurn, openChatFile, DETACHED, detach, EXTENSION, railStyle, onDivider, dragging, CHAT_ONLY, upNotices, closeNotice };
   },
@@ -4817,6 +4839,16 @@ const EnvHome = {
               <Icon :name="r.icon"/>{{ r.value }}</a>
             <a v-else-if="r.href" class=agent-fact :href="r.href" target=_blank rel=noopener
               :title="r.label + ' — open it'"><Icon :name="r.icon"/>{{ r.value }}</a>
+            <span v-else-if="r.skills" class="agent-fact bar-menu">
+              <button type=button class=agent-fact-open :title="r.skills.length + ' skill(s) open in this session'"
+                :aria-expanded="skillsOpen ? 'true' : 'false'" @click="skillsOpen = !skillsOpen">
+                <Icon name="book"/>{{ r.value }}</button>
+              <div v-if="skillsOpen" class="drop bar-drop skills-drop">
+                <p class=bar-none>Skills this session has opened, newest last.</p>
+                <a v-for="name in r.skills" :key="name" class=bar-item :href="'#/skills/' + name"
+                  @click="skillsOpen = false"><Icon name="book"/>{{ name }}</a>
+              </div>
+            </span>
             <span v-else class=agent-fact :title="r.label"><Icon :name="r.icon"/>{{ r.value }}</span>
           </template>
         </div>
