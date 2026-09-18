@@ -32,8 +32,8 @@ the shell itself (the picker, the background worker, the relay between page and 
   and a camera sends a picture of one. The – in the bar folds the window down to the bar and the
   agent's status line, and opens it back up. Open, closed, minimized and where it sits are one state
   for every tab: open it here and the tab you switch to has it too; fold or close it anywhere and
-  every tab follows. It can only appear on a site the extension may touch — opening it asks for the
-  site once, and "Let the chat follow you on every page" covers them all. Alt+J again, Esc, or ×
+  every tab follows. The extension asks for every site at install, so nothing has to be granted
+  later. Alt+J again, Esc, or ×
   closes it.
 - **Send a test message** in the popup posts one message with no pointing involved. If the test
   lands and pointing does not, the pointer is at fault; if neither lands, the popup says why.

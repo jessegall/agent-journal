@@ -4001,7 +4001,7 @@ function askExtension(kind) {
 }
 window.addEventListener("message", (e) => {
   if (e.source !== window || !e.data || e.data.source !== "journal-extension") return;
-  if (e.data.kind === "here") EXTENSION.here = true;
+  if (e.data.kind === "here") { EXTENSION.here = true; if (e.data.holding) { EXTENSION.holding = true; keepWindow(); } }
   if (e.data.kind === "detached") { EXTENSION.holding = true; EXTENSION.everywhere = e.data.everywhere !== false; DETACHED.on = false; keepWindow(); }
   if (e.data.kind === "attached" || e.data.kind === "failed") EXTENSION.holding = false;
 });
