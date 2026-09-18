@@ -88,10 +88,12 @@
   // the moment the window cannot keep up — would otherwise drop the window where it stood.
   const drag = (e, move) => {
     e.preventDefault();
-    const from = { x: e.clientX, y: e.clientY, ...box };
+    // THE POINTER AND THE BOX ARE TWO DIFFERENT x's. Spreading the box over the pointer's own
+    // coordinates made every drag measure from the window's corner, which is the jump to the right.
+    const from = { px: e.clientX, py: e.clientY, ...box };
     bar.classList.add("dragging");
     const step = (ev) => {
-      move(ev.clientX - from.x, ev.clientY - from.y, from);
+      move(ev.clientX - from.px, ev.clientY - from.py, from);
       place(box);
     };
     const done = () => {
