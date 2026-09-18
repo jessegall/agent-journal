@@ -1,4 +1,4 @@
-# Journal pointer
+# Agent journal — the Chrome extension
 
 A Chrome extension that lets you point at anything in any tab and have the agent told what you
 meant — the selector, the page, the text, its opening tag, and a picture of the element itself — as a message in this journal.
@@ -52,3 +52,25 @@ with a PNG of the element attached to the message.
 - The picture is cut out of the visible tab, so an element scrolled out of view is sent without
   one rather than with the wrong one.
 - It reaches `127.0.0.1` and `localhost` only. A journal on another machine is out of scope.
+
+## Putting it on the Chrome Web Store, unlisted
+
+One click for everyone who has the link, and Chrome updates them by itself; nobody finds it by
+searching. Only the publisher needs an account.
+
+1. https://chrome.google.com/webstore/devconsole — sign in with a Google account and pay the
+   one-time $5 developer registration.
+2. **New item** → upload the zip the journal serves at `/extension.zip` (Settings → Chrome
+   extension → Download). It is already the shape the store wants: `manifest.json` with icons,
+   version and description at the top level of the folder.
+3. Store listing: the name and description are taken from the manifest; add a 128×128 icon
+   (`icons/128.png` in the zip) and at least one screenshot (1280×800) of the window over a page.
+4. Privacy: it stores nothing outside the machine — every message goes to a journal viewer on
+   127.0.0.1 — and asks for a site's permission only to draw its window there. Say so in the
+   privacy fields; the `<all_urls>` optional permission is what "follow me on every page" uses.
+5. **Distribution → Visibility: Unlisted.** Submit for review; a first review takes a day or two.
+6. When it is published, put the store page's URL in `extension/store.json` and publish the
+   journal: Settings then shows **Add to Chrome** above the download.
+
+A new version is the same zip with a higher `version` in `manifest.json`, uploaded as a new
+package; installed copies update on their own within hours.

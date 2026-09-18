@@ -219,7 +219,7 @@ chrome.runtime.onMessage.addListener((msg, sender, reply) => {
     closed: () => rememberOpen(false).then(() => ({ ok: true })),
     // asking for the page's origin has to come from a click, which is why the popup asks and this only answers
     origin: async () => { const [tab] = await chrome.tabs.query({ active: true, currentWindow: true }); return { origin: tab && tab.url && /^https?:/.test(tab.url) ? new URL(tab.url).origin : "" }; },
-    test: () => post("[journal pointer] a test message from the extension", []),
+    test: () => post("[agent journal] a test message from the extension", []),
     follow: () => follow(msg.on, sender.tab && sender.tab.id),
     following: async () => ({ on: await following(), everywhere: await everywhere() }),
     where: async () => {

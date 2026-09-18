@@ -5624,10 +5624,15 @@ const Settings = {
             page, the element's text and a picture of it. Alt+J opens this chat as a window over whatever you are
             looking at.</p>
           <div class=settings-card>
+            <div v-if="about.data.extension_store" class=settings-row>
+              <span class=settings-label>Agent journal</span>
+              <span class=settings-value>One click, from the Chrome Web Store; Chrome keeps it up to date</span>
+              <a class=btn :href="about.data.extension_store" target=_blank rel=noopener>Add to Chrome</a>
+            </div>
             <div class=settings-row>
-              <span class=settings-label>Journal pointer</span>
+              <span class=settings-label>{{ about.data.extension_store ? 'Or by hand' : 'Agent journal' }}</span>
               <span class=settings-value>Unzip it, then chrome://extensions → Developer mode → Load unpacked</span>
-              <a class=btn href="/extension.zip" download="journal-pointer.zip">Download</a>
+              <a class=btn href="/extension.zip" download="agent-journal.zip">Download</a>
             </div>
           </div>
         </section>
