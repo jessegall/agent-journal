@@ -1836,6 +1836,9 @@
   .md p { margin: .6em 0; }
   .md ul, .md ol { margin: .4em 0 .8em; padding-left: 1.3em; }
   .md li { margin: .2em 0; }
+  /* a thing named in prose — a file, a commit, a command — reads as one token, not as code that ran */
+  .md code.chip { padding: 1px 6px; border: 1px solid var(--border); border-radius: 5px; background: var(--raised);
+    color: var(--text-2); font-size: .92em; white-space: nowrap; }
   /* a list that was written inline: it follows its lead line closely, the way it read */
   .md p + .inline-list { margin-top: -.3em; }
   .md .inline-list li { margin: .3em 0; }
