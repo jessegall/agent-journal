@@ -27,5 +27,10 @@ class MakePayload(Payload):
     name = Field(str)
 
 
+class AssignPayload(Payload):
+    #: a session's stem, or enough of its start to be one session and not two
+    session = Field(str)
+
+
 class AutoPayload(Payload):
     state = Field(str)

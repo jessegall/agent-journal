@@ -343,6 +343,7 @@ WEB = {
     "journal:auto": "Changed auto mode",
     "environment:make": "Made an environment",
     "environment:remove": "Removed an environment",
+    "environment:assign": "Assigned an agent to this environment",
     "messages:update": "Edited message {n}",
     "messages:process": "Filed message {n}",
     "messages:file": "Filed an attachment from message {n}",

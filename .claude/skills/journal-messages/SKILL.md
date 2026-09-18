@@ -102,7 +102,9 @@ refusals (a closed to-do cannot be edited, a struck pin cannot change).
 
 **A session started with `journal claude` hears the viewer while idle.** One started as plain
 `claude` does not, and the viewer says so: a warning band above the agent bar, there until a
-session with the channel holds the environment. A message the user
+session with the channel holds the environment. An environment no running session holds gets
+the same band with an **Assign agent** button: the user picks one of the running sessions and
+it is bound there — the one move of a session the agent does not make itself. A message the user
 leaves wakes it; with auto mode on, an answered question, a comment and a decided suggestion do too,
 and only while it is idle. With auto mode
 off, nothing but a message wakes it, and a wake-up is never a reason to start on the to-do list.

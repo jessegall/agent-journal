@@ -696,6 +696,18 @@ status, got = post("/api/env/alpha/environment/settings", {"todos_archive_days":
 status2, _, body = get("/api/env/alpha/environment")
 check("the Settings page sets how long done to-dos stay listed, and reads it back",
       (status, json.loads(body).get("todos_archive_days")), (200, 14))
+# WHO IS RUNNING, AND ASSIGNING ONE OF THEM. A session seen just now with no process on record still
+# counts (its pid is unknown, its hook just fired); a one-shot from hours ago does not.
+state.put(root, "seen_at", int(time.time()), stem="fresh-session-1")
+state.put(root, "seen_at", int(time.time()) - 3 * 3600, stem="old-oneshot-2")
+_sess_rows = {x["short"]: x for x in json.loads(get("/api/env/alpha/environment")[2])["sessions"]}
+check("the environment lists running sessions, bound or not, and leaves a stale one-shot out",
+      ("fresh-se" in _sess_rows, _sess_rows.get("fresh-se", {}).get("env"), "old-ones" in _sess_rows), (True, None, False))
+status, got = post("/api/env/alpha/environment/assign", {"session": "fresh-sess"})
+check("the viewer assigns a running session to this environment", (status, tracks.bound(root, "fresh-session-1")), (200, "alpha"))
+check("and the same session again is refused as already there", post("/api/env/alpha/environment/assign", {"session": "fresh-sess"})[0], 400)
+check("a prefix that names nobody is refused", post("/api/env/alpha/environment/assign", {"session": "zzz"})[0], 400)
+tracks.unbind(root, "fresh-session-1") if hasattr(tracks, "unbind") else None
 status, _, body = get("/api/env/alpha/environment")
 check("Activity shows 50 lines and keeps 250 by default",
       (json.loads(body)["activity_show"], json.loads(body)["activity_keep"]), (50, 250))
