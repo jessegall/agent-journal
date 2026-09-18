@@ -12,6 +12,7 @@ import Priority from "./Priority.vue";
 import Trace from "./Trace.vue";
 import Comments from "./Comments.vue";
 import Links from "./Links.vue";
+import Asked from "./Asked.vue";
 
 const props = defineProps({resource: Object, comments: {type: Boolean, default: true}});
 const emit = defineEmits(["close"]);
@@ -86,6 +87,7 @@ const traced = computed(() => !!kind.value.fields.changed);
                 </template>
             </section>
         </template>
+        <Asked :resource="resource" />
         <Links :resource="resource" />
         <footer class="foot">seen by {{ resource.seen.join(", ") || "nobody" }}</footer>
         <template v-if="comments">
