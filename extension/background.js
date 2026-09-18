@@ -130,8 +130,22 @@ async function everywhere() {
   return chrome.permissions.contains({ origins: ["<all_urls>"] }).catch(() => false);
 }
 
-async function follow(on) {
+//: THE WINDOW OPENS WHERE YOU PRESSED THE BUTTON. Detaching in the viewer used to set the flag and
+//: leave the user to open the window themselves, which is two gestures for one intention.
+async function follow(on, tabId) {
   await chrome.storage.local.set({ following: !!on });
+  if (tabId) {
+    try {
+      if (on) {
+        await chrome.scripting.executeScript({ target: { tabId }, files: ["chat.js"] });
+      } else {
+        await chrome.scripting.executeScript({
+          target: { tabId },
+          func: () => { const el = document.getElementById("__journal-chat-window"); if (el) el.remove(); },
+        });
+      }
+    } catch (e) { /* a page the extension may not touch keeps the flag and nothing else */ }
+  }
   return { ok: true, everywhere: await everywhere() };
 }
 
@@ -169,7 +183,7 @@ chrome.runtime.onMessage.addListener((msg, sender, reply) => {
     point: () => inject("picker.js"),
     chat: () => inject("chat.js"),
     test: () => post("[journal pointer] a test message from the extension", []),
-    follow: () => follow(msg.on),
+    follow: () => follow(msg.on, sender.tab && sender.tab.id),
     following: async () => ({ on: await following(), everywhere: await everywhere() }),
     where: async () => {
       const to = await target({ fresh: !!msg.fresh });
