@@ -1,5 +1,4 @@
 import json
-import os
 import subprocess
 import time
 from pathlib import Path
@@ -54,7 +53,7 @@ class Engine:
             self.relayed = self.record.last_event()
         for e in self.record.events(self.relayed):
             self.relayed = e.id
-            if e.pid != os.getpid():
+            if not e.heard:
                 bus.emit(e, self.record)
 
     def private(self, e) -> bool:

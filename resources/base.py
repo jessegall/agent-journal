@@ -26,6 +26,7 @@ class Event:
     actor: str    # one of ACTORS
     data: dict = field(default_factory=dict)
     pid: int = 0
+    heard: bool = False
 
     @property
     def ref(self) -> str:

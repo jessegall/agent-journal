@@ -10,6 +10,11 @@ const notes = computed(() => [...rows("notification")].reverse());
 const unread = computed(() => notes.value.filter((n) => !n.seen.includes("user")));
 const shown = computed(() => (sub.value === "unread" ? unread.value : notes.value.filter((n) => n.seen.includes("user"))));
 
+async function readAll() {
+    await Promise.all(unread.value.map((n) => act(route.value.env, "notification", n.n, "read")));
+    await reload();
+}
+
 async function openNote(n) {
     await act(route.value.env, "notification", n.n, "read");
     await reload();
@@ -56,6 +61,9 @@ async function openNote(n) {
             </template>
         </button>
     </TransitionGroup>
+    <div class="rail-foot">
+        <button type="button" class="rail-foot-act" :disabled="!unread.length" @click="readAll">Mark all as read</button>
+    </div>
 </template>
 
 <style scoped>
@@ -212,5 +220,45 @@ async function openNote(n) {
     font-size: 11.5px;
     color: var(--text-3);
     line-height: 1.4;
+}
+.rail-foot {
+    position: sticky;
+    bottom: 0;
+    z-index: 2;
+    flex: none;
+    margin-top: auto;
+    display: flex;
+    align-items: center;
+    height: 34px;
+    padding: 0 var(--rail-gutter);
+    border-top: 1px solid var(--border);
+    background: var(--raised);
+}
+
+.rail-foot-act {
+    flex: none;
+    padding: 3px 9px;
+    border: 1px solid var(--border-2);
+    border-radius: 6px;
+    background: var(--raised);
+    font: inherit;
+    font-size: 11px;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+    color: var(--text-2);
+    cursor: pointer;
+}
+
+.rail-foot-act:hover:not(:disabled) {
+    color: var(--text);
+    background: var(--hover);
+    border-color: var(--border-2);
+}
+
+.rail-foot-act:disabled {
+    color: var(--text-3);
+    background: transparent;
+    opacity: 0.5;
+    cursor: default;
 }
 </style>

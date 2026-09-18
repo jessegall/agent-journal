@@ -29,5 +29,9 @@ def emit(event: Event, record=None) -> None:
                 listener(event, record)
 
 
+def listening() -> bool:
+    return any(_listeners.values())
+
+
 def clear() -> None:
     _listeners.clear()
