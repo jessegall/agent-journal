@@ -1871,6 +1871,17 @@
   .agent-work.skills .agent-work-head { position: sticky; top: 0; z-index: 1; }
   .skill-always { margin-left: 8px; padding: 0 6px; border: 1px solid var(--border-2); border-radius: 4px; font-size: 10.5px; color: var(--text-3); }
   .skill-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+  .skill-refs { display: flex; flex-direction: column; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+  .skill-ref + .skill-ref { border-top: 1px solid var(--border); }
+  .skill-ref-head { display: flex; align-items: center; gap: 8px; width: 100%; padding: 9px 12px; border: 0; background: var(--raised);
+    color: var(--text-2); font: inherit; font-size: 12.5px; text-align: left; cursor: pointer; }
+  .skill-ref-head:hover:not(:disabled) { color: var(--text); }
+  .skill-ref-head:disabled { cursor: default; }
+  .skill-ref-head .ico { width: 12px; height: 12px; color: var(--text-3); transition: transform .12s ease; transform: rotate(-90deg); }
+  .skill-ref.open .skill-ref-head .ico { transform: none; }
+  .skill-ref-path { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: ui-monospace, "SF Mono", Menlo, monospace; }
+  .skill-ref-size { color: var(--text-4, #6b6e76); font-size: 11px; }
+  .skill-ref-body { padding: 4px 14px 10px; }
   .panel-tools { display: flex; align-items: center; gap: 4px; }
   /* a block is a list container too, so Home's lists narrow their columns beside an open panel */
   .block { border: 1px solid var(--border); border-radius: 10px; overflow: hidden; container: list / inline-size; }

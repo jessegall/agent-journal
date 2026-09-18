@@ -72,8 +72,26 @@ def find(project: Path, name: str) -> dict | None:
     for s in available(project):
         if s["name"] == name:
             return {"name": s["name"], "description": s["description"], "source": s["source"],
-                    "text": s["path"].read_text(errors="replace")}
+                    "text": s["path"].read_text(errors="replace"), "references": _references(s["path"].parent)}
     return None
+
+
+#: a reference bigger than this is named, not shown: the panel is for reading, not for scrolling forever
+REFERENCE_MAX = 60_000
+
+
+def _references(folder: Path) -> list[dict]:
+    """The files beside SKILL.md, by relative path; markdown and plain text come with their contents."""
+    out = []
+    for f in sorted(folder.rglob("*")):
+        if not f.is_file() or f.name == "SKILL.md" or f.name.startswith(".") or "__pycache__" in f.parts:
+            continue
+        rel = str(f.relative_to(folder))
+        text = None
+        if f.suffix.lower() in (".md", ".txt") and f.stat().st_size <= REFERENCE_MAX:
+            text = f.read_text(errors="replace")
+        out.append({"path": rel, "text": text, "size": f.stat().st_size})
+    return out
 
 
 ALWAYS = "always_load_skills"

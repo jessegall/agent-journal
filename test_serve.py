@@ -1043,6 +1043,14 @@ check("a skill it loaded that has no file here is listed as built in, and cannot
       (_sk_rows["loop"]["source"], _sk_rows["loop"]["loaded"], _sk_rows["loop"]["readable"]), ("built in", 1, False))
 _sk_status, _, _sk_body = get("/api/skills/demo-skill")
 check("a skill's text is read by name, read-only", (_sk_status, "the body" in json.loads(_sk_body).get("text", "")), (200, True))
+# THE FILES BESIDE IT COME TOO: a skill that says "read references/x.md" is not read until x.md is on the screen
+_sk_dir = project / ".claude" / "skills" / "demo-skill"
+(_sk_dir / "references").mkdir(exist_ok=True)
+(_sk_dir / "references" / "more.md").write_text("# More\n\nthe reference body\n")
+(_sk_dir / "references" / "tool.py").write_text("print(1)\n")
+_sk_refs = json.loads(get("/api/skills/demo-skill")[2])["references"]
+check("a skill's references are listed by path, markdown with its text and code by name only",
+      [(r["path"], r["text"] is not None) for r in _sk_refs], [("references/more.md", True), ("references/tool.py", False)])
 check("a name that is not a skill on disk is not found, and a path is not a name",
       (get("/api/skills/nope")[0], get("/api/skills/..%2F..%2Fetc")[0]), (404, 404))
 _st, _ = post("/api/env/alpha/environment/settings", {"always_load": "demo-skill", "always_on": True})
