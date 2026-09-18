@@ -1,4 +1,4 @@
-from v2.resources.base import Resource
+from v2.resources.base import DOCUMENT, WIDE, Resource
 
 
 class Message(Resource):
@@ -7,6 +7,7 @@ class Message(Resource):
     title_ = "Message"
     abstract_ = "What the user left for the agent, or the agent for the user"
     help_ = "A message is read once by the other side and processed part by part; what each part became is written on it."
+    view = WIDE
 
 
 class Todo(Resource):
@@ -23,6 +24,7 @@ class Work(Resource):
     title_ = "Work"
     abstract_ = "What the agent is doing right now, declared before its first write"
     help_ = "Work is opened by the agent, updated as it moves and ended when done; the agent that opened it has seen it."
+    nav = False
 
 
 class Plan(Resource):
@@ -31,6 +33,7 @@ class Plan(Resource):
     title_ = "Plan"
     abstract_ = "Ordered phases of to-dos with a goal, approved by the user before it runs"
     help_ = "A plan is drafted by the agent, approved and continued by the user, and worked phase by phase."
+    view = DOCUMENT
 
 
 class Doc(Resource):
@@ -38,6 +41,7 @@ class Doc(Resource):
     title_ = "Document"
     abstract_ = "What stays true about the project, catalogued for every session"
     help_ = "A doc is written once, cited by pins and rules, and read before anything it settles is re-investigated."
+    view = DOCUMENT
 
 
 class Report(Resource):
@@ -46,6 +50,7 @@ class Report(Resource):
     title_ = "Report"
     abstract_ = "What was checked and what was found, written for the user, read once"
     help_ = "A report answers something the user asked to have checked; it ages out or becomes a doc."
+    view = DOCUMENT
 
 
 class Pin(Resource):
@@ -85,6 +90,7 @@ class Comment(Resource):
     title_ = "Comment"
     abstract_ = "What the user or the agent said about another resource"
     help_ = "A comment is a resource of its own, linked to what it is about."
+    nav = False
 
 
 class AgentRow(Resource):
@@ -92,6 +98,7 @@ class AgentRow(Resource):
     title_ = "Agent"
     abstract_ = "A session of Claude or Codex, and what it is doing right now"
     help_ = "The hooks write an agent's status here; the engine reads it to know idle from working."
+    nav = False
 
 
 TYPES = {c.type: c for c in (Message, Todo, Work, Plan, Doc, Report, Pin, Rule, Reminder, Question, Comment, AgentRow)}
