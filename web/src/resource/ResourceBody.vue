@@ -19,15 +19,17 @@ const files = computed(() => Object.entries(props.resource.data.files || {}));
 
 <template>
     <article class="body">
-        <header class="top">
-            <span class="kind">
-                <Icon :name="kind.icon" :size="13" />
-                {{ kind.title }} {{ resource.n }}
-            </span>
-            <span class="age">{{ age(resource.created) }}</span>
-            <Btn kind="icon" @click="emit('close')"><Icon name="x" /></Btn>
+        <header class="head">
+            <div class="top">
+                <span class="kind">
+                    <Icon :name="kind.icon" :size="13" />
+                    {{ kind.title }} {{ resource.n }}
+                </span>
+                <span class="age">{{ age(resource.created) }}</span>
+                <Btn kind="icon" @click="emit('close')"><Icon name="x" /></Btn>
+            </div>
+            <h2 class="title">{{ resource.title }}</h2>
         </header>
-        <h2 class="title">{{ resource.title }}</h2>
         <template v-if="resource.abstract">
             <p class="abstract">{{ resource.abstract }}</p>
         </template>
@@ -89,6 +91,16 @@ const files = computed(() => Object.entries(props.resource.data.files || {}));
 .body > :deep(.comments) {
     flex: 1;
 }
+.head {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    margin: -16px -20px 0;
+    padding: 16px 20px 8px;
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+}
+
 .top {
     display: flex;
     align-items: center;
@@ -108,13 +120,13 @@ const files = computed(() => Object.entries(props.resource.data.files || {}));
     flex: 1;
 }
 .title {
-    margin: 10px 0 4px;
+    margin: 10px 0 0;
     font-size: 19px;
     font-weight: 600;
     line-height: 1.3;
 }
 .abstract {
-    margin: 0 0 8px;
+    margin: 12px 0 8px;
     color: var(--text-2);
 }
 .block {
