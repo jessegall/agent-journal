@@ -1,6 +1,8 @@
 import subprocess
 
 from v2.controllers.base import Controller
+from v2.engine.record import Record
+from v2.engine.sessions import Sessions
 from v2.resources import types
 from v2.resources.base import AGENT, Refused, check_title
 
@@ -237,9 +239,50 @@ class Connections(Controller):
     resource = types.Connection
 
 
+class Environments(Controller):
+    resource = types.Environment
+
+    def create(self, title: str, abstract: str = "", brief: str = "", **data):
+        name = check_title(title)
+        if any(e.title == name for e in self.all()):
+            raise Refused(f"environment {name!r} exists: switch to it")
+        made = super().create(name, abstract, brief, **data)
+        Record(self.record.root, name)
+        return made
+
+    def sessions(self) -> Sessions:
+        if not self.session:
+            raise Refused("no session to bind: say which with --session")
+        return Sessions(self.record.root)
+
+    def switch(self, n: int):
+        env = self.load(n)
+        holder = self.sessions().holder(env.title)
+        if holder and holder != self.session:
+            raise Refused(f"environment {env.title!r} is taken by session {holder}: claim it with a reason, or work another")
+        self.sessions().bind(self.session, env.title)
+        return self.update(n, holder=self.session)
+
+    def claim(self, n: int, why: str):
+        env = self.load(n)
+        holder = self.sessions().holder(env.title)
+        if holder and holder != self.session:
+            self.sessions().evict(holder, self.session, env.title, why)
+        self.sessions().bind(self.session, env.title)
+        return self.update(n, holder=self.session, claimed={"from": holder, "why": why})
+
+    def leave(self, n: int):
+        self.sessions().unbind(self.session)
+        return self.update(n, holder="")
+
+    def grant(self, n: int, off: bool = False):
+        env = self.load(n)
+        return self.sessions().grant(self.session, env.title, on=not off)
+
+
 class Nudges(Controller):
     resource = types.Nudge
 
 
 CONTROLLERS = {c.resource.type: c for c in (Messages, Todos, Works, Plans, Docs, Reports, Pins, Rules, Reminders,
-                                            Questions, Comments, Agents, Notifications, Notices, Reactions, Tools, Styles, Connections, Nudges)}
+                                            Questions, Comments, Agents, Notifications, Notices, Reactions, Tools, Styles, Connections, Environments, Nudges)}

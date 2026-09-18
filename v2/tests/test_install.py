@@ -62,6 +62,8 @@ for name in PROVIDERS:
                        env={**os.environ, "PATH": os.defpath})
     row = CONTROLLERS["agent"](Record(project / ".journal", "main"), actor=SYSTEM).by_session("s-9")
     check(f"{name}: the installed hook command runs and writes the status", (p.returncode, row.data.get("status"), row.data.get("provider")), (0, "idle", name))
+    from v2.engine.sessions import Sessions  # noqa: E402
+    check(f"{name}: the session is bound to the default environment on its first report", Sessions(project / ".journal").environment("s-9"), "main")
 
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)

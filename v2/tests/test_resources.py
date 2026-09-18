@@ -81,7 +81,7 @@ for type_ in TYPES:
         check(f"{type_}: project scope, listed from every environment, filed under the root", (seen_there, CONTROLLERS[type_](here).path(1).parent.parent), (["shared"], root))
     else:
         check(f"{type_}: environment scope, its own", (seen_there, CONTROLLERS[type_](here).path(1).parent.parent.parent), ([], root / "environments"))
-check("rules, docs, tools, style and connections are the project's", sorted(n for n, t in TYPES.items() if t.scope == PROJECT), ["connection", "doc", "rule", "style", "tool"])
+check("rules, docs, tools, style and connections are the project's", sorted(n for n, t in TYPES.items() if t.scope == PROJECT), ["connection", "doc", "environment", "rule", "style", "tool"])
 check("every scope is one of the two", {t.scope for t in TYPES.values()} <= {ENVIRONMENT, PROJECT}, True)
 
 print(f"\n{ok} passed, {fail} failed")

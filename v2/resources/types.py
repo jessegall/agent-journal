@@ -167,6 +167,16 @@ class Connection(Shape, Resource):
     nav = False
 
 
+class Environment(Shape, Resource):
+    type = "environment"
+    names = {"create": "prepare", "complete": "remove"}
+    title_ = "Environment"
+    abstract_ = "One line of work with its own record: messages, to-dos, pins, plans, settings"
+    help_ = "A session works one environment at a time; switch takes one that is free, claim takes a held one with a reason."
+    scope = PROJECT
+    nav = False
+
+
 class Nudge(Shape, Resource):
     type = "nudge"
     title_ = "Nudge"
@@ -177,5 +187,5 @@ class Nudge(Shape, Resource):
     spoken = True
 
 
-TYPES = {c.type: c for c in (Message, Todo, Work, Plan, Doc, Report, Pin, Rule, Reminder, Question, Comment, AgentRow, Notification, Notice, Reaction, Tool, Style, Connection, Nudge)}
-PRIORITY = ("message", "question", "comment", "plan", "todo", "report", "doc", "pin", "rule", "reminder", "notice", "reaction", "style", "tool", "connection", "work", "agent", "notification", "nudge")
+TYPES = {c.type: c for c in (Message, Todo, Work, Plan, Doc, Report, Pin, Rule, Reminder, Question, Comment, AgentRow, Notification, Notice, Reaction, Tool, Style, Connection, Environment, Nudge)}
+PRIORITY = ("message", "question", "comment", "plan", "todo", "report", "doc", "pin", "rule", "reminder", "notice", "reaction", "style", "tool", "connection", "environment", "work", "agent", "notification", "nudge")
