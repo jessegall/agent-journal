@@ -12,7 +12,7 @@ import migrations
 from engine import queries
 from engine.drivers import DRIVERS
 from engine.record import Record
-from engine.sessions import Sessions
+from engine.sessions import Sessions, allowed
 from engine.transcript import conversation, search, user
 from providers import PROVIDERS
 from resources.base import AGENT, Refused, SYSTEM
@@ -67,6 +67,7 @@ def parser() -> argparse.ArgumentParser:
     top.add_argument("--env", default=os.environ.get("JOURNAL_ENV", ""))
     top.add_argument("--as", dest="as_actor", default=os.environ.get("JOURNAL_ACTOR", AGENT))
     top.add_argument("--session", default=os.environ.get("JOURNAL_SESSION", ""))
+    top.add_argument("--agent", default=os.environ.get("JOURNAL_AGENT", ""))
     cmds = top.add_subparsers(dest="command", required=True)
     for type_, controller in CONTROLLERS.items():
         t = cmds.add_parser(type_, help=controller.resource.abstract_, description=controller.resource.help_)
@@ -126,7 +127,10 @@ def context(args: dict) -> dict:
     session = args.pop("session")
     env = args.pop("env") or (sessions.environment(session) if session else "") or ((root / "runtime" / "env").read_text().strip() if (root / "runtime" / "env").is_file() else "main")
     session = session or sessions.holder(env)
-    return {"record": Record(root, env), "session": session, "actor": args.pop("as_actor")}
+    return {"record": Record(root, env), "session": session, "actor": args.pop("as_actor"), "agent": args.pop("agent"), "sessions": sessions}
+
+
+READS = {"all", "show", "find", "search", "files", "folder", "comments", "linked_to", "unread", "read"}
 
 
 def typed(value: str):
@@ -153,7 +157,11 @@ def run(argv: list[str]) -> int:
         method = args.pop("method")
         args.pop("action", None)
         extra = {k: typed(v) for k, v in (kv.split("=", 1) for kv in args.pop("set", []))}
-        controller = CONTROLLERS[command](ctx["record"], actor=ctx["actor"], session=ctx["session"])
+        if ctx["agent"] and method not in READS:
+            why = allowed(ctx["sessions"], ctx["session"], ctx["record"].env, ctx["agent"], command)
+            if why:
+                raise Refused(why)
+        controller = CONTROLLERS[command](ctx["record"], actor=ctx["actor"], session=ctx["session"], agent=ctx["agent"])
         got = getattr(controller, method)(**args, **extra)
     except Refused as e:
         print(f"! {e}", file=sys.stderr)
