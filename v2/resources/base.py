@@ -8,6 +8,8 @@ from pathlib import Path
 TITLE_MAX = 80
 ABSTRACT_MAX = 200
 ACTIONS = ("created", "updated", "deleted", "linked", "commented", "completed")
+SMALL, WIDE, DOCUMENT = "small", "wide", "document"
+VIEWS = (SMALL, WIDE, DOCUMENT)
 USER, AGENT, SYSTEM = "user", "agent", "system"
 ACTORS = (USER, AGENT, SYSTEM)
 
@@ -34,6 +36,8 @@ class Resource:
     abstract_ = ""
     help_ = ""
     names: ClassVar[dict] = {}   # what this type calls a controller method: {"complete": "done", "create": "add"}
+    view: ClassVar[str] = SMALL  # how it is read: a small inspector, a wide one, or a document page
+    nav: ClassVar[bool] = True   # whether it sits in the sidebar
     n: int = 0
     title: str = ""
     abstract: str = ""
