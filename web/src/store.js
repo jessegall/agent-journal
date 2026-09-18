@@ -129,3 +129,19 @@ export function quoted(text) {
 export function withQuote(quote, text) {
     return quote ? `> ${quote.replace(/\n/g, "\n> ")}\n\n${text}` : text;
 }
+
+export function span(seconds) {
+    const s = Math.max(0, Math.floor(seconds));
+    if (s < 60) return `${s}s`;
+    if (s < 3600) return `${Math.floor(s / 60)}m`;
+    const h = Math.floor(s / 3600);
+    const m = Math.floor((s % 3600) / 60);
+    return h < 24 ? `${h}h ${m}m` : `${Math.floor(h / 24)}d ${h % 24}h`;
+}
+
+export const lightbox = reactive({pictures: [], at: -1});
+
+export function openPictures(pictures, at) {
+    lightbox.pictures = pictures;
+    lightbox.at = at;
+}

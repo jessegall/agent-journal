@@ -1,8 +1,9 @@
 <script setup>
 import {computed, ref} from "vue";
-import {act, fileUrl} from "../api.js";
+import {act} from "../api.js";
 import Icon from "../kit/Icon.vue";
 import OptionsPicker from "../resource/OptionsPicker.vue";
+import Attachments from "./Attachments.vue";
 import {peek, route} from "../route.js";
 import {clock, meta, quoted, reload, rows} from "../store.js";
 
@@ -22,7 +23,6 @@ const faces = computed(() => {
     return Object.entries(seen).map(([face, who]) => ({face, n: who.length, mine: who.includes("user"), title: who.join(", ")}));
 });
 const files = computed(() => Object.keys(props.turn.data.files || {}));
-const picture = (name) => /\.(png|jpe?g|gif|webp)$/i.test(name);
 
 function refOf(word) {
     const m = word.trim().match(/^(\w+)[ :](\d+)$/);
@@ -74,21 +74,7 @@ async function drop() {
                 <OptionsPicker :resource="turn" />
             </template>
             <template v-if="files.length">
-                <div class="thread-files">
-                    <template v-for="f in files" :key="f">
-                        <a class="thread-file" :href="fileUrl(route.env, turn.type, turn.n, f)" target="_blank">
-                            <template v-if="picture(f)">
-                                <img class="thread-image" :src="fileUrl(route.env, turn.type, turn.n, f)" :alt="f" @load="emit('grew')" />
-                            </template>
-                            <template v-else>
-                                <span class="thread-file-name">
-                                    <Icon name="paperclip" />
-                                    {{ f }}
-                                </span>
-                            </template>
-                        </a>
-                    </template>
-                </div>
+                <Attachments :resource="turn" @grew="emit('grew')" />
             </template>
         </div>
         <div :class="['thread-tools', {picking}]">
@@ -269,34 +255,6 @@ button.thread-pill:hover {
     margin: 4px 0 0;
     color: var(--text-3);
     font-size: 12.5px;
-}
-
-.thread-files {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    margin-top: 8px;
-}
-
-.thread-image {
-    display: block;
-    max-width: 100%;
-    max-height: 320px;
-    border-radius: 7px;
-    border: 1px solid var(--border);
-}
-
-.thread-file-name {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    color: var(--accent-text);
-}
-
-.thread-file-name .ico {
-    width: 13px;
-    height: 13px;
-    color: inherit;
 }
 
 .thread-meta {
