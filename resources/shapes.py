@@ -48,3 +48,7 @@ LEVELS = {"low": 50, "default": 100, "high": 150, "critical": 200}
 class Ranked(Shape):
     fields = {"priority": NUMBER}
     labels = {"priority": "Priority"}
+
+
+class Traced(Shape):
+    fields = {"changed": rows(path=TEXT, added=NUMBER, removed=NUMBER, created=FLAG), "commits": rows(sha=TEXT, subject=TEXT)}

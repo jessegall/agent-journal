@@ -4,7 +4,7 @@ import {act, saveSettings} from "../api.js";
 import Icon from "../kit/Icon.vue";
 import RunningCommand from "./RunningCommand.vue";
 import Switch from "../kit/Switch.vue";
-import {go, route} from "../route.js";
+import {go, peek, route} from "../route.js";
 import {agent, autoOn, reload, rows} from "../store.js";
 
 const state = computed(() => (agent.value && agent.value.data.status !== "stopped" ? agent.value.data.status : "stopped"));
@@ -17,6 +17,11 @@ const line = computed(() => {
     const last = works[works.length - 1];
     return last ? `last on ${named(last)}` : state.value === "idle" ? "waiting for you" : "on nothing declared";
 });
+const current = computed(() => rows("work").find((w) => !w.completed) || null);
+function inspect() {
+    if (current.value) peek("work", current.value.n);
+    else go(route.value.env);
+}
 const was = ref("");
 const sentence = computed(() => {
     const now = line.value;
@@ -57,9 +62,9 @@ async function runBar(p) {
 </script>
 
 <template>
-    <div class="statusbar" @click.self="go(route.env)">
+    <div class="statusbar" @click.self="inspect">
         <span :class="['statusbar-dot', {live: state !== 'stopped'}]" />
-        <button type="button" class="statusbar-text" @click="go(route.env)">
+        <button type="button" class="statusbar-text" @click="inspect">
             <b>{{ state[0].toUpperCase() + state.slice(1) }}</b>
             <span class="statusbar-roll">
                 <template v-if="sentence.head">

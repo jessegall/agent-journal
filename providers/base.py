@@ -45,6 +45,7 @@ class Provider(ABC):
         uses = int(row.data.get("uses") or 0) + (event == "PreToolUse")
         context = self.context(payload)
         agents.update(row.n, status=STATUS[event], event=event, tool=payload.get("tool_name") or "", **self.shell(row.data, event, payload),
+                      file=str((payload.get("tool_input") or {}).get("file_path") or ""), wrote=event == "PostToolUse" and self.writes(payload),
                       cwd=str(payload.get("cwd") or row.data.get("cwd") or ""),
                       at=time.time(), provider=self.name, uses=uses, transcript=str(payload.get("transcript_path") or row.data.get("transcript") or ""),
                       model=self.model(payload) or row.data.get("model") or "", started=row.data.get("started") or time.time(),
