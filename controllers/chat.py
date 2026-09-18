@@ -186,9 +186,14 @@ def wrote(root: Path, env: str) -> list[dict]:
                 if str(ref).startswith("todo:") and ref.partition(":")[2].isdigit()]
         working = any((rows.get(k) or {}).get("started") and not (rows.get(k) or {}).get("done") for k in made)
         whole = (m.get("text") or "").strip()
+        # A QUOTE IS A QUOTE ON BOTH SIDES OF THE THREAD. Replying to something the agent SAID has no
+        # message to hang a reply on, so the viewer puts the quoted line in the text as "> …" — which
+        # then read as markdown inside the bubble while the agent's own replies got the quote chip.
+        # Split it back out here: the record keeps the words, the thread shows them as what they are.
+        quote, whole = _quoted_out(whole)
         out.append({"at": m.get("at") or "", "who": "you", "kind": "message", "tag": "",
                     "text": trim(whole), "full": whole if len(whole) > TEXT_MAX else "", "n": n,
-                    "ref": "",
+                    "ref": quote,
                     "files": [{"name": f["name"], "picture": f["name"].lower().endswith(PICTURES)}
                               for f in (m.get("files") or []) if not f.get("removed")],
                     # delivered, read, filed: three states the record already keeps, so the ticks are a
@@ -244,6 +249,21 @@ def wrote(root: Path, env: str) -> list[dict]:
                            if r.get("source") == "web" else {}),
                         "ref": r.get("quoting") or r.get("part") or trim(whole, 90)})
     return out
+
+
+def _quoted_out(text: str) -> tuple[str, str]:
+    """(what it quotes, what it says) for a message that opens with a "> " block."""
+    lines = text.splitlines()
+    if not lines or not lines[0].startswith(">"):
+        return "", text
+    said, rest = [], []
+    for i, line in enumerate(lines):
+        if not rest and (line.startswith(">") or (not line.strip() and not rest)):
+            if line.startswith(">"):
+                said.append(line.lstrip("> ").rstrip())
+            continue
+        rest = lines[i:]
+    return " ".join(said).strip(), "\n".join(rest).strip()
 
 
 def asked(root: Path, env: str) -> list[dict]:

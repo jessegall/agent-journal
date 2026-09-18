@@ -4427,9 +4427,12 @@ const Thread = {
             <span v-if="t.working" class=thread-became-word>Working on</span>
             <a v-for="r in t.becameRefs" :key="r.label" class=thread-pill :href="r.href"
               :title="'Open ' + r.label" @click.stop="goRef($event, r)">{{ r.label }}</a></p>
-          <button v-if="t.ref && t.kind !== 'message' && quoteAnchor(t)" type=button class="thread-quote go"
+          <!-- BOTH SIDES QUOTE THE SAME WAY. A message of the user's that opens with a quote carries
+               it as a ref like every other turn, so it is the same chip rather than markdown in the
+               bubble; only the ones that can be jumped to are buttons. -->
+          <button v-if="t.ref && quoteAnchor(t)" type=button class="thread-quote go"
             :title="'Go to the turn this answers'" @click="goQuote(t)">{{ t.ref }}</button>
-          <p v-else-if="t.ref && t.kind !== 'message'" class=thread-quote>{{ t.ref }}</p>
+          <p v-else-if="t.ref" class=thread-quote>{{ t.ref }}</p>
           <div v-if="t.text" v-html="$md(whole.has(t.key) ? t.full : t.text)"></div>
           <p v-if="t.state === 'failed'" class=thread-failed>Not sent — {{ t.error }}
             <button type=button class=thread-tool @click.stop="retry(t)">Put it back in the box</button></p>
