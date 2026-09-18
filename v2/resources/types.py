@@ -94,5 +94,12 @@ class Comment(Resource):
     help_ = "A comment is a resource of its own, linked to what it is about."
 
 
-TYPES = {c.type: c for c in (Message, Todo, Work, Plan, Doc, Report, Pin, Rule, Reminder, Question, Suggestion, Comment)}
-PRIORITY = ("message", "question", "suggestion", "comment", "plan", "todo", "report", "doc", "pin", "rule", "reminder", "work")
+class AgentRow(Resource):
+    type = "agent"
+    title_ = "Agent"
+    abstract_ = "A session of Claude or Codex, and what it is doing right now"
+    help_ = "The hooks write an agent's status here; the engine reads it to know idle from working."
+
+
+TYPES = {c.type: c for c in (Message, Todo, Work, Plan, Doc, Report, Pin, Rule, Reminder, Question, Suggestion, Comment, AgentRow)}
+PRIORITY = ("message", "question", "suggestion", "comment", "plan", "todo", "report", "doc", "pin", "rule", "reminder", "work", "agent")

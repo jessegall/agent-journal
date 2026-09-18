@@ -56,6 +56,9 @@ class Controller:
         r.data.update(data)
         return self.save(r, "updated")
 
+    def set(self, n: int, key: str, value: str) -> Resource:
+        return self.update(n, **{key: value})
+
     def section(self, n: int, title: str, body: str) -> Resource:
         r = self.load(n)
         for s in r.sections:

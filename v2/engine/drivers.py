@@ -1,4 +1,3 @@
-import json
 import os
 import re
 import time
@@ -13,12 +12,11 @@ class Driver(ABC):
     name = ""
     QUIET = 3.0
 
-    def __init__(self, root: Path, session: str, fd: int = -1):
-        self.root = Path(root)
+    def __init__(self, record, session: str, fd: int = -1):
+        self.record = record
         self.session = session
         self.fd = fd
-        self.reports = self.root / "runtime" / "agents" / f"{session}.jsonl"
-        self.printed = self.root / "runtime" / f"printed-{session}"
+        self.printed = record.root / "runtime" / f"printed-{session}"
 
     @abstractmethod
     def command(self, args: list[str]) -> list[str]: ...
@@ -33,11 +31,10 @@ class Driver(ABC):
         os.write(self.fd, b"\r")
 
     def last_report(self) -> dict | None:
-        try:
-            tail = self.reports.read_bytes()[-4096:].decode(errors="replace").strip().splitlines()
-            return json.loads(tail[-1]) if tail else None
-        except (OSError, ValueError):
-            return None
+        from v2.controllers.types import CONTROLLERS
+        from v2.resources.base import SYSTEM
+        rows = [r for r in CONTROLLERS["agent"](self.record, actor=SYSTEM).all() if r.title == self.session]
+        return rows[0].data if rows and rows[0].data.get("event") else None
 
     def quiet_for(self) -> float:
         try:
