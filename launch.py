@@ -342,9 +342,21 @@ class Nudger:
         # WHAT WAS LEFT BEFORE THE SEAT SAT DOWN IS STILL OWED. A message written while the agent was
         # being restarted must be typed once it is idle; what was told already is marked told in the
         # record and never repeats, so the look back costs nothing but the first read.
-        if not self.since:
+        first = not self.since
+        if first:
             self.since = time.time() - SINCE_BACK
-        return news._waiting(self.env, self.since)
+        got = news._waiting(self.env, self.since)
+        if first:
+            # ONLY A MESSAGE STILL WAITING IS OWED FROM BEFORE THE SEAT SAT DOWN. A reaction, a reply
+            # or a plan approved hours ago and never told is history — measured: a fresh seat typed
+            # six of them one after another before the user's new message. They are marked told,
+            # unspoken; a message nobody has read yet is not.
+            stale = [key for key, _ in got if not re.fullmatch(rf"{re.escape(self.env)}:\d+", key)]
+            if stale:
+                self.mark(stale)
+                self.told.update(stale)
+                got = [(key, params) for key, params in got if key not in self.told]
+        return got
 
     def mark(self, keys: list) -> None:
         try:

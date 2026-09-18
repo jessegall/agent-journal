@@ -3,6 +3,7 @@ from __future__ import annotations
 import fcntl
 import os
 import pty
+import re
 import select
 import struct
 import sys
@@ -203,6 +204,16 @@ with (events / "sess-1.jsonl").open("a") as f:
     f.write(json.dumps({"at": time.time() + 3, "event": "PreToolUse", "tool": "Bash", "session": "sess-1"}) + "\n")
 nudger.stamp(seat)
 check("a tool call under way is working", state.get(root, "seat", {}, stem="sess-1").get("working"), True)
+
+# AT ITS FIRST LOOK A FRESH SEAT TYPES ONLY MESSAGES STILL WAITING: an old reaction is marked told, unspoken
+import reactions  # noqa: E402
+from datetime import datetime, timezone  # noqa: E402
+inbox.add(root, "a late one", datetime.now(timezone.utc).isoformat(timespec="seconds"), source="web", track="alpha")
+reactions.leave(root, "reply:1", "👍", "2026-09-18T00:00:21+00:00", by="web", track="alpha")
+fresh = launch.Nudger(root, "alpha", every=0)
+first = fresh.pending()
+check("the first look hands over the waiting message and nothing older that is not one",
+      ([k for k, _ in first if k.startswith("alpha:react")], any(re.fullmatch(r"alpha:\d+", k) for k, _ in first)), ([], True))
 
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)
