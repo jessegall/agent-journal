@@ -15,7 +15,7 @@ from v2.providers import PROVIDERS
 from v2.resources.base import AGENT, Refused, SYSTEM
 
 HIDDEN = ("path", "numbers", "load", "save", "named", "method", "sessions")
-VERSION = "2.0.0"
+VERSION = next((f.read_text().strip() for f in (Path(__file__).resolve().parents[2] / "VERSION", Path(__file__).resolve().parents[1] / "VERSION") if f.is_file()), "0")
 
 
 def actions(controller: type) -> list[str]:
