@@ -746,10 +746,14 @@
   .file-raw-link:hover { color: var(--text-2); text-decoration: underline; text-underline-offset: 3px; }
   /* A HEADING IN THE RAIL IS THE LIST PAGE'S GROUP HEADING, at the width this column has: the state
      is said once, over the rows that are in it, rather than repeated on the end of every row. */
-  .rail-group { display: flex; align-items: center; justify-content: space-between; gap: 7px; height: 28px; padding: 0 var(--rail-gutter);
-    border-bottom: 1px solid var(--border); background: color-mix(in srgb, var(--raised) 60%, transparent);
-    font-size: 11px; letter-spacing: .04em; text-transform: uppercase; color: var(--text-3); }
-  .rail-group-n { color: var(--text-3); font-variant-numeric: tabular-nums; text-transform: none; }
+  /* the same bar the notifications' Unread/Read strip is: darker than the rows, shorter, quieter —
+     a divider between sections rather than a heading competing with the tabs above it */
+  .rail-group { display: flex; align-items: center; justify-content: space-between; gap: 7px;
+    height: 24px; padding: 0 var(--rail-gutter); border-bottom: 1px solid var(--border);
+    background: var(--side); font-size: 10px; font-weight: 500; letter-spacing: .05em;
+    text-transform: uppercase; color: var(--text-4, #6b6e76); }
+  .rail-group-n { color: var(--text-4, #6b6e76); font-size: 10px; font-variant-numeric: tabular-nums;
+    text-transform: none; }
   .rail-note { display: flex; align-items: stretch; }
   /* THE HEADING IS A BAR, THE SAME BAR THE LIST PAGES USE. It was a line of text with six pixels
      under it and nothing above it, so a section began with a word rather than with a division. It
