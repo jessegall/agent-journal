@@ -23,8 +23,8 @@ block = f.read_text()
 check("every write rewrites the start block", block, start_block(record))
 check("it says the environment, the rules, the pins, the open work, the docs and the count of to-dos",
       [line for line in block.splitlines() if line and not line.startswith("  ")],
-      ["THE JOURNAL IS IN FORCE HERE — this session is bound to environment `t`.", "RULES, in force on every environment:", "PINS on `t`:", "STILL OPEN, from this or an earlier session:",
-       "DOCS, 1 catalogued — read one before you re-investigate what it settles:", "1 to-do(s) waiting: delayed work, not an instruction to start any of it."])
+      ["THE JOURNAL IS IN FORCE HERE — this session is bound to environment `t`.", "STILL OPEN, from this or an earlier session (1):", "RULES, in force on every environment (1):", "PINS on this environment (1):",
+       "DOCS catalogued — read one before you re-investigate what it settles (1):", "1 TO-DOS waiting — delayed work, not an instruction to start any of it."])
 check("a doc line carries its abstract", "    1  The engine  (the loop from A to Z)" in block, True)
 
 # THE HOOK HANDS IT OVER at SessionStart, computing nothing
