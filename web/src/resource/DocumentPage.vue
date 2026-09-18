@@ -35,13 +35,13 @@ const quote = ref("");
     overscroll-behavior: contain;
 }
 
-.document-body > :deep(.body) {
+.document-body :deep(.body) {
     max-width: 800px;
     margin: 0 auto;
     padding: 36px 32px 60px;
 }
 
-.document-body > :deep(.body) > .head {
+.document-body :deep(.body) > .head {
     margin: -36px -32px 0;
     padding: 36px 32px 8px;
 }
