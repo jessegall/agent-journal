@@ -4,7 +4,7 @@ import {api} from "../api.js";
 import Btn from "../kit/Btn.vue";
 import CommentToggle from "./CommentToggle.vue";
 import Icon from "../kit/Icon.vue";
-import {route} from "../route.js";
+import {go, route} from "../route.js";
 import {rows, span} from "../store.js";
 import {render} from "../text/index.js";
 import "../text/all.js";
@@ -85,7 +85,10 @@ onUnmounted(() => clearInterval(timer));
         </div>
         <template v-if="(data.skills || []).length">
             <section class="block">
-                <h3>Skills loaded in this window</h3>
+                <h3>
+                    Skills loaded in this window
+                    <button type="button" class="every" @click="go(route.env, 'skills')">every skill</button>
+                </h3>
                 <div class="skills">
                     <template v-for="s in data.skills" :key="s">
                         <span class="skill">
@@ -326,5 +329,18 @@ onUnmounted(() => clearInterval(timer));
 
 .said :deep(p + p) {
     margin-top: 0.5em;
+}
+
+.every {
+    margin-left: 8px;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--accent-text);
+    font: inherit;
+    font-size: 11px;
+    text-transform: none;
+    letter-spacing: 0;
+    cursor: pointer;
 }
 </style>

@@ -1,8 +1,16 @@
 import json
 import shutil
+from datetime import datetime
 from pathlib import Path
 
 from providers.base import EVENTS, Provider
+
+
+def stamp(iso: str) -> float:
+    try:
+        return datetime.fromisoformat(iso.replace("Z", "+00:00")).timestamp()
+    except ValueError:
+        return 0.0
 
 
 class Claude(Provider):
@@ -63,4 +71,5 @@ class Claude(Provider):
         if row.get("type") != "assistant" or row.get("isSidechain"):
             return []
         content = (row.get("message") or {}).get("content")
-        return [{"name": b.get("name", ""), "input": b.get("input") or {}} for b in content or () if isinstance(b, dict) and b.get("type") == "tool_use"]
+        at = stamp(str(row.get("timestamp") or ""))
+        return [{"name": b.get("name", ""), "input": b.get("input") or {}, "at": at} for b in content or () if isinstance(b, dict) and b.get("type") == "tool_use"]
