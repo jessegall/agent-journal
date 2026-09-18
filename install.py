@@ -20,8 +20,10 @@ def alias(project: Path, root: Path) -> Path:
     f.write_text(f'#!/bin/sh\nexec "{sys.executable}" "{PACKAGE / "journal.py"}" --root "{root}" "$@"\n')
     f.chmod(f.stat().st_mode | stat.S_IEXEC)
     bin_ = Path.home() / ".local" / "bin"
-    if bin_.is_dir() and not (bin_ / "journal").exists():
-        (bin_ / "journal").symlink_to(f)
+    if bin_.is_dir():
+        shim = bin_ / "journal"
+        shim.write_text('#!/bin/sh\ndir="$(pwd)"\nwhile [ "$dir" != "/" ]; do\n  if [ -f "$dir/.journal/journal.py" ]; then exec python3 "$dir/.journal/journal.py" --root "$dir/.journal" "$@"; fi\n  dir="$(dirname "$dir")"\ndone\necho "no .journal/ here or above: install agent-journal in this project first" >&2\nexit 1\n')
+        shim.chmod(shim.stat().st_mode | stat.S_IEXEC)
     return f
 
 
