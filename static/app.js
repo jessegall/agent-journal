@@ -4910,7 +4910,7 @@ const EnvHome = {
       <!-- THE AGENT BAR BELONGS TO THE CHAT, NOT TO THE PAGE. It is the agent's own state — which
            model, which session, how long, how full — and the rail beside it is not the agent's, so
            a bar spanning both said that state was the whole page's. -->
-      <div :class="['agent-bar', {open: (crewOpen && liveCrew.length) || (shellsOpen && shells.length)}]">
+      <div class=agent-bar>
         <div class=agent-facts>
           <template v-for="(r, i) in lead.rows" :key="r.label">
             <a v-if="i === 0 && lead.href" class=agent-fact-lead :href="lead.href" :title="'Open the agent page — ' + r.label">
