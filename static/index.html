@@ -980,6 +980,12 @@
   .skills-group.folded .ico { transform: rotate(-90deg); }
   .skills-group-n { color: var(--text-4, #6b6e76); font-size: 11px; font-variant-numeric: tabular-nums; }
   .skills-subgroup { padding-left: 30px; background: transparent; }
+  .skills-fold { display: grid; grid-template-rows: 1fr; transition: grid-template-rows .22s cubic-bezier(.2, .8, .2, 1); }
+  .skills-fold.shut { grid-template-rows: 0fr; }
+  .skills-fold-in { min-height: 0; overflow: hidden; display: flex; flex-direction: column; }
+  .skills-fold.shut > .skills-fold-in { opacity: 0; }
+  .skills-fold-in { transition: opacity .18s ease; }
+  @media (prefers-reduced-motion: reduce) { .skills-fold, .skills-fold-in { transition: none; } }
   .skills-depth-1 .skills-open { padding-left: 30px; }
   .skills-depth-2 .skills-open { padding-left: 48px; }
   .skills-where { color: var(--text-4, #6b6e76); font-size: 11px; }
