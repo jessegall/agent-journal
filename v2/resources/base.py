@@ -52,6 +52,7 @@ class Resource:
     updated: float = 0.0
     deleted: float = 0.0
     completed: float = 0.0
+    outcome: str = ""      # what completing it said: how a to-do was done, a question's answer, why a pin was struck
 
     @property
     def ref(self) -> str:

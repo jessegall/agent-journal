@@ -39,4 +39,4 @@ class Options(Shape):
 
 
 class Reasoned(Shape):
-    labels = {"brief": "Reasoning"}
+    labels = {"brief": "Reasoning", "outcome": "Why struck"}

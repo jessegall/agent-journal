@@ -4,7 +4,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[4]))
 from v2 import features  # noqa: E402
 from v2.controllers.types import CONTROLLERS  # noqa: E402
-from v2.features.todos.next import next, ready  # noqa: E402
+from v2.features.auto.next import next, ready  # noqa: E402
 from v2.resources.base import AGENT, USER  # noqa: E402
 from v2.tests.features.kit import idle, nudges  # noqa: E402
 from v2.tests.kit import check, done, fresh  # noqa: E402
@@ -34,14 +34,14 @@ for t in ready(record):
     todos.complete(t.n, "done")
 check("nothing ready: nothing", next(record), None)
 
-# THE NUDGE: on idle, with auto on and nothing open, the next row is offered
+# THE NUDGE: on idle, with the feature enabled (auto mode) and nothing open, the next row is offered
 record = fresh()
 todos = CONTROLLERS["todo"](record, actor=USER)
 todos.create("first")
 todos.create("second")
 idle(record)
 check("auto off: nothing offered", nudges(record), [])
-record.set_setting("auto", True)
+features.FEATURES["auto"].enable(record)
 idle(record)
 check("auto on: the next row is offered once per idle stretch", nudges(record), ["todo 1 next"])
 work = CONTROLLERS["work"](record, actor=AGENT).create("on it", todo=1)

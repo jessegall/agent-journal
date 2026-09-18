@@ -46,11 +46,13 @@ class Controller:
     def create(self, title: str, abstract: str = "", brief: str = "", **data) -> Resource:
         with self.record.locked():
             n = (self.numbers() or [0])[-1] + 1
+            about = data.pop("about", None)
             r = self.resource(n=n, title=check_title(title), abstract=check_abstract(abstract), brief=brief,
                               data=self._shaped(data), created=time.time(), seen=[self.actor])
-            return self.save(r, "created")
+            self.save(r, "created")
+            return self.link(n, about) if about else r
 
-    def update(self, n: int, title: str | None = None, abstract: str | None = None, brief: str | None = None, **data) -> Resource:
+    def update(self, n: int, title: str | None = None, abstract: str | None = None, brief: str | None = None, outcome: str | None = None, **data) -> Resource:
         r = self.load(n)
         if title is not None:
             r.title = check_title(title)
@@ -58,6 +60,8 @@ class Controller:
             r.abstract = check_abstract(abstract)
         if brief is not None:
             r.brief = brief
+        if outcome is not None:
+            r.outcome = outcome
         r.data.update(self._shaped(data))
         return self.save(r, "updated")
 
@@ -84,6 +88,7 @@ class Controller:
         if r.completed:
             raise Refused(f"{self.type} {n} is already {self.named('complete')}")
         r.completed = time.time()
+        r.outcome = how
         return self.save(r, "completed", how=how, **data)
 
     def named(self, method: str) -> str:
@@ -121,14 +126,13 @@ class Controller:
     def comment(self, n: int, text: str) -> Resource:
         from v2.controllers.types import CONTROLLERS
         parent = self.load(n)
-        made = CONTROLLERS["comment"](self.record, actor=self.actor).create(text.strip()[:TITLE_MAX].replace(":", " -"), brief=text.strip(), on=parent.ref)
+        made = CONTROLLERS["comment"](self.record, actor=self.actor).create(text.strip()[:TITLE_MAX].replace(":", " -"), brief=text.strip(), about=parent.ref)
         self.save(parent, "commented", comment=made.n)
         return made
 
     def comments(self, n: int) -> list[Resource]:
         from v2.controllers.types import CONTROLLERS
-        ref = f"{self.type}:{n}"
-        return [c for c in CONTROLLERS["comment"](self.record, actor=self.actor).all() if c.data.get("on") == ref]
+        return CONTROLLERS["comment"](self.record, actor=self.actor).linked_to(f"{self.type}:{n}")
 
     def show(self, n: int) -> Resource:
         return self.see(n)

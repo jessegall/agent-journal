@@ -9,8 +9,12 @@ ANY = "*"
 _listeners: dict[str, list[tuple[str, Listener]]] = defaultdict(list)
 
 
-def on(pattern: str, listener: Listener, feature: str = "") -> Callable[[], None]:
-    entry = (feature, listener)
+def always(record) -> bool:
+    return True
+
+
+def on(pattern: str, listener: Listener, enabled: Callable = always) -> Callable[[], None]:
+    entry = (enabled, listener)
     _listeners[pattern].append(entry)
 
     def off() -> None:
@@ -18,16 +22,10 @@ def on(pattern: str, listener: Listener, feature: str = "") -> Callable[[], None
     return off
 
 
-def enabled(feature: str, record) -> bool:
-    if not feature or record is None:
-        return True
-    return record.setting("features", {}).get(feature, True)
-
-
 def emit(event: Event, record=None) -> None:
     for pattern in (ANY, event.type, event.action, f"{event.type}.{event.action}"):
-        for feature, listener in list(_listeners.get(pattern, ())):
-            if enabled(feature, record):
+        for enabled, listener in list(_listeners.get(pattern, ())):
+            if record is None or enabled(record):
                 listener(event, record)
 
 

@@ -14,6 +14,7 @@ class Message(Shape, Resource):
 class Todo(Shape, Resource):
     type = "todo"
     names = {"complete": "done", "create": "add"}
+    labels = {"outcome": "How"}
     title_ = "To-do"
     abstract_ = "One thing to do later, with a brief that says why and where to start"
     help_ = "A to-do waits on the list until it is started as work and closed; auto mode works the list in order."
@@ -81,6 +82,7 @@ class Reminder(Shape, Resource):
 class Question(Options, Resource):
     type = "question"
     names = {"complete": "answer", "create": "ask"}
+    labels = {"outcome": "Answer", "abstract": "Context"}
     title_ = "Question"
     abstract_ = "Something the agent asks the user, with choices to pick"
     help_ = "A question waits for the user; its answer reaches the agent as an event."

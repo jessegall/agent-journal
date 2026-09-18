@@ -14,7 +14,7 @@ features.load()
 
 
 def told(record):
-    return [(n.title, n.abstract, n.data["about"]) for n in CONTROLLERS["notification"](record).all()]
+    return [(n.title, n.abstract, n.refs[0]) for n in CONTROLLERS["notification"](record).all()]
 
 
 # THE AGENT'S ACTS reach the user as notifications, in the type's own words; the user's own acts make none

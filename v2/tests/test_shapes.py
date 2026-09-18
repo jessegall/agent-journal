@@ -25,7 +25,7 @@ shared = [n for n, t in TYPES.items() if Options in t.__mro__]
 reasoned = sorted(n for n, t in TYPES.items() if Reasoned in t.__mro__)
 check("options belong to the question", shared, ["question"])
 check("pins and rules share one reasoning shape", reasoned, ["pin", "rule"])
-check("the reasoning shape names the brief", TYPES["pin"].labels, {"brief": "Reasoning"})
+check("the reasoning shape names the brief and the strike", TYPES["pin"].labels, {"brief": "Reasoning", "outcome": "Why struck"})
 check("a shape declared once is the same object on both", TYPES["pin"].labels == TYPES["rule"].labels, True)
 
 
@@ -33,7 +33,7 @@ class Twice(Options, Reasoned, Shape):
     fields = {"extra": "flag"}
 
 
-check("shapes compose: fields and labels from every mixin plus its own", (sorted(Twice.fields), Twice.labels), (["extra", "options", "pick"], {"brief": "Reasoning"}))
+check("shapes compose: fields and labels from every mixin plus its own", (sorted(Twice.fields), Twice.labels), (["extra", "options", "pick"], {"brief": "Reasoning", "outcome": "Why struck"}))
 
 # THE CONTROLLER VALIDATES what a type's shape declares, and leaves the rest of data free
 record = fresh()
@@ -48,6 +48,6 @@ check("a flag takes only a bool", refused(lambda: CONTROLLERS["todo"](record).cr
 # THE MANIFEST carries every type's fields and labels
 m = manifest()
 check("the manifest says a question's fields", m["types"]["question"]["fields"], Options.fields)
-check("the manifest says a pin's labels", m["types"]["pin"]["labels"], {"brief": "Reasoning"})
+check("the manifest says a pin's labels", m["types"]["pin"]["labels"], {"brief": "Reasoning", "outcome": "Why struck"})
 
 done()
