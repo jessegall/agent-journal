@@ -17,11 +17,7 @@ const emit = defineEmits(["unquote"]);
 const draft = reactive({text: "", files: [], sending: false, error: ""});
 const area = ref(null);
 const attachment = {attachment: true, icon: "paperclip"};
-const actions = computed(() => [
-    ...props.tools.filter((tool) => !tool.text),
-    attachment,
-    ...props.tools.filter((tool) => tool.text && draft.text.trim()),
-]);
+const actions = computed(() => [...props.tools, attachment]);
 
 watch(
     () => props.quote,
@@ -83,11 +79,9 @@ async function go() {
 }
 
 async function use(tool) {
-    if (tool.text && !draft.text.trim()) return;
     draft.error = "";
     try {
-        await tool.go(draft.text.trim());
-        if (tool.consume) draft.text = "";
+        await tool.go();
     } catch (e) {
         draft.error = e.message;
     }
