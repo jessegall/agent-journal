@@ -6,6 +6,7 @@ import {agent, types} from "../store.js";
 
 const STEP = 700;
 const HOLD_EDITS = 1000;
+const DELTA_LEAVE = 240;
 const SHOW_CLOCK_AFTER = 10;
 const WRITE_TOOLS = ["Edit", "Write", "MultiEdit", "NotebookEdit"];
 const CHANGING = ["writes", "deletes"];
@@ -41,6 +42,7 @@ const counts = ref({added: 0, removed: 0});
 const showDelta = ref(false);
 const frames = {added: 0, removed: 0};
 const tally = new Map();
+const retired = new Set();
 let rolls = null;
 
 function roll() {
@@ -79,7 +81,8 @@ function clock(secs) {
 
 const stay = ref(null);
 let resetting = 0;
-let streakEnd = "";
+let started = 0;
+let heldAt = 0;
 
 function outcome(result) {
     return result.failed ? {value: `${result.failed} failed`, kind: "failed"} : {value: "passed", kind: "passed"};
@@ -159,13 +162,27 @@ function total() {
     return sum;
 }
 
+function retire() {
+    tally.forEach((_, at) => retired.add(at));
+    retired.add(heldAt);
+    tally.clear();
+}
+
 function endStreak() {
     clearTimeout(resetting);
     resetting = setTimeout(() => {
-        stay.value = null;
-        tally.clear();
+        retire();
         apply(total());
+        resetting = setTimeout(() => (stay.value = null), DELTA_LEAVE);
     }, HOLD_EDITS);
+}
+
+function counted(run) {
+    if (!run || !run.at || !run.changed || retired.has(run.at)) return false;
+    const was = tally.get(run.at);
+    if (was && was.added === run.changed.added && was.removed === run.changed.removed) return false;
+    tally.set(run.at, run.changed);
+    return true;
 }
 
 watch(
@@ -173,16 +190,25 @@ watch(
     (run) => {
         if (!run) return;
         const before = run.before;
-        [before, run].forEach((r) => r && r.at && r.changed && tally.set(r.at, r.changed));
-        const end = `${run.at}-${!!(before && before.changed)}`;
-        if (run.what && !editing(run) && tally.size && end !== streakEnd) {
-            streakEnd = end;
-            stay.value = before && before.changed ? lineFor(before) : null;
+        const late = counted(before);
+        counted(run);
+        if (run.what && run.at !== started) {
+            started = run.at;
+            clearTimeout(resetting);
+            stay.value = null;
+            if (!editing(run) && before && editing(before)) {
+                heldAt = before.at;
+                stay.value = lineFor(before);
+                endStreak();
+            } else if (!editing(run)) {
+                retire();
+            }
+        } else if (late && stay.value && before.at === heldAt) {
             endStreak();
         }
         apply(total());
     },
-    {immediate: true}
+    {immediate: true, deep: true}
 );
 
 const delta = computed(() => {
