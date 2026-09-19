@@ -57,7 +57,8 @@ def normalize(limits: dict, now: float) -> dict:
             continue
         if resets <= now:
             continue
-        windows.append({"key": key, "label": label(minutes), "used": round(used, 1), "minutes": minutes, "resets": resets})
+        remaining = max(0, min(100, 100 - used))
+        windows.append({"key": key, "label": label(minutes), "remaining": round(remaining, 1), "minutes": minutes, "resets": resets})
     return {"windows": windows}
 
 
