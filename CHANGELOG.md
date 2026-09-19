@@ -4,6 +4,14 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.14.0 — Plugins from a GitHub URL
+
+Paste a repository on the Plugins page and it installs into the project: a repo with a `.journal-plugin/` folder and a manifest says what it needs, what to run to set itself up, which events it listens to, which services it runs and which pages it shows. You see every command before anything runs, and it installs at that exact commit. A private repository is reached with the GitHub CLI's token, which is never stored or printed. A plugin hears the bus — each event is posted to it or piped to a command — and its answer can whisper to the agent, notify, raise a notice, file a to-do or hold the agent; a plugin that stops answering backs off and tells you once. Its services are owned by a keeper that dies with the session, so nothing is left running; `journal services` lists them, starts, stops, restarts one or reads its log. A plugin's pages show in the sidebar with the state of the service behind them.
+
+The first plugin is workflows: the visual workflow engine, running inside the journal, started by journal events.
+
+What to do about it: `journal upgrade`, then Plugins in the sidebar.
+
 ## 2.13.0 — Exact line counts, running subagents, and a refactor
 
 The status bar's line counts are exact: each step is a before/after diff of the tree, so a commit counts nothing and a deleted file counts every line. A run of edits totals and counts up; an editing, deleting or test command keeps its line while its inner steps run, lingers a second when replaced, and takes its count with it. The shell and subagent dropdowns list what is running now with how long, and a subagent opens its own session on the agent page. More test runners are recognised (dotnet, Maven, Gradle, RSpec, mix) with PHPUnit and .NET outcomes read. A picked answer holds five seconds with a bar and can be cancelled; the agent's replies show apart from comments; the quick-send dialog closes the moment you send. Lists read a per-type index. Features register their own commands.
