@@ -32,7 +32,7 @@ def release() -> bytes:
 
 
 CURSOR = re.compile(rb"\x1b\[(\d*)(?:;(\d*))?([Hfdr])")
-PARTIAL = re.compile(rb"\x1b(\[[\d;]*)?$")
+PARTIAL = re.compile(rb"\x1b(\[[\d;?]*|\][^\x07\x1b]*\x1b?)?$")
 
 
 class Translator:
