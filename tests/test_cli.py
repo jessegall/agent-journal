@@ -48,6 +48,7 @@ check("a bool-or-none parameter takes a word and keeps it a boolean, untouched w
 journal("plan", "rephrase", "1", "1", "--checkpoint", "false")
 check("the word false is False, not a truthy string", Plans(Record(root, "t")).load(1).phases[0]["checkpoint"], False)
 check("continue is the plan's word and only the user's", journal("plan", "continue", "1")[1], "! only the user can continue a plan: they do it in the viewer")
+journal("plan", "ready", "1")
 check("the user may, with --as", journal("--as", "user", "plan", "activate", "1")[0], 0)
 check("carry begins with the start block", journal("carry")[1].startswith("THE JOURNAL IS IN FORCE HERE"), True)
 check("open lists open work", journal("open")[1], "")

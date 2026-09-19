@@ -21,7 +21,9 @@ by_user = Plans(record, actor=USER)
 
 # WRITING ONE: phases in order, --before in the middle, rows in one phase each
 plan = by_agent.create("Port everything", goal="it all runs on v2")
-check("a new plan is a draft with no phases", (plan.data["status"], plan.data["phases"]), ("draft", []))
+check("a plan the agent creates is building, with no phases", (plan.data["status"], plan.data["phases"]), ("building", []))
+check("a plan the user creates is a draft", by_user.create("The user's own").data["status"], "draft")
+check("a plan still being built cannot be started", refused(lambda: by_user.activate(plan.n)), f"plan {plan.n} is building, not one that can become active")
 by_agent.phase(plan.n, "First", when="the first is done")
 by_agent.phase(plan.n, "Third", when="the third is done", checkpoint=True)
 by_agent.phase(plan.n, "Second", when="the second is done", before=2)
@@ -43,7 +45,7 @@ check("every phase filled: ready", by_agent.load(plan.n).data["status"], "ready"
 
 # WHO DOES WHAT: only the user activates and continues
 check("the agent cannot activate", refused(lambda: by_agent.activate(plan.n)), "only the user can activate a plan: they do it in the viewer")
-check("a draft holds its rows: next skips them", next(record), None)
+check("a plan not yet started holds its rows: next skips them", next(record), None)
 by_user.activate(plan.n)
 check("active: rows of the current phase are ready, in order; the others wait", [t.n for t in __import__("features.auto.next", fromlist=["ready"]).ready(record)], [1, 2])
 second = by_agent.create("Another")
@@ -115,8 +117,8 @@ docs.section(doc.n, "Phase 1 — The record", "files first")
 docs.section(doc.n, "Notes", "not a phase")
 docs.section(doc.n, "Phase 2: The engine", "then the loop")
 drafted = by_agent.from_doc(doc.n)
-check("from-doc: a draft with the doc's phases, goal and link", (drafted.data["status"], [p["title"] for p in drafted.data["phases"]], drafted.data["goal"], drafted.refs),
-      ("draft", ["The record", "The engine"], "what is true when done", [doc.ref]))
+check("from-doc: a plan being built with the doc's phases, goal and link", (drafted.data["status"], [p["title"] for p in drafted.data["phases"]], drafted.data["goal"], drafted.refs),
+      ("building", ["The record", "The engine"], "what is true when done", [doc.ref]))
 
 # THE WORDS: place answers to todos, resume to continue
 check("the type's own words", (by_agent.named("place"), by_agent.named("resume"), by_agent.named("complete")), ("todos", "continue", "acknowledge"))

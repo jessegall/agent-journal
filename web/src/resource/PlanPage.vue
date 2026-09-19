@@ -64,6 +64,10 @@ async function run(action, body = {}) {
             <template v-if="button">
                 <Btn kind="primary" @click="run(button[0])">{{ button[1] }}</Btn>
             </template>
+            <template v-else-if="status === 'building'">
+                <Btn kind="primary" disabled>Start</Btn>
+                <span class="note">The agent is still writing this plan. It can be started once it is ready.</span>
+            </template>
             <template v-if="!['done', 'abandoned'].includes(status)">
                 <Btn kind="danger" @click="run('abandon', {why: 'stopped from the viewer'})">Abandon</Btn>
             </template>
@@ -123,6 +127,13 @@ async function run(action, body = {}) {
 }
 .status.waiting {
     color: var(--blocking);
+}
+.status.building {
+    color: var(--accent-text);
+}
+.note {
+    color: var(--text-3);
+    font-size: 12px;
 }
 .grow {
     flex: 1;

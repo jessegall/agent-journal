@@ -154,14 +154,14 @@ class Works(Controller):
         return super().create(title, abstract, brief, **data)
 
 
-DRAFT, READY, ACTIVE, WAITING, DONE, ABANDONED = "draft", "ready", "active", "waiting", "done", "abandoned"
+BUILDING, DRAFT, READY, ACTIVE, WAITING, DONE, ABANDONED = "building", "draft", "ready", "active", "waiting", "done", "abandoned"
 
 
 class Plans(Controller):
     resource = types.Plan
 
     def create(self, title: str, abstract: str = "", brief: str = "", **data):
-        return super().create(title, abstract, brief, status=DRAFT, phases=[], current=1, **data)
+        return super().create(title, abstract, brief, status=BUILDING if self.actor == AGENT else DRAFT, phases=[], current=1, **data)
 
     def from_doc(self, doc: int):
         source = Docs(self.record, actor=self.actor).load(int(doc))
@@ -211,7 +211,7 @@ class Plans(Controller):
         for i, ph in enumerate(r.phases, 1):
             if not ph[PHASE.todos]:
                 raise Refused(f"plan {n} cannot be ready: phase {i} has no to-dos")
-        return self._status(r, READY, DRAFT)
+        return self._status(r, READY, BUILDING, DRAFT)
 
     def activate(self, n: int):
         self._user_only("activate")
@@ -227,7 +227,7 @@ class Plans(Controller):
         return self._status(r, ACTIVE, WAITING)
 
     def abandon(self, n: int, why: str = ""):
-        return self._status(self.load(n), ABANDONED, DRAFT, READY, ACTIVE, WAITING, why=why)
+        return self._status(self.load(n), ABANDONED, BUILDING, DRAFT, READY, ACTIVE, WAITING, why=why)
 
     def _status(self, r, to: str, *allowed: str, **event):
         if r.status not in allowed:
