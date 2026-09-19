@@ -3,6 +3,7 @@ from pathlib import Path
 
 from features import trigger
 from features.base import Recital, on
+from providers import PROVIDERS
 
 BLOCK = re.compile(r"\n?<!-- journal rules -->.*?<!-- /journal rules -->\n?", re.DOTALL)
 
@@ -19,8 +20,9 @@ class RulesFeature(Recital):
     @on("rule")
     def inject(self, event, record) -> None:
         rules = self.standing(record, "rule")
-        self._write(record.root.parent / "CLAUDE.md", [r for r in rules if r.injected])
-        self._write(record.root.parent / "AGENTS.md", [r for r in rules if r.injected_codex])
+        for cls in PROVIDERS.values():
+            if cls.briefing_file:
+                self._write(record.root.parent / cls.briefing_file, [r for r in rules if cls.name in r.targets])
 
     def _write(self, target: Path, injected: list) -> None:
         had = target.read_text() if target.is_file() else ""

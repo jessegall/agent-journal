@@ -5,10 +5,11 @@ from pathlib import Path
 
 from controllers.types import Agents, Works
 from features.base import Feature, on
+from providers import PROVIDERS
 from resources.base import SYSTEM, names
 from resources.shapes import CHANGE, COMMIT
 from resources.types import RUNNING
-from skills import LIBRARY, LINKED
+from skills import LIBRARY
 
 DELTA = names("edited", "created", "deleted", "added", "removed")
 STATE = names("hash", "lines")
@@ -31,7 +32,7 @@ def internal(record, project: Path) -> tuple[str, ...]:
                 roots.append(str(root.relative_to(project.resolve())))
             except ValueError:
                 continue
-    homes = (LIBRARY, *LINKED.values(), ".codex/skills")
+    homes = (LIBRARY, *(cls.skill_home for cls in PROVIDERS.values() if cls.skill_home))
     return (*(f"{r}/" for r in dict.fromkeys(roots)), *(f"{h}/journal" for h in homes), *(f"{h}/style-" for h in homes))
 
 

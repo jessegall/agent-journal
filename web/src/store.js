@@ -179,7 +179,9 @@ export async function boot() {
 
 export const open = (type) => rows(type).filter((r) => !r.completed);
 export const unreadByUser = (type) => open(type).filter((r) => !r.seen.includes("user"));
-export const agent = computed(() => [...store.agents].sort((a, b) => (b.data.at || 0) - (a.data.at || 0))[0] || null);
+export const agent = computed(
+    () => [...store.agents].filter((a) => !a.data.parent).sort((a, b) => (b.data.at || 0) - (a.data.at || 0))[0] || null
+);
 export const autoOn = computed(() => !!(store.settings && store.settings.features.auto));
 
 export function age(at) {

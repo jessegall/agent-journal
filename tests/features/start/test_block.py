@@ -5,6 +5,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 import features  # noqa: E402
 from controllers.types import Docs, Pins, Rules, Todos, Works  # noqa: E402
 from engine.queries import carry, start_block, status  # noqa: E402
+from engine.hooks import handle  # noqa: E402
 from providers import PROVIDERS  # noqa: E402
 from resources.base import AGENT, USER  # noqa: E402
 from tests.kit import check, done, fresh  # noqa: E402
@@ -29,9 +30,9 @@ check("a doc line carries its abstract", "    1  The engine  (the loop from A to
 
 # THE HOOK HANDS IT OVER at SessionStart, computing nothing
 provider = PROVIDERS["claude"]()
-out = provider.handle(record.root, record.env, {"hook_event_name": "SessionStart", "session_id": "s-1"})
+out = handle(provider, record.root, record.env, {"hook_event_name": "SessionStart", "session_id": "s-1"})
 check("SessionStart returns the file as context", out["hookSpecificOutput"]["additionalContext"] == f.read_text() and out["hookSpecificOutput"]["hookEventName"], "SessionStart")
-check("other events hand nothing over", provider.handle(record.root, record.env, {"hook_event_name": "Stop", "session_id": "s-1"}), {})
+check("other events hand nothing over", handle(provider, record.root, record.env, {"hook_event_name": "Stop", "session_id": "s-1"}), {})
 
 # STATUS AND CARRY are reads
 check("status counts what stands, by type", status(record).splitlines()[0], "JOURNAL  environment t")

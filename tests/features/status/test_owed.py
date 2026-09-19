@@ -5,7 +5,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 import features  # noqa: E402
 from controllers.types import Agents, Messages  # noqa: E402
-from providers.base import gate_file  # noqa: E402
+from engine.hooks import gate_file  # noqa: E402
 from resources.base import AGENT, USER  # noqa: E402
 from tests.features.kit import nudges, report  # noqa: E402
 from tests.kit import check, done, fresh  # noqa: E402

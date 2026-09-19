@@ -287,11 +287,15 @@ class Rules(Controller):
         return standing[0] if standing else notices.create(rule.title, about=rule.ref, link=f"#/{self.record.env}/rule/{n}", label="Open rule")
 
     def _injection(self, n: int, into: str, value: bool):
-        fields = {"claude": {"injected": value}, "codex": {"injected_codex": value},
-                  "both": {"injected": value, "injected_codex": value}}
-        if into not in fields:
-            raise Refused("a rule is injected into claude, codex or both")
-        return self.update(n, **fields[into])
+        from providers import PROVIDERS
+        names = tuple(PROVIDERS)
+        if into not in (*names, "both"):
+            raise Refused(f"a rule is injected into {', '.join(names)} or both")
+        rule = self.load(n)
+        selected = set(names if into == "both" else (into,))
+        targets = set(rule.targets)
+        targets = targets | selected if value else targets - selected
+        return self.update(n, targets=sorted(targets))
 
 
 class Reminders(Controller):
@@ -343,6 +347,10 @@ class Agents(Controller):
             if r.title == session:
                 return r
         return self.create(session, status="stopped")
+
+    def primary(self):
+        rows = [row for row in self.all() if not row.parent]
+        return max(rows, key=lambda row: float(row.at or 0), default=None)
 
 
 class Notifications(Controller):

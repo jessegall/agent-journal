@@ -11,4 +11,4 @@ class Law(Feature):
 
     @refuses
     def dispatch(self, provider, record, hook, session) -> str:
-        return refusal(provider.name, hook.tool)
+        return refusal(provider, hook.tool)

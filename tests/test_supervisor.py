@@ -27,7 +27,7 @@ check("the supervisor runs as a separate Python process", (command[0], Path(comm
 check("reload and stop use process exit codes", (terminal.RELOAD, terminal.STOP), (75, 76))
 
 
-class FakeDriver:
+class FakeDriver(drivers.Driver):
     def command(self, args):
         return ["fake", *args]
 

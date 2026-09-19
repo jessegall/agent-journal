@@ -4,7 +4,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 import features  # noqa: E402
 from controllers.types import Agents, Pins, Rules, Works  # noqa: E402
-from providers import PROVIDERS  # noqa: E402
+from features.base import held  # noqa: E402
 from resources.base import AGENT, SYSTEM  # noqa: E402
 from tests.features.kit import nudges as all_nudges, report  # noqa: E402
 from tests.kit import check, done, fresh  # noqa: E402
@@ -14,8 +14,7 @@ features.load()
 nudges = lambda r: [n for n in all_nudges(r) if n.startswith("context")]
 
 record = fresh()
-provider = PROVIDERS["claude"]()
-gate = lambda: provider.gate(record.root, record.env, "claude-1")
+gate = lambda: held(record, "claude-1")
 Works(record, actor=AGENT).create("something open")
 report(record, "working", "PostToolUse", context=30)
 check("under the first mark: no hold, nothing said", (gate(), nudges(record)), ("", []))

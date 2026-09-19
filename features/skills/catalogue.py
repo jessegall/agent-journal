@@ -10,9 +10,9 @@ from resources.base import SYSTEM, USER, names
 from resources.types import AgentRow
 
 SKILL = names("name", "description", "path", "changed", "loaded", "stale", "always", "size")
-from skills import LIBRARY, LINKED
+from skills import LIBRARY
 
-HOMES = (LIBRARY, *LINKED.values(), ".codex/skills")
+HOMES = (LIBRARY, *(cls.skill_home for cls in PROVIDERS.values() if cls.skill_home))
 
 
 def frontmatter(text: str) -> dict:
@@ -43,12 +43,7 @@ def loaded_at(agent) -> dict[str, float]:
     provider = PROVIDERS.get(agent.provider)
     if not provider or not agent.transcript:
         return {}
-    when = {}
-    for use in provider().tools(Path(agent.transcript)):
-        name = str((use.get("input") or {}).get("skill") or "")
-        if use.get("name") == "Skill" and name:
-            when[name] = float(use.get("at") or 0)
-    return when
+    return provider().loaded_skills(Path(agent.transcript))
 
 
 def chosen(record: Record) -> list[str]:
@@ -60,8 +55,7 @@ def chosen(record: Record) -> list[str]:
 def skills(record: Record, n: int = 0) -> list[dict]:
     always = set(chosen(record))
     agents = Agents(record, actor=SYSTEM)
-    rows = [a for a in agents.all() if a.status and a.status != "stopped"]
-    agent = agents.load(n) if n else (rows[-1] if rows else None)
+    agent = agents.load(n) if n else agents.primary()
     when = loaded_at(agent) if agent else {}
     out = []
     for s in catalogue(record.root.parent):

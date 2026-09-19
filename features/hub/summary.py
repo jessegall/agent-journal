@@ -20,8 +20,7 @@ def plan(p, todos: dict) -> dict:
 
 
 def environment(record: Record) -> dict:
-    agents = sorted(Agents(record, actor=SYSTEM).all(), key=lambda a: a.at or 0)
-    agent = agents[-1] if agents else None
+    agent = Agents(record, actor=SYSTEM).primary()
     works = [w for w in Works(record, actor=SYSTEM).all() if not w.deleted]
     current = next((w for w in works if not w.completed), None)
     last = works[-1] if works else None

@@ -1,5 +1,5 @@
 from controllers.types import Works
-from features.base import Feature, on, refuses
+from features.base import Feature, held, on, refuses
 from resources.base import SYSTEM
 
 
@@ -25,4 +25,4 @@ class Gate(Feature):
 
     @refuses
     def held(self, provider, record, hook, session) -> str:
-        return provider.gate(record.root, record.env, session) if provider.writes(hook) else ""
+        return held(record, session) if provider.writes(hook) else ""

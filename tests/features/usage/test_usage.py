@@ -8,7 +8,9 @@ import features
 from commands.http import dispatch
 from controllers.types import Agents
 from engine.record import Record
-from features.usage.usage import codex, options
+from features.usage.usage import observe, options
+from providers.claude import Claude
+from providers.codex import Codex
 from resources.base import SYSTEM
 from tests.kit import check, done
 
@@ -20,13 +22,15 @@ limits = {
     "secondary": {"usedPercent": 81, "windowDurationMins": 10080, "resetsAt": now + 7200},
 }
 transcript.write_text("bad json\n" + json.dumps({"type": "event_msg", "payload": {"type": "token_count", "rate_limits": limits}}) + "\n")
-check("Codex plan windows normalize snake and camel case fields", codex(transcript, now), {
+check("Codex owns plan-window extraction and normalizes both field cases", Codex().usage(transcript, now), {
     "windows": [
-        {"key": "primary", "label": "5h", "remaining": 57.6, "minutes": 300, "resets": now + 3600},
-        {"key": "secondary", "label": "7d", "remaining": 19.0, "minutes": 10080, "resets": now + 7200},
+        {"key": "primary", "label": "5h", "used": 42.4, "minutes": 300, "resets": now + 3600},
+        {"key": "secondary", "label": "7d", "used": 81.0, "minutes": 10080, "resets": now + 7200},
     ]
 })
-check("expired plan windows are not presented as current", codex(transcript, now + 8000), {"windows": []})
+check("providers report expired windows as facts", len(Codex().usage(transcript, now + 8000)["windows"]), 2)
+check("the usage feature decides expired windows are not current", observe("codex", str(transcript), {}, now + 8000), {"windows": []})
+check("providers without plan telemetry use the base fallback", Claude().usage(transcript), None)
 
 root = folder / ".journal"
 record = Record(root, "main")
@@ -42,7 +46,7 @@ limits["secondary"]["usedPercent"] = 82
 with transcript.open("a") as out:
     out.write(json.dumps({"type": "event_msg", "payload": {"type": "token_count", "rate_limits": limits}}) + "\n")
 agents.update(agent.n, status="working")
-check("one agent event refreshes both reported windows", [window["remaining"] for window in agents.load(agent.n).usage["windows"]], [56.6, 18.0])
+check("one agent event refreshes both reported windows", [window["used"] for window in agents.load(agent.n).usage["windows"]], [43.4, 82.0])
 
 reply = dispatch("GET", "/api/agent-usage/claude", root, {}, {})
 check("Claude explains its supported fallback without changing configuration", reply.body, options("claude"))
