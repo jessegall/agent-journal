@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.6.1 — A hook call four times faster
+
+A hook or a command now reads each kind of record once and remembers it until its next write, instead of re-reading every file for each feature that asks; the event log's last id is read from its tail. `journal speed` on this project: one hook call 536 → 137 ms, `journal start` 251 → 158 ms. The long-running viewer and engine read fresh as before.
+
+What to do about it: `journal upgrade`.
+
 ## 2.6.0 — Housekeeping and a speed measurement, for every journal
 
 The runtime folder no longer grows without end: the housekeeping feature, always on, cuts each terminal capture to its last 64 KB and each log to its last megabyte, and removes per-session files quiet for a week (`housekeeping.days`), every hour. `journal tidy` runs it now; on this project it took runtime/ from 181 MB to 8 MB. `journal speed` prints median milliseconds for record lists, journal commands, one hook call and the viewer API, on a scratch copy of the record, to compare before and after a change. The viewer tab now opens once the agent's session has started, after any startup or resume menu.
