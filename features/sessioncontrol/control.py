@@ -6,27 +6,28 @@ from providers import PROVIDERS
 from resources.base import Refused
 
 
-def options(provider: str) -> dict:
+def configured(provider: str, current_model: str = "") -> tuple[type, dict]:
     cls = PROVIDERS.get(provider)
-    configured = cls.controls if cls else {"groups": [], "note": "This CLI does not expose model controls."}
+    return cls, cls.control_options(current_model) if cls else {"groups": [], "note": "This CLI does not expose model controls."}
+
+
+def options(provider: str, current_model: str = "") -> dict:
+    _, controls = configured(provider, current_model)
     return {
         "provider": provider,
         "groups": [
-            {**group, "choices": [{k: v for k, v in choice.items() if k != "command"} for choice in group["choices"]]}
-            for group in configured["groups"]
+            {**group, "choices": [{k: v for k, v in choice.items() if k not in ("command", "commands")} for choice in group["choices"]]}
+            for group in controls["groups"]
         ],
-        "note": configured["note"],
+        "note": controls["note"],
     }
 
 
-def choice(provider: str, action: str, value: str) -> dict:
+def choice(provider: str, action: str, value: str, current_model: str = "") -> dict:
     cls = PROVIDERS.get(provider)
-    configured = cls.controls if cls else {}
-    group = next((group for group in configured.get("groups", []) if group["key"] == action), None)
-    selected = next((item for item in (group or {}).get("choices", []) if item["value"] == value), None)
-    if not selected:
+    if not cls:
         raise Refused(f"{provider or 'this agent'} does not support {action} {value!r}")
-    return {"action": action, **selected}
+    return cls.control_choice(action, value, current_model)
 
 
 def request(root: Path, env: str, session: str, action: str, value: str) -> dict:
@@ -36,6 +37,9 @@ def request(root: Path, env: str, session: str, action: str, value: str) -> dict
         raise Refused(f"session {session!r} is not online")
     if found["environment"] != env:
         raise Refused(f"session {session!r} belongs to environment {found['environment']!r}")
-    selected = choice(found["provider"], action, value)
-    queued = queue(root, session, selected["command"], selected["label"], provider=found["provider"], action=action, value=value)
+    selected = choice(found["provider"], action, value, found.get("model", ""))
+    commands = selected.get("commands") or [selected["command"]]
+    queued = None
+    for line in commands:
+        queued = queue(root, session, line, selected["label"], provider=found["provider"], action=action, value=value)
     return {k: v for k, v in queued.items() if k != "line"} | {"queued": True}

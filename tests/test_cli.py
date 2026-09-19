@@ -82,6 +82,7 @@ agents.update(row.n, provider="claude", transcript=str(transcript))
 check("search cites line numbers", journal("search", "header", session="s-1")[1], "claude:s-1       1  user    fix the header")
 check("user is the user's words", journal("user", session="s-1")[1], "     1  user    fix the header")
 check("conversation --back with no summary is everything", journal("conversation", session="s-1")[1].count("\n"), 1)
+check("client transcript formatting removes agent tags", "[!reply]" not in journal("conversation", session="s-1")[1], True)
 
 codex_transcript = project / "s-2.jsonl"
 codex_transcript.write_text(json.dumps({"type": "response_item", "payload": {"type": "message", "role": "user", "content": [{"type": "input_text", "text": "fix the header everywhere"}]}}) + "\n")
