@@ -14,6 +14,7 @@ from engine import band  # noqa: E402
 from engine.terminal import RELOAD, STOP, watched  # noqa: E402
 
 RELOAD_EVERY = 5.0
+TYPED_EVERY = 1.0
 
 
 def size() -> tuple[int, int]:
@@ -58,6 +59,8 @@ def run(root: Path, cwd: Path, env: str, agent: str, fd: int, session: str) -> i
     top = band.Band(root, env, session, root.resolve().parent.name)
     rows_below = band.Translator(rows)
     printed = root / "runtime" / f"printed-{session}"
+    typed = root / "runtime" / f"typed-{session}"
+    typed_at = 0.0
     printed.parent.mkdir(parents=True, exist_ok=True)
     out = printed.open("ab")
     driver = spawn_driver(root, cwd, env, agent, fd, session)
@@ -101,6 +104,11 @@ def run(root: Path, cwd: Path, env: str, agent: str, fd: int, session: str) -> i
                     result = STOP
                     break
                 os.write(fd, data)
+                if b"\r" in data or b"\n" in data:
+                    typed.unlink(missing_ok=True)
+                elif time.time() - typed_at >= TYPED_EVERY:
+                    typed.touch()
+                    typed_at = time.time()
             now = time.time()
             if now - last_check >= RELOAD_EVERY:
                 last_check = now

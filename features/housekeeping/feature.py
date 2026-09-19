@@ -14,7 +14,7 @@ class Housekeeping(Feature):
     DAYS = "days"
     days = 7
     tails = {"printed-*": 64 * 1024, "*.log": 1024 * 1024}
-    sessions = ("printed-*", "trigger-*.json", "gate-*.json", "seat-*.json", "session-*.json")
+    sessions = ("printed-*", "typed-*", "trigger-*.json", "gate-*.json", "seat-*.json", "session-*.json")
 
     @on("agent.updated")
     def sweep(self, event, record) -> None:

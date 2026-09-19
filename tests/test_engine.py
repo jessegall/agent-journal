@@ -1,4 +1,5 @@
 import json
+import os
 import sys
 import tempfile
 import time
@@ -280,5 +281,21 @@ engine_module.steps.running = lambda pid: "later"
 engine.step()
 check("a finished command gets no step written", Agents(record).by_session("fake-1").running.get("step"), "cat notes.md")
 engine_module.steps.running = real
+
+# THE USER TYPING IN THE TERMINAL holds the engine's typing, until the draft has sat untouched for a while
+root = Path(tempfile.mkdtemp()) / ".journal"
+record = Record(root, "main")
+driver = Fake(record)
+engine = Engine(record, driver)
+driver.report = None
+(root / "runtime").mkdir(parents=True, exist_ok=True)
+driver.typed.touch()
+check("a keystroke moments ago holds everything the engine would type", engine.typing(), "holding: the user is typing in the terminal")
+old = time.time() - 31
+os.utime(driver.typed, (old, old))
+cleared = []
+driver.clear_input = lambda: cleared.append(True)
+check("a draft untouched for half a minute no longer holds it, and is cleared before the engine types", (engine.typing(), cleared, driver.typed.exists()), ("", [True], False))
+check("after the user pressed Enter nothing holds and nothing is cleared", (engine.typing(), len(cleared)), ("", 1))
 
 done()
