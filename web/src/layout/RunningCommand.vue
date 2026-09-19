@@ -14,11 +14,9 @@ const pending = [];
 const rolling = ref(null);
 const counts = ref({added: 0, removed: 0});
 const showDelta = ref(false);
-const reserveDelta = ref(false);
 const frames = {added: 0, removed: 0};
 let rolls = null;
 let reveal = null;
-let release = null;
 
 function roll() {
     rolling.value = pending.shift() || null;
@@ -44,7 +42,6 @@ onUnmounted(() => {
     clearInterval(timer);
     if (rolls) clearTimeout(rolls);
     if (reveal) clearTimeout(reveal);
-    if (release) clearTimeout(release);
     Object.values(frames).forEach(cancelAnimationFrame);
 });
 
@@ -107,23 +104,14 @@ watch(
     [() => line.value && line.value.key, () => delta.value.length, () => !!data.value],
     ([, size, active]) => {
         if (reveal) clearTimeout(reveal);
-        if (release) clearTimeout(release);
         reveal = null;
-        release = null;
         if (!active || !size) {
             showDelta.value = false;
-            release = setTimeout(() => {
-                reserveDelta.value = false;
-                release = null;
-            }, 90);
             return;
         }
         if (showDelta.value) return;
         reveal = setTimeout(() => {
-            if (data.value && delta.value.length) {
-                reserveDelta.value = true;
-                showDelta.value = true;
-            }
+            if (data.value && delta.value.length) showDelta.value = true;
             reveal = null;
         }, 240);
     },
@@ -132,7 +120,7 @@ watch(
 </script>
 
 <template>
-    <span :class="['statusbar-running', {ending: !data, counting: reserveDelta}]">
+    <span :class="['statusbar-running', {ending: !data}]">
         <Transition name="roll">
             <span v-if="line" :key="line.key" :class="['statusbar-run-line', {done: line.done}]">
                 <span class="statusbar-run-text" :title="line.text">
@@ -146,9 +134,9 @@ watch(
             </span>
         </Transition>
         <Transition name="delta">
-            <span v-if="showDelta && delta.length" class="statusbar-run-delta">
+            <TransitionGroup v-if="showDelta && delta.length" tag="span" name="count" class="statusbar-run-delta">
                 <span v-for="d in delta" :key="d.kind" :class="['statusbar-run-count', d.kind]">{{ d.text }}</span>
-            </span>
+            </TransitionGroup>
         </Transition>
     </span>
 </template>
@@ -159,17 +147,13 @@ watch(
     min-width: 0;
     position: relative;
     display: grid;
-    grid-template-columns: minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1fr) auto;
     align-items: center;
     max-width: 44ch;
     margin-left: auto;
     font-size: 10.5px;
     color: var(--text-3);
     pointer-events: none;
-}
-
-.statusbar-running.counting {
-    padding-right: calc(7ch + 7px);
 }
 
 .statusbar-running > .statusbar-run-line {
@@ -219,15 +203,13 @@ watch(
 }
 
 .statusbar-run-delta {
-    position: absolute;
-    right: 0;
-    top: 0;
-    bottom: 0;
+    grid-area: 1 / 2;
     display: inline-flex;
     align-items: center;
     justify-content: flex-end;
-    gap: 5px;
-    width: 7ch;
+    max-width: 11ch;
+    margin-left: 7px;
+    overflow: hidden;
     white-space: nowrap;
     font-size: 8px;
     letter-spacing: 0.02em;
@@ -243,21 +225,50 @@ watch(
 }
 
 .statusbar-run-count {
-    min-width: 3ch;
+    display: inline-block;
+    max-width: 5ch;
+    overflow: hidden;
     text-align: right;
     font-variant-numeric: tabular-nums;
 }
 
+.statusbar-run-count + .statusbar-run-count {
+    margin-left: 5px;
+}
+
 .delta-enter-active {
-    transition: opacity 0.14s ease;
+    transition:
+        max-width 0.24s cubic-bezier(0.22, 0.7, 0.3, 1),
+        margin-left 0.24s cubic-bezier(0.22, 0.7, 0.3, 1),
+        opacity 0.14s ease;
 }
 
 .delta-leave-active {
-    transition: opacity 0.09s ease;
+    transition:
+        max-width 0.18s ease,
+        margin-left 0.18s ease,
+        opacity 0.09s ease;
 }
 
 .delta-enter-from,
 .delta-leave-to {
+    max-width: 0;
+    margin-left: 0;
+    opacity: 0;
+}
+
+.count-enter-active,
+.count-leave-active {
+    transition:
+        max-width 0.22s cubic-bezier(0.22, 0.7, 0.3, 1),
+        margin-left 0.22s cubic-bezier(0.22, 0.7, 0.3, 1),
+        opacity 0.14s ease;
+}
+
+.count-enter-from,
+.count-leave-to {
+    max-width: 0;
+    margin-left: 0;
     opacity: 0;
 }
 
