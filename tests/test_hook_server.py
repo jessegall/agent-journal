@@ -11,6 +11,7 @@ from urllib.request import Request, urlopen
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from controllers.types import Agents, Nudges  # noqa: E402
+from engine import bus  # noqa: E402
 from engine.hooks import gate_file  # noqa: E402
 from engine.sessions import ACTIVE_ENV  # noqa: E402
 from resources.base import SYSTEM  # noqa: E402
@@ -43,6 +44,18 @@ p = run_hook(record.root, "Stop")
 row = agents.by_session("srv-1")
 check("the hook's row is written by the server", (p.returncode, row.status, row.event), (0, "idle", "Stop"))
 check("the server's features heard the write", record.events()[-1].heard, True)
+
+# THE ANSWER COMES FIRST: a slow feature runs on the hook's write after the reply is sent
+ran = []
+bus.on("agent.updated", lambda e, r: time.sleep(1) or ran.append(e.id))
+before = record.last_event()
+began = time.time()
+run_hook(record.root, "PreToolUse")
+took = time.time() - began
+hooked = next(e.id for e in record.events(before) if e.type == "agent" and e.action == "updated")
+check("the hook is answered without waiting on a slow feature", took < 0.9, True)
+time.sleep(1.5)
+check("the feature still ran on the hook's own write, after the reply", hooked in ran, True)
 time.sleep(2.5)
 check("the server keeps its heartbeat fresh", time.time() - int((record.root / "runtime" / "heartbeat").read_text().split()[0]) < 3.5, True)
 check("the server knew the agent's parent process", bool(json.loads((record.root / "runtime" / "session-srv-1.json").read_text()).get("pid")), True)

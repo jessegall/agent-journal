@@ -47,6 +47,9 @@ class Handler(BaseHTTPRequestHandler):
             self.send_header("Content-Length", str(len(data)))
             self.end_headers()
             self.wfile.write(data)
+            self.wfile.flush()
+            if reply.after:
+                reply.after()
             return
         self.send_header("Cache-Control", "no-cache")
         self.end_headers()
