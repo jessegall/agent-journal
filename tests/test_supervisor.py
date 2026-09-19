@@ -3,6 +3,7 @@ import tempfile
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+import os  # noqa: E402
 import threading  # noqa: E402
 import time  # noqa: E402
 from engine import drivers, supervisor, terminal  # noqa: E402
@@ -25,11 +26,19 @@ check("a Python package change asks for a fresh supervisor", terminal.watched(ro
 calls = []
 original = terminal.subprocess.Popen
 terminal.subprocess.Popen = lambda command, **options: calls.append((command, options)) or "process"
-made = terminal.spawn_supervisor(root, Path("/tmp/project"), "main", "codex", 17, "codex-9")
+made = terminal.spawn_supervisor(root, Path("/tmp/project"), "main", "codex", 17, "codex-9", 21)
+terminal.spawn_supervisor(root, Path("/tmp/project"), "main", "codex", 17, "codex-9")
 terminal.subprocess.Popen = original
 command, options = calls[0]
-check("the replaceable supervisor receives the live PTY and session", (made, command[-6:], options["pass_fds"]),
-      ("process", [str(root), "/tmp/project", "main", "codex", "17", "codex-9"], (17,)))
+check("the replaceable supervisor receives the live PTY, the session and the owner's lifeline", (made, command[-7:], options["pass_fds"]),
+      ("process", [str(root), "/tmp/project", "main", "codex", "17", "codex-9", "21"], (17, 21)))
+check("without a lifeline only the PTY is passed", calls[1][1]["pass_fds"], (17,))
+
+read, write = terminal.lifeline()
+check("the lifeline's read end is inherited and its write end is not", (os.get_inheritable(read), os.get_inheritable(write)), (True, False))
+os.close(write)
+check("closing the write end leaves the read end at an end", os.read(read, 1), b"")
+os.close(read)
 check("the supervisor runs as a separate Python process", (command[0], Path(command[1]).name), (sys.executable, "supervisor.py"))
 check("reload and stop use process exit codes", (terminal.RELOAD, terminal.STOP), (75, 76))
 
@@ -71,7 +80,7 @@ children = iter(((0, 0), (41, 0)))
 originals = (terminal.spawn_agent, terminal.spawn_supervisor, terminal.child, terminal.termios.tcgetattr,
              terminal.os.write, terminal.os.close, drivers.DRIVERS.get("fake"))
 terminal.spawn_agent = lambda command, cwd: (41, 17)
-terminal.spawn_supervisor = lambda root, cwd, env, agent, fd, session: launched.append((fd, session)) or Coordinator(next(codes))
+terminal.spawn_supervisor = lambda root, cwd, env, agent, fd, session, lifeline=-1: launched.append((fd, session, lifeline)) or Coordinator(next(codes))
 terminal.child = lambda pid, block=False: next(children)
 terminal.termios.tcgetattr = no_terminal
 terminal.os.write = lambda fd, data: len(data)
@@ -85,6 +94,7 @@ if originals[6] is None:
     drivers.DRIVERS.pop("fake")
 else:
     drivers.DRIVERS["fake"] = originals[6]
-check("a reload keeps the agent session and PTY while replacing its supervisor", (result, launched), (0, [(17, "fake-41"), (17, "fake-41")]))
+check("a reload keeps the agent session and PTY while replacing its supervisor", (result, [(fd, session) for fd, session, _ in launched]), (0, [(17, "fake-41"), (17, "fake-41")]))
+check("and every supervisor holds the same lifeline, so services live across a reload", len({line for _, _, line in launched}), 1)
 
 done()
