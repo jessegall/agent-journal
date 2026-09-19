@@ -17,7 +17,9 @@ const commits = computed(() => props.resource.data.commits || []);
             <div class="trace-files">
                 <template v-for="f in files" :key="f.path">
                     <div class="trace-file" :title="f.path">
-                        <span class="trace-path">{{ f.path }}</span>
+                        <a class="trace-path" :href="`#/${route.env}/file?q=${encodeURIComponent(f.path)}`" :title="`Open ${f.path}`">
+                            {{ f.path }}
+                        </a>
                         <template v-if="f.created">
                             <span class="trace-new">new</span>
                         </template>
@@ -95,6 +97,11 @@ const commits = computed(() => props.resource.data.commits || []);
 .trace-path {
     font-family: ui-monospace, "SF Mono", Menlo, monospace;
     font-size: 11.5px;
+    text-decoration: none;
+}
+
+.trace-path:hover {
+    color: var(--accent-text);
 }
 
 .trace-new {
