@@ -15,7 +15,15 @@ const notice = ref("");
 const folded = ref(new Set());
 
 async function reload() {
-    rows.value = await api("GET", `/${route.value.env}/skills?agent=${agent.value ? agent.value.n : 0}`);
+    const got = await api("GET", `/${route.value.env}/skills?agent=${agent.value ? agent.value.n : 0}`);
+    if (!loaded.value) {
+        folded.value = new Set(
+            groups(got).flatMap((group) =>
+                group.skill ? [] : [group.key, ...group.items.filter((item) => !item.skill).map((item) => item.key)],
+            ),
+        );
+    }
+    rows.value = got;
     loaded.value = true;
 }
 onMounted(reload);
@@ -27,14 +35,15 @@ const skillGroups = computed(() => groups(rows.value));
 function groups(list) {
     const under = (prefix) => list.filter((s) => s.name === prefix || s.name.startsWith(`${prefix}-`));
     const seen = new Set();
-    const result = [];
+    const named = [];
+    const individual = [];
     for (const skill of list) {
         const top = skill.name.split("-")[0];
         if (seen.has(top)) continue;
         seen.add(top);
         const members = under(top);
         if (members.length < 2) {
-            result.push({key: skill.name, skill});
+            individual.push({key: skill.name, skill});
             continue;
         }
         const subgroups = new Set();
@@ -49,9 +58,9 @@ function groups(list) {
                 items.push({key: member.name, skill: member});
             }
         }
-        result.push({key: top, name: top, count: members.length, items});
+        named.push({key: top, name: top, count: members.length, items});
     }
-    return result;
+    return [...named, ...individual];
 }
 
 function fold(key) {
@@ -98,7 +107,11 @@ async function always(s, on) {
             <p class="empty">No skills are installed under .claude/skills or .codex/skills.</p>
         </template>
         <div v-if="rows.length" class="rows">
-            <template v-for="group in skillGroups" :key="group.key">
+            <div
+                v-for="group in skillGroups"
+                :key="group.key"
+                :class="['cluster', group.skill ? 'individual' : 'named']"
+            >
                 <SkillsRow
                     v-if="group.skill"
                     :skill="group.skill"
@@ -156,7 +169,7 @@ async function always(s, on) {
                         </template>
                     </template>
                 </template>
-            </template>
+            </div>
         </div>
     </section>
 </template>
@@ -192,6 +205,17 @@ async function always(s, on) {
     flex-direction: column;
     gap: 4px;
     padding: 18px 14px 0 22px;
+}
+
+.cluster {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.cluster.named + .cluster.named,
+.cluster.named + .cluster.individual {
+    margin-top: 12px;
 }
 
 .group {
