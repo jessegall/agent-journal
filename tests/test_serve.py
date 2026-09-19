@@ -74,6 +74,17 @@ check("an unknown action is refused", code, 400)
 code, up = call("GET", "/api/upstream")
 check("upstream answers with both versions and whether the newer one is ahead", (code, set(up) == {"installed", "latest", "newer"}, isinstance(up["newer"], bool)), (200, True, True))
 
+# SERVICES are listed, controlled and read over HTTP
+code, listed = call("GET", "/api/services")
+check("with no plugin installed, no service is listed", (code, listed), (200, []))
+code, said = call("POST", "/api/services/works.web", {"want": "down"})
+check("a service can be asked to stop", (code, said["want"], said["id"]), (200, "down", "works.web"))
+code, said = call("POST", "/api/services/works.web", {"want": "restart"})
+check("a restart is the same ask with a fresh nonce", (code, said["want"], said["nonce"] > 0), (200, "up", True))
+check("anything else is refused", call("POST", "/api/services/works.web", {"want": "sideways"})[0], 404)
+code, read = call("GET", "/api/services/works.web/log")
+check("a log that does not exist yet reads empty", (code, read), (200, {"id": "works.web", "log": ""}))
+
 # SETTINGS, SEARCH AND FILES
 code, got = call("GET", "/api/main/settings")
 check("settings say every feature's switch, the triggers and the keep days", (code, got["features"]["auto"], got["features"]["work"], got["triggers"], got["keep"]), (200, False, True, {}, {}))
