@@ -102,11 +102,12 @@ def specs(root: Path) -> list[dict]:
     for row in plugins(root):
         name = str(row.manifest.get("name") or "")
         where = folder(root, name)
-        env = environment(root, name, row.manifest, row.token)
-        ports = {}
+        kept = (row.settings or {}).get("ports") or {}
+        env = environment(root, name, row.manifest, row.token, kept)
+        ports = {f"ports.{service}": port for service, port in kept.items()}
         for service, given in (row.manifest.get("services") or {}).items():
             sid = f"{name}.{service}"
-            port, blocked = allocate(root, sid, given.get("port"), taken) if given.get("port") is not None else (0, "")
+            port, blocked = allocate(root, sid, kept.get(service) or given.get("port"), taken) if given.get("port") is not None else (0, "")
             if port:
                 taken.add(port)
                 ports[f"ports.{service}"] = port
