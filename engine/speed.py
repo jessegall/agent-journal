@@ -39,10 +39,18 @@ def cli(root: Path, env: str, argv: tuple, runs: int) -> float:
     return timed(lambda: subprocess.run(command, capture_output=True, timeout=120, env={**os.environ, "AGENT_JOURNAL_ACTIVE": ""}), runs)
 
 
-def hook(root: Path, runs: int) -> float:
+def hook(root: Path, env: str, runs: int, engine: bool = False) -> float:
     payload = json.dumps({"hook_event_name": "PreToolUse", "session_id": "speed-probe", "tool_name": "Read", "tool_input": {"file_path": "README.md"}})
     command = [sys.executable, str(HERE / "hook.py"), "claude", str(root)]
-    return timed(lambda: subprocess.run(command, input=payload, capture_output=True, text=True, timeout=120, cwd=root.parent, env={**os.environ, "AGENT_JOURNAL_ACTIVE": "1", "JOURNAL_ENV": "main"}), runs)
+    seat = root / "runtime" / "seat-speed-probe.json"
+
+    def once():
+        if engine:
+            seat.write_text(json.dumps({"at": time.time(), "env": env}))
+        subprocess.run(command, input=payload, capture_output=True, text=True, timeout=120, cwd=root.parent, env={**os.environ, "AGENT_JOURNAL_ACTIVE": "1", "JOURNAL_ENV": env})
+    took = timed(once, runs)
+    seat.unlink(missing_ok=True)
+    return took
 
 
 def viewer(root: Path) -> str:
@@ -63,7 +71,10 @@ def measure(live: Path, env: str, runs: int = 5, url: str = "", out: str = "") -
         rows[f"list {type_} ({count})"] = timed(lambda: CONTROLLERS[type_](record).all(), runs)
     for argv in COMMANDS:
         rows[f"journal {' '.join(argv)}"] = cli(scratch, env, argv, runs)
-    rows["hook PreToolUse"] = hook(scratch, runs)
+    for seat in (scratch / "runtime").glob("seat-*.json"):
+        seat.unlink()
+    rows["hook PreToolUse"] = hook(scratch, env, runs)
+    rows["hook PreToolUse, engine on"] = hook(scratch, env, runs, engine=True)
     base = url.rstrip("/") or viewer(live)
     for path in PATHS if base else ():
         address = base + path.format(env=env)

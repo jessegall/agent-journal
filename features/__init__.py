@@ -11,14 +11,14 @@ def names() -> list[str]:
     return sorted(p.name for p in HERE.iterdir() if (p / "feature.py").is_file())
 
 
-def load() -> list[str]:
+def load(listen: bool = True) -> list[str]:
     from features.base import REGISTRY
     for name in names():
         importlib.import_module(f"features.{name}.feature")
     for name, cls in REGISTRY.items():
         if name not in FEATURES:
             FEATURES[name] = cls()
-            FEATURES[name].register()
+            FEATURES[name].register(listen)
     return sorted(FEATURES)
 
 
