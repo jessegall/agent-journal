@@ -195,7 +195,7 @@ async function post(text, files) {
         const result = await sendMessage(route.value.env, {brief: body, about}, files);
         if (!result.queued) await reload();
     } finally {
-        pending.value = pending.value.filter((p) => p !== placeholder);
+        pending.value = pending.value.filter((p) => p.ref !== placeholder.ref);
         Object.values(placeholder.data.previews).forEach(URL.revokeObjectURL);
     }
     await nextTick();
