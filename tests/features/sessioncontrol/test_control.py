@@ -9,7 +9,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 from commands.http import dispatch
 from engine.drivers import Driver
 from engine.engine import Engine
-from engine.inputs import take
+from engine.inputs import queue, take
 from engine.record import Record
 from engine.sessions import Sessions
 from features.sessioncontrol.control import options, request
@@ -83,8 +83,8 @@ with patch.object(Codex, "catalog", classmethod(lambda cls, path=None: models)),
 
     listed = dispatch("GET", "/api/agent-controls/codex", root, {"model": configuration["model"]}, {})
     posted = dispatch("POST", "/api/main/agent/codex-live/control", root, {}, {"action": "model", "value": "gpt-5.6-luna"})
-    check("the viewer API lists and queues controls", (listed.code, listed.body["provider"], posted.code, take(root, "codex-live")["line"]), (200, "codex", 200, "/model"))
-    while take(root, "codex-live"):
+    check("the viewer API lists and queues controls", (listed.code, listed.body["provider"], posted.code, take(root, {"codex-live"})["line"]), (200, "codex", 200, "/model"))
+    while take(root, {"codex-live"}):
         pass
 
     queued = request(root, "main", "codex-live", "effort", "high")
@@ -92,8 +92,25 @@ with patch.object(Codex, "catalog", classmethod(lambda cls, path=None: models)),
     driver = FakeCodex(record)
     engine = Engine(record, driver)
     check("the live engine starts the native picker for a choice", (engine.control(), driver.sent), ("controlled: High", ["/model"]))
-    check("a control is consumed once per engine tick", (engine.control(), take(root, "codex-live")["line"]), ("", ""))
-    while take(root, "codex-live"):
+    check("a control is consumed once per engine tick", (engine.control(), take(root, {"codex-live"})["line"]), ("", ""))
+    while take(root, {"codex-live"}):
         pass
+
+    class Supervised(FakeCodex):
+        def __init__(self, record):
+            super().__init__(record)
+            self.session = "codex-4242"
+
+        def last_report(self):
+            return AgentRow(title="codex-live", data={"status": "idle", "event": "Stop", "provider": "codex", "at": time.time()})
+
+    request(root, "main", "codex-live", "effort", "high")
+    supervised = Supervised(record)
+    check("a control queued under the agent's own session reaches the engine that runs it under its terminal name",
+          (Engine(record, supervised).control(), supervised.sent), ("controlled: High", ["/model"]))
+    queue(root, "codex-live", "/model", "Old", provider="codex")
+    for path in (root / "runtime" / "inputs").glob("*.json"):
+        path.write_text(json.dumps({**json.loads(path.read_text()), "at": time.time() - 3600}))
+    check("a control left waiting for an hour is dropped, not typed late", (take(root, {"codex-live"}), list((root / "runtime" / "inputs").glob("*.json"))), ({}, []))
 
 done()
