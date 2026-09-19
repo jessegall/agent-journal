@@ -46,7 +46,7 @@ class WorkFeature(Feature):
         agent = self.agent_due(event, record)
         if not agent:
             return
-        for w in self.standing(record, "work")[:1]:
+        for w in self.standing(record, Works)[:1]:
             if w.sections:
                 self.nudge(record, agent, f"work {w.n} open")
             else:
@@ -55,7 +55,7 @@ class WorkFeature(Feature):
     @on("agent.updated")
     def edited(self, event, record) -> None:
         agent = self.agent(event, record)
-        work = self.standing(record, "work")[:1]
+        work = self.standing(record, Works)[:1]
         if not agent or not agent.wrote or not work:
             return
         edits = int(trigger.last(record, agent.title, self.name).get(self.EDITS) or 0) + 1

@@ -65,7 +65,7 @@ function follow(e) {
     overflow-x: auto;
     border: 1px solid var(--border);
     border-radius: 8px;
-    background: #121316;
+    background: var(--code-bg);
 }
 
 .md :deep(pre code) {

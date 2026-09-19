@@ -3,10 +3,10 @@ import time
 from argparse import _SubParsersAction
 
 from commands.cli import parser
-from controllers.types import CONTROLLERS, Questions, Todos
+from controllers.types import Pins, Questions, Reminders, Rules, Todos
 from resources.base import SYSTEM
 
-CLAIMS = ("rule", "pin", "reminder")
+CLAIMS = (Rules, Pins, Reminders)
 PATH = re.compile(r"(?<![\w/])((?:[\w.-]+/)+[\w.-]+\.\w+|[\w-]+\.(?:py|js|vue|md|json|css|html|sh))\b")
 COMMAND = re.compile(r"`journal\s+([a-z][a-z-]*)(?:\s+([a-z][a-z-]*))?[^`]*`|^\s*journal\s+([a-z][a-z-]*)(?:\s+([a-z][a-z-]*))?", re.MULTILINE)
 WAITING_DAYS = 7
@@ -40,15 +40,18 @@ def evidence(record) -> list[dict]:
     project = record.root.parent
     words = command_words()
     found = []
-    for type_ in CLAIMS:
-        for r in CONTROLLERS[type_](record, actor=SYSTEM).all():
+    for claims in CLAIMS:
+        controller = claims(record, actor=SYSTEM)
+        type_, close = controller.type, controller.named("complete")
+        for r in controller.all():
             if r.completed:
                 continue
             text = f"{r.title}\n{r.brief}"
+            retire = f"journal {type_} {r.n} {close} \"<why>\""
             for what in missing_paths(project, text):
-                found.append({"ref": r.ref, "title": r.title, "evidence": f"names {what}, which is gone", "retire": f"journal {type_} {r.n} {CONTROLLERS[type_].named(CONTROLLERS[type_], 'complete')} \"<why>\""})
+                found.append({"ref": r.ref, "title": r.title, "evidence": f"names {what}, which is gone", "retire": retire})
             for what in unknown_verbs(text, words):
-                found.append({"ref": r.ref, "title": r.title, "evidence": f"names {what}, which the CLI does not answer to", "retire": f"journal {type_} {r.n} {CONTROLLERS[type_].named(CONTROLLERS[type_], 'complete')} \"<why>\""})
+                found.append({"ref": r.ref, "title": r.title, "evidence": f"names {what}, which the CLI does not answer to", "retire": retire})
     questions = Questions(record, actor=SYSTEM)
     for t in Todos(record, actor=SYSTEM).all():
         if t.completed:
@@ -61,7 +64,7 @@ def evidence(record) -> list[dict]:
 
 def read(record) -> list:
     record.cleanup_read_at = time.time()
-    return [r for type_ in ("rule", "pin") for r in CONTROLLERS[type_](record, actor=SYSTEM).all() if not r.completed]
+    return [r for controller in (Rules, Pins) for r in controller(record, actor=SYSTEM).all() if not r.completed]
 
 
 def read_owed(record, days: int = 7) -> bool:

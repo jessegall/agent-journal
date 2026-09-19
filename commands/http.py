@@ -31,6 +31,7 @@ from engine.transcript import page
 from providers import PROVIDERS
 from resources.base import USER, Refused, titled
 from resources.types import Ask
+from engine.stored import write_json
 
 WEB = Path(__file__).resolve().parents[1] / "web" / "dist"
 JSON = "application/json"
@@ -317,9 +318,7 @@ def post_forget(req: Request) -> Reply:
 @route("POST", "/api/{env}/browser/driver")
 def post_driver(req: Request) -> Reply:
     from controllers.types import driver_file
-    f = driver_file(req.root, req.params["env"])
-    f.parent.mkdir(parents=True, exist_ok=True)
-    f.write_text(json.dumps({"on": bool(req.body.get("on")), "url": req.body.get("url", ""), "title": req.body.get("title", ""), "at": time.time()}))
+    write_json(driver_file(req.root, req.params["env"]), {"on": bool(req.body.get("on")), "url": req.body.get("url", ""), "title": req.body.get("title", ""), "at": time.time()})
     return Reply(200, {"ok": True})
 
 

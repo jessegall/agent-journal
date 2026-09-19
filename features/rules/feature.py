@@ -1,6 +1,7 @@
 import re
 from pathlib import Path
 
+from controllers.types import Rules
 from features import trigger
 from features.base import Recital, on
 
@@ -10,7 +11,7 @@ INSTRUCTION_FILES = ("AGENTS.md", "CLAUDE.md")
 
 class RulesFeature(Recital):
     name = "rules"
-    type = "rule"
+    controller = Rules
     said = "in force, read them"
     title_ = "Rules"
     abstract_ = "The rules said again at every tenth of the context, and the injected ones kept in AGENTS.md and CLAUDE.md"
@@ -19,7 +20,7 @@ class RulesFeature(Recital):
 
     @on("rule")
     def inject(self, event, record) -> None:
-        injected = [r for r in self.standing(record, "rule") if r.injected]
+        injected = [r for r in self.standing(record, Rules) if r.injected]
         for name in INSTRUCTION_FILES:
             self._write(record.root.parent / name, injected)
 

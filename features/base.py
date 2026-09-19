@@ -4,11 +4,12 @@ from functools import wraps
 from typing import ClassVar
 
 from controllers.base import COMMANDS
-from controllers.types import Agents, CONTROLLERS, Nudges
+from controllers.types import Agents, Nudges
 from engine import bus
 from features import trigger
 from engine.hooks import POLICIES, gate_file
 from resources.base import Refused, SYSTEM
+from engine.stored import read_json, write_json
 
 REGISTRY: dict[str, type] = {}
 
@@ -100,8 +101,8 @@ class Feature(ABC):
         agent = self.agent(event, record)
         return agent if self.due(record, agent) else None
 
-    def standing(self, record, type_: str) -> list:
-        return [r for r in CONTROLLERS[type_](record, actor=SYSTEM).all() if not r.completed]
+    def standing(self, record, controller: type) -> list:
+        return [r for r in controller(record, actor=SYSTEM).all() if not r.completed]
 
     def due(self, record, agent) -> bool:
         if not self.trigger or not trigger.due(record, agent, self.name, self.trigger):
@@ -112,13 +113,7 @@ class Feature(ABC):
     def hold(self, record, why: str) -> None:
         for agent in Agents(record, actor=SYSTEM).all():
             f = gate_file(record.root, record.env, agent.title)
-            f.parent.mkdir(parents=True, exist_ok=True)
-            try:
-                holds = json.loads(f.read_text())
-            except (OSError, ValueError):
-                holds = {}
-            holds[self.name] = why
-            f.write_text(json.dumps(holds))
+            write_json(f, {**read_json(f, {}), self.name: why})
 
     def release(self, record) -> None:
         self.hold(record, "")
@@ -135,12 +130,12 @@ class Feature(ABC):
 
 
 class Recital(Feature):
-    type = ""
+    controller: ClassVar[type]
     said = "standing, read them"
 
     @on("agent.updated")
     def repeat(self, event, record) -> None:
         agent = self.agent_due(event, record)
-        rows = self.standing(record, self.type) if agent else []
+        rows = self.standing(record, self.controller) if agent else []
         if rows:
-            self.nudge(record, agent, f"{self.plural(len(rows), self.type)} {self.said}", "; ".join(f"{r.n}. {r.title}" for r in rows))
+            self.nudge(record, agent, f"{self.plural(len(rows), self.controller.resource.type)} {self.said}", "; ".join(f"{r.n}. {r.title}" for r in rows))

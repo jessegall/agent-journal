@@ -10,6 +10,7 @@
     --border-3: #3a3d44;
     --line: #22252b;
     --bg-2: #101216;
+    --code-bg: #121316;
     --text: #e6e7ea;
     --text-2: #a9acb3;
     --text-3: #83868e;
@@ -21,6 +22,7 @@
     --open: #8b8e96;
     --blocking: #d9a441;
     --danger: #df8b7e;
+    --danger-soft: #d98c8c;
     --created: #6cc08b;
     --font: "Geist", -apple-system, "Segoe UI", system-ui, sans-serif;
 }

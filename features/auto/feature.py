@@ -1,3 +1,4 @@
+from controllers.types import Works
 from features import trigger
 from features.base import Feature, on, refuses
 from features.auto.next import next
@@ -21,7 +22,7 @@ class Auto(Feature):
         agent = self.agent_due(event, record)
         if not agent:
             return
-        if self.standing(record, "work"):
+        if self.standing(record, Works):
             return
         row = next(record)
         if row:

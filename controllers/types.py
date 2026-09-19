@@ -1,6 +1,4 @@
 import base64
-import json
-import shutil
 import subprocess
 import tempfile
 import time
@@ -14,6 +12,7 @@ from resources import types
 from resources.base import AGENT, SECTION, SYSTEM, Refused, check_title, names, titled
 from resources.shapes import LEVELS
 from resources.types import PHASE
+from engine.stored import read_json
 
 UPLOAD = names("name", "data")
 
@@ -497,11 +496,7 @@ class Asks(Controller):
     resource = types.Ask
 
     def driving(self) -> dict:
-        f = driver_file(self.record.root, self.record.env)
-        try:
-            return json.loads(f.read_text())
-        except (OSError, ValueError):
-            return {}
+        return read_json(driver_file(self.record.root, self.record.env), {})
 
     def ask(self, op: str, *args: str, wait: int = 30):
         if op not in OPS:

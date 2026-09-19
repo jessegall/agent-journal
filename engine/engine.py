@@ -1,4 +1,3 @@
-import json
 import subprocess
 import time
 from pathlib import Path
@@ -16,6 +15,7 @@ from engine.sessions import Sessions
 from providers import PROVIDERS
 from resources.base import AGENT, SYSTEM
 from resources.types import PRIORITY, RUNNING, TYPES
+from engine.stored import write_json
 
 TICK = 1.0
 SETTLE, STEP = 3.0, 0.1
@@ -261,11 +261,9 @@ class Engine:
         self.crew()
         self.step()
         last = self.agent.driver.last_report()
-        f = self.record.root / "runtime" / f"seat-{self.agent.driver.session}.json"
-        f.parent.mkdir(parents=True, exist_ok=True)
-        f.write_text(json.dumps({"at": time.time(), "agent": self.agent.driver.name, "state": self.agent.state(), "env": self.record.env,
+        write_json(self.record.root / "runtime" / f"seat-{self.agent.driver.session}.json", {"at": time.time(), "agent": self.agent.driver.name, "state": self.agent.state(), "env": self.record.env,
                                  "why": self.why, "printed": self.agent.driver.last_printed(),
-                                 "report": {"title": last.title, **last.data} if last else {}}))
+                                 "report": {"title": last.title, **last.data} if last else {}})
 
     def run(self) -> None:
         self.start()

@@ -1,6 +1,7 @@
 import fcntl
 import json
 import os
+import threading
 import time
 from contextlib import contextmanager
 from dataclasses import asdict
@@ -8,6 +9,7 @@ from pathlib import Path
 
 from engine import bus
 from resources.base import ACTIONS, ACTORS, PROJECT, Event
+from engine.stored import read_json, write_json
 
 
 class Setting:
@@ -45,6 +47,7 @@ class Record:
         self.home = self.root / "environments" / env
         self.home.mkdir(parents=True, exist_ok=True)
         self._held = 0
+        self._threads = threading.RLock()
         self.memo = {} if memo else None
 
     def folder(self, type: str, scope: str = "") -> Path:
@@ -54,21 +57,22 @@ class Record:
 
     @contextmanager
     def locked(self):
-        if self._held:
-            self._held += 1
-            try:
-                yield
-            finally:
-                self._held -= 1
-            return
-        with (self.home / ".lock").open("a+") as fh:
-            fcntl.flock(fh, fcntl.LOCK_EX)
-            self._held = 1
-            try:
-                yield
-            finally:
-                self._held = 0
-                fcntl.flock(fh, fcntl.LOCK_UN)
+        with self._threads:
+            if self._held:
+                self._held += 1
+                try:
+                    yield
+                finally:
+                    self._held -= 1
+                return
+            with (self.home / ".lock").open("a+") as fh:
+                fcntl.flock(fh, fcntl.LOCK_EX)
+                self._held = 1
+                try:
+                    yield
+                finally:
+                    self._held = 0
+                    fcntl.flock(fh, fcntl.LOCK_UN)
 
     def emit(self, type: str, n: int, action: str, actor: str, **data) -> Event:
         if action not in ACTIONS or actor not in ACTORS:
@@ -138,17 +142,9 @@ class Record:
         self.set_cursor_text(name, str(n))
 
     def setting(self, key: str, default=None):
-        f = self.home / "settings.json"
-        try:
-            return json.loads(f.read_text()).get(key, default)
-        except (OSError, ValueError):
-            return default
+        return read_json(self.home / "settings.json", {}).get(key, default)
 
     def set_setting(self, key: str, value) -> None:
         f = self.home / "settings.json"
-        try:
-            got = json.loads(f.read_text())
-        except (OSError, ValueError):
-            got = {}
-        got[key] = value
-        f.write_text(json.dumps(got, indent=2))
+        with self.locked():
+            write_json(f, {**read_json(f, {}), key: value}, indent=2)

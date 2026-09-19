@@ -11,6 +11,7 @@ from resources.base import SYSTEM, names
 from resources.shapes import CHANGE, COMMIT
 from resources.types import RUNNING
 from skills import LIBRARY
+from engine.stored import write_json
 
 DELTA = names("edited", "created", "deleted", "added", "removed")
 STATE = names("hash", "lines")
@@ -153,7 +154,7 @@ class Files(Feature):
         if agent.event != "PostToolUse":
             return
         works = Works(record, actor=SYSTEM)
-        for work in self.standing(record, "work")[:1]:
+        for work in self.standing(record, Works)[:1]:
             project = record.root.parent
             file = agent.file or ""
             only = str(Path(file).resolve().relative_to(project.resolve())) if file and file.startswith(str(project)) else ""
@@ -187,7 +188,7 @@ class Files(Feature):
             except (OSError, ValueError):
                 last = None
             now = blobs(record, project)
-            snapshot.write_text(json.dumps(now))
+            write_json(snapshot, now)
         return step(project, last if last is not None else now, now)
 
     def finished(self, running: dict) -> float:

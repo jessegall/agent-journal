@@ -31,6 +31,6 @@ const bars = computed(() => (props.value < 100 ? [1, 0.25, 0.25] : props.value =
 }
 
 .prio.hot {
-    color: #d98c8c;
+    color: var(--danger-soft);
 }
 </style>
