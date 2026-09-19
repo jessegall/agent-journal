@@ -14,7 +14,8 @@ const family = computed(() => ((data.value && data.value.model) || "").match(/op
 const name = computed(() => ({claude: "Claude Code", codex: "Codex"})[data.value && data.value.provider] || "agent");
 const skills = computed(() => (data.value && data.value.skills) || []);
 const usage = computed(() => (data.value && data.value.usage && data.value.usage.windows) || []);
-const usageLabel = computed(() => usage.value.length ? `${usage.value[0].label} ${Math.round(usage.value[0].used)}%` : "usage");
+const remaining = (window) => Math.max(0, Math.min(100, Number(window.remaining ?? 100 - window.used)));
+const usageLabel = computed(() => (usage.value.length ? `${Math.round(remaining(usage.value[0]))}%` : "usage"));
 const counts = computed(() => [
     {
         key: "skills",
@@ -148,12 +149,13 @@ onUnmounted(() => window.removeEventListener("click", away));
                 <button
                     v-if="['claude', 'codex'].includes(data.provider)"
                     type="button"
-                    :class="['agent-fact', 'agent-count', {open: open === 'usage'}]"
-                    :title="usage.length ? 'authenticated plan usage' : `Open ${name} usage`"
+                    :class="['agent-fact', 'agent-count', 'agent-usage', {open: open === 'usage'}]"
+                    :title="usage.length ? `${usageLabel} plan allowance remaining` : `Open ${name} usage`"
                     :aria-expanded="open === 'usage'"
                     @click="usageDetails"
                 >
                     <Icon name="activity" />
+                    <span v-if="usage.length" class="usage-gauge"><span :style="{width: `${remaining(usage[0])}%`}" /></span>
                     {{ usageLabel }}
                 </button>
                 <button
@@ -273,11 +275,11 @@ onUnmounted(() => window.removeEventListener("click", away));
                     </template>
                     <template #usage>
                         <p v-if="error" class="bar-error">{{ error }}</p>
-                        <p class="bar-current">Plan usage</p>
+                        <p class="bar-current">Plan allowance remaining</p>
                         <div v-for="window in usage" :key="window.key" class="bar-usage">
                             <span>{{ window.label }}</span>
-                            <strong>{{ Math.round(window.used) }}%</strong>
-                            <span class="bar-usage-track"><span :style="{width: `${Math.min(100, Math.max(0, window.used))}%`}" /></span>
+                            <strong>{{ Math.round(remaining(window)) }}%</strong>
+                            <span class="bar-usage-track"><span :style="{width: `${remaining(window)}%`}" /></span>
                             <small>{{ resetLabel(window) }}</small>
                         </div>
                         <p v-if="!usage.length && !error" class="bar-none">No current plan window has been reported here.</p>
@@ -484,6 +486,25 @@ onUnmounted(() => window.removeEventListener("click", away));
     padding: 7px 8px 5px;
     color: var(--text);
     font-size: 12px;
+}
+
+.agent-usage {
+    font-variant-numeric: tabular-nums;
+}
+
+.usage-gauge {
+    width: 18px;
+    height: 4px;
+    overflow: hidden;
+    border-radius: 2px;
+    background: var(--line);
+}
+
+.usage-gauge > span {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: var(--accent-text);
 }
 
 .bar-usage {
