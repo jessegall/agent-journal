@@ -19,7 +19,7 @@ console.log(JSON.stringify({
         {what: "git commit -m x"}, {what: "git log -3"}, {what: "grep -n foo bar.py"}, {what: "python3 - <<EOF"}, {what: "ls -la"},
         {what: "editing Turn.vue", tool: "Edit"}, {what: "playwright · browser evaluate", tool: "mcp__playwright__browser_evaluate"}, {what: "x", tool: "mcp__sentry__search"},
     ].map(kindOf),
-    variety: ["inbox", "journal", "tests", "build", "commit", "history", "code", "script", "service", "command", "reading", "editing", "writing", "searching", "web", "helper", "skill", "list", "browser", "tool", "bearings"].map((k) => new Set(Array.from({length: 40}, (_, i) => said(k, i))).size),
+    variety: ["inbox", "journal", "tests", "build", "commit", "history", "code", "script", "service", "command", "reading", "editing", "writing", "searching", "web", "helper", "skill", "list", "browser", "tool", "bearings", "idle"].map((k) => new Set(Array.from({length: 40}, (_, i) => said(k, i))).size),
     steady: [doingOf({what: "git log", at: 1789812345.6}), doingOf({what: "git log", at: 1789812345.6}), doingOf({what: "git log", at: 1789812346.6})],
     busyDone: lineOf(agent("working", {what: "ls", at: 1, done: 2}), [work(1, 12, 1)]),
     idleLast: lineOf(agent("idle"), [work(1, 12, 1)]),
@@ -35,7 +35,7 @@ check("commands and tools map to kinds", got["doing"], ["inbox", "journal", "tes
 check("every kind has at least ten wordings", all(n >= 10 for n in got["variety"]), True)
 check("the wording is steady while the same thing runs and varies between runs", (got["steady"][0] == got["steady"][1], got["steady"][0] != got["steady"][2]), (True, True))
 check("busy with nothing running is a bearings phrase, never the last work", got["busyDone"] in ("finding its bearings", "looking around", "thinking", "getting oriented", "working out what is next", "taking stock", "considering", "mulling it over", "reading the room", "gathering its thoughts"), True)
-check("idle remembers the last work; fresh idle waits", (got["idleLast"], got["idleFresh"]), ("last on to-do 12 · the thing", "waiting for you"))
+check("idle says one of its ten wordings, never the last work", ("the thing" in got["idleLast"], "the thing" in got["idleFresh"]), (False, False))
 check("no agent, no line", got["stopped"], "no agent is on this environment")
 check("states: declared work is working, undeclared is busy, idle is idle", got["states"], ["working", "busy", "idle"])
 done()
