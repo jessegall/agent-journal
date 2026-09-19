@@ -14,6 +14,7 @@ import SearchPage from "./pages/SearchPage.vue";
 import FilesPage from "./pages/FilesPage.vue";
 import CommitPage from "./pages/CommitPage.vue";
 import SkillsPage from "./pages/SkillsPage.vue";
+import HubPage from "./pages/HubPage.vue";
 import Reader from "./resource/Reader.vue";
 import Lightbox from "./kit/Lightbox.vue";
 import QuickMenu from "./layout/QuickMenu.vue";
@@ -22,7 +23,11 @@ import AwayCard from "./layout/AwayCard.vue";
 import UpgradeBand from "./layout/UpgradeBand.vue";
 
 const page = computed(() =>
-    !route.value.page ? "home" : ["settings", "search", "files", "commit", "skills"].includes(route.value.page) ? route.value.page : "index"
+    !route.value.page
+        ? "home"
+        : ["settings", "search", "files", "commit", "skills", "hub"].includes(route.value.page)
+          ? route.value.page
+          : "index"
 );
 const opened = computed(
     () => route.value.open || (route.value.n && page.value === "index" ? {type: route.value.page, n: route.value.n} : {type: "", n: 0})
@@ -90,6 +95,7 @@ watch(
                             <template #files><FilesPage /></template>
                             <template #commit><CommitPage /></template>
                             <template #skills><SkillsPage /></template>
+                            <template #hub><HubPage /></template>
                             <template #default><Index :type="route.page" /></template>
                         </SwitchCase>
                     </div>

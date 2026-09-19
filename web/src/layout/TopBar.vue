@@ -5,19 +5,8 @@ import RailNotes from "../pages/RailNotes.vue";
 import {route} from "../route.js";
 import {meta, store, unreadByUser} from "../store.js";
 
-const title = computed(() =>
-    !route.value.page
-        ? "Home"
-        : route.value.page === "settings"
-          ? "Settings"
-          : route.value.page === "search"
-            ? "Search"
-            : route.value.page === "files"
-              ? "Files"
-              : route.value.page === "commit"
-                ? "Commit"
-                : `${meta(route.value.page).title}s`
-);
+const PAGES = {settings: "Settings", search: "Search", files: "Files", commit: "Commit", skills: "Skills", hub: "Hub"};
+const title = computed(() => (!route.value.page ? "Home" : PAGES[route.value.page] || `${meta(route.value.page).title}s`));
 const waiting = computed(() => unreadByUser("notification").length);
 const drop = ref(false);
 const wrap = ref(null);
