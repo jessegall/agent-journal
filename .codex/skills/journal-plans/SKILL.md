@@ -9,4 +9,4 @@ A plan advances as its rows close: a phase completes, a checkpoint waits, the la
 
 Only the user activates a plan and continues it past a checkpoint; with the auto feature on, checkpoints are passed without waiting.
 
-It listens to: todo.completed. It speaks on the events it listens to. On by default; the viewer's Settings switches it per environment, and `triggers.plans` in the environment's settings tunes it.
+It listens to: agent.updated, todo.completed. It speaks on the events it listens to. On by default; the viewer's Settings switches it per environment, and `triggers.plans` in the environment's settings tunes it.

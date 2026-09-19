@@ -84,6 +84,20 @@ auto_todos.complete(a, "done")
 check("with auto on, a checkpoint phase complete moves straight on, and the event says it was passed",
       (quick.load(run.n).data["status"], quick.load(run.n).data["current"], [e for e in auto.events() if e.type == "plan"][-1].data["passed"]), ("active", 2, True))
 auto.features = {"auto": False}
+quick.phase(run.n, "Late gate", checkpoint=True)
+quick.phase(run.n, "Last")
+c, d = auto_todos.create("third").n, auto_todos.create("fourth").n
+quick.place(run.n, 3, [c])
+quick.place(run.n, 4, [d])
+auto_todos.complete(b, "done")
+auto_todos.complete(c, "done")
+check("with auto off the later checkpoint waits", quick.load(run.n).data["status"], "waiting")
+auto.features = {"auto": True}
+from tests.features.kit import idle  # noqa: E402
+from controllers.types import Agents  # noqa: E402
+Agents(auto, actor=AGENT).by_session("claude-1")
+idle(auto)
+check("auto switched on while a plan waits: the next agent activity continues it", (quick.load(run.n).data["status"], quick.load(run.n).data["current"]), ("active", 4))
 check("the event on an ordinary phase says no checkpoint was passed", [e for e in record.events() if e.type == "plan" and e.data.get("phase") == 1][-1].data["passed"], False)
 
 # ABANDON: a close with a reason; the rows stay open
