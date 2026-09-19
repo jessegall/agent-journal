@@ -31,8 +31,8 @@ Todos(record, actor=USER).create("the user's own row")
 Messages(record, actor=AGENT).reply(m.n, "on it")
 check("a row the user files, and the agent's reply, are not linked as what it became", len(messages.load(m.n).refs), 2)
 
-# CLOSED, IT LEAVES THE HANDS: the next row goes to the next message read, or nowhere
-Messages(record, actor=AGENT).complete(m.n, "filed")
+# CLOSED, IT LEAVES THE HANDS: the agent's reply answered it, so the next row goes to the next message read, or nowhere
+check("the agent's reply closed the message", bool(messages.load(m.n).completed), True)
 later = todos.create("after the message was closed")
 check("a closed message takes nothing more", later.ref in messages.load(m.n).refs, False)
 
