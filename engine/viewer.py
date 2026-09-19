@@ -1,4 +1,5 @@
 import json
+import os
 import re
 import socket
 import subprocess
@@ -12,8 +13,34 @@ PORTS = range(8420, 8440)
 URL = re.compile(r"http://127\.0\.0\.1:\d+/")
 
 
+def machine() -> Path:
+    return Path(os.environ.get("AGENT_JOURNAL_HOME") or Path.home() / ".journal") / "journals.json"
+
+
 def marker(root: Path) -> Path:
     return root / "runtime" / "viewer.json"
+
+
+def known() -> list[dict]:
+    try:
+        return [j for j in json.loads(machine().read_text()) if isinstance(j, dict) and j.get("root")]
+    except (OSError, ValueError):
+        return []
+
+
+def keep(entries: list[dict]) -> None:
+    target = machine()
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text(json.dumps(sorted(entries, key=lambda j: -j["at"])))
+
+
+def note(root: Path, url: str) -> None:
+    root = root.resolve()
+    keep([*(j for j in known() if j["root"] != str(root)), {"root": str(root), "project": root.parent.name, "url": url, "at": time.time()}])
+
+
+def forget(root: str) -> None:
+    keep([j for j in known() if j["root"] != root])
 
 
 def remember(root: Path, port: int) -> str:
@@ -21,6 +48,7 @@ def remember(root: Path, port: int) -> str:
     target = marker(root)
     target.parent.mkdir(parents=True, exist_ok=True)
     target.write_text(json.dumps({"url": url, "at": time.time()}))
+    note(root, url)
     return url
 
 

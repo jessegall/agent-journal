@@ -14,6 +14,11 @@ server = serve(root, 0)
 threading.Thread(target=server.serve_forever, daemon=True).start()
 url = f"http://127.0.0.1:{server.server_address[1]}/"
 check("the viewer records and answers at its actual URL", running(root), url)
+listed = viewer.known()
+check("the machine remembers every journal whose viewer ran, newest first", (listed[0]["root"], listed[0]["project"], listed[0]["url"]), (str(root.resolve()), root.parent.name, url))
+viewer.note(Path("/elsewhere/.journal"), "http://127.0.0.1:8421/")
+viewer.forget("/elsewhere/.journal")
+check("one entry per root, and forget drops one", [j["root"] for j in viewer.known()], [str(root.resolve())])
 opened = []
 check("a journal launcher reuses and opens the project's viewer", (ensure(root, root.parent, opened.append), opened), (url, [url]))
 server.shutdown()

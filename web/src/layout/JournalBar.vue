@@ -7,7 +7,7 @@ import {age} from "../store.js";
 import {capital, lineOf, planButton, stateOf} from "./statusline.js";
 
 const props = defineProps({journal: {type: Object, required: true}, open: Boolean});
-const emit = defineEmits(["toggle", "changed"]);
+const emit = defineEmits(["toggle", "changed", "forget"]);
 const error = ref("");
 
 async function manage(fn) {
@@ -71,11 +71,15 @@ const counts = (c) => [
 </script>
 
 <template>
-    <section :class="['jbar', {open, gone: journal.gone}]">
+    <section :class="['jbar', {open, gone: journal.gone || !journal.running}]">
         <button type="button" class="jbar-head" :aria-expanded="open" @click="emit('toggle')">
             <span :class="['jbar-dot', {live}]" />
             <span class="jbar-project">{{ journal.project }}</span>
-            <template v-if="!journal.summary">
+            <template v-if="!journal.running">
+                <span class="jbar-state">Stopped</span>
+                <span class="jbar-line">run journal claude in {{ journal.root.replace(/\/\.journal$/, "") }}</span>
+            </template>
+            <template v-else-if="!journal.summary">
                 <span class="jbar-line">this viewer is on {{ journal.version || "an older version" }} — the hub reads 2.3.0 and up</span>
             </template>
             <template v-else-if="reporting">
@@ -270,13 +274,41 @@ a.jbar-count:hover {
     color: var(--text-3);
 }
 
+.jbar-forget {
+    flex: none;
+    padding: 2px 8px;
+    border: 1px solid var(--border-2);
+    border-radius: 6px;
+    color: var(--text-2);
+    font-size: 11px;
+}
+
+.jbar-forget:hover {
+    background: var(--raised);
+    color: var(--text);
+}
+
 .jbar-fold {
     flex: none;
     color: var(--text-3);
     transition: transform 0.18s ease;
 }
 
-.jbar.open .jbar-fold {
+.jbar.open .jbar-forget {
+    flex: none;
+    padding: 2px 8px;
+    border: 1px solid var(--border-2);
+    border-radius: 6px;
+    color: var(--text-2);
+    font-size: 11px;
+}
+
+.jbar-forget:hover {
+    background: var(--raised);
+    color: var(--text);
+}
+
+.jbar-fold {
     transform: rotate(180deg);
 }
 

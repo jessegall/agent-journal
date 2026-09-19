@@ -32,17 +32,22 @@ function follow(e) {
     const [type, n] = pill.dataset.peek.split(":");
     peek(type, Number(n));
 }
+function worded(ref, word) {
+    return ref.type && meta(ref.type) ? `${meta(ref.type).title.toLowerCase()} ${ref.n}` : word;
+}
+
 const became = computed(() => {
-    const declared = props.turn.sections.flatMap((s) => s.body.split(/,\s*/).map((word) => ({part: s.title, word, ref: refOf(word)})));
+    const declared = props.turn.sections.flatMap((s) =>
+        s.body.split(/,\s*/).map((word) => ({part: s.title, word: worded(refOf(word), word), ref: refOf(word)}))
+    );
     const named = new Set(declared.map((b) => `${b.ref.type}:${b.ref.n}`));
     const linked = props.turn.refs
         .filter((ref) => !named.has(ref) && meta(ref.split(":")[0]))
-        .map((ref) => ({
-            part: "filed while this message was in hand",
-            word: `${meta(ref.split(":")[0]).title.toLowerCase()} ${ref.split(":")[1]}`,
-            ref: refOf(ref),
-        }));
-    return [...declared, ...linked].map((b) => ({...b, type: b.ref.type, n: b.ref.n}));
+        .map((ref) => ({part: "filed while this message was in hand", word: worded(refOf(ref), ref), ref: refOf(ref)}));
+    const seen = new Set();
+    return [...declared, ...linked]
+        .filter((b) => !b.ref.type || (!seen.has(`${b.ref.type}:${b.ref.n}`) && seen.add(`${b.ref.type}:${b.ref.n}`)))
+        .map((b) => ({...b, type: b.ref.type, n: b.ref.n}));
 });
 const faces = computed(() => {
     const seen = {};
