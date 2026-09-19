@@ -1,5 +1,6 @@
 <script setup>
 import {computed, onUnmounted, ref} from "vue";
+import {appoint, onlineAgents} from "../api.js";
 import Icon from "../kit/Icon.vue";
 import SwitchCase from "../kit/SwitchCase.vue";
 import {go, peek, route} from "../route.js";
@@ -25,6 +26,9 @@ const counts = computed(() => [
 ]);
 const skillCount = computed(() => counts.value[0]);
 const activityCounts = computed(() => counts.value.slice(1));
+const available = ref([]);
+const assigning = ref("");
+const error = ref("");
 const anchor = ref({left: 0, top: 0});
 function toggle(key, e) {
     open.value = open.value === key ? "" : key;
@@ -32,6 +36,29 @@ function toggle(key, e) {
     const wrap = bar.value.getBoundingClientRect();
     anchor.value = {left: Math.max(0, Math.min(box.left - wrap.left, wrap.width - 288)), top: box.bottom - wrap.top + 6};
 }
+async function appointments(e) {
+    toggle("appoint", e);
+    if (open.value !== "appoint") return;
+    error.value = "";
+    try {
+        available.value = await onlineAgents();
+    } catch (e) {
+        error.value = e.message;
+    }
+}
+async function choose(candidate) {
+    assigning.value = candidate.session;
+    error.value = "";
+    try {
+        await appoint(route.value.env, candidate.session);
+        open.value = "";
+    } catch (e) {
+        error.value = e.message;
+    } finally {
+        assigning.value = "";
+    }
+}
+const agentName = (provider) => ({claude: "Claude Code", codex: "Codex"})[provider] || "Agent";
 const bar = ref(null);
 function openSkills() {
     open.value = "";
@@ -48,7 +75,10 @@ onUnmounted(() => window.removeEventListener("click", away));
     <div ref="bar" class="agent-bar">
         <div class="agent-facts">
             <template v-if="!data">
-                <span class="agent-fact">No agent</span>
+                <button type="button" class="agent-fact-lead" :aria-expanded="open === 'appoint'" @click="appointments">
+                    <Icon name="agents" />
+                    Assign agent
+                </button>
             </template>
             <template v-else>
                 <button
@@ -128,8 +158,24 @@ onUnmounted(() => window.removeEventListener("click", away));
             </button>
         </div>
         <Transition name="drop">
-            <div v-if="open && data" class="bar-drop" :style="{left: `${anchor.left}px`, top: `${anchor.top}px`}">
+            <div v-if="open && (data || open === 'appoint')" class="bar-drop" :style="{left: `${anchor.left}px`, top: `${anchor.top}px`}">
                 <SwitchCase :value="open">
+                    <template #appoint>
+                        <p v-if="error" class="bar-error">{{ error }}</p>
+                        <p v-else-if="!available.length" class="bar-none">No online agents are available.</p>
+                        <button
+                            v-for="candidate in available"
+                            :key="candidate.session"
+                            type="button"
+                            class="bar-agent-choice"
+                            :disabled="assigning === candidate.session"
+                            @click="choose(candidate)"
+                        >
+                            <Icon name="agents" />
+                            <span>{{ agentName(candidate.provider) }}{{ candidate.model ? ` · ${candidate.model}` : "" }}</span>
+                            <small>{{ candidate.environment || "unassigned" }}</small>
+                        </button>
+                    </template>
                     <template #skills>
                         <p class="bar-none">Loaded in this window, newest last. A compaction empties it.</p>
                         <template v-if="!skills.length">
@@ -332,6 +378,39 @@ onUnmounted(() => window.removeEventListener("click", away));
     color: var(--text-3);
     font-size: 11.5px;
     line-height: 1.4;
+}
+
+.bar-error {
+    margin: 0;
+    padding: 6px 8px;
+    color: var(--danger);
+    font-size: 11.5px;
+}
+
+.bar-agent-choice {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 16px 1fr auto;
+    align-items: center;
+    gap: 7px;
+    padding: 7px 8px;
+    border: 0;
+    border-radius: 6px;
+    background: none;
+    color: var(--text-2);
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+.bar-agent-choice:hover {
+    background: var(--hover);
+    color: var(--text);
+}
+
+.bar-agent-choice small {
+    color: var(--text-3);
+    font-size: 10.5px;
 }
 
 .bar-item {
