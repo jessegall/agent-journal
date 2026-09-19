@@ -7,12 +7,17 @@ from engine import drivers, terminal  # noqa: E402
 from tests.kit import check, done  # noqa: E402
 
 root = Path(tempfile.mkdtemp())
-(root / "one.py").write_text("one\n")
-(root / "ignored.js").write_text("one\n")
+package = root / "src"
+package.mkdir()
+(package / "one.py").write_text("one\n")
+(package / "ignored.js").write_text("one\n")
 before = terminal.watched(root)
-(root / "ignored.js").write_text("two\n")
+(package / "ignored.js").write_text("two\n")
 check("the owner watches installed Python only", terminal.watched(root), before)
-(root / "two.py").write_text("two\n")
+(root / "plugins" / "workflows" / "vendor").mkdir(parents=True)
+(root / "plugins" / "workflows" / "vendor" / "tool.py").write_text("plugin\n")
+check("a plugin's Python outside the package is never watched", terminal.watched(root), before)
+(package / "two.py").write_text("two\n")
 check("a Python package change asks for a fresh supervisor", terminal.watched(root) != before, True)
 
 calls = []
