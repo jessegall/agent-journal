@@ -72,6 +72,22 @@ const line = computed(() => {
     return {key: text, text, tokens: gistTokens(text), clock: clock(secs), done: !!run.done};
 });
 
+const was = ref([]);
+watch(line, (now, before) => (was.value = before ? before.tokens : []));
+const shape = computed(() => {
+    const tokens = line.value ? line.value.tokens : [];
+    let i = 0;
+    while (i < tokens.length - 1 && i < was.value.length && tokens[i].value === was.value[i].value) i += 1;
+    return {
+        head: tokens.slice(0, i),
+        tail: tokens.slice(i),
+        key: tokens
+            .slice(i)
+            .map((t) => t.value)
+            .join(" "),
+    };
+});
+
 const target = computed(() => {
     const run = data.value && data.value.running;
     return run ? run.changed || {} : null;
@@ -145,11 +161,22 @@ watch(
 <template>
     <span :class="['statusbar-running', {ending: !data}]">
         <Transition name="roll">
-            <span v-if="line" :key="line.key" :class="['statusbar-run-line', {done: line.done}]">
+            <span v-if="line" :class="['statusbar-run-line', {done: line.done}]">
                 <span class="statusbar-run-text" :title="line.text">
-                    <span v-for="(token, i) in line.tokens" :key="`${i}-${token.value}`" :class="['statusbar-run-token', token.kind]">
+                    <span v-for="(token, i) in shape.head" :key="`${i}-${token.value}`" :class="['statusbar-run-token', token.kind]">
                         {{ token.value }}
                     </span>
+                    <Transition name="roll">
+                        <span :key="shape.key" :class="['statusbar-run-tail', {after: shape.head.length}]">
+                            <span
+                                v-for="(token, i) in shape.tail"
+                                :key="`${i}-${token.value}`"
+                                :class="['statusbar-run-token', token.kind]"
+                            >
+                                {{ token.value }}
+                            </span>
+                        </span>
+                    </Transition>
                 </span>
                 <span class="statusbar-running-slot">
                     <Transition name="clock">
@@ -197,6 +224,7 @@ watch(
 }
 
 .statusbar-run-text {
+    position: relative;
     flex: 0 1 auto;
     min-width: 0;
     display: inline-flex;
@@ -209,8 +237,20 @@ watch(
     flex: none;
 }
 
-.statusbar-run-token + .statusbar-run-token {
+.statusbar-run-token + .statusbar-run-token,
+.statusbar-run-tail.after {
     margin-left: 0.55em;
+}
+
+.statusbar-run-tail {
+    display: inline-flex;
+    align-items: baseline;
+    min-width: 0;
+    overflow: hidden;
+}
+
+.statusbar-run-tail.roll-leave-active {
+    position: absolute;
 }
 
 .statusbar-run-token.command {
