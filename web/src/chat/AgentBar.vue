@@ -1,5 +1,5 @@
 <script setup>
-import {computed, onUnmounted, ref} from "vue";
+import {computed, onUnmounted, ref, watch} from "vue";
 import {agentControls, agentUsage, appoint, controlAgent, forceAgent, onlineAgents} from "../api.js";
 import Icon from "../kit/Icon.vue";
 import SwitchCase from "../kit/SwitchCase.vue";
@@ -85,18 +85,21 @@ async function control(action, value) {
         controlling.value = "";
     }
 }
+const forced = ref("");
 async function pushThrough() {
-    controlling.value = "force";
+    forced.value = open.value;
     error.value = "";
     try {
         await forceAgent(route.value.env, agent.value.title);
-        open.value = "";
     } catch (e) {
+        forced.value = "";
         error.value = e.message;
-    } finally {
-        controlling.value = "";
     }
 }
+watch(
+    () => pending(forced.value),
+    (still) => still || (forced.value = "")
+);
 async function usageDetails(e) {
     toggle("usage", e);
     if (open.value !== "usage") return;
@@ -294,7 +297,14 @@ onUnmounted(() => window.removeEventListener("click", away));
                         <p class="bar-current">{{ current }}</p>
                         <div v-if="pending(open)" class="bar-waiting">
                             <span>{{ pending(open) }} is waiting for the agent to finish its turn.</span>
-                            <button type="button" class="bar-act" :disabled="Boolean(controlling)" @click="pushThrough">Force now</button>
+                            <button
+                                type="button"
+                                :class="['bar-act', {forcing: forced === open}]"
+                                :disabled="Boolean(controlling) || forced === open"
+                                @click="pushThrough"
+                            >
+                                {{ forced === open ? "Forcing" : "Force now" }}
+                            </button>
                         </div>
                         <template v-for="group in chosen" :key="group.key">
                             <p class="bar-label">{{ group.label }}</p>
@@ -721,5 +731,17 @@ onUnmounted(() => window.removeEventListener("click", away));
     margin: 4px 0 8px;
     font-size: 12px;
     color: var(--progress);
+}
+
+.bar-act.forcing::after {
+    content: "";
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    margin-left: 5px;
+    border: 1.5px solid currentColor;
+    border-right-color: transparent;
+    border-radius: 50%;
+    animation: waiting 0.8s linear infinite;
 }
 </style>
