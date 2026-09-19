@@ -1,6 +1,6 @@
 <script setup>
 import {computed, onUnmounted, ref} from "vue";
-import {agentControls, appoint, controlAgent, onlineAgents} from "../api.js";
+import {agentControls, agentUsage, appoint, controlAgent, onlineAgents} from "../api.js";
 import Icon from "../kit/Icon.vue";
 import SwitchCase from "../kit/SwitchCase.vue";
 import {go, peek, route} from "../route.js";
@@ -13,6 +13,8 @@ const data = computed(() => (agent.value && agent.value.data.status !== "stopped
 const family = computed(() => ((data.value && data.value.model) || "").match(/opus|sonnet|haiku|gpt[-\w.]*/i));
 const name = computed(() => ({claude: "Claude Code", codex: "Codex"})[data.value && data.value.provider] || "agent");
 const skills = computed(() => (data.value && data.value.skills) || []);
+const usage = computed(() => (data.value && data.value.usage && data.value.usage.windows) || []);
+const usageLabel = computed(() => usage.value.length ? `${usage.value[0].label} ${Math.round(usage.value[0].used)}%` : "usage");
 const counts = computed(() => [
     {
         key: "skills",
@@ -30,6 +32,7 @@ const available = ref([]);
 const assigning = ref("");
 const controls = ref({groups: [], note: ""});
 const controlling = ref("");
+const usageInfo = ref({note: ""});
 const error = ref("");
 const anchor = ref({left: 0, top: 0});
 function toggle(key, e) {
@@ -70,6 +73,21 @@ async function control(action, value) {
     } finally {
         controlling.value = "";
     }
+}
+async function usageDetails(e) {
+    toggle("usage", e);
+    if (open.value !== "usage") return;
+    error.value = "";
+    usageInfo.value = {note: "Loading usage…"};
+    try {
+        usageInfo.value = await agentUsage(data.value.provider);
+    } catch (e) {
+        error.value = e.message;
+    }
+}
+function resetLabel(window) {
+    const seconds = window.resets - Date.now() / 1000;
+    return seconds > 0 ? `resets in ${span(seconds)}` : "reset due";
 }
 async function choose(candidate) {
     assigning.value = candidate.session;
@@ -127,6 +145,17 @@ onUnmounted(() => window.removeEventListener("click", away));
                         {{ family[0].toLowerCase() }}
                     </button>
                 </template>
+                <button
+                    v-if="['claude', 'codex'].includes(data.provider)"
+                    type="button"
+                    :class="['agent-fact', 'agent-count', {open: open === 'usage'}]"
+                    :title="usage.length ? 'authenticated plan usage' : `Open ${name} usage`"
+                    :aria-expanded="open === 'usage'"
+                    @click="usageDetails"
+                >
+                    <Icon name="activity" />
+                    {{ usageLabel }}
+                </button>
                 <button
                     type="button"
                     :class="['agent-fact', 'agent-count', 'agent-skill', {none: !skillCount.n, open: open === skillCount.key}]"
@@ -241,6 +270,18 @@ onUnmounted(() => window.removeEventListener("click", away));
                             </div>
                         </template>
                         <p class="bar-none">{{ controls.note }}</p>
+                    </template>
+                    <template #usage>
+                        <p v-if="error" class="bar-error">{{ error }}</p>
+                        <p class="bar-current">Plan usage</p>
+                        <div v-for="window in usage" :key="window.key" class="bar-usage">
+                            <span>{{ window.label }}</span>
+                            <strong>{{ Math.round(window.used) }}%</strong>
+                            <span class="bar-usage-track"><span :style="{width: `${Math.min(100, Math.max(0, window.used))}%`}" /></span>
+                            <small>{{ resetLabel(window) }}</small>
+                        </div>
+                        <p v-if="!usage.length && !error" class="bar-none">No current plan window has been reported here.</p>
+                        <p class="bar-none">{{ usageInfo.note }}</p>
                     </template>
                     <template #shells>
                         <p class="bar-none">{{ data.shells || 0 }} background shell(s) were started in this session.</p>
@@ -443,6 +484,42 @@ onUnmounted(() => window.removeEventListener("click", away));
     padding: 7px 8px 5px;
     color: var(--text);
     font-size: 12px;
+}
+
+.bar-usage {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 4px 8px;
+    padding: 6px 8px;
+    color: var(--text-2);
+    font-size: 11.5px;
+}
+
+.bar-usage strong {
+    color: var(--text);
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+}
+
+.bar-usage-track {
+    grid-column: 1 / -1;
+    height: 4px;
+    overflow: hidden;
+    border-radius: 2px;
+    background: var(--line);
+}
+
+.bar-usage-track > span {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: var(--accent-text);
+}
+
+.bar-usage small {
+    grid-column: 1 / -1;
+    color: var(--text-3);
+    font-size: 10.5px;
 }
 
 .bar-label {

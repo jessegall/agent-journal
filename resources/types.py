@@ -174,6 +174,7 @@ class AgentRow(Shape, Resource):
     model = Field(default="")
     started = Field()
     context = Field(default=0)
+    usage = Field(default=dict)
     skills = Field(default=list)
     shells = Field(default=0)
     subagents = Field(default=0)
