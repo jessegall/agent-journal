@@ -161,4 +161,15 @@ check("the model the hook names can say [1m] too", used("claude-opus-5[1m]"), 10
 transcript.write_text(json.dumps({"message": {"usage": {"input_tokens": 400_000}}}) + "\n")
 check("more than 200,000 in use can only be a million window", used(), 40.0)
 
+# CLAUDE'S CURRENT EFFORT is the last one it confirmed in its transcript, even one kept for the session only
+said = lambda text, kind="user": json.dumps({"type": kind, "message": {"role": kind, "content": text}})
+transcript.write_text("\n".join([
+    said("<local-command-stdout>Set effort level to medium (saved as your default for new sessions): Balanced</local-command-stdout>"),
+    said("<local-command-stdout>Set effort level to max (this session only): Maximum</local-command-stdout>"),
+    said("I quoted <local-command-stdout>Set effort level to low in my own words", "assistant"),
+]) + "\n")
+(home / ".claude" / "settings.json").write_text(json.dumps({"effortLevel": "medium"}))
+check("the transcript's last confirmed effort wins over the settings, and the agent's own words never count", PROVIDERS["claude"]().effort(project, transcript), "max")
+check("with no confirmation in the transcript, the settings say", PROVIDERS["claude"]().effort(project, project / "none.jsonl"), "medium")
+
 done()

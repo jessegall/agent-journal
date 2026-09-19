@@ -1,4 +1,5 @@
 import json
+import re
 import shutil
 from pathlib import Path
 
@@ -9,6 +10,8 @@ from providers.payload import Hook
 
 ASKS = frozenset({"AskUserQuestion"})
 WINDOW, LONG_WINDOW, LONG_MARK = 200_000, 1_000_000, "[1m]"
+TAIL = 1_000_000
+EFFORT_SET = re.compile(r"<local-command-stdout>Set effort level to (\w+)")
 
 
 class Claude(Provider):
@@ -55,8 +58,27 @@ class Claude(Provider):
                 continue
         return found
 
-    def effort(self, project: Path) -> str:
-        return self.setting(project, "effortLevel")
+    def effort(self, project: Path, transcript: Path | None = None) -> str:
+        return self.chosen_effort(transcript) or self.setting(project, "effortLevel")
+
+    def chosen_effort(self, transcript: Path | None) -> str:
+        try:
+            with Path(transcript).open("rb") as source:
+                source.seek(0, 2)
+                source.seek(max(0, source.tell() - TAIL))
+                lines = source.read().decode(errors="replace").splitlines()
+        except (OSError, TypeError):
+            return ""
+        for raw in reversed(lines):
+            try:
+                row = json.loads(raw)
+            except ValueError:
+                continue
+            content = (row.get("message") or {}).get("content") if row.get("type") == "user" else None
+            found = EFFORT_SET.match(content) if isinstance(content, str) else None
+            if found:
+                return found.group(1)
+        return ""
 
     def window(self, hook: Hook, used: int) -> int:
         configured = self.setting(Path(hook.cwd or "."), "model")

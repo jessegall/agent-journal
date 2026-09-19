@@ -55,6 +55,11 @@ async function appointments(e) {
     }
 }
 const CONTROLS = ["model", "effort"];
+const WAITS_FOR = 600;
+const pending = (key) => {
+    const choice = data.value && data.value.pending && data.value.pending[key];
+    return choice && Date.now() / 1000 - choice.at < WAITS_FOR ? choice.value : "";
+};
 const chosen = computed(() => controls.value.groups.filter((group) => group.key === open.value));
 const current = computed(() => (open.value === "effort" ? `effort ${data.value.effort || "not reported"}` : data.value.model));
 async function modelControls(e, key) {
@@ -154,23 +159,27 @@ onUnmounted(() => window.removeEventListener("click", away));
                 <template v-if="family">
                     <button
                         type="button"
-                        :class="['agent-fact', 'agent-count', {open: open === 'model'}]"
-                        :title="`${data.model} — change model`"
+                        :class="['agent-fact', 'agent-count', {open: open === 'model', waiting: pending('model')}]"
+                        :title="pending('model') ? `${pending('model')} — waiting for the agent` : `${data.model} — change model`"
                         :aria-expanded="open === 'model'"
                         @click="modelControls($event, 'model')"
                     >
                         <Icon name="model" />
-                        {{ family[0].toLowerCase() }}
+                        {{ pending("model") || family[0].toLowerCase() }}
                     </button>
                     <button
                         type="button"
-                        :class="['agent-fact', 'agent-count', {open: open === 'effort'}]"
-                        :title="`reasoning effort${data.effort ? ` ${data.effort}` : ''} — change it`"
+                        :class="['agent-fact', 'agent-count', {open: open === 'effort', waiting: pending('effort')}]"
+                        :title="
+                            pending('effort')
+                                ? `effort ${pending('effort')} — waiting for the agent`
+                                : `reasoning effort${data.effort ? ` ${data.effort}` : ''} — change it`
+                        "
                         :aria-expanded="open === 'effort'"
                         @click="modelControls($event, 'effort')"
                     >
                         <Icon name="activity" />
-                        {{ data.effort || "effort" }}
+                        {{ pending("effort") || data.effort || "effort" }}
                     </button>
                 </template>
                 <button
@@ -665,5 +674,30 @@ onUnmounted(() => window.removeEventListener("click", away));
 .drop-leave-to {
     opacity: 0;
     transform: translateY(-4px);
+}
+
+.agent-fact.waiting {
+    color: var(--progress);
+}
+
+.agent-fact.waiting::after {
+    content: "";
+    width: 5px;
+    height: 5px;
+    margin-left: 2px;
+    border-radius: 50%;
+    background: currentColor;
+    animation: waiting 1.2s ease-in-out infinite;
+}
+
+@keyframes waiting {
+    0%,
+    100% {
+        opacity: 0.25;
+    }
+
+    50% {
+        opacity: 1;
+    }
 }
 </style>

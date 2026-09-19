@@ -7,6 +7,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 from commands.http import dispatch
+from controllers.types import Agents
 from engine.drivers import Driver
 from engine.engine import Engine
 from engine.inputs import queue, take
@@ -14,6 +15,7 @@ from engine.record import Record
 from engine.sessions import Sessions
 from features.sessioncontrol.control import options, request
 from providers.codex import Codex
+from resources.base import SYSTEM
 from resources.types import AgentRow
 from tests.kit import check, done, refused
 
@@ -88,10 +90,12 @@ with patch.object(Codex, "catalog", classmethod(lambda cls, path=None: models)),
         pass
 
     queued = request(root, "main", "codex-live", "effort", "high")
+    check("a queued choice shows as pending on the agent's row", Agents(record, actor=SYSTEM).by_session("codex-live").pending.get("effort", {}).get("value"), "high")
     check("a supported choice queues a control without exposing its CLI command", (queued["provider"], "line" in queued, queued["queued"]), ("codex", False, True))
     driver = FakeCodex(record)
     engine = Engine(record, driver)
     check("the live engine starts the native picker for a choice", (engine.control(), driver.sent), ("controlled: High", ["/model"]))
+    check("once typed, the choice is no longer pending", "effort" in Agents(record, actor=SYSTEM).by_session("codex-live").pending, False)
     check("a control is consumed once per engine tick", (engine.control(), take(root, {"codex-live"})["line"]), ("", ""))
     while take(root, {"codex-live"}):
         pass
