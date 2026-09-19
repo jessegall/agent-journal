@@ -48,7 +48,7 @@ async function run(method) {
                 <Btn small @click="emit('edit')">Edit</Btn>
             </template>
             <template v-for="m in offered" :key="m">
-                <Btn :kind="m === 'complete' ? 'primary' : 'danger'" small @click="m === 'complete' ? (prompt = m) : run(m)">
+                <Btn :kind="m === 'complete' ? (resource.type === 'todo' ? 'ghost' : 'primary') : 'danger'" small @click="m === 'complete' ? (prompt = m) : run(m)">
                     {{ word(resource.type, m) }}
                 </Btn>
             </template>
