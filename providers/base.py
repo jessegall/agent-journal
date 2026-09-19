@@ -22,7 +22,7 @@ EFFECTS = (
     ("writes", re.compile(WRITING_COMMANDS.pattern + r"|" + START + r"(?:perl\s+-\w*i|sed\s+-i)|\.write_text\(|\.write\(|open\([^)]*,\s*(?:mode=)?['\"][wa]b?\+?['\"]")),
     ("reads", re.compile(r"^\s*(?:cd \S+\s*(?:&&|;)\s*)?(?:cat|head|tail|less|grep|rg|sed -n|wc|ls|find|tree|stat)\b")),
 )
-JOURNAL_COMMAND = re.compile(r"(^|[;&|]\s*)(\S*journal(\.py)?)\s")
+JOURNAL_CALL = re.compile(r"(^|[;&|(]\s*|\$\()\S*journal(?:\.py)?\s(?:\"[^\"]*\"|'[^']*'|[^;&|)\n])*")
 
 
 class Provider(ABC):
@@ -69,7 +69,8 @@ class Provider(ABC):
     def writes(self, hook: Hook) -> bool:
         if hook.tool.name in WRITES:
             return self.in_project(hook.tool.file_path, hook.cwd)
-        return hook.tool.name == "Bash" and not JOURNAL_COMMAND.search(hook.command) and any(pattern.search(hook.command) for name, pattern in EFFECTS if name in CHANGING)
+        rest = self.without_journal(hook.command)
+        return hook.tool.name == "Bash" and any(pattern.search(rest) for name, pattern in EFFECTS if name in CHANGING)
 
     def in_project(self, path: str, cwd: str) -> bool:
         if not path or not cwd:
@@ -97,9 +98,11 @@ class Provider(ABC):
         return self.effect_of(hook.command) if hook.tool.name == "Bash" else ""
 
     def effect_of(self, command: str) -> str:
-        if JOURNAL_COMMAND.search(command):
-            return ""
-        return next((name for name, pattern in EFFECTS if pattern.search(command)), "")
+        rest = self.without_journal(command)
+        return next((name for name, pattern in EFFECTS if pattern.search(rest)), "") if rest.strip() else ""
+
+    def without_journal(self, command: str) -> str:
+        return JOURNAL_CALL.sub(r"\1", command)
 
     def context(self, hook: Hook) -> float | None:
         return None

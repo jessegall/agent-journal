@@ -120,12 +120,17 @@ effects = {
     "cd web && npm run build": "",
     "git status": "",
     "journal todo all": "",
+    'journal work log 5 "done > shipped" >/dev/null; python3 - <<\'EOF\'\nimport pathlib\npathlib.Path("a").write_text("x")\nEOF': "writes",
+    'journal message reply 3 "use a > b" >/dev/null': "",
+    'W=$(journal todo show 5 | grep work); journal work log $W "x"; git commit -m y': "writes",
 }
 claude = PROVIDERS["claude"]()
 check("each shell command is classified by what it does", {c: claude.effect(Hook.read({"hook_event_name": "PreToolUse", "tool_name": "Bash", "tool_input": {"command": c}})) for c in effects}, effects)
 read_only = "python3 - <<'EOF'\nprint(open('a').read())\nEOF"
 check("a heredoc that only reads is neither editing nor a write", (claude.effect(Hook.read({"hook_event_name": "PreToolUse", "tool_name": "Bash", "tool_input": {"command": read_only}})),
       claude.writes(Hook.read({"hook_event_name": "PostToolUse", "tool_name": "Bash", "tool_input": {"command": read_only}}))), ("", False))
+check("an edit next to a journal call is still a write, and journal calls alone never are",
+      [claude.writes(Hook.read({"hook_event_name": "PostToolUse", "tool_name": "Bash", "tool_input": {"command": c}})) for c in ('journal work log 5 "x"; git commit -m y', 'journal message reply 3 "a > b"', ".journal/journal todo add x")], [True, False, False])
 check("a command labelled editing is one whose line changes are counted", all(claude.writes(Hook.read({"hook_event_name": "PostToolUse", "tool_name": "Bash", "tool_input": {"command": c}})) for c, e in effects.items() if e in ("writes", "deletes")), True)
 check("a tool that is not the shell has no effect to report", claude.effect(Hook.read({"hook_event_name": "PreToolUse", "tool_name": "Read", "tool_input": {"file_path": "x"}})), "")
 shelled = claude.shell(AgentRow(n=1, title="s"), Hook.read({"hook_event_name": "PreToolUse", "tool_name": "Bash", "tool_input": {"command": "rm x", "description": "Remove x"}}))
