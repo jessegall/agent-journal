@@ -75,7 +75,13 @@ const hunks = computed(() =>
             <div class="files">
                 <template v-for="f in files" :key="f.path">
                     <div class="file">
-                        <span class="path">{{ f.path }}</span>
+                        <a
+                            class="path"
+                            :href="`#/${route.env}/file?q=${encodeURIComponent(f.path.replace(/\{.*=> (.*)\}/, '$1'))}`"
+                            :title="`Open ${f.path}`"
+                        >
+                            {{ f.path }}
+                        </a>
                         <span class="count">{{ f.count }}</span>
                         <span class="bar">
                             <span v-for="(kind, i) in blocks(f)" :key="i" :class="['block', kind]" />
@@ -159,6 +165,11 @@ const hunks = computed(() =>
     white-space: nowrap;
     font-family: ui-monospace, "SF Mono", Menlo, monospace;
     color: var(--text-2);
+    text-decoration: none;
+}
+
+.path:hover {
+    color: var(--accent-text);
 }
 
 .count {
