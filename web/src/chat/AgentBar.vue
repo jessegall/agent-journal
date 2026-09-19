@@ -54,9 +54,12 @@ async function appointments(e) {
         error.value = e.message;
     }
 }
-async function modelControls(e) {
-    toggle("model", e);
-    if (open.value !== "model") return;
+const CONTROLS = ["model", "effort"];
+const chosen = computed(() => controls.value.groups.filter((group) => group.key === open.value));
+const current = computed(() => (open.value === "effort" ? `effort ${data.value.effort || "not reported"}` : data.value.model));
+async function modelControls(e, key) {
+    toggle(key, e);
+    if (open.value !== key) return;
     error.value = "";
     controls.value = {groups: [], note: "Loading controls…"};
     try {
@@ -152,12 +155,22 @@ onUnmounted(() => window.removeEventListener("click", away));
                     <button
                         type="button"
                         :class="['agent-fact', 'agent-count', {open: open === 'model'}]"
-                        :title="`${data.model} — change model or reasoning effort`"
+                        :title="`${data.model} — change model`"
                         :aria-expanded="open === 'model'"
-                        @click="modelControls"
+                        @click="modelControls($event, 'model')"
                     >
                         <Icon name="model" />
                         {{ family[0].toLowerCase() }}
+                    </button>
+                    <button
+                        type="button"
+                        :class="['agent-fact', 'agent-count', {open: open === 'effort'}]"
+                        :title="`reasoning effort${data.effort ? ` ${data.effort}` : ''} — change it`"
+                        :aria-expanded="open === 'effort'"
+                        @click="modelControls($event, 'effort')"
+                    >
+                        <Icon name="activity" />
+                        {{ data.effort || "effort" }}
                     </button>
                 </template>
                 <button
@@ -223,7 +236,7 @@ onUnmounted(() => window.removeEventListener("click", away));
         </div>
         <Transition name="drop">
             <div v-if="open && (data || open === 'appoint')" class="bar-drop" :style="{left: `${anchor.left}px`, top: `${anchor.top}px`}">
-                <SwitchCase :value="open">
+                <SwitchCase :value="CONTROLS.includes(open) ? 'model' : open">
                     <template #appoint>
                         <p v-if="error" class="bar-error">{{ error }}</p>
                         <p v-else-if="!available.length" class="bar-none">No online agents are available.</p>
@@ -257,8 +270,8 @@ onUnmounted(() => window.removeEventListener("click", away));
                     </template>
                     <template #model>
                         <p v-if="error" class="bar-error">{{ error }}</p>
-                        <p class="bar-current">{{ data.model }}</p>
-                        <template v-for="group in controls.groups" :key="group.key">
+                        <p class="bar-current">{{ current }}</p>
+                        <template v-for="group in chosen" :key="group.key">
                             <p class="bar-label">{{ group.label }}</p>
                             <div class="bar-choices">
                                 <button
@@ -291,14 +304,16 @@ onUnmounted(() => window.removeEventListener("click", away));
                         <p class="bar-none">{{ data.shells || 0 }} background shell(s) were started in this session.</p>
                         <span v-for="row in shellRows" :key="row.cell" class="bar-item">
                             <Icon name="terminal" />
-                            {{ row.command }}<small>{{ row.cell }}</small>
+                            {{ row.command }}
+                            <small>{{ row.cell }}</small>
                         </span>
                     </template>
                     <template #default>
                         <p class="bar-none">{{ data.subagents || 0 }} subagent(s) were dispatched in this session.</p>
                         <span v-for="row in subagentRows" :key="`${row.task}-${row.model}`" class="bar-item">
                             <Icon name="agents" />
-                            {{ row.task }}<small v-if="row.model">{{ row.model }}</small>
+                            {{ row.task }}
+                            <small v-if="row.model">{{ row.model }}</small>
                         </span>
                     </template>
                 </SwitchCase>

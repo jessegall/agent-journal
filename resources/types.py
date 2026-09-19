@@ -173,6 +173,7 @@ class AgentRow(Shape, Resource):
     uses = Field(default=0)
     transcript = Field(default="")
     model = Field(default="")
+    effort = Field(default="")
     started = Field()
     context = Field(default=0)
     usage = Field(default=dict)

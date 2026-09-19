@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.10.1 — Model and effort, each its own picker
+
+The agent bar has a Model button and a separate Effort button that shows the current reasoning effort, read by each provider from its own settings; each opens only its own choices, and Fable is offered by its current id. A command the bar calls editing files is now always counted as a write, so its line changes show. The running step of a pipeline is its first command, not its last filter, and a message edited after sending no longer leaves a Sending ghost.
+
+What to do about it: `journal upgrade`, then restart `journal claude`.
+
 ## 2.10.0 — The status bar follows a chained command step by step
 
 The engine reads the agent's process tree once a second and names the command running right now under the agent's command shell, so a one-liner like `pytest && cat notes.md` shows running tests, then reading files, as each step starts; the agent's own servers are never mistaken for a step. A new command starts without the previous one's line counts. Also: reports can be deleted only once archived, no agent-side action wears the primary colour, the sidebar header carries the project name in its colour, and the prose-choices check needs a question to the user before it holds the agent.

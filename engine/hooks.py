@@ -85,7 +85,7 @@ def handle(provider, root: Path, env: str, raw: dict) -> dict:
                   **provider.session(hook.transcript), file=hook.tool.file_path,
                   wrote=hook.event == "PostToolUse" and provider.writes(hook), cwd=hook.cwd or row.cwd or "", at=time.time(),
                   provider=provider.name, uses=uses, transcript=str(hook.transcript or row.transcript or ""),
-                  model=provider.model(hook) or row.model or "", started=row.started or time.time(),
+                  model=provider.model(hook) or row.model or "", effort=provider.effort(Path(hook.cwd or root.parent)), started=row.started or time.time(),
                   context=row.context or 0 if context is None else context)
     if hook.event == "PreToolUse":
         why = next((reason for policy in POLICIES if (reason := policy(provider, record, hook, row.title))), "")

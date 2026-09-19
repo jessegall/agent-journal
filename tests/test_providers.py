@@ -1,4 +1,5 @@
 import json
+import os
 import sys
 import tempfile
 from pathlib import Path
@@ -121,8 +122,27 @@ effects = {
 }
 claude = PROVIDERS["claude"]()
 check("each shell command is classified by what it does", {c: claude.effect(Hook.read({"hook_event_name": "PreToolUse", "tool_name": "Bash", "tool_input": {"command": c}})) for c in effects}, effects)
+read_only = "python3 - <<'EOF'\nprint(open('a').read())\nEOF"
+check("a heredoc that only reads is neither editing nor a write", (claude.effect(Hook.read({"hook_event_name": "PreToolUse", "tool_name": "Bash", "tool_input": {"command": read_only}})),
+      claude.writes(Hook.read({"hook_event_name": "PostToolUse", "tool_name": "Bash", "tool_input": {"command": read_only}}))), ("", False))
+check("a command labelled editing is one whose line changes are counted", all(claude.writes(Hook.read({"hook_event_name": "PostToolUse", "tool_name": "Bash", "tool_input": {"command": c}})) for c, e in effects.items() if e in ("writes", "deletes")), True)
 check("a tool that is not the shell has no effect to report", claude.effect(Hook.read({"hook_event_name": "PreToolUse", "tool_name": "Read", "tool_input": {"file_path": "x"}})), "")
 shelled = claude.shell(AgentRow(n=1, title="s"), Hook.read({"hook_event_name": "PreToolUse", "tool_name": "Bash", "tool_input": {"command": "rm x", "description": "Remove x"}}))
 check("the effect rides on the running command and on its entry in the recent commands", (shelled["running"].get("effect"), shelled["commands"][-1].get("effect")), ("deletes", "deletes"))
+
+# THE CURRENT EFFORT is a fact each provider reads from its own settings; the project's settings win over the user's
+home = Path(tempfile.mkdtemp())
+project = Path(tempfile.mkdtemp())
+(home / ".claude").mkdir()
+(home / ".claude" / "settings.json").write_text(json.dumps({"effortLevel": "high"}))
+os.environ["HOME"] = str(home)
+check("Claude's effort comes from the user's settings", PROVIDERS["claude"]().effort(project), "high")
+(project / ".claude").mkdir()
+(project / ".claude" / "settings.local.json").write_text(json.dumps({"effortLevel": "low"}))
+check("a project's local setting wins", PROVIDERS["claude"]().effort(project), "low")
+(home / ".codex").mkdir()
+(home / ".codex" / "config.toml").write_text('model = "gpt-5"\nmodel_reasoning_effort = "medium"\n')
+check("Codex's effort comes from its config", PROVIDERS["codex"]().effort(project), "medium")
+check("Fable is offered by its current id", [c["value"] for g in PROVIDERS["claude"].controls["groups"] if g["key"] == "model" for c in g["choices"]][-1], "claude-fable-5-1")
 
 done()

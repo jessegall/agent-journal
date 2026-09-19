@@ -25,7 +25,7 @@ class Claude(Provider):
                     {"value": "opus", "label": "Opus", "command": "/model opus"},
                     {"value": "sonnet", "label": "Sonnet", "command": "/model sonnet"},
                     {"value": "haiku", "label": "Haiku", "command": "/model haiku"},
-                    {"value": "claude-fable-5", "label": "Fable", "command": "/model claude-fable-5"},
+                    {"value": "claude-fable-5-1", "label": "Fable", "command": "/model claude-fable-5-1"},
                 ],
             },
             {
@@ -44,6 +44,15 @@ class Claude(Provider):
         "note": "Changes apply immediately to this Claude Code session.",
     }
     usage_note = "Claude exposes plan limits only in its native /usage view; the journal does not replace your status-line configuration to scrape them."
+
+    def effort(self, project: Path) -> str:
+        found = ""
+        for settings in (Path.home() / ".claude" / "settings.json", project / ".claude" / "settings.json", project / ".claude" / "settings.local.json"):
+            try:
+                found = json.loads(settings.read_text()).get("effortLevel") or found
+            except (OSError, ValueError, AttributeError):
+                continue
+        return found
 
     def present(self, project: Path) -> bool:
         return (project / ".claude").is_dir() or shutil.which("claude") is not None

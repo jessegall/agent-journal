@@ -12,12 +12,13 @@ from resources.types import AgentRow, COMMAND, RUNNING
 WRITES = ("Edit", "Write", "MultiEdit", "NotebookEdit")
 WRITING_COMMANDS = re.compile(r"(^|[;&|]\s*)(rm|mv|cp|git (commit|push|rm|mv)|sed -i|tee|touch|mkdir|npm install|pip install)\b|(?<![\d&])>>?\s*(?!/dev/null|&)\S")
 RING = 12
+CHANGING = ("writes", "deletes")
 START = r"(?:^|[;&|(]\s*|\b(?:do|then)\s+)"
 EFFECTS = (
     ("tests", re.compile(START + r"(?:\S*python3?\s+(?:-m\s+)?\S*tests?/\S*|pytest|npm (?:run )?test|npx (?:vitest|jest)|vitest|jest|go test|cargo test|phpunit|php artisan test)\b")),
     ("tests", re.compile(r"(?=.*\btest_)(?=.*\bpython3?\s+\"?\$\w)", re.S)),
     ("deletes", re.compile(START + r"(?:rm|rmdir|unlink|git rm)\s")),
-    ("writes", re.compile(WRITING_COMMANDS.pattern + r"|" + START + r"(?:perl\s+-\w*i|sed\s+-i)|\.write_text\(|\.write\(|open\([^)]*['\"][wa]['\"]|<<-?\s*['\"]?EOF")),
+    ("writes", re.compile(WRITING_COMMANDS.pattern + r"|" + START + r"(?:perl\s+-\w*i|sed\s+-i)|\.write_text\(|\.write\(|open\([^)]*,\s*(?:mode=)?['\"][wa]b?\+?['\"]")),
     ("reads", re.compile(r"^\s*(?:cd \S+\s*(?:&&|;)\s*)?(?:cat|head|tail|less|grep|rg|sed -n|wc|ls|find|tree|stat)\b")),
 )
 JOURNAL_COMMAND = re.compile(r"(^|[;&|]\s*)(\S*journal(\.py)?)\s")
@@ -67,7 +68,7 @@ class Provider(ABC):
     def writes(self, hook: Hook) -> bool:
         if hook.tool.name in WRITES:
             return True
-        return hook.tool.name == "Bash" and not JOURNAL_COMMAND.search(hook.command) and bool(WRITING_COMMANDS.search(hook.command))
+        return hook.tool.name == "Bash" and not JOURNAL_COMMAND.search(hook.command) and any(pattern.search(hook.command) for name, pattern in EFFECTS if name in CHANGING)
 
     def shell(self, row, hook: Hook) -> dict:
         doing = hook.tool.doing.strip()[:400]
@@ -109,6 +110,9 @@ class Provider(ABC):
 
     def model(self, hook: Hook) -> str:
         return hook.model
+
+    def effort(self, project: Path) -> str:
+        return ""
 
     def transcript(self, path: Path) -> list:
         turns = []
