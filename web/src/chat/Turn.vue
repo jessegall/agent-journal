@@ -424,7 +424,7 @@ button.thread-pill:hover {
     margin: 0;
     white-space: pre-wrap;
     overflow-wrap: anywhere;
-    text-wrap: balance;
+    text-wrap: pretty;
 }
 
 .thread-text :deep(p + p) {
