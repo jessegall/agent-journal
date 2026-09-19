@@ -76,6 +76,7 @@ def serve(root: Path, port: int = 8430) -> ThreadingHTTPServer:
     Handler.root = root
     migrations.run(root)
     features.load()
+    features.FEATURES["updates"].announce(root)
     server = ThreadingHTTPServer(("127.0.0.1", port), Handler)
     remember(root, server.server_address[1])
     heartbeat(root, server.server_address[1])
