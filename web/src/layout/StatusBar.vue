@@ -6,7 +6,7 @@ import RunningCommand from "./RunningCommand.vue";
 import Switch from "../kit/Switch.vue";
 import {go, peek, route} from "../route.js";
 import {agent, autoOn, rows} from "../store.js";
-import {currentWork, doneOf, lineOf, phaseOf, planButton, queued, shownPlans, stateOf, wordOf} from "./statusline.js";
+import {currentWork, doneOf, lineOf, phaseOf, planButton, queued, rowsOf, shownPlans, stateOf, wordOf} from "./statusline.js";
 
 const current = computed(() => currentWork(rows("work")));
 const state = computed(() => stateOf(agent.value, rows("work")));
@@ -78,7 +78,7 @@ async function runBar(p) {
                 <span class="planbar-title">{{ p.title }}</span>
                 <span class="planbar-phase">{{ phaseOf(p) }}</span>
                 <span class="planbar-track" role="progressbar">
-                    <span :style="{width: `${(100 * done(p)) / Math.max(1, p.data.phases.length)}%`}" />
+                    <span :style="{width: `${(100 * done(p)) / Math.max(1, rowsOf(p).length)}%`}" />
                 </span>
             </a>
             <template v-if="planButton(p)">
