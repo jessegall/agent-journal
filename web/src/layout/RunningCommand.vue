@@ -79,18 +79,14 @@ function clock(secs) {
 }
 
 const stay = ref(null);
-let shown = null;
 let staying = 0;
+let held = 0;
 
 function outcome(result) {
     return result.failed ? {value: `${result.failed} failed`, kind: "failed"} : {value: "passed", kind: "passed"};
 }
 
-const line = computed(() => {
-    ticks.value;
-    if (stay.value) return stay.value;
-    if (rolling.value) return rolling.value;
-    const run = data.value && data.value.running;
+function lineFor(run) {
     if (!run || !run.what) return null;
     const step = run.step && !run.done ? {what: run.step, tool: "Bash", effect: run.step_effect} : null;
     const now = step && said(step).length ? step : run;
@@ -105,8 +101,14 @@ const line = computed(() => {
         tokens: [...tokensOf(now, text), ...(result ? [result] : [])],
         clock: clock(secs),
         done: !!run.done,
-        result: !!result,
     };
+}
+
+const line = computed(() => {
+    ticks.value;
+    if (stay.value) return stay.value;
+    if (rolling.value) return rolling.value;
+    return lineFor(data.value && data.value.running);
 });
 
 const text = ref(null);
@@ -145,15 +147,16 @@ watch(
     }
 );
 
-watch(line, (now) => {
-    if (!stay.value) shown = now;
-});
-
 watch(
-    () => data.value && data.value.running && data.value.running.at,
-    (at, was) => {
-        if (!was || at === was || !shown || !(measured.added || measured.removed || shown.result)) return;
-        stay.value = shown;
+    () => {
+        const before = data.value && data.value.running && data.value.running.before;
+        return before && (before.changed || before.result) ? before : null;
+    },
+    (before) => {
+        if (!before || before.at === held) return;
+        held = before.at;
+        stay.value = lineFor(before);
+        apply(before.changed || {});
         clearTimeout(staying);
         staying = setTimeout(() => {
             stay.value = null;
