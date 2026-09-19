@@ -94,31 +94,6 @@ watch(() => route.value.q, load);
     color: var(--text-2);
 }
 
-.text :deep(.tok-comment) {
-    color: var(--text-4);
-    font-style: italic;
-}
-
-.text :deep(.tok-string) {
-    color: #a8d08d;
-}
-
-.text :deep(.tok-number) {
-    color: #e0b26a;
-}
-
-.text :deep(.tok-keyword) {
-    color: var(--accent-text);
-}
-
-.text :deep(.tok-type) {
-    color: #7fc6d9;
-}
-
-.text :deep(.tok-property) {
-    color: #c8a8e8;
-}
-
 .n {
     display: inline-block;
     width: 3.5em;

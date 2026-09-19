@@ -75,3 +75,28 @@ textarea {
 * {
     scrollbar-width: none;
 }
+
+.tok-comment {
+    color: var(--text-4);
+    font-style: italic;
+}
+
+.tok-string {
+    color: #a8d08d;
+}
+
+.tok-number {
+    color: #e0b26a;
+}
+
+.tok-keyword {
+    color: var(--accent-text);
+}
+
+.tok-type {
+    color: #7fc6d9;
+}
+
+.tok-property {
+    color: #c8a8e8;
+}

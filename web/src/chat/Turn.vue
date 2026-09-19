@@ -382,6 +382,25 @@ button.thread-pill:hover {
     font-size: 0.92em;
 }
 
+.thread-text :deep(pre.chat-code) {
+    margin: 6px 0;
+    padding: 9px 11px;
+    overflow-x: auto;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: #121316;
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: 12px;
+    line-height: 1.5;
+    white-space: pre;
+}
+
+.thread-text :deep(pre.chat-code code) {
+    padding: 0;
+    background: none;
+    font-size: inherit;
+}
+
 .thread-text :deep(a) {
     color: var(--accent-text);
 }
