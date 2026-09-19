@@ -16,6 +16,8 @@ console.log(JSON.stringify({
     loop: gists(`for f in tests/test_*.py tests/features/*/test_*.py; do echo "$f"; perl -e 'alarm 60; exec @ARGV' python3 "$f" || exit 1; done`),
     tokens: gistTokens("git commit file.txt").map((token) => token.kind),
     slash: gists("ls ~/projects/ 2>/dev/null | head"),
+    inbox: gists(`cd /Users/x/projects/workflows; N=$(journal message unread | awk '{print $1}' | head -1); echo "msg $N"; journal message read $N | sed -n '/^---$/,$p' | grep -v '^---$' | tail -n +14 | head -20; journal message files $N 2>/dev/null | head`),
+    leadingCd: [gists("cd web && npm run build"), gists("cd web; npm test"), gists("cd /x")],
     escaped: gists('grep -n "class=\\\\"head\\\\|\\\\.title\\\\|abstract" a.vue | head -3; cat b.vue'),
     wrapped: [gists("env -u AGENT_JOURNAL_ACTIVE python3 tests/test_install.py"), gists("timeout 60 npm test"), gists("sudo -u www php artisan migrate"), gists("FOO=1 BAR=2 node build.js")].flat(),
     captured: gists("n=$(journal comment unread 2>&1 | awk '/^ *[0-9]+ /{print $1}' | tail -1); journal comment read $n 2>&1", (w) => w.slice(0, 2).join(" ")),
@@ -26,6 +28,8 @@ console.log(JSON.stringify({
 result = subprocess.run(["node", "--input-type=module", "-e", script], cwd=root, text=True, capture_output=True, check=True)
 got = json.loads(result.stdout)
 check("patch bodies are not command gists", got["patch"], [])
+check("the inbox-reading compound command keeps each journal step", got["inbox"], ["journal message unread", "journal message read", "journal message files"])
+check("a leading cd is dropped and the command after it kept; a lone cd shows nothing", got["leadingCd"], [["npm run build"], ["npm test"], []])
 check("real chained shell commands still split", got["shell"], ["git commit done", "rg needle"])
 check("shell loops keep the inner executable", got["loop"], ["python3 script"])
 check("a subcommand shares the executable's emphasis", got["tokens"], ["command", "command", "argument"])
