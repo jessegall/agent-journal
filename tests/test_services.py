@@ -112,6 +112,14 @@ with socket.socket() as sock:
     blocked.tick()
     check("a service whose port is taken says so and is not started", (status(root, "works.fixed")["state"], "in use" in status(root, "works.fixed")["why"], "blocked" in started), ("blocked", True, False))
 
+# A LIVE SERVICE IS LEFT ALONE by the sweep, whatever its status says about its owner
+mine = subprocess.Popen([sys.executable, "-c", "import time; time.sleep(30)"], start_new_session=True)
+write_json(status_file(root, "works.live"), {"state": "ready", "keeper": 4242, "owner": 0, "pgid": mine.pid})
+Manager(root, start=lambda spec, lifeline: 1, clock=lambda: clock[0], living=lambda pid: pid in running).sweep()
+check("a service whose keeper is alive is not swept, even with no owner recorded", mine.poll(), None)
+mine.kill()
+mine.wait(timeout=10)
+
 # A GROUP LEFT BEHIND by a dead keeper is killed
 left = subprocess.Popen([sys.executable, "-c", "import time; time.sleep(60)"], start_new_session=True)
 write_json(status_file(root, "works.orphan"), {"state": "ready", "keeper": 999999, "owner": 999999, "pgid": left.pid})

@@ -195,7 +195,7 @@ class Manager:
             return False
         if spec["restart"] == "never" and said.get("state") in ("exited", "stopped"):
             return False
-        write_json(spec_file(self.root, sid), spec)
+        write_json(spec_file(self.root, sid), {**spec, "owner": os.getpid()})
         keeper = self.start(spec, self.lifeline)
         write_json(Path(spec["status"]), {**said, "state": "starting", "keeper": keeper, "owner": os.getpid(), "port": spec["port"], "url": spec["url"], "at": now})
         return True
@@ -216,7 +216,7 @@ class Manager:
         killed = []
         for sid, said in states(self.root).items():
             group = int(said.get("pgid") or 0)
-            if not group or gone(group) or self.living(said.get("keeper", 0)) and self.living(said.get("owner", 0)):
+            if not group or gone(group) or self.living(said.get("keeper", 0)):
                 continue
             teardown(group, 1.0)
             killed.append(group)
