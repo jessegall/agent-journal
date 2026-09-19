@@ -64,7 +64,7 @@ check("a record already migrated is left alone", again, [])
 other = Path(tempfile.mkdtemp()) / ".journal"
 legacy = Rules(Record(other, "main")).create("inject this", injected=True, injected_codex=False)
 ran = migrate(other)
-check("a fresh record runs every migration once and writes the ledger", (ran, sorted(applied(other))), (["m0001_the_old_record", "m0002_rule_targets", "m0003_unify_rule_injection"], ["m0001_the_old_record", "m0002_rule_targets", "m0003_unify_rule_injection"]))
+check("a fresh record runs every migration once and writes the ledger", (ran, sorted(applied(other))), (["m0001_the_old_record", "m0002_rule_targets", "m0003_unify_rule_injection", "m0004_compress_attic"], ["m0001_the_old_record", "m0002_rule_targets", "m0003_unify_rule_injection", "m0004_compress_attic"]))
 check("the rule injection migration unifies old choices", (Rules(Record(other, "main")).load(legacy.n).injected, "targets" in Rules(Record(other, "main")).load(legacy.n).data), (True, False))
 check("run again: nothing", migrate(other), [])
 check("the ledger says when and what came of it", set(applied(other)["m0001_the_old_record"]), {"at", "result"})

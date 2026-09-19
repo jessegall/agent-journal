@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.4.1 — Archived environments are compressed
+
+Removing an environment packs its record into one gzip archive in `.journal/attic/` (checked member by member before the folder is removed; a pack that does not check out leaves the folder where it was). `journal environment unarchive <name>` unpacks the newest archive of that name, byte for byte with its attachments, and brings the environment back; a name in use is refused, never merged. The upgrade compresses every folder already in the attic (migration m0004).
+
+What to do about it: `journal upgrade`.
+
 ## 2.4.0 — The package lives in .journal/src
 
 The installed code moves out of the record: `.journal/src` holds the package, and `.journal` holds only the project's record plus two forwarding entrypoints (`hook.py`, `journal.py`) so hooks a running session loaded at its start keep working. Hooks, the `journal` alias and the `~/.local/bin/journal` shim point at `src/`; the shim still finds an older install. An upgrade from the old layout copies the package into `src/`, rewires the hooks (the old command is replaced, never doubled), then removes the old top-level package files. Also: a message closes itself once every paragraph has been processed into a part; a bare `.md` is no longer a file pill; a question's resource pills sit in its header row.
