@@ -8,6 +8,14 @@ from resources.base import SYSTEM
 PACKAGE = Path(__file__).resolve().parents[2]
 
 
+def counted(version: str) -> tuple:
+    return tuple(int(part) if part.isdigit() else 0 for part in str(version).split("."))
+
+
+def newer(version: str, than: str) -> bool:
+    return bool(version and than) and counted(version) > counted(than)
+
+
 class Updates(Feature):
     name = "updates"
     title_ = "Journal updates"

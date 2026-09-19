@@ -70,6 +70,10 @@ code, got = call("GET", "/api/main/nothing")
 check("an unknown type is a 404", code, 404)
 code, got = call("POST", "/api/main/todo/1/nothing", {})
 check("an unknown action is refused", code, 400)
+# THE UPSTREAM CHECK compares the installed version with the newest one
+code, up = call("GET", "/api/upstream")
+check("upstream answers with both versions and whether the newer one is ahead", (code, set(up) == {"installed", "latest", "newer"}, isinstance(up["newer"], bool)), (200, True, True))
+
 # SETTINGS, SEARCH AND FILES
 code, got = call("GET", "/api/main/settings")
 check("settings say every feature's switch, the triggers and the keep days", (code, got["features"]["auto"], got["features"]["work"], got["triggers"], got["keep"]), (200, False, True, {}, {}))
