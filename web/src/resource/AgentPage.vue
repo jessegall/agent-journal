@@ -3,6 +3,7 @@ import {computed, nextTick, onMounted, onUnmounted, ref, watch} from "vue";
 import {api} from "../api.js";
 import Btn from "../kit/Btn.vue";
 import CommentToggle from "./CommentToggle.vue";
+import {modelFamily, providerName} from "../agents.js";
 import Icon from "../kit/Icon.vue";
 import {go, route, showSession} from "../route.js";
 import {rows, span} from "../store.js";
@@ -14,8 +15,8 @@ import AgentHooks from "./AgentHooks.vue";
 const props = defineProps({resource: Object});
 const emit = defineEmits(["close"]);
 const data = computed(() => props.resource.data);
-const family = computed(() => (data.value.model || "").match(/opus|sonnet|haiku|gpt[-\w.]*/i));
-const name = computed(() => ({claude: "Claude Code", codex: "Codex"})[data.value.provider] || "agent");
+const family = computed(() => modelFamily(data.value.model));
+const name = computed(() => providerName(data.value.provider));
 const works = computed(() =>
     rows("work")
         .filter((w) => w.data.session === props.resource.title || (!w.data.session && !w.completed))
@@ -170,7 +171,7 @@ onUnmounted(() => {
             <CommentToggle />
             <Btn kind="icon" @click="emit('close')"><Icon name="x" /></Btn>
         </header>
-        <h2 class="title">{{ family ? `${name} · ${family[0].toLowerCase()}` : name }}</h2>
+        <h2 class="title">{{ family ? `${name} · ${family}` : name }}</h2>
         <p class="session">session {{ resource.title }}</p>
         <div class="facts">
             <template v-if="data.branch">

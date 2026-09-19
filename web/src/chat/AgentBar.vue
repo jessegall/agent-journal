@@ -1,7 +1,9 @@
 <script setup>
 import {computed, onUnmounted, ref, watch} from "vue";
 import {agentControls, agentUsage, appoint, controlAgent, forceAgent, onlineAgents} from "../api.js";
+import {modelFamily, providerName} from "../agents.js";
 import Icon from "../kit/Icon.vue";
+import CrewList from "./CrewList.vue";
 import SwitchCase from "../kit/SwitchCase.vue";
 import {go, peek, route} from "../route.js";
 import {agent, detach, span, store} from "../store.js";
@@ -10,8 +12,8 @@ const props = defineProps({standalone: Boolean});
 const open = ref("");
 const alone = computed(() => props.standalone || window.parent !== window || new URLSearchParams(location.search).has("chat"));
 const data = computed(() => (agent.value && agent.value.data.status !== "stopped" ? agent.value.data : null));
-const family = computed(() => ((data.value && data.value.model) || "").match(/opus|sonnet|haiku|fable|gpt[-\w.]*/i));
-const name = computed(() => ({claude: "Claude Code", codex: "Codex"})[data.value && data.value.provider] || "agent");
+const family = computed(() => modelFamily(data.value && data.value.model));
+const name = computed(() => providerName(data.value && data.value.provider));
 const skills = computed(() => (data.value && data.value.skills) || []);
 const usage = computed(() => (data.value && data.value.usage && data.value.usage.windows) || []);
 const used = (window) => Math.max(0, Math.min(100, Number(window.used ?? 100 - window.remaining)));
@@ -29,19 +31,6 @@ const counts = computed(() => [
 ]);
 const skillCount = computed(() => counts.value[0]);
 const activityCounts = computed(() => counts.value.slice(1));
-const shellRows = computed(() => sorted((data.value && data.value.shell_rows) || []));
-const subagentRows = computed(() => sorted((data.value && data.value.subagent_rows) || []));
-const now = ref(Date.now() / 1000);
-const clock = setInterval(() => (now.value = Date.now() / 1000), 1000);
-
-function sorted(rows) {
-    return [...rows.filter((r) => r.running), ...rows.filter((r) => !r.running).reverse()];
-}
-
-function lasted(row) {
-    if (!row.at) return "";
-    return row.running ? `running ${span(now.value - row.at)}` : `${row.status || "finished"} · ${span((row.ended || row.at) - row.at)}`;
-}
 
 function openSession(row) {
     open.value = "";
@@ -143,7 +132,6 @@ async function choose(candidate) {
         assigning.value = "";
     }
 }
-const agentName = (provider) => ({claude: "Claude Code", codex: "Codex"})[provider] || "Agent";
 const bar = ref(null);
 function openSkills() {
     open.value = "";
@@ -153,10 +141,7 @@ const away = (e) => {
     if (bar.value && !bar.value.contains(e.target)) open.value = "";
 };
 window.addEventListener("click", away);
-onUnmounted(() => {
-    window.removeEventListener("click", away);
-    clearInterval(clock);
-});
+onUnmounted(() => window.removeEventListener("click", away));
 </script>
 
 <template>
@@ -204,7 +189,7 @@ onUnmounted(() => {
                         @click="modelControls($event, 'model')"
                     >
                         <Icon name="model" />
-                        {{ pending("model") || family[0].toLowerCase() }}
+                        {{ pending("model") || family }}
                     </button>
                     <button
                         type="button"
@@ -293,7 +278,7 @@ onUnmounted(() => {
                             @click="choose(candidate)"
                         >
                             <Icon name="agents" />
-                            <span>{{ agentName(candidate.provider) }}{{ candidate.model ? ` · ${candidate.model}` : "" }}</span>
+                            <span>{{ providerName(candidate.provider, "Agent") }}{{ candidate.model ? ` · ${candidate.model}` : "" }}</span>
                             <small>{{ candidate.environment || "unassigned" }}</small>
                         </button>
                     </template>
@@ -356,39 +341,10 @@ onUnmounted(() => {
                         <p class="bar-none">{{ usageInfo.note }}</p>
                     </template>
                     <template #shells>
-                        <p class="bar-none">
-                            {{ shellRows.filter((r) => r.running).length }} running, {{ data.shells || 0 }} started in this session.
-                        </p>
-                        <span v-for="row in shellRows" :key="row.id || row.cell" :class="['bar-item', 'crew-row', {done: !row.running}]">
-                            <span :class="['crew-dot', {on: row.running}]" />
-                            <span class="crew-what">
-                                {{ row.task || row.command }}
-                                <small>{{ row.task ? row.command : row.cell }}</small>
-                            </span>
-                            <small class="crew-when">{{ lasted(row) }}</small>
-                        </span>
+                        <CrewList :rows="data.shell_rows || []" :total="data.shells || 0" />
                     </template>
                     <template #default>
-                        <p class="bar-none">
-                            {{ subagentRows.filter((r) => r.running).length }} running, {{ data.subagents || 0 }} dispatched in this
-                            session.
-                        </p>
-                        <button
-                            v-for="row in subagentRows"
-                            :key="row.id || `${row.task}-${row.model}`"
-                            type="button"
-                            :class="['bar-item', 'crew-row', {done: !row.running}]"
-                            :disabled="!row.session"
-                            :title="row.session ? 'Open this subagent\'s session' : ''"
-                            @click="openSession(row)"
-                        >
-                            <span :class="['crew-dot', {on: row.running}]" />
-                            <span class="crew-what">
-                                {{ row.task }}
-                                <small>{{ [row.type, row.model].filter(Boolean).join(" · ") }}</small>
-                            </span>
-                            <small class="crew-when">{{ lasted(row) }}</small>
-                        </button>
+                        <CrewList :rows="data.subagent_rows || []" :total="data.subagents || 0" started="dispatched" @open="openSession" />
                     </template>
                 </SwitchCase>
             </div>
@@ -721,62 +677,6 @@ onUnmounted(() => {
 .bar-item .ico {
     width: 13px;
     height: 13px;
-}
-
-.crew-row {
-    width: 100%;
-    border: 0;
-    background: none;
-    text-align: left;
-}
-
-button.crew-row:not(:disabled) {
-    cursor: pointer;
-}
-
-button.crew-row:not(:disabled):hover {
-    background: var(--hover);
-}
-
-.crew-row.done {
-    opacity: 0.6;
-}
-
-.crew-dot {
-    flex: none;
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: var(--text-3);
-}
-
-.crew-dot.on {
-    background: var(--created);
-    box-shadow: 0 0 0 3px color-mix(in srgb, var(--created) 25%, transparent);
-}
-
-.crew-what {
-    flex: 1;
-    min-width: 0;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-}
-
-.crew-what small {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    color: var(--text-3);
-    font-size: 11px;
-}
-
-.crew-when {
-    flex: none;
-    color: var(--text-3);
-    font-size: 11px;
-    font-variant-numeric: tabular-nums;
 }
 
 .drop-enter-active {

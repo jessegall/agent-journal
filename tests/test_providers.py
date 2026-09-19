@@ -228,6 +228,11 @@ check("a background shell ends with the status its notification gives", [(r["com
 check("a subagent's own session reads as a transcript", [t.text for t in claude.transcript(claude.subagent_transcript(crewed, "abc"))], ["audit the core"])
 check("an unknown session gives no transcript path", claude.subagent_transcript(crewed, "nope"), None)
 
+# AN EDIT TOOL reports the writes effect only inside the project
+edit_in = Hook.read({"hook_event_name": "PreToolUse", "tool_name": "Edit", "cwd": "/p", "tool_input": {"file_path": "/p/a.py"}})
+edit_out = Hook.read({"hook_event_name": "PreToolUse", "tool_name": "Edit", "cwd": "/p", "tool_input": {"file_path": "/elsewhere/a.py"}})
+check("an edit inside the project writes; outside it has no effect", (claude.effect(edit_in), claude.effect(edit_out)), ("writes", ""))
+
 # A NEW COMMAND KEEPS THE FINISHED ONE as before, so its line counts can still arrive and be shown
 finished = {"what": "sed -i x f.py", "tool": "Bash", "at": 1.0, "done": 2.0, "effect": "writes", "changed": {"added": 3}, "step": "sed"}
 nxt = claude.shell(AgentRow(n=1, title="s", data={"running": finished}), Hook.read({"hook_event_name": "PreToolUse", "tool_name": "Bash", "tool_input": {"command": "git status"}}))["running"]
