@@ -66,4 +66,11 @@ check("the message lives there with its sections", (moved.n, there.load(moved.n)
 check("here it is deleted, saying where it went", (bool(read.load(m.n, ) if False else True), [e for e in record.events() if e.type == "message" and e.action == "deleted"][-1].data["why"]), (True, "moved to other as message 1"))
 check("the other environment got a created event that says where from", [e.data for e in there.record.events() if e.type == "message"][-1], {"moved_from": "t/1"})
 
+# EDITING a message's words retitles it, so every list shows what it now says
+edited = left.create("first words", brief="first words")
+left.edit(edited.n, "the words after an edit")
+check("an edited message is titled from its new words", left.load(edited.n).title, "the words after an edit")
+left.update(edited.n, title="a title of my own", brief="and new words beside it")
+check("a title given with the edit is kept", left.load(edited.n).title, "a title of my own")
+
 done()
