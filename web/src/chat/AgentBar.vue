@@ -216,7 +216,7 @@ onUnmounted(() => window.removeEventListener("click", away));
     border: 0;
     border-radius: 6px;
     background: none;
-    color: var(--text-2);
+    color: inherit;
     font: inherit;
     cursor: pointer;
 }
