@@ -6,7 +6,6 @@ import {spoken} from "../spoken.js";
 import {agent, types} from "../store.js";
 
 const STEP = 700;
-const REVEAL_AFTER = 240;
 const HIDE_AFTER = 5000;
 const SHOW_CLOCK_AFTER = 10;
 const sentence = (words) => spoken(words, types.value);
@@ -42,7 +41,6 @@ const showDelta = ref(false);
 const frames = {added: 0, removed: 0};
 const measured = {added: 0, removed: 0};
 let rolls = null;
-let reveal = null;
 let hide = null;
 
 function roll() {
@@ -59,7 +57,7 @@ watch(
             if (c.at <= seen.at) continue;
             seen.at = c.at;
             if (!first) {
-                const shown = said(c);
+                const shown = said(c).slice(0, 1);
                 shown.forEach((text) => pending.push({key: text, text, tokens: tokensOf(c, text), delta: []}));
                 api("POST", "/shown", {command: c.what, shown}).catch(() => {});
             }
@@ -93,7 +91,6 @@ onUnmounted(() => {
     if (watching) watching.disconnect();
     clearInterval(timer);
     if (rolls) clearTimeout(rolls);
-    if (reveal) clearTimeout(reveal);
     if (hide) clearTimeout(hide);
     Object.values(frames).forEach(cancelAnimationFrame);
 });
@@ -110,7 +107,7 @@ const line = computed(() => {
     const parts = said(run);
     if (!parts.length) return null;
     const secs = Math.floor((run.done || Date.now() / 1000) - run.at);
-    const text = parts[parts.length - 1];
+    const text = parts[0];
     return {key: text, text, tokens: tokensOf(run, text), clock: clock(secs), done: !!run.done};
 });
 
@@ -180,25 +177,15 @@ function count(kind, to) {
 }
 
 function concealDelta() {
-    if (reveal) clearTimeout(reveal);
     if (hide) clearTimeout(hide);
-    reveal = null;
     hide = null;
     showDelta.value = false;
 }
 
 function revealDelta() {
-    if (reveal) clearTimeout(reveal);
     if (hide) clearTimeout(hide);
-    reveal = null;
     hide = setTimeout(concealDelta, HIDE_AFTER);
-    const show = () => {
-        reveal = null;
-        if (!data.value || !delta.value.length) return;
-        showDelta.value = true;
-    };
-    if (showDelta.value) show();
-    else reveal = setTimeout(show, REVEAL_AFTER);
+    showDelta.value = !!data.value && delta.value.length > 0;
 }
 
 watch(
