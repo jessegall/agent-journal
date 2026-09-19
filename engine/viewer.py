@@ -114,8 +114,11 @@ def start(root: Path, project: Path) -> str:
     return ""
 
 
-def ensure(root: Path, project: Path, opener=webbrowser.open, focuser=existing_tab) -> str:
-    url = start(root, project)
+def show(url: str, opener=webbrowser.open, focuser=existing_tab) -> str:
     if url and not focuser(url):
         opener(url)
     return url
+
+
+def ensure(root: Path, project: Path, opener=webbrowser.open, focuser=existing_tab) -> str:
+    return show(start(root, project), opener, focuser)
