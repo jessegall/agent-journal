@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.4.0 — The package lives in .journal/src
+
+The installed code moves out of the record: `.journal/src` holds the package, and `.journal` holds only the project's record plus two forwarding entrypoints (`hook.py`, `journal.py`) so hooks a running session loaded at its start keep working. Hooks, the `journal` alias and the `~/.local/bin/journal` shim point at `src/`; the shim still finds an older install. An upgrade from the old layout copies the package into `src/`, rewires the hooks (the old command is replaced, never doubled), then removes the old top-level package files. Also: a message closes itself once every paragraph has been processed into a part; a bare `.md` is no longer a file pill; a question's resource pills sit in its header row.
+
+What to do about it: `journal upgrade`, then restart `journal claude` — the viewer still running serves from the old place until it restarts.
+
 ## 2.3.2 — Work keeps a log
 
 Every piece of work has a log: `journal work log <n> "<message>"` writes a numbered, dated entry for each decision, turn and finding, and twenty edits without an entry hold the agent's writes until it logs (`work.log_after` tunes the count). While a work's log is empty, the idle line says so. `work update` only renames or rewords the work. A processed message links the resources its parts became, and its inspector no longer repeats each part under the body.

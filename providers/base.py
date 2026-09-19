@@ -149,9 +149,11 @@ class Provider(ABC):
         except (OSError, ValueError):
             had = {}
         hooks = had.setdefault("hooks", {})
+        ours = command.partition("hook.py")[2]
         for event, blocks in self.wiring(command)["hooks"].items():
-            mine = hooks.setdefault(event, [])
+            mine = [b for b in hooks.get(event, []) if command in json.dumps(b) or not ("hook.py" in json.dumps(b) and ours in json.dumps(b))]
             if not any(command in json.dumps(b) for b in mine):
                 mine.extend(blocks)
+            hooks[event] = mine
         f.write_text(json.dumps(had, indent=2) + "\n")
         return f
