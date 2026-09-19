@@ -37,7 +37,7 @@ export async function upload(env, type, n, file, base = "") {
 }
 export const act = (env, type, n, action, body = {}, base = "") => api("POST", `/${env}/${type}/${n}/${action}`, body, base);
 export const readAll = (env, type, numbers) => api("POST", `/${env}/${type}/read-all`, {numbers});
-export const events = (env, since = 0) => api("GET", `/${env}/events?since=${since}`);
+export const events = (env, since = 0, last = 0) => api("GET", `/${env}/events?since=${since}&last=${last}`);
 export const settings = (env) => api("GET", `/${env}/settings`);
 export const saveSettings = (env, body, base = "") => api("POST", `/${env}/settings`, body, base);
 export const search = (env, q) => api("GET", `/${env}/search?q=${encodeURIComponent(q)}`);

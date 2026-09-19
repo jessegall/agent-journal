@@ -16,7 +16,7 @@ HERE = Path(__file__).resolve().parents[1]
 
 COMMANDS = (("start",), ("status",), ("message", "all"), ("message", "unread"), ("todo", "all"), ("work", "all"))
 TYPES = ("message", "todo", "work", "comment", "notification", "agent", "question", "reaction")
-PATHS = ("/api/summary", "/api/manifest", "/api/{env}/message", "/api/{env}/todo", "/api/{env}/comment", "/api/{env}/notification", "/api/{env}/events?since=0")
+PATHS = ("/api/summary", "/api/manifest", "/api/{env}/message", "/api/{env}/todo", "/api/{env}/comment", "/api/{env}/notification", "/api/{env}/events?since=0&last=1000")
 
 
 def timed(fn, runs: int) -> float:

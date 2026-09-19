@@ -83,35 +83,37 @@ class Record:
         bus.emit(e, self)
         return e
 
-    def events(self, since: int = 0) -> list[Event]:
-        log = self.home / "events.jsonl"
-        if not log.is_file():
-            return []
+    def events(self, since: int = 0, last: int = 0) -> list[Event]:
         out = []
-        for raw in log.read_text().splitlines():
+        for raw in self.lines_back():
             try:
                 e = Event(**json.loads(raw))
             except (ValueError, TypeError):
                 continue
-            if e.id > since:
-                out.append(e)
-        return out
+            if e.id <= since or (last and len(out) == last):
+                break
+            out.append(e)
+        return out[::-1]
 
-    def last_event(self) -> int:
+    def lines_back(self, block: int = 65536):
         log = self.home / "events.jsonl"
         if not log.is_file():
-            return 0
+            return
         with log.open("rb") as fh:
             fh.seek(0, 2)
-            size = fh.tell()
-            fh.seek(max(0, size - 65536))
-            tail = fh.read().splitlines()
-        for raw in reversed(tail):
-            try:
-                return int(json.loads(raw)["id"])
-            except (ValueError, KeyError, TypeError):
-                continue
-        got = self.events()
+            at, rest = fh.tell(), b""
+            while at > 0:
+                step = min(block, at)
+                at -= step
+                fh.seek(at)
+                lines = (fh.read(step) + rest).split(b"\n")
+                rest = lines.pop(0)
+                yield from (line for line in reversed(lines) if line.strip())
+            if rest.strip():
+                yield rest
+
+    def last_event(self) -> int:
+        got = self.events(last=1)
         return got[-1].id if got else 0
 
     def cursor_text(self, name: str) -> str:

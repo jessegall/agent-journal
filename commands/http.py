@@ -211,7 +211,7 @@ def get_extension_zip(req: Request) -> Reply:
 
 @route("GET", "/api/{env}/events")
 def get_events(req: Request) -> Reply:
-    return Reply(200, [asdict(e) for e in req.record().events(int(req.query.get("since") or 0))])
+    return Reply(200, [asdict(e) for e in req.record().events(int(req.query.get("since") or 0), int(req.query.get("last") or 0))])
 
 
 @route("GET", "/api/{env}/settings")
