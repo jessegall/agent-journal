@@ -6,7 +6,7 @@ from pathlib import Path
 
 from controllers.types import Agents, Works
 from engine.record import Record
-from engine.viewer import running
+from engine.viewer import marked, running
 from resources.base import SYSTEM
 
 ROWS = 4
@@ -69,6 +69,7 @@ class Band:
         self.shown = b""
         self.url = ""
         self.url_at = 0.0
+        self.asked_at = 0.0
 
     def seat(self) -> dict:
         try:
@@ -85,9 +86,13 @@ class Band:
         return {"title": rows[-1].title, **rows[-1].data} if rows else {}
 
     def viewer(self) -> str:
-        if not self.url or time.time() - self.url_at >= 10:
+        now = time.time()
+        if now - self.url_at >= 10:
             self.url = running(self.root) or self.url
-            self.url_at = time.time()
+            self.url_at = now
+        elif not self.url and now - self.asked_at >= 1:
+            self.url = marked(self.root)
+            self.asked_at = now
         return self.url or "viewer unavailable"
 
     def activity(self, record: Record, agent: dict) -> str:
