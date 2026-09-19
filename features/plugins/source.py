@@ -6,6 +6,7 @@ import shutil
 import subprocess
 from pathlib import Path
 
+from engine.hooks import default_env
 from engine.viewer import running
 from features.plugins.manifest import fill, read
 from install import fetch
@@ -50,7 +51,7 @@ def address(source: str) -> str:
 
 def values(root: Path, name: str, token: str, ports: dict | None = None) -> dict:
     return {"dir": str(folder(root, name)), "data": str(data(root, name)), "root": str(Path(root)),
-            "journal.url": running(Path(root)) or "", "token": token,
+            "journal.url": running(Path(root)) or "", "journal.env": default_env(Path(root)), "token": token,
             **{f"ports.{service}": port for service, port in (ports or {}).items()}}
 
 
@@ -74,7 +75,7 @@ def environment(root: Path, name: str, manifest: dict, token: str, ports: dict |
     given = fill(manifest.get("env") or {}, where)
     return {**os.environ, **{str(k): str(v) for k, v in given.items()},
             "JOURNAL_ROOT": where["root"], "JOURNAL_URL": where["journal.url"], "JOURNAL_TOKEN": token,
-            "JOURNAL": str(Path(root) / "journal"), "JOURNAL_PLUGIN": name,
+            "JOURNAL": str(Path(root) / "journal"), "JOURNAL_ENV": where["journal.env"], "JOURNAL_PLUGIN": name,
             "JOURNAL_PLUGIN_DIR": where["dir"], "JOURNAL_PLUGIN_DATA": where["data"]}
 
 
