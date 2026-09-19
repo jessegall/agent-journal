@@ -279,6 +279,8 @@ export function openPictures(pictures, at) {
 }
 
 export const away = reactive({open: false, since: 0, back: 0, left: 0});
+export const flash = reactive({at: Date.now()});
+const FLASH_AFTER = 3000;
 
 function left() {
     away.left = away.left || Date.now();
@@ -288,6 +290,7 @@ async function back() {
     if (document.visibilityState !== "visible" || !away.left) return;
     const since = away.left;
     away.left = 0;
+    if (Date.now() - since >= FLASH_AFTER) flash.at = Date.now();
     if (Date.now() - since < 60000) return;
     await reload();
     Object.assign(away, {open: true, since, back: Date.now()});
