@@ -29,7 +29,7 @@ from engine.hooks import answer
 from engine.record import Record
 from engine.transcript import page
 from providers import PROVIDERS
-from resources.base import USER, Refused
+from resources.base import USER, Refused, titled
 from resources.types import Ask
 
 WEB = Path(__file__).resolve().parents[1] / "web" / "dist"
@@ -459,7 +459,8 @@ def get_all(req: Request) -> Reply:
 
 @route("POST", "/api/{env}/{type}")
 def post_create(req: Request) -> Reply:
-    return Reply(201, shaped(req.controller().create(**req.body)))
+    controller = req.controller()
+    return Reply(201, shaped(controller.create(**{**req.body, "title": req.body.get("title") or titled(req.body.get("brief", ""))})))
 
 
 @route("GET", "/api/{env}/{type}/{n}")

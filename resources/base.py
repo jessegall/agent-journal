@@ -138,7 +138,12 @@ def check_title(title: str) -> str:
 
 
 def titled(text: str) -> str:
-    return " ".join((text or "").split()).replace(":", " -")[:TITLE_MAX].strip() or "untitled"
+    lines = (text or "").splitlines()
+    line = " ".join(next((l for l in lines if l.strip() and not l.startswith(">")), text or "").split()).replace(":", " -")
+    if len(line) <= TITLE_MAX:
+        return line or "untitled"
+    cut = line[:TITLE_MAX - 1]
+    return f"{(cut[:cut.rindex(' ')] if ' ' in cut else cut).rstrip(' -,.;')}…"
 
 
 def check_abstract(abstract: str) -> str:

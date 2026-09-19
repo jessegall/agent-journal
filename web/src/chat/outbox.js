@@ -1,5 +1,4 @@
 import {create, upload} from "../api.js";
-import {title} from "../text/index.js";
 
 const KEY = "journal.outbox.v1";
 const BRIDGE_WAIT = 500;
@@ -211,7 +210,7 @@ export async function sendMessage(env, body, files = []) {
         id: token(),
         origin: location.origin,
         env,
-        title: body.title || title(body.brief),
+        title: body.title,
         brief: body.brief,
         about: body.about,
         files: await Promise.all(files.map(fileRecord)),

@@ -5,7 +5,6 @@ import {sendMessage} from "./outbox.js";
 import Icon from "../kit/Icon.vue";
 import {route} from "../route.js";
 import {agent, laidOut, meta, quoted, reload, rows, store, withQuote} from "../store.js";
-import {title as titled} from "../text/index.js";
 import Compose from "./Compose.vue";
 import Turn from "./Turn.vue";
 import ThreadSkeleton from "./ThreadSkeleton.vue";
@@ -164,7 +163,7 @@ async function post(text, files) {
     await nextTick();
     toBottom();
     try {
-        const result = await sendMessage(route.value.env, {title: titled(body), brief: body, about}, files);
+        const result = await sendMessage(route.value.env, {brief: body, about}, files);
         if (!result.queued) await reload();
     } finally {
         pending.value = pending.value.filter((p) => p !== placeholder);
@@ -214,7 +213,7 @@ async function promised(body, files) {
         ref: `pending:${promises}`,
         type: "message",
         n: 0,
-        title: titled(body),
+        title: "",
         brief: body,
         abstract: "",
         refs: [],
@@ -233,7 +232,7 @@ async function promised(body, files) {
 }
 
 async function pin(text, about = "") {
-    await create(route.value.env, "notice", {title: titled(text), about: about || undefined});
+    await create(route.value.env, "notice", {brief: text, about: about || undefined});
 }
 
 watch(busy, async () => {
