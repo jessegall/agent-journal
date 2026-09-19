@@ -5,7 +5,6 @@ import {spoken} from "../spoken.js";
 import {agent, types} from "../store.js";
 
 const STEP = 700;
-const HIDE_AFTER = 5000;
 const HOLD_EDITS = 1000;
 const SHOW_CLOCK_AFTER = 10;
 const sentence = (words) => spoken(words, types.value);
@@ -41,7 +40,6 @@ const showDelta = ref(false);
 const frames = {added: 0, removed: 0};
 const measured = {added: 0, removed: 0};
 let rolls = null;
-let hide = null;
 
 function roll() {
     rolling.value = pending.shift() || null;
@@ -70,7 +68,6 @@ onUnmounted(() => {
     clearTimeout(staying);
     clearInterval(timer);
     if (rolls) clearTimeout(rolls);
-    if (hide) clearTimeout(hide);
     Object.values(frames).forEach(cancelAnimationFrame);
 });
 
@@ -195,14 +192,10 @@ function count(kind, to) {
 }
 
 function concealDelta() {
-    if (hide) clearTimeout(hide);
-    hide = null;
     showDelta.value = false;
 }
 
 function revealDelta() {
-    if (hide) clearTimeout(hide);
-    hide = setTimeout(concealDelta, HIDE_AFTER);
     showDelta.value = !!data.value;
 }
 
