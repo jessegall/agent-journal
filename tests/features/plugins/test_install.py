@@ -7,6 +7,8 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 import features  # noqa: E402
 from controllers.types import Notifications, Plugins  # noqa: E402
+from engine.services import want_file  # noqa: E402
+from engine.stored import read_json  # noqa: E402
 from features.plugins.manifest import MANIFEST  # noqa: E402
 from features.plugins.source import data, folder, home  # noqa: E402
 from resources.base import AGENT  # noqa: E402
@@ -102,6 +104,11 @@ shown = rows.action("upgrade")(first.n)
 check("without --yes it shows what will run differently and installs nothing", ("now also: setup build: echo built > built.txt" in shown, rows.load(first.n).version), (True, "1.0.0"))
 moved = rows.action("upgrade")(first.n, yes=True)
 check("with --yes the row moves to the new commit and the setup ran", (moved.version, moved.commit != first.commit, (folder(moving.root, "moving") / "built.txt").is_file()), ("2.0.0", True, True))
+check("the ports it was installed with are kept", moved.settings.get("ports"), first.settings.get("ports"))
+(origin / MANIFEST).write_text(json.dumps({**WORKS, "name": "moving", "version": "3.0.0", "setup": [], "services": {"web": {"run": "echo serving"}}}))
+git("commit", "-q", "-am", "three", cwd=origin)
+rows.action("upgrade")(first.n, yes=True)
+check("and every service of the plugin is asked to start over", read_json(want_file(moving.root, "moving.web"), {}).get("nonce", 0) > 0, True)
 
 # ENABLE AND DISABLE flip the row
 check("a plugin can be switched off and on", (rows.action("disable")(first.n).enabled, rows.action("enable")(first.n).enabled), (False, True))
