@@ -4,21 +4,16 @@ import time
 from datetime import datetime
 from pathlib import Path
 
-from controllers.types import Agents, Works
+from controllers.types import Agents
 from engine.record import Record
 from engine.viewer import marked, running
 from resources.base import SYSTEM
 
-ROWS = 5
+ROWS = 4
 ESC = "\x1b"
 STYLE = f"{ESC}[48;2;23;24;27m{ESC}[38;2;169;172;179m"
-BRIGHT = f"{ESC}[38;2;230;231;234m"
-ACCENT = f"{ESC}[38;2;163;168;240m"
-DIM = f"{ESC}[38;2;131;134;142m"
 URL = f"{ESC}[48;2;52;55;105m{ESC}[38;2;238;239;246m"
 RESET = f"{ESC}[0m"
-STATES = {"idle": "●", "busy": "◐", "working": "◐", "compacting": "◔", "stopped": "○"}
-STATE_LABELS = {"idle": "Idle", "busy": "Busy", "working": "Working on", "compacting": "Compacting", "stopped": "Stopped"}
 BRAND = "JOURNAL"
 GRADIENT = ((36, 38, 78), (94, 99, 222), (36, 38, 78))
 
@@ -91,25 +86,11 @@ class Band:
             self.asked_at = now
         return self.url or "viewer unavailable"
 
-    def activity(self, record: Record, agent: dict) -> str:
-        active = agent.get("running") or {}
-        if active and not active.get("done"):
-            return " ".join(str(active.get("what") or "").split())
-        work = [row for row in Works(record, actor=SYSTEM).all() if not row.completed]
-        return work[-1].title if work else "no open work"
-
     def lines(self, cols: int) -> list[str]:
         seat = self.seat()
-        agent = self.agent(seat)
-        state = seat.get("state") or agent.get("status") or "stopped"
-        mark = STATES.get(state, "○")
         env = seat.get("env") or self.env
-        record = Record(self.root, env)
-        facts = self.banner(cols, env, agent)
-        url = self.fit(f"{DIM}viewer{RESET} {URL}{self.viewer()}{STYLE}", cols)
-        status = f"{ACCENT}{mark} {BRIGHT}{STATE_LABELS.get(state, state.title())}{DIM}  {self.activity(record, agent)}"
         rule = f"{ESC}[38;2;47;49;54m{'─' * cols}"
-        return [facts, url, self.fit(status, cols, left=2), self.fit(rule, cols), " " * cols]
+        return [self.banner(cols, env, self.agent(seat)), self.fit(f"{URL}{self.viewer()}{STYLE}", cols), " " * cols, self.fit(rule, cols)]
 
     def shade(self, x: int, cols: int) -> tuple[int, int, int]:
         t = x / max(1, cols - 1) * (len(GRADIENT) - 1)
