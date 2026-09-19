@@ -9,7 +9,7 @@ class PlansFeature(Feature):
     name = "plans"
     title_ = "Plans"
     abstract_ = "A plan advances as its rows close: a phase completes, a checkpoint waits, the last phase ends it"
-    help_ = "Only the user activates a plan and continues it past a checkpoint."
+    help_ = "Only the user activates a plan and continues it past a checkpoint; with the auto feature on, checkpoints are passed without waiting."
 
     def phase_complete(self, record, phase: dict) -> bool:
         todos = Todos(record, actor=SYSTEM)
@@ -24,6 +24,7 @@ class PlansFeature(Feature):
                 continue
             i = plan.current
             last = i == len(plan.phases)
-            plan.status = DONE if last else WAITING if phase[PHASE.checkpoint] else ACTIVE
-            plan.current = i if last or phase[PHASE.checkpoint] else i + 1
-            plans.save(plan, "updated", phase=i, complete=True, status=plan.status)
+            waits = bool(phase[PHASE.checkpoint]) and not record.features.get("auto")
+            plan.status = DONE if last else WAITING if waits else ACTIVE
+            plan.current = i if last or waits else i + 1
+            plans.save(plan, "updated", phase=i, complete=True, status=plan.status, passed=bool(phase[PHASE.checkpoint]) and not waits)

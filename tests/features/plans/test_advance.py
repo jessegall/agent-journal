@@ -53,7 +53,7 @@ check("one plan at a time", refused(lambda: by_user.activate(second.n)), "one pl
 todos.complete(1, "done")
 check("one row done: the phase is not complete", by_agent.load(plan.n).data["current"], 1)
 todos.complete(2, "done")
-check("every row done: the next phase is current, by the feature, as SYSTEM", (by_agent.load(plan.n).data["current"], [e for e in record.events() if e.type == "plan"][-1].actor, [e for e in record.events() if e.type == "plan"][-1].data), (2, SYSTEM, {"phase": 1, "complete": True, "status": "active"}))
+check("every row done: the next phase is current, by the feature, as SYSTEM", (by_agent.load(plan.n).data["current"], [e for e in record.events() if e.type == "plan"][-1].actor, [e for e in record.events() if e.type == "plan"][-1].data), (2, SYSTEM, {"phase": 1, "complete": True, "status": "active", "passed": False}))
 check("next offers the new phase's row", next(record).n, 3)
 todos.complete(3, "done")
 check("a checkpoint phase complete: the plan waits, the phase stays current", (by_agent.load(plan.n).data["status"], by_agent.load(plan.n).data["current"]), ("waiting", 2))
@@ -66,6 +66,25 @@ todos.complete(5, "done")
 check("the last phase complete: the plan is done", by_agent.load(plan.n).data["status"], "done")
 by_user.complete(plan.n, "seen")
 check("acknowledge is the user's complete", bool(by_agent.load(plan.n).completed), True)
+
+# UNDER AUTO: a checkpoint is passed, not waited at
+auto = fresh("auto")
+auto.features = {"auto": True}
+auto_todos = Todos(auto, actor=USER)
+a, b = auto_todos.create("first").n, auto_todos.create("second").n
+quick = Plans(auto, actor=AGENT)
+run = quick.create("Straight through", goal="no stop")
+quick.phase(run.n, "Gate", checkpoint=True)
+quick.phase(run.n, "After")
+quick.place(run.n, 1, [a])
+quick.place(run.n, 2, [b])
+quick.ready(run.n)
+Plans(auto, actor=USER).activate(run.n)
+auto_todos.complete(a, "done")
+check("with auto on, a checkpoint phase complete moves straight on, and the event says it was passed",
+      (quick.load(run.n).data["status"], quick.load(run.n).data["current"], [e for e in auto.events() if e.type == "plan"][-1].data["passed"]), ("active", 2, True))
+auto.features = {"auto": False}
+check("the event on an ordinary phase says no checkpoint was passed", [e for e in record.events() if e.type == "plan" and e.data.get("phase") == 1][-1].data["passed"], False)
 
 # ABANDON: a close with a reason; the rows stay open
 other = by_agent.create("Abandoned one")
