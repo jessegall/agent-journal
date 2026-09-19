@@ -193,7 +193,7 @@ onUnmounted(() => window.removeEventListener("click", away));
                         :aria-expanded="open === 'effort'"
                         @click="modelControls($event, 'effort')"
                     >
-                        <Icon name="activity" />
+                        <Icon name="bolt" />
                         {{ pending("effort") || data.effort || "effort" }}
                     </button>
                 </template>
@@ -212,6 +212,7 @@ onUnmounted(() => window.removeEventListener("click", away));
                     {{ data.started ? span(Date.now() / 1000 - data.started) : "just started" }}
                 </span>
                 <span class="agent-fact agent-context" :title="`context ${Math.round(Number(data.context || 0))}% full`">
+                    <Icon name="gauge" />
                     <span class="agent-context-bar"><span :style="{width: `${Math.round(Number(data.context || 0))}%`}" /></span>
                     {{ Math.round(Number(data.context || 0)) }}%
                 </span>
@@ -444,7 +445,7 @@ onUnmounted(() => window.removeEventListener("click", away));
 
 .agent-context-bar {
     display: inline-block;
-    width: 44px;
+    width: 20px;
     height: 4px;
     border-radius: 2px;
     overflow: hidden;
