@@ -22,7 +22,45 @@ export function lineOf(agent, works) {
     const last = works[works.length - 1];
     if (state === "idle") return last ? `last on ${named(last)}` : "waiting for you";
     const running = agent.data.running;
-    return running && running.what && !running.done ? running.what : "finding its bearings";
+    return running && running.what && !running.done ? doingOf(running) : "finding its bearings";
+}
+
+const DOING = [
+    [/^journal (message|comment|reaction|question)\b/, "going through its inbox"],
+    [/^journal\b/, "keeping the journal"],
+    [/\b(pytest|python3? (-m )?tests?\/|npm test|vitest|jest|phpunit)\b/, "running tests"],
+    [/\b(npm run build|vite build|make\b|cargo build|go build|tsc\b)/, "building"],
+    [/^git (commit|push|add)\b/, "committing"],
+    [/^git\b/, "looking at the history"],
+    [/^(grep|rg|ag|find|ls|cat|sed -n|head|tail|wc|tree|fd)\b/, "looking through the code"],
+    [/^(python3?|node|php|ruby|perl|bash|sh)\b/, "running a script"],
+    [/^(curl|wget|http)\b/, "talking to a service"],
+];
+
+const TOOLS = {
+    Read: "reading the code",
+    Edit: "editing the code",
+    MultiEdit: "editing the code",
+    NotebookEdit: "editing the code",
+    Write: "writing a file",
+    Grep: "searching the code",
+    Glob: "searching the code",
+    WebFetch: "reading the web",
+    WebSearch: "searching the web",
+    Agent: "briefing a helper",
+    Task: "briefing a helper",
+    Skill: "loading a skill",
+    TodoWrite: "sorting its own list",
+};
+
+export function doingOf(running) {
+    const tool = running.tool || "Bash";
+    if (tool === "Bash") return (DOING.find(([re]) => re.test(running.what.trim())) || [null, "running a command"])[1];
+    if (tool.startsWith("mcp__")) {
+        const server = tool.slice(5).split("__")[0];
+        return /playwright|browser|chrome/.test(server) ? "driving the browser" : `talking to ${server}`;
+    }
+    return TOOLS[tool] || "using a tool";
 }
 
 export function capital(word) {
