@@ -13,6 +13,7 @@ import SettingsPage from "./pages/SettingsPage.vue";
 import SearchPage from "./pages/SearchPage.vue";
 import FilesPage from "./pages/FilesPage.vue";
 import CommitPage from "./pages/CommitPage.vue";
+import ServicesPage from "./pages/ServicesPage.vue";
 import SkillsPage from "./pages/SkillsPage.vue";
 import HubPage from "./pages/HubPage.vue";
 import FilePage from "./pages/FilePage.vue";
@@ -29,7 +30,7 @@ import IdentityBand from "./layout/IdentityBand.vue";
 const page = computed(() =>
     !route.value.page
         ? "home"
-        : ["settings", "search", "files", "commit", "skills", "hub", "file"].includes(route.value.page)
+        : ["settings", "search", "files", "commit", "skills", "services", "hub", "file"].includes(route.value.page)
           ? route.value.page
           : "index"
 );
@@ -106,6 +107,7 @@ watch(
                                 <template #files><FilesPage /></template>
                                 <template #commit><CommitPage /></template>
                                 <template #skills><SkillsPage /></template>
+                                <template #services><ServicesPage /></template>
                                 <template #hub><HubPage /></template>
                                 <template #file><FilePage /></template>
                                 <template #default><Index :type="route.page" /></template>

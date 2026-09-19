@@ -78,6 +78,10 @@ async function makeEnv() {
                     <Icon name="book" />
                     Skills
                 </a>
+                <a :class="['item', {on: route.page === 'services'}]" :href="`#/${route.env}/services`">
+                    <Icon name="terminal" />
+                    Services
+                </a>
             </template>
         </div>
         <div class="group">
