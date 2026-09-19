@@ -20,7 +20,7 @@ export function lineOf(agent, works) {
     const current = currentWork(works);
     if (current) return named(current);
     const last = works[works.length - 1];
-    if (state === "idle") return last ? `last on ${named(last)}` : "waiting for you";
+    if (state === "idle") return said("idle", agent.data.at);
     const running = agent.data.running;
     return running && running.what && !running.done ? doingOf(running) : said("bearings", agent.data.at);
 }
@@ -265,6 +265,18 @@ const SAID = {
         "working away",
         "on a task",
         "working",
+    ],
+    idle: [
+        "waiting for you",
+        "taking a breath",
+        "all ears",
+        "resting between rounds",
+        "nothing on its desk",
+        "standing by",
+        "ready when you are",
+        "kettle on, waiting",
+        "hands folded, listening",
+        "at your service",
     ],
     bearings: [
         "finding its bearings",
