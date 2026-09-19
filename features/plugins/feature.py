@@ -99,10 +99,11 @@ class Plugins(Feature):
                 return f"{row.manifest['name']} is already at {commit[:12]}"
             if not yes:
                 return f"{preview(manifest, row.source, commit)}\n\n{self.difference(row.manifest, manifest)}\nNothing has changed yet. To upgrade to exactly this, run it again with --yes --ref {commit}"
-            env = environment(root, manifest["name"], manifest, row.token)
+            ports = {**ports_for(root, manifest), **((row.settings or {}).get("ports") or {})}
+            env = environment(root, manifest["name"], manifest, row.token, ports)
             checked(manifest, where, env)
             prepared(manifest, where, env, log(root, manifest["name"]))
-            self.place(plugins, where, linked, manifest, row.source, ref, commit, row.token, row=row)
+            self.place(plugins, where, linked, manifest, row.source, ref, commit, row.token, row=row, ports=ports)
             kept = True
         finally:
             if not kept:
@@ -165,7 +166,7 @@ class Plugins(Feature):
             where.rename(target)
         kept = {"source": source, "revision": ref, "commit": commit, "version": said_version(target, manifest), "linked": linked, "manifest": manifest}
         if row:
-            return plugins.update(row.n, abstract=manifest.get("description") or "", **kept)
+            return plugins.update(row.n, abstract=manifest.get("description") or "", settings={**(row.settings or {}), "ports": ports or {}}, **kept)
         return plugins.create(manifest.get("title") or name, abstract=manifest.get("description") or "", enabled=True, settings={"ports": ports or {}}, token=secret, **kept)
 
     def drop(self, staging: Path, linked: bool) -> None:
