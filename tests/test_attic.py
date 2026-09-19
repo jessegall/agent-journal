@@ -49,6 +49,9 @@ for name in ("a-1", "a-20", "a-b-99"):
     (root / "environments" / name / "note").write_text(name)
     attic.pack(root / "environments" / name, name)
 check("the latest by its stamp, not by text", attic.latest(root, "a").name, "a-20.tar.gz")
+(root / "environments" / "b" ).mkdir()
+attic.pack(root / "environments" / "b", "b")
+check("an archive from before stamps, named only for its environment, is still found", attic.latest(root, "b").name, "b.tar.gz")
 
 # THE MIGRATION compresses every folder already in the attic, contents intact
 record = fresh()
