@@ -71,8 +71,9 @@ for name in PROVIDERS:
     command = next(h["command"] for b in cfg["hooks"]["Stop"] for h in b["hooks"] if "hook.sh" in h["command"])
     session = f"{name}-9"
     payload = json.dumps({"hook_event_name": "Stop", "session_id": session, "transcript_path": f"/t/{session}.jsonl"})
+    inactive = {k: v for k, v in os.environ.items() if k != ACTIVE_ENV}
     p = subprocess.run(command.split(), input=payload, capture_output=True, text=True, timeout=60, cwd=project,
-                       env={**os.environ, "PATH": os.defpath})
+                       env={**inactive, "PATH": os.defpath})
     check(f"{name}: an inactive installed hook returns before binding or writing", (p.returncode, p.stdout, Sessions(project / ".journal").environment(session)), (0, "", ""))
     p = subprocess.run(command.split(), input=payload, capture_output=True, text=True, timeout=60, cwd=project,
                        env={**os.environ, "PATH": os.defpath, ACTIVE_ENV: "1"})

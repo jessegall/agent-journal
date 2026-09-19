@@ -5,7 +5,7 @@ import time
 from datetime import datetime
 from pathlib import Path
 
-from controllers.types import CONTROLLERS
+from controllers.types import CONTROLLERS, Docs, Messages, Notifications, Rules, Todos
 from engine.record import Record
 from resources.base import AGENT, Refused, SYSTEM, USER, TITLE_MAX, titled
 
@@ -89,7 +89,7 @@ class Migration:
                 parts = [{"title": p.get("excerpt", "")[:TITLE_MAX], "body": ", ".join(p.get("became", []) if isinstance(p.get("became"), list) else [str(p.get("became", ""))])} for p in m.get("parts", [])]
                 self.write(record, "message", i, m["text"], brief=m["text"], created=when(m.get("at")), completed=when(m.get("processed")), sections=parts, kind=m.get("kind", ""))
                 for reply in m.get("replies", []):
-                    CONTROLLERS["message"](record, actor=AGENT).comment(i, reply.get("text", ""))
+                    Messages(record, actor=AGENT).comment(i, reply.get("text", ""))
         if self.fresh(record, "question"):
             for i, q in enumerate(load_json(home / "questions.json", "questions"), 1):
                 options = [{"title": o.get("label", ""), "description": o.get("description", ""), "code": o.get("code", "")} for o in q.get("options", [])]
@@ -115,11 +115,11 @@ class Migration:
             for i, n in enumerate(load_json(home / "notifications.json", "notifications"), 1):
                 self.write(record, "notification", i, n["text"], actor=SYSTEM, created=when(n.get("at")))
                 if n.get("read_at"):
-                    CONTROLLERS["notification"](record, actor=USER).read(i)
+                    Notifications(record, actor=USER).read(i)
 
     def closed(self, record: Record, n: int) -> bool:
         try:
-            return bool(CONTROLLERS["todo"](record, actor=SYSTEM).load(n).completed)
+            return bool(Todos(record, actor=SYSTEM).load(n).completed)
         except Refused:
             return True
 
@@ -132,7 +132,7 @@ class Migration:
                 fact = rules[n - 1]["fact"] if n - 1 < len(rules) else fields.get("title", body)
                 self.write(record, "rule", n, fact, brief=body, created=when(fields.get("at")), completed=time.time() if (n - 1 < len(rules) and rules[n - 1].get("struck")) else 0.0)
             for i, r in enumerate(load_json(self.root / "record.json", "rules"), 1):
-                if not CONTROLLERS["rule"](record, actor=SYSTEM).path(i).is_file():
+                if not Rules(record, actor=SYSTEM).path(i).is_file():
                     self.write(record, "rule", i, r["fact"], created=when(r.get("at")), completed=time.time() if r.get("struck") else 0.0, outcome=r.get("struck") or "")
         if self.fresh(record, "doc"):
             for folder in sorted(p for p in (self.root / "docs").iterdir() if p.is_dir()) if (self.root / "docs").is_dir() else []:
@@ -150,7 +150,7 @@ class Migration:
                 self.write(record, "doc", n, fields.get("title", body), abstract=fields.get("abstract", ""), brief=body, actor=AGENT, created=when(fields.get("at")),
                            completed=time.time() if fields.get("status") == "final" else 0.0, sections=parts)
                 if (folder / "files").is_dir():
-                    shutil.copytree(folder / "files", CONTROLLERS["doc"](record, actor=SYSTEM).folder(n), dirs_exist_ok=True)
+                    shutil.copytree(folder / "files", Docs(record, actor=SYSTEM).folder(n), dirs_exist_ok=True)
         if self.fresh(record, "environment"):
             for i, name in enumerate(self.environments(), 1):
                 self.write(record, "environment", i, name)

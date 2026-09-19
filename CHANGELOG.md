@@ -4,6 +4,16 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.13.0 — Exact line counts, running subagents, and a refactor
+
+The status bar's line counts are exact: each step is a before/after diff of the tree, so a commit counts nothing and a deleted file counts every line. A run of edits totals and counts up; an editing, deleting or test command keeps its line while its inner steps run, lingers a second when replaced, and takes its count with it. The shell and subagent dropdowns list what is running now with how long, and a subagent opens its own session on the agent page. More test runners are recognised (dotnet, Maven, Gradle, RSpec, mix) with PHPUnit and .NET outcomes read. A picked answer holds five seconds with a bar and can be cancelled; the agent's replies show apart from comments; the quick-send dialog closes the moment you send. Lists read a per-type index. Features register their own commands.
+
+Fixed: session and settings files could be corrupted or lose changes when two processes or threads wrote at once — every shared JSON state file is now written atomically, and the record lock holds across threads.
+
+Refactor (audit report 14): controllers are reached by class, the files feature runs on blob trees alone, providers read a transcript once, crew counting lives in each provider, the viewer takes tool effects from the provider, and duplicated checks and helpers are one funnel each.
+
+What to do about it: `journal upgrade`, then restart `journal claude`.
+
 ## 2.12.0 — Changes you can see land
 
 A journal update shows in the Activity panel, highlighted. The status bar shows each command's line changes even when the next command starts before they are counted, adds a finished test run's outcome (passed, or how many failed), and holds either a second before moving on. A reply or reaction closes the message it answers, and an edited message is retitled. Claude's usage dropdown fills from its status line; its effort is read from what it last confirmed; picked model and effort changes are shown as pending, can be forced through a busy agent, and are announced over the chat when queued and when delivered. The engine waits while you type in the terminal and checks that its Enter took. Only project files need open work. The terminal band is the bar, the viewer URL, a blank line and the border; the agent bar reads provider, usage, context, model, effort, skills, duration, branch.
