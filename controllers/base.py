@@ -137,7 +137,7 @@ class Controller:
         from controllers.types import Comments, Reactions
         parent = self.load(n)
         made = Comments(self.record, actor=self.actor).create(titled(text), brief=text.strip(), about=parent.ref)
-        self.save(parent, "commented", comment=made.n)
+        self.save(self.load(n), "commented", comment=made.n)
         return made
 
     def comments(self, n: int) -> list[Resource]:

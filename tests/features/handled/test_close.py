@@ -42,6 +42,20 @@ m4 = left.create("done by hand", brief="one thing")
 agent.method("processed")(m4.n, "handled")
 check("an already closed message is left as it is", agent.load(m4.n).outcome, "handled")
 
+# A REPLY OR A REACTION BY THE AGENT answers the user's message and closes it
+asked = left.create("can you look at this?")
+agent.reply(asked.n, "looked, all fine")
+check("the agent's reply closes the message as answered", (bool(agent.load(asked.n).completed), agent.load(asked.n).outcome), (True, "answered by the agent"))
+nod = left.create("thanks")
+agent.react(nod.n, "👍")
+check("the agent's reaction closes it as acknowledged", agent.load(nod.n).outcome, "acknowledged by the agent")
+theirs = left.create("the user's own follow-up")
+left.react(theirs.n, "👍")
+check("the user's own reaction closes nothing", agent.load(theirs.n).completed, 0.0)
+mine = agent.create("the agent's own note")
+agent.react(mine.n, "👀")
+check("a message the agent wrote is never closed this way", agent.load(mine.n).completed, 0.0)
+
 # SWITCHED OFF per environment
 record = fresh()
 record.set_setting("features", {"handled": False})
