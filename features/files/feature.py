@@ -151,14 +151,18 @@ class Files(Feature):
             if list(files.values()) != work.changed or commits != work.commits:
                 works.update(work.n, changed=list(files.values()), commits=commits)
             if any(delta[k] for k in (DELTA.edited, DELTA.created, DELTA.deleted)):
-                self.count(record, agent.n, delta)
+                self.count(record, agent.n, self.finished(agent.running), delta)
 
-    def count(self, record, n: int, delta: dict) -> None:
+    def finished(self, running: dict) -> float:
+        run = running if running.get(RUNNING.done) else running.get(RUNNING.before) or {}
+        return run.get(RUNNING.at, 0)
+
+    def count(self, record, n: int, ran: float, delta: dict) -> None:
         agents = Agents(record, actor=SYSTEM)
         running = agents.load(n).running
-        late = not running.get(RUNNING.done) and running.get(RUNNING.before)
-        edited = running[RUNNING.before] if late else running
-        if not edited:
+        late = running.get(RUNNING.at) != ran
+        edited = running.get(RUNNING.before) or {} if late else running
+        if not ran or edited.get(RUNNING.at) != ran:
             return
         prior = edited.get(RUNNING.changed) or {}
         edited = {**edited, RUNNING.changed: {key: prior.get(key, 0) + value for key, value in delta.items()}}

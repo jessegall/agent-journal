@@ -85,12 +85,12 @@ class Provider(ABC):
     def shell(self, row, hook: Hook) -> dict:
         doing = hook.tool.doing.strip()[:400]
         running = dict(row.running)
+        before = {k: v for k, v in running.items() if k in (RUNNING.what, RUNNING.tool, RUNNING.at, RUNNING.done, RUNNING.effect, RUNNING.changed, RUNNING.result)}
         if hook.event == "UserPromptSubmit":
-            return {AgentRow.running: {}, AgentRow.commands: list(row.commands)}
+            return {AgentRow.running: {RUNNING.before: before} if before.get(RUNNING.done) else {}, AgentRow.commands: list(row.commands)}
         if hook.event == "PreToolUse" and doing:
             now = time.time()
             effect = self.effect(hook)
-            before = {k: v for k, v in running.items() if k in (RUNNING.what, RUNNING.tool, RUNNING.at, RUNNING.done, RUNNING.effect, RUNNING.changed, RUNNING.result)}
             running = {RUNNING.what: doing, RUNNING.tool: hook.tool.name, RUNNING.at: now, **({RUNNING.effect: effect} if effect else {}),
                        **({RUNNING.before: before} if before.get(RUNNING.done) else {})}
             return {AgentRow.running: running, AgentRow.commands: (list(row.commands) + [{COMMAND.what: doing, COMMAND.tool: hook.tool.name, COMMAND.at: now,
