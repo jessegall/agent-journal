@@ -476,13 +476,13 @@ def get_stream(req: Request) -> Reply:
 
 @route("GET", "/api/{env}/{type}")
 def get_all(req: Request) -> Reply:
-    rows = req.controller().all()
+    controller = req.controller()
     last = int(req.query.get("last") or 0)
     if not last:
-        return Reply(200, [shaped(r) for r in rows])
-    window = rows[-last:]
-    kept = [r for r in rows[:-last] if not r.completed] + window
-    return Reply(200, {"rows": [shaped(r) for r in kept], "more": len(rows) > last})
+        return Reply(200, [shaped(r) for r in controller.all()])
+    rows = [row for row in controller.summaries() if not row["deleted"]]
+    kept = [row for row in rows[:-last] if not row["completed"]] + rows[-last:]
+    return Reply(200, {"rows": [shaped(controller.load(row["n"])) for row in kept], "more": len(rows) > last})
 
 
 @route("POST", "/api/{env}/{type}")
