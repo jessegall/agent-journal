@@ -98,7 +98,7 @@ old = project / ".journal" / "environments" / "main"
 (project / ".journal" / "runtime" / "keep").write_text("record state\n")
 from install import upgrade  # noqa: E402
 said = upgrade(project)
-check("upgrade wires, writes skills and runs the migrations, and says so", (any("skills" in l for l in said), said[-1]), (True, "migrations run: m0001_the_old_record, m0002_rule_targets"))
+check("upgrade wires, writes skills and runs the migrations, and says so", (any("skills" in l for l in said), said[-1]), (True, "migrations run: m0001_the_old_record, m0002_rule_targets, m0003_unify_rule_injection"))
 check("the old row is a v2 to-do with its number", Todos(Record(project / ".journal", "main")).load(3).title, "an old row")
 check("upgrade refreshes package code and removes retired package files", ("def context" in (project / ".journal" / "providers" / "codex.py").read_text(), (project / ".journal" / "providers" / "retired.py").exists()), (True, False))
 check("upgrade preserves the project record", (project / ".journal" / "runtime" / "keep").read_text(), "record state\n")

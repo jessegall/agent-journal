@@ -1,5 +1,6 @@
 import json
 import mimetypes
+import os
 import re
 import subprocess
 import tempfile
@@ -348,6 +349,22 @@ def get_files(req: Request) -> Reply:
     return Reply(200, sorted(out, key=lambda x: -x["at"]))
 
 
+@route("GET", "/api/{env}/project-files")
+def get_project_files(req: Request) -> Reply:
+    project = req.root.parent.resolve()
+    out = []
+    for folder, dirs, names in os.walk(project):
+        dirs[:] = [name for name in dirs if not name.startswith(".") and name != "__pycache__" and name != "node_modules"]
+        for name in names:
+            path = Path(folder) / name
+            if not path.is_file():
+                continue
+            relative = path.relative_to(project)
+            kind = mimetypes.guess_type(path.name)[0] or ""
+            out.append({"path": str(relative), "size": path.stat().st_size, "kind": kind})
+    return Reply(200, sorted(out, key=lambda x: x["path"].lower()))
+
+
 @route("GET", "/api/{env}/agent/{n}/transcript")
 def get_transcript(req: Request) -> Reply:
     row = Agents(req.record(), actor=USER).load(int(req.params["n"]))
@@ -470,7 +487,7 @@ def post_upload(req: Request) -> Reply:
 @route("POST", "/api/{env}/{type}/read-all")
 def post_read_all(req: Request) -> Reply:
     controller = req.controller()
-    return Reply(200, represented([controller.read(int(n)) for n in req.body.get("numbers", [])]))
+    return Reply(200, represented(controller.read_all(req.body.get("numbers", []))))
 
 
 @route("POST", "/api/{env}/{type}/{action}")

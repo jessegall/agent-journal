@@ -62,6 +62,10 @@ for type_ in TYPES:                                                   # every ty
     code, got = call("POST", f"/api/main/{type_}", {"title": "bad: colon"})
     check(f"{type_}: the title rule holds over HTTP", (code, "colon" in got["error"]), (400, True))
 
+code, first_message = call("POST", "/api/main/message", {"title": "queued once", "idempotency": "outbox-1"})
+code, duplicate_message = call("POST", "/api/main/message", {"title": "queued twice", "idempotency": "outbox-1"})
+check("messages with an idempotency key are created once", (code, duplicate_message["n"], duplicate_message["title"]), (201, first_message["n"], "queued once"))
+
 code, got = call("GET", "/api/main/nothing")
 check("an unknown type is a 404", code, 404)
 code, got = call("POST", "/api/main/todo/1/nothing", {})
@@ -76,8 +80,11 @@ check("search spans every type", (code, sorted({r["type"] for r in got}) == ["to
 check("no term: nothing", call("GET", "/api/main/search")[1], [])
 call("POST", "/api/main/notification", {"title": "one unread", "actor": "agent"})
 call("POST", "/api/main/notification", {"title": "two unread", "actor": "agent"})
+before = call("GET", "/api/main/events?since=0")[1]
 code, got = call("POST", "/api/main/notification/read-all", {"numbers": [2, 3]})
 check("one bulk request marks many rows read", (code, [r["seen"] for r in got]), (200, [["agent", "user"], ["agent", "user"]]))
+after = call("GET", "/api/main/events?since=0")[1]
+check("one bulk read emits one refresh event", (len(after) - len(before), after[-1]["data"]), (1, {"numbers": [2, 3], "seen": "user"}))
 import tempfile  # noqa: E402
 shot = Path(tempfile.mkdtemp()) / "shot.png"
 shot.write_bytes(b"\x89PNG")
@@ -135,6 +142,8 @@ check("what the status bar shows is logged for the record", (code, (root / "runt
 (root.parent / "web" / "gist.js").write_text("export const a = 1;\nexport const b = 2;\n")
 code, got = call("GET", "/api/main/file?path=web/gist.js")
 check("a project file is served read-only with its text and line count", (code, got["path"], got["lines"], got["text"].startswith("export")), (200, "web/gist.js", 2, True))
+code, project_files = call("GET", "/api/main/project-files")
+check("the project file index lists visible files without journal internals", (code, any(f["path"] == "web/gist.js" for f in project_files), any(f["path"].startswith(".journal/") for f in project_files)), (200, True, False))
 code, got = call("GET", f"/api/main/file?path={str(root.parent / 'web' / 'gist.js').replace('/', '%2F')}")
 check("an absolute mention inside the project resolves to its concise project path", (code, got["path"]), (200, "web/gist.js"))
 check("a path outside the project is refused", call("GET", "/api/main/file?path=../../etc/passwd")[0], 404)

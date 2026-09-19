@@ -1,11 +1,12 @@
 <script setup>
 import {computed} from "vue";
-import {markdown} from "../text/markdown.js";
+import {render} from "../text/index.js";
 import {peek, route} from "../route.js";
 import {types} from "../store.js";
+import "../text/all.js";
 
 const props = defineProps({text: {type: String, default: ""}});
-const html = computed(() => markdown(props.text, {types: types.value, env: route.value.env}));
+const html = computed(() => render(props.text, {types: types.value, env: route.value.env}));
 
 function follow(e) {
     const pill = e.target.closest("[data-peek]");

@@ -5,7 +5,11 @@ from features.base import Feature, on
 from providers import PROVIDERS
 
 TAGS = ("[!discovery]", "[!correction]", "[!blocked]", "[!info]", "[!reply]")
-TAG = re.compile(r"^\s*(?:\*\*)?\[!(?:discovery|correction|blocked|info|reply)\](?:\*\*)?\s*")
+TAG = re.compile(
+    r"^[ \t]*(?:\*\*)?(?:"
+    + "|".join(re.escape(tag) for tag in TAGS)
+    + r")(?:\*\*)?(?:[ \t]+|$)"
+)
 
 
 def visible(text: str) -> str:

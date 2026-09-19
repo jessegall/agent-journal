@@ -1,4 +1,4 @@
-from controllers.types import Todos, Works
+from controllers.types import Agents, Todos, Works
 from features import trigger
 from features.base import Feature, on
 from resources.base import SYSTEM
@@ -8,9 +8,11 @@ from resources.types import Work
 class WorkFeature(Feature):
     name = "work"
     title_ = "Work"
-    abstract_ = "Work started for a to-do is linked to it; work ended --todo closes the row; open work is said on idle"
-    help_ = "Start work with --todo=<n> to take a row; end it with --todo to close the row with it."
+    abstract_ = "Work started for a to-do is linked to it; its log is kept, and twenty edits without an entry hold the writes; work ended --todo closes the row"
+    help_ = 'Start work with --todo=<n> to take a row; log each decision and turn with journal work log <n> "<message>" (work.log_after, 20 edits, without an entry holds the writes); end it with --todo to close the row with it.'
     trigger = {"on": trigger.WORKED}
+    EDITS, LOG_AFTER = "edits", "log_after"
+    log_after = 20
 
     @on("work.created")
     def started(self, event, record) -> None:
@@ -39,4 +41,26 @@ class WorkFeature(Feature):
         if not agent:
             return
         for w in self.standing(record, "work")[:1]:
-            self.nudge(record, agent, f"work {w.n} open")
+            if w.sections:
+                self.nudge(record, agent, f"work {w.n} open")
+            else:
+                self.nudge(record, agent, f"work {w.n} open, nothing logged", brief=f'journal work log {w.n} "<what was decided or done, and why>"')
+
+    @on("agent.updated")
+    def edited(self, event, record) -> None:
+        agent = self.agent(event, record)
+        work = self.standing(record, "work")[:1]
+        if not agent or not agent.wrote or not work:
+            return
+        edits = int(trigger.last(record, agent.title, self.name).get(self.EDITS) or 0) + 1
+        trigger.write(record, agent, self.name, edits=edits)
+        if edits >= record.setting(self.name, {}).get(self.LOG_AFTER, self.log_after):
+            self.hold(record, f'{edits} edits since work {work[0].n} was last logged: journal work log {work[0].n} "<what was decided or done, and why>" before any other write')
+
+    @on("work.updated")
+    def logged(self, event, record) -> None:
+        if not event.data.get("section"):
+            return
+        for agent in Agents(record, actor=SYSTEM).all():
+            trigger.write(record, agent, self.name, edits=0)
+        self.release(record)

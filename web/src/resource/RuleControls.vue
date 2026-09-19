@@ -7,13 +7,12 @@ import {route} from "../route.js";
 
 const props = defineProps({resource: Object});
 const error = ref("");
-const claude = computed(() => Boolean(props.resource.data.injected));
-const codex = computed(() => Boolean(props.resource.data.injected_codex));
+const injected = computed(() => Boolean(props.resource.data.injected));
 
-async function toggle(into, on) {
+async function toggle(on) {
     error.value = "";
     try {
-        await act(route.value.env, "rule", props.resource.n, on ? "inject" : "uninject", {into});
+        await act(route.value.env, "rule", props.resource.n, on ? "inject" : "uninject");
     } catch (e) {
         error.value = e.message;
     }
@@ -32,8 +31,7 @@ async function pin() {
 <template>
     <div class="rule-controls">
         <span class="rule-control-label">Inject into</span>
-        <Switch :on="claude" word="CLAUDE.md" framed @change="toggle('claude', $event)" />
-        <Switch :on="codex" word="AGENTS.md" framed @change="toggle('codex', $event)" />
+        <Switch :on="injected" word="instructions" framed @change="toggle" />
         <Btn small @click="pin">Pin over chat</Btn>
         <template v-if="error">
             <span class="error">{{ error }}</span>

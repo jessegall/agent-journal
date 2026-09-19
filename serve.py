@@ -1,6 +1,9 @@
 import json
+import os
 import re
 import sys
+import threading
+import time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qsl, urlparse
@@ -75,8 +78,56 @@ def serve(root: Path, port: int = 8430) -> ThreadingHTTPServer:
     return server
 
 
+WATCH_SECONDS = 1.0
+SETTLE_SECONDS = 1.5
+IGNORED_CODE_FOLDERS = {"__pycache__", "environments", "runtime", "tests"}
+
+
+def code_snapshot(package: Path) -> tuple[tuple[str, int], ...]:
+    files = []
+    for path in package.rglob("*.py"):
+        relative = path.relative_to(package)
+        if any(part.startswith(".") or part in IGNORED_CODE_FOLDERS for part in relative.parts[:-1]):
+            continue
+        try:
+            files.append((str(path), path.stat().st_mtime_ns))
+        except OSError:
+            continue
+    return tuple(sorted(files))
+
+
+def watch_code(package: Path, server: ThreadingHTTPServer, changed: threading.Event) -> None:
+    before = code_snapshot(package)
+    last_change = 0.0
+    while not changed.is_set():
+        time.sleep(WATCH_SECONDS)
+        now = code_snapshot(package)
+        if now != before:
+            before = now
+            last_change = time.monotonic()
+        elif last_change and time.monotonic() - last_change >= SETTLE_SECONDS:
+            changed.set()
+            server.shutdown()
+
+
+def run(root: Path, port: int = 8430) -> None:
+    server = serve(root, port)
+    print(f"http://127.0.0.1:{server.server_address[1]}/", flush=True)
+    changed = threading.Event()
+    threading.Thread(target=watch_code, args=(Path(__file__).resolve().parent, server, changed), daemon=True).start()
+    try:
+        server.serve_forever()
+    except KeyboardInterrupt:
+        pass
+    finally:
+        server.server_close()
+    if changed.is_set():
+        print("journal: Python code changed; restarting on the same port", flush=True)
+        command = [sys.executable, str(Path(__file__).resolve().with_name("journal.py")), "--root", str(root), "serve", "--port", str(server.server_port)]
+        os.execv(sys.executable, command)
+
+
 if __name__ == "__main__":
     root = Path(sys.argv[1] if len(sys.argv) > 1 else ".journal").resolve()
     port = int(sys.argv[2]) if len(sys.argv) > 2 else 8430
-    print(f"http://127.0.0.1:{port}/")
-    serve(root, port).serve_forever()
+    run(root, port)

@@ -218,6 +218,8 @@ watch(
 
 <style scoped>
 .statusbar-running {
+    --command-in: 180ms;
+    --command-out: 150ms;
     flex: 0 1 auto;
     min-width: 0;
     position: relative;
@@ -251,7 +253,7 @@ watch(
     flex: 0 1 auto;
     min-width: 0;
     gap: 0.55em;
-    transition: width 240ms cubic-bezier(0.22, 0.7, 0.3, 1);
+    transition: width var(--command-in) cubic-bezier(0.22, 0.7, 0.3, 1);
     display: inline-flex;
     align-items: baseline;
     overflow: hidden;
@@ -264,8 +266,8 @@ watch(
 
 .statusbar-run-token {
     transition:
-        opacity 240ms ease,
-        transform 240ms cubic-bezier(0.22, 0.7, 0.3, 1);
+        opacity var(--command-in) ease,
+        transform var(--command-in) cubic-bezier(0.22, 0.7, 0.3, 1);
 }
 
 .statusbar-run-token.fresh {
@@ -276,8 +278,8 @@ watch(
 
 .token-leave-active {
     transition:
-        opacity 200ms ease,
-        transform 200ms cubic-bezier(0.22, 0.7, 0.3, 1);
+        opacity var(--command-out) ease,
+        transform var(--command-out) cubic-bezier(0.22, 0.7, 0.3, 1);
 }
 
 .token-leave-to {
@@ -389,20 +391,20 @@ watch(
 
 .roll-enter-active {
     transition:
-        opacity 240ms ease,
-        transform 240ms cubic-bezier(0.22, 0.7, 0.3, 1);
+        opacity var(--command-in) ease,
+        transform var(--command-in) cubic-bezier(0.22, 0.7, 0.3, 1);
 }
 
 .roll-leave-active {
     transition:
-        opacity 200ms ease,
-        transform 200ms cubic-bezier(0.22, 0.7, 0.3, 1);
+        opacity var(--command-out) ease,
+        transform var(--command-out) cubic-bezier(0.22, 0.7, 0.3, 1);
 }
 
 .statusbar-running.ending .roll-leave-active {
     transition:
-        opacity 200ms ease 90ms,
-        transform 200ms cubic-bezier(0.22, 0.7, 0.3, 1) 90ms;
+        opacity var(--command-out) ease 90ms,
+        transform var(--command-out) cubic-bezier(0.22, 0.7, 0.3, 1) 90ms;
 }
 
 .roll-enter-from {

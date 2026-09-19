@@ -6,7 +6,7 @@ from pathlib import Path
 from engine.record import Record
 from resources.base import Refused, Resource, SECTION, check_abstract, check_title, titled
 from resources.pictures import dimensions
-from resources.shapes import check
+from resources.shapes import Options, check, normalize_options
 
 FACES = ("👍", "❤️", "🎉", "😄", "👀", "🙏", "👎", "💔", "😠")
 
@@ -48,7 +48,7 @@ class Controller:
 
     def _shaped(self, data: dict) -> dict:
         fields = self.resource.fields
-        return {k: check(k, fields[k], v) if k in fields else v for k, v in data.items()}
+        return {k: check(k, fields[k], normalize_options(v) if k == Options.options else v) if k in fields else v for k, v in data.items()}
 
     def create(self, title: str, abstract: str = "", brief: str = "", **data) -> Resource:
         with self.record.locked():
@@ -213,11 +213,25 @@ class Controller:
         return self.read(n)
 
     def read(self, n: int) -> Resource:
-        r = self.load(n)
-        if self.actor in r.seen:
-            return r
-        r.seen.append(self.actor)
-        return self.save(r, "updated", seen=self.actor)
+        return self.read_all([n])[0]
+
+    def read_all(self, numbers: list[int]) -> list[Resource]:
+        rows = []
+        changed = []
+        wanted = list(dict.fromkeys(int(n) for n in numbers))
+        with self.record.locked():
+            for n in wanted:
+                r = self.load(n)
+                rows.append(r)
+                if self.actor in r.seen:
+                    continue
+                r.seen.append(self.actor)
+                r.updated = time.time()
+                self.path(r.n).write_text(r.dump())
+                changed.append(r)
+            if changed:
+                self.record.emit(self.type, changed[0].n, "updated", self.actor, numbers=[r.n for r in changed], seen=self.actor)
+        return rows
 
     def unread(self, actor: str | None = None) -> list[Resource]:
         who = actor or self.actor

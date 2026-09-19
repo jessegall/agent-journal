@@ -1,23 +1,35 @@
 <script setup>
-import {computed, nextTick, reactive} from "vue";
+import {computed, nextTick, reactive, ref, watch} from "vue";
 import {act} from "../api.js";
 import Btn from "../kit/Btn.vue";
 import {route} from "../route.js";
 import {age, quoted, rows, withQuote} from "../store.js";
 import Compose from "../chat/Compose.vue";
+import Markdown from "./Markdown.vue";
 
 const props = defineProps({
     resource: Object,
     quote: {type: String, default: ""},
     showThread: {type: Boolean, default: true},
     compose: {type: Boolean, default: true},
+    focus: {type: Number, default: 0},
 });
 const emit = defineEmits(["sent"]);
+const list = ref(null);
 const thread = computed(() =>
     rows("comment")
         .filter((c) => c.refs.includes(props.resource.ref) && !c.deleted)
         .map((c) => ({...c, ...quoted(c.brief)}))
 );
+
+async function focusComment() {
+    if (!props.focus) return;
+    await nextTick();
+    const row = list.value?.querySelector(`[data-comment="${props.focus}"]`);
+    if (row) row.scrollIntoView({behavior: "smooth", block: "center"});
+}
+
+watch([() => props.focus, thread], focusComment, {immediate: true, flush: "post"});
 
 const editing = reactive({n: 0, text: "", error: ""});
 
@@ -49,7 +61,7 @@ async function send(text) {
 </script>
 
 <template>
-    <section v-if="props.showThread" class="comments">
+    <section v-if="props.showThread" ref="list" class="comments">
         <template v-if="thread.length">
             <h3>Comments</h3>
         </template>
@@ -57,17 +69,17 @@ async function send(text) {
             <p class="none">No comments yet.</p>
         </template>
         <template v-for="c in thread" :key="c.n">
-            <div :class="['comment', c.seen[0]]" :data-comment="c.n">
+            <div :class="['comment', c.seen[0], {focused: c.n === props.focus}]" :data-comment="c.n">
                 <span class="who">
                     {{ c.seen[0] }} · {{ age(c.created) }}
-                    <template v-if="c.completed">
-                        <span class="done">· handled: {{ c.outcome }}</span>
-                    </template>
                     <span class="tools">
                         <button type="button" class="tool" title="Edit this comment" @click="edit(c)">Edit</button>
                         <button type="button" class="tool" title="Delete this comment" @click="remove(c)">Delete</button>
                     </span>
                 </span>
+                <template v-if="c.completed">
+                    <div class="done">· handled: <Markdown class="done-text" :text="c.outcome" /></div>
+                </template>
                 <template v-if="editing.n === c.n">
                     <textarea v-model="editing.text" rows="3" @keydown.esc="editing.n = 0" @keydown.meta.enter.prevent="save" />
                     <span class="edit-row">
@@ -82,7 +94,7 @@ async function send(text) {
                     <template v-if="c.quote">
                         <span class="quoted">{{ c.quote }}</span>
                     </template>
-                    <span class="text">{{ c.text }}</span>
+                    <Markdown :text="c.text" />
                 </template>
             </div>
         </template>
@@ -124,6 +136,11 @@ h3 {
 
 .comment.agent {
     border-left: 2px solid var(--accent);
+}
+
+.comment.focused {
+    outline: 1px solid var(--accent);
+    outline-offset: 2px;
 }
 
 .who {
@@ -184,12 +201,15 @@ textarea {
 }
 
 .done {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 4px;
     color: var(--text-3);
 }
 
-.text {
-    white-space: pre-wrap;
-    color: var(--text-2);
+.done-text :deep(p) {
+    display: inline;
+    margin: 0;
 }
 
 .quoted {
