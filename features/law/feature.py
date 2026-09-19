@@ -10,5 +10,5 @@ class Law(Feature):
     fixed = True
 
     @refuses
-    def dispatch(self, provider, record, payload, session) -> str:
-        return refusal(provider.name, payload)
+    def dispatch(self, provider, record, hook, session) -> str:
+        return refusal(provider.name, hook.tool)

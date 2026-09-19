@@ -24,5 +24,5 @@ class Gate(Feature):
         self.on_work(event, record)
 
     @refuses
-    def held(self, provider, record, payload, session) -> str:
-        return provider.gate(record.root, record.env, session) if provider.writes(payload) else ""
+    def held(self, provider, record, hook, session) -> str:
+        return provider.gate(record.root, record.env, session) if provider.writes(hook) else ""

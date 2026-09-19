@@ -5,8 +5,8 @@ APPROVAL_FLAGS = {"claude": frozenset({"--permission-mode", "--dangerously-skip-
                   "codex": frozenset({"-a", "--ask-for-approval", "--approve-for-me", "--full-auto", "--dangerously-bypass-approvals-and-sandbox"})}
 
 
-def refusal(payload: dict) -> str:
-    return QUESTION_REFUSAL if payload.get("tool_name") in QUESTION_TOOLS else ""
+def refusal(hook) -> str:
+    return QUESTION_REFUSAL if hook.tool.name in QUESTION_TOOLS else ""
 
 
 def launch_args(record, provider: str, args: list[str]) -> list[str]:

@@ -5,6 +5,7 @@ from pathlib import Path
 
 from engine.transcript import AGENT, HUMAN, INJECTED, TOOL, timestamp
 from providers.base import EVENTS, Provider
+from providers.payload import Hook
 from resources.types import AgentRow
 
 TOOLS = {"exec": "Bash", "exec_command": "Bash", "shell": "Bash", "shell_command": "Bash", "apply_patch": "Edit"}
@@ -50,11 +51,10 @@ class Codex(Provider):
             return content
         return "\n".join(str(block.get("text") or "") for block in content or [] if isinstance(block, dict) and block.get("type") in ("input_text", "output_text", "text"))
 
-    def context(self, payload: dict) -> float | None:
-        path = Path(str(payload.get("transcript_path") or ""))
+    def context(self, hook: Hook) -> float | None:
         try:
-            rows = reversed(path.read_text().splitlines())
-        except OSError:
+            rows = reversed(hook.transcript.read_text().splitlines())
+        except (OSError, AttributeError):
             return None
         for raw in rows:
             try:
@@ -70,11 +70,10 @@ class Codex(Provider):
                 return round(100 * used / window, 1)
         return None
 
-    def telemetry(self, row, event: str, payload: dict) -> dict:
-        if event == "SubagentStart":
+    def telemetry(self, row, hook: Hook) -> dict:
+        if hook.event == "SubagentStart":
             return {AgentRow.subagents: int(row.subagents or 0) + 1}
-        response = payload.get("tool_response")
-        if event == "PostToolUse" and payload.get("tool_name") == "Bash" and isinstance(response, dict) and response.get("session_id") is not None:
+        if hook.event == "PostToolUse" and hook.tool.name == "Bash" and hook.tool.response.get("session_id") is not None:
             return {AgentRow.shells: int(row.shells or 0) + 1}
         return {}
 

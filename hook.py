@@ -7,6 +7,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import features  # noqa: E402
 from engine.sessions import ACTIVE_ENV, Sessions  # noqa: E402
 from providers import PROVIDERS  # noqa: E402
+from providers.payload import Hook  # noqa: E402
 
 
 def default_env(root: Path) -> str:
@@ -20,15 +21,15 @@ def main(argv: list[str]) -> int:
     provider = PROVIDERS[argv[0]]()
     root = Path(argv[1])
     try:
-        payload = json.load(sys.stdin)
+        raw = json.load(sys.stdin)
     except ValueError:
         return 0
     sessions = Sessions(root)
-    session = provider.session_of(payload)
+    session = Hook.read(raw).session
     env = sessions.environment(session) or sessions.bind(session, default_env(root), pid=os.getppid())["environment"]
     sessions.touch(session)
     features.load()
-    out = provider.handle(root, env, payload)
+    out = provider.handle(root, env, raw)
     if out:
         print(json.dumps(out))
     return 0
