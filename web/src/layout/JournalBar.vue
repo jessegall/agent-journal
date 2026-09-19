@@ -4,7 +4,7 @@ import {act, saveSettings} from "../api.js";
 import Icon from "../kit/Icon.vue";
 import Switch from "../kit/Switch.vue";
 import {age} from "../store.js";
-import {capital, lineOf, planButton, stateOf} from "./statusline.js";
+import {lineOf, planButton, stateOf, wordOf} from "./statusline.js";
 
 const props = defineProps({journal: {type: Object, required: true}, open: Boolean});
 const emit = defineEmits(["toggle", "changed", "forget"]);
@@ -42,7 +42,7 @@ function stateFor(e) {
 }
 
 function lineFor(e) {
-    return props.journal.gone ? "the viewer stopped answering" : lineOf(agentOf(e), worksOf(e));
+    return props.journal.gone ? "the viewer stopped answering" : lineOf(agentOf(e), worksOf(e), e.auto);
 }
 
 const environments = computed(() => (props.journal.summary || {}).environments || []);
@@ -84,7 +84,7 @@ const counts = (c) => [
             </template>
             <template v-else-if="reporting">
                 <span class="jbar-env">{{ reporting.name }}</span>
-                <span class="jbar-state">{{ capital(stateFor(reporting)) }}</span>
+                <span class="jbar-state">{{ wordOf(stateFor(reporting), reporting.auto) }}</span>
                 <span class="jbar-line">{{ lineFor(reporting) }}</span>
             </template>
             <span class="jbar-counts">
@@ -136,7 +136,7 @@ const counts = (c) => [
                 <div class="jbar-envline">
                     <span :class="['jbar-dot', {live: stateFor(e) !== 'stopped'}]" />
                     <a class="jbar-envname" :href="`${base}/#/${e.name}`">{{ e.name }}</a>
-                    <span class="jbar-state">{{ capital(stateFor(e)) }}</span>
+                    <span class="jbar-state">{{ wordOf(stateFor(e), e.auto) }}</span>
                     <span class="jbar-line">{{ lineFor(e) }}</span>
                     <span class="jbar-counts">
                         <template v-for="[key, n, what] in counts(e.counts)" :key="key">
