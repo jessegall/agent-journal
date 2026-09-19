@@ -9,14 +9,15 @@ from resources.base import SYSTEM, USER
 SHOWN = ("ready", "active", "waiting", "done")
 
 
-def phase_done(phase: dict, todos: dict) -> bool:
-    return bool(phase["todos"]) and all(todos.get(n) for n in phase["todos"])
+def rows_of(p) -> list[int]:
+    return [n for phase in p.phases for n in phase["todos"]]
 
 
 def plan(p, todos: dict) -> dict:
     current = p.phases[p.current - 1] if p.phases and 0 < p.current <= len(p.phases) else None
+    rows = rows_of(p)
     return {"n": p.n, "title": p.title, "status": p.status, "current": p.current, "phase": current["title"] if current else "",
-            "phases": len(p.phases), "done": sum(phase_done(ph, todos) for ph in p.phases)}
+            "phases": len(p.phases), "rows": len(rows), "done": sum(bool(todos.get(n)) for n in rows)}
 
 
 def environment(record: Record) -> dict:

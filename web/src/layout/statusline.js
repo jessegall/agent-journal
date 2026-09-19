@@ -374,8 +374,12 @@ export function phaseOf(p) {
     return p.data.phases[i - 1] ? `phase ${i}, ${p.data.phases[i - 1].title}` : "";
 }
 
+export function rowsOf(p) {
+    return p.data.phases.flatMap((ph) => ph.todos);
+}
+
 export function doneOf(p, todos) {
-    return p.data.phases.filter((ph) => ph.todos.length && ph.todos.every((n) => (todos.find((t) => t.n === n) || {}).completed)).length;
+    return rowsOf(p).filter((n) => (todos.find((t) => t.n === n) || {}).completed).length;
 }
 
 export function planButton(p) {

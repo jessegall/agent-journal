@@ -53,9 +53,9 @@ plans.place(1, 2, [2])
 plans.ready(1)
 Plans(record, actor=USER).activate(1)
 got = environment(record)["plans"]
-check("an active plan says its phase and how many phases are done", got, [{"n": 1, "title": "the plan", "status": "active", "current": 1, "phase": "First", "phases": 2, "done": 0}])
+check("an active plan says its phase and how many of its rows are done", got, [{"n": 1, "title": "the plan", "status": "active", "current": 1, "phase": "First", "phases": 2, "rows": 2, "done": 0}])
 Todos(record, actor=AGENT).complete(1, how="shipped")
-check("a phase is done when its rows are", environment(record)["plans"][0]["done"], 1)
+check("each row done counts towards the plan, whichever phase it sits in", environment(record)["plans"][0]["done"], 1)
 check("a draft plan is not shown", len([plans.create(title="draft", goal="g")]) and len(environment(record)["plans"]), 1)
 
 whole = summarize(record.root)

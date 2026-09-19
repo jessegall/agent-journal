@@ -169,7 +169,7 @@ const counts = (c) => [
                     <span class="jbar-plan-title">{{ p.title }}</span>
                     <span class="jbar-plan-phase">{{ p.phase ? `phase ${p.current}, ${p.phase}` : "" }}</span>
                     <span class="jbar-track" role="progressbar">
-                        <span :style="{width: `${(100 * p.done) / Math.max(1, p.phases)}%`}" />
+                        <span :style="{width: `${(100 * p.done) / Math.max(1, p.rows)}%`}" />
                     </span>
                     <button v-if="wordFor(p)" type="button" :class="['jbar-act', {ack: p.status === 'done'}]" @click="runPlan(e, p)">
                         {{ wordFor(p) }}
