@@ -10,9 +10,24 @@ const REVEAL_AFTER = 240;
 const HIDE_AFTER = 5000;
 const SHOW_CLOCK_AFTER = 10;
 const sentence = (words) => spoken(words, types.value);
-const EFFECTS = {tests: "running tests", deletes: "deleting files", writes: "making edits", reads: "reading files"};
-const said = (c) => (c.effect ? [EFFECTS[c.effect]] : c.tool && c.tool !== "Bash" ? [c.what] : gists(c.what, sentence));
-const tokensOf = (c, text) => (c.effect ? [{value: text, kind: "words"}] : gistTokens(text));
+const EFFECTS = {
+    tests: [
+        {value: "running", kind: "command"},
+        {value: "tests", kind: "argument"},
+    ],
+    deletes: [
+        {value: "deleting", kind: "command"},
+        {value: "files", kind: "argument"},
+    ],
+    writes: [{value: "making edits", kind: "command"}],
+    reads: [
+        {value: "reading", kind: "command"},
+        {value: "files", kind: "argument"},
+    ],
+};
+const said = (c) =>
+    c.effect ? [EFFECTS[c.effect].map((t) => t.value).join(" ")] : c.tool && c.tool !== "Bash" ? [c.what] : gists(c.what, sentence);
+const tokensOf = (c, text) => (c.effect ? EFFECTS[c.effect] : gistTokens(text));
 const data = computed(() => (agent.value && ["working", "compacting"].includes(agent.value.data.status) ? agent.value.data : null));
 const ticks = ref(0);
 const timer = setInterval(() => (ticks.value += 1), 1000);
@@ -309,10 +324,6 @@ watch(
 .statusbar-run-token.command {
     color: var(--text-2);
     font-weight: 500;
-}
-
-.statusbar-run-token.words {
-    color: var(--text-3);
 }
 
 .statusbar-run-token.argument {
