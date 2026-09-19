@@ -10,7 +10,9 @@ const emit = defineEmits(["edit"]);
 const error = ref("");
 const prompt = ref("");
 const text = ref("");
-const offered = computed(() => (props.resource.completed ? ["delete"] : ["complete", "delete"]));
+const offered = computed(() =>
+    props.resource.completed ? ["delete"] : meta(props.resource.type).closed_first ? ["complete"] : ["complete", "delete"]
+);
 
 async function run(method) {
     error.value = "";
@@ -40,7 +42,7 @@ async function run(method) {
                 @keydown.enter="run(prompt)"
                 @keydown.esc="prompt = ''"
             />
-            <Btn kind="primary" small @click="run(prompt)">{{ word(resource.type, prompt) }}</Btn>
+            <Btn small @click="run(prompt)">{{ word(resource.type, prompt) }}</Btn>
             <Btn small @click="prompt = ''">Cancel</Btn>
         </template>
         <template v-else>
@@ -48,7 +50,7 @@ async function run(method) {
                 <Btn small @click="emit('edit')">Edit</Btn>
             </template>
             <template v-for="m in offered" :key="m">
-                <Btn :kind="m === 'complete' ? (resource.type === 'todo' ? 'ghost' : 'primary') : 'danger'" small @click="m === 'complete' ? (prompt = m) : run(m)">
+                <Btn :kind="m === 'complete' ? 'ghost' : 'danger'" small @click="m === 'complete' ? (prompt = m) : run(m)">
                     {{ word(resource.type, m) }}
                 </Btn>
             </template>

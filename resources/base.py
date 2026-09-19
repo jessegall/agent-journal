@@ -75,6 +75,7 @@ class Resource:
     counted: ClassVar[bool] = False     # handed as a count, not row by row
     lent: ClassVar[bool] = True         # a subagent lent the environment may write it
     mirror: ClassVar[bool] = False      # it exists about another resource and is shown under it, never on its own
+    closed_first: ClassVar[bool] = False
     scope: ClassVar[str] = ENVIRONMENT   # whose it is: one environment's, or the whole project's
     notify: ClassVar[tuple] = (USER, AGENT)   # who is told of its events, besides the actor
     spoken: ClassVar[bool] = False            # typed to the agent as its title, not as "type n action"

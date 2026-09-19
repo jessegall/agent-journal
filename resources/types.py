@@ -79,6 +79,7 @@ class Report(Shape, Resource):
     attention = True
     icon = "report"
     names = {"complete": "archive"}
+    closed_first = True
     title_ = "Report"
     abstract_ = "What was checked and what was found, written for the user, read once"
     help_ = "A report answers something the user asked to have checked; it ages out or becomes a doc."
