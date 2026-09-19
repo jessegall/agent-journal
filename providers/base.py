@@ -16,7 +16,7 @@ JOURNAL_DIR = ".journal"
 CHANGING = ("writes", "deletes")
 START = r"(?:^|[;&|(]\s*|\b(?:do|then)\s+)"
 EFFECTS = (
-    ("tests", re.compile(START + r"(?:\S*[Pp]ython[\d.]*\s+(?:-m\s+)?\S*tests?/\S*|pytest|npm (?:run )?test|npx (?:vitest|jest)|vitest|jest|go test|cargo test|phpunit|php artisan test)\b")),
+    ("tests", re.compile(START + r"(?:\S*[Pp]ython[\d.]*\s+(?:-m\s+)?\S*tests?/\S*|pytest|npm (?:run )?test|npx (?:vitest|jest)|vitest|jest|go test|cargo test|phpunit|php artisan test|dotnet test|mvn\b[^;&|]*\btest|\S*gradlew?\b[^;&|]*\btest|(?:bundle exec )?rspec|mix test)\b")),
     ("tests", re.compile(r"(?=.*\btest_)(?=.*\b[Pp]ython[\d.]*\s+\"?\$\w)", re.S)),
     ("deletes", re.compile(START + r"(?:rm|rmdir|unlink|git rm)\s")),
     ("writes", re.compile(START + r"(?:perl\s+-\w*i|sed\s+-i)|\.write_text\(|\.write\(|open\([^)]*,\s*(?:mode=)?['\"][wa]b?\+?['\"]")),
@@ -25,6 +25,11 @@ EFFECTS = (
 PASSED = re.compile(r"\b(\d+) passed\b")
 FAILED = re.compile(r"\b(\d+) failed\b")
 FAILING = re.compile(r"\bfiles failing: (\d+)")
+PHPUNIT_OK = re.compile(r"^OK \((\d+) tests?", re.M)
+DOTNET = re.compile(r"\bFailed:\s*(\d+),\s*Passed:\s*(\d+)")
+EXAMPLES = re.compile(r"\b(\d+) (?:examples?|tests?), (\d+) failures?")
+TALLY = re.compile(r"\bTests(?: run)?: (\d+),.*$", re.M)
+TALLY_FAILED = re.compile(r"\b(?:Failures|Errors): (\d+)")
 QUOTED = re.compile(r'"(?:[^"\\]|\\.)*"' + r"|'[^']*'")
 JOURNAL_CALL = re.compile(r"(^|[;&|(]\s*|\$\()\S*journal(?:\.py)?\s(?:\"(?:[^\"\\]|\\.)*\"|'[^']*'|\d*>&\d|[^;&|)\n])*")
 
@@ -104,12 +109,23 @@ class Provider(ABC):
 
     def test_result(self, hook: Hook) -> dict | None:
         output = f"{hook.tool.response.get('stdout') or ''}\n{hook.tool.response.get('stderr') or ''}"
-        passed = sum(int(n) for n in PASSED.findall(output))
-        failed = sum(int(n) for n in FAILED.findall(output))
-        failing = [int(n) for n in FAILING.findall(output)]
-        if not (passed or failed or failing):
-            return None
-        return {"passed": passed, "failed": failed or sum(failing)}
+        tallies = [(int(m.group(1)), sum(int(n) for n in TALLY_FAILED.findall(m.group(0)))) for m in TALLY.finditer(output)]
+        dotnet = DOTNET.findall(output)
+        examples = EXAMPLES.findall(output)
+        if dotnet:
+            failed, passed = map(int, dotnet[-1])
+        elif tallies:
+            total, failed = tallies[-1]
+            passed = total - failed
+        elif examples:
+            total, failed = map(int, examples[-1])
+            passed = total - failed
+        else:
+            passed = sum(int(n) for n in PASSED.findall(output) + PHPUNIT_OK.findall(output))
+            failed = sum(int(n) for n in FAILED.findall(output)) or sum(int(n) for n in FAILING.findall(output))
+            if not (passed or failed or FAILING.search(output)):
+                return None
+        return {"passed": passed, "failed": failed}
 
     def effect(self, hook: Hook) -> str:
         return self.effect_of(hook.command) if hook.tool.name == "Bash" else ""

@@ -193,6 +193,17 @@ ended = claude.shell(AgentRow(n=1, title="s", data={"running": running}), Hook.r
 check("the summed outcome rides on the finished test command", ended.get("result"), {"passed": 15, "failed": 1})
 check("pytest and jest summaries are read too", [claude.test_result(Hook.read({"tool_name": "Bash", "tool_response": {"stdout": out}})) for out in ("== 2 failed, 40 passed in 1s ==", "Tests: 1 failed, 9 passed, 10 total")],
       [{"passed": 40, "failed": 2}, {"passed": 9, "failed": 1}])
+outcomes = {
+    "OK (12 tests, 30 assertions)": {"passed": 12, "failed": 0},
+    "FAILURES!\nTests: 12, Assertions: 30, Failures: 2, Errors: 1.": {"passed": 9, "failed": 3},
+    "Failed!  - Failed:     2, Passed:    10, Skipped:     0, Total:    12": {"passed": 10, "failed": 2},
+    "Tests run: 3, Failures: 0, Errors: 0\nResults:\nTests run: 10, Failures: 1, Errors: 1, Skipped: 0": {"passed": 8, "failed": 2},
+    "Finished in 0.1 seconds\n10 examples, 2 failures": {"passed": 8, "failed": 2},
+    "Finished in 0.2 seconds\n7 tests, 0 failures": {"passed": 7, "failed": 0},
+}
+check("PHPUnit, .NET, Maven, RSpec and mix summaries are read", {out: claude.test_result(Hook.read({"tool_name": "Bash", "tool_response": {"stdout": out}})) for out in outcomes}, outcomes)
+check("more test runners are recognised", [claude.effect_of(c) for c in ("dotnet test", "mvn -q test", "./gradlew test", "bundle exec rspec", "mix test", "mvn package")],
+      ["tests", "tests", "tests", "tests", "tests", ""])
 check("output with no summary gives no outcome", claude.test_result(Hook.read({"tool_name": "Bash", "tool_response": {"stdout": "built"}})), None)
 
 # A NEW COMMAND KEEPS THE FINISHED ONE as before, so its line counts can still arrive and be shown
