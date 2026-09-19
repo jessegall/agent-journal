@@ -78,6 +78,12 @@ const width = ref("");
 const fresh = ref(new Set());
 let settling = 0;
 
+function pinned(el) {
+    const box = el.parentElement.getBoundingClientRect();
+    const own = el.getBoundingClientRect();
+    Object.assign(el.style, {position: "absolute", top: `${own.top - box.top}px`, right: `${box.right - own.right}px`, marginLeft: 0});
+}
+
 function settledWidth() {
     clearTimeout(settling);
     width.value = "";
@@ -185,6 +191,7 @@ watch(
                     :style="{width}"
                     :title="line.text"
                     @transitionend.self="settledWidth"
+                    @before-leave="pinned"
                 >
                     <span
                         v-for="(token, i) in line.tokens"
@@ -271,7 +278,14 @@ watch(
 }
 
 .token-leave-active {
-    display: none;
+    transition:
+        opacity 200ms ease,
+        transform 200ms cubic-bezier(0.22, 0.7, 0.3, 1);
+}
+
+.token-leave-to {
+    opacity: 0;
+    transform: translateY(-10px);
 }
 
 .statusbar-run-token.command {
