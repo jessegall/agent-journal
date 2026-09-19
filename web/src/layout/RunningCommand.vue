@@ -19,7 +19,7 @@ const EFFECTS = {
         {value: "deleting", kind: "command"},
         {value: "files", kind: "argument"},
     ],
-    writes: [{value: "making edits", kind: "command"}],
+    writes: [{value: "editing", kind: "command"}, {value: "files", kind: "argument"}],
     reads: [
         {value: "reading", kind: "command"},
         {value: "files", kind: "argument"},
