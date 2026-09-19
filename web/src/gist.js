@@ -52,6 +52,11 @@ function split(line, atBreak) {
     let depth = 0;
     for (let i = 0; i < line.length; i++) {
         const c = line[i];
+        if (c === "\\" && quote !== "'" && i + 1 < line.length) {
+            cur += c + line[i + 1];
+            i += 1;
+            continue;
+        }
         if (quote) {
             cur += c;
             if (c === quote) quote = "";
@@ -148,6 +153,11 @@ function expanded(pieces_) {
     const names = {};
     const out = [];
     for (const piece of pieces_) {
+        const inner = piece.trim().match(/^[A-Za-z_]\w*=\$\((.*)\)$/s);
+        if (inner) {
+            out.push(...expanded(pieces(inner[1])));
+            continue;
+        }
         const m = piece.trim().match(/^([A-Za-z_]\w*)=([^\s=]\S*)$/);
         if (m) {
             names[m[1]] = m[2];

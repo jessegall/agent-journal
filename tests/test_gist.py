@@ -16,6 +16,8 @@ console.log(JSON.stringify({
     loop: gists(`for f in tests/test_*.py tests/features/*/test_*.py; do echo "$f"; perl -e 'alarm 60; exec @ARGV' python3 "$f" || exit 1; done`),
     tokens: gistTokens("git commit file.txt").map((token) => token.kind),
     slash: gists("ls ~/projects/ 2>/dev/null | head"),
+    escaped: gists('grep -n "class=\\\\"head\\\\|\\\\.title\\\\|abstract" a.vue | head -3; cat b.vue'),
+    captured: gists("n=$(journal comment unread 2>&1 | awk '/^ *[0-9]+ /{print $1}' | tail -1); journal comment read $n 2>&1", (w) => w.slice(0, 2).join(" ")),
     paths: spoken(["message", "paths", "104"], [{name: "message", title: "Message", names: {}}]),
     tag: spoken(["message", "tag", "105", "x.png", "words"], [{name: "message", title: "Message", names: {}}]),
 }));
@@ -27,5 +29,7 @@ check("real chained shell commands still split", got["shell"], ["git commit done
 check("shell loops keep the inner executable", got["loop"], ["python3 script"])
 check("a subcommand shares the executable's emphasis", got["tokens"], ["command", "command", "argument"])
 check("a path ending in a slash still names its last part", got["slash"], ["ls projects"])
+check("an escaped quote or pipe inside a pattern never splits the piece", got["escaped"], ["grep a.vue"])
+check("a captured command is gisted as the command inside it", got["captured"], ["comment unread", "comment read"])
 check("an unknown word ending in s is a thing of the row, not a verb to conjugate", (got["paths"], got["tag"]), ("the paths of message 104", "tagging message 105"))
 done()
