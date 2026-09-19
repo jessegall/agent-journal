@@ -125,5 +125,18 @@ sock.close()
 lines = [l for l in buf.decode().splitlines() if l.startswith("data:")]
 check("an event on the environment reaches the stream as it happens, another environment's does not",
       (b"text/event-stream" in buf, len(lines), json.loads(lines[0][5:])["type"] if lines else None, b"elsewhere" in buf), (True, 1, "todo", False))
+
+
+# A SIBLING VIEWER ON THIS MACHINE
+def asked(origin, method="GET"):
+    req = urllib.request.Request(base + "/api/identity", method=method, headers={"Origin": origin})
+    with urllib.request.urlopen(req) as r:
+        return r.status, r.headers.get("Access-Control-Allow-Origin"), r.headers.get("Access-Control-Allow-Headers")
+
+
+check("a sibling viewer on this machine may read this one", asked(f"http://127.0.0.1:{port + 1}"), (200, f"http://127.0.0.1:{port + 1}", "Content-Type"))
+check("so may one on localhost", asked("http://localhost:8421")[1], "http://localhost:8421")
+check("a page from anywhere else may not", asked("http://evil.example")[1], None)
+check("a JSON post's preflight is answered", asked("http://127.0.0.1:8421", "OPTIONS")[:2], (204, "http://127.0.0.1:8421"))
 server.shutdown()
 done()
