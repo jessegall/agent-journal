@@ -26,4 +26,5 @@ export const events = (env, since = 0) => api("GET", `/${env}/events?since=${sin
 export const settings = (env) => api("GET", `/${env}/settings`);
 export const saveSettings = (env, body, base = "") => api("POST", `/${env}/settings`, body, base);
 export const search = (env, q) => api("GET", `/${env}/search?q=${encodeURIComponent(q)}`);
+export const projectFile = (env, path) => api("GET", `/${env}/file?path=${encodeURIComponent(path)}`);
 export const fileUrl = (env, type, n, name) => `/api/${env}/${type}/${n}/files/${encodeURIComponent(name)}`;

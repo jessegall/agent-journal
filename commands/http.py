@@ -334,6 +334,19 @@ def get_commit(req: Request) -> Reply:
     return Reply(200, {"sha": full, "author": author, "at": float(at or 0), "subject": subject, "body": body, "stat": stat, "diff": diff[:200000]})
 
 
+@route("GET", "/api/{env}/file")
+def get_file_text(req: Request) -> Reply:
+    project = req.root.parent.resolve()
+    asked = str(req.query.get("path") or "").lstrip("/")
+    target = (project / asked).resolve()
+    if not asked or project not in target.parents or not target.is_file():
+        raise Missing(f"no file {asked} in the project")
+    raw = target.read_bytes()[:400000]
+    kind = mimetypes.guess_type(target.name)[0] or ""
+    text = "" if kind.startswith("image/") else raw.decode("utf-8", errors="replace")
+    return Reply(200, {"path": str(target.relative_to(project)), "size": target.stat().st_size, "kind": kind, "text": text, "lines": len(text.splitlines())})
+
+
 @route("GET", "/api/{env}/search")
 def get_search(req: Request) -> Reply:
     term = req.query.get("q", "")

@@ -376,6 +376,19 @@ button.thread-pill:hover {
     color: var(--accent-text);
 }
 
+.thread-text :deep(.file-pill) {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: 12px;
+}
+
+.thread-text :deep(.file-pill .ico) {
+    width: 11px;
+    height: 11px;
+}
+
 .thread-text :deep(.console-card) {
     position: relative;
     margin: 0.5em 0 0.8em;
