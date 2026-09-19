@@ -1,5 +1,6 @@
 import json
 import re
+from datetime import datetime
 import shutil
 from pathlib import Path
 
@@ -11,6 +12,9 @@ from providers.payload import Hook
 ASKS = frozenset({"AskUserQuestion"})
 WINDOW, LONG_WINDOW, LONG_MARK = 200_000, 1_000_000, "[1m]"
 TAIL = 1_000_000
+STATUS_SCRIPT = "claude-status.sh"
+STATUS_HOME = (".journal", "claude-status")
+PLAN_WINDOWS = {"five_hour": ("5h", 300), "seven_day": ("7d", 10080)}
 EFFORT_SET = re.compile(r"<local-command-stdout>Set effort level to (\w+)")
 
 
@@ -47,7 +51,7 @@ class Claude(Provider):
         ],
         "note": "Changes apply immediately to this Claude Code session.",
     }
-    usage_note = "Claude exposes plan limits only in its native /usage view; the journal does not replace your status-line configuration to scrape them."
+    usage_note = "Claude reports plan limits to its status line; the journal reads them there, unless you have a status line of your own."
 
     def setting(self, project: Path, key: str) -> str:
         found = ""
@@ -83,6 +87,39 @@ class Claude(Provider):
     def window(self, hook: Hook, used: int) -> int:
         configured = self.setting(Path(hook.cwd or "."), "model")
         return LONG_WINDOW if LONG_MARK in f"{hook.model}{configured}" or used > WINDOW else WINDOW
+
+    def wire(self, project: Path, command: str) -> Path:
+        wired = super().wire(project, command)
+        settings = self.settings(project)
+        if "statusLine" not in settings:
+            script = Path(command.split()[1]).with_name(STATUS_SCRIPT)
+            self.save(project, {**settings, "statusLine": {"type": "command", "command": f"sh {script}", "padding": 0}})
+        return wired
+
+    def usage(self, path: Path, now: float | None = None) -> dict | None:
+        try:
+            limits = json.loads(Path.home().joinpath(*STATUS_HOME, f"{Path(path).stem}.json").read_text()).get("rate_limits")
+        except (OSError, ValueError, TypeError):
+            return None
+        if not isinstance(limits, dict):
+            return None
+        windows = []
+        for key, (label, minutes) in PLAN_WINDOWS.items():
+            raw = limits.get(key)
+            if not isinstance(raw, dict):
+                continue
+            try:
+                used = float(raw.get("used_percentage"))
+                resets = self.moment(raw.get("resets_at"))
+            except (TypeError, ValueError):
+                continue
+            windows.append({"key": key, "label": label, "used": round(max(0, min(100, used)), 1), "minutes": minutes, "resets": resets})
+        return {"windows": windows}
+
+    def moment(self, value) -> int:
+        if isinstance(value, (int, float)) or str(value).isdigit():
+            return int(float(value))
+        return int(datetime.fromisoformat(str(value).replace("Z", "+00:00")).timestamp())
 
     def present(self, project: Path) -> bool:
         return (project / ".claude").is_dir() or shutil.which("claude") is not None
