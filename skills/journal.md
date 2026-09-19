@@ -47,7 +47,7 @@ A session works one environment; `journal environment switch <n>` takes a free o
 
 ## Look before you answer
 
-`journal search <term>`, `journal conversation --back 1` (the stretch the last summary replaced), `journal user` (the user's own words), `journal carry` (everything standing, in full), `journal status`.
+`journal search <term>`, `journal conversation --back 1` (the stretch the last summary replaced), `journal user` (the user's own words), `journal carry` (everything standing, in full), `journal status`. `journal speed` times lists, commands, a hook call and the viewer API; `journal tidy` runs the runtime housekeeping now (it also runs by itself every hour and cannot be switched off).
 
 ## Skills
 

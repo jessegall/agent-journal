@@ -150,6 +150,9 @@ def parser() -> argparse.ArgumentParser:
         add_query(cmds, name, f"start {name} supervised, on this environment; everything after the word is forwarded to {name}", lambda ctx, name=name: supervise(ctx, name))
     add_query(cmds, "serve", "the web viewer", lambda ctx: serve_forever(ctx), ("--port", {"type": int, "default": 8430}))
     add_query(cmds, "upgrade", "pull the package, wire the hooks, write the skills, run the migrations", lambda ctx: upgrade_here(ctx))
+    add_query(cmds, "speed", "median milliseconds for lists, commands, a hook call and the viewer API, and the runtime folder's size", lambda ctx: speed(ctx),
+              ("--runs", {"type": int, "default": 5}), ("--url", {"default": ""}), ("--out", {"default": ""}))
+    add_query(cmds, "tidy", "run the housekeeping now: trim captures and logs, drop quiet sessions' files", lambda ctx: str(features.FEATURES["housekeeping"].tidy(ctx["record"])))
     return top
 
 
@@ -199,6 +202,11 @@ def help_text(word: str) -> str:
         if isinstance(action, argparse._SubParsersAction) and word in action.choices:
             return action.choices[word].format_help()
     return f"no command {word!r}"
+
+
+def speed(ctx) -> str:
+    from engine.speed import measure
+    return measure(ctx["record"].root, ctx["record"].env, ctx["runs"], ctx["url"], ctx["out"])
 
 
 def upgrade_here(ctx) -> str:
