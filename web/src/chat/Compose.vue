@@ -58,14 +58,18 @@ function unpick(i) {
 
 async function go() {
     if (draft.sending || !draft.text.trim()) return;
+    const text = draft.text.trim();
+    const files = draft.files;
     draft.sending = true;
     draft.error = "";
+    draft.text = "";
+    draft.files = [];
     try {
-        await props.send(draft.text.trim(), draft.files);
-        draft.text = "";
-        draft.files = [];
+        await props.send(text, files);
     } catch (e) {
         draft.error = e.message;
+        draft.text = draft.text || text;
+        draft.files = draft.files.length ? draft.files : files;
     } finally {
         draft.sending = false;
         area.value && area.value.focus();

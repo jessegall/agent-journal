@@ -104,6 +104,7 @@ const turns = computed(() =>
         ...rows("question")
             .filter((q) => !q.deleted)
             .map((q) => ({...q, who: "agent"})),
+        ...pending.value.filter((p) => !rows("message").some((m) => !m.deleted && m.brief === p.brief && m.created >= p.created - 5)),
     ].sort((a, b) => a.created - b.created)
 );
 
@@ -141,16 +142,47 @@ async function post(text, files) {
         return;
     }
     const body = withQuote(quote.value.text, text);
-    const message = await create(route.value.env, "message", {
-        title: titled(body),
-        brief: body,
-        about: quote.value.ref || undefined,
-    });
+    const about = quote.value.ref || undefined;
     quote.value = {text: "", ref: ""};
-    for (const f of files) await upload(message.n, f);
-    await reload();
+    const placeholder = promised(body, files);
     await nextTick();
     toBottom();
+    try {
+        const message = await create(route.value.env, "message", {title: titled(body), brief: body, about});
+        for (const f of files) await upload(message.n, f);
+        await reload();
+    } finally {
+        pending.value = pending.value.filter((p) => p !== placeholder);
+    }
+    await nextTick();
+    toBottom();
+}
+
+const pending = ref([]);
+let promises = 0;
+
+function promised(body, files) {
+    promises += 1;
+    const turn = {
+        ref: `pending:${promises}`,
+        type: "message",
+        n: 0,
+        title: titled(body),
+        brief: body,
+        abstract: "",
+        refs: [],
+        seen: ["user"],
+        sections: [],
+        data: {},
+        created: Date.now() / 1000,
+        updated: 0,
+        deleted: 0,
+        completed: 0,
+        who: "user",
+        pending: true,
+    };
+    pending.value = [...pending.value, turn];
+    return turn;
 }
 
 function titled(text) {

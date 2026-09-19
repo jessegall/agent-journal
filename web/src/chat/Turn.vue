@@ -171,12 +171,17 @@ async function drop() {
                 </div>
             </template>
             <div class="thread-meta">
-                <template v-if="mine || turn.type === 'question'">
+                <template v-if="turn.pending">
+                    <span>sending</span>
+                </template>
+                <template v-else-if="mine || turn.type === 'question'">
                     <span class="thread-ref">{{ turn.type }} {{ turn.n }}</span>
                     <span class="thread-meta-dot" />
                 </template>
-                <span>{{ clock(turn.created) }}</span>
-                <template v-if="mine">
+                <template v-if="!turn.pending">
+                    <span>{{ clock(turn.created) }}</span>
+                </template>
+                <template v-if="mine && !turn.pending">
                     <span
                         :class="['thread-ticks', turn.completed ? 'filed' : turn.seen.includes('agent') ? 'read' : 'sent']"
                         :title="turn.completed ? 'processed' : turn.seen.includes('agent') ? 'read' : 'sent'"
