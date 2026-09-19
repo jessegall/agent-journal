@@ -69,6 +69,26 @@
           }
         ]
       }
+    ],
+    "SubagentStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/opt/homebrew/opt/python@3.14/bin/python3.14 /Users/jessegall/projects/agent-journal/.journal/hook.py claude /Users/jessegall/projects/agent-journal/.journal"
+          }
+        ]
+      }
+    ],
+    "SubagentStop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/opt/homebrew/opt/python@3.14/bin/python3.14 /Users/jessegall/projects/agent-journal/.journal/hook.py claude /Users/jessegall/projects/agent-journal/.journal"
+          }
+        ]
+      }
     ]
   }
 }

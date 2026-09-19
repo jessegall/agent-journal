@@ -52,6 +52,9 @@ class Messages(Controller):
         r = self.load(n)
         if part not in r.title and part not in r.brief:
             raise Refused(f"that part is not in message {n}; quote the words it is about")
+        for kind, _, num in (w.strip().replace(" ", ":").partition(":") for w in became.split(",")):
+            if kind in CONTROLLERS and num.isdigit():
+                self.link(n, f"{kind}:{int(num)}")
         return self.section(n, part, became)
 
     def reply(self, n: int, text: str, file: str = ""):
