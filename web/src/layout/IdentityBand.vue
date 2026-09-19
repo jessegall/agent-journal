@@ -11,7 +11,7 @@ const title = computed(() => `${store.identity.project} project color`);
 
 <style scoped>
 .identity-band {
-    height: 4px;
+    height: 7px;
     flex: none;
 }
 </style>

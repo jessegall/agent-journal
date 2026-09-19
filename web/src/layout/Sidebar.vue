@@ -25,13 +25,21 @@ async function makeEnv() {
         draft.error = e.message;
     }
 }
+const project = computed(() => (store.identity && store.identity.project) || route.value.env);
+const tint = computed(() => (store.identity && store.identity.color) || "#2a2c33");
+const negative = computed(() => {
+    const hex = tint.value.replace("#", "");
+    const full = hex.length === 3 ? [...hex].map((c) => c + c).join("") : hex;
+    const inverted = (0xffffff ^ parseInt(full, 16)).toString(16).padStart(6, "0");
+    return `#${inverted}`;
+});
 </script>
 
 <template>
     <aside class="side">
-        <a class="project" :href="`#/${route.env}`" :title="route.env">
-            <span class="logo">{{ route.env.charAt(0).toUpperCase() }}</span>
-            <span class="project-name">{{ route.env }}</span>
+        <a class="project" :href="`#/${route.env}`" :title="project">
+            <span class="logo" :style="{background: tint, color: negative}">{{ project.charAt(0).toUpperCase() }}</span>
+            <span class="project-name">{{ project }}</span>
         </a>
         <a :class="['item', 'hub-item', {on: route.page === 'hub'}]" :href="`#/${route.env}/hub`">
             <Icon name="panel" />
@@ -128,7 +136,7 @@ async function makeEnv() {
     display: flex;
     flex-direction: column;
     gap: 18px;
-    padding: 12px 0;
+    padding: 0 0 12px;
     overflow-x: hidden;
     overflow-y: auto;
 }
@@ -136,7 +144,11 @@ async function makeEnv() {
     flex: none;
 }
 .side > .project {
-    margin-inline: 10px;
+    height: 48px;
+    margin-bottom: -8px;
+    padding: 0 18px;
+    border-bottom: 1px solid var(--border);
+    border-radius: 0;
 }
 .side > .group {
     padding-inline: 10px;
@@ -164,7 +176,7 @@ async function makeEnv() {
 }
 
 .hub-item {
-    margin: -6px 10px 4px;
+    margin: 0 10px;
 }
 
 .project:hover {
