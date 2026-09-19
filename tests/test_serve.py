@@ -127,6 +127,17 @@ check("an event on the environment reaches the stream as it happens, another env
       (b"text/event-stream" in buf, len(lines), json.loads(lines[0][5:])["type"] if lines else None, b"elsewhere" in buf), (True, 1, "todo", False))
 
 
+# JOURNALS ON THIS MACHINE
+from engine import viewer  # noqa: E402
+viewer.note(root.parent / "stopped" / ".journal", "http://127.0.0.1:8439/")
+(root.parent / "stopped" / ".journal").mkdir(parents=True)
+code, journals = call("GET", "/api/journals")
+stopped = [j for j in journals if not j["running"]]
+check("a remembered journal whose viewer is down is listed as not running, with its project", (code, [(j["project"], j["port"]) for j in stopped]), (200, [("stopped", 0)]))
+call("POST", "/api/journals/forget", {"root": stopped[0]["root"]})
+check("forget takes it off the list", [j for j in call("GET", "/api/journals")[1] if not j["running"]], [])
+
+
 # A SIBLING VIEWER ON THIS MACHINE
 def asked(origin, method="GET"):
     req = urllib.request.Request(base + "/api/identity", method=method, headers={"Origin": origin})

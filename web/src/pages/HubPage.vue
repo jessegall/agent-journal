@@ -1,5 +1,5 @@
 <script setup>
-import {onMounted, onUnmounted, reactive, ref, watch} from "vue";
+import {computed, onMounted, onUnmounted, reactive, ref, watch} from "vue";
 import {api} from "../api.js";
 import JournalBar from "../layout/JournalBar.vue";
 import {remembered, store} from "../store.js";
@@ -7,6 +7,7 @@ import {remembered, store} from "../store.js";
 const LINGER = 60000;
 const journals = ref([]);
 const loaded = ref(false);
+const running = computed(() => journals.value.filter((j) => j.running));
 const opened = reactive(new Set(remembered("journal.hub", [])));
 const streams = new Map();
 let ticking = 0;
@@ -28,6 +29,11 @@ function toggle(j) {
 }
 
 async function refresh(j) {
+    if (!j.running) {
+        j.summary = null;
+        j.unreadable = false;
+        return;
+    }
     try {
         j.summary = await api("GET", "/summary", undefined, baseOf(j));
         j.gone = 0;
@@ -38,8 +44,8 @@ async function refresh(j) {
 }
 
 function listenTo(j) {
-    const envs = ((j.summary || {}).environments || []).map((e) => e.name);
-    const have = streams.get(j.port) || new Map();
+    const envs = j.running ? ((j.summary || {}).environments || []).map((e) => e.name) : [];
+    const have = streams.get(j.root) || new Map();
     for (const name of envs) {
         if (have.has(name)) continue;
         const source = new EventSource(`${baseOf(j)}/api/${name}/stream`);
@@ -51,13 +57,18 @@ function listenTo(j) {
         source.close();
         have.delete(name);
     }
-    streams.set(j.port, have);
+    streams.set(j.root, have);
 }
 
-function drop(port) {
-    for (const source of (streams.get(port) || new Map()).values()) source.close();
-    streams.delete(port);
-    journals.value = journals.value.filter((j) => j.port !== port);
+function drop(root) {
+    for (const source of (streams.get(root) || new Map()).values()) source.close();
+    streams.delete(root);
+    journals.value = journals.value.filter((j) => j.root !== root);
+}
+
+async function forget(j) {
+    await api("POST", "/journals/forget", {root: j.root});
+    drop(j.root);
 }
 
 async function scan() {
@@ -102,16 +113,20 @@ onMounted(async () => {
 
 onUnmounted(() => {
     clearInterval(ticking);
-    for (const j of [...journals.value]) drop(j.port);
+    for (const j of [...journals.value]) drop(j.root);
 });
 </script>
 
 <template>
     <section class="hub">
         <div class="bar">
-            <span class="count">{{ journals.length }} {{ journals.length === 1 ? "journal" : "journals" }} running on this machine</span>
+            <span class="count">
+                {{ running.length }} {{ running.length === 1 ? "journal" : "journals" }} running on this machine{{
+                    journals.length > running.length ? `, ${journals.length - running.length} stopped` : ""
+                }}
+            </span>
         </div>
-        <template v-if="loaded && journals.length < 2">
+        <template v-if="loaded && running.length < 2">
             <p class="empty">
                 Only this journal is running. Start another with
                 <code>journal claude</code>
@@ -119,13 +134,14 @@ onUnmounted(() => {
             </p>
         </template>
         <div class="bars">
-            <template v-for="j in journals" :key="j.port">
+            <template v-for="j in journals" :key="j.root">
                 <JournalBar
-                    v-if="j.summary || j.unreadable"
+                    v-if="j.summary || j.unreadable || !j.running"
                     :journal="j"
                     :open="opened.has(j.root)"
                     @toggle="toggle(j)"
                     @changed="refresh(j)"
+                    @forget="forget(j)"
                 />
             </template>
         </div>

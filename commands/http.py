@@ -18,7 +18,7 @@ from features.skills.catalogue import SKILL, always, catalogue, load_now, skills
 from features.extension.package import archive as extension_archive, info as extension_info
 from features.hub.summary import summarize
 from controllers.types import Agents, Asks, CONTROLLERS, Environments
-from engine import bus
+from engine import bus, viewer
 from engine.manifest import manifest
 from engine.record import Record
 from engine.transcript import page
@@ -216,14 +216,24 @@ def post_upgrade(req: Request) -> Reply:
 @route("GET", "/api/journals")
 def get_journals(req: Request) -> Reply:
     found = []
-    for port in range(8420, 8440):
+    for port in viewer.PORTS:
         try:
             with urlopen(f"http://127.0.0.1:{port}/api/identity", timeout=0.25) as r:
                 got = json.loads(r.read())
         except (OSError, ValueError):
             continue
-        found.append({"port": port, "project": got.get("project", ""), "version": got.get("version", ""), "root": got.get("root", ""), "current": got.get("root") == str(req.root)})
+        found.append({"port": port, "project": got.get("project", ""), "version": got.get("version", ""), "root": got.get("root", ""), "current": got.get("root") == str(req.root), "running": True})
+    up = {str(req.root.resolve()), *(str(Path(j["root"]).resolve()) for j in found)}
+    for j in viewer.known():
+        if j["root"] not in up and Path(j["root"]).is_dir():
+            found.append({"port": 0, "project": j["project"], "version": "", "root": j["root"], "current": False, "running": False, "at": j["at"]})
     return Reply(200, found)
+
+
+@route("POST", "/api/journals/forget")
+def post_forget(req: Request) -> Reply:
+    viewer.forget(str(req.body.get("root") or ""))
+    return Reply(200, {"ok": True})
 
 
 @route("POST", "/api/{env}/browser/driver")

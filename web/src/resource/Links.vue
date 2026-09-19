@@ -14,7 +14,6 @@ const bar = (ref, direction) => {
         ref,
         icon: meta(type).icon,
         title: r ? r.title : `${meta(type).title} ${n}`,
-        excerpt: r ? r.abstract || "" : "",
         kind: `${meta(type).title.toLowerCase()} ${n}`,
         age: r ? age(r.updated || r.created) : "",
     };
@@ -39,9 +38,6 @@ const open = (ref) => {
                 <button type="button" class="bar" @click="open(r.ref)">
                     <Icon :name="r.icon" :size="13" />
                     <span class="bar-title">{{ r.title }}</span>
-                    <template v-if="r.excerpt">
-                        <span class="bar-excerpt">{{ r.excerpt }}</span>
-                    </template>
                     <span class="bar-kind">{{ r.kind }}</span>
                     <span class="bar-age">{{ r.age }}</span>
                 </button>
@@ -100,15 +96,6 @@ h3 {
     text-overflow: ellipsis;
     white-space: nowrap;
     font-weight: 500;
-}
-
-.bar-excerpt {
-    flex: 1 1 30%;
-    min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    color: var(--text-3);
 }
 
 .bar-kind {
