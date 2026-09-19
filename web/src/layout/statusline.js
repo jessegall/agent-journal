@@ -18,9 +18,11 @@ export function lineOf(agent, works) {
     if (state === "stopped") return "no agent is on this environment";
     if (state === "compacting") return "compacting its context — it carries on after";
     const current = currentWork(works);
-    if (current) return `on ${named(current)}`;
+    if (current) return named(current);
     const last = works[works.length - 1];
-    return last ? `last on ${named(last)}` : state === "idle" ? "waiting for you" : "on nothing declared";
+    if (state === "idle") return last ? `last on ${named(last)}` : "waiting for you";
+    const running = agent.data.running;
+    return running && running.what && !running.done ? running.what : "finding its bearings";
 }
 
 export function capital(word) {

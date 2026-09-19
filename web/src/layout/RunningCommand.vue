@@ -75,11 +75,21 @@ const line = computed(() => {
 
 const text = ref(null);
 const width = ref("");
+const fresh = ref(new Set());
+let settling = 0;
+
+function settledWidth() {
+    clearTimeout(settling);
+    width.value = "";
+    fresh.value = new Set();
+}
+
 watch(
-    () => (line.value ? line.value.tokens.map((t) => t.value).join(" ") : ""),
+    () => (line.value ? line.value.tokens.map((t, i) => `${i}-${t.value}`) : []),
     async (now, before) => {
         const el = text.value && text.value.$el;
-        if (!el || !now || !before) return;
+        if (!el || !now.length || !before.length) return;
+        fresh.value = new Set(now.filter((k) => !before.includes(k)));
         const from = el.getBoundingClientRect().width;
         width.value = `${from}px`;
         await nextTick();
@@ -88,12 +98,10 @@ watch(
         el.style.width = `${from}px`;
         el.getBoundingClientRect();
         width.value = `${to}px`;
+        clearTimeout(settling);
+        settling = setTimeout(settledWidth, Math.abs(to - from) < 1 ? 20 : 300);
     }
 );
-
-function settledWidth() {
-    width.value = "";
-}
 
 const target = computed(() => {
     const run = data.value && data.value.running;
@@ -178,7 +186,11 @@ watch(
                     :title="line.text"
                     @transitionend.self="settledWidth"
                 >
-                    <span v-for="(token, i) in line.tokens" :key="`${i}-${token.value}`" :class="['statusbar-run-token', token.kind]">
+                    <span
+                        v-for="(token, i) in line.tokens"
+                        :key="`${i}-${token.value}`"
+                        :class="['statusbar-run-token', token.kind, {fresh: fresh.has(`${i}-${token.value}`)}]"
+                    >
                         {{ token.value }}
                     </span>
                 </TransitionGroup>
@@ -246,15 +258,16 @@ watch(
     margin-left: 0.55em;
 }
 
-.token-enter-active {
+.statusbar-run-token {
     transition:
         opacity 240ms ease,
         transform 240ms cubic-bezier(0.22, 0.7, 0.3, 1);
 }
 
-.token-enter-from {
+.statusbar-run-token.fresh {
     opacity: 0;
     transform: translateY(10px);
+    transition: none;
 }
 
 .token-leave-active {
