@@ -13,6 +13,7 @@ subjects = [path for path in (Path(__file__).resolve().parents[1] / "skills").gl
 check("the core, subject skills and one per feature", (sorted(got)[:1], len(got)), (["journal-agents/SKILL.md"], 1 + len(subjects) + len(features.FEATURES)))
 core = got["journal/SKILL.md"]
 check("the core skill has its front matter and the reference", (core.startswith("---\nname: journal\n"), "## Reference: every noun and its words" in core), (True, True))
+check("the core skill teaches autonomous to-do priority judgment", "Agents assign priority themselves when urgency, impact, dependencies or risk make a difference" in core, True)
 ref = reference()
 for type_, c in CONTROLLERS.items():
     check(f"{type_}: every word is in the reference under its noun", all(f"journal {type_} {c.resource.names.get(m, m)}" in ref for m in ("create", "complete", "show")), True)
