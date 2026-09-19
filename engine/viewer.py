@@ -66,16 +66,21 @@ def candidates(root: Path) -> list[str]:
     return list(dict.fromkeys(url for url in found if url))
 
 
+def answers(url: str, root: Path, timeout: float = 0.05) -> bool:
+    try:
+        with urlopen(f"{url}api/identity", timeout=timeout) as response:
+            return Path(str(json.loads(response.read()).get("root") or "")).resolve() == root.resolve()
+    except (OSError, ValueError):
+        return False
+
+
 def running(root: Path) -> str:
-    want = root.resolve()
-    for url in candidates(root):
-        try:
-            with urlopen(f"{url}api/identity", timeout=0.05) as response:
-                if Path(str(json.loads(response.read()).get("root") or "")).resolve() == want:
-                    return url
-        except (OSError, ValueError):
-            continue
-    return ""
+    return next((url for url in candidates(root) if answers(url, root)), "")
+
+
+def marked(root: Path) -> str:
+    url = candidates(root)[:1]
+    return url[0] if url and answers(url[0], root, timeout=0.2) else ""
 
 
 def available() -> int:

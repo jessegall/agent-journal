@@ -44,4 +44,13 @@ viewer.running = lambda _: url
 check("a launcher opens the running viewer", (ensure(root, root.parent, opened.append), opened), (url, [url]))
 viewer.running = original
 
+import engine.band as band_module  # noqa: E402
+late = Band(root, "main", "s-1", "journal")
+asked = []
+band_module.running = lambda _: (asked.append("scan"), "")[1]
+band_module.marked = lambda _: (asked.append("marker"), url if len(asked) > 2 else "")[1]
+check("with no viewer yet the band scans once, then asks the marker every second, and shows the URL the moment it answers",
+      (late.viewer(), late.viewer(), (setattr(late, "asked_at", 0) or late.viewer()), asked), ("viewer unavailable", "viewer unavailable", url, ["scan", "marker", "marker"]))
+band_module.running, band_module.marked = original, viewer.marked
+
 done()
