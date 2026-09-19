@@ -41,15 +41,12 @@ const shapes = [
 .thread-shape {
     flex: none;
     border-radius: 9px;
-    background: linear-gradient(
-            100deg,
-            transparent 30%,
-            color-mix(in srgb, var(--text-3) 12%, transparent) 50%,
-            transparent 70%
-        )
-        0 0 / 300% 100%,
-        color-mix(in srgb, var(--raised) 60%, transparent);
-    animation: thread-shimmer 1.8s ease-in-out infinite;
+    background-color: color-mix(in srgb, var(--raised) 60%, transparent);
+    background-image: linear-gradient(100deg, transparent 35%, color-mix(in srgb, var(--text-3) 22%, transparent) 50%, transparent 65%);
+    background-size: 200vw 100%;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    animation: thread-shimmer 1.6s linear infinite;
 }
 
 .thread-shape.mine {
@@ -58,15 +55,11 @@ const shapes = [
 
 @keyframes thread-shimmer {
     from {
-        background-position:
-            100% 0,
-            0 0;
+        background-position: -100vw 0;
     }
 
     to {
-        background-position:
-            0 0,
-            0 0;
+        background-position: 100vw 0;
     }
 }
 </style>
