@@ -181,4 +181,14 @@ transcript.write_text("\n".join([
 check("the transcript's last confirmed effort wins over the settings, and the agent's own words never count", PROVIDERS["claude"]().effort(project, transcript), "max")
 check("with no confirmation in the transcript, the settings say", PROVIDERS["claude"]().effort(project, project / "none.jsonl"), "medium")
 
+# A TEST RUN'S OUTCOME is read from its output and kept on the finished command
+claude = PROVIDERS["claude"]()
+running = claude.shell(AgentRow(n=1, title="s"), Hook.read({"hook_event_name": "PreToolUse", "tool_name": "Bash", "tool_input": {"command": "python3 tests/a.py"}}))["running"]
+ended = claude.shell(AgentRow(n=1, title="s", data={"running": running}), Hook.read({"hook_event_name": "PostToolUse", "tool_name": "Bash", "tool_input": {"command": "python3 tests/a.py"},
+                                                                                      "tool_response": {"stdout": "a.py: 12 passed, 0 failed\nb.py: 3 passed, 1 failed"}}))["running"]
+check("the summed outcome rides on the finished test command", ended.get("result"), {"passed": 15, "failed": 1})
+check("pytest and jest summaries are read too", [claude.test_result(Hook.read({"tool_name": "Bash", "tool_response": {"stdout": out}})) for out in ("== 2 failed, 40 passed in 1s ==", "Tests: 1 failed, 9 passed, 10 total")],
+      [{"passed": 40, "failed": 2}, {"passed": 9, "failed": 1}])
+check("output with no summary gives no outcome", claude.test_result(Hook.read({"tool_name": "Bash", "tool_response": {"stdout": "built"}})), None)
+
 done()

@@ -22,6 +22,9 @@ EFFECTS = (
     ("writes", re.compile(START + r"(?:perl\s+-\w*i|sed\s+-i)|\.write_text\(|\.write\(|open\([^)]*,\s*(?:mode=)?['\"][wa]b?\+?['\"]")),
     ("reads", re.compile(r"^\s*(?:cd \S+\s*(?:&&|;)\s*)?(?:cat|head|tail|less|grep|rg|sed -n|wc|ls|find|tree|stat)\b")),
 )
+PASSED = re.compile(r"\b(\d+) passed\b")
+FAILED = re.compile(r"\b(\d+) failed\b")
+FAILING = re.compile(r"\bfiles failing: (\d+)")
 QUOTED = re.compile(r"\"(?:[^\"\\\\]|\\\\.)*\"|'[^']*'")
 JOURNAL_CALL = re.compile(r"(^|[;&|(]\s*|\$\()\S*journal(?:\.py)?\s(?:\"[^\"]*\"|'[^']*'|[^;&|)\n])*")
 
@@ -92,7 +95,19 @@ class Provider(ABC):
                                                                                           **({COMMAND.effect: effect} if effect else {})}])[-RING:]}
         if running and not running.get(RUNNING.done):
             running[RUNNING.done] = time.time()
+            result = self.test_result(hook) if running.get(RUNNING.effect) == "tests" else None
+            if result:
+                running[RUNNING.result] = result
         return {AgentRow.running: running, AgentRow.commands: list(row.commands)}
+
+    def test_result(self, hook: Hook) -> dict | None:
+        output = f"{hook.tool.response.get('stdout') or ''}\n{hook.tool.response.get('stderr') or ''}"
+        passed = sum(int(n) for n in PASSED.findall(output))
+        failed = sum(int(n) for n in FAILED.findall(output))
+        failing = [int(n) for n in FAILING.findall(output)]
+        if not (passed or failed or failing):
+            return None
+        return {"passed": passed, "failed": failed or sum(failing)}
 
     def effect(self, hook: Hook) -> str:
         return self.effect_of(hook.command) if hook.tool.name == "Bash" else ""
