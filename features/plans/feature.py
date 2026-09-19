@@ -15,6 +15,15 @@ class PlansFeature(Feature):
         todos = Todos(record, actor=SYSTEM)
         return all(todos.load(n).completed for n in phase[PHASE.todos])
 
+    @on("agent.updated")
+    def pass_checkpoints(self, event, record) -> None:
+        if not record.features.get("auto"):
+            return
+        plans = Plans(record, actor=SYSTEM)
+        for plan in plans.all():
+            if plan.status == WAITING:
+                plans.resume(plan.n)
+
     @on("todo.completed")
     def advance(self, event, record) -> None:
         plans = Plans(record, actor=SYSTEM)
