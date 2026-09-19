@@ -21,6 +21,10 @@ check("a vertical position moves down", t.feed(b"\x1b[12d"), b"\x1b[%dd" % (12 +
 check("a sequence split across reads is held and joined", (t.feed(b"abc\x1b[3"), t.feed(b";4Hdef")), (b"abc", b"\x1b[%d;4Hdef" % (3 + ROWS)))
 check("other sequences pass untouched", t.feed(b"\x1b[K\x1b[?25l\x1b[38;2;1;2;3m"), b"\x1b[K\x1b[?25l\x1b[38;2;1;2;3m")
 check("plain text passes", t.feed(b"hello"), b"hello")
+check("a window-title update split across reads is held whole, so no drawing lands inside it and no bare bell rings",
+      (t.feed(b"text\x1b]0;\xe2\x97\x90 3 unread"), t.feed(b" comment\x07more")), (b"text", b"\x1b]0;\xe2\x97\x90 3 unread comment\x07more"))
+check("a title ended by ESC backslash split at the ESC is held too", (t.feed(b"\x1b]0;title\x1b"), t.feed(b"\\after")), (b"", b"\x1b]0;title\x1b\\after"))
+check("a private mode split across reads is held", (t.feed(b"x\x1b[?20"), t.feed(b"26h")), (b"x", b"\x1b[?2026h"))
 
 root = Path(tempfile.mkdtemp()) / ".journal"
 record = Record(root, "main")

@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.9.4 — No stray beeps, no raw variables, a paged chat
+
+The terminal band no longer draws into the middle of a window-title update the agent is sending, which left a bare bell character that made the computer beep. The chat loads the newest hundred messages and pages older ones in ahead of the scroll; activity and notifications load a hundred too. The status bar never shows a shell variable as if it were a number, the effect words ride on every recent command, and `runtime/statusbar.log` records each text the bar shows. The agent page has Transcript, Work and Hooks tabs, the hooks can be edited there, and the transcript is back to the flat v1 lines.
+
+What to do about it: `journal upgrade`, then restart `journal claude` so the terminal band runs the new code.
+
 ## 2.9.3 — The status bar says what a command does
 
 While the agent works, a shell command that runs tests shows as running tests, one that removes files as deleting files, one that writes as making edits and one that only reads as reading files; every other command keeps its gist. The provider reports the effect with the running command, the viewer chooses the words. Also: message titles are made in one place, on the server, and a long one is cut at a word with an ellipsis; highlights and notifications list newest first; the chat skeleton is shimmering message shapes that fill the height.
