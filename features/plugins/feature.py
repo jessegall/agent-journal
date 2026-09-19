@@ -9,7 +9,7 @@ from features.plugins.host import watch
 from features.plugins.manifest import fill, read
 from features.plugins.payload import refusal
 from features.plugins.run import call
-from features.plugins.source import checked, data, environment, folder, home, log, prepared, preview, staged, token
+from features.plugins.source import alone, checked, data, environment, folder, home, log, prepared, preview, staged, token
 from resources.base import Refused, SYSTEM
 
 VERSION = (Path(__file__).resolve().parents[2] / "VERSION").read_text().strip() if (Path(__file__).resolve().parents[2] / "VERSION").is_file() else ""
@@ -61,13 +61,14 @@ class Plugins(Feature):
     def install(self, plugins, source: str, ref: str = "", yes: bool = False):
         root = plugins.record.root
         where, manifest, commit, linked = staged(root, source, ref, VERSION)
-        name, kept = manifest["name"], False
+        name, kept, held = manifest["name"], False, None
         try:
             taken = next((r for r in plugins.all() if r.manifest and r.manifest.get("name") == name and not r.completed), None)
             if taken:
                 raise Refused(f"a plugin named {name} is installed from {taken.source}: remove it first")
             if not yes:
                 return f"{preview(manifest, source, commit)}\n\nNothing is installed yet. To install exactly this, run it again with --yes" + (f" --ref {commit}" if commit else "")
+            held = alone(root, name)
             secret = token()
             env = environment(root, name, manifest, secret)
             checked(manifest, where, env)
@@ -76,6 +77,8 @@ class Plugins(Feature):
             made = self.place(plugins, where, linked, manifest, source, ref, commit, secret)
             kept = True
         finally:
+            if held:
+                held.close()
             if not kept:
                 self.drop(where, linked)
         Notifications(plugins.record, actor=SYSTEM).create(f"Plugin {name} installed", brief=f"From {source}" + (f" at {commit[:12]}" if commit else "") + ".", about=made.ref)
