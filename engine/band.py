@@ -9,7 +9,7 @@ from engine.record import Record
 from engine.viewer import marked, running
 from resources.base import SYSTEM
 
-ROWS = 4
+ROWS = 5
 ESC = "\x1b"
 STYLE = f"{ESC}[48;2;23;24;27m{ESC}[38;2;169;172;179m"
 BRIGHT = f"{ESC}[38;2;230;231;234m"
@@ -98,7 +98,7 @@ class Band:
     def activity(self, record: Record, agent: dict) -> str:
         active = agent.get("running") or {}
         if active and not active.get("done"):
-            return str(active.get("what") or "")
+            return " ".join(str(active.get("what") or "").split())
         work = [row for row in Works(record, actor=SYSTEM).all() if not row.completed]
         return f"work {work[-1].n} {work[-1].title}" if work else "no open work"
 
@@ -111,9 +111,10 @@ class Band:
         record = Record(self.root, env)
         facts = f"{BRIGHT}{self.project}{DIM} · {BRIGHT}{env}{DIM} · {ACCENT}{self.viewer()}{DIM} · {datetime.now().strftime('%H:%M:%S')}"
         status = (f"{ACCENT}{mark} {BRIGHT}{state}{DIM}  {agent.get('model') or agent.get('provider') or '—'} · {agent.get('title', '')[:8]}"
-                  f" · up {since(float(agent.get('started') or 0))} · context {round(float(agent.get('context') or 0))}% · {self.activity(record, agent)}")
+                  f" · up {since(float(agent.get('started') or 0))} · context {round(float(agent.get('context') or 0))}%")
+        doing = f"{BRIGHT}{self.activity(record, agent)}"
         rule = f"{ESC}[38;2;47;49;54m{'─' * cols}"
-        return [self.banner(env, cols)] + [self.fit(line, cols) for line in (facts, status, rule)]
+        return [self.banner(env, cols)] + [self.fit(line, cols) for line in (facts, status, doing, rule)]
 
     def shade(self, x: int, cols: int) -> tuple[int, int, int]:
         t = x / max(1, cols - 1) * (len(GRADIENT) - 1)
