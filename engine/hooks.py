@@ -2,10 +2,10 @@ import json
 import time
 from pathlib import Path
 
-from controllers.types import Agents, Nudges
+from controllers.types import Agents, Environments, Nudges
 from engine.actors import COMPACTING, IDLE, STOPPED, WORKING
 from engine.record import Record
-from engine.sessions import Sessions
+from engine.sessions import Sessions, agent_pid
 from resources.base import AGENT, SYSTEM
 from resources.types import AgentRow
 
@@ -55,9 +55,19 @@ def answer(provider, root: Path, raw: dict, pid: int, prefer: str = "") -> tuple
     from providers.payload import Hook
     sessions = Sessions(root)
     session = Hook.read(raw).session
-    env = sessions.environment(session) or sessions.bind(session, default_env(root, prefer), pid=pid)["environment"]
+    env = sessions.environment(session)
+    if not env or not sessions.read(session).get("provider"):
+        env = sessions.choose(session, provider.name, default_env(root, prefer))
+        sessions.bind(session, env, pid=agent_pid(pid), provider=provider.name)
+        seated(root, env, session)
     sessions.touch(session)
     return respond(provider, root, env, raw)
+
+
+def seated(root: Path, env: str, session: str) -> None:
+    envs = Environments(Record(root, env), actor=SYSTEM)
+    row = next((e for e in envs.all() if e.title == env), None) or envs.create(env)
+    envs.update(row.n, holder=session)
 
 
 def handle(provider, root: Path, env: str, raw: dict) -> dict:
