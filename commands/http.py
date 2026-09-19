@@ -376,8 +376,9 @@ def get_commit(req: Request) -> Reply:
 @route("GET", "/api/{env}/file")
 def get_file_text(req: Request) -> Reply:
     project = req.root.parent.resolve()
-    asked = str(req.query.get("path") or "").lstrip("/")
-    target = (project / asked).resolve()
+    asked = str(req.query.get("path") or "")
+    candidate = Path(asked).expanduser() if Path(asked).is_absolute() else project / asked
+    target = candidate.resolve()
     if not asked or project not in target.parents or not target.is_file():
         raise Missing(f"no file {asked} in the project")
     raw = target.read_bytes()[:400000]
