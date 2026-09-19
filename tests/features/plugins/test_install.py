@@ -115,4 +115,10 @@ check("removing takes the folder, not the data", (folder(moving.root, "moving").
 check("purge is refused while a plugin is installed", refused(lambda: rows.action("purge")(rows.action("install")(url, yes=True).n)), "plugin 2 is installed: remove it first")
 check("purging a removed plugin takes its data too", (rows.action("purge")(first.n).startswith("everything moving kept in"), kept.exists()), (True, False))
 
+# A ROW THAT NAMES NO PLUGIN takes nothing with it
+bare = Plugins(moving, actor=AGENT).create("filed by hand")
+Plugins(moving, actor=AGENT).complete(bare.n, "gone")
+check("removing a row with no manifest leaves the plugin folders alone", data(moving.root, "").exists(), True)
+check("and purging it is refused", refused(lambda: rows.action("purge")(bare.n)), f"plugin {bare.n} never named itself, so it kept nothing of its own")
+
 done()
