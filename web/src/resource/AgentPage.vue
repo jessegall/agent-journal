@@ -9,6 +9,7 @@ import {rows, span} from "../store.js";
 import {render} from "../text/index.js";
 import "../text/all.js";
 import Trace from "./Trace.vue";
+import AgentHooks from "./AgentHooks.vue";
 
 const props = defineProps({resource: Object});
 const emit = defineEmits(["close"]);
@@ -25,6 +26,12 @@ const state = computed(() => {
     const reported = data.value.status;
     return ["stopped", "idle", "compacting"].includes(reported) ? reported : works.value.some((w) => !w.completed) ? "working" : "busy";
 });
+const TABS = [
+    ["transcript", "Transcript"],
+    ["work", "Work"],
+    ["hooks", "Hooks"],
+];
+const tab = ref("transcript");
 const turns = ref([]);
 const total = ref(0);
 const first = ref(0);
@@ -171,39 +178,37 @@ onUnmounted(() => {
             </span>
         </div>
         <template v-if="(data.skills || []).length">
-            <section class="block">
-                <h3>
-                    Skills loaded in this window
-                    <button type="button" class="every" @click="go(route.env, 'skills')">every skill</button>
-                </h3>
-                <div class="skills">
-                    <template v-for="s in data.skills" :key="s">
-                        <span class="skill">
-                            <Icon name="book" />
-                            {{ s }}
-                        </span>
-                    </template>
+            <p class="skills">
+                <span class="skills-label">Skills in this window</span>
+                {{ data.skills.join(", ") }}
+                <button type="button" class="every" @click="go(route.env, 'skills')">every skill</button>
+            </p>
+        </template>
+        <div class="tabs" role="tablist">
+            <template v-for="[key, label] in TABS" :key="key">
+                <button type="button" role="tab" :aria-selected="tab === key" :class="['tab', {on: tab === key}]" @click="tab = key">
+                    {{ label }}
+                </button>
+            </template>
+            <span v-if="tab === 'transcript'" class="tab-note">
+                {{ turns.length ? `${turns.length} of ${total} lines · live` : "live" }}
+            </span>
+        </div>
+        <section v-if="tab === 'work'" class="block">
+            <template v-for="w in works" :key="w.n">
+                <div class="work">
+                    <span :class="['dot', {open: !w.completed}]" />
+                    <span class="work-title">{{ w.title }}</span>
+                    <span class="work-when">{{ w.completed ? "ended" : "open" }}</span>
                 </div>
-            </section>
-        </template>
-        <template v-if="works.length">
-            <section class="block">
-                <h3>Work</h3>
-                <template v-for="w in works" :key="w.n">
-                    <div class="work">
-                        <span :class="['dot', {open: !w.completed}]" />
-                        <span class="work-title">{{ w.title }}</span>
-                        <span class="work-when">{{ w.completed ? "ended" : "open" }}</span>
-                    </div>
-                    <Trace :resource="w" />
-                </template>
-            </section>
-        </template>
-        <section class="block">
-            <h3>
-                Transcript
-                <span class="muted">{{ turns.length ? `${turns.length} of ${total} rows · live` : "live" }}</span>
-            </h3>
+                <Trace :resource="w" />
+            </template>
+            <p v-if="!works.length" class="none">No work on this agent yet.</p>
+        </section>
+        <section v-if="tab === 'hooks'" class="block">
+            <AgentHooks :provider="data.provider" />
+        </section>
+        <section v-show="tab === 'transcript'" class="block">
             <div ref="scroller" class="transcript">
                 <div ref="topMark" class="edge">
                     {{
@@ -340,40 +345,51 @@ onUnmounted(() => {
     margin-top: 12px;
 }
 
-.block h3 {
-    margin: 0 0 6px;
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--text-3);
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-}
-
-.muted {
-    margin-left: 4px;
-    font-weight: 400;
-}
-
 .skills {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
+    margin: 0;
+    font-size: 12px;
+    line-height: 1.5;
+    color: var(--text-3);
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
 }
 
-.skill {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    padding: 2px 8px;
-    border: 1px solid var(--border-2);
-    border-radius: 99px;
-    font-size: 12px;
+.skills-label {
+    margin-right: 6px;
     color: var(--text-2);
 }
 
-.skill .ico {
-    width: 12px;
-    height: 12px;
+.tabs {
+    display: flex;
+    align-items: stretch;
+    gap: 16px;
+    height: 32px;
+    margin-top: 6px;
+    border-bottom: 1px solid var(--border);
+}
+
+.tab {
+    padding: 0;
+    border: 0;
+    border-bottom: 2px solid transparent;
+    background: none;
+    font-size: 12px;
+    color: var(--text-3);
+    cursor: pointer;
+}
+
+.tab.on {
+    border-bottom-color: var(--accent);
+    color: var(--text);
+}
+
+.tab-note {
+    margin-left: auto;
+    align-self: center;
+    font-size: 11px;
+    color: var(--text-4);
 }
 
 .work {
@@ -408,12 +424,8 @@ onUnmounted(() => {
 }
 
 .transcript {
-    max-height: 60vh;
+    max-height: 70vh;
     overflow-y: auto;
-    padding: 10px 12px;
-    border: 1px solid var(--border);
-    border-radius: 9px;
-    background: var(--raised);
     font-size: 12.5px;
 }
 
@@ -440,40 +452,15 @@ onUnmounted(() => {
 }
 
 .edge {
-    padding: 4px 0 10px;
-    font-size: 11px;
-    color: var(--text-4);
+    padding: 14px 0;
+    font-size: 12px;
+    color: var(--text-3);
     text-align: center;
 }
 
 .turn {
-    padding: 8px 10px;
-    margin: 0 0 6px;
-    border-radius: 8px;
-    border-left: 2px solid var(--border-2);
-    background: var(--bg);
-}
-
-.turn.human {
-    border-left-color: var(--accent);
-}
-
-.turn.agent {
-    border-left-color: var(--progress);
-}
-
-.turn.tool {
-    border-left-color: var(--border);
-}
-
-.turn.injected,
-.turn.task,
-.turn.peer {
-    border-left-color: var(--blocking);
-}
-
-.turn.summary {
-    border-left-color: var(--created);
+    padding: 8px 2px;
+    border-bottom: 1px solid color-mix(in srgb, var(--border) 55%, transparent);
 }
 
 .turn.superseded {
@@ -487,22 +474,18 @@ onUnmounted(() => {
 .meta {
     display: flex;
     align-items: baseline;
-    gap: 10px;
-    margin-bottom: 4px;
-    font-size: 10.5px;
-    color: var(--text-4);
+    gap: 8px;
+    font-size: 11.5px;
+    color: var(--text-3);
 }
 
 .who {
     padding: 0;
     border: 0;
     background: none;
-    color: var(--text-3);
+    color: var(--text-2);
     font: inherit;
-    font-size: 10.5px;
-    font-weight: 600;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
+    font-weight: 500;
     cursor: pointer;
 }
 
@@ -510,20 +493,16 @@ onUnmounted(() => {
     margin-left: 5px;
     color: var(--text-4);
     font-weight: 400;
-    text-transform: none;
 }
 
 .turn.human .who {
     color: var(--accent-text);
 }
 
-.turn.agent .who {
-    color: var(--progress);
-}
-
 .line {
     margin-left: auto;
     font-variant-numeric: tabular-nums;
+    opacity: 0.7;
 }
 
 .tools {
@@ -531,18 +510,21 @@ onUnmounted(() => {
 }
 
 .said {
-    color: var(--text-2);
+    margin-top: 4px;
+    line-height: 1.5;
+    color: var(--text);
 }
 
 .raw {
-    max-height: 240px;
-    margin: 0;
+    max-height: 280px;
+    margin: 4px 0 0;
     overflow: auto;
-    font-size: 11.5px;
-    line-height: 1.45;
+    font: inherit;
+    font-size: 12.5px;
+    line-height: 1.5;
     white-space: pre-wrap;
     overflow-wrap: anywhere;
-    color: var(--text-3);
+    color: var(--text-2);
 }
 
 .clipped {
