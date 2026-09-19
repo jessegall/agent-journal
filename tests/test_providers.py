@@ -36,10 +36,10 @@ for name, cls in PROVIDERS.items():                       # every provider, the 
     provider = cls()
     project = Path(tempfile.mkdtemp())
     root = project / ".journal"
-    f = provider.wire(project, "/x/hook.py")
+    f = provider.wire(project, "sh /x/hook.sh claude /r /py")
     got = json.loads(f.read_text())
     check(f"{name}: wires every hook event into its own config file", (f.is_relative_to(project), sorted(got["hooks"])), (True, sorted(EVENTS)))
-    check(f"{name}: each hook runs the one command", all("/x/hook.py" in json.dumps(v) for v in got["hooks"].values()), True)
+    check(f"{name}: each hook runs the one command", all("/x/hook.sh" in json.dumps(v) for v in got["hooks"].values()), True)
     record = Record(root, "main")
     agents = Agents(record, actor=SYSTEM)
     payload = {"session_id": "abc-1", "transcript_path": f"/tmp/{name}/abc-1.jsonl", "cwd": str(project)}

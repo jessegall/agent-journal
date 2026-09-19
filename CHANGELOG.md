@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.8.0 — The hook asks the running server
+
+A hook is now a small shell script. It reads the server's heartbeat (`runtime/viewer.json`, refreshed every 2 seconds); if the server is running it posts the payload with curl, and the server, with everything already loaded, writes the agent's row, runs the features and answers the refusals: 200 lets the tool call go ahead, carrying any private line for the agent, 403 refuses it with the reason. With no fresh heartbeat the script returns at once and the journal stays out of the way: the viewer server must be running for the journal to act, and `journal claude` starts it. Upgrading rewires every hook to the script, replacing the old command. Also: notifications the user has seen are removed after three days.
+
+What to do about it: `journal upgrade`, then restart `journal claude` so the viewer runs the new server.
+
 ## 2.7.0 — The hook takes a fast path while the engine runs
 
 While `journal claude` runs an engine on the environment, a hook only writes the agent's row and answers the refusals (the write gate, the dispatch law, auto's question block); the engine, which has every feature loaded, runs the listeners on the event within a tick. With no engine the hook runs them itself, as before. One hook call with the engine on: 65 ms (536 ms this morning). The viewer's event feed reads the log from its end and a reload fetches the newest thousand events instead of all of them: 125 → 5 ms. One send is one message: a resend with the same key finds the first message even once it is processed or archived, and tabs take turns on the shared outbox.

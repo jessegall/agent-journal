@@ -4,6 +4,7 @@ import re
 import socket
 import subprocess
 import sys
+import threading
 import time
 import webbrowser
 from pathlib import Path
@@ -12,6 +13,7 @@ from urllib.request import urlopen
 from features.tabfocus.focus import existing_tab
 
 PORTS = range(8420, 8440)
+HEARTBEAT = 2.0
 URL = re.compile(r"http://127\.0\.0\.1:\d+/")
 
 
@@ -46,12 +48,27 @@ def forget(root: str) -> None:
 
 
 def remember(root: Path, port: int) -> str:
+    url = beat(root, port)
+    note(root, url)
+    return url
+
+
+def beat(root: Path, port: int) -> str:
     url = f"http://127.0.0.1:{port}/"
     target = marker(root)
     target.parent.mkdir(parents=True, exist_ok=True)
-    target.write_text(json.dumps({"url": url, "at": time.time()}))
-    note(root, url)
+    partial = target.with_name(f".{target.name}.partial")
+    partial.write_text(json.dumps({"url": url, "at": time.time()}))
+    partial.replace(target)
     return url
+
+
+def heartbeat(root: Path, port: int, every: float = HEARTBEAT) -> None:
+    def keep() -> None:
+        while True:
+            time.sleep(every)
+            beat(root, port)
+    threading.Thread(target=keep, daemon=True).start()
 
 
 def candidates(root: Path) -> list[str]:

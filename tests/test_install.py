@@ -1,6 +1,7 @@
 import json
 import os
 import subprocess
+import threading
 import sys
 import tempfile
 from pathlib import Path
@@ -11,6 +12,7 @@ from controllers.types import Agents, Todos  # noqa: E402
 from engine.record import Record  # noqa: E402
 from engine.sessions import ACTIVE_ENV, Sessions  # noqa: E402
 from install import install, refresh  # noqa: E402
+from serve import serve  # noqa: E402
 from providers import PROVIDERS  # noqa: E402
 from engine.hooks import EVENTS  # noqa: E402
 from resources.base import SYSTEM  # noqa: E402
@@ -59,12 +61,14 @@ install(project)
 install(project)
 got = json.loads((project / ".claude" / "settings.json").read_text())
 check("the user's other settings and their own Stop hook stay", (got["theme"], got["hooks"]["Stop"][0]["hooks"][0]["command"]), ("dark", "echo mine"))
-check("ours is added once, for every event, beside theirs", (sorted(got["hooks"]), sum("hook.py" in json.dumps(b) for b in got["hooks"]["Stop"])), (sorted(EVENTS), 1))
+check("ours is added once, for every event, beside theirs", (sorted(got["hooks"]), sum("hook.sh" in json.dumps(b) for b in got["hooks"]["Stop"])), (sorted(EVENTS), 1))
 
-# THE WIRED COMMAND RUNS: a hook payload on stdin lands as the agent's status
+# THE WIRED COMMAND RUNS: a hook payload on stdin reaches the project's server and lands as the agent's status
+server = serve(project / ".journal", 0)
+threading.Thread(target=server.serve_forever, daemon=True).start()
 for name in PROVIDERS:
     cfg = json.loads(PROVIDERS[name]().config(project).read_text())
-    command = next(h["command"] for b in cfg["hooks"]["Stop"] for h in b["hooks"] if "hook.py" in h["command"])
+    command = next(h["command"] for b in cfg["hooks"]["Stop"] for h in b["hooks"] if "hook.sh" in h["command"])
     session = f"{name}-9"
     payload = json.dumps({"hook_event_name": "Stop", "session_id": session, "transcript_path": f"/t/{session}.jsonl"})
     p = subprocess.run(command.split(), input=payload, capture_output=True, text=True, timeout=60, cwd=project,
@@ -86,6 +90,7 @@ for name in PROVIDERS:
     p = subprocess.run(command.split(), input=payload, capture_output=True, text=True, timeout=60, cwd=project,
                        env={**os.environ, "PATH": os.defpath, ACTIVE_ENV: "1"})
     check(f"{name}: the installed hook enforces the dispatch law", json.loads(p.stdout).get("decision"), "block")
+server.shutdown()
 
 # UPGRADE installs and migrates an old record
 project = project_with(".claude")
@@ -104,12 +109,12 @@ check("upgrade wires, writes skills and runs the migrations, and says so", (any(
 check("the old row is a v2 to-do with its number", Todos(Record(project / ".journal", "main")).load(3).title, "an old row")
 check("upgrade refreshes package code and removes retired package files", ("def context" in (project / ".journal" / "src" / "providers" / "codex.py").read_text(), (project / ".journal" / "providers").exists()), (True, False))
 check("upgrade preserves the project record", (project / ".journal" / "runtime" / "keep").read_text(), "record state\n")
-command = next(h["command"] for b in json.loads((project / ".claude" / "settings.json").read_text())["hooks"]["Stop"] for h in b["hooks"] if "hook.py" in h["command"])
-check("the hook and shim run the installed package, not the source checkout", (str(project / ".journal" / "src" / "hook.py") in command, str(project / ".journal" / "src" / "journal.py") in (project / ".journal" / "journal").read_text()), (True, True))
+command = next(h["command"] for b in json.loads((project / ".claude" / "settings.json").read_text())["hooks"]["Stop"] for h in b["hooks"] if "hook.sh" in h["command"])
+check("the hook and shim run the installed package, not the source checkout", (str(project / ".journal" / "src" / "hook.sh") in command, str(project / ".journal" / "src" / "journal.py") in (project / ".journal" / "journal").read_text()), (True, True))
 check("the record holds no package code: only the two entrypoints, forwarding to src/", sorted(p.name for p in (project / ".journal").iterdir() if p.suffix == ".py"), ["hook.py", "journal.py"])
 forwarded = subprocess.run([sys.executable, str(project / ".journal" / "journal.py"), "--root", str(project / ".journal"), "version"], capture_output=True, text=True, timeout=20)
 check("an old path still runs the CLI through its forward", (forwarded.returncode, forwarded.stdout.strip() != ""), (0, True))
-check("each hook event runs one journal command, the old one replaced", sum("hook.py" in json.dumps(b) for b in json.loads((project / ".claude" / "settings.json").read_text())["hooks"]["Stop"]), 1)
+check("each hook event runs one journal command, the old one replaced", sum("/hook." in json.dumps(b) for b in json.loads((project / ".claude" / "settings.json").read_text())["hooks"]["Stop"]), 1)
 check("a second upgrade migrates nothing", upgrade(project)[-1], "record already in shape")
 alias = project / ".journal" / "journal"
 p = subprocess.run([str(alias), "version"], capture_output=True, text=True, timeout=20)

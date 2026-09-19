@@ -25,6 +25,7 @@ from features.usage.usage import options as usage_options
 from controllers.types import Agents, Asks, CONTROLLERS, Environments
 from engine import bus, viewer
 from engine.manifest import manifest
+from engine.hooks import answer
 from engine.record import Record
 from engine.transcript import page
 from providers import PROVIDERS
@@ -135,6 +136,14 @@ def static(path: str) -> Reply:
     if not f.is_file():
         return Reply(404, {"error": "no web build; run npm run build in web"})
     return Reply(200, f.read_bytes(), mimetypes.guess_type(str(f))[0] or "application/octet-stream")
+
+
+@route("POST", "/api/hook/{provider}")
+def post_hook(req: Request) -> Reply:
+    if Path(req.query.get("root") or "").resolve() != req.root.resolve() or req.params["provider"] not in PROVIDERS:
+        return Reply(409, {})
+    out, why = answer(PROVIDERS[req.params["provider"]](), req.root, req.body, int(req.query.get("pid") or 0), req.query.get("env") or "")
+    return Reply(403 if why else 200, out)
 
 
 @route("GET", "/api/manifest")
