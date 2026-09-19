@@ -4,6 +4,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 import features  # noqa: E402
+from engine.hooks import handle  # noqa: E402
 from engine.queries import start_block  # noqa: E402
 from features.law.policy import BEGIN, brief  # noqa: E402
 from providers import PROVIDERS  # noqa: E402
@@ -36,13 +37,13 @@ cases = (("claude", "Agent", {"subagent_type": "general-purpose", "model": "sonn
          ("codex", "collaboration.spawn_agent", {"task_name": "general", "model": "gpt-5.6-luna"}),
          ("codex", "collaboration.spawn_agent", {"task_name": "search_history"}))
 for name, tool, given in cases:
-    result = PROVIDERS[name]().handle(record.root, record.env, {"hook_event_name": "PreToolUse", "session_id": f"{name}-law", "tool_name": tool, "tool_input": given})
+    result = handle(PROVIDERS[name](), record.root, record.env, {"hook_event_name": "PreToolUse", "session_id": f"{name}-law", "tool_name": tool, "tool_input": given})
     check(f"{name}: the law refuses an invalid dispatch", result.get("decision"), "block")
 
 allowed = (("claude", "Agent", {"subagent_type": "Explore", "model": "haiku"}),
            ("codex", "collaboration.spawn_agent", {"task_name": "search_history", "model": "gpt-5.6-luna"}))
 for name, tool, given in allowed:
-    result = PROVIDERS[name]().handle(record.root, record.env, {"hook_event_name": "PreToolUse", "session_id": f"{name}-law", "tool_name": tool, "tool_input": given})
+    result = handle(PROVIDERS[name](), record.root, record.env, {"hook_event_name": "PreToolUse", "session_id": f"{name}-law", "tool_name": tool, "tool_input": given})
     check(f"{name}: a bounded dispatch with a model goes through", result, {})
 
 done()

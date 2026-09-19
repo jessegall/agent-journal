@@ -5,7 +5,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 import features  # noqa: E402
 from controllers.types import Environments, Works  # noqa: E402
 from engine.sessions import Sessions, allowed  # noqa: E402
-from providers import PROVIDERS  # noqa: E402
+from features.base import held  # noqa: E402
 from resources.base import AGENT  # noqa: E402
 from tests.features.kit import report  # noqa: E402
 from tests.kit import check, done, fresh  # noqa: E402
@@ -15,7 +15,7 @@ features.load()
 
 record = fresh()
 sessions = Sessions(record.root)
-gate = lambda s: PROVIDERS["claude"]().gate(record.root, record.env, s)
+gate = lambda s: held(record, s)
 Works(record, actor=AGENT).create("open, so the work gate is quiet")
 one = Environments(record, actor=AGENT, session="claude-1")
 env = one.create("t")

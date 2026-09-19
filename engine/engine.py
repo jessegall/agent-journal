@@ -6,7 +6,7 @@ from pathlib import Path
 from controllers.types import CONTROLLERS
 import features
 from engine import bus
-from engine.actors import Actor, Agent, BUSY, IDLE, STOPPED, System, User, WORKING
+from engine.actors import Actor, Agent, BUSY, COMPACTING, IDLE, STOPPED, System, User, WORKING
 from engine.inputs import take
 from engine.record import Record
 from engine.sessions import Sessions
@@ -195,7 +195,9 @@ class Engine:
         self.crewed_size = size
         facts = PROVIDERS[last.provider]().crew(Path(path)) if last.provider in PROVIDERS else {}
         if facts and any(last.data.get(k) != v for k, v in facts.items()):
-            self.agent.mark(last.status or "", last.event or "", at=last.at, **facts)
+            compacting = facts.get("compacting")
+            status = COMPACTING if compacting else WORKING if compacting is False and last.status == COMPACTING else last.status or ""
+            self.agent.mark(status, last.event or "", at=last.at, **facts)
 
     def seat(self) -> None:
         self.branch()

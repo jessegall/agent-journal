@@ -4,6 +4,8 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 import features  # noqa: E402
 from controllers.types import Messages, Nudges, Works  # noqa: E402
+from engine.hooks import handle  # noqa: E402
+from features.base import held  # noqa: E402
 from providers import PROVIDERS  # noqa: E402
 from resources.base import AGENT, USER  # noqa: E402
 from tests.features.kit import nudges, report  # noqa: E402
@@ -13,7 +15,7 @@ features.unload()
 features.load()
 
 record = fresh()
-gate = lambda: PROVIDERS["claude"]().gate(record.root, record.env, "claude-1")
+gate = lambda: held(record, "claude-1")
 Works(record, actor=AGENT).create("something open")
 inbox = lambda: [n for n in nudges(record) if "inbox" in n]
 
@@ -51,12 +53,13 @@ Works(patient, actor=AGENT).create("open")
 Messages(patient, actor=USER).create("hi")
 report(patient, "working", "PreToolUse", uses=3)
 report(patient, "working", "PreToolUse", uses=6)
-check("patience is a setting", PROVIDERS["claude"]().gate(patient.root, patient.env, "claude-1") != "", True)
+check("patience is a setting", held(patient, "claude-1") != "", True)
 
 # PRIVATE: the nudge is never typed into the terminal; the next hook hands it to the agent as context
 check("the inbox nudge is private", all(n.data.get("private") for n in Nudges(record).all() if "inbox" in n.title), True)
-whisper = PROVIDERS["claude"]().handle(record.root, record.env, {"hook_event_name": "PostToolUse", "session_id": "claude-1", "tool_name": "Read"})
+provider = PROVIDERS["claude"]()
+whisper = handle(provider, record.root, record.env, {"hook_event_name": "PostToolUse", "session_id": "claude-1", "tool_name": "Read"})
 check("PostToolUse carries the unread private nudges as context and marks them read", ("there are new messages in your inbox" in whisper["hookSpecificOutput"]["additionalContext"], whisper["hookSpecificOutput"]["hookEventName"]), (True, "PostToolUse"))
-check("handed once", PROVIDERS["claude"]().handle(record.root, record.env, {"hook_event_name": "PostToolUse", "session_id": "claude-1", "tool_name": "Read"}), {})
+check("handed once", handle(provider, record.root, record.env, {"hook_event_name": "PostToolUse", "session_id": "claude-1", "tool_name": "Read"}), {})
 
 done()

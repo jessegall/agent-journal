@@ -1,6 +1,6 @@
+from engine.hooks import start_file
 from engine.queries import start_block
 from features.base import Feature, on
-from providers.base import start_file
 
 
 COMPACTED = """THIS WINDOW WAS JUST COMPACTED. The summary kept what was done and dropped what was decided. Before touching anything:

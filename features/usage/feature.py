@@ -9,7 +9,7 @@ class Usage(Feature):
     name = "usage"
     title_ = "Provider plan usage"
     abstract_ = "The session bar shows authenticated plan windows reported by the live CLI"
-    help_ = "Always on: Codex usage is read from its transcript; providers without accessible data explain their native source."
+    help_ = "Always on: plan usage is read through the provider; providers without accessible data explain their native source."
     fixed = True
 
     @on("agent.updated")

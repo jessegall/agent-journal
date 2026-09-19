@@ -1,6 +1,8 @@
 import re
 from pathlib import Path
 
+from providers import PROVIDERS
+
 LAWS = (
     ("L1", "Every subagent dispatch names its model and chooses the least expensive model that reliably fits the work.",
      "Use a fast, economical model for mechanical work with a known answer, a capable general model for careful implementation, and the strongest model only when the task turns on difficult judgement. Inheriting the orchestrator's model is not a model choice. If the dispatch API cannot accept a model, that operation is exempt."),
@@ -29,7 +31,8 @@ def brief(project: Path) -> list[Path]:
     written = []
     managed = block()
     title = project.resolve().name
-    for name in ("AGENTS.md", "CLAUDE.md"):
+    names = sorted({cls.briefing_file for cls in PROVIDERS.values() if cls.briefing_file})
+    for name in names:
         target = project / name
         had = target.read_text() if target.is_file() else ""
         kept = BLOCK.sub("\n", had).strip()
@@ -40,17 +43,12 @@ def brief(project: Path) -> list[Path]:
     return written
 
 
-def refusal(provider: str, tool) -> str:
-    if provider == "claude" and tool.name == "Agent":
-        kind = tool.subagent_type.strip().lower()
-        if kind in GENERIC:
-            return "Journal law L2 refuses generic subagents. Choose the specific agent type whose declared job matches this assignment."
-        if kind != "fork" and not tool.model.strip():
-            return "Journal law L1 requires an explicit model on every subagent dispatch. Choose the least expensive model that reliably fits the work."
-    if provider == "codex" and tool.name.endswith("spawn_agent"):
-        kind = tool.task_name.strip().lower()
-        if kind in GENERIC:
-            return "Journal law L2 refuses generic subagents. Give this dispatch a concrete task name and bounded assignment."
-        if not tool.model.strip():
-            return "Journal law L1 requires an explicit model on every subagent dispatch. Choose the least expensive model that reliably fits the work."
+def refusal(provider, tool) -> str:
+    dispatch = provider.dispatch(tool)
+    if not dispatch:
+        return ""
+    if dispatch.get("kind") in GENERIC:
+        return "Journal law L2 refuses generic subagents. Choose a specific agent type or give the dispatch a concrete task name and bounded assignment."
+    if dispatch.get("model_supported") and not dispatch.get("model"):
+        return "Journal law L1 requires an explicit model on every subagent dispatch. Choose the least expensive model that reliably fits the work."
     return ""

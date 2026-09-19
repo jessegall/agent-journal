@@ -76,9 +76,8 @@ class Band:
         if seat.get("report"):
             return seat["report"]
         record = Record(self.root, seat.get("env") or self.env)
-        rows = [r for r in Agents(record, actor=SYSTEM).all() if r.event]
-        rows.sort(key=lambda r: float(r.at or 0))
-        return {"title": rows[-1].title, **rows[-1].data} if rows else {}
+        agent = Agents(record, actor=SYSTEM).primary()
+        return {"title": agent.title, **agent.data} if agent and agent.event else {}
 
     def viewer(self) -> str:
         now = time.time()

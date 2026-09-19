@@ -3,7 +3,8 @@ import shutil
 from pathlib import Path
 
 from engine.transcript import AGENT, HUMAN, INJECTED, PEER, SUMMARY, SUPERSEDED, TASK, TOOL, Turn, timestamp
-from providers.base import EVENTS, Provider
+from engine.hooks import EVENTS
+from providers.base import Provider
 from providers.payload import Hook
 
 ASKS = frozenset({"AskUserQuestion"})
@@ -11,6 +12,37 @@ ASKS = frozenset({"AskUserQuestion"})
 
 class Claude(Provider):
     name = "claude"
+    question_tools = frozenset({"AskUserQuestion"})
+    briefing_file = "CLAUDE.md"
+    skill_home = ".claude/skills"
+    link_skills = True
+    controls = {
+        "groups": [
+            {
+                "key": "model",
+                "label": "Model",
+                "choices": [
+                    {"value": "opus", "label": "Opus", "command": "/model opus"},
+                    {"value": "sonnet", "label": "Sonnet", "command": "/model sonnet"},
+                    {"value": "haiku", "label": "Haiku", "command": "/model haiku"},
+                ],
+            },
+            {
+                "key": "effort",
+                "label": "Reasoning effort",
+                "choices": [
+                    {"value": "auto", "label": "Auto", "command": "/effort auto"},
+                    {"value": "low", "label": "Low", "command": "/effort low"},
+                    {"value": "medium", "label": "Medium", "command": "/effort medium"},
+                    {"value": "high", "label": "High", "command": "/effort high"},
+                    {"value": "xhigh", "label": "Extra high", "command": "/effort xhigh"},
+                    {"value": "max", "label": "Maximum", "command": "/effort max"},
+                ],
+            },
+        ],
+        "note": "Changes apply immediately to this Claude Code session.",
+    }
+    usage_note = "Claude exposes plan limits only in its native /usage view; the journal does not replace your status-line configuration to scrape them."
 
     def present(self, project: Path) -> bool:
         return (project / ".claude").is_dir() or shutil.which("claude") is not None
@@ -23,6 +55,12 @@ class Claude(Provider):
 
     def compacted(self, hook: Hook) -> bool:
         return hook.source == "compact"
+
+    def dispatch(self, tool) -> dict:
+        if tool.name != "Agent":
+            return {}
+        kind = tool.subagent_type.strip().lower()
+        return {"kind": kind, "model": tool.model.strip(), "model_supported": kind != "fork"}
 
     def model(self, hook: Hook) -> str:
         path = hook.transcript

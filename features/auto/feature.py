@@ -14,7 +14,7 @@ class Auto(Feature):
 
     @refuses
     def no_blocking_question(self, provider, record, hook, session) -> str:
-        return refusal(hook)
+        return refusal(provider, hook)
 
     @on("agent.updated")
     def offer(self, event, record) -> None:

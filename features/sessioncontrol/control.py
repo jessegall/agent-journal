@@ -2,54 +2,13 @@ from pathlib import Path
 
 from engine.inputs import queue
 from engine.seats import live
+from providers import PROVIDERS
 from resources.base import Refused
-
-PROVIDERS = {
-    "claude": {
-        "groups": [
-            {
-                "key": "model",
-                "label": "Model",
-                "choices": [
-                    {"value": "opus", "label": "Opus", "command": "/model opus"},
-                    {"value": "sonnet", "label": "Sonnet", "command": "/model sonnet"},
-                    {"value": "haiku", "label": "Haiku", "command": "/model haiku"},
-                ],
-            },
-            {
-                "key": "effort",
-                "label": "Reasoning effort",
-                "choices": [
-                    {"value": "auto", "label": "Auto", "command": "/effort auto"},
-                    {"value": "low", "label": "Low", "command": "/effort low"},
-                    {"value": "medium", "label": "Medium", "command": "/effort medium"},
-                    {"value": "high", "label": "High", "command": "/effort high"},
-                    {"value": "xhigh", "label": "Extra high", "command": "/effort xhigh"},
-                    {"value": "max", "label": "Maximum", "command": "/effort max"},
-                ],
-            },
-        ],
-        "note": "Changes apply immediately to this Claude Code session.",
-    },
-    "codex": {
-        "groups": [
-            {
-                "key": "picker",
-                "label": "Model and reasoning effort",
-                "choices": [
-                    {"value": "open", "label": "Open Codex picker", "command": "/model"},
-                ],
-            },
-        ],
-        "note": "Choose the model and reasoning effort in the Codex terminal picker.",
-    },
-}
 
 
 def options(provider: str) -> dict:
-    configured = PROVIDERS.get(provider)
-    if not configured:
-        return {"provider": provider, "groups": [], "note": "This CLI does not expose model controls."}
+    cls = PROVIDERS.get(provider)
+    configured = cls.controls if cls else {"groups": [], "note": "This CLI does not expose model controls."}
     return {
         "provider": provider,
         "groups": [
@@ -61,7 +20,8 @@ def options(provider: str) -> dict:
 
 
 def choice(provider: str, action: str, value: str) -> dict:
-    configured = PROVIDERS.get(provider) or {}
+    cls = PROVIDERS.get(provider)
+    configured = cls.controls if cls else {}
     group = next((group for group in configured.get("groups", []) if group["key"] == action), None)
     selected = next((item for item in (group or {}).get("choices", []) if item["value"] == value), None)
     if not selected:

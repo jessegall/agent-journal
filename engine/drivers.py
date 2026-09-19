@@ -10,6 +10,8 @@ ANSI = re.compile(rb"\x1b\[[0-?]*[ -/]*[@-~]|\x1b\][^\x07\x1b]*(?:\x07|\x1b\\)|\
 
 class Driver(ABC):
     name = ""
+    AUTO_ARGS = ()
+    APPROVAL_FLAGS = frozenset()
     QUIET = 3.0
     PROMPT = re.compile(r"[›>$❯]\s*$")
 
@@ -22,6 +24,11 @@ class Driver(ABC):
 
     @abstractmethod
     def command(self, args: list[str]) -> list[str]: ...
+
+    @classmethod
+    def launch_args(cls, args: list[str], automatic: bool = False) -> list[str]:
+        flags = {arg.split("=", 1)[0] for arg in args}
+        return [*cls.AUTO_ARGS, *args] if automatic and flags.isdisjoint(cls.APPROVAL_FLAGS) else args
 
     def alive(self) -> bool:
         return self.fd >= 0
@@ -68,6 +75,8 @@ class Driver(ABC):
 
 class Claude(Driver):
     name = "claude"
+    AUTO_ARGS = ("--permission-mode", "auto")
+    APPROVAL_FLAGS = frozenset({"--permission-mode", "--dangerously-skip-permissions"})
 
     def command(self, args: list[str]) -> list[str]:
         return ["claude", *args]
@@ -75,6 +84,8 @@ class Claude(Driver):
 
 class Codex(Driver):
     name = "codex"
+    AUTO_ARGS = ("--approve-for-me",)
+    APPROVAL_FLAGS = frozenset({"-a", "--ask-for-approval", "--approve-for-me", "--full-auto", "--dangerously-bypass-approvals-and-sandbox"})
 
     def command(self, args: list[str]) -> list[str]:
         return ["codex", *args]

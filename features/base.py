@@ -5,10 +5,18 @@ from typing import ClassVar
 from controllers.types import Agents, CONTROLLERS, Nudges
 from engine import bus
 from features import trigger
-from providers.base import POLICIES, gate_file
+from engine.hooks import POLICIES, gate_file
 from resources.base import SYSTEM
 
 REGISTRY: dict[str, type] = {}
+
+
+def held(record, session: str) -> str:
+    try:
+        holds = json.loads(gate_file(record.root, record.env, session).read_text())
+    except (OSError, ValueError):
+        return ""
+    return "; ".join(why for why in holds.values() if why)
 
 
 def on(pattern: str):

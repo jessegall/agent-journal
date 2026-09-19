@@ -6,10 +6,12 @@ from pathlib import Path
 import features
 from commands.cli import actions
 from controllers.types import CONTROLLERS
+from providers import PROVIDERS
 
 HERE = Path(__file__).resolve().parent
 LIBRARY = ".agents/skills"
-LINKED = {"claude": ".claude/skills"}
+LINKED = {name: cls.skill_home for name, cls in PROVIDERS.items() if cls.link_skills}
+RETIRED = tuple(dict.fromkeys(home for cls in PROVIDERS.values() for home in cls.retired_skill_homes))
 
 
 def signature(controller: type, name: str) -> str:
@@ -101,8 +103,9 @@ def unlink(project: Path, name: str) -> None:
 def publish(project: Path, agents: tuple[str, ...]) -> tuple[list[Path], list[Path]]:
     written = write(project / LIBRARY)
     names = sorted({f.parent.name for f in written})
-    for stale in (project / ".codex" / "skills").glob("journal*"):
-        if stale.is_dir() and not stale.is_symlink():
-            shutil.rmtree(stale)
+    for home in RETIRED:
+        for stale in (project / home).glob("journal*"):
+            if stale.is_dir() and not stale.is_symlink():
+                shutil.rmtree(stale)
     linked = [t for name in names for t in link(project, name, tuple(a for a in agents if a in LINKED))]
     return written, linked

@@ -98,8 +98,7 @@ class Pin(Reasoned, Resource):
 
 class Rule(Reasoned, Resource):
     type = "rule"
-    injected = Field(FLAG)
-    injected_codex = Field(FLAG)
+    targets = Field(default=list)
     handed = "RULES, in force on every environment"
     lent = False
     attention = True
@@ -178,6 +177,8 @@ class AgentRow(Shape, Resource):
     skills = Field(default=list)
     shells = Field(default=0)
     subagents = Field(default=0)
+    parent = Field(default="")
+    compacting = Field(FLAG, False)
     running = Field(default=dict)
     commands = Field(default=list)
     branch = Field()
