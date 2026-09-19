@@ -14,7 +14,6 @@ const bar = (ref, direction) => {
         ref,
         icon: meta(type).icon,
         title: r ? r.title : `${meta(type).title} ${n}`,
-        kind: `${meta(type).title.toLowerCase()} ${n}`,
         age: r ? age(r.updated || r.created) : "",
     };
 };
@@ -38,7 +37,6 @@ const open = (ref) => {
                 <button type="button" class="bar" @click="open(r.ref)">
                     <Icon :name="r.icon" :size="13" />
                     <span class="bar-title">{{ r.title }}</span>
-                    <span class="bar-kind">{{ r.kind }}</span>
                     <span class="bar-age">{{ r.age }}</span>
                 </button>
             </template>
@@ -90,19 +88,12 @@ h3 {
 }
 
 .bar-title {
-    flex: 0 1 auto;
+    flex: 1 1 auto;
     min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
     font-weight: 500;
-}
-
-.bar-kind {
-    flex: none;
-    margin-left: auto;
-    font-size: 11px;
-    color: var(--text-3);
 }
 
 .bar-age {
