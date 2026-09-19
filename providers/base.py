@@ -76,10 +76,8 @@ class Provider(ABC):
             return {AgentRow.running: {}, AgentRow.commands: list(row.commands)}
         if hook.event == "PreToolUse" and doing:
             now = time.time()
-            changed = running.get(RUNNING.changed)
             effect = self.effect(hook)
-            running = {RUNNING.what: doing, RUNNING.tool: hook.tool.name, RUNNING.at: now, **({RUNNING.effect: effect} if effect else {}),
-                       **({RUNNING.changed: changed} if changed else {})}
+            running = {RUNNING.what: doing, RUNNING.tool: hook.tool.name, RUNNING.at: now, **({RUNNING.effect: effect} if effect else {})}
             return {AgentRow.running: running, AgentRow.commands: (list(row.commands) + [{COMMAND.what: doing, COMMAND.tool: hook.tool.name, COMMAND.at: now,
                                                                                           **({COMMAND.effect: effect} if effect else {})}])[-RING:]}
         if running and not running.get(RUNNING.done):
@@ -87,9 +85,12 @@ class Provider(ABC):
         return {AgentRow.running: running, AgentRow.commands: list(row.commands)}
 
     def effect(self, hook: Hook) -> str:
-        if hook.tool.name != "Bash" or JOURNAL_COMMAND.search(hook.command):
+        return self.effect_of(hook.command) if hook.tool.name == "Bash" else ""
+
+    def effect_of(self, command: str) -> str:
+        if JOURNAL_COMMAND.search(command):
             return ""
-        return next((name for name, pattern in EFFECTS if pattern.search(hook.command)), "")
+        return next((name for name, pattern in EFFECTS if pattern.search(command)), "")
 
     def context(self, hook: Hook) -> float | None:
         return None

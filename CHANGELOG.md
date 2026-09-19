@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.10.0 — The status bar follows a chained command step by step
+
+The engine reads the agent's process tree once a second and names the command running right now under the agent's command shell, so a one-liner like `pytest && cat notes.md` shows running tests, then reading files, as each step starts; the agent's own servers are never mistaken for a step. A new command starts without the previous one's line counts. Also: reports can be deleted only once archived, no agent-side action wears the primary colour, the sidebar header carries the project name in its colour, and the prose-choices check needs a question to the user before it holds the agent.
+
+What to do about it: `journal upgrade`, then restart `journal claude` so the engine reads the running steps.
+
 ## 2.9.4 — No stray beeps, no raw variables, a paged chat
 
 The terminal band no longer draws into the middle of a window-title update the agent is sending, which left a bare bell character that made the computer beep. The chat loads the newest hundred messages and pages older ones in ahead of the scroll; activity and notifications load a hundred too. The status bar never shows a shell variable as if it were a number, the effect words ride on every recent command, and `runtime/statusbar.log` records each text the bar shows. The agent page has Transcript, Work and Hooks tabs, the hooks can be edited there, and the transcript is back to the flat v1 lines.

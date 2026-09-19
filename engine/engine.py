@@ -3,16 +3,18 @@ import subprocess
 import time
 from pathlib import Path
 
-from controllers.types import CONTROLLERS
+from controllers.types import CONTROLLERS, Agents
 import features
 from engine import bus
 from engine.actors import Actor, Agent, BUSY, COMPACTING, IDLE, STOPPED, System, User, WORKING
 from engine.inputs import take
+from engine import steps
 from engine.record import Record
+from engine.terminal import pid_of
 from engine.sessions import Sessions
 from providers import PROVIDERS
-from resources.base import AGENT
-from resources.types import PRIORITY, TYPES
+from resources.base import AGENT, SYSTEM
+from resources.types import PRIORITY, RUNNING, TYPES
 
 TICK = 1.0
 WEB_HOSTS = ("github.com", "gitlab.com", "bitbucket.org")
@@ -44,6 +46,7 @@ class Engine:
         self.typed_at = 0.0
         self.probed_at = 0.0
         self.controlled_at = 0.0
+        self.stepped = ""
         self.why = ""
 
     def start(self) -> None:
@@ -199,9 +202,26 @@ class Engine:
             status = COMPACTING if compacting else WORKING if compacting is False and last.status == COMPACTING else last.status or ""
             self.agent.mark(status, last.event or "", at=last.at, **facts)
 
+    def step(self) -> None:
+        pid = pid_of(self.agent.driver.session)
+        command = steps.running(pid) if pid else ""
+        if command == self.stepped:
+            return
+        self.stepped = command
+        last = self.agent.driver.last_report()
+        row = Agents(self.record, actor=SYSTEM).by_session((last and last.title) or self.agent.driver.session)
+        running = dict(row.running)
+        if not running.get(RUNNING.what) or running.get(RUNNING.done):
+            return
+        running[RUNNING.step] = command
+        provider = PROVIDERS.get(self.agent.driver.name)
+        running[RUNNING.step_effect] = provider().effect_of(command) if provider and command else ""
+        self.agent.mark(row.status or "", row.event or "", running=running)
+
     def seat(self) -> None:
         self.branch()
         self.crew()
+        self.step()
         last = self.agent.driver.last_report()
         f = self.record.root / "runtime" / f"seat-{self.agent.driver.session}.json"
         f.parent.mkdir(parents=True, exist_ok=True)
