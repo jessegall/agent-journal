@@ -168,9 +168,10 @@ const counts = (c) => [
                     <span class="jbar-plan-n">Plan</span>
                     <span class="jbar-plan-title">{{ p.title }}</span>
                     <template v-if="p.phase">
-                        <span class="jbar-plan-phase">· {{ p.phase }}</span>
+                        <span class="jbar-plan-dot">·</span>
+                        <span class="jbar-plan-phase">{{ p.phase }}</span>
                     </template>
-                    <span class="jbar-plan-step">{{ p.current || 1 }}</span>
+                    <span class="jbar-plan-step">phase {{ p.current || 1 }}/{{ p.phases }}</span>
                     <span class="jbar-track" role="progressbar">
                         <span :style="{width: `${(100 * p.done) / Math.max(1, p.rows)}%`}" />
                     </span>
@@ -431,6 +432,11 @@ a.jbar-count:hover {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+}
+
+.jbar-plan-dot {
+    flex: none;
+    color: var(--text-3);
 }
 
 .jbar-plan-phase {
