@@ -15,6 +15,7 @@ import FilesPage from "./pages/FilesPage.vue";
 import CommitPage from "./pages/CommitPage.vue";
 import SkillsPage from "./pages/SkillsPage.vue";
 import HubPage from "./pages/HubPage.vue";
+import FilePage from "./pages/FilePage.vue";
 import Reader from "./resource/Reader.vue";
 import Lightbox from "./kit/Lightbox.vue";
 import QuickMenu from "./layout/QuickMenu.vue";
@@ -25,7 +26,7 @@ import UpgradeBand from "./layout/UpgradeBand.vue";
 const page = computed(() =>
     !route.value.page
         ? "home"
-        : ["settings", "search", "files", "commit", "skills", "hub"].includes(route.value.page)
+        : ["settings", "search", "files", "commit", "skills", "hub", "file"].includes(route.value.page)
           ? route.value.page
           : "index"
 );
@@ -96,6 +97,7 @@ watch(
                             <template #commit><CommitPage /></template>
                             <template #skills><SkillsPage /></template>
                             <template #hub><HubPage /></template>
+                            <template #file><FilePage /></template>
                             <template #default><Index :type="route.page" /></template>
                         </SwitchCase>
                     </div>

@@ -131,6 +131,14 @@ code, got = call("POST", "/api/shown", {"command": "journal message paths 104", 
 check("what the status bar shows is logged for the record", (code, (root / "runtime" / "shown.log").read_text().split("\t")[1]), (200, '["the paths of message 104"]'))
 
 
+(root.parent / "web").mkdir(exist_ok=True)
+(root.parent / "web" / "gist.js").write_text("export const a = 1;\nexport const b = 2;\n")
+code, got = call("GET", "/api/main/file?path=web/gist.js")
+check("a project file is served read-only with its text and line count", (code, got["path"], got["lines"], got["text"].startswith("export")), (200, "web/gist.js", 2, True))
+check("a path outside the project is refused", call("GET", "/api/main/file?path=../../etc/passwd")[0], 404)
+check("a path with no file is refused", call("GET", "/api/main/file?path=web/none.js")[0], 404)
+
+
 # JOURNALS ON THIS MACHINE
 from engine import viewer  # noqa: E402
 viewer.note(root.parent / "stopped" / ".journal", "http://127.0.0.1:8439/")
