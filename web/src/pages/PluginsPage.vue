@@ -1,6 +1,6 @@
 <script setup>
-import {computed, ref} from "vue";
-import {act, command} from "../api.js";
+import {computed, onMounted, onUnmounted, ref} from "vue";
+import {act, api, command} from "../api.js";
 import Btn from "../kit/Btn.vue";
 import Icon from "../kit/Icon.vue";
 import Switch from "../kit/Switch.vue";
@@ -11,14 +11,28 @@ const source = ref("");
 const shown = ref("");
 const busy = ref("");
 const plugins = computed(() => rows("plugin").filter((p) => !p.completed && !p.deleted));
+const services = ref([]);
+const EVERY = 3000;
+let timer = 0;
 const pagesOf = (p) => (store.pages || []).filter((page) => page.plugin === p.data.manifest.name);
 
 function servicesOf(p) {
-    return Object.keys((p.data.manifest && p.data.manifest.services) || {}).map((name) => {
-        const page = (store.pages || []).find((x) => x.service === `${p.data.manifest.name}.${name}`);
-        return {name, state: page ? page.state : ""};
-    });
+    return services.value.filter((s) => s.plugin === p.data.manifest.name);
 }
+
+async function look() {
+    try {
+        services.value = await api("GET", "/services");
+    } catch (e) {
+        services.value = [];
+    }
+}
+
+onMounted(() => {
+    look();
+    timer = setInterval(look, EVERY);
+});
+onUnmounted(() => clearInterval(timer));
 
 async function preview() {
     busy.value = "preview";
@@ -102,10 +116,10 @@ async function plugin(p, action, body = {}) {
                     </p>
                     <template v-if="servicesOf(p).length">
                         <div class="services">
-                            <template v-for="s in servicesOf(p)" :key="s.name">
-                                <span :class="['service', s.state]">
+                            <template v-for="s in servicesOf(p)" :key="s.id">
+                                <span :class="['service', s.state]" :title="s.why || s.state">
                                     <span class="dot" />
-                                    {{ s.name }}
+                                    {{ s.service }}
                                 </span>
                             </template>
                         </div>

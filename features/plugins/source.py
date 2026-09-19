@@ -132,6 +132,17 @@ def preview(manifest: dict, source: str, commit: str) -> str:
     return "\n".join(line for line in lines if line is not None)
 
 
+def said_version(where: Path, manifest: dict) -> str:
+    given = str(manifest.get("version") or "")
+    if given:
+        return given
+    kept = Path(where) / "VERSION"
+    try:
+        return kept.read_text().strip()[:32]
+    except OSError:
+        return ""
+
+
 def staged(root: Path, source: str, revision: str, version: str) -> tuple[Path, dict, str, bool]:
     where = address(source)
     linked = not where.startswith(("http://", "https://", "git@", "file://", "ssh://"))
