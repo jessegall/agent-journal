@@ -6,7 +6,7 @@ import {peek, route} from "../route.js";
 import {age, rows} from "../store.js";
 
 const sub = ref("unread");
-const notes = computed(() => [...rows("notification")].reverse());
+const notes = computed(() => [...rows("notification")].sort((a, b) => b.created - a.created));
 const unread = computed(() => notes.value.filter((n) => !n.seen.includes("user")));
 const shown = computed(() => (sub.value === "unread" ? unread.value : notes.value.filter((n) => n.seen.includes("user"))));
 const reading = ref(false);
