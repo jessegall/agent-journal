@@ -1,5 +1,5 @@
 <script setup>
-import {reactive, ref, watch} from "vue";
+import {computed, reactive, ref, watch} from "vue";
 import Icon from "../kit/Icon.vue";
 
 const props = defineProps({
@@ -16,6 +16,12 @@ const props = defineProps({
 const emit = defineEmits(["unquote"]);
 const draft = reactive({text: "", files: [], sending: false, error: ""});
 const area = ref(null);
+const attachment = {attachment: true, icon: "paperclip"};
+const actions = computed(() => [
+    ...props.tools.filter((tool) => !tool.text),
+    attachment,
+    ...props.tools.filter((tool) => tool.text && draft.text.trim()),
+]);
 
 watch(
     () => props.quote,
@@ -122,22 +128,22 @@ async function use(tool) {
                 @keydown.ctrl.enter.prevent="go"
             />
             <div class="compose-foot">
-                <template v-for="tool in tools" :key="tool.icon">
+                <template v-for="action in actions" :key="action.icon">
+                    <label v-if="action.attachment" class="compose-attach" title="Attach files" aria-label="Attach files">
+                        <Icon name="paperclip" />
+                        <input type="file" multiple hidden @change="picked" />
+                    </label>
                     <button
+                        v-else
                         type="button"
                         class="compose-attach"
-                        :title="tool.title"
-                        :aria-label="tool.title"
-                        :disabled="tool.text && !draft.text.trim()"
-                        @click="use(tool)"
+                        :title="action.title"
+                        :aria-label="action.title"
+                        @click="use(action)"
                     >
-                        <Icon :name="tool.icon" />
+                        <Icon :name="action.icon" />
                     </button>
                 </template>
-                <label class="compose-attach" title="Attach files" aria-label="Attach files">
-                    <Icon name="paperclip" />
-                    <input type="file" multiple hidden @change="picked" />
-                </label>
                 <button type="submit" class="compose-send" :disabled="draft.sending || !draft.text.trim()">{{ submit }}</button>
             </div>
         </div>
@@ -274,11 +280,6 @@ async function use(tool) {
 .compose-attach:hover {
     background: var(--hover);
     color: var(--text);
-}
-
-.compose-attach:disabled {
-    opacity: 0.35;
-    cursor: default;
 }
 
 .compose-attach .ico {
