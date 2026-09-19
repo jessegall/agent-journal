@@ -32,10 +32,10 @@ band.url = url
 plain = lambda line: re.sub(r"\x1b\[[0-9;]*m", "", line)
 lines = [plain(line) for line in band.lines(180)]
 check("the band shows the current environment, viewer URL and clock", ("main" in lines[1], url in lines[1], bool(re.search(r"\d\d:\d\d:\d\d", lines[1]))), (True, True, True))
-check("the band shows this session's model, context and open work", ("gpt-5" in lines[2], "context 38%" in lines[2], f"work {work.n} {work.title}" in lines[2]), (True, True, True))
+check("the band shows this session's model and context, and the open work on a line of its own", ("gpt-5" in lines[2], "context 38%" in lines[2], f"work {work.n} {work.title}" in lines[3], len(lines)), (True, True, True, ROWS))
 (root / "runtime" / "seat-s-1.json").write_text(json.dumps({"env": "other", "state": "idle", "report": {"title": "real-session", "provider": "claude", "model": "sonnet", "context": 52, "running": {"what": "npm run build", "at": 1}, "started": 1}}))
 updated = [plain(line) for line in band.lines(180)]
-check("a redraw reads fresh seat data", ("other" in updated[1], "sonnet" in updated[2], "context 52%" in updated[2], "npm run build" in updated[2]), (True, True, True, True))
+check("a redraw reads fresh seat data", ("other" in updated[1], "sonnet" in updated[2], "context 52%" in updated[2], "npm run build" in updated[3]), (True, True, True, True))
 
 opened = []
 from engine import viewer  # noqa: E402
