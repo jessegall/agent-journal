@@ -137,7 +137,12 @@ class Controller:
 
     def action(self, name: str):
         command = COMMANDS.get(self.type, {}).get(name)
-        return partial(command, self) if command else getattr(self, name)
+        if command:
+            return partial(command, self)
+        for method, alias in self.resource.names.items():
+            if alias == name:
+                return getattr(self, method)
+        return getattr(self, name)
 
     def restore(self, n: int) -> Resource:
         r = self.load(n)

@@ -109,14 +109,34 @@ def configure(project: Path, root: Path) -> list[str]:
     return done
 
 
+def token() -> str:
+    if not shutil.which("gh"):
+        return ""
+    try:
+        got = subprocess.run(["gh", "auth", "token"], capture_output=True, text=True, timeout=20)
+    except (OSError, subprocess.SubprocessError):
+        return ""
+    return got.stdout.strip() if got.returncode == 0 else ""
+
+
+def reachable(repository: str, secret: str) -> str:
+    return repository.replace("https://", f"https://x-access-token:{secret}@", 1) if secret and repository.startswith("https://github.com/") else repository
+
+
+def plain(text: str, secret: str) -> str:
+    return text.replace(secret, "the token") if secret else text
+
+
 def fetch(into: Path, repository: str = "", ref: str = "") -> tuple[str, str]:
-    source = repository or os.environ.get("AGENT_JOURNAL_REPO", REPOSITORY)
+    wanted = repository or os.environ.get("AGENT_JOURNAL_REPO", REPOSITORY)
+    secret = token() if wanted.startswith("https://github.com/") else ""
+    source = reachable(wanted, secret)
     into.mkdir(parents=True, exist_ok=True)
     try:
         for step in (["init", "-q"], ["fetch", "-q", "--depth", "1", source, ref or "HEAD"], ["checkout", "-q", "FETCH_HEAD"]):
             done = subprocess.run(["git", *step], cwd=into, capture_output=True, text=True, timeout=120)
             if done.returncode:
-                return "", done.stderr.strip() or f"git {step[0]} failed"
+                return "", plain(done.stderr.strip() or f"git {step[0]} failed", secret)
         return subprocess.run(["git", "rev-parse", "HEAD"], cwd=into, capture_output=True, text=True, timeout=30).stdout.strip(), ""
     except (OSError, subprocess.TimeoutExpired) as error:
         return "", str(error)
