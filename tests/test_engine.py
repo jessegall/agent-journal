@@ -12,7 +12,7 @@ from engine.drivers import Driver  # noqa: E402
 from engine.engine import Engine  # noqa: E402
 from engine.record import Record  # noqa: E402
 from engine.sessions import ACTIVE_ENV  # noqa: E402
-from engine.supervisor import agent_environment  # noqa: E402
+from engine.terminal import agent_environment  # noqa: E402
 from resources.base import AGENT, SYSTEM, USER  # noqa: E402
 from resources.types import PRIORITY, TYPES  # noqa: E402
 from resources.types import AgentRow  # noqa: E402

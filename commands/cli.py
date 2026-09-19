@@ -207,7 +207,7 @@ def upgrade_here(ctx) -> str:
 
 
 def supervise(ctx, agent: str) -> str:
-    from engine.supervisor import run as run_supervisor
+    from engine.terminal import run as run_supervisor
     from engine.viewer import ensure
     record = ctx["record"]
     url = ensure(record.root, Path.cwd())

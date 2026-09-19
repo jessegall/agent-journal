@@ -72,8 +72,8 @@ if pid == 0:
     for k in ("CLAUDECODE", "CLAUDE_CODE_ENTRYPOINT", "CLAUDE_CODE_SESSION_ID"):
         os.environ.pop(k, None)
     os.execvp(sys.executable, [sys.executable, "-c",
-              f"import sys; sys.path.insert(0, {str(HERE)!r}); from pathlib import Path; from engine import supervisor; "
-              f"supervisor.run(Path({str(root)!r}), Path({str(project)!r}), 'main', 'claude', ['--model', 'haiku', '--dangerously-skip-permissions'])"])
+              f"import sys; sys.path.insert(0, {str(HERE)!r}); from pathlib import Path; from engine import terminal; "
+              f"terminal.run(Path({str(root)!r}), Path({str(project)!r}), 'main', 'claude', ['--model', 'haiku', '--dangerously-skip-permissions'])"])
 fcntl.ioctl(fd, termios.TIOCSWINSZ, struct.pack("HHHH", 40, 140, 0, 0))
 screen = b""
 
