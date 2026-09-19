@@ -104,11 +104,12 @@ const line = computed(() => {
     if (rolling.value) return rolling.value;
     const run = data.value && data.value.running;
     if (!run || !run.what) return null;
-    const parts = said(run);
+    const now = run.step && !run.done ? {what: run.step, tool: "Bash", effect: run.step_effect} : run;
+    const parts = said(now);
     if (!parts.length) return null;
     const secs = Math.floor((run.done || Date.now() / 1000) - run.at);
     const text = parts[0];
-    return {key: text, text, tokens: tokensOf(run, text), clock: clock(secs), done: !!run.done};
+    return {key: text, text, tokens: tokensOf(now, text), clock: clock(secs), done: !!run.done};
 });
 
 const text = ref(null);

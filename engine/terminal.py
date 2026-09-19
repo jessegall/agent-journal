@@ -24,6 +24,15 @@ def agent_environment(base: dict | None = None) -> dict:
     return {**(base if base is not None else os.environ), ACTIVE_ENV: "1"}
 
 
+def session_of(agent: str, pid: int) -> str:
+    return f"{agent}-{pid}"
+
+
+def pid_of(session: str) -> int:
+    tail = session.rsplit("-", 1)[-1]
+    return int(tail) if tail.isdigit() else 0
+
+
 def spawn_agent(command: list[str], cwd: Path) -> tuple[int, int]:
     pid, fd = pty.fork()
     if pid == 0:
@@ -60,7 +69,7 @@ def run(root: Path, cwd: Path, env: str, agent: str, args: list[str]) -> int:
     driver = DRIVERS[agent]
     command = driver.command(driver, launch_args(Record(root, env), agent, args))
     pid, fd = spawn_agent(command, cwd)
-    session = f"{agent}-{pid}"
+    session = session_of(agent, pid)
     runtime = root / "runtime"
     runtime.mkdir(parents=True, exist_ok=True)
     (runtime / "env").write_text(env)

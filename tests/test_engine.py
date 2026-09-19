@@ -258,4 +258,27 @@ for i in range(10):
     Messages(engine.record, actor=USER).create(f"note {i}")
 check("ten waiting events are typed at once, without waiting for quiet", (engine.tick(), driver.sent), ("typed 10 in one line", ["10 new messages"]))
 
+# THE RUNNING STEP of a chained command is read from the agent's processes and written once per change
+root = Path(tempfile.mkdtemp()) / ".journal"
+record = Record(root, "main")
+driver = Fake(record)
+engine = Engine(record, driver)
+row = Agents(record, actor=SYSTEM).by_session("fake-1")
+Agents(record, actor=SYSTEM).update(row.n, running={"what": "python3 tests/test_a.py && cat notes.md", "tool": "Bash", "at": time.time()})
+seen = iter(["python3 tests/test_a.py", "python3 tests/test_a.py", "cat notes.md"])
+real = engine_module.steps.running
+engine_module.steps.running = lambda pid: next(seen)
+writes = lambda: len([e for e in record.events() if e.type == "agent"])
+before = writes()
+engine.step()
+engine.step()
+check("the step is written once while it stays the same", (Agents(record).by_session("fake-1").running.get("step"), writes() - before), ("python3 tests/test_a.py", 1))
+engine.step()
+check("the chain's next command becomes the step", Agents(record).by_session("fake-1").running.get("step"), "cat notes.md")
+Agents(record, actor=SYSTEM).update(row.n, running={**Agents(record).by_session("fake-1").running, "done": time.time()})
+engine_module.steps.running = lambda pid: "later"
+engine.step()
+check("a finished command gets no step written", Agents(record).by_session("fake-1").running.get("step"), "cat notes.md")
+engine_module.steps.running = real
+
 done()

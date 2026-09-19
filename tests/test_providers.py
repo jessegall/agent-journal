@@ -68,7 +68,7 @@ for name, cls in PROVIDERS.items():                       # every provider, the 
     check(f"{name}: its end stamps the running command done; a read reports no command", (row["running"]["done"] >= row["running"]["at"], len(row["commands"])), (True, 1))
     agents.update(agents.by_session("abc-1").n, running={**row["running"], "changed": {"edited": 2}})
     handle(provider, root, "main", {**payload, "hook_event_name": "PreToolUse", "tool_name": "Bash", "tool_input": {"command": "npm test"}})
-    check(f"{name}: a turn carries its change count across commands", agents.by_session("abc-1").running["changed"], {"edited": 2})
+    check(f"{name}: a new command starts without the last one's line changes, so the bar hides them until it edits", "changed" in agents.by_session("abc-1").running, False)
     handle(provider, root, "main", {**payload, "hook_event_name": "UserPromptSubmit"})
     check(f"{name}: the next turn clears the command and its change count", agents.by_session("abc-1").running, {})
     logged = (root / "runtime" / "commands.log").read_text().splitlines()
