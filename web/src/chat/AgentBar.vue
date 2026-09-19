@@ -171,6 +171,11 @@ onUnmounted(() => window.removeEventListener("click", away));
                     <span v-if="usage.length" class="usage-gauge"><span :style="{width: `${used(usage[0])}%`}" /></span>
                     {{ usageLabel }}
                 </button>
+                <span class="agent-fact agent-context" :title="`context ${Math.round(Number(data.context || 0))}% full`">
+                    <Icon name="gauge" />
+                    <span class="agent-context-bar"><span :style="{width: `${Math.round(Number(data.context || 0))}%`}" /></span>
+                    {{ Math.round(Number(data.context || 0)) }}%
+                </span>
                 <template v-if="family">
                     <button
                         type="button"
@@ -210,11 +215,6 @@ onUnmounted(() => window.removeEventListener("click", away));
                 <span class="agent-fact" title="how long this session has run">
                     <Icon name="reminders" />
                     {{ data.started ? span(Date.now() / 1000 - data.started) : "just started" }}
-                </span>
-                <span class="agent-fact agent-context" :title="`context ${Math.round(Number(data.context || 0))}% full`">
-                    <Icon name="gauge" />
-                    <span class="agent-context-bar"><span :style="{width: `${Math.round(Number(data.context || 0))}%`}" /></span>
-                    {{ Math.round(Number(data.context || 0)) }}%
                 </span>
                 <template v-if="data.branch && data.branch_url">
                     <a
