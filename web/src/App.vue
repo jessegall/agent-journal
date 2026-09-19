@@ -21,6 +21,7 @@ import Lightbox from "./kit/Lightbox.vue";
 import QuickMenu from "./layout/QuickMenu.vue";
 import ChatWindow from "./layout/ChatWindow.vue";
 import AwayCard from "./layout/AwayCard.vue";
+import ProjectFlash from "./layout/ProjectFlash.vue";
 import UpgradeBand from "./layout/UpgradeBand.vue";
 import ThreadSkeleton from "./chat/ThreadSkeleton.vue";
 import IdentityBand from "./layout/IdentityBand.vue";
@@ -122,6 +123,7 @@ watch(
                 </Transition>
                 <template v-if="away.open">
                     <AwayCard />
+                    <ProjectFlash />
                 </template>
                 <ChatWindow v-if="store.detached && !store.extension.holding && !store.extension.pending" floating />
             </div>

@@ -2,6 +2,7 @@
 import {computed, reactive} from "vue";
 import {create} from "../api.js";
 import Icon from "../kit/Icon.vue";
+import {negative, project, tint} from "../identity.js";
 import {route} from "../route.js";
 import {load, navTypes, open, rows, store, unreadByUser} from "../store.js";
 
@@ -25,14 +26,6 @@ async function makeEnv() {
         draft.error = e.message;
     }
 }
-const project = computed(() => (store.identity && store.identity.project) || route.value.env);
-const tint = computed(() => (store.identity && store.identity.color) || "#2a2c33");
-const negative = computed(() => {
-    const hex = tint.value.replace("#", "");
-    const full = hex.length === 3 ? [...hex].map((c) => c + c).join("") : hex;
-    const inverted = (0xffffff ^ parseInt(full, 16)).toString(16).padStart(6, "0");
-    return `#${inverted}`;
-});
 </script>
 
 <template>
