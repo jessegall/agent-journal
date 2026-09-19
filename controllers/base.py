@@ -1,4 +1,3 @@
-import json
 import os
 import shutil
 import time
@@ -10,6 +9,7 @@ from engine.record import Record
 from resources.base import Refused, Resource, SECTION, check_abstract, check_title, titled
 from resources.pictures import dimensions
 from resources.shapes import Options, check, normalize_options
+from engine.stored import read_json, write_json
 
 INDEX = "index.json"
 COMMANDS: dict[str, dict] = {}
@@ -40,10 +40,7 @@ class Controller:
     def summaries(self) -> list[dict]:
         folder = self.record.folder(self.type, self.resource.scope)
         stamps = {int(e.name[:-3]): f"{e.stat().st_mtime_ns}-{e.stat().st_size}" for e in os.scandir(folder) if e.name.endswith(".md") and e.name[:-3].isdigit()}
-        try:
-            known = {int(n): row for n, row in json.loads((folder / INDEX).read_text()).items()}
-        except (OSError, ValueError):
-            known = {}
+        known = {int(n): row for n, row in (read_json(folder / INDEX) or {}).items()}
         rows = {}
         for n, stamp in stamps.items():
             if known.get(n, {}).get("stamp") == stamp:
@@ -55,9 +52,7 @@ class Controller:
                 continue
             rows[n] = {"n": n, "title": r.title, "deleted": r.deleted, "completed": r.completed, "seen": r.seen, "refs": r.refs, "updated": r.updated, "stamp": stamp}
         if rows != known:
-            spare = folder / f".{INDEX}.{os.getpid()}"
-            spare.write_text(json.dumps(rows))
-            os.replace(spare, folder / INDEX)
+            write_json(folder / INDEX, rows)
         return [rows[n] for n in sorted(rows)]
 
     def load(self, n: int) -> Resource:
@@ -166,14 +161,14 @@ class Controller:
         return self.save(r, "linked", to=ref, off=True)
 
     def comment(self, n: int, text: str) -> Resource:
-        from controllers.types import Comments, Reactions
+        from controllers.types import Comments
         parent = self.load(n)
         made = Comments(self.record, actor=self.actor).create(titled(text), brief=text.strip(), about=parent.ref)
         self.save(self.load(n), "commented", comment=made.n)
         return made
 
     def comments(self, n: int) -> list[Resource]:
-        from controllers.types import Comments, Reactions
+        from controllers.types import Comments
         return Comments(self.record, actor=self.actor).linked_to(f"{self.type}:{n}")
 
     def folder(self, n: int) -> Path:
@@ -235,7 +230,7 @@ class Controller:
             m = (there.numbers() or [0])[-1] + 1
             moved = self.resource(**{**asdict(r), "n": m})
             there.path(m).write_text(moved.dump())
-            if self.folder(n).iterdir():
+            if any(self.folder(n).iterdir()):
                 shutil.copytree(self.folder(n), there.folder(m), dirs_exist_ok=True)
             there.record.emit(self.type, m, "created", self.actor, moved_from=f"{self.record.env}/{n}")
         self.delete(n, why=f"moved to {env} as {self.type} {m}")
@@ -296,7 +291,7 @@ class Controller:
     def react(self, n: int, face: str) -> Resource | None:
         if face not in FACES:
             raise Refused(f"a reaction is one of {' '.join(FACES)}")
-        from controllers.types import Comments, Reactions
+        from controllers.types import Reactions
         r = self.load(n)
         reactions = Reactions(self.record, actor=self.actor)
         for made in reactions.linked_to(r.ref):

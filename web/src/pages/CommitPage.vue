@@ -193,7 +193,7 @@ const hunks = computed(() =>
 }
 
 .block.dels {
-    background: #d98c8c;
+    background: var(--danger-soft);
 }
 
 .diff {
@@ -202,7 +202,7 @@ const hunks = computed(() =>
     overflow-x: auto;
     border: 1px solid var(--border);
     border-radius: 9px;
-    background: #121316;
+    background: var(--code-bg);
     font-family: ui-monospace, "SF Mono", Menlo, monospace;
     font-size: 11.5px;
     line-height: 1.5;

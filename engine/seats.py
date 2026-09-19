@@ -1,8 +1,8 @@
-import json
 import time
 from pathlib import Path
 
 from engine.sessions import Sessions
+from engine.stored import read_json
 
 ONLINE_FOR = 5.0
 
@@ -32,8 +32,7 @@ def live(root: Path) -> list[tuple[dict, dict]]:
 def seats(root: Path) -> list[dict]:
     found = []
     for path in (Path(root) / "runtime").glob("seat-*.json"):
-        try:
-            found.append(json.loads(path.read_text()))
-        except (OSError, ValueError):
-            pass
+        seat = read_json(path)
+        if seat is not None:
+            found.append(seat)
     return found

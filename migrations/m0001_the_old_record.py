@@ -7,7 +7,7 @@ from pathlib import Path
 
 from controllers.types import CONTROLLERS
 from engine.record import Record
-from resources.base import AGENT, SYSTEM, USER, TITLE_MAX, titled
+from resources.base import AGENT, Refused, SYSTEM, USER, TITLE_MAX, titled
 
 FRONT = re.compile(r"^---\n(.*?)\n---\n?(.*)$", re.DOTALL)
 
@@ -120,7 +120,7 @@ class Migration:
     def closed(self, record: Record, n: int) -> bool:
         try:
             return bool(CONTROLLERS["todo"](record, actor=SYSTEM).load(n).completed)
-        except Exception:
+        except Refused:
             return True
 
     def project(self, record: Record) -> None:

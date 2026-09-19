@@ -1,6 +1,7 @@
 import json
 import re
 from pathlib import Path
+from engine.stored import write_json
 
 
 PALETTE = ("#e5484d", "#f76b15", "#ffc53d", "#30a46c", "#12a594", "#0090ff", "#3e63dd", "#8e4ec6", "#d6409f", "#a18072")
@@ -38,7 +39,7 @@ def set_color(root: Path, value: str | None) -> None:
         values.pop("color", None)
     else:
         values["color"] = value.lower()
-    file(root).write_text(json.dumps(values, indent=2))
+    write_json(file(root), values, indent=2)
 
 
 def identity(root: Path) -> dict:

@@ -1,7 +1,7 @@
 <script setup>
 import {computed, nextTick, onMounted, ref} from "vue";
 import Compose from "../chat/Compose.vue";
-import {api, saveSettings} from "../api.js";
+import {projectFiles, saveSettings} from "../api.js";
 import {sendMessage} from "../chat/outbox.js";
 import Icon from "../kit/Icon.vue";
 import {go, peek, route} from "../route.js";
@@ -74,7 +74,7 @@ async function browseFiles() {
     filesLoading.value = true;
     nextTick(() => fileInput.value && fileInput.value.focus());
     try {
-        files.value = await api("GET", `/${route.value.env}/project-files`);
+        files.value = await projectFiles(route.value.env);
     } catch (e) {
         files.value = [];
         filesError.value = e.message;
@@ -113,7 +113,7 @@ const highlights = computed(() => types.value.filter((t) => t.attention).flatMap
 const commands = computed(() => {
     const pages = [
         {page: "", label: "Home", icon: "home"},
-        ...navTypes("environment").map((t) => ({page: t.name, label: meta(t.name).title + "s", icon: t.icon})),
+        ...navTypes("environment").map((t) => ({page: t.name, label: `${meta(t.name).title}s`, icon: t.icon})),
     ];
     const rows = pages.map((p, n) => ({label: `Go to ${p.label}`, keys: p.label, hk: String(n + 1), icon: p.icon, run: goTo(p.page)}));
     rows.push({label: "Go to Settings", keys: "settings preferences", icon: "settings", run: goTo("settings")});
@@ -548,7 +548,7 @@ function onFileKey(e) {
     gap: 14px;
     padding: 9px 15px;
     border-top: 1px solid var(--border);
-    background: #121316;
+    background: var(--code-bg);
     font-size: 11px;
     color: var(--text-3);
     white-space: nowrap;

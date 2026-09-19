@@ -7,6 +7,7 @@ from pathlib import Path
 
 from engine.transcript import Turn
 from providers.payload import Hook
+from resources.base import Refused
 from resources.types import AgentRow, COMMAND, RUNNING
 
 WRITES = ("Edit", "Write", "MultiEdit", "NotebookEdit")
@@ -54,7 +55,6 @@ class Provider(ABC):
         group = next((group for group in configured.get("groups", []) if group["key"] == action), None)
         selected = next((item for item in (group or {}).get("choices", []) if item["value"] == value), None)
         if not selected:
-            from resources.base import Refused
             raise Refused(f"{cls.name or 'this agent'} does not support {action} {value!r}")
         return {"action": action, **selected}
 

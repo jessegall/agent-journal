@@ -1,10 +1,10 @@
-import json
 import os
 import subprocess
 import time
 from pathlib import Path
 
 from resources.types import TYPES
+from engine.stored import read_json, write_json
 
 
 RECENT = 600.0
@@ -46,15 +46,11 @@ class Sessions:
         return self.root / "runtime" / f"session-{session}.json"
 
     def read(self, session: str) -> dict:
-        try:
-            return json.loads(self.path(session).read_text())
-        except (OSError, ValueError):
-            return {}
+        return read_json(self.path(session), {})
 
     def write(self, session: str, **fields) -> dict:
         got = {**self.read(session), **fields}
-        self.path(session).parent.mkdir(parents=True, exist_ok=True)
-        self.path(session).write_text(json.dumps(got))
+        write_json(self.path(session), got)
         return got
 
     def bind(self, session: str, env: str, pid: int = 0, provider: str = "") -> dict:
@@ -90,7 +86,7 @@ class Sessions:
         return self.read(session).get("environment", "")
 
     def all(self) -> dict[str, dict]:
-        return {p.stem.removeprefix("session-"): json.loads(p.read_text())
+        return {p.stem.removeprefix("session-"): read_json(p, {})
                 for p in sorted((self.root / "runtime").glob("session-*.json"))} if (self.root / "runtime").is_dir() else {}
 
     def holder(self, env: str) -> str:

@@ -1,7 +1,7 @@
-import json
 import time
 import uuid
 from pathlib import Path
+from engine.stored import read_json, write_json
 
 STALE = 600.0
 FORCE = "force"
@@ -12,18 +12,15 @@ def queue(root: Path, session: str, line: str, label: str, **data) -> dict:
     folder = Path(root) / "runtime" / "inputs"
     folder.mkdir(parents=True, exist_ok=True)
     target = folder / f"{time.time_ns()}-{uuid.uuid4().hex}.json"
-    temporary = target.with_suffix(".tmp")
-    temporary.write_text(json.dumps(queued))
-    temporary.replace(target)
+    write_json(target, queued)
     return queued
 
 
 def take(root: Path, sessions: set[str], action: str = "") -> dict:
     folder = Path(root) / "runtime" / "inputs"
     for path in sorted(folder.glob("*.json")):
-        try:
-            queued = json.loads(path.read_text())
-        except (OSError, ValueError):
+        queued = read_json(path)
+        if not isinstance(queued, dict):
             path.unlink(missing_ok=True)
             continue
         if time.time() - float(queued.get("at") or 0) > STALE:

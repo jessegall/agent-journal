@@ -99,7 +99,7 @@ watch(() => route.value.q, load);
     overflow-x: auto;
     border: 1px solid var(--border);
     border-radius: 9px;
-    background: #121316;
+    background: var(--code-bg);
     font-family: ui-monospace, "SF Mono", Menlo, monospace;
     font-size: 11.5px;
     line-height: 1.5;

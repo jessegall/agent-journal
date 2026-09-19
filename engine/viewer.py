@@ -12,6 +12,7 @@ from pathlib import Path
 from urllib.request import urlopen
 
 from features.tabfocus.focus import existing_tab
+from engine.stored import read_json, write_json
 
 PORTS = range(8420, 8440)
 HEARTBEAT = 2.0
@@ -27,16 +28,11 @@ def marker(root: Path) -> Path:
 
 
 def known() -> list[dict]:
-    try:
-        return [j for j in json.loads(machine().read_text()) if isinstance(j, dict) and j.get("root")]
-    except (OSError, ValueError):
-        return []
+    return [j for j in read_json(machine(), []) if isinstance(j, dict) and j.get("root")]
 
 
 def keep(entries: list[dict]) -> None:
-    target = machine()
-    target.parent.mkdir(parents=True, exist_ok=True)
-    target.write_text(json.dumps(sorted(entries, key=lambda j: -j["at"])))
+    write_json(machine(), sorted(entries, key=lambda j: -j["at"]))
 
 
 def note(root: Path, url: str) -> None:
@@ -74,10 +70,7 @@ def heartbeat(root: Path, port: int, every: float = HEARTBEAT) -> None:
 
 def candidates(root: Path) -> list[str]:
     found = []
-    try:
-        found.append(str(json.loads(marker(root).read_text()).get("url") or ""))
-    except (OSError, ValueError):
-        pass
+    found.append(str(last(root).get("url") or ""))
     try:
         found.extend(URL.findall((root / "runtime" / "viewer.log").read_text())[-1:])
     except OSError:
@@ -116,10 +109,7 @@ def available(prefer: int = 0) -> int:
 
 
 def last(root: Path) -> dict:
-    try:
-        return json.loads(marker(root).read_text())
-    except (OSError, ValueError):
-        return {}
+    return read_json(marker(root), {})
 
 
 def restart(root: Path, project: Path) -> str:

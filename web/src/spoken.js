@@ -1,4 +1,6 @@
-const one = (noun, n) => (n ? `${noun} ${n}` : `the ${noun}`);
+function one(noun, n) {
+    return n ? `${noun} ${n}` : `the ${noun}`;
+}
 
 const SAID = {
     create: (noun) => `adding a ${noun}`,

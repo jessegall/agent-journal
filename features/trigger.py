@@ -3,6 +3,7 @@ import time
 
 from resources.base import names
 from resources.types import AgentRow
+from engine.stored import write_json
 
 PERCENT, USES, MINUTES, IDLE, WORKED, START = "percent", "uses", "minutes", "idle", "worked", "start"
 UNITS = (PERCENT, USES, MINUTES, IDLE, WORKED, START)
@@ -50,9 +51,7 @@ def due(record, agent, name: str, default: dict) -> bool:
 
 
 def write(record, agent, name: str, **fields) -> None:
-    f = _file(record, agent.title, name)
-    f.parent.mkdir(parents=True, exist_ok=True)
-    f.write_text(json.dumps({**last(record, agent.title, name), **fields}))
+    write_json(_file(record, agent.title, name), {**last(record, agent.title, name), **fields})
 
 
 def observe(record, agent, name: str, was: dict) -> None:

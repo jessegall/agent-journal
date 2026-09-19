@@ -7,7 +7,7 @@ import time
 from dataclasses import dataclass
 from pathlib import Path
 
-from controllers.base import COMMANDS, Controller
+from controllers.base import COMMANDS
 from controllers.types import Agents, CONTROLLERS
 import features
 import migrations
@@ -22,7 +22,8 @@ from resources.base import AGENT, Refused, SYSTEM
 from resources.types import AgentRow
 
 HIDDEN = ("path", "numbers", "summaries", "load", "save", "named", "method", "action", "sessions")
-VERSION = next((f.read_text().strip() for f in (Path(__file__).resolve().parents[1] / "VERSION", Path(__file__).resolve().parents[1] / "VERSION") if f.is_file()), "0")
+VERSION_FILE = Path(__file__).resolve().parents[1] / "VERSION"
+VERSION = VERSION_FILE.read_text().strip() if VERSION_FILE.is_file() else "0"
 
 
 def actions(controller: type) -> list[str]:
