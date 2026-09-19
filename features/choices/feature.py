@@ -5,7 +5,7 @@ from features.base import Feature, on
 from features.tags.feature import last_said
 
 LISTED = re.compile(r"^\s*(?:\(?[A-Za-z]\)|\(?[A-Za-z][.)]|\d+[.)]|[-*•])\s+\S", re.MULTILINE)
-ASKING = re.compile(r"\?|\b(which|choose|pick|prefer|option|should I|do you want|would you like|let me know)\b", re.IGNORECASE)
+ASKING = re.compile(r"\?|\b(should I|shall I|do you want|would you like|would you prefer|let me know|your call|you decide|up to you)\b", re.IGNORECASE)
 
 
 NAMED = re.compile(r"\bquestion \d+\b", re.IGNORECASE)

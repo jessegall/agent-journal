@@ -20,6 +20,8 @@ check("a list that asks nothing is a list", offers_choices("Done:\n- built\n- te
 check("a question without options is fine", offers_choices("Shall I merge it?"), False)
 check("a summary that points at an open question by number is not offering choices",
       offers_choices("Done:\n- built the route\n- tested it\n\nQuestion 15 is still open: should the server answer first?"), False)
+check("a statement that uses 'which' asks nothing", offers_choices("Done:\n- the engine can see which step is running\n- the band is taller"), False)
+check("a list and a phrase addressed to the user still offers choices", offers_choices("Two ways:\n1. blue\n2. red\nLet me know."), True)
 check("choices beside a named question still count", offers_choices("See question 3.\nWhich do you want?\n1. blue\n2. red"), True)
 
 record = fresh()
