@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.9.0 — A restarted agent returns to its environment
+
+A session now records the agent's own process, not the shell that ran its hook, and counts as live exactly while that process runs; a restarted agent's old session stops holding its environment the moment the old process ends. On its first report a session is bound to its own environment if free, else to the environment its provider's most recent ended session was on, else to the start environment; the environment is created if it does not exist (`main` on a first run) and marked as held by the session.
+
+What to do about it: `journal upgrade`, then restart `journal claude`.
+
 ## 2.8.1 — An upgrade from an older installer brings the hook script too
 
 An installer from before 2.8.0 copies only the files it knows, so its upgrade left `hook.sh` behind while the new configuration pointed every hook at it. The configuring step now checks the package for every file it needs and fetches the package again when one is missing.

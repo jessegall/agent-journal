@@ -1,5 +1,6 @@
 import json
 import os
+import subprocess
 import time
 from pathlib import Path
 
@@ -8,6 +9,7 @@ from resources.types import TYPES
 
 RECENT = 600.0
 ACTIVE_ENV = "AGENT_JOURNAL_ACTIVE"
+SHELLS = {"sh", "bash", "zsh", "dash", "fish"}
 
 
 def alive(pid: int) -> bool:
@@ -19,7 +21,21 @@ def alive(pid: int) -> bool:
 
 
 def live(session: dict) -> bool:
-    return alive(session.get("pid")) or time.time() - float(session.get("seen") or session.get("since") or 0) < RECENT
+    if session.get("pid"):
+        return alive(session["pid"])
+    return time.time() - float(session.get("seen") or session.get("since") or 0) < RECENT
+
+
+def agent_pid(pid: int) -> int:
+    for _ in range(4):
+        try:
+            parent, name = subprocess.run(["ps", "-o", "ppid=,comm=", "-p", str(pid)], capture_output=True, text=True, timeout=2).stdout.split(None, 1)
+        except (OSError, ValueError, subprocess.TimeoutExpired):
+            return pid
+        if Path(name.strip()).name.lstrip("-") not in SHELLS:
+            return pid
+        pid = int(parent)
+    return pid
 
 
 class Sessions:
@@ -41,8 +57,20 @@ class Sessions:
         self.path(session).write_text(json.dumps(got))
         return got
 
-    def bind(self, session: str, env: str, pid: int = 0) -> dict:
-        return self.write(session, environment=env, since=time.time(), pid=pid)
+    def bind(self, session: str, env: str, pid: int = 0, provider: str = "") -> dict:
+        return self.write(session, environment=env, since=time.time(), **({"pid": pid} if pid else {}), **({"provider": provider} if provider else {}))
+
+    def choose(self, session: str, provider: str, prefer: str) -> str:
+        own = self.environment(session)
+        if own and self.holder(own) in ("", session):
+            return own
+        others = self.all()
+        ended = sorted((s for name, s in others.items() if name != session and s.get("provider") == provider and s.get("environment") and not live(s)),
+                       key=lambda s: float(s.get("seen") or s.get("since") or 0))
+        for s in reversed(ended):
+            if not self.holder(s["environment"]):
+                return s["environment"]
+        return prefer
 
     def touch(self, session: str) -> None:
         self.write(session, seen=time.time())
