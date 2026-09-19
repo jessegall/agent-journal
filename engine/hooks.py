@@ -51,7 +51,7 @@ def default_env(root: Path, prefer: str = "") -> str:
     return prefer or (f.read_text().strip() if f.is_file() else "main")
 
 
-def answer(provider, root: Path, raw: dict, pid: int, prefer: str = "") -> tuple[dict, str]:
+def answer(provider, root: Path, raw: dict, pid: int, prefer: str = "") -> dict:
     from providers.payload import Hook
     sessions = Sessions(root)
     session = Hook.read(raw).session
@@ -61,7 +61,7 @@ def answer(provider, root: Path, raw: dict, pid: int, prefer: str = "") -> tuple
         sessions.bind(session, env, pid=agent_pid(pid), provider=provider.name)
         seated(root, env, session)
     sessions.touch(session)
-    return respond(provider, root, env, raw)
+    return handle(provider, root, env, raw)
 
 
 def seated(root: Path, env: str, session: str) -> None:
@@ -71,14 +71,10 @@ def seated(root: Path, env: str, session: str) -> None:
 
 
 def handle(provider, root: Path, env: str, raw: dict) -> dict:
-    return respond(provider, root, env, raw)[0]
-
-
-def respond(provider, root: Path, env: str, raw: dict) -> tuple[dict, str]:
     from providers.payload import Hook
     hook = Hook.read(raw)
     if hook.event not in STATUS or (root / "runtime" / "off").is_file():
-        return {}, ""
+        return {}
     log_command(root, hook)
     record = Record(root, env, memo=True)
     agents = Agents(record, actor=SYSTEM)
@@ -93,9 +89,9 @@ def respond(provider, root: Path, env: str, raw: dict) -> tuple[dict, str]:
                   context=row.context or 0 if context is None else context)
     if hook.event == "PreToolUse":
         why = next((reason for policy in POLICIES if (reason := policy(provider, record, hook, row.title))), "")
-        return provider.response(blocked=why), why
+        return provider.response(blocked=why)
     if hook.event == "SessionStart":
-        return provider.response(hook.event, start(root, env, provider.compacted(hook))), ""
+        return provider.response(hook.event, start(root, env, provider.compacted(hook)))
     if hook.event in ("PostToolUse", "UserPromptSubmit"):
-        return provider.response(hook.event, whispered(record, row.title)), ""
-    return {}, ""
+        return provider.response(hook.event, whispered(record, row.title))
+    return {}

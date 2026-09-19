@@ -1,7 +1,8 @@
 import json
 import re
 import time
-from dataclasses import dataclass, field, asdict
+from copy import deepcopy
+from dataclasses import dataclass, field, asdict, replace
 from pathlib import Path
 from types import SimpleNamespace
 from typing import ClassVar
@@ -98,6 +99,9 @@ class Resource:
     @property
     def ref(self) -> str:
         return f"{self.type}:{self.n}"
+
+    def fork(self) -> "Resource":
+        return replace(self, sections=[dict(s) for s in self.sections], refs=list(self.refs), seen=list(self.seen), data=deepcopy(self.data))
 
     def dump(self) -> str:
         head = {k: v for k, v in asdict(self).items() if k not in ("sections", "brief")}

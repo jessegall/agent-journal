@@ -28,7 +28,7 @@ def run_hook(root: Path, event: str, tool: str = "Read", session: str = "srv-1")
 
 def point(root: Path, url: str, at: float = 0) -> None:
     (root / "runtime").mkdir(exist_ok=True)
-    (root / "runtime" / "viewer.json").write_text(json.dumps({"url": url, "at": at or time.time()}))
+    (root / "runtime" / "heartbeat").write_text(f"{int(at or time.time())} {url}\n")
 
 
 record = fresh("main")
@@ -44,7 +44,7 @@ row = agents.by_session("srv-1")
 check("the hook's row is written by the server", (p.returncode, row.status, row.event), (0, "idle", "Stop"))
 check("the server's features heard the write", record.events()[-1].heard, True)
 time.sleep(2.5)
-check("the server keeps its heartbeat fresh", time.time() - json.loads((record.root / "runtime" / "viewer.json").read_text())["at"] < 2.5, True)
+check("the server keeps its heartbeat fresh", time.time() - int((record.root / "runtime" / "heartbeat").read_text().split()[0]) < 3.5, True)
 check("the server knew the agent's parent process", bool(json.loads((record.root / "runtime" / "session-srv-1.json").read_text()).get("pid")), True)
 
 # 200 WITH NOTHING TO SAY prints nothing; 200 WITH A PRIVATE MESSAGE prints it for the agent

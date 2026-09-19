@@ -142,8 +142,9 @@ def static(path: str) -> Reply:
 def post_hook(req: Request) -> Reply:
     if Path(req.query.get("root") or "").resolve() != req.root.resolve() or req.params["provider"] not in PROVIDERS:
         return Reply(409, {})
-    out, why = answer(PROVIDERS[req.params["provider"]](), req.root, req.body, int(req.query.get("pid") or 0), req.query.get("env") or "")
-    return Reply(403 if why else 200, out)
+    provider = PROVIDERS[req.params["provider"]]()
+    out = answer(provider, req.root, req.body, int(req.query.get("pid") or 0), req.query.get("env") or "")
+    return Reply(403 if provider.refused(out) else 200, out)
 
 
 @route("GET", "/api/manifest")
