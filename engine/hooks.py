@@ -81,12 +81,13 @@ def handle(provider, root: Path, env: str, raw: dict) -> dict:
     row = agents.by_session(hook.session)
     uses = int(row.uses or 0) + (hook.event == "PreToolUse")
     context = provider.context(hook)
-    agents.update(row.n, status=STATUS[hook.event], event=hook.event, tool=hook.tool.name, **provider.shell(row, hook),
-                  **provider.session(hook.transcript), file=hook.tool.file_path,
-                  wrote=hook.event == "PostToolUse" and provider.writes(hook), cwd=hook.cwd or row.cwd or "", at=time.time(),
-                  provider=provider.name, uses=uses, transcript=str(hook.transcript or row.transcript or ""),
-                  model=provider.model(hook) or row.model or "", effort=provider.effort(Path(hook.cwd or root.parent), hook.transcript), started=row.started or time.time(),
-                  context=row.context or 0 if context is None else context)
+    agents.saw(row.n, {"hook": hook.event, "tool": hook.tool.name, "file": hook.tool.file_path, "session": hook.session},
+               status=STATUS[hook.event], event=hook.event, tool=hook.tool.name, **provider.shell(row, hook),
+               **provider.session(hook.transcript), file=hook.tool.file_path,
+               wrote=hook.event == "PostToolUse" and provider.writes(hook), cwd=hook.cwd or row.cwd or "", at=time.time(),
+               provider=provider.name, uses=uses, transcript=str(hook.transcript or row.transcript or ""),
+               model=provider.model(hook) or row.model or "", effort=provider.effort(Path(hook.cwd or root.parent), hook.transcript), started=row.started or time.time(),
+               context=row.context or 0 if context is None else context)
     if hook.event == "PreToolUse":
         why = next((reason for policy in POLICIES if (reason := policy(provider, record, hook, row.title))), "")
         return provider.response(blocked=why)

@@ -393,6 +393,11 @@ class Agents(Controller):
                 return r
         return self.create(session, status="stopped")
 
+    def saw(self, n: int, fact: dict, **data):
+        r = self.load(n)
+        r.data.update(self._shaped(data))
+        return self.save(r, "updated", **fact)
+
     def primary(self):
         rows = [row for row in self.all() if not row.parent]
         return max(rows, key=lambda row: float(row.at or 0), default=None)

@@ -16,7 +16,7 @@ from providers import PROVIDERS  # noqa: E402
 from providers.payload import Hook  # noqa: E402
 from resources.types import AgentRow  # noqa: E402
 from resources.base import SYSTEM  # noqa: E402
-from tests.kit import check, done  # noqa: E402
+from tests.kit import check, done, fresh  # noqa: E402
 
 features.unload()
 features.load()
@@ -184,6 +184,14 @@ transcript.write_text("\n".join([
 (home / ".claude" / "settings.json").write_text(json.dumps({"effortLevel": "medium"}))
 check("the transcript's last confirmed effort wins over the settings, and the agent's own words never count", PROVIDERS["claude"]().effort(project, transcript), "max")
 check("with no confirmation in the transcript, the settings say", PROVIDERS["claude"]().effort(project, project / "none.jsonl"), "medium")
+
+# THE HOOK'S FACTS RIDE ON THE AGENT'S EVENT, so a later reader knows what the hook saw
+facts = fresh()
+handle(PROVIDERS["claude"](), facts.root, facts.env, {"hook_event_name": "PostToolUse", "session_id": "claude-7", "tool_name": "Edit",
+                                                   "cwd": str(facts.root.parent), "tool_input": {"file_path": str(facts.root.parent / "a.py")}})
+said = [e for e in facts.events() if e.type == "agent"][-1]
+check("a hook writes what it saw on the agent's event", (said.action, said.data["hook"], said.data["tool"], said.data["session"], said.data["file"].endswith("a.py")),
+      ("updated", "PostToolUse", "Edit", "claude-7", True))
 
 # A TEST RUN'S OUTCOME is read from its output and kept on the finished command
 claude = PROVIDERS["claude"]()
