@@ -21,7 +21,7 @@ from providers import PROVIDERS
 from resources.base import AGENT, Refused, SYSTEM
 from resources.types import AgentRow
 
-HIDDEN = ("path", "numbers", "summaries", "load", "save", "named", "method", "action", "sessions")
+HIDDEN = ("path", "numbers", "summaries", "load", "save", "named", "method", "action", "sessions", "mark", "waits", "waitable", "chain")
 VERSION_FILE = Path(__file__).resolve().parents[1] / "VERSION"
 VERSION = VERSION_FILE.read_text().strip() if VERSION_FILE.is_file() else "0"
 
@@ -300,8 +300,7 @@ def run(argv: list[str]) -> int:
         return 1
     if isinstance(got, list):
         for r in got:
-            done = "  [done]" if command == "todo" and getattr(r, "completed", 0) else ""
-            print(f"{r.n:>4}  {r.title}{done}" if hasattr(r, "n") else r)
+            print(f"{r.n:>4}  {r.title}{controller.mark(r)}" if hasattr(r, "n") else r)
     elif isinstance(got, dict):
         print(got.get("out", "") or got)
     elif got is not None:

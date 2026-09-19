@@ -16,7 +16,7 @@ export function named(w) {
 export function queued(todos, auto, questions = []) {
     const open = todos.filter((t) => !t.completed && !t.deleted);
     const asked = (t) => questions.some((q) => !q.completed && !q.deleted && q.refs.includes(`todo:${t.n}`));
-    const waits = (t) => [].concat(t.data.after || []).some((n) => open.some((o) => o.n === Number(n)));
+    const waits = (t) => [].concat(t.data.after || []).some((ref) => open.some((o) => `todo:${o.n}` === ref));
     return auto && open.some((t) => !t.data.blocked && !t.data.assigned && !asked(t) && !waits(t));
 }
 

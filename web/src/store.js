@@ -105,6 +105,24 @@ export function rows(type) {
     return store.rows[type] || [];
 }
 
+const ENDED = ["done", "abandoned"];
+export const GROUPS = {started: "In progress", blocked: "Blocked", waiting: "Waiting on others", asked: "Waiting on you", open: "Open"};
+
+export function waitsOn(r) {
+    return [].concat(r.data.after || []).filter((ref) => {
+        const [type, n] = ref.split(":");
+        const other = rows(type).find((x) => x.n === Number(n));
+        return other && !other.deleted && (type === "plan" ? !ENDED.includes(other.data.status) : !other.completed);
+    });
+}
+
+export function groupOf(r) {
+    if (r.data.blocked) return "blocked";
+    if (waitsOn(r).length) return "waiting";
+    if (r.data.status === "started") return "started";
+    return rows("question").some((q) => !q.completed && q.refs.includes(r.ref)) ? "asked" : "open";
+}
+
 const PAGE = 100;
 const PAGED = new Set(["message", "comment", "notification"]);
 export const paging = reactive({size: {}, more: {}});
