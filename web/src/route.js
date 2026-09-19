@@ -16,6 +16,7 @@ export const route = computed(() => {
         n: n ? (/^\d+$/.test(n) ? Number(n) : n) : 0,
         q: params.get("q") || "",
         sub: params.get("sub") || "",
+        at: params.get("at") || "",
         open: openType ? {type: openType, n: Number(openN), comment: Number(openComment) || 0} : null,
     };
 });
