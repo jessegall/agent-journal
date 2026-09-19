@@ -1,3 +1,4 @@
+import fcntl
 import json
 import time
 import urllib.error
@@ -12,10 +13,11 @@ from features.plugins.manifest import fill
 from features.plugins.payload import of
 from features.plugins.run import SECONDS, call
 from features.plugins.source import environment, folder, log
-from resources.base import PLUGIN, SYSTEM
+from resources.base import PLUGIN, Refused, SYSTEM
 
 REPLAY = 600
 POST_SECONDS = 10.0
+WAIT = 0.5
 PATIENCE = 5
 BACKOFF = 60.0
 LONGEST_WAIT = 300.0
@@ -49,6 +51,23 @@ def post(url: str, payload: dict, token: str) -> tuple[bool, dict | str]:
     except ValueError:
         return False, f"{url} answered with something other than JSON"
     return (True, reply) if isinstance(reply, dict) else (False, f"{url} answered with something other than an object")
+
+
+def watch(root: Path) -> None:
+    lock = Path(root) / "runtime" / "plugins.lock"
+    lock.parent.mkdir(parents=True, exist_ok=True)
+    with lock.open("w") as held:
+        try:
+            fcntl.flock(held, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except BlockingIOError:
+            return
+        host = Host(root)
+        while True:
+            try:
+                host.step(time.time())
+            except (OSError, ValueError, Refused):
+                pass
+            time.sleep(WAIT)
 
 
 class Host:
