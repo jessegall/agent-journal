@@ -55,11 +55,11 @@ def remember(root: Path, port: int) -> str:
 
 def beat(root: Path, port: int) -> str:
     url = f"http://127.0.0.1:{port}/"
-    target = marker(root)
-    target.parent.mkdir(parents=True, exist_ok=True)
-    partial = target.with_name(f".{target.name}.partial")
-    partial.write_text(json.dumps({"url": url, "at": time.time()}))
-    partial.replace(target)
+    for target, text in ((marker(root), json.dumps({"url": url, "at": time.time()})), (root / "runtime" / "heartbeat", f"{int(time.time())} {url}\n")):
+        target.parent.mkdir(parents=True, exist_ok=True)
+        partial = target.with_name(f".{target.name}.partial")
+        partial.write_text(text)
+        partial.replace(target)
     return url
 
 

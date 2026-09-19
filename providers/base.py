@@ -53,6 +53,9 @@ class Provider(ABC):
             return {"decision": "block", "reason": blocked}
         return {"hookSpecificOutput": {"hookEventName": event, "additionalContext": text}} if text else {}
 
+    def refused(self, response: dict) -> bool:
+        return response.get("decision") == "block"
+
     def writes(self, hook: Hook) -> bool:
         if hook.tool.name in WRITES:
             return True

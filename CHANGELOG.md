@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.9.1 — Tidied after the speed work
+
+A row a hook or command remembers is handed out as a copy, so a change that is never saved stays with the code that made it. The in-process fast path the server replaced is gone. The server asks the provider whether its reply refuses. Retention is one sweep with a rule per type. The hook script reads a one-line `runtime/heartbeat` (seconds and URL) instead of picking JSON apart. `journal speed` times the hook both in-process and through the server.
+
+What to do about it: `journal upgrade`, then restart `journal claude`.
+
 ## 2.9.0 — A restarted agent returns to its environment
 
 A session now records the agent's own process, not the shell that ran its hook, and counts as live exactly while that process runs; a restarted agent's old session stops holding its environment the moment the old process ends. On its first report a session is bound to its own environment if free, else to the environment its provider's most recent ended session was on, else to the start environment; the environment is created if it does not exist (`main` on a first run) and marked as held by the session.

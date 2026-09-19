@@ -29,11 +29,6 @@ def live(root: Path) -> list[tuple[dict, dict]]:
     return sorted(found.values(), key=lambda pair: (-pair[1]["at"], pair[1]["session"]))
 
 
-def engine_on(root: Path, env: str) -> bool:
-    now = time.time()
-    return any(seat.get("env") == env and now - float(seat.get("at") or 0) <= ONLINE_FOR for seat in seats(root))
-
-
 def seats(root: Path) -> list[dict]:
     found = []
     for path in (Path(root) / "runtime").glob("seat-*.json"):

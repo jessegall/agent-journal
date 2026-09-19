@@ -239,13 +239,13 @@ class Controller:
 
     def all(self, deleted: bool = False) -> list[Resource]:
         memo = self.record.memo
-        if memo is not None and (self.type, deleted) in memo:
-            return list(memo[self.type, deleted])
-        rows = [self.load(n) for n in self.numbers()]
-        rows = rows if deleted else [r for r in rows if not r.deleted]
-        if memo is not None:
+        if memo is None or (self.type, deleted) not in memo:
+            rows = [self.load(n) for n in self.numbers()]
+            rows = rows if deleted else [r for r in rows if not r.deleted]
+            if memo is None:
+                return rows
             memo[self.type, deleted] = rows
-        return list(rows)
+        return [r.fork() for r in memo[self.type, deleted]]
 
     def search(self, term: str) -> list[Resource]:
         want = term.lower()

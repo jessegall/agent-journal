@@ -5,11 +5,9 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import features  # noqa: E402
-from engine.hooks import answer, default_env  # noqa: E402
-from engine.seats import engine_on  # noqa: E402
-from engine.sessions import ACTIVE_ENV, Sessions  # noqa: E402
+from engine.hooks import answer  # noqa: E402
+from engine.sessions import ACTIVE_ENV  # noqa: E402
 from providers import PROVIDERS  # noqa: E402
-from providers.payload import Hook  # noqa: E402
 
 
 def main(argv: list[str]) -> int:
@@ -21,10 +19,8 @@ def main(argv: list[str]) -> int:
         raw = json.load(sys.stdin)
     except ValueError:
         return 0
-    prefer = os.environ.get("JOURNAL_ENV", "")
-    env = Sessions(root).environment(Hook.read(raw).session) or default_env(root, prefer)
-    features.load(listen=not engine_on(root, env))
-    out, _ = answer(provider, root, raw, os.getppid(), prefer)
+    features.load()
+    out = answer(provider, root, raw, os.getppid(), os.environ.get("JOURNAL_ENV", ""))
     if out:
         print(json.dumps(out))
     return 0
