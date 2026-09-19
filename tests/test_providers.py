@@ -145,4 +145,20 @@ check("a project's local setting wins", PROVIDERS["claude"]().effort(project), "
 check("Codex's effort comes from its config", PROVIDERS["codex"]().effort(project), "medium")
 check("Fable is offered by its current id", [c["value"] for g in PROVIDERS["claude"].controls["groups"] if g["key"] == "model" for c in g["choices"]][-1], "claude-fable-5-1")
 
+# CLAUDE'S CONTEXT WINDOW comes from the model it is set to, since its transcript does not name the window
+home = Path(tempfile.mkdtemp())
+project = Path(tempfile.mkdtemp())
+os.environ["HOME"] = str(home)
+transcript = project / "t.jsonl"
+transcript.write_text(json.dumps({"message": {"usage": {"input_tokens": 100_000}}}) + "\n")
+used = lambda model="": PROVIDERS["claude"]().context(Hook.read({"hook_event_name": "Stop", "transcript_path": str(transcript), "cwd": str(project), "model": model}))
+check("with no long-context model set, the window is 200,000", used(), 50.0)
+(home / ".claude").mkdir()
+(home / ".claude" / "settings.json").write_text(json.dumps({"model": "opus[1m]"}))
+check("a model set to [1m] in the settings means a million", used(), 10.0)
+(home / ".claude" / "settings.json").write_text(json.dumps({"model": "opus"}))
+check("the model the hook names can say [1m] too", used("claude-opus-5[1m]"), 10.0)
+transcript.write_text(json.dumps({"message": {"usage": {"input_tokens": 400_000}}}) + "\n")
+check("more than 200,000 in use can only be a million window", used(), 40.0)
+
 done()
