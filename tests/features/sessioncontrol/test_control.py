@@ -150,4 +150,13 @@ with patch.object(Codex, "catalog", classmethod(lambda cls, path=None: models)),
     while take(root, {"codex-live"}) or take(root, {"codex-live"}, FORCE):
         pass
 
+# AN ACTIVE MODEL MISSING FROM THE CATALOG still gets its effort choices, and a choice still reaches the picker
+with patch.object(Codex, "configuration", classmethod(lambda cls, path=None: {"model": "gpt-5.6-luna", "effort": "medium"})):
+    dated = Codex.controls_for(models, "gpt-5.6-sol-2026-09-01")
+    check("a dated id finds its catalog model, and the effort group stays", ([g["key"] for g in dated["groups"]], [c["value"] for c in dated["groups"][1]["choices"]]),
+          (["model", "effort"], ["low", "medium", "high", "xhigh", "max"]))
+    unknown = Codex.controls_for(models, "something-else")
+    check("an unknown id falls back to the configured model's efforts", [g["key"] for g in unknown["groups"]], ["model", "effort"])
+    check("an effort choice for an unmatched model still builds the picker's keys", Codex.commands(models, "effort", "high", "something-else", "medium")[0], "/model")
+
 done()

@@ -44,8 +44,17 @@ class Codex(Provider):
         return {"action": action, **selected, "commands": commands, "command": commands[0]}
 
     @classmethod
+    def matched(cls, models: list[dict], current_model: str) -> dict | None:
+        if not models:
+            return None
+        exact = next((item for item in models if item["slug"] == current_model), None)
+        near = next((item for item in models if current_model and (current_model.startswith(item["slug"]) or item["slug"].startswith(current_model))), None)
+        configured = next((item for item in models if item["slug"] == cls.configuration().get("model")), None)
+        return exact or near or configured or models[0]
+
+    @classmethod
     def controls_for(cls, models: list[dict], current_model: str) -> dict:
-        model = next((item for item in models if item["slug"] == current_model), None)
+        model = cls.matched(models, current_model)
         groups = [{"key": "model", "label": "Model", "choices": [cls.model_choice(item) for item in models]}]
         if model:
             groups.append({"key": "effort", "label": "Reasoning effort", "choices": [cls.effort_choice(item) for item in model["supported_reasoning_levels"]]})
@@ -98,8 +107,8 @@ class Codex(Provider):
 
     @classmethod
     def commands(cls, models: list[dict], action: str, value: str, current_model: str, current_effort: str) -> list[str]:
-        target = next(model for model in models if model["slug"] == (current_model if action == "effort" else value))
-        source_model = next((i for i, model in enumerate(models) if model["slug"] == current_model), 0)
+        target = cls.matched(models, current_model) if action == "effort" else next(model for model in models if model["slug"] == value)
+        source_model = models.index(cls.matched(models, current_model))
         target_model = models.index(target)
         commands = ["/model", cls.move(source_model, target_model)]
         supported = [item["effort"] for item in target["supported_reasoning_levels"]]
