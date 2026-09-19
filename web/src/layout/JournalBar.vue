@@ -42,7 +42,7 @@ function stateFor(e) {
 }
 
 function lineFor(e) {
-    return props.journal.gone ? "the viewer stopped answering" : lineOf(agentOf(e), worksOf(e), e.auto);
+    return props.journal.gone ? "the viewer stopped answering" : lineOf(agentOf(e), worksOf(e), e.auto && e.counts.todos > 0);
 }
 
 const environments = computed(() => (props.journal.summary || {}).environments || []);
@@ -84,7 +84,7 @@ const counts = (c) => [
             </template>
             <template v-else-if="reporting">
                 <span class="jbar-env">{{ reporting.name }}</span>
-                <span class="jbar-state">{{ wordOf(stateFor(reporting), reporting.auto) }}</span>
+                <span class="jbar-state">{{ wordOf(stateFor(reporting), reporting.auto && reporting.counts.todos > 0) }}</span>
                 <span class="jbar-line">{{ lineFor(reporting) }}</span>
             </template>
             <span class="jbar-counts">
@@ -136,7 +136,7 @@ const counts = (c) => [
                 <div class="jbar-envline">
                     <span :class="['jbar-dot', {live: stateFor(e) !== 'stopped'}]" />
                     <a class="jbar-envname" :href="`${base}/#/${e.name}`">{{ e.name }}</a>
-                    <span class="jbar-state">{{ wordOf(stateFor(e), e.auto) }}</span>
+                    <span class="jbar-state">{{ wordOf(stateFor(e), e.auto && e.counts.todos > 0) }}</span>
                     <span class="jbar-line">{{ lineFor(e) }}</span>
                     <span class="jbar-counts">
                         <template v-for="[key, n, what] in counts(e.counts)" :key="key">
