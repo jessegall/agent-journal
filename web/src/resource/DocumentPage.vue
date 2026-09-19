@@ -64,7 +64,7 @@ provide("talk", {talking, count, toggle: () => (talking.value = !talking.value)}
     min-width: 0;
     overflow-y: auto;
     overscroll-behavior: contain;
-    animation: curtain-left 0.32s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+    animation: curtain-left 0.32s cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
     transition: transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
