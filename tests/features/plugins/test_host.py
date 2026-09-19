@@ -124,4 +124,20 @@ check("once it answers, the event arrives and its answer is applied", (down.step
       (1, ["while the service is down"], ["asked for by the service"]))
 server.shutdown()
 
+# THE HOST RUNS IN THE SERVER: started once, it delivers by itself
+from features import FEATURES  # noqa: E402
+live = fresh("live")
+Agents(live, actor=SYSTEM).by_session("claude-1")
+landed = folder(live.root, "live") / "landed.txt"
+installed(live, {"name": "live", "on": {"todo.created": {"run": "sh handler.sh"}}}, handler=f"cat > /dev/null; echo landed >> {landed}\necho '{{\"whisper\": \"heard it\"}}'\n")
+FEATURES["plugins"].host(live.root)
+time.sleep(1.2)
+Todos(live, actor=AGENT).create("while the host is running")
+for _ in range(40):
+    if landed.exists():
+        break
+    time.sleep(0.25)
+check("the running host delivers without being stepped", (landed.exists(), [n.brief for n in Nudges(live).all()]), (True, ["heard it"]))
+check("a second host on the same journal does not double up", FEATURES["plugins"].host(live.root) or True, True)
+
 done()

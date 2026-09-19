@@ -1,9 +1,11 @@
 import shutil
+import threading
 import time
 from pathlib import Path
 
 from controllers.types import Notifications, Plugins as Rows
 from features.base import Feature, command, on, refuses
+from features.plugins.host import watch
 from features.plugins.manifest import fill, read
 from features.plugins.payload import refusal
 from features.plugins.run import call
@@ -22,6 +24,9 @@ class Plugins(Feature):
     EACH = 1.5
     LONGEST_EACH = 3.0
     ALTOGETHER = 5.0
+
+    def host(self, root: Path) -> None:
+        threading.Thread(target=watch, args=(Path(root),), daemon=True).start()
 
     @refuses
     def guard(self, provider, record, hook, session) -> str:
