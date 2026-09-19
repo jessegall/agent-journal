@@ -1,0 +1,8 @@
+#!/bin/sh
+set -eu
+
+root=$(git rev-parse --show-toplevel)
+cd "$root"
+git diff --cached --quiet -- VERSION && exit 0
+npm --prefix web run build
+git add web/dist
