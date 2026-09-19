@@ -6,12 +6,14 @@ from pathlib import Path
 
 ENTER_AFTER = 0.3
 RECHECK, RESUBMITS, SAMPLE = 0.6, 2, 24
+DRAFT_LINES = 8
 INPUT = re.compile("[❯›]")
 ANSI = re.compile(rb"\x1b\[[0-?]*[ -/]*[@-~]|\x1b\][^\x07\x1b]*(?:\x07|\x1b\\)|\x1b[@-Z\\-_]|[\x00-\x08\x0b-\x1f\x7f]")
 
 
 class Driver(ABC):
     STOP = b"\x1b"
+    CLEAR_LINE = b"\x05\x15"
     name = ""
     AUTO_ARGS = ()
     APPROVAL_FLAGS = frozenset()
@@ -24,6 +26,7 @@ class Driver(ABC):
         self.fd = fd
         self.born = time.time()
         self.printed = record.root / "runtime" / f"printed-{session}"
+        self.typed = record.root / "runtime" / f"typed-{session}"
 
     @abstractmethod
     def command(self, args: list[str]) -> list[str]: ...
@@ -65,6 +68,18 @@ class Driver(ABC):
             os.write(self.fd, b"\x03")
         except OSError:
             self.fd = -1
+
+    def clear_input(self) -> None:
+        try:
+            os.write(self.fd, self.CLEAR_LINE + (b"\x7f" + self.CLEAR_LINE) * DRAFT_LINES)
+        except OSError:
+            self.fd = -1
+
+    def user_typing(self, within: float) -> bool:
+        try:
+            return time.time() - self.typed.stat().st_mtime < within
+        except OSError:
+            return False
 
     def at_prompt(self) -> bool:
         return bool(self.PROMPT.search(self.last_printed().rstrip()))

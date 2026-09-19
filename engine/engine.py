@@ -19,6 +19,7 @@ from resources.types import PRIORITY, RUNNING, TYPES
 
 TICK = 1.0
 SETTLE, STEP = 3.0, 0.1
+TYPING_HOLD = 30.0
 WEB_HOSTS = ("github.com", "gitlab.com", "bitbucket.org")
 
 
@@ -61,7 +62,7 @@ class Engine:
 
     def tick(self) -> str:
         self.relay()
-        self.why = self.follow() or self.probe() or self.forced() or self.control() or self.deliver() or self.nudge()
+        self.why = self.follow() or self.probe() or self.forced() or self.typing() or self.control() or self.deliver() or self.nudge()
         self.seat()
         return self.why
 
@@ -118,6 +119,15 @@ class Engine:
     def names(self) -> set[str]:
         last = self.agent.driver.last_report()
         return {self.agent.driver.session, *([last.title] if last and last.title else [])}
+
+    def typing(self) -> str:
+        driver = self.agent.driver
+        if driver.user_typing(TYPING_HOLD):
+            return "holding: the user is typing in the terminal"
+        if driver.typed.exists():
+            driver.clear_input()
+            driver.typed.unlink(missing_ok=True)
+        return ""
 
     def forced(self) -> str:
         if self.agent.state() == IDLE or not take(self.record.root, self.names(), FORCE):
