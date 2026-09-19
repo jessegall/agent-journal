@@ -8,7 +8,7 @@ to-dos, messages, rules, pins, reminders, plans, reports, docs, and the history 
 them. Every new session receives the part it needs, while the full record stays readable in
 plain files and in the browser.
 
-The current package is 2.2.3. Claude and Codex use the same record, engine, viewer, and command
+The current package is 2.3.0. Claude and Codex use the same record, engine, viewer, and command
 line.
 
 ## Install
@@ -67,6 +67,12 @@ their record; the CLI also renames and moves them.
 The viewer is live: controller writes made by the CLI, an agent, or another open tab arrive over
 the same event stream. Resource inspectors open over the current page, so following a link does
 not discard where you were.
+
+The Hub page shows every journal running on this machine as one status bar each, expandable to
+every environment with its plans, auto switch and counts, and links to open that journal's viewer
+or chat. Viewers find each other on ports 8420–8439 and read one another directly; a journal whose
+viewer has stopped stays on the hub, grey, until you forget it. Peers on versions before 2.3.0
+are listed but cannot be read.
 
 ## What changes in an agent session
 
