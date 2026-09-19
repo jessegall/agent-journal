@@ -51,9 +51,11 @@ async function runBar(p) {
                 <template v-if="sentence.head">
                     <span class="statusbar-head">{{ sentence.head }}</span>
                 </template>
-                <Transition name="roll">
-                    <span :key="sentence.tail" class="statusbar-line">{{ sentence.tail }}</span>
-                </Transition>
+                <span class="statusbar-tail">
+                    <Transition name="roll">
+                        <span :key="sentence.tail" class="statusbar-line">{{ sentence.tail }}</span>
+                    </Transition>
+                </span>
             </span>
         </button>
         <RunningCommand />
@@ -162,6 +164,14 @@ async function runBar(p) {
 .statusbar-head {
     flex: none;
     white-space: pre;
+}
+
+.statusbar-tail {
+    position: relative;
+    flex: 0 1 auto;
+    min-width: 0;
+    display: flex;
+    align-items: baseline;
 }
 
 .statusbar-line {
