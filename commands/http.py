@@ -392,24 +392,27 @@ def get_project_files(req: Request) -> Reply:
     return Reply(200, sorted(out, key=lambda x: x["path"].lower()))
 
 
+def transcript_of(req: Request, session: str = "") -> Reply:
+    row = Agents(req.record(), actor=USER).load(int(req.params["n"]))
+    provider = PROVIDERS[row.provider]() if row.provider in PROVIDERS and row.transcript else None
+    path = Path(row.transcript) if provider else None
+    if session:
+        known = any(r.get("session") == session for r in row.subagent_rows)
+        path = provider.subagent_transcript(path, session) if provider and known else None
+        if not path:
+            raise Missing("no such subagent session")
+    turns = provider.transcript(path) if path else []
+    return Reply(200, page(turns, int(req.query.get("since") or 0), int(req.query.get("before") or 0), int(req.query.get("last") or 300)))
+
+
 @route("GET", "/api/{env}/agent/{n}/transcript")
 def get_transcript(req: Request) -> Reply:
-    row = Agents(req.record(), actor=USER).load(int(req.params["n"]))
-    provider = PROVIDERS.get(row.provider)
-    turns = provider().transcript(Path(row.transcript)) if provider and row.transcript else []
-    return Reply(200, page(turns, int(req.query.get("since") or 0), int(req.query.get("before") or 0), int(req.query.get("last") or 300)))
+    return transcript_of(req)
 
 
 @route("GET", "/api/{env}/agent/{n}/subagent/{session}/transcript")
 def get_subagent_transcript(req: Request) -> Reply:
-    row = Agents(req.record(), actor=USER).load(int(req.params["n"]))
-    provider = PROVIDERS.get(row.provider)
-    known = any(r.get("session") == req.params["session"] for r in row.subagent_rows)
-    path = provider().subagent_transcript(Path(row.transcript), req.params["session"]) if provider and known and row.transcript else None
-    if not path:
-        raise Missing("no such subagent session")
-    turns = provider().transcript(path)
-    return Reply(200, page(turns, int(req.query.get("since") or 0), int(req.query.get("before") or 0), int(req.query.get("last") or 300)))
+    return transcript_of(req, req.params["session"])
 
 
 @route("GET", "/api/{env}/commit/{sha}")
