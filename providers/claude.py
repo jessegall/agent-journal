@@ -8,6 +8,7 @@ from providers.base import Provider
 from providers.payload import Hook
 
 ASKS = frozenset({"AskUserQuestion"})
+WINDOW, LONG_WINDOW, LONG_MARK = 200_000, 1_000_000, "[1m]"
 
 
 class Claude(Provider):
@@ -45,14 +46,21 @@ class Claude(Provider):
     }
     usage_note = "Claude exposes plan limits only in its native /usage view; the journal does not replace your status-line configuration to scrape them."
 
-    def effort(self, project: Path) -> str:
+    def setting(self, project: Path, key: str) -> str:
         found = ""
         for settings in (Path.home() / ".claude" / "settings.json", project / ".claude" / "settings.json", project / ".claude" / "settings.local.json"):
             try:
-                found = json.loads(settings.read_text()).get("effortLevel") or found
+                found = json.loads(settings.read_text()).get(key) or found
             except (OSError, ValueError, AttributeError):
                 continue
         return found
+
+    def effort(self, project: Path) -> str:
+        return self.setting(project, "effortLevel")
+
+    def window(self, hook: Hook, used: int) -> int:
+        configured = self.setting(Path(hook.cwd or "."), "model")
+        return LONG_WINDOW if LONG_MARK in f"{hook.model}{configured}" or used > WINDOW else WINDOW
 
     def present(self, project: Path) -> bool:
         return (project / ".claude").is_dir() or shutil.which("claude") is not None
@@ -96,8 +104,7 @@ class Claude(Provider):
                 continue
             if usage:
                 used = sum(int(usage.get(k) or 0) for k in ("input_tokens", "cache_read_input_tokens", "cache_creation_input_tokens"))
-                window = 1_000_000 if "[1m]" in hook.model or used > 200_000 else 200_000
-                return round(100 * used / window, 1)
+                return round(100 * used / self.window(hook, used), 1)
         return None
 
     def turn(self, row: dict) -> tuple | None:
