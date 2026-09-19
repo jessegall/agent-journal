@@ -388,11 +388,21 @@ class Connections(Controller):
 
 class Environments(Controller):
     resource = types.Environment
+    OPEN_BEFORE_REMOVING = (Todos, Pins, Reminders, Messages, Questions)
+    PICKED_UP = (Works, Todos, Questions, Messages)
+
+    def unused(self, name: str, hint: str = "") -> str:
+        if any(e.title == name for e in self.all()):
+            raise Refused(f"environment {name!r} exists{hint}")
+        return name
+
+    def vacant(self, title: str, mine: str = "") -> None:
+        holder = Sessions(self.record.root).holder(title)
+        if holder and holder != mine:
+            raise Refused(f"environment {title!r} is held by session {holder}; it leaves first")
 
     def create(self, title: str, abstract: str = "", brief: str = "", **data):
-        name = check_title(title)
-        if any(e.title == name for e in self.all()):
-            raise Refused(f"environment {name!r} exists: switch to it")
+        name = self.unused(check_title(title), ": switch to it")
         made = super().create(name, abstract, brief, **data)
         Record(self.record.root, name)
         return made
@@ -426,10 +436,8 @@ class Environments(Controller):
     def complete(self, n: int, how: str = "", yes: bool = False, **data):
         env = self.load(n)
         record = Record(self.record.root, env.title)
-        held = {t: len([r for r in CONTROLLERS[t](record, actor=SYSTEM).all() if not r.completed]) for t in ("todo", "pin", "reminder", "message", "question")}
-        holder = Sessions(self.record.root).holder(env.title)
-        if holder:
-            raise Refused(f"environment {env.title!r} is held by session {holder}; it leaves first")
+        held = {c.resource.type: len([r for r in c(record, actor=SYSTEM).all() if not r.completed]) for c in self.OPEN_BEFORE_REMOVING}
+        self.vacant(env.title)
         kept = ", ".join(f"{v} open {k}s" for k, v in held.items() if v)
         if kept and not yes:
             raise Refused(f"environment {env.title!r} holds {kept}; --yes removes it anyway (its record goes to the attic)")
@@ -442,19 +450,14 @@ class Environments(Controller):
         archive = attic.latest(self.record.root, name)
         if not archive:
             raise Refused(f"no archived environment {name!r} in attic/")
-        if any(e.title == name for e in self.all()):
-            raise Refused(f"environment {name!r} exists: rename it before bringing the archived one back")
+        self.unused(name, ": rename it before bringing the archived one back")
         attic.unpack(archive, Record(self.record.root, name).home)
         return self.create(name)
 
     def rename(self, n: int, name: str):
         env = self.load(n)
-        new = check_title(name)
-        if any(e.title == new for e in self.all()):
-            raise Refused(f"environment {new!r} exists")
-        holder = self.sessions().holder(env.title)
-        if holder and holder != self.session:
-            raise Refused(f"environment {env.title!r} is held by session {holder}; it leaves first")
+        new = self.unused(check_title(name))
+        self.vacant(env.title, self.session)
         old = Record(self.record.root, env.title).home
         if old.is_dir():
             old.rename(old.with_name(new))
@@ -465,7 +468,7 @@ class Environments(Controller):
         env = self.load(n)
         record = Record(self.record.root, env.title)
         return {"environment": env.title, "holder": self.sessions().holder(env.title),
-                **{f"open {t}s": [f"{r.n} {r.title}" for r in CONTROLLERS[t](record, actor=SYSTEM).all() if not r.completed][:10] for t in ("work", "todo", "question", "message")},
+                **{f"open {c.resource.type}s": [f"{r.n} {r.title}" for r in c(record, actor=SYSTEM).all() if not r.completed][:10] for c in self.PICKED_UP},
                 "pins": [f"{r.n} {r.title}" for r in Pins(record, actor=SYSTEM).all() if not r.completed][:10]}
 
     def claim(self, n: int, why: str):
