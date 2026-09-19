@@ -25,6 +25,20 @@ class Provider(ABC):
     controls = {"groups": [], "note": "This CLI does not expose model controls."}
     usage_note = "This CLI does not expose plan usage."
 
+    @classmethod
+    def control_options(cls, current_model: str = "") -> dict:
+        return cls.controls
+
+    @classmethod
+    def control_choice(cls, action: str, value: str, current_model: str = "") -> dict:
+        configured = cls.control_options(current_model)
+        group = next((group for group in configured.get("groups", []) if group["key"] == action), None)
+        selected = next((item for item in (group or {}).get("choices", []) if item["value"] == value), None)
+        if not selected:
+            from resources.base import Refused
+            raise Refused(f"{cls.name or 'this agent'} does not support {action} {value!r}")
+        return {"action": action, **selected}
+
     @abstractmethod
     def config(self, project: Path) -> Path: ...
 

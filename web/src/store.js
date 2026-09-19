@@ -1,6 +1,7 @@
 import {computed, reactive, ref, watch} from "vue";
 import * as http from "./api.js";
 import {go, route} from "./route.js";
+import {visible} from "./text/index.js";
 
 export function remembered(key, fallback) {
     try {
@@ -209,7 +210,7 @@ export function clock(at) {
 }
 
 export function quoted(text) {
-    const lines = (text || "").split("\n");
+    const lines = visible(text).split("\n");
     const quote = [];
     while (lines.length && lines[0].startsWith(">")) quote.push(lines.shift().replace(/^> ?/, ""));
     return {quote: quote.join("\n"), text: lines.join("\n").trim()};

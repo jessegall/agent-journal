@@ -22,22 +22,106 @@ class Codex(Provider):
     briefing_file = "AGENTS.md"
     skill_home = ".agents/skills"
     retired_skill_homes = (".codex/skills",)
-    controls = {
-        "groups": [
-            {
-                "key": "model",
-                "label": "Model",
-                "choices": [
-                    {"value": "gpt-5.3-codex", "label": "GPT-5.3 Codex", "command": "/model gpt-5.3-codex"},
-                    {"value": "gpt-5.2-codex", "label": "GPT-5.2 Codex", "command": "/model gpt-5.2-codex"},
-                    {"value": "gpt-5.1-codex-max", "label": "GPT-5.1 Codex Max", "command": "/model gpt-5.1-codex-max"},
-                    {"value": "gpt-5.1-codex-mini", "label": "GPT-5.1 Codex Mini", "command": "/model gpt-5.1-codex-mini"},
-                ],
-            },
-        ],
-        "note": "Changes apply immediately to this Codex session.",
-    }
     usage_note = "Codex reports plan limits here after its next response."
+
+    @classmethod
+    def control_options(cls, current_model: str = "") -> dict:
+        config = cls.configuration()
+        return cls.controls_for(cls.catalog(), current_model or config.get("model", ""))
+
+    @classmethod
+    def control_choice(cls, action: str, value: str, current_model: str = "") -> dict:
+        config = cls.configuration()
+        model = current_model or config.get("model", "")
+        controls = cls.controls_for(cls.catalog(), model)
+        group = next((group for group in controls["groups"] if group["key"] == action), None)
+        selected = next((item for item in (group or {}).get("choices", []) if item["value"] == value), None)
+        if not selected:
+            from resources.base import Refused
+            raise Refused(f"{cls.name} does not support {action} {value!r}")
+        models = cls.catalog()
+        commands = cls.commands(models, action, value, model, config.get("effort", ""))
+        return {"action": action, **selected, "commands": commands, "command": commands[0]}
+
+    @classmethod
+    def controls_for(cls, models: list[dict], current_model: str) -> dict:
+        model = next((item for item in models if item["slug"] == current_model), None)
+        groups = [{"key": "model", "label": "Model", "choices": [cls.model_choice(item) for item in models]}]
+        if model:
+            groups.append({"key": "effort", "label": "Reasoning effort", "choices": [cls.effort_choice(item) for item in model["supported_reasoning_levels"]]})
+        note = "Changes apply immediately through the Codex model picker."
+        if not models:
+            note = "Codex model catalog unavailable; use /model in the Codex terminal."
+        return {"groups": groups if models else [], "note": note}
+
+    @classmethod
+    def catalog(cls, path: Path | None = None) -> list[dict]:
+        path = path or Path.home() / ".codex" / "models_cache.json"
+        try:
+            data = json.loads(path.read_text())
+        except (OSError, TypeError, ValueError):
+            return []
+        if not isinstance(data, dict):
+            return []
+        return [
+            model for model in data.get("models", [])
+            if isinstance(model, dict)
+            and model.get("slug")
+            and model.get("visibility") == "list"
+            and model.get("supported_in_api")
+            and isinstance(model.get("supported_reasoning_levels"), list)
+            and all(isinstance(level, dict) and level.get("effort") for level in model["supported_reasoning_levels"])
+        ]
+
+    @classmethod
+    def configuration(cls, path: Path | None = None) -> dict:
+        path = path or Path.home() / ".codex" / "config.toml"
+        try:
+            lines = path.read_text().splitlines()
+        except OSError:
+            return {}
+        values = {}
+        for line in lines:
+            match = re.match(r"\s*(model|model_reasoning_effort)\s*=\s*\"([^\"]+)\"", line)
+            if match:
+                values["model" if match.group(1) == "model" else "effort"] = match.group(2)
+        return values
+
+    @classmethod
+    def model_choice(cls, model: dict) -> dict:
+        return {"value": model["slug"], "label": model.get("display_name") or model["slug"]}
+
+    @classmethod
+    def effort_choice(cls, effort: dict) -> dict:
+        value = effort.get("effort", "")
+        return {"value": value, "label": {"xhigh": "Extra high"}.get(value, value.title())}
+
+    @classmethod
+    def commands(cls, models: list[dict], action: str, value: str, current_model: str, current_effort: str) -> list[str]:
+        target = next(model for model in models if model["slug"] == (current_model if action == "effort" else value))
+        source_model = next((i for i, model in enumerate(models) if model["slug"] == current_model), 0)
+        target_model = models.index(target)
+        commands = ["/model", cls.move(source_model, target_model)]
+        supported = [item["effort"] for item in target["supported_reasoning_levels"]]
+        standard = [item for item in supported if item not in ("max", "ultra")]
+        advanced = [item for item in supported if item in ("max", "ultra")]
+        chosen = value if action == "effort" else target.get("default_reasoning_level", standard[0] if standard else advanced[0])
+        initial = (
+            current_effort if action == "effort" and current_effort in standard
+            else 0 if action == "effort" and current_effort
+            else target.get("default_reasoning_level", standard[0] if standard else "")
+        )
+        if chosen in standard:
+            commands.append(cls.move(standard.index(initial) if initial in standard else 0, standard.index(chosen)))
+        else:
+            commands.append(cls.move(standard.index(initial) if initial in standard else 0, len(standard)))
+            commands.append(cls.move(0, advanced.index(chosen)))
+        return commands
+
+    @staticmethod
+    def move(start: int, target: int) -> str:
+        key = "\x1b[B" if target >= start else "\x1b[A"
+        return key * abs(target - start)
 
     def present(self, project: Path) -> bool:
         return (project / ".codex").is_dir() or shutil.which("codex") is not None

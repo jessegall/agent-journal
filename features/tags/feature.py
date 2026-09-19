@@ -5,7 +5,11 @@ from features.base import Feature, on
 from providers import PROVIDERS
 
 TAGS = ("[!discovery]", "[!correction]", "[!blocked]", "[!info]", "[!reply]")
-TAG = re.compile(r"^\s*(?:\*\*)?\[!(?:discovery|correction|blocked|info|reply)\]")
+TAG = re.compile(r"^\s*(?:\*\*)?\[!(?:discovery|correction|blocked|info|reply)\](?:\*\*)?\s*")
+
+
+def visible(text: str) -> str:
+    return TAG.sub("", str(text or ""), count=1)
 
 
 def last_said(record, agent) -> str:

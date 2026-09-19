@@ -16,6 +16,7 @@ from engine.drivers import DRIVERS
 from engine.record import Record
 from engine.sessions import Sessions, allowed
 from engine.transcript import Turn, conversation, search as search_transcript, user
+from features.tags.feature import visible
 from providers import PROVIDERS
 from resources.base import AGENT, Refused, SYSTEM
 from resources.types import AgentRow
@@ -69,7 +70,7 @@ def transcript(record, session: str):
 
 
 def turn_text(turn, source: str = "") -> str:
-    return f"{source}{turn.line:>6}  {turn.who:<7} {turn.text}"
+    return f"{source}{turn.line:>6}  {turn.who:<7} {visible(turn.text)}"
 
 
 def say(turns) -> str:

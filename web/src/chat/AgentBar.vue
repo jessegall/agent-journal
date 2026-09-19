@@ -10,7 +10,7 @@ const props = defineProps({standalone: Boolean});
 const open = ref("");
 const alone = computed(() => props.standalone || window.parent !== window || new URLSearchParams(location.search).has("chat"));
 const data = computed(() => (agent.value && agent.value.data.status !== "stopped" ? agent.value.data : null));
-const family = computed(() => ((data.value && data.value.model) || "").match(/opus|sonnet|haiku|gpt[-\w.]*/i));
+const family = computed(() => ((data.value && data.value.model) || "").match(/opus|sonnet|haiku|fable|gpt[-\w.]*/i));
 const name = computed(() => ({claude: "Claude Code", codex: "Codex"})[data.value && data.value.provider] || "agent");
 const skills = computed(() => (data.value && data.value.skills) || []);
 const usage = computed(() => (data.value && data.value.usage && data.value.usage.windows) || []);
@@ -60,7 +60,7 @@ async function modelControls(e) {
     error.value = "";
     controls.value = {groups: [], note: "Loading controls…"};
     try {
-        controls.value = await agentControls(data.value.provider);
+        controls.value = await agentControls(data.value.provider, data.value.model);
     } catch (e) {
         error.value = e.message;
     }

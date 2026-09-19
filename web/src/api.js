@@ -21,7 +21,7 @@ export const identity = () => api("GET", "/identity");
 export const saveIdentity = (body) => api("POST", "/identity", body);
 export const onlineAgents = () => api("GET", "/agents");
 export const appoint = (env, session) => api("POST", `/${env}/appoint`, {session});
-export const agentControls = (provider) => api("GET", `/agent-controls/${encodeURIComponent(provider)}`);
+export const agentControls = (provider, model = "") => api("GET", `/agent-controls/${encodeURIComponent(provider)}${model ? `?model=${encodeURIComponent(model)}` : ""}`);
 export const controlAgent = (env, session, action, value) =>
     api("POST", `/${env}/agent/${encodeURIComponent(session)}/control`, {action, value});
 export const agentUsage = (provider) => api("GET", `/agent-usage/${encodeURIComponent(provider)}`);

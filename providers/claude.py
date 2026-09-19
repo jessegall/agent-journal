@@ -25,6 +25,7 @@ class Claude(Provider):
                     {"value": "opus", "label": "Opus", "command": "/model opus"},
                     {"value": "sonnet", "label": "Sonnet", "command": "/model sonnet"},
                     {"value": "haiku", "label": "Haiku", "command": "/model haiku"},
+                    {"value": "claude-fable-5", "label": "Fable", "command": "/model claude-fable-5"},
                 ],
             },
             {
