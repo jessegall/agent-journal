@@ -50,7 +50,7 @@ check("the chat includes comments on any supported resource", (
 check("message replies keep reply treatment while resource comments keep comment treatment", (
     'const messageReply = computed(() => commentParent.value?.type === "message");' in turn,
     "'comment-origin': resourceComment" in turn,
-    "resourceComment ? openComment() : toQuoted" in turn,
+    "resourceComment ? openComment() : toQuoted()" in turn,
 ), (True, True, True))
 check("a line of code in a chat message becomes a highlighted block; fences and runs too; prose stays prose", got["chat"], [
     '<p>read the room.</p><pre class="chat-code"><code>return [*automatic, *args] if x.get(&quot;auto&quot;, False) else args</code></pre><p>You fix one thing.</p>',
