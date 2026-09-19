@@ -252,7 +252,7 @@ watch(
         </template>
         <div
             ref="scroller"
-            :class="['thread-scroll', {focusing: store.focus, loading: !ready}]"
+            :class="['thread-scroll', {focusing: store.focus, loading: !ready, busy}]"
             @scroll.passive="watchScroll"
             @mouseenter="reading.inside = true"
             @mouseleave="reading.inside = false"
@@ -371,7 +371,10 @@ watch(
 .thread-band {
     order: 2;
     flex: none;
+    position: relative;
+    z-index: 2;
     height: 62px;
+    margin-top: -62px;
     padding: 0 8px;
     overflow: hidden;
     background: transparent;
@@ -382,13 +385,19 @@ watch(
 .band-leave-active {
     transition:
         height 0.22s cubic-bezier(0.2, 0.8, 0.2, 1),
+        margin-top 0.22s cubic-bezier(0.2, 0.8, 0.2, 1),
         opacity 0.18s ease;
 }
 
 .band-enter-from,
 .band-leave-to {
     height: 0;
+    margin-top: 0;
     opacity: 0;
+}
+
+.thread-scroll.busy {
+    padding-bottom: 74px;
 }
 
 .thread-turn.busy {
