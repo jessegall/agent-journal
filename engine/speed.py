@@ -61,7 +61,7 @@ def measure(live: Path, env: str, runs: int = 5, url: str = "", out: str = "") -
     record = Record(scratch, env)
     for type_ in TYPES:
         folder = record.folder(type_, CONTROLLERS[type_].resource.scope)
-        count = len(list(folder.glob("[0-9][0-9][0-9].md")))
+        count = len([p for p in folder.glob("*.md") if p.stem.isdigit()])
         rows[f"list {type_} ({count})"] = timed(lambda: CONTROLLERS[type_](record).all(), runs)
     for argv in COMMANDS:
         rows[f"journal {' '.join(argv)}"] = cli(scratch, env, argv, runs)

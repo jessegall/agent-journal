@@ -75,4 +75,12 @@ for type_ in TYPES:
 check("rules, docs, tools, style and connections are the project's", sorted(n for n, t in TYPES.items() if t.scope == PROJECT), ["connection", "doc", "environment", "rule", "style", "tool"])
 check("every scope is one of the two", {t.scope for t in TYPES.values()} <= {ENVIRONMENT, PROJECT}, True)
 
+# NUMBERS PAST 999 are listed and counted on, never overwritten
+record = Record(Path(tempfile.mkdtemp()) / ".journal", "main")
+todos = CONTROLLERS["todo"](record)
+for i in range(1, 1003):
+    todos.create(f"row {i}")
+rows = todos.all()
+check("the thousandth row and those after it are listed, each its own", (len(rows), [r.n for r in rows][-3:], rows[-1].title), (1002, [1000, 1001, 1002], "row 1002"))
+
 done()
