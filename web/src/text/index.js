@@ -5,12 +5,6 @@ export function visible(text) {
     return String(text ?? "").replace(TAG, "");
 }
 
-export function title(text) {
-    const source = String(text ?? "");
-    const line = source.split("\n").find((part) => part.trim() && !part.startsWith(">")) || source;
-    return line.replace(/:/g, " -").replace(/\s+/g, " ").trim().slice(0, 80);
-}
-
 export function register(fn) {
     transformers.push(fn);
 }
