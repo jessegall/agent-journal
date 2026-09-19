@@ -11,6 +11,7 @@ const running = computed(() => journals.value.filter((j) => j.running));
 const opened = reactive(new Set(remembered("journal.hub", [])));
 const streams = new Map();
 let ticking = 0;
+let scanning = false;
 
 function baseOf(j) {
     return j.current ? "" : `http://127.0.0.1:${j.port}`;
@@ -72,6 +73,16 @@ async function forget(j) {
 }
 
 async function scan() {
+    if (scanning) return;
+    scanning = true;
+    try {
+        await rescan();
+    } finally {
+        scanning = false;
+    }
+}
+
+async function rescan() {
     const listed = (await api("GET", "/journals")).map((got) => ({...got, current: got.port === Number(location.port)}));
     const found = listed.filter(
         (got) => got.current || !listed.some((other) => other.root === got.root && (other.current || other.port < got.port))

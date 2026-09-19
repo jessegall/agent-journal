@@ -96,9 +96,22 @@ const counts = (c) => [
                 </template>
             </span>
             <span class="jbar-meta">
-                {{ journal.current ? "this one" : `port ${journal.port}` }}{{ journal.version ? ` · ${journal.version}` : "" }}
+                {{ journal.running ? (journal.current ? "this one" : `port ${journal.port}`) : `last seen ${age(journal.at)} ago`
+                }}{{ journal.version ? ` · ${journal.version}` : "" }}
             </span>
-            <Icon name="down" :size="12" class="jbar-fold" />
+            <template v-if="journal.running">
+                <Icon name="down" :size="12" class="jbar-fold" />
+            </template>
+            <template v-else>
+                <span
+                    class="jbar-forget"
+                    role="button"
+                    title="Take this journal off the hub until its viewer runs again"
+                    @click.stop="emit('forget')"
+                >
+                    Forget
+                </span>
+            </template>
         </button>
         <template v-if="open && journal.summary">
             <div class="jbar-open">
@@ -294,21 +307,7 @@ a.jbar-count:hover {
     transition: transform 0.18s ease;
 }
 
-.jbar.open .jbar-forget {
-    flex: none;
-    padding: 2px 8px;
-    border: 1px solid var(--border-2);
-    border-radius: 6px;
-    color: var(--text-2);
-    font-size: 11px;
-}
-
-.jbar-forget:hover {
-    background: var(--raised);
-    color: var(--text);
-}
-
-.jbar-fold {
+.jbar.open .jbar-fold {
     transform: rotate(180deg);
 }
 
