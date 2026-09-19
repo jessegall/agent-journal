@@ -125,7 +125,7 @@ export async function reload() {
         do {
             reloadAgain = false;
             const env = route.value.env;
-            const [events, settings, agents] = await Promise.all([http.events(env), http.settings(env), http.all(env, "agent")]);
+            const [events, settings, agents] = await Promise.all([http.events(env, 0, RECENT), http.settings(env), http.all(env, "agent")]);
             store.events = events;
             store.settings = settings;
             store.agents = agents;
@@ -144,6 +144,7 @@ export function listen() {
     poll();
 }
 
+const RECENT = 1000;
 let ticking = 0;
 let ticks = 0;
 
