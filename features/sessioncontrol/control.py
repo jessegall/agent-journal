@@ -1,7 +1,7 @@
 from pathlib import Path
 
 from controllers.types import Agents
-from engine.inputs import queue
+from engine.inputs import FORCE, queue
 from engine.record import Record
 from engine.seats import live
 from providers import PROVIDERS
@@ -32,13 +32,27 @@ def choice(provider: str, action: str, value: str, current_model: str = "") -> d
     return cls.control_choice(action, value, current_model)
 
 
-def request(root: Path, env: str, session: str, action: str, value: str) -> dict:
-    root = Path(root)
-    found = next((agent for _, agent in live(root) if agent["session"] == session), None)
+CARRY_ON = "Carry on with what you were doing; the model or effort change you were interrupted for is done."
+
+
+def online(root: Path, env: str, session: str) -> dict:
+    found = next((agent for _, agent in live(Path(root)) if agent["session"] == session), None)
     if not found:
         raise Refused(f"session {session!r} is not online")
     if found["environment"] != env:
         raise Refused(f"session {session!r} belongs to environment {found['environment']!r}")
+    return found
+
+
+def force(root: Path, env: str, session: str) -> dict:
+    found = online(root, env, session)
+    queued = queue(Path(root), session, "", "Force through", provider=found["provider"], action=FORCE)
+    return {k: v for k, v in queued.items() if k != "line"} | {"queued": True}
+
+
+def request(root: Path, env: str, session: str, action: str, value: str) -> dict:
+    root = Path(root)
+    found = online(root, env, session)
     selected = choice(found["provider"], action, value, found.get("model", ""))
     commands = selected.get("commands") or [selected["command"]]
     queued = None

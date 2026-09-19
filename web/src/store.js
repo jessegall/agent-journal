@@ -280,7 +280,7 @@ export function openPictures(pictures, at) {
 
 export const away = reactive({open: false, since: 0, back: 0, left: 0});
 export const flash = reactive({at: Date.now()});
-const FLASH_AFTER = 3000;
+const FLASH_AFTER = 1000;
 
 function left() {
     away.left = away.left || Date.now();

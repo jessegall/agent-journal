@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.11.0 — Model and effort changes you can see and push through
+
+A model or effort picked in the agent bar shows on its button with a small spinner until the engine types it, and the button then shows what Claude confirmed — including a session-only `/effort max`, read from Claude's own transcript. A waiting change can be forced: the engine stops the agent's turn, types the change and tells it to carry on. Picked changes are delivered at all now (they were queued under a name the engine never read). Also: a journal flashes its name when you open it or come back to it, a quote in the chat highlights what it answers again, chat paragraphs never end on a lone word, a file name without its path opens the project file it names, the composer offers no Pin, and Claude's context percentage follows the model's real window.
+
+What to do about it: `journal upgrade`.
+
 ## 2.10.1 — Model and effort, each its own picker
 
 The agent bar has a Model button and a separate Effort button that shows the current reasoning effort, read by each provider from its own settings; each opens only its own choices, and Fable is offered by its current id. A command the bar calls editing files is now always counted as a write, so its line changes show. The running step of a pipeline is its first command, not its last filter, and a message edited after sending no longer leaves a Sending ghost.

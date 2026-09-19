@@ -1,6 +1,6 @@
 <script setup>
 import {computed, onUnmounted, ref} from "vue";
-import {agentControls, agentUsage, appoint, controlAgent, onlineAgents} from "../api.js";
+import {agentControls, agentUsage, appoint, controlAgent, forceAgent, onlineAgents} from "../api.js";
 import Icon from "../kit/Icon.vue";
 import SwitchCase from "../kit/SwitchCase.vue";
 import {go, peek, route} from "../route.js";
@@ -78,6 +78,18 @@ async function control(action, value) {
     error.value = "";
     try {
         await controlAgent(route.value.env, agent.value.title, action, value);
+        open.value = "";
+    } catch (e) {
+        error.value = e.message;
+    } finally {
+        controlling.value = "";
+    }
+}
+async function pushThrough() {
+    controlling.value = "force";
+    error.value = "";
+    try {
+        await forceAgent(route.value.env, agent.value.title);
         open.value = "";
     } catch (e) {
         error.value = e.message;
@@ -280,6 +292,10 @@ onUnmounted(() => window.removeEventListener("click", away));
                     <template #model>
                         <p v-if="error" class="bar-error">{{ error }}</p>
                         <p class="bar-current">{{ current }}</p>
+                        <div v-if="pending(open)" class="bar-waiting">
+                            <span>{{ pending(open) }} is waiting for the agent to finish its turn.</span>
+                            <button type="button" class="bar-act" :disabled="Boolean(controlling)" @click="pushThrough">Force now</button>
+                        </div>
                         <template v-for="group in chosen" :key="group.key">
                             <p class="bar-label">{{ group.label }}</p>
                             <div class="bar-choices">
@@ -682,22 +698,28 @@ onUnmounted(() => window.removeEventListener("click", away));
 
 .agent-fact.waiting::after {
     content: "";
-    width: 5px;
-    height: 5px;
-    margin-left: 2px;
+    width: 7px;
+    height: 7px;
+    margin-left: 3px;
+    border: 1.5px solid currentColor;
+    border-right-color: transparent;
     border-radius: 50%;
-    background: currentColor;
-    animation: waiting 1.2s ease-in-out infinite;
+    animation: waiting 0.8s linear infinite;
 }
 
 @keyframes waiting {
-    0%,
-    100% {
-        opacity: 0.25;
+    to {
+        transform: rotate(360deg);
     }
+}
 
-    50% {
-        opacity: 1;
-    }
+.bar-waiting {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin: 4px 0 8px;
+    font-size: 12px;
+    color: var(--progress);
 }
 </style>
