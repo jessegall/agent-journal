@@ -54,7 +54,7 @@ class Plugins(Feature):
         row = plugins.load(n)
         root = plugins.record.root
         if row.linked:
-            manifest = read(folder(root, row.manifest["name"]), VERSION)
+            manifest = read(folder(root, self.called(row)), VERSION)
             return plugins.update(n, manifest=manifest, version=manifest.get("version") or "", abstract=manifest.get("description") or "")
         where, manifest, commit, linked = staged(root, row.source, ref or row.revision, VERSION)
         kept = False
@@ -86,14 +86,21 @@ class Plugins(Feature):
         row = plugins.load(n)
         if not row.completed:
             raise Refused(f"plugin {n} is installed: remove it first")
-        kept = data(plugins.record.root, row.manifest["name"])
+        name = self.called(row)
+        if not name:
+            raise Refused(f"plugin {n} never named itself, so it kept nothing of its own")
+        kept = data(plugins.record.root, name)
         shutil.rmtree(kept, ignore_errors=True)
-        return f"everything {row.manifest['name']} kept in {kept} is gone"
+        return f"everything {name} kept in {kept} is gone"
 
     @on("plugin.completed")
     def removed(self, event, record) -> None:
-        row = Rows(record, actor=SYSTEM).load(event.n)
-        self.clear(folder(record.root, row.manifest["name"]))
+        name = self.called(Rows(record, actor=SYSTEM).load(event.n))
+        if name:
+            self.clear(folder(record.root, name))
+
+    def called(self, row) -> str:
+        return str((row.manifest or {}).get("name") or "")
 
     def difference(self, before: dict, after: dict) -> str:
         was, now = self.runs(before), self.runs(after)
