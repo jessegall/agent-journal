@@ -112,7 +112,7 @@ async function save() {
                     <button type="button" class="wait" @click="peek(ref.split(':')[0], Number(ref.split(':')[1]))">
                         {{ ref.replace("todo:", "to-do ").replace("plan:", "plan ") }}
                     </button>
-                    <template v-if="i < waits.length - 1">,</template>
+                    {{ i < waits.length - 1 ? ", " : "" }}
                 </template>
             </template>
         </p>
