@@ -26,7 +26,7 @@ check("auto mode is a feature off by default; the rest are on", ([n for n, f in 
 from features.base import Feature, REGISTRY  # noqa: E402
 check("the registry holds one class per feature, each a Feature", (sorted(REGISTRY), all(issubclass(c, Feature) for c in REGISTRY.values())), (loaded, True))
 check("a feature describes itself for a menu: name, words, what it listens to, its trigger", sorted(features.describe()["work"]), ["abstract", "default", "fixed", "help", "listens", "name", "title", "trigger"])
-check("the work feature listens to what its methods say", features.describe()["work"]["listens"], ["agent.updated", "work.completed", "work.created"])
+check("the work feature listens to what its methods say", features.describe()["work"]["listens"], ["agent.updated", "work.completed", "work.created", "work.updated"])
 r = fresh()
 work = features.FEATURES["work"]
 check("enabled by default", work.enabled(r), True)

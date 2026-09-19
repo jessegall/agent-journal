@@ -1,4 +1,3 @@
-import argparse
 import json
 import os
 import shutil
@@ -10,10 +9,10 @@ import time
 from pathlib import Path
 from urllib.request import urlopen
 
+from controllers.types import CONTROLLERS
+from engine.record import Record
+
 HERE = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(HERE))
-from controllers.types import CONTROLLERS  # noqa: E402
-from engine.record import Record  # noqa: E402
 
 COMMANDS = (("start",), ("status",), ("message", "all"), ("message", "unread"), ("todo", "all"), ("work", "all"))
 TYPES = ("message", "todo", "work", "comment", "notification", "agent", "question", "reaction")
@@ -53,39 +52,25 @@ def viewer(root: Path) -> str:
         return ""
 
 
-def main(argv: list[str]) -> int:
-    ask = argparse.ArgumentParser(description="Time what users wait on in a journal record")
-    ask.add_argument("--root", default=str(HERE / ".journal"))
-    ask.add_argument("--env", default="main")
-    ask.add_argument("--runs", type=int, default=5)
-    ask.add_argument("--url", default="")
-    ask.add_argument("--out", default="")
-    args = ask.parse_args(argv)
-    live = Path(args.root).resolve()
+def measure(live: Path, env: str, runs: int = 5, url: str = "", out: str = "") -> str:
+    live = Path(live).resolve()
     scratch = copy(live)
     rows = {}
-    record = Record(scratch, args.env)
+    record = Record(scratch, env)
     for type_ in TYPES:
         folder = record.folder(type_, CONTROLLERS[type_].resource.scope)
         count = len(list(folder.glob("[0-9][0-9][0-9].md")))
-        rows[f"list {type_} ({count})"] = timed(lambda: CONTROLLERS[type_](record).all(), args.runs)
-    for argv_ in COMMANDS:
-        rows[f"journal {' '.join(argv_)}"] = cli(scratch, args.env, argv_, args.runs)
-    rows["hook PreToolUse"] = hook(scratch, args.runs)
-    base = args.url.rstrip("/") or viewer(live)
+        rows[f"list {type_} ({count})"] = timed(lambda: CONTROLLERS[type_](record).all(), runs)
+    for argv in COMMANDS:
+        rows[f"journal {' '.join(argv)}"] = cli(scratch, env, argv, runs)
+    rows["hook PreToolUse"] = hook(scratch, runs)
+    base = url.rstrip("/") or viewer(live)
     for path in PATHS if base else ():
-        url = base + path.format(env=args.env)
-        rows[f"GET {path}"] = timed(lambda: urlopen(url, timeout=30).read(), args.runs)
+        address = base + path.format(env=env)
+        rows[f"GET {path}"] = timed(lambda: urlopen(address, timeout=30).read(), runs)
     shutil.rmtree(scratch.parent, ignore_errors=True)
-    runtime = sum(f.stat().st_size for f in (live / "runtime").rglob("*") if f.is_file())
-    rows["runtime/ MB"] = runtime / 1e6
+    rows["runtime/ MB"] = sum(f.stat().st_size for f in (live / "runtime").rglob("*") if f.is_file()) / 1e6
+    if out:
+        Path(out).write_text(json.dumps({"at": time.time(), "viewer": base, "runs": runs, "median_ms": rows}, indent=2))
     width = max(len(k) for k in rows)
-    for name, value in rows.items():
-        print(f"{name:<{width}}  {value:9.1f}")
-    if args.out:
-        Path(args.out).write_text(json.dumps({"at": time.time(), "viewer": base, "runs": args.runs, "median_ms": rows}, indent=2))
-    return 0
-
-
-if __name__ == "__main__":
-    sys.exit(main(sys.argv[1:]))
+    return "\n".join(f"{name:<{width}}  {value:9.1f}" for name, value in rows.items())

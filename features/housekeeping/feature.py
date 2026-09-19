@@ -10,6 +10,7 @@ class Housekeeping(Feature):
     abstract_ = "The runtime folder is kept small: terminal captures and logs are cut to their tail, and files of sessions gone quiet are removed"
     help_ = "Once an hour: each printed-<session> capture keeps its last 64 KB, each log its last 1 MB; trigger, gate, seat, session and capture files untouched for housekeeping.days (7) are removed."
     trigger = {"every": 60, "unit": trigger.MINUTES}
+    fixed = True
     DAYS = "days"
     days = 7
     tails = {"printed-*": 64 * 1024, "*.log": 1024 * 1024}

@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.6.0 — Housekeeping and a speed measurement, for every journal
+
+The runtime folder no longer grows without end: the housekeeping feature, always on, cuts each terminal capture to its last 64 KB and each log to its last megabyte, and removes per-session files quiet for a week (`housekeeping.days`), every hour. `journal tidy` runs it now; on this project it took runtime/ from 181 MB to 8 MB. `journal speed` prints median milliseconds for record lists, journal commands, one hook call and the viewer API, on a scratch copy of the record, to compare before and after a change. The viewer tab now opens once the agent's session has started, after any startup or resume menu.
+
+What to do about it: `journal upgrade`; the first hour of activity tidies runtime/ by itself.
+
 ## 2.5.0 — The package in .journal/src, a work log, and a compressed attic
 
 The installed code moves out of the record: `.journal/src` holds the package, and `.journal` holds the project's record plus two forwarding entrypoints (`hook.py`, `journal.py`) so hooks a running session loaded at its start keep working. Hooks, the `journal` alias and the `~/.local/bin/journal` shim point at `src/`; the shim still finds an older install. An upgrade from the old layout copies the package into `src/`, rewires the hooks (the old command is replaced, never doubled), then removes the old top-level package files.
