@@ -93,6 +93,7 @@ for name, cls in PROVIDERS.items():                       # every provider, the 
         handle(provider, root, "main", {**payload, "transcript_path": str(transcript), "hook_event_name": "Stop"})
         crew = provider.crew(transcript)
         check("codex: rollout context, skills, native subagents and yielded shells are detected", (agents.by_session("rollout").context, crew["skills"], crew["subagents"], crew["shells"]), (50.0, ["journal"], 1, 1))
+        check("codex: crew details identify the yielded shell and spawned task", (crew["shell_rows"][0]["cell"], crew["subagent_rows"][0]["task"]), ("41", "audit"))
         with transcript.open("a") as out:
             out.write(json.dumps({"type": "event_msg", "payload": {"type": "token_count", "info": {"last_token_usage": {"total_tokens": 193800}, "model_context_window": 258400}}}) + "\n")
         handle(provider, root, "main", {**payload, "transcript_path": str(transcript), "hook_event_name": "PreToolUse"})
