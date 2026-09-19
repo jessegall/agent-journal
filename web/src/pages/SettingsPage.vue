@@ -283,6 +283,7 @@ h2 {
     border-radius: 6px;
     background: var(--raised);
     color: var(--text);
+    font-size: 12px;
     text-align: right;
 }
 
