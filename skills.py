@@ -52,6 +52,9 @@ def feature_skill(f) -> str:
 def render() -> dict[str, str]:
     features.load()
     out = {"journal/SKILL.md": core()}
+    for source in sorted((HERE / "skills").glob("*.md")):
+        if source.name != "journal.md":
+            out[f"journal-{source.stem}/SKILL.md"] = source.read_text()
     for name, f in features.FEATURES.items():
         out[f"journal-{name}/SKILL.md"] = feature_skill(f)
     return out

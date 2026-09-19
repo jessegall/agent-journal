@@ -159,6 +159,13 @@ class Controller:
         r.files[source.name] = what
         return self.save(r, "updated", file=source.name, what=what)
 
+    def tag(self, n: int, name: str, tags: str) -> Resource:
+        r = self.load(n)
+        if name not in r.files:
+            raise Refused(f"{self.type} {n} has no file {name}")
+        r.files[name] = tags.strip()
+        return self.save(r, "updated", file=name, tags=tags.strip())
+
     def files(self, n: int) -> list[str]:
         return sorted(p.name for p in self.folder(n).iterdir())
 
@@ -218,7 +225,8 @@ class Controller:
     def search(self, term: str) -> list[Resource]:
         want = term.lower()
         return [r for r in self.all() if want in r.title.lower() or want in r.brief.lower() or want in r.abstract.lower()
-                or any(want in s[SECTION.title].lower() or want in s[SECTION.body].lower() for s in r.sections)]
+                or any(want in s[SECTION.title].lower() or want in s[SECTION.body].lower() for s in r.sections)
+                or any(want in name.lower() or want in str(tags).lower() for name, tags in r.files.items())]
 
     def find(self, name: str) -> Resource:
         if str(name).isdigit():

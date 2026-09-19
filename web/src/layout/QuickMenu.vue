@@ -42,7 +42,7 @@ async function setAuto(on) {
     await saveSettings(route.value.env, {features: {auto: on}});
 }
 
-const waiting = computed(() => types.value.filter((t) => t.attention).flatMap((t) => unreadByUser(t.name)));
+const highlights = computed(() => types.value.filter((t) => t.attention).flatMap((t) => unreadByUser(t.name)));
 const commands = computed(() => {
     const pages = [
         {page: "", label: "Home", icon: "home"},
@@ -51,11 +51,11 @@ const commands = computed(() => {
     const rows = pages.map((p, n) => ({label: `Go to ${p.label}`, keys: p.label, hk: String(n + 1), icon: p.icon, run: goTo(p.page)}));
     rows.push({label: "Go to Settings", keys: "settings preferences", icon: "settings", run: goTo("settings")});
     rows.push({label: "Search", keys: "search find", icon: "search", run: goTo("search")});
-    if (waiting.value.length) {
-        const first = waiting.value[0];
+    if (highlights.value.length) {
+        const first = highlights.value[0];
         rows.unshift({
-            label: `Answer the first of ${waiting.value.length} waiting on you`,
-            keys: "answer waiting",
+            label: `Open the first of ${highlights.value.length} highlights`,
+            keys: "open highlights review",
             hk: "a",
             icon: "questions",
             run: () => {

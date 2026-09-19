@@ -106,6 +106,7 @@ watch(
             <template v-if="away.open">
                 <AwayCard />
             </template>
+            <ChatWindow v-if="store.detached && !store.extension.holding && !store.extension.pending" floating />
         </div>
     </template>
 </template>

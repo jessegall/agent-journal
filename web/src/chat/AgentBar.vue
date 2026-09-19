@@ -5,8 +5,9 @@ import SwitchCase from "../kit/SwitchCase.vue";
 import {go, peek, route} from "../route.js";
 import {agent, detach, span, store} from "../store.js";
 
+const props = defineProps({standalone: Boolean});
 const open = ref("");
-const alone = window.parent !== window || new URLSearchParams(location.search).has("chat");
+const alone = computed(() => props.standalone || window.parent !== window || new URLSearchParams(location.search).has("chat"));
 const data = computed(() => (agent.value && agent.value.data.status !== "stopped" ? agent.value.data : null));
 const family = computed(() => ((data.value && data.value.model) || "").match(/opus|sonnet|haiku|gpt[-\w.]*/i));
 const name = computed(() => ({claude: "Claude Code", codex: "Codex"})[data.value && data.value.provider] || "agent");
@@ -22,6 +23,8 @@ const counts = computed(() => [
     {key: "shells", icon: "terminal", n: (data.value && data.value.shells) || 0, title: "background shells started this session", rows: []},
     {key: "subagents", icon: "agents", n: (data.value && data.value.subagents) || 0, title: "subagents dispatched this session", rows: []},
 ]);
+const skillCount = computed(() => counts.value[0]);
+const activityCounts = computed(() => counts.value.slice(1));
 const anchor = ref({left: 0, top: 0});
 function toggle(key, e) {
     open.value = open.value === key ? "" : key;
@@ -63,6 +66,24 @@ onUnmounted(() => window.removeEventListener("click", away));
                         {{ family[0].toLowerCase() }}
                     </span>
                 </template>
+                <button
+                    type="button"
+                    :class="['agent-fact', 'agent-count', 'agent-skill', {none: !skillCount.n, open: open === skillCount.key}]"
+                    :title="skillCount.title"
+                    :aria-expanded="open === skillCount.key"
+                    @click="toggle(skillCount.key, $event)"
+                >
+                    <Icon :name="skillCount.icon" />
+                    {{ skillCount.n }}
+                </button>
+                <span class="agent-fact" title="how long this session has run">
+                    <Icon name="reminders" />
+                    {{ data.started ? span(Date.now() / 1000 - data.started) : "just started" }}
+                </span>
+                <span class="agent-fact agent-context" :title="`context ${Math.round(Number(data.context || 0))}% full`">
+                    <span class="agent-context-bar"><span :style="{width: `${Math.round(Number(data.context || 0))}%`}" /></span>
+                    {{ Math.round(Number(data.context || 0)) }}%
+                </span>
                 <template v-if="data.branch && data.branch_url">
                     <a
                         class="agent-fact agent-link"
@@ -80,40 +101,32 @@ onUnmounted(() => window.removeEventListener("click", away));
                         {{ data.branch }}
                     </span>
                 </template>
-                <span class="agent-fact" title="how long this session has run">
-                    <Icon name="reminders" />
-                    {{ data.started ? span(Date.now() / 1000 - data.started) : "just started" }}
-                </span>
-                <span class="agent-fact agent-context" :title="`context ${Math.round(Number(data.context || 0))}% full`">
-                    <span class="agent-context-bar"><span :style="{width: `${Math.round(Number(data.context || 0))}%`}" /></span>
-                    {{ Math.round(Number(data.context || 0)) }}%
-                </span>
-                <template v-for="c in counts" :key="c.key">
-                    <span class="agent-facts-divider" />
-                    <button
-                        type="button"
-                        :class="['agent-fact', 'agent-count', {none: !c.n, open: open === c.key}]"
-                        :title="c.title"
-                        :aria-expanded="open === c.key"
-                        @click="toggle(c.key, $event)"
-                    >
-                        <Icon :name="c.icon" />
-                        {{ c.n }}
-                    </button>
-                </template>
             </template>
         </div>
-        <template v-if="!alone">
+        <div v-if="data" class="agent-actions">
             <button
+                v-for="c in activityCounts"
+                :key="c.key"
                 type="button"
-                :class="['agent-count', 'agent-detach', {on: store.detached}]"
+                :class="['agent-fact', 'agent-count', {none: !c.n, open: open === c.key}]"
+                :title="c.title"
+                :aria-expanded="open === c.key"
+                @click="toggle(c.key, $event)"
+            >
+                <Icon :name="c.icon" />
+                {{ c.n }}
+            </button>
+            <button
+                v-if="!alone"
+                type="button"
+                :class="['agent-fact', 'agent-count', 'agent-detach', {on: store.detached}]"
                 :title="store.detached ? 'Put the chat back on the page' : 'Detach the chat into its own window'"
                 :aria-pressed="store.detached"
                 @click="detach(!store.detached)"
             >
                 <Icon name="sidepanel" />
             </button>
-        </template>
+        </div>
         <Transition name="drop">
             <div v-if="open && data" class="bar-drop" :style="{left: `${anchor.left}px`, top: `${anchor.top}px`}">
                 <SwitchCase :value="open">
@@ -166,6 +179,16 @@ onUnmounted(() => window.removeEventListener("click", away));
     align-items: center;
     gap: 12px;
     overflow-x: auto;
+}
+
+.agent-actions {
+    flex: none;
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    margin-left: auto;
+    padding-left: 8px;
+    border-left: 1px solid var(--border);
 }
 
 .agent-facts > * {
@@ -235,20 +258,17 @@ onUnmounted(() => window.removeEventListener("click", away));
     background: var(--text-3);
 }
 
-.agent-facts-divider {
-    align-self: stretch;
-    width: 1px;
-    margin: 9px 2px;
-    background: var(--border);
-}
-
 .agent-count {
-    padding: 2px 6px;
+    padding: 2px 4px;
     border: 0;
     border-radius: 6px;
     background: none;
     color: var(--text-2);
     cursor: pointer;
+}
+
+.agent-skill {
+    margin-left: -2px;
 }
 
 .agent-count:hover,
@@ -263,7 +283,7 @@ onUnmounted(() => window.removeEventListener("click", away));
 
 .agent-detach {
     flex: none;
-    margin-left: 6px;
+    margin-left: 2px;
 }
 
 .agent-detach.on {

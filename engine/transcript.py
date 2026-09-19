@@ -1,12 +1,51 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+from datetime import datetime
 from pathlib import Path
+
+HUMAN, AGENT, TOOL = "human", "agent", "tool"
+INJECTED, TASK, PEER = "injected", "task", "peer"
+SUMMARY, SUPERSEDED = "summary", "superseded"
 
 
 @dataclass
 class Turn:
     line: int
-    who: str          # user | agent | summary
+    who: str
     text: str
+    kind: str = ""
+    at: float = 0.0
+    tools: list[str] = field(default_factory=list)
+    parent: str = ""
+    asked: list[str] = field(default_factory=list)
+    answered: list[str] = field(default_factory=list)
+
+
+def timestamp(value: str) -> float:
+    try:
+        return datetime.fromisoformat(value.replace("Z", "+00:00")).timestamp()
+    except ValueError:
+        return 0.0
+
+
+def page(turns: list[Turn], since: int = 0, before: int = 0, size: int = 300, cap: int = 20_000) -> dict:
+    kept = [turn for turn in turns if turn.line > since and (not before or turn.line < before)]
+    rows = kept[-max(1, min(size, 1000)):]
+    return {
+        "total": len(turns),
+        "first": turns[0].line if turns else 0,
+        "turns": [
+            {
+                "line": turn.line,
+                "who": turn.who,
+                "kind": turn.kind,
+                "at": turn.at,
+                "tools": turn.tools,
+                "text": turn.text[:cap],
+                "clipped": len(turn.text) > cap,
+            }
+            for turn in rows
+        ],
+    }
 
 
 def search(turns: list[Turn], term: str, page: int = 0, size: int = 25) -> list[Turn]:
@@ -25,4 +64,4 @@ def conversation(turns: list[Turn], back: int = 1) -> list[Turn]:
 
 
 def user(turns: list[Turn]) -> list[Turn]:
-    return [t for t in turns if t.who == "user"]
+    return [t for t in turns if t.who == "user" and t.kind != SUPERSEDED]

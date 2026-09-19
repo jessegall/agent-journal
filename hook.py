@@ -4,7 +4,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from engine.sessions import Sessions  # noqa: E402
+from engine.sessions import ACTIVE_ENV, Sessions  # noqa: E402
 from providers import PROVIDERS  # noqa: E402
 
 
@@ -14,6 +14,8 @@ def default_env(root: Path) -> str:
 
 
 def main(argv: list[str]) -> int:
+    if os.environ.get(ACTIVE_ENV) != "1":
+        return 0
     provider = PROVIDERS[argv[0]]()
     root = Path(argv[1])
     try:

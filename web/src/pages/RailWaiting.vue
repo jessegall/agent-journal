@@ -29,7 +29,7 @@ async function dismiss(r) {
     <template v-if="!cards.length">
         <div class="home-rail-empty">
             <Icon name="todos" />
-            <p>Nothing is waiting on you.</p>
+            <p>No highlights to review.</p>
         </div>
     </template>
     <template v-else>

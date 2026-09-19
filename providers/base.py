@@ -9,11 +9,14 @@ from controllers.types import Agents, Nudges
 from engine.actors import COMPACTING, IDLE, STOPPED, WORKING
 from engine.record import Record
 from engine.transcript import Turn
+from features.auto.policy import refusal as auto_refusal
+from features.law.policy import refusal as law_refusal
 from resources.base import AGENT, SYSTEM
 from resources.types import AgentRow, COMMAND, RUNNING
 
 STATUS = {"SessionStart": IDLE, "Stop": IDLE, "UserPromptSubmit": WORKING, "PreToolUse": WORKING,
-          "PostToolUse": WORKING, "PreCompact": COMPACTING, "SessionEnd": STOPPED}
+          "PostToolUse": WORKING, "PreCompact": COMPACTING, "SubagentStart": WORKING,
+          "SubagentStop": WORKING, "SessionEnd": STOPPED}
 EVENTS = tuple(STATUS)
 WRITES = ("Edit", "Write", "MultiEdit", "NotebookEdit")
 WRITING_COMMANDS = re.compile(r"(^|[;&|]\s*)(rm|mv|cp|git (commit|push|rm|mv)|sed -i|tee|touch|mkdir|npm install|pip install)\b|(?<![\d&])>>?\s*(?!/dev/null|&)\S")
@@ -45,16 +48,22 @@ class Provider(ABC):
         event = payload.get("hook_event_name") or ""
         if event not in STATUS or (root / "runtime" / "off").is_file():
             return {}
-        agents = Agents(Record(root, env), actor=SYSTEM)
+        record = Record(root, env)
+        agents = Agents(record, actor=SYSTEM)
         row = agents.by_session(self.session_of(payload))
         uses = int(row.uses or 0) + (event == "PreToolUse")
         context = self.context(payload)
         agents.update(row.n, status=STATUS[event], event=event, tool=payload.get("tool_name") or "", **self.shell(row, event, payload),
+                      **self.telemetry(row, event, payload),
                       file=str((payload.get("tool_input") or {}).get("file_path") or ""), wrote=event == "PostToolUse" and self.writes(payload),
                       cwd=str(payload.get("cwd") or row.cwd or ""),
                       at=time.time(), provider=self.name, uses=uses, transcript=str(payload.get("transcript_path") or row.transcript or ""),
                       model=self.model(payload) or row.model or "", started=row.started or time.time(),
                       context=row.context or 0 if context is None else context)
+        if event == "PreToolUse" and (why := auto_refusal(record, payload.get("tool_name") or "")):
+            return self.refusal(why)
+        if event == "PreToolUse" and (why := law_refusal(self.name, payload)):
+            return self.refusal(why)
         if event == "PreToolUse" and self.writes(payload):
             return self.refusal(self.gate(root, env, row.title))
         if event == "SessionStart":
@@ -97,9 +106,12 @@ class Provider(ABC):
     def shell(self, row, event: str, payload: dict) -> dict:
         command = str((payload.get("tool_input") or {}).get("command") or "").strip()[:400]
         running = dict(row.running)
+        if event == "UserPromptSubmit":
+            return {AgentRow.running: {}, AgentRow.commands: list(row.commands)}
         if event == "PreToolUse" and command:
             now = time.time()
-            running = {RUNNING.what: command, RUNNING.at: now}
+            changed = running.get(RUNNING.changed)
+            running = {RUNNING.what: command, RUNNING.at: now, **({RUNNING.changed: changed} if changed else {})}
             return {AgentRow.running: running, AgentRow.commands: (list(row.commands) + [{COMMAND.what: command, COMMAND.at: now}])[-RING:]}
         if running and not running.get(RUNNING.done):
             running[RUNNING.done] = time.time()
@@ -110,6 +122,9 @@ class Provider(ABC):
 
     def context(self, payload: dict) -> float | None:
         return None
+
+    def telemetry(self, row, event: str, payload: dict) -> dict:
+        return {}
 
     def model(self, payload: dict) -> str:
         return str(payload.get("model") or "")
@@ -127,6 +142,9 @@ class Provider(ABC):
                 continue
             if turn:
                 turns.append(Turn(i, *turn))
+        return self.refine(turns)
+
+    def refine(self, turns: list[Turn]) -> list[Turn]:
         return turns
 
     def turn(self, row: dict) -> tuple[str, str] | None:

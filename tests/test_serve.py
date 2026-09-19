@@ -7,6 +7,7 @@ import urllib.request
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from engine.viewer import running  # noqa: E402
 from resources.base import ACTIONS, VIEWS  # noqa: E402
 from resources.types import TYPES  # noqa: E402
 from serve import serve  # noqa: E402
@@ -19,6 +20,7 @@ server = serve(root, 0)
 port = server.server_address[1]
 threading.Thread(target=server.serve_forever, daemon=True).start()
 base = f"http://127.0.0.1:{port}"
+check("the live viewer records its actual URL", running(root), f"{base}/")
 
 
 def call(method, path, body=None):
@@ -46,19 +48,19 @@ for type_ in TYPES:                                                   # every ty
     check(f"{type_}: create", (code, made["n"], made["type"], made["seen"]), (201, first, type_, ["user"]))
     code, rows = call("GET", f"/api/main/{type_}")
     check(f"{type_}: list", (code, [r["title"] for r in rows][-1:]), (200, [f"a {type_}"]))
-    code, one = call("GET", f"/api/main/{type_}/1")
-    check(f"{type_}: show", (code, one["ref"]), (200, f"{type_}:1"))
+    code, one = call("GET", f"/api/main/{type_}/{first}")
+    check(f"{type_}: show", (code, one["ref"]), (200, f"{type_}:{first}"))
+    code, got = call("POST", f"/api/main/{type_}/{first}/link", {"ref": "todo:9"})
+    check(f"{type_}: link", (code, got["refs"]), (200, ["todo:9"]))
     finish = TYPES[type_].names.get("complete", "complete")
-    code, got = call("POST", f"/api/main/{type_}/1/{finish}", {"how": "over"})
-    check(f"{type_}: the type's own name for complete works ({finish})", (code, got["completed"] > 0), (200, True))
-    code, got = call("POST", f"/api/main/{type_}/1/complete")
+    code, got = call("POST", f"/api/main/{type_}/{first}/{finish}", {"how": "over"})
+    check(f"{type_}: the type's own name for complete works ({finish})", (code, "removed" in got if type_ == "environment" else got["completed"] > 0), (200, True))
+    code, got = call("POST", f"/api/main/{type_}/{first}/complete")
     renamed = "complete" in TYPES[type_].names
     check(f"{type_}: the default name {'names the right word' if renamed else 'is the same act, already done'}",
           (code, ("calls that" in got["error"]) if renamed else ("already" in got["error"])), (400, True))
     code, got = call("POST", f"/api/main/{type_}", {"title": "bad: colon"})
     check(f"{type_}: the title rule holds over HTTP", (code, "colon" in got["error"]), (400, True))
-    code, got = call("POST", f"/api/main/{type_}/1/link", {"ref": "todo:9"})
-    check(f"{type_}: link", (code, got["refs"]), (200, ["todo:9"]))
 
 code, got = call("GET", "/api/main/nothing")
 check("an unknown type is a 404", code, 404)
@@ -72,6 +74,10 @@ check("settings are written and read back", (got["features"]["auto"], got["keep"
 code, got = call("GET", "/api/main/search?q=a%20todo")
 check("search spans every type", (code, sorted({r["type"] for r in got}) == ["todo"] and len(got) >= 1), (200, True))
 check("no term: nothing", call("GET", "/api/main/search")[1], [])
+call("POST", "/api/main/notification", {"title": "one unread", "actor": "agent"})
+call("POST", "/api/main/notification", {"title": "two unread", "actor": "agent"})
+code, got = call("POST", "/api/main/notification/read-all", {"numbers": [2, 3]})
+check("one bulk request marks many rows read", (code, [r["seen"] for r in got]), (200, [["agent", "user"], ["agent", "user"]]))
 import tempfile  # noqa: E402
 shot = Path(tempfile.mkdtemp()) / "shot.png"
 shot.write_bytes(b"\x89PNG")
@@ -80,6 +86,14 @@ req = urllib.request.Request(base + "/api/main/todo/1/files/shot.png")
 with urllib.request.urlopen(req) as r:
     check("a resource's file is served with its type", (r.status, r.headers["Content-Type"], r.read()), (200, "image/png", b"\x89PNG"))
 check("a missing file is a 404", call("GET", "/api/main/todo/1/files/none.png")[0], 404)
+
+transcript = Path(tempfile.mkdtemp()) / "rollout.jsonl"
+transcript.write_text("\n".join(json.dumps({"type": "response_item", "payload": {"type": "message", "role": "assistant", "content": [{"type": "output_text", "text": text}]}}) for text in ("one", "two", "three")) + "\n")
+code, agent = call("POST", "/api/main/agent", {"title": "transcript-agent", "provider": "codex", "transcript": str(transcript)})
+code, latest = call("GET", f"/api/main/agent/{agent['n']}/transcript?last=2")
+code, earlier = call("GET", f"/api/main/agent/{agent['n']}/transcript?before={latest['turns'][0]['line']}&last=2")
+check("an agent transcript pages newest first with stable source lines", (code, latest["total"], [t["text"] for t in latest["turns"]], [t["text"] for t in earlier["turns"]]),
+      (200, 3, ["two", "three"], ["one"]))
 
 # AN UPLOAD: a multipart body lands as the resource's files
 boundary = b"xx1234"

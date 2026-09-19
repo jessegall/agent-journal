@@ -1,10 +1,12 @@
 import json
 import re
 import time
+from datetime import datetime
 from pathlib import Path
 
-from controllers.types import Agents
+from controllers.types import Agents, Works
 from engine.record import Record
+from engine.viewer import running
 from resources.base import SYSTEM
 
 ROWS = 4
@@ -14,7 +16,7 @@ BRIGHT = f"{ESC}[38;2;230;231;234m"
 ACCENT = f"{ESC}[38;2;163;168;240m"
 DIM = f"{ESC}[38;2;131;134;142m"
 RESET = f"{ESC}[0m"
-STATES = {"idle": "●", "working": "◐", "waiting": "◔", "stopped": "○"}
+STATES = {"idle": "●", "busy": "◐", "working": "◐", "compacting": "◔", "stopped": "○"}
 BRAND = "JOURNAL"
 GRADIENT = ((36, 38, 78), (94, 99, 222), (36, 38, 78))
 
@@ -65,6 +67,8 @@ class Band:
     def __init__(self, root: Path, env: str, session: str, project: str):
         self.root, self.env, self.session, self.project = root, env, session, project
         self.shown = b""
+        self.url = ""
+        self.url_at = 0.0
 
     def seat(self) -> dict:
         try:
@@ -72,20 +76,37 @@ class Band:
         except (OSError, ValueError):
             return {}
 
-    def agent(self) -> dict:
-        record = Record(self.root, self.seat().get("env") or self.env)
+    def agent(self, seat: dict) -> dict:
+        if seat.get("report"):
+            return seat["report"]
+        record = Record(self.root, seat.get("env") or self.env)
         rows = [r for r in Agents(record, actor=SYSTEM).all() if r.event]
         rows.sort(key=lambda r: float(r.at or 0))
         return {"title": rows[-1].title, **rows[-1].data} if rows else {}
 
+    def viewer(self) -> str:
+        if not self.url or time.time() - self.url_at >= 10:
+            self.url = running(self.root) or self.url
+            self.url_at = time.time()
+        return self.url or "viewer unavailable"
+
+    def activity(self, record: Record, agent: dict) -> str:
+        active = agent.get("running") or {}
+        if active and not active.get("done"):
+            return str(active.get("what") or "")
+        work = [row for row in Works(record, actor=SYSTEM).all() if not row.completed]
+        return f"work {work[-1].n} {work[-1].title}" if work else "no open work"
+
     def lines(self, cols: int) -> list[str]:
-        seat, agent = self.seat(), self.agent()
+        seat = self.seat()
+        agent = self.agent(seat)
         state = seat.get("state") or agent.get("status") or "stopped"
         mark = STATES.get(state, "○")
         env = seat.get("env") or self.env
-        facts = f"{BRIGHT}{self.project}{DIM} · environment {BRIGHT}{env}"
+        record = Record(self.root, env)
+        facts = f"{BRIGHT}{self.project}{DIM} · {BRIGHT}{env}{DIM} · {ACCENT}{self.viewer()}{DIM} · {datetime.now().strftime('%H:%M:%S')}"
         status = (f"{ACCENT}{mark} {BRIGHT}{state}{DIM}  {agent.get('model') or agent.get('provider') or '—'} · {agent.get('title', '')[:8]}"
-                  f" · up {since(float(agent.get('started') or 0))} · context {round(float(agent.get('context') or 0))}%")
+                  f" · up {since(float(agent.get('started') or 0))} · context {round(float(agent.get('context') or 0))}% · {self.activity(record, agent)}")
         rule = f"{ESC}[38;2;47;49;54m{'─' * cols}"
         return [self.banner(env, cols)] + [self.fit(line, cols) for line in (facts, status, rule)]
 

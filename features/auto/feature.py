@@ -7,7 +7,7 @@ class Auto(Feature):
     name = "auto"
     title_ = "Auto mode"
     abstract_ = "The next ready row, by priority, offered on idle while nothing is open"
-    help_ = "Off by default: enabling it is the user's word to work the list. A row is ready when it is not blocked, waits on no open row or question, and its plan's phase is current."
+    help_ = "Off by default: enabling it is the user's word to work the list and decide without blocking questions. A row is ready when it is not blocked, waits on no open row or question, and its plan's phase is current. Questions only the user can answer go through the journal so work can continue."
     trigger = {"on": trigger.IDLE}
     default = False
 

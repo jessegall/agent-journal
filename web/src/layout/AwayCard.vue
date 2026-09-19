@@ -55,7 +55,7 @@ onUnmounted(() => window.removeEventListener("keydown", onEscape));
             </template>
         </div>
         <div class="away-foot">
-            <span>{{ waiting ? `${waiting} waiting on you` : "Nothing waiting on you" }}</span>
+            <span>{{ waiting ? `${waiting} highlight${waiting === 1 ? "" : "s"} to review` : "No highlights to review" }}</span>
             <button type="button" class="away-go" @click="toInbox">Open the chat</button>
         </div>
     </div>

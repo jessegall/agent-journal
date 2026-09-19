@@ -2,13 +2,13 @@ import time
 from abc import ABC, abstractmethod
 from pathlib import Path
 
-from controllers.types import Agents, CONTROLLERS, Notifications
+from controllers.types import Agents, CONTROLLERS, Notifications, Works
 from engine.record import Record
 from resources.base import AGENT, SYSTEM, USER, Event
 from resources.types import AgentRow, TYPES
 
-STOPPED, IDLE, WORKING, WAITING, COMPACTING = "stopped", "idle", "working", "waiting", "compacting"
-STATES = (STOPPED, IDLE, WORKING, WAITING, COMPACTING)
+STOPPED, IDLE, BUSY, WORKING, COMPACTING = "stopped", "idle", "busy", "working", "compacting"
+STATES = (STOPPED, IDLE, BUSY, WORKING, COMPACTING)
 BATCH = {"quiet": 5.0, "size": 10}
 
 
@@ -99,17 +99,18 @@ class Agent(Actor):
         last = self.driver.last_report()
         quiet = self.driver.quiet_for()
         if last is None:
-            return IDLE if quiet >= self.driver.QUIET else WORKING
+            return IDLE if quiet >= self.driver.QUIET else self.active()
         status = last.status or ""
         if status == STOPPED:
             return STOPPED
         if status == IDLE:
-            return IDLE if quiet >= 1.0 else WORKING
+            return IDLE if quiet >= 1.0 else self.active()
         if status == COMPACTING:
             return COMPACTING
-        if last.event == "PreToolUse" and quiet >= 5.0:
-            return WAITING
-        return WORKING
+        return self.active()
+
+    def active(self) -> str:
+        return WORKING if any(not row.completed for row in Works(self.record, actor=SYSTEM).all()) else BUSY
 
     def mark(self, status: str, event: str, **more) -> None:
         agents = Agents(self.record, actor=SYSTEM)
@@ -122,9 +123,5 @@ class Agent(Actor):
 
     def is_working(self) -> bool:
         return self.state() == WORKING
-
-    def is_waiting(self) -> bool:
-        return self.state() == WAITING
-
 
 ACTORS = {USER: User, AGENT: Agent, SYSTEM: System}

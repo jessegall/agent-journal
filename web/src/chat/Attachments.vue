@@ -8,10 +8,14 @@ import {openPictures} from "../store.js";
 const props = defineProps({resource: Object});
 const emit = defineEmits(["grew"]);
 const picture = (name) => /\.(png|jpe?g|gif|webp)$/i.test(name);
+const video = (name) => /\.(mp4|m4v|mov|webm|ogv)$/i.test(name);
 const url = (name) => fileUrl(route.value.env, props.resource.type, props.resource.n, name);
-const names = computed(() => Object.keys(props.resource.data.files || {}));
-const pictures = computed(() => names.value.filter(picture).map((name) => ({name, url: url(name)})));
-const others = computed(() => names.value.filter((name) => !picture(name)));
+const files = computed(() => props.resource.data.files || {});
+const names = computed(() => Object.keys(files.value));
+const derived = (name) => String(files.value[name] || "").startsWith("video frame from ");
+const pictures = computed(() => names.value.filter((name) => picture(name) && !derived(name)).map((name) => ({name, url: url(name)})));
+const videos = computed(() => names.value.filter(video));
+const others = computed(() => names.value.filter((name) => !picture(name) && !video(name)));
 const grid = computed(() => pictures.value.length > 1);
 </script>
 
@@ -40,6 +44,12 @@ const grid = computed(() => pictures.value.length > 1);
                     <img class="thread-image" :src="p.url" :alt="p.name" @load="emit('grew')" />
                 </a>
             </template>
+        </template>
+        <template v-for="name in videos" :key="name">
+            <video class="thread-video" controls preload="metadata" @loadedmetadata="emit('grew')">
+                <source :src="url(name)" />
+                <a :href="url(name)" target="_blank">{{ name }}</a>
+            </video>
         </template>
         <template v-for="name in others" :key="name">
             <a class="thread-file" :href="url(name)" target="_blank" :title="name">
@@ -111,6 +121,15 @@ const grid = computed(() => pictures.value.length > 1);
     max-height: 320px;
     border-radius: 7px;
     border: 1px solid var(--border);
+}
+
+.thread-video {
+    display: block;
+    width: 100%;
+    max-height: 360px;
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    background: #000;
 }
 
 .thread-file-name {

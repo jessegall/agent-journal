@@ -123,7 +123,16 @@ function withoutScripts(command) {
     const lines = String(command || "").split("\n");
     const kept = [];
     let end = "";
+    let patch = false;
     for (const line of lines) {
+        if (line.trim() === "*** Begin Patch") {
+            patch = true;
+            continue;
+        }
+        if (patch) {
+            if (line.trim() === "*** End Patch") patch = false;
+            continue;
+        }
         if (end) {
             if (line.trim() === end) end = "";
             continue;
@@ -165,4 +174,12 @@ export function gist(command, translate) {
         kept.unshift(real[i]);
     }
     return kept.join(" · ");
+}
+
+export function gistTokens(text) {
+    const tokens = String(text || "")
+        .split(/\s+/)
+        .filter(Boolean);
+    const command = SUBVERBS.has(tokens[0]) ? 2 : 1;
+    return tokens.map((value, i) => ({value, kind: i < command ? "command" : "argument"}));
 }

@@ -11,6 +11,21 @@ const IDLE = 10000;
 const scroller = ref(null);
 const quote = ref({text: "", ref: ""});
 const editing = ref(null);
+const chatOnly = new URLSearchParams(location.search).has("chat");
+const pageTools = chatOnly
+    ? [
+          {icon: "crosshair", title: "Point at an element on the page", go: () => point("point")},
+          {icon: "camera", title: "Send a picture of an element on the page", go: () => point("shot")},
+      ]
+    : [];
+const composeTools = [
+    {icon: "pins", title: "Pin this text over the chat", text: true, consume: true, go: (text) => pin(text)},
+    ...pageTools,
+];
+
+function point(kind) {
+    window.postMessage({source: "journal-page", kind}, window.location.origin);
+}
 const mine = computed(() => rows("message").filter((m) => !m.deleted && m.seen[0] === "user" && !m.seen.includes("agent")));
 
 function editLast() {
@@ -126,9 +141,8 @@ async function post(text, files) {
         return;
     }
     const body = withQuote(quote.value.text, text);
-    const title = body.split("\n").find((l) => l && !l.startsWith(">")) || body;
     const message = await create(route.value.env, "message", {
-        title: title.replace(/:/g, " -").slice(0, 80),
+        title: titled(body),
         brief: body,
         about: quote.value.ref || undefined,
     });
@@ -137,6 +151,15 @@ async function post(text, files) {
     await reload();
     await nextTick();
     toBottom();
+}
+
+function titled(text) {
+    const line = text.split("\n").find((part) => part.trim() && !part.startsWith(">")) || text;
+    return line.replace(/:/g, " -").replace(/\s+/g, " ").trim().slice(0, 80);
+}
+
+async function pin(text, about = "") {
+    await create(route.value.env, "notice", {title: titled(text), about: about || undefined});
 }
 
 async function upload(n, file) {
@@ -204,6 +227,7 @@ watch(
                 :preset="editing ? editing.text : ''"
                 :up="editLast"
                 :down="unedit"
+                :tools="composeTools"
             />
         </div>
         <template v-if="!ready">
@@ -231,7 +255,15 @@ watch(
                 <p class="thread-empty">Nothing has been said here yet.</p>
             </template>
             <TransitionGroup :name="settledOnce ? 'turn' : ''">
-                <Turn v-for="t in turns" :key="t.ref" :turn="t" @reply="quote = $event" @edit="editing = $event" @grew="settled" />
+                <Turn
+                    v-for="t in turns"
+                    :key="t.ref"
+                    :turn="t"
+                    @reply="quote = $event"
+                    @edit="editing = $event"
+                    @pin="pin($event.text, $event.ref)"
+                    @grew="settled"
+                />
             </TransitionGroup>
         </div>
     </div>
@@ -330,11 +362,15 @@ watch(
 }
 
 .thread-turn.busy {
+    position: absolute;
+    left: var(--home-gutter);
+    bottom: calc(100% + 4px);
+    z-index: 2;
     display: flex;
     flex-direction: column;
     gap: 3px;
     max-width: max-content;
-    margin: 0 0 6px;
+    pointer-events: none;
 }
 
 .rise-enter-from.thread-turn.busy,

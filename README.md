@@ -1,105 +1,135 @@
 # agent-journal
 
-A journal for AI coding agents working in your project, built for Claude Code.
+A project journal and live viewer for Claude Code and Codex.
 
-When you work with a coding agent for hours or days, things get lost: the context is
-compacted into a summary, the session ends, and the next one starts with nothing. This
-gives the agent a journal inside your repository — what it is working on, what it put off,
-what was decided — and hands it back to every session. Plain files in your repo, so you can
-read them, edit them and commit them with your project.
+Long agent sessions lose decisions when context is compacted, a terminal closes, or another
+session takes over. Agent Journal keeps the durable state beside your project: current work,
+to-dos, messages, rules, pins, reminders, plans, reports, docs, and the history connecting
+them. Every new session receives the part it needs, while the full record stays readable in
+plain files and in the browser.
+
+The current package is 2.2.1. Claude and Codex use the same record, engine, viewer, and command
+line.
 
 ## Install
 
-In the root of your project, with `git` and `python3` available:
+From the root of your project, with `git` and `python3` available:
 
     curl -fsSL https://raw.githubusercontent.com/jessegall/agent-journal/main/install.sh | sh
 
-This copies the package into `.journal/`, wires the hooks into `.claude/settings.json` (and
-`.codex/hooks.json`) next to anything already there, writes the agent's skills, puts a
-`journal` command in `~/.local/bin`, and runs the migrations — an older record is carried
-across with every number kept. Running it again, or `journal upgrade`, upgrades.
+The installer copies the package into `.journal/`, preserves the project record on upgrades,
+wires each agent it finds, writes that agent's generated journal skills, installs a `journal`
+shim in `~/.local/bin` when that directory exists, injects the journal's immutable dispatch law
+into `CLAUDE.md` and `AGENTS.md`, and runs migrations. Run the installer again, or use
+`journal upgrade`, to update an existing installation.
 
-## Start the agent
+Claude hooks live beside existing settings in `.claude/settings.json`; Codex hooks live in
+`.codex/hooks.json`. Hooks contain no journal decisions: they report activity and enforce the
+write gate. Features in the engine decide what the agent should hear.
+
+## Start Claude or Codex
 
     journal claude
-
-**This is the command to run.** It starts Claude Code under the journal's supervisor: an
-engine beside the terminal reads the record and types one line into the agent while it is
-idle — a message you left, an answer, a reminder, the next to-do under auto mode — in a
-tiny vocabulary the agent's skill explains. `journal serve` brings the web interface up.
-
-It takes what `claude` takes: `journal claude --continue`, `journal claude --resume=<id>`,
-or a first prompt in quotes.
-
     journal codex
 
-**The same for Codex.** Claude and Codex are two drivers behind one interface; the hooks of
-each are wired into its own config, and the engine treats them alike.
+These launch the chosen agent under the same supervisor. Arguments after the driver name pass
+through unchanged, so commands such as `journal claude --continue` and a quoted first prompt
+still work.
 
-**Hooks report, the engine decides.** The hooks only write the agent's status — idle,
-working, waiting, its tool uses, its context — and refuse a write while no work is open.
-Everything else is a feature in the engine: reminders said again on idle, rules and pins at
-every tenth of the context, a decision demanded at each mark of the window, the next row
-offered under auto mode, an untagged reply named once. Every feature is a switch in the
-viewer's Settings and its cadence a setting; a silent agent is probed with one Ctrl-C after
-two minutes.
+The installed hooks are inert in standalone Claude and Codex sessions. The launcher marks only
+the agent process it starts, and hooks return immediately when that mark is absent.
 
-## The web interface
+The launcher:
 
-`journal claude` starts it; `journal serve` starts one on its own.
+- binds the session to the current environment, `main` by default;
+- starts this project's viewer on an available local port and opens it in the browser;
+- runs the journal engine beside the agent and delivers messages while the agent is idle;
+- keeps a live terminal band showing the agent, environment, state, context, active work or
+  command, current time, and the clickable viewer URL.
 
-The home is a conversation. Everything the agent says to you and everything you say back is
-one thread — you write to it from the box at the bottom and it is told at its next stop.
-What the agent *did* stays in the Activity column beside it. What is waiting on you sits in
-a rail: a question to answer in place, a report to read, work the agent set aside because it
-cannot go on without you. Clicking one moves the thread to the turn that raised it.
+Use `journal serve` to run only the viewer. Use `journal status` to see the record's current
+counts, and `journal verify` to check hooks, engine, viewer, and this session's latest report.
 
-Everything else in the journal has a page there too — the to-dos, the docs, the pins, the
-plans — and opening one from anywhere else swaps it in over what you were reading, rather
-than taking you away from it.
+## The viewer
 
-## What it does to your session
+Home is a conversation with the active agent. Messages, answers, reactions, and receipts share
+one thread. The rail keeps questions, reports, notifications, and to-dos within reach; Activity
+shows what changed while the agent worked. A notice can stay pinned above the chat, and any turn
+or unsent composer text can become one.
 
-These are mechanisms, not suggestions, and they are why the agent behaves differently:
+Environment pages contain the work that belongs to one line of effort: to-dos, work, plans,
+reports, pins, reminders, and settings. Project pages contain rules, docs, tools, connections,
+coding styles, and Skills. The Skills page shows every Claude and Codex skill, whether it is loaded or stale,
+and lets you ask the agent to load it now or at every start. Search covers the record; Files
+collects attachments. The viewer creates, assigns, and removes environments without deleting
+their record; the CLI also renames and moves them.
 
-- **An edit with nothing declared is refused.** The agent says what it is working on before
-  it changes a file.
-- **Work deferred in words is named back.** If it tells you "I'll do that after this" and files
-  nothing, the engine says so at its next idle moment.
-- **A context mark demands a decision.** At 50, 70, 90 and 95 percent of the window (a
-  setting), writes are held until the agent has pinned what must survive — or said, with a
-  reason, that nothing needs pinning.
-- **A reminder is repeated.** Not once at the start, where it is read and then drifted from:
-  at every idle moment (or every N tool uses, or every N percent — a setting), for as long as
-  it stands.
-- **A session starts on no environment.** An environment is a line of work with its own
-  pins, to-dos and reminders. There is no default one: the agent picks, or asks.
+The viewer is live: controller writes made by the CLI, an agent, or another open tab arrive over
+the same event stream. Resource inspectors open over the current page, so following a link does
+not discard where you were.
 
-`journal` on its own shows where things stand.
+## What changes in an agent session
 
-## The tags you will see
+These are engine-backed mechanisms, not prompt suggestions:
 
-Every message the agent writes starts with a tag. That is the journal at work, not the
-agent being odd — the tag is part of the message, so it lands in the transcript, where what
-mattered can be found again without anyone filing anything.
+- A file write with no declared work is refused. Start a row with `journal todo start <n>`, or
+  declare standalone work with `journal work start "..."`.
+- Putting work off in prose without filing a to-do is named back to the agent.
+- At 50, 70, 90, and 95 percent of the context window, writes wait for a decision: create a pin,
+  create a project-wide rule, or run `journal nothing "<why>"`.
+- Pins and rules are repeated as context fills. Selected rules can also be kept in `CLAUDE.md`,
+  `AGENTS.md`, or both from their viewer controls.
+- Standing reminders return when the agent comes to rest after work.
+- Auto mode is off by default. When enabled in Settings, the next ready to-do is offered whenever
+  no work is open. The launcher also selects the provider's automatic approval mode and refuses
+  blocking question tools; questions only the user can answer are filed in the journal while the
+  agent continues with other ready work.
+- Hooks only report status or refuse an unscoped write. Work selection, reminders, retention,
+  context decisions, messages, and every other behavior belong to switchable engine features.
 
-    [!discovery]    something real it did not know: a cause, a constraint, a measurement
-    [!correction]   something it had wrong is now right
-    [!blocked]      it cannot proceed, and says on what
-    [!info]         something happening that is not work progress: an agent started, a build running
-    [!reply]        a plain answer to what you asked; routine, and skipped when reading back
+An environment is one line of work with its own messages, to-dos, pins, plans, and settings. A
+rule and a doc are project-wide. The viewer can bind an idle session to another environment; an
+agent never changes branches or environments on its own.
 
-## Point at what you mean
+## Message tags
 
-There is a Chrome extension in `extension/` — the journal's viewer hands it out from its Settings
-page, or you can load the folder directly. With it, **Alt+P** puts a crosshair on any page: click an
-element and the agent is told what you pointed at — the selector, the page, the element's text, and
-a picture of it. **Alt+J** opens the chat as a window over whatever you are looking at.
+Every agent reply begins with one searchable tag:
 
-## Everything else
+    [!discovery]    a cause, constraint, result, or measurement it found
+    [!correction]   something it had wrong and has now corrected
+    [!blocked]      something external prevents progress
+    [!info]         useful state that is not a work result
+    [!reply]        a direct answer
 
-Every command is a noun and a word: `journal todo add "…"`, `journal question answer 3 --how "…"`,
-`journal plan continue 1`. `journal --help` lists the nouns, `journal <noun> --help` the words;
-the agent's `journal` skill carries the same reference, generated from the package.
+The tag stays in the transcript, so important turns remain findable without turning every line
+into a permanent record resource.
 
-To update: `journal upgrade`. Its changes are in [CHANGELOG.md](CHANGELOG.md).
+## Chrome extension
+
+Settings serves a version-matched extension zip. Download it, unpack it, and load the folder from
+Chrome's extension page. The same chat can then float over the viewer or follow you to other tabs;
+its bar can be dragged, its corner resized, and its journal and environment switched in place.
+
+With the extension active, **Alt+J** opens the floating chat and **Alt+P** lets you point at a page
+element. The composer can also select an element, take a picture, or let the agent drive the tab
+while you explicitly leave it at the wheel.
+
+## Commands
+
+Every record command is a noun and a word:
+
+    journal todo add "write the release notes" --brief "What belongs in them and where to start"
+    journal todo start 12
+    journal work update 18 --brief "The migration is halfway through"
+    journal work end 18 --how "The migration landed"
+    journal todo done 12 --how "Published with the release"
+    journal question ask "Which name should the release use?"
+    journal question answer 3 --how "Aurora"
+    journal rule inject 4 --into codex
+    journal plan continue 1
+
+`journal --help` lists top-level commands. `journal <noun> --help` lists the words for a resource,
+and `journal help <word>` prints focused help. The generated `journal` skill carries the same
+reference for each agent.
+
+Upgrade with `journal upgrade`. Release history is in [CHANGELOG.md](CHANGELOG.md).

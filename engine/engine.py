@@ -6,7 +6,7 @@ from pathlib import Path
 from controllers.types import CONTROLLERS
 import features
 from engine import bus
-from engine.actors import Actor, Agent, IDLE, STOPPED, System, User, WAITING, WORKING
+from engine.actors import Actor, Agent, BUSY, IDLE, STOPPED, System, User, WORKING
 from engine.record import Record
 from engine.sessions import Sessions
 from providers import PROVIDERS
@@ -101,7 +101,7 @@ class Engine:
                 return "probe: nothing came back, stopped"
             self.probed_at = 0.0
             return "probe: working"
-        if silent and self.agent.state() in (WORKING, WAITING):
+        if silent and self.agent.state() in (BUSY, WORKING):
             driver.interrupt()
             self.probed_at = time.time()
             return "silent for two minutes: probing with Ctrl-C"
@@ -188,10 +188,12 @@ class Engine:
     def seat(self) -> None:
         self.branch()
         self.crew()
+        last = self.agent.driver.last_report()
         f = self.record.root / "runtime" / f"seat-{self.agent.driver.session}.json"
         f.parent.mkdir(parents=True, exist_ok=True)
         f.write_text(json.dumps({"at": time.time(), "agent": self.agent.driver.name, "state": self.agent.state(), "env": self.record.env,
-                                 "why": self.why, "printed": self.agent.driver.last_printed()}))
+                                 "why": self.why, "printed": self.agent.driver.last_printed(),
+                                 "report": {"title": last.title, **last.data} if last else {}}))
 
     def run(self) -> None:
         self.start()

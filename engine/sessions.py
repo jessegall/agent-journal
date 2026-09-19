@@ -7,6 +7,7 @@ from resources.types import TYPES
 
 
 RECENT = 600.0
+ACTIVE_ENV = "AGENT_JOURNAL_ACTIVE"
 
 
 def alive(pid: int) -> bool:

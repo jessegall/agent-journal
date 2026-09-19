@@ -131,6 +131,8 @@ class Works(Controller):
     def create(self, title: str, abstract: str = "", brief: str = "", **data):
         if data.get(types.Work.todo):
             row = Todos(self.record, actor=self.actor).load(int(data[types.Work.todo]))
+            if row.completed:
+                raise Refused(f"todo {row.n} is already done")
             held = row.assigned or ""
             if held and held != self.agent:
                 raise Refused(f"todo {row.n} is assigned to {held}; nobody else may take it")
@@ -272,11 +274,24 @@ class Pins(Controller):
 class Rules(Controller):
     resource = types.Rule
 
-    def inject(self, n: int):
-        return self.update(n, injected=True)
+    def inject(self, n: int, into: str = "claude"):
+        return self._injection(n, into, True)
 
-    def uninject(self, n: int):
-        return self.update(n, injected=False)
+    def uninject(self, n: int, into: str = "claude"):
+        return self._injection(n, into, False)
+
+    def pin(self, n: int):
+        rule = self.load(n)
+        notices = Notices(self.record, actor=self.actor)
+        standing = [notice for notice in notices.linked_to(rule.ref) if not notice.completed]
+        return standing[0] if standing else notices.create(rule.title, about=rule.ref, link=f"#/{self.record.env}/rule/{n}", label="Open rule")
+
+    def _injection(self, n: int, into: str, value: bool):
+        fields = {"claude": {"injected": value}, "codex": {"injected_codex": value},
+                  "both": {"injected": value, "injected_codex": value}}
+        if into not in fields:
+            raise Refused("a rule is injected into claude, codex or both")
+        return self.update(n, **fields[into])
 
 
 class Reminders(Controller):
@@ -401,7 +416,7 @@ class Environments(Controller):
         env = self.load(n)
         record = Record(self.record.root, env.title)
         held = {t: len([r for r in CONTROLLERS[t](record, actor=SYSTEM).all() if not r.completed]) for t in ("todo", "pin", "reminder", "message", "question")}
-        holder = self.sessions().holder(env.title)
+        holder = Sessions(self.record.root).holder(env.title)
         if holder:
             raise Refused(f"environment {env.title!r} is held by session {holder}; it leaves first")
         kept = ", ".join(f"{v} open {k}s" for k, v in held.items() if v)
@@ -475,7 +490,7 @@ class Asks(Controller):
         tab = self.driving()
         if not tab.get("on"):
             raise Refused("no tab is being driven: the user turns driving on in the chat window's bar (the wheel)")
-        made = self.create(f"{op} {' '.join(args)}".strip()[:80], op=op, args=list(args))
+        made = self.create(f"browser {op}", brief=" ".join(args), op=op, args=list(args))
         end = time.time() + int(wait)
         while time.time() < end:
             got = self.load(made.n)

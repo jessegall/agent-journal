@@ -4,6 +4,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 import features  # noqa: E402
 from controllers.types import Questions, Todos, Works  # noqa: E402
+from features.auto.policy import launch_args  # noqa: E402
 from features.auto.next import next, ready  # noqa: E402
 from resources.base import AGENT, USER  # noqa: E402
 from tests.features.kit import idle, nudges  # noqa: E402
@@ -50,6 +51,10 @@ check("auto off: nothing offered", nudges(record), [])
 features.FEATURES["auto"].enable(record)
 idle(record)
 check("auto on: the next row is offered once per idle stretch", nudges(record), ["todo 1 next"])
+check("auto launches Claude with its automatic approval mode", launch_args(record, "claude", ["--model", "sonnet"]), ["--permission-mode", "auto", "--model", "sonnet"])
+check("auto launches Codex with its automatic approval mode", launch_args(record, "codex", ["--model", "gpt-5"]), ["--approve-for-me", "--model", "gpt-5"])
+check("an explicit Claude permission choice wins", launch_args(record, "claude", ["--permission-mode=dontAsk"]), ["--permission-mode=dontAsk"])
+check("an explicit Codex approval choice wins", launch_args(record, "codex", ["--ask-for-approval", "never"]), ["--ask-for-approval", "never"])
 work = Works(record, actor=AGENT).create("on it", todo=1)
 idle(record)
 check("work open: nothing offered; the work feature speaks instead", nudges(record), ["todo 1 next", "work 1 open"])

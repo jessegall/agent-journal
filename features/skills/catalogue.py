@@ -2,6 +2,7 @@ import re
 import time
 from pathlib import Path
 
+import features
 from controllers.types import Agents, Messages
 from engine.record import Record
 from providers import PROVIDERS
@@ -27,6 +28,17 @@ def catalogue(root: Path) -> list[dict]:
     return list(out.values())
 
 
+def managed() -> set[str]:
+    subjects = Path(__file__).resolve().parents[2] / "skills"
+    return {"journal", *(f"journal-{name}" for name in features.names()), *(f"journal-{path.stem}" for path in subjects.glob("*.md") if path.name != "journal.md")}
+
+
+def available(root: Path) -> set[str]:
+    homes = [root / home for home in HOMES if (root / home).is_dir()]
+    found = [{f.parent.name for f in home.glob("*/SKILL.md")} for home in homes]
+    return set.intersection(*found) if found else set()
+
+
 def loaded_at(agent) -> dict[str, float]:
     provider = PROVIDERS.get(agent.provider)
     if not provider or not agent.transcript:
@@ -41,7 +53,8 @@ def loaded_at(agent) -> dict[str, float]:
 
 def chosen(record: Record) -> list[str]:
     named = record.setting(Record.skills)
-    return sorted(s[SKILL.name] for s in catalogue(record.root.parent) if s[SKILL.name] == "journal" or s[SKILL.name].startswith("journal-")) if named is None else list(named)
+    current = managed() & available(record.root.parent)
+    return sorted(current if named is None else current & set(named))
 
 
 def skills(record: Record, n: int = 0) -> list[dict]:

@@ -13,7 +13,7 @@ def last_said(record, agent) -> str:
     if not provider or not agent.transcript:
         return ""
     turns = provider().transcript(agent.transcript)
-    said = [t for t in turns if t.who == "agent"]
+    said = [t for t in turns if t.who == "agent" and t.text.strip()]
     return said[-1].text if said else ""
 
 

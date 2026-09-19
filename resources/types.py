@@ -1,5 +1,5 @@
 from resources.base import AGENT, DOCUMENT, PROJECT, USER, WIDE, Resource
-from resources.shapes import TEXT, Field, Options, Ranked, Reasoned, Shape, Traced, names
+from resources.shapes import FLAG, TEXT, Field, Options, Ranked, Reasoned, Shape, Traced, names
 
 
 class Message(Shape, Resource):
@@ -99,7 +99,8 @@ class Pin(Reasoned, Resource):
 
 class Rule(Reasoned, Resource):
     type = "rule"
-    injected = Field()
+    injected = Field(FLAG)
+    injected_codex = Field(FLAG)
     handed = "RULES, in force on every environment"
     lent = False
     attention = True
@@ -186,7 +187,7 @@ class AgentRow(Shape, Resource):
     icon = "bot"
     title_ = "Agent"
     abstract_ = "A session of Claude or Codex, and what it is doing right now"
-    help_ = "The hooks write an agent's status here; the engine reads it to know idle from working."
+    help_ = "The hooks report activity; the engine distinguishes idle, busy, declared work and compaction."
     nav = False
     notify = ()
 

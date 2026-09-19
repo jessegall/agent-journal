@@ -21,25 +21,65 @@ export const store = reactive({
     activity: remembered("journal.activity", true),
     focus: "",
     detached: false,
+    extension: {here: false, holding: false, pending: false, everywhere: false},
+    chatWindow: remembered("journal.window", {
+        x: Math.max(16, window.innerWidth - 468),
+        y: 84,
+        w: 440,
+        h: Math.min(680, Math.max(360, window.innerHeight - 140)),
+    }),
 });
 
-let popup = null;
+function extensionMessage(kind) {
+    window.postMessage({source: "journal-page", kind}, window.location.origin);
+}
+
+function extensionReply(e) {
+    if (e.source !== window || e.origin !== window.location.origin || !e.data || e.data.source !== "journal-extension") return;
+    if (e.data.kind === "here") {
+        store.extension.here = true;
+        store.extension.holding = !!e.data.holding;
+        store.detached = store.detached || store.extension.holding;
+    }
+    if (e.data.kind === "detached") {
+        store.extension.pending = false;
+        store.extension.holding = true;
+        store.extension.everywhere = e.data.everywhere !== false;
+        store.detached = true;
+    }
+    if (e.data.kind === "attached") {
+        store.extension.pending = false;
+        store.extension.holding = false;
+        store.detached = false;
+    }
+    if (e.data.kind === "failed") {
+        store.extension.pending = false;
+        store.extension.holding = false;
+    }
+}
+
+window.addEventListener("message", extensionReply);
+extensionMessage("hello");
 
 export function detach(on) {
     if (on) {
-        popup = window.open(`${location.origin}/?chat${location.hash}`, "journal-chat", "popup,width=430,height=620");
-        store.detached = !!popup;
-        const watch = setInterval(() => {
-            if (!popup || popup.closed) {
-                clearInterval(watch);
-                store.detached = false;
-            }
-        }, 800);
+        store.detached = true;
+        if (store.extension.here) {
+            store.extension.pending = true;
+            extensionMessage("detach");
+        }
     } else {
-        if (popup && !popup.closed) popup.close();
-        popup = null;
         store.detached = false;
+        store.extension.pending = false;
+        if (store.extension.here && store.extension.holding) extensionMessage("attach");
+        store.extension.holding = false;
     }
+}
+
+export function keepChatWindow() {
+    try {
+        localStorage.setItem("journal.window", JSON.stringify(store.chatWindow));
+    } catch (e) {}
 }
 
 watch(
@@ -68,13 +108,26 @@ export async function load(type) {
 
 http.onWrite(() => reload());
 
+let reloadTask = null;
+let reloadAgain = false;
+
 export async function reload() {
-    const env = route.value.env;
-    const [events, settings, agents] = await Promise.all([http.events(env), http.settings(env), http.all(env, "agent")]);
-    store.events = events;
-    store.settings = settings;
-    store.agents = agents;
-    await Promise.all(Object.keys(store.rows).map(load));
+    if (reloadTask) {
+        reloadAgain = true;
+        return reloadTask;
+    }
+    reloadTask = (async () => {
+        do {
+            reloadAgain = false;
+            const env = route.value.env;
+            const [events, settings, agents] = await Promise.all([http.events(env), http.settings(env), http.all(env, "agent")]);
+            store.events = events;
+            store.settings = settings;
+            store.agents = agents;
+            await Promise.all(Object.keys(store.rows).map(load));
+        } while (reloadAgain);
+    })().finally(() => (reloadTask = null));
+    return reloadTask;
 }
 
 export function listen() {

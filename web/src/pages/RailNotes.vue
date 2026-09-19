@@ -1,6 +1,6 @@
 <script setup>
 import {computed, ref} from "vue";
-import {act} from "../api.js";
+import {act, readAll as readAllRows} from "../api.js";
 import Icon from "../kit/Icon.vue";
 import {peek, route} from "../route.js";
 import {age, rows} from "../store.js";
@@ -9,9 +9,19 @@ const sub = ref("unread");
 const notes = computed(() => [...rows("notification")].reverse());
 const unread = computed(() => notes.value.filter((n) => !n.seen.includes("user")));
 const shown = computed(() => (sub.value === "unread" ? unread.value : notes.value.filter((n) => n.seen.includes("user"))));
+const reading = ref(false);
 
 async function readAll() {
-    await Promise.all(unread.value.map((n) => act(route.value.env, "notification", n.n, "read")));
+    reading.value = true;
+    try {
+        await readAllRows(
+            route.value.env,
+            "notification",
+            unread.value.map((n) => n.n)
+        );
+    } finally {
+        reading.value = false;
+    }
 }
 
 async function openNote(n) {
@@ -60,7 +70,10 @@ async function openNote(n) {
         </button>
     </TransitionGroup>
     <div class="rail-foot">
-        <button type="button" class="rail-foot-act" :disabled="!unread.length" @click="readAll">Mark all as read</button>
+        <button type="button" class="rail-foot-act" :disabled="reading || !unread.length" @click="readAll">
+            <span v-if="reading" class="rail-foot-spinner" />
+            {{ reading ? "Marking…" : "Mark all as read" }}
+        </button>
     </div>
 </template>
 
@@ -245,6 +258,21 @@ async function openNote(n) {
     white-space: nowrap;
     color: var(--text-2);
     cursor: pointer;
+}
+
+.rail-foot-spinner {
+    width: 9px;
+    height: 9px;
+    border: 1px solid currentColor;
+    border-right-color: transparent;
+    border-radius: 50%;
+    animation: rail-spin 0.7s linear infinite;
+}
+
+@keyframes rail-spin {
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 .rail-foot-act:hover:not(:disabled) {

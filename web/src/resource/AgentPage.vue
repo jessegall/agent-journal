@@ -1,5 +1,5 @@
 <script setup>
-import {computed, onMounted, onUnmounted, ref} from "vue";
+import {computed, nextTick, onMounted, onUnmounted, ref} from "vue";
 import {api} from "../api.js";
 import Btn from "../kit/Btn.vue";
 import CommentToggle from "./CommentToggle.vue";
@@ -21,24 +21,111 @@ const works = computed(() =>
         .slice(-5)
         .reverse()
 );
+const state = computed(() => {
+    const reported = data.value.status;
+    return ["stopped", "idle", "compacting"].includes(reported) ? reported : works.value.some((w) => !w.completed) ? "working" : "busy";
+});
 const turns = ref([]);
+const total = ref(0);
+const first = ref(0);
 const scroller = ref(null);
+const topMark = ref(null);
+const folded = ref(new Set());
+const error = ref("");
+const loading = ref(true);
+const paging = ref(false);
 let timer = null;
+let fetching = false;
 
-async function fetchTurns() {
-    const since = turns.value.length ? turns.value[turns.value.length - 1].line : 0;
-    const fresh = await api("GET", `/${route.value.env}/agent/${props.resource.n}/transcript?since=${since}&last=200`);
-    if (!fresh.length) return;
-    const atBottom = !scroller.value || scroller.value.scrollHeight - scroller.value.scrollTop - scroller.value.clientHeight < 60;
-    turns.value = [...turns.value, ...fresh].slice(-400);
-    if (atBottom) requestAnimationFrame(() => scroller.value && (scroller.value.scrollTop = scroller.value.scrollHeight));
+const WHO = {
+    human: "You",
+    agent: "Agent",
+    tool: "Tool result",
+    injected: "Journal",
+    task: "Task",
+    peer: "Another session",
+    summary: "Summary",
+    superseded: "You, edited",
+};
+const earliest = computed(() => (turns.value.length ? turns.value[0].line : 0));
+const atStart = computed(() => turns.value.length > 0 && earliest.value <= first.value);
+
+function when(epoch) {
+    return epoch
+        ? new Date(epoch * 1000).toLocaleString([], {month: "short", day: "numeric", hour: "2-digit", minute: "2-digit", second: "2-digit"})
+        : "";
 }
 
+function toggle(line) {
+    const next = new Set(folded.value);
+    if (next.has(line)) next.delete(line);
+    else next.add(line);
+    folded.value = next;
+}
+
+function foldTools(fresh) {
+    const next = new Set(folded.value);
+    fresh.filter((turn) => turn.kind === "tool").forEach((turn) => next.add(turn.line));
+    folded.value = next;
+}
+
+async function fetchTurns() {
+    if (fetching) return;
+    fetching = true;
+    try {
+        const since = turns.value.length ? turns.value[turns.value.length - 1].line : 0;
+        const got = await api("GET", `/${route.value.env}/agent/${props.resource.n}/transcript?since=${since}&last=200`);
+        error.value = "";
+        total.value = got.total;
+        first.value = got.first;
+        if (!got.turns.length) return;
+        const atBottom = !scroller.value || scroller.value.scrollHeight - scroller.value.scrollTop - scroller.value.clientHeight < 60;
+        foldTools(got.turns);
+        turns.value = [...turns.value, ...got.turns];
+        if (atBottom) requestAnimationFrame(() => scroller.value && (scroller.value.scrollTop = scroller.value.scrollHeight));
+    } catch (reason) {
+        error.value = reason.message;
+    } finally {
+        fetching = false;
+        loading.value = false;
+    }
+}
+
+async function earlier() {
+    if (paging.value || atStart.value || !turns.value.length) return;
+    paging.value = true;
+    const box = scroller.value;
+    const fromBottom = box ? box.scrollHeight - box.scrollTop : 0;
+    try {
+        const got = await api("GET", `/${route.value.env}/agent/${props.resource.n}/transcript?before=${earliest.value}&last=200`);
+        error.value = "";
+        foldTools(got.turns);
+        turns.value = [...got.turns, ...turns.value];
+        await nextTick();
+        if (box) box.scrollTop = box.scrollHeight - fromBottom;
+    } catch (reason) {
+        error.value = reason.message;
+    } finally {
+        paging.value = false;
+    }
+}
+
+const retry = () => (turns.value.length && !atStart.value ? earlier() : fetchTurns());
+
+let watcher = null;
 onMounted(async () => {
     await fetchTurns();
     timer = setInterval(fetchTurns, 3000);
+    watcher = new IntersectionObserver((seen) => seen.some((e) => e.isIntersecting) && earlier(), {
+        root: scroller.value,
+        rootMargin: "400px 0px",
+    });
+    if (topMark.value) watcher.observe(topMark.value);
 });
-onUnmounted(() => clearInterval(timer));
+onUnmounted(() => {
+    clearInterval(timer);
+    if (watcher) watcher.disconnect();
+});
 </script>
 
 <template>
@@ -48,7 +135,7 @@ onUnmounted(() => clearInterval(timer));
                 <Icon name="agents" :size="13" />
                 Agent {{ resource.n }}
             </span>
-            <span :class="['state', data.status]">{{ data.status }}</span>
+            <span :class="['state', state]">{{ state }}</span>
             <span class="grow" />
             <CommentToggle />
             <Btn kind="icon" @click="emit('close')"><Icon name="x" /></Btn>
@@ -115,16 +202,59 @@ onUnmounted(() => clearInterval(timer));
         <section class="block">
             <h3>
                 Transcript
-                <span class="muted">live</span>
+                <span class="muted">{{ turns.length ? `${turns.length} of ${total} rows · live` : "live" }}</span>
             </h3>
             <div ref="scroller" class="transcript">
-                <template v-if="!turns.length">
+                <div ref="topMark" class="edge">
+                    {{
+                        paging
+                            ? "Loading earlier rows…"
+                            : atStart
+                              ? "Start of the transcript."
+                              : turns.length
+                                ? "Earlier rows load as you scroll up."
+                                : ""
+                    }}
+                </div>
+                <p v-if="error" class="read-error">
+                    {{ error }}
+                    <button type="button" @click="retry">Try again</button>
+                </p>
+                <template v-if="loading && !turns.length">
+                    <p class="none">Loading…</p>
+                </template>
+                <template v-else-if="!turns.length && !error">
                     <p class="none">Nothing printed yet, or no transcript on this row.</p>
                 </template>
                 <template v-for="t in turns" :key="t.line">
-                    <div :class="['turn', t.who]">
-                        <span class="who">{{ t.who }}</span>
-                        <div class="said" v-html="render(t.text, {types: [], env: route.env})" />
+                    <div :class="['turn', t.kind, {folded: folded.has(t.line)}]">
+                        <div class="meta">
+                            <button
+                                type="button"
+                                class="who"
+                                :aria-expanded="t.text ? !folded.has(t.line) : undefined"
+                                @click="toggle(t.line)"
+                            >
+                                {{ WHO[t.kind] || t.kind }}
+                                <span v-if="t.text" class="fold-mark">{{ folded.has(t.line) ? "show" : "hide" }}</span>
+                            </button>
+                            <span class="when">{{ when(t.at) }}</span>
+                            <span class="line">#{{ t.line }}</span>
+                            <template v-if="t.tools.length">
+                                <span class="tools">used {{ t.tools.join(", ") }}</span>
+                            </template>
+                        </div>
+                        <template v-if="t.text && !folded.has(t.line)">
+                            <template v-if="t.kind === 'agent' || t.kind === 'human'">
+                                <div class="said" v-html="render(t.text, {types: [], env: route.env})" />
+                            </template>
+                            <template v-else>
+                                <pre class="raw">{{ t.text }}</pre>
+                            </template>
+                            <template v-if="t.clipped">
+                                <span class="clipped">Cut short here.</span>
+                            </template>
+                        </template>
                     </div>
                 </template>
             </div>
@@ -164,6 +294,7 @@ onUnmounted(() => clearInterval(timer));
 }
 
 .state.working,
+.state.busy,
 .state.compacting {
     color: var(--progress);
 }
@@ -291,34 +422,132 @@ onUnmounted(() => clearInterval(timer));
     color: var(--text-3);
 }
 
-.turn {
+.read-error {
     display: flex;
-    gap: 10px;
-    padding: 6px 0;
-    border-bottom: 1px solid var(--border);
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin: 0 0 8px;
+    color: var(--blocking);
 }
 
-.turn:last-child {
-    border-bottom: 0;
+.read-error button {
+    border: 0;
+    background: none;
+    color: inherit;
+    cursor: pointer;
+    text-decoration: underline;
+}
+
+.edge {
+    padding: 4px 0 10px;
+    font-size: 11px;
+    color: var(--text-4);
+    text-align: center;
+}
+
+.turn {
+    padding: 8px 10px;
+    margin: 0 0 6px;
+    border-radius: 8px;
+    border-left: 2px solid var(--border-2);
+    background: var(--bg);
+}
+
+.turn.human {
+    border-left-color: var(--accent);
+}
+
+.turn.agent {
+    border-left-color: var(--progress);
+}
+
+.turn.tool {
+    border-left-color: var(--border);
+}
+
+.turn.injected,
+.turn.task,
+.turn.peer {
+    border-left-color: var(--blocking);
+}
+
+.turn.summary {
+    border-left-color: var(--created);
+}
+
+.turn.superseded {
+    opacity: 0.62;
+}
+
+.turn.superseded .said {
+    text-decoration: line-through;
+}
+
+.meta {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    margin-bottom: 4px;
+    font-size: 10.5px;
+    color: var(--text-4);
 }
 
 .who {
-    flex: none;
-    width: 52px;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--text-3);
+    font: inherit;
     font-size: 10.5px;
+    font-weight: 600;
     letter-spacing: 0.04em;
     text-transform: uppercase;
-    color: var(--text-3);
+    cursor: pointer;
 }
 
-.turn.user .who {
+.fold-mark {
+    margin-left: 5px;
+    color: var(--text-4);
+    font-weight: 400;
+    text-transform: none;
+}
+
+.turn.human .who {
     color: var(--accent-text);
 }
 
+.turn.agent .who {
+    color: var(--progress);
+}
+
+.line {
+    margin-left: auto;
+    font-variant-numeric: tabular-nums;
+}
+
+.tools {
+    color: var(--text-3);
+}
+
 .said {
-    flex: 1;
-    min-width: 0;
     color: var(--text-2);
+}
+
+.raw {
+    max-height: 240px;
+    margin: 0;
+    overflow: auto;
+    font-size: 11.5px;
+    line-height: 1.45;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    color: var(--text-3);
+}
+
+.clipped {
+    font-size: 11px;
+    color: var(--text-4);
 }
 
 .said :deep(p) {

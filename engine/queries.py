@@ -39,8 +39,9 @@ def describe(r) -> str:
 
 
 def start_block(record) -> str:
+    from features.law.policy import carry as law
     from features.skills.catalogue import handed as skills_handed
-    parts = [f"THE JOURNAL IS IN FORCE HERE — this session is bound to environment `{record.env}`.", skills_handed(record)]
+    parts = [f"THE JOURNAL IS IN FORCE HERE — this session is bound to environment `{record.env}`.", law(), skills_handed(record)]
     for type_ in reversed(PRIORITY):
         kind = TYPES[type_]
         rows = handed(record, type_) if kind.handed else []

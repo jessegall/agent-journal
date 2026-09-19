@@ -7,10 +7,12 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from controllers.types import Agents, Messages, Nudges, Pins, Questions, Todos, Works  # noqa: E402
 from engine import bus  # noqa: E402
-from engine.actors import IDLE, STOPPED, WAITING, WORKING, User  # noqa: E402
+from engine.actors import BUSY, IDLE, STOPPED, WORKING, User  # noqa: E402
 from engine.drivers import Driver  # noqa: E402
 from engine.engine import Engine  # noqa: E402
 from engine.record import Record  # noqa: E402
+from engine.sessions import ACTIVE_ENV  # noqa: E402
+from engine.supervisor import agent_environment  # noqa: E402
 from resources.base import AGENT, SYSTEM, USER  # noqa: E402
 from resources.types import PRIORITY, TYPES  # noqa: E402
 from resources.types import AgentRow  # noqa: E402
@@ -53,6 +55,7 @@ driver = Fake(record)
 engine = Engine(record, driver)
 engine.start()
 check("start puts the engine in its loop; stop takes it out", (engine.running, (engine.stop(), engine.running)[1]), (True, False))
+check("the launcher marks only the child agent environment as journal-managed", agent_environment({"PATH": "/bin"}), {"PATH": "/bin", ACTIVE_ENV: "1"})
 
 # STATE, read from the driver's reports and quiet
 driver.up = False
@@ -60,19 +63,19 @@ check("no driver alive: stopped", engine.agent.state(), STOPPED)
 driver.up = True
 driver.report = None
 driver.quiet = 0.2
-check("no reports yet, printing: working", engine.agent.state(), WORKING)
+check("no reports yet, printing without declared work: busy", engine.agent.state(), BUSY)
 driver.quiet = 4.0
 check("no reports yet, quiet: idle", engine.agent.state(), IDLE)
 driver.report = {"at": time.time(), "event": "PreToolUse", "status": WORKING}
 driver.quiet = 6.0
-check("a tool call under way and quiet: waiting", engine.agent.state(), WAITING)
+check("a tool call under way without declared work: busy", engine.agent.state(), BUSY)
 driver.report = {"at": time.time(), "event": "Stop", "status": IDLE}
 driver.quiet = 2.0
 check("a Stop and quiet: idle", (engine.agent.state(), engine.agent.is_idle()), (IDLE, True))
 driver.report = {"at": time.time(), "event": "SessionStart", "status": IDLE}
 check("a SessionStart is idle too", engine.agent.is_idle(), True)
 driver.report = {"at": time.time(), "event": "PostToolUse", "status": WORKING}
-check("between tool calls: working", engine.agent.is_working(), True)
+check("between tool calls without declared work: busy", engine.agent.state(), BUSY)
 
 # EVERY EVENT REACHES EVERY ACTOR BUT ITS OWN. The user writes a message: the agent is typed to at once,
 # working or not; the user is not notified of their own act. The agent completes it: the user is notified.
@@ -85,10 +88,10 @@ check("before a tick nothing is typed", driver.sent, [])
 why = engine.tick()
 check("the tick collects the user's event for the agent, typing nothing yet", (why, driver.sent), ("delivered 1", []))
 check("the user is not notified of their own event", User(record).unread(), [])
-check("a second tick within the quiet spell types nothing and collects nothing twice", (engine.tick(), driver.sent, len(engine.agent.pending)), (WORKING, [], 1))
+check("a second tick within the quiet spell types nothing and collects nothing twice", (engine.tick(), driver.sent, len(engine.agent.pending)), (BUSY, [], 1))
 engine.agent.pending_at -= 5
 check("five quiet seconds later the batch is typed as one counted line", (engine.tick(), driver.sent), ("typed 1 in one line", ["1 new message"]))
-check("the cursor moved: a further tick types nothing more", (engine.tick(), len(driver.sent)), (WORKING, 1))
+check("the cursor moved: a further tick types nothing more", (engine.tick(), len(driver.sent)), (BUSY, 1))
 driver.sent.clear()
 Messages(record, actor=AGENT).complete(1, "read and filed")
 engine.tick()
@@ -117,6 +120,10 @@ Todos(record, actor=AGENT).read(1)
 why = settle()
 check("everything seen: nothing owed", (why, driver.sent), ("nothing owed", []))
 Works(record, actor=AGENT).create("the header")
+driver.report = {"at": time.time(), "event": "PostToolUse", "status": WORKING}
+check("active with declared work: working", engine.agent.state(), WORKING)
+driver.report = {"at": time.time(), "event": "Stop", "status": IDLE}
+driver.quiet = 3.0
 why = settle()
 check("the agent's own work is not owed to it by the engine: that is the work feature's nudge", (why, driver.sent), ("nothing owed", []))
 Nudges(record, actor=SYSTEM).create("work 1 open")
