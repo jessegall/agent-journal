@@ -248,11 +248,11 @@ watch(busy, async () => {
 });
 
 watch(
-    () => turns.value.length,
+    () => (store.booted ? turns.value.length : -1),
     async (n, before) => {
         await nextTick();
         if (!ready.value) {
-            if (!n) return;
+            if (n < 0) return;
             await loaded();
             ready.value = true;
             await nextTick();
