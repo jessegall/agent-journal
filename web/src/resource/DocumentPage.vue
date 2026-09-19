@@ -34,8 +34,8 @@ provide("talk", {talking, count, toggle: () => (talking.value = !talking.value)}
 </script>
 
 <template>
-    <div :class="['document', {shifted}]" @transitionend.self="shiftedDone">
-        <div class="document-body">
+    <div :class="['document', {shifted}]">
+        <div class="document-body" @transitionend.self="shiftedDone">
             <Highlight @quote="quote = $event">
                 <slot>
                     <ResourceBody :resource="resource" :comments="false" @close="emit('close')" />
