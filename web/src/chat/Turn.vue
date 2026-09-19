@@ -238,6 +238,7 @@ async function drop() {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
+    align-self: flex-start;
     gap: 3px;
     max-width: 78%;
 }
