@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.4.2 — Older archives unarchive too
+
+An attic folder from before removal stamped its name (`attic/main`, not `attic/main-1789…`) is compressed to `main.tar.gz`; `journal environment unarchive main` now finds it.
+
+What to do about it: `journal upgrade`.
+
 ## 2.4.1 — Archived environments are compressed
 
 Removing an environment packs its record into one gzip archive in `.journal/attic/` (checked member by member before the folder is removed; a pack that does not check out leaves the folder where it was). `journal environment unarchive <name>` unpacks the newest archive of that name, byte for byte with its attachments, and brings the environment back; a name in use is refused, never merged. The upgrade compresses every folder already in the attic (migration m0004).

@@ -39,7 +39,7 @@ def compress(root: Path) -> list[str]:
 
 def latest(root: Path, env: str) -> Path | None:
     stamps = {p: p.name[len(env) + 1:-len(SUFFIX)] for p in folder(root).glob(f"{env}-*{SUFFIX}")}
-    found = sorted((int(stamp), p) for p, stamp in stamps.items() if stamp.isdigit())
+    found = sorted([(0, p) for p in folder(root).glob(f"{env}{SUFFIX}")] + [(int(stamp), p) for p, stamp in stamps.items() if stamp.isdigit()])
     return found[-1][1] if found else None
 
 
