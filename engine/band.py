@@ -15,8 +15,10 @@ STYLE = f"{ESC}[48;2;23;24;27m{ESC}[38;2;169;172;179m"
 BRIGHT = f"{ESC}[38;2;230;231;234m"
 ACCENT = f"{ESC}[38;2;163;168;240m"
 DIM = f"{ESC}[38;2;131;134;142m"
+URL = f"{ESC}[48;2;52;55;105m{ESC}[38;2;238;239;246m"
 RESET = f"{ESC}[0m"
 STATES = {"idle": "●", "busy": "◐", "working": "◐", "compacting": "◔", "stopped": "○"}
+STATE_LABELS = {"idle": "Idle", "busy": "Busy", "working": "Working on", "compacting": "Compacting", "stopped": "Stopped"}
 BRAND = "JOURNAL"
 GRADIENT = ((36, 38, 78), (94, 99, 222), (36, 38, 78))
 
@@ -94,7 +96,7 @@ class Band:
         if active and not active.get("done"):
             return " ".join(str(active.get("what") or "").split())
         work = [row for row in Works(record, actor=SYSTEM).all() if not row.completed]
-        return f"work {work[-1].n} {work[-1].title}" if work else "no open work"
+        return work[-1].title if work else "no open work"
 
     def lines(self, cols: int) -> list[str]:
         seat = self.seat()
@@ -103,11 +105,11 @@ class Band:
         mark = STATES.get(state, "○")
         env = seat.get("env") or self.env
         record = Record(self.root, env)
-        facts = (f"{BRIGHT}{self.project}{DIM} · {BRIGHT}{env}{DIM} · {ACCENT}{self.viewer()}{DIM}"
-                 f" · {agent.get('model') or agent.get('provider') or '—'} · context {round(float(agent.get('context') or 0))}%")
-        status = f"{ACCENT}{mark} {BRIGHT}{state}{DIM}  {self.activity(record, agent)}"
+        facts = self.banner(cols, env, agent)
+        url = self.fit(f"{DIM}viewer{RESET} {URL}{self.viewer()}{STYLE}", cols)
+        status = f"{ACCENT}{mark} {BRIGHT}{STATE_LABELS.get(state, state.title())}{DIM}  {self.activity(record, agent)}"
         rule = f"{ESC}[38;2;47;49;54m{'─' * cols}"
-        return [self.banner(cols), self.fit(facts, cols, left=2), self.fit(status, cols, left=2), self.fit(rule, cols), " " * cols]
+        return [facts, url, self.fit(status, cols, left=2), self.fit(rule, cols), " " * cols]
 
     def shade(self, x: int, cols: int) -> tuple[int, int, int]:
         t = x / max(1, cols - 1) * (len(GRADIENT) - 1)
@@ -115,14 +117,17 @@ class Band:
         f = t - int(t)
         return tuple(round(a[i] + (b[i] - a[i]) * f) for i in range(3))
 
-    def banner(self, cols: int) -> str:
+    def banner(self, cols: int, env: str, agent: dict) -> str:
         left = max(0, (cols - len(BRAND)) // 2)
         clock = datetime.now().strftime("%H:%M:%S")
-        clock_at = max(0, cols - len(clock) - 2)
+        left_text = f"{self.project} · {env}"
+        right_text = f"context {round(float(agent.get('context') or 0))}% · {clock}"
         text = list(" " * cols)
+        text[2:min(cols, 2 + len(left_text))] = left_text[:max(0, cols - 2)]
         text[left:min(cols, left + len(BRAND))] = BRAND[:max(0, cols - left)]
-        if clock_at > left + len(BRAND):
-            text[clock_at:clock_at + len(clock)] = clock
+        right = max(2, cols - len(right_text) - 2)
+        if right > left + len(BRAND):
+            text[right:min(cols, right + len(right_text))] = right_text[:max(0, cols - right)]
         cells = []
         for x, ch in enumerate(text):
             r, g, b = self.shade(x, cols)

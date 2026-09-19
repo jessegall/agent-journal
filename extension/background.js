@@ -262,6 +262,8 @@ chrome.runtime.onMessage.addListener((msg, sender, reply) => {
     closed: () => setTabState(sender.tab && sender.tab.id, { closed: true }).then(() => ({ ok: true })),
     follow: () => follow(msg.on, sender.tab && sender.tab.id),
     following: async () => ({ on: await following(), everywhere: await everywhere() }),
+    "outbox-get": async () => ({ value: (await kept("outbox", {})).outbox || [] }),
+    "outbox-set": async () => { await keep({ outbox: Array.isArray(msg.value) ? msg.value : [] }); return { ok: true }; },
     where: async () => {
       const to = await target({ fresh: !!msg.fresh, tabId: sender.tab && sender.tab.id });
       return to.why ? { why: to.why, journals: [] } : {

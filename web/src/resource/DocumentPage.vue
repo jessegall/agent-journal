@@ -5,14 +5,19 @@ import ResourceBody from "./ResourceBody.vue";
 import Comments from "./Comments.vue";
 import Highlight from "./Highlight.vue";
 
-const props = defineProps({resource: Object});
+const props = defineProps({resource: Object, focus: {type: Number, default: 0}});
 const emit = defineEmits(["close"]);
 const quote = ref("");
 const count = computed(() => rows("comment").filter((c) => c.refs.includes(props.resource.ref) && !c.deleted).length);
-const talking = ref(count.value > 0);
+const talking = ref(count.value > 0 || props.focus > 0);
 const shifted = ref(talking.value);
 const panel = ref(talking.value);
 watch(quote, (q) => q && (talking.value = true));
+watch(
+    () => props.focus,
+    (focus) => focus && (talking.value = true),
+    {immediate: true}
+);
 watch(talking, (on) => {
     if (on) {
         if (shifted.value) panel.value = true;
@@ -44,7 +49,7 @@ provide("talk", {talking, count, toggle: () => (talking.value = !talking.value)}
         </div>
         <Transition name="aside" @after-leave="panelLeft">
             <aside v-if="panel" class="document-aside">
-                <Comments :resource="resource" :quote="quote" @sent="quote = ''" />
+                <Comments :resource="resource" :quote="quote" :focus="props.focus" @sent="quote = ''" />
             </aside>
         </Transition>
     </div>

@@ -46,6 +46,10 @@ later = left.create("pasted later", brief="A: hi\nB: hi")
 left.declare(later.n, "transcript")
 check("declared after the fact", left.load(later.n).data["kind"], "transcript")
 
+queued = left.create("a queued message", idempotency="outbox-1")
+same = left.create("a duplicate", idempotency="outbox-1")
+check("the same idempotency key returns the original message", (same.n, len(left.all()), same.idempotency), (queued.n, 5, "outbox-1"))
+
 # MOVING to another environment keeps the message, its files and its number there; here it is deleted with a note
 moved = read.move(m.n, "other")
 there = Messages(Record(record.root, "other"))

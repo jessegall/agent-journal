@@ -14,7 +14,9 @@ function card(entries) {
         )
         .join("");
     const shown =
-        entries.length > 1 ? `<details class="console-more"><summary>Show all ${entries.length} errors</summary>${rows}</details>` : rows;
+        entries.length > 1
+            ? `<details class="console-more"><summary><span class="console-more-collapsed">Show all ${entries.length} errors</span><span class="console-more-expanded">Show fewer errors</span></summary>${rows}</details>`
+            : rows;
     const first =
         entries.length > 1
             ? `<div class="console-entry"><div class="console-head">${entries[0].head}</div>${entries[0].frames

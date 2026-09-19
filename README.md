@@ -47,8 +47,9 @@ The launcher:
 - keeps a live terminal band showing the agent, environment, state, context, active work or
   command, current time, and the clickable viewer URL.
 
-Use `journal serve` to run only the viewer. Use `journal status` to see the record's current
-counts, and `journal verify` to check hooks, engine, viewer, and this session's latest report.
+Use `journal serve` to run only the viewer. It reloads changed Python package code on the same
+port; frontend assets continue to refresh from disk. Use `journal status` to see the record's
+current counts, and `journal verify` to check hooks, engine, viewer, and this session's latest report.
 
 ## The viewer
 
@@ -83,8 +84,8 @@ These are engine-backed mechanisms, not prompt suggestions:
 - Putting work off in prose without filing a to-do is named back to the agent.
 - At 50, 70, 90, and 95 percent of the context window, writes wait for a decision: create a pin,
   create a project-wide rule, or run `journal nothing "<why>"`.
-- Pins and rules are repeated as context fills. Selected rules can also be kept in `CLAUDE.md`,
-  `AGENTS.md`, or both from their viewer controls.
+- Pins and rules are repeated as context fills. A selected rule can also be injected into the
+  same managed block in both `AGENTS.md` and `CLAUDE.md` from its viewer control.
 - Standing reminders return when the agent comes to rest after work.
 - Auto mode is off by default. When enabled in Settings, the next ready to-do is offered whenever
   no work is open. The launcher also selects the provider's automatic approval mode and refuses
@@ -126,12 +127,12 @@ Every record command is a noun and a word:
 
     journal todo add "write the release notes" --brief "What belongs in them and where to start"
     journal todo start 12
-    journal work update 18 --brief "The migration is halfway through"
+    journal work log 18 "Old rows converted; the links are next because they cite row numbers"
     journal work end 18 --how "The migration landed"
     journal todo done 12 --how "Published with the release"
     journal question ask "Which name should the release use?"
     journal question answer 3 --how "Aurora"
-    journal rule inject 4 --into codex
+    journal rule inject 4
     journal plan continue 1
 
 `journal --help` lists top-level commands. `journal <noun> --help` lists the words for a resource,

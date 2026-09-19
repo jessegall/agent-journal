@@ -164,7 +164,7 @@ async function makeEnv() {
 }
 
 .hub-item {
-    margin: -6px 0 4px;
+    margin: -6px 10px 4px;
 }
 
 .project:hover {

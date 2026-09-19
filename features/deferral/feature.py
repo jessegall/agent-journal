@@ -12,7 +12,7 @@ class Deferral(Feature):
     name = "deferral"
     title_ = "Deferral"
     abstract_ = "Work put off in words, with no to-do parked, is named back to the agent once"
-    help_ = "A sentence like 'I'll do that after this' is the title of a to-do; park it before the reply goes out."
+    help_ = "A sentence like 'I'll do that after this' is the title of a to-do; file it immediately before the reply or next implementation."
     trigger = {"on": trigger.IDLE}
 
     def parked_since(self, record, when: float) -> bool:

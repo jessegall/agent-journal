@@ -14,6 +14,7 @@ check("the core, subject skills and one per feature", (sorted(got)[:1], len(got)
 core = got["journal/SKILL.md"]
 check("the core skill has its front matter and the reference", (core.startswith("---\nname: journal\n"), "## Reference: every noun and its words" in core), (True, True))
 check("the core skill teaches autonomous to-do priority judgment", "Agents assign priority themselves when urgency, impact, dependencies or risk make a difference" in core, True)
+check("the core skill files different work before investigation", "File it immediately, before looking at files, investigating, implementing, or deferring it" in core, True)
 ref = reference()
 for type_, c in CONTROLLERS.items():
     check(f"{type_}: every word is in the reference under its noun", all(f"journal {type_} {c.resource.names.get(m, m)}" in ref for m in ("create", "complete", "show")), True)
@@ -23,6 +24,11 @@ auto = got["journal-auto/SKILL.md"]
 check("a feature's skill says what it listens to, when it speaks and its default", ("It listens to: agent.updated" in auto, "It speaks on idle" in auto, "Off by default" in auto), (True, True, True))
 check("message tracing names the automatic message-to-resource links", "# Message tracing" in got["journal-became/SKILL.md"], True)
 check("subject skills use v2's singular noun and word commands", ("journal todo start" in got["journal-todos/SKILL.md"], "journal report create" in got["journal-reports/SKILL.md"]), (True, True))
+check("future work is filed before other work continues", (
+    "becomes `journal todo add` immediately" in got["journal-todos/SKILL.md"],
+    "file the to-do immediately before investigating or implementing it" in got["journal-messages/SKILL.md"],
+    "file it immediately before the reply or next implementation" in got["journal-deferral/SKILL.md"],
+), (True, True, True))
 folder = Path(tempfile.mkdtemp())
 written = write(folder)
 check("written as SKILL.md files, one folder each", (len(written), (folder / "journal" / "SKILL.md").is_file(), (folder / "journal-work" / "SKILL.md").is_file()), (len(got), True, True))

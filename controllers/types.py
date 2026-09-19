@@ -20,6 +20,15 @@ UPLOAD = names("name", "data")
 class Messages(Controller):
     resource = types.Message
 
+    def create(self, title: str, abstract: str = "", brief: str = "", **data):
+        with self.record.locked():
+            key = data.get(types.Message.idempotency, "")
+            if key:
+                existing = next((message for message in self.all() if message.idempotency == key), None)
+                if existing:
+                    return existing
+            return super().create(title, abstract, brief, **data)
+
     def waiting(self) -> list:
         return [m for m in self.all() if not m.completed and m.seen[:1] != [AGENT]]
 
@@ -137,6 +146,9 @@ class Works(Controller):
             if held and held != self.agent:
                 raise Refused(f"todo {row.n} is assigned to {held}; nobody else may take it")
         return super().create(title, abstract, brief, **data)
+
+    def log(self, n: int, text: str):
+        return self.section(n, f"{len(self.load(n).sections) + 1} · {time.strftime('%Y-%m-%d %H:%M')}", text)
 
 
 DRAFT, READY, ACTIVE, WAITING, DONE, ABANDONED = "draft", "ready", "active", "waiting", "done", "abandoned"
@@ -274,29 +286,17 @@ class Pins(Controller):
 class Rules(Controller):
     resource = types.Rule
 
-    def inject(self, n: int, into: str = "claude"):
-        return self._injection(n, into, True)
+    def inject(self, n: int):
+        return self.update(n, injected=True)
 
-    def uninject(self, n: int, into: str = "claude"):
-        return self._injection(n, into, False)
+    def uninject(self, n: int):
+        return self.update(n, injected=False)
 
     def pin(self, n: int):
         rule = self.load(n)
         notices = Notices(self.record, actor=self.actor)
         standing = [notice for notice in notices.linked_to(rule.ref) if not notice.completed]
         return standing[0] if standing else notices.create(rule.title, about=rule.ref, link=f"#/{self.record.env}/rule/{n}", label="Open rule")
-
-    def _injection(self, n: int, into: str, value: bool):
-        from providers import PROVIDERS
-        names = tuple(PROVIDERS)
-        if into not in (*names, "both"):
-            raise Refused(f"a rule is injected into {', '.join(names)} or both")
-        rule = self.load(n)
-        selected = set(names if into == "both" else (into,))
-        targets = set(rule.targets)
-        targets = targets | selected if value else targets - selected
-        return self.update(n, targets=sorted(targets))
-
 
 class Reminders(Controller):
     resource = types.Reminder

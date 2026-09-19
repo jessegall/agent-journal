@@ -8,15 +8,22 @@ import {word} from "../store.js";
 const props = defineProps({resource: Object});
 const own = ref("");
 const changing = ref(false);
-const options = computed(() => props.resource.data.options || []);
+const optionText = (option = {}) => String(option.title || option.label || option.value || "");
+const options = computed(() =>
+    (Array.isArray(props.resource.data.options) ? props.resource.data.options : []).map((option) => {
+        const value = option && typeof option === "object" ? option : {};
+        return {...value, title: optionText(value), code: value.code ?? value.value ?? ""};
+    })
+);
 const pick = computed(() => props.resource.data.pick || 0);
 const settled = computed(() => !!props.resource.completed && !changing.value);
 const ownWords = computed(() => settled.value && !options.value.some((o) => o.title === props.resource.outcome));
 
 async function submit(text) {
-    if (!text.trim()) return;
-    if (props.resource.completed) await act(route.value.env, props.resource.type, props.resource.n, "set", {key: "outcome", value: text});
-    else await act(route.value.env, props.resource.type, props.resource.n, word(props.resource.type, "complete"), {how: text});
+    const answer = String(text || "").trim();
+    if (!answer) return;
+    if (props.resource.completed) await act(route.value.env, props.resource.type, props.resource.n, "set", {key: "outcome", value: answer});
+    else await act(route.value.env, props.resource.type, props.resource.n, word(props.resource.type, "complete"), {how: answer});
     changing.value = false;
 }
 </script>

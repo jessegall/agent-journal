@@ -57,7 +57,7 @@ check("an explicit Claude permission choice wins", launch_args(record, "claude",
 check("an explicit Codex approval choice wins", launch_args(record, "codex", ["--ask-for-approval", "never"]), ["--ask-for-approval", "never"])
 work = Works(record, actor=AGENT).create("on it", todo=1)
 idle(record)
-check("work open: nothing offered; the work feature speaks instead", nudges(record), ["todo 1 next", "work 1 open"])
+check("work open: nothing offered; the work feature speaks instead", nudges(record), ["todo 1 next", "work 1 open, nothing logged"])
 Works(record, actor=AGENT).complete(work.n, "done", todo=True)
 idle(record)
 check("the row closed with the work: the next row is offered", nudges(record)[-1], "todo 2 next")

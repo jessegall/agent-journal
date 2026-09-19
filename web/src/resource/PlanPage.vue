@@ -6,6 +6,7 @@ import CommentToggle from "./CommentToggle.vue";
 import Icon from "../kit/Icon.vue";
 import {peek, route} from "../route.js";
 import {rows} from "../store.js";
+import Markdown from "./Markdown.vue";
 
 const props = defineProps({resource: Object});
 const emit = defineEmits(["close"]);
@@ -57,7 +58,7 @@ async function run(action, body = {}) {
         </header>
         <h2 class="title">{{ resource.title }}</h2>
         <template v-if="resource.data.goal">
-            <p class="goal">{{ resource.data.goal }}</p>
+            <Markdown class="goal" :text="resource.data.goal" />
         </template>
         <div class="actions">
             <template v-if="button">
@@ -69,7 +70,7 @@ async function run(action, body = {}) {
             <span class="error">{{ error }}</span>
         </div>
         <template v-if="resource.brief">
-            <div class="brief">{{ resource.brief }}</div>
+            <Markdown class="brief" :text="resource.brief" />
         </template>
         <ol class="phases">
             <template v-for="p in phases" :key="p.i">
@@ -147,7 +148,6 @@ async function run(action, body = {}) {
 }
 .brief {
     margin: 0 0 20px;
-    white-space: pre-wrap;
     color: var(--text-2);
 }
 .phases {

@@ -1,5 +1,6 @@
 import {computed, reactive, ref, watch} from "vue";
 import * as http from "./api.js";
+import {onOutboxChange, startOutbox} from "./chat/outbox.js";
 import {go, route} from "./route.js";
 import {visible} from "./text/index.js";
 
@@ -110,6 +111,7 @@ export async function load(type) {
 }
 
 http.onWrite(() => reload());
+onOutboxChange(() => reload());
 
 let reloadTask = null;
 let reloadAgain = false;
@@ -136,6 +138,7 @@ export async function reload() {
 export function listen() {
     if (store.stream) store.stream.close();
     const env = route.value.env;
+    startOutbox(env);
     store.stream = new EventSource(`/api/${env}/stream`);
     store.stream.onmessage = () => reload();
     poll();

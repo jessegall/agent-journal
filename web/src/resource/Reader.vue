@@ -11,6 +11,7 @@ import Comments from "./Comments.vue";
 
 const props = defineProps({type: String, n: Number});
 const resource = computed(() => (props.type ? rows(props.type).find((r) => r.n === props.n) : null) || null);
+const focusComment = computed(() => route.value.open?.comment || 0);
 const shape = computed(() => (!props.type ? "" : ["plan", "agent"].includes(props.type) ? props.type : meta(props.type).view));
 const panel = computed(() => (["small", "wide"].includes(shape.value) ? "inspector" : shape.value));
 const close = () => (route.value.open ? unpeek() : go(route.value.env, props.type));
@@ -30,7 +31,7 @@ watch(
 <template>
     <Transition name="reader">
         <div v-if="resource" :key="panel" :class="['reader', shape]" @click.self="close">
-            <aside v-if="panel === 'inspector'" :class="['inspector', {swapping}]">
+            <aside v-if="panel === 'inspector'" :class="['inspector', {swapping, 'focusing-comment': focusComment}]">
                 <div class="inspector-pages">
                     <Transition name="inspector-page">
                         <div :key="resource.ref" :class="['inspector-page', shape]">
@@ -47,22 +48,22 @@ watch(
                         </div>
                     </Transition>
                 </div>
-                <Comments :resource="resource" :show-thread="false" />
+                <Comments :resource="resource" :show-thread="!!focusComment" :focus="focusComment" />
             </aside>
             <div v-else class="page">
                 <SwitchCase :value="shape">
                     <template #plan>
-                        <DocumentPage :resource="resource" @close="close">
+                        <DocumentPage :resource="resource" :focus="focusComment" @close="close">
                             <PlanPage :resource="resource" @close="close" />
                         </DocumentPage>
                     </template>
                     <template #agent>
-                        <DocumentPage :resource="resource" @close="close">
+                        <DocumentPage :resource="resource" :focus="focusComment" @close="close">
                             <AgentPage :resource="resource" @close="close" />
                         </DocumentPage>
                     </template>
                     <template #document>
-                        <DocumentPage :resource="resource" @close="close" />
+                        <DocumentPage :resource="resource" :focus="focusComment" @close="close" />
                     </template>
                     <template #default>
                         <ResourceBody :resource="resource" @close="close" />
@@ -95,7 +96,7 @@ watch(
     width: min(460px, 100%);
     display: flex;
     flex-direction: column;
-    overflow: visible;
+    overflow: hidden;
     background: var(--bg);
     border-left: 1px solid var(--border);
     box-shadow: -20px 0 50px rgba(0, 0, 0, 0.4);
@@ -116,6 +117,18 @@ watch(
 
 .inspector.swapping::before {
     animation: inspector-progress 0.26s ease-out forwards;
+}
+
+.inspector.focusing-comment .inspector-pages {
+    flex: 0 0 42%;
+}
+
+.inspector.focusing-comment > :deep(.comments) {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    margin: 0;
+    padding: 16px 20px 8px;
 }
 
 .inspector-pages {

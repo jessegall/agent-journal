@@ -25,6 +25,26 @@ def check(name: str, spec, value):
     return value
 
 
+def normalize_options(value):
+    if not isinstance(value, list):
+        return value
+    normalized = []
+    for option in value:
+        if not isinstance(option, dict):
+            normalized.append(option)
+            continue
+        raw = option
+        option = {k: v for k, v in raw.items() if k not in ("label", "value")}
+        title = option.get("title") or raw.get("label")
+        if not title:
+            raise Refused("options.title is required")
+        option["title"] = title
+        if "code" not in option and "value" in raw:
+            option["code"] = raw["value"]
+        normalized.append(option)
+    return normalized
+
+
 class Shape:
     fields: ClassVar[dict] = {}
     labels: ClassVar[dict] = {}

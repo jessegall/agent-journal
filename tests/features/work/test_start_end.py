@@ -5,7 +5,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 import features  # noqa: E402
 from controllers.types import Todos, Works  # noqa: E402
 from resources.base import AGENT, SYSTEM, USER  # noqa: E402
-from tests.features.kit import idle, nudges  # noqa: E402
+from features.base import held  # noqa: E402
+from tests.features.kit import idle, nudges, report  # noqa: E402
 from tests.kit import check, done, fresh, refused  # noqa: E402
 
 features.unload()
@@ -38,10 +39,35 @@ check("work with no to-do: the feature does nothing", [e for e in record.events(
 record = fresh()
 idle(record)
 check("nothing open: nothing said", nudges(record), [])
-Works(record, actor=AGENT).create("the header")
+works = Works(record, actor=AGENT)
+works.create("the header")
 idle(record)
 idle(record)
-check("open work is said at each idle", nudges(record), ["work 1 open", "work 1 open"])
+check("open work with an empty log is said at each idle, asking for the log", nudges(record), ["work 1 open, nothing logged", "work 1 open, nothing logged"])
+works.log(1, "Chose the header, because the footer waits on it")
+idle(record)
+check("once logged, the open work is said plainly", nudges(record)[-1], "work 1 open")
+entry = works.load(1).sections[0]
+check("a log entry is the message under its number and the time it was written", (entry["body"], entry["title"][:4], len(entry["title"])), ("Chose the header, because the footer waits on it", "1 · ", 20))
+works.log(1, "Then the footer")
+check("each entry is its own section", len(works.load(1).sections), 2)
+
+# EDITS without a log entry hold the writes until the work is logged
+record = fresh()
+record.set_setting("work", {"log_after": 3})
+works = Works(record, actor=AGENT)
+works.create("editing")
+report(record, "working", "PostToolUse", wrote=True)
+report(record, "working", "PostToolUse", wrote=True)
+check("under the limit: nothing held", held(record, "claude-1"), "")
+report(record, "working", "PostToolUse", wrote=False)
+check("a read is not an edit", held(record, "claude-1"), "")
+report(record, "working", "PostToolUse", wrote=True)
+check("at the limit the writes are held, naming the command", "journal work log 1" in held(record, "claude-1"), True)
+works.log(1, "Three edits in")
+check("a log entry releases the hold", held(record, "claude-1"), "")
+report(record, "working", "PostToolUse", wrote=True)
+check("and the count starts over", held(record, "claude-1"), "")
 
 # SWITCHED OFF per environment
 record = fresh()

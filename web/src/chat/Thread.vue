@@ -1,9 +1,11 @@
 <script setup>
 import {computed, nextTick, onMounted, onUnmounted, ref, watch} from "vue";
 import {act, create} from "../api.js";
+import {sendMessage} from "./outbox.js";
 import Icon from "../kit/Icon.vue";
 import {route} from "../route.js";
 import {agent, laidOut, meta, quoted, reload, rows, store, withQuote} from "../store.js";
+import {title as titled} from "../text/index.js";
 import Compose from "./Compose.vue";
 import Turn from "./Turn.vue";
 import ThreadSkeleton from "./ThreadSkeleton.vue";
@@ -69,33 +71,37 @@ const acknowledged = (m) =>
     rows("comment").some((c) => !c.deleted && c.refs.includes(m.ref) && c.seen[0] === "agent") ||
     rows("reaction").some((r) => !r.deleted && r.refs.includes(m.ref) && r.seen[0] === "agent");
 const filed = (m) => m.refs.filter((r) => !r.startsWith("message:") && meta(r.split(":")[0]));
-const receipt = (m) => ({
-    ref: `receipt:${m.n}`,
-    type: "receipt",
-    n: m.n,
-    who: "agent",
-    created: m.updated + 0.001,
-    seen: ["agent"],
-    refs: filed(m),
-    data: {},
-    sections: [],
-    title: filed(m).length
-        ? `Filed ${filed(m)
-              .map((r) => `${meta(r.split(":")[0]).title.toLowerCase()} ${r.split(":")[1]}`)
-              .join(", ")} from your message.`
-        : "Noted.",
-    brief: "",
-});
+const hasParent = (c) =>
+    c.refs.some((ref) => {
+        const [type] = ref.split(":");
+        return type !== "comment" && meta(type);
+    });
+const receipt = (m) => {
+    const refs = filed(m);
+    return {
+        ref: `receipt:${m.n}`,
+        type: "receipt",
+        n: m.n,
+        who: "agent",
+        created: m.updated + 0.001,
+        seen: ["agent"],
+        refs,
+        data: {},
+        sections: [],
+        title: `Filed ${refs.map((r) => `${meta(r.split(":")[0]).title.toLowerCase()} ${r.split(":")[1]}`).join(", ")} from your message.`,
+        brief: "",
+    };
+};
 const turns = computed(() =>
     [
         ...rows("message")
             .filter((m) => !m.deleted && !pending.value.some((p) => promisedFor(p, m) && !delivered(p, m)))
             .map((m) => ({...m, who: m.seen[0]})),
         ...rows("message")
-            .filter((m) => !m.deleted && m.seen[0] === "user" && m.completed && !acknowledged(m))
+            .filter((m) => !m.deleted && m.seen[0] === "user" && m.completed && filed(m).length && !acknowledged(m))
             .map(receipt),
         ...rows("comment")
-            .filter((c) => !c.deleted && c.refs.some((r) => r.startsWith("message:")))
+            .filter((c) => !c.deleted && hasParent(c))
             .map((c) => ({...c, who: c.seen[0]})),
         ...rows("question")
             .filter((q) => !q.deleted)
@@ -158,9 +164,8 @@ async function post(text, files) {
     await nextTick();
     toBottom();
     try {
-        const message = await create(route.value.env, "message", {title: titled(body), brief: body, about});
-        for (const f of files) await upload(message.n, f);
-        await reload();
+        const result = await sendMessage(route.value.env, {title: titled(body), brief: body, about}, files);
+        if (!result.queued) await reload();
     } finally {
         pending.value = pending.value.filter((p) => p !== placeholder);
         Object.values(placeholder.data.previews).forEach(URL.revokeObjectURL);
@@ -227,20 +232,8 @@ async function promised(body, files) {
     return turn;
 }
 
-function titled(text) {
-    const line = text.split("\n").find((part) => part.trim() && !part.startsWith(">")) || text;
-    return line.replace(/:/g, " -").replace(/\s+/g, " ").trim().slice(0, 80);
-}
-
 async function pin(text, about = "") {
     await create(route.value.env, "notice", {title: titled(text), about: about || undefined});
-}
-
-async function upload(n, file) {
-    const body = new FormData();
-    body.append("file", file, file.name);
-    const res = await fetch(`/api/${route.value.env}/message/${n}/upload`, {method: "POST", body});
-    if (!res.ok) throw new Error((await res.json()).error || res.statusText);
 }
 
 watch(busy, async () => {

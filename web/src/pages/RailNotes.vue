@@ -10,6 +10,10 @@ const notes = computed(() => [...rows("notification")].reverse());
 const unread = computed(() => notes.value.filter((n) => !n.seen.includes("user")));
 const shown = computed(() => (sub.value === "unread" ? unread.value : notes.value.filter((n) => n.seen.includes("user"))));
 const reading = ref(false);
+const noteTitle = (n) => {
+    const number = (n.refs[0] || "").split(":")[1];
+    return number ? n.title.replace(` ${number}`, "") : n.title;
+};
 
 async function readAll() {
     reading.value = true;
@@ -61,20 +65,25 @@ async function openNote(n) {
             @click="openNote(n)"
         >
             <span class="rail-note-head">
-                <span class="rail-row-title">{{ n.title }}</span>
-                <span class="rail-row-state">{{ age(n.created) }}</span>
+                <span class="rail-row-title">{{ noteTitle(n) }}</span>
             </span>
             <template v-if="n.abstract">
                 <span class="rail-note-text">{{ n.abstract }}</span>
             </template>
+            <span class="rail-note-foot">
+                <span class="rail-note-ref">{{ n.refs[0] || "" }}</span>
+                <span class="rail-row-state">{{ age(n.created) }}</span>
+            </span>
         </button>
     </TransitionGroup>
-    <div class="rail-foot">
-        <button type="button" class="rail-foot-act" :disabled="reading || !unread.length" @click="readAll">
-            <span v-if="reading" class="rail-foot-spinner" />
-            {{ reading ? "Marking…" : "Mark all as read" }}
-        </button>
-    </div>
+    <template v-if="sub === 'unread' && unread.length">
+        <div class="rail-foot">
+            <button type="button" class="rail-foot-act" :disabled="reading" @click="readAll">
+                <span v-if="reading" class="rail-foot-spinner" />
+                {{ reading ? "Marking…" : "Mark all as read" }}
+            </button>
+        </div>
+    </template>
 </template>
 
 <style scoped>
@@ -231,6 +240,19 @@ async function openNote(n) {
     font-size: 11.5px;
     color: var(--text-3);
     line-height: 1.4;
+}
+.rail-note-foot {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-3);
+    font-size: 10.5px;
+}
+.rail-note-ref {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
 }
 .rail-foot {
     position: sticky;

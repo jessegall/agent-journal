@@ -4,7 +4,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from controllers.types import Comments, Questions, Todos  # noqa: E402
 from resources.base import AGENT, USER  # noqa: E402
-from tests.kit import check, done, fresh  # noqa: E402
+from tests.kit import check, done, fresh, refused  # noqa: E402
 
 record = fresh()
 todo = Todos(record, actor=USER).create("a row")
@@ -17,6 +17,10 @@ q = asked.create("which colour", abstract="the header is grey today", about=todo
 check("the question links what it is about", q.refs, [todo.ref])
 check("its words: ask, answer; its labels: Context and Answer", (asked.named("create"), asked.named("complete"), q.labels), ("ask", "answer", {"outcome": "Answer", "abstract": "Context"}))
 check("the user has not seen it; the agent has", (answered.unread() and [x.n for x in answered.unread()], q.seen), ([1], [AGENT]))
+
+legacy = asked.create("which mode", options=[{"label": "fast", "value": "quick", "description": "short path"}])
+check("question options normalize label and value to the viewer shape", legacy.data["options"], [{"description": "short path", "title": "fast", "code": "quick"}])
+check("an option without a title or label is refused", refused(lambda: asked.create("which mode", options=[{"description": "missing label"}])), "options.title is required")
 
 # ANSWERING is the user's complete; the answer lives on the question and in the event
 answered.complete(q.n, "green")

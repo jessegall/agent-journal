@@ -217,10 +217,8 @@ def supervise(ctx, agent: str) -> str:
 
 
 def serve_forever(ctx) -> str:
-    from serve import serve
-    server = serve(ctx["record"].root, ctx["port"])
-    print(f"http://127.0.0.1:{server.server_address[1]}/")
-    server.serve_forever()
+    from serve import run
+    run(ctx["record"].root, ctx["port"])
     return ""
 
 

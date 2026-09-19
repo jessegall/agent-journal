@@ -1,9 +1,10 @@
 <script setup>
-import {computed, ref} from "vue";
+import {computed, onMounted, onUnmounted, ref} from "vue";
 import SwitchCase from "../kit/SwitchCase.vue";
 import {route} from "../route.js";
 import {detach, open, store, types, unreadByUser} from "../store.js";
 import Thread from "../chat/Thread.vue";
+import ThreadSkeleton from "../chat/ThreadSkeleton.vue";
 import Notice from "../chat/Notice.vue";
 import AgentBar from "../chat/AgentBar.vue";
 import RailWaiting from "./RailWaiting.vue";
@@ -11,6 +12,14 @@ import RailTodos from "./RailTodos.vue";
 import RailNotes from "./RailNotes.vue";
 
 const tab = ref("waiting");
+const ready = ref(false);
+let frame = 0;
+onMounted(() => {
+    frame = requestAnimationFrame(() => {
+        frame = requestAnimationFrame(() => (ready.value = true));
+    });
+});
+onUnmounted(() => cancelAnimationFrame(frame));
 const notices = computed(() => open("notice"));
 const tabs = computed(() => [
     ["waiting", "Highlights", types.value.filter((t) => t.attention).flatMap((t) => unreadByUser(t.name)).length, true],
@@ -21,7 +30,10 @@ const tabs = computed(() => [
 
 <template>
     <div class="home">
-        <div class="home-main">
+        <div v-if="!ready" class="home-loading">
+            <ThreadSkeleton />
+        </div>
+        <div v-else class="home-main">
             <section :class="['home-section', 'home-thread', {roomy: !store.activity}]">
                 <AgentBar />
                 <TransitionGroup name="act">
@@ -98,6 +110,13 @@ const tabs = computed(() => [
     display: flex;
     flex-direction: column;
     min-height: 0;
+}
+
+.home-loading {
+    flex: 1;
+    min-height: 0;
+    max-width: 1080px;
+    display: flex;
 }
 
 .home-main {

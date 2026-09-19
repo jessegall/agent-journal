@@ -5,6 +5,7 @@ from resources.shapes import FLAG, TEXT, Field, Options, Ranked, Reasoned, Shape
 class Message(Shape, Resource):
     type = "message"
     icon = "mail"
+    idempotency = Field(TEXT)
     names = {"complete": "processed"}
     title_ = "Message"
     abstract_ = "What the user left for the agent, or the agent for the user"
@@ -98,7 +99,7 @@ class Pin(Reasoned, Resource):
 
 class Rule(Reasoned, Resource):
     type = "rule"
-    targets = Field(default=list)
+    injected = Field(FLAG)
     handed = "RULES, in force on every environment"
     lent = False
     attention = True

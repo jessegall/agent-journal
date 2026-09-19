@@ -96,7 +96,7 @@ async function save() {
             </form>
         </template>
         <template v-else-if="resource.abstract">
-            <p class="abstract">{{ resource.abstract }}</p>
+            <Markdown class="abstract" :text="resource.abstract" />
         </template>
         <div v-if="!editing" class="controls">
             <ResourceActions :resource="resource" @edit="edit" />
@@ -113,12 +113,7 @@ async function save() {
                 <template v-if="kind.labels.brief">
                     <h3>{{ kind.labels.brief }}</h3>
                 </template>
-                <template v-if="kind.view === 'document'">
-                    <Markdown :text="resource.brief" />
-                </template>
-                <template v-else>
-                    <div class="text">{{ resource.brief }}</div>
-                </template>
+                <Markdown :text="resource.brief" />
             </section>
         </template>
         <Sections :sections="resource.sections" />
@@ -136,7 +131,7 @@ async function save() {
                         )
                     }}
                 </h3>
-                <div class="text">{{ resource.outcome || age(resource.completed) }}</div>
+                <Markdown :text="resource.outcome || age(resource.completed)" />
             </section>
         </template>
         <template v-if="files.length">
@@ -255,10 +250,6 @@ async function save() {
     color: var(--text-3);
     text-transform: uppercase;
     letter-spacing: 0.04em;
-}
-.text {
-    white-space: pre-wrap;
-    color: var(--text-2);
 }
 .file {
     display: flex;

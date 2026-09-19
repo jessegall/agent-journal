@@ -41,6 +41,22 @@ onMounted(() => nextTick(shaped));
 const mine = computed(() => props.turn.who === "user");
 const words = computed(() => quoted(props.turn.brief || props.turn.title));
 const html = computed(() => render(words.value.text, {types: types.value, env: route.value.env}));
+const commentParent = computed(() => {
+    if (props.turn.type !== "comment") return null;
+    const parent = props.turn.refs.find((ref) => {
+        const [type] = ref.split(":");
+        return type !== "comment" && meta(type);
+    });
+    if (!parent) return null;
+    const [type, n] = parent.split(":");
+    return {type, n: Number(n), label: `${meta(type).title.toLowerCase()} ${n}`};
+});
+const messageReply = computed(() => commentParent.value?.type === "message");
+const resourceComment = computed(() => !!commentParent.value && !messageReply.value);
+
+function openComment() {
+    if (commentParent.value) peek(commentParent.value.type, commentParent.value.n, props.turn.n);
+}
 
 function toQuoted() {
     const ref = props.turn.refs.find((r) => rows(r.split(":")[0]).length && r !== props.turn.ref);
@@ -54,6 +70,7 @@ function follow(e) {
     const pill = e.target.closest("[data-peek]");
     if (!pill) return;
     e.preventDefault();
+    e.stopPropagation();
     const [type, n] = pill.dataset.peek.split(":");
     peek(type, Number(n));
 }
@@ -64,14 +81,15 @@ function worded(ref, word) {
 const became = computed(() => {
     const declared = props.turn.sections.flatMap((s) =>
         s.body.split(/,\s*/).map((word) => ({part: s.title, word: worded(refOf(word), word), ref: refOf(word)}))
-    );
+    ).filter((b) => b.ref.type);
     const named = new Set(declared.map((b) => `${b.ref.type}:${b.ref.n}`));
     const linked = props.turn.refs
-        .filter((ref) => !named.has(ref) && meta(ref.split(":")[0]))
+        .filter((ref) => !named.has(ref) && refOf(ref).type)
         .map((ref) => ({part: "filed while this message was in hand", word: worded(refOf(ref), ref), ref: refOf(ref)}));
     const seen = new Set();
     const quotedMessage = (b) => words.value.quote && b.ref.type === "message" && props.turn.refs.includes(`message:${b.ref.n}`);
     return [...declared, ...linked]
+        .filter((b) => b.ref.type !== "comment")
         .filter((b) => !quotedMessage(b))
         .filter((b) => !b.ref.type || (!seen.has(`${b.ref.type}:${b.ref.n}`) && seen.add(`${b.ref.type}:${b.ref.n}`)))
         .map((b) => ({...b, type: b.ref.type, n: b.ref.n}));
@@ -97,7 +115,7 @@ async function react(face) {
 }
 
 async function drop() {
-    await act(route.value.env, "message", props.turn.n, "delete", {why: "deleted from the viewer"});
+    await act(route.value.env, props.turn.type, props.turn.n, "delete", {why: "deleted from the viewer"});
 }
 </script>
 
@@ -109,22 +127,23 @@ async function drop() {
     </template>
     <template v-else>
         <div
-            :class="['thread-turn', {mine, ask: turn.type === 'question', lit: store.focus === turn.ref}]"
+            :class="['thread-turn', {mine, ask: turn.type === 'question', lit: store.focus === turn.ref, 'comment-origin': resourceComment}]"
             :data-ref="turn.ref"
             @mouseleave="picking = false"
         >
-            <div ref="bubble" class="thread-bubble md">
+            <div ref="bubble" class="thread-bubble md" @click="resourceComment && openComment()">
+                <template v-if="resourceComment">
+                    <button type="button" class="thread-comment-context" @click.stop="openComment">
+                        <Icon name="bubble" :size="12" />
+                        Comment on {{ commentParent.label }}
+                    </button>
+                </template>
                 <template v-if="became.length">
                     <div :class="['thread-became', {live: !turn.completed}]">
                         <template v-for="(b, i) in became" :key="i">
-                            <template v-if="b.type">
-                                <button type="button" class="thread-pill" :title="b.part" @click="peek(b.type, b.n)">
-                                    {{ b.word }}
-                                </button>
-                            </template>
-                            <template v-else>
-                                <span class="thread-pill" :title="b.part">{{ b.word }}</span>
-                            </template>
+                            <button type="button" class="thread-pill" :title="b.part" @click.stop="peek(b.type, b.n)">
+                                {{ b.word }}
+                            </button>
                         </template>
                     </div>
                 </template>
@@ -132,7 +151,7 @@ async function drop() {
                     <p class="thread-ask-label">Question</p>
                 </template>
                 <template v-if="words.quote">
-                    <p class="thread-quote" title="Go to what this answers" @click.stop="toQuoted">{{ words.quote }}</p>
+                    <p class="thread-quote" title="Go to what this answers" @click.stop="resourceComment ? openComment() : toQuoted">{{ words.quote }}</p>
                 </template>
                 <div class="thread-text" @click="follow" v-html="html" />
                 <template v-if="turn.type === 'question'">
@@ -294,9 +313,39 @@ async function drop() {
     transition: opacity 0.12s ease;
 }
 
+.thread-comment-context {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 0 6px;
+    margin: -2px -12px 6px;
+    border: 0;
+    background: none;
+    color: var(--blocking);
+    font: inherit;
+    font-size: 10.5px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    cursor: pointer;
+}
+
+.thread-comment-context:hover {
+    color: var(--text);
+}
+
 .thread-turn.mine .thread-bubble {
     border-color: color-mix(in srgb, var(--accent) 45%, transparent);
     background: color-mix(in srgb, var(--accent) 14%, transparent);
+}
+
+.thread-turn.comment-origin .thread-bubble {
+    border-color: color-mix(in srgb, var(--blocking) 45%, var(--border-2));
+    background: color-mix(in srgb, var(--blocking) 9%, #161719);
+    cursor: pointer;
+}
+
+.thread-turn.mine .thread-text {
+    padding-bottom: 4px;
 }
 
 .thread-turn.ask .thread-bubble {
@@ -493,8 +542,16 @@ button.thread-pill:hover {
     font-size: 11px;
 }
 
-.thread-text :deep(.console-more[open] summary) {
+.thread-text :deep(.console-more-expanded) {
     display: none;
+}
+
+.thread-text :deep(.console-more[open] .console-more-collapsed) {
+    display: none;
+}
+
+.thread-text :deep(.console-more[open] .console-more-expanded) {
+    display: inline;
 }
 
 .thread-context {

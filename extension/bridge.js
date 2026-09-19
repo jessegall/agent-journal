@@ -21,6 +21,8 @@
     if (kind === "hello") return ask({ kind: "following" }, (got) => tell("here", { holding: !!(got && got.on) }));
     // the chat in the window asks for the page under it: point at an element, or send a picture of one
     if (kind === "point" || kind === "shot") return ask({ kind });
+    if (kind === "outbox-get") return ask({ kind }, (got) => tell("outbox", { request: e.data.request, value: got && got.value }));
+    if (kind === "outbox-set") return ask({ kind, value: e.data.value }, (got) => tell("outbox", { request: e.data.request, value: !!(got && got.ok) }));
     if (kind === "detach" || kind === "attach") {
       ask({ kind: "follow", on: kind === "detach" }, (got) => {
         if (!got) return tell("failed");
