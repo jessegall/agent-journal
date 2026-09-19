@@ -12,6 +12,14 @@ from resources.types import AgentRow, COMMAND, RUNNING
 WRITES = ("Edit", "Write", "MultiEdit", "NotebookEdit")
 WRITING_COMMANDS = re.compile(r"(^|[;&|]\s*)(rm|mv|cp|git (commit|push|rm|mv)|sed -i|tee|touch|mkdir|npm install|pip install)\b|(?<![\d&])>>?\s*(?!/dev/null|&)\S")
 RING = 12
+START = r"(?:^|[;&|(]\s*|\b(?:do|then)\s+)"
+EFFECTS = (
+    ("tests", re.compile(START + r"(?:\S*python3?\s+(?:-m\s+)?\S*tests?/\S*|pytest|npm (?:run )?test|npx (?:vitest|jest)|vitest|jest|go test|cargo test|phpunit|php artisan test)\b")),
+    ("tests", re.compile(r"(?=.*\btest_)(?=.*\bpython3?\s+\"?\$\w)", re.S)),
+    ("deletes", re.compile(START + r"(?:rm|rmdir|unlink|git rm)\s")),
+    ("writes", re.compile(WRITING_COMMANDS.pattern + r"|" + START + r"(?:perl\s+-\w*i|sed\s+-i)|\.write_text\(|\.write\(|open\([^)]*['\"][wa]['\"]|<<-?\s*['\"]?EOF")),
+    ("reads", re.compile(r"^\s*(?:cd \S+\s*(?:&&|;)\s*)?(?:cat|head|tail|less|grep|rg|sed -n|wc|ls|find|tree|stat)\b")),
+)
 JOURNAL_COMMAND = re.compile(r"(^|[;&|]\s*)(\S*journal(\.py)?)\s")
 
 
@@ -69,11 +77,18 @@ class Provider(ABC):
         if hook.event == "PreToolUse" and doing:
             now = time.time()
             changed = running.get(RUNNING.changed)
-            running = {RUNNING.what: doing, RUNNING.tool: hook.tool.name, RUNNING.at: now, **({RUNNING.changed: changed} if changed else {})}
+            effect = self.effect(hook)
+            running = {RUNNING.what: doing, RUNNING.tool: hook.tool.name, RUNNING.at: now, **({RUNNING.effect: effect} if effect else {}),
+                       **({RUNNING.changed: changed} if changed else {})}
             return {AgentRow.running: running, AgentRow.commands: (list(row.commands) + [{COMMAND.what: doing, COMMAND.tool: hook.tool.name, COMMAND.at: now}])[-RING:]}
         if running and not running.get(RUNNING.done):
             running[RUNNING.done] = time.time()
         return {AgentRow.running: running, AgentRow.commands: list(row.commands)}
+
+    def effect(self, hook: Hook) -> str:
+        if hook.tool.name != "Bash" or JOURNAL_COMMAND.search(hook.command):
+            return ""
+        return next((name for name, pattern in EFFECTS if pattern.search(hook.command)), "")
 
     def context(self, hook: Hook) -> float | None:
         return None

@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.9.3 — The status bar says what a command does
+
+While the agent works, a shell command that runs tests shows as running tests, one that removes files as deleting files, one that writes as making edits and one that only reads as reading files; every other command keeps its gist. The provider reports the effect with the running command, the viewer chooses the words. Also: message titles are made in one place, on the server, and a long one is cut at a word with an ellipsis; highlights and notifications list newest first; the chat skeleton is shimmering message shapes that fill the height.
+
+What to do about it: `journal upgrade`.
+
 ## 2.9.2 — Answered first, on the same port
 
 The server answers a hook before running the features on its write, so a tool call waits only on what can stop it. A viewer that starts again takes the port it had before when that port is free, and its heartbeat notes its process so it can be restarted in place. The prose-choices check no longer holds the agent for a line that merely names an open question.

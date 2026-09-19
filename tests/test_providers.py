@@ -13,6 +13,7 @@ from engine.record import Record  # noqa: E402
 from features.auto.policy import QUESTION_REFUSAL  # noqa: E402
 from providers import PROVIDERS  # noqa: E402
 from providers.payload import Hook  # noqa: E402
+from resources.types import AgentRow  # noqa: E402
 from resources.base import SYSTEM  # noqa: E402
 from tests.kit import check, done  # noqa: E402
 
@@ -101,5 +102,27 @@ for name, cls in PROVIDERS.items():                       # every provider, the 
         child = project / "child.jsonl"
         child.write_text("bad json\n" + json.dumps({"type": "session_meta", "payload": {"source": {"subagent": {"thread_spawn": {"parent_thread_id": "main-thread"}}}}}) + "\n")
         check("codex: a native subagent transcript reports its parent session", provider.session(child)["parent"], "main-thread")
+
+# A SHELL COMMAND'S EFFECT is a fact the provider reports with the running command
+effects = {
+    "python3 tests/test_gist.py 2>&1 | tail -2": "tests",
+    "for t in $(find tests -name 'test_*.py'); do python3 $t; done": "tests",
+    "cd web && npm test": "tests",
+    "rm -rf build": "deletes",
+    "git rm old.py": "deletes",
+    "python3 - <<'EOF'\nfrom pathlib import Path\nPath('a').write_text('x')\nEOF": "writes",
+    "sed -i '' 's/a/b/' f.py": "writes",
+    "echo hi > out.txt": "writes",
+    "cat a.py": "reads",
+    "grep -n foo x.py | head": "reads",
+    "cd web && npm run build": "",
+    "git status": "",
+    "journal todo all": "",
+}
+claude = PROVIDERS["claude"]()
+check("each shell command is classified by what it does", {c: claude.effect(Hook.read({"hook_event_name": "PreToolUse", "tool_name": "Bash", "tool_input": {"command": c}})) for c in effects}, effects)
+check("a tool that is not the shell has no effect to report", claude.effect(Hook.read({"hook_event_name": "PreToolUse", "tool_name": "Read", "tool_input": {"file_path": "x"}})), "")
+running = claude.shell(AgentRow(n=1, title="s"), Hook.read({"hook_event_name": "PreToolUse", "tool_name": "Bash", "tool_input": {"command": "rm x", "description": "Remove x"}}))["running"]
+check("the effect rides on the running command", running.get("effect"), "deletes")
 
 done()
