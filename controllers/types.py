@@ -154,9 +154,6 @@ class Works(Controller):
                 raise Refused(f"todo {row.n} is assigned to {held}; nobody else may take it")
         return super().create(title, abstract, brief, **data)
 
-    def log(self, n: int, text: str):
-        return self.section(n, f"{len(self.load(n).sections) + 1} · {time.strftime('%Y-%m-%d %H:%M')}", text)
-
 
 DRAFT, READY, ACTIVE, WAITING, DONE, ABANDONED = "draft", "ready", "active", "waiting", "done", "abandoned"
 

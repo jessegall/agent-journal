@@ -1,12 +1,14 @@
 import json
 from abc import ABC
+from functools import wraps
 from typing import ClassVar
 
+from controllers.base import COMMANDS
 from controllers.types import Agents, CONTROLLERS, Nudges
 from engine import bus
 from features import trigger
 from engine.hooks import POLICIES, gate_file
-from resources.base import SYSTEM
+from resources.base import Refused, SYSTEM
 
 REGISTRY: dict[str, type] = {}
 
@@ -31,6 +33,13 @@ def refuses(fn):
     return fn
 
 
+def command(type_: str):
+    def mark(fn):
+        fn.command = type_
+        return fn
+    return mark
+
+
 class Feature(ABC):
     name: ClassVar[str] = ""
     title_: ClassVar[str] = ""
@@ -52,7 +61,20 @@ class Feature(ABC):
     def refusals(self) -> list:
         return [getattr(self, attr) for attr in dir(type(self)) for fn in [getattr(type(self), attr)] if callable(fn) and getattr(fn, "refuses", False)]
 
+    def commands(self) -> list:
+        return [getattr(self, attr) for attr in dir(type(self)) for fn in [getattr(type(self), attr)] if callable(fn) and getattr(fn, "command", "")]
+
+    def guarded(self, fn):
+        @wraps(fn)
+        def run(controller, *args, **kwargs):
+            if not self.enabled(controller.record):
+                raise Refused(f"the {self.name} feature is off")
+            return fn(controller, *args, **kwargs)
+        return run
+
     def register(self) -> None:
+        for fn in self.commands():
+            COMMANDS.setdefault(fn.command, {})[fn.__name__] = self.guarded(fn)
         for pattern, handler in self.listeners():
             bus.on(pattern, handler, enabled=self.enabled)
         for handler in self.refusals():

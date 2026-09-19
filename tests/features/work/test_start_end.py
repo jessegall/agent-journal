@@ -3,6 +3,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 import features  # noqa: E402
+from controllers.base import COMMANDS  # noqa: E402
 from controllers.types import Todos, Works  # noqa: E402
 from resources.base import AGENT, SYSTEM, USER  # noqa: E402
 from features.base import held  # noqa: E402
@@ -44,12 +45,12 @@ works.create("the header")
 idle(record)
 idle(record)
 check("open work with an empty log is said at each idle, asking for the log", nudges(record), ["work 1 open, nothing logged", "work 1 open, nothing logged"])
-works.log(1, "Chose the header, because the footer waits on it")
+works.action("log")(1, "Chose the header, because the footer waits on it")
 idle(record)
 check("once logged, the open work is said plainly", nudges(record)[-1], "work 1 open")
 entry = works.load(1).sections[0]
 check("a log entry is the message under its number and the time it was written", (entry["body"], entry["title"][:4], len(entry["title"])), ("Chose the header, because the footer waits on it", "1 · ", 20))
-works.log(1, "Then the footer")
+works.action("log")(1, "Then the footer")
 check("each entry is its own section", len(works.load(1).sections), 2)
 
 # EDITS without a log entry hold the writes until the work is logged
@@ -64,7 +65,7 @@ report(record, "working", "PostToolUse", wrote=False)
 check("a read is not an edit", held(record, "claude-1"), "")
 report(record, "working", "PostToolUse", wrote=True)
 check("at the limit the writes are held, naming the command", "journal work log 1" in held(record, "claude-1"), True)
-works.log(1, "Three edits in")
+works.action("log")(1, "Three edits in")
 check("a log entry releases the hold", held(record, "claude-1"), "")
 report(record, "working", "PostToolUse", wrote=True)
 check("and the count starts over", held(record, "claude-1"), "")
@@ -75,5 +76,9 @@ record.set_setting("features", {"work": False})
 todo = Todos(record, actor=USER).create("a row")
 work = Works(record, actor=AGENT).create("work", todo=todo.n)
 check("work switched off: nothing is linked", Works(record).load(work.n).refs, [])
+check("its log command refuses while the feature is off", refused(lambda: Works(record, actor=AGENT).action("log")(work.n, "x")), "the work feature is off")
+
+# THE LOG COMMAND is the feature's own, reached by its word like any other
+check("work log is registered by the feature, not the controller", ("log" in COMMANDS["work"], hasattr(Works, "log")), (True, False))
 
 done()

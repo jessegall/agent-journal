@@ -7,7 +7,7 @@ import time
 from dataclasses import dataclass
 from pathlib import Path
 
-from controllers.base import Controller
+from controllers.base import COMMANDS, Controller
 from controllers.types import Agents, CONTROLLERS
 import features
 import migrations
@@ -21,7 +21,7 @@ from providers import PROVIDERS
 from resources.base import AGENT, Refused, SYSTEM
 from resources.types import AgentRow
 
-HIDDEN = ("path", "numbers", "summaries", "load", "save", "named", "method", "sessions")
+HIDDEN = ("path", "numbers", "summaries", "load", "save", "named", "method", "action", "sessions")
 VERSION = next((f.read_text().strip() for f in (Path(__file__).resolve().parents[1] / "VERSION", Path(__file__).resolve().parents[1] / "VERSION") if f.is_file()), "0")
 
 
@@ -37,7 +37,8 @@ def truthy(word: str) -> bool:
 def add_method(acts, controller: type, name: str) -> None:
     a = acts.add_parser(controller.resource.names.get(name, name))
     a.set_defaults(method=name)
-    for p in list(inspect.signature(getattr(controller, name)).parameters.values())[1:]:
+    fn = COMMANDS.get(controller.resource.type, {}).get(name) or getattr(controller, name)
+    for p in list(inspect.signature(fn).parameters.values())[1:]:
         required = p.default is inspect.Parameter.empty
         flag = p.name if required else f"--{p.name}"
         if p.kind is inspect.Parameter.VAR_KEYWORD:
@@ -125,10 +126,11 @@ def parser(only: str = "") -> argparse.ArgumentParser:
     top.add_argument("--session", default=os.environ.get("JOURNAL_SESSION", ""))
     top.add_argument("--agent", default=os.environ.get("JOURNAL_AGENT", ""))
     cmds = top.add_subparsers(dest="command", required=True)
+    features.load()
     for type_, controller in CONTROLLERS.items():
         t = cmds.add_parser(type_, help=controller.resource.abstract_, description=controller.resource.help_)
         acts = t.add_subparsers(dest="action", required=True)
-        for name in actions(controller) if not only or only == type_ else ():
+        for name in sorted({*actions(controller), *COMMANDS.get(type_, {})}) if not only or only == type_ else ():
             add_method(acts, controller, name)
     add_query(cmds, "status", "where things stand", lambda ctx: queries.status(ctx["record"]))
     add_query(cmds, "carry", "everything standing, in full", lambda ctx: queries.carry(ctx["record"]))
@@ -291,8 +293,7 @@ def run(argv: list[str]) -> int:
             if why:
                 raise Refused(why)
         controller = CONTROLLERS[command](ctx["record"], actor=ctx["actor"], session=ctx["session"], agent=ctx["agent"])
-        fn = getattr(controller, method)
-        got = invoke(fn, args, extra)
+        got = invoke(controller.action(method), args, extra)
     except Refused as e:
         print(f"! {e}", file=sys.stderr)
         return 1

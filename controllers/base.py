@@ -3,6 +3,7 @@ import os
 import shutil
 import time
 from dataclasses import asdict
+from functools import partial
 from pathlib import Path
 
 from engine.record import Record
@@ -11,6 +12,7 @@ from resources.pictures import dimensions
 from resources.shapes import Options, check, normalize_options
 
 INDEX = "index.json"
+COMMANDS: dict[str, dict] = {}
 FACES = ("👍", "❤️", "🎉", "😄", "👀", "🙏", "👎", "💔", "😠")
 
 
@@ -136,7 +138,11 @@ class Controller:
                 return getattr(self, method)
         if name in self.resource.names:
             raise Refused(f"a {self.type} calls that {self.resource.names[name]}")
-        return getattr(self, name)
+        return self.action(name)
+
+    def action(self, name: str):
+        command = COMMANDS.get(self.type, {}).get(name)
+        return partial(command, self) if command else getattr(self, name)
 
     def restore(self, n: int) -> Resource:
         r = self.load(n)
