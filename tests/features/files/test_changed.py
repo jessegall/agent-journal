@@ -65,6 +65,21 @@ check("a journal reached through a symlink is still the journal's own, and so ar
 second = Agents(record, actor=SYSTEM).by_session("claude-1").running["changed"]
 check("one active turn accumulates changes across its writes", (second["edited"], second["created"] > first["created"], second["deleted"]), (first["edited"], True, 1))
 
+# A FILE THAT SHRINKS counts its lost lines as removed
+Agents(record, actor=SYSTEM).update(agent.n, running={"what": "shrink", "at": time.time(), "done": time.time()})
+(project / "fresh.txt").write_text("a\n")
+report(record, "working", "PostToolUse", tool="Bash", file="", wrote=True)
+shrunk = Agents(record, actor=SYSTEM).by_session("claude-1").running["changed"]
+check("a file cut from three lines to one shows two removed", (shrunk["added"], shrunk["removed"]), (0, 2))
+
+# COUNTS THAT ARRIVE AFTER THE NEXT COMMAND STARTED land on the command that made them, and the new one stays running
+agents = Agents(record, actor=SYSTEM)
+agents.update(agent.n, running={"what": "next", "at": time.time(), "before": {"what": "edit", "at": 1.0, "done": 2.0}})
+from features.files.feature import Files  # noqa: E402
+Files().count(record, agent.n, {"edited": 1, "created": 0, "deleted": 0, "added": 1, "removed": 0})
+running = agents.load(agent.n).running
+check("late counts go on the finished command, the running one is kept", (running["what"], running["before"]["changed"]["added"], "changed" in running), ("next", 1, False))
+
 # A COMMIT DURING THE WORK is recorded on it
 subprocess.run(["git", "add", "-A"], cwd=project, check=True)
 subprocess.run(["git", "-c", "user.email=t@t", "-c", "user.name=t", "commit", "-q", "-m", "the change"], cwd=project, check=True)

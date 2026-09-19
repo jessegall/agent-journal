@@ -156,7 +156,7 @@ watch(
         if (!before || before.at === held) return;
         held = before.at;
         stay.value = lineFor(before);
-        apply(before.changed || {});
+        apply(before.changed || {}, true);
         clearTimeout(staying);
         staying = setTimeout(() => {
             stay.value = null;
@@ -203,10 +203,10 @@ function concealDelta() {
 function revealDelta() {
     if (hide) clearTimeout(hide);
     hide = setTimeout(concealDelta, HIDE_AFTER);
-    showDelta.value = !!data.value && delta.value.length > 0;
+    showDelta.value = !!data.value;
 }
 
-function apply(changed) {
+function apply(changed, always = false) {
     if (!changed) {
         concealDelta();
         return;
@@ -216,8 +216,8 @@ function apply(changed) {
     Object.assign(measured, next);
     count("added", next.added);
     count("removed", next.removed);
-    if (increased) revealDelta();
-    else if (!next.added && !next.removed) concealDelta();
+    if (!next.added && !next.removed) concealDelta();
+    else if (increased || always) revealDelta();
 }
 
 watch(target, (changed) => stay.value || apply(changed), {immediate: true});
