@@ -1,4 +1,6 @@
 import inspect
+import os
+import shutil
 from pathlib import Path
 
 import features
@@ -6,6 +8,8 @@ from commands.cli import actions
 from controllers.types import CONTROLLERS
 
 HERE = Path(__file__).resolve().parent
+LIBRARY = ".agents/skills"
+LINKED = {"claude": ".claude/skills"}
 
 
 def signature(controller: type, name: str) -> str:
@@ -68,3 +72,37 @@ def write(folder: Path) -> list[Path]:
         f.write_text(text)
         written.append(f)
     return written
+
+
+def link(project: Path, name: str, agents: tuple[str, ...] = tuple(LINKED)) -> list[Path]:
+    source = project / LIBRARY / name
+    links = []
+    for agent in agents:
+        target = project / LINKED[agent] / name
+        target.parent.mkdir(parents=True, exist_ok=True)
+        if target.is_symlink() or target.is_file():
+            target.unlink()
+        elif target.is_dir():
+            shutil.rmtree(target)
+        target.symlink_to(os.path.relpath(source, target.parent))
+        links.append(target)
+    return links
+
+
+def unlink(project: Path, name: str) -> None:
+    for home in (LIBRARY, *LINKED.values()):
+        target = project / home / name
+        if target.is_symlink():
+            target.unlink()
+        elif target.is_dir():
+            shutil.rmtree(target)
+
+
+def publish(project: Path, agents: tuple[str, ...]) -> tuple[list[Path], list[Path]]:
+    written = write(project / LIBRARY)
+    names = sorted({f.parent.name for f in written})
+    for stale in (project / ".codex" / "skills").glob("journal*"):
+        if stale.is_dir() and not stale.is_symlink():
+            shutil.rmtree(stale)
+    linked = [t for name in names for t in link(project, name, tuple(a for a in agents if a in LINKED))]
+    return written, linked

@@ -25,7 +25,13 @@ const QUERIES = {
 };
 
 function ing(word) {
-    return word.endsWith("e") ? `${word.slice(0, -1)}ing` : `${word}ing`;
+    if (word.endsWith("e")) return `${word.slice(0, -1)}ing`;
+    if (/[^aeiou][aeiou][bdgmnprt]$/.test(word)) return `${word}${word.slice(-1)}ing`;
+    return `${word}ing`;
+}
+
+function fallback(said, name, n) {
+    return said.endsWith("s") ? `the ${said} of ${name} ${n}` : `${ing(said)} ${name} ${n}`;
 }
 
 export function spoken(words, types) {
@@ -38,5 +44,5 @@ export function spoken(words, types) {
     const method = Object.entries(kind.names).find(([, w]) => w === said);
     const action = method ? method[0] : said;
     const say = SAID[said] || SAID[action];
-    return say ? say(name, n).trim() : `${ing(said)} ${name} ${n}`.trim();
+    return say ? say(name, n).trim() : fallback(said, name, n).trim();
 }

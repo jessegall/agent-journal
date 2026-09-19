@@ -8,7 +8,7 @@ from providers.base import EVENTS, Provider
 from resources.types import AgentRow
 
 TOOLS = {"exec": "Bash", "exec_command": "Bash", "shell": "Bash", "shell_command": "Bash", "apply_patch": "Edit"}
-SKILL_PATH = re.compile(r"\.codex/skills/(journal(?:-[\w-]+)?)/SKILL\.md")
+SKILL_PATH = re.compile(r"\.(?:codex|agents)/skills/(journal(?:-[\w-]+)?)/SKILL\.md")
 SKILL_LOOP = re.compile(r"for\s+\w+\s+in\s+([^;]+);\s*do")
 
 
@@ -94,7 +94,7 @@ class Codex(Provider):
         if "tools.exec_command" not in text:
             return uses
         found = set(SKILL_PATH.findall(text))
-        if ".codex/skills/$s/SKILL.md" in text:
+        if "/skills/$s/SKILL.md" in text:
             loop = SKILL_LOOP.search(text)
             if loop:
                 found.update(word for word in loop.group(1).split() if word == "journal" or word.startswith("journal-"))
