@@ -9,6 +9,7 @@ ANSI = re.compile(rb"\x1b\[[0-?]*[ -/]*[@-~]|\x1b\][^\x07\x1b]*(?:\x07|\x1b\\)|\
 
 
 class Driver(ABC):
+    STOP = b"\x1b"
     name = ""
     AUTO_ARGS = ()
     APPROVAL_FLAGS = frozenset()
@@ -40,6 +41,12 @@ class Driver(ABC):
             time.sleep(ENTER_AFTER)
             os.write(self.fd, b"\r")
         except OSError:                                   # the agent is gone: nothing to type into
+            self.fd = -1
+
+    def stop_turn(self) -> None:
+        try:
+            os.write(self.fd, self.STOP)
+        except OSError:
             self.fd = -1
 
     def interrupt(self) -> None:

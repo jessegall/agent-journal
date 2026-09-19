@@ -25,6 +25,7 @@ export const agentControls = (provider, model = "") =>
     api("GET", `/agent-controls/${encodeURIComponent(provider)}${model ? `?model=${encodeURIComponent(model)}` : ""}`);
 export const controlAgent = (env, session, action, value) =>
     api("POST", `/${env}/agent/${encodeURIComponent(session)}/control`, {action, value});
+export const forceAgent = (env, session) => api("POST", `/${env}/agent/${encodeURIComponent(session)}/force`);
 export const agentUsage = (provider) => api("GET", `/agent-usage/${encodeURIComponent(provider)}`);
 export const all = (env, type, base = "") => api("GET", `/${env}/${type}`, undefined, base);
 export const recent = (env, type, last) => api("GET", `/${env}/${type}?last=${last}`);

@@ -10,10 +10,10 @@ from commands.http import dispatch
 from controllers.types import Agents
 from engine.drivers import Driver
 from engine.engine import Engine
-from engine.inputs import queue, take
+from engine.inputs import FORCE, queue, take
 from engine.record import Record
 from engine.sessions import Sessions
-from features.sessioncontrol.control import options, request
+from features.sessioncontrol.control import CARRY_ON, force, options, request
 from providers.codex import Codex
 from resources.base import SYSTEM
 from resources.types import AgentRow
@@ -116,5 +116,34 @@ with patch.object(Codex, "catalog", classmethod(lambda cls, path=None: models)),
     for path in (root / "runtime" / "inputs").glob("*.json"):
         path.write_text(json.dumps({**json.loads(path.read_text()), "at": time.time() - 3600}))
     check("a control left waiting for an hour is dropped, not typed late", (take(root, {"codex-live"}), list((root / "runtime" / "inputs").glob("*.json"))), ({}, []))
+
+    class Busy(FakeCodex):
+        def __init__(self, record):
+            super().__init__(record)
+            self.status, self.stopped = "working", 0
+
+        def stop_turn(self):
+            self.stopped += 1
+            self.status = "idle"
+
+        def last_report(self):
+            return AgentRow(title="codex-live", data={"status": self.status, "event": "PreToolUse" if self.status == "working" else "Stop", "provider": "codex", "at": time.time()})
+
+        def quiet_for(self):
+            return 0.0 if self.status == "working" else 30.0
+
+    busy = Busy(record)
+    forcing = Engine(record, busy)
+    request(root, "main", "codex-live", "effort", "high")
+    check("while the agent works, a queued change waits", (forcing.control(), busy.sent), ("", []))
+    check("an agent that is not busy is never forced", (Engine(record, Supervised(record)).forced(), busy.stopped), ("", 0))
+    force(root, "main", "codex-live")
+    check("force stops the agent's turn with its stop key", (forcing.forced(), busy.stopped), ("forced: stopping the turn for a waiting change", 1))
+    forcing.controlled_at = 0
+    forcing.control()
+    check("once idle, the change is typed and the agent is told to carry on", busy.sent, ["/model", CARRY_ON])
+    check("force takes the offline check like any control", refused(lambda: force(root, "main", "gone")), "session 'gone' is not online")
+    while take(root, {"codex-live"}) or take(root, {"codex-live"}, FORCE):
+        pass
 
 done()

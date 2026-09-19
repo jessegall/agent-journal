@@ -7,7 +7,8 @@ from controllers.types import CONTROLLERS, Agents
 import features
 from engine import bus
 from engine.actors import Actor, Agent, BUSY, COMPACTING, IDLE, STOPPED, System, User, WORKING
-from engine.inputs import take
+from engine.inputs import FORCE, take
+from features.sessioncontrol.control import CARRY_ON
 from engine import steps
 from engine.record import Record
 from engine.terminal import pid_of
@@ -47,6 +48,7 @@ class Engine:
         self.probed_at = 0.0
         self.controlled_at = 0.0
         self.stepped = ""
+        self.carry_on = False
         self.why = ""
 
     def start(self) -> None:
@@ -58,7 +60,7 @@ class Engine:
 
     def tick(self) -> str:
         self.relay()
-        self.why = self.follow() or self.probe() or self.control() or self.deliver() or self.nudge()
+        self.why = self.follow() or self.probe() or self.forced() or self.control() or self.deliver() or self.nudge()
         self.seat()
         return self.why
 
@@ -112,15 +114,29 @@ class Engine:
             return "silent for two minutes: probing with Ctrl-C"
         return ""
 
+    def names(self) -> set[str]:
+        last = self.agent.driver.last_report()
+        return {self.agent.driver.session, *([last.title] if last and last.title else [])}
+
+    def forced(self) -> str:
+        if self.agent.state() == IDLE or not take(self.record.root, self.names(), FORCE):
+            return ""
+        self.agent.driver.stop_turn()
+        self.carry_on = True
+        return "forced: stopping the turn for a waiting change"
+
     def control(self) -> str:
         if self.agent.state() != IDLE or time.time() - self.controlled_at < TICK:
             return ""
         last = self.agent.driver.last_report()
-        queued = take(self.record.root, {self.agent.driver.session, *([last.title] if last and last.title else [])})
+        queued = take(self.record.root, self.names())
         if not queued:
             return ""
         self.agent.driver.send(queued["line"])
         self.controlled_at = time.time()
+        if self.carry_on:
+            self.carry_on = False
+            self.agent.driver.send(CARRY_ON)
         row = Agents(self.record, actor=SYSTEM).by_session((last and last.title) or self.agent.driver.session)
         if queued.get("action") in row.pending:
             self.agent.mark(row.status or "", row.event or "", pending={k: v for k, v in row.pending.items() if k != queued["action"]})
