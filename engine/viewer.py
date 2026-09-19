@@ -9,6 +9,8 @@ import webbrowser
 from pathlib import Path
 from urllib.request import urlopen
 
+from features.tabfocus.focus import existing_tab
+
 PORTS = range(8420, 8440)
 URL = re.compile(r"http://127\.0\.0\.1:\d+/")
 
@@ -112,8 +114,8 @@ def start(root: Path, project: Path) -> str:
     return ""
 
 
-def ensure(root: Path, project: Path, opener=webbrowser.open) -> str:
+def ensure(root: Path, project: Path, opener=webbrowser.open, focuser=existing_tab) -> str:
     url = start(root, project)
-    if url:
+    if url and not focuser(url):
         opener(url)
     return url

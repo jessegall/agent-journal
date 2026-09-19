@@ -20,7 +20,9 @@ viewer.note(Path("/elsewhere/.journal"), "http://127.0.0.1:8421/")
 viewer.forget("/elsewhere/.journal")
 check("one entry per root, and forget drops one", [j["root"] for j in viewer.known()], [str(root.resolve())])
 opened = []
-check("a journal launcher reuses and opens the project's viewer", (ensure(root, root.parent, opened.append), opened), (url, [url]))
+focused = []
+check("a journal launcher focuses the existing project viewer tab", (ensure(root, root.parent, opened.append, lambda found: focused.append(found) or True), focused, opened), (url, [url], []))
+check("a journal launcher opens the viewer when its tab is missing", (ensure(root, root.parent, opened.append, lambda _: False), opened), (url, [url]))
 server.shutdown()
 
 launched = []
