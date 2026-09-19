@@ -105,15 +105,15 @@ class Provider(ABC):
         return hook.tool.name == "Bash" and not JOURNAL_COMMAND.search(hook.command) and bool(WRITING_COMMANDS.search(hook.command))
 
     def shell(self, row, hook: Hook) -> dict:
-        command = hook.command.strip()[:400]
+        doing = hook.tool.doing.strip()[:400]
         running = dict(row.running)
         if hook.event == "UserPromptSubmit":
             return {AgentRow.running: {}, AgentRow.commands: list(row.commands)}
-        if hook.event == "PreToolUse" and command:
+        if hook.event == "PreToolUse" and doing:
             now = time.time()
             changed = running.get(RUNNING.changed)
-            running = {RUNNING.what: command, RUNNING.at: now, **({RUNNING.changed: changed} if changed else {})}
-            return {AgentRow.running: running, AgentRow.commands: (list(row.commands) + [{COMMAND.what: command, COMMAND.at: now}])[-RING:]}
+            running = {RUNNING.what: doing, RUNNING.tool: hook.tool.name, RUNNING.at: now, **({RUNNING.changed: changed} if changed else {})}
+            return {AgentRow.running: running, AgentRow.commands: (list(row.commands) + [{COMMAND.what: doing, COMMAND.tool: hook.tool.name, COMMAND.at: now}])[-RING:]}
         if running and not running.get(RUNNING.done):
             running[RUNNING.done] = time.time()
         return {AgentRow.running: running, AgentRow.commands: list(row.commands)}

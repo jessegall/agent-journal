@@ -9,6 +9,7 @@ const STEP = 700;
 const REVEAL_AFTER = 240;
 const HIDE_AFTER = 5000;
 const sentence = (words) => spoken(words, types.value);
+const said = (c) => (c.tool && c.tool !== "Bash" ? [c.what] : gists(c.what, sentence));
 const data = computed(() => (agent.value && ["working", "compacting"].includes(agent.value.data.status) ? agent.value.data : null));
 const ticks = ref(0);
 const timer = setInterval(() => (ticks.value += 1), 1000);
@@ -37,7 +38,7 @@ watch(
             if (c.at <= seen.at) continue;
             seen.at = c.at;
             if (!first) {
-                const shown = gists(c.what, sentence);
+                const shown = said(c);
                 shown.forEach((text) => pending.push({key: text, text, tokens: gistTokens(text), delta: []}));
                 api("POST", "/shown", {command: c.what, shown}).catch(() => {});
             }
@@ -64,7 +65,7 @@ const line = computed(() => {
     if (rolling.value) return rolling.value;
     const run = data.value && data.value.running;
     if (!run || !run.what) return null;
-    const parts = gists(run.what, sentence);
+    const parts = said(run);
     if (!parts.length) return null;
     const secs = Math.floor((run.done || Date.now() / 1000) - run.at);
     const text = parts[parts.length - 1];

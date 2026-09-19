@@ -50,8 +50,12 @@ class Feature(ABC):
         for handler in self.refusals():
             POLICIES.append(lambda provider, record, payload, session, handler=handler: handler(provider, record, payload, session) if self.enabled(record) else "")
 
+    @classmethod
+    def on_for(cls, record) -> bool:
+        return True if cls.fixed else record.features.get(cls.name, cls.default)
+
     def enabled(self, record) -> bool:
-        return True if self.fixed else record.features.get(self.name, self.default)
+        return self.on_for(record)
 
     def enable(self, record) -> None:
         record.features = {**record.features, self.name: True}

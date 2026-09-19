@@ -10,6 +10,9 @@ class ToolUse:
     subagent_type: str = ""
     model: str = ""
     task_name: str = ""
+    pattern: str = ""
+    url: str = ""
+    skill: str = ""
     response: dict = field(default_factory=dict)
 
     @classmethod
@@ -18,7 +21,34 @@ class ToolUse:
         response = raw.get("tool_response")
         return cls(name=str(raw.get("tool_name") or ""), command=str(given.get("command") or ""), file_path=str(given.get("file_path") or ""),
                    subagent_type=str(given.get("subagent_type") or ""), model=str(given.get("model") or ""), task_name=str(given.get("task_name") or ""),
+                   pattern=str(given.get("pattern") or given.get("query") or ""), url=str(given.get("url") or ""), skill=str(given.get("skill") or ""),
                    response=response if isinstance(response, dict) else {})
+
+    @property
+    def doing(self) -> str:
+        name = Path(self.file_path).name
+        if self.name == "Bash":
+            return self.command
+        if self.name == "Read":
+            return f"reading {name}"
+        if self.name in ("Edit", "MultiEdit", "NotebookEdit"):
+            return f"editing {name}"
+        if self.name == "Write":
+            return f"writing {name}"
+        if self.name in ("Glob", "Grep"):
+            return f"searching {self.pattern}".strip()
+        if self.name == "WebFetch":
+            return f"fetching {self.url.split('/')[2] if self.url.count('/') > 2 else self.url}".strip()
+        if self.name == "WebSearch":
+            return f"searching the web for {self.pattern}".strip()
+        if self.name in ("Agent", "Task"):
+            return f"dispatching {self.subagent_type or self.task_name or 'an agent'}"
+        if self.name == "Skill":
+            return f"loading skill {self.skill}".strip()
+        if self.name.startswith("mcp__"):
+            server, _, tool = self.name[5:].partition("__")
+            return f"{server} · {tool.replace('_', ' ')}"
+        return self.name.lower()
 
 
 @dataclass(frozen=True)

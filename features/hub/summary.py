@@ -3,6 +3,7 @@ from pathlib import Path
 from controllers.types import Agents, Environments, Messages, Plans, Questions, Suggestions, Todos, Works
 from engine.manifest import manifest
 from engine.record import Record
+from features.auto.feature import Auto
 from resources.base import SYSTEM, USER
 
 SHOWN = ("ready", "active", "waiting", "done")
@@ -33,7 +34,7 @@ def environment(record: Record) -> dict:
         "work": work(current),
         "last": work(last),
         "plans": [plan(p, todos) for p in Plans(record, actor=SYSTEM).all() if p.status in SHOWN and not p.completed],
-        "auto": bool(record.features.get("auto")),
+        "auto": Auto.on_for(record),
         "counts": {
             "messages": len(Messages(record, actor=SYSTEM).unread(USER)),
             "questions": len([q for q in Questions(record, actor=SYSTEM).all() if not q.completed]),
