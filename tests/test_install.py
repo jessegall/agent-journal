@@ -133,4 +133,11 @@ upgraded = subprocess.run([sys.executable, str(consumer / ".journal" / "src" / "
                           env={**git_env, "AGENT_JOURNAL_REPO": str(source)})
 check("an installed journal clones, refreshes and configures the new package", (upgraded.returncode, (consumer / ".journal" / "src" / "VERSION").read_text(), "package refreshed" in upgraded.stdout, (consumer / ".claude" / "settings.json").is_file()), (0, "9.9.9\n", True, True))
 
+older = project_with(".claude")
+install(older)
+(older / ".journal" / "src" / "hook.sh").unlink()
+finished = subprocess.run([sys.executable, str(older / ".journal" / "src" / "install.py"), "finish", str(older)], capture_output=True, text=True, timeout=60,
+                          env={**git_env, "AGENT_JOURNAL_REPO": str(source)})
+check("a package file an older installer did not copy is fetched before the hooks point at it", ((older / ".journal" / "src" / "hook.sh").is_file(), "package files an older installer did not know: fetched" in finished.stdout), (True, True))
+
 done()

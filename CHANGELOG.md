@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.8.1 — An upgrade from an older installer brings the hook script too
+
+An installer from before 2.8.0 copies only the files it knows, so its upgrade left `hook.sh` behind while the new configuration pointed every hook at it. The configuring step now checks the package for every file it needs and fetches the package again when one is missing.
+
+What to do about it: `journal upgrade`; run it twice if you upgraded to 2.8.0 from an older version and your hooks report a missing hook.sh.
+
 ## 2.8.0 — The hook asks the running server
 
 A hook is now a small shell script. It reads the server's heartbeat (`runtime/viewer.json`, refreshed every 2 seconds); if the server is running it posts the payload with curl, and the server, with everything already loaded, writes the agent's row, runs the features and answers the refusals: 200 lets the tool call go ahead, carrying any private line for the agent, 403 refuses it with the reason. With no fresh heartbeat the script returns at once and the journal stays out of the way: the viewer server must be running for the journal to act, and `journal claude` starts it. Upgrading rewires every hook to the script, replacing the old command. Also: notifications the user has seen are removed after three days.
