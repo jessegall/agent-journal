@@ -20,10 +20,7 @@ const pageTools = chatOnly
           {icon: "camera", title: "Send a picture of an element on the page", go: () => point("shot")},
       ]
     : [];
-const composeTools = [
-    {icon: "pins", title: "Pin this text over the chat", text: true, consume: true, go: (text) => pin(text)},
-    ...pageTools,
-];
+const composeTools = pageTools;
 
 function point(kind) {
     window.postMessage({source: "journal-page", kind}, window.location.origin);
