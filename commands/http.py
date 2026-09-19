@@ -401,6 +401,18 @@ def get_transcript(req: Request) -> Reply:
     return Reply(200, page(turns, int(req.query.get("since") or 0), int(req.query.get("before") or 0), int(req.query.get("last") or 300)))
 
 
+@route("GET", "/api/{env}/agent/{n}/subagent/{session}/transcript")
+def get_subagent_transcript(req: Request) -> Reply:
+    row = Agents(req.record(), actor=USER).load(int(req.params["n"]))
+    provider = PROVIDERS.get(row.provider)
+    known = any(r.get("session") == req.params["session"] for r in row.subagent_rows)
+    path = provider().subagent_transcript(Path(row.transcript), req.params["session"]) if provider and known and row.transcript else None
+    if not path:
+        raise Missing("no such subagent session")
+    turns = provider().transcript(path)
+    return Reply(200, page(turns, int(req.query.get("since") or 0), int(req.query.get("before") or 0), int(req.query.get("last") or 300)))
+
+
 @route("GET", "/api/{env}/commit/{sha}")
 def get_commit(req: Request) -> Reply:
     sha = req.params["sha"]

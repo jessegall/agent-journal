@@ -29,8 +29,24 @@ const counts = computed(() => [
 ]);
 const skillCount = computed(() => counts.value[0]);
 const activityCounts = computed(() => counts.value.slice(1));
-const shellRows = computed(() => (data.value && data.value.shell_rows) || []);
-const subagentRows = computed(() => (data.value && data.value.subagent_rows) || []);
+const shellRows = computed(() => sorted((data.value && data.value.shell_rows) || []));
+const subagentRows = computed(() => sorted((data.value && data.value.subagent_rows) || []));
+const now = ref(Date.now() / 1000);
+const clock = setInterval(() => (now.value = Date.now() / 1000), 1000);
+
+function sorted(rows) {
+    return [...rows.filter((r) => r.running), ...rows.filter((r) => !r.running).reverse()];
+}
+
+function lasted(row) {
+    if (!row.at) return "";
+    return row.running ? `running ${span(now.value - row.at)}` : `${row.status || "finished"} · ${span((row.ended || row.at) - row.at)}`;
+}
+
+function openSession(row) {
+    open.value = "";
+    peek("agent", agent.value.n, 0, row.session);
+}
 const available = ref([]);
 const assigning = ref("");
 const controls = ref({groups: [], note: ""});
@@ -137,7 +153,10 @@ const away = (e) => {
     if (bar.value && !bar.value.contains(e.target)) open.value = "";
 };
 window.addEventListener("click", away);
-onUnmounted(() => window.removeEventListener("click", away));
+onUnmounted(() => {
+    window.removeEventListener("click", away);
+    clearInterval(clock);
+});
 </script>
 
 <template>
@@ -337,20 +356,39 @@ onUnmounted(() => window.removeEventListener("click", away));
                         <p class="bar-none">{{ usageInfo.note }}</p>
                     </template>
                     <template #shells>
-                        <p class="bar-none">{{ data.shells || 0 }} background shell(s) were started in this session.</p>
-                        <span v-for="row in shellRows" :key="row.cell" class="bar-item">
-                            <Icon name="terminal" />
-                            {{ row.command }}
-                            <small>{{ row.cell }}</small>
+                        <p class="bar-none">
+                            {{ shellRows.filter((r) => r.running).length }} running, {{ data.shells || 0 }} started in this session.
+                        </p>
+                        <span v-for="row in shellRows" :key="row.id || row.cell" :class="['bar-item', 'crew-row', {done: !row.running}]">
+                            <span :class="['crew-dot', {on: row.running}]" />
+                            <span class="crew-what">
+                                {{ row.task || row.command }}
+                                <small>{{ row.task ? row.command : row.cell }}</small>
+                            </span>
+                            <small class="crew-when">{{ lasted(row) }}</small>
                         </span>
                     </template>
                     <template #default>
-                        <p class="bar-none">{{ data.subagents || 0 }} subagent(s) were dispatched in this session.</p>
-                        <span v-for="row in subagentRows" :key="`${row.task}-${row.model}`" class="bar-item">
-                            <Icon name="agents" />
-                            {{ row.task }}
-                            <small v-if="row.model">{{ row.model }}</small>
-                        </span>
+                        <p class="bar-none">
+                            {{ subagentRows.filter((r) => r.running).length }} running, {{ data.subagents || 0 }} dispatched in this
+                            session.
+                        </p>
+                        <button
+                            v-for="row in subagentRows"
+                            :key="row.id || `${row.task}-${row.model}`"
+                            type="button"
+                            :class="['bar-item', 'crew-row', {done: !row.running}]"
+                            :disabled="!row.session"
+                            :title="row.session ? 'Open this subagent\'s session' : ''"
+                            @click="openSession(row)"
+                        >
+                            <span :class="['crew-dot', {on: row.running}]" />
+                            <span class="crew-what">
+                                {{ row.task }}
+                                <small>{{ [row.type, row.model].filter(Boolean).join(" · ") }}</small>
+                            </span>
+                            <small class="crew-when">{{ lasted(row) }}</small>
+                        </button>
                     </template>
                 </SwitchCase>
             </div>
@@ -683,6 +721,62 @@ onUnmounted(() => window.removeEventListener("click", away));
 .bar-item .ico {
     width: 13px;
     height: 13px;
+}
+
+.crew-row {
+    width: 100%;
+    border: 0;
+    background: none;
+    text-align: left;
+}
+
+button.crew-row:not(:disabled) {
+    cursor: pointer;
+}
+
+button.crew-row:not(:disabled):hover {
+    background: var(--hover);
+}
+
+.crew-row.done {
+    opacity: 0.6;
+}
+
+.crew-dot {
+    flex: none;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--text-3);
+}
+
+.crew-dot.on {
+    background: var(--created);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--created) 25%, transparent);
+}
+
+.crew-what {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.crew-what small {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: var(--text-3);
+    font-size: 11px;
+}
+
+.crew-when {
+    flex: none;
+    color: var(--text-3);
+    font-size: 11px;
+    font-variant-numeric: tabular-nums;
 }
 
 .drop-enter-active {

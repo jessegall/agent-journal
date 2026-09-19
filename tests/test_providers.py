@@ -206,6 +206,28 @@ check("more test runners are recognised", [claude.effect_of(c) for c in ("dotnet
       ["tests", "tests", "tests", "tests", "tests", ""])
 check("output with no summary gives no outcome", claude.test_result(Hook.read({"tool_name": "Bash", "tool_response": {"stdout": "built"}})), None)
 
+# SUBAGENTS AND BACKGROUND SHELLS are listed with whether they run, and a subagent with its own session
+crewed = Path(tempfile.mkdtemp()) / "main.jsonl"
+def said_by(role, content, at): return json.dumps({"type": role, "timestamp": at, "message": {"role": role, "content": content}})
+crewed.write_text("\n".join([
+    said_by("assistant", [{"type": "tool_use", "id": "t1", "name": "Agent", "input": {"description": "Audit core", "subagent_type": "auditor", "model": "sonnet", "run_in_background": True}},
+                          {"type": "tool_use", "id": "t2", "name": "Agent", "input": {"description": "Quick lookup", "model": "haiku"}},
+                          {"type": "tool_use", "id": "t3", "name": "Bash", "input": {"command": "npm run dev", "run_in_background": True}}], "2026-09-19T10:00:00Z"),
+    said_by("user", [{"type": "tool_result", "tool_use_id": "t1", "content": "launched"}, {"type": "tool_result", "tool_use_id": "t2", "content": "found it"},
+                     {"type": "tool_result", "tool_use_id": "t3", "content": "running in background"}], "2026-09-19T10:00:05Z"),
+    json.dumps({"type": "queue-operation", "operation": "enqueue", "timestamp": "2026-09-19T10:02:00Z", "content": "<task-notification>\n<tool-use-id>t3</tool-use-id>\n<status>failed</status>\n</task-notification>"}),
+]) + "\n")
+home = crewed.with_suffix("") / "subagents"
+home.mkdir(parents=True)
+(home / "agent-abc.meta.json").write_text(json.dumps({"toolUseId": "t1"}))
+(home / "agent-abc.jsonl").write_text(json.dumps({"type": "user", "isSidechain": True, "agentId": "abc", "timestamp": "2026-09-19T10:00:01Z", "message": {"role": "user", "content": "audit the core"}}) + "\n")
+crew = claude.crew(crewed)
+check("subagents: the background one runs with its session, the foreground one returned", [(r["task"], r["type"], r["model"], r["running"], r["session"]) for r in crew["subagent_rows"]],
+      [("Audit core", "auditor", "sonnet", True, "abc"), ("Quick lookup", "", "haiku", False, "")])
+check("a background shell ends with the status its notification gives", [(r["command"], r["running"], r["status"]) for r in crew["shell_rows"]], [("npm run dev", False, "failed")])
+check("a subagent's own session reads as a transcript", [t.text for t in claude.transcript(claude.subagent_transcript(crewed, "abc"))], ["audit the core"])
+check("an unknown session gives no transcript path", claude.subagent_transcript(crewed, "nope"), None)
+
 # A NEW COMMAND KEEPS THE FINISHED ONE as before, so its line counts can still arrive and be shown
 finished = {"what": "sed -i x f.py", "tool": "Bash", "at": 1.0, "done": 2.0, "effect": "writes", "changed": {"added": 3}, "step": "sed"}
 nxt = claude.shell(AgentRow(n=1, title="s", data={"running": finished}), Hook.read({"hook_event_name": "PreToolUse", "tool_name": "Bash", "tool_input": {"command": "git status"}}))["running"]

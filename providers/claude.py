@@ -2,6 +2,7 @@ import json
 import re
 from datetime import datetime
 import shutil
+import time
 from pathlib import Path
 
 from engine.transcript import AGENT, HUMAN, INJECTED, PEER, SUMMARY, SUPERSEDED, TASK, TOOL, Turn, timestamp
@@ -16,6 +17,9 @@ STATUS_SCRIPT = "claude-status.sh"
 STATUS_HOME = (".journal", "claude-status")
 PLAN_WINDOWS = {"five_hour": ("5h", 300), "seven_day": ("7d", 10080)}
 EFFORT_SET = re.compile(r"<local-command-stdout>Set effort level to (\w+)")
+NOTIFIED = re.compile(r"<tool-use-id>([^<]+)</tool-use-id>.*?<status>([^<]+)</status>", re.S)
+DISPATCHES = ("Agent", "Task")
+QUIET_SUBAGENT = 600
 
 
 class Claude(Provider):
@@ -167,7 +171,7 @@ class Claude(Provider):
         return None
 
     def turn(self, row: dict) -> tuple | None:
-        if row.get("isSidechain") or row.get("type") not in ("user", "assistant"):
+        if (row.get("isSidechain") and not row.get("agentId")) or row.get("type") not in ("user", "assistant"):
             return None
         content = (row.get("message") or {}).get("content")
         blocks = [block for block in (content if isinstance(content, list) else []) if isinstance(block, dict)]
@@ -238,4 +242,60 @@ class Claude(Provider):
             return []
         content = (row.get("message") or {}).get("content")
         at = timestamp(str(row.get("timestamp") or ""))
-        return [{"name": b.get("name", ""), "input": b.get("input") or {}, "at": at} for b in content or () if isinstance(b, dict) and b.get("type") == "tool_use"]
+        return [{"id": b.get("id", ""), "name": b.get("name", ""), "input": b.get("input") or {}, "at": at} for b in content or () if isinstance(b, dict) and b.get("type") == "tool_use"]
+
+    def endings(self, path: Path) -> dict[str, tuple[str, float]]:
+        ended = {}
+        try:
+            raw = Path(path).read_text().splitlines()
+        except OSError:
+            return ended
+        for line in raw:
+            try:
+                row = json.loads(line)
+            except ValueError:
+                continue
+            at = timestamp(str(row.get("timestamp") or ""))
+            if row.get("type") == "queue-operation" and row.get("operation") == "enqueue":
+                for used, status in NOTIFIED.findall(str(row.get("content") or "")):
+                    ended[used] = (status, at)
+            if row.get("type") != "user" or row.get("isSidechain") or not isinstance((row.get("message") or {}).get("content"), list):
+                continue
+            for block in row["message"]["content"]:
+                if isinstance(block, dict) and block.get("type") == "tool_result":
+                    ended.setdefault(str(block.get("tool_use_id") or ""), ("returned", at))
+        return ended
+
+    def crew(self, path: Path) -> dict:
+        facts = super().crew(path)
+        uses = self.tools(path)
+        ended = self.endings(path)
+        sessions = {}
+        for meta in Path(path).with_suffix("").joinpath("subagents").glob("*.meta.json"):
+            try:
+                sessions[json.loads(meta.read_text()).get("toolUseId")] = meta.with_name(meta.name.replace(".meta.json", ".jsonl"))
+            except (OSError, ValueError):
+                continue
+        now = time.time()
+        subagents = []
+        for use in (u for u in uses if u["name"] in DISPATCHES):
+            given, session = use["input"], sessions.get(use["id"])
+            status, done = ended.get(use["id"], ("", 0.0))
+            waiting = bool(given.get("run_in_background")) and status == "returned"
+            quiet = session is None or not session.is_file() or now - session.stat().st_mtime > QUIET_SUBAGENT
+            running = (not status or waiting) and not (waiting and quiet)
+            subagents.append({"id": use["id"], "task": str(given.get("description") or "subagent"), "type": str(given.get("subagent_type") or ""),
+                              "model": str(given.get("model") or ""), "running": running, "at": use["at"], "ended": 0.0 if running else done,
+                              "status": "" if running else status if status != "returned" or not given.get("run_in_background") else "stopped",
+                              "session": session.stem.removeprefix("agent-") if session else ""})
+        shells = []
+        for use in (u for u in uses if u["name"] == "Bash" and u["input"].get("run_in_background")):
+            status, done = ended.get(use["id"], ("", 0.0))
+            finished = status not in ("", "returned")
+            shells.append({"id": use["id"], "command": str(use["input"].get("command") or "")[:160], "task": str(use["input"].get("description") or ""),
+                           "running": not finished, "at": use["at"], "ended": done if finished else 0.0, "status": status if finished else ""})
+        return {**facts, "subagent_rows": subagents, "shell_rows": shells}
+
+    def subagent_transcript(self, path: Path, session: str) -> Path | None:
+        found = Path(path).with_suffix("").joinpath("subagents", f"agent-{session}.jsonl")
+        return found if found.is_file() else None
