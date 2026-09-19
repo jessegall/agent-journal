@@ -6,9 +6,36 @@ import Switch from "../kit/Switch.vue";
 import {route} from "../route.js";
 import {rows, store} from "../store.js";
 
-const triggerText = (t) => (t.on ? `on ${t.on}` : t.at ? `at ${t.at.join(", ")} percent` : t.every ? `every ${t.every} ${t.unit}` : "");
-const features = computed(() => Object.values(store.spec.features).map((f) => ({...f, when: triggerText(f.trigger)})));
+const COUNTED = ["percent", "uses", "minutes"];
+const EVENTS = ["idle", "worked", "start"];
+const triggerOf = (f) => (store.settings && store.settings.triggers && store.settings.triggers[f.name]) || f.trigger;
+const features = computed(() =>
+    Object.values(store.spec.features).map((f) => ({...f, when: f.trigger && Object.keys(f.trigger).length ? triggerOf(f) : null}))
+);
 const on = (name) => !!(store.settings && store.settings.features[name]);
+
+async function setTrigger(f, next) {
+    await saveSettings(route.value.env, {triggers: {...((store.settings && store.settings.triggers) || {}), [f.name]: next}});
+}
+
+function every(f, value) {
+    const t = triggerOf(f);
+    const n = Number(value);
+    if (n > 0) setTrigger(f, {every: n, unit: COUNTED.includes(t.unit) ? t.unit : "percent"});
+}
+
+function unit(f, u) {
+    const t = triggerOf(f);
+    setTrigger(f, EVENTS.includes(u) ? {on: u} : {every: t.every || (u === "minutes" ? 5 : 10), unit: u});
+}
+
+function marks(f, value) {
+    const at = String(value)
+        .split(/[\s,]+/)
+        .map(Number)
+        .filter((n) => n > 0 && n <= 100);
+    if (at.length) setTrigger(f, {unit: "percent", at});
+}
 const retention = computed(() => (store.settings && store.settings.keep) || {});
 const days = ref({});
 const envs = computed(() => rows("environment").filter((e) => !e.completed));
@@ -60,7 +87,37 @@ async function remove(e) {
                         <span class="title">{{ f.title }}</span>
                         <span class="help">{{ f.abstract }}</span>
                         <template v-if="f.when">
-                            <span class="note">{{ f.when }}</span>
+                            <span class="cadence">
+                                <template v-if="f.when.at">
+                                    <span class="note">at</span>
+                                    <input class="days marks" :value="f.when.at.join(', ')" @change="marks(f, $event.target.value)" />
+                                    <span class="note">percent</span>
+                                </template>
+                                <template v-else-if="f.when.on">
+                                    <span class="note">on</span>
+                                </template>
+                                <template v-else>
+                                    <span class="note">every</span>
+                                    <input
+                                        class="days"
+                                        type="number"
+                                        min="1"
+                                        :value="f.when.every"
+                                        @change="every(f, $event.target.value)"
+                                    />
+                                </template>
+                                <span class="units">
+                                    <template v-for="u in [...COUNTED, ...EVENTS]" :key="u">
+                                        <button
+                                            type="button"
+                                            :class="['unit-pick', {on: f.when.on ? f.when.on === u : f.when.unit === u}]"
+                                            @click="unit(f, u)"
+                                        >
+                                            {{ u }}
+                                        </button>
+                                    </template>
+                                </span>
+                            </span>
                         </template>
                     </span>
                     <span class="control">
@@ -178,6 +235,44 @@ h2 {
     justify-content: flex-end;
     gap: 8px;
     min-width: 96px;
+}
+
+.cadence {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    margin-top: 6px;
+}
+
+.cadence .days {
+    height: 24px;
+}
+
+.marks {
+    width: 96px;
+}
+
+.units {
+    display: inline-flex;
+    gap: 2px;
+    margin-left: 4px;
+}
+
+.unit-pick {
+    padding: 2px 7px;
+    border: 1px solid var(--border-2);
+    border-radius: 6px;
+    background: none;
+    color: var(--text-3);
+    font-size: 11px;
+    cursor: pointer;
+}
+
+.unit-pick.on {
+    border-color: color-mix(in srgb, var(--accent) 55%, transparent);
+    background: color-mix(in srgb, var(--accent) 18%, transparent);
+    color: var(--text);
 }
 
 .days {

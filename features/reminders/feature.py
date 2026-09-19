@@ -7,5 +7,5 @@ class RemindersFeature(Recital):
     type = "reminder"
     title_ = "Reminders"
     abstract_ = "The standing reminders said again to the agent when it comes to rest after work"
-    help_ = "Said at an idle that follows tool use, not at every stop: three replies in a row hear them once. Set triggers.reminders to {every, unit} or {on} to change it."
-    trigger = {"on": trigger.WORKED}
+    help_ = "Said again every tenth of the context window, so a long session hears them a handful of times. Settings sets the cadence: every n percent, uses or minutes, or on idle, worked or start."
+    trigger = {"every": 10, "unit": trigger.PERCENT}
