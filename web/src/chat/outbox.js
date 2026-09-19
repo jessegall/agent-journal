@@ -22,8 +22,12 @@ window.addEventListener("message", (event) => {
     resolve(event.data.value);
 });
 
+function shared(work) {
+    return globalThis.navigator?.locks ? () => navigator.locks.request(KEY, work) : work;
+}
+
 function serial(work) {
-    const task = queueTask.then(work, work);
+    const task = queueTask.then(shared(work), shared(work));
     queueTask = task.catch(() => {});
     return task;
 }
