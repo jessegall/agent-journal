@@ -57,4 +57,17 @@ later_agent = Agents(later, actor=SYSTEM).create("new session", status="working"
 Agents(later, actor=SYSTEM).update(later_agent.n, event="SessionStart")
 check("a starting agent hears about media attached while none was live", len(Nudges(later, actor=SYSTEM).all()), 2)
 
+
+import struct  # noqa: E402
+real = folder / "shot.png"
+real.write_bytes(b"\x89PNG\r\n\x1a\n" + struct.pack(">I", 13) + b"IHDR" + struct.pack(">II", 1390, 486) + b"\x08\x06\x00\x00\x00" + b"\0" * 4)
+jpg = folder / "photo.jpg"
+jpg.write_bytes(b"\xff\xd8\xff\xe0" + struct.pack(">H", 16) + b"JFIF\0" + b"\0" * 9 + b"\xff\xc0" + struct.pack(">H", 17) + b"\x08" + struct.pack(">HH", 480, 640) + b"\x03" + b"\0" * 9 + b"\xff\xd9")
+messages.attach(message.n, str(real))
+messages.attach(message.n, str(jpg))
+check("an image's width and height are read from its header on attach, so the viewer can reserve its box", messages.load(message.n).pictures, {"shot.png": [1390, 486], "photo.jpg": [640, 480]})
+check("a file with no readable size has no entry", "dashboard.png" in messages.load(message.n).pictures, False)
+messages.detach(message.n, "shot.png")
+check("detach drops the size with the file", "shot.png" in messages.load(message.n).pictures, False)
+
 done()

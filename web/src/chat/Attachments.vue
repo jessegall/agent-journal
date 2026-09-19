@@ -9,8 +9,12 @@ const props = defineProps({resource: Object});
 const emit = defineEmits(["grew"]);
 const picture = (name) => /\.(png|jpe?g|gif|webp)$/i.test(name);
 const video = (name) => /\.(mp4|m4v|mov|webm|ogv)$/i.test(name);
-const url = (name) => fileUrl(route.value.env, props.resource.type, props.resource.n, name);
+const url = (name) => (props.resource.data.previews || {})[name] || fileUrl(route.value.env, props.resource.type, props.resource.n, name);
 const files = computed(() => props.resource.data.files || {});
+const sized = (name) => {
+    const [w, h] = (props.resource.data.pictures || {})[name] || [];
+    return w && h ? {width: w, height: h, style: {aspectRatio: `${w} / ${h}`, width: `${Math.min(w, Math.round((320 * w) / h))}px`}} : {};
+};
 const names = computed(() => Object.keys(files.value));
 const derived = (name) => String(files.value[name] || "").startsWith("video frame from ");
 const pictures = computed(() => names.value.filter((name) => picture(name) && !derived(name)).map((name) => ({name, url: url(name)})));
@@ -30,7 +34,7 @@ const grid = computed(() => pictures.value.length > 1);
                         :title="p.name"
                         @click.prevent="openPictures(pictures, i)"
                     >
-                        <img :src="p.url" :alt="p.name" @load="emit('grew')" />
+                        <img :src="p.url" :alt="p.name" v-bind="sized(p.name)" @load="emit('grew')" />
                         <template v-if="i === 3 && pictures.length > 4">
                             <span class="thread-shot-more">{{ pictures.length - 4 }} more</span>
                         </template>
@@ -41,7 +45,7 @@ const grid = computed(() => pictures.value.length > 1);
         <template v-else>
             <template v-for="(p, i) in pictures" :key="p.name">
                 <a class="thread-file" :href="p.url" :title="p.name" @click.prevent="openPictures(pictures, i)">
-                    <img class="thread-image" :src="p.url" :alt="p.name" @load="emit('grew')" />
+                    <img class="thread-image" :src="p.url" :alt="p.name" v-bind="sized(p.name)" @load="emit('grew')" />
                 </a>
             </template>
         </template>
@@ -117,10 +121,13 @@ const grid = computed(() => pictures.value.length > 1);
 
 .thread-image {
     display: block;
+    height: auto;
     max-width: 100%;
     max-height: 320px;
+    object-fit: contain;
     border-radius: 7px;
     border: 1px solid var(--border);
+    background: var(--raised);
 }
 
 .thread-video {

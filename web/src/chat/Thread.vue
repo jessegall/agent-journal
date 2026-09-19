@@ -93,7 +93,7 @@ const receipt = (m) => ({
 const turns = computed(() =>
     [
         ...rows("message")
-            .filter((m) => !m.deleted)
+            .filter((m) => !m.deleted && !pending.value.some((p) => promisedFor(p, m) && !delivered(p, m)))
             .map((m) => ({...m, who: m.seen[0]})),
         ...rows("message")
             .filter((m) => !m.deleted && m.seen[0] === "user" && m.completed && !acknowledged(m))
@@ -104,7 +104,16 @@ const turns = computed(() =>
         ...rows("question")
             .filter((q) => !q.deleted)
             .map((q) => ({...q, who: "agent"})),
-        ...pending.value.filter((p) => !rows("message").some((m) => !m.deleted && m.brief === p.brief && m.created >= p.created - 5)),
+        ...pending.value.filter(
+            (p) =>
+                !rows("message").some(
+                    (m) =>
+                        !m.deleted &&
+                        m.brief === p.brief &&
+                        m.created >= p.created - 5 &&
+                        Object.keys(m.data.files || {}).length >= Object.keys(p.data.files).length
+                )
+        ),
     ].sort((a, b) => a.created - b.created)
 );
 
@@ -144,7 +153,7 @@ async function post(text, files) {
     const body = withQuote(quote.value.text, text);
     const about = quote.value.ref || undefined;
     quote.value = {text: "", ref: ""};
-    const placeholder = promised(body, files);
+    const placeholder = await promised(body, files);
     await nextTick();
     toBottom();
     try {
@@ -153,16 +162,48 @@ async function post(text, files) {
         await reload();
     } finally {
         pending.value = pending.value.filter((p) => p !== placeholder);
+        Object.values(placeholder.data.previews).forEach(URL.revokeObjectURL);
     }
     await nextTick();
     toBottom();
 }
 
+const borrowed = new Map();
+
+function promisedFor(p, m) {
+    const yes = m.brief === p.brief && m.created >= p.created - 5;
+    if (yes) borrowed.set(m.ref, p.ref);
+    return yes;
+}
+
+function keyOf(t) {
+    return borrowed.get(t.ref) || t.ref;
+}
+
+function delivered(p, m) {
+    return Object.keys(m.data.files || {}).length >= Object.keys(p.data.files).length;
+}
+
+function measured(url) {
+    return new Promise((resolve) => {
+        const img = new Image();
+        img.onload = () => resolve([img.naturalWidth, img.naturalHeight]);
+        img.onerror = () => resolve(null);
+        img.src = url;
+    });
+}
+
 const pending = ref([]);
 let promises = 0;
 
-function promised(body, files) {
+async function promised(body, files) {
     promises += 1;
+    const previews = Object.fromEntries(files.map((f) => [f.name, URL.createObjectURL(f)]));
+    const pictures = {};
+    for (const f of files) {
+        const size = f.type.startsWith("image/") ? await measured(previews[f.name]) : null;
+        if (size) pictures[f.name] = size;
+    }
     const turn = {
         ref: `pending:${promises}`,
         type: "message",
@@ -173,7 +214,7 @@ function promised(body, files) {
         refs: [],
         seen: ["user"],
         sections: [],
-        data: {},
+        data: {files: Object.fromEntries(files.map((f) => [f.name, ""])), previews, pictures},
         created: Date.now() / 1000,
         updated: 0,
         deleted: 0,
@@ -296,7 +337,7 @@ watch(
             <TransitionGroup :name="settledOnce ? 'turn' : ''">
                 <Turn
                     v-for="t in turns"
-                    :key="t.ref"
+                    :key="keyOf(t)"
                     :turn="t"
                     @reply="quote = $event"
                     @edit="editing = $event"
