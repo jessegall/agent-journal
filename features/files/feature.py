@@ -145,14 +145,21 @@ class Files(Feature):
                     delta[DELTA.edited] += 1
                 else:
                     continue
-                delta[DELTA.added] += max(0, f[CHANGE.added] - was[0])
-                delta[DELTA.removed] += max(0, f[CHANGE.removed] - was[1])
+                delta[DELTA.added] += max(0, f[CHANGE.added] - was[0]) + max(0, was[1] - f[CHANGE.removed])
+                delta[DELTA.removed] += max(0, f[CHANGE.removed] - was[1]) + max(0, was[0] - f[CHANGE.added])
             commits = committed(project, work.created)
             if list(files.values()) != work.changed or commits != work.commits:
                 works.update(work.n, changed=list(files.values()), commits=commits)
-            if agent.running and any(delta[k] for k in (DELTA.edited, DELTA.created, DELTA.deleted)):
-                late = not agent.running.get(RUNNING.done) and agent.running.get(RUNNING.before)
-                edited = agent.running[RUNNING.before] if late else agent.running
-                prior = edited.get(RUNNING.changed) or {}
-                edited = {**edited, RUNNING.changed: {key: prior.get(key, 0) + value for key, value in delta.items()}}
-                Agents(record, actor=SYSTEM).update(agent.n, running={**agent.running, RUNNING.before: edited} if late else edited)
+            if any(delta[k] for k in (DELTA.edited, DELTA.created, DELTA.deleted)):
+                self.count(record, agent.n, delta)
+
+    def count(self, record, n: int, delta: dict) -> None:
+        agents = Agents(record, actor=SYSTEM)
+        running = agents.load(n).running
+        late = not running.get(RUNNING.done) and running.get(RUNNING.before)
+        edited = running[RUNNING.before] if late else running
+        if not edited:
+            return
+        prior = edited.get(RUNNING.changed) or {}
+        edited = {**edited, RUNNING.changed: {key: prior.get(key, 0) + value for key, value in delta.items()}}
+        agents.update(n, running={**running, RUNNING.before: edited} if late else edited)
