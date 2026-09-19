@@ -1,3 +1,5 @@
+import fcntl
+import os
 import re
 import secrets
 import shutil
@@ -54,7 +56,7 @@ def values(root: Path, name: str, token: str) -> dict:
 def environment(root: Path, name: str, manifest: dict, token: str) -> dict:
     where = values(root, name, token)
     given = fill(manifest.get("env") or {}, where)
-    return {**{str(k): str(v) for k, v in given.items()},
+    return {**os.environ, **{str(k): str(v) for k, v in given.items()},
             "JOURNAL_ROOT": where["root"], "JOURNAL_URL": where["journal.url"], "JOURNAL_PLUGIN": name,
             "JOURNAL_TOKEN": token, "JOURNAL": str(Path(root) / "journal"), "PLUGIN_DIR": where["dir"], "PLUGIN_DATA": where["data"]}
 
@@ -128,6 +130,22 @@ def staged(root: Path, source: str, revision: str, version: str) -> tuple[Path, 
     except Refused:
         shutil.rmtree(staging, ignore_errors=True)
         raise
+
+
+def busy_file(root: Path, name: str) -> Path:
+    return Path(root) / "runtime" / f"installing-{name}.lock"
+
+
+def alone(root: Path, name: str):
+    lock = busy_file(root, name)
+    lock.parent.mkdir(parents=True, exist_ok=True)
+    held = lock.open("w")
+    try:
+        fcntl.flock(held, fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except BlockingIOError:
+        held.close()
+        raise Refused(f"{name} is being installed already; wait for that to finish")
+    return held
 
 
 def token() -> str:

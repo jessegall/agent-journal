@@ -121,4 +121,21 @@ Plugins(moving, actor=AGENT).complete(bare.n, "gone")
 check("removing a row with no manifest leaves the plugin folders alone", data(moving.root, "").exists(), True)
 check("and purging it is refused", refused(lambda: rows.action("purge")(bare.n)), f"plugin {bare.n} never named itself, so it kept nothing of its own")
 
+# THE COMMANDS RUN IN YOUR OWN ENVIRONMENT, so what is on your PATH is on theirs
+needs = fresh("path")
+rows = Plugins(needs, actor=AGENT)
+made = rows.action("install")(repository({**WORKS, "name": "onpath", "requires": {"python": {"check": "command -v python3", "hint": "install python"}},
+                                          "setup": [{"name": "which", "run": "command -v python3 > found.txt"}]}), yes=True)
+check("a requirement and a setup step both find what is on your PATH", (made.manifest["name"], (folder(needs.root, "onpath") / "found.txt").read_text().strip().endswith("python3")), ("onpath", True))
+
+# ONE INSTALL AT A TIME: a second click while the first is running is refused
+from features.plugins.source import alone  # noqa: E402
+busy = fresh("busy")
+rows = Plugins(busy, actor=AGENT)
+held = alone(busy.root, "works")
+check("a second install of the same plugin is refused while one runs", refused(lambda: rows.action("install")(source, yes=True)),
+      "works is being installed already; wait for that to finish")
+held.close()
+check("once it is done, installing works again", rows.action("install")(source, yes=True).manifest["name"], "works")
+
 done()
