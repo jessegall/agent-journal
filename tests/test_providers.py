@@ -12,11 +12,18 @@ from engine.record import Record  # noqa: E402
 from features.auto.policy import QUESTION_REFUSAL  # noqa: E402
 from providers import PROVIDERS  # noqa: E402
 from providers.base import EVENTS, STATUS  # noqa: E402
+from providers.payload import Hook  # noqa: E402
 from resources.base import SYSTEM  # noqa: E402
 from tests.kit import check, done  # noqa: E402
 
 features.unload()
 features.load()
+
+hook = Hook.read({"hook_event_name": "PreToolUse", "session_id": "s-1", "transcript_path": "/t/abc-7.jsonl", "cwd": "/p", "model": "m",
+                  "tool_name": "Agent", "tool_input": {"subagent_type": "auditor", "model": "haiku", "command": "ls"}, "tool_response": {"session_id": "sh-1"}})
+check("the hook payload is read once into typed fields: event, session from the transcript, tool and its inputs", (hook.event, hook.session, str(hook.transcript), hook.cwd, hook.model, hook.tool.name, hook.tool.subagent_type, hook.tool.model, hook.command, hook.tool.response),
+      ("PreToolUse", "abc-7", "/t/abc-7.jsonl", "/p", "m", "Agent", "auditor", "haiku", "ls", {"session_id": "sh-1"}))
+check("an empty payload reads to empty fields, never to a KeyError", (Hook.read({}).event, Hook.read({}).session, Hook.read({}).transcript, Hook.read({}).tool.name), ("", "", None, ""))
 
 
 

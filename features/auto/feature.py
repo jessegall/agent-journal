@@ -13,8 +13,8 @@ class Auto(Feature):
     default = False
 
     @refuses
-    def no_blocking_question(self, provider, record, payload, session) -> str:
-        return refusal(payload)
+    def no_blocking_question(self, provider, record, hook, session) -> str:
+        return refusal(hook)
 
     @on("agent.updated")
     def offer(self, event, record) -> None:

@@ -40,19 +40,17 @@ def brief(project: Path) -> list[Path]:
     return written
 
 
-def refusal(provider: str, payload: dict) -> str:
-    tool = str(payload.get("tool_name") or "")
-    data = payload.get("tool_input") or {}
-    if provider == "claude" and tool == "Agent":
-        kind = str(data.get("subagent_type") or "").strip().lower()
+def refusal(provider: str, tool) -> str:
+    if provider == "claude" and tool.name == "Agent":
+        kind = tool.subagent_type.strip().lower()
         if kind in GENERIC:
             return "Journal law L2 refuses generic subagents. Choose the specific agent type whose declared job matches this assignment."
-        if kind != "fork" and not str(data.get("model") or "").strip():
+        if kind != "fork" and not tool.model.strip():
             return "Journal law L1 requires an explicit model on every subagent dispatch. Choose the least expensive model that reliably fits the work."
-    if provider == "codex" and tool.endswith("spawn_agent"):
-        kind = str(data.get("task_name") or "").strip().lower()
+    if provider == "codex" and tool.name.endswith("spawn_agent"):
+        kind = tool.task_name.strip().lower()
         if kind in GENERIC:
             return "Journal law L2 refuses generic subagents. Give this dispatch a concrete task name and bounded assignment."
-        if not str(data.get("model") or "").strip():
+        if not tool.model.strip():
             return "Journal law L1 requires an explicit model on every subagent dispatch. Choose the least expensive model that reliably fits the work."
     return ""

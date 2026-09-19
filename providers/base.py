@@ -10,6 +10,7 @@ from engine.actors import COMPACTING, IDLE, STOPPED, WORKING
 from engine.record import Record
 from engine.transcript import Turn
 from resources.base import AGENT, SYSTEM
+from providers.payload import Hook
 from resources.types import AgentRow, COMMAND, RUNNING
 
 STATUS = {"SessionStart": IDLE, "Stop": IDLE, "UserPromptSubmit": WORKING, "PreToolUse": WORKING,
@@ -33,14 +34,13 @@ def gate_file(root: Path, env: str, session: str) -> Path:
 POLICIES: list = []
 
 
-def log_command(root: Path, payload: dict) -> None:
-    command = (payload.get("tool_input") or {}).get("command")
-    if payload.get("hook_event_name") != "PreToolUse" or command is None:
+def log_command(root: Path, hook: Hook) -> None:
+    if hook.event != "PreToolUse" or not hook.command:
         return
     target = root / "runtime" / "commands.log"
     target.parent.mkdir(parents=True, exist_ok=True)
     with target.open("a") as out:
-        out.write(f"{time.time():.3f}\t{command!r}\n")
+        out.write(f"{time.time():.3f}\t{hook.command!r}\n")
 
 
 class Provider(ABC):
@@ -52,32 +52,27 @@ class Provider(ABC):
     @abstractmethod
     def wiring(self, command: str) -> dict: ...
 
-    def session_of(self, payload: dict) -> str:
-        return Path(str(payload.get("transcript_path") or payload.get("session_id") or "")).stem
-
-    def handle(self, root: Path, env: str, payload: dict) -> dict:
-        event = payload.get("hook_event_name") or ""
-        if event not in STATUS or (root / "runtime" / "off").is_file():
+    def handle(self, root: Path, env: str, raw: dict) -> dict:
+        hook = Hook.read(raw)
+        if hook.event not in STATUS or (root / "runtime" / "off").is_file():
             return {}
-        log_command(root, payload)
+        log_command(root, hook)
         record = Record(root, env)
         agents = Agents(record, actor=SYSTEM)
-        row = agents.by_session(self.session_of(payload))
-        uses = int(row.uses or 0) + (event == "PreToolUse")
-        context = self.context(payload)
-        agents.update(row.n, status=STATUS[event], event=event, tool=payload.get("tool_name") or "", **self.shell(row, event, payload),
-                      **self.telemetry(row, event, payload),
-                      file=str((payload.get("tool_input") or {}).get("file_path") or ""), wrote=event == "PostToolUse" and self.writes(payload),
-                      cwd=str(payload.get("cwd") or row.cwd or ""),
-                      at=time.time(), provider=self.name, uses=uses, transcript=str(payload.get("transcript_path") or row.transcript or ""),
-                      model=self.model(payload) or row.model or "", started=row.started or time.time(),
+        row = agents.by_session(hook.session)
+        uses = int(row.uses or 0) + (hook.event == "PreToolUse")
+        context = self.context(hook)
+        agents.update(row.n, status=STATUS[hook.event], event=hook.event, tool=hook.tool.name, **self.shell(row, hook), **self.telemetry(row, hook),
+                      file=hook.tool.file_path, wrote=hook.event == "PostToolUse" and self.writes(hook), cwd=hook.cwd or row.cwd or "",
+                      at=time.time(), provider=self.name, uses=uses, transcript=str(hook.transcript or row.transcript or ""),
+                      model=self.model(hook) or row.model or "", started=row.started or time.time(),
                       context=row.context or 0 if context is None else context)
-        if event == "PreToolUse":
-            return self.refusal(next((why for policy in POLICIES if (why := policy(self, record, payload, row.title))), ""))
-        if event == "SessionStart":
-            return self.handover(event, self.start(root, env, self.compacted(payload)))
-        if event in ("PostToolUse", "UserPromptSubmit"):
-            return self.handover(event, self.whispered(root, env, row.title))
+        if hook.event == "PreToolUse":
+            return self.refusal(next((why for policy in POLICIES if (why := policy(self, record, hook, row.title))), ""))
+        if hook.event == "SessionStart":
+            return self.handover(hook.event, self.start(root, env, self.compacted(hook)))
+        if hook.event in ("PostToolUse", "UserPromptSubmit"):
+            return self.handover(hook.event, self.whispered(root, env, row.title))
         return {}
 
     def whispered(self, root: Path, env: str, session: str) -> str:
@@ -87,7 +82,7 @@ class Provider(ABC):
             nudges.read(n.n)
         return "\n".join(dict.fromkeys(f"{n.title}{' — ' + n.brief if n.brief else ''}" for n in mine))
 
-    def compacted(self, payload: dict) -> bool:
+    def compacted(self, hook: Hook) -> bool:
         return False
 
     def start(self, root: Path, env: str, compacted: bool = False) -> str:
@@ -104,19 +99,17 @@ class Provider(ABC):
             return ""
         return "; ".join(why for why in holds.values() if why)
 
-    def writes(self, payload: dict) -> bool:
-        tool = payload.get("tool_name") or ""
-        if tool in WRITES:
+    def writes(self, hook: Hook) -> bool:
+        if hook.tool.name in WRITES:
             return True
-        command = str((payload.get("tool_input") or {}).get("command") or "")
-        return tool == "Bash" and not JOURNAL_COMMAND.search(command) and bool(WRITING_COMMANDS.search(command))
+        return hook.tool.name == "Bash" and not JOURNAL_COMMAND.search(hook.command) and bool(WRITING_COMMANDS.search(hook.command))
 
-    def shell(self, row, event: str, payload: dict) -> dict:
-        command = str((payload.get("tool_input") or {}).get("command") or "").strip()[:400]
+    def shell(self, row, hook: Hook) -> dict:
+        command = hook.command.strip()[:400]
         running = dict(row.running)
-        if event == "UserPromptSubmit":
+        if hook.event == "UserPromptSubmit":
             return {AgentRow.running: {}, AgentRow.commands: list(row.commands)}
-        if event == "PreToolUse" and command:
+        if hook.event == "PreToolUse" and command:
             now = time.time()
             changed = running.get(RUNNING.changed)
             running = {RUNNING.what: command, RUNNING.at: now, **({RUNNING.changed: changed} if changed else {})}
@@ -128,14 +121,14 @@ class Provider(ABC):
     def refusal(self, why: str) -> dict:
         return {"decision": "block", "reason": why} if why else {}
 
-    def context(self, payload: dict) -> float | None:
+    def context(self, hook: Hook) -> float | None:
         return None
 
-    def telemetry(self, row, event: str, payload: dict) -> dict:
+    def telemetry(self, row, hook: Hook) -> dict:
         return {}
 
-    def model(self, payload: dict) -> str:
-        return str(payload.get("model") or "")
+    def model(self, hook: Hook) -> str:
+        return hook.model
 
     def transcript(self, path: Path) -> list:
         turns = []

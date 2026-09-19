@@ -4,6 +4,7 @@ from pathlib import Path
 
 from engine.transcript import AGENT, HUMAN, INJECTED, PEER, SUMMARY, SUPERSEDED, TASK, TOOL, Turn, timestamp
 from providers.base import EVENTS, Provider
+from providers.payload import Hook
 
 ASKS = frozenset({"AskUserQuestion"})
 
@@ -20,13 +21,13 @@ class Claude(Provider):
     def wiring(self, command: str) -> dict:
         return {"hooks": {event: [{"hooks": [{"type": "command", "command": command}]}] for event in EVENTS}}
 
-    def compacted(self, payload: dict) -> bool:
-        return payload.get("source") == "compact"
+    def compacted(self, hook: Hook) -> bool:
+        return hook.source == "compact"
 
-    def model(self, payload: dict) -> str:
-        path = Path(str(payload.get("transcript_path") or ""))
-        if not path.is_file():
-            return str(payload.get("model") or "")
+    def model(self, hook: Hook) -> str:
+        path = hook.transcript
+        if not path or not path.is_file():
+            return hook.model
         for raw in reversed(path.read_text().splitlines()):
             try:
                 model = json.loads(raw).get("message", {}).get("model")
@@ -34,11 +35,11 @@ class Claude(Provider):
                 continue
             if model:
                 return model
-        return str(payload.get("model") or "")
+        return hook.model
 
-    def context(self, payload: dict) -> float | None:
-        path = Path(str(payload.get("transcript_path") or ""))
-        if not path.is_file():
+    def context(self, hook: Hook) -> float | None:
+        path = hook.transcript
+        if not path or not path.is_file():
             return None
         for raw in reversed(path.read_text().splitlines()):
             try:
@@ -47,7 +48,7 @@ class Claude(Provider):
                 continue
             if usage:
                 used = sum(int(usage.get(k) or 0) for k in ("input_tokens", "cache_read_input_tokens", "cache_creation_input_tokens"))
-                window = 1_000_000 if "[1m]" in str(payload.get("model") or "") or used > 200_000 else 200_000
+                window = 1_000_000 if "[1m]" in hook.model or used > 200_000 else 200_000
                 return round(100 * used / window, 1)
         return None
 
