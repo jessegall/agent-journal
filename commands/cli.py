@@ -209,9 +209,9 @@ def upgrade_here(ctx) -> str:
 
 def supervise(ctx, agent: str) -> str:
     from engine.terminal import run as run_supervisor
-    from engine.viewer import ensure
+    from engine.viewer import start
     record = ctx["record"]
-    url = ensure(record.root, Path.cwd())
+    url = start(record.root, Path.cwd())
     print(f"journal: viewer {url}" if url else "journal: the viewer did not start; see .journal/runtime/viewer.log")
     return str(run_supervisor(record.root, Path.cwd(), record.env, agent, ctx["args"] or []))
 
