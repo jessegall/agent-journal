@@ -76,7 +76,7 @@ with patch.object(Codex, "catalog", classmethod(lambda cls, path=None: models)),
     check("commands stay server-side", "command" in claude["groups"][0]["choices"][0], False)
     check("Claude exposes Fable in its cloud model picker",
           [choice["value"] for choice in claude["groups"][0]["choices"]],
-          ["opus", "sonnet", "haiku", "claude-fable-5"])
+          ["opus", "sonnet", "haiku", "claude-fable-5-1"])
     check("an unknown control is refused", refused(lambda: request(root, "main", "codex-live", "model", "gpt-5")), "codex does not support model 'gpt-5'")
     check("another environment cannot control the session", refused(lambda: request(root, "other", "codex-live", "model", "gpt-5.6-sol")), "session 'codex-live' belongs to environment 'main'")
     check("an offline session cannot be controlled", refused(lambda: request(root, "main", "gone", "picker", "open")), "session 'gone' is not online")

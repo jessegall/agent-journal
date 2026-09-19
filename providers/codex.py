@@ -277,6 +277,9 @@ class Codex(Provider):
         return {AgentRow.skills: skills, AgentRow.shells: shells, AgentRow.subagents: subagents,
                 AgentRow.shell_rows: shell_rows, AgentRow.subagent_rows: subagent_rows, AgentRow.compacting: compacting}
 
+    def effort(self, project: Path) -> str:
+        return self.configuration().get("effort", "")
+
     def session(self, path: Path | None) -> dict:
         try:
             with Path(path).open() as source:
