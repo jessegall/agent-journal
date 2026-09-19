@@ -370,8 +370,8 @@ export function shownPlans(plans) {
 }
 
 export function phaseOf(p) {
-    const i = p.data.current || 1;
-    return p.data.phases[i - 1] ? `phase ${i}, ${p.data.phases[i - 1].title}` : "";
+    const at = p.data.phases[(p.data.current || 1) - 1];
+    return at ? at.title : "";
 }
 
 export function rowsOf(p) {
