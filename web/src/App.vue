@@ -123,8 +123,8 @@ watch(
                 </Transition>
                 <template v-if="away.open">
                     <AwayCard />
-                    <ProjectFlash />
                 </template>
+                <ProjectFlash />
                 <ChatWindow v-if="store.detached && !store.extension.holding && !store.extension.pending" floating />
             </div>
         </div>
