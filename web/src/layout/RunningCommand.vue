@@ -90,7 +90,8 @@ function outcome(result) {
 
 function lineFor(run) {
     if (!run || !run.what) return null;
-    const step = run.step && !run.done ? {what: run.step, tool: "Bash", effect: run.step_effect} : null;
+    const scoped = CHANGING.includes(run.effect) || run.effect === "tests";
+    const step = run.step && !run.done && !scoped ? {what: run.step, tool: "Bash", effect: run.step_effect} : null;
     const now = step && said(step).length ? step : run;
     const parts = said(now);
     if (!parts.length) return null;
