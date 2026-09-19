@@ -1,5 +1,6 @@
 <script setup>
-import {computed} from "vue";
+import {computed, reactive, ref} from "vue";
+import {act} from "../api.js";
 import Btn from "../kit/Btn.vue";
 import CommentToggle from "./CommentToggle.vue";
 import Icon from "../kit/Icon.vue";
@@ -22,6 +23,27 @@ const kind = computed(() => meta(props.resource.type));
 const files = computed(() => Object.entries(props.resource.data.files || {}));
 const ranked = computed(() => !!kind.value.fields.priority && !props.resource.completed);
 const traced = computed(() => !!kind.value.fields.changed);
+const editing = ref(false);
+const draft = reactive({title: "", abstract: "", brief: "", error: ""});
+
+function edit() {
+    Object.assign(draft, {title: props.resource.title, abstract: props.resource.abstract, brief: props.resource.brief, error: ""});
+    editing.value = true;
+}
+
+async function save() {
+    draft.error = "";
+    try {
+        await act(route.value.env, props.resource.type, props.resource.n, "update", {
+            title: draft.title.trim(),
+            abstract: draft.abstract.trim(),
+            brief: draft.brief,
+        });
+        editing.value = false;
+    } catch (e) {
+        draft.error = e.message;
+    }
+}
 </script>
 
 <template>
@@ -36,13 +58,43 @@ const traced = computed(() => !!kind.value.fields.changed);
                 <CommentToggle />
                 <Btn kind="icon" @click="emit('close')"><Icon name="x" /></Btn>
             </div>
-            <h2 class="title">{{ resource.title }}</h2>
+            <template v-if="editing">
+                <input
+                    v-model="draft.title"
+                    class="edit-title"
+                    maxlength="80"
+                    placeholder="Title, at most 80 characters"
+                    @keydown.esc="editing = false"
+                />
+            </template>
+            <template v-else>
+                <h2 class="title">{{ resource.title }}</h2>
+            </template>
         </header>
-        <template v-if="resource.abstract">
+        <template v-if="editing">
+            <form class="edit" @submit.prevent="save">
+                <textarea
+                    v-model="draft.abstract"
+                    rows="2"
+                    maxlength="200"
+                    placeholder="Abstract, at most 200 characters"
+                    @keydown.esc="editing = false"
+                />
+                <textarea v-model="draft.brief" rows="6" :placeholder="kind.labels.brief || 'Brief'" @keydown.esc="editing = false" />
+                <div class="edit-row">
+                    <Btn kind="primary" small @click="save">Save</Btn>
+                    <Btn small @click="editing = false">Cancel</Btn>
+                    <template v-if="draft.error">
+                        <span class="edit-error">{{ draft.error }}</span>
+                    </template>
+                </div>
+            </form>
+        </template>
+        <template v-else-if="resource.abstract">
             <p class="abstract">{{ resource.abstract }}</p>
         </template>
-        <div class="controls">
-            <ResourceActions :resource="resource" />
+        <div v-if="!editing" class="controls">
+            <ResourceActions :resource="resource" @edit="edit" />
             <template v-if="ranked">
                 <Priority :resource="resource" />
             </template>
@@ -51,7 +103,7 @@ const traced = computed(() => !!kind.value.fields.changed);
         <template v-if="kind.fields.options">
             <OptionsPicker :resource="resource" />
         </template>
-        <template v-if="resource.brief">
+        <template v-if="resource.brief && !editing">
             <section class="block">
                 <template v-if="kind.labels.brief">
                     <h3>{{ kind.labels.brief }}</h3>
@@ -148,6 +200,40 @@ const traced = computed(() => !!kind.value.fields.changed);
 .abstract {
     margin: 12px 0 8px;
     color: var(--text-2);
+}
+.edit-title {
+    width: 100%;
+    margin: 10px 0 0;
+    padding: 6px 10px;
+    border: 1px solid var(--border-2);
+    border-radius: 7px;
+    background: var(--raised);
+    font-size: 17px;
+    font-weight: 600;
+}
+.edit {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin: 12px 0;
+}
+.edit textarea {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid var(--border-2);
+    border-radius: 7px;
+    background: var(--raised);
+    font: inherit;
+    resize: vertical;
+}
+.edit-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.edit-error {
+    color: var(--danger);
+    font-size: 12px;
 }
 .block {
     margin-top: 16px;

@@ -6,6 +6,7 @@ import {route} from "../route.js";
 import {meta, word} from "../store.js";
 
 const props = defineProps({resource: Object});
+const emit = defineEmits(["edit"]);
 const error = ref("");
 const prompt = ref("");
 const text = ref("");
@@ -43,6 +44,9 @@ async function run(method) {
             <Btn small @click="prompt = ''">Cancel</Btn>
         </template>
         <template v-else>
+            <template v-if="!resource.completed">
+                <Btn small @click="emit('edit')">Edit</Btn>
+            </template>
             <template v-for="m in offered" :key="m">
                 <Btn :kind="m === 'complete' ? 'primary' : 'danger'" small @click="m === 'complete' ? (prompt = m) : run(m)">
                     {{ word(resource.type, m) }}
