@@ -17,6 +17,11 @@ PACKAGE_DIRS = ("commands", "controllers", "engine", "extension", "features", "m
 PACKAGE_FILES = ("VERSION", "hook.py", "install.py", "journal.py", "serve.py", "skills.py")
 PACKAGE_TREES = (*PACKAGE_DIRS, "web/dist")
 REPOSITORY = "https://github.com/jessegall/agent-journal"
+SRC = "src"
+
+
+def code(root: Path) -> Path:
+    return root / SRC
 
 
 def package_files(root: Path) -> set[Path]:
@@ -46,23 +51,42 @@ def refresh(source: Path, target: Path) -> tuple[int, int]:
     return len(changed), len(gone)
 
 
+ENTRYPOINTS = ("hook.py", "journal.py")
+FORWARD = 'import runpy\nimport sys\nfrom pathlib import Path\n\nsys.argv[0] = str(Path(__file__).resolve().parent / "src" / Path(__file__).name)\nrunpy.run_path(sys.argv[0], run_name="__main__")\n'
+
+
+def retire(root: Path) -> int:
+    old = {rel for rel in package_files(root) if str(rel) not in ENTRYPOINTS}
+    for rel in old:
+        (root / rel).unlink()
+    for name in ENTRYPOINTS:
+        (root / name).write_text(FORWARD)
+    for name in (*PACKAGE_DIRS, "web"):
+        tree = root / name
+        if tree.is_dir() and not any(f.is_file() and "__pycache__" not in f.parts for f in tree.rglob("*")):
+            shutil.rmtree(tree)
+    return len(old)
+
+
 def alias(project: Path, root: Path) -> Path:
     f = root / "journal"
     f.parent.mkdir(parents=True, exist_ok=True)
-    f.write_text(f'#!/bin/sh\nexec "{sys.executable}" "{root / "journal.py"}" --root "{root}" "$@"\n')
+    f.write_text(f'#!/bin/sh\nexec "{sys.executable}" "{code(root) / "journal.py"}" --root "{root}" "$@"\n')
     f.chmod(f.stat().st_mode | stat.S_IEXEC)
     bin_ = Path.home() / ".local" / "bin"
     if bin_.is_dir():
         shim = bin_ / "journal"
-        shim.write_text('#!/bin/sh\ndir="$(pwd)"\nwhile [ "$dir" != "/" ]; do\n  if [ -f "$dir/.journal/journal.py" ]; then exec python3 "$dir/.journal/journal.py" --root "$dir/.journal" "$@"; fi\n  dir="$(dirname "$dir")"\ndone\necho "no .journal/ here or above: install agent-journal in this project first" >&2\nexit 1\n')
+        shim.write_text('#!/bin/sh\ndir="$(pwd)"\nwhile [ "$dir" != "/" ]; do\n  for code in "$dir/.journal/src" "$dir/.journal"; do\n    if [ -f "$code/journal.py" ]; then exec python3 "$code/journal.py" --root "$dir/.journal" "$@"; fi\n  done\n  dir="$(dirname "$dir")"\ndone\necho "no .journal/ here or above: install agent-journal in this project first" >&2\nexit 1\n')
         shim.chmod(shim.stat().st_mode | stat.S_IEXEC)
     return f
 
 
 def install(project: Path, root: Path | None = None) -> list[str]:
     root = root or project / ".journal"
-    refresh(PACKAGE, root)
-    return configure(project, root)
+    refresh(PACKAGE, code(root))
+    done = configure(project, root)
+    retire(root)
+    return done
 
 
 def configure(project: Path, root: Path) -> list[str]:
@@ -72,7 +96,7 @@ def configure(project: Path, root: Path) -> list[str]:
         provider = cls()
         if not provider.present(project):
             continue
-        f = provider.wire(project, f"{sys.executable} {root / 'hook.py'} {name} {root}")
+        f = provider.wire(project, f"{sys.executable} {code(root) / 'hook.py'} {name} {root}")
         done.append(f"{name}: hooks in {f.relative_to(project)}")
         present.append(name)
     if not done:
@@ -89,7 +113,7 @@ def upgrade(project: Path, root: Path | None = None) -> list[str]:
     root = root or project / ".journal"
     done = []
     source, temporary = PACKAGE, None
-    reloaded = PACKAGE.resolve() == root.resolve() and not os.environ.get("AGENT_JOURNAL_BOOTSTRAPPED")
+    reloaded = PACKAGE.resolve() in (root.resolve(), code(root).resolve()) and not os.environ.get("AGENT_JOURNAL_BOOTSTRAPPED")
     if reloaded:
         temporary = Path(tempfile.mkdtemp())
         source = temporary / "package"
@@ -104,21 +128,26 @@ def upgrade(project: Path, root: Path | None = None) -> list[str]:
     elif (PACKAGE / ".git").is_dir() and shutil.which("git"):
         pulled = subprocess.run(["git", "-C", str(PACKAGE), "pull", "--ff-only", "-q"], capture_output=True, text=True, timeout=120)
         done.append("package pulled" if pulled.returncode == 0 else f"package not pulled: {pulled.stderr.strip()}")
-    changed, gone = refresh(source, root)
+    changed, gone = refresh(source, code(root))
     if temporary:
         shutil.rmtree(temporary, ignore_errors=True)
     done.append(f"package refreshed: {changed} changed, {gone} retired")
     if reloaded:
-        finished = subprocess.run([sys.executable, str(root / "install.py"), "finish", str(project)], capture_output=True, text=True, timeout=120)
+        finished = subprocess.run([sys.executable, str(code(root) / "install.py"), "finish", str(project)], capture_output=True, text=True, timeout=120)
         return done + (finished.stdout.strip().splitlines() if finished.returncode == 0 else [f"package refreshed but configuration failed: {finished.stderr.strip()}"])
     done += finish(project, root)
     return done
 
 
 def finish(project: Path, root: Path) -> list[str]:
+    if PACKAGE.resolve() == root.resolve():
+        refresh(PACKAGE, code(root))
     done = configure(project, root)
     ran = migrate(root)
     done.append(f"migrations run: {', '.join(ran)}" if ran else "record already in shape")
+    moved = retire(root)
+    if moved:
+        done.append(f"package moved into {SRC}/: {moved} files out of the record")
     return done
 
 

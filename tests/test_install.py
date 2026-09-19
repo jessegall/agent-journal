@@ -96,14 +96,20 @@ old = project / ".journal" / "environments" / "main"
 (project / ".journal" / "providers" / "retired.py").write_text("gone\n")
 (project / ".journal" / "runtime").mkdir()
 (project / ".journal" / "runtime" / "keep").write_text("record state\n")
+legacy = f"{sys.executable} {project / '.journal' / 'hook.py'} claude {project / '.journal'}"
+(project / ".claude" / "settings.json").write_text(json.dumps({"hooks": {"Stop": [{"hooks": [{"type": "command", "command": legacy}]}]}}))
 from install import upgrade  # noqa: E402
 said = upgrade(project)
-check("upgrade wires, writes skills and runs the migrations, and says so", (any("skills" in l for l in said), said[-1]), (True, "migrations run: m0001_the_old_record, m0002_rule_targets, m0003_unify_rule_injection"))
+check("upgrade wires, writes skills and runs the migrations, and says so", (any("skills" in l for l in said), said[-2:]), (True, ["migrations run: m0001_the_old_record, m0002_rule_targets, m0003_unify_rule_injection", "package moved into src/: 1 files out of the record"]))
 check("the old row is a v2 to-do with its number", Todos(Record(project / ".journal", "main")).load(3).title, "an old row")
-check("upgrade refreshes package code and removes retired package files", ("def context" in (project / ".journal" / "providers" / "codex.py").read_text(), (project / ".journal" / "providers" / "retired.py").exists()), (True, False))
+check("upgrade refreshes package code and removes retired package files", ("def context" in (project / ".journal" / "src" / "providers" / "codex.py").read_text(), (project / ".journal" / "providers").exists()), (True, False))
 check("upgrade preserves the project record", (project / ".journal" / "runtime" / "keep").read_text(), "record state\n")
 command = next(h["command"] for b in json.loads((project / ".claude" / "settings.json").read_text())["hooks"]["Stop"] for h in b["hooks"] if "hook.py" in h["command"])
-check("the hook and shim run the installed package, not the source checkout", (str(project / ".journal" / "hook.py") in command, str(project / ".journal" / "journal.py") in (project / ".journal" / "journal").read_text()), (True, True))
+check("the hook and shim run the installed package, not the source checkout", (str(project / ".journal" / "src" / "hook.py") in command, str(project / ".journal" / "src" / "journal.py") in (project / ".journal" / "journal").read_text()), (True, True))
+check("the record holds no package code: only the two entrypoints, forwarding to src/", sorted(p.name for p in (project / ".journal").iterdir() if p.suffix == ".py"), ["hook.py", "journal.py"])
+forwarded = subprocess.run([sys.executable, str(project / ".journal" / "journal.py"), "--root", str(project / ".journal"), "version"], capture_output=True, text=True, timeout=20)
+check("an old path still runs the CLI through its forward", (forwarded.returncode, forwarded.stdout.strip() != ""), (0, True))
+check("each hook event runs one journal command, the old one replaced", sum("hook.py" in json.dumps(b) for b in json.loads((project / ".claude" / "settings.json").read_text())["hooks"]["Stop"]), 1)
 check("a second upgrade migrates nothing", upgrade(project)[-1], "record already in shape")
 alias = project / ".journal" / "journal"
 p = subprocess.run([str(alias), "version"], capture_output=True, text=True, timeout=20)
@@ -118,8 +124,8 @@ subprocess.run(["git", "-C", str(source), "add", "."], check=True, env=git_env)
 subprocess.run(["git", "-C", str(source), "-c", "user.name=Test", "-c", "user.email=test@example.com", "commit", "-qm", "package"], check=True, env=git_env)
 consumer = project_with(".claude")
 install(consumer)
-upgraded = subprocess.run([sys.executable, str(consumer / ".journal" / "install.py"), "upgrade", str(consumer)], capture_output=True, text=True, timeout=60,
+upgraded = subprocess.run([sys.executable, str(consumer / ".journal" / "src" / "install.py"), "upgrade", str(consumer)], capture_output=True, text=True, timeout=60,
                           env={**git_env, "AGENT_JOURNAL_REPO": str(source)})
-check("an installed journal clones, refreshes and configures the new package", (upgraded.returncode, (consumer / ".journal" / "VERSION").read_text(), "package refreshed" in upgraded.stdout, (consumer / ".claude" / "settings.json").is_file()), (0, "9.9.9\n", True, True))
+check("an installed journal clones, refreshes and configures the new package", (upgraded.returncode, (consumer / ".journal" / "src" / "VERSION").read_text(), "package refreshed" in upgraded.stdout, (consumer / ".claude" / "settings.json").is_file()), (0, "9.9.9\n", True, True))
 
 done()
