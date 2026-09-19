@@ -17,6 +17,7 @@ import features
 from features.appointments.appoint import appoint, online
 from features.extension.package import archive as extension_archive, info as extension_info
 from features.hub.summary import summarize
+from features.sessioncontrol.control import options as control_options, request as control_session
 from features.skills.catalogue import SKILL, always, catalogue, load_now, skills
 from controllers.types import Agents, Asks, CONTROLLERS, Environments
 from engine import bus, viewer
@@ -158,6 +159,17 @@ def get_agents(req: Request) -> Reply:
 @route("POST", "/api/{env}/appoint")
 def post_appoint(req: Request) -> Reply:
     return Reply(200, appoint(req.root, req.params["env"], str(req.body.get("session") or "")))
+
+
+@route("GET", "/api/agent-controls/{provider}")
+def get_agent_controls(req: Request) -> Reply:
+    return Reply(200, control_options(req.params["provider"]))
+
+
+@route("POST", "/api/{env}/agent/{session}/control")
+def post_agent_control(req: Request) -> Reply:
+    return Reply(200, control_session(req.root, req.params["env"], req.params["session"],
+                                      str(req.body.get("action") or ""), str(req.body.get("value") or "")))
 
 
 @route("POST", "/api/shown")

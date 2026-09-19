@@ -1,0 +1,30 @@
+import json
+import time
+import uuid
+from pathlib import Path
+
+
+def queue(root: Path, session: str, line: str, label: str, **data) -> dict:
+    queued = {"session": session, "line": line, "label": label, "at": time.time(), **data}
+    folder = Path(root) / "runtime" / "inputs"
+    folder.mkdir(parents=True, exist_ok=True)
+    target = folder / f"{time.time_ns()}-{uuid.uuid4().hex}.json"
+    temporary = target.with_suffix(".tmp")
+    temporary.write_text(json.dumps(queued))
+    temporary.replace(target)
+    return queued
+
+
+def take(root: Path, session: str) -> dict:
+    folder = Path(root) / "runtime" / "inputs"
+    for path in sorted(folder.glob("*.json")):
+        try:
+            queued = json.loads(path.read_text())
+        except (OSError, ValueError):
+            path.unlink(missing_ok=True)
+            continue
+        if queued.get("session") != session:
+            continue
+        path.unlink(missing_ok=True)
+        return queued
+    return {}

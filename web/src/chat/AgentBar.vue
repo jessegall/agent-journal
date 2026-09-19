@@ -1,6 +1,6 @@
 <script setup>
 import {computed, onUnmounted, ref} from "vue";
-import {appoint, onlineAgents} from "../api.js";
+import {agentControls, appoint, controlAgent, onlineAgents} from "../api.js";
 import Icon from "../kit/Icon.vue";
 import SwitchCase from "../kit/SwitchCase.vue";
 import {go, peek, route} from "../route.js";
@@ -28,6 +28,8 @@ const skillCount = computed(() => counts.value[0]);
 const activityCounts = computed(() => counts.value.slice(1));
 const available = ref([]);
 const assigning = ref("");
+const controls = ref({groups: [], note: ""});
+const controlling = ref("");
 const error = ref("");
 const anchor = ref({left: 0, top: 0});
 function toggle(key, e) {
@@ -44,6 +46,29 @@ async function appointments(e) {
         available.value = await onlineAgents();
     } catch (e) {
         error.value = e.message;
+    }
+}
+async function modelControls(e) {
+    toggle("model", e);
+    if (open.value !== "model") return;
+    error.value = "";
+    controls.value = {groups: [], note: "Loading controls…"};
+    try {
+        controls.value = await agentControls(data.value.provider);
+    } catch (e) {
+        error.value = e.message;
+    }
+}
+async function control(action, value) {
+    controlling.value = `${action}:${value}`;
+    error.value = "";
+    try {
+        await controlAgent(route.value.env, agent.value.title, action, value);
+        open.value = "";
+    } catch (e) {
+        error.value = e.message;
+    } finally {
+        controlling.value = "";
     }
 }
 async function choose(candidate) {
@@ -91,10 +116,16 @@ onUnmounted(() => window.removeEventListener("click", away));
                     {{ name }}
                 </button>
                 <template v-if="family">
-                    <span class="agent-fact" :title="data.model">
+                    <button
+                        type="button"
+                        :class="['agent-fact', 'agent-count', {open: open === 'model'}]"
+                        :title="`${data.model} — change model or reasoning effort`"
+                        :aria-expanded="open === 'model'"
+                        @click="modelControls"
+                    >
                         <Icon name="model" />
                         {{ family[0].toLowerCase() }}
-                    </span>
+                    </button>
                 </template>
                 <button
                     type="button"
@@ -190,6 +221,26 @@ onUnmounted(() => window.removeEventListener("click", away));
                         <div class="bar-foot">
                             <button type="button" class="bar-act" @click="openSkills">Browse every skill</button>
                         </div>
+                    </template>
+                    <template #model>
+                        <p v-if="error" class="bar-error">{{ error }}</p>
+                        <p class="bar-current">{{ data.model }}</p>
+                        <template v-for="group in controls.groups" :key="group.key">
+                            <p class="bar-label">{{ group.label }}</p>
+                            <div class="bar-choices">
+                                <button
+                                    v-for="choice in group.choices"
+                                    :key="choice.value"
+                                    type="button"
+                                    class="bar-control-choice"
+                                    :disabled="Boolean(controlling)"
+                                    @click="control(group.key, choice.value)"
+                                >
+                                    {{ choice.label }}
+                                </button>
+                            </div>
+                        </template>
+                        <p class="bar-none">{{ controls.note }}</p>
                     </template>
                     <template #shells>
                         <p class="bar-none">{{ data.shells || 0 }} background shell(s) were started in this session.</p>
@@ -385,6 +436,47 @@ onUnmounted(() => window.removeEventListener("click", away));
     padding: 6px 8px;
     color: var(--danger);
     font-size: 11.5px;
+}
+
+.bar-current {
+    margin: 0;
+    padding: 7px 8px 5px;
+    color: var(--text);
+    font-size: 12px;
+}
+
+.bar-label {
+    margin: 0;
+    padding: 6px 8px 3px;
+    color: var(--text-3);
+    font-size: 10px;
+    font-weight: 650;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.bar-choices {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    padding: 2px 6px 5px;
+}
+
+.bar-control-choice {
+    padding: 5px 8px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: none;
+    color: var(--text-2);
+    font: inherit;
+    font-size: 11.5px;
+    cursor: pointer;
+}
+
+.bar-control-choice:hover {
+    border-color: var(--border-2);
+    background: var(--hover);
+    color: var(--text);
 }
 
 .bar-agent-choice {
