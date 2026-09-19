@@ -77,9 +77,10 @@ async function runBar(p) {
                 <span class="planbar-n">Plan</span>
                 <span class="planbar-title">{{ p.title }}</span>
                 <template v-if="phaseOf(p)">
-                    <span class="planbar-phase">· {{ phaseOf(p) }}</span>
+                    <span class="planbar-dot">·</span>
+                    <span class="planbar-phase">{{ phaseOf(p) }}</span>
                 </template>
-                <span class="planbar-step">{{ p.data.current || 1 }}</span>
+                <span class="planbar-step">phase {{ p.data.current || 1 }}/{{ p.data.phases.length }}</span>
                 <span class="planbar-track" role="progressbar">
                     <span :style="{width: `${(100 * done(p)) / Math.max(1, rowsOf(p).length)}%`}" />
                 </span>
@@ -264,6 +265,11 @@ async function runBar(p) {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+}
+
+.planbar-dot {
+    flex: none;
+    color: var(--text-3);
 }
 
 .planbar-phase {
