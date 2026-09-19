@@ -9,7 +9,7 @@ from engine.record import Record
 from engine.viewer import marked, running
 from resources.base import SYSTEM
 
-ROWS = 5
+ROWS = 4
 ESC = "\x1b"
 STYLE = f"{ESC}[48;2;23;24;27m{ESC}[38;2;169;172;179m"
 BRIGHT = f"{ESC}[38;2;230;231;234m"
@@ -109,12 +109,12 @@ class Band:
         mark = STATES.get(state, "○")
         env = seat.get("env") or self.env
         record = Record(self.root, env)
-        facts = f"{BRIGHT}{self.project}{DIM} · {BRIGHT}{env}{DIM} · {ACCENT}{self.viewer()}{DIM} · {datetime.now().strftime('%H:%M:%S')}"
-        status = (f"{ACCENT}{mark} {BRIGHT}{state}{DIM}  {agent.get('model') or agent.get('provider') or '—'} · {agent.get('title', '')[:8]}"
-                  f" · up {since(float(agent.get('started') or 0))} · context {round(float(agent.get('context') or 0))}%")
-        doing = f"{BRIGHT}{self.activity(record, agent)}"
+        facts = (f"{BRIGHT}{self.project}{DIM} · {BRIGHT}{env}{DIM} · {ACCENT}{self.viewer()}{DIM} · {datetime.now().strftime('%H:%M:%S')}"
+                 f" · {agent.get('model') or agent.get('provider') or '—'} · {agent.get('title', '')[:8]}"
+                 f" · up {since(float(agent.get('started') or 0))} · context {round(float(agent.get('context') or 0))}%")
+        status = f"{ACCENT}{mark} {BRIGHT}{state}{DIM}  {self.activity(record, agent)}"
         rule = f"{ESC}[38;2;47;49;54m{'─' * cols}"
-        return [self.banner(env, cols)] + [self.fit(line, cols) for line in (facts, status, doing, rule)]
+        return [self.banner(env, cols), self.fit(facts, cols, left=2), self.fit(status, cols, left=2), self.fit(rule, cols)]
 
     def shade(self, x: int, cols: int) -> tuple[int, int, int]:
         t = x / max(1, cols - 1) * (len(GRADIENT) - 1)
@@ -131,7 +131,7 @@ class Band:
             cells.append(f"{ESC}[48;2;{r};{g};{b}m{ch}")
         return f"{ESC}[1m{ESC}[38;2;245;246;250m" + "".join(cells)
 
-    def fit(self, line: str, cols: int) -> str:
+    def fit(self, line: str, cols: int, left: int = -1) -> str:
         plain = 0
         out = []
         i = 0
@@ -141,12 +141,12 @@ class Band:
                 out.append(line[i:j])
                 i = j
                 continue
-            if plain >= cols:
+            if plain >= cols - max(0, left):
                 break
             out.append(line[i])
             plain += 1
             i += 1
-        left = max(0, (cols - plain) // 2)
+        left = max(0, (cols - plain) // 2) if left < 0 else min(left, cols - plain)
         return " " * left + "".join(out) + " " * (cols - plain - left)
 
     def draw(self, cols: int, force: bool = False) -> bytes:
