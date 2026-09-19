@@ -9,6 +9,7 @@ import tty
 from pathlib import Path
 
 from engine.sessions import ACTIVE_ENV
+from install import code
 
 RELOAD = 75
 STOP = 76
@@ -16,7 +17,7 @@ CHECK_EVERY = 0.5
 
 
 def watched(root: Path) -> tuple:
-    files = sorted(root.rglob("*.py"))
+    files = sorted(code(root).rglob("*.py"))
     return tuple((str(f), f.stat().st_mtime_ns) for f in files if f.is_file())
 
 
