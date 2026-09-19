@@ -11,7 +11,7 @@ from engine import attic
 from engine.record import Record
 from engine.sessions import Sessions
 from resources import types
-from resources.base import AGENT, SECTION, SYSTEM, Refused, check_title, names
+from resources.base import AGENT, SECTION, SYSTEM, Refused, check_title, names, titled
 from resources.shapes import LEVELS
 from resources.types import PHASE
 
@@ -29,6 +29,9 @@ class Messages(Controller):
                 if existing:
                     return existing
             return super().create(title, abstract, brief, **data)
+
+    def update(self, n: int, title: str | None = None, abstract: str | None = None, brief: str | None = None, outcome: str | None = None, **data):
+        return super().update(n, titled(brief) if title is None and brief is not None else title, abstract, brief, outcome, **data)
 
     def waiting(self) -> list:
         return [m for m in self.all() if not m.completed and m.seen[:1] != [AGENT]]
