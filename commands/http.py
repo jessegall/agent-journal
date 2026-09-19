@@ -14,9 +14,10 @@ from urllib.parse import quote, unquote
 from urllib.request import urlopen
 
 import features
-from features.skills.catalogue import SKILL, always, catalogue, load_now, skills
+from features.appointments.appoint import appoint, online
 from features.extension.package import archive as extension_archive, info as extension_info
 from features.hub.summary import summarize
+from features.skills.catalogue import SKILL, always, catalogue, load_now, skills
 from controllers.types import Agents, Asks, CONTROLLERS, Environments
 from engine import bus, viewer
 from engine.manifest import manifest
@@ -147,6 +148,16 @@ def get_identity(req: Request) -> Reply:
 @route("GET", "/api/summary")
 def get_summary(req: Request) -> Reply:
     return Reply(200, summarize(req.root))
+
+
+@route("GET", "/api/agents")
+def get_agents(req: Request) -> Reply:
+    return Reply(200, online(req.root))
+
+
+@route("POST", "/api/{env}/appoint")
+def post_appoint(req: Request) -> Reply:
+    return Reply(200, appoint(req.root, req.params["env"], str(req.body.get("session") or "")))
 
 
 @route("POST", "/api/shown")
