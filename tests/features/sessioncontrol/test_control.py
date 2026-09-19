@@ -45,23 +45,23 @@ seat = {"at": time.time(), "agent": "codex", "state": "idle", "env": "main", "re
 
 claude = options("claude")
 codex = options("codex")
-check("Claude offers direct model and effort choices while Codex exposes its native picker",
-      ([group["key"] for group in claude["groups"]], codex["groups"][0]["choices"]),
-      (["model", "effort"], [{"value": "open", "label": "Open Codex picker"}]))
+check("Claude and Codex offer direct model choices",
+      ([group["key"] for group in claude["groups"]], codex["groups"][0]["choices"][:1]),
+      (["model", "effort"], [{"value": "gpt-5.3-codex", "label": "GPT-5.3 Codex"}]))
 check("commands stay server-side", "command" in claude["groups"][0]["choices"][0], False)
 check("an unknown control is refused", refused(lambda: request(root, "main", "codex-live", "model", "gpt-5")), "codex does not support model 'gpt-5'")
-check("another environment cannot control the session", refused(lambda: request(root, "other", "codex-live", "picker", "open")), "session 'codex-live' belongs to environment 'main'")
+check("another environment cannot control the session", refused(lambda: request(root, "other", "codex-live", "model", "gpt-5.3-codex")), "session 'codex-live' belongs to environment 'main'")
 check("an offline session cannot be controlled", refused(lambda: request(root, "main", "gone", "picker", "open")), "session 'gone' is not online")
 
 listed = dispatch("GET", "/api/agent-controls/codex", root, {}, {})
-posted = dispatch("POST", "/api/main/agent/codex-live/control", root, {}, {"action": "picker", "value": "open"})
-check("the viewer API lists and queues controls", (listed.code, listed.body["provider"], posted.code, take(root, "codex-live")["line"]), (200, "codex", 200, "/model"))
+posted = dispatch("POST", "/api/main/agent/codex-live/control", root, {}, {"action": "model", "value": "gpt-5.3-codex"})
+check("the viewer API lists and queues controls", (listed.code, listed.body["provider"], posted.code, take(root, "codex-live")["line"]), (200, "codex", 200, "/model gpt-5.3-codex"))
 
-queued = request(root, "main", "codex-live", "picker", "open")
+queued = request(root, "main", "codex-live", "model", "gpt-5.3-codex")
 check("a supported choice queues a control without exposing its CLI command", (queued["provider"], "line" in queued, queued["queued"]), ("codex", False, True))
 driver = FakeCodex(record)
 engine = Engine(record, driver)
-check("the live engine types one queued control into its own CLI", (engine.control(), driver.sent), ("controlled: Open Codex picker", ["/model"]))
+check("the live engine types one queued control into its own CLI", (engine.control(), driver.sent), ("controlled: GPT-5.3 Codex", ["/model gpt-5.3-codex"]))
 check("a control is consumed once", (engine.control(), take(root, "codex-live")), ("", {}))
 
 done()

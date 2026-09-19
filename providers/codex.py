@@ -25,12 +25,17 @@ class Codex(Provider):
     controls = {
         "groups": [
             {
-                "key": "picker",
-                "label": "Model and reasoning effort",
-                "choices": [{"value": "open", "label": "Open Codex picker", "command": "/model"}],
+                "key": "model",
+                "label": "Model",
+                "choices": [
+                    {"value": "gpt-5.3-codex", "label": "GPT-5.3 Codex", "command": "/model gpt-5.3-codex"},
+                    {"value": "gpt-5.2-codex", "label": "GPT-5.2 Codex", "command": "/model gpt-5.2-codex"},
+                    {"value": "gpt-5.1-codex-max", "label": "GPT-5.1 Codex Max", "command": "/model gpt-5.1-codex-max"},
+                    {"value": "gpt-5.1-codex-mini", "label": "GPT-5.1 Codex Mini", "command": "/model gpt-5.1-codex-mini"},
+                ],
             },
         ],
-        "note": "Choose the model and reasoning effort in the Codex terminal picker.",
+        "note": "Changes apply immediately to this Codex session.",
     }
     usage_note = "Codex reports plan limits here after its next response."
 
