@@ -1,11 +1,13 @@
 <script setup>
-import {onMounted, ref, watch} from "vue";
+import {computed, onMounted, ref, watch} from "vue";
 import {projectFile} from "../api.js";
+import {highlight, languageOf} from "../text/highlight.js";
 import Icon from "../kit/Icon.vue";
 import {route} from "../route.js";
 
 const file = ref(null);
 const error = ref("");
+const lines = computed(() => (file.value ? highlight(file.value.text, languageOf(file.value.path)) : []));
 
 async function load() {
     error.value = "";
@@ -35,9 +37,7 @@ watch(() => route.value.q, load);
                 <p class="empty">An image; open it from Files if it is an attachment.</p>
             </template>
             <template v-else>
-                <pre
-                    class="text"
-                ><template v-for="(line, i) in file.text.replace(/\n$/, '').split('\n')" :key="i"><span class="n">{{ i + 1 }}</span>{{ line }}
+                <pre class="text"><template v-for="(line, i) in lines" :key="i"><span class="n">{{ i + 1 }}</span><span v-html="line" />
 </template></pre>
             </template>
         </template>
@@ -92,6 +92,31 @@ watch(() => route.value.q, load);
     font-size: 11.5px;
     line-height: 1.5;
     color: var(--text-2);
+}
+
+.text :deep(.tok-comment) {
+    color: var(--text-4);
+    font-style: italic;
+}
+
+.text :deep(.tok-string) {
+    color: #a8d08d;
+}
+
+.text :deep(.tok-number) {
+    color: #e0b26a;
+}
+
+.text :deep(.tok-keyword) {
+    color: var(--accent-text);
+}
+
+.text :deep(.tok-type) {
+    color: #7fc6d9;
+}
+
+.text :deep(.tok-property) {
+    color: #c8a8e8;
 }
 
 .n {
