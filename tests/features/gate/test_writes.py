@@ -22,8 +22,8 @@ for name, provider_cls in PROVIDERS.items():
     provider = provider_cls()
     session = f"{name}-7"
 
-    def hook(event, tool="", **tool_input):
-        return handle(provider, root, env, {"hook_event_name": event, "session_id": session, "tool_name": tool, "tool_input": tool_input})
+    def hook(event, tool="", cwd="", **tool_input):
+        return handle(provider, root, env, {"hook_event_name": event, "session_id": session, "tool_name": tool, "tool_input": tool_input, "cwd": cwd})
 
     # THE HOOK REPORTS, AND READS ONE FLAG; the gate feature writes it from work events
     hook("SessionStart")
@@ -35,6 +35,10 @@ for name, provider_cls in PROVIDERS.items():
     check(f"{name}: a redirect is a write", hook("PreToolUse", "Bash", command="echo x > out.txt"), {"decision": "block", "reason": REFUSED})
     check(f"{name}: a redirect to /dev/null is not", hook("PreToolUse", "Bash", command="make > /dev/null"), {})
     check(f"{name}: joining stderr is not a write", hook("PreToolUse", "Bash", command="python3 tests/x.py 2>&1 | tail -1"), {})
+    project = str(root.parent)
+    check(f"{name}: a project file is gated", hook("PreToolUse", "Write", cwd=project, file_path="web/x.js"), {"decision": "block", "reason": REFUSED})
+    check(f"{name}: a file inside the journal is not project work", hook("PreToolUse", "Write", cwd=project, file_path=".journal/environments/main/notes.md"), {})
+    check(f"{name}: a file outside the project is not project work", hook("PreToolUse", "Edit", cwd=project, file_path="/tmp/elsewhere/memory.md"), {})
     check(f"{name}: a journal command is never gated, it is how work opens", hook("PreToolUse", "Bash", command="journal work start \"x\" >/dev/null; .journal/journal todo add x"), {})
     work = Works(record, actor=AGENT).create(f"the header for {name}")
     check(f"{name}: work open: the flag flips to allowed", held(record, session), "")

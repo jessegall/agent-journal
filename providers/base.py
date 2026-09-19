@@ -12,6 +12,7 @@ from resources.types import AgentRow, COMMAND, RUNNING
 WRITES = ("Edit", "Write", "MultiEdit", "NotebookEdit")
 WRITING_COMMANDS = re.compile(r"(^|[;&|]\s*)(rm|mv|cp|git (commit|push|rm|mv)|sed -i|tee|touch|mkdir|npm install|pip install)\b|(?<![\d&])>>?\s*(?!/dev/null|&)\S")
 RING = 12
+JOURNAL_DIR = ".journal"
 CHANGING = ("writes", "deletes")
 START = r"(?:^|[;&|(]\s*|\b(?:do|then)\s+)"
 EFFECTS = (
@@ -67,8 +68,15 @@ class Provider(ABC):
 
     def writes(self, hook: Hook) -> bool:
         if hook.tool.name in WRITES:
-            return True
+            return self.in_project(hook.tool.file_path, hook.cwd)
         return hook.tool.name == "Bash" and not JOURNAL_COMMAND.search(hook.command) and any(pattern.search(hook.command) for name, pattern in EFFECTS if name in CHANGING)
+
+    def in_project(self, path: str, cwd: str) -> bool:
+        if not path or not cwd:
+            return True
+        project = Path(cwd).resolve()
+        target = (project / path).resolve()
+        return project in target.parents and JOURNAL_DIR not in target.relative_to(project).parts[:1]
 
     def shell(self, row, hook: Hook) -> dict:
         doing = hook.tool.doing.strip()[:400]
