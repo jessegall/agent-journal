@@ -136,18 +136,6 @@ onUnmounted(() => window.removeEventListener("click", away));
                     <Icon name="agents" />
                     {{ name }}
                 </button>
-                <template v-if="family">
-                    <button
-                        type="button"
-                        :class="['agent-fact', 'agent-count', {open: open === 'model'}]"
-                        :title="`${data.model} — change model or reasoning effort`"
-                        :aria-expanded="open === 'model'"
-                        @click="modelControls"
-                    >
-                        <Icon name="model" />
-                        {{ family[0].toLowerCase() }}
-                    </button>
-                </template>
                 <button
                     v-if="['claude', 'codex'].includes(data.provider)"
                     type="button"
@@ -160,6 +148,18 @@ onUnmounted(() => window.removeEventListener("click", away));
                     <span v-if="usage.length" class="usage-gauge"><span :style="{width: `${used(usage[0])}%`}" /></span>
                     {{ usageLabel }}
                 </button>
+                <template v-if="family">
+                    <button
+                        type="button"
+                        :class="['agent-fact', 'agent-count', {open: open === 'model'}]"
+                        :title="`${data.model} — change model or reasoning effort`"
+                        :aria-expanded="open === 'model'"
+                        @click="modelControls"
+                    >
+                        <Icon name="model" />
+                        {{ family[0].toLowerCase() }}
+                    </button>
+                </template>
                 <button
                     type="button"
                     :class="['agent-fact', 'agent-count', 'agent-skill', {none: !skillCount.n, open: open === skillCount.key}]"
