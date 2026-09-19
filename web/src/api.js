@@ -38,6 +38,7 @@ export async function upload(env, type, n, file, base = "") {
     if (!res.ok) throw new Error((await res.json()).error || res.statusText);
 }
 export const act = (env, type, n, action, body = {}, base = "") => api("POST", `/${env}/${type}/${n}/${action}`, body, base);
+export const command = (env, type, action, body = {}) => api("POST", `/${env}/${type}/${action}`, body);
 export const readAll = (env, type, numbers) => api("POST", `/${env}/${type}/read-all`, {numbers});
 export const events = (env, since = 0, last = 0) => api("GET", `/${env}/events?since=${since}&last=${last}`);
 export const settings = (env) => api("GET", `/${env}/settings`);

@@ -1,10 +1,10 @@
 <script setup>
 import {computed, onMounted, ref} from "vue";
-import {act, api, saveIdentity, saveSettings} from "../api.js";
+import {act, api, command, saveIdentity, saveSettings} from "../api.js";
 import Btn from "../kit/Btn.vue";
 import Switch from "../kit/Switch.vue";
 import {route} from "../route.js";
-import {rows, store} from "../store.js";
+import {load, rows, store} from "../store.js";
 
 const COUNTED = ["percent", "uses", "minutes"];
 const EVENTS = ["idle", "worked", "start"];
@@ -13,6 +13,45 @@ const features = computed(() =>
     Object.values(store.spec.features).map((f) => ({...f, when: f.trigger && Object.keys(f.trigger).length ? triggerOf(f) : null}))
 );
 const on = (name) => !!(store.settings && store.settings.features[name]);
+const source = ref("");
+const shown = ref("");
+const busy = ref("");
+const plugins = computed(() => rows("plugin").filter((p) => !p.completed));
+
+async function preview() {
+    busy.value = "preview";
+    shown.value = "";
+    try {
+        shown.value = await command(route.value.env, "plugin", "preview", {source: source.value});
+    } catch (e) {
+        shown.value = e.message;
+    }
+    busy.value = "";
+}
+
+async function install() {
+    busy.value = "install";
+    try {
+        await command(route.value.env, "plugin", "install", {source: source.value, yes: true});
+        source.value = "";
+        shown.value = "";
+        await load("plugin");
+    } catch (e) {
+        shown.value = e.message;
+    }
+    busy.value = "";
+}
+
+async function plugin(p, action, body = {}) {
+    busy.value = `${p.n}`;
+    try {
+        await act(route.value.env, "plugin", p.n, action, body);
+        await load("plugin");
+    } catch (e) {
+        shown.value = e.message;
+    }
+    busy.value = "";
+}
 
 async function setTrigger(f, next) {
     await saveSettings(route.value.env, {triggers: {...((store.settings && store.settings.triggers) || {}), [f.name]: next}});
@@ -101,6 +140,65 @@ async function remove(e) {
                     <a class="download" href="/extension.zip">Download</a>
                 </span>
             </div>
+        </section>
+        <section class="group">
+            <header class="group-head">
+                <h2>Plugins</h2>
+                <p class="lead">
+                    Paste a repository. You see every command it would run before anything runs, and it installs at that exact commit. A
+                    plugin runs as you.
+                </p>
+            </header>
+            <div class="row">
+                <span class="text">
+                    <input
+                        v-model="source"
+                        class="source"
+                        placeholder="https://github.com/owner/repo, owner/repo, or a folder"
+                        @keydown.enter="preview"
+                    />
+                </span>
+                <span class="control">
+                    <Btn small :disabled="!source || busy === 'preview'" @click="preview">
+                        {{ busy === "preview" ? "Reading…" : "Preview" }}
+                    </Btn>
+                </span>
+            </div>
+            <template v-if="shown">
+                <pre class="preview">{{ shown }}</pre>
+                <div class="row">
+                    <span class="text"><span class="help">Installing runs these commands on your machine.</span></span>
+                    <span class="control">
+                        <Btn small @click="shown = ''">Cancel</Btn>
+                        <Btn kind="primary" small :disabled="busy === 'install'" @click="install">
+                            {{ busy === "install" ? "Installing…" : "Install" }}
+                        </Btn>
+                    </span>
+                </div>
+            </template>
+            <template v-for="p in plugins" :key="p.n">
+                <div class="row">
+                    <span class="text">
+                        <span class="title">{{ p.title }} {{ p.data.version }}</span>
+                        <span class="help">{{ p.data.source }}{{ p.data.commit ? ` at ${p.data.commit.slice(0, 12)}` : " (linked)" }}</span>
+                    </span>
+                    <span class="control">
+                        <Switch :on="!!p.data.enabled" @change="(v) => plugin(p, v ? 'enable' : 'disable')" />
+                        <Btn small :disabled="busy === `${p.n}`" @click="plugin(p, 'upgrade', {yes: true})">Upgrade</Btn>
+                        <Btn
+                            kind="danger"
+                            small
+                            :disabled="busy === `${p.n}`"
+                            @click="plugin(p, 'remove', {how: 'removed from the viewer'})"
+                        >
+                            Remove
+                        </Btn>
+                    </span>
+                </div>
+            </template>
+            <template v-if="!plugins.length">
+                <p class="none">No plugin is installed on this project.</p>
+            </template>
         </section>
         <section class="group">
             <header class="group-head">
@@ -314,6 +412,35 @@ h2 {
 }
 
 .unit {
+    color: var(--text-3);
+    font-size: 12.5px;
+}
+
+.source {
+    width: 100%;
+    padding: 7px 10px;
+    border: 1px solid var(--border-2);
+    border-radius: 7px;
+    background: var(--bg);
+    color: inherit;
+    font: inherit;
+}
+
+.preview {
+    margin: 0 0 8px;
+    padding: 10px 12px;
+    max-height: 320px;
+    overflow: auto;
+    border: 1px solid var(--border-2);
+    border-radius: 9px;
+    background: var(--code-bg);
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: 12px;
+    white-space: pre-wrap;
+}
+
+.none {
+    margin: 0;
     color: var(--text-3);
     font-size: 12.5px;
 }
