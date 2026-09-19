@@ -31,9 +31,11 @@ band = Band(root, "old", "s-1", "journal")
 band.url = url
 plain = lambda line: re.sub(r"\x1b\[[0-9;]*m", "", line)
 lines = [plain(line) for line in band.lines(180)]
-check("the band shows the current environment, viewer URL and clock", ("main" in lines[1], url in lines[1], bool(re.search(r"\d\d:\d\d:\d\d", lines[1]))), (True, True, True))
-check("the top line carries the session's model and context, left-aligned; the status line puts the state before the open work",
-      ("gpt-5" in lines[1], "context 38%" in lines[1], lines[1].startswith("  journal"), lines[2].startswith("  ◐ working"), f"work {work.n} {work.title}" in lines[2], len(lines)), (True, True, True, True, True, ROWS))
+check("the gradient bar keeps the centered brand and moves the clock to the right", (lines[0].index("JOURNAL"), lines[0].rfind("JOURNAL"), bool(re.search(r"\d\d:\d\d:\d\d  $", lines[0]))), ((180 - len("JOURNAL")) // 2, (180 - len("JOURNAL")) // 2, True))
+check("metadata keeps the useful facts and drops the session id and uptime",
+      ("main" in lines[1], url in lines[1], "gpt-5" in lines[1], "context 38%" in lines[1], "real-ses" in lines[1], " up " in lines[1]), (True, True, True, True, False, False))
+check("status precedes the open work and a blank row follows the divider",
+      (lines[2].startswith("  ◐ working"), f"work {work.n} {work.title}" in lines[2], set(lines[3].strip()), lines[4].strip(), len(lines)), (True, True, {"─"}, "", ROWS))
 (root / "runtime" / "seat-s-1.json").write_text(json.dumps({"env": "other", "state": "idle", "report": {"title": "real-session", "provider": "claude", "model": "sonnet", "context": 52, "running": {"what": "npm run build", "at": 1}, "started": 1}}))
 updated = [plain(line) for line in band.lines(180)]
 check("a redraw reads fresh seat data", ("other" in updated[1], "sonnet" in updated[1], "context 52%" in updated[1], "npm run build" in updated[2]), (True, True, True, True))
