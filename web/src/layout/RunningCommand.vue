@@ -81,7 +81,7 @@ let settling = 0;
 function pinned(el) {
     const box = el.parentElement.getBoundingClientRect();
     const own = el.getBoundingClientRect();
-    Object.assign(el.style, {position: "absolute", top: `${own.top - box.top}px`, right: `${box.right - own.right}px`, marginLeft: 0});
+    Object.assign(el.style, {position: "absolute", top: `${own.top - box.top}px`, right: `${box.right - own.right}px`});
 }
 
 function settledWidth() {
@@ -250,6 +250,7 @@ watch(
     position: relative;
     flex: 0 1 auto;
     min-width: 0;
+    gap: 0.55em;
     transition: width 240ms cubic-bezier(0.22, 0.7, 0.3, 1);
     display: inline-flex;
     align-items: baseline;
@@ -259,10 +260,6 @@ watch(
 
 .statusbar-run-token {
     flex: none;
-}
-
-.statusbar-run-token + .statusbar-run-token {
-    margin-left: 0.55em;
 }
 
 .statusbar-run-token {
