@@ -18,6 +18,9 @@ check("a numbered list with a question offers choices", offers_choices("Which do
 check("lettered options too", offers_choices("Should I:\nA) merge now\nB) wait for CI"), True)
 check("a list that asks nothing is a list", offers_choices("Done:\n- built\n- tested"), False)
 check("a question without options is fine", offers_choices("Shall I merge it?"), False)
+check("a summary that points at an open question by number is not offering choices",
+      offers_choices("Done:\n- built the route\n- tested it\n\nQuestion 15 is still open: should the server answer first?"), False)
+check("choices beside a named question still count", offers_choices("See question 3.\nWhich do you want?\n1. blue\n2. red"), True)
 
 record = fresh()
 transcript = record.root / "runtime" / "t.jsonl"
