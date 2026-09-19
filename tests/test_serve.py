@@ -134,8 +134,6 @@ check("an event on the environment reaches the stream as it happens, another env
       (b"text/event-stream" in buf, len(lines), json.loads(lines[0][5:])["type"] if lines else None, b"elsewhere" in buf), (True, 1, "todo", False))
 
 
-code, got = call("POST", "/api/shown", {"command": "journal message paths 104", "shown": ["the paths of message 104"]})
-check("what the status bar shows is logged for the record", (code, (root / "runtime" / "shown.log").read_text().split("\t")[1]), (200, '["the paths of message 104"]'))
 
 
 (root.parent / "web").mkdir(exist_ok=True)

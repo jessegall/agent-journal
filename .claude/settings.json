@@ -90,5 +90,10 @@
         ]
       }
     ]
+  },
+  "statusLine": {
+    "type": "command",
+    "command": "sh /Users/jessegall/projects/agent-journal/.journal/src/claude-status.sh",
+    "padding": 0
   }
 }

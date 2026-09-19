@@ -107,6 +107,7 @@ for name, cls in PROVIDERS.items():                       # every provider, the 
 # A SHELL COMMAND'S EFFECT is a fact the provider reports with the running command
 effects = {
     "python3 tests/test_gist.py 2>&1 | tail -2": "tests",
+    "/opt/homebrew/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python tests/features/files/test_changed.py": "tests",
     "for t in $(find tests -name 'test_*.py'); do python3 $t; done": "tests",
     "cd web && npm test": "tests",
     "rm -rf build": "deletes",

@@ -24,6 +24,7 @@ const NOISE = new Set([
     "exit",
 ]);
 const LEAD = new Set(["do", "then", "else"]);
+const VALUED = new Set(["--root", "--env", "--as", "--session", "--agent"]);
 const RUNNERS = new Set(["node", "python", "python3", "perl", "ruby", "php", "bash", "sh", "zsh", "osascript"]);
 const FILTERS = new Set(["tail", "head", "grep", "wc", "sort", "cut", "sed", "awk", "tr", "xargs", "cat", "tee", "uniq"]);
 const SUBVERBS = new Set([
@@ -121,11 +122,21 @@ function verbOf(piece) {
     return w;
 }
 
+function journalWords(w) {
+    const out = [];
+    for (let i = 0; i < w.length; i += 1) {
+        if (VALUED.has(w[i])) i += 1;
+        else if (!w[i].startsWith("-")) out.push(w[i]);
+    }
+    return out;
+}
+
 function pieceGist(piece, translate) {
-    const w = verbOf(piece);
+    let w = verbOf(piece);
     if (!w.length || NOISE.has(w[0])) return "";
+    if (RUNNERS.has(w[0].split("/").pop().toLowerCase()) && /(^|\/)journal\.py$/.test(w[1] || "")) w = w.slice(1);
     const verb = w[0].split("/").pop();
-    if (translate && /^journal(\.py)?$/.test(verb)) return translate(w.slice(1).filter((x) => !x.startsWith("-")));
+    if (translate && /^journal(\.py)?$/.test(verb)) return translate(journalWords(w.slice(1)));
     if (w.some((x) => x.startsWith("<<"))) return `${verb} script`;
     const rest = SUBVERBS.has(verb) && w[1] && !w[1].startsWith("-") ? `${verb} ${w[1]}` : verb;
     const given = w.slice(rest.split(" ").length);
