@@ -1,3 +1,5 @@
+import json
+import os
 import shutil
 import time
 from dataclasses import asdict
@@ -8,6 +10,7 @@ from resources.base import Refused, Resource, SECTION, check_abstract, check_tit
 from resources.pictures import dimensions
 from resources.shapes import Options, check, normalize_options
 
+INDEX = "index.json"
 FACES = ("👍", "❤️", "🎉", "😄", "👀", "🙏", "👎", "💔", "😠")
 
 
@@ -31,6 +34,29 @@ class Controller:
 
     def numbers(self) -> list[int]:
         return sorted(int(p.stem) for p in self.record.folder(self.type, self.resource.scope).glob("*.md") if p.stem.isdigit())
+
+    def summaries(self) -> list[dict]:
+        folder = self.record.folder(self.type, self.resource.scope)
+        stamps = {int(e.name[:-3]): f"{e.stat().st_mtime_ns}-{e.stat().st_size}" for e in os.scandir(folder) if e.name.endswith(".md") and e.name[:-3].isdigit()}
+        try:
+            known = {int(n): row for n, row in json.loads((folder / INDEX).read_text()).items()}
+        except (OSError, ValueError):
+            known = {}
+        rows = {}
+        for n, stamp in stamps.items():
+            if known.get(n, {}).get("stamp") == stamp:
+                rows[n] = known[n]
+                continue
+            try:
+                r = self.load(n)
+            except (Refused, OSError):
+                continue
+            rows[n] = {"n": n, "title": r.title, "deleted": r.deleted, "completed": r.completed, "seen": r.seen, "refs": r.refs, "updated": r.updated, "stamp": stamp}
+        if rows != known:
+            spare = folder / f".{INDEX}.{os.getpid()}"
+            spare.write_text(json.dumps(rows))
+            os.replace(spare, folder / INDEX)
+        return [rows[n] for n in sorted(rows)]
 
     def load(self, n: int) -> Resource:
         p = self.path(n)
@@ -235,7 +261,7 @@ class Controller:
 
     def unread(self, actor: str | None = None) -> list[Resource]:
         who = actor or self.actor
-        return [r for r in self.all() if who not in r.seen and not r.completed]
+        return [self.load(row["n"]) for row in self.summaries() if who not in row["seen"] and not row["completed"] and not row["deleted"]]
 
     def all(self, deleted: bool = False) -> list[Resource]:
         memo = self.record.memo
@@ -274,4 +300,4 @@ class Controller:
         return reactions.create(face, face=face, about=r.ref)
 
     def linked_to(self, ref: str) -> list[Resource]:
-        return [r for r in self.all() if ref in r.refs]
+        return [self.load(row["n"]) for row in self.summaries() if ref in row["refs"] and not row["deleted"]]
