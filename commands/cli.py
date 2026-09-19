@@ -245,7 +245,7 @@ def context(args: dict) -> dict:
     session = args.pop("session")
     env = args.pop("bound") or (sessions.environment(session) if session else "") or ((root / "runtime" / "env").read_text().strip() if (root / "runtime" / "env").is_file() else "main")
     session = session or sessions.holder(env)
-    return {"record": Record(root, env), "session": session, "actor": args.pop("as_actor"), "agent": args.pop("agent"), "sessions": sessions}
+    return {"record": Record(root, env, memo=True), "session": session, "actor": args.pop("as_actor"), "agent": args.pop("agent"), "sessions": sessions}
 
 
 READS = {"all", "show", "find", "search", "files", "folder", "comments", "linked_to", "unread", "read"}

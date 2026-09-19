@@ -51,7 +51,7 @@ def handle(provider, root: Path, env: str, raw: dict) -> dict:
     if hook.event not in STATUS or (root / "runtime" / "off").is_file():
         return {}
     log_command(root, hook)
-    record = Record(root, env)
+    record = Record(root, env, memo=True)
     agents = Agents(record, actor=SYSTEM)
     row = agents.by_session(hook.session)
     uses = int(row.uses or 0) + (hook.event == "PreToolUse")

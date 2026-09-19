@@ -238,8 +238,14 @@ class Controller:
         return [r for r in self.all() if who not in r.seen and not r.completed]
 
     def all(self, deleted: bool = False) -> list[Resource]:
+        memo = self.record.memo
+        if memo is not None and (self.type, deleted) in memo:
+            return list(memo[self.type, deleted])
         rows = [self.load(n) for n in self.numbers()]
-        return rows if deleted else [r for r in rows if not r.deleted]
+        rows = rows if deleted else [r for r in rows if not r.deleted]
+        if memo is not None:
+            memo[self.type, deleted] = rows
+        return list(rows)
 
     def search(self, term: str) -> list[Resource]:
         want = term.lower()

@@ -39,12 +39,13 @@ class Record:
     cleanup_read_at = Setting(0)
     SETTINGS = ("features", "triggers", "keep", "batch", "inbox", "status", "agents", "skills")
 
-    def __init__(self, root: Path, env: str):
+    def __init__(self, root: Path, env: str, memo: bool = False):
         self.root = Path(root)
         self.env = env
         self.home = self.root / "environments" / env
         self.home.mkdir(parents=True, exist_ok=True)
         self._held = 0
+        self.memo = {} if memo else None
 
     def folder(self, type: str, scope: str = "") -> Path:
         f = (self.root if scope == PROJECT else self.home) / type
@@ -77,6 +78,8 @@ class Record:
             e = Event(id=self.last_event() + 1, at=time.time(), type=type, n=n, action=action, actor=actor, data=data, pid=os.getpid(), heard=bus.listening())
             with log.open("a") as fh:
                 fh.write(json.dumps(asdict(e)) + "\n")
+        if self.memo is not None:
+            self.memo.clear()
         bus.emit(e, self)
         return e
 
@@ -95,6 +98,19 @@ class Record:
         return out
 
     def last_event(self) -> int:
+        log = self.home / "events.jsonl"
+        if not log.is_file():
+            return 0
+        with log.open("rb") as fh:
+            fh.seek(0, 2)
+            size = fh.tell()
+            fh.seek(max(0, size - 65536))
+            tail = fh.read().splitlines()
+        for raw in reversed(tail):
+            try:
+                return int(json.loads(raw)["id"])
+            except (ValueError, KeyError, TypeError):
+                continue
         got = self.events()
         return got[-1].id if got else 0
 
