@@ -156,6 +156,8 @@ def parser(only: str = "") -> argparse.ArgumentParser:
     add_query(cmds, "speed", "median milliseconds for lists, commands, a hook call and the viewer API, and the runtime folder's size", lambda ctx: speed(ctx),
               ("--runs", {"type": int, "default": 5}), ("--url", {"default": ""}), ("--out", {"default": ""}))
     add_query(cmds, "tidy", "run the housekeeping now: trim captures and logs, drop quiet sessions' files", lambda ctx: str(features.FEATURES["housekeeping"].tidy(ctx["record"])))
+    add_query(cmds, "services", "the services plugins run: list them, start, stop or restart one, read its log, or keep them up in this terminal with up",
+              lambda ctx: services(ctx), ("what", {"nargs": "?", "default": "list"}), ("which", {"nargs": "?", "default": ""}), ("--lines", {"type": int, "default": 40}))
     return top
 
 
@@ -225,6 +227,55 @@ def supervise(ctx, agent: str) -> str:
     url = start(record.root, Path.cwd())
     print(f"journal: viewer {url}" if url else "journal: the viewer did not start; see .journal/runtime/viewer.log")
     return str(run_supervisor(record.root, Path.cwd(), record.env, agent, ctx["args"] or []))
+
+
+def services(ctx) -> str:
+    from engine.services import DOWN, UP, log_file, spec_file, specs, states, status, want
+    root = ctx["record"].root
+    what, which = ctx["what"], ctx["which"]
+    if what == "up":
+        return services_up(root)
+    if what == "log":
+        return tail(log_file(root, which), ctx["lines"])
+    if what in ("start", "stop", "restart"):
+        if not which:
+            raise Refused(f"say which service to {what}: journal services {what} <plugin>.<service>")
+        want(root, which, DOWN if what == "stop" else UP, nonce=time.time() if what == "restart" else 0.0)
+        return f"{which} is asked to {'stop' if what == 'stop' else 'run'}"
+    if what != "list":
+        raise Refused(f"services knows list, up, start, stop, restart and log, not {what!r}")
+    known = {spec["id"]: spec for spec in specs(root)}
+    lines = []
+    for sid, said in sorted({**{k: {} for k in known}, **states(root)}.items()):
+        if sid not in known and not said:
+            continue
+        where = (known.get(sid) or {}).get("url") or said.get("url") or ""
+        lines.append(f"{sid:<28} {said.get('state') or 'not running':<10} {where}{'  ' + said['why'] if said.get('why') else ''}")
+    return "\n".join(lines) or "no plugin declares a service"
+
+
+def services_up(root: Path) -> str:
+    from engine.services import Manager
+    from engine.terminal import lifeline
+    alive, keeping = lifeline()
+    manager = Manager(root, alive)
+    print("journal: keeping the plugins' services up; Ctrl-C stops them")
+    try:
+        while True:
+            manager.tick()
+            time.sleep(1.0)
+    except KeyboardInterrupt:
+        pass
+    finally:
+        os.close(keeping)
+    return "the services are stopped"
+
+
+def tail(path: Path, lines: int) -> str:
+    try:
+        return "\n".join(path.read_text(errors="replace").splitlines()[-lines:])
+    except OSError:
+        return f"nothing is logged in {path}"
 
 
 def serve_forever(ctx) -> str:
