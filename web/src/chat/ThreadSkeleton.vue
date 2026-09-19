@@ -1,14 +1,27 @@
 <script setup>
-const rows = [3, 1, 2, 4, 2];
+const shapes = [
+    [46, 38],
+    [30, 22],
+    [58, 64],
+    [40, 30],
+    [34, 22],
+    [62, 86],
+    [26, 22],
+    [50, 44],
+    [38, 30],
+    [56, 58],
+    [30, 22],
+    [44, 38],
+    [60, 72],
+    [36, 30],
+];
 </script>
 
 <template>
     <div class="thread-skeleton" aria-label="Loading messages">
-        <div v-for="(lines, i) in rows" :key="i" :class="['thread-turn', {mine: i % 2}]">
-            <div class="thread-bubble">
-                <span v-for="line in lines" :key="line" class="thread-blank" />
-            </div>
-        </div>
+        <template v-for="([width, height], i) in shapes" :key="i">
+            <div :class="['thread-shape', {mine: i % 3 === 1}]" :style="{width: `${width}%`, height: `${height}px`}" />
+        </template>
     </div>
 </template>
 
@@ -20,55 +33,40 @@ const rows = [3, 1, 2, 4, 2];
     display: flex;
     flex-direction: column;
     justify-content: flex-end;
-    gap: 7px;
+    gap: 8px;
     padding: 14px 8px 12px;
     overflow: hidden;
 }
 
-.thread-turn {
-    display: flex;
-    flex-direction: column;
-    width: 60%;
-    max-width: 88%;
+.thread-shape {
+    flex: none;
+    border-radius: 9px;
+    background: linear-gradient(
+            100deg,
+            transparent 30%,
+            color-mix(in srgb, var(--text-3) 12%, transparent) 50%,
+            transparent 70%
+        )
+        0 0 / 300% 100%,
+        color-mix(in srgb, var(--raised) 60%, transparent);
+    animation: thread-shimmer 1.8s ease-in-out infinite;
 }
 
-.thread-turn.mine {
+.thread-shape.mine {
     align-self: flex-end;
 }
 
-.thread-bubble {
-    display: flex;
-    flex-direction: column;
-    gap: 7px;
-    width: 100%;
-    padding: 12px;
-    border: 1px solid transparent;
-    border-radius: 9px;
-    background: color-mix(in srgb, var(--raised) 55%, transparent);
-    animation: thread-wait 1.6s ease-in-out infinite;
-}
-
-.thread-blank {
-    display: block;
-    width: 100%;
-    height: 9px;
-    border-radius: 99px;
-    background: color-mix(in srgb, var(--text-3) 22%, transparent);
-}
-
-.thread-blank:not(:only-child):last-child {
-    width: 62%;
-    opacity: 0.6;
-}
-
-@keyframes thread-wait {
-    0%,
-    100% {
-        opacity: 0.45;
+@keyframes thread-shimmer {
+    from {
+        background-position:
+            100% 0,
+            0 0;
     }
 
-    50% {
-        opacity: 0.8;
+    to {
+        background-position:
+            0 0,
+            0 0;
     }
 }
 </style>
