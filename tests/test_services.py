@@ -7,7 +7,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 import features  # noqa: E402
 from controllers.types import Plugins  # noqa: E402
 from engine.services import DOWN, Manager, PORTS, UP, allocate, log_file, specs, states, status, status_file, want, wanted  # noqa: E402
-from engine.stored import write_json  # noqa: E402
+from engine.services import want_file  # noqa: E402
+from engine.stored import read_json, write_json  # noqa: E402
 from features.plugins.source import folder, home  # noqa: E402
 from resources.base import SYSTEM  # noqa: E402
 from tests.kit import check, done, fresh  # noqa: E402
@@ -121,5 +122,25 @@ check("a service whose keeper is gone is taken down", (left.poll() is not None, 
 # A PLUGIN THAT IS OFF declares no services
 Plugins(record, actor=SYSTEM).update(1, enabled=False)
 check("a plugin switched off runs nothing", specs(root), [])
+
+# THE COMMAND lists what is declared, asks for start, stop and restart, and reads a log
+def journal(*argv):
+    out = subprocess.run([sys.executable, str(Path(__file__).resolve().parents[1] / "journal.py"), "--root", str(root), "--env", record.env, *argv],
+                         capture_output=True, text=True, timeout=60)
+    return out.returncode, (out.stdout + out.stderr).strip()
+
+Plugins(record, actor=SYSTEM).update(1, enabled=True, manifest={"name": "works", "services": {"web": {"run": "serve --port={port}", "port": "auto"}}})
+code, listed = journal("services")
+web = next(line for line in listed.splitlines() if line.startswith("works.web"))
+check("the list names each service, its state and its address", (code, "http://127.0.0.1:" in web, "works.fixed" in listed), (0, True, True))
+check("stopping is asked for in plain words", journal("services", "stop", "works.web"), (0, "works.web is asked to stop"))
+check("and the ask is written down", wanted(root, "works.web"), DOWN)
+check("starting says so too", (journal("services", "start", "works.web")[1], wanted(root, "works.web")), ("works.web is asked to run", UP))
+before = read_json(want_file(root, "works.web"), {})["nonce"]
+check("a restart is the same ask with a fresh nonce", (journal("services", "restart", "works.web")[0], read_json(want_file(root, "works.web"), {})["nonce"] > before), (0, True))
+check("a start with no service named is refused, saying how", journal("services", "start")[1], "! say which service to start: journal services start <plugin>.<service>")
+check("a word it does not know is refused", journal("services", "sideways")[1].startswith("! services knows list, up, start, stop, restart and log"), True)
+log_file(root, "works.web").write_text("one\ntwo\nthree\n")
+check("a log is read from its end", journal("services", "log", "works.web", "--lines", "2")[1], "two\nthree")
 
 done()
