@@ -42,7 +42,7 @@ opened = []
 from engine import viewer  # noqa: E402
 original = viewer.running
 viewer.running = lambda _: url
-check("a launcher opens the running viewer", (ensure(root, root.parent, opened.append), opened), (url, [url]))
+check("a launcher opens the running viewer when no tab can be focused", (ensure(root, root.parent, opened.append, lambda _: False), opened), (url, [url]))
 viewer.running = original
 
 import engine.band as band_module  # noqa: E402
