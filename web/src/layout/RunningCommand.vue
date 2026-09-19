@@ -7,6 +7,7 @@ import {agent, types} from "../store.js";
 
 const STEP = 700;
 const HIDE_AFTER = 5000;
+const HOLD_EDITS = 1000;
 const SHOW_CLOCK_AFTER = 10;
 const sentence = (words) => spoken(words, types.value);
 const EFFECTS = {
@@ -88,6 +89,7 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
+    clearTimeout(staying);
     if (watching) watching.disconnect();
     clearInterval(timer);
     if (rolls) clearTimeout(rolls);
@@ -99,8 +101,13 @@ function clock(secs) {
     return secs < SHOW_CLOCK_AFTER ? "" : secs < 60 ? `${secs}s` : `${Math.floor(secs / 60)}m ${secs % 60}s`;
 }
 
+const stay = ref(null);
+let shown = null;
+let staying = 0;
+
 const line = computed(() => {
     ticks.value;
+    if (stay.value) return stay.value;
     if (rolling.value) return rolling.value;
     const run = data.value && data.value.running;
     if (!run || !run.what) return null;
@@ -149,6 +156,23 @@ watch(
     }
 );
 
+watch(line, (now) => {
+    if (!stay.value) shown = now;
+});
+
+watch(
+    () => data.value && data.value.running && data.value.running.at,
+    (at, was) => {
+        if (!was || at === was || !(measured.added || measured.removed) || !shown) return;
+        stay.value = shown;
+        clearTimeout(staying);
+        staying = setTimeout(() => {
+            stay.value = null;
+            apply(target.value);
+        }, HOLD_EDITS);
+    }
+);
+
 const target = computed(() => {
     const run = data.value && data.value.running;
     return run ? run.changed || {} : null;
@@ -190,23 +214,21 @@ function revealDelta() {
     showDelta.value = !!data.value && delta.value.length > 0;
 }
 
-watch(
-    target,
-    (changed) => {
-        if (!changed) {
-            concealDelta();
-            return;
-        }
-        const next = {added: changed.added || 0, removed: changed.removed || 0};
-        const increased = next.added > measured.added || next.removed > measured.removed;
-        Object.assign(measured, next);
-        count("added", next.added);
-        count("removed", next.removed);
-        if (increased) revealDelta();
-        else if (!next.added && !next.removed) concealDelta();
-    },
-    {immediate: true}
-);
+function apply(changed) {
+    if (!changed) {
+        concealDelta();
+        return;
+    }
+    const next = {added: changed.added || 0, removed: changed.removed || 0};
+    const increased = next.added > measured.added || next.removed > measured.removed;
+    Object.assign(measured, next);
+    count("added", next.added);
+    count("removed", next.removed);
+    if (increased) revealDelta();
+    else if (!next.added && !next.removed) concealDelta();
+}
+
+watch(target, (changed) => stay.value || apply(changed), {immediate: true});
 </script>
 
 <template>
