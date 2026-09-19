@@ -115,7 +115,8 @@ class Engine:
     def control(self) -> str:
         if self.agent.state() != IDLE or time.time() - self.controlled_at < TICK:
             return ""
-        queued = take(self.record.root, self.agent.driver.session)
+        last = self.agent.driver.last_report()
+        queued = take(self.record.root, {self.agent.driver.session, *([last.title] if last and last.title else [])})
         if not queued:
             return ""
         self.agent.driver.send(queued["line"])

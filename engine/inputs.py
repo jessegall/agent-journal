@@ -3,6 +3,8 @@ import time
 import uuid
 from pathlib import Path
 
+STALE = 600.0
+
 
 def queue(root: Path, session: str, line: str, label: str, **data) -> dict:
     queued = {"session": session, "line": line, "label": label, "at": time.time(), **data}
@@ -15,7 +17,7 @@ def queue(root: Path, session: str, line: str, label: str, **data) -> dict:
     return queued
 
 
-def take(root: Path, session: str) -> dict:
+def take(root: Path, sessions: set[str]) -> dict:
     folder = Path(root) / "runtime" / "inputs"
     for path in sorted(folder.glob("*.json")):
         try:
@@ -23,7 +25,10 @@ def take(root: Path, session: str) -> dict:
         except (OSError, ValueError):
             path.unlink(missing_ok=True)
             continue
-        if queued.get("session") != session:
+        if time.time() - float(queued.get("at") or 0) > STALE:
+            path.unlink(missing_ok=True)
+            continue
+        if queued.get("session") not in sessions:
             continue
         path.unlink(missing_ok=True)
         return queued
