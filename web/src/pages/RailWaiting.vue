@@ -14,7 +14,12 @@ const TINT = {
     rule: "var(--open)",
     reminder: "var(--open)",
 };
-const cards = computed(() => types.value.filter((t) => t.attention).flatMap((t) => unreadByUser(t.name)));
+const cards = computed(() =>
+    types.value
+        .filter((t) => t.attention)
+        .flatMap((t) => unreadByUser(t.name))
+        .sort((a, b) => b.created - a.created)
+);
 
 function open(r) {
     if (!focusTurn(r.ref)) peek(r.type, r.n);
