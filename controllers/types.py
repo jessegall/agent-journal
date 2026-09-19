@@ -433,6 +433,10 @@ class Connections(Controller):
     resource = types.Connection
 
 
+class Plugins(Controller):
+    resource = types.Plugin
+
+
 class Environments(Controller):
     resource = types.Environment
     OPEN_BEFORE_REMOVING = (Todos, Pins, Reminders, Messages, Questions)
@@ -581,4 +585,4 @@ class Nudges(Controller):
 
 
 CONTROLLERS = {c.resource.type: c for c in (Messages, Todos, Works, Plans, Docs, Reports, Pins, Rules, Reminders, Suggestions,
-                                            Questions, Comments, Agents, Notifications, Notices, Reactions, Tools, Styles, Connections, Environments, Asks, Nudges)}
+                                            Questions, Comments, Agents, Notifications, Notices, Reactions, Tools, Styles, Connections, Plugins, Environments, Asks, Nudges)}

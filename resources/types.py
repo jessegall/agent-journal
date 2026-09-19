@@ -269,6 +269,26 @@ class Connection(Shape, Resource):
     scope = PROJECT
 
 
+class Plugin(Shape, Resource):
+    type = "plugin"
+    lent = False
+    icon = "plug"
+    names = {"complete": "remove"}
+    title_ = "Plugin"
+    abstract_ = "A repository installed into the journal: it hears the bus, answers, and may run services of its own"
+    help_ = "Installed from a GitHub URL or a local path, pinned to a commit; its manifest says what it listens to, what it runs and which pages it shows."
+    source = Field(TEXT)
+    revision = Field(TEXT)
+    commit = Field(TEXT)
+    version = Field(TEXT)
+    linked = Field(FLAG)
+    enabled = Field(FLAG)
+    manifest = Field()
+    settings = Field()
+    token = Field()
+    scope = PROJECT
+
+
 class Environment(Shape, Resource):
     type = "environment"
     lent = False
@@ -313,5 +333,5 @@ PHASE = names("title", "when", "checkpoint", "brief", "todos")
 RUNNING = names("what", "tool", "at", "done", "changed", "effect", "step", "step_effect", "result", "before")
 COMMAND = names("what", "tool", "at", "effect")
 
-TYPES = {c.type: c for c in (Message, Todo, Work, Plan, Doc, Report, Pin, Rule, Reminder, Question, Suggestion, Comment, AgentRow, Notification, Notice, Reaction, Tool, Style, Connection, Environment, Ask, Nudge)}
-PRIORITY = ("message", "question", "suggestion", "comment", "plan", "todo", "report", "doc", "pin", "rule", "reminder", "notice", "reaction", "style", "tool", "connection", "environment", "work", "agent", "notification", "browser", "nudge")
+TYPES = {c.type: c for c in (Message, Todo, Work, Plan, Doc, Report, Pin, Rule, Reminder, Question, Suggestion, Comment, AgentRow, Notification, Notice, Reaction, Tool, Style, Connection, Plugin, Environment, Ask, Nudge)}
+PRIORITY = ("message", "question", "suggestion", "comment", "plan", "todo", "report", "doc", "pin", "rule", "reminder", "notice", "reaction", "style", "tool", "connection", "plugin", "environment", "work", "agent", "notification", "browser", "nudge")
