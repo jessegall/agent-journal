@@ -13,14 +13,18 @@ export function named(w) {
     return w.data.todo ? `to-do ${w.data.todo} · ${w.title}` : w.title;
 }
 
-export function lineOf(agent, works) {
+export function wordOf(state, auto = false) {
+    return capital(state === "idle" && auto ? "waiting" : state);
+}
+
+export function lineOf(agent, works, auto = false) {
     const state = stateOf(agent, works);
     if (state === "stopped") return "no agent is on this environment";
     if (state === "compacting") return "compacting its context — it carries on after";
     const current = currentWork(works);
     if (current) return named(current);
     const last = works[works.length - 1];
-    if (state === "idle") return said("idle", agent.data.at);
+    if (state === "idle") return said(auto ? "auto" : "idle", agent.data.at);
     const running = agent.data.running;
     return running && running.what && !running.done ? doingOf(running) : said("bearings", agent.data.at);
 }
@@ -265,6 +269,18 @@ const SAID = {
         "working away",
         "on a task",
         "working",
+    ],
+    auto: [
+        "for instructions",
+        "for the next row",
+        "for the engine's word",
+        "for the list to speak",
+        "between one row and the next",
+        "for the next to-do",
+        "for its next orders",
+        "for the queue",
+        "for the next thing",
+        "for the go-ahead",
     ],
     idle: [
         "waiting for you",
