@@ -7,6 +7,7 @@ import time
 from pathlib import Path
 
 from controllers.base import Controller
+from engine import attic
 from engine.record import Record
 from engine.sessions import Sessions
 from resources import types
@@ -433,12 +434,19 @@ class Environments(Controller):
         kept = ", ".join(f"{v} open {k}s" for k, v in held.items() if v)
         if kept and not yes:
             raise Refused(f"environment {env.title!r} holds {kept}; --yes removes it anyway (its record goes to the attic)")
-        attic = self.record.root / "attic"
-        attic.mkdir(exist_ok=True)
         if record.home.is_dir():
-            shutil.move(str(record.home), str(attic / f"{env.title}-{int(time.time())}"))
+            attic.pack(record.home, f"{env.title}-{int(time.time())}")
         self.force_delete(n)
-        return f"environment {env.title!r} removed; its record is in {attic.name}/"
+        return f"environment {env.title!r} removed; its record is packed in attic/ — journal environment unarchive {env.title} brings it back"
+
+    def unarchive(self, name: str):
+        archive = attic.latest(self.record.root, name)
+        if not archive:
+            raise Refused(f"no archived environment {name!r} in attic/")
+        if any(e.title == name for e in self.all()):
+            raise Refused(f"environment {name!r} exists: rename it before bringing the archived one back")
+        attic.unpack(archive, Record(self.record.root, name).home)
+        return self.create(name)
 
     def rename(self, n: int, name: str):
         env = self.load(n)

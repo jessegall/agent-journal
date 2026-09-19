@@ -100,7 +100,7 @@ legacy = f"{sys.executable} {project / '.journal' / 'hook.py'} claude {project /
 (project / ".claude" / "settings.json").write_text(json.dumps({"hooks": {"Stop": [{"hooks": [{"type": "command", "command": legacy}]}]}}))
 from install import upgrade  # noqa: E402
 said = upgrade(project)
-check("upgrade wires, writes skills and runs the migrations, and says so", (any("skills" in l for l in said), said[-2:]), (True, ["migrations run: m0001_the_old_record, m0002_rule_targets, m0003_unify_rule_injection", "package moved into src/: 1 files out of the record"]))
+check("upgrade wires, writes skills and runs the migrations, and says so", (any("skills" in l for l in said), said[-2:]), (True, ["migrations run: m0001_the_old_record, m0002_rule_targets, m0003_unify_rule_injection, m0004_compress_attic", "package moved into src/: 1 files out of the record"]))
 check("the old row is a v2 to-do with its number", Todos(Record(project / ".journal", "main")).load(3).title, "an old row")
 check("upgrade refreshes package code and removes retired package files", ("def context" in (project / ".journal" / "src" / "providers" / "codex.py").read_text(), (project / ".journal" / "providers").exists()), (True, False))
 check("upgrade preserves the project record", (project / ".journal" / "runtime" / "keep").read_text(), "record state\n")
