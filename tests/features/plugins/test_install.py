@@ -84,4 +84,35 @@ linked = rows.action("install")(str(here), yes=True)
 check("a local plugin is linked, with no commit", (linked.linked, linked.commit, folder(local.root, "mine").is_symlink()), (True, "", True))
 check("the folder it was linked from is left alone", (here / MANIFEST).is_file(), True)
 
+# UPGRADE moves to a newer commit, after showing what changes
+moving = fresh("moving")
+rows = Plugins(moving, actor=AGENT)
+origin = Path(tempfile.mkdtemp()) / "plugin"
+(origin / MANIFEST).parent.mkdir(parents=True)
+(origin / MANIFEST).write_text(json.dumps({**WORKS, "name": "moving", "setup": []}))
+git("init", "-q", "-b", "main", cwd=origin)
+git("add", "-A", cwd=origin)
+git("commit", "-q", "-m", "one", cwd=origin)
+url = origin.as_uri()
+first = rows.action("install")(url, yes=True)
+check("an upgrade with nothing new says so", rows.action("upgrade")(first.n), f"moving is already at {first.commit[:12]}")
+(origin / MANIFEST).write_text(json.dumps({**WORKS, "name": "moving", "version": "2.0.0", "setup": [{"name": "build", "run": "echo built > built.txt"}]}))
+git("commit", "-q", "-am", "two", cwd=origin)
+shown = rows.action("upgrade")(first.n)
+check("without --yes it shows what will run differently and installs nothing", ("now also: setup build: echo built > built.txt" in shown, rows.load(first.n).version), (True, "1.0.0"))
+moved = rows.action("upgrade")(first.n, yes=True)
+check("with --yes the row moves to the new commit and the setup ran", (moved.version, moved.commit != first.commit, (folder(moving.root, "moving") / "built.txt").is_file()), ("2.0.0", True, True))
+
+# ENABLE AND DISABLE flip the row
+check("a plugin can be switched off and on", (rows.action("disable")(first.n).enabled, rows.action("enable")(first.n).enabled), (False, True))
+
+# REMOVE takes the folder away and keeps what the plugin stored, until it is purged
+kept = data(moving.root, "moving")
+kept.mkdir(parents=True, exist_ok=True)
+(kept / "state.json").write_text("{}")
+rows.complete(first.n, "not needed")
+check("removing takes the folder, not the data", (folder(moving.root, "moving").exists(), (kept / "state.json").is_file()), (False, True))
+check("purge is refused while a plugin is installed", refused(lambda: rows.action("purge")(rows.action("install")(url, yes=True).n)), "plugin 2 is installed: remove it first")
+check("purging a removed plugin takes its data too", (rows.action("purge")(first.n).startswith("everything moving kept in"), kept.exists()), (True, False))
+
 done()

@@ -2,8 +2,9 @@ import shutil
 from pathlib import Path
 
 from controllers.types import Notifications, Plugins as Rows
-from features.base import Feature, command
-from features.plugins.source import data, environment, checked, folder, home, log, preview, prepared, staged, token
+from features.base import Feature, command, on
+from features.plugins.manifest import read
+from features.plugins.source import checked, data, environment, folder, home, log, prepared, preview, staged, token
 from resources.base import Refused, SYSTEM
 
 VERSION = (Path(__file__).resolve().parents[2] / "VERSION").read_text().strip() if (Path(__file__).resolve().parents[2] / "VERSION").is_file() else ""
@@ -48,7 +49,67 @@ class Plugins(Feature):
         Notifications(plugins.record, actor=SYSTEM).create(f"Plugin {name} installed", brief=f"From {source}" + (f" at {commit[:12]}" if commit else "") + ".", about=made.ref)
         return made
 
-    def place(self, plugins, where: Path, linked: bool, manifest: dict, source: str, ref: str, commit: str, secret: str):
+    @command("plugin")
+    def upgrade(self, plugins, n: int, ref: str = "", yes: bool = False):
+        row = plugins.load(n)
+        root = plugins.record.root
+        if row.linked:
+            manifest = read(folder(root, row.manifest["name"]), VERSION)
+            return plugins.update(n, manifest=manifest, version=manifest.get("version") or "", abstract=manifest.get("description") or "")
+        where, manifest, commit, linked = staged(root, row.source, ref or row.revision, VERSION)
+        kept = False
+        try:
+            if commit == row.commit and not ref:
+                return f"{row.manifest['name']} is already at {commit[:12]}"
+            if not yes:
+                return f"{preview(manifest, row.source, commit)}\n\n{self.difference(row.manifest, manifest)}\nNothing has changed yet. To upgrade to exactly this, run it again with --yes --ref {commit}"
+            env = environment(root, manifest["name"], manifest, row.token)
+            checked(manifest, where, env)
+            prepared(manifest, where, env, log(root, manifest["name"]))
+            self.place(plugins, where, linked, manifest, row.source, ref, commit, row.token, row=row)
+            kept = True
+        finally:
+            if not kept:
+                self.drop(where, linked)
+        return plugins.load(n)
+
+    @command("plugin")
+    def enable(self, plugins, n: int):
+        return plugins.update(n, enabled=True)
+
+    @command("plugin")
+    def disable(self, plugins, n: int):
+        return plugins.update(n, enabled=False)
+
+    @command("plugin")
+    def purge(self, plugins, n: int):
+        row = plugins.load(n)
+        if not row.completed:
+            raise Refused(f"plugin {n} is installed: remove it first")
+        kept = data(plugins.record.root, row.manifest["name"])
+        shutil.rmtree(kept, ignore_errors=True)
+        return f"everything {row.manifest['name']} kept in {kept} is gone"
+
+    @on("plugin.completed")
+    def removed(self, event, record) -> None:
+        row = Rows(record, actor=SYSTEM).load(event.n)
+        self.clear(folder(record.root, row.manifest["name"]))
+
+    def difference(self, before: dict, after: dict) -> str:
+        was, now = self.runs(before), self.runs(after)
+        gone = [line for line in was if line not in now]
+        fresh = [line for line in now if line not in was]
+        if not gone and not fresh:
+            return "It runs the same commands as the version you have."
+        return "\n".join(["What it runs changes:", *(f"  no longer: {line}" for line in gone), *(f"  now also: {line}" for line in fresh)])
+
+    def runs(self, manifest: dict) -> list[str]:
+        steps = [f"setup {step['name']}: {step['run']}" for step in manifest.get("setup") or []]
+        services = [f"service {name}: {spec['run']}" for name, spec in (manifest.get("services") or {}).items()]
+        handlers = [f"on {pattern}: {handler.get('post') or handler.get('run')}" for pattern, handler in (manifest.get("on") or {}).items()]
+        return [*steps, *services, *handlers]
+
+    def place(self, plugins, where: Path, linked: bool, manifest: dict, source: str, ref: str, commit: str, secret: str, row=None):
         name = manifest["name"]
         target = folder(plugins.record.root, name)
         home(plugins.record.root).mkdir(parents=True, exist_ok=True)
@@ -57,9 +118,10 @@ class Plugins(Feature):
             target.symlink_to(where)
         else:
             where.rename(target)
-        return plugins.create(manifest.get("title") or name, abstract=manifest.get("description") or "",
-                              source=source, revision=ref, commit=commit, version=manifest.get("version") or "",
-                              linked=linked, enabled=True, manifest=manifest, settings={}, token=secret)
+        kept = {"source": source, "revision": ref, "commit": commit, "version": manifest.get("version") or "", "linked": linked, "manifest": manifest}
+        if row:
+            return plugins.update(row.n, abstract=manifest.get("description") or "", **kept)
+        return plugins.create(manifest.get("title") or name, abstract=manifest.get("description") or "", enabled=True, settings={}, token=secret, **kept)
 
     def drop(self, staging: Path, linked: bool) -> None:
         if not linked:
