@@ -93,8 +93,8 @@ function openFile(file) {
 const fileCommand = {label: "Open project file", keys: "file files open", hk: "f", icon: "file", run: browseFiles};
 
 async function send(text, files) {
-    await sendMessage(route.value.env, {brief: text}, files);
     emit("close");
+    await sendMessage(route.value.env, {brief: text}, files);
 }
 
 defineExpose({spaceAgain: () => !q.value && write("")});
