@@ -1,11 +1,29 @@
 <script setup>
-import {computed} from "vue";
+import {computed, ref} from "vue";
+import {act, saveSettings} from "../api.js";
 import Icon from "../kit/Icon.vue";
+import Switch from "../kit/Switch.vue";
 import {age} from "../store.js";
-import {capital, lineOf, stateOf} from "./statusline.js";
+import {capital, lineOf, planButton, stateOf} from "./statusline.js";
 
 const props = defineProps({journal: {type: Object, required: true}, open: Boolean});
-const emit = defineEmits(["toggle"]);
+const emit = defineEmits(["toggle", "changed"]);
+const error = ref("");
+
+async function manage(fn) {
+    error.value = "";
+    try {
+        await fn();
+        emit("changed");
+    } catch (e) {
+        error.value = e.message;
+    }
+}
+
+const setAuto = (e, on) => manage(() => saveSettings(e.name, {features: {auto: on}}, base.value));
+const runPlan = (e, p) => manage(() => act(e.name, "plan", p.n, planButton({data: p})[0], {}, base.value));
+const wordFor = (p) => (planButton({data: p}) || [])[1];
+const at = (e, page = "") => `${base.value}/#/${e.name}${page ? `/${page}` : ""}`;
 
 function worksOf(e) {
     const row = (w, completed) => ({...w, completed, data: {todo: w.todo}});
@@ -78,6 +96,24 @@ const counts = (c) => [
             </span>
             <Icon name="down" :size="12" class="jbar-fold" />
         </button>
+        <template v-if="open && journal.summary">
+            <div class="jbar-open">
+                <a
+                    class="jbar-go"
+                    :href="`${base}/#/${journal.summary.start}`"
+                    :target="journal.current ? '' : '_blank'"
+                    title="Open this journal's viewer"
+                >
+                    <Icon name="open" :size="12" />
+                    Open viewer
+                </a>
+                <a class="jbar-go" :href="`${base}/?chat`" target="_blank" title="Open this journal's chat in its own window">
+                    <Icon name="bubble" :size="12" />
+                    Open chat
+                </a>
+                <span v-if="error" class="jbar-error">{{ error }}</span>
+            </div>
+        </template>
         <div v-if="open && journal.summary" class="jbar-body">
             <div v-for="e in environments" :key="e.name" class="jbar-row">
                 <div class="jbar-envline">
@@ -87,12 +123,22 @@ const counts = (c) => [
                     <span class="jbar-line">{{ lineFor(e) }}</span>
                     <span class="jbar-counts">
                         <template v-for="[key, n, what] in counts(e.counts)" :key="key">
-                            <span v-if="n" :class="['jbar-count', key]" :title="`${n} ${what}`">
+                            <a v-if="n" :class="['jbar-count', key]" :title="`${n} ${what}`" :href="at(e, key === 'todos' ? 'todo' : '')">
                                 <Icon :name="key === 'messages' ? 'mail' : key === 'questions' ? 'help' : 'todos'" :size="12" />
                                 {{ n }}
-                            </span>
+                            </a>
                         </template>
                     </span>
+                    <Switch
+                        :on="e.auto"
+                        word="auto"
+                        :title="
+                            e.auto
+                                ? 'The agent works through the to-do list without asking'
+                                : 'The agent asks before picking up the next to-do'
+                        "
+                        @change="(on) => setAuto(e, on)"
+                    />
                     <span class="jbar-agent">
                         <template v-if="e.agent && e.agent.status !== 'stopped'">
                             {{ e.agent.provider }}{{ e.agent.model ? ` · ${e.agent.model}` : "" }} · context
@@ -108,6 +154,10 @@ const counts = (c) => [
                     <span class="jbar-track" role="progressbar">
                         <span :style="{width: `${(100 * p.done) / Math.max(1, p.phases)}%`}" />
                     </span>
+                    <button v-if="wordFor(p)" type="button" :class="['jbar-act', {ack: p.status === 'done'}]" @click="runPlan(e, p)">
+                        {{ wordFor(p) }}
+                        <Icon name="arrow" />
+                    </button>
                 </div>
             </div>
         </div>
@@ -202,6 +252,11 @@ const counts = (c) => [
     display: inline-flex;
     align-items: center;
     gap: 4px;
+    color: inherit;
+}
+
+a.jbar-count:hover {
+    color: var(--text);
 }
 
 .jbar-count.messages,
@@ -223,6 +278,63 @@ const counts = (c) => [
 
 .jbar.open .jbar-fold {
     transform: rotate(180deg);
+}
+
+.jbar-open {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    height: 34px;
+    padding: 0 16px 0 20px;
+    border-top: 1px solid var(--line);
+    font-size: 12px;
+}
+
+.jbar-go {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    color: var(--text-2);
+}
+
+.jbar-go:hover {
+    color: var(--text);
+}
+
+.jbar-error {
+    margin-left: auto;
+    color: var(--danger);
+    font-size: 11px;
+}
+
+.jbar-act {
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    height: 22px;
+    padding: 0 10px;
+    border: 1px solid color-mix(in srgb, var(--accent) 55%, transparent);
+    border-radius: 6px;
+    background: color-mix(in srgb, var(--accent) 22%, transparent);
+    color: var(--text);
+    font-size: 11px;
+    cursor: pointer;
+}
+
+.jbar-act:hover {
+    background: color-mix(in srgb, var(--accent) 34%, transparent);
+}
+
+.jbar-act .ico {
+    width: 11px;
+    height: 11px;
+    color: inherit;
+}
+
+.jbar-act.ack {
+    border-color: var(--border-2);
+    background: var(--raised);
 }
 
 .jbar-body {
