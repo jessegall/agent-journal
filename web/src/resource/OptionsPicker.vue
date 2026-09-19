@@ -1,11 +1,14 @@
 <script setup>
-import {computed, ref} from "vue";
+import {computed, onUnmounted, ref} from "vue";
 import {act} from "../api.js";
 import Btn from "../kit/Btn.vue";
 import {route} from "../route.js";
 import {word} from "../store.js";
 
+const HOLD_PICK = 5000;
 const props = defineProps({resource: Object});
+const holding = ref(-1);
+let hold = 0;
 const own = ref("");
 const changing = ref(false);
 const optionText = (option = {}) => String(option.title || option.label || option.value || "");
@@ -26,6 +29,25 @@ async function submit(text) {
     else await act(route.value.env, props.resource.type, props.resource.n, word(props.resource.type, "complete"), {how: answer});
     changing.value = false;
 }
+
+function choose(i) {
+    clearTimeout(hold);
+    if (holding.value === i) {
+        holding.value = -1;
+        return;
+    }
+    holding.value = i;
+    hold = setTimeout(save, HOLD_PICK);
+}
+
+function save() {
+    const i = holding.value;
+    clearTimeout(hold);
+    holding.value = -1;
+    if (i >= 0) submit(options.value[i].title);
+}
+
+onUnmounted(save);
 </script>
 
 <template>
@@ -33,9 +55,9 @@ async function submit(text) {
         <template v-for="(o, i) in options" :key="i">
             <button
                 type="button"
-                :class="['option', {picked: i + 1 === pick && !settled, chosen: resource.outcome === o.title}]"
+                :class="['option', {picked: i + 1 === pick && !settled, chosen: resource.outcome === o.title, holding: holding === i}]"
                 :disabled="settled"
-                @click="submit(o.title)"
+                @click="choose(i)"
             >
                 <span class="label">
                     {{ o.title }}
@@ -48,6 +70,10 @@ async function submit(text) {
                 </template>
                 <template v-if="o.code">
                     <code class="code">{{ o.code }}</code>
+                </template>
+                <template v-if="holding === i">
+                    <span class="hold-note">Saving this answer… click it again to cancel</span>
+                    <span class="hold-bar" :style="{'--hold': `${HOLD_PICK}ms`}" />
                 </template>
             </button>
         </template>
@@ -82,6 +108,8 @@ async function submit(text) {
     margin: 12px 0;
 }
 .option {
+    position: relative;
+    overflow: hidden;
     display: flex;
     flex-direction: column;
     gap: 2px;
@@ -102,6 +130,35 @@ async function submit(text) {
     border-color: var(--accent);
     background: color-mix(in srgb, var(--accent) 12%, var(--raised));
 }
+.option.holding {
+    border-color: var(--accent);
+}
+
+.hold-note {
+    color: var(--accent-text);
+    font-size: 11.5px;
+}
+
+.hold-bar {
+    position: absolute;
+    z-index: 5;
+    top: 0;
+    left: 0;
+    height: 2px;
+    background: var(--progress);
+    animation: hold var(--hold) linear forwards;
+}
+
+@keyframes hold {
+    from {
+        width: 0;
+    }
+
+    to {
+        width: 100%;
+    }
+}
+
 .option:disabled {
     cursor: default;
     opacity: 0.7;
