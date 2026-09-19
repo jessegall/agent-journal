@@ -167,7 +167,10 @@ const counts = (c) => [
                 <div v-for="p in e.plans" :key="p.n" :class="['jbar-plan', `jbar-plan-${p.status}`]">
                     <span class="jbar-plan-n">Plan</span>
                     <span class="jbar-plan-title">{{ p.title }}</span>
-                    <span class="jbar-plan-phase">{{ p.phase ? `phase ${p.current}, ${p.phase}` : "" }}</span>
+                    <template v-if="p.phase">
+                        <span class="jbar-plan-phase">· {{ p.phase }}</span>
+                    </template>
+                    <span class="jbar-plan-step">{{ p.current || 1 }}</span>
                     <span class="jbar-track" role="progressbar">
                         <span :style="{width: `${(100 * p.done) / Math.max(1, p.rows)}%`}" />
                     </span>
@@ -431,10 +434,20 @@ a.jbar-count:hover {
 }
 
 .jbar-plan-phase {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--text-3);
+    font-size: 11px;
+}
+
+.jbar-plan-step {
     flex: none;
     margin-left: auto;
     color: var(--text-3);
     font-size: 11px;
+    font-variant-numeric: tabular-nums;
 }
 
 .jbar-track {

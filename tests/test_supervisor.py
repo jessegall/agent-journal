@@ -3,7 +3,9 @@ import tempfile
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from engine import drivers, terminal  # noqa: E402
+import threading  # noqa: E402
+import time  # noqa: E402
+from engine import drivers, supervisor, terminal  # noqa: E402
 from tests.kit import check, done  # noqa: E402
 
 root = Path(tempfile.mkdtemp())
@@ -30,6 +32,17 @@ check("the replaceable supervisor receives the live PTY and session", (made, com
       ("process", [str(root), "/tmp/project", "main", "codex", "17", "codex-9"], (17,)))
 check("the supervisor runs as a separate Python process", (command[0], Path(command[1]).name), (sys.executable, "supervisor.py"))
 check("reload and stop use process exit codes", (terminal.RELOAD, terminal.STOP), (75, 76))
+
+# THE SUPERVISOR KEEPS THE VIEWER UP: it starts one that no longer answers, off the relay loop
+started = []
+original_start = supervisor.viewer.start
+supervisor.viewer.start = lambda root, project: started.append((root, project)) or time.sleep(0.2) or "http://127.0.0.1:8424/"
+watching = supervisor.keep_viewer(root, Path("/tmp/project"), None)
+again = supervisor.keep_viewer(root, Path("/tmp/project"), watching)
+check("while one check is still running, no second one is started", again is watching, True)
+watching.join(timeout=5)
+supervisor.viewer.start = original_start
+check("a viewer that stopped answering is started again, in its own thread", (started, watching.is_alive()), ([(root, Path("/tmp/project"))], False))
 
 
 class FakeDriver(drivers.Driver):

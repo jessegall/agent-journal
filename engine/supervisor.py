@@ -6,14 +6,17 @@ import struct
 import subprocess
 import sys
 import termios
+import threading
 import time
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from engine import band  # noqa: E402
+from engine import viewer  # noqa: E402
 from engine.terminal import RELOAD, STOP, watched  # noqa: E402
 
 RELOAD_EVERY = 5.0
+VIEWER_EVERY = 10.0
 TYPED_EVERY = 1.0
 
 
@@ -54,6 +57,14 @@ def stop_driver(driver: subprocess.Popen) -> None:
         driver.wait()
 
 
+def keep_viewer(root: Path, cwd: Path, watching) -> object:
+    if watching and watching.is_alive():
+        return watching
+    thread = threading.Thread(target=viewer.start, args=(root, cwd), daemon=True)
+    thread.start()
+    return thread
+
+
 def run(root: Path, cwd: Path, env: str, agent: str, fd: int, session: str) -> int:
     rows, cols = resize(fd)
     top = band.Band(root, env, session, root.resolve().parent.name)
@@ -77,6 +88,8 @@ def run(root: Path, cwd: Path, env: str, agent: str, fd: int, session: str) -> i
     signal.signal(signal.SIGWINCH, lambda *_: frame())
     os.write(stdout, band.region(rows) + top.draw(cols, force=True))
     last_check = 0.0
+    last_viewer = time.time()
+    watching = None
     last_band = 0.0
     try:
         while True:
@@ -110,6 +123,9 @@ def run(root: Path, cwd: Path, env: str, agent: str, fd: int, session: str) -> i
                     typed.touch()
                     typed_at = time.time()
             now = time.time()
+            if now - last_viewer >= VIEWER_EVERY:
+                last_viewer = now
+                watching = keep_viewer(root, cwd, watching)
             if now - last_check >= RELOAD_EVERY:
                 last_check = now
                 if driver.poll() is not None or watched(root) != stamps:

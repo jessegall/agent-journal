@@ -76,7 +76,10 @@ async function runBar(p) {
             <a class="planbar-link" :href="`#/${route.env}/plan/${p.n}`" :title="`Plan ${p.n}: ${p.title}`">
                 <span class="planbar-n">Plan</span>
                 <span class="planbar-title">{{ p.title }}</span>
-                <span class="planbar-phase">{{ phaseOf(p) }}</span>
+                <template v-if="phaseOf(p)">
+                    <span class="planbar-phase">· {{ phaseOf(p) }}</span>
+                </template>
+                <span class="planbar-step">{{ p.data.current || 1 }}</span>
                 <span class="planbar-track" role="progressbar">
                     <span :style="{width: `${(100 * done(p)) / Math.max(1, rowsOf(p).length)}%`}" />
                 </span>
@@ -264,10 +267,20 @@ async function runBar(p) {
 }
 
 .planbar-phase {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--text-3);
+    font-size: 11px;
+}
+
+.planbar-step {
     flex: none;
     margin-left: auto;
     color: var(--text-3);
     font-size: 11px;
+    font-variant-numeric: tabular-nums;
 }
 
 .planbar-track {
