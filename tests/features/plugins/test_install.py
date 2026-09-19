@@ -148,10 +148,11 @@ check("once it is done, installing works again", rows.action("install")(source, 
 # THE PLUGIN'S OWN NAMES are given to every command it runs
 named = fresh("named")
 rows = Plugins(named, actor=AGENT)
-rows.action("install")(repository({**WORKS, "name": "named", "setup": [{"name": "say", "run": "printf '%s %s %s' \"$JOURNAL_PLUGIN\" \"$JOURNAL_PLUGIN_DIR\" \"$JOURNAL_PLUGIN_DATA\" > said.txt"}]}), yes=True)
+rows.action("install")(repository({**WORKS, "name": "named", "setup": [{"name": "say", "run": "printf '%s %s %s %s' \"$JOURNAL_PLUGIN\" \"$JOURNAL_PLUGIN_DIR\" \"$JOURNAL_PLUGIN_DATA\" \"$JOURNAL_ENV\" > said.txt"}]}), yes=True)
 said = (folder(named.root, "named") / "said.txt").read_text().split()
 check("a command knows the plugin's name, its folder and its data folder", (said[0], said[1] == str(folder(named.root, "named")), said[2] == str(data(named.root, "named"))),
       ("named", True, True))
+check("and which environment to write back to", said[3], "main")
 
 # A SERVICE'S PORT is known before the first setup step runs
 ported = fresh("ported")
