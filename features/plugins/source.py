@@ -48,13 +48,29 @@ def address(source: str) -> str:
     raise Refused(f"{given!r} is neither a repository URL, an owner/repo, nor a folder on this machine")
 
 
-def values(root: Path, name: str, token: str) -> dict:
+def values(root: Path, name: str, token: str, ports: dict | None = None) -> dict:
     return {"dir": str(folder(root, name)), "data": str(data(root, name)), "root": str(Path(root)),
-            "journal.url": running(Path(root)) or "", "token": token}
+            "journal.url": running(Path(root)) or "", "token": token,
+            **{f"ports.{service}": port for service, port in (ports or {}).items()}}
 
 
-def environment(root: Path, name: str, manifest: dict, token: str) -> dict:
-    where = values(root, name, token)
+def ports_for(root: Path, manifest: dict) -> dict:
+    from engine.services import allocate
+    name = manifest["name"]
+    taken: set[int] = set()
+    given = {}
+    for service, spec in (manifest.get("services") or {}).items():
+        if spec.get("port") is None:
+            continue
+        port, blocked = allocate(root, f"{name}.{service}", spec["port"], taken)
+        if port:
+            taken.add(port)
+            given[service] = port
+    return given
+
+
+def environment(root: Path, name: str, manifest: dict, token: str, ports: dict | None = None) -> dict:
+    where = values(root, name, token, ports)
     given = fill(manifest.get("env") or {}, where)
     return {**os.environ, **{str(k): str(v) for k, v in given.items()},
             "JOURNAL_ROOT": where["root"], "JOURNAL_URL": where["journal.url"], "JOURNAL_TOKEN": token,

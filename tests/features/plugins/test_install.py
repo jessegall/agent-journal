@@ -146,4 +146,14 @@ said = (folder(named.root, "named") / "said.txt").read_text().split()
 check("a command knows the plugin's name, its folder and its data folder", (said[0], said[1] == str(folder(named.root, "named")), said[2] == str(data(named.root, "named"))),
       ("named", True, True))
 
+# A SERVICE'S PORT is known before the first setup step runs
+ported = fresh("ported")
+rows = Plugins(ported, actor=AGENT)
+made = rows.action("install")(repository({**WORKS, "name": "ported", "env": {"APP_URL": "http://127.0.0.1:{ports.web}"},
+                                          "services": {"web": {"run": "serve --port={port}", "port": "auto"}},
+                                          "setup": [{"name": "say", "run": "printf '%s' \"$APP_URL\" > url.txt"}]}), yes=True)
+url = (folder(ported.root, "ported") / "url.txt").read_text().strip()
+check("the setup step is given the port the service will run on", (url.startswith("http://127.0.0.1:"), url.endswith(str(made.settings["ports"]["web"]))), (True, True))
+check("and the row remembers that port", made.settings["ports"]["web"] > 0, True)
+
 done()

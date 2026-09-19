@@ -9,7 +9,7 @@ from features.plugins.host import watch
 from features.plugins.manifest import fill, read
 from features.plugins.payload import refusal
 from features.plugins.run import call
-from features.plugins.source import alone, checked, data, environment, folder, home, log, prepared, preview, staged, token
+from features.plugins.source import alone, checked, data, environment, folder, home, log, ports_for, prepared, preview, staged, token
 from resources.base import Refused, SYSTEM
 
 VERSION = (Path(__file__).resolve().parents[2] / "VERSION").read_text().strip() if (Path(__file__).resolve().parents[2] / "VERSION").is_file() else ""
@@ -70,11 +70,12 @@ class Plugins(Feature):
                 return f"{preview(manifest, source, commit)}\n\nNothing is installed yet. To install exactly this, run it again with --yes" + (f" --ref {commit}" if commit else "")
             held = alone(root, name)
             secret = token()
-            env = environment(root, name, manifest, secret)
+            ports = ports_for(root, manifest)
+            env = environment(root, name, manifest, secret, ports)
             checked(manifest, where, env)
             data(root, name).mkdir(parents=True, exist_ok=True)
             prepared(manifest, where, env, log(root, name))
-            made = self.place(plugins, where, linked, manifest, source, ref, commit, secret)
+            made = self.place(plugins, where, linked, manifest, source, ref, commit, secret, ports=ports)
             kept = True
         finally:
             if held:
@@ -151,7 +152,7 @@ class Plugins(Feature):
         handlers = [f"on {pattern}: {handler.get('post') or handler.get('run')}" for pattern, handler in (manifest.get("on") or {}).items()]
         return [*steps, *services, *handlers]
 
-    def place(self, plugins, where: Path, linked: bool, manifest: dict, source: str, ref: str, commit: str, secret: str, row=None):
+    def place(self, plugins, where: Path, linked: bool, manifest: dict, source: str, ref: str, commit: str, secret: str, row=None, ports: dict | None = None):
         name = manifest["name"]
         target = folder(plugins.record.root, name)
         home(plugins.record.root).mkdir(parents=True, exist_ok=True)
@@ -163,7 +164,7 @@ class Plugins(Feature):
         kept = {"source": source, "revision": ref, "commit": commit, "version": manifest.get("version") or "", "linked": linked, "manifest": manifest}
         if row:
             return plugins.update(row.n, abstract=manifest.get("description") or "", **kept)
-        return plugins.create(manifest.get("title") or name, abstract=manifest.get("description") or "", enabled=True, settings={}, token=secret, **kept)
+        return plugins.create(manifest.get("title") or name, abstract=manifest.get("description") or "", enabled=True, settings={"ports": ports or {}}, token=secret, **kept)
 
     def drop(self, staging: Path, linked: bool) -> None:
         if not linked:
