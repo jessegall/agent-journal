@@ -7,7 +7,7 @@ export function onWrite(fn) {
 export async function api(method, path, body, base = "") {
     const res = await fetch(`${base}/api${path}`, {
         method,
-        headers: {"Content-Type": "application/json"},
+        headers: body === undefined ? {} : {"Content-Type": "application/json"},
         body: body === undefined ? undefined : JSON.stringify(body),
     });
     const got = await res.json();

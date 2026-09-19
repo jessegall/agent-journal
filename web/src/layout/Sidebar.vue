@@ -75,9 +75,17 @@ async function makeEnv() {
                             </span>
                         </a>
                     </template>
+                    <a class="journal-row hub" :href="`#/${route.env}/hub`" @click="switching = false">
+                        <Icon name="panel" :size="12" />
+                        <span class="journal-name">Every journal, one bar each</span>
+                    </a>
                 </div>
             </Transition>
         </div>
+        <a :class="['item', 'hub-item', {on: route.page === 'hub'}]" :href="`#/${route.env}/hub`">
+            <Icon name="panel" />
+            Hub
+        </a>
         <div class="group">
             <button type="button" class="group-label fold-head" :aria-expanded="!folded.environment" @click="fold('environment')">
                 Environment
@@ -240,6 +248,17 @@ async function makeEnv() {
 .journal-row:hover {
     background: var(--hover);
     color: var(--text);
+}
+
+.journal-row.hub {
+    margin-top: 4px;
+    border-top: 1px solid var(--line);
+    border-radius: 0 0 6px 6px;
+    color: var(--text-3);
+}
+
+.hub-item {
+    margin: -6px 0 4px;
 }
 
 .journal-row.current {
