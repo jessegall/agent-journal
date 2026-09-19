@@ -1,6 +1,8 @@
+import time
+
 from controllers.types import Agents, Todos, Works
 from features import trigger
-from features.base import Feature, on
+from features.base import Feature, command, on
 from resources.base import SYSTEM
 from resources.types import Work
 
@@ -13,6 +15,10 @@ class WorkFeature(Feature):
     trigger = {"on": trigger.WORKED}
     EDITS, LOG_AFTER = "edits", "log_after"
     log_after = 20
+
+    @command("work")
+    def log(self, works: Works, n: int, text: str):
+        return works.section(n, f"{len(works.load(n).sections) + 1} · {time.strftime('%Y-%m-%d %H:%M')}", text)
 
     @on("work.created")
     def started(self, event, record) -> None:

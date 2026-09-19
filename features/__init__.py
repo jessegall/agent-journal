@@ -23,7 +23,9 @@ def load() -> list[str]:
 
 
 def unload() -> None:
+    from controllers.base import COMMANDS
     from engine.hooks import POLICIES
+    COMMANDS.clear()
     bus.clear()
     POLICIES.clear()
     FEATURES.clear()

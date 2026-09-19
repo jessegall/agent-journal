@@ -189,7 +189,11 @@ function counted(run) {
 watch(
     () => data.value && data.value.running,
     (run) => {
-        if (!run) return;
+        if (!run || !run.what) {
+            if (!stay.value) retire();
+            apply(total());
+            return;
+        }
         const before = run.before;
         const late = counted(before);
         counted(run);
