@@ -27,6 +27,7 @@ export const controlAgent = (env, session, action, value) =>
     api("POST", `/${env}/agent/${encodeURIComponent(session)}/control`, {action, value});
 export const agentUsage = (provider) => api("GET", `/agent-usage/${encodeURIComponent(provider)}`);
 export const all = (env, type, base = "") => api("GET", `/${env}/${type}`, undefined, base);
+export const recent = (env, type, last) => api("GET", `/${env}/${type}?last=${last}`);
 export const show = (env, type, n) => api("GET", `/${env}/${type}/${n}`);
 export const create = (env, type, body, base = "") => api("POST", `/${env}/${type}`, body, base);
 export async function upload(env, type, n, file, base = "") {

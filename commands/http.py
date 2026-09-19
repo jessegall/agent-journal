@@ -484,7 +484,13 @@ def get_stream(req: Request) -> Reply:
 
 @route("GET", "/api/{env}/{type}")
 def get_all(req: Request) -> Reply:
-    return Reply(200, [shaped(r) for r in req.controller().all()])
+    rows = req.controller().all()
+    last = int(req.query.get("last") or 0)
+    if not last:
+        return Reply(200, [shaped(r) for r in rows])
+    window = rows[-last:]
+    kept = [r for r in rows[:-last] if not r.completed] + window
+    return Reply(200, {"rows": [shaped(r) for r in kept], "more": len(rows) > last})
 
 
 @route("POST", "/api/{env}/{type}")

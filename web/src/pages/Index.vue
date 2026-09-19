@@ -1,11 +1,11 @@
 <script setup>
-import {computed, ref} from "vue";
+import {computed, onUnmounted, ref, watch} from "vue";
 import {create} from "../api.js";
 import Btn from "../kit/Btn.vue";
 import Icon from "../kit/Icon.vue";
 import SwitchCase from "../kit/SwitchCase.vue";
 import {go, route} from "../route.js";
-import {load, meta, open, rows, word} from "../store.js";
+import {load, meta, open, rows, trim, whole, word} from "../store.js";
 import RowGroups from "../resource/RowGroups.vue";
 import ResourceCard from "../resource/ResourceCard.vue";
 import NewResource from "../resource/NewResource.vue";
@@ -15,6 +15,15 @@ const kind = computed(() => meta(props.type));
 const archive = ref(false);
 const adding = ref(false);
 const all = computed(() => rows(props.type));
+watch(
+    () => props.type,
+    (type, was) => {
+        if (was) trim(was);
+        whole(type);
+    },
+    {immediate: true}
+);
+onUnmounted(() => trim(props.type));
 const shown = computed(() => (archive.value ? all.value.filter((r) => r.completed) : open(props.type)));
 const groups = computed(() => {
     const named = {started: "In progress", blocked: "Blocked", asked: "Waiting on you"};
