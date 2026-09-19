@@ -9,7 +9,7 @@ from features.plugins.host import watch
 from features.plugins.manifest import fill, read
 from features.plugins.payload import refusal
 from features.plugins.run import call
-from features.plugins.source import alone, checked, data, environment, folder, home, log, ports_for, prepared, preview, staged, token
+from features.plugins.source import alone, checked, data, environment, folder, home, log, ports_for, prepared, preview, said_version, staged, token
 from resources.base import Refused, SYSTEM
 
 VERSION = (Path(__file__).resolve().parents[2] / "VERSION").read_text().strip() if (Path(__file__).resolve().parents[2] / "VERSION").is_file() else ""
@@ -163,7 +163,7 @@ class Plugins(Feature):
             target.symlink_to(where)
         else:
             where.rename(target)
-        kept = {"source": source, "revision": ref, "commit": commit, "version": manifest.get("version") or "", "linked": linked, "manifest": manifest}
+        kept = {"source": source, "revision": ref, "commit": commit, "version": said_version(target, manifest), "linked": linked, "manifest": manifest}
         if row:
             return plugins.update(row.n, abstract=manifest.get("description") or "", **kept)
         return plugins.create(manifest.get("title") or name, abstract=manifest.get("description") or "", enabled=True, settings={"ports": ports or {}}, token=secret, **kept)
