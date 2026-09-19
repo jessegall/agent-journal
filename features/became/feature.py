@@ -5,7 +5,7 @@ from resources.base import AGENT, SYSTEM
 
 class Became(Feature):
     name = "became"
-    title_ = "What a message became"
+    title_ = "Message tracing"
     abstract_ = "A row the agent files while a message is in its hands is linked to that message, without a declaration"
     help_ = "The message the agent read last and has not closed is the one in hand; every to-do, pin, rule, reminder, question, doc, report, plan or work it creates meanwhile is linked to it and shows as a pill on the turn."
 

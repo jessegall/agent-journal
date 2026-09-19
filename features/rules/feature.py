@@ -12,14 +12,17 @@ class RulesFeature(Recital):
     type = "rule"
     said = "in force, read them"
     title_ = "Rules"
-    abstract_ = "The rules said again at every tenth of the context, and the injected ones kept in CLAUDE.md"
-    help_ = "A rule binds every environment; inject puts it in CLAUDE.md and every change rewrites that block."
+    abstract_ = "The rules said again at every tenth of the context, and the injected ones kept in CLAUDE.md or AGENTS.md"
+    help_ = "A rule binds every environment; inject targets Claude, Codex or both, and every change rewrites those blocks."
     trigger = {"every": 10, "unit": trigger.PERCENT}
 
     @on("rule")
     def inject(self, event, record) -> None:
-        injected = [r for r in self.standing(record, "rule") if r.injected]
-        target = record.root.parent / "CLAUDE.md"
+        rules = self.standing(record, "rule")
+        self._write(record.root.parent / "CLAUDE.md", [r for r in rules if r.injected])
+        self._write(record.root.parent / "AGENTS.md", [r for r in rules if r.injected_codex])
+
+    def _write(self, target: Path, injected: list) -> None:
         had = target.read_text() if target.is_file() else ""
         stripped = BLOCK.sub("\n", had).strip("\n")
         if not injected:

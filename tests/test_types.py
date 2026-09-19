@@ -37,10 +37,11 @@ for type_ in TYPES:                                       # seen: the creator ha
 top = parser()
 base_actions = actions(Controller)
 check("the base controller's actions are the CRUD set", base_actions,
-      ["all", "attach", "comment", "comments", "complete", "create", "delete", "detach", "files", "find", "folder", "force_delete", "index", "link", "linked_to", "move", "paths", "react", "read", "restore", "search", "section", "set", "show", "unlink", "unread", "update"])
+      ["all", "attach", "comment", "comments", "complete", "create", "delete", "detach", "files", "find", "folder", "force_delete", "index", "link", "linked_to", "move", "paths", "react", "read", "restore", "search", "section", "set", "show", "tag", "unlink", "unread", "update"])
 subs = top._subparsers._group_actions[0].choices
 check("every type is a command, beside the queries", sorted(t for t in subs if t in TYPES), sorted(TYPES))
-check("the queries stand beside them", sorted(t for t in subs if t not in TYPES), ["carry", "claude", "codex", "conversation", "nothing", "open", "search", "serve", "start", "status", "upgrade", "user", "version"])
+check("the queries stand beside them", sorted(t for t in subs if t not in TYPES),
+      ["carry", "claude", "codex", "conversation", "disable", "enable", "help", "nothing", "open", "search", "serve", "settings", "start", "status", "upgrade", "user", "verify", "version"])
 for type_ in TYPES:
     acts = subs[type_]._subparsers._group_actions[0].choices
     names = TYPES[type_].names
@@ -68,11 +69,12 @@ for type_ in TYPES:                                       # and each generated c
     code, out = cli(type_, create, "a: colon")
     check(f"{type_}: the title rule holds from the shell", (code, "colon" in out), (1, True))
     finish = TYPES[type_].names.get("complete", "complete")
-    code, out = cli(type_, finish, "1", "--how", "finished")
-    check(f"{type_}: completing it by the type's own name ({finish}) emits completed", (code, record_events_of(root, type_)[-1]), (0, "completed"))
-    code, out = cli(type_, finish, "1")
+    n = "2" if type_ == "environment" else "1"
+    code, out = cli(type_, finish, n, "--how", "finished")
+    check(f"{type_}: completing it by the type's own name ({finish}) emits its terminal event", (code, record_events_of(root, type_)[-1]), (0, "deleted" if type_ == "environment" else "completed"))
+    code, out = cli(type_, finish, n)
     check(f"{type_}: completing twice is refused", code, 1)
     code, out = cli(type_, "all")
-    check(f"{type_}: all from the shell", out.split("\n")[-1].strip().split("  ", 1)[-1], f"a {type_} from the shell")
+    check(f"{type_}: all from the shell", out.split("\n")[-1].strip().split("  ", 1)[-1], "main" if type_ == "environment" else f"a {type_} from the shell" + ("  [done]" if type_ == "todo" else ""))
 
 done()

@@ -14,6 +14,7 @@ import Trace from "./Trace.vue";
 import Comments from "./Comments.vue";
 import Links from "./Links.vue";
 import Asked from "./Asked.vue";
+import RuleControls from "./RuleControls.vue";
 
 const props = defineProps({resource: Object, comments: {type: Boolean, default: true}});
 const emit = defineEmits(["close"]);
@@ -46,6 +47,7 @@ const traced = computed(() => !!kind.value.fields.changed);
                 <Priority :resource="resource" />
             </template>
         </div>
+        <RuleControls v-if="resource.type === 'rule' && !resource.completed" :resource="resource" />
         <template v-if="kind.fields.options">
             <OptionsPicker :resource="resource" />
         </template>

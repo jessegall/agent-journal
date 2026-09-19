@@ -8,6 +8,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import features  # noqa: E402
 import migrations  # noqa: E402
 from commands.http import dispatch  # noqa: E402
+from engine.viewer import remember  # noqa: E402
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -51,7 +52,9 @@ def serve(root: Path, port: int = 8430) -> ThreadingHTTPServer:
     Handler.root = root
     migrations.run(root)
     features.load()
-    return ThreadingHTTPServer(("127.0.0.1", port), Handler)
+    server = ThreadingHTTPServer(("127.0.0.1", port), Handler)
+    remember(root, server.server_address[1])
+    return server
 
 
 if __name__ == "__main__":

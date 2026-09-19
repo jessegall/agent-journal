@@ -124,8 +124,11 @@ async function post(text, files) {
     const made = await r.json();
     for (const f of files || []) {
       const body = new FormData();
-      body.append("file", await (await fetch(f.data)).blob(), f.name);
-      await fetch(`${to.url}/api/${to.env}/message/${made.n}/upload`, { method: "POST", body });
+      const data = String(f.data || "").split(",").pop();
+      const bytes = Uint8Array.from(atob(data), (c) => c.charCodeAt(0));
+      body.append("file", new Blob([bytes], { type: "image/png" }), f.name);
+      const uploaded = await fetch(`${to.url}/api/${to.env}/message/${made.n}/upload`, { method: "POST", body });
+      if (!uploaded.ok) throw new Error(`${to.project} refused the picture (${uploaded.status}).`);
     }
     return { ok: true, project: to.project, env: to.env, shot: !!(files && files.length) };
   } catch (e) {

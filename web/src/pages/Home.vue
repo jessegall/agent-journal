@@ -13,7 +13,7 @@ import RailNotes from "./RailNotes.vue";
 const tab = ref("waiting");
 const notices = computed(() => open("notice"));
 const tabs = computed(() => [
-    ["waiting", "Waiting on you", types.value.filter((t) => t.attention).flatMap((t) => unreadByUser(t.name)).length, true],
+    ["waiting", "Highlights", types.value.filter((t) => t.attention).flatMap((t) => unreadByUser(t.name)).length, true],
     ["todos", "To-dos", open("todo").length, false],
     ["notes", "Notifications", unreadByUser("notification").length, true],
 ]);
@@ -29,7 +29,13 @@ const tabs = computed(() => [
                 </TransitionGroup>
                 <template v-if="store.detached">
                     <div class="home-away">
-                        <p>The chat is in its own window.</p>
+                        <p>
+                            {{
+                                store.extension.holding
+                                    ? "The chat is following you through the extension."
+                                    : "The chat is floating over this page."
+                            }}
+                        </p>
                         <button type="button" class="home-away-back" @click="detach(false)">Put it back here</button>
                     </div>
                 </template>

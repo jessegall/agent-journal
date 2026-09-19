@@ -25,6 +25,7 @@ class Feature(ABC):
     help_: ClassVar[str] = ""
     trigger: ClassVar[dict] = {}
     default: ClassVar[bool] = True
+    fixed: ClassVar[bool] = False
 
     def __init_subclass__(cls, **kw):
         super().__init_subclass__(**kw)
@@ -40,7 +41,7 @@ class Feature(ABC):
             bus.on(pattern, handler, enabled=self.enabled)
 
     def enabled(self, record) -> bool:
-        return record.features.get(self.name, self.default)
+        return True if self.fixed else record.features.get(self.name, self.default)
 
     def enable(self, record) -> None:
         record.features = {**record.features, self.name: True}
@@ -85,7 +86,7 @@ class Feature(ABC):
         return f"{n} {word}{'s' if n != 1 else ''}"
 
     def describe(self) -> dict:
-        return {"name": self.name, "title": self.title_, "abstract": self.abstract_, "help": self.help_, "default": self.default,
+        return {"name": self.name, "title": self.title_, "abstract": self.abstract_, "help": self.help_, "default": self.default, "fixed": self.fixed,
                 "listens": sorted({p for p, _ in self.listeners()}), "trigger": dict(self.trigger)}
 
 

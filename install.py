@@ -1,23 +1,56 @@
+import os
 import shutil
 import stat
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from migrations import run as migrate  # noqa: E402
+from features.law.policy import brief  # noqa: E402
 from providers import PROVIDERS  # noqa: E402
 from skills import write as write_skills  # noqa: E402
 
 PACKAGE = Path(__file__).resolve().parent
-HOOK = PACKAGE / "hook.py"
 SKILLS = {"claude": ".claude/skills", "codex": ".codex/skills"}
+PACKAGE_DIRS = ("commands", "controllers", "engine", "extension", "features", "migrations", "providers", "resources", "skills")
+PACKAGE_FILES = ("VERSION", "hook.py", "install.py", "journal.py", "serve.py", "skills.py")
+PACKAGE_TREES = (*PACKAGE_DIRS, "web/dist")
+REPOSITORY = "https://github.com/jessegall/agent-journal"
+
+
+def package_files(root: Path) -> set[Path]:
+    files = {Path(name) for name in PACKAGE_FILES if (root / name).is_file()}
+    for name in PACKAGE_TREES:
+        base = root / name
+        if base.is_dir():
+            files.update(f.relative_to(root) for f in base.rglob("*") if f.is_file() and f.name != ".DS_Store" and f.suffix != ".pyc" and "__pycache__" not in f.parts)
+    return files
+
+
+def refresh(source: Path, target: Path) -> tuple[int, int]:
+    source, target = source.resolve(), target.resolve()
+    if source == target:
+        return 0, 0
+    wanted = package_files(source)
+    existing = package_files(target)
+    gone = existing - wanted
+    changed = {rel for rel in wanted if not (target / rel).is_file() or (source / rel).read_bytes() != (target / rel).read_bytes()}
+    for rel in sorted(gone):
+        (target / rel).unlink()
+    for rel in sorted(changed):
+        destination = target / rel
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        destination.unlink(missing_ok=True)
+        shutil.copy2(source / rel, destination)
+    return len(changed), len(gone)
 
 
 def alias(project: Path, root: Path) -> Path:
     f = root / "journal"
     f.parent.mkdir(parents=True, exist_ok=True)
-    f.write_text(f'#!/bin/sh\nexec "{sys.executable}" "{PACKAGE / "journal.py"}" --root "{root}" "$@"\n')
+    f.write_text(f'#!/bin/sh\nexec "{sys.executable}" "{root / "journal.py"}" --root "{root}" "$@"\n')
     f.chmod(f.stat().st_mode | stat.S_IEXEC)
     bin_ = Path.home() / ".local" / "bin"
     if bin_.is_dir():
@@ -29,17 +62,24 @@ def alias(project: Path, root: Path) -> Path:
 
 def install(project: Path, root: Path | None = None) -> list[str]:
     root = root or project / ".journal"
+    refresh(PACKAGE, root)
+    return configure(project, root)
+
+
+def configure(project: Path, root: Path) -> list[str]:
     done = []
     for name, cls in PROVIDERS.items():
         provider = cls()
         if not provider.present(project):
             continue
-        f = provider.wire(project, f"{sys.executable} {HOOK} {name} {root}")
+        f = provider.wire(project, f"{sys.executable} {root / 'hook.py'} {name} {root}")
         done.append(f"{name}: hooks in {f.relative_to(project)}")
         written = write_skills(project / SKILLS[name])
         done.append(f"{name}: {len(written)} skills in {SKILLS[name]}")
     if not done:
         return ["no agent found here: neither Claude nor Codex"]
+    written = brief(project)
+    done.append(f"the journal's law in {', '.join(f.name for f in written) or 'AGENTS.md and CLAUDE.md'}")
     done.append(f"the journal command: {alias(project, root).relative_to(project)}")
     return done
 
@@ -47,16 +87,50 @@ def install(project: Path, root: Path | None = None) -> list[str]:
 def upgrade(project: Path, root: Path | None = None) -> list[str]:
     root = root or project / ".journal"
     done = []
-    if (PACKAGE / ".git").is_dir() and shutil.which("git"):
+    source, temporary = PACKAGE, None
+    reloaded = PACKAGE.resolve() == root.resolve() and not os.environ.get("AGENT_JOURNAL_BOOTSTRAPPED")
+    if reloaded:
+        temporary = Path(tempfile.mkdtemp())
+        source = temporary / "package"
+        try:
+            cloned = subprocess.run(["git", "clone", "--quiet", "--depth", "1", os.environ.get("AGENT_JOURNAL_REPO", REPOSITORY), str(source)], capture_output=True, text=True, timeout=120)
+        except (OSError, subprocess.TimeoutExpired) as error:
+            shutil.rmtree(temporary, ignore_errors=True)
+            return [f"package not refreshed: {error}"]
+        if cloned.returncode:
+            shutil.rmtree(temporary, ignore_errors=True)
+            return [f"package not refreshed: {cloned.stderr.strip() or 'git clone failed'}"]
+    elif (PACKAGE / ".git").is_dir() and shutil.which("git"):
         pulled = subprocess.run(["git", "-C", str(PACKAGE), "pull", "--ff-only", "-q"], capture_output=True, text=True, timeout=120)
         done.append("package pulled" if pulled.returncode == 0 else f"package not pulled: {pulled.stderr.strip()}")
-    done += install(project, root)
+    changed, gone = refresh(source, root)
+    if temporary:
+        shutil.rmtree(temporary, ignore_errors=True)
+    done.append(f"package refreshed: {changed} changed, {gone} retired")
+    if reloaded:
+        finished = subprocess.run([sys.executable, str(root / "install.py"), "finish", str(project)], capture_output=True, text=True, timeout=120)
+        return done + (finished.stdout.strip().splitlines() if finished.returncode == 0 else [f"package refreshed but configuration failed: {finished.stderr.strip()}"])
+    done += finish(project, root)
+    return done
+
+
+def finish(project: Path, root: Path) -> list[str]:
+    done = configure(project, root)
     ran = migrate(root)
     done.append(f"migrations run: {', '.join(ran)}" if ran else "record already in shape")
     return done
 
 
+def main(argv: list[str]) -> list[str]:
+    word = argv[0] if argv else "install"
+    if word == "upgrade":
+        return upgrade(Path(argv[1] if len(argv) > 1 else ".").resolve())
+    if word == "finish":
+        project = Path(argv[1] if len(argv) > 1 else ".").resolve()
+        return finish(project, project / ".journal")
+    return install(Path(word).resolve())
+
+
 if __name__ == "__main__":
-    project = Path(sys.argv[2] if len(sys.argv) > 2 else ".").resolve() if len(sys.argv) > 1 and sys.argv[1] == "upgrade" else Path(sys.argv[1] if len(sys.argv) > 1 else ".").resolve()
-    for line in (upgrade if len(sys.argv) > 1 and sys.argv[1] == "upgrade" else install)(project):
+    for line in main(sys.argv[1:]):
         print(line)

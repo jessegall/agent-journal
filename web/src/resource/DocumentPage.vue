@@ -10,12 +10,31 @@ const emit = defineEmits(["close"]);
 const quote = ref("");
 const count = computed(() => rows("comment").filter((c) => c.refs.includes(props.resource.ref) && !c.deleted).length);
 const talking = ref(count.value > 0);
+const shifted = ref(talking.value);
+const panel = ref(talking.value);
 watch(quote, (q) => q && (talking.value = true));
+watch(talking, (on) => {
+    if (on) {
+        if (shifted.value) panel.value = true;
+        else shifted.value = true;
+    } else if (panel.value) panel.value = false;
+    else shifted.value = false;
+});
+
+function shiftedDone(event) {
+    if (event.propertyName === "transform" && talking.value) panel.value = true;
+}
+
+function panelLeft() {
+    if (talking.value) panel.value = true;
+    else shifted.value = false;
+}
+
 provide("talk", {talking, count, toggle: () => (talking.value = !talking.value)});
 </script>
 
 <template>
-    <div :class="['document', {talking}]">
+    <div :class="['document', {shifted}]" @transitionend.self="shiftedDone">
         <div class="document-body">
             <Highlight @quote="quote = $event">
                 <slot>
@@ -23,8 +42,8 @@ provide("talk", {talking, count, toggle: () => (talking.value = !talking.value)}
                 </slot>
             </Highlight>
         </div>
-        <Transition name="aside">
-            <aside v-if="talking" class="document-aside">
+        <Transition name="aside" @after-leave="panelLeft">
+            <aside v-if="panel" class="document-aside">
                 <Comments :resource="resource" :quote="quote" @sent="quote = ''" />
             </aside>
         </Transition>
@@ -33,36 +52,30 @@ provide("talk", {talking, count, toggle: () => (talking.value = !talking.value)}
 
 <style scoped>
 .document {
-    display: flex;
+    --comments-width: clamp(280px, 34%, 400px);
+    position: relative;
     height: 100%;
     overflow: hidden;
 }
 
 .document-body {
     position: relative;
-    flex: 2 1 0;
+    height: 100%;
     min-width: 0;
     overflow-y: auto;
     overscroll-behavior: contain;
     animation: curtain-left 0.32s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+    transition: transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.document.shifted .document-body {
+    transform: translateX(calc(var(--comments-width) / -2));
 }
 
 @keyframes curtain-left {
     from {
         opacity: 0;
         transform: translateX(-28px);
-    }
-
-    to {
-        opacity: 1;
-        transform: none;
-    }
-}
-
-@keyframes curtain-right {
-    from {
-        opacity: 0;
-        transform: translateX(28px);
     }
 
     to {
@@ -83,15 +96,14 @@ provide("talk", {talking, count, toggle: () => (talking.value = !talking.value)}
 }
 
 .document-aside {
-    flex: 1 1 0;
-    min-width: 280px;
-    max-width: 480px;
+    position: absolute;
+    inset: 0 0 0 auto;
+    width: var(--comments-width);
     display: flex;
     flex-direction: column;
     min-height: 0;
     border-left: 1px solid var(--border);
     background: var(--side);
-    animation: curtain-right 0.32s cubic-bezier(0.2, 0.8, 0.2, 1) 0.08s both;
 }
 
 .document-aside > :deep(.comments) {
@@ -114,18 +126,14 @@ provide("talk", {talking, count, toggle: () => (talking.value = !talking.value)}
 
 .document-aside.aside-enter-active,
 .document-aside.aside-leave-active {
-    flex-grow: 0;
     transition:
-        flex-basis 0.28s cubic-bezier(0.2, 0.8, 0.2, 1),
-        min-width 0.28s cubic-bezier(0.2, 0.8, 0.2, 1),
+        transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1),
         opacity 0.2s ease;
-    overflow: hidden;
 }
 
 .document-aside.aside-enter-from,
 .document-aside.aside-leave-to {
-    flex-basis: 0;
-    min-width: 0;
+    transform: translateX(100%);
     opacity: 0;
 }
 </style>

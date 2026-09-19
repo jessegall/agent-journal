@@ -1,11 +1,10 @@
 <script setup>
 import {computed, onMounted, ref, watch} from "vue";
 import {api} from "../api.js";
-import Btn from "../kit/Btn.vue";
 import Icon from "../kit/Icon.vue";
-import Switch from "../kit/Switch.vue";
 import {route} from "../route.js";
-import {age, agent} from "../store.js";
+import {agent} from "../store.js";
+import SkillsRow from "./SkillsRow.vue";
 
 const rows = ref([]);
 const loaded = ref(false);
@@ -13,6 +12,7 @@ const opened = ref("");
 const text = ref("");
 const busy = ref("");
 const notice = ref("");
+const folded = ref(new Set());
 
 async function reload() {
     rows.value = await api("GET", `/${route.value.env}/skills?agent=${agent.value ? agent.value.n : 0}`);
@@ -22,11 +22,43 @@ onMounted(reload);
 watch(() => agent.value && agent.value.data.uses, reload);
 
 const loadedCount = computed(() => rows.value.filter((s) => s.loaded).length);
-const journal = computed(() => rows.value.filter((s) => s.name === "journal" || s.name.startsWith("journal-")));
-const others = computed(() => rows.value.filter((s) => !journal.value.includes(s)));
+const skillGroups = computed(() => groups(rows.value));
 
-function state(s) {
-    return s.stale ? "Changed since loaded" : s.loaded ? "Loaded" : "";
+function groups(list) {
+    const under = (prefix) => list.filter((s) => s.name === prefix || s.name.startsWith(`${prefix}-`));
+    const seen = new Set();
+    const result = [];
+    for (const skill of list) {
+        const top = skill.name.split("-")[0];
+        if (seen.has(top)) continue;
+        seen.add(top);
+        const members = under(top);
+        if (members.length < 2) {
+            result.push({key: skill.name, skill});
+            continue;
+        }
+        const subgroups = new Set();
+        const items = [];
+        for (const member of members) {
+            const parts = member.name.split("-");
+            const subgroup = parts.length > 2 ? parts.slice(0, 2).join("-") : "";
+            if (subgroup && !subgroups.has(subgroup) && under(subgroup).length > 1) {
+                subgroups.add(subgroup);
+                items.push({key: subgroup, name: subgroup, rows: under(subgroup)});
+            } else if (!subgroup || !subgroups.has(subgroup)) {
+                items.push({key: member.name, skill: member});
+            }
+        }
+        result.push({key: top, name: top, count: members.length, items});
+    }
+    return result;
+}
+
+function fold(key) {
+    const next = new Set(folded.value);
+    if (next.has(key)) next.delete(key);
+    else next.add(key);
+    folded.value = next;
 }
 
 async function open(s) {
@@ -65,50 +97,67 @@ async function always(s, on) {
         <template v-if="loaded && !rows.length">
             <p class="empty">No skills are installed under .claude/skills or .codex/skills.</p>
         </template>
-        <template
-            v-for="[label, list] in [
-                ['Journal', journal],
-                ['Project', others],
-            ]"
-            :key="label"
-        >
-            <template v-if="list.length">
-                <h3 class="label">
-                    {{ label }}
-                    <span class="muted">{{ list.length }}</span>
-                </h3>
-                <div class="rows">
-                    <template v-for="s in list" :key="s.name">
-                        <div :class="['row', {loaded: s.loaded, stale: s.stale, open: opened === s.name}]">
-                            <button type="button" class="main" @click="open(s)">
-                                <Icon name="book" />
-                                <span class="name">{{ s.name }}</span>
-                                <span class="description">{{ s.description }}</span>
-                            </button>
-                            <span :class="['state', {stale: s.stale}]">{{ state(s) }}</span>
-                            <span class="changed" :title="`SKILL.md changed ${age(s.changed)}`">{{ age(s.changed) }}</span>
-                            <Btn
-                                small
-                                :disabled="busy === s.name || (s.loaded && !s.stale)"
-                                :title="s.loaded && !s.stale ? 'Loaded, and unchanged since' : `Ask the agent to load ${s.name} now`"
-                                @click="loadNow(s)"
-                            >
-                                Load
-                            </Btn>
-                            <Switch
-                                :on="s.always"
-                                word="every start"
-                                :title="s.always ? 'Stop naming it at every start' : 'Name it at every start'"
-                                @change="always(s, $event)"
+        <div v-if="rows.length" class="rows">
+            <template v-for="group in skillGroups" :key="group.key">
+                <SkillsRow
+                    v-if="group.skill"
+                    :skill="group.skill"
+                    :busy="busy"
+                    :opened="opened"
+                    :text="text"
+                    @open="open"
+                    @load="loadNow"
+                    @always="always"
+                />
+                <template v-else>
+                    <button type="button" :class="['group', {folded: folded.has(group.key)}]" @click="fold(group.key)">
+                        <span class="group-name">{{ group.name }}</span>
+                        <span class="group-count">{{ group.count }}</span>
+                        <Icon name="down" />
+                    </button>
+                    <template v-if="!folded.has(group.key)">
+                        <template v-for="item in group.items" :key="item.key">
+                            <SkillsRow
+                                v-if="item.skill"
+                                :skill="item.skill"
+                                :busy="busy"
+                                :opened="opened"
+                                :text="text"
+                                :depth="1"
+                                @open="open"
+                                @load="loadNow"
+                                @always="always"
                             />
-                        </div>
-                        <template v-if="opened === s.name">
-                            <pre class="text">{{ text }}</pre>
+                            <template v-else>
+                                <button
+                                    type="button"
+                                    :class="['group', 'subgroup', {folded: folded.has(item.key)}]"
+                                    @click="fold(item.key)"
+                                >
+                                    <span class="group-name">{{ item.name }}</span>
+                                    <span class="group-count">{{ item.rows.length }}</span>
+                                    <Icon name="down" />
+                                </button>
+                                <template v-if="!folded.has(item.key)">
+                                    <SkillsRow
+                                        v-for="skill in item.rows"
+                                        :key="skill.name"
+                                        :skill="skill"
+                                        :busy="busy"
+                                        :opened="opened"
+                                        :text="text"
+                                        :depth="2"
+                                        @open="open"
+                                        @load="loadNow"
+                                        @always="always"
+                                    />
+                                </template>
+                            </template>
                         </template>
                     </template>
-                </div>
+                </template>
             </template>
-        </template>
+        </div>
     </section>
 </template>
 
@@ -138,106 +187,53 @@ async function always(s, on) {
     color: var(--text-3);
 }
 
-.label {
-    margin: 22px 22px 10px;
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--text-3);
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-}
-
-.muted {
-    margin-left: 6px;
-    font-weight: 400;
-    color: var(--text-4);
-}
-
 .rows {
     display: flex;
     flex-direction: column;
     gap: 4px;
-    padding: 0 14px 0 22px;
+    padding: 18px 14px 0 22px;
 }
 
-.row {
+.group {
     display: flex;
     align-items: center;
-    gap: 12px;
-    min-height: 40px;
-    padding: 4px 8px 4px 10px;
+    gap: 8px;
+    min-height: 38px;
+    padding: 6px 12px;
     border: 1px solid var(--border);
     border-radius: 8px;
     background: var(--raised);
-}
-
-.row.loaded {
-    border-color: var(--border-2);
-}
-
-.main {
-    flex: 1 1 auto;
-    min-width: 0;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 4px 0;
-    border: 0;
-    background: none;
     color: var(--text);
     font: inherit;
+    font-weight: 600;
     text-align: left;
-    cursor: pointer;
 }
 
-.main .ico {
-    flex: none;
-    width: 14px;
-    height: 14px;
-    opacity: 0.7;
+.group:hover {
+    background: var(--hover);
 }
 
-.name {
-    flex: none;
-    font-weight: 500;
-}
-
-.description {
-    flex: 1 1 auto;
-    min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    font-size: 12px;
+.group .ico {
+    width: 13px;
+    height: 13px;
+    margin-left: auto;
     color: var(--text-3);
+    transition: transform 0.12s ease;
 }
 
-.state {
-    flex: none;
+.group.folded .ico {
+    transform: rotate(-90deg);
+}
+
+.group-count {
     font-size: 11px;
-    color: var(--progress);
-}
-
-.state.stale {
-    color: var(--blocking);
-}
-
-.changed {
-    flex: none;
-    width: 3ch;
-    font-size: 11px;
+    font-weight: 400;
     color: var(--text-4);
 }
 
-.text {
-    margin: 0 0 8px;
-    padding: 14px 16px;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    background: var(--bg);
-    font-size: 12px;
-    line-height: 1.5;
-    white-space: pre-wrap;
-    color: var(--text-2);
+.subgroup {
+    margin-left: 18px;
+    background: transparent;
+    font-weight: 500;
 }
 </style>

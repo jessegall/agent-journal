@@ -1,6 +1,6 @@
 <script setup>
-import {computed, ref} from "vue";
-import {act, saveSettings} from "../api.js";
+import {computed, onMounted, ref} from "vue";
+import {act, api, saveSettings} from "../api.js";
 import Btn from "../kit/Btn.vue";
 import Switch from "../kit/Switch.vue";
 import {route} from "../route.js";
@@ -12,6 +12,11 @@ const on = (name) => !!(store.settings && store.settings.features[name]);
 const retention = computed(() => (store.settings && store.settings.keep) || {});
 const days = ref({});
 const envs = computed(() => rows("environment").filter((e) => !e.completed));
+const extension = ref(null);
+
+onMounted(async () => {
+    extension.value = await api("GET", "/extension");
+});
 
 async function flip(name, value) {
     await saveSettings(route.value.env, {features: {...store.settings.features, [name]: value}});
@@ -30,6 +35,22 @@ async function remove(e) {
     <section class="settings">
         <section class="group">
             <header class="group-head">
+                <h2>Chrome extension</h2>
+                <p class="lead">Float the chat over any page, point at elements, send pictures, and let the agent drive the tab.</p>
+            </header>
+            <div class="row">
+                <span class="text">
+                    <span class="title">Agent journal for Chrome</span>
+                    <span class="help">The unpacked extension is served from this exact journal version.</span>
+                </span>
+                <span v-if="extension && extension.available" class="control">
+                    <a v-if="extension.store" class="download" :href="extension.store" target="_blank" rel="noopener">Add to Chrome</a>
+                    <a class="download" href="/extension.zip">Download</a>
+                </span>
+            </div>
+        </section>
+        <section class="group">
+            <header class="group-head">
                 <h2>Features on {{ route.env }}</h2>
                 <p class="lead">Each is a switch; its trigger says when it speaks to the agent.</p>
             </header>
@@ -43,7 +64,8 @@ async function remove(e) {
                         </template>
                     </span>
                     <span class="control">
-                        <Switch :on="on(f.name)" @change="(v) => flip(f.name, v)" />
+                        <span v-if="f.fixed" class="note">Always on</span>
+                        <Switch v-else :on="on(f.name)" @change="(v) => flip(f.name, v)" />
                     </span>
                 </div>
             </template>
@@ -172,5 +194,18 @@ h2 {
 .unit {
     color: var(--text-3);
     font-size: 12.5px;
+}
+
+.download {
+    height: 28px;
+    padding: 4px 10px;
+    border: 1px solid var(--border-2);
+    border-radius: 6px;
+    color: var(--text);
+    text-decoration: none;
+}
+
+.download:hover {
+    background: var(--hover);
 }
 </style>

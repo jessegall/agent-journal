@@ -7,18 +7,20 @@ import Switch from "../kit/Switch.vue";
 import {go, peek, route} from "../route.js";
 import {agent, autoOn, rows} from "../store.js";
 
-const state = computed(() => (agent.value && agent.value.data.status !== "stopped" ? agent.value.data.status : "stopped"));
+const current = computed(() => rows("work").find((w) => !w.completed) || null);
+const state = computed(() => {
+    const reported = agent.value ? agent.value.data.status : "stopped";
+    return ["stopped", "idle", "compacting"].includes(reported) ? reported : current.value ? "working" : "busy";
+});
 const named = (w) => (w.data.todo ? `to-do ${w.data.todo} · ${w.title}` : w.title);
 const line = computed(() => {
     if (state.value === "stopped") return "no agent is on this environment";
     if (state.value === "compacting") return "compacting its context — it carries on after";
     const works = rows("work");
-    const open = works.find((w) => !w.completed);
-    if (open) return `on ${named(open)}`;
+    if (current.value) return `on ${named(current.value)}`;
     const last = works[works.length - 1];
     return last ? `last on ${named(last)}` : state.value === "idle" ? "waiting for you" : "on nothing declared";
 });
-const current = computed(() => rows("work").find((w) => !w.completed) || null);
 function inspect() {
     if (current.value) peek("work", current.value.n);
     else go(route.value.env);
@@ -171,6 +173,10 @@ async function runBar(p) {
     align-items: baseline;
     font-size: 13px;
     color: var(--text-2);
+    text-decoration-line: underline;
+    text-decoration-color: color-mix(in srgb, var(--text-3) 55%, transparent);
+    text-decoration-thickness: 1px;
+    text-underline-offset: 4px;
 }
 
 .statusbar-head {

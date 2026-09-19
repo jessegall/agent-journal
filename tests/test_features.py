@@ -25,7 +25,7 @@ check("every listener is gated by its feature's enabled", all(callable(g) for en
 check("auto mode is a feature off by default; the rest are on", ([n for n, f in features.FEATURES.items() if not f.default]), ["auto"])
 from features.base import Feature, REGISTRY  # noqa: E402
 check("the registry holds one class per feature, each a Feature", (sorted(REGISTRY), all(issubclass(c, Feature) for c in REGISTRY.values())), (loaded, True))
-check("a feature describes itself for a menu: name, words, what it listens to, its trigger", sorted(features.describe()["work"]), ["abstract", "default", "help", "listens", "name", "title", "trigger"])
+check("a feature describes itself for a menu: name, words, what it listens to, its trigger", sorted(features.describe()["work"]), ["abstract", "default", "fixed", "help", "listens", "name", "title", "trigger"])
 check("the work feature listens to what its methods say", features.describe()["work"]["listens"], ["agent.updated", "work.completed", "work.created"])
 r = fresh()
 work = features.FEATURES["work"]

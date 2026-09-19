@@ -31,7 +31,7 @@ Would a later reader be WRONG without it? **a pin.** Will you stop DOING it thou
 
 ## Messages, questions, comments
 
-The user writes to you from the viewer. `journal message unread` lists what waits, `journal message read <n>` marks one seen. A message is processed part by part — `journal message process <n> "<their words>" "<what it became>"` — and closed with `journal message processed <n> --how "<what was done>"`; reply under it with `journal message reply <n> "<text>" [--file <path>]`, quoting the message's own words. `message waiting` lists the ones not yet processed; `message file <n> <name> --into "doc <d>"` files an attached file into a doc (`keep` keeps it); `message archive <n> "<why>"` puts one away; `message edit <n> "<text>"` rewords one that still waits. Ask through the journal, never by halting: `journal question ask "<one line>" --abstract "<context>" --set about=todo:<n>` with options as `--set options=…` JSON; the answer reaches you as an event. A comment the user left is handled and `journal comment done <n> --how "<what was done>"`.
+The user writes to you from the viewer. `journal message unread` lists what waits, `journal message read <n>` marks one seen. Use `journal message process <n> "<their exact words>" "<resource ref>"` only when that part became a record resource such as a to-do, pin, rule, reminder, question, doc, report, plan or work. The pills above a message are links, never status prose, acknowledgements or descriptions of what you did. Reply with `journal message reply <n> "<text>" [--file <path>]` when the message needs an answer; react when it only needs acknowledgement; then close it with `journal message processed <n> --how "<what was done>"`. `message waiting` lists the ones not yet processed; `message file <n> <name> --into "doc <d>"` files an attached file into a doc (`keep` keeps it); `message archive <n> "<why>"` puts one away; `message edit <n> "<text>"` rewords one that still waits. Ask through the journal, never by halting: `journal question ask "<one line>" --abstract "<context>" --set about=todo:<n>` with options as `--set options=…` JSON; the answer reaches you as an event. A comment the user left is handled and `journal comment done <n> --how "<what was done>"`.
 
 ## Plans, reports, docs
 
@@ -95,6 +95,7 @@ A message is read once by the other side and processed part by part; what each p
     journal message section <n> <title> <body>
     journal message set <n> <key> <value>
     journal message show <n>
+    journal message tag <n> <name> <tags>
     journal message unlink <n> <ref>
     journal message unread [--actor …]
     journal message update <n> [--title …] [--abstract …] [--brief …] [--outcome …] [--set key=value…]
@@ -136,6 +137,7 @@ A to-do waits on the list until it is started as work and closed; auto mode work
     journal todo show <n>
     journal todo start <n>
     journal todo strike <n> <why>
+    journal todo tag <n> <name> <tags>
     journal todo unblock <n>
     journal todo unlink <n> <ref>
     journal todo unread [--actor …]
@@ -167,6 +169,7 @@ Work is opened by the agent, updated as it moves and ended when done; the agent 
     journal work section <n> <title> <body>
     journal work set <n> <key> <value>
     journal work show <n>
+    journal work tag <n> <name> <tags>
     journal work unlink <n> <ref>
     journal work unread [--actor …]
     journal work update <n> [--title …] [--abstract …] [--brief …] [--outcome …] [--set key=value…]
@@ -206,6 +209,7 @@ A plan is drafted by the agent, approved and continued by the user, and worked p
     journal plan section <n> <title> <body>
     journal plan set <n> <key> <value>
     journal plan show <n>
+    journal plan tag <n> <name> <tags>
     journal plan unlink <n> <ref>
     journal plan unread [--actor …]
     journal plan update <n> [--title …] [--abstract …] [--brief …] [--outcome …] [--set key=value…]
@@ -238,6 +242,7 @@ A doc is written once, cited by pins and rules, and read before anything it sett
     journal doc set <n> <key> <value>
     journal doc show <n>
     journal doc supersede <n> <by>
+    journal doc tag <n> <name> <tags>
     journal doc unlink <n> <ref>
     journal doc unread [--actor …]
     journal doc update <n> [--title …] [--abstract …] [--brief …] [--outcome …] [--set key=value…]
@@ -269,6 +274,7 @@ A report answers something the user asked to have checked; it ages out or become
     journal report section <n> <title> <body>
     journal report set <n> <key> <value>
     journal report show <n>
+    journal report tag <n> <name> <tags>
     journal report unlink <n> <ref>
     journal report unread [--actor …]
     journal report update <n> [--title …] [--abstract …] [--brief …] [--outcome …] [--set key=value…]
@@ -300,6 +306,7 @@ A pin is handed to every session on its environment; it is struck when it stops 
     journal pin section <n> <title> <body>
     journal pin set <n> <key> <value>
     journal pin show <n>
+    journal pin tag <n> <name> <tags>
     journal pin unlink <n> <ref>
     journal pin unread [--actor …]
     journal pin update <n> [--title …] [--abstract …] [--brief …] [--outcome …] [--set key=value…]
@@ -319,11 +326,12 @@ A rule is decided by the user, cited where it applies, and struck only by them. 
     journal rule folder <n>
     journal rule force_delete <n>
     journal rule index <n>
-    journal rule inject <n>
+    journal rule inject <n> [--into …]
     journal rule link <n> <ref>
     journal rule linked_to <ref>
     journal rule move <n> <env>
     journal rule paths <n>
+    journal rule pin <n>
     journal rule react <n> <face>
     journal rule read <n>
     journal rule restore <n>
@@ -331,7 +339,8 @@ A rule is decided by the user, cited where it applies, and struck only by them. 
     journal rule section <n> <title> <body>
     journal rule set <n> <key> <value>
     journal rule show <n>
-    journal rule uninject <n>
+    journal rule tag <n> <name> <tags>
+    journal rule uninject <n> [--into …]
     journal rule unlink <n> <ref>
     journal rule unread [--actor …]
     journal rule update <n> [--title …] [--abstract …] [--brief …] [--outcome …] [--set key=value…]
@@ -362,6 +371,7 @@ A reminder repeats at every start and every so often mid-work, because knowing i
     journal reminder section <n> <title> <body>
     journal reminder set <n> <key> <value>
     journal reminder show <n>
+    journal reminder tag <n> <name> <tags>
     journal reminder unlink <n> <ref>
     journal reminder unread [--actor …]
     journal reminder update <n> [--title …] [--abstract …] [--brief …] [--outcome …] [--set key=value…]
@@ -392,6 +402,7 @@ Accepting or adjusting files a to-do from it; a decline is a ruling the agent do
     journal suggestion section <n> <title> <body>
     journal suggestion set <n> <key> <value>
     journal suggestion show <n>
+    journal suggestion tag <n> <name> <tags>
     journal suggestion unlink <n> <ref>
     journal suggestion unread [--actor …]
     journal suggestion update <n> [--title …] [--abstract …] [--brief …] [--outcome …] [--set key=value…]
@@ -422,6 +433,7 @@ A question waits for the user; its answer reaches the agent as an event.  Scope:
     journal question section <n> <title> <body>
     journal question set <n> <key> <value>
     journal question show <n>
+    journal question tag <n> <name> <tags>
     journal question unlink <n> <ref>
     journal question unread [--actor …]
     journal question update <n> [--title …] [--abstract …] [--brief …] [--outcome …] [--set key=value…]
@@ -452,12 +464,13 @@ A comment is a resource of its own, linked to what it is about.  Scope: environm
     journal comment section <n> <title> <body>
     journal comment set <n> <key> <value>
     journal comment show <n>
+    journal comment tag <n> <name> <tags>
     journal comment unlink <n> <ref>
     journal comment unread [--actor …]
     journal comment update <n> [--title …] [--abstract …] [--brief …] [--outcome …] [--set key=value…]
 
 ### agent — A session of Claude or Codex, and what it is doing right now
-The hooks write an agent's status here; the engine reads it to know idle from working.  Scope: environment. Seen by: nobody.
+The hooks report activity; the engine distinguishes idle, busy, declared work and compaction.  Scope: environment. Seen by: nobody.
     journal agent all [--deleted]
     journal agent attach <n> <path> [--what …]
     journal agent by_session <session>
@@ -483,6 +496,7 @@ The hooks write an agent's status here; the engine reads it to know idle from wo
     journal agent section <n> <title> <body>
     journal agent set <n> <key> <value>
     journal agent show <n>
+    journal agent tag <n> <name> <tags>
     journal agent unlink <n> <ref>
     journal agent unread [--actor …]
     journal agent update <n> [--title …] [--abstract …] [--brief …] [--outcome …] [--set key=value…]
@@ -513,6 +527,7 @@ A notification is written for the user by a feature for every act of the agent, 
     journal notification section <n> <title> <body>
     journal notification set <n> <key> <value>
     journal notification show <n>
+    journal notification tag <n> <name> <tags>
     journal notification unlink <n> <ref>
     journal notification unread [--actor …]
     journal notification update <n> [--title …] [--abstract …] [--brief …] [--outcome …] [--set key=value…]
@@ -543,6 +558,7 @@ A notice stays until the user's X or the agent's close; a tone and a link may ri
     journal notice section <n> <title> <body>
     journal notice set <n> <key> <value>
     journal notice show <n>
+    journal notice tag <n> <name> <tags>
     journal notice unlink <n> <ref>
     journal notice unread [--actor …]
     journal notice update <n> [--title …] [--abstract …] [--brief …] [--outcome …] [--set key=value…]
@@ -573,6 +589,7 @@ A reaction is one face by one actor on one message; the same face again takes it
     journal reaction section <n> <title> <body>
     journal reaction set <n> <key> <value>
     journal reaction show <n>
+    journal reaction tag <n> <name> <tags>
     journal reaction unlink <n> <ref>
     journal reaction unread [--actor …]
     journal reaction update <n> [--title …] [--abstract …] [--brief …] [--outcome …] [--set key=value…]
@@ -604,6 +621,7 @@ A tool names its entry (how to run it), its usage and what it does; run executes
     journal tool section <n> <title> <body>
     journal tool set <n> <key> <value>
     journal tool show <n>
+    journal tool tag <n> <name> <tags>
     journal tool unlink <n> <ref>
     journal tool unread [--actor …]
     journal tool update <n> [--title …] [--abstract …] [--brief …] [--outcome …] [--set key=value…]
@@ -634,6 +652,7 @@ A style rule names its subject and its decision; the style feature writes the sk
     journal style section <n> <title> <body>
     journal style set <n> <key> <value>
     journal style show <n>
+    journal style tag <n> <name> <tags>
     journal style unlink <n> <ref>
     journal style unread [--actor …]
     journal style update <n> [--title …] [--abstract …] [--brief …] [--outcome …] [--set key=value…]
@@ -664,6 +683,7 @@ Never the token itself: the name of the variable that holds it.  Scope: project.
     journal connection section <n> <title> <body>
     journal connection set <n> <key> <value>
     journal connection show <n>
+    journal connection tag <n> <name> <tags>
     journal connection unlink <n> <ref>
     journal connection unread [--actor …]
     journal connection update <n> [--title …] [--abstract …] [--brief …] [--outcome …] [--set key=value…]
@@ -700,6 +720,7 @@ A session works one environment at a time; switch takes one that is free, claim 
     journal environment set <n> <key> <value>
     journal environment show <n>
     journal environment switch <n> [--project] [--move …] [--back]
+    journal environment tag <n> <name> <tags>
     journal environment unlink <n> <ref>
     journal environment unread [--actor …]
     journal environment update <n> [--title …] [--abstract …] [--brief …] [--outcome …] [--set key=value…]
@@ -734,6 +755,7 @@ journal browser shot|url|text|dom|console|click <selector>|type <selector> <word
     journal browser section <n> <title> <body>
     journal browser set <n> <key> <value>
     journal browser show <n>
+    journal browser tag <n> <name> <tags>
     journal browser unlink <n> <ref>
     journal browser unread [--actor …]
     journal browser update <n> [--title …] [--abstract …] [--brief …] [--outcome …] [--set key=value…]
@@ -764,6 +786,7 @@ A nudge is written by a feature and spoken to the agent as it is; the user never
     journal nudge section <n> <title> <body>
     journal nudge set <n> <key> <value>
     journal nudge show <n>
+    journal nudge tag <n> <name> <tags>
     journal nudge unlink <n> <ref>
     journal nudge unread [--actor …]
     journal nudge update <n> [--title …] [--abstract …] [--brief …] [--outcome …] [--set key=value…]

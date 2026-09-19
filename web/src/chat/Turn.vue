@@ -11,7 +11,7 @@ import "../text/all.js";
 
 const FACES = ["👍", "❤️", "🎉", "😄", "👀", "🙏", "👎", "💔", "😠"];
 const props = defineProps({turn: Object});
-const emit = defineEmits(["reply", "edit", "grew"]);
+const emit = defineEmits(["reply", "edit", "grew", "pin"]);
 const picking = ref(false);
 const mine = computed(() => props.turn.who === "user");
 const words = computed(() => quoted(props.turn.brief || props.turn.title));
@@ -132,6 +132,14 @@ async function drop() {
                         @click.stop="emit('reply', {text: words.text, ref: turn.ref})"
                     >
                         Reply
+                    </button>
+                    <button
+                        type="button"
+                        class="thread-tool"
+                        title="Pin this over the chat"
+                        @click.stop="emit('pin', {text: words.text, ref: turn.ref})"
+                    >
+                        Pin
                     </button>
                     <template v-if="mine && !turn.completed">
                         <button

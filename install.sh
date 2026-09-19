@@ -21,4 +21,4 @@ for f in "$TMP"/pkg/* "$TMP"/pkg/.gitignore; do
   esac
 done
 rm -rf "$TMP"
-python3 .journal/install.py upgrade .
+AGENT_JOURNAL_BOOTSTRAPPED=1 python3 .journal/install.py upgrade .

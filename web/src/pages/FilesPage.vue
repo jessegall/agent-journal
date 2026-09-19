@@ -3,6 +3,7 @@ import {computed, onMounted, ref} from "vue";
 import {api} from "../api.js";
 import Icon from "../kit/Icon.vue";
 import {peek, route} from "../route.js";
+import FileTags from "../resource/FileTags.vue";
 import {age, meta, openPictures} from "../store.js";
 
 const files = ref([]);
@@ -39,6 +40,7 @@ const pictures = computed(() => images.value.map((f) => ({url: f.url, name: f.na
                         </a>
                         <figcaption>
                             <span class="tile-name" :title="f.name">{{ f.name }}</span>
+                            <FileTags :file="f" />
                             <button type="button" class="tile-source" @click="peek(f.type, f.n)">{{ source(f) }}</button>
                         </figcaption>
                     </figure>
@@ -56,6 +58,7 @@ const pictures = computed(() => images.value.map((f) => ({url: f.url, name: f.na
                         <a class="thumb" :href="f.url" target="_blank" :title="`Open ${f.name}`"><Icon name="docs" /></a>
                         <div class="main">
                             <a class="name" :href="f.url" target="_blank">{{ f.name }}</a>
+                            <FileTags :file="f" />
                             <span class="meta">
                                 <button type="button" class="source" @click="peek(f.type, f.n)">{{ source(f) }}</button>
                                 <span>· {{ size(f.size) }}</span>

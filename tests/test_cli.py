@@ -5,7 +5,7 @@ import tempfile
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from controllers.types import Agents, Environments, Todos  # noqa: E402
+from controllers.types import Agents, Asks, Environments, Todos  # noqa: E402
 from engine.record import Record  # noqa: E402
 from engine.sessions import Sessions  # noqa: E402
 from resources.base import SYSTEM  # noqa: E402
@@ -26,9 +26,17 @@ def journal(*argv, env="t", session=""):
 code, out = journal("todo", "add", "a row", "--brief", "why")
 check("a to-do is added by the type's own word, as the agent", (code, out.startswith("---")), (0, True))
 check("the agent created it", Todos(Record(root, "t")).load(1).seen, ["agent"])
+check("transcript queries need no live session", (journal("search", "nothing")[0], journal("conversation")[0], journal("user")[0]), (0, 0, 0))
 check("all lists it", journal("todo", "all")[1], "   1  a row")
 check("done is refused with a wrong word", journal("todo", "complete", "1")[0], 2)
 check("done with a how", journal("todo", "done", "1", "--how", "shipped")[0], 0)
+check("a completed row is marked in list output", journal("todo", "all")[1], "   1  a row  [done]")
+check("starting a completed row is refused", journal("todo", "start", "1"), (1, "! todo 1 is already done"))
+check("the refused start creates no work", journal("work", "all")[1], "")
+picture = project / "dashboard.png"
+picture.write_bytes(b"png")
+journal("todo", "attach", "1", str(picture), "--what", "deployment graph")
+check("search without a session still finds file tags", journal("search", "deployment")[1], "  file  todo:1  dashboard.png — deployment graph")
 check("status counts", "to-do            0" in journal("status")[1], True)
 journal("plan", "create", "The plan", "--set", "goal=all of it")
 journal("plan", "phase", "1", "First", "--when", "it is first")
@@ -40,6 +48,16 @@ check("carry begins with the start block", journal("carry")[1].startswith("THE J
 check("open lists open work", journal("open")[1], "")
 check("nothing notes the decision on the session's agent row", journal("nothing", "fine as it is", session="s-1")[1], "noted: fine as it is")
 check("version is the package's VERSION file", journal("version", env="")[1] != "0", True)
+(root / "runtime").mkdir(parents=True, exist_ok=True)
+(root / "runtime" / "browser-t.json").write_text(json.dumps({"on": True}))
+code, out = journal("browser", "ask", "goto", "https://example.com", "--wait", "0")
+ask = Asks(Record(root, "t")).all()[-1]
+check("a required argument before variadic browser arguments is bound once", (code, ask.title, ask.op, ask.args), (0, "browser goto", "goto", ["https://example.com"]))
+
+code, out = journal("environment", "prepare", "disposable")
+disposable = Environments(Record(root, "t")).find("disposable")
+check("an unheld environment can be removed without a bound session", journal("environment", "remove", str(disposable.n), "--how", "finished")[0], 0)
+check("removal takes the environment out of the catalogue", [e.title for e in Environments(Record(root, "t")).all() if e.title == "disposable"], [])
 
 # THE SESSION: --session binds; without it the holder of the environment is used
 journal("environment", "prepare", "t")

@@ -43,6 +43,9 @@ for type_ in TYPES:                                                 # the data p
     check(f"{type_}: a comment can have a comment", (reply.refs[0], [x.title for x in Comments(record).comments(note.n)]),
           (f"comment:{note.n}", ["a comment on the comment"]))
     c.complete(1, "finished")
+    if type_ == "environment":
+        check("environment: remove is terminal and physical", (refused(lambda: c.show(1)), refused(lambda: c.complete(1))), (True, True))
+        continue
     check(f"{type_}: completed is the final phase, marked once", (c.show(1).completed > 0, refused(lambda: c.complete(1))), (True, True))
     others = [x.n for x in c.all() if x.n > 2]                    # a comment's record also holds the comments made above
     c.delete(1, "no longer needed")
@@ -53,7 +56,8 @@ for type_ in TYPES:                                                 # the data p
 
 for type_ in TYPES:                                                 # every type emits the same six actions, no more
     mine = [e for e in records[type_].events() if e.type == type_]
-    check(f"{type_}: every action left an event, and only the six actions", sorted({e.action for e in mine}), sorted(ACTIONS))
+    expected = set(ACTIONS) - ({"completed"} if type_ == "environment" else set())
+    check(f"{type_}: every action left an event, and only its terminal actions", sorted({e.action for e in mine}), sorted(expected))
     check(f"{type_}: an event says who did it and what it is about", (mine[0].actor, mine[0].ref), ("user", f"{type_}:1"))
 
 # SCOPE: a project resource is one for every environment; an environment's is its own

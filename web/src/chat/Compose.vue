@@ -11,6 +11,7 @@ const props = defineProps({
     preset: {type: String, default: ""},
     up: Function,
     down: Function,
+    tools: {type: Array, default: () => []},
 });
 const emit = defineEmits(["unquote"]);
 const draft = reactive({text: "", files: [], sending: false, error: ""});
@@ -70,6 +71,17 @@ async function go() {
         area.value && area.value.focus();
     }
 }
+
+async function use(tool) {
+    if (tool.text && !draft.text.trim()) return;
+    draft.error = "";
+    try {
+        await tool.go(draft.text.trim());
+        if (tool.consume) draft.text = "";
+    } catch (e) {
+        draft.error = e.message;
+    }
+}
 </script>
 
 <template>
@@ -106,6 +118,18 @@ async function go() {
                 @keydown.ctrl.enter.prevent="go"
             />
             <div class="compose-foot">
+                <template v-for="tool in tools" :key="tool.icon">
+                    <button
+                        type="button"
+                        class="compose-attach"
+                        :title="tool.title"
+                        :aria-label="tool.title"
+                        :disabled="tool.text && !draft.text.trim()"
+                        @click="use(tool)"
+                    >
+                        <Icon :name="tool.icon" />
+                    </button>
+                </template>
                 <label class="compose-attach" title="Attach files" aria-label="Attach files">
                     <Icon name="paperclip" />
                     <input type="file" multiple hidden @change="picked" />
@@ -246,6 +270,11 @@ async function go() {
 .compose-attach:hover {
     background: var(--hover);
     color: var(--text);
+}
+
+.compose-attach:disabled {
+    opacity: 0.35;
+    cursor: default;
 }
 
 .compose-attach .ico {

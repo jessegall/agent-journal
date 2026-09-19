@@ -33,9 +33,15 @@ watch(
             <p class="empty">Nothing matches “{{ route.q }}”.</p>
         </template>
         <div class="cards">
-            <template v-for="r in hits" :key="r.ref">
+            <div v-for="r in hits" :key="r.ref" class="hit">
                 <ResourceCard :resource="r" @click="peek(r.type, r.n)" />
-            </template>
+                <div v-if="r.matches.length" class="matches">
+                    <a v-for="f in r.matches" :key="f.name" :href="f.url" target="_blank">
+                        <span>{{ f.name }}</span>
+                        <small v-if="f.tags">{{ f.tags }}</small>
+                    </a>
+                </div>
+            </div>
         </div>
     </section>
 </template>
@@ -75,5 +81,34 @@ watch(
     grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
     gap: 12px;
     margin-top: 18px;
+}
+
+.hit {
+    min-width: 0;
+}
+
+.matches {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    padding: 7px 10px;
+}
+
+.matches a {
+    display: flex;
+    gap: 7px;
+    min-width: 0;
+    color: var(--accent-text);
+}
+
+.matches span,
+.matches small {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.matches small {
+    color: var(--text-3);
 }
 </style>

@@ -10,15 +10,17 @@ from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from queue import Empty, Queue
 from typing import Callable, Iterator
-from urllib.parse import unquote
+from urllib.parse import quote, unquote
 from urllib.request import urlopen
 
 import features
 from features.skills.catalogue import SKILL, always, catalogue, load_now, skills
+from features.extension.package import archive as extension_archive, info as extension_info
 from controllers.types import Agents, Asks, CONTROLLERS, Environments
 from engine import bus
 from engine.manifest import manifest
 from engine.record import Record
+from engine.transcript import page
 from providers import PROVIDERS
 from resources.base import USER, Refused
 from resources.types import Ask
@@ -107,6 +109,14 @@ def shaped(r) -> dict:
     return {**asdict(r), "type": r.type, "ref": r.ref}
 
 
+def represented(got):
+    if got is None:
+        return {"ok": True}
+    if isinstance(got, list):
+        return [shaped(item) if hasattr(item, "ref") else item for item in got]
+    return shaped(got) if hasattr(got, "ref") else got
+
+
 def settings(record: Record) -> dict:
     return {Record.features: {name: f.enabled(record) for name, f in features.FEATURES.items()},
             Record.triggers: record.triggers, Record.keep: record.keep}
@@ -131,6 +141,17 @@ def get_identity(req: Request) -> Reply:
     m = manifest(req.root)
     names = [e.title for e in Environments(Record(req.root, m["environment"]), actor=USER).all()]
     return Reply(200, {"project": m["project"], "root": str(req.root), "version": m["version"], "environments": names})
+
+
+@route("GET", "/api/extension")
+def get_extension(req: Request) -> Reply:
+    return Reply(200, extension_info())
+
+
+@route("GET", "/extension.zip")
+def get_extension_zip(req: Request) -> Reply:
+    body = extension_archive()
+    return Reply(200 if body else 404, body if body else {"error": "the extension is not in this package"}, "application/zip" if body else JSON)
 
 
 @route("GET", "/api/{env}/events")
@@ -268,8 +289,7 @@ def get_transcript(req: Request) -> Reply:
     row = Agents(req.record(), actor=USER).load(int(req.params["n"]))
     provider = PROVIDERS.get(row.provider)
     turns = provider().transcript(Path(row.transcript)) if provider and row.transcript else []
-    since = int(req.query.get("since") or 0)
-    return Reply(200, [{"line": t.line, "who": t.who, "text": t.text} for t in turns if t.line > since][-int(req.query.get("last") or 300):])
+    return Reply(200, page(turns, int(req.query.get("since") or 0), int(req.query.get("before") or 0), int(req.query.get("last") or 300)))
 
 
 @route("GET", "/api/{env}/commit/{sha}")
@@ -292,8 +312,17 @@ def get_commit(req: Request) -> Reply:
 @route("GET", "/api/{env}/search")
 def get_search(req: Request) -> Reply:
     term = req.query.get("q", "")
+    if not term:
+        return Reply(200, [])
     record = req.record()
-    return Reply(200, [shaped(r) for type_ in CONTROLLERS for r in CONTROLLERS[type_](record, actor=USER).search(term)] if term else [])
+    want = term.lower()
+    out = []
+    for type_ in CONTROLLERS:
+        for r in CONTROLLERS[type_](record, actor=USER).search(term):
+            matches = [{"name": name, "tags": tags, "url": f"/api/{record.env}/{type_}/{r.n}/files/{quote(name)}"}
+                       for name, tags in r.files.items() if want in name.lower() or want in str(tags).lower()]
+            out.append({**shaped(r), "matches": matches})
+    return Reply(200, out)
 
 
 @route("GET", "/api/{env}/stream")
@@ -360,12 +389,18 @@ def post_upload(req: Request) -> Reply:
     return Reply(200, {"files": names})
 
 
+@route("POST", "/api/{env}/{type}/read-all")
+def post_read_all(req: Request) -> Reply:
+    controller = req.controller()
+    return Reply(200, represented([controller.read(int(n)) for n in req.body.get("numbers", [])]))
+
+
 @route("POST", "/api/{env}/{type}/{action}")
 def post_action_bare(req: Request) -> Reply:
-    return Reply(201, shaped(req.controller().method(req.params["action"])(**req.body)))
+    return Reply(201, represented(req.controller().method(req.params["action"])(**req.body)))
 
 
 @route("POST", "/api/{env}/{type}/{n}/{action}")
 def post_action(req: Request) -> Reply:
     got = req.controller().method(req.params["action"])(int(req.params["n"]), **req.body)
-    return Reply(200, shaped(got) if got is not None else {"ok": True})
+    return Reply(200, represented(got))

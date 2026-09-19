@@ -13,6 +13,9 @@ from pathlib import Path
 
 from engine import band
 from engine.drivers import DRIVERS
+from engine.record import Record
+from engine.sessions import ACTIVE_ENV
+from features.auto.policy import launch_args
 
 RELOAD_EVERY = 5.0
 
@@ -22,11 +25,15 @@ def watched(root: Path) -> tuple:
     return tuple(f.stat().st_mtime_ns for f in files if f.is_file())
 
 
+def agent_environment(base: dict | None = None) -> dict:
+    return {**(base if base is not None else os.environ), ACTIVE_ENV: "1"}
+
+
 def spawn_agent(command: list[str], cwd: Path) -> tuple[int, int]:
     pid, fd = pty.fork()
     if pid == 0:
         os.chdir(cwd)
-        os.execvp(command[0], command)
+        os.execvpe(command[0], command, agent_environment())
     return pid, fd
 
 
@@ -58,7 +65,7 @@ def spawn_driver(root: Path, cwd: Path, env: str, agent: str, fd: int, session: 
 
 def run(root: Path, cwd: Path, env: str, agent: str, args: list[str]) -> int:
     driver = DRIVERS[agent]
-    command = driver.command(driver, args)
+    command = driver.command(driver, launch_args(Record(root, env), agent, args))
     pid, fd = spawn_agent(command, cwd)
     rows, cols = resize(fd)
     session = f"{agent}-{pid}"
@@ -89,7 +96,6 @@ def run(root: Path, cwd: Path, env: str, agent: str, args: list[str]) -> int:
     os.write(stdout, band.region(rows) + top.draw(cols, force=True))
     last_check = 0.0
     last_band = 0.0
-    last_output = 0.0
     try:
         while True:
             ready, _, _ = select.select([fd, stdin], [], [], 0.5)
@@ -101,14 +107,13 @@ def run(root: Path, cwd: Path, env: str, agent: str, args: list[str]) -> int:
                 if not data:
                     break
                 os.write(stdout, rows_below.feed(data))
-                last_output = time.time()
                 if any(mark in data for mark in REDRAWS):
                     os.write(stdout, band.region(shape[0]) + top.draw(shape[1], force=True))
                 elif data.rstrip().endswith(FRAME_END):
                     os.write(stdout, top.draw(shape[1]))
                 out.write(data[-4096:])
                 out.flush()
-            if time.time() - last_band >= 1.0 and time.time() - last_output >= 1.0:
+            if time.time() - last_band >= 1.0:
                 last_band = time.time()
                 os.write(stdout, top.draw(shape[1]))
             if stdin in ready:

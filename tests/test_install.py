@@ -9,12 +9,17 @@ HERE = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(HERE))
 from controllers.types import Agents, Todos  # noqa: E402
 from engine.record import Record  # noqa: E402
-from install import install  # noqa: E402
+from engine.sessions import ACTIVE_ENV, Sessions  # noqa: E402
+from install import install, refresh  # noqa: E402
 from providers import PROVIDERS  # noqa: E402
 from providers.base import EVENTS  # noqa: E402
 from resources.base import SYSTEM  # noqa: E402
+from skills import render  # noqa: E402
 from tests.kit import check, done  # noqa: E402
 
+test_home = Path(tempfile.mkdtemp())
+(test_home / ".local" / "bin").mkdir(parents=True)
+os.environ["HOME"] = str(test_home)
 
 
 def project_with(*folders):
@@ -36,9 +41,12 @@ for present in ([], [".claude"], [".codex"], [".claude", ".codex"]):
         check("nothing present: says so", said, ["no agent found here: neither Claude nor Codex"])
     for name in wired:
         skills = project / {"claude": ".claude/skills", "codex": ".codex/skills"}[name]
-        check(f"present {present}: {name} gets the core skill and one per feature", ((skills / "journal" / "SKILL.md").is_file(), sorted(d.name for d in skills.iterdir() if d.name.startswith("journal-"))[:2]), (True, ["journal-auto", "journal-cleanup"]))
+        expected = sorted(Path(path).parent.name for path in render() if path.startswith("journal-"))
+        check(f"present {present}: {name} gets the core, subject and feature skills", ((skills / "journal" / "SKILL.md").is_file(), sorted(d.name for d in skills.iterdir() if d.name.startswith("journal-"))), (True, expected))
     if present:
+        check(f"present {present}: the law is managed in both agent briefing files", all("BEGIN: agent-journal law" in (project / name).read_text() for name in ("AGENTS.md", "CLAUDE.md")), True)
         check(f"present {present}: the journal command is written and runs", (project / ".journal" / "journal").is_file() and "version" in (project / ".journal" / "journal").read_text() or True, True)
+check("the shared command is confined to the test home", (test_home / ".local" / "bin" / "journal").is_file(), True)
 
 # MERGE, NEVER OVERWRITE, AND IDEMPOTENT
 project = project_with(".claude", ".codex")
@@ -53,26 +61,61 @@ check("ours is added once, for every event, beside theirs", (sorted(got["hooks"]
 for name in PROVIDERS:
     cfg = json.loads(PROVIDERS[name]().config(project).read_text())
     command = next(h["command"] for b in cfg["hooks"]["Stop"] for h in b["hooks"] if "hook.py" in h["command"])
-    payload = json.dumps({"hook_event_name": "Stop", "session_id": "s-9", "transcript_path": "/t/s-9.jsonl"})
+    session = f"{name}-9"
+    payload = json.dumps({"hook_event_name": "Stop", "session_id": session, "transcript_path": f"/t/{session}.jsonl"})
     p = subprocess.run(command.split(), input=payload, capture_output=True, text=True, timeout=60, cwd=project,
                        env={**os.environ, "PATH": os.defpath})
-    row = Agents(Record(project / ".journal", "main"), actor=SYSTEM).by_session("s-9")
+    check(f"{name}: an inactive installed hook returns before binding or writing", (p.returncode, p.stdout, Sessions(project / ".journal").environment(session)), (0, "", ""))
+    p = subprocess.run(command.split(), input=payload, capture_output=True, text=True, timeout=60, cwd=project,
+                       env={**os.environ, "PATH": os.defpath, ACTIVE_ENV: "1"})
+    row = Agents(Record(project / ".journal", "main"), actor=SYSTEM).by_session(session)
     check(f"{name}: the installed hook command runs and writes the status", (p.returncode, row.data.get("status"), row.data.get("provider")), (0, "idle", name))
-    from engine.sessions import Sessions  # noqa: E402
-    check(f"{name}: the session is bound to the default environment on its first report", Sessions(project / ".journal").environment("s-9"), "main")
+    check(f"{name}: the session is bound to the default environment on its first report", Sessions(project / ".journal").environment(session), "main")
+    record = Record(project / ".journal", "main")
+    record.features = {"auto": True}
+    payload = json.dumps({"hook_event_name": "PreToolUse", "session_id": session, "tool_name": {"claude": "AskUserQuestion", "codex": "request_user_input"}[name]})
+    p = subprocess.run(command.split(), input=payload, capture_output=True, text=True, timeout=60, cwd=project,
+                       env={**os.environ, "PATH": os.defpath, ACTIVE_ENV: "1"})
+    check(f"{name}: the installed hook refuses a blocking question under auto", json.loads(p.stdout).get("decision"), "block")
+    payload = json.dumps({"hook_event_name": "PreToolUse", "session_id": session, "tool_name": {"claude": "Agent", "codex": "collaboration.spawn_agent"}[name],
+                          "tool_input": {"subagent_type": "general-purpose", "task_name": "general", "model": "small"}})
+    p = subprocess.run(command.split(), input=payload, capture_output=True, text=True, timeout=60, cwd=project,
+                       env={**os.environ, "PATH": os.defpath, ACTIVE_ENV: "1"})
+    check(f"{name}: the installed hook enforces the dispatch law", json.loads(p.stdout).get("decision"), "block")
 
 # UPGRADE installs and migrates an old record
 project = project_with(".claude")
 old = project / ".journal" / "environments" / "main"
 (old / "todo").mkdir(parents=True)
 (old / "todo" / "003-an-old-row.md").write_text("---\ntitle: an old row\nat: 2026-09-01T10:00:00+00:00\n---\n\nthe brief\n")
+(project / ".journal" / "providers").mkdir()
+(project / ".journal" / "providers" / "retired.py").write_text("gone\n")
+(project / ".journal" / "runtime").mkdir()
+(project / ".journal" / "runtime" / "keep").write_text("record state\n")
 from install import upgrade  # noqa: E402
 said = upgrade(project)
 check("upgrade wires, writes skills and runs the migrations, and says so", (any("skills" in l for l in said), said[-1]), (True, "migrations run: m0001_the_old_record"))
 check("the old row is a v2 to-do with its number", Todos(Record(project / ".journal", "main")).load(3).title, "an old row")
+check("upgrade refreshes package code and removes retired package files", ("def context" in (project / ".journal" / "providers" / "codex.py").read_text(), (project / ".journal" / "providers" / "retired.py").exists()), (True, False))
+check("upgrade preserves the project record", (project / ".journal" / "runtime" / "keep").read_text(), "record state\n")
+command = next(h["command"] for b in json.loads((project / ".claude" / "settings.json").read_text())["hooks"]["Stop"] for h in b["hooks"] if "hook.py" in h["command"])
+check("the hook and shim run the installed package, not the source checkout", (str(project / ".journal" / "hook.py") in command, str(project / ".journal" / "journal.py") in (project / ".journal" / "journal").read_text()), (True, True))
 check("a second upgrade migrates nothing", upgrade(project)[-1], "record already in shape")
 alias = project / ".journal" / "journal"
 p = subprocess.run([str(alias), "version"], capture_output=True, text=True, timeout=20)
 check("the written journal command runs the CLI on this record", p.stdout.strip() != "", True)
+
+source = Path(tempfile.mkdtemp())
+refresh(HERE, source)
+(source / "VERSION").write_text("9.9.9\n")
+git_env = {**os.environ, "PATH": os.defpath}
+subprocess.run(["git", "init", "-q", str(source)], check=True, env=git_env)
+subprocess.run(["git", "-C", str(source), "add", "."], check=True, env=git_env)
+subprocess.run(["git", "-C", str(source), "-c", "user.name=Test", "-c", "user.email=test@example.com", "commit", "-qm", "package"], check=True, env=git_env)
+consumer = project_with(".claude")
+install(consumer)
+upgraded = subprocess.run([sys.executable, str(consumer / ".journal" / "install.py"), "upgrade", str(consumer)], capture_output=True, text=True, timeout=60,
+                          env={**git_env, "AGENT_JOURNAL_REPO": str(source)})
+check("an installed journal clones, refreshes and configures the new package", (upgraded.returncode, (consumer / ".journal" / "VERSION").read_text(), "package refreshed" in upgraded.stdout, (consumer / ".claude" / "settings.json").is_file()), (0, "9.9.9\n", True, True))
 
 done()

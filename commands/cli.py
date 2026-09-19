@@ -14,7 +14,7 @@ from engine import queries
 from engine.drivers import DRIVERS
 from engine.record import Record
 from engine.sessions import Sessions, allowed
-from engine.transcript import conversation, search, user
+from engine.transcript import conversation, search as search_transcript, user
 from providers import PROVIDERS
 from resources.base import AGENT, Refused, SYSTEM
 from resources.types import AgentRow
@@ -54,6 +54,8 @@ def add_query(cmds, name: str, help_: str, fn, *flags) -> None:
 
 
 def transcript(record, session: str):
+    if not session:
+        return []
     row = Agents(record, actor=SYSTEM).by_session(session)
     provider = PROVIDERS.get(row.provider)
     return provider().transcript(row.transcript) if provider else []
@@ -61,6 +63,15 @@ def transcript(record, session: str):
 
 def say(turns) -> str:
     return "\n".join(f"{t.line:>6}  {t.who:<7} {t.text}" for t in turns)
+
+
+def search_text(record, session: str, term: str, page: int) -> str:
+    want = term.lower()
+    transcript_hits = say(search_transcript(transcript(record, session), term, page))
+    file_hits = [f"  file  {r.ref}  {name}" + (f" — {tags}" if tags else "")
+                 for type_, controller in CONTROLLERS.items() for r in controller(record).all()
+                 for name, tags in r.files.items() if want in name.lower() or want in str(tags).lower()]
+    return "\n".join(part for part in (transcript_hits, "\n".join(file_hits)) if part)
 
 
 def parser() -> argparse.ArgumentParser:
@@ -80,7 +91,7 @@ def parser() -> argparse.ArgumentParser:
     add_query(cmds, "carry", "everything standing, in full", lambda ctx: queries.carry(ctx["record"]))
     add_query(cmds, "start", "what a session is handed at its start", lambda ctx: queries.start_block(ctx["record"]))
     add_query(cmds, "open", "open work", lambda ctx: queries.lines(queries.open_work(ctx["record"])))
-    add_query(cmds, "search", "this session's transcript, newest hits first", lambda ctx: say(search(transcript(ctx["record"], ctx["session"]), ctx["term"], ctx["page"])),
+    add_query(cmds, "search", "this session's transcript and attached files", lambda ctx: search_text(ctx["record"], ctx["session"], ctx["term"], ctx["page"]),
               ("term", {}), ("--page", {"type": int, "default": 0}))
     add_query(cmds, "conversation", "the stretch the last summary replaced", lambda ctx: say(conversation(transcript(ctx["record"], ctx["session"]), ctx["back"])),
               ("--back", {"type": int, "default": 1}))
@@ -155,7 +166,10 @@ def upgrade_here(ctx) -> str:
 
 def supervise(ctx, agent: str) -> str:
     from engine.supervisor import run as run_supervisor
+    from engine.viewer import ensure
     record = ctx["record"]
+    url = ensure(record.root, Path.cwd())
+    print(f"journal: viewer {url}" if url else "journal: the viewer did not start; see .journal/runtime/viewer.log")
     return str(run_supervisor(record.root, Path.cwd(), record.env, agent, ctx["args"] or []))
 
 
@@ -195,6 +209,16 @@ def typed(value: str):
         return value
 
 
+def invoke(fn, args: dict, extra: dict):
+    params = list(inspect.signature(fn).parameters.values())
+    at = next((i for i, p in enumerate(params) if p.kind is inspect.Parameter.VAR_POSITIONAL), None)
+    positional = []
+    if at is not None:
+        positional = [args.pop(p.name) for p in params[:at] if p.kind in (inspect.Parameter.POSITIONAL_ONLY, inspect.Parameter.POSITIONAL_OR_KEYWORD)]
+        positional.extend(args.pop(params[at].name))
+    return fn(*positional, **args, **extra)
+
+
 def run(argv: list[str]) -> int:
     parsed, passed = parser().parse_known_args(argv)
     args = vars(parsed)
@@ -218,14 +242,14 @@ def run(argv: list[str]) -> int:
                 raise Refused(why)
         controller = CONTROLLERS[command](ctx["record"], actor=ctx["actor"], session=ctx["session"], agent=ctx["agent"])
         fn = getattr(controller, method)
-        rest = [args.pop(p.name) for p in inspect.signature(fn).parameters.values() if p.kind is inspect.Parameter.VAR_POSITIONAL]
-        got = fn(*(rest[0] if rest else []), **args, **extra)
+        got = invoke(fn, args, extra)
     except Refused as e:
         print(f"! {e}", file=sys.stderr)
         return 1
     if isinstance(got, list):
         for r in got:
-            print(f"{r.n:>4}  {r.title}" if hasattr(r, "n") else r)
+            done = "  [done]" if command == "todo" and getattr(r, "completed", 0) else ""
+            print(f"{r.n:>4}  {r.title}{done}" if hasattr(r, "n") else r)
     elif isinstance(got, dict):
         print(got.get("out", "") or got)
     elif got is not None:

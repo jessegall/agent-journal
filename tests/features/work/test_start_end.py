@@ -6,7 +6,7 @@ import features  # noqa: E402
 from controllers.types import Todos, Works  # noqa: E402
 from resources.base import AGENT, SYSTEM, USER  # noqa: E402
 from tests.features.kit import idle, nudges  # noqa: E402
-from tests.kit import check, done, fresh  # noqa: E402
+from tests.kit import check, done, fresh, refused  # noqa: E402
 
 features.unload()
 features.load()
@@ -29,9 +29,8 @@ work2 = works.create("again", todo=todo.n)
 works.complete(work2.n, "done", todo=True)
 check("work ended --todo: the row is completed by SYSTEM, citing the work", (bool(todos.load(todo.n).completed), record.events()[-1].actor, record.events()[-1].data["how"]),
       (True, SYSTEM, f"work {work2.n} ended"))
-work3 = works.create("once more", todo=todo.n)
-works.complete(work3.n, "done", todo=True)
-check("a row already complete is left alone", [e.action for e in record.events() if e.type == "todo"].count("completed"), 1)
+check("work cannot start for a completed row", refused(lambda: works.create("once more", todo=todo.n)), f"todo {todo.n} is already done")
+check("the refusal creates no work or to-do event", (len(works.all()), [e.action for e in record.events() if e.type == "todo"].count("completed")), (2, 1))
 plain = works.create("work with no to-do")
 check("work with no to-do: the feature does nothing", [e for e in record.events() if e.n == plain.n and e.type == "work"][-1].action, "created")
 

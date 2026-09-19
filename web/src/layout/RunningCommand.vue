@@ -1,6 +1,6 @@
 <script setup>
 import {computed, onUnmounted, ref, watch} from "vue";
-import {gists} from "../gist.js";
+import {gists, gistTokens} from "../gist.js";
 import {spoken} from "../spoken.js";
 import {agent, types} from "../store.js";
 
@@ -12,7 +12,13 @@ const timer = setInterval(() => (ticks.value += 1), 1000);
 const seen = {at: 0};
 const pending = [];
 const rolling = ref(null);
+const counts = ref({added: 0, removed: 0});
+const showDelta = ref(false);
+const reserveDelta = ref(false);
+const frames = {added: 0, removed: 0};
 let rolls = null;
+let reveal = null;
+let release = null;
 
 function roll() {
     rolling.value = pending.shift() || null;
@@ -27,7 +33,7 @@ watch(
         for (const c of ring) {
             if (c.at <= seen.at) continue;
             seen.at = c.at;
-            if (!first) gists(c.what, sentence).forEach((text) => pending.push({key: text, text, delta: []}));
+            if (!first) gists(c.what, sentence).forEach((text) => pending.push({key: text, text, tokens: gistTokens(text), delta: []}));
         }
         if (first && !seen.at) seen.at = 1;
         if (pending.length && !rolls) roll();
@@ -37,6 +43,9 @@ watch(
 onUnmounted(() => {
     clearInterval(timer);
     if (rolls) clearTimeout(rolls);
+    if (reveal) clearTimeout(reveal);
+    if (release) clearTimeout(release);
+    Object.values(frames).forEach(cancelAnimationFrame);
 });
 
 function clock(secs) {
@@ -51,33 +60,94 @@ const line = computed(() => {
     const parts = gists(run.what, sentence);
     if (!parts.length) return null;
     const secs = Math.floor((run.done || Date.now() / 1000) - run.at);
-    const changed = run.changed || {};
-    const delta = [
-        {kind: "edited", text: changed.edited ? `${changed.edited} edited` : ""},
-        {kind: "created", text: changed.created ? `${changed.created} created` : ""},
-        {kind: "deleted", text: changed.deleted ? `${changed.deleted} deleted` : ""},
-        {kind: "added", text: changed.added ? `+${changed.added}` : ""},
-        {kind: "removed", text: changed.removed ? `−${changed.removed}` : ""},
-    ].filter((d) => d.text);
-    return {key: parts[parts.length - 1], text: parts[parts.length - 1], clock: clock(secs), done: !!run.done, delta};
+    const text = parts[parts.length - 1];
+    return {key: text, text, tokens: gistTokens(text), clock: clock(secs), done: !!run.done};
 });
+
+const target = computed(() => {
+    const run = data.value && data.value.running;
+    return run ? run.changed || {} : null;
+});
+
+function count(kind, to) {
+    cancelAnimationFrame(frames[kind]);
+    const from = counts.value[kind];
+    if (to <= from) {
+        counts.value = {...counts.value, [kind]: to};
+        return;
+    }
+    const started = performance.now();
+    const step = (now) => {
+        const at = Math.min(1, (now - started) / 360);
+        const eased = 1 - (1 - at) ** 3;
+        counts.value = {...counts.value, [kind]: Math.round(from + (to - from) * eased)};
+        if (at < 1) frames[kind] = requestAnimationFrame(step);
+    };
+    frames[kind] = requestAnimationFrame(step);
+}
+
+watch(
+    target,
+    (changed) => {
+        if (!changed) return;
+        count("added", changed.added || 0);
+        count("removed", changed.removed || 0);
+    },
+    {immediate: true}
+);
+
+const delta = computed(() => {
+    return [
+        {kind: "added", text: counts.value.added ? `+${counts.value.added}` : ""},
+        {kind: "removed", text: counts.value.removed ? `−${counts.value.removed}` : ""},
+    ].filter((d) => d.text);
+});
+
+watch(
+    [() => line.value && line.value.key, () => delta.value.length, () => !!data.value],
+    ([, size, active]) => {
+        if (reveal) clearTimeout(reveal);
+        if (release) clearTimeout(release);
+        reveal = null;
+        release = null;
+        if (!active || !size) {
+            showDelta.value = false;
+            release = setTimeout(() => {
+                reserveDelta.value = false;
+                release = null;
+            }, 90);
+            return;
+        }
+        if (showDelta.value) return;
+        reveal = setTimeout(() => {
+            if (data.value && delta.value.length) {
+                reserveDelta.value = true;
+                showDelta.value = true;
+            }
+            reveal = null;
+        }, 240);
+    },
+    {immediate: true}
+);
 </script>
 
 <template>
-    <span class="statusbar-running">
+    <span :class="['statusbar-running', {ending: !data, counting: reserveDelta}]">
         <Transition name="roll">
             <span v-if="line" :key="line.key" :class="['statusbar-run-line', {done: line.done}]">
-                <span class="statusbar-run-text">{{ line.text }}</span>
-                <Transition name="delta">
-                    <TransitionGroup v-if="line.delta.length" tag="span" name="count" class="statusbar-run-delta">
-                        <span v-for="d in line.delta" :key="d.kind" :class="['statusbar-run-count', d.kind]">{{ d.text }}</span>
-                    </TransitionGroup>
-                </Transition>
+                <span class="statusbar-run-text" :title="line.text">
+                    <span v-for="(token, i) in line.tokens" :key="`${i}-${token.value}`" :class="['statusbar-run-token', token.kind]">{{ token.value }}</span>
+                </span>
                 <span class="statusbar-running-slot">
                     <Transition name="clock">
                         <span v-if="line.clock" class="statusbar-running-for">{{ line.clock }}</span>
                     </Transition>
                 </span>
+            </span>
+        </Transition>
+        <Transition name="delta">
+            <span v-if="showDelta && delta.length" class="statusbar-run-delta">
+                <span v-for="d in delta" :key="d.kind" :class="['statusbar-run-count', d.kind]">{{ d.text }}</span>
             </span>
         </Transition>
     </span>
@@ -91,19 +161,24 @@ const line = computed(() => {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
     align-items: center;
+    max-width: 44ch;
     margin-left: auto;
-    padding-left: 14px;
-    overflow: hidden;
     font-size: 10.5px;
     color: var(--text-3);
+    pointer-events: none;
 }
 
-.statusbar-running > * {
+.statusbar-running.counting {
+    padding-right: calc(7ch + 7px);
+}
+
+.statusbar-running > .statusbar-run-line {
     grid-area: 1 / 1;
     justify-self: end;
 }
 
 .statusbar-run-line {
+    position: relative;
     display: inline-flex;
     align-items: center;
     max-width: 44ch;
@@ -115,49 +190,74 @@ const line = computed(() => {
 .statusbar-run-text {
     flex: 0 1 auto;
     min-width: 0;
+    display: inline-flex;
+    align-items: baseline;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+.statusbar-run-token {
+    flex: none;
+}
+
+.statusbar-run-token + .statusbar-run-token {
+    margin-left: 0.55em;
+}
+
+.statusbar-run-token.command {
+    color: var(--text-2);
+    font-weight: 500;
+}
+
+.statusbar-run-token.argument {
+    flex: 0 1 auto;
+    min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
-    white-space: nowrap;
+    color: color-mix(in srgb, var(--text-3) 76%, transparent);
+    font-size: 0.88em;
 }
 
 .statusbar-run-delta {
-    flex: none;
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
     display: inline-flex;
-    gap: 7px;
-    max-width: 30ch;
-    margin-left: 10px;
-    overflow: hidden;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 5px;
+    width: 7ch;
     white-space: nowrap;
-    font-size: 9.5px;
+    font-size: 8px;
     letter-spacing: 0.02em;
+    line-height: normal;
 }
 
-.statusbar-run-count.edited {
-    color: var(--progress);
-}
-
-.statusbar-run-count.added,
-.statusbar-run-count.created {
+.statusbar-run-count.added {
     color: var(--created);
 }
 
-.statusbar-run-count.deleted,
 .statusbar-run-count.removed {
     color: var(--danger);
 }
 
-.delta-enter-active,
+.statusbar-run-count {
+    min-width: 3ch;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+}
+
+.delta-enter-active {
+    transition: opacity 0.14s ease;
+}
+
 .delta-leave-active {
-    transition:
-        max-width 0.3s cubic-bezier(0.2, 0.8, 0.2, 1),
-        margin-left 0.3s cubic-bezier(0.2, 0.8, 0.2, 1),
-        opacity 0.2s ease;
+    transition: opacity 0.09s ease;
 }
 
 .delta-enter-from,
 .delta-leave-to {
-    max-width: 0;
-    margin-left: 0;
     opacity: 0;
 }
 
@@ -191,6 +291,12 @@ const line = computed(() => {
         transform 200ms cubic-bezier(0.22, 0.7, 0.3, 1);
 }
 
+.statusbar-running.ending .roll-leave-active {
+    transition:
+        opacity 200ms ease 90ms,
+        transform 200ms cubic-bezier(0.22, 0.7, 0.3, 1) 90ms;
+}
+
 .roll-enter-from {
     opacity: 0;
     transform: translateY(10px);
@@ -222,27 +328,4 @@ const line = computed(() => {
     opacity: 0;
 }
 
-.statusbar-run-count {
-    display: inline-block;
-    max-width: 12ch;
-    overflow: hidden;
-    white-space: nowrap;
-}
-
-.count-enter-active,
-.count-leave-active {
-    transition:
-        max-width 0.24s cubic-bezier(0.2, 0.8, 0.2, 1),
-        opacity 0.18s ease;
-}
-
-.count-enter-from,
-.count-leave-to {
-    max-width: 0;
-    opacity: 0;
-}
-
-.count-leave-active {
-    position: absolute;
-}
 </style>

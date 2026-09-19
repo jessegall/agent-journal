@@ -21,6 +21,7 @@ export const all = (env, type) => api("GET", `/${env}/${type}`);
 export const show = (env, type, n) => api("GET", `/${env}/${type}/${n}`);
 export const create = (env, type, body) => api("POST", `/${env}/${type}`, body);
 export const act = (env, type, n, action, body = {}) => api("POST", `/${env}/${type}/${n}/${action}`, body);
+export const readAll = (env, type, numbers) => api("POST", `/${env}/${type}/read-all`, {numbers});
 export const events = (env, since = 0) => api("GET", `/${env}/events?since=${since}`);
 export const settings = (env) => api("GET", `/${env}/settings`);
 export const saveSettings = (env, body) => api("POST", `/${env}/settings`, body);
