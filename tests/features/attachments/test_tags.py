@@ -36,7 +36,7 @@ check("the feature's instructed CLI command tags the attachment", tagged.returnc
 check("tags live on the file entry", messages.load(message.n).files[image.name], "deployment graph with three regions")
 check("resource search finds a file by its tags", [r.n for r in messages.search("three regions")], [message.n])
 check("resource search finds a file by its name", [r.n for r in messages.search("dashboard.png")], [message.n])
-check("journal search includes matching file tags", "message:1  dashboard.png — deployment graph with three regions" in search_text(record, "session", "deployment graph", 0), True)
+check("journal search includes matching file tags", "message:1  dashboard.png — deployment graph with three regions" in search_text(record, "deployment graph", 0), True)
 reply = dispatch("GET", "/api/t/search", record.root, {"q": "three regions"}, {})
 check("viewer search identifies the matching attachment", reply.body[0]["matches"], [{"name": "dashboard.png", "tags": "deployment graph with three regions", "url": "/api/t/message/1/files/dashboard.png"}])
 check("unknown files cannot be tagged", refused(lambda: messages.tag(message.n, "missing.png", "nothing")), "message 1 has no file missing.png")
