@@ -14,7 +14,7 @@ from skills import LIBRARY, LINKED, publish  # noqa: E402
 
 PACKAGE = Path(__file__).resolve().parent
 PACKAGE_DIRS = ("commands", "controllers", "engine", "extension", "features", "migrations", "providers", "resources", "skills")
-PACKAGE_FILES = ("VERSION", "hook.py", "install.py", "journal.py", "serve.py", "skills.py")
+PACKAGE_FILES = ("VERSION", "hook.py", "hook.sh", "install.py", "journal.py", "serve.py", "skills.py")
 PACKAGE_TREES = (*PACKAGE_DIRS, "web/dist")
 REPOSITORY = "https://github.com/jessegall/agent-journal"
 SRC = "src"
@@ -96,7 +96,7 @@ def configure(project: Path, root: Path) -> list[str]:
         provider = cls()
         if not provider.present(project):
             continue
-        f = provider.wire(project, f"{sys.executable} {code(root) / 'hook.py'} {name} {root}")
+        f = provider.wire(project, f"sh {code(root) / 'hook.sh'} {name} {root}")
         done.append(f"{name}: hooks in {f.relative_to(project)}")
         present.append(name)
     if not done:

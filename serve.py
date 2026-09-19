@@ -12,7 +12,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import features  # noqa: E402
 import migrations  # noqa: E402
 from commands.http import dispatch  # noqa: E402
-from engine.viewer import remember  # noqa: E402
+from engine.viewer import heartbeat, remember  # noqa: E402
 
 LOOPBACK = re.compile(r"^http://(127\.0\.0\.1|localhost)(:\d+)?$")
 
@@ -75,6 +75,7 @@ def serve(root: Path, port: int = 8430) -> ThreadingHTTPServer:
     features.load()
     server = ThreadingHTTPServer(("127.0.0.1", port), Handler)
     remember(root, server.server_address[1])
+    heartbeat(root, server.server_address[1])
     return server
 
 

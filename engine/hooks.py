@@ -5,6 +5,7 @@ from pathlib import Path
 from controllers.types import Agents, Nudges
 from engine.actors import COMPACTING, IDLE, STOPPED, WORKING
 from engine.record import Record
+from engine.sessions import Sessions
 from resources.base import AGENT, SYSTEM
 from resources.types import AgentRow
 
@@ -45,11 +46,29 @@ def start(root: Path, env: str, compacted: bool) -> str:
     return path.read_text() if path.is_file() else ""
 
 
+def default_env(root: Path, prefer: str = "") -> str:
+    f = root / "runtime" / "env"
+    return prefer or (f.read_text().strip() if f.is_file() else "main")
+
+
+def answer(provider, root: Path, raw: dict, pid: int, prefer: str = "") -> tuple[dict, str]:
+    from providers.payload import Hook
+    sessions = Sessions(root)
+    session = Hook.read(raw).session
+    env = sessions.environment(session) or sessions.bind(session, default_env(root, prefer), pid=pid)["environment"]
+    sessions.touch(session)
+    return respond(provider, root, env, raw)
+
+
 def handle(provider, root: Path, env: str, raw: dict) -> dict:
+    return respond(provider, root, env, raw)[0]
+
+
+def respond(provider, root: Path, env: str, raw: dict) -> tuple[dict, str]:
     from providers.payload import Hook
     hook = Hook.read(raw)
     if hook.event not in STATUS or (root / "runtime" / "off").is_file():
-        return {}
+        return {}, ""
     log_command(root, hook)
     record = Record(root, env, memo=True)
     agents = Agents(record, actor=SYSTEM)
@@ -64,9 +83,9 @@ def handle(provider, root: Path, env: str, raw: dict) -> dict:
                   context=row.context or 0 if context is None else context)
     if hook.event == "PreToolUse":
         why = next((reason for policy in POLICIES if (reason := policy(provider, record, hook, row.title))), "")
-        return provider.response(blocked=why)
+        return provider.response(blocked=why), why
     if hook.event == "SessionStart":
-        return provider.response(hook.event, start(root, env, provider.compacted(hook)))
+        return provider.response(hook.event, start(root, env, provider.compacted(hook))), ""
     if hook.event in ("PostToolUse", "UserPromptSubmit"):
-        return provider.response(hook.event, whispered(record, row.title))
-    return {}
+        return provider.response(hook.event, whispered(record, row.title)), ""
+    return {}, ""
