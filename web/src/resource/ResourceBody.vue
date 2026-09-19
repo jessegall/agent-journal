@@ -18,7 +18,11 @@ import Asked from "./Asked.vue";
 import RuleControls from "./RuleControls.vue";
 import Markdown from "./Markdown.vue";
 
-const props = defineProps({resource: Object, comments: {type: Boolean, default: true}});
+const props = defineProps({
+    resource: Object,
+    comments: {type: Boolean, default: true},
+    commentComposer: {type: Boolean, default: true},
+});
 const emit = defineEmits(["close"]);
 const kind = computed(() => meta(props.resource.type));
 const files = computed(() => Object.entries(props.resource.data.files || {}));
@@ -153,7 +157,7 @@ async function save() {
         <Links :resource="resource" />
         <footer class="foot">seen by {{ resource.seen.join(", ") || "nobody" }}</footer>
         <template v-if="comments">
-            <Comments :resource="resource" />
+            <Comments :resource="resource" :compose="commentComposer" />
         </template>
     </article>
 </template>
