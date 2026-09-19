@@ -24,9 +24,23 @@ const files = computed(() =>
         .filter((l) => l.includes("|"))
         .map((l) => {
             const [path, change] = l.split("|").map((x) => x.trim());
-            return {path, adds: (change.match(/\+/g) || []).length, dels: (change.match(/-/g) || []).length, count: change.split(" ")[0]};
+            return {
+                path,
+                adds: (change.match(/\+/g) || []).length,
+                dels: (change.match(/-/g) || []).length,
+                count: Number(change.split(" ")[0]) || 0,
+            };
         })
 );
+const BLOCKS = 5;
+const largest = computed(() => Math.max(1, ...files.value.map((f) => f.count)));
+function blocks(f) {
+    const filled = Math.max(f.count ? 1 : 0, Math.round((BLOCKS * f.count) / largest.value));
+    const marks = f.adds + f.dels;
+    const green = marks ? Math.round((filled * f.adds) / marks) : 0;
+    return Array.from({length: BLOCKS}, (_, i) => (i < green ? "adds" : i < filled ? "dels" : "none"));
+}
+
 const hunks = computed(() =>
     (commit.value ? commit.value.diff : "").split("\n").map((line) => ({
         line,
@@ -64,8 +78,7 @@ const hunks = computed(() =>
                         <span class="path">{{ f.path }}</span>
                         <span class="count">{{ f.count }}</span>
                         <span class="bar">
-                            <span class="adds" :style="{width: `${f.adds * 4}px`}" />
-                            <span class="dels" :style="{width: `${f.dels * 4}px`}" />
+                            <span v-for="(kind, i) in blocks(f)" :key="i" :class="['block', kind]" />
                         </span>
                     </div>
                 </template>
@@ -155,22 +168,20 @@ const hunks = computed(() =>
 
 .bar {
     display: inline-flex;
-    width: 80px;
-    height: 6px;
-    overflow: hidden;
-    border-radius: 3px;
+    gap: 2px;
+}
+
+.block {
+    width: 9px;
+    height: 9px;
     background: var(--line);
 }
 
-.adds {
-    display: block;
-    height: 100%;
+.block.adds {
     background: #3ecf74;
 }
 
-.dels {
-    display: block;
-    height: 100%;
+.block.dels {
     background: #d98c8c;
 }
 
