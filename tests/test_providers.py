@@ -4,6 +4,7 @@ import tempfile
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+import features  # noqa: E402
 from controllers.types import Agents  # noqa: E402
 from engine.actors import Agent, BUSY, IDLE, STOPPED, WORKING  # noqa: E402
 from engine.drivers import DRIVERS  # noqa: E402
@@ -13,6 +14,9 @@ from providers import PROVIDERS  # noqa: E402
 from providers.base import EVENTS, STATUS  # noqa: E402
 from resources.base import SYSTEM  # noqa: E402
 from tests.kit import check, done  # noqa: E402
+
+features.unload()
+features.load()
 
 
 

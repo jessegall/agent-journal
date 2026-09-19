@@ -23,7 +23,9 @@ def load() -> list[str]:
 
 
 def unload() -> None:
+    from providers.base import POLICIES
     bus.clear()
+    POLICIES.clear()
     FEATURES.clear()
 
 

@@ -1,5 +1,5 @@
 from controllers.types import Works
-from features.base import Feature, on
+from features.base import Feature, on, refuses
 from resources.base import SYSTEM
 
 
@@ -22,3 +22,7 @@ class Gate(Feature):
     @on("agent.created")
     def on_agent(self, event, record) -> None:
         self.on_work(event, record)
+
+    @refuses
+    def held(self, provider, record, payload, session) -> str:
+        return provider.gate(record.root, record.env, session) if provider.writes(payload) else ""

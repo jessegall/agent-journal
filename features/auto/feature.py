@@ -1,6 +1,7 @@
 from features import trigger
-from features.base import Feature, on
+from features.base import Feature, on, refuses
 from features.auto.next import next
+from features.auto.policy import refusal
 
 
 class Auto(Feature):
@@ -10,6 +11,10 @@ class Auto(Feature):
     help_ = "Off by default: enabling it is the user's word to work the list and decide without blocking questions. A row is ready when it is not blocked, waits on no open row or question, and its plan's phase is current. Questions only the user can answer go through the journal so work can continue."
     trigger = {"on": trigger.IDLE}
     default = False
+
+    @refuses
+    def no_blocking_question(self, provider, record, payload, session) -> str:
+        return refusal(payload)
 
     @on("agent.updated")
     def offer(self, event, record) -> None:
