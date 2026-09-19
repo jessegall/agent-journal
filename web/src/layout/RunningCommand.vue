@@ -5,6 +5,8 @@ import {spoken} from "../spoken.js";
 import {agent, types} from "../store.js";
 
 const STEP = 700;
+const REVEAL_AFTER = 240;
+const HIDE_AFTER = 5000;
 const sentence = (words) => spoken(words, types.value);
 const data = computed(() => (agent.value && ["working", "compacting"].includes(agent.value.data.status) ? agent.value.data : null));
 const ticks = ref(0);
@@ -15,8 +17,10 @@ const rolling = ref(null);
 const counts = ref({added: 0, removed: 0});
 const showDelta = ref(false);
 const frames = {added: 0, removed: 0};
+const measured = {added: 0, removed: 0};
 let rolls = null;
 let reveal = null;
+let hide = null;
 
 function roll() {
     rolling.value = pending.shift() || null;
@@ -42,6 +46,7 @@ onUnmounted(() => {
     clearInterval(timer);
     if (rolls) clearTimeout(rolls);
     if (reveal) clearTimeout(reveal);
+    if (hide) clearTimeout(hide);
     Object.values(frames).forEach(cancelAnimationFrame);
 });
 
@@ -66,6 +71,13 @@ const target = computed(() => {
     return run ? run.changed || {} : null;
 });
 
+const delta = computed(() => {
+    return [
+        {kind: "added", text: counts.value.added ? `+${counts.value.added}` : ""},
+        {kind: "removed", text: counts.value.removed ? `−${counts.value.removed}` : ""},
+    ].filter((d) => d.text);
+});
+
 function count(kind, to) {
     cancelAnimationFrame(frames[kind]);
     const from = counts.value[kind];
@@ -83,37 +95,42 @@ function count(kind, to) {
     frames[kind] = requestAnimationFrame(step);
 }
 
+function concealDelta() {
+    if (reveal) clearTimeout(reveal);
+    if (hide) clearTimeout(hide);
+    reveal = null;
+    hide = null;
+    showDelta.value = false;
+}
+
+function revealDelta() {
+    if (reveal) clearTimeout(reveal);
+    if (hide) clearTimeout(hide);
+    reveal = null;
+    hide = setTimeout(concealDelta, HIDE_AFTER);
+    const show = () => {
+        reveal = null;
+        if (!data.value || !delta.value.length) return;
+        showDelta.value = true;
+    };
+    if (showDelta.value) show();
+    else reveal = setTimeout(show, REVEAL_AFTER);
+}
+
 watch(
     target,
     (changed) => {
-        if (!changed) return;
-        count("added", changed.added || 0);
-        count("removed", changed.removed || 0);
-    },
-    {immediate: true}
-);
-
-const delta = computed(() => {
-    return [
-        {kind: "added", text: counts.value.added ? `+${counts.value.added}` : ""},
-        {kind: "removed", text: counts.value.removed ? `−${counts.value.removed}` : ""},
-    ].filter((d) => d.text);
-});
-
-watch(
-    [() => line.value && line.value.key, () => delta.value.length, () => !!data.value],
-    ([, size, active]) => {
-        if (reveal) clearTimeout(reveal);
-        reveal = null;
-        if (!active || !size) {
-            showDelta.value = false;
+        if (!changed) {
+            concealDelta();
             return;
         }
-        if (showDelta.value) return;
-        reveal = setTimeout(() => {
-            if (data.value && delta.value.length) showDelta.value = true;
-            reveal = null;
-        }, 240);
+        const next = {added: changed.added || 0, removed: changed.removed || 0};
+        const increased = next.added > measured.added || next.removed > measured.removed;
+        Object.assign(measured, next);
+        count("added", next.added);
+        count("removed", next.removed);
+        if (increased) revealDelta();
+        else if (!next.added && !next.removed) concealDelta();
     },
     {immediate: true}
 );
