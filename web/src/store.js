@@ -105,9 +105,40 @@ export function rows(type) {
     return store.rows[type] || [];
 }
 
+const PAGE = 100;
+const PAGED = new Set(["message", "comment", "notification"]);
+export const paging = reactive({size: {}, more: {}});
+
 export async function load(type) {
-    store.rows[type] = await http.all(route.value.env, type);
+    if (!PAGED.has(type) || paging.size[type] === Infinity) {
+        store.rows[type] = await http.all(route.value.env, type);
+        return store.rows[type];
+    }
+    const size = paging.size[type] || PAGE;
+    const got = await http.recent(route.value.env, type, size);
+    store.rows[type] = got.rows;
+    paging.size[type] = size;
+    paging.more[type] = got.more;
     return store.rows[type];
+}
+
+export async function earlier(...types) {
+    const growing = types.filter((type) => paging.more[type]);
+    growing.forEach((type) => (paging.size[type] = (paging.size[type] || PAGE) + PAGE));
+    await Promise.all(growing.map(load));
+    return growing.length > 0;
+}
+
+export async function whole(type) {
+    if (!PAGED.has(type)) return rows(type);
+    paging.size[type] = Infinity;
+    return load(type);
+}
+
+export async function trim(type) {
+    if (!PAGED.has(type)) return rows(type);
+    paging.size[type] = PAGE;
+    return load(type);
 }
 
 http.onWrite(() => reload());
@@ -144,7 +175,7 @@ export function listen() {
     poll();
 }
 
-const RECENT = 1000;
+const RECENT = 100;
 let ticking = 0;
 let ticks = 0;
 

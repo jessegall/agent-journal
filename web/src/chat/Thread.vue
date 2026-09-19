@@ -4,7 +4,7 @@ import {act, create} from "../api.js";
 import {sendMessage} from "./outbox.js";
 import Icon from "../kit/Icon.vue";
 import {route} from "../route.js";
-import {agent, laidOut, meta, quoted, reload, rows, store, withQuote} from "../store.js";
+import {agent, earlier, laidOut, meta, quoted, reload, rows, store, withQuote} from "../store.js";
 import Compose from "./Compose.vue";
 import Turn from "./Turn.vue";
 import ThreadSkeleton from "./ThreadSkeleton.vue";
@@ -44,6 +44,26 @@ const missed = ref(0);
 const settledOnce = ref(false);
 const ready = ref(false);
 const rendering = ref(false);
+const topMark = ref(null);
+const AHEAD = "1600px 0px 0px 0px";
+let prepending = false;
+let topWatcher = null;
+
+async function older() {
+    const s = scroller.value;
+    if (!ready.value || prepending || !s) return;
+    prepending = true;
+    const fromBottom = s.scrollHeight - s.scrollTop;
+    try {
+        while (await earlier("message", "comment")) {
+            await nextTick();
+            s.scrollTop = s.scrollHeight - fromBottom;
+            if (s.scrollTop > s.clientHeight * 2) break;
+        }
+    } finally {
+        prepending = false;
+    }
+}
 let frame = 0;
 
 function pictured() {
@@ -137,9 +157,18 @@ onMounted(() => {
     frame = requestAnimationFrame(() => {
         frame = requestAnimationFrame(() => (rendering.value = true));
     });
+    topWatcher = new IntersectionObserver((seen) => seen.some((e) => e.isIntersecting) && older(), {
+        root: scroller.value,
+        rootMargin: AHEAD,
+    });
 });
 
-onUnmounted(() => cancelAnimationFrame(frame));
+watch(topMark, (el) => el && topWatcher && topWatcher.observe(el));
+
+onUnmounted(() => {
+    cancelAnimationFrame(frame);
+    if (topWatcher) topWatcher.disconnect();
+});
 
 function watchScroll() {
     const s = scroller.value;
@@ -251,6 +280,7 @@ watch(
             await nextTick();
             laidOut.value += 1;
         }
+        if (prepending) return;
         if (stillReading()) missed.value += Math.max(0, n - (before || 0));
         else toBottom();
         if (n && !settledOnce.value) setTimeout(() => (settledOnce.value = true), 300);
@@ -302,6 +332,7 @@ watch(
             @mousemove="reading.moved = Date.now()"
         >
             <template v-if="rendering">
+                <div ref="topMark" class="thread-top" />
                 <template v-if="!turns.length">
                     <p class="thread-empty">Nothing has been said here yet.</p>
                 </template>
