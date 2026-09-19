@@ -23,6 +23,7 @@ import ChatWindow from "./layout/ChatWindow.vue";
 import AwayCard from "./layout/AwayCard.vue";
 import UpgradeBand from "./layout/UpgradeBand.vue";
 import ThreadSkeleton from "./chat/ThreadSkeleton.vue";
+import IdentityBand from "./layout/IdentityBand.vue";
 
 const page = computed(() =>
     !route.value.page
@@ -87,40 +88,43 @@ watch(
         <ChatWindow />
     </template>
     <template v-else-if="store.spec">
-        <div class="app">
-            <Sidebar />
-            <div class="main">
-                <TopBar />
-                <UpgradeBand />
-                <StatusBar />
-                <Transition name="page" mode="out-in">
-                    <div :key="route.page || 'home'" class="page">
-                        <SwitchCase :value="page">
-                            <template #home><Home /></template>
-                            <template #settings><SettingsPage /></template>
-                            <template #search><SearchPage /></template>
-                            <template #files><FilesPage /></template>
-                            <template #commit><CommitPage /></template>
-                            <template #skills><SkillsPage /></template>
-                            <template #hub><HubPage /></template>
-                            <template #file><FilePage /></template>
-                            <template #default><Index :type="route.page" /></template>
-                        </SwitchCase>
-                    </div>
+        <div class="viewer">
+            <IdentityBand />
+            <div class="app">
+                <Sidebar />
+                <div class="main">
+                    <TopBar />
+                    <UpgradeBand />
+                    <StatusBar />
+                    <Transition name="page" mode="out-in">
+                        <div :key="route.page || 'home'" class="page">
+                            <SwitchCase :value="page">
+                                <template #home><Home /></template>
+                                <template #settings><SettingsPage /></template>
+                                <template #search><SearchPage /></template>
+                                <template #files><FilesPage /></template>
+                                <template #commit><CommitPage /></template>
+                                <template #skills><SkillsPage /></template>
+                                <template #hub><HubPage /></template>
+                                <template #file><FilePage /></template>
+                                <template #default><Index :type="route.page" /></template>
+                            </SwitchCase>
+                        </div>
+                    </Transition>
+                </div>
+                <Transition name="column">
+                    <Activity v-if="store.activity" />
                 </Transition>
+                <Reader :type="opened.type" :n="opened.n" />
+                <Lightbox />
+                <Transition name="quick">
+                    <QuickMenu v-if="quick" ref="quickMenu" @close="quick = false" />
+                </Transition>
+                <template v-if="away.open">
+                    <AwayCard />
+                </template>
+                <ChatWindow v-if="store.detached && !store.extension.holding && !store.extension.pending" floating />
             </div>
-            <Transition name="column">
-                <Activity v-if="store.activity" />
-            </Transition>
-            <Reader :type="opened.type" :n="opened.n" />
-            <Lightbox />
-            <Transition name="quick">
-                <QuickMenu v-if="quick" ref="quickMenu" @close="quick = false" />
-            </Transition>
-            <template v-if="away.open">
-                <AwayCard />
-            </template>
-            <ChatWindow v-if="store.detached && !store.extension.holding && !store.extension.pending" floating />
         </div>
     </template>
 </template>
@@ -133,9 +137,15 @@ watch(
     padding: 48px 24px 96px;
 }
 
-.app {
-    display: flex;
+.viewer {
     height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+.app {
+    flex: 1;
+    min-height: 0;
+    display: flex;
 }
 .main {
     flex: 1;

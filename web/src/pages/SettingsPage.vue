@@ -1,6 +1,6 @@
 <script setup>
 import {computed, onMounted, ref} from "vue";
-import {act, api, saveSettings} from "../api.js";
+import {act, api, saveIdentity, saveSettings} from "../api.js";
 import Btn from "../kit/Btn.vue";
 import Switch from "../kit/Switch.vue";
 import {route} from "../route.js";
@@ -53,6 +53,10 @@ async function saveRetention(type) {
     await saveSettings(route.value.env, {keep: {...retention.value, [type]: Number(days.value[type])}});
 }
 
+async function saveColor(color) {
+    store.identity = await saveIdentity({color});
+}
+
 async function remove(e) {
     await act(route.value.env, "environment", e.n, "remove", {how: "removed from the viewer"});
 }
@@ -60,6 +64,28 @@ async function remove(e) {
 
 <template>
     <section class="settings">
+        <section class="group">
+            <header class="group-head">
+                <h2>Project identity</h2>
+                <p class="lead">The band across the viewer distinguishes this project from other open journals.</p>
+            </header>
+            <div class="row">
+                <span class="text">
+                    <span class="title">Color</span>
+                    <span class="help">Defaults to a stable color chosen from the project name.</span>
+                </span>
+                <span class="control color-control">
+                    <input
+                        class="color"
+                        type="color"
+                        :value="store.identity.color"
+                        aria-label="Project color"
+                        @change="saveColor($event.target.value)"
+                    />
+                    <Btn v-if="store.identity.custom_color" small @click="saveColor(null)">Reset</Btn>
+                </span>
+            </div>
+        </section>
         <section class="group">
             <header class="group-head">
                 <h2>Chrome extension</h2>
@@ -303,5 +329,19 @@ h2 {
 
 .download:hover {
     background: var(--hover);
+}
+
+.color-control {
+    min-width: 116px;
+}
+
+.color {
+    width: 34px;
+    height: 28px;
+    padding: 2px;
+    border: 1px solid var(--border-2);
+    border-radius: 6px;
+    background: var(--raised);
+    cursor: pointer;
 }
 </style>

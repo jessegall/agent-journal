@@ -13,6 +13,7 @@ export function remembered(key, fallback) {
 
 export const store = reactive({
     spec: null,
+    identity: null,
     rows: {},
     events: [],
     settings: null,
@@ -165,7 +166,7 @@ async function rebuilt() {
 }
 
 export async function boot() {
-    store.spec = await http.manifest();
+    [store.spec, store.identity] = await Promise.all([http.manifest(), http.identity()]);
     if (!route.value.env) {
         go(store.spec.environment);
         return boot();
