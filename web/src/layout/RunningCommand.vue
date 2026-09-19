@@ -12,6 +12,7 @@ const SHOW_CLOCK_AFTER = 10;
 const sentence = (words) => spoken(words, types.value);
 const EFFECTS = {tests: "running tests", deletes: "deleting files", writes: "making edits", reads: "reading files"};
 const said = (c) => (c.effect ? [EFFECTS[c.effect]] : c.tool && c.tool !== "Bash" ? [c.what] : gists(c.what, sentence));
+const tokensOf = (c, text) => (c.effect ? [{value: text, kind: "words"}] : gistTokens(text));
 const data = computed(() => (agent.value && ["working", "compacting"].includes(agent.value.data.status) ? agent.value.data : null));
 const ticks = ref(0);
 const timer = setInterval(() => (ticks.value += 1), 1000);
@@ -41,7 +42,7 @@ watch(
             seen.at = c.at;
             if (!first) {
                 const shown = said(c);
-                shown.forEach((text) => pending.push({key: text, text, tokens: gistTokens(text), delta: []}));
+                shown.forEach((text) => pending.push({key: text, text, tokens: tokensOf(c, text), delta: []}));
                 api("POST", "/shown", {command: c.what, shown}).catch(() => {});
             }
         }
@@ -88,7 +89,7 @@ const line = computed(() => {
     if (!parts.length) return null;
     const secs = Math.floor((run.done || Date.now() / 1000) - run.at);
     const text = parts[parts.length - 1];
-    return {key: text, text, tokens: gistTokens(text), clock: clock(secs), done: !!run.done};
+    return {key: text, text, tokens: tokensOf(run, text), clock: clock(secs), done: !!run.done};
 });
 
 const text = ref(null);
@@ -308,6 +309,10 @@ watch(
 .statusbar-run-token.command {
     color: var(--text-2);
     font-weight: 500;
+}
+
+.statusbar-run-token.words {
+    color: var(--text-3);
 }
 
 .statusbar-run-token.argument {
