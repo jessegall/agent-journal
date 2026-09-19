@@ -43,6 +43,10 @@ class Field:
 SECTION = names("title", "body")
 
 
+def shown(r) -> dict:
+    return {**asdict(r), "type": r.type, "ref": r.ref}
+
+
 @dataclass
 class Event:
     id: int
