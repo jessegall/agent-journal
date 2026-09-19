@@ -5,6 +5,8 @@ from abc import ABC, abstractmethod
 from pathlib import Path
 
 ENTER_AFTER = 0.3
+RECHECK, RESUBMITS, SAMPLE = 0.6, 2, 24
+INPUT = re.compile("[❯›]")
 ANSI = re.compile(rb"\x1b\[[0-?]*[ -/]*[@-~]|\x1b\][^\x07\x1b]*(?:\x07|\x1b\\)|\x1b[@-Z\\-_]|[\x00-\x08\x0b-\x1f\x7f]")
 
 
@@ -35,13 +37,22 @@ class Driver(ABC):
         return self.fd >= 0
 
     def send(self, text: str) -> None:
-        line = " ".join(part.strip() for part in text.splitlines() if part.strip()).encode()
+        line = " ".join(part.strip() for part in text.splitlines() if part.strip())
         try:
-            os.write(self.fd, line)
+            os.write(self.fd, line.encode())
             time.sleep(ENTER_AFTER)
             os.write(self.fd, b"\r")
-        except OSError:                                   # the agent is gone: nothing to type into
+            for _ in range(RESUBMITS):
+                time.sleep(RECHECK)
+                if not self.unsent(line):
+                    break
+                os.write(self.fd, b"\r")
+        except OSError:
             self.fd = -1
+
+    def unsent(self, line: str) -> bool:
+        box = INPUT.split(self.last_printed())
+        return len(box) > 1 and bool(line) and line[:SAMPLE] in box[-1]
 
     def stop_turn(self) -> None:
         try:
