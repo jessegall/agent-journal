@@ -444,6 +444,48 @@ onUnmounted(() => {
     padding: 4px 0;
 }
 
+.sessions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 8px;
+}
+
+.session-pick {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border: 1px solid var(--border-2);
+    border-radius: 99px;
+    background: none;
+    color: var(--text-3);
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.session-pick:hover {
+    color: var(--text-2);
+    border-color: var(--text-3);
+}
+
+.session-pick.on {
+    border-color: var(--accent);
+    background: color-mix(in srgb, var(--accent) 14%, transparent);
+    color: var(--text);
+}
+
+.session-pick .dot {
+    width: 6px;
+    height: 6px;
+}
+
+.session-note {
+    margin: 0 0 8px;
+    font-size: 12px;
+    color: var(--text-3);
+}
+
 .dot {
     width: 8px;
     height: 8px;
