@@ -52,6 +52,16 @@ files = {f["path"]: f for f in works.load(work.n).data["changed"]}
 check("a script's writes count too: the new file is created, with its lines", (files["fresh.txt"]["created"], files["fresh.txt"]["added"]), (True, 3))
 check("pre-existing dirt stays off the work while a deletion stays on it", ("prior.txt" in files, files["remove.txt"]["removed"]), (False, 2))
 check("the journal's own runtime writes are never attributed to the work", any(path.startswith(".journal/") for path in files), False)
+from features.files.feature import internal, journals_own  # noqa: E402
+linked = fresh("linked")
+elsewhere = linked.root.parent
+(elsewhere / "worktree").mkdir()
+(elsewhere / "worktree" / ".journal").symlink_to(elsewhere / ".journal")
+from engine.record import Record  # noqa: E402
+marks = internal(Record(elsewhere / "worktree" / ".journal", "linked"), elsewhere / "worktree")
+check("a journal reached through a symlink is still the journal's own, and so are the skills it generates",
+      (journals_own(".journal/environments/main/todo/001.json", marks), journals_own(".agents/skills/journal-auto/SKILL.md", marks), journals_own(".claude/skills/style-imports/SKILL.md", marks), journals_own("src/app.js", marks), journals_own(".claude/skills/mine/SKILL.md", marks)),
+      (True, True, True, False, False))
 second = Agents(record, actor=SYSTEM).by_session("claude-1").running["changed"]
 check("one active turn accumulates changes across its writes", (second["edited"], second["created"] > first["created"], second["deleted"]), (first["edited"], True, 1))
 
