@@ -90,7 +90,9 @@ class Provider(ABC):
         if hook.event == "PreToolUse" and doing:
             now = time.time()
             effect = self.effect(hook)
-            running = {RUNNING.what: doing, RUNNING.tool: hook.tool.name, RUNNING.at: now, **({RUNNING.effect: effect} if effect else {})}
+            before = {k: v for k, v in running.items() if k in (RUNNING.what, RUNNING.tool, RUNNING.at, RUNNING.done, RUNNING.effect, RUNNING.changed, RUNNING.result)}
+            running = {RUNNING.what: doing, RUNNING.tool: hook.tool.name, RUNNING.at: now, **({RUNNING.effect: effect} if effect else {}),
+                       **({RUNNING.before: before} if before.get(RUNNING.done) else {})}
             return {AgentRow.running: running, AgentRow.commands: (list(row.commands) + [{COMMAND.what: doing, COMMAND.tool: hook.tool.name, COMMAND.at: now,
                                                                                           **({COMMAND.effect: effect} if effect else {})}])[-RING:]}
         if running and not running.get(RUNNING.done):

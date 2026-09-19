@@ -195,4 +195,11 @@ check("pytest and jest summaries are read too", [claude.test_result(Hook.read({"
       [{"passed": 40, "failed": 2}, {"passed": 9, "failed": 1}])
 check("output with no summary gives no outcome", claude.test_result(Hook.read({"tool_name": "Bash", "tool_response": {"stdout": "built"}})), None)
 
+# A NEW COMMAND KEEPS THE FINISHED ONE as before, so its line counts can still arrive and be shown
+finished = {"what": "sed -i x f.py", "tool": "Bash", "at": 1.0, "done": 2.0, "effect": "writes", "changed": {"added": 3}, "step": "sed"}
+nxt = claude.shell(AgentRow(n=1, title="s", data={"running": finished}), Hook.read({"hook_event_name": "PreToolUse", "tool_name": "Bash", "tool_input": {"command": "git status"}}))["running"]
+check("the finished command rides along as before, without its step", (nxt["what"], nxt["before"]), ("git status", {"what": "sed -i x f.py", "tool": "Bash", "at": 1.0, "done": 2.0, "effect": "writes", "changed": {"added": 3}}))
+unfinished = claude.shell(AgentRow(n=1, title="s", data={"running": {"what": "a", "at": 1.0}}), Hook.read({"hook_event_name": "PreToolUse", "tool_name": "Bash", "tool_input": {"command": "b"}}))["running"]
+check("a command that never finished is not kept", "before" in unfinished, False)
+
 done()

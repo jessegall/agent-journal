@@ -151,6 +151,8 @@ class Files(Feature):
             if list(files.values()) != work.changed or commits != work.commits:
                 works.update(work.n, changed=list(files.values()), commits=commits)
             if agent.running and any(delta[k] for k in (DELTA.edited, DELTA.created, DELTA.deleted)):
-                prior = agent.running.get(RUNNING.changed) or {}
-                total = {key: prior.get(key, 0) + value for key, value in delta.items()}
-                Agents(record, actor=SYSTEM).update(agent.n, running={**agent.running, RUNNING.changed: total})
+                late = not agent.running.get(RUNNING.done) and agent.running.get(RUNNING.before)
+                edited = agent.running[RUNNING.before] if late else agent.running
+                prior = edited.get(RUNNING.changed) or {}
+                edited = {**edited, RUNNING.changed: {key: prior.get(key, 0) + value for key, value in delta.items()}}
+                Agents(record, actor=SYSTEM).update(agent.n, running={**agent.running, RUNNING.before: edited} if late else edited)
