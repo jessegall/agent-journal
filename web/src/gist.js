@@ -115,7 +115,7 @@ function pieceGist(piece, translate) {
     const given = w.slice(rest.split(" ").length);
     const args = given.filter((x, i) => !/^(-|["'$]|\d*[<>]|&|\/dev\/)/.test(x) && !(/^\d+$/.test(x) && /^-/.test(given[i - 1] || "")));
     const scripted = RUNNERS.has(verb) && given.some((x) => /^["']/.test(x));
-    const shown = args.length ? `${rest} ${args[0].split("/").pop()}` : scripted ? `${rest} script` : rest;
+    const shown = args.length ? `${rest} ${args[0].split("/").filter(Boolean).pop() || args[0]}` : scripted ? `${rest} script` : rest;
     return shown.length > CAP ? `${shown.slice(0, CAP - 1).trimEnd()}…` : shown;
 }
 
