@@ -407,6 +407,41 @@ def get_subagent_transcript(req: Request) -> Reply:
     return transcript_of(req, req.params["session"])
 
 
+@route("GET", "/api/services")
+def get_services(req: Request) -> Reply:
+    from engine.services import specs, states
+    known = {spec["id"]: spec for spec in specs(req.root)}
+    said = states(req.root)
+    out = []
+    for sid in sorted({*known, *said}):
+        spec, state = known.get(sid, {}), said.get(sid, {})
+        out.append({"id": sid, "plugin": spec.get("plugin") or sid.split(".")[0], "service": spec.get("service") or sid.split(".", 1)[-1],
+                    "state": state.get("state") or "not running", "why": state.get("why") or "", "url": spec.get("url") or state.get("url") or "",
+                    "port": spec.get("port") or state.get("port") or 0, "since": state.get("started") or 0, "declared": sid in known})
+    return Reply(200, out)
+
+
+@route("GET", "/api/services/{id}/log")
+def get_service_log(req: Request) -> Reply:
+    from engine.services import log_file
+    path = log_file(req.root, req.params["id"])
+    try:
+        text = path.read_text(errors="replace")
+    except OSError:
+        text = ""
+    return Reply(200, {"id": req.params["id"], "log": "\n".join(text.splitlines()[-int(req.query.get("lines") or 200):])})
+
+
+@route("POST", "/api/services/{id}")
+def post_service(req: Request) -> Reply:
+    from engine.services import DOWN, UP, want
+    asked = str(req.body.get("want") or "").lower()
+    if asked not in (UP, DOWN, "restart"):
+        raise Missing("a service is asked to be up, down or restart")
+    said = want(req.root, req.params["id"], DOWN if asked == DOWN else UP, nonce=time.time() if asked == "restart" else 0.0)
+    return Reply(200, {"id": req.params["id"], **said})
+
+
 @route("GET", "/api/{env}/commit/{sha}")
 def get_commit(req: Request) -> Reply:
     sha = req.params["sha"]
