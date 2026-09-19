@@ -8,6 +8,7 @@ from features.base import Feature, on
 from resources.base import SYSTEM, names
 from resources.shapes import CHANGE, COMMIT
 from resources.types import RUNNING
+from skills import LIBRARY, LINKED
 
 DELTA = names("edited", "created", "deleted", "added", "removed")
 STATE = names("hash", "lines")
@@ -18,6 +19,24 @@ def git(project: Path, *args: str) -> str:
         return subprocess.run(["git", *args], cwd=project, capture_output=True, text=True, timeout=5).stdout
     except (OSError, subprocess.SubprocessError):
         return ""
+
+
+def internal(record, project: Path) -> tuple[str, ...]:
+    roots = []
+    for root in (record.root, record.root.resolve()):
+        try:
+            roots.append(str(root.relative_to(project)))
+        except ValueError:
+            try:
+                roots.append(str(root.relative_to(project.resolve())))
+            except ValueError:
+                continue
+    homes = (LIBRARY, *LINKED.values(), ".codex/skills")
+    return (*(f"{r}/" for r in dict.fromkeys(roots)), *(f"{h}/journal" for h in homes), *(f"{h}/style-" for h in homes))
+
+
+def journals_own(path: str, marks: tuple[str, ...]) -> bool:
+    return any(path.startswith(m) or path == m.rstrip("/") for m in marks)
 
 
 def changed(project: Path, only: str = "") -> list[dict]:
@@ -54,12 +73,8 @@ def baseline_file(record, n: int) -> Path:
 
 
 def source_state(record, project: Path, only: str = "") -> dict:
-    got = state(project, only)
-    try:
-        internal = str(record.root.resolve().relative_to(project.resolve()))
-    except ValueError:
-        return got
-    return {path: value for path, value in got.items() if path != internal and not path.startswith(f"{internal}/")}
+    marks = internal(record, project)
+    return {path: value for path, value in state(project, only).items() if not journals_own(path, marks)}
 
 
 def read_baseline(record, work, project: Path) -> dict:
@@ -110,7 +125,8 @@ class Files(Feature):
             current = source_state(record, project, only)
             paths = {only} if only else set(baseline) | set(current)
             touched = {path for path in paths if baseline.get(path) != current.get(path)}
-            now = {f[CHANGE.path]: f for f in changed(project, only) if f[CHANGE.path] in touched}
+            marks = internal(record, project)
+            now = {f[CHANGE.path]: f for f in changed(project, only) if f[CHANGE.path] in touched and not journals_own(f[CHANGE.path], marks)}
             for path in touched - set(now):
                 old, new = baseline.get(path), current.get(path)
                 old_lines = old[STATE.lines] if old else 0
