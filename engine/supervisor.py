@@ -1,6 +1,5 @@
 import fcntl
 import os
-import pty
 import select
 import signal
 import struct
@@ -8,33 +7,13 @@ import subprocess
 import sys
 import termios
 import time
-import tty
 from pathlib import Path
 
-from engine import band
-from engine.drivers import DRIVERS
-from engine.record import Record
-from engine.sessions import ACTIVE_ENV
-from features.auto.policy import launch_args
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from engine import band  # noqa: E402
+from engine.terminal import RELOAD, STOP, watched  # noqa: E402
 
 RELOAD_EVERY = 5.0
-
-
-def watched(root: Path) -> tuple:
-    files = sorted(root.rglob("*.py"))
-    return tuple(f.stat().st_mtime_ns for f in files if f.is_file())
-
-
-def agent_environment(base: dict | None = None) -> dict:
-    return {**(base if base is not None else os.environ), ACTIVE_ENV: "1"}
-
-
-def spawn_agent(command: list[str], cwd: Path) -> tuple[int, int]:
-    pid, fd = pty.fork()
-    if pid == 0:
-        os.chdir(cwd)
-        os.execvpe(command[0], command, agent_environment())
-    return pid, fd
 
 
 def size() -> tuple[int, int]:
@@ -63,29 +42,29 @@ def spawn_driver(root: Path, cwd: Path, env: str, agent: str, fd: int, session: 
     return subprocess.Popen([sys.executable, str(main), str(root), env, agent, str(fd), session], cwd=cwd, pass_fds=(fd,))
 
 
-def run(root: Path, cwd: Path, env: str, agent: str, args: list[str]) -> int:
-    driver = DRIVERS[agent]
-    command = driver.command(driver, launch_args(Record(root, env), agent, args))
-    pid, fd = spawn_agent(command, cwd)
+def stop_driver(driver: subprocess.Popen) -> None:
+    if driver.poll() is not None:
+        return
+    driver.terminate()
+    try:
+        driver.wait(timeout=5)
+    except subprocess.TimeoutExpired:
+        driver.kill()
+        driver.wait()
+
+
+def run(root: Path, cwd: Path, env: str, agent: str, fd: int, session: str) -> int:
     rows, cols = resize(fd)
-    session = f"{agent}-{pid}"
     top = band.Band(root, env, session, root.resolve().parent.name)
     rows_below = band.Translator(rows)
     printed = root / "runtime" / f"printed-{session}"
     printed.parent.mkdir(parents=True, exist_ok=True)
-    (root / "runtime" / "env").write_text(env)
-    print(f"journal: environment {env} — a session bound elsewhere is followed there")
     out = printed.open("ab")
     driver = spawn_driver(root, cwd, env, agent, fd, session)
     stamps = watched(root)
     stdin, stdout = sys.stdin.fileno(), sys.stdout.fileno()
-    saved = None
-    try:
-        saved = termios.tcgetattr(stdin)
-        tty.setraw(stdin)
-    except termios.error:
-        pass
     shape = [rows, cols]
+    result = 0
 
     def frame() -> None:
         shape[0], shape[1] = resize(fd)
@@ -119,25 +98,22 @@ def run(root: Path, cwd: Path, env: str, agent: str, args: list[str]) -> int:
             if stdin in ready:
                 data = os.read(stdin, 65536)
                 if not data:
+                    result = STOP
                     break
                 os.write(fd, data)
             now = time.time()
             if now - last_check >= RELOAD_EVERY:
                 last_check = now
-                dead = driver.poll() is not None
-                changed = watched(root) != stamps
-                if dead or changed:
-                    if not dead:
-                        driver.terminate()
-                        driver.wait(timeout=5)
-                    stamps = watched(root)
-                    driver = spawn_driver(root, cwd, env, agent, fd, session)
+                if driver.poll() is not None or watched(root) != stamps:
+                    result = RELOAD
+                    break
     finally:
         signal.signal(signal.SIGWINCH, signal.SIG_DFL)
-        os.write(stdout, band.release())
-        if saved is not None:
-            termios.tcsetattr(stdin, termios.TCSADRAIN, saved)
-        driver.terminate()
+        stop_driver(driver)
         out.close()
-    _, status = os.waitpid(pid, 0)
-    return os.waitstatus_to_exitcode(status)
+    return result
+
+
+if __name__ == "__main__":
+    root, cwd, env, agent, fd, session = sys.argv[1:7]
+    raise SystemExit(run(Path(root), Path(cwd), env, agent, int(fd), session))
