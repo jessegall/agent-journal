@@ -1,10 +1,10 @@
 <script setup>
-import {computed, nextTick, onMounted, onUnmounted, ref} from "vue";
+import {computed, nextTick, onMounted, onUnmounted, ref, watch} from "vue";
 import {api} from "../api.js";
 import Btn from "../kit/Btn.vue";
 import CommentToggle from "./CommentToggle.vue";
 import Icon from "../kit/Icon.vue";
-import {go, route} from "../route.js";
+import {go, route, showSession} from "../route.js";
 import {rows, span} from "../store.js";
 import {render} from "../text/index.js";
 import "../text/all.js";
@@ -54,6 +54,15 @@ const WHO = {
     summary: "Summary",
     superseded: "You, edited",
 };
+const subagents = computed(() => (data.value.subagent_rows || []).filter((r) => r.session));
+const session = computed(() => route.value.sub);
+const picked = computed(() => subagents.value.find((r) => r.session === session.value));
+
+function transcriptPath() {
+    const base = `/${route.value.env}/agent/${props.resource.n}`;
+    return session.value ? `${base}/subagent/${session.value}/transcript` : `${base}/transcript`;
+}
+
 const earliest = computed(() => (turns.value.length ? turns.value[0].line : 0));
 const atStart = computed(() => turns.value.length > 0 && earliest.value <= first.value);
 
@@ -81,7 +90,9 @@ async function fetchTurns() {
     fetching = true;
     try {
         const since = turns.value.length ? turns.value[turns.value.length - 1].line : 0;
-        const got = await api("GET", `/${route.value.env}/agent/${props.resource.n}/transcript?since=${since}&last=200`);
+        const path = transcriptPath();
+        const got = await api("GET", `${path}?since=${since}&last=200`);
+        if (path !== transcriptPath()) return;
         error.value = "";
         total.value = got.total;
         first.value = got.first;
@@ -104,7 +115,9 @@ async function earlier() {
     const box = scroller.value;
     const fromBottom = box ? box.scrollHeight - box.scrollTop : 0;
     try {
-        const got = await api("GET", `/${route.value.env}/agent/${props.resource.n}/transcript?before=${earliest.value}&last=200`);
+        const path = transcriptPath();
+        const got = await api("GET", `${path}?before=${earliest.value}&last=200`);
+        if (path !== transcriptPath()) return;
         error.value = "";
         foldTools(got.turns);
         turns.value = [...got.turns, ...turns.value];
@@ -118,6 +131,16 @@ async function earlier() {
 }
 
 const retry = () => (turns.value.length && !atStart.value ? earlier() : fetchTurns());
+
+watch(session, () => {
+    turns.value = [];
+    total.value = 0;
+    first.value = 0;
+    loading.value = true;
+    error.value = "";
+    tab.value = "transcript";
+    fetchTurns();
+});
 
 let watcher = null;
 onMounted(async () => {
@@ -209,6 +232,28 @@ onUnmounted(() => {
             <AgentHooks :provider="data.provider" />
         </section>
         <section v-show="tab === 'transcript'" class="block">
+            <div v-if="subagents.length" class="sessions">
+                <button type="button" :class="['session-pick', {on: !session}]" @click="showSession('')">This session</button>
+                <template v-for="r in subagents" :key="r.session">
+                    <button
+                        type="button"
+                        :class="['session-pick', {on: session === r.session}]"
+                        :title="r.type ? `${r.type} · ${r.model}` : r.model"
+                        @click="showSession(r.session)"
+                    >
+                        <span :class="['dot', {open: r.running}]" />
+                        {{ r.task }}
+                    </button>
+                </template>
+            </div>
+            <p v-if="picked" class="session-note">
+                Subagent {{ picked.type || "" }} · {{ picked.model || "inherited model" }} ·
+                {{
+                    picked.running
+                        ? `running ${span(Date.now() / 1000 - picked.at)}`
+                        : `${picked.status || "finished"} after ${span(picked.ended - picked.at)}`
+                }}
+            </p>
             <div ref="scroller" class="transcript">
                 <div ref="topMark" class="edge">
                     {{

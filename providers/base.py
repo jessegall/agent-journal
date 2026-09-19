@@ -208,6 +208,9 @@ class Provider(ABC):
         subagents = sum(1 for u in uses if u.get("name") in ("Agent", "Task"))
         return {"skills": skills, "shells": shells, "subagents": subagents, "shell_rows": [], "subagent_rows": []}
 
+    def subagent_transcript(self, path: Path, session: str) -> Path | None:
+        return None
+
     def loaded_skills(self, path: Path) -> dict[str, float]:
         return {str((use.get("input") or {}).get("skill")): float(use.get("at") or 0) for use in self.tools(path)
                 if use.get("name") == "Skill" and (use.get("input") or {}).get("skill")}
