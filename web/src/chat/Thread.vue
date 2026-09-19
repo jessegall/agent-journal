@@ -3,7 +3,7 @@ import {computed, nextTick, onMounted, ref, watch} from "vue";
 import {act, create} from "../api.js";
 import Icon from "../kit/Icon.vue";
 import {route} from "../route.js";
-import {agent, meta, quoted, reload, rows, store, withQuote} from "../store.js";
+import {agent, laidOut, meta, quoted, reload, rows, store, withQuote} from "../store.js";
 import Compose from "./Compose.vue";
 import Turn from "./Turn.vue";
 
@@ -256,6 +256,7 @@ watch(
             await loaded();
             ready.value = true;
             await nextTick();
+            laidOut.value += 1;
         }
         if (stillReading()) missed.value += Math.max(0, n - (before || 0));
         else toBottom();

@@ -1,4 +1,4 @@
-import {computed, reactive, watch} from "vue";
+import {computed, reactive, ref, watch} from "vue";
 import * as http from "./api.js";
 import {go, route} from "./route.js";
 
@@ -224,6 +224,13 @@ export function span(seconds) {
     const m = Math.floor((s % 3600) / 60);
     return h < 24 ? `${h}h ${m}m` : `${Math.floor(h / 24)}d ${h % 24}h`;
 }
+
+export const laidOut = ref(0);
+let resizing = 0;
+window.addEventListener("resize", () => {
+    clearTimeout(resizing);
+    resizing = setTimeout(() => (laidOut.value += 1), 120);
+});
 
 export const lightbox = reactive({pictures: [], at: -1});
 

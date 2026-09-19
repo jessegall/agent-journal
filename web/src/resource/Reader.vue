@@ -1,5 +1,5 @@
 <script setup>
-import {computed} from "vue";
+import {computed, ref, watch} from "vue";
 import SwitchCase from "../kit/SwitchCase.vue";
 import {go, route, unpeek} from "../route.js";
 import {meta, rows} from "../store.js";
@@ -13,37 +13,53 @@ const resource = computed(() => (props.type ? rows(props.type).find((r) => r.n =
 const shape = computed(() => (!props.type ? "" : ["plan", "agent"].includes(props.type) ? props.type : meta(props.type).view));
 const panel = computed(() => (["small", "wide"].includes(shape.value) ? "inspector" : shape.value));
 const close = () => (route.value.open ? unpeek() : go(route.value.env, props.type));
+const swapping = ref(false);
+let settle = 0;
+watch(
+    () => `${props.type}:${props.n}`,
+    (now, before) => {
+        if (!before || !resource.value || before.startsWith(":")) return;
+        swapping.value = true;
+        clearTimeout(settle);
+        settle = setTimeout(() => (swapping.value = false), 160);
+    }
+);
 </script>
 
 <template>
     <Transition name="reader">
         <div v-if="resource" :key="panel" :class="['reader', shape]" @click.self="close">
-            <Transition name="swap" mode="out-in">
-                <div :key="`${type}:${n}`" class="held">
+            <component :is="panel === 'inspector' ? 'aside' : 'div'" :class="panel === 'inspector' ? 'inspector' : 'page'">
+                <template v-if="swapping">
+                    <div class="skeleton">
+                        <span class="blank short" />
+                        <span class="blank wide" />
+                        <span class="blank" />
+                        <span class="blank" />
+                        <span class="blank half" />
+                    </div>
+                </template>
+                <template v-else>
                     <SwitchCase :value="shape">
                         <template #plan>
-                            <div class="page">
-                                <DocumentPage :resource="resource" @close="close">
-                                    <PlanPage :resource="resource" @close="close" />
-                                </DocumentPage>
-                            </div>
+                            <DocumentPage :resource="resource" @close="close">
+                                <PlanPage :resource="resource" @close="close" />
+                            </DocumentPage>
                         </template>
                         <template #agent>
-                            <div class="page">
-                                <DocumentPage :resource="resource" @close="close">
-                                    <AgentPage :resource="resource" @close="close" />
-                                </DocumentPage>
-                            </div>
+                            <DocumentPage :resource="resource" @close="close">
+                                <AgentPage :resource="resource" @close="close" />
+                            </DocumentPage>
                         </template>
                         <template #document>
-                            <div class="page"><DocumentPage :resource="resource" @close="close" /></div>
+                            <DocumentPage :resource="resource" @close="close" />
                         </template>
                         <template #default>
-                            <aside class="inspector"><ResourceBody :resource="resource" @close="close" /></aside>
+                            <ResourceBody :resource="resource" @close="close" />
                         </template>
                     </SwitchCase>
-                </div>
-            </Transition>
+                </template>
+            </component>
         </div>
     </Transition>
 </template>
@@ -77,25 +93,47 @@ const close = () => (route.value.open ? unpeek() : go(route.value.env, props.typ
     width: min(760px, 100%);
 }
 
-.held {
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
+.skeleton {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 44px 32px;
+    animation: skeleton-wait 1.6s ease-in-out infinite;
 }
 
-.held > .inspector,
-.held > .page {
-    pointer-events: auto;
+.blank {
+    display: block;
+    height: 11px;
+    border-radius: 99px;
+    background: color-mix(in srgb, var(--text-3) 22%, transparent);
 }
 
-.swap-enter-active,
-.swap-leave-active {
-    transition: opacity 0.12s ease;
+.blank.short {
+    width: 28%;
+    height: 9px;
 }
 
-.swap-enter-from,
-.swap-leave-to {
-    opacity: 0;
+.blank.wide {
+    width: 88%;
+    height: 18px;
+    margin-bottom: 8px;
+}
+
+.blank.half {
+    width: 55%;
+}
+
+@keyframes skeleton-wait {
+    0%,
+    100% {
+        opacity: 0.45;
+    }
+
+    50% {
+        opacity: 1;
+    }
 }
 .page {
     position: absolute;

@@ -1,11 +1,11 @@
 <script setup>
-import {computed, ref} from "vue";
+import {computed, nextTick, onMounted, ref, watch} from "vue";
 import {act} from "../api.js";
 import Icon from "../kit/Icon.vue";
 import OptionsPicker from "../resource/OptionsPicker.vue";
 import Attachments from "./Attachments.vue";
 import {peek, route} from "../route.js";
-import {clock, focusTurn, meta, quoted, rows, store, types} from "../store.js";
+import {clock, focusTurn, laidOut, meta, quoted, rows, store, types} from "../store.js";
 import {render} from "../text/index.js";
 import "../text/all.js";
 
@@ -13,6 +13,26 @@ const FACES = ["👍", "❤️", "🎉", "😄", "👀", "🙏", "👎", "💔",
 const props = defineProps({turn: Object});
 const emit = defineEmits(["reply", "edit", "grew", "pin"]);
 const picking = ref(false);
+const bubble = ref(null);
+const LONG = 6;
+
+function shaped() {
+    const el = bubble.value;
+    if (!el || files.value.length) return;
+    Object.assign(el.style, {width: "9999px", maxWidth: ""});
+    const cap = el.getBoundingClientRect().width;
+    Object.assign(el.style, {position: "absolute", width: "max-content", maxWidth: "none"});
+    const wide = el.getBoundingClientRect().width;
+    Object.assign(el.style, {position: "", width: "", maxWidth: ""});
+    if (wide <= cap) return;
+    const lines = Math.ceil(wide / cap);
+    if (lines > LONG) return;
+    const text = el.querySelector(".thread-text");
+    const pad = el.clientWidth - (text ? text.clientWidth : el.clientWidth);
+    el.style.width = `${Math.min(cap, Math.ceil((wide - pad) / lines) * 1.08 + pad)}px`;
+}
+
+onMounted(() => nextTick(shaped));
 const mine = computed(() => props.turn.who === "user");
 const words = computed(() => quoted(props.turn.brief || props.turn.title));
 const html = computed(() => render(words.value.text, {types: types.value, env: route.value.env}));
@@ -56,6 +76,7 @@ const faces = computed(() => {
     return Object.entries(seen).map(([face, who]) => ({face, n: who.length, mine: who.includes("user"), title: who.join(", ")}));
 });
 const files = computed(() => Object.keys(props.turn.data.files || {}));
+watch([html, laidOut], () => nextTick(shaped));
 
 function refOf(word) {
     const m = word.trim().match(/^([\w-]+)[ :](\d+)$/);
@@ -85,7 +106,7 @@ async function drop() {
             :data-ref="turn.ref"
             @mouseleave="picking = false"
         >
-            <div class="thread-bubble md">
+            <div ref="bubble" class="thread-bubble md">
                 <template v-if="became.length">
                     <div :class="['thread-became', {live: !turn.completed}]">
                         <template v-for="(b, i) in became" :key="i">
@@ -323,9 +344,12 @@ button.thread-pill:hover {
 
 .thread-quote {
     cursor: pointer;
+    width: 0;
+    min-width: 100%;
+    box-sizing: border-box;
     display: -webkit-box;
     -webkit-box-orient: vertical;
-    -webkit-line-clamp: 2;
+    -webkit-line-clamp: 1;
     overflow: hidden;
     margin: 0 0 6px;
     padding: 2px 0 2px 9px;
@@ -343,7 +367,7 @@ button.thread-pill:hover {
     margin: 0;
     white-space: pre-wrap;
     overflow-wrap: anywhere;
-    text-wrap: pretty;
+    text-wrap: balance;
 }
 
 .thread-text :deep(p + p) {
