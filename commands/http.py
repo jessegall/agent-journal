@@ -16,6 +16,7 @@ from urllib.request import urlopen
 import features
 from features.skills.catalogue import SKILL, always, catalogue, load_now, skills
 from features.extension.package import archive as extension_archive, info as extension_info
+from features.hub.summary import summarize
 from controllers.types import Agents, Asks, CONTROLLERS, Environments
 from engine import bus
 from engine.manifest import manifest
@@ -141,6 +142,11 @@ def get_identity(req: Request) -> Reply:
     m = manifest(req.root)
     names = [e.title for e in Environments(Record(req.root, m["environment"]), actor=USER).all()]
     return Reply(200, {"project": m["project"], "root": str(req.root), "version": m["version"], "environments": names})
+
+
+@route("GET", "/api/summary")
+def get_summary(req: Request) -> Reply:
+    return Reply(200, summarize(req.root))
 
 
 @route("GET", "/api/extension")
