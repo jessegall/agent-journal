@@ -12,7 +12,7 @@ export function escape(text) {
         .replace(/"/g, "&quot;");
 }
 
-export function render(text, context) {
+function transformed(text, context) {
     const blocks = [{kind: "text", text: escape(text).replace(/\r\n/g, "\n")}];
     for (const fn of transformers) {
         for (let i = blocks.length - 1; i >= 0; i--) {
@@ -23,9 +23,19 @@ export function render(text, context) {
             else if (made) blocks.splice(i, 1, ...made);
         }
     }
-    return blocks
+    return blocks;
+}
+
+export function render(text, context) {
+    return transformed(text, context)
         .map((b) => (b.kind === "text" ? paragraphs(b.text) : b.html))
         .filter(Boolean)
+        .join("");
+}
+
+export function inline(text, context) {
+    return transformed(text, context)
+        .map((b) => (b.kind === "text" ? b.text : b.html))
         .join("");
 }
 

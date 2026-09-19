@@ -16,6 +16,7 @@ import Comments from "./Comments.vue";
 import Links from "./Links.vue";
 import Asked from "./Asked.vue";
 import RuleControls from "./RuleControls.vue";
+import Markdown from "./Markdown.vue";
 
 const props = defineProps({resource: Object, comments: {type: Boolean, default: true}});
 const emit = defineEmits(["close"]);
@@ -108,7 +109,12 @@ async function save() {
                 <template v-if="kind.labels.brief">
                     <h3>{{ kind.labels.brief }}</h3>
                 </template>
-                <div class="text">{{ resource.brief }}</div>
+                <template v-if="kind.view === 'document'">
+                    <Markdown :text="resource.brief" />
+                </template>
+                <template v-else>
+                    <div class="text">{{ resource.brief }}</div>
+                </template>
             </section>
         </template>
         <Sections :sections="resource.sections" />

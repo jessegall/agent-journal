@@ -1,4 +1,6 @@
 <script setup>
+import Markdown from "./Markdown.vue";
+
 defineProps({sections: Array});
 </script>
 
@@ -6,7 +8,7 @@ defineProps({sections: Array});
     <template v-for="s in sections" :key="s.title">
         <section class="section">
             <h3>{{ s.title }}</h3>
-            <div class="text">{{ s.body }}</div>
+            <Markdown :text="s.body" />
         </section>
     </template>
 </template>
@@ -20,9 +22,5 @@ h3 {
     font-size: 13px;
     font-weight: 600;
     color: var(--text);
-}
-.text {
-    white-space: pre-wrap;
-    color: var(--text-2);
 }
 </style>
