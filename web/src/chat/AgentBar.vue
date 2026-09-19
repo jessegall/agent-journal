@@ -202,7 +202,7 @@ onUnmounted(() => window.removeEventListener("click", away));
                 v-for="c in activityCounts"
                 :key="c.key"
                 type="button"
-                :class="['agent-fact', 'agent-count', {none: !c.n, open: open === c.key}]"
+                :class="['agent-fact', 'agent-count', `agent-activity-${c.key}`, {none: !c.n, open: open === c.key}]"
                 :title="c.title"
                 :aria-expanded="open === c.key"
                 @click="toggle(c.key, $event)"
@@ -431,7 +431,13 @@ onUnmounted(() => window.removeEventListener("click", away));
 
 .agent-detach {
     flex: none;
-    margin-left: 2px;
+    margin-left: 8px;
+    padding-left: 10px;
+    border-left: 1px solid var(--border);
+}
+
+.agent-activity-subagents {
+    margin-left: 8px;
 }
 
 .agent-detach.on {
