@@ -1,10 +1,13 @@
 <script setup>
-import {act} from "../api.js";
+import {act, forceAgent} from "../api.js";
 import Icon from "../kit/Icon.vue";
 import {route} from "../route.js";
-import {} from "../store.js";
 
 const props = defineProps({notice: Object});
+
+async function force() {
+    await forceAgent(route.value.env, props.notice.data.session);
+}
 
 async function close() {
     await act(route.value.env, "notice", props.notice.n, "close");
@@ -17,6 +20,9 @@ async function close() {
         <span class="chat-notice-text">{{ notice.title }}</span>
         <template v-if="notice.data.link">
             <a class="chat-notice-go" :href="notice.data.link" target="_blank" rel="noopener">{{ notice.data.label || "open" }}</a>
+        </template>
+        <template v-if="notice.data.action && notice.data.session">
+            <button type="button" class="chat-notice-go" @click="force">Force now</button>
         </template>
         <button type="button" class="chat-notice-x" title="Close this" @click="close"><Icon name="close" /></button>
     </div>
@@ -46,6 +52,12 @@ async function close() {
 .chat-notice-text {
     flex: 1;
     min-width: 0;
+}
+
+button.chat-notice-go {
+    font: inherit;
+    font-size: 11.5px;
+    cursor: pointer;
 }
 
 .chat-notice-go {

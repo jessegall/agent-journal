@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from controllers.types import Agents
+from controllers.types import Agents, Notices, Notifications
 from engine.inputs import FORCE, queue
 from engine.record import Record
 from engine.seats import live
@@ -44,6 +44,14 @@ def online(root: Path, env: str, session: str) -> dict:
     return found
 
 
+def delivered(record, sessions: set[str], action: str, label: str) -> None:
+    notices = Notices(record, actor=SYSTEM)
+    for notice in notices.all():
+        if not notice.completed and notice.data.get("action") == action and notice.data.get("session") in sessions:
+            notices.complete(notice.n, how="delivered")
+    Notifications(record, actor=SYSTEM).create(f"{action.capitalize()} set to {label.lower()}", brief=f"The {action} change was typed into the agent.")
+
+
 def force(root: Path, env: str, session: str) -> dict:
     found = online(root, env, session)
     queued = queue(Path(root), session, "", "Force through", provider=found["provider"], action=FORCE)
@@ -58,7 +66,9 @@ def request(root: Path, env: str, session: str, action: str, value: str) -> dict
     queued = None
     for line in commands:
         queued = queue(root, session, line, selected["label"], provider=found["provider"], action=action, value=value)
-    agents = Agents(Record(root, env), actor=SYSTEM)
+    record = Record(root, env)
+    agents = Agents(record, actor=SYSTEM)
     row = agents.by_session(session)
     agents.update(row.n, pending={**row.pending, action: {"value": value, "at": queued["at"]}})
+    Notices(record, actor=SYSTEM).create(f"Setting {action} to {selected['label'].lower()} — waiting for the agent", tone="note", session=session, action=action)
     return {k: v for k, v in queued.items() if k != "line"} | {"queued": True}
