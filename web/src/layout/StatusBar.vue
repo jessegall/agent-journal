@@ -6,21 +6,11 @@ import RunningCommand from "./RunningCommand.vue";
 import Switch from "../kit/Switch.vue";
 import {go, peek, route} from "../route.js";
 import {agent, autoOn, rows} from "../store.js";
+import {capital, currentWork, doneOf, lineOf, phaseOf, planButton, shownPlans, stateOf} from "./statusline.js";
 
-const current = computed(() => rows("work").find((w) => !w.completed) || null);
-const state = computed(() => {
-    const reported = agent.value ? agent.value.data.status : "stopped";
-    return ["stopped", "idle", "compacting"].includes(reported) ? reported : current.value ? "working" : "busy";
-});
-const named = (w) => (w.data.todo ? `to-do ${w.data.todo} · ${w.title}` : w.title);
-const line = computed(() => {
-    if (state.value === "stopped") return "no agent is on this environment";
-    if (state.value === "compacting") return "compacting its context — it carries on after";
-    const works = rows("work");
-    if (current.value) return `on ${named(current.value)}`;
-    const last = works[works.length - 1];
-    return last ? `last on ${named(last)}` : state.value === "idle" ? "waiting for you" : "on nothing declared";
-});
+const current = computed(() => currentWork(rows("work")));
+const state = computed(() => stateOf(agent.value, rows("work")));
+const line = computed(() => lineOf(agent.value, rows("work")));
 function inspect() {
     if (current.value) peek("work", current.value.n);
     else go(route.value.env);
@@ -34,19 +24,9 @@ const sentence = computed(() => {
     return {head: now.slice(0, cut), tail: now.slice(cut)};
 });
 watch(line, (now, before) => (was.value = before || ""));
-const plans = computed(() => rows("plan").filter((p) => ["ready", "active", "waiting", "done"].includes(p.data.status) && !p.completed));
+const plans = computed(() => shownPlans(rows("plan")));
 const error = ref("");
-
-const phaseOf = (p) => {
-    const i = p.data.current || 1;
-    return p.data.phases[i - 1] ? `phase ${i}, ${p.data.phases[i - 1].title}` : "";
-};
-
-const doneOf = (p) =>
-    p.data.phases.filter((ph) => ph.todos.length && ph.todos.every((n) => (rows("todo").find((t) => t.n === n) || {}).completed)).length;
-
-const button = (p) =>
-    ({ready: ["activate", "Start"], waiting: ["continue", "Continue"], done: ["acknowledge", "Acknowledge"]})[p.data.status] || null;
+const done = (p) => doneOf(p, rows("todo"));
 
 async function setAuto(on) {
     await saveSettings(route.value.env, {features: {auto: on}});
@@ -55,7 +35,7 @@ async function setAuto(on) {
 async function runBar(p) {
     error.value = "";
     try {
-        await act(route.value.env, "plan", p.n, button(p)[0]);
+        await act(route.value.env, "plan", p.n, planButton(p)[0]);
     } catch (e) {
         error.value = e.message;
     }
@@ -66,7 +46,7 @@ async function runBar(p) {
     <div class="statusbar" @click.self="inspect">
         <span :class="['statusbar-dot', {live: state !== 'stopped'}]" />
         <button type="button" class="statusbar-text" @click="inspect">
-            <b>{{ state[0].toUpperCase() + state.slice(1) }}</b>
+            <b>{{ capital(state) }}</b>
             <span class="statusbar-roll">
                 <template v-if="sentence.head">
                     <span class="statusbar-head">{{ sentence.head }}</span>
@@ -95,12 +75,12 @@ async function runBar(p) {
                 <span class="planbar-title">{{ p.title }}</span>
                 <span class="planbar-phase">{{ phaseOf(p) }}</span>
                 <span class="planbar-track" role="progressbar">
-                    <span :style="{width: `${(100 * doneOf(p)) / Math.max(1, p.data.phases.length)}%`}" />
+                    <span :style="{width: `${(100 * done(p)) / Math.max(1, p.data.phases.length)}%`}" />
                 </span>
             </a>
-            <template v-if="button(p)">
+            <template v-if="planButton(p)">
                 <button type="button" :class="['planbar-act', {ack: p.data.status === 'done'}]" @click="runBar(p)">
-                    {{ button(p)[1] }}
+                    {{ planButton(p)[1] }}
                     <Icon name="arrow" />
                 </button>
             </template>
