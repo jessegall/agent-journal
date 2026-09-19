@@ -30,7 +30,7 @@ from engine.hooks import answer
 from engine.record import Record
 from engine.transcript import page
 from providers import PROVIDERS
-from resources.base import USER, Refused, titled
+from resources.base import shown as shaped, USER, Refused, titled
 from resources.types import Ask
 from engine.stored import write_json
 
@@ -113,10 +113,6 @@ def dispatch(method: str, path: str, root: Path, query: dict, body: dict) -> Rep
         return Reply(400, {"error": str(e)})
     except (TypeError, AttributeError) as e:
         return Reply(400, {"error": f"not an action here: {e}"})
-
-
-def shaped(r) -> dict:
-    return {**asdict(r), "type": r.type, "ref": r.ref}
 
 
 def represented(got):
