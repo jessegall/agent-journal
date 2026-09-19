@@ -39,9 +39,11 @@ async function dismiss(r) {
                     <div class="needs-card-top">
                         <span class="needs-card-kind">{{ meta(r.type).title }}</span>
                         <span class="needs-card-meta">{{ r.type }} {{ r.n }}</span>
-                        <button type="button" class="needs-dismiss" title="Seen — take it off the list" @click.stop="dismiss(r)">
-                            <Icon name="close" />
-                        </button>
+                        <template v-if="r.type !== 'question' || r.completed">
+                            <button type="button" class="needs-dismiss" title="Seen — take it off the list" @click.stop="dismiss(r)">
+                                <Icon name="close" />
+                            </button>
+                        </template>
                     </div>
                     <p class="needs-card-title">{{ r.title }}</p>
                     <template v-if="r.abstract">
