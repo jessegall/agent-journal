@@ -117,7 +117,7 @@ def search_text(record, term: str, page: int) -> str:
     return "\n".join(part for part in (transcript_matches, "\n".join(file_hits)) if part)
 
 
-def parser() -> argparse.ArgumentParser:
+def parser(only: str = "") -> argparse.ArgumentParser:
     top = argparse.ArgumentParser(prog="journal", description="the journal, every type a noun and every method its word")
     top.add_argument("--root", default=os.environ.get("JOURNAL_ROOT", ".journal"))
     top.add_argument("--env", dest="bound", default=os.environ.get("JOURNAL_ENV", ""))
@@ -128,7 +128,7 @@ def parser() -> argparse.ArgumentParser:
     for type_, controller in CONTROLLERS.items():
         t = cmds.add_parser(type_, help=controller.resource.abstract_, description=controller.resource.help_)
         acts = t.add_subparsers(dest="action", required=True)
-        for name in actions(controller):
+        for name in actions(controller) if not only or only == type_ else ():
             add_method(acts, controller, name)
     add_query(cmds, "status", "where things stand", lambda ctx: queries.status(ctx["record"]))
     add_query(cmds, "carry", "everything standing, in full", lambda ctx: queries.carry(ctx["record"]))
@@ -269,11 +269,12 @@ def invoke(fn, args: dict, extra: dict):
 
 
 def run(argv: list[str]) -> int:
-    parsed, passed = parser().parse_known_args(argv)
+    noun = "" if {"-h", "--help"} & set(argv[:1]) else next((word for word in argv if word in CONTROLLERS), "-")
+    parsed, passed = parser(noun).parse_known_args(argv)
     args = vars(parsed)
     command = args.pop("command")
     if passed and command not in DRIVERS:
-        parser().error(f"unrecognized arguments: {' '.join(passed)}")
+        parser(noun).error(f"unrecognized arguments: {' '.join(passed)}")
     ctx = context(args)
     if command in DRIVERS:
         args["args"] = passed
