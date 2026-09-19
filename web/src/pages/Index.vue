@@ -73,7 +73,7 @@ async function select(n) {
             <NewResource :type="type" @made="select" @close="adding = false" />
         </template>
         <template v-if="!shown.length">
-            <p class="empty">No {{ kind.title.toLowerCase() }}s {{ archive ? "archived" : "on this environment" }} yet.</p>
+            <p class="empty">No {{ kind.title.toLowerCase() }}s {{ archive ? "archived" : all.length ? "open" : "on this environment" }}{{ archive || !all.length ? " yet" : "" }}.</p>
         </template>
         <SwitchCase :value="kind.view">
             <template #document>
