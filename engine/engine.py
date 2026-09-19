@@ -7,6 +7,7 @@ from controllers.types import CONTROLLERS
 import features
 from engine import bus
 from engine.actors import Actor, Agent, BUSY, IDLE, STOPPED, System, User, WORKING
+from engine.inputs import take
 from engine.record import Record
 from engine.sessions import Sessions
 from providers import PROVIDERS
@@ -42,6 +43,7 @@ class Engine:
         self.relayed = None
         self.typed_at = 0.0
         self.probed_at = 0.0
+        self.controlled_at = 0.0
         self.why = ""
 
     def start(self) -> None:
@@ -53,7 +55,7 @@ class Engine:
 
     def tick(self) -> str:
         self.relay()
-        self.why = self.follow() or self.probe() or self.deliver() or self.nudge()
+        self.why = self.follow() or self.probe() or self.control() or self.deliver() or self.nudge()
         self.seat()
         return self.why
 
@@ -106,6 +108,16 @@ class Engine:
             self.probed_at = time.time()
             return "silent for two minutes: probing with Ctrl-C"
         return ""
+
+    def control(self) -> str:
+        if self.agent.state() != IDLE or time.time() - self.controlled_at < TICK:
+            return ""
+        queued = take(self.record.root, self.agent.driver.session)
+        if not queued:
+            return ""
+        self.agent.driver.send(queued["line"])
+        self.controlled_at = time.time()
+        return f"controlled: {queued['label']}"
 
     def deliver(self) -> str:
         if self.agent.driver.last_report() is None:       # the agent has not reported yet: it may still be at a dialog
