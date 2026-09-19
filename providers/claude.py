@@ -1,14 +1,15 @@
 import json
 import re
-from datetime import datetime
 import shutil
 import time
+from datetime import datetime
 from pathlib import Path
 
 from engine.transcript import AGENT, HUMAN, INJECTED, PEER, SUMMARY, SUPERSEDED, TASK, TOOL, Turn, timestamp
 from engine.hooks import EVENTS
 from providers.base import Provider
 from providers.payload import Hook
+from resources.types import AgentRow
 
 ASKS = frozenset({"AskUserQuestion"})
 WINDOW, LONG_WINDOW, LONG_MARK = 200_000, 1_000_000, "[1m]"
@@ -147,11 +148,8 @@ class Claude(Provider):
         path = hook.transcript
         if not path or not path.is_file():
             return hook.model
-        for raw in reversed(path.read_text().splitlines()):
-            try:
-                model = json.loads(raw).get("message", {}).get("model")
-            except (ValueError, AttributeError):
-                continue
+        for _, row in reversed(self.entries(path)):
+            model = (row.get("message") or {}).get("model")
             if model:
                 return model
         return hook.model
@@ -160,11 +158,8 @@ class Claude(Provider):
         path = hook.transcript
         if not path or not path.is_file():
             return None
-        for raw in reversed(path.read_text().splitlines()):
-            try:
-                usage = json.loads(raw).get("message", {}).get("usage")
-            except (ValueError, AttributeError):
-                continue
+        for _, row in reversed(self.entries(path)):
+            usage = (row.get("message") or {}).get("usage")
             if usage:
                 used = sum(int(usage.get(k) or 0) for k in ("input_tokens", "cache_read_input_tokens", "cache_creation_input_tokens"))
                 return round(100 * used / self.window(hook, used), 1)
@@ -244,17 +239,9 @@ class Claude(Provider):
         at = timestamp(str(row.get("timestamp") or ""))
         return [{"id": b.get("id", ""), "name": b.get("name", ""), "input": b.get("input") or {}, "at": at} for b in content or () if isinstance(b, dict) and b.get("type") == "tool_use"]
 
-    def endings(self, path: Path) -> dict[str, tuple[str, float]]:
+    def endings(self, rows: list[dict]) -> dict[str, tuple[str, float]]:
         ended = {}
-        try:
-            raw = Path(path).read_text().splitlines()
-        except OSError:
-            return ended
-        for line in raw:
-            try:
-                row = json.loads(line)
-            except ValueError:
-                continue
+        for row in rows:
             at = timestamp(str(row.get("timestamp") or ""))
             if row.get("type") == "queue-operation" and row.get("operation") == "enqueue":
                 for used, status in NOTIFIED.findall(str(row.get("content") or "")):
@@ -267,9 +254,9 @@ class Claude(Provider):
         return ended
 
     def crew(self, path: Path) -> dict:
-        facts = super().crew(path)
-        uses = self.tools(path)
-        ended = self.endings(path)
+        rows = [row for _, row in self.entries(path)]
+        uses = [use for row in rows for use in self.tool_uses(row)]
+        ended = self.endings(rows)
         sessions = {}
         for meta in Path(path).with_suffix("").joinpath("subagents").glob("*.meta.json"):
             try:
@@ -294,7 +281,9 @@ class Claude(Provider):
             finished = status not in ("", "returned")
             shells.append({"id": use["id"], "command": str(use["input"].get("command") or "")[:160], "task": str(use["input"].get("description") or ""),
                            "running": not finished, "at": use["at"], "ended": done if finished else 0.0, "status": status if finished else ""})
-        return {**facts, "subagent_rows": subagents, "shell_rows": shells}
+        skills = sorted({str(u["input"].get("skill") or "") for u in uses if u["name"] == "Skill"} - {""})
+        return {AgentRow.skills: skills, AgentRow.shells: len(shells), AgentRow.subagents: len(subagents),
+                AgentRow.shell_rows: shells, AgentRow.subagent_rows: subagents}
 
     def subagent_transcript(self, path: Path, session: str) -> Path | None:
         found = Path(path).with_suffix("").joinpath("subagents", f"agent-{session}.jsonl")
