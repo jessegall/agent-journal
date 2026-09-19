@@ -70,7 +70,9 @@ const became = computed(() => {
         .filter((ref) => !named.has(ref) && meta(ref.split(":")[0]))
         .map((ref) => ({part: "filed while this message was in hand", word: worded(refOf(ref), ref), ref: refOf(ref)}));
     const seen = new Set();
+    const quotedMessage = (b) => words.value.quote && b.ref.type === "message" && props.turn.refs.includes(`message:${b.ref.n}`);
     return [...declared, ...linked]
+        .filter((b) => !quotedMessage(b))
         .filter((b) => !b.ref.type || (!seen.has(`${b.ref.type}:${b.ref.n}`) && seen.add(`${b.ref.type}:${b.ref.n}`)))
         .map((b) => ({...b, type: b.ref.type, n: b.ref.n}));
 });
