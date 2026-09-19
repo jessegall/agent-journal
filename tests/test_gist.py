@@ -14,6 +14,7 @@ console.log(JSON.stringify({
     shell: gists("git commit -m done && rg needle src"),
     loop: gists(`for f in tests/test_*.py tests/features/*/test_*.py; do echo "$f"; perl -e 'alarm 60; exec @ARGV' python3 "$f" || exit 1; done`),
     tokens: gistTokens("git commit file.txt").map((token) => token.kind),
+    slash: gists("ls ~/projects/ 2>/dev/null | head"),
 }));
 '''
 result = subprocess.run(["node", "--input-type=module", "-e", script], cwd=root, text=True, capture_output=True, check=True)
@@ -22,4 +23,5 @@ check("patch bodies are not command gists", got["patch"], [])
 check("real chained shell commands still split", got["shell"], ["git commit done", "rg needle"])
 check("shell loops keep the inner executable", got["loop"], ["python3 script"])
 check("a subcommand shares the executable's emphasis", got["tokens"], ["command", "command", "argument"])
+check("a path ending in a slash still names its last part", got["slash"], ["ls projects"])
 done()
