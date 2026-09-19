@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/opt/homebrew/opt/python@3.14/bin/python3.14 /Users/jessegall/projects/agent-journal/.journal/src/hook.py codex /Users/jessegall/projects/agent-journal/.journal",
+            "command": "sh /Users/jessegall/projects/agent-journal/.journal/src/hook.sh codex /Users/jessegall/projects/agent-journal/.journal",
             "timeout": 60
           }
         ]
@@ -18,7 +18,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/opt/homebrew/opt/python@3.14/bin/python3.14 /Users/jessegall/projects/agent-journal/.journal/src/hook.py codex /Users/jessegall/projects/agent-journal/.journal",
+            "command": "sh /Users/jessegall/projects/agent-journal/.journal/src/hook.sh codex /Users/jessegall/projects/agent-journal/.journal",
             "timeout": 60
           }
         ]
@@ -30,7 +30,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/opt/homebrew/opt/python@3.14/bin/python3.14 /Users/jessegall/projects/agent-journal/.journal/src/hook.py codex /Users/jessegall/projects/agent-journal/.journal",
+            "command": "sh /Users/jessegall/projects/agent-journal/.journal/src/hook.sh codex /Users/jessegall/projects/agent-journal/.journal",
             "timeout": 60
           }
         ]
@@ -42,7 +42,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/opt/homebrew/opt/python@3.14/bin/python3.14 /Users/jessegall/projects/agent-journal/.journal/src/hook.py codex /Users/jessegall/projects/agent-journal/.journal",
+            "command": "sh /Users/jessegall/projects/agent-journal/.journal/src/hook.sh codex /Users/jessegall/projects/agent-journal/.journal",
             "timeout": 60
           }
         ]
@@ -54,7 +54,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/opt/homebrew/opt/python@3.14/bin/python3.14 /Users/jessegall/projects/agent-journal/.journal/src/hook.py codex /Users/jessegall/projects/agent-journal/.journal",
+            "command": "sh /Users/jessegall/projects/agent-journal/.journal/src/hook.sh codex /Users/jessegall/projects/agent-journal/.journal",
             "timeout": 60
           }
         ]
@@ -66,7 +66,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/opt/homebrew/opt/python@3.14/bin/python3.14 /Users/jessegall/projects/agent-journal/.journal/src/hook.py codex /Users/jessegall/projects/agent-journal/.journal",
+            "command": "sh /Users/jessegall/projects/agent-journal/.journal/src/hook.sh codex /Users/jessegall/projects/agent-journal/.journal",
             "timeout": 60
           }
         ]
@@ -78,7 +78,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/opt/homebrew/opt/python@3.14/bin/python3.14 /Users/jessegall/projects/agent-journal/.journal/src/hook.py codex /Users/jessegall/projects/agent-journal/.journal",
+            "command": "sh /Users/jessegall/projects/agent-journal/.journal/src/hook.sh codex /Users/jessegall/projects/agent-journal/.journal",
             "timeout": 60
           }
         ]
@@ -90,7 +90,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/opt/homebrew/opt/python@3.14/bin/python3.14 /Users/jessegall/projects/agent-journal/.journal/src/hook.py codex /Users/jessegall/projects/agent-journal/.journal",
+            "command": "sh /Users/jessegall/projects/agent-journal/.journal/src/hook.sh codex /Users/jessegall/projects/agent-journal/.journal",
             "timeout": 60
           }
         ]
@@ -102,7 +102,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/opt/homebrew/opt/python@3.14/bin/python3.14 /Users/jessegall/projects/agent-journal/.journal/src/hook.py codex /Users/jessegall/projects/agent-journal/.journal",
+            "command": "sh /Users/jessegall/projects/agent-journal/.journal/src/hook.sh codex /Users/jessegall/projects/agent-journal/.journal",
             "timeout": 60
           }
         ]

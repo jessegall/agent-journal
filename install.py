@@ -109,22 +109,29 @@ def configure(project: Path, root: Path) -> list[str]:
     return done
 
 
+def fetch() -> tuple[Path, str]:
+    temporary = Path(tempfile.mkdtemp())
+    try:
+        cloned = subprocess.run(["git", "clone", "--quiet", "--depth", "1", os.environ.get("AGENT_JOURNAL_REPO", REPOSITORY), str(temporary / "package")], capture_output=True, text=True, timeout=120)
+    except (OSError, subprocess.TimeoutExpired) as error:
+        shutil.rmtree(temporary, ignore_errors=True)
+        return temporary, str(error)
+    if cloned.returncode:
+        shutil.rmtree(temporary, ignore_errors=True)
+        return temporary, cloned.stderr.strip() or "git clone failed"
+    return temporary, ""
+
+
 def upgrade(project: Path, root: Path | None = None) -> list[str]:
     root = root or project / ".journal"
     done = []
     source, temporary = PACKAGE, None
     reloaded = PACKAGE.resolve() in (root.resolve(), code(root).resolve()) and not os.environ.get("AGENT_JOURNAL_BOOTSTRAPPED")
     if reloaded:
-        temporary = Path(tempfile.mkdtemp())
+        temporary, failed = fetch()
+        if failed:
+            return [f"package not refreshed: {failed}"]
         source = temporary / "package"
-        try:
-            cloned = subprocess.run(["git", "clone", "--quiet", "--depth", "1", os.environ.get("AGENT_JOURNAL_REPO", REPOSITORY), str(source)], capture_output=True, text=True, timeout=120)
-        except (OSError, subprocess.TimeoutExpired) as error:
-            shutil.rmtree(temporary, ignore_errors=True)
-            return [f"package not refreshed: {error}"]
-        if cloned.returncode:
-            shutil.rmtree(temporary, ignore_errors=True)
-            return [f"package not refreshed: {cloned.stderr.strip() or 'git clone failed'}"]
     elif (PACKAGE / ".git").is_dir() and shutil.which("git"):
         pulled = subprocess.run(["git", "-C", str(PACKAGE), "pull", "--ff-only", "-q"], capture_output=True, text=True, timeout=120)
         done.append("package pulled" if pulled.returncode == 0 else f"package not pulled: {pulled.stderr.strip()}")
@@ -142,7 +149,14 @@ def upgrade(project: Path, root: Path | None = None) -> list[str]:
 def finish(project: Path, root: Path) -> list[str]:
     if PACKAGE.resolve() == root.resolve():
         refresh(PACKAGE, code(root))
-    done = configure(project, root)
+    done = []
+    if not all((code(root) / name).is_file() for name in PACKAGE_FILES) and not os.environ.get("AGENT_JOURNAL_BOOTSTRAPPED"):
+        temporary, failed = fetch()
+        if not failed:
+            refresh(temporary / "package", code(root))
+            shutil.rmtree(temporary, ignore_errors=True)
+        done.append(f"package files an older installer did not know: {failed or 'fetched'}")
+    done += configure(project, root)
     ran = migrate(root)
     done.append(f"migrations run: {', '.join(ran)}" if ran else "record already in shape")
     moved = retire(root)
