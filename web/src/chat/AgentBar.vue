@@ -29,6 +29,8 @@ const counts = computed(() => [
 ]);
 const skillCount = computed(() => counts.value[0]);
 const activityCounts = computed(() => counts.value.slice(1));
+const shellRows = computed(() => (data.value && data.value.shell_rows) || []);
+const subagentRows = computed(() => (data.value && data.value.subagent_rows) || []);
 const available = ref([]);
 const assigning = ref("");
 const controls = ref({groups: [], note: ""});
@@ -287,9 +289,17 @@ onUnmounted(() => window.removeEventListener("click", away));
                     </template>
                     <template #shells>
                         <p class="bar-none">{{ data.shells || 0 }} background shell(s) were started in this session.</p>
+                        <span v-for="row in shellRows" :key="row.cell" class="bar-item">
+                            <Icon name="terminal" />
+                            {{ row.command }}<small>{{ row.cell }}</small>
+                        </span>
                     </template>
                     <template #default>
                         <p class="bar-none">{{ data.subagents || 0 }} subagent(s) were dispatched in this session.</p>
+                        <span v-for="row in subagentRows" :key="`${row.task}-${row.model}`" class="bar-item">
+                            <Icon name="agents" />
+                            {{ row.task }}<small v-if="row.model">{{ row.model }}</small>
+                        </span>
                     </template>
                 </SwitchCase>
             </div>

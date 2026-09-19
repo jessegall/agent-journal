@@ -148,8 +148,11 @@ class Codex(Provider):
         uses = self.tools(path)
         skills = sorted({str((use.get("input") or {}).get("skill") or "") for use in uses if use.get("name") == "Skill"} - {""})
         subagents = sum(1 for use in uses if str(use.get("name") or "").endswith("spawn_agent"))
+        subagent_rows = []
+        shell_rows = []
         shells = 0
         compacting = False
+        pending = {}
         try:
             lines = Path(path).read_text().splitlines()
         except OSError:
@@ -160,13 +163,30 @@ class Codex(Provider):
                 payload = row.get("payload") or {}
             except (ValueError, AttributeError):
                 continue
+            if row.get("type") == "response_item":
+                name = ".".join(part for part in (str(payload.get("namespace") or ""), str(payload.get("name") or "")) if part)
+                key = payload.get("call_id") or payload.get("id")
+                raw = payload.get("arguments") or payload.get("input") or ""
+                text = str(raw)
+                if name.endswith("spawn_agent"):
+                    try:
+                        detail = json.loads(raw) if isinstance(raw, str) else raw
+                    except (TypeError, ValueError):
+                        detail = {}
+                    detail = detail if isinstance(detail, dict) else {}
+                    subagent_rows.append({"task": str(detail.get("task_name") or "subagent"), "model": str(detail.get("model") or "")})
+                elif name.rsplit(".", 1)[-1] in ("exec", "exec_command", "shell", "shell_command"):
+                    pending[key] = text
+                if payload.get("type") == "custom_tool_call_output" and str(payload.get("output") or "").startswith("Script running with cell ID"):
+                    shells += 1
+                    command = pending.get(payload.get("call_id") or payload.get("id"), "")
+                    shell_rows.append({"command": command[:160] or "background shell", "cell": str(payload.get("output") or "").split("ID", 1)[-1].strip()})
             if row.get("type") == "compacted":
                 compacting = True
             elif row.get("type") == "response_item" and (payload.get("role") == "assistant" or payload.get("type") in ("reasoning", "function_call", "custom_tool_call")):
                 compacting = False
-            if payload.get("type") == "custom_tool_call_output" and str(payload.get("output") or "").startswith("Script running with cell ID"):
-                shells += 1
-        return {AgentRow.skills: skills, AgentRow.shells: shells, AgentRow.subagents: subagents, AgentRow.compacting: compacting}
+        return {AgentRow.skills: skills, AgentRow.shells: shells, AgentRow.subagents: subagents,
+                AgentRow.shell_rows: shell_rows, AgentRow.subagent_rows: subagent_rows, AgentRow.compacting: compacting}
 
     def session(self, path: Path | None) -> dict:
         try:

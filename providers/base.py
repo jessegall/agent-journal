@@ -118,7 +118,7 @@ class Provider(ABC):
         skills = sorted({str((u.get("input") or {}).get("skill") or "") for u in uses if u.get("name") == "Skill"} - {""})
         shells = sum(1 for u in uses if u.get("name") == "Bash" and (u.get("input") or {}).get("run_in_background"))
         subagents = sum(1 for u in uses if u.get("name") in ("Agent", "Task"))
-        return {"skills": skills, "shells": shells, "subagents": subagents}
+        return {"skills": skills, "shells": shells, "subagents": subagents, "shell_rows": [], "subagent_rows": []}
 
     def loaded_skills(self, path: Path) -> dict[str, float]:
         return {str((use.get("input") or {}).get("skill")): float(use.get("at") or 0) for use in self.tools(path)
