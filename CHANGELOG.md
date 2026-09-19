@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.12.0 — Changes you can see land
+
+A journal update shows in the Activity panel, highlighted. The status bar shows each command's line changes even when the next command starts before they are counted, adds a finished test run's outcome (passed, or how many failed), and holds either a second before moving on. A reply or reaction closes the message it answers, and an edited message is retitled. Claude's usage dropdown fills from its status line; its effort is read from what it last confirmed; picked model and effort changes are shown as pending, can be forced through a busy agent, and are announced over the chat when queued and when delivered. The engine waits while you type in the terminal and checks that its Enter took. Only project files need open work. The terminal band is the bar, the viewer URL, a blank line and the border; the agent bar reads provider, usage, context, model, effort, skills, duration, branch.
+
+What to do about it: `journal upgrade`, then restart `journal claude`.
+
 ## 2.11.0 — Model and effort changes you can see and push through
 
 A model or effort picked in the agent bar shows on its button with a small spinner until the engine types it, and the button then shows what Claude confirmed — including a session-only `/effort max`, read from Claude's own transcript. A waiting change can be forced: the engine stops the agent's turn, types the change and tells it to carry on. Picked changes are delivered at all now (they were queued under a name the engine never read). Also: a journal flashes its name when you open it or come back to it, a quote in the chat highlights what it answers again, chat paragraphs never end on a lone word, a file name without its path opens the project file it names, the composer offers no Pin, and Claude's context percentage follows the model's real window.

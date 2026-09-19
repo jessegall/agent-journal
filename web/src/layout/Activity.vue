@@ -3,19 +3,23 @@ import {computed, onMounted, ref} from "vue";
 import {peek} from "../route.js";
 import {age, byRef, meta, store, word} from "../store.js";
 
+const updated = (e) =>
+    e.type === "notification" && e.action === "created" && (byRef(`notification:${e.n}`) || {data: {}}).data.kind === "update";
 const settled = ref(false);
 onMounted(() => setTimeout(() => (settled.value = true), 400));
 const shown = computed(() =>
     [...store.events]
         .reverse()
-        .filter((e) => meta(e.type).notify.includes("user"))
+        .filter((e) => meta(e.type).notify.includes("user") || updated(e))
         .slice(0, 80)
 );
 const words = {created: "New", updated: "Updated", deleted: "Deleted", linked: "Linked", commented: "Commented on"};
 const heading = (e) =>
-    e.action === "completed"
-        ? `${meta(e.type).title} ${word(e.type, "complete")}`
-        : `${words[e.action]} ${meta(e.type).title.toLowerCase()}`;
+    updated(e)
+        ? "Journal updated"
+        : e.action === "completed"
+          ? `${meta(e.type).title} ${word(e.type, "complete")}`
+          : `${words[e.action]} ${meta(e.type).title.toLowerCase()}`;
 const title = (e) => (byRef(`${e.type}:${e.n}`) || {}).title || "";
 const who = (e) => e.actor[0].toUpperCase() + e.actor.slice(1);
 </script>
@@ -25,7 +29,13 @@ const who = (e) => e.actor[0].toUpperCase() + e.actor.slice(1);
         <div class="activity-panel">
             <div class="activity-head"><span class="group-label">Activity</span></div>
             <TransitionGroup tag="div" class="activity-list" :name="settled ? 'act' : ''">
-                <a v-for="e in shown" :key="e.id" class="activity-row activity-link" href="#" @click.prevent="peek(e.type, e.n)">
+                <a
+                    v-for="e in shown"
+                    :key="e.id"
+                    :class="['activity-row', 'activity-link', {'activity-update': updated(e)}]"
+                    href="#"
+                    @click.prevent="peek(e.type, e.n)"
+                >
                     <span class="activity-text">
                         {{ heading(e) }}
                         <span class="activity-n">{{ e.n }}</span>
@@ -167,5 +177,12 @@ const who = (e) => e.actor[0].toUpperCase() + e.actor.slice(1);
 
 .act-move {
     transition: transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.activity-update {
+    margin: 2px 0;
+    border-radius: 8px;
+    background: color-mix(in srgb, var(--accent) 16%, transparent);
+    box-shadow: inset 2px 0 0 var(--accent);
 }
 </style>
