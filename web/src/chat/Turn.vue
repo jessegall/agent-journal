@@ -138,17 +138,17 @@ async function drop() {
                         Comment on {{ commentParent.label }}
                     </button>
                 </template>
-                <template v-if="became.length">
+                <template v-if="became.length || turn.type === 'question'">
                     <div :class="['thread-became', {live: !turn.completed}]">
+                        <template v-if="turn.type === 'question'">
+                            <p class="thread-ask-label">Question</p>
+                        </template>
                         <template v-for="(b, i) in became" :key="i">
                             <button type="button" class="thread-pill" :title="b.part" @click.stop="peek(b.type, b.n)">
                                 {{ b.word }}
                             </button>
                         </template>
                     </div>
-                </template>
-                <template v-if="turn.type === 'question'">
-                    <p class="thread-ask-label">Question</p>
                 </template>
                 <template v-if="words.quote">
                     <p class="thread-quote" title="Go to what this answers" @click.stop="resourceComment ? openComment() : toQuoted">{{ words.quote }}</p>
@@ -392,7 +392,7 @@ button.thread-pill:hover {
 }
 
 .thread-ask-label {
-    margin: -2px 0 5px;
+    margin: 0 auto 0 0;
     font-size: 10.5px;
     letter-spacing: 0.04em;
     text-transform: uppercase;
