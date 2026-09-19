@@ -39,10 +39,14 @@ for present in ([], [".claude"], [".codex"], [".claude", ".codex"]):
     check(f"present {present}: exactly those are wired", wired, sorted(f[1:] for f in present))
     if not present:
         check("nothing present: says so", said, ["no agent found here: neither Claude nor Codex"])
-    for name in wired:
-        skills = project / {"claude": ".claude/skills", "codex": ".codex/skills"}[name]
+    if wired:
+        library = project / ".agents" / "skills"
         expected = sorted(Path(path).parent.name for path in render() if path.startswith("journal-"))
-        check(f"present {present}: {name} gets the core, subject and feature skills", ((skills / "journal" / "SKILL.md").is_file(), sorted(d.name for d in skills.iterdir() if d.name.startswith("journal-"))), (True, expected))
+        check(f"present {present}: the library holds the core, subject and feature skills once", ((library / "journal" / "SKILL.md").is_file(), sorted(d.name for d in library.iterdir() if d.name.startswith("journal-"))), (True, expected))
+        linked = project / ".claude" / "skills" / "journal-auto"
+        check(f"present {present}: Claude reads the library through links, Codex reads it directly",
+              (linked.is_symlink() if "claude" in wired else not linked.exists(), (linked / "SKILL.md").read_text() == (library / "journal-auto" / "SKILL.md").read_text() if "claude" in wired else True, not (project / ".codex" / "skills" / "journal-auto").exists()),
+              (True, True, True))
     if present:
         check(f"present {present}: the law is managed in both agent briefing files", all("BEGIN: agent-journal law" in (project / name).read_text() for name in ("AGENTS.md", "CLAUDE.md")), True)
         check(f"present {present}: the journal command is written and runs", (project / ".journal" / "journal").is_file() and "version" in (project / ".journal" / "journal").read_text() or True, True)

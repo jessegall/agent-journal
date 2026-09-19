@@ -1,5 +1,6 @@
 <script setup>
 import {computed, onUnmounted, ref, watch} from "vue";
+import {api} from "../api.js";
 import {gists, gistTokens} from "../gist.js";
 import {spoken} from "../spoken.js";
 import {agent, types} from "../store.js";
@@ -35,7 +36,11 @@ watch(
         for (const c of ring) {
             if (c.at <= seen.at) continue;
             seen.at = c.at;
-            if (!first) gists(c.what, sentence).forEach((text) => pending.push({key: text, text, tokens: gistTokens(text), delta: []}));
+            if (!first) {
+                const shown = gists(c.what, sentence);
+                shown.forEach((text) => pending.push({key: text, text, tokens: gistTokens(text), delta: []}));
+                api("POST", "/shown", {command: c.what, shown}).catch(() => {});
+            }
         }
         if (first && !seen.at) seen.at = 1;
         if (pending.length && !rolls) roll();
@@ -141,7 +146,9 @@ watch(
         <Transition name="roll">
             <span v-if="line" :key="line.key" :class="['statusbar-run-line', {done: line.done}]">
                 <span class="statusbar-run-text" :title="line.text">
-                    <span v-for="(token, i) in line.tokens" :key="`${i}-${token.value}`" :class="['statusbar-run-token', token.kind]">{{ token.value }}</span>
+                    <span v-for="(token, i) in line.tokens" :key="`${i}-${token.value}`" :class="['statusbar-run-token', token.kind]">
+                        {{ token.value }}
+                    </span>
                 </span>
                 <span class="statusbar-running-slot">
                     <Transition name="clock">
@@ -355,5 +362,4 @@ watch(
     margin-left: 0;
     opacity: 0;
 }
-
 </style>

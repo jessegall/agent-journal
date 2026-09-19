@@ -13,12 +13,13 @@ features.load()
 record = fresh()
 styles = Styles(record, actor=USER)
 rule = styles.create("Helper functions in the viewer", subject="js-helpers", decision="a top-level helper is a function declaration", when="static/app.js helpers", brief="Decided in the review.")
-skill = record.root.parent / ".claude" / "skills" / "style-js-helpers" / "SKILL.md"
+skill = record.root.parent / ".agents" / "skills" / "style-js-helpers" / "SKILL.md"
+linked = record.root.parent / ".claude" / "skills" / "style-js-helpers"
 check("a style rule writes its skill", skill.read_text(), "---\nname: style-js-helpers\ndescription: Helper functions in the viewer: a top-level helper is a function declaration\n---\n\n# Helper functions in the viewer\n\n**The rule here:** a top-level helper is a function declaration\n\nApplies to static/app.js helpers.\n\nDecided in the review.\n")
 styles.update(rule.n, decision="a top-level helper is a function declaration, never a const arrow")
-check("a change rewrites it", "never a const arrow" in skill.read_text(), True)
+check("a change rewrites it, and Claude reads it through a link", ("never a const arrow" in skill.read_text(), linked.is_symlink(), (linked / "SKILL.md").read_text() == skill.read_text()), (True, True, True))
 styles.method("strike")(rule.n, "no longer wanted")
-check("struck: the skill is gone", skill.exists(), False)
+check("struck: the skill and its link are gone", (skill.exists(), linked.exists()), (False, False))
 check("style rules are the project's, with their reasoning", (styles.resource.scope, styles.resource.labels["brief"]), ("project", "Reasoning"))
 
 done()

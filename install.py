@@ -10,10 +10,9 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from migrations import run as migrate  # noqa: E402
 from features.law.policy import brief  # noqa: E402
 from providers import PROVIDERS  # noqa: E402
-from skills import write as write_skills  # noqa: E402
+from skills import LIBRARY, LINKED, publish  # noqa: E402
 
 PACKAGE = Path(__file__).resolve().parent
-SKILLS = {"claude": ".claude/skills", "codex": ".codex/skills"}
 PACKAGE_DIRS = ("commands", "controllers", "engine", "extension", "features", "migrations", "providers", "resources", "skills")
 PACKAGE_FILES = ("VERSION", "hook.py", "install.py", "journal.py", "serve.py", "skills.py")
 PACKAGE_TREES = (*PACKAGE_DIRS, "web/dist")
@@ -68,16 +67,18 @@ def install(project: Path, root: Path | None = None) -> list[str]:
 
 def configure(project: Path, root: Path) -> list[str]:
     done = []
+    present = []
     for name, cls in PROVIDERS.items():
         provider = cls()
         if not provider.present(project):
             continue
         f = provider.wire(project, f"{sys.executable} {root / 'hook.py'} {name} {root}")
         done.append(f"{name}: hooks in {f.relative_to(project)}")
-        written = write_skills(project / SKILLS[name])
-        done.append(f"{name}: {len(written)} skills in {SKILLS[name]}")
+        present.append(name)
     if not done:
         return ["no agent found here: neither Claude nor Codex"]
+    written, linked = publish(project, tuple(present))
+    done.append(f"{len(written)} skills in {LIBRARY}" + (f", linked from {', '.join(LINKED[a] for a in present if a in LINKED)}" if linked else ""))
     written = brief(project)
     done.append(f"the journal's law in {', '.join(f.name for f in written) or 'AGENTS.md and CLAUDE.md'}")
     done.append(f"the journal command: {alias(project, root).relative_to(project)}")

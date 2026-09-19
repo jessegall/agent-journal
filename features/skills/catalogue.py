@@ -10,7 +10,9 @@ from resources.base import SYSTEM, USER, names
 from resources.types import AgentRow
 
 SKILL = names("name", "description", "path", "changed", "loaded", "stale", "always", "size")
-HOMES = (".claude/skills", ".codex/skills")
+from skills import LIBRARY, LINKED
+
+HOMES = (LIBRARY, *LINKED.values(), ".codex/skills")
 
 
 def frontmatter(text: str) -> dict:
@@ -34,9 +36,7 @@ def managed() -> set[str]:
 
 
 def available(root: Path) -> set[str]:
-    homes = [root / home for home in HOMES if (root / home).is_dir()]
-    found = [{f.parent.name for f in home.glob("*/SKILL.md")} for home in homes]
-    return set.intersection(*found) if found else set()
+    return {f.parent.name for f in (root / LIBRARY).glob("*/SKILL.md")}
 
 
 def loaded_at(agent) -> dict[str, float]:
