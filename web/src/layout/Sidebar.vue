@@ -7,6 +7,7 @@ import {route} from "../route.js";
 import {load, navTypes, open, rows, store, unreadByUser} from "../store.js";
 
 const envs = computed(() => rows("environment").filter((e) => !e.completed));
+const pages = computed(() => store.pages || []);
 const draft = reactive({open: false, name: "", error: ""});
 const folded = reactive({});
 const fold = (key) => {
@@ -82,6 +83,16 @@ async function makeEnv() {
                     <Icon name="terminal" />
                     Services
                 </a>
+                <template v-for="p in pages" :key="`${p.plugin}.${p.name}`">
+                    <a
+                        :class="['item', {on: route.page === 'plugin' && String(route.n) === `${p.plugin}.${p.name}`}]"
+                        :href="`#/${route.env}/plugin/${p.plugin}.${p.name}`"
+                    >
+                        <Icon :name="p.icon" />
+                        {{ p.title }}
+                        <span :class="['plugin-dot', p.state]" />
+                    </a>
+                </template>
             </template>
         </div>
         <div class="group">
@@ -260,6 +271,24 @@ async function makeEnv() {
     height: 15px;
     color: var(--text-3);
 }
+.plugin-dot {
+    width: 6px;
+    height: 6px;
+    margin-left: auto;
+    border-radius: 50%;
+    background: var(--text-3);
+}
+
+.plugin-dot.ready,
+.plugin-dot.starting {
+    background: var(--created);
+}
+
+.plugin-dot.failed,
+.plugin-dot.blocked {
+    background: var(--danger);
+}
+
 .count {
     margin-left: auto;
     font-size: 12px;

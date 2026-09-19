@@ -20,6 +20,7 @@ export const store = reactive({
     events: [],
     settings: null,
     agents: [],
+    pages: [],
     stream: null,
     booted: false,
     activity: remembered("journal.activity", true),
@@ -205,6 +206,7 @@ function poll() {
         const env = route.value.env;
         store.agents = await http.all(env, "agent");
         if (ticks % 5) return;
+        store.pages = await http.api("GET", "/pages");
         const last = store.events.length ? store.events[store.events.length - 1].id : 0;
         const fresh = await http.events(env, last);
         if (fresh.length) await reload();

@@ -407,6 +407,23 @@ def get_subagent_transcript(req: Request) -> Reply:
     return transcript_of(req, req.params["session"])
 
 
+@route("GET", "/api/pages")
+def get_pages(req: Request) -> Reply:
+    from engine.services import specs, status
+    from engine.services import plugins as installed
+    where = {spec["id"]: spec for spec in specs(req.root)}
+    out = []
+    for row in installed(req.root):
+        plugin = str(row.manifest.get("name") or "")
+        for page in row.manifest.get("pages") or []:
+            sid = f"{plugin}.{page['service']}"
+            spec, said = where.get(sid, {}), status(req.root, sid)
+            out.append({"plugin": plugin, "name": page["name"], "title": page["title"], "icon": page.get("icon") or "plug",
+                        "service": sid, "state": said.get("state") or "not running", "path": page.get("path") or "/",
+                        "url": (spec.get("url") or said.get("url") or "") + (page.get("path") or "/"), "status": page.get("status") or ""})
+    return Reply(200, out)
+
+
 @route("GET", "/api/services")
 def get_services(req: Request) -> Reply:
     from engine.services import specs, states
