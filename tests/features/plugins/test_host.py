@@ -8,7 +8,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 import features  # noqa: E402
-from controllers.types import Agents, Nudges, Plugins, Todos  # noqa: E402
+from controllers.types import Agents, Notices, Nudges, Plugins, Todos  # noqa: E402
 from features.plugins.host import Host  # noqa: E402
 from features.plugins.source import folder, home, log  # noqa: E402
 from resources.base import AGENT, PLUGIN, SYSTEM  # noqa: E402
@@ -63,6 +63,23 @@ Todos(noisy, actor=AGENT).create("one")
 loud.step()
 Todos(noisy, actor=AGENT).create("two")
 check("a failing handler is written to the plugin's log and does not stop the next event", (loud.step(), "boom" in log(noisy.root, "noisy").read_text()), (1, True))
+
+# A PLUGIN THAT KEEPS FAILING backs off and the user is told once
+from features.plugins.host import PATIENCE  # noqa: E402
+base = time.time()
+loud.trouble.clear()
+for i in range(PATIENCE - 1):
+    Todos(noisy, actor=AGENT).create(f"row {i}")
+    loud.step(now=base)
+check("while it is only stumbling, nothing is said", (Notices(noisy).all(), loud.trouble["noisy"]["failures"]), ([], PATIENCE - 1))
+Todos(noisy, actor=AGENT).create("the one too many")
+loud.step(now=base)
+told = Notices(noisy).all()
+check("after five failures in a row the user is told once, with the log", (len(told), told[0].title, "boom" in told[0].brief, "noisy.log" in told[0].brief), (1, "Plugin noisy is failing", True, True))
+check("and it is left alone until its wait is over", (loud.trouble["noisy"]["until"] > base, loud.step(now=base)), (True, 0))
+(folder(noisy.root, "noisy") / "handler.sh").write_text("echo '{}'\n")
+Todos(noisy, actor=AGENT).create("after it was fixed")
+check("once it answers again, the notice is closed and it is no longer held back", (loud.step(now=base + 120) > 0, bool(Notices(noisy).load(told[0].n).completed), "noisy" in loud.trouble), (True, True, False))
 
 # EVENTS OLDER THAN THE REPLAY WINDOW are passed over after the viewer was down
 old = fresh("old")
