@@ -7,6 +7,7 @@ import ResourceBody from "./ResourceBody.vue";
 import DocumentPage from "./DocumentPage.vue";
 import PlanPage from "./PlanPage.vue";
 import AgentPage from "./AgentPage.vue";
+import Comments from "./Comments.vue";
 
 const props = defineProps({type: String, n: Number});
 const resource = computed(() => (props.type ? rows(props.type).find((r) => r.n === props.n) : null) || null);
@@ -21,7 +22,7 @@ watch(
         if (!before || !resource.value || before.startsWith(":")) return;
         swapping.value = true;
         clearTimeout(settle);
-        settle = setTimeout(() => (swapping.value = false), 160);
+        settle = setTimeout(() => (swapping.value = false), 260);
     }
 );
 </script>
@@ -29,37 +30,45 @@ watch(
 <template>
     <Transition name="reader">
         <div v-if="resource" :key="panel" :class="['reader', shape]" @click.self="close">
-            <component :is="panel === 'inspector' ? 'aside' : 'div'" :class="panel === 'inspector' ? 'inspector' : 'page'">
-                <template v-if="swapping">
-                    <div class="skeleton">
-                        <span class="blank short" />
-                        <span class="blank wide" />
-                        <span class="blank" />
-                        <span class="blank" />
-                        <span class="blank half" />
-                    </div>
-                </template>
-                <template v-else>
-                    <SwitchCase :value="shape">
-                        <template #plan>
-                            <DocumentPage :resource="resource" @close="close">
-                                <PlanPage :resource="resource" @close="close" />
-                            </DocumentPage>
-                        </template>
-                        <template #agent>
-                            <DocumentPage :resource="resource" @close="close">
-                                <AgentPage :resource="resource" @close="close" />
-                            </DocumentPage>
-                        </template>
-                        <template #document>
-                            <DocumentPage :resource="resource" @close="close" />
-                        </template>
-                        <template #default>
-                            <ResourceBody :resource="resource" @close="close" />
-                        </template>
-                    </SwitchCase>
-                </template>
-            </component>
+            <aside v-if="panel === 'inspector'" :class="['inspector', {swapping}]">
+                <div class="inspector-pages">
+                    <Transition name="inspector-page">
+                        <div :key="resource.ref" :class="['inspector-page', shape]">
+                            <template v-if="swapping">
+                                <div class="skeleton">
+                                    <span class="blank short" />
+                                    <span class="blank wide" />
+                                    <span class="blank" />
+                                    <span class="blank" />
+                                    <span class="blank half" />
+                                </div>
+                            </template>
+                            <ResourceBody v-else :resource="resource" :comment-composer="false" @close="close" />
+                        </div>
+                    </Transition>
+                </div>
+                <Comments :resource="resource" :show-thread="false" />
+            </aside>
+            <div v-else class="page">
+                <SwitchCase :value="shape">
+                    <template #plan>
+                        <DocumentPage :resource="resource" @close="close">
+                            <PlanPage :resource="resource" @close="close" />
+                        </DocumentPage>
+                    </template>
+                    <template #agent>
+                        <DocumentPage :resource="resource" @close="close">
+                            <AgentPage :resource="resource" @close="close" />
+                        </DocumentPage>
+                    </template>
+                    <template #document>
+                        <DocumentPage :resource="resource" @close="close" />
+                    </template>
+                    <template #default>
+                        <ResourceBody :resource="resource" @close="close" />
+                    </template>
+                </SwitchCase>
+            </div>
         </div>
     </Transition>
 </template>
@@ -84,10 +93,64 @@ watch(
     right: 0;
     bottom: 0;
     width: min(460px, 100%);
-    overflow: auto;
+    display: flex;
+    flex-direction: column;
+    overflow: visible;
     background: var(--bg);
     border-left: 1px solid var(--border);
     box-shadow: -20px 0 50px rgba(0, 0, 0, 0.4);
+    transition: width 0.26s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.inspector::before {
+    content: "";
+    position: absolute;
+    z-index: 5;
+    top: 0;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: var(--progress);
+    opacity: 0;
+}
+
+.inspector.swapping::before {
+    animation: inspector-progress 0.26s ease-out forwards;
+}
+
+.inspector-pages {
+    position: relative;
+    flex: 1;
+    min-height: 0;
+    overflow: visible;
+}
+
+.inspector-page {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    background: var(--bg);
+}
+
+.inspector-page.small {
+    width: min(460px, 100vw);
+}
+
+.inspector-page.wide {
+    width: min(760px, 100vw);
+}
+
+.inspector > :deep(.comment-write) {
+    position: relative;
+    z-index: 3;
+    flex: none;
+    margin: 0;
+    padding: 10px 20px 14px;
+    border-top: 1px solid var(--border);
+    background: var(--bg);
 }
 .reader.wide .inspector {
     width: min(760px, 100%);
@@ -135,6 +198,44 @@ watch(
         opacity: 1;
     }
 }
+
+@keyframes inspector-progress {
+    0% {
+        width: 0;
+        opacity: 1;
+    }
+
+    75% {
+        width: 82%;
+        opacity: 1;
+    }
+
+    100% {
+        width: 100%;
+        opacity: 0;
+    }
+}
+
+.inspector-page-enter-active,
+.inspector-page-leave-active {
+    transition:
+        transform 0.26s cubic-bezier(0.2, 0.8, 0.2, 1),
+        opacity 0.18s ease;
+}
+
+.inspector-page-leave-active {
+    position: absolute;
+}
+
+.inspector-page-enter-from {
+    opacity: 0;
+    transform: translateX(32px);
+}
+
+.inspector-page-leave-to {
+    opacity: 0;
+    transform: translateX(-32px);
+}
 .page {
     position: absolute;
     top: 0;
@@ -165,7 +266,9 @@ watch(
 
 .reader-enter-active .inspector,
 .reader-leave-active .inspector {
-    transition: transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
+    transition:
+        transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1),
+        width 0.26s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 .reader-enter-active .page,

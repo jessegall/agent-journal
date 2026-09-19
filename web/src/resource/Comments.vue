@@ -6,7 +6,12 @@ import {route} from "../route.js";
 import {age, quoted, rows, withQuote} from "../store.js";
 import Compose from "../chat/Compose.vue";
 
-const props = defineProps({resource: Object, quote: {type: String, default: ""}});
+const props = defineProps({
+    resource: Object,
+    quote: {type: String, default: ""},
+    showThread: {type: Boolean, default: true},
+    compose: {type: Boolean, default: true},
+});
 const emit = defineEmits(["sent"]);
 const thread = computed(() =>
     rows("comment")
@@ -44,7 +49,7 @@ async function send(text) {
 </script>
 
 <template>
-    <section class="comments">
+    <section v-if="props.showThread" class="comments">
         <template v-if="thread.length">
             <h3>Comments</h3>
         </template>
@@ -82,7 +87,7 @@ async function send(text) {
             </div>
         </template>
     </section>
-    <div class="comment-write">
+    <div v-if="props.compose" class="comment-write">
         <Compose placeholder="Comment…" submit="Comment" :quote="quote" :send="send" @unquote="emit('sent')" />
     </div>
 </template>
