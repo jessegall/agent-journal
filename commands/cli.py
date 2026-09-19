@@ -4,6 +4,7 @@ import json
 import os
 import sys
 import time
+from dataclasses import dataclass
 from pathlib import Path
 
 from controllers.base import Controller
@@ -14,7 +15,7 @@ from engine import queries
 from engine.drivers import DRIVERS
 from engine.record import Record
 from engine.sessions import Sessions, allowed
-from engine.transcript import conversation, search as search_transcript, user
+from engine.transcript import Turn, conversation, search as search_transcript, user
 from providers import PROVIDERS
 from resources.base import AGENT, Refused, SYSTEM
 from resources.types import AgentRow
@@ -67,17 +68,52 @@ def transcript(record, session: str):
     return provider().transcript(row.transcript) if provider else []
 
 
+def turn_text(turn, source: str = "") -> str:
+    return f"{source}{turn.line:>6}  {turn.who:<7} {turn.text}"
+
+
 def say(turns) -> str:
-    return "\n".join(f"{t.line:>6}  {t.who:<7} {t.text}" for t in turns)
+    return "\n".join(turn_text(turn) for turn in turns)
 
 
-def search_text(record, session: str, term: str, page: int) -> str:
+@dataclass(frozen=True)
+class SourcedTurn:
+    provider: str
+    session: str
+    turn: Turn
+
+    @property
+    def text(self) -> str:
+        return self.turn.text
+
+
+def environment_transcript(record) -> list[SourcedTurn]:
+    seen = set()
+    turns = []
+    for row in Agents(record, actor=SYSTEM).all():
+        provider = PROVIDERS.get(row.provider)
+        path = Path(row.transcript).expanduser() if row.transcript else None
+        try:
+            path = path.resolve(strict=True) if path else None
+        except (OSError, RuntimeError):
+            continue
+        if not provider or not path or not path.is_file() or path in seen:
+            continue
+        seen.add(path)
+        for turn in provider().transcript(path):
+            turns.append((turn.at, row.n, turn.line, SourcedTurn(row.provider, row.title, turn)))
+    turns.sort(key=lambda item: item[:3])
+    return [item[-1] for item in turns]
+
+
+def search_text(record, term: str, page: int) -> str:
     want = term.lower()
-    transcript_hits = say(search_transcript(transcript(record, session), term, page))
+    transcript_matches = "\n".join(turn_text(hit.turn, f"{hit.provider}:{hit.session}  ")
+                                   for hit in search_transcript(environment_transcript(record), term, page))
     file_hits = [f"  file  {r.ref}  {name}" + (f" — {tags}" if tags else "")
                  for type_, controller in CONTROLLERS.items() for r in controller(record).all()
                  for name, tags in r.files.items() if want in name.lower() or want in str(tags).lower()]
-    return "\n".join(part for part in (transcript_hits, "\n".join(file_hits)) if part)
+    return "\n".join(part for part in (transcript_matches, "\n".join(file_hits)) if part)
 
 
 def parser() -> argparse.ArgumentParser:
@@ -97,7 +133,7 @@ def parser() -> argparse.ArgumentParser:
     add_query(cmds, "carry", "everything standing, in full", lambda ctx: queries.carry(ctx["record"]))
     add_query(cmds, "start", "what a session is handed at its start", lambda ctx: queries.start_block(ctx["record"]))
     add_query(cmds, "open", "open work", lambda ctx: queries.lines(queries.open_work(ctx["record"])))
-    add_query(cmds, "search", "this session's transcript and attached files", lambda ctx: search_text(ctx["record"], ctx["session"], ctx["term"], ctx["page"]),
+    add_query(cmds, "search", "every agent transcript in this environment and attached files", lambda ctx: search_text(ctx["record"], ctx["term"], ctx["page"]),
               ("term", {}), ("--page", {"type": int, "default": 0}))
     add_query(cmds, "conversation", "the stretch the last summary replaced", lambda ctx: say(conversation(transcript(ctx["record"], ctx["session"]), ctx["back"])),
               ("--back", {"type": int, "default": 1}))

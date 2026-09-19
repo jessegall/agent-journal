@@ -79,8 +79,20 @@ transcript.write_text("\n".join(json.dumps(r) for r in [{"type": "user", "messag
 agents = Agents(Record(root, "t"), actor=SYSTEM)
 row = agents.by_session("s-1")
 agents.update(row.n, provider="claude", transcript=str(transcript))
-check("search cites line numbers", journal("search", "header", session="s-1")[1], "     1  user    fix the header")
+check("search cites line numbers", journal("search", "header", session="s-1")[1], "claude:s-1       1  user    fix the header")
 check("user is the user's words", journal("user", session="s-1")[1], "     1  user    fix the header")
 check("conversation --back with no summary is everything", journal("conversation", session="s-1")[1].count("\n"), 1)
+
+codex_transcript = project / "s-2.jsonl"
+codex_transcript.write_text(json.dumps({"type": "response_item", "payload": {"type": "message", "role": "user", "content": [{"type": "input_text", "text": "fix the header everywhere"}]}}) + "\n")
+second = agents.by_session("s-2")
+agents.update(second.n, provider="codex", transcript=str(codex_transcript))
+duplicate = agents.by_session("s-3")
+agents.update(duplicate.n, provider="codex", transcript=str(codex_transcript))
+missing = agents.by_session("s-4")
+agents.update(missing.n, provider="claude", transcript=str(project / "missing.jsonl"))
+found = journal("search", "header", session="s-1")[1]
+check("search covers every agent transcript and identifies its source", ("claude:s-1" in found, "codex:s-2" in found), (True, True))
+check("search deduplicates transcript paths and ignores unreadable ones", (found.count("fix the header everywhere"), "s-3" in found, "s-4" in found), (1, False, False))
 
 done()
