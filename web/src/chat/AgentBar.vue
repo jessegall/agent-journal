@@ -212,7 +212,7 @@ onUnmounted(() => window.removeEventListener("click", away));
 
 .agent-fact-lead {
     padding: 2px 6px;
-    margin-left: -6px;
+    margin: 0 -6px;
     border: 0;
     border-radius: 6px;
     background: none;
@@ -260,15 +260,12 @@ onUnmounted(() => window.removeEventListener("click", away));
 
 .agent-count {
     padding: 2px 4px;
+    margin: 0 -4px;
     border: 0;
     border-radius: 6px;
     background: none;
     color: var(--text-2);
     cursor: pointer;
-}
-
-.agent-skill {
-    margin-left: -2px;
 }
 
 .agent-count:hover,
