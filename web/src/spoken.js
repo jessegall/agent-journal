@@ -37,7 +37,7 @@ function fallback(said, name, n) {
 export function spoken(words, types) {
     const [noun, said, ...rest] = words;
     const kind = types.find((t) => t.name === noun || `${t.name}s` === noun);
-    const n = rest.find((x) => /^\d+$/.test(x)) || "";
+    const n = rest.find((x) => /^\d+$/.test(x)) || rest.find((x) => /^\$\{?\w+\}?$/.test(x)) || "";
     if (!kind) return QUERIES[noun] || (noun ? `checking ${noun}` : "the journal");
     const name = kind.title.toLowerCase();
     if (!said) return `the ${name} list`;

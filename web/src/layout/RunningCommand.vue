@@ -1,5 +1,5 @@
 <script setup>
-import {computed, onUnmounted, ref, watch} from "vue";
+import {computed, nextTick, onUnmounted, ref, watch} from "vue";
 import {api} from "../api.js";
 import {gists, gistTokens} from "../gist.js";
 import {spoken} from "../spoken.js";
@@ -8,6 +8,7 @@ import {agent, types} from "../store.js";
 const STEP = 700;
 const REVEAL_AFTER = 240;
 const HIDE_AFTER = 5000;
+const SHOW_CLOCK_AFTER = 10;
 const sentence = (words) => spoken(words, types.value);
 const said = (c) => (c.tool && c.tool !== "Bash" ? [c.what] : gists(c.what, sentence));
 const data = computed(() => (agent.value && ["working", "compacting"].includes(agent.value.data.status) ? agent.value.data : null));
@@ -57,7 +58,7 @@ onUnmounted(() => {
 });
 
 function clock(secs) {
-    return secs < 5 ? "" : secs < 60 ? `${secs}s` : `${Math.floor(secs / 60)}m ${secs % 60}s`;
+    return secs < SHOW_CLOCK_AFTER ? "" : secs < 60 ? `${secs}s` : `${Math.floor(secs / 60)}m ${secs % 60}s`;
 }
 
 const line = computed(() => {
@@ -72,21 +73,27 @@ const line = computed(() => {
     return {key: text, text, tokens: gistTokens(text), clock: clock(secs), done: !!run.done};
 });
 
-const was = ref([]);
-watch(line, (now, before) => (was.value = before ? before.tokens : []));
-const shape = computed(() => {
-    const tokens = line.value ? line.value.tokens : [];
-    let i = 0;
-    while (i < tokens.length - 1 && i < was.value.length && tokens[i].value === was.value[i].value) i += 1;
-    return {
-        head: tokens.slice(0, i),
-        tail: tokens.slice(i),
-        key: tokens
-            .slice(i)
-            .map((t) => t.value)
-            .join(" "),
-    };
-});
+const text = ref(null);
+const width = ref("");
+watch(
+    () => (line.value ? line.value.tokens.map((t) => t.value).join(" ") : ""),
+    async (now, before) => {
+        const el = text.value && text.value.$el;
+        if (!el || !now || !before) return;
+        const from = el.getBoundingClientRect().width;
+        width.value = `${from}px`;
+        await nextTick();
+        el.style.width = "auto";
+        const to = el.getBoundingClientRect().width;
+        el.style.width = `${from}px`;
+        el.getBoundingClientRect();
+        width.value = `${to}px`;
+    }
+);
+
+function settledWidth() {
+    width.value = "";
+}
 
 const target = computed(() => {
     const run = data.value && data.value.running;
@@ -162,22 +169,19 @@ watch(
     <span :class="['statusbar-running', {ending: !data}]">
         <Transition name="roll">
             <span v-if="line" :class="['statusbar-run-line', {done: line.done}]">
-                <span class="statusbar-run-text" :title="line.text">
-                    <span v-for="(token, i) in shape.head" :key="`${i}-${token.value}`" :class="['statusbar-run-token', token.kind]">
+                <TransitionGroup
+                    ref="text"
+                    tag="span"
+                    name="token"
+                    class="statusbar-run-text"
+                    :style="{width}"
+                    :title="line.text"
+                    @transitionend.self="settledWidth"
+                >
+                    <span v-for="(token, i) in line.tokens" :key="`${i}-${token.value}`" :class="['statusbar-run-token', token.kind]">
                         {{ token.value }}
                     </span>
-                    <Transition name="roll">
-                        <span :key="shape.key" :class="['statusbar-run-tail', {after: shape.head.length}]">
-                            <span
-                                v-for="(token, i) in shape.tail"
-                                :key="`${i}-${token.value}`"
-                                :class="['statusbar-run-token', token.kind]"
-                            >
-                                {{ token.value }}
-                            </span>
-                        </span>
-                    </Transition>
-                </span>
+                </TransitionGroup>
                 <span class="statusbar-running-slot">
                     <Transition name="clock">
                         <span v-if="line.clock" class="statusbar-running-for">{{ line.clock }}</span>
@@ -227,6 +231,7 @@ watch(
     position: relative;
     flex: 0 1 auto;
     min-width: 0;
+    transition: width 240ms cubic-bezier(0.22, 0.7, 0.3, 1);
     display: inline-flex;
     align-items: baseline;
     overflow: hidden;
@@ -237,20 +242,23 @@ watch(
     flex: none;
 }
 
-.statusbar-run-token + .statusbar-run-token,
-.statusbar-run-tail.after {
+.statusbar-run-token + .statusbar-run-token {
     margin-left: 0.55em;
 }
 
-.statusbar-run-tail {
-    display: inline-flex;
-    align-items: baseline;
-    min-width: 0;
-    overflow: hidden;
+.token-enter-active {
+    transition:
+        opacity 240ms ease,
+        transform 240ms cubic-bezier(0.22, 0.7, 0.3, 1);
 }
 
-.statusbar-run-tail.roll-leave-active {
-    position: absolute;
+.token-enter-from {
+    opacity: 0;
+    transform: translateY(10px);
+}
+
+.token-leave-active {
+    display: none;
 }
 
 .statusbar-run-token.command {
