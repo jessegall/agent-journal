@@ -13,10 +13,12 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from engine import band  # noqa: E402
 from engine import viewer  # noqa: E402
+from engine.services import Manager  # noqa: E402
 from engine.terminal import RELOAD, STOP, watched  # noqa: E402
 
 RELOAD_EVERY = 5.0
 VIEWER_EVERY = 10.0
+SERVICES_EVERY = 1.0
 TYPED_EVERY = 1.0
 
 
@@ -65,7 +67,7 @@ def keep_viewer(root: Path, cwd: Path, watching) -> object:
     return thread
 
 
-def run(root: Path, cwd: Path, env: str, agent: str, fd: int, session: str) -> int:
+def run(root: Path, cwd: Path, env: str, agent: str, fd: int, session: str, lifeline: int = -1) -> int:
     rows, cols = resize(fd)
     top = band.Band(root, env, session, root.resolve().parent.name)
     rows_below = band.Translator(rows)
@@ -89,7 +91,9 @@ def run(root: Path, cwd: Path, env: str, agent: str, fd: int, session: str) -> i
     os.write(stdout, band.region(rows) + top.draw(cols, force=True))
     last_check = 0.0
     last_viewer = time.time()
+    last_services = 0.0
     watching = None
+    services = Manager(root, lifeline)
     last_band = 0.0
     try:
         while True:
@@ -123,6 +127,9 @@ def run(root: Path, cwd: Path, env: str, agent: str, fd: int, session: str) -> i
                     typed.touch()
                     typed_at = time.time()
             now = time.time()
+            if now - last_services >= SERVICES_EVERY:
+                last_services = now
+                services.tick()
             if now - last_viewer >= VIEWER_EVERY:
                 last_viewer = now
                 watching = keep_viewer(root, cwd, watching)
@@ -140,4 +147,4 @@ def run(root: Path, cwd: Path, env: str, agent: str, fd: int, session: str) -> i
 
 if __name__ == "__main__":
     root, cwd, env, agent, fd, session = sys.argv[1:7]
-    raise SystemExit(run(Path(root), Path(cwd), env, agent, int(fd), session))
+    raise SystemExit(run(Path(root), Path(cwd), env, agent, int(fd), session, int(sys.argv[7]) if len(sys.argv) > 7 else -1))

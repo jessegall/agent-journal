@@ -42,9 +42,17 @@ def spawn_agent(command: list[str], cwd: Path) -> tuple[int, int]:
     return pid, fd
 
 
-def spawn_supervisor(root: Path, cwd: Path, env: str, agent: str, fd: int, session: str) -> subprocess.Popen:
+def spawn_supervisor(root: Path, cwd: Path, env: str, agent: str, fd: int, session: str, lifeline: int = -1) -> subprocess.Popen:
     main = Path(__file__).resolve().with_name("supervisor.py")
-    return subprocess.Popen([sys.executable, str(main), str(root), str(cwd), env, agent, str(fd), session], cwd=cwd, pass_fds=(fd,))
+    return subprocess.Popen([sys.executable, str(main), str(root), str(cwd), env, agent, str(fd), session, str(lifeline)], cwd=cwd,
+                            pass_fds=(fd, lifeline) if lifeline >= 0 else (fd,))
+
+
+def lifeline() -> tuple[int, int]:
+    read, write = os.pipe()
+    os.set_inheritable(read, True)
+    os.set_inheritable(write, False)
+    return read, write
 
 
 def child(pid: int, block: bool = False) -> tuple[int, int]:
@@ -85,9 +93,10 @@ def run(root: Path, cwd: Path, env: str, agent: str, args: list[str]) -> int:
             tty.setraw(stdin)
         except termios.error:
             pass
+        alive, held = lifeline()
         while status is None:
             stamps = watched(root)
-            coordinator = spawn_supervisor(root, cwd, env, agent, fd, session)
+            coordinator = spawn_supervisor(root, cwd, env, agent, fd, session, alive)
             code = coordinator.wait()
             coordinator = None
             ended, status = child(pid)
