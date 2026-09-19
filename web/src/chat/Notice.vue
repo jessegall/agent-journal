@@ -1,12 +1,20 @@
 <script setup>
+import {ref} from "vue";
 import {act, forceAgent} from "../api.js";
 import Icon from "../kit/Icon.vue";
 import {route} from "../route.js";
 
 const props = defineProps({notice: Object});
 
+const forcing = ref(false);
+
 async function force() {
-    await forceAgent(route.value.env, props.notice.data.session);
+    forcing.value = true;
+    try {
+        await forceAgent(route.value.env, props.notice.data.session);
+    } catch (e) {
+        forcing.value = false;
+    }
 }
 
 async function close() {
@@ -22,7 +30,9 @@ async function close() {
             <a class="chat-notice-go" :href="notice.data.link" target="_blank" rel="noopener">{{ notice.data.label || "open" }}</a>
         </template>
         <template v-if="notice.data.action && notice.data.session">
-            <button type="button" class="chat-notice-go" @click="force">Force now</button>
+            <button type="button" :class="['chat-notice-go', {forcing}]" :disabled="forcing" @click="force">
+                {{ forcing ? "Forcing" : "Force now" }}
+            </button>
         </template>
         <button type="button" class="chat-notice-x" title="Close this" @click="close"><Icon name="close" /></button>
     </div>
@@ -108,5 +118,29 @@ button.chat-notice-go {
 
 .chat-notice.tone-warn .chat-notice-dot {
     background: #d8a94a;
+}
+
+.chat-notice-go.forcing {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    opacity: 0.75;
+    cursor: default;
+}
+
+.chat-notice-go.forcing::after {
+    content: "";
+    width: 8px;
+    height: 8px;
+    border: 1.5px solid currentColor;
+    border-right-color: transparent;
+    border-radius: 50%;
+    animation: forcing 0.8s linear infinite;
+}
+
+@keyframes forcing {
+    to {
+        transform: rotate(360deg);
+    }
 }
 </style>
