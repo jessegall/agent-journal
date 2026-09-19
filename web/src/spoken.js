@@ -21,7 +21,7 @@ const SAID = {
 const QUERIES = {
     open: "the open work",
     status: "where things stand",
-    search: "searching the record",
+    search: "searching the journal",
     user: "reading the user's words",
     carry: "what a session is handed",
 };

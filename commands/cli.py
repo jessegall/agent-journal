@@ -21,7 +21,7 @@ from providers import PROVIDERS
 from resources.base import AGENT, Refused, SYSTEM
 from resources.types import AgentRow
 
-HIDDEN = ("path", "numbers", "load", "save", "named", "method", "sessions")
+HIDDEN = ("path", "numbers", "summaries", "load", "save", "named", "method", "sessions")
 VERSION = next((f.read_text().strip() for f in (Path(__file__).resolve().parents[1] / "VERSION", Path(__file__).resolve().parents[1] / "VERSION") if f.is_file()), "0")
 
 
