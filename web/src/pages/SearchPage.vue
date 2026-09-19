@@ -1,5 +1,5 @@
 <script setup>
-import {ref, watch} from "vue";
+import {nextTick, onMounted, ref, watch} from "vue";
 import {search as find} from "../api.js";
 import Icon from "../kit/Icon.vue";
 import {go, peek, route} from "../route.js";
@@ -7,6 +7,9 @@ import ResourceCard from "../resource/ResourceCard.vue";
 
 const q = ref(route.value.q);
 const hits = ref([]);
+const input = ref(null);
+
+onMounted(() => nextTick(() => input.value?.focus()));
 
 async function run() {
     go(route.value.env, "search", 0, q.value);
@@ -27,7 +30,7 @@ watch(
     <section class="search">
         <form class="box" @submit.prevent="run">
             <Icon name="search" />
-            <input v-model="q" placeholder="Search everything on this environment…" autofocus />
+            <input ref="input" v-model="q" placeholder="Search everything on this environment…" autofocus />
         </form>
         <template v-if="route.q && !hits.length">
             <p class="empty">Nothing matches “{{ route.q }}”.</p>
