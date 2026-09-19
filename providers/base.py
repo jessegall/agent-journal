@@ -32,6 +32,13 @@ def gate_file(root: Path, env: str, session: str) -> Path:
     return root / "runtime" / f"gate-{env}-{session}.json"
 
 
+def gate_refusal(provider, record, payload: dict, session: str) -> str:
+    return provider.gate(record.root, record.env, session) if provider.writes(payload) else ""
+
+
+POLICIES = (auto_refusal, law_refusal, gate_refusal)
+
+
 def log_command(root: Path, payload: dict) -> None:
     command = (payload.get("tool_input") or {}).get("command")
     if payload.get("hook_event_name") != "PreToolUse" or command is None:
@@ -71,12 +78,8 @@ class Provider(ABC):
                       at=time.time(), provider=self.name, uses=uses, transcript=str(payload.get("transcript_path") or row.transcript or ""),
                       model=self.model(payload) or row.model or "", started=row.started or time.time(),
                       context=row.context or 0 if context is None else context)
-        if event == "PreToolUse" and (why := auto_refusal(record, payload.get("tool_name") or "")):
-            return self.refusal(why)
-        if event == "PreToolUse" and (why := law_refusal(self.name, payload)):
-            return self.refusal(why)
-        if event == "PreToolUse" and self.writes(payload):
-            return self.refusal(self.gate(root, env, row.title))
+        if event == "PreToolUse":
+            return self.refusal(next((why for policy in POLICIES if (why := policy(self, record, payload, row.title))), ""))
         if event == "SessionStart":
             return self.handover(event, self.start(root, env, self.compacted(payload)))
         if event in ("PostToolUse", "UserPromptSubmit"):
