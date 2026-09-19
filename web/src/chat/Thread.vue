@@ -1,5 +1,5 @@
 <script setup>
-import {computed, nextTick, onMounted, ref, watch} from "vue";
+import {computed, nextTick, onMounted, onUnmounted, ref, watch} from "vue";
 import {act, create} from "../api.js";
 import Icon from "../kit/Icon.vue";
 import {route} from "../route.js";
@@ -42,6 +42,8 @@ const away = ref(false);
 const missed = ref(0);
 const settledOnce = ref(false);
 const ready = ref(false);
+const rendering = ref(false);
+let frame = 0;
 
 function pictured() {
     return [...(scroller.value ? scroller.value.querySelectorAll("img") : [])].filter((img) => !img.complete);
@@ -127,7 +129,12 @@ onMounted(() => {
     new MutationObserver(() => {
         for (const el of scroller.value.children) grew.observe(el);
     }).observe(scroller.value, {childList: true});
+    frame = requestAnimationFrame(() => {
+        frame = requestAnimationFrame(() => (rendering.value = true));
+    });
 });
+
+onUnmounted(() => cancelAnimationFrame(frame));
 
 function watchScroll() {
     const s = scroller.value;
@@ -242,7 +249,7 @@ watch(busy, async () => {
 });
 
 watch(
-    () => (store.booted ? turns.value.length : -1),
+    () => (store.booted && rendering.value ? turns.value.length : -1),
     async (n, before) => {
         await nextTick();
         if (!ready.value) {
@@ -302,30 +309,32 @@ watch(
             @mouseleave="reading.inside = false"
             @mousemove="reading.moved = Date.now()"
         >
-            <template v-if="!turns.length">
-                <p class="thread-empty">Nothing has been said here yet.</p>
-            </template>
-            <TransitionGroup :name="settledOnce ? 'turn' : ''">
-                <Turn
-                    v-for="t in turns"
-                    :key="keyOf(t)"
-                    :turn="t"
-                    @reply="quote = $event"
-                    @edit="editing = $event"
-                    @pin="pin($event.text, $event.ref)"
-                    @grew="settled"
-                />
-            </TransitionGroup>
-            <Transition name="rise">
-                <div v-if="busy" class="thread-turn busy" aria-label="The agent is working">
-                    <div class="thread-bubble">
-                        <span class="thread-dot" />
-                        <span class="thread-dot" />
-                        <span class="thread-dot" />
+            <template v-if="rendering">
+                <template v-if="!turns.length">
+                    <p class="thread-empty">Nothing has been said here yet.</p>
+                </template>
+                <TransitionGroup :name="settledOnce ? 'turn' : ''">
+                    <Turn
+                        v-for="t in turns"
+                        :key="keyOf(t)"
+                        :turn="t"
+                        @reply="quote = $event"
+                        @edit="editing = $event"
+                        @pin="pin($event.text, $event.ref)"
+                        @grew="settled"
+                    />
+                </TransitionGroup>
+                <Transition name="rise">
+                    <div v-if="busy" class="thread-turn busy" aria-label="The agent is working">
+                        <div class="thread-bubble">
+                            <span class="thread-dot" />
+                            <span class="thread-dot" />
+                            <span class="thread-dot" />
+                        </div>
+                        <div class="thread-meta"><span>working</span></div>
                     </div>
-                    <div class="thread-meta"><span>working</span></div>
-                </div>
-            </Transition>
+                </Transition>
+            </template>
         </div>
     </div>
 </template>
