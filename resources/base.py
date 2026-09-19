@@ -12,10 +12,10 @@ ABSTRACT_MAX = 200
 ACTIONS = ("created", "updated", "deleted", "linked", "commented", "completed")
 SMALL, WIDE, DOCUMENT = "small", "wide", "document"
 VIEWS = (SMALL, WIDE, DOCUMENT)
-USER, AGENT, SYSTEM = "user", "agent", "system"
+USER, AGENT, SYSTEM, PLUGIN = "user", "agent", "system", "plugin"
 ENVIRONMENT, PROJECT = "environment", "project"
 SCOPES = (ENVIRONMENT, PROJECT)
-ACTORS = (USER, AGENT, SYSTEM)
+ACTORS = (USER, AGENT, SYSTEM, PLUGIN)
 
 
 def names(*columns: str) -> SimpleNamespace:

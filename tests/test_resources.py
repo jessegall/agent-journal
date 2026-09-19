@@ -3,11 +3,11 @@ import tempfile
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from controllers.types import CONTROLLERS, Comments  # noqa: E402
+from controllers.types import CONTROLLERS, Comments, Todos  # noqa: E402
 from engine.record import Record  # noqa: E402
-from resources.base import ABSTRACT_MAX, TITLE_MAX, ACTIONS  # noqa: E402
+from resources.base import ABSTRACT_MAX, ACTORS, PLUGIN, TITLE_MAX, ACTIONS  # noqa: E402
 from resources.types import TYPES  # noqa: E402
-from tests.kit import check, done, refused as kit_refused  # noqa: E402
+from tests.kit import check, done, fresh, refused as kit_refused  # noqa: E402
 
 
 
@@ -82,5 +82,11 @@ for i in range(1, 1003):
     todos.create(f"row {i}")
 rows = todos.all()
 check("the thousandth row and those after it are listed, each its own", (len(rows), [r.n for r in rows][-3:], rows[-1].title), (1002, [1000, 1001, 1002], "row 1002"))
+
+# THE PLUGIN ACTOR writes like any other, and its events say so
+record = fresh()
+made = Todos(record, actor=PLUGIN).create("filed by a plugin")
+check("a plugin writes as itself", (made.seen, [e.actor for e in record.events() if e.type == "todo"][-1]), ([PLUGIN], PLUGIN))
+check("and it is one of the actors the manifest offers", PLUGIN in ACTORS, True)
 
 done()
