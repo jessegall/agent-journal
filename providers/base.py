@@ -80,7 +80,8 @@ class Provider(ABC):
             effect = self.effect(hook)
             running = {RUNNING.what: doing, RUNNING.tool: hook.tool.name, RUNNING.at: now, **({RUNNING.effect: effect} if effect else {}),
                        **({RUNNING.changed: changed} if changed else {})}
-            return {AgentRow.running: running, AgentRow.commands: (list(row.commands) + [{COMMAND.what: doing, COMMAND.tool: hook.tool.name, COMMAND.at: now}])[-RING:]}
+            return {AgentRow.running: running, AgentRow.commands: (list(row.commands) + [{COMMAND.what: doing, COMMAND.tool: hook.tool.name, COMMAND.at: now,
+                                                                                          **({COMMAND.effect: effect} if effect else {})}])[-RING:]}
         if running and not running.get(RUNNING.done):
             running[RUNNING.done] = time.time()
         return {AgentRow.running: running, AgentRow.commands: list(row.commands)}

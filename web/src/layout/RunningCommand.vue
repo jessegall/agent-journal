@@ -19,7 +19,10 @@ const EFFECTS = {
         {value: "deleting", kind: "command"},
         {value: "files", kind: "argument"},
     ],
-    writes: [{value: "editing", kind: "command"}, {value: "files", kind: "argument"}],
+    writes: [
+        {value: "editing", kind: "command"},
+        {value: "files", kind: "argument"},
+    ],
     reads: [
         {value: "reading", kind: "command"},
         {value: "files", kind: "argument"},
@@ -71,7 +74,11 @@ let watching = null;
 let displayed = "";
 
 function record() {
-    const text = (bar.value ? bar.value.textContent : "").replace(/\s+/g, " ").trim();
+    const pieces = bar.value ? [...bar.value.querySelectorAll(".statusbar-run-token, .statusbar-running-for, .statusbar-run-count")] : [];
+    const text = pieces
+        .map((piece) => piece.textContent.trim())
+        .filter(Boolean)
+        .join(" ");
     if (text === displayed) return;
     displayed = text;
     api("POST", "/displayed", {text}).catch(() => {});
