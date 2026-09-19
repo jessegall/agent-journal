@@ -3,7 +3,6 @@ import {computed, onMounted, onUnmounted, ref, watch} from "vue";
 import {api} from "../api.js";
 import Btn from "../kit/Btn.vue";
 import Icon from "../kit/Icon.vue";
-import TopBar from "../layout/TopBar.vue";
 import {route} from "../route.js";
 import {store} from "../store.js";
 
@@ -54,7 +53,6 @@ onUnmounted(() => clearInterval(timer));
 </script>
 
 <template>
-    <TopBar :crumbs="[route.env, page ? page.title : 'Plugin']" />
     <template v-if="running && src">
         <iframe class="plugin-frame" :src="src" :title="page.title" />
     </template>

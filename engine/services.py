@@ -140,9 +140,11 @@ def alive(pid: int) -> bool:
 
 def spawn(spec: dict, lifeline: int) -> int:
     write_json(Path(spec["status"]), {**read_json(Path(spec["status"]), {}), **{k: spec[k] for k in ("port", "url")}, "owner": os.getpid()})
-    kept = subprocess.Popen([sys.executable, str(KEEPER), str(lifeline), str(spec["spec"])],
-                            pass_fds=(lifeline,) if lifeline >= 0 else (), stdin=subprocess.DEVNULL,
-                            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True)
+    Path(spec["log"]).parent.mkdir(parents=True, exist_ok=True)
+    with open(spec["log"], "ab", buffering=0) as log:
+        kept = subprocess.Popen([sys.executable, str(KEEPER), str(lifeline), str(spec["spec"])],
+                                pass_fds=(lifeline,) if lifeline >= 0 else (), stdin=subprocess.DEVNULL,
+                                stdout=log, stderr=log, start_new_session=True)
     return kept.pid
 
 

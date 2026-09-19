@@ -3,7 +3,6 @@ import {computed, onMounted, onUnmounted, ref} from "vue";
 import {api} from "../api.js";
 import Btn from "../kit/Btn.vue";
 import Icon from "../kit/Icon.vue";
-import TopBar from "../layout/TopBar.vue";
 import {route} from "../route.js";
 import {span} from "../store.js";
 
@@ -52,7 +51,6 @@ onUnmounted(() => clearInterval(timer));
 </script>
 
 <template>
-    <TopBar :crumbs="[route.env, 'Services']" />
     <section class="services">
         <p class="count">{{ running }} running of {{ rows.length }}</p>
         <template v-if="error">

@@ -156,4 +156,14 @@ url = (folder(ported.root, "ported") / "url.txt").read_text().strip()
 check("the setup step is given the port the service will run on", (url.startswith("http://127.0.0.1:"), url.endswith(str(made.settings["ports"]["web"]))), (True, True))
 check("and the row remembers that port", made.settings["ports"]["web"] > 0, True)
 
+# REMOVING AN OLD ROW never takes a newer install of the same plugin with it
+twice = fresh("twice")
+rows = Plugins(twice, actor=AGENT)
+older = rows.action("install")(source, yes=True)
+newer_row = rows.create("Works", manifest=older.manifest, enabled=True, token="t", settings={}, source=source)
+rows.complete(older.n, "replaced by the newer install")
+check("the newer row's folder is left in place", folder(twice.root, "works").is_dir(), True)
+rows.complete(newer_row.n, "and now really gone")
+check("once the last row goes, so does the folder", folder(twice.root, "works").exists(), False)
+
 done()

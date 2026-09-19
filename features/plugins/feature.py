@@ -131,8 +131,10 @@ class Plugins(Feature):
 
     @on("plugin.completed")
     def removed(self, event, record) -> None:
-        name = self.called(Rows(record, actor=SYSTEM).load(event.n))
-        if name:
+        rows = Rows(record, actor=SYSTEM)
+        name = self.called(rows.load(event.n))
+        still = any(r.n != event.n and not r.completed and self.called(r) == name for r in rows.all())
+        if name and not still:
             self.clear(folder(record.root, name))
 
     def called(self, row) -> str:

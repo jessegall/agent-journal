@@ -143,65 +143,6 @@ async function remove(e) {
         </section>
         <section class="group">
             <header class="group-head">
-                <h2>Plugins</h2>
-                <p class="lead">
-                    Paste a repository. You see every command it would run before anything runs, and it installs at that exact commit. A
-                    plugin runs as you.
-                </p>
-            </header>
-            <div class="row">
-                <span class="text">
-                    <input
-                        v-model="source"
-                        class="source"
-                        placeholder="https://github.com/owner/repo, owner/repo, or a folder"
-                        @keydown.enter="preview"
-                    />
-                </span>
-                <span class="control">
-                    <Btn small :disabled="!source || busy === 'preview'" @click="preview">
-                        {{ busy === "preview" ? "Reading…" : "Preview" }}
-                    </Btn>
-                </span>
-            </div>
-            <template v-if="shown">
-                <pre class="preview">{{ shown }}</pre>
-                <div class="row">
-                    <span class="text"><span class="help">Installing runs these commands on your machine.</span></span>
-                    <span class="control">
-                        <Btn small @click="shown = ''">Cancel</Btn>
-                        <Btn kind="primary" small :disabled="busy === 'install'" @click="install">
-                            {{ busy === "install" ? "Installing…" : "Install" }}
-                        </Btn>
-                    </span>
-                </div>
-            </template>
-            <template v-for="p in plugins" :key="p.n">
-                <div class="row">
-                    <span class="text">
-                        <span class="title">{{ p.title }} {{ p.data.version }}</span>
-                        <span class="help">{{ p.data.source }}{{ p.data.commit ? ` at ${p.data.commit.slice(0, 12)}` : " (linked)" }}</span>
-                    </span>
-                    <span class="control">
-                        <Switch :on="!!p.data.enabled" @change="(v) => plugin(p, v ? 'enable' : 'disable')" />
-                        <Btn small :disabled="busy === `${p.n}`" @click="plugin(p, 'upgrade', {yes: true})">Upgrade</Btn>
-                        <Btn
-                            kind="danger"
-                            small
-                            :disabled="busy === `${p.n}`"
-                            @click="plugin(p, 'remove', {how: 'removed from the viewer'})"
-                        >
-                            Remove
-                        </Btn>
-                    </span>
-                </div>
-            </template>
-            <template v-if="!plugins.length">
-                <p class="none">No plugin is installed on this project.</p>
-            </template>
-        </section>
-        <section class="group">
-            <header class="group-head">
                 <h2>Features on {{ route.env }}</h2>
                 <p class="lead">Each is a switch; its trigger says when it speaks to the agent.</p>
             </header>
