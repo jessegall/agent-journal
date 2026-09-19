@@ -30,7 +30,7 @@ class Controller:
         return self.record.folder(self.type, self.resource.scope) / f"{n:03d}.md"
 
     def numbers(self) -> list[int]:
-        return sorted(int(p.stem) for p in self.record.folder(self.type, self.resource.scope).glob("[0-9][0-9][0-9].md"))
+        return sorted(int(p.stem) for p in self.record.folder(self.type, self.resource.scope).glob("*.md") if p.stem.isdigit())
 
     def load(self, n: int) -> Resource:
         p = self.path(n)
