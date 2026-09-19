@@ -25,8 +25,8 @@ EFFECTS = (
 PASSED = re.compile(r"\b(\d+) passed\b")
 FAILED = re.compile(r"\b(\d+) failed\b")
 FAILING = re.compile(r"\bfiles failing: (\d+)")
-QUOTED = re.compile(r"\"(?:[^\"\\\\]|\\\\.)*\"|'[^']*'")
-JOURNAL_CALL = re.compile(r"(^|[;&|(]\s*|\$\()\S*journal(?:\.py)?\s(?:\"[^\"]*\"|'[^']*'|[^;&|)\n])*")
+QUOTED = re.compile(r'"(?:[^"\\]|\\.)*"' + r"|'[^']*'")
+JOURNAL_CALL = re.compile(r"(^|[;&|(]\s*|\$\()\S*journal(?:\.py)?\s(?:\"(?:[^\"\\]|\\.)*\"|'[^']*'|\d*>&\d|[^;&|)\n])*")
 
 
 class Provider(ABC):

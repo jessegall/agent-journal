@@ -129,6 +129,10 @@ check("each shell command is classified by what it does", {c: claude.effect(Hook
 read_only = "python3 - <<'EOF'\nprint(open('a').read())\nEOF"
 check("a heredoc that only reads is neither editing nor a write", (claude.effect(Hook.read({"hook_event_name": "PreToolUse", "tool_name": "Bash", "tool_input": {"command": read_only}})),
       claude.writes(Hook.read({"hook_event_name": "PostToolUse", "tool_name": "Bash", "tool_input": {"command": read_only}}))), ("", False))
+reading = 'cd /x && journal todo start 221 2>&1|tail -1; grep -n "a\\|<template v-if=\\"family\\">\\|b" f.vue | sed -n 1,40p'
+check("a journal call with 2>&1 is set aside whole, and a > inside escaped quotes is not a redirect",
+      (claude.without_journal(reading).startswith("cd /x && |tail"), claude.effects(reading), claude.writes(Hook.read({"hook_event_name": "PreToolUse", "tool_name": "Bash", "tool_input": {"command": reading}}))),
+      (True, [], False))
 check("a quoted > is text, not a redirect; tests then a commit is still a write",
       ([claude.effect_of(c) for c in ("grep 'c>=2' f", "git commit -m 'a > b'")], claude.writes(Hook.read({"hook_event_name": "PostToolUse", "tool_name": "Bash", "tool_input": {"command": "python3 tests/x.py && git commit -m y"}}))),
       (["reads", "writes"], True))
