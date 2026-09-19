@@ -1,6 +1,7 @@
 import json
 import os
 import re
+import signal
 import socket
 import subprocess
 import sys
@@ -55,7 +56,7 @@ def remember(root: Path, port: int) -> str:
 
 def beat(root: Path, port: int) -> str:
     url = f"http://127.0.0.1:{port}/"
-    for target, text in ((marker(root), json.dumps({"url": url, "at": time.time()})), (root / "runtime" / "heartbeat", f"{int(time.time())} {url}\n")):
+    for target, text in ((marker(root), json.dumps({"url": url, "at": time.time(), "port": port, "pid": os.getpid()})), (root / "runtime" / "heartbeat", f"{int(time.time())} {url}\n")):
         target.parent.mkdir(parents=True, exist_ok=True)
         partial = target.with_name(f".{target.name}.partial")
         partial.write_text(text)
@@ -102,9 +103,10 @@ def marked(root: Path) -> str:
     return url[0] if url and answers(url[0], root, timeout=0.2) else ""
 
 
-def available() -> int:
-    for port in PORTS:
+def available(prefer: int = 0) -> int:
+    for port in ([prefer] if prefer in PORTS else []) + list(PORTS):
         with socket.socket() as sock:
+            sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
             try:
                 sock.bind(("127.0.0.1", port))
             except OSError:
@@ -113,11 +115,29 @@ def available() -> int:
     raise OSError("no viewer port available from 8420 through 8439")
 
 
+def last(root: Path) -> dict:
+    try:
+        return json.loads(marker(root).read_text())
+    except (OSError, ValueError):
+        return {}
+
+
+def restart(root: Path, project: Path) -> str:
+    was = last(root)
+    if was.get("pid") and running(root):
+        os.kill(int(was["pid"]), signal.SIGTERM)
+        for _ in range(50):
+            if not running(root):
+                break
+            time.sleep(0.1)
+    return start(root, project)
+
+
 def start(root: Path, project: Path) -> str:
     already = running(root)
     if already:
         return already
-    port = available()
+    port = available(last(root).get("port", 0))
     log = root / "runtime" / "viewer.log"
     log.parent.mkdir(parents=True, exist_ok=True)
     command = [sys.executable, str(Path(__file__).resolve().parents[1] / "journal.py"), "--root", str(root), "serve", "--port", str(port)]

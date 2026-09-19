@@ -55,7 +55,7 @@ launched = []
 answers = iter(("", "http://127.0.0.1:8427/"))
 originals = viewer.running, viewer.available, viewer.subprocess.Popen, viewer.time.sleep
 viewer.running = lambda _: next(answers)
-viewer.available = lambda: 8427
+viewer.available = lambda prefer=0: 8427
 viewer.subprocess.Popen = lambda command, **options: launched.append((command, options))
 viewer.time.sleep = lambda _: None
 fresh = Path(tempfile.mkdtemp()) / ".journal"

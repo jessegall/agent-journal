@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.9.2 — Answered first, on the same port
+
+The server answers a hook before running the features on its write, so a tool call waits only on what can stop it. A viewer that starts again takes the port it had before when that port is free, and its heartbeat notes its process so it can be restarted in place. The prose-choices check no longer holds the agent for a line that merely names an open question.
+
+What to do about it: `journal upgrade`.
+
 ## 2.9.1 — Tidied after the speed work
 
 A row a hook or command remembers is handed out as a copy, so a change that is never saved stays with the code that made it. The in-process fast path the server replaced is gone. The server asks the provider whether its reply refuses. Retention is one sweep with a rule per type. The hook script reads a one-line `runtime/heartbeat` (seconds and URL) instead of picking JSON apart. `journal speed` times the hook both in-process and through the server.
