@@ -16,8 +16,18 @@ def nudges(record):
     return [(n.title, n.brief) for n in Nudges(record).all()]
 
 
-# ON IDLE, the default: the standing reminders are spoken once per idle stretch
+# EVERY TENTH OF THE CONTEXT, the default: an idle says nothing by itself
 record = fresh()
+Reminders(record, actor=USER).create("run the suites first")
+report(record, "working", "PreToolUse")
+report(record, "idle", "Stop")
+check("the default is a context cadence, not the idle", nudges(record), [])
+report(record, "working", "PostToolUse", context=11)
+check("crossing a tenth says the standing reminders", nudges(record), [("1 reminder standing, read them", "1. run the suites first")])
+
+# ON WORKED, chosen in Settings: the standing reminders are spoken once per idle stretch after tool use
+record = fresh()
+record.set_setting("triggers", {"reminders": {"on": "worked"}})
 Reminders(record, actor=USER).create("run the suites first")
 Reminders(record, actor=USER).create("say which environment")
 report(record, "working", "PreToolUse")
