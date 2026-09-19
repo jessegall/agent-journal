@@ -7,6 +7,8 @@ import {agent, types} from "../store.js";
 const STEP = 700;
 const HOLD_EDITS = 1000;
 const SHOW_CLOCK_AFTER = 10;
+const WRITE_TOOLS = ["Edit", "Write", "MultiEdit", "NotebookEdit"];
+const CHANGING = ["writes", "deletes"];
 const sentence = (words) => spoken(words, types.value);
 const EFFECTS = {
     tests: [
@@ -38,7 +40,7 @@ const rolling = ref(null);
 const counts = ref({added: 0, removed: 0});
 const showDelta = ref(false);
 const frames = {added: 0, removed: 0};
-const measured = {added: 0, removed: 0};
+const tally = new Map();
 let rolls = null;
 
 function roll() {
@@ -65,7 +67,7 @@ watch(
     {immediate: true}
 );
 onUnmounted(() => {
-    clearTimeout(staying);
+    clearTimeout(resetting);
     clearInterval(timer);
     if (rolls) clearTimeout(rolls);
     Object.values(frames).forEach(cancelAnimationFrame);
@@ -76,8 +78,8 @@ function clock(secs) {
 }
 
 const stay = ref(null);
-let staying = 0;
-let held = 0;
+let resetting = 0;
+let streakEnd = "";
 
 function outcome(result) {
     return result.failed ? {value: `${result.failed} failed`, kind: "failed"} : {value: "passed", kind: "passed"};
@@ -144,28 +146,44 @@ watch(
     }
 );
 
-watch(
-    () => {
-        const before = data.value && data.value.running && data.value.running.before;
-        return before && (before.changed || before.result) ? before : null;
-    },
-    (before) => {
-        if (!before || before.at === held) return;
-        held = before.at;
-        stay.value = lineFor(before);
-        apply(before.changed || {}, true);
-        clearTimeout(staying);
-        staying = setTimeout(() => {
-            stay.value = null;
-            apply(target.value);
-        }, HOLD_EDITS);
-    }
-);
+function editing(run) {
+    return CHANGING.includes(run.effect) || WRITE_TOOLS.includes(run.tool);
+}
 
-const target = computed(() => {
-    const run = data.value && data.value.running;
-    return run ? run.changed || {} : null;
-});
+function total() {
+    const sum = {added: 0, removed: 0};
+    tally.forEach((c) => {
+        sum.added += c.added || 0;
+        sum.removed += c.removed || 0;
+    });
+    return sum;
+}
+
+function endStreak() {
+    clearTimeout(resetting);
+    resetting = setTimeout(() => {
+        stay.value = null;
+        tally.clear();
+        apply(total());
+    }, HOLD_EDITS);
+}
+
+watch(
+    () => data.value && data.value.running,
+    (run) => {
+        if (!run) return;
+        const before = run.before;
+        [before, run].forEach((r) => r && r.at && r.changed && tally.set(r.at, r.changed));
+        const end = `${run.at}-${!!(before && before.changed)}`;
+        if (run.what && !editing(run) && tally.size && end !== streakEnd) {
+            streakEnd = end;
+            stay.value = before && before.changed ? lineFor(before) : null;
+            endStreak();
+        }
+        apply(total());
+    },
+    {immediate: true}
+);
 
 const delta = computed(() => {
     return [
@@ -191,29 +209,11 @@ function count(kind, to) {
     frames[kind] = requestAnimationFrame(step);
 }
 
-function concealDelta() {
-    showDelta.value = false;
+function apply(sum) {
+    count("added", sum.added);
+    count("removed", sum.removed);
+    showDelta.value = !!(sum.added || sum.removed);
 }
-
-function revealDelta() {
-    showDelta.value = !!data.value;
-}
-
-function apply(changed, always = false) {
-    if (!changed) {
-        concealDelta();
-        return;
-    }
-    const next = {added: changed.added || 0, removed: changed.removed || 0};
-    const increased = next.added > measured.added || next.removed > measured.removed;
-    Object.assign(measured, next);
-    count("added", next.added);
-    count("removed", next.removed);
-    if (!next.added && !next.removed) concealDelta();
-    else if (increased || always) revealDelta();
-}
-
-watch(target, (changed) => stay.value || apply(changed), {immediate: true});
 </script>
 
 <template>

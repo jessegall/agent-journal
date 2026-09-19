@@ -1,3 +1,4 @@
+import fcntl
 import hashlib
 import json
 import subprocess
@@ -13,11 +14,12 @@ from skills import LIBRARY
 
 DELTA = names("edited", "created", "deleted", "added", "removed")
 STATE = names("hash", "lines")
+EMPTY_BLOB = "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
 
 
-def git(project: Path, *args: str) -> str:
+def git(project: Path, *args: str, stdin: str | None = None) -> str:
     try:
-        return subprocess.run(["git", *args], cwd=project, capture_output=True, text=True, timeout=5).stdout
+        return subprocess.run(["git", *args], cwd=project, input=stdin, capture_output=True, text=True, timeout=5).stdout
     except (OSError, subprocess.SubprocessError):
         return ""
 
@@ -89,6 +91,40 @@ def read_baseline(record, work, project: Path) -> dict:
         return before
 
 
+def blobs(record, project: Path) -> dict:
+    tree = {}
+    for entry in git(project, "ls-files", "-s", "-z").split("\0"):
+        meta, _, path = entry.partition("\t")
+        if path:
+            tree[path] = meta.split()[1]
+    dirty = list(dict.fromkeys(p for p in git(project, "ls-files", "-m", "-o", "-d", "--exclude-standard", "-z").split("\0") if p))
+    present = [p for p in dirty if (project / p).is_file()]
+    for path in set(dirty) - set(present):
+        tree.pop(path, None)
+    shas = git(project, "hash-object", "-w", "--stdin-paths", stdin="\n".join(present)).split() if present else []
+    if len(shas) == len(present):
+        tree.update(zip(present, shas))
+    marks = internal(record, project)
+    return {path: sha for path, sha in tree.items() if not journals_own(path, marks)}
+
+
+def step(project: Path, last: dict, now: dict) -> dict:
+    delta = {DELTA.edited: 0, DELTA.created: 0, DELTA.deleted: 0, DELTA.added: 0, DELTA.removed: 0}
+    for path in set(last) | set(now):
+        old, new = last.get(path, EMPTY_BLOB), now.get(path, EMPTY_BLOB)
+        if old == new:
+            continue
+        delta[DELTA.created if path not in last else DELTA.deleted if path not in now else DELTA.edited] += 1
+        added, removed = (git(project, "diff", "--numstat", old, new).split("\t") + ["", ""])[:2]
+        delta[DELTA.added] += int(added) if added.isdigit() else 0
+        delta[DELTA.removed] += int(removed) if removed.isdigit() else 0
+    return delta
+
+
+def snapshot_file(record, n: int) -> Path:
+    return record.home / "runtime" / f"files-{n}-blobs.json"
+
+
 def committed(project: Path, since: float) -> list[dict]:
     out = git(project, "log", f"--since=@{int(since)}", "--format=%H%x1f%s")
     return [{COMMIT.sha: sha, COMMIT.subject: subject} for sha, _, subject in (line.partition("\x1f") for line in out.splitlines()) if sha]
@@ -104,10 +140,12 @@ class Files(Feature):
     def begin(self, event, record) -> None:
         work = Works(record, actor=SYSTEM).load(event.n)
         read_baseline(record, work, record.root.parent)
+        self.stepped(record, work.n, record.root.parent)
 
     @on("work.completed")
     def end(self, event, record) -> None:
         baseline_file(record, event.n).unlink(missing_ok=True)
+        snapshot_file(record, event.n).unlink(missing_ok=True)
 
     @on("agent.updated")
     def record_files(self, event, record) -> None:
@@ -120,8 +158,7 @@ class Files(Feature):
             file = agent.file or ""
             only = str(Path(file).resolve().relative_to(project.resolve())) if file and file.startswith(str(project)) else ""
             files = {f[CHANGE.path]: f for f in work.changed}
-            before = {f[CHANGE.path]: (f[CHANGE.added], f[CHANGE.removed]) for f in files.values()}
-            delta = {DELTA.edited: 0, DELTA.created: 0, DELTA.deleted: 0, DELTA.added: 0, DELTA.removed: 0}
+            delta = self.stepped(record, work.n, project)
             baseline = read_baseline(record, work, project)
             current = source_state(record, project, only)
             paths = {only} if only else set(baseline) | set(current)
@@ -133,25 +170,25 @@ class Files(Feature):
                 old_lines = old[STATE.lines] if old else 0
                 new_lines = new[STATE.lines] if new else 0
                 now[path] = {CHANGE.path: path, CHANGE.added: max(0, new_lines - old_lines), CHANGE.removed: max(0, old_lines - new_lines), CHANGE.created: old is None and new is not None}
-            for f in now.values():
-                files[f[CHANGE.path]] = f
-                was = before.get(f[CHANGE.path], (0, 0))
-                missing = current.get(f[CHANGE.path]) is None
-                if missing and f[CHANGE.path] not in before:
-                    delta[DELTA.deleted] += 1
-                elif f[CHANGE.path] not in before and f[CHANGE.created]:
-                    delta[DELTA.created] += 1
-                elif f[CHANGE.path] not in before or was != (f[CHANGE.added], f[CHANGE.removed]):
-                    delta[DELTA.edited] += 1
-                else:
-                    continue
-                delta[DELTA.added] += max(0, f[CHANGE.added] - was[0]) + max(0, was[1] - f[CHANGE.removed])
-                delta[DELTA.removed] += max(0, f[CHANGE.removed] - was[1]) + max(0, was[0] - f[CHANGE.added])
+            files.update(now)
             commits = committed(project, work.created)
             if list(files.values()) != work.changed or commits != work.commits:
                 works.update(work.n, changed=list(files.values()), commits=commits)
             if any(delta[k] for k in (DELTA.edited, DELTA.created, DELTA.deleted)):
                 self.count(record, agent.n, self.finished(agent.running), delta)
+
+    def stepped(self, record, n: int, project: Path) -> dict:
+        snapshot = snapshot_file(record, n)
+        snapshot.parent.mkdir(parents=True, exist_ok=True)
+        with snapshot.with_suffix(".lock").open("w") as lock:
+            fcntl.flock(lock, fcntl.LOCK_EX)
+            try:
+                last = json.loads(snapshot.read_text())
+            except (OSError, ValueError):
+                last = None
+            now = blobs(record, project)
+            snapshot.write_text(json.dumps(now))
+        return step(project, last if last is not None else now, now)
 
     def finished(self, running: dict) -> float:
         run = running if running.get(RUNNING.done) else running.get(RUNNING.before) or {}

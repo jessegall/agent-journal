@@ -63,7 +63,7 @@ check("a journal reached through a symlink is still the journal's own, and so ar
       (journals_own(".journal/environments/main/todo/001.json", marks), journals_own(".agents/skills/journal-auto/SKILL.md", marks), journals_own(".claude/skills/style-imports/SKILL.md", marks), journals_own("src/app.js", marks), journals_own(".claude/skills/mine/SKILL.md", marks)),
       (True, True, True, False, False))
 second = Agents(record, actor=SYSTEM).by_session("claude-1").running["changed"]
-check("one active turn accumulates changes across its writes", (second["edited"], second["created"] > first["created"], second["deleted"]), (first["edited"], True, 1))
+check("one active turn accumulates its writes, each file counted once", (second["edited"], second["created"], second["deleted"]), (first["edited"], first["created"], 1))
 
 # A FILE THAT SHRINKS counts its lost lines as removed
 Agents(record, actor=SYSTEM).update(agent.n, running={"what": "shrink", "at": time.time(), "done": time.time()})
@@ -84,10 +84,24 @@ agents.update(agent.n, running={"what": "after a prompt", "at": time.time()})
 Files().count(record, agent.n, 1.0, one)
 check("counts whose command is gone are dropped, never put on another", "changed" in agents.load(agent.n).running, False)
 
-# A COMMIT DURING THE WORK is recorded on it
+# A COMMIT DURING THE WORK is recorded on it, and changes no line
 subprocess.run(["git", "add", "-A"], cwd=project, check=True)
 subprocess.run(["git", "-c", "user.email=t@t", "-c", "user.name=t", "commit", "-q", "-m", "the change"], cwd=project, check=True)
+Agents(record, actor=SYSTEM).update(agent.n, running={"what": "commit", "at": 5.0, "done": 6.0})
 report(record, "working", "PostToolUse", tool="Bash", file="", wrote=True)
+check("a commit adds and removes no lines", "changed" in Agents(record, actor=SYSTEM).by_session("claude-1").running, False)
+
+# EACH STEP COUNTS EXACTLY what it changed: a line swapped is one added and one removed; a deleted file removes its lines
+Agents(record, actor=SYSTEM).update(agent.n, running={"what": "swap", "at": 7.0, "done": 8.0})
+(project / "kept.txt").write_text("one\nTHREE\nfour\n")
+report(record, "working", "PostToolUse", tool="Edit", file=str(project / "kept.txt"), wrote=True)
+swapped = Agents(record, actor=SYSTEM).by_session("claude-1").running["changed"]
+check("a changed line is one added, one removed", (swapped["edited"], swapped["added"], swapped["removed"]), (1, 1, 1))
+Agents(record, actor=SYSTEM).update(agent.n, running={"what": "delete", "at": 9.0, "done": 10.0})
+(project / "kept.txt").unlink()
+report(record, "working", "PostToolUse", tool="Bash", file="", wrote=True)
+gone = Agents(record, actor=SYSTEM).by_session("claude-1").running["changed"]
+check("deleting a file removes all its lines", (gone["deleted"], gone["added"], gone["removed"]), (1, 0, 3))
 check("the commits made since the work started are on it", [c["subject"] for c in works.load(work.n).data["commits"]], ["the change"])
 
 # A READ records nothing
