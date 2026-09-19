@@ -1,11 +1,22 @@
+import os
+import signal
 import socket
+import subprocess
+import sys
+import time
 from pathlib import Path
 
+from engine.keeper import gone, teardown
 from engine.record import Record
 from engine.stored import read_json, write_json
 
 PORTS = range(8440, 8500)
 UP, DOWN = "up", "down"
+BLOCKED, FAILED = "blocked", "failed"
+RESTING = (BLOCKED, FAILED, "stopped", "exited")
+BACKOFF = (1.0, 2.0, 4.0, 8.0, 16.0, 30.0)
+CRASHES, WITHIN = 5, 60.0
+KEEPER = Path(__file__).resolve().parent / "keeper.py"
 
 
 def runtime(root: Path, name: str) -> Path:
@@ -18,6 +29,10 @@ def status_file(root: Path, sid: str) -> Path:
 
 def lock_file(root: Path, sid: str) -> Path:
     return runtime(root, f"service-{sid}.lock")
+
+
+def spec_file(root: Path, sid: str) -> Path:
+    return runtime(root, f"spec-{sid}.json")
 
 
 def want_file(root: Path, sid: str) -> Path:
@@ -99,7 +114,7 @@ def specs(root: Path) -> list[dict]:
                         "run": given["run"], "cwd": str(where / (given.get("cwd") or "")), "env": {**env, **(given.get("env") or {})},
                         "path": str((given.get("ready") or {}).get("path") or ""), "restart": given.get("restart") or "on-failure",
                         "grace": float(given.get("grace") or 5.0), "show": given.get("show") or {},
-                        "lock": str(lock_file(root, sid)), "log": str(log_file(root, sid)), "status": str(status_file(root, sid))})
+                        "lock": str(lock_file(root, sid)), "log": str(log_file(root, sid)), "status": str(status_file(root, sid)), "spec": str(spec_file(root, sid))})
         for spec in out:
             if spec["plugin"] != name:
                 continue
@@ -108,3 +123,101 @@ def specs(root: Path) -> list[dict]:
             spec["env"] = {key: str(fill(value, places)) for key, value in spec["env"].items()}
             spec["url"] = f"http://127.0.0.1:{spec['port']}" if spec["port"] else ""
     return out
+
+
+def alive(pid: int) -> bool:
+    if not pid:
+        return False
+    try:
+        os.kill(int(pid), 0)
+    except ProcessLookupError:
+        return False
+    except PermissionError:
+        return True
+    return True
+
+
+def spawn(spec: dict, lifeline: int) -> int:
+    write_json(Path(spec["status"]), {**read_json(Path(spec["status"]), {}), **{k: spec[k] for k in ("port", "url")}, "owner": os.getpid()})
+    kept = subprocess.Popen([sys.executable, str(KEEPER), str(lifeline), str(spec["spec"])],
+                            pass_fds=(lifeline,) if lifeline >= 0 else (), stdin=subprocess.DEVNULL,
+                            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True)
+    return kept.pid
+
+
+class Manager:
+    def __init__(self, root: Path, lifeline: int = -1, start=spawn, clock=time.time, living=alive):
+        self.root = Path(root)
+        self.lifeline = lifeline
+        self.start = start
+        self.clock = clock
+        self.living = living
+        self.crashes: dict = {}
+        self.seen: dict = {}
+        self.waiting: dict = {}
+        self.marks: dict = {}
+
+    def tick(self) -> list[str]:
+        started = []
+        for spec in specs(self.root):
+            if self.one(spec):
+                started.append(spec["id"])
+        self.sweep()
+        return started
+
+    def one(self, spec: dict) -> bool:
+        sid = spec["id"]
+        said = status(self.root, sid)
+        asked = read_json(want_file(self.root, sid), {})
+        now = self.clock()
+        if str(asked.get("want") or UP) == DOWN:
+            self.stop(sid, said)
+            return False
+        if float(asked.get("nonce") or 0) > self.marks.get(sid, 0.0):
+            self.marks[sid] = float(asked.get("nonce") or 0)
+            self.stop(sid, said)
+            self.crashes.pop(sid, None)
+            self.waiting.pop(sid, None)
+            said = {}
+        if self.living(said.get("keeper", 0)) and said.get("state") not in RESTING:
+            return False
+        if spec["blocked"]:
+            write_json(Path(spec["status"]), {**said, "state": BLOCKED, "why": spec["blocked"], "at": now})
+            return False
+        if said.get("state") == "exited" and self.seen.get(sid) != said.get("at"):
+            self.seen[sid] = said.get("at")
+            self.crashed(sid, now)
+        if len(self.crashes.get(sid, [])) >= CRASHES:
+            write_json(Path(spec["status"]), {**said, "state": FAILED, "why": f"it stopped {CRASHES} times within {WITHIN:g} seconds", "at": now})
+            return False
+        if self.waiting.get(sid, 0) > now:
+            return False
+        if spec["restart"] == "never" and said.get("state") in ("exited", "stopped"):
+            return False
+        write_json(spec_file(self.root, sid), spec)
+        keeper = self.start(spec, self.lifeline)
+        write_json(Path(spec["status"]), {**said, "state": "starting", "keeper": keeper, "owner": os.getpid(), "port": spec["port"], "url": spec["url"], "at": now})
+        return True
+
+    def crashed(self, sid: str, now: float) -> None:
+        seen = [at for at in self.crashes.get(sid, []) if now - at < WITHIN] + [now]
+        self.crashes[sid] = seen
+        self.waiting[sid] = now + BACKOFF[min(len(seen), len(BACKOFF)) - 1]
+
+    def stop(self, sid: str, said: dict) -> None:
+        if self.living(said.get("keeper", 0)):
+            try:
+                os.kill(int(said["keeper"]), signal.SIGTERM)
+            except (ProcessLookupError, PermissionError):
+                pass
+
+    def sweep(self) -> list[int]:
+        killed = []
+        for sid, said in states(self.root).items():
+            group = int(said.get("pgid") or 0)
+            if not group or gone(group) or self.living(said.get("keeper", 0)) and self.living(said.get("owner", 0)):
+                continue
+            teardown(group, 1.0)
+            killed.append(group)
+            write_json(status_file(self.root, sid), {**said, "state": "stopped", "why": "its keeper is gone", "at": self.clock()})
+        return killed
