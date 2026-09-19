@@ -123,5 +123,3 @@ class Agent(Actor):
 
     def is_working(self) -> bool:
         return self.state() == WORKING
-
-ACTORS = {USER: User, AGENT: Agent, SYSTEM: System}
