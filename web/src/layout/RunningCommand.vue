@@ -82,6 +82,10 @@ const stay = ref(null);
 let shown = null;
 let staying = 0;
 
+function outcome(result) {
+    return result.failed ? {value: `${result.failed} failed`, kind: "failed"} : {value: "passed", kind: "passed"};
+}
+
 const line = computed(() => {
     ticks.value;
     if (stay.value) return stay.value;
@@ -94,7 +98,15 @@ const line = computed(() => {
     if (!parts.length) return null;
     const secs = Math.floor((run.done || Date.now() / 1000) - run.at);
     const text = parts[0];
-    return {key: text, text, tokens: tokensOf(now, text), clock: clock(secs), done: !!run.done};
+    const result = run.done && run.result ? outcome(run.result) : null;
+    return {
+        key: text,
+        text,
+        tokens: [...tokensOf(now, text), ...(result ? [result] : [])],
+        clock: clock(secs),
+        done: !!run.done,
+        result: !!result,
+    };
 });
 
 const text = ref(null);
@@ -140,7 +152,7 @@ watch(line, (now) => {
 watch(
     () => data.value && data.value.running && data.value.running.at,
     (at, was) => {
-        if (!was || at === was || !(measured.added || measured.removed) || !shown) return;
+        if (!was || at === was || !shown || !(measured.added || measured.removed || shown.result)) return;
         stay.value = shown;
         clearTimeout(staying);
         staying = setTimeout(() => {
@@ -465,5 +477,13 @@ watch(target, (changed) => stay.value || apply(changed), {immediate: true});
     max-width: 0;
     margin-left: 0;
     opacity: 0;
+}
+
+.statusbar-run-token.passed {
+    color: var(--created);
+}
+
+.statusbar-run-token.failed {
+    color: var(--danger);
 }
 </style>
