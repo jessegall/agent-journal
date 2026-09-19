@@ -122,7 +122,7 @@ effects = {
 claude = PROVIDERS["claude"]()
 check("each shell command is classified by what it does", {c: claude.effect(Hook.read({"hook_event_name": "PreToolUse", "tool_name": "Bash", "tool_input": {"command": c}})) for c in effects}, effects)
 check("a tool that is not the shell has no effect to report", claude.effect(Hook.read({"hook_event_name": "PreToolUse", "tool_name": "Read", "tool_input": {"file_path": "x"}})), "")
-running = claude.shell(AgentRow(n=1, title="s"), Hook.read({"hook_event_name": "PreToolUse", "tool_name": "Bash", "tool_input": {"command": "rm x", "description": "Remove x"}}))["running"]
-check("the effect rides on the running command", running.get("effect"), "deletes")
+shelled = claude.shell(AgentRow(n=1, title="s"), Hook.read({"hook_event_name": "PreToolUse", "tool_name": "Bash", "tool_input": {"command": "rm x", "description": "Remove x"}}))
+check("the effect rides on the running command and on its entry in the recent commands", (shelled["running"].get("effect"), shelled["commands"][-1].get("effect")), ("deletes", "deletes"))
 
 done()

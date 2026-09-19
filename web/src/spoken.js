@@ -1,17 +1,19 @@
+const one = (noun, n) => (n ? `${noun} ${n}` : `the ${noun}`);
+
 const SAID = {
     create: (noun) => `adding a ${noun}`,
-    complete: (noun, n) => `closing ${noun} ${n}`,
-    read: (noun, n) => `reading ${noun} ${n}`,
-    show: (noun, n) => `reading ${noun} ${n}`,
+    complete: (noun, n) => `closing ${one(noun, n)}`,
+    read: (noun, n) => `reading ${one(noun, n)}`,
+    show: (noun, n) => `reading ${one(noun, n)}`,
     unread: (noun) => `checking for unread ${noun}s`,
     all: (noun) => `the ${noun} list`,
-    update: (noun, n) => `updating ${noun} ${n}`,
-    reply: (noun, n) => `replying to ${noun} ${n}`,
-    comment: (noun, n) => `commenting on ${noun} ${n}`,
-    link: (noun, n) => `linking ${noun} ${n}`,
-    delete: (noun, n) => `dropping ${noun} ${n}`,
+    update: (noun, n) => `updating ${one(noun, n)}`,
+    reply: (noun, n) => `replying to ${one(noun, n)}`,
+    comment: (noun, n) => `commenting on ${one(noun, n)}`,
+    link: (noun, n) => `linking ${one(noun, n)}`,
+    delete: (noun, n) => `dropping ${one(noun, n)}`,
     search: (noun) => `searching the ${noun}s`,
-    priority: (noun, n) => `reordering ${noun} ${n}`,
+    priority: (noun, n) => `reordering ${one(noun, n)}`,
     start: () => "starting work",
     end: (noun, n) => `ending work ${n}`,
 };
@@ -31,13 +33,13 @@ function ing(word) {
 }
 
 function fallback(said, name, n) {
-    return said.endsWith("s") ? `the ${said} of ${name} ${n}` : `${ing(said)} ${name} ${n}`;
+    return said.endsWith("s") ? `the ${said} of ${one(name, n)}` : `${ing(said)} ${one(name, n)}`;
 }
 
 export function spoken(words, types) {
     const [noun, said, ...rest] = words;
     const kind = types.find((t) => t.name === noun || `${t.name}s` === noun);
-    const n = rest.find((x) => /^\d+$/.test(x)) || rest.find((x) => /^\$\{?\w+\}?$/.test(x)) || "";
+    const n = rest.find((x) => /^\d+$/.test(x)) || "";
     if (!kind) return QUERIES[noun] || (noun ? `checking ${noun}` : "the journal");
     const name = kind.title.toLowerCase();
     if (!said) return `the ${name} list`;
