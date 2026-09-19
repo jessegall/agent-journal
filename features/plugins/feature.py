@@ -4,6 +4,7 @@ import time
 from pathlib import Path
 
 from controllers.types import Notifications, Plugins as Rows
+from engine.services import UP, want
 from features.base import Feature, command, on, refuses
 from features.plugins.host import watch
 from features.plugins.manifest import fill, read
@@ -104,6 +105,7 @@ class Plugins(Feature):
             checked(manifest, where, env)
             prepared(manifest, where, env, log(root, manifest["name"]))
             self.place(plugins, where, linked, manifest, row.source, ref, commit, row.token, row=row, ports=ports)
+            self.again(root, manifest)
             kept = True
         finally:
             if not kept:
@@ -168,6 +170,10 @@ class Plugins(Feature):
         if row:
             return plugins.update(row.n, abstract=manifest.get("description") or "", settings={**(row.settings or {}), "ports": ports or {}}, **kept)
         return plugins.create(manifest.get("title") or name, abstract=manifest.get("description") or "", enabled=True, settings={"ports": ports or {}}, token=secret, **kept)
+
+    def again(self, root: Path, manifest: dict) -> None:
+        for service in (manifest.get("services") or {}):
+            want(root, f"{manifest['name']}.{service}", UP, nonce=time.time())
 
     def drop(self, staging: Path, linked: bool) -> None:
         if not linked:
