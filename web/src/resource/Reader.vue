@@ -11,34 +11,39 @@ import AgentPage from "./AgentPage.vue";
 const props = defineProps({type: String, n: Number});
 const resource = computed(() => (props.type ? rows(props.type).find((r) => r.n === props.n) : null) || null);
 const shape = computed(() => (!props.type ? "" : ["plan", "agent"].includes(props.type) ? props.type : meta(props.type).view));
+const panel = computed(() => (["small", "wide"].includes(shape.value) ? "inspector" : shape.value));
 const close = () => (route.value.open ? unpeek() : go(route.value.env, props.type));
 </script>
 
 <template>
     <Transition name="reader">
-        <div v-if="resource" :key="`${type}:${n}`" :class="['reader', shape]" @click.self="close">
-            <SwitchCase :value="shape">
-                <template #plan>
-                    <div class="page">
-                        <DocumentPage :resource="resource" @close="close">
-                            <PlanPage :resource="resource" @close="close" />
-                        </DocumentPage>
-                    </div>
-                </template>
-                <template #agent>
-                    <div class="page">
-                        <DocumentPage :resource="resource" @close="close">
-                            <AgentPage :resource="resource" @close="close" />
-                        </DocumentPage>
-                    </div>
-                </template>
-                <template #document>
-                    <div class="page"><DocumentPage :resource="resource" @close="close" /></div>
-                </template>
-                <template #default>
-                    <aside class="inspector"><ResourceBody :resource="resource" @close="close" /></aside>
-                </template>
-            </SwitchCase>
+        <div v-if="resource" :key="panel" :class="['reader', shape]" @click.self="close">
+            <Transition name="swap" mode="out-in">
+                <div :key="`${type}:${n}`" class="held">
+                    <SwitchCase :value="shape">
+                        <template #plan>
+                            <div class="page">
+                                <DocumentPage :resource="resource" @close="close">
+                                    <PlanPage :resource="resource" @close="close" />
+                                </DocumentPage>
+                            </div>
+                        </template>
+                        <template #agent>
+                            <div class="page">
+                                <DocumentPage :resource="resource" @close="close">
+                                    <AgentPage :resource="resource" @close="close" />
+                                </DocumentPage>
+                            </div>
+                        </template>
+                        <template #document>
+                            <div class="page"><DocumentPage :resource="resource" @close="close" /></div>
+                        </template>
+                        <template #default>
+                            <aside class="inspector"><ResourceBody :resource="resource" @close="close" /></aside>
+                        </template>
+                    </SwitchCase>
+                </div>
+            </Transition>
         </div>
     </Transition>
 </template>
@@ -70,6 +75,27 @@ const close = () => (route.value.open ? unpeek() : go(route.value.env, props.typ
 }
 .reader.wide .inspector {
     width: min(760px, 100%);
+}
+
+.held {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+}
+
+.held > .inspector,
+.held > .page {
+    pointer-events: auto;
+}
+
+.swap-enter-active,
+.swap-leave-active {
+    transition: opacity 0.12s ease;
+}
+
+.swap-enter-from,
+.swap-leave-to {
+    opacity: 0;
 }
 .page {
     position: absolute;
