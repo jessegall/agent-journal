@@ -32,6 +32,16 @@ def gate_file(root: Path, env: str, session: str) -> Path:
     return root / "runtime" / f"gate-{env}-{session}.json"
 
 
+def log_command(root: Path, payload: dict) -> None:
+    command = (payload.get("tool_input") or {}).get("command")
+    if payload.get("hook_event_name") != "PreToolUse" or command is None:
+        return
+    target = root / "runtime" / "commands.log"
+    target.parent.mkdir(parents=True, exist_ok=True)
+    with target.open("a") as out:
+        out.write(f"{time.time():.3f}\t{command!r}\n")
+
+
 class Provider(ABC):
     name = ""
 
@@ -48,6 +58,7 @@ class Provider(ABC):
         event = payload.get("hook_event_name") or ""
         if event not in STATUS or (root / "runtime" / "off").is_file():
             return {}
+        log_command(root, payload)
         record = Record(root, env)
         agents = Agents(record, actor=SYSTEM)
         row = agents.by_session(self.session_of(payload))

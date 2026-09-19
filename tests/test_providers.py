@@ -54,6 +54,8 @@ for name, cls in PROVIDERS.items():                       # every provider, the 
     check(f"{name}: a turn carries its change count across commands", agents.by_session("abc-1").running["changed"], {"edited": 2})
     provider.handle(root, "main", {**payload, "hook_event_name": "UserPromptSubmit"})
     check(f"{name}: the next turn clears the command and its change count", agents.by_session("abc-1").running, {})
+    logged = (root / "runtime" / "commands.log").read_text().splitlines()
+    check(f"{name}: every command starting is logged raw, as received, for the record", [line.split("\t")[1] for line in logged][-2:], ["'npm run build'", "'npm test'"])
     provider.handle(root, "main", {**payload, "hook_event_name": "PreToolUse", "tool_name": "Read", "tool_input": {"file_path": "/x"}})
     check(f"{name}: another tool leaves the ring and the last commands as they were", [c["what"] for c in agents.by_session("abc-1").data["commands"]], ["npm run build", "npm test"])
     agents.set(agents.by_session("abc-1").n, "status", IDLE)
