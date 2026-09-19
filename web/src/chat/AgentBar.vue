@@ -259,8 +259,9 @@ onUnmounted(() => window.removeEventListener("click", away));
 }
 
 .agent-count {
-    padding: 2px 4px;
+    padding: 0 4px;
     margin: 0 -4px;
+    line-height: inherit;
     border: 0;
     border-radius: 6px;
     background: none;
