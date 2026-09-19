@@ -1,13 +1,14 @@
-from controllers.types import Messages
+from controllers.types import CONTROLLERS, Messages
 from features.base import Feature, on
-from resources.base import SECTION, SYSTEM
+from resources.base import AGENT, SECTION, SYSTEM
 
 
 class Handled(Feature):
     name = "handled"
     title_ = "Handled messages close"
-    abstract_ = "A message whose every paragraph has been processed into a part is closed, naming what each part became"
-    help_ = "Process each part with journal message process <n> \"<their words>\" \"<resource ref>\"; once every paragraph is covered the message closes itself. A message with parts left stays open."
+    abstract_ = "A message is closed once the agent replies to it, reacts to it, or processes every paragraph into a part"
+    help_ = "A reply or a reaction by the agent answers the user's message and closes it; so does processing each part with journal message process <n> \"<their words>\" \"<resource ref>\" until every paragraph is covered."
+    ANSWERS = {"comment": "answered", "reaction": "acknowledged"}
 
     def paragraphs(self, message) -> list[str]:
         blocks = (b.strip() for b in (message.brief or message.title).split("\n\n"))
@@ -28,3 +29,18 @@ class Handled(Feature):
             return
         became = ", ".join(s[SECTION.body] for s in message.sections)
         messages.complete(message.n, how=f"every part became a record: {became}")
+
+    @on("comment.created")
+    @on("reaction.created")
+    def answered(self, event, record) -> None:
+        if event.actor != AGENT:
+            return
+        made = CONTROLLERS[event.type](record, actor=SYSTEM).load(event.n)
+        messages = Messages(record, actor=SYSTEM)
+        for ref in made.refs:
+            kind, _, n = ref.partition(":")
+            if kind != "message" or not n.isdigit():
+                continue
+            message = messages.load(int(n))
+            if not message.completed and message.seen[:1] != [AGENT]:
+                messages.complete(message.n, how=f"{self.ANSWERS[event.type]} by the agent")
