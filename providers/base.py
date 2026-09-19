@@ -9,8 +9,6 @@ from controllers.types import Agents, Nudges
 from engine.actors import COMPACTING, IDLE, STOPPED, WORKING
 from engine.record import Record
 from engine.transcript import Turn
-from features.auto.policy import refusal as auto_refusal
-from features.law.policy import refusal as law_refusal
 from resources.base import AGENT, SYSTEM
 from resources.types import AgentRow, COMMAND, RUNNING
 
@@ -32,11 +30,7 @@ def gate_file(root: Path, env: str, session: str) -> Path:
     return root / "runtime" / f"gate-{env}-{session}.json"
 
 
-def gate_refusal(provider, record, payload: dict, session: str) -> str:
-    return provider.gate(record.root, record.env, session) if provider.writes(payload) else ""
-
-
-POLICIES = (auto_refusal, law_refusal, gate_refusal)
+POLICIES: list = []
 
 
 def log_command(root: Path, payload: dict) -> None:

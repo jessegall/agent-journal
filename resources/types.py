@@ -1,4 +1,4 @@
-from resources.base import AGENT, DOCUMENT, PROJECT, USER, WIDE, Resource
+from resources.base import AGENT, DOCUMENT, PROJECT, USER, Resource
 from resources.shapes import FLAG, TEXT, Field, Options, Ranked, Reasoned, Shape, Traced, names
 
 
@@ -9,7 +9,6 @@ class Message(Shape, Resource):
     title_ = "Message"
     abstract_ = "What the user left for the agent, or the agent for the user"
     help_ = "A message is read once by the other side and processed part by part; what each part became is written on it."
-    view = WIDE
 
 
 class Todo(Ranked, Resource):

@@ -5,7 +5,7 @@ from typing import ClassVar
 from controllers.types import Agents, CONTROLLERS, Nudges
 from engine import bus
 from features import trigger
-from providers.base import gate_file
+from providers.base import POLICIES, gate_file
 from resources.base import SYSTEM
 
 REGISTRY: dict[str, type] = {}
@@ -16,6 +16,11 @@ def on(pattern: str):
         fn.patterns = (*getattr(fn, "patterns", ()), pattern)
         return fn
     return mark
+
+
+def refuses(fn):
+    fn.refuses = True
+    return fn
 
 
 class Feature(ABC):
@@ -36,9 +41,14 @@ class Feature(ABC):
         return [(pattern, getattr(self, attr)) for attr in dir(type(self))
                 for fn in [getattr(type(self), attr)] if callable(fn) for pattern in getattr(fn, "patterns", ())]
 
+    def refusals(self) -> list:
+        return [getattr(self, attr) for attr in dir(type(self)) for fn in [getattr(type(self), attr)] if callable(fn) and getattr(fn, "refuses", False)]
+
     def register(self) -> None:
         for pattern, handler in self.listeners():
             bus.on(pattern, handler, enabled=self.enabled)
+        for handler in self.refusals():
+            POLICIES.append(lambda provider, record, payload, session, handler=handler: handler(provider, record, payload, session) if self.enabled(record) else "")
 
     def enabled(self, record) -> bool:
         return True if self.fixed else record.features.get(self.name, self.default)
