@@ -19,6 +19,7 @@ m = left.create("two things", brief="fix the header, and later add a csv export"
 read.process(m.n, "fix the header", "work")
 read.process(m.n, "later add a csv export", "todo 2")
 check("each part becomes a section: the words, then what it became", read.load(m.n).sections, [{"title": "fix the header", "body": "work"}, {"title": "later add a csv export", "body": "todo 2"}])
+check("a part that became a resource links the message to it", read.load(m.n).refs, ["todo:2"])
 check("a part not in the message is refused", refused(lambda: read.process(m.n, "rewrite everything", "todo 3")), "that part is not in message 1; quote the words it is about")
 read.method("processed")(m.n, "both parts filed")
 check("processed is the message's complete", (bool(read.load(m.n).completed), read.load(m.n).outcome), (True, "both parts filed"))

@@ -71,6 +71,42 @@
           }
         ]
       }
+    ],
+    "PreCompact": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/opt/homebrew/opt/python@3.14/bin/python3.14 /Users/jessegall/projects/agent-journal/.journal/hook.py codex /Users/jessegall/projects/agent-journal/.journal",
+            "timeout": 60
+          }
+        ]
+      }
+    ],
+    "SubagentStart": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/opt/homebrew/opt/python@3.14/bin/python3.14 /Users/jessegall/projects/agent-journal/.journal/hook.py codex /Users/jessegall/projects/agent-journal/.journal",
+            "timeout": 60
+          }
+        ]
+      }
+    ],
+    "SubagentStop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/opt/homebrew/opt/python@3.14/bin/python3.14 /Users/jessegall/projects/agent-journal/.journal/hook.py codex /Users/jessegall/projects/agent-journal/.journal",
+            "timeout": 60
+          }
+        ]
+      }
     ]
   }
 }

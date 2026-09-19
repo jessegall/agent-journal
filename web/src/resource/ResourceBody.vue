@@ -116,7 +116,7 @@ async function save() {
                 <Markdown :text="resource.brief" />
             </section>
         </template>
-        <Sections :sections="resource.sections" />
+        <Sections v-if="resource.type !== 'message'" :sections="resource.sections" />
         <template v-if="traced">
             <Trace :resource="resource" />
         </template>
