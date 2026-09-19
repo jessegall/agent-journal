@@ -1,9 +1,12 @@
 import shutil
+import time
 from pathlib import Path
 
 from controllers.types import Notifications, Plugins as Rows
-from features.base import Feature, command, on
-from features.plugins.manifest import read
+from features.base import Feature, command, on, refuses
+from features.plugins.manifest import fill, read
+from features.plugins.payload import refusal
+from features.plugins.run import call
 from features.plugins.source import checked, data, environment, folder, home, log, prepared, preview, staged, token
 from resources.base import Refused, SYSTEM
 
@@ -16,6 +19,30 @@ class Plugins(Feature):
     abstract_ = "A repository installed into the journal hears the bus, answers it, and may run services of its own"
     help_ = "Install one with journal plugin install <url>: its .journal-plugin/plugin.json says what it listens to, what it runs and which pages it shows. A plugin runs as you; install shows every command before it runs any."
     fixed = True
+    EACH = 1.5
+    LONGEST_EACH = 3.0
+    ALTOGETHER = 5.0
+
+    @refuses
+    def guard(self, provider, record, hook, session) -> str:
+        writes = provider.writes(hook)
+        left = self.ALTOGETHER
+        for row in Rows(record, actor=SYSTEM).all():
+            asking = (row.manifest or {}).get("refuse")
+            if not row.enabled or row.completed or not asking or left <= 0:
+                continue
+            if not writes and not (row.manifest or {}).get("reads"):
+                continue
+            name = self.called(row)
+            where = folder(record.root, name)
+            env = environment(record.root, name, row.manifest, row.token)
+            seconds = min(float(row.manifest.get("refuse_seconds") or self.EACH), self.LONGEST_EACH, left)
+            started = time.monotonic()
+            ok, reply = call(fill(asking, env), where, env, refusal(record, hook, name, where, writes), seconds)
+            left -= time.monotonic() - started
+            if ok and isinstance(reply, dict) and str(reply.get("refuse") or "").strip():
+                return f"{name}: {str(reply['refuse']).strip()}"
+        return ""
 
     @command("plugin")
     def preview(self, plugins, source: str, ref: str = "") -> str:
