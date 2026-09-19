@@ -17,6 +17,7 @@ import features
 from features.appointments.appoint import appoint, online
 from features.extension.package import archive as extension_archive, info as extension_info
 from features.hub.summary import summarize
+from features.identity.color import identity, set_color
 from features.sessioncontrol.control import options as control_options, request as control_session
 from features.skills.catalogue import SKILL, always, catalogue, load_now, skills
 from features.usage.usage import options as usage_options
@@ -144,7 +145,16 @@ def get_manifest(req: Request) -> Reply:
 def get_identity(req: Request) -> Reply:
     m = manifest(req.root)
     names = [e.title for e in Environments(Record(req.root, m["environment"]), actor=USER).all()]
-    return Reply(200, {"project": m["project"], "root": str(req.root), "version": m["version"], "environments": names})
+    return Reply(200, {**identity(req.root), "root": str(req.root), "version": m["version"], "environments": names})
+
+
+@route("POST", "/api/identity")
+def post_identity(req: Request) -> Reply:
+    try:
+        set_color(req.root, req.body.get("color"))
+    except ValueError as e:
+        return Reply(400, {"error": str(e)})
+    return get_identity(req)
 
 
 @route("GET", "/api/summary")
