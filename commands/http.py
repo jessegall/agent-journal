@@ -196,6 +196,27 @@ def post_agent_control(req: Request) -> Reply:
                                       str(req.body.get("action") or ""), str(req.body.get("value") or "")))
 
 
+def provider_of(req: Request):
+    if req.params["provider"] not in PROVIDERS:
+        raise Missing(f"no provider {req.params['provider']}")
+    return PROVIDERS[req.params["provider"]]()
+
+
+@route("GET", "/api/agent-hooks/{provider}")
+def get_agent_hooks(req: Request) -> Reply:
+    provider = provider_of(req)
+    return Reply(200, {"path": str(provider.config(req.root.parent).relative_to(req.root.parent)), "hooks": provider.hooks(req.root.parent)})
+
+
+@route("POST", "/api/agent-hooks/{provider}")
+def post_agent_hooks(req: Request) -> Reply:
+    provider = provider_of(req)
+    try:
+        return Reply(200, {"hooks": provider.set_hooks(req.root.parent, req.body.get("hooks") or {})})
+    except ValueError as e:
+        return Reply(400, {"error": str(e)})
+
+
 @route("GET", "/api/agent-usage/{provider}")
 def get_agent_usage(req: Request) -> Reply:
     return Reply(200, usage_options(req.params["provider"]))

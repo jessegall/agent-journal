@@ -159,13 +159,32 @@ class Provider(ABC):
     @abstractmethod
     def present(self, project: Path) -> bool: ...
 
-    def wire(self, project: Path, command: str) -> Path:
+    def settings(self, project: Path) -> dict:
+        try:
+            return json.loads(self.config(project).read_text())
+        except (OSError, ValueError):
+            return {}
+
+    def hooks(self, project: Path) -> dict:
+        return self.settings(project).get("hooks", {})
+
+    def set_hooks(self, project: Path, hooks: dict) -> dict:
+        for event, blocks in hooks.items():
+            if not isinstance(blocks, list) or not all(isinstance(b, dict) and isinstance(b.get("hooks"), list) and all(isinstance(h, dict) and str(h.get("command", "")).strip() for h in b["hooks"]) for b in blocks):
+                raise ValueError(f"{event}: every block needs a list of hooks, each with a command")
+        had = self.settings(project)
+        had["hooks"] = {event: blocks for event, blocks in hooks.items() if blocks}
+        self.save(project, had)
+        return had["hooks"]
+
+    def save(self, project: Path, settings: dict) -> Path:
         f = self.config(project)
         f.parent.mkdir(parents=True, exist_ok=True)
-        try:
-            had = json.loads(f.read_text())
-        except (OSError, ValueError):
-            had = {}
+        f.write_text(json.dumps(settings, indent=2) + "\n")
+        return f
+
+    def wire(self, project: Path, command: str) -> Path:
+        had = self.settings(project)
         hooks = had.setdefault("hooks", {})
         name, root = command.split("/hook.", 1)[1].split()[1:3]
         ours = f" {name} {root}"
@@ -174,5 +193,4 @@ class Provider(ABC):
             if not any(command in json.dumps(b) for b in mine):
                 mine.extend(blocks)
             hooks[event] = mine
-        f.write_text(json.dumps(had, indent=2) + "\n")
-        return f
+        return self.save(project, had)
