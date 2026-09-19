@@ -7,7 +7,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 from commands.http import dispatch
-from controllers.types import Agents
+from controllers.types import Agents, Notices, Notifications
 from engine.drivers import Driver
 from engine.engine import Engine
 from engine.inputs import FORCE, queue, take
@@ -96,6 +96,9 @@ with patch.object(Codex, "catalog", classmethod(lambda cls, path=None: models)),
     engine = Engine(record, driver)
     check("the live engine starts the native picker for a choice", (engine.control(), driver.sent), ("controlled: High", ["/model"]))
     check("once typed, the choice is no longer pending", "effort" in Agents(record, actor=SYSTEM).by_session("codex-live").pending, False)
+    announced = [n for n in Notices(record).all() if n.data.get("action") == "effort"]
+    check("the queued change was announced over the chat, and the announcement closed once typed", (len(announced), all(n.completed for n in announced), announced[0].title), (1, True, "Setting effort to high — waiting for the agent"))
+    check("its delivery is told to the user", [n.title for n in Notifications(record).all()][-1], "Effort set to high")
     check("a control is consumed once per engine tick", (engine.control(), take(root, {"codex-live"})["line"]), ("", ""))
     while take(root, {"codex-live"}):
         pass
@@ -132,16 +135,17 @@ with patch.object(Codex, "catalog", classmethod(lambda cls, path=None: models)),
         def quiet_for(self):
             return 0.0 if self.status == "working" else 30.0
 
+        def at_prompt(self):
+            return self.status == "idle"
+
     busy = Busy(record)
     forcing = Engine(record, busy)
     request(root, "main", "codex-live", "effort", "high")
     check("while the agent works, a queued change waits", (forcing.control(), busy.sent), ("", []))
     check("an agent that is not busy is never forced", (Engine(record, Supervised(record)).forced(), busy.stopped), ("", 0))
     force(root, "main", "codex-live")
-    check("force stops the agent's turn with its stop key", (forcing.forced(), busy.stopped), ("forced: stopping the turn for a waiting change", 1))
-    forcing.controlled_at = 0
-    forcing.control()
-    check("once idle, the change is typed and the agent is told to carry on", busy.sent, ["/model", CARRY_ON])
+    check("force stops the turn, and once the prompt is back types the change and tells the agent to carry on, without waiting for an idle report",
+          (forcing.forced(), busy.stopped, busy.sent), ("controlled: High", 1, ["/model", CARRY_ON]))
     check("force takes the offline check like any control", refused(lambda: force(root, "main", "gone")), "session 'gone' is not online")
     while take(root, {"codex-live"}) or take(root, {"codex-live"}, FORCE):
         pass

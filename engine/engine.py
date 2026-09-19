@@ -8,7 +8,7 @@ import features
 from engine import bus
 from engine.actors import Actor, Agent, BUSY, COMPACTING, IDLE, STOPPED, System, User, WORKING
 from engine.inputs import FORCE, take
-from features.sessioncontrol.control import CARRY_ON
+from features.sessioncontrol.control import CARRY_ON, delivered
 from engine import steps
 from engine.record import Record
 from engine.terminal import pid_of
@@ -18,6 +18,7 @@ from resources.base import AGENT, SYSTEM
 from resources.types import PRIORITY, RUNNING, TYPES
 
 TICK = 1.0
+SETTLE, STEP = 3.0, 0.1
 WEB_HOSTS = ("github.com", "gitlab.com", "bitbucket.org")
 
 
@@ -122,11 +123,16 @@ class Engine:
         if self.agent.state() == IDLE or not take(self.record.root, self.names(), FORCE):
             return ""
         self.agent.driver.stop_turn()
+        for _ in range(int(SETTLE / STEP)):
+            if self.agent.driver.at_prompt():
+                break
+            time.sleep(STEP)
         self.carry_on = True
-        return "forced: stopping the turn for a waiting change"
+        self.controlled_at = 0.0
+        return self.control(stopped=True) or "forced: stopped the turn, nothing was waiting"
 
-    def control(self) -> str:
-        if self.agent.state() != IDLE or time.time() - self.controlled_at < TICK:
+    def control(self, stopped: bool = False) -> str:
+        if not stopped and (self.agent.state() != IDLE or time.time() - self.controlled_at < TICK):
             return ""
         last = self.agent.driver.last_report()
         queued = take(self.record.root, self.names())
@@ -137,6 +143,8 @@ class Engine:
         if self.carry_on:
             self.carry_on = False
             self.agent.driver.send(CARRY_ON)
+        if queued.get("action") and queued.get("label"):
+            delivered(self.record, self.names(), queued["action"], queued["label"])
         row = Agents(self.record, actor=SYSTEM).by_session((last and last.title) or self.agent.driver.session)
         if queued.get("action") in row.pending:
             self.agent.mark(row.status or "", row.event or "", pending={k: v for k, v in row.pending.items() if k != queued["action"]})
