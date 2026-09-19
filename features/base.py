@@ -52,8 +52,8 @@ class Feature(ABC):
     def refusals(self) -> list:
         return [getattr(self, attr) for attr in dir(type(self)) for fn in [getattr(type(self), attr)] if callable(fn) and getattr(fn, "refuses", False)]
 
-    def register(self) -> None:
-        for pattern, handler in self.listeners():
+    def register(self, listen: bool = True) -> None:
+        for pattern, handler in self.listeners() if listen else ():
             bus.on(pattern, handler, enabled=self.enabled)
         for handler in self.refusals():
             POLICIES.append(lambda provider, record, payload, session, handler=handler: handler(provider, record, payload, session) if self.enabled(record) else "")

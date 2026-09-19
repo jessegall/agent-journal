@@ -5,6 +5,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import features  # noqa: E402
+from engine.seats import engine_on  # noqa: E402
 from engine.sessions import ACTIVE_ENV, Sessions  # noqa: E402
 from engine.hooks import handle  # noqa: E402
 from providers import PROVIDERS  # noqa: E402
@@ -29,7 +30,7 @@ def main(argv: list[str]) -> int:
     session = Hook.read(raw).session
     env = sessions.environment(session) or sessions.bind(session, default_env(root), pid=os.getppid())["environment"]
     sessions.touch(session)
-    features.load()
+    features.load(listen=not engine_on(root, env))
     out = handle(provider, root, env, raw)
     if out:
         print(json.dumps(out))

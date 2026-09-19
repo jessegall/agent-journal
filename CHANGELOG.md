@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.7.0 — The hook takes a fast path while the engine runs
+
+While `journal claude` runs an engine on the environment, a hook only writes the agent's row and answers the refusals (the write gate, the dispatch law, auto's question block); the engine, which has every feature loaded, runs the listeners on the event within a tick. With no engine the hook runs them itself, as before. One hook call with the engine on: 65 ms (536 ms this morning). The viewer's event feed reads the log from its end and a reload fetches the newest thousand events instead of all of them: 125 → 5 ms. One send is one message: a resend with the same key finds the first message even once it is processed or archived, and tabs take turns on the shared outbox.
+
+What to do about it: `journal upgrade`, then restart `journal claude` so its engine and viewer run the new code.
+
 ## 2.6.2 — Commands start in half the time
 
 A command builds only the words of the noun it runs instead of all 730 of them: `journal todo all` 138 → 82 ms, `journal start` 158 → 96 ms on this project.
