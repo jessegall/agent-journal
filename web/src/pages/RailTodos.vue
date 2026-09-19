@@ -18,6 +18,7 @@ const groups = computed(() => {
                 : "open";
     const buckets = {};
     for (const r of open("todo")) (buckets[of(r)] ||= []).push(r);
+    for (const rows of Object.values(buckets)) rows.sort((a, b) => (Number(b.data.priority ?? 100) - Number(a.data.priority ?? 100)) || (a.n - b.n));
     return Object.keys(named)
         .filter((key) => buckets[key])
         .map((key) => ({key, label: named[key], rows: buckets[key]}));
