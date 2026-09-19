@@ -164,19 +164,23 @@ class Provider(ABC):
     def effort(self, project: Path, transcript: Path | None = None) -> str:
         return ""
 
-    def transcript(self, path: Path) -> list:
-        turns = []
+    def entries(self, path: Path | None) -> list[tuple[int, dict]]:
         try:
             raw = Path(path).read_text().splitlines()
-        except OSError:
-            return turns
+        except (OSError, TypeError):
+            return []
+        found = []
         for i, line in enumerate(raw, 1):
             try:
-                turn = self.turn(json.loads(line))
+                row = json.loads(line)
             except ValueError:
                 continue
-            if turn:
-                turns.append(Turn(i, *turn))
+            if isinstance(row, dict):
+                found.append((i, row))
+        return found
+
+    def transcript(self, path: Path) -> list:
+        turns = [Turn(i, *turn) for i, row in self.entries(path) for turn in [self.turn(row)] if turn]
         return self.refine(turns)
 
     def refine(self, turns: list[Turn]) -> list[Turn]:
@@ -186,27 +190,13 @@ class Provider(ABC):
         return None
 
     def tools(self, path: Path) -> list[dict]:
-        try:
-            raw = Path(path).read_text().splitlines()
-        except OSError:
-            return []
-        found = []
-        for line in raw:
-            try:
-                found.extend(self.tool_uses(json.loads(line)))
-            except ValueError:
-                continue
-        return found
+        return [use for _, row in self.entries(path) for use in self.tool_uses(row)]
 
     def tool_uses(self, row: dict) -> list[dict]:
         return []
 
     def crew(self, path: Path) -> dict:
-        uses = self.tools(path)
-        skills = sorted({str((u.get("input") or {}).get("skill") or "") for u in uses if u.get("name") == "Skill"} - {""})
-        shells = sum(1 for u in uses if u.get("name") == "Bash" and (u.get("input") or {}).get("run_in_background"))
-        subagents = sum(1 for u in uses if u.get("name") in ("Agent", "Task"))
-        return {"skills": skills, "shells": shells, "subagents": subagents, "shell_rows": [], "subagent_rows": []}
+        return {}
 
     def subagent_transcript(self, path: Path, session: str) -> Path | None:
         return None

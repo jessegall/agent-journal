@@ -6,7 +6,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 import features  # noqa: E402
 from controllers.types import Agents, Works  # noqa: E402
-from features.files.feature import baseline_file  # noqa: E402
+from features.files.feature import tree_file  # noqa: E402
 from resources.base import AGENT, SYSTEM  # noqa: E402
 from tests.features.kit import report  # noqa: E402
 from tests.kit import check, done, fresh  # noqa: E402
@@ -35,7 +35,7 @@ work = works.create("change some files")
 report(record, "working", "PostToolUse", tool="Edit", file=str(project / "kept.txt"), wrote=True)
 files = {f["path"]: f for f in works.load(work.n).data["changed"]}
 check("an edit reported with its path records that file with its line counts", (files["kept.txt"]["added"], files["kept.txt"]["removed"], files["kept.txt"]["created"]), (2, 1, False))
-check("only the reported file, not the rest of the tree", list(files), ["kept.txt"])
+check("every file the step changed is on the work, the new one as created", sorted((p, f["created"]) for p, f in files.items()), [("fresh.txt", True), ("kept.txt", False)])
 agent = Agents(record, actor=SYSTEM).by_session("claude-1")
 Agents(record, actor=SYSTEM).update(agent.n, running={"what": "first", "at": time.time(), "done": time.time()})
 
@@ -90,6 +90,7 @@ subprocess.run(["git", "-c", "user.email=t@t", "-c", "user.name=t", "commit", "-
 Agents(record, actor=SYSTEM).update(agent.n, running={"what": "commit", "at": 5.0, "done": 6.0})
 report(record, "working", "PostToolUse", tool="Bash", file="", wrote=True)
 check("a commit adds and removes no lines", "changed" in Agents(record, actor=SYSTEM).by_session("claude-1").running, False)
+check("a commit keeps the work's changed files, counted against the work's start", "fresh.txt" in {f["path"] for f in works.load(work.n).data["changed"]}, True)
 
 # EACH STEP COUNTS EXACTLY what it changed: a line swapped is one added and one removed; a deleted file removes its lines
 Agents(record, actor=SYSTEM).update(agent.n, running={"what": "swap", "at": 7.0, "done": 8.0})
@@ -109,7 +110,7 @@ before = works.load(work.n).updated
 report(record, "working", "PostToolUse", tool="Read", file=str(project / "kept.txt"), wrote=False)
 check("a read changes nothing on the work", works.load(work.n).updated, before)
 
-baseline = baseline_file(record, work.n)
+baseline = tree_file(record, work.n, "base")
 works.complete(work.n, how="done")
 check("the feature baseline lives only as long as the work", (baseline.exists(), works.load(work.n).completed > 0), (False, True))
 

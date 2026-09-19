@@ -1,20 +1,17 @@
 import fcntl
-import hashlib
-import json
 import subprocess
 from pathlib import Path
 
 from controllers.types import Agents, Works
+from engine.stored import read_json, write_json
 from features.base import Feature, on
 from providers import PROVIDERS
 from resources.base import SYSTEM, names
 from resources.shapes import CHANGE, COMMIT
 from resources.types import RUNNING
 from skills import LIBRARY
-from engine.stored import write_json
 
 DELTA = names("edited", "created", "deleted", "added", "removed")
-STATE = names("hash", "lines")
 EMPTY_BLOB = "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
 
 
@@ -43,55 +40,6 @@ def journals_own(path: str, marks: tuple[str, ...]) -> bool:
     return any(path.startswith(m) or path == m.rstrip("/") for m in marks)
 
 
-def changed(project: Path, only: str = "") -> list[dict]:
-    paths = [only] if only else []
-    out = []
-    for line in git(project, "diff", "--numstat", "HEAD", "--", *paths).splitlines():
-        added, removed, path = (line.split("\t", 2) + ["", ""])[:3]
-        if path:
-            out.append({CHANGE.path: path, CHANGE.added: int(added) if added.isdigit() else 0, CHANGE.removed: int(removed) if removed.isdigit() else 0, CHANGE.created: False})
-    for path in git(project, "ls-files", "--others", "--exclude-standard", "--", *paths).splitlines():
-        try:
-            lines = sum(1 for _ in (project / path).open(errors="replace"))
-        except OSError:
-            lines = 0
-        out.append({CHANGE.path: path, CHANGE.added: lines, CHANGE.removed: 0, CHANGE.created: True})
-    return out
-
-
-def state(project: Path, only: str = "") -> dict:
-    paths = [only] if only else []
-    found = git(project, "ls-files", "--cached", "--others", "--exclude-standard", "-z", "--", *paths).split("\0")
-    out = {}
-    for path in (path for path in found if path):
-        try:
-            data = (project / path).read_bytes()
-            out[path] = {STATE.hash: hashlib.sha256(data).hexdigest(), STATE.lines: len(data.splitlines())}
-        except OSError:
-            out[path] = None
-    return out
-
-
-def baseline_file(record, n: int) -> Path:
-    return record.home / "runtime" / f"files-{n}.json"
-
-
-def source_state(record, project: Path, only: str = "") -> dict:
-    marks = internal(record, project)
-    return {path: value for path, value in state(project, only).items() if not journals_own(path, marks)}
-
-
-def read_baseline(record, work, project: Path) -> dict:
-    path = baseline_file(record, work.n)
-    try:
-        return json.loads(path.read_text())
-    except (OSError, ValueError):
-        before = source_state(record, project)
-        path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(json.dumps(before))
-        return before
-
-
 def blobs(record, project: Path) -> dict:
     tree = {}
     for entry in git(project, "ls-files", "-s", "-z").split("\0"):
@@ -109,21 +57,13 @@ def blobs(record, project: Path) -> dict:
     return {path: sha for path, sha in tree.items() if not journals_own(path, marks)}
 
 
-def step(project: Path, last: dict, now: dict) -> dict:
-    delta = {DELTA.edited: 0, DELTA.created: 0, DELTA.deleted: 0, DELTA.added: 0, DELTA.removed: 0}
-    for path in set(last) | set(now):
-        old, new = last.get(path, EMPTY_BLOB), now.get(path, EMPTY_BLOB)
-        if old == new:
-            continue
-        delta[DELTA.created if path not in last else DELTA.deleted if path not in now else DELTA.edited] += 1
-        added, removed = (git(project, "diff", "--numstat", old, new).split("\t") + ["", ""])[:2]
-        delta[DELTA.added] += int(added) if added.isdigit() else 0
-        delta[DELTA.removed] += int(removed) if removed.isdigit() else 0
-    return delta
+def numstat(project: Path, old: str, new: str) -> tuple[int, int]:
+    added, removed = (git(project, "diff", "--numstat", old, new).split("\t") + ["", ""])[:2]
+    return int(added) if added.isdigit() else 0, int(removed) if removed.isdigit() else 0
 
 
-def snapshot_file(record, n: int) -> Path:
-    return record.home / "runtime" / f"files-{n}-blobs.json"
+def tree_file(record, n: int, which: str) -> Path:
+    return record.home / "runtime" / f"files-{n}-{which}.json"
 
 
 def committed(project: Path, since: float) -> list[dict]:
@@ -135,61 +75,59 @@ class Files(Feature):
     name = "files"
     title_ = "Files changed"
     abstract_ = "Every file a piece of work changes, and every commit made during it, is recorded on the work"
-    help_ = "The work's opening tree is its baseline; after a write, only paths changed since then are kept with their line counts. A script's writes count too."
+    help_ = "The work's opening tree is its baseline; after each tool use the tree is compared with the last one, and every file that differs from the baseline is kept with its exact line counts. A script's writes count too."
+    TREES = ("base", "last")
 
     @on("work.created")
     def begin(self, event, record) -> None:
-        work = Works(record, actor=SYSTEM).load(event.n)
-        read_baseline(record, work, record.root.parent)
-        self.stepped(record, work.n, record.root.parent)
+        now = blobs(record, record.root.parent)
+        for which in self.TREES:
+            write_json(tree_file(record, event.n, which), now)
 
     @on("work.completed")
     def end(self, event, record) -> None:
-        baseline_file(record, event.n).unlink(missing_ok=True)
-        snapshot_file(record, event.n).unlink(missing_ok=True)
+        for which in self.TREES:
+            tree_file(record, event.n, which).unlink(missing_ok=True)
 
     @on("agent.updated")
     def record_files(self, event, record) -> None:
         agent = self.agent(event, record)
         if agent.event != "PostToolUse":
             return
-        works = Works(record, actor=SYSTEM)
         for work in self.standing(record, Works)[:1]:
             project = record.root.parent
-            file = agent.file or ""
-            only = str(Path(file).resolve().relative_to(project.resolve())) if file and file.startswith(str(project)) else ""
+            base, last, now = self.trees(record, work.n, project)
+            delta = {DELTA.edited: 0, DELTA.created: 0, DELTA.deleted: 0, DELTA.added: 0, DELTA.removed: 0}
             files = {f[CHANGE.path]: f for f in work.changed}
-            delta = self.stepped(record, work.n, project)
-            baseline = read_baseline(record, work, project)
-            current = source_state(record, project, only)
-            paths = {only} if only else set(baseline) | set(current)
-            touched = {path for path in paths if baseline.get(path) != current.get(path)}
-            marks = internal(record, project)
-            now = {f[CHANGE.path]: f for f in changed(project, only) if f[CHANGE.path] in touched and not journals_own(f[CHANGE.path], marks)}
-            for path in touched - set(now):
-                old, new = baseline.get(path), current.get(path)
-                old_lines = old[STATE.lines] if old else 0
-                new_lines = new[STATE.lines] if new else 0
-                now[path] = {CHANGE.path: path, CHANGE.added: max(0, new_lines - old_lines), CHANGE.removed: max(0, old_lines - new_lines), CHANGE.created: old is None and new is not None}
-            files.update(now)
+            for path in {p for p in set(last) | set(now) if last.get(p) != now.get(p)}:
+                added, removed = numstat(project, last.get(path, EMPTY_BLOB), now.get(path, EMPTY_BLOB))
+                delta[DELTA.created if path not in last else DELTA.deleted if path not in now else DELTA.edited] += 1
+                delta[DELTA.added] += added
+                delta[DELTA.removed] += removed
+                if base.get(path) == now.get(path):
+                    files.pop(path, None)
+                    continue
+                total_added, total_removed = numstat(project, base.get(path, EMPTY_BLOB), now.get(path, EMPTY_BLOB))
+                files[path] = {CHANGE.path: path, CHANGE.added: total_added, CHANGE.removed: total_removed, CHANGE.created: path not in base}
             commits = committed(project, work.created)
             if list(files.values()) != work.changed or commits != work.commits:
-                works.update(work.n, changed=list(files.values()), commits=commits)
+                Works(record, actor=SYSTEM).update(work.n, changed=list(files.values()), commits=commits)
             if any(delta[k] for k in (DELTA.edited, DELTA.created, DELTA.deleted)):
                 self.count(record, agent.n, self.finished(agent.running), delta)
 
-    def stepped(self, record, n: int, project: Path) -> dict:
-        snapshot = snapshot_file(record, n)
-        snapshot.parent.mkdir(parents=True, exist_ok=True)
-        with snapshot.with_suffix(".lock").open("w") as lock:
+    def trees(self, record, n: int, project: Path) -> tuple[dict, dict, dict]:
+        last_file = tree_file(record, n, "last")
+        last_file.parent.mkdir(parents=True, exist_ok=True)
+        with last_file.with_suffix(".lock").open("w") as lock:
             fcntl.flock(lock, fcntl.LOCK_EX)
-            try:
-                last = json.loads(snapshot.read_text())
-            except (OSError, ValueError):
-                last = None
             now = blobs(record, project)
-            write_json(snapshot, now)
-        return step(project, last if last is not None else now, now)
+            last = read_json(last_file)
+            base = read_json(tree_file(record, n, "base"))
+            if base is None:
+                base = last if last is not None else now
+                write_json(tree_file(record, n, "base"), base)
+            write_json(last_file, now)
+        return base, now if last is None else last, now
 
     def finished(self, running: dict) -> float:
         run = running if running.get(RUNNING.done) else running.get(RUNNING.before) or {}

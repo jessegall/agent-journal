@@ -243,7 +243,8 @@ class Codex(Provider):
         return f"{minutes}m"
 
     def crew(self, path: Path) -> dict:
-        uses = self.tools(path)
+        rows = [row for _, row in self.entries(path)]
+        uses = [use for row in rows for use in self.tool_uses(row)]
         skills = sorted({str((use.get("input") or {}).get("skill") or "") for use in uses if use.get("name") == "Skill"} - {""})
         subagents = sum(1 for use in uses if str(use.get("name") or "").endswith("spawn_agent"))
         subagent_rows = []
@@ -251,15 +252,9 @@ class Codex(Provider):
         shells = 0
         compacting = False
         pending = {}
-        try:
-            lines = Path(path).read_text().splitlines()
-        except OSError:
-            lines = []
-        for line in lines:
-            try:
-                row = json.loads(line)
-                payload = row.get("payload") or {}
-            except (ValueError, AttributeError):
+        for row in rows:
+            payload = row.get("payload") or {}
+            if not isinstance(payload, dict):
                 continue
             if row.get("type") == "response_item":
                 name = ".".join(part for part in (str(payload.get("namespace") or ""), str(payload.get("name") or "")) if part)
