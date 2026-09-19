@@ -274,6 +274,9 @@ class Controller:
             memo[self.type, deleted] = rows
         return [r.fork() for r in memo[self.type, deleted]]
 
+    def mark(self, r: Resource) -> str:
+        return ""
+
     def search(self, term: str) -> list[Resource]:
         want = term.lower()
         return [r for r in self.all() if want in r.title.lower() or want in r.brief.lower() or want in r.abstract.lower()

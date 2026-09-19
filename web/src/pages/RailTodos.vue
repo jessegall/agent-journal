@@ -4,24 +4,16 @@ import Dot from "../kit/Dot.vue";
 import Icon from "../kit/Icon.vue";
 import PriorityIcon from "../kit/PriorityIcon.vue";
 import {peek, route} from "../route.js";
-import {open, rows} from "../store.js";
+import {GROUPS, groupOf, open} from "../store.js";
 
 const groups = computed(() => {
-    const named = {started: "In progress", blocked: "Blocked", asked: "Waiting on you", open: "Open"};
-    const of = (r) =>
-        r.data.blocked
-            ? "blocked"
-            : r.data.status === "started"
-              ? "started"
-              : rows("question").some((q) => !q.completed && q.refs.includes(r.ref))
-                ? "asked"
-                : "open";
     const buckets = {};
-    for (const r of open("todo")) (buckets[of(r)] ||= []).push(r);
-    for (const rows of Object.values(buckets)) rows.sort((a, b) => (Number(b.data.priority ?? 100) - Number(a.data.priority ?? 100)) || (a.n - b.n));
-    return Object.keys(named)
+    for (const r of open("todo")) (buckets[groupOf(r)] ||= []).push(r);
+    for (const rows of Object.values(buckets))
+        rows.sort((a, b) => Number(b.data.priority ?? 100) - Number(a.data.priority ?? 100) || a.n - b.n);
+    return Object.keys(GROUPS)
         .filter((key) => buckets[key])
-        .map((key) => ({key, label: named[key], rows: buckets[key]}));
+        .map((key) => ({key, label: GROUPS[key], rows: buckets[key]}));
 });
 </script>
 

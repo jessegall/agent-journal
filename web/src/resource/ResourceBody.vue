@@ -1,12 +1,11 @@
 <script setup>
 import {computed, reactive, ref} from "vue";
-import {act} from "../api.js";
+import {act, fileUrl} from "../api.js";
 import Btn from "../kit/Btn.vue";
 import CommentToggle from "./CommentToggle.vue";
 import Icon from "../kit/Icon.vue";
-import {fileUrl} from "../api.js";
-import {route} from "../route.js";
-import {age, label, meta, word} from "../store.js";
+import {peek, route} from "../route.js";
+import {age, label, meta, waitsOn, word} from "../store.js";
 import ResourceActions from "./ResourceActions.vue";
 import Sections from "./Sections.vue";
 import OptionsPicker from "./OptionsPicker.vue";
@@ -28,6 +27,7 @@ const kind = computed(() => meta(props.resource.type));
 const files = computed(() => Object.entries(props.resource.data.files || {}));
 const ranked = computed(() => !!kind.value.fields.priority && !props.resource.completed);
 const traced = computed(() => !!kind.value.fields.changed);
+const waits = computed(() => (props.resource.completed ? [] : waitsOn(props.resource)));
 const editing = ref(false);
 const draft = reactive({title: "", abstract: "", brief: "", error: ""});
 
@@ -104,6 +104,18 @@ async function save() {
                 <Priority :resource="resource" />
             </template>
         </div>
+        <p v-if="!resource.completed && (resource.data.blocked || waits.length)" class="waits">
+            <template v-if="resource.data.blocked">Blocked: {{ resource.data.blocked }}</template>
+            <template v-if="waits.length">
+                Waits on
+                <template v-for="(ref, i) in waits" :key="ref">
+                    <button type="button" class="wait" @click="peek(ref.split(':')[0], Number(ref.split(':')[1]))">
+                        {{ ref.replace("todo:", "to-do ").replace("plan:", "plan ") }}
+                    </button>
+                    <template v-if="i < waits.length - 1">,</template>
+                </template>
+            </template>
+        </p>
         <RuleControls v-if="resource.type === 'rule' && !resource.completed" :resource="resource" />
         <template v-if="kind.fields.options">
             <OptionsPicker :resource="resource" />
@@ -265,6 +277,21 @@ async function save() {
     color: var(--text-3);
     font-size: 11.5px;
 }
+.waits {
+    margin: 10px 0 0;
+    color: var(--blocking);
+    font-size: 12.5px;
+}
+
+.wait {
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--accent-text);
+    font: inherit;
+    cursor: pointer;
+}
+
 .controls {
     display: flex;
     align-items: center;

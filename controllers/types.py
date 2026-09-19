@@ -112,9 +112,50 @@ class Todos(Controller):
     def unblock(self, n: int):
         return self.update(n, blocked="")
 
-    def after(self, n: int, waits: int, off: bool = False):
-        other = self.load(int(waits))
-        return self.unlink(n, other.ref) if off else self.link(n, other.ref)
+    def after(self, n: int, waits: str, off: bool = False):
+        row = self.load(n)
+        kind, _, num = (str(waits) if ":" in str(waits) else f"todo:{waits}").partition(":")
+        if not self.waitable(kind) or not num.isdigit():
+            raise Refused("a to-do waits on another to-do or a plan: a number, todo:<n> or plan:<n>")
+        ref = self.waitable(kind)(self.record, actor=SYSTEM).load(int(num)).ref
+        if ref == row.ref or row.ref in self.chain(ref):
+            raise Refused(f"todo {n} waiting on {ref} would wait on itself")
+        held = list(row.after or [])
+        return self.update(n, after=[r for r in held if r != ref] if off else held + [ref] * (ref not in held))
+
+    def waitable(self, kind: str):
+        return {"todo": Todos, "plan": Plans}.get(kind)
+
+    def chain(self, ref: str) -> set[str]:
+        seen, todo = set(), [ref]
+        while todo:
+            kind, _, num = todo.pop().partition(":")
+            if kind != "todo" or f"todo:{num}" in seen:
+                continue
+            seen.add(f"todo:{num}")
+            todo.extend(self.load(int(num)).after or [])
+        return seen
+
+    def waits(self, row) -> list[str]:
+        open_ = []
+        for ref in row.after or []:
+            kind, _, num = ref.partition(":")
+            try:
+                other = self.waitable(kind)(self.record, actor=SYSTEM).load(int(num))
+            except (TypeError, ValueError, Refused):
+                continue
+            finished = other.status in ENDED if kind == "plan" else other.completed
+            if not finished and not other.deleted:
+                open_.append(ref)
+        return open_
+
+    def mark(self, r) -> str:
+        if r.completed:
+            return "  [done]"
+        if r.blocked:
+            return f"  [blocked: {r.blocked}]"
+        waits = self.waits(r)
+        return f"  [waits on {', '.join(w.replace(':', ' ') for w in waits)}]" if waits else ""
 
     def strike(self, n: int, why: str):
         return self.complete(n, f"struck: {why}", struck=True)
@@ -155,6 +196,7 @@ class Works(Controller):
 
 
 BUILDING, DRAFT, READY, ACTIVE, WAITING, DONE, ABANDONED = "building", "draft", "ready", "active", "waiting", "done", "abandoned"
+ENDED = (DONE, ABANDONED)
 
 
 class Plans(Controller):

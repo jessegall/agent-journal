@@ -12,14 +12,9 @@ def asked(record, todo) -> bool:
     return any(not q.completed and todo.ref in q.refs for q in Questions(record, actor=SYSTEM).all())
 
 
-def waiting_on(record, todo, rows: list) -> bool:
-    open_refs = {t.ref for t in rows}
-    return any(ref in open_refs for ref in todo.refs if ref.startswith("todo:"))
-
-
 def ready(record) -> list:
-    rows = open_rows(record)
-    fit = [t for t in rows if not t.blocked and not t.assigned and not waiting_on(record, t, rows) and not asked(record, t) and not held(record, t)]
+    todos = Todos(record, actor=SYSTEM)
+    fit = [t for t in open_rows(record) if not t.blocked and not t.assigned and not todos.waits(t) and not asked(record, t) and not held(record, t)]
     return sorted(fit, key=lambda t: (-int(t.priority or LEVELS["default"]), t.n))
 
 

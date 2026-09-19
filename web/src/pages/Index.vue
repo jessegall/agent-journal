@@ -5,7 +5,7 @@ import Btn from "../kit/Btn.vue";
 import Icon from "../kit/Icon.vue";
 import SwitchCase from "../kit/SwitchCase.vue";
 import {go, route} from "../route.js";
-import {load, meta, open, rows, trim, whole, word} from "../store.js";
+import {GROUPS, groupOf, load, meta, open, rows, trim, whole, word} from "../store.js";
 import RowGroups from "../resource/RowGroups.vue";
 import ResourceCard from "../resource/ResourceCard.vue";
 import NewResource from "../resource/NewResource.vue";
@@ -26,24 +26,14 @@ watch(
 onUnmounted(() => trim(props.type));
 const shown = computed(() => (archive.value ? all.value.filter((r) => r.completed) : open(props.type)));
 const groups = computed(() => {
-    const named = {started: "In progress", blocked: "Blocked", asked: "Waiting on you"};
-    const of = (r) =>
-        r.data.blocked
-            ? "blocked"
-            : r.data.status === "started"
-              ? "started"
-              : rows("question").some((q) => !q.completed && q.refs.includes(r.ref))
-                ? "asked"
-                : "open";
     const buckets = {};
-    for (const r of shown.value) (buckets[of(r)] ||= []).push(r);
-    return [...Object.keys(named), "open"]
+    for (const r of shown.value) (buckets[groupOf(r)] ||= []).push(r);
+    return Object.keys(GROUPS)
         .filter((k) => buckets[k])
-        .map((k) => [k, buckets[k]])
-        .map(([k, list]) => ({
+        .map((k) => ({
             key: k,
-            title: named[k] || (archive.value ? word(props.type, "complete").replace(/^\w/, (c) => c.toUpperCase()) : "Open"),
-            list,
+            title: k === "open" && archive.value ? word(props.type, "complete").replace(/^\w/, (c) => c.toUpperCase()) : GROUPS[k],
+            list: buckets[k],
         }));
 });
 
@@ -73,7 +63,10 @@ async function select(n) {
             <NewResource :type="type" @made="select" @close="adding = false" />
         </template>
         <template v-if="!shown.length">
-            <p class="empty">No {{ kind.title.toLowerCase() }}s {{ archive ? "archived" : all.length ? "open" : "on this environment" }}{{ archive || !all.length ? " yet" : "" }}.</p>
+            <p class="empty">
+                No {{ kind.title.toLowerCase() }}s {{ archive ? "archived" : all.length ? "open" : "on this environment"
+                }}{{ archive || !all.length ? " yet" : "" }}.
+            </p>
         </template>
         <SwitchCase :value="kind.view">
             <template #document>
