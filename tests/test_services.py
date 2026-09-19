@@ -1,11 +1,12 @@
 import socket
+import subprocess
 import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 import features  # noqa: E402
 from controllers.types import Plugins  # noqa: E402
-from engine.services import DOWN, PORTS, UP, allocate, log_file, specs, states, status_file, want, wanted  # noqa: E402
+from engine.services import DOWN, Manager, PORTS, UP, allocate, log_file, specs, states, status, status_file, want, wanted  # noqa: E402
 from engine.stored import write_json  # noqa: E402
 from features.plugins.source import folder, home  # noqa: E402
 from resources.base import SYSTEM  # noqa: E402
@@ -58,6 +59,64 @@ check("a restart is the same word with a new nonce", want(root, "works.web", UP,
 # WHAT IS RUNNING is read from the state files
 check("states are read by service", sorted(states(root)), ["works.web"])
 check("a log is one file per service", log_file(root, "works.web").name, "service-works.web.log")
+
+# THE MANAGER STARTS WHAT IS WANTED, backs off when it keeps stopping, and gives up saying why
+started = []
+clock = [1000.0]
+running = {4242}
+manager = Manager(root, start=lambda spec, lifeline: started.append(spec["id"]) or 4242, clock=lambda: clock[0], living=lambda pid: pid in running)
+want(root, "works.web", UP)
+check("what is wanted and not running is started", (manager.tick(), status(root, "works.web")["state"]), (["works.web", "works.queue"], "starting"))
+check("what is already running is left alone", manager.tick(), [])
+
+# A SERVICE THAT STOPS is started again, but only after it has waited
+def exited(sid: str = "works.web"):
+    write_json(status_file(root, sid), {**status(root, sid), "state": "exited", "at": clock[0]})
+
+
+exited()
+check("the stop is noticed and it is left to wait", (manager.tick(), status(root, "works.web")["state"]), ([], "exited"))
+clock[0] += 5
+check("once the wait is over it is started again", manager.tick(), ["works.web"])
+
+# STOPPING AGAIN AND AGAIN makes each wait longer, and five within a minute gives up
+for wait in (2, 4, 8, 16):
+    exited()
+    manager.tick()
+    clock[0] += wait - 0.5
+    check(f"after {wait} seconds it is still waiting", manager.tick(), [])
+    clock[0] += 1
+    manager.tick()
+exited()
+manager.tick()
+check("five stops within the minute leaves it failed, saying why", (status(root, "works.web")["state"], "5 times" in status(root, "works.web")["why"]), ("failed", True))
+clock[0] += 120
+check("and it stays failed, however long it waits", manager.tick(), [])
+want(root, "works.web", UP, nonce=clock[0])
+check("asking for it again starts it", manager.tick(), ["works.web"])
+
+# ASKED TO STOP, nothing is started
+want(root, "works.queue", DOWN)
+quiet = Manager(root, start=lambda spec, lifeline: started.append("never") or 1, clock=lambda: clock[0], living=lambda pid: pid in running)
+check("a service asked to stop is not started", "works.queue" in quiet.tick(), False)
+want(root, "works.queue", UP)
+
+# A PORT THAT IS TAKEN is reported, not fought over
+with socket.socket() as sock:
+    sock.bind(("127.0.0.1", 0))
+    sock.listen(1)
+    busy = sock.getsockname()[1]
+    Plugins(record, actor=SYSTEM).update(1, manifest={"name": "works", "services": {"fixed": {"run": "serve", "port": busy}}})
+    blocked = Manager(root, start=lambda spec, lifeline: started.append("blocked") or 1, clock=lambda: clock[0], living=lambda pid: pid in running)
+    blocked.tick()
+    check("a service whose port is taken says so and is not started", (status(root, "works.fixed")["state"], "in use" in status(root, "works.fixed")["why"], "blocked" in started), ("blocked", True, False))
+
+# A GROUP LEFT BEHIND by a dead keeper is killed
+left = subprocess.Popen([sys.executable, "-c", "import time; time.sleep(60)"], start_new_session=True)
+write_json(status_file(root, "works.orphan"), {"state": "ready", "keeper": 999999, "owner": 999999, "pgid": left.pid})
+Manager(root, start=lambda spec, lifeline: 1, clock=lambda: clock[0], living=lambda pid: pid in running).sweep()
+left.wait(timeout=10)
+check("a service whose keeper is gone is taken down", (left.poll() is not None, status(root, "works.orphan")["state"]), (True, "stopped"))
 
 # A PLUGIN THAT IS OFF declares no services
 Plugins(record, actor=SYSTEM).update(1, enabled=False)
