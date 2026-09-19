@@ -22,6 +22,7 @@ import QuickMenu from "./layout/QuickMenu.vue";
 import ChatWindow from "./layout/ChatWindow.vue";
 import AwayCard from "./layout/AwayCard.vue";
 import UpgradeBand from "./layout/UpgradeBand.vue";
+import ThreadSkeleton from "./chat/ThreadSkeleton.vue";
 
 const page = computed(() =>
     !route.value.page
@@ -77,7 +78,12 @@ watch(
 </script>
 
 <template>
-    <template v-if="store.spec && chatOnly">
+    <template v-if="!store.spec && !route.page">
+        <main class="home-loading">
+            <ThreadSkeleton />
+        </main>
+    </template>
+    <template v-else-if="store.spec && chatOnly">
         <ChatWindow />
     </template>
     <template v-else-if="store.spec">
@@ -120,6 +126,13 @@ watch(
 </template>
 
 <style scoped>
+.home-loading {
+    width: min(1080px, 100%);
+    height: 100%;
+    display: flex;
+    padding: 48px 24px 96px;
+}
+
 .app {
     display: flex;
     height: 100%;
