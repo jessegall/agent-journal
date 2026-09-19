@@ -5,7 +5,7 @@ import tempfile
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from controllers.types import Agents, Asks, Environments, Todos  # noqa: E402
+from controllers.types import Agents, Asks, Environments, Plans, Todos  # noqa: E402
 from engine.record import Record  # noqa: E402
 from engine.sessions import Sessions  # noqa: E402
 from resources.base import SYSTEM  # noqa: E402
@@ -42,6 +42,11 @@ journal("plan", "create", "The plan", "--set", "goal=all of it")
 journal("plan", "phase", "1", "First", "--when", "it is first")
 code, out = journal("plan", "todos", "1", "1", "1")
 check("a list parameter is positional", (code, "todo:1" in out), (0, True))
+journal("plan", "rephrase", "1", "1", "--checkpoint", "true")
+journal("plan", "rephrase", "1", "1", "--title", "Still first")
+check("a bool-or-none parameter takes a word and keeps it a boolean, untouched when unset", Plans(Record(root, "t")).load(1).phases[0]["checkpoint"], True)
+journal("plan", "rephrase", "1", "1", "--checkpoint", "false")
+check("the word false is False, not a truthy string", Plans(Record(root, "t")).load(1).phases[0]["checkpoint"], False)
 check("continue is the plan's word and only the user's", journal("plan", "continue", "1")[1], "! only the user can continue a plan: they do it in the viewer")
 check("the user may, with --as", journal("--as", "user", "plan", "activate", "1")[0], 0)
 check("carry begins with the start block", journal("carry")[1].startswith("THE JOURNAL IS IN FORCE HERE"), True)

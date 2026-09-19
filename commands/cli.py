@@ -28,6 +28,10 @@ def actions(controller: type) -> list[str]:
                   if not name.startswith("_") and name not in HIDDEN)
 
 
+def truthy(word: str) -> bool:
+    return word.strip().lower() in ("true", "yes", "on", "1")
+
+
 def add_method(acts, controller: type, name: str) -> None:
     a = acts.add_parser(controller.resource.names.get(name, name))
     a.set_defaults(method=name)
@@ -40,6 +44,8 @@ def add_method(acts, controller: type, name: str) -> None:
             a.add_argument(p.name, nargs="*")
         elif p.annotation is bool or isinstance(p.default, bool):
             a.add_argument(flag, action="store_true")
+        elif p.annotation == bool | None:
+            a.add_argument(flag, type=truthy, default=None)
         elif p.annotation is list:
             a.add_argument(flag, nargs="+", type=int)
         else:
