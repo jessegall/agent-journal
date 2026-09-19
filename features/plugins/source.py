@@ -57,8 +57,9 @@ def environment(root: Path, name: str, manifest: dict, token: str) -> dict:
     where = values(root, name, token)
     given = fill(manifest.get("env") or {}, where)
     return {**os.environ, **{str(k): str(v) for k, v in given.items()},
-            "JOURNAL_ROOT": where["root"], "JOURNAL_URL": where["journal.url"], "JOURNAL_PLUGIN": name,
-            "JOURNAL_TOKEN": token, "JOURNAL": str(Path(root) / "journal"), "PLUGIN_DIR": where["dir"], "PLUGIN_DATA": where["data"]}
+            "JOURNAL_ROOT": where["root"], "JOURNAL_URL": where["journal.url"], "JOURNAL_TOKEN": token,
+            "JOURNAL": str(Path(root) / "journal"), "JOURNAL_PLUGIN": name,
+            "JOURNAL_PLUGIN_DIR": where["dir"], "JOURNAL_PLUGIN_DATA": where["data"]}
 
 
 def run(command, cwd: Path, env: dict, seconds: int) -> tuple[int, str]:
