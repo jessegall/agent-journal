@@ -111,7 +111,7 @@ class Provider(ABC):
     def model(self, hook: Hook) -> str:
         return hook.model
 
-    def effort(self, project: Path) -> str:
+    def effort(self, project: Path, transcript: Path | None = None) -> str:
         return ""
 
     def transcript(self, path: Path) -> list:

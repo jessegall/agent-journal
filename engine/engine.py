@@ -121,6 +121,9 @@ class Engine:
             return ""
         self.agent.driver.send(queued["line"])
         self.controlled_at = time.time()
+        row = Agents(self.record, actor=SYSTEM).by_session((last and last.title) or self.agent.driver.session)
+        if queued.get("action") in row.pending:
+            self.agent.mark(row.status or "", row.event or "", pending={k: v for k, v in row.pending.items() if k != queued["action"]})
         return f"controlled: {queued['label']}"
 
     def deliver(self) -> str:

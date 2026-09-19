@@ -174,6 +174,7 @@ class AgentRow(Shape, Resource):
     transcript = Field(default="")
     model = Field(default="")
     effort = Field(default="")
+    pending = Field(default=dict)
     started = Field()
     context = Field(default=0)
     usage = Field(default=dict)
