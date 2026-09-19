@@ -37,7 +37,7 @@ onUnmounted(() => window.removeEventListener("click", away));
                     </template>
                 </button>
                 <Transition name="drop">
-                    <div v-if="drop" class="drop" @click="drop = false">
+                    <div v-if="drop" class="drop" @click="(e) => e.target.closest('.note-row') && (drop = false)">
                         <div class="drop-head">Notifications</div>
                         <RailNotes />
                     </div>
