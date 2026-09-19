@@ -16,8 +16,8 @@ JOURNAL_DIR = ".journal"
 CHANGING = ("writes", "deletes")
 START = r"(?:^|[;&|(]\s*|\b(?:do|then)\s+)"
 EFFECTS = (
-    ("tests", re.compile(START + r"(?:\S*python3?\s+(?:-m\s+)?\S*tests?/\S*|pytest|npm (?:run )?test|npx (?:vitest|jest)|vitest|jest|go test|cargo test|phpunit|php artisan test)\b")),
-    ("tests", re.compile(r"(?=.*\btest_)(?=.*\bpython3?\s+\"?\$\w)", re.S)),
+    ("tests", re.compile(START + r"(?:\S*[Pp]ython[\d.]*\s+(?:-m\s+)?\S*tests?/\S*|pytest|npm (?:run )?test|npx (?:vitest|jest)|vitest|jest|go test|cargo test|phpunit|php artisan test)\b")),
+    ("tests", re.compile(r"(?=.*\btest_)(?=.*\b[Pp]ython[\d.]*\s+\"?\$\w)", re.S)),
     ("deletes", re.compile(START + r"(?:rm|rmdir|unlink|git rm)\s")),
     ("writes", re.compile(WRITING_COMMANDS.pattern + r"|" + START + r"(?:perl\s+-\w*i|sed\s+-i)|\.write_text\(|\.write\(|open\([^)]*,\s*(?:mode=)?['\"][wa]b?\+?['\"]")),
     ("reads", re.compile(r"^\s*(?:cd \S+\s*(?:&&|;)\s*)?(?:cat|head|tail|less|grep|rg|sed -n|wc|ls|find|tree|stat)\b")),

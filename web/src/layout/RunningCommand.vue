@@ -1,6 +1,5 @@
 <script setup>
-import {computed, nextTick, onMounted, onUnmounted, ref, watch} from "vue";
-import {api} from "../api.js";
+import {computed, nextTick, onUnmounted, ref, watch} from "vue";
 import {gists, gistTokens} from "../gist.js";
 import {spoken} from "../spoken.js";
 import {agent, types} from "../store.js";
@@ -60,7 +59,6 @@ watch(
             if (!first) {
                 const shown = said(c).slice(0, 1);
                 shown.forEach((text) => pending.push({key: text, text, tokens: tokensOf(c, text), delta: []}));
-                api("POST", "/shown", {command: c.what, shown}).catch(() => {});
             }
         }
         if (first && !seen.at) seen.at = 1;
@@ -68,29 +66,8 @@ watch(
     },
     {immediate: true}
 );
-const bar = ref(null);
-let watching = null;
-let displayed = "";
-
-function record() {
-    const pieces = bar.value ? [...bar.value.querySelectorAll(".statusbar-run-token, .statusbar-running-for, .statusbar-run-count")] : [];
-    const text = pieces
-        .map((piece) => piece.textContent.trim())
-        .filter(Boolean)
-        .join(" ");
-    if (text === displayed) return;
-    displayed = text;
-    api("POST", "/displayed", {text}).catch(() => {});
-}
-
-onMounted(() => {
-    watching = new MutationObserver(record);
-    watching.observe(bar.value, {subtree: true, childList: true, characterData: true});
-});
-
 onUnmounted(() => {
     clearTimeout(staying);
-    if (watching) watching.disconnect();
     clearInterval(timer);
     if (rolls) clearTimeout(rolls);
     if (hide) clearTimeout(hide);
@@ -232,7 +209,7 @@ watch(target, (changed) => stay.value || apply(changed), {immediate: true});
 </script>
 
 <template>
-    <span ref="bar" :class="['statusbar-running', {ending: !data}]">
+    <span :class="['statusbar-running', {ending: !data}]">
         <Transition name="roll">
             <span v-if="line" :class="['statusbar-run-line', {done: line.done}]">
                 <TransitionGroup
