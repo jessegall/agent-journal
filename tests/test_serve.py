@@ -135,6 +135,8 @@ check("what the status bar shows is logged for the record", (code, (root / "runt
 (root.parent / "web" / "gist.js").write_text("export const a = 1;\nexport const b = 2;\n")
 code, got = call("GET", "/api/main/file?path=web/gist.js")
 check("a project file is served read-only with its text and line count", (code, got["path"], got["lines"], got["text"].startswith("export")), (200, "web/gist.js", 2, True))
+code, got = call("GET", f"/api/main/file?path={str(root.parent / 'web' / 'gist.js').replace('/', '%2F')}")
+check("an absolute mention inside the project resolves to its concise project path", (code, got["path"]), (200, "web/gist.js"))
 check("a path outside the project is refused", call("GET", "/api/main/file?path=../../etc/passwd")[0], 404)
 check("a path with no file is refused", call("GET", "/api/main/file?path=web/none.js")[0], 404)
 
