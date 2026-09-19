@@ -104,7 +104,8 @@ const line = computed(() => {
     if (rolling.value) return rolling.value;
     const run = data.value && data.value.running;
     if (!run || !run.what) return null;
-    const now = run.step && !run.done ? {what: run.step, tool: "Bash", effect: run.step_effect} : run;
+    const step = run.step && !run.done ? {what: run.step, tool: "Bash", effect: run.step_effect} : null;
+    const now = step && said(step).length ? step : run;
     const parts = said(now);
     if (!parts.length) return null;
     const secs = Math.floor((run.done || Date.now() / 1000) - run.at);

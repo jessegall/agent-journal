@@ -17,14 +17,16 @@ rows = {
     200: (1, "/bin/zsh -c other"),
     201: (200, "vim x"),
 }
-check("the newest process under the agent's command shell is the running step", steps.running(AGENT, rows), "node helper.js")
-del rows[104]
-check("when it ends, its parent is the step again", steps.running(AGENT, rows), "python3 tests/test_a.py")
+check("the running step is the command the shell started, not a helper under it", steps.running(AGENT, rows), "python3 tests/test_a.py")
 rows[105] = (102, "cat notes.md")
 del rows[103]
 check("the chain moves on to its next command", steps.running(AGENT, rows), "cat notes.md")
 check("a server started straight under the agent is never a step", steps.running(AGENT, {AGENT: (1, "claude"), 101: (AGENT, "npm exec mcp")}), "")
 check("another shell's processes are not this agent's", "vim" in steps.running(AGENT, rows), False)
+pipeline = {AGENT: (1, "claude"), 300: (AGENT, "/bin/zsh -c journal todo all | grep x | awk y"), 301: (300, "journal todo all"), 302: (300, "grep x"), 303: (300, "awk y")}
+check("in a pipeline the step is its first command, not the last filter", steps.running(AGENT, pipeline), "journal todo all")
+pipeline.update({400: (AGENT, "/bin/zsh -c sleep 100"), 401: (400, "sleep 100")})
+check("the newest command shell is the one the agent is waiting on", steps.running(AGENT, pipeline), "sleep 100")
 check("nothing running: no step", steps.running(AGENT, {AGENT: (1, "claude")}), "")
 check("the supervisor's session name carries the agent's pid both ways", pid_of(session_of("claude", 12837)), 12837)
 check("a session name without a pid gives none", pid_of("9a08cbbb"), 0)

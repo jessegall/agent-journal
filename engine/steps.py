@@ -26,10 +26,13 @@ def running(agent: int, rows: dict[int, tuple[int, str]] | None = None) -> str:
     under = {}
     for pid, (parent, _) in rows.items():
         under.setdefault(parent, []).append(pid)
-    found, stack = [], [pid for pid in under.get(agent, []) if shell(rows[pid][1])]
-    while stack:
-        pid = stack.pop()
-        if not shell(rows[pid][1]):
-            found.append(pid)
-        stack.extend(under.get(pid, []))
-    return rows[max(found)][1][:400] if found else ""
+    for top in sorted((pid for pid in under.get(agent, []) if shell(rows[pid][1])), reverse=True):
+        found, stack = [], list(under.get(top, []))
+        while stack:
+            pid = stack.pop()
+            if not shell(rows[pid][1]):
+                found.append(pid)
+            stack.extend(under.get(pid, []))
+        if found:
+            return rows[min(found)][1][:400]
+    return ""
