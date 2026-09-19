@@ -151,7 +151,7 @@ async function drop() {
                     </div>
                 </template>
                 <template v-if="words.quote">
-                    <p class="thread-quote" title="Go to what this answers" @click.stop="resourceComment ? openComment() : toQuoted">{{ words.quote }}</p>
+                    <p class="thread-quote" title="Go to what this answers" @click.stop="resourceComment ? openComment() : toQuoted()">{{ words.quote }}</p>
                 </template>
                 <div class="thread-text" @click="follow" v-html="html" />
                 <template v-if="turn.type === 'question'">
