@@ -6,11 +6,12 @@ import RunningCommand from "./RunningCommand.vue";
 import Switch from "../kit/Switch.vue";
 import {go, peek, route} from "../route.js";
 import {agent, autoOn, rows} from "../store.js";
-import {currentWork, doneOf, lineOf, phaseOf, planButton, shownPlans, stateOf, wordOf} from "./statusline.js";
+import {currentWork, doneOf, lineOf, phaseOf, planButton, queued, shownPlans, stateOf, wordOf} from "./statusline.js";
 
 const current = computed(() => currentWork(rows("work")));
 const state = computed(() => stateOf(agent.value, rows("work")));
-const line = computed(() => lineOf(agent.value, rows("work"), autoOn.value));
+const waiting = computed(() => queued(rows("todo"), autoOn.value, rows("question")));
+const line = computed(() => lineOf(agent.value, rows("work"), waiting.value));
 function inspect() {
     if (current.value) peek("work", current.value.n);
     else go(route.value.env);
@@ -46,7 +47,7 @@ async function runBar(p) {
     <div class="statusbar" @click.self="inspect">
         <span :class="['statusbar-dot', {live: state !== 'stopped'}]" />
         <button type="button" class="statusbar-text" @click="inspect">
-            <b>{{ wordOf(state, autoOn) }}</b>
+            <b>{{ wordOf(state, waiting) }}</b>
             <span class="statusbar-roll">
                 <template v-if="sentence.head">
                     <span class="statusbar-head">{{ sentence.head }}</span>

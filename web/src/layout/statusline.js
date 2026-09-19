@@ -13,8 +13,15 @@ export function named(w) {
     return w.data.todo ? `to-do ${w.data.todo} · ${w.title}` : w.title;
 }
 
-export function wordOf(state, auto = false) {
-    return capital(state === "idle" && auto ? "waiting" : state);
+export function queued(todos, auto, questions = []) {
+    const open = todos.filter((t) => !t.completed && !t.deleted);
+    const asked = (t) => questions.some((q) => !q.completed && !q.deleted && q.refs.includes(`todo:${t.n}`));
+    const waits = (t) => [].concat(t.data.after || []).some((n) => open.some((o) => o.n === Number(n)));
+    return auto && open.some((t) => !t.data.blocked && !t.data.assigned && !asked(t) && !waits(t));
+}
+
+export function wordOf(state, waiting = false) {
+    return capital(state === "idle" && waiting ? "waiting" : state);
 }
 
 export function lineOf(agent, works, auto = false) {
