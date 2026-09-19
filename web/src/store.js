@@ -18,6 +18,7 @@ export const store = reactive({
     settings: null,
     agents: [],
     stream: null,
+    booted: false,
     activity: remembered("journal.activity", true),
     focus: "",
     detached: false,
@@ -171,6 +172,7 @@ export async function boot() {
     }
     await Promise.all(types.value.filter((t) => t.name !== "nudge").map((t) => load(t.name)));
     await reload();
+    store.booted = true;
     listen();
 }
 
