@@ -128,6 +128,8 @@ class Provider(ABC):
         return {"passed": passed, "failed": failed}
 
     def effect(self, hook: Hook) -> str:
+        if hook.tool.name in WRITES:
+            return "writes" if self.in_project(hook.tool.file_path, hook.cwd) else ""
         return self.effect_of(hook.command) if hook.tool.name == "Bash" else ""
 
     def effect_of(self, command: str) -> str:

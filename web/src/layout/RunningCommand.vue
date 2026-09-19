@@ -8,9 +8,8 @@ const STEP = 700;
 const HOLD_EDITS = 1000;
 const DELTA_LEAVE = 240;
 const SHOW_CLOCK_AFTER = 10;
-const WRITE_TOOLS = ["Edit", "Write", "MultiEdit", "NotebookEdit"];
+const COUNT_UP = 360;
 const CHANGING = ["writes", "deletes"];
-const sentence = (words) => spoken(words, types.value);
 const EFFECTS = {
     tests: [
         {value: "running", kind: "command"},
@@ -29,9 +28,6 @@ const EFFECTS = {
         {value: "files", kind: "argument"},
     ],
 };
-const said = (c) =>
-    c.effect ? [EFFECTS[c.effect].map((t) => t.value).join(" ")] : c.tool && c.tool !== "Bash" ? [c.what] : gists(c.what, sentence);
-const tokensOf = (c, text) => (c.effect ? EFFECTS[c.effect] : gistTokens(text));
 const data = computed(() => (agent.value && ["working", "compacting"].includes(agent.value.data.status) ? agent.value.data : null));
 const ticks = ref(0);
 const timer = setInterval(() => (ticks.value += 1), 1000);
@@ -44,6 +40,23 @@ const frames = {added: 0, removed: 0};
 const tally = new Map();
 const retired = new Set();
 let rolls = null;
+
+function sentence(words) {
+    return spoken(words, types.value);
+}
+
+function ownWords(c) {
+    return c.tool && c.tool !== "Bash";
+}
+
+function said(c) {
+    if (ownWords(c)) return [c.what];
+    return c.effect ? [EFFECTS[c.effect].map((t) => t.value).join(" ")] : gists(c.what, sentence);
+}
+
+function tokensOf(c, text) {
+    return c.effect && !ownWords(c) ? EFFECTS[c.effect] : gistTokens(text);
+}
 
 function roll() {
     rolling.value = pending.shift() || null;
@@ -60,7 +73,7 @@ watch(
             seen.at = c.at;
             if (!first) {
                 const shown = said(c).slice(0, 1);
-                shown.forEach((text) => pending.push({key: text, text, tokens: tokensOf(c, text), delta: []}));
+                shown.forEach((text) => pending.push({key: text, text, tokens: tokensOf(c, text)}));
             }
         }
         if (first && !seen.at) seen.at = 1;
@@ -151,7 +164,7 @@ watch(
 );
 
 function editing(run) {
-    return CHANGING.includes(run.effect) || WRITE_TOOLS.includes(run.tool);
+    return CHANGING.includes(run.effect);
 }
 
 function total() {
@@ -197,7 +210,7 @@ watch(
         const before = run.before;
         const late = counted(before);
         counted(run);
-        if (run.what && run.at !== started) {
+        if (run.at !== started) {
             started = run.at;
             clearTimeout(resetting);
             stay.value = null;
@@ -230,14 +243,14 @@ function count(kind, to) {
         counts.value = {...counts.value, [kind]: to};
         return;
     }
-    const started = performance.now();
-    const step = (now) => {
-        const at = Math.min(1, (now - started) / 360);
+    const began = performance.now();
+    const frame = (now) => {
+        const at = Math.min(1, (now - began) / COUNT_UP);
         const eased = 1 - (1 - at) ** 3;
         counts.value = {...counts.value, [kind]: Math.round(from + (to - from) * eased)};
-        if (at < 1) frames[kind] = requestAnimationFrame(step);
+        if (at < 1) frames[kind] = requestAnimationFrame(frame);
     };
-    frames[kind] = requestAnimationFrame(step);
+    frames[kind] = requestAnimationFrame(frame);
 }
 
 function apply(sum) {
