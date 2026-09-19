@@ -7,7 +7,8 @@ import {route} from "../route.js";
 
 const file = ref(null);
 const error = ref("");
-const lines = computed(() => (file.value ? highlight(file.value.text, languageOf(file.value.path)) : []));
+const matches = computed(() => (file.value && file.value.matches) || []);
+const lines = computed(() => (file.value && !matches.value.length ? highlight(file.value.text, languageOf(file.value.path)) : []));
 
 async function load() {
     error.value = "";
@@ -27,7 +28,18 @@ watch(() => route.value.q, load);
         <template v-if="error">
             <p class="empty">{{ error }}</p>
         </template>
-        <template v-if="file">
+        <template v-if="matches.length">
+            <p class="empty">{{ matches.length }} files in the project are named {{ route.q }}:</p>
+            <ul class="matches">
+                <li v-for="path in matches" :key="path">
+                    <a :href="`#/${route.env}/file?q=${encodeURIComponent(path)}`">
+                        <Icon name="file" />
+                        <code>{{ path }}</code>
+                    </a>
+                </li>
+            </ul>
+        </template>
+        <template v-else-if="file">
             <header class="head">
                 <Icon name="file" />
                 <code class="path">{{ file.path }}</code>
@@ -101,5 +113,23 @@ watch(() => route.value.q, load);
     text-align: right;
     color: var(--text-4);
     user-select: none;
+}
+.matches {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.matches a {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 4px;
+    color: var(--text-2);
+    text-decoration: none;
+}
+
+.matches a:hover {
+    color: var(--accent-text);
 }
 </style>

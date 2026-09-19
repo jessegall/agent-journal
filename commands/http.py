@@ -391,19 +391,18 @@ def get_files(req: Request) -> Reply:
     return Reply(200, sorted(out, key=lambda x: -x["at"]))
 
 
+def project_paths(project: Path) -> list[Path]:
+    found = []
+    for folder, dirs, names in os.walk(project):
+        dirs[:] = [name for name in dirs if not name.startswith(".") and name != "__pycache__" and name != "node_modules"]
+        found.extend(path for path in (Path(folder) / name for name in names) if path.is_file())
+    return found
+
+
 @route("GET", "/api/{env}/project-files")
 def get_project_files(req: Request) -> Reply:
     project = req.root.parent.resolve()
-    out = []
-    for folder, dirs, names in os.walk(project):
-        dirs[:] = [name for name in dirs if not name.startswith(".") and name != "__pycache__" and name != "node_modules"]
-        for name in names:
-            path = Path(folder) / name
-            if not path.is_file():
-                continue
-            relative = path.relative_to(project)
-            kind = mimetypes.guess_type(path.name)[0] or ""
-            out.append({"path": str(relative), "size": path.stat().st_size, "kind": kind})
+    out = [{"path": str(path.relative_to(project)), "size": path.stat().st_size, "kind": mimetypes.guess_type(path.name)[0] or ""} for path in project_paths(project)]
     return Reply(200, sorted(out, key=lambda x: x["path"].lower()))
 
 
@@ -438,6 +437,12 @@ def get_file_text(req: Request) -> Reply:
     asked = str(req.query.get("path") or "")
     candidate = Path(asked).expanduser() if Path(asked).is_absolute() else project / asked
     target = candidate.resolve()
+    if asked and not Path(asked).is_absolute() and not target.is_file():
+        tail = f"/{asked.lstrip('./')}"
+        matches = sorted(str(path.relative_to(project)) for path in project_paths(project) if f"/{path.relative_to(project)}".endswith(tail))
+        if len(matches) > 1:
+            return Reply(200, {"matches": matches})
+        target = project / matches[0] if matches else target
     if not asked or project not in target.parents or not target.is_file():
         raise Missing(f"no file {asked} in the project")
     raw = target.read_bytes()[:400000]
