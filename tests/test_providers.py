@@ -129,6 +129,9 @@ check("each shell command is classified by what it does", {c: claude.effect(Hook
 read_only = "python3 - <<'EOF'\nprint(open('a').read())\nEOF"
 check("a heredoc that only reads is neither editing nor a write", (claude.effect(Hook.read({"hook_event_name": "PreToolUse", "tool_name": "Bash", "tool_input": {"command": read_only}})),
       claude.writes(Hook.read({"hook_event_name": "PostToolUse", "tool_name": "Bash", "tool_input": {"command": read_only}}))), ("", False))
+check("a quoted > is text, not a redirect; tests then a commit is still a write",
+      ([claude.effect_of(c) for c in ("grep 'c>=2' f", "git commit -m 'a > b'")], claude.writes(Hook.read({"hook_event_name": "PostToolUse", "tool_name": "Bash", "tool_input": {"command": "python3 tests/x.py && git commit -m y"}}))),
+      (["reads", "writes"], True))
 check("an edit next to a journal call is still a write, and journal calls alone never are",
       [claude.writes(Hook.read({"hook_event_name": "PostToolUse", "tool_name": "Bash", "tool_input": {"command": c}})) for c in ('journal work log 5 "x"; git commit -m y', 'journal message reply 3 "a > b"', ".journal/journal todo add x")], [True, False, False])
 check("a command labelled editing is one whose line changes are counted", all(claude.writes(Hook.read({"hook_event_name": "PostToolUse", "tool_name": "Bash", "tool_input": {"command": c}})) for c, e in effects.items() if e in ("writes", "deletes")), True)

@@ -19,9 +19,10 @@ EFFECTS = (
     ("tests", re.compile(START + r"(?:\S*[Pp]ython[\d.]*\s+(?:-m\s+)?\S*tests?/\S*|pytest|npm (?:run )?test|npx (?:vitest|jest)|vitest|jest|go test|cargo test|phpunit|php artisan test)\b")),
     ("tests", re.compile(r"(?=.*\btest_)(?=.*\b[Pp]ython[\d.]*\s+\"?\$\w)", re.S)),
     ("deletes", re.compile(START + r"(?:rm|rmdir|unlink|git rm)\s")),
-    ("writes", re.compile(WRITING_COMMANDS.pattern + r"|" + START + r"(?:perl\s+-\w*i|sed\s+-i)|\.write_text\(|\.write\(|open\([^)]*,\s*(?:mode=)?['\"][wa]b?\+?['\"]")),
+    ("writes", re.compile(START + r"(?:perl\s+-\w*i|sed\s+-i)|\.write_text\(|\.write\(|open\([^)]*,\s*(?:mode=)?['\"][wa]b?\+?['\"]")),
     ("reads", re.compile(r"^\s*(?:cd \S+\s*(?:&&|;)\s*)?(?:cat|head|tail|less|grep|rg|sed -n|wc|ls|find|tree|stat)\b")),
 )
+QUOTED = re.compile(r"\"(?:[^\"\\\\]|\\\\.)*\"|'[^']*'")
 JOURNAL_CALL = re.compile(r"(^|[;&|(]\s*|\$\()\S*journal(?:\.py)?\s(?:\"[^\"]*\"|'[^']*'|[^;&|)\n])*")
 
 
@@ -69,8 +70,7 @@ class Provider(ABC):
     def writes(self, hook: Hook) -> bool:
         if hook.tool.name in WRITES:
             return self.in_project(hook.tool.file_path, hook.cwd)
-        rest = self.without_journal(hook.command)
-        return hook.tool.name == "Bash" and any(pattern.search(rest) for name, pattern in EFFECTS if name in CHANGING)
+        return hook.tool.name == "Bash" and any(name in CHANGING for name in self.effects(hook.command))
 
     def in_project(self, path: str, cwd: str) -> bool:
         if not path or not cwd:
@@ -98,8 +98,14 @@ class Provider(ABC):
         return self.effect_of(hook.command) if hook.tool.name == "Bash" else ""
 
     def effect_of(self, command: str) -> str:
+        return next(iter(self.effects(command)), "")
+
+    def effects(self, command: str) -> list[str]:
         rest = self.without_journal(command)
-        return next((name for name, pattern in EFFECTS if pattern.search(rest)), "") if rest.strip() else ""
+        if not rest.strip():
+            return []
+        bare = QUOTED.sub("''", rest)
+        return [name for name, pattern in EFFECTS if pattern.search(rest) or (name == "writes" and WRITING_COMMANDS.search(bare))]
 
     def without_journal(self, command: str) -> str:
         return JOURNAL_CALL.sub(r"\1", command)
