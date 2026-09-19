@@ -50,6 +50,8 @@ def post(url: str, payload: dict, token: str) -> tuple[bool, dict | str]:
         reply = json.loads(out)
     except ValueError:
         return False, f"{url} answered with something other than JSON"
+    if reply == []:
+        return True, {}
     return (True, reply) if isinstance(reply, dict) else (False, f"{url} answered with something other than an object")
 
 

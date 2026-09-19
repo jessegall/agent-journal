@@ -124,6 +124,31 @@ check("once it answers, the event arrives and its answer is applied", (down.step
       (1, ["while the service is down"], ["asked for by the service"]))
 server.shutdown()
 
+
+# A SERVICE WITH NOTHING TO SAY answers an empty list, and that is not a failure
+class Quiet(BaseHTTPRequestHandler):
+    def do_POST(self):
+        self.rfile.read(int(self.headers["Content-Length"]))
+        self.send_response(200)
+        self.send_header("Content-Type", "application/json")
+        self.send_header("Content-Length", "2")
+        self.end_headers()
+        self.wfile.write(b"[]")
+
+    def log_message(self, *args):
+        return
+
+
+quiet = ThreadingHTTPServer(("127.0.0.1", 0), Quiet)
+threading.Thread(target=quiet.serve_forever, daemon=True).start()
+silent = fresh("silent")
+host = Host(silent.root)
+installed(silent, {"name": "quiet", "on": {"todo.created": {"post": f"http://127.0.0.1:{quiet.server_address[1]}/journal/events"}}})
+host.step()
+Todos(silent, actor=AGENT).create("nothing comes back")
+check("an empty list is taken as nothing to do, and the cursor moves", (host.step(), silent.cursor("plugin-quiet") == silent.last_event(), host.trouble), (1, True, {}))
+quiet.shutdown()
+
 # THE HOST RUNS IN THE SERVER: started once, it delivers by itself
 from features import FEATURES  # noqa: E402
 live = fresh("live")

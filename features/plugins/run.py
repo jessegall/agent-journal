@@ -39,6 +39,8 @@ def read(out: str) -> tuple[bool, dict | str]:
         reply = json.loads(out)
     except ValueError:
         return False, f"the reply was not JSON: {out.strip()[:SHOWN]}"
+    if reply == []:
+        return True, {}
     if not isinstance(reply, dict):
         return False, "the reply was not an object"
     return True, reply
