@@ -25,7 +25,7 @@ class Messages(Controller):
         with self.record.locked():
             key = data.get(types.Message.idempotency, "")
             if key:
-                existing = next((message for message in self.all() if message.idempotency == key), None)
+                existing = next((message for message in self.all(deleted=True) if message.idempotency == key), None)
                 if existing:
                     return existing
             return super().create(title, abstract, brief, **data)

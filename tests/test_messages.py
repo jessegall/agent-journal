@@ -24,6 +24,14 @@ check("a part not in the message is refused", refused(lambda: read.process(m.n, 
 read.method("processed")(m.n, "both parts filed")
 check("processed is the message's complete", (bool(read.load(m.n).completed), read.load(m.n).outcome), (True, "both parts filed"))
 
+# THE SAME SEND TWICE is one message, even after the first was processed or archived
+once = left.create("sent twice", idempotency="k-1")
+check("a resend with the same key returns the first message", left.create("sent twice", idempotency="k-1").n, once.n)
+read.method("processed")(once.n, "handled")
+check("a resend after processing is still the first message", left.create("sent twice", idempotency="k-1").n, once.n)
+read.archive(once.n, "duplicate")
+check("a resend after archiving creates nothing new", (left.create("sent twice", idempotency="k-1").n, len([x for x in left.all(deleted=True) if x.idempotency == "k-1"])), (once.n, 1))
+
 # REPLYING is a comment by the agent, and it may carry a file
 shot = Path(tempfile.mkdtemp()) / "shot.png"
 shot.write_bytes(b"png")
@@ -38,7 +46,7 @@ fresh_one = left.create("a typo hear")
 left.edit(fresh_one.n, "a typo here")
 check("edited while unread", left.load(fresh_one.n).brief, "a typo here")
 read.show(fresh_one.n)
-check("read by the agent: the user is told to leave a new one", refused(lambda: left.edit(fresh_one.n, "again")), "message 2 has been read: leave a new one")
+check("read by the agent: the user is told to leave a new one", refused(lambda: left.edit(fresh_one.n, "again")), f"message {fresh_one.n} has been read: leave a new one")
 
 # A TRANSCRIPT is a message declared as one
 t = left.create("the call with the team", brief="A: we ship friday\nB: agreed", kind="transcript")
