@@ -23,6 +23,11 @@ hook = Hook.read({"hook_event_name": "PreToolUse", "session_id": "s-1", "transcr
                   "tool_name": "Agent", "tool_input": {"subagent_type": "auditor", "model": "haiku", "command": "ls"}, "tool_response": {"session_id": "sh-1"}})
 check("the hook payload is read once into typed fields: event, session from the transcript, tool and its inputs", (hook.event, hook.session, str(hook.transcript), hook.cwd, hook.model, hook.tool.name, hook.tool.subagent_type, hook.tool.model, hook.command, hook.tool.response),
       ("PreToolUse", "abc-7", "/t/abc-7.jsonl", "/p", "m", "Agent", "auditor", "haiku", "ls", {"session_id": "sh-1"}))
+said = lambda name, **given: Hook.read({"tool_name": name, "tool_input": given}).tool.doing
+check("every tool use has words the status bar and the band show: files by name, patterns, agents, skills, mcp as server · tool",
+      (said("Read", file_path="/p/web/src/gist.js"), said("Edit", file_path="/p/Turn.vue"), said("Write", file_path="/p/new.py"), said("Grep", pattern="def foo"), said("Glob", pattern="**/*.vue"),
+       said("Agent", subagent_type="auditor"), said("Skill", skill="journal"), said("mcp__playwright__browser_navigate"), said("WebFetch", url="https://docs.example.com/a/b"), said("Bash", command="ls -la"), said("TodoWrite")),
+      ("reading gist.js", "editing Turn.vue", "writing new.py", "searching def foo", "searching **/*.vue", "dispatching auditor", "loading skill journal", "playwright · browser navigate", "fetching docs.example.com", "ls -la", "todowrite"))
 check("an empty payload reads to empty fields, never to a KeyError", (Hook.read({}).event, Hook.read({}).session, Hook.read({}).transcript, Hook.read({}).tool.name), ("", "", None, ""))
 
 
@@ -68,7 +73,7 @@ for name, cls in PROVIDERS.items():                       # every provider, the 
     logged = (root / "runtime" / "commands.log").read_text().splitlines()
     check(f"{name}: every command starting is logged raw, as received, for the record", [line.split("\t")[1] for line in logged][-2:], ["'npm run build'", "'npm test'"])
     provider.handle(root, "main", {**payload, "hook_event_name": "PreToolUse", "tool_name": "Read", "tool_input": {"file_path": "/x"}})
-    check(f"{name}: another tool leaves the ring and the last commands as they were", [c["what"] for c in agents.by_session("abc-1").data["commands"]], ["npm run build", "npm test"])
+    check(f"{name}: a read joins the ring in words, with its tool, so the bar shows it as it is", [(c["what"], c["tool"]) for c in agents.by_session("abc-1").data["commands"]][-1], ("reading x", "Read"))
     agents.set(agents.by_session("abc-1").n, "status", IDLE)
     check(f"{name}: journal agent set status idle is the same funnel", agents.by_session("abc-1").data["status"], IDLE)
     question = {**payload, "hook_event_name": "PreToolUse", "tool_name": {"claude": "AskUserQuestion", "codex": "request_user_input"}[name]}

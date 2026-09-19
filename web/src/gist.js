@@ -43,7 +43,8 @@ const SUBVERBS = new Set([
     "gh",
     "kubectl",
 ]);
-const WRAPPERS = new Set(["perl", "timeout", "time", "exec", "nohup"]);
+const WRAPPERS = new Set(["perl", "timeout", "time", "exec", "nohup", "env", "sudo", "nice", "caffeinate", "xvfb-run"]);
+const OPERANDS = new Set(["-u", "-n", "-e", "-C", "-g", "-p", "-s", "-k", "--signal", "--user"]);
 
 function split(line, atBreak) {
     const out = [];
@@ -94,18 +95,28 @@ function words(piece) {
     return split(piece, (s, i) => (/\s/.test(s[i]) ? 1 : 0));
 }
 
+function unwrapped(w) {
+    const wrapper = w[0];
+    let i = 1;
+    while (i < w.length - 1) {
+        const x = w[i];
+        if (OPERANDS.has(x) || (wrapper === "perl" && /^-e$/.test(x))) i += 2;
+        else if (
+            x.startsWith("-") ||
+            /^[A-Za-z_]\w*=/.test(x) ||
+            (wrapper === "timeout" && /^\d/.test(x)) ||
+            (wrapper === "perl" && /^'.*'$/.test(x))
+        )
+            i += 1;
+        else break;
+    }
+    return w.slice(i);
+}
+
 function verbOf(piece) {
     let w = words(piece.replace(/^[({\s;&]+|[)}\s;&]+$/g, ""));
-    while (w.length > 1 && (/^[A-Z_][A-Z0-9_]*=/.test(w[0]) || WRAPPERS.has(w[0]) || LEAD.has(w[0]))) {
-        w =
-            w[0] === "perl"
-                ? w.slice(
-                      Math.max(
-                          1,
-                          w.findIndex((x, i) => i > 0 && !x.startsWith("-") && !/^'.*'$/.test(x))
-                      )
-                  )
-                : w.slice(1);
+    while (w.length > 1 && (/^[A-Za-z_]\w*=/.test(w[0]) || WRAPPERS.has(w[0]) || LEAD.has(w[0]))) {
+        w = WRAPPERS.has(w[0]) ? unwrapped(w) : w.slice(1);
     }
     return w;
 }

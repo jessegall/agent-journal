@@ -10,6 +10,7 @@ def refusal(hook) -> str:
 
 
 def launch_args(record, provider: str, args: list[str]) -> list[str]:
+    from features.auto.feature import Auto
     flags = {arg.split("=", 1)[0] for arg in args}
     automatic = APPROVAL_ARGS.get(provider, ())
-    return [*automatic, *args] if record.features.get("auto", False) and flags.isdisjoint(APPROVAL_FLAGS.get(provider, ())) else args
+    return [*automatic, *args] if Auto.on_for(record) and flags.isdisjoint(APPROVAL_FLAGS.get(provider, ())) else args
