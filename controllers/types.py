@@ -150,6 +150,8 @@ class Todos(Controller):
         return open_
 
     def mark(self, r) -> str:
+        if r.type != self.type:
+            return ""
         if r.completed:
             return "  [done]"
         if r.blocked:

@@ -50,4 +50,8 @@ m0005_todo_waits.run(old.root)
 moved = legacy.load(b.n)
 check("an old link to a to-do becomes a wait", (moved.after, a.ref in moved.refs), ([a.ref], False))
 
+# A ROW OF ANOTHER TYPE, listed through a to-do, is left unmarked
+note = todos.comment(second.n, "a note")
+check("a comment listed under a to-do is not marked", todos.mark(note), "")
+
 done()
