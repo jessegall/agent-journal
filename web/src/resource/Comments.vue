@@ -1,5 +1,5 @@
 <script setup>
-import {computed} from "vue";
+import {computed, nextTick} from "vue";
 import {act} from "../api.js";
 import {route} from "../route.js";
 import {age, quoted, rows, withQuote} from "../store.js";
@@ -14,8 +14,11 @@ const thread = computed(() =>
 );
 
 async function send(text) {
-    await act(route.value.env, props.resource.type, props.resource.n, "comment", {text: withQuote(props.quote, text)});
+    const made = await act(route.value.env, props.resource.type, props.resource.n, "comment", {text: withQuote(props.quote, text)});
     emit("sent");
+    await nextTick();
+    const row = document.querySelector(`[data-comment="${made.n}"]`);
+    if (row) row.scrollIntoView({behavior: "smooth", block: "nearest"});
 }
 </script>
 
@@ -28,7 +31,7 @@ async function send(text) {
             <p class="none">No comments yet.</p>
         </template>
         <template v-for="c in thread" :key="c.n">
-            <div :class="['comment', c.seen[0]]">
+            <div :class="['comment', c.seen[0]]" :data-comment="c.n">
                 <span class="who">
                     {{ c.seen[0] }} · {{ age(c.created) }}
                     <template v-if="c.completed">
