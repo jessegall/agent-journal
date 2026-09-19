@@ -169,6 +169,11 @@ async function upload(n, file) {
     if (!res.ok) throw new Error((await res.json()).error || res.statusText);
 }
 
+watch(busy, async () => {
+    await nextTick();
+    if (!stillReading()) toBottom();
+});
+
 watch(
     () => turns.value.length,
     async (n, before) => {
@@ -189,9 +194,9 @@ watch(
 
 <template>
     <div class="thread">
-        <div class="thread-write">
-            <Transition name="rise">
-                <div v-if="busy" class="thread-turn busy" aria-label="The agent is working">
+        <Transition name="band">
+            <div v-if="busy" class="thread-band">
+                <div class="thread-turn busy" aria-label="The agent is working">
                     <div class="thread-bubble">
                         <span class="thread-dot" />
                         <span class="thread-dot" />
@@ -199,7 +204,9 @@ watch(
                     </div>
                     <div class="thread-meta"><span>working</span></div>
                 </div>
-            </Transition>
+            </div>
+        </Transition>
+        <div class="thread-write">
             <Transition name="rise">
                 <button
                     v-if="away"
@@ -361,21 +368,34 @@ watch(
     }
 }
 
+.thread-band {
+    order: 2;
+    flex: none;
+    height: 62px;
+    padding: 0 8px;
+    overflow: hidden;
+    background: transparent;
+    pointer-events: none;
+}
+
+.band-enter-active,
+.band-leave-active {
+    transition:
+        height 0.22s cubic-bezier(0.2, 0.8, 0.2, 1),
+        opacity 0.18s ease;
+}
+
+.band-enter-from,
+.band-leave-to {
+    height: 0;
+    opacity: 0;
+}
+
 .thread-turn.busy {
-    position: absolute;
-    left: var(--home-gutter);
-    bottom: calc(100% + 4px);
-    z-index: 2;
     display: flex;
     flex-direction: column;
     gap: 3px;
     max-width: max-content;
-    pointer-events: none;
-}
-
-.rise-enter-from.thread-turn.busy,
-.rise-leave-to.thread-turn.busy {
-    transform: translateY(8px);
 }
 
 .thread-turn.busy .thread-bubble {
@@ -455,7 +475,7 @@ watch(
 }
 
 .thread-write {
-    order: 2;
+    order: 3;
     position: relative;
     flex: none;
     display: flex;
