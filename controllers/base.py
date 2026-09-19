@@ -5,6 +5,7 @@ from pathlib import Path
 
 from engine.record import Record
 from resources.base import Refused, Resource, SECTION, check_abstract, check_title, titled
+from resources.pictures import dimensions
 from resources.shapes import check
 
 FACES = ("👍", "❤️", "🎉", "😄", "👀", "🙏", "👎", "💔", "😠")
@@ -157,6 +158,9 @@ class Controller:
         shutil.copytree(source, target, dirs_exist_ok=True) if source.is_dir() else shutil.copy2(source, target)
         r = self.load(n)
         r.files[source.name] = what
+        size = dimensions(target) if target.is_file() else None
+        if size:
+            r.pictures[source.name] = list(size)
         return self.save(r, "updated", file=source.name, what=what)
 
     def tag(self, n: int, name: str, tags: str) -> Resource:
@@ -180,6 +184,7 @@ class Controller:
         struck.mkdir(exist_ok=True)
         shutil.move(str(self.folder(n) / name), str(struck / name))
         r.files.pop(name)
+        r.pictures.pop(name, None)
         return self.save(r, "updated", detached=name, why=why)
 
     def index(self, n: int) -> Resource:

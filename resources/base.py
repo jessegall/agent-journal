@@ -78,6 +78,7 @@ class Resource:
     notify: ClassVar[tuple] = (USER, AGENT)   # who is told of its events, besides the actor
     spoken: ClassVar[bool] = False            # typed to the agent as its title, not as "type n action"
     files = Field(default=dict)               # what is attached: name → what became of it
+    pictures = Field(default=dict)            # an attached image's width and height, known before it loads
     agent = Field()                           # the subagent that wrote it, and its dispatcher
     dispatcher = Field()
     n: int = 0
