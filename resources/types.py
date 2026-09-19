@@ -272,6 +272,7 @@ class Connection(Shape, Resource):
 class Plugin(Shape, Resource):
     type = "plugin"
     lent = False
+    nav = False
     icon = "plug"
     names = {"complete": "remove"}
     title_ = "Plugin"

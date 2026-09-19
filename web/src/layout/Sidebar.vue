@@ -85,8 +85,8 @@ async function makeEnv() {
                 </a>
                 <template v-for="p in pages" :key="`${p.plugin}.${p.name}`">
                     <a
-                        :class="['item', {on: route.page === 'plugin' && String(route.n) === `${p.plugin}.${p.name}`}]"
-                        :href="`#/${route.env}/plugin/${p.plugin}.${p.name}`"
+                        :class="['item', {on: route.page === 'page' && String(route.n) === `${p.plugin}.${p.name}`}]"
+                        :href="`#/${route.env}/page/${p.plugin}.${p.name}`"
                     >
                         <Icon :name="p.icon" />
                         {{ p.title }}
