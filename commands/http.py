@@ -210,6 +210,15 @@ def post_shown(req: Request) -> Reply:
     return Reply(200, {"ok": True})
 
 
+@route("POST", "/api/displayed")
+def post_displayed(req: Request) -> Reply:
+    target = req.root / "runtime" / "statusbar.log"
+    target.parent.mkdir(parents=True, exist_ok=True)
+    with target.open("a") as out:
+        out.write(f"{time.strftime('%H:%M:%S')}.{int(time.time() * 1000) % 1000:03d}\t{req.body.get('text') or '(empty)'}\n")
+    return Reply(200, {"ok": True})
+
+
 @route("GET", "/api/extension")
 def get_extension(req: Request) -> Reply:
     return Reply(200, extension_info())

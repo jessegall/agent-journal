@@ -1,5 +1,5 @@
 <script setup>
-import {computed, nextTick, onUnmounted, ref, watch} from "vue";
+import {computed, nextTick, onMounted, onUnmounted, ref, watch} from "vue";
 import {api} from "../api.js";
 import {gists, gistTokens} from "../gist.js";
 import {spoken} from "../spoken.js";
@@ -50,7 +50,24 @@ watch(
     },
     {immediate: true}
 );
+const bar = ref(null);
+let watching = null;
+let displayed = "";
+
+function record() {
+    const text = (bar.value ? bar.value.textContent : "").replace(/\s+/g, " ").trim();
+    if (text === displayed) return;
+    displayed = text;
+    api("POST", "/displayed", {text}).catch(() => {});
+}
+
+onMounted(() => {
+    watching = new MutationObserver(record);
+    watching.observe(bar.value, {subtree: true, childList: true, characterData: true});
+});
+
 onUnmounted(() => {
+    if (watching) watching.disconnect();
     clearInterval(timer);
     if (rolls) clearTimeout(rolls);
     if (reveal) clearTimeout(reveal);
@@ -181,7 +198,7 @@ watch(
 </script>
 
 <template>
-    <span :class="['statusbar-running', {ending: !data}]">
+    <span ref="bar" :class="['statusbar-running', {ending: !data}]">
         <Transition name="roll">
             <span v-if="line" :class="['statusbar-run-line', {done: line.done}]">
                 <TransitionGroup
