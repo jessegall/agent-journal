@@ -25,7 +25,7 @@ check("a type's own word, not the method's name", ("journal todo done <n>" in re
 check("the old words never appear", any(w in core for w in ("journal next", "MCP", " reference <n>", "kinds", "dispatcher", "verb")), False)
 auto = got["journal-auto/SKILL.md"]
 check("a feature's skill says what it listens to, when it speaks and its default", ("It listens to: agent.updated" in auto, "It speaks on idle" in auto, "Off by default" in auto), (True, True, True))
-check("message tracing names the automatic message-to-resource links", "# Message tracing" in got["journal-became/SKILL.md"], True)
+check("where a row came from names both the link it makes and the one it asks for", ("# Where a row came from" in got["journal-became/SKILL.md"], "cites nothing" in got["journal-became/SKILL.md"] or "was built on" in got["journal-became/SKILL.md"]), (True, True))
 check("subject skills use v2's singular noun and word commands", ("journal todo start" in got["journal-todos/SKILL.md"], "journal report create" in got["journal-reports/SKILL.md"]), (True, True))
 check("future work is filed before other work continues", (
     "becomes `journal todo create` immediately" in got["journal-todos/SKILL.md"],

@@ -103,10 +103,12 @@ class WorkFeature(Feature):
         if not agent:
             return
         for w in self.working(record)[:1]:
+            close = f'journal work end {w.n} --how "<what landed>", or journal work park {w.n} "<why it waits>"'
             if w.sections:
-                self.nudge(record, agent, f"work {w.n} open")
+                self.nudge(record, agent, f"work {w.n} is still open", brief=f"end it or park it before you stop: {close}")
             else:
-                self.nudge(record, agent, f"work {w.n} open, nothing logged", brief=f'journal work log {w.n} "<what was decided or done, and why>"')
+                self.nudge(record, agent, f"work {w.n} is still open, with nothing logged",
+                           brief=f'journal work log {w.n} "<what was decided or done, and why>" — then {close}')
 
     @event("agent.updated")
     def edited(self, event, record) -> None:

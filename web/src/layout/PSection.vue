@@ -11,7 +11,7 @@ defineEmits<{runBar: [unknown]}>();
 
 <template>
     <div :class="['planbar', `planbar-${data.status}`]">
-        <a class="planbar-link" :href="`#/${route.env}/plan/${p.n}`" :title="`Plan ${p.n}: ${p.title}`">
+        <button type="button" class="planbar-link" :title="`Plan ${p.n}: ${p.title}`" @click="peek('plan', p.n)">
             <span class="planbar-n">Plan</span>
             <span class="planbar-dot">·</span>
             <span class="planbar-title">{{ p.title }}</span>
@@ -29,7 +29,7 @@ defineEmits<{runBar: [unknown]}>();
                     <span :style="{width: `${(100 * doneOf(p, rows('todo'))) / Math.max(1, rowsOf(p).length)}%`}" />
                 </span>
             </template>
-        </a>
+        </button>
         <template v-if="planButton(p)">
             <button type="button" :class="['planbar-act', {ack: data.status === 'done'}]" @click="$emit('runBar', p)">
                 {{ planButton(p)[1] }}
@@ -56,6 +56,11 @@ defineEmits<{runBar: [unknown]}>();
 }
 
 .planbar-link {
+    border: 0;
+    background: none;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
     flex: 1;
     min-width: 0;
     display: flex;
