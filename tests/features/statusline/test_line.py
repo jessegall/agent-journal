@@ -45,18 +45,18 @@ check("a test run names what it is testing", said(shell("python3 tests/test_serv
       ["testing", "python3", "test_serve.py"])
 check("every other kind has its own word",
       [said(shell("rm x", effect=e))[0] for e in ("deletes", "installs", "builds")], ["deleting", "installing", "building"])
-check("a journal command speaks for itself, with no verb in front", said(shell("journal message read 7")), ["reading", "message", "7"])
+check("a journal command is rooted under journal and says what it did there", said(shell("journal message read 7")), ["journal", "reading", "message", "7"])
 check("journal commands group with each other, and a shell command is not one of them",
       (said(shell("journal todo add x"), [shell("journal message unread", NOW - 1), shell("curl http://x", NOW - 2)]),
        said(shell("curl http://x"), [shell("journal message unread", NOW - 1)])),
-      ([["checking for unread messages", "adding a to-do"]], ["running", "curl"]))
+      (["journal", ["checking for unread messages", "adding a to-do"]], ["running", "curl"]))
 check("a tool that is neither a file nor a shell is being used, and every word of it is a part of its own",
       said({"what": "playwright · browser evaluate", "tool": "mcp__playwright__browser_evaluate", "at": NOW}),
       ["using", "playwright", "·", "browser", "evaluate"])
 check("the verb is the root and the only unmuted part",
       coloured({"what": "playwright · browser evaluate", "tool": "mcp__x", "at": NOW})[:2], [("using", "gray"), ("playwright", "muted")])
-check("a line with no verb makes its own first word the root",
-      coloured(shell("journal message read 601"))[:2], [("reading", "gray"), ("message", "muted")])
+check("a journal command's root is journal, and what it did there is muted",
+      coloured(shell("journal message read 601"))[:2], [("journal", "gray"), ("reading", "muted")])
 check("nothing running is no line", (line({}, [], NOW), line({"tool": "Bash"}, [], NOW)), ({}, {}))
 
 # A RUN OF THE SAME KIND is one line, flipping through what it worked on
