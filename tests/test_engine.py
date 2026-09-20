@@ -10,7 +10,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from controllers.types import Agents, Messages, Nudges, Pins, Questions, Todos, Works  # noqa: E402
 from engine import bus  # noqa: E402
 from engine.actors import Agent, BUSY, IDLE, STOPPED, WORKING, User  # noqa: E402
-from engine.drivers import Claude, Driver  # noqa: E402
+from engine.drivers import Claude, Codex, Driver  # noqa: E402
 from engine.engine import Engine, TYPING_HOLD  # noqa: E402
 from engine.record import Record  # noqa: E402
 from engine.sessions import ACTIVE_ENV  # noqa: E402
@@ -316,8 +316,9 @@ check("the journal launches claude ready to accept its messages",
 check("a settings argument of the user's own is left alone", launching.command(["--settings", "mine.json"])[-2:], ["--settings", "mine.json"])
 check("and it loads the journal's own channel", launching.command([])[-2:], ["--dangerously-load-development-channels", "server:journal"])
 warned = b"WARNING: Loading development channels\n1. I am using this for local development\nEnter to confirm"
-check("the journal answers for the flag it passed, once", (launching.confirm(warned), launching.confirm(warned)), (b"\r", b""))
-check("and answers nothing else", Claude(record, "fresh").confirm(b"an ordinary line of output"), b"")
+check("the journal answers for the flag it passed", Claude.confirm(warned), b"\r")
+check("and answers nothing else", Claude.confirm(b"an ordinary line of output"), b"")
+check("a driver that never passes the flag never answers", Codex.confirm(warned), b"")
 check("with the channel not listening, a line is not handed to it", launching.handed("x"), False)
 (record.root / "runtime").mkdir(exist_ok=True)
 (record.root / "runtime" / "channel.on").touch()
