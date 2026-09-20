@@ -31,12 +31,12 @@ def event(pattern: str):
 
 
 def chatformatter(fn):
-    fn.formats = True
+    fn.chatformats = True
     return fn
 
 
 def interceptor(fn):
-    fn.refuses = True
+    fn.intercepts = True
     return fn
 
 
@@ -66,10 +66,10 @@ class Feature(ABC):
                 for fn in [getattr(type(self), attr)] if callable(fn) for pattern in getattr(fn, "patterns", ())]
 
     def refusals(self) -> list:
-        return [getattr(self, attr) for attr in dir(type(self)) for fn in [getattr(type(self), attr)] if callable(fn) and getattr(fn, "refuses", False)]
+        return [getattr(self, attr) for attr in dir(type(self)) for fn in [getattr(type(self), attr)] if callable(fn) and getattr(fn, "intercepts", False)]
 
     def formatters(self) -> list:
-        return [getattr(self, attr) for attr in dir(type(self)) for fn in [getattr(type(self), attr)] if callable(fn) and getattr(fn, "formats", False)]
+        return [getattr(self, attr) for attr in dir(type(self)) for fn in [getattr(type(self), attr)] if callable(fn) and getattr(fn, "chatformats", False)]
 
     def commands(self) -> list:
         return [getattr(self, attr) for attr in dir(type(self)) for fn in [getattr(type(self), attr)] if callable(fn) and getattr(fn, "command", "")]

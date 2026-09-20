@@ -213,5 +213,14 @@ check("a sibling viewer on this machine may read this one", asked(f"http://127.0
 check("so may one on localhost", asked("http://localhost:8421")[1], "http://localhost:8421")
 check("a page from anywhere else may not", asked("http://evil.example")[1], None)
 check("a JSON post's preflight is answered", asked("http://127.0.0.1:8421", "OPTIONS")[:2], (204, "http://127.0.0.1:8421"))
+call("POST", "/api/main/plugin", {"title": "Workflows", "actor": "system", "enabled": True,
+                                  "manifest": {"name": "works", "chat": [{"find": "WF-(\\d+)", "as": "[workflow \\1](#/wf/\\1)"}]}})
+code, said = call("POST", "/api/main/message", {"title": "a run", "brief": "see WF-42 for the run", "actor": "user"})
+check("a plugin's chat rule shapes the text the viewer is given",
+      (code, said["brief"]), (201, "see [workflow 42](#/wf/42) for the run"))
+code, tagged = call("POST", "/api/main/message", {"title": "a reply", "brief": "[!reply] done, pushed", "actor": "agent"})
+check("a tag is stripped on the way to the viewer", (code, tagged["brief"]), (201, "done, pushed"))
+check("and the record keeps it", (root / f"environments/main/message/{tagged['n']:03d}.md").read_text().strip().endswith("[!reply] done, pushed"), True)
+
 server.shutdown()
 done()

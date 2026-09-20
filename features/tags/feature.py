@@ -1,19 +1,19 @@
 import re
 
 from features import trigger
-from features.base import Feature, event
+from features.base import Feature, chatformatter, event
 from providers import PROVIDERS
 
 TAGS = ("[!discovery]", "[!correction]", "[!blocked]", "[!info]", "[!reply]")
 TAG = re.compile(
-    r"^[ \t]*(?:\*\*)?(?:"
+    r"^[ \t]*(> ?)?(?:\*\*)?(?:"
     + "|".join(re.escape(tag) for tag in TAGS)
-    + r")(?:\*\*)?(?:[ \t]+|$)"
+    + r")(?:\*\*)?(?:[ \t]+|$)", re.M
 )
 
 
 def visible(text: str) -> str:
-    return TAG.sub("", str(text or ""), count=1)
+    return TAG.sub(lambda found: found.group(1) or "", str(text or ""))
 
 
 def last_said(record, agent) -> str:
@@ -40,3 +40,7 @@ class Tags(Feature):
         said = last_said(record, agent)
         if said and not TAG.match(said):
             self.nudge(record, agent, "your last message has no tag", f"open every message with exactly one of {' '.join(TAGS)}")
+
+    @chatformatter
+    def without_tags(self, text, record):
+        return visible(text)

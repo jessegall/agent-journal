@@ -124,12 +124,12 @@ def dispatch(method: str, path: str, root: Path, query: dict, body: dict) -> Rep
         return Reply(400, {"error": f"not an action here: {e}"})
 
 
-def represented(got):
+def represented(got, record=None):
     if got is None:
         return {"ok": True}
     if isinstance(got, list):
-        return [shaped(item) if hasattr(item, "ref") else item for item in got]
-    return shaped(got) if hasattr(got, "ref") else got
+        return [shaped(item, record) if hasattr(item, "ref") else item for item in got]
+    return shaped(got, record) if hasattr(got, "ref") else got
 
 
 def settings(record: Record) -> dict:
@@ -362,7 +362,7 @@ def post_pending(req: Request) -> Reply:
 @route("POST", "/api/{env}/browser/{n}/result")
 def post_result(req: Request) -> Reply:
     got = Asks(req.record(), actor=USER).answer(int(req.params["n"]), req.body.get("text", ""), ok=bool(req.body.get("ok", True)), files=req.body.get("files") or [])
-    return Reply(200, shaped(got))
+    return Reply(200, shaped(got, req.record()))
 
 
 @route("GET", "/api/{env}/skills")
@@ -560,7 +560,7 @@ def get_search(req: Request) -> Reply:
         for r in CONTROLLERS[type_](record, actor=USER).search(term):
             matches = [{"name": name, "tags": tags, "url": f"/api/{record.env}/{type_}/{r.n}/files/{quote(name)}"}
                        for name, tags in r.files.items() if want in name.lower() or want in str(tags).lower()]
-            out.append({**shaped(r), "matches": matches})
+            out.append({**shaped(r, req.record()), "matches": matches})
     return Reply(200, out)
 
 
@@ -589,22 +589,22 @@ def get_all(req: Request) -> Reply:
     controller = req.controller()
     last = int(req.query.get("last") or 0)
     if not last:
-        return Reply(200, [shaped(r) for r in controller.all()])
+        return Reply(200, [shaped(r, req.record()) for r in controller.all()])
     rows = [row for row in controller.summaries() if not row["deleted"]]
     kept = [row for row in rows[:-last] if not row["completed"]] + rows[-last:]
-    return Reply(200, {"rows": [shaped(controller.load(row["n"])) for row in kept], "more": len(rows) > last})
+    return Reply(200, {"rows": [shaped(controller.load(row["n"]), req.record()) for row in kept], "more": len(rows) > last})
 
 
 @route("POST", "/api/{env}/{type}")
 def post_create(req: Request) -> Reply:
     controller = req.controller()
-    return Reply(201, shaped(controller.create(**{**req.body, "title": req.body.get("title") or titled(req.body.get("brief", ""))})))
+    return Reply(201, shaped(controller.create(**{**req.body, "title": req.body.get("title") or titled(req.body.get("brief", ""))}), req.record()))
 
 
 @route("GET", "/api/{env}/{type}/{n}")
 def get_one(req: Request) -> Reply:
     try:
-        return Reply(200, shaped(req.controller().show(int(req.params["n"]))))
+        return Reply(200, shaped(req.controller().show(int(req.params["n"])), req.record()))
     except Refused as e:
         raise Missing(str(e))
 
@@ -638,15 +638,15 @@ def post_upload(req: Request) -> Reply:
 @route("POST", "/api/{env}/{type}/read-all")
 def post_read_all(req: Request) -> Reply:
     controller = req.controller()
-    return Reply(200, represented(controller.read_all(req.body.get("numbers", []))))
+    return Reply(200, represented(controller.read_all(req.body.get("numbers", [])), req.record()))
 
 
 @route("POST", "/api/{env}/{type}/{action}")
 def post_action_bare(req: Request) -> Reply:
-    return Reply(201, represented(req.controller().method(req.params["action"])(**req.body)))
+    return Reply(201, represented(req.controller().method(req.params["action"])(**req.body), req.record()))
 
 
 @route("POST", "/api/{env}/{type}/{n}/{action}")
 def post_action(req: Request) -> Reply:
     got = req.controller().method(req.params["action"])(int(req.params["n"]), **req.body)
-    return Reply(200, represented(got))
+    return Reply(200, represented(got, req.record()))
