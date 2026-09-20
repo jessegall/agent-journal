@@ -17,6 +17,16 @@ const source = ref("");
 const shown = ref("");
 const busy = ref("");
 const plugins = computed(() => rows("plugin").filter((p) => !p.completed));
+const stopping = ref(false);
+
+async function stop() {
+    stopping.value = true;
+    try {
+        await api("POST", "/stop", {});
+    } catch (e) {
+        stopping.value = false;
+    }
+}
 
 async function preview() {
     busy.value = "preview";
@@ -232,6 +242,23 @@ async function remove(e) {
                     </span>
                 </div>
             </template>
+        </section>
+        <section class="group">
+            <header class="group-head">
+                <h2>Stop</h2>
+                <p class="lead">
+                    This closes the viewer, ends the engine and takes down every service a plugin runs. The agent's terminal stops with
+                    them. Nothing on the record is touched; start it again with journal claude.
+                </p>
+            </header>
+            <div class="row">
+                <span class="text">
+                    <span class="title">Stop the journal</span>
+                </span>
+                <span class="control">
+                    <Btn kind="danger" small :disabled="stopping" @click="stop">{{ stopping ? "Stopping…" : "Stop" }}</Btn>
+                </span>
+            </div>
         </section>
     </section>
 </template>

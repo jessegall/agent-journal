@@ -12,6 +12,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import features  # noqa: E402
 import migrations  # noqa: E402
 from commands.http import dispatch  # noqa: E402
+from engine.stop import asked  # noqa: E402
 from engine.viewer import heartbeat, remember  # noqa: E402
 
 LOOPBACK = re.compile(r"^http://(127\.0\.0\.1|localhost)(:\d+)?$")
@@ -117,17 +118,30 @@ def watch_code(package: Path, server: ThreadingHTTPServer, changed: threading.Ev
             server.shutdown()
 
 
+def watch_stop(root: Path, server: ThreadingHTTPServer, halting: threading.Event, began: float = 0.0) -> None:
+    while not halting.is_set():
+        time.sleep(WATCH_SECONDS)
+        if asked(root, began):
+            halting.set()
+            server.shutdown()
+
+
 def run(root: Path, port: int = 8430) -> None:
     server = serve(root, port)
     print(f"http://127.0.0.1:{server.server_address[1]}/", flush=True)
     changed = threading.Event()
+    halting = threading.Event()
     threading.Thread(target=watch_code, args=(Path(__file__).resolve().parent, server, changed), daemon=True).start()
+    threading.Thread(target=watch_stop, args=(root, server, halting, time.time()), daemon=True).start()
     try:
         server.serve_forever()
     except KeyboardInterrupt:
         pass
     finally:
         server.server_close()
+    if halting.is_set():
+        print("journal: stopped", flush=True)
+        return
     if changed.is_set():
         print("journal: Python code changed; restarting on the same port", flush=True)
         command = [sys.executable, str(Path(__file__).resolve().with_name("journal.py")), "--root", str(root), "serve", "--port", str(server.server_port)]

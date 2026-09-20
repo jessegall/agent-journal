@@ -153,6 +153,7 @@ def parser(only: str = "") -> argparse.ArgumentParser:
         add_query(cmds, name, f"start {name} supervised, on this environment; everything after the word is forwarded to {name}", lambda ctx, name=name: supervise(ctx, name))
     add_query(cmds, "serve", "the web viewer", lambda ctx: serve_forever(ctx), ("--port", {"type": int, "default": 8430}))
     add_query(cmds, "upgrade", "pull the package, wire the hooks, write the skills, run the migrations", lambda ctx: upgrade_here(ctx))
+    add_query(cmds, "stop", "stop this journal: its viewer, its engine and every service a plugin runs", lambda ctx: halt(ctx))
     add_query(cmds, "speed", "median milliseconds for lists, commands, a hook call and the viewer API, and the runtime folder's size", lambda ctx: speed(ctx),
               ("--runs", {"type": int, "default": 5}), ("--url", {"default": ""}), ("--out", {"default": ""}))
     add_query(cmds, "tidy", "run the housekeeping now: trim captures and logs, drop quiet sessions' files", lambda ctx: str(features.FEATURES["housekeeping"].tidy(ctx["record"])))
@@ -218,6 +219,15 @@ def upgrade_here(ctx) -> str:
     from install import upgrade
     root = ctx["record"].root
     return "\n".join(upgrade(root.parent, root))
+
+
+def halt(ctx) -> str:
+    from engine.stop import ask, clear, gone
+    root = ctx["record"].root
+    ask(root)
+    went = gone(root)
+    clear(root)
+    return "the journal is stopped: its viewer, its engine and every service it ran" if went else "the viewer is still answering; see .journal/runtime/viewer.log"
 
 
 def supervise(ctx, agent: str) -> str:
