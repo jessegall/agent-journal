@@ -77,11 +77,12 @@ agents = Agents(record, actor=SYSTEM)
 agents.update(agent.n, running={"what": "next", "at": time.time(), "before": {"what": "edit", "at": 1.0, "done": 2.0}})
 from features.files.feature import Files  # noqa: E402
 one = {"edited": 1, "created": 0, "deleted": 0, "added": 1, "removed": 0}
-Files().count(record, agent.n, 1.0, one)
+Files().count(record, agent.n, 1.0, one, ["web/src/a.vue"])
 running = agents.load(agent.n).running
 check("late counts go on the finished command, the running one is kept", (running["what"], running["before"]["changed"]["added"], "changed" in running), ("next", 1, False))
+check("and the files it touched go with them", running["before"]["files"], ["web/src/a.vue"])
 agents.update(agent.n, running={"what": "after a prompt", "at": time.time()})
-Files().count(record, agent.n, 1.0, one)
+Files().count(record, agent.n, 1.0, one, ["web/src/a.vue"])
 check("counts whose command is gone are dropped, never put on another", "changed" in agents.load(agent.n).running, False)
 
 # A COMMIT DURING THE WORK is recorded on it, and changes no line

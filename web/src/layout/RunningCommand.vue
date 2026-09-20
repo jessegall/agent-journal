@@ -11,10 +11,6 @@ const told = computed(() => {
     const words = store.bar && store.bar.line;
     return words && words.parts && words.parts.length ? words : null;
 });
-
-function ownWords() {
-    return null;
-}
 const data = computed(() => (agent.value && ["working", "compacting"].includes(agent.value.data.status) ? agent.value.data : null));
 const ticks = ref(0);
 const timer = setInterval(() => (ticks.value += 1), 500);
@@ -64,14 +60,15 @@ let resetting = 0;
 let started = 0;
 let heldAt = 0;
 
-function shownPart(part) {
+function shownPart(part, began = 0) {
     const values = Array.isArray(part.value) ? part.value : [part.value];
-    const at = values.length > 1 ? Math.floor(Date.now() / ((part.duration || 0.5) * 1000)) % values.length : 0;
+    const steps = Math.floor((Date.now() / 1000 - began) / (part.duration || 0.5));
+    const at = values.length > 1 && began ? Math.max(0, Math.min(steps, values.length - 1)) : 0;
     return {values, at, value: values[at], color: part.color || "muted", align: part.align || "left"};
 }
 
 function fromJournal(words) {
-    const parts = (words.parts || []).map(shownPart);
+    const parts = (words.parts || []).map((part) => shownPart(part, words.at));
     return {
         key: words.key,
         text: parts.map((p) => p.value).join(" "),

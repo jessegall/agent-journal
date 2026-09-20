@@ -8,6 +8,8 @@ RIGHT = "right"
 HELD = ("writes", "deletes", "tests")
 VERBS = {"writes": "editing", "reads": "reading", "deletes": "deleting", "tests": "testing",
          "installs": "installing", "builds": "building", "": "running"}
+USING = "using"
+FILED = ("writes", "deletes")
 NOUNS = {"writes": "files", "reads": "files", "deletes": "files", "tests": "tests", "installs": "dependencies"}
 ROLL_EVERY = 0.5
 HOLD = 1.0
@@ -26,24 +28,39 @@ def capped(said: str) -> str:
     return said if len(said) <= NAME_CAP else f"{said[:NAME_CAP - 1].rstrip()}…"
 
 
+def by_hand(one: dict) -> bool:
+    return (one.get(COMMAND.tool) or "Bash") != "Bash"
+
+
 def named(one: dict) -> list[dict]:
     what = (one.get(COMMAND.what) or "").strip()
     if not what:
         return []
-    if (one.get(COMMAND.tool) or "Bash") != "Bash":
+    if by_hand(one):
         said = what.split(" ", 1)
         return [{"value": capped(said[1] if len(said) > 1 and said[0] in VERBED else what), "own": False}]
-    return [{**name, "value": capped(name["value"])} for name in names(what, spoken)]
+    first = names(what, spoken)[:1]
+    return [{**name, "value": capped(name["value"])} for name in first]
+
+
+def files_of(one: dict) -> list[dict]:
+    return [{"value": capped(path.rsplit("/", 1)[-1]), "own": False} for path in one.get(RUNNING.files) or []]
+
+
+def worked(one: dict, kind: str) -> list[dict]:
+    if kind not in FILED:
+        return named(one)
+    return files_of(one) if not by_hand(one) else named(one)
 
 
 def working(run: dict, commands: list) -> list[dict]:
     kind = kind_of(run)
     seen: list[dict] = []
-    for one in [*(commands or []), run, *(run.get(RUNNING.steps) or [])]:
+    for one in [*(commands or []), run]:
         if kind_of(one) != kind:
             continue
-        for name in named(one):
-            if not seen or seen[-1]["value"] != name["value"]:
+        for name in worked(one, kind):
+            if not any(name["value"] == was["value"] for was in seen):
                 seen.append(name)
     return seen[-MOST:]
 
@@ -58,8 +75,11 @@ def outcome(result: dict) -> list[dict]:
 
 
 def verb_for(run: dict, found: list[dict]) -> list[dict]:
-    own = found and all(name["own"] for name in found)
-    return [] if own else [{"value": VERBS[kind_of(run)], "color": GRAY}]
+    if found and all(name["own"] for name in found):
+        return []
+    kind = kind_of(run)
+    said = USING if not kind and by_hand(run) else VERBS[kind]
+    return [{"value": said, "color": GRAY}]
 
 
 def parts_for(run: dict, commands: list) -> list[dict]:
