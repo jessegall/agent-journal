@@ -4,7 +4,7 @@ import Dot from "../kit/Dot.vue";
 import Icon from "../kit/Icon.vue";
 import PriorityIcon from "../kit/PriorityIcon.vue";
 import {peek, route} from "../route.js";
-import {GROUPS, groupOf, open} from "../store.js";
+import {GROUPS, groupOf, open, planOf} from "../store.js";
 
 const groups = computed(() => {
     const buckets = {};
@@ -36,6 +36,15 @@ const groups = computed(() => {
                         <Dot :kind="g.key" />
                         <PriorityIcon :value="Number(t.data.priority ?? 100)" />
                         <span class="rail-row-n">#{{ t.n }}</span>
+                        <template v-if="planOf(t)">
+                            <span
+                                class="rail-row-plan"
+                                :title="`Plan ${planOf(t).n}: ${planOf(t).title}`"
+                                @click.stop="peek('plan', planOf(t).n)"
+                            >
+                                Plan {{ planOf(t).n }}
+                            </span>
+                        </template>
                     </span>
                     <span class="rail-row-title">{{ t.title }}</span>
                 </button>
@@ -124,6 +133,23 @@ const groups = computed(() => {
     font-variant-numeric: tabular-nums;
 }
 
+.rail-row-plan {
+    flex: none;
+    margin-left: auto;
+    padding: 1px 7px;
+    border: 1px solid var(--border-2);
+    border-radius: 99px;
+    color: var(--text-3);
+    font-size: 10.5px;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.rail-row-plan:hover {
+    border-color: var(--accent);
+    color: var(--accent-text);
+}
+
 .rail-row-title {
     flex: 1 1 auto;
     min-width: 0;
@@ -136,6 +162,7 @@ const groups = computed(() => {
     display: flex;
     align-items: center;
     gap: 7px;
+    width: 100%;
 }
 
 .rail-row-title {

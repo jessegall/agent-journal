@@ -127,6 +127,10 @@ export function waitsOn(r) {
     });
 }
 
+export function planOf(r) {
+    return rows("plan").find((p) => !p.deleted && (p.data.phases || []).some((f) => (f.todos || []).includes(r.n))) || null;
+}
+
 export function groupOf(r) {
     if (r.data.blocked) return "blocked";
     if (waitsOn(r).length) return "waiting";
