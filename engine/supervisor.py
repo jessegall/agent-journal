@@ -11,6 +11,8 @@ import threading
 import time
 from pathlib import Path
 
+from engine.drivers import DRIVERS
+
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from engine import band  # noqa: E402
 from engine import viewer  # noqa: E402
@@ -88,6 +90,7 @@ def run(root: Path, cwd: Path, env: str, agent: str, fd: int, session: str, life
     printed.parent.mkdir(parents=True, exist_ok=True)
     out = printed.open("ab")
     driver = spawn_driver(root, cwd, env, agent, fd, session)
+    answered = False
     started = time.time()
     settled = False
     stamps = watched(root)
@@ -120,7 +123,8 @@ def run(root: Path, cwd: Path, env: str, agent: str, fd: int, session: str, life
                 if not data:
                     break
                 os.write(stdout, rows_below.feed(data))
-                if (keys := driver.confirm(data)):
+                if not answered and (keys := DRIVERS[agent].confirm(data)):
+                    answered = True
                     os.write(fd, keys)
                 if any(mark in data for mark in REDRAWS):
                     os.write(stdout, band.region(shape[0]) + top.draw(shape[1], force=True))
