@@ -38,6 +38,9 @@ check("a test run is testing", said(shell("python3 tests/test_serve.py", effect=
 check("every other kind has its own word",
       [said(shell("rm x", effect=e))[0] for e in ("deletes", "installs", "builds")], ["deleting", "installing", "building"])
 check("a journal command speaks for itself, with no verb in front", said(shell("journal message read 7")), [["reading message 7"]])
+check("a tool with no verb of its own keeps its whole phrase",
+      said({"what": "playwright · browser evaluate", "tool": "mcp__playwright__browser_evaluate", "at": NOW}),
+      ["running", ["playwright · browser evaluate"]])
 check("nothing running is no line", (line({}, [], NOW), line({"tool": "Bash"}, [], NOW)), ({}, {}))
 
 # A RUN OF THE SAME KIND is one line, flipping through what it worked on

@@ -15,6 +15,7 @@ LINGERS = 10.0
 CLOCK_AFTER = 10.0
 MOST = 12
 NAME_CAP = 42
+VERBED = ("reading", "editing", "writing", "searching", "dispatching", "fetching", "loading")
 
 
 def kind_of(one: dict) -> str:
@@ -30,7 +31,8 @@ def named(one: dict) -> list[dict]:
     if not what:
         return []
     if (one.get(COMMAND.tool) or "Bash") != "Bash":
-        return [{"value": capped(what.split(" ", 1)[-1] if " " in what else what), "own": False}]
+        said = what.split(" ", 1)
+        return [{"value": capped(said[1] if len(said) > 1 and said[0] in VERBED else what), "own": False}]
     return [{**name, "value": capped(name["value"])} for name in names(what, spoken)]
 
 
