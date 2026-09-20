@@ -278,6 +278,12 @@ def post_upgrade(req: Request) -> Reply:
     return Reply(200, {"lines": upgrade(req.root.parent, req.root)})
 
 
+@route("GET", "/api/{env}/changes")
+def get_changes(req: Request) -> Reply:
+    from features.files.feature import changes
+    return Reply(200, {"changes": list(reversed(changes(req.record())))})
+
+
 @route("GET", "/api/{env}/bar")
 def get_bar(req: Request) -> Reply:
     from features.statusline.feature import bar

@@ -1,5 +1,6 @@
 import fcntl
 import subprocess
+import time
 from pathlib import Path
 
 from controllers.types import Agents, Works
@@ -13,6 +14,8 @@ from resources.types import COMMAND, RUNNING
 from skills import LIBRARY
 
 DELTA = names("edited", "created", "deleted", "added", "removed")
+NOTE = names("at", "path", "kind", "added", "removed")
+KEPT = 200
 EMPTY_BLOB = "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
 
 
@@ -67,6 +70,19 @@ def tree_file(record, n: int, which: str) -> Path:
     return record.home / "runtime" / f"files-{n}-{which}.json"
 
 
+def changes_file(record) -> Path:
+    return record.home / "runtime" / "changes.json"
+
+
+def changes(record) -> list[dict]:
+    return read_json(changes_file(record)) or []
+
+
+def noted(record, entries: list[dict]) -> None:
+    if entries:
+        write_json(changes_file(record), [*changes(record), *entries][-KEPT:])
+
+
 def committed(project: Path, since: float) -> list[dict]:
     out = git(project, "log", f"--since=@{int(since)}", "--format=%H%x1f%s")
     return [{COMMIT.sha: sha, COMMIT.subject: subject} for sha, _, subject in (line.partition("\x1f") for line in out.splitlines()) if sha]
@@ -100,11 +116,13 @@ class Files(Feature):
             base, last, now = self.trees(record, work.n, project)
             delta = {DELTA.edited: 0, DELTA.created: 0, DELTA.deleted: 0, DELTA.added: 0, DELTA.removed: 0}
             files = {f[CHANGE.path]: f for f in work.changed}
-            touched = []
+            touched, entries, at = [], [], time.time()
             for path in sorted(p for p in set(last) | set(now) if last.get(p) != now.get(p)):
                 touched.append(path)
                 added, removed = numstat(project, last.get(path, EMPTY_BLOB), now.get(path, EMPTY_BLOB))
-                delta[DELTA.created if path not in last else DELTA.deleted if path not in now else DELTA.edited] += 1
+                kind = DELTA.created if path not in last else DELTA.deleted if path not in now else DELTA.edited
+                entries.append({NOTE.at: at, NOTE.path: path, NOTE.kind: kind, NOTE.added: added, NOTE.removed: removed})
+                delta[kind] += 1
                 delta[DELTA.added] += added
                 delta[DELTA.removed] += removed
                 if base.get(path) == now.get(path):
@@ -112,6 +130,7 @@ class Files(Feature):
                     continue
                 total_added, total_removed = numstat(project, base.get(path, EMPTY_BLOB), now.get(path, EMPTY_BLOB))
                 files[path] = {CHANGE.path: path, CHANGE.added: total_added, CHANGE.removed: total_removed, CHANGE.created: path not in base}
+            noted(record, entries)
             commits = committed(project, work.created)
             if list(files.values()) != work.changed or commits != work.commits:
                 Works(record, actor=SYSTEM).update(work.n, changed=list(files.values()), commits=commits)

@@ -6,7 +6,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 import features  # noqa: E402
 from controllers.types import Agents, Works  # noqa: E402
-from features.files.feature import tree_file  # noqa: E402
+from features.files.feature import changes, tree_file  # noqa: E402
 from resources.base import AGENT, SYSTEM  # noqa: E402
 from tests.features.kit import report  # noqa: E402
 from tests.kit import check, done, fresh  # noqa: E402
@@ -114,5 +114,11 @@ check("a read changes nothing on the work", works.load(work.n).updated, before)
 baseline = tree_file(record, work.n, "base")
 works.complete(work.n, how="done")
 check("the feature baseline lives only as long as the work", (baseline.exists(), works.load(work.n).completed > 0), (False, True))
+
+# EVERY CHANGE IS LOGGED as it happens, for the activity sidebar to read in order
+logged = changes(record)
+check("each file change is kept with when it happened, what became of it and its counts",
+      [(c["path"], c["kind"]) for c in logged][:2], [("fresh.txt", "created"), ("kept.txt", "edited")])
+check("a removal is logged as one", any(c["kind"] == "deleted" for c in logged), True)
 
 done()
