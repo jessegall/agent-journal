@@ -37,6 +37,9 @@ code, m = call("GET", "/api/manifest")
 check("the manifest says every type, its view and nav, the actions, actors and priority", (code, sorted(m["types"]), m["actions"], m["types"]["todo"]["names"]),
       (200, sorted(TYPES), list(ACTIONS), {"complete": "done", "create": "add"}))
 check("every view in the manifest is one of the three", all(t["view"] in VIEWS for t in m["types"].values()), True)
+check("a type says what its list can be narrowed to, and what each tab is called",
+      (m["types"]["todo"]["filters"], [f["title"] for f in m["types"]["rule"]["filters"]]),
+      ([{"key": "open", "title": "Open", "shows": "open"}, {"key": "closed", "title": "Done", "shows": "closed"}], ["Open", "Struck"]))
 check("a type says whether it leaves the highlights only once it is decided",
       sorted(name for name, t in m["types"].items() if t["settled"]), ["question", "suggestion"])
 check("a type says how its events read in the viewer", (m["types"]["work"]["shown"]["created"], m["types"]["pin"]["shown"]["completed"]),
