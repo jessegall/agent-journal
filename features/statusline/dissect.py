@@ -51,12 +51,10 @@ def a_path(args: list[str]) -> str:
 
 
 def names_of(one: dict, kind: str) -> list[dict]:
-    if one.get(COMMAND.files):
-        return [whole(base(path)) for path in one[COMMAND.files]]
-    if by_hand(one):
+    if by_hand(one) or kind in TOUCHED:
+        if one.get(COMMAND.files):
+            return [whole(base(path)) for path in one[COMMAND.files]]
         return [said_name(one[COMMAND.subject])] if one.get(COMMAND.subject) else []
-    if kind in TOUCHED:
-        return []
     piece = piece_of(one)
     if not piece:
         return []

@@ -49,6 +49,9 @@ check("a write is only editing when a file really changed",
 check("a plain shell command is named by its root and subcommand",
       (names(shell("npx prettier --write a.vue")), names(shell("git add -A && git commit -m x"))), (["npx prettier"], ["git add"]))
 check("a journal command is named in its own words", names(shell("journal message read 7")), ["reading message 7"])
+check("a command that did not edit anything never takes the name of a file it was blamed for",
+      (names(shell("journal message read 7", files=["web/dist/assets/index.js"])), names(shell("ls", effect="reads", files=["a.js"]))),
+      (["reading message 7"], []))
 check("a name too long to show is cut", len(names(tool("Read", effect="reads", files=["a" * 80]))[0]), NAME_CAP)
 
 # WHAT ELSE IT CARRIES, so a finished message keeps what it did
