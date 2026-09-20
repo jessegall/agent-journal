@@ -108,7 +108,9 @@ class Provider(ABC):
             running = {RUNNING.what: doing, RUNNING.tool: hook.tool.name, RUNNING.at: now, **({RUNNING.effect: effect} if effect else {}),
                        **({RUNNING.before: before} if before.get(RUNNING.done) else {})}
             ran = {COMMAND.what: doing, COMMAND.tool: hook.tool.name, COMMAND.at: now,
-                   **({COMMAND.effect: effect} if effect else {}), **({COMMAND.subject: hook.tool.subject} if hook.tool.subject else {})}
+                   **({COMMAND.effect: effect} if effect else {}),
+                   **({COMMAND.files: [hook.tool.file_path]} if hook.tool.file_path else {}),
+                   **({COMMAND.subject: hook.tool.subject} if hook.tool.subject and not hook.tool.file_path else {})}
             return {AgentRow.running: running, AgentRow.commands: (list(row.commands) + [ran])[-RING:]}
         if running and not running.get(RUNNING.done):
             running[RUNNING.done] = time.time()
@@ -138,9 +140,10 @@ class Provider(ABC):
         return {"passed": passed, "failed": failed}
 
     def effect(self, hook: Hook) -> str:
-        if hook.tool.name in WRITES or hook.tool.name in READS:
-            kind = "writes" if hook.tool.name in WRITES else "reads"
-            return kind if self.in_project(hook.tool.file_path, hook.cwd) else ""
+        if hook.tool.name in READS:
+            return "reads"
+        if hook.tool.name in WRITES:
+            return "writes" if self.in_project(hook.tool.file_path, hook.cwd) else ""
         return self.effect_of(hook.command) if hook.tool.name == "Bash" else ""
 
     def effect_of(self, command: str) -> str:
