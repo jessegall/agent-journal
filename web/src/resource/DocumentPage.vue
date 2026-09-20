@@ -47,7 +47,9 @@ provide("talk", {talking, count, toggle: () => (talking.value = !talking.value),
                 <slot>
                     <ResourceBody :resource="resource" :comments="false" @close="emit('close')" />
                 </slot>
-                <Links :resource="resource" :except="shownAlready" />
+                <div class="document-links">
+                    <Links :resource="resource" :except="shownAlready" />
+                </div>
             </Highlight>
         </div>
         <Transition name="aside" @after-leave="panelLeft">
@@ -90,6 +92,12 @@ provide("talk", {talking, count, toggle: () => (talking.value = !talking.value),
         opacity: 1;
         transform: none;
     }
+}
+
+.document-links {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 0 32px 60px;
 }
 
 .document-body :deep(.body) {
