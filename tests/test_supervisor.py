@@ -103,4 +103,11 @@ seated = Sessions(root).read("fake-41")
 check("the session is bound to the environment it was launched on, with its provider and pid", (seated.get("environment"), seated.get("provider"), seated.get("pid")), ("main", "fake", 41))
 check("and the agent is handed that environment, so its hooks prefer it", terminal.agent_environment({"PATH": "/bin"}, "main").get("JOURNAL_ENV"), "main")
 
+# WHAT THE TERMINAL SENDS is only typing when a character comes with it
+from engine.supervisor import typing  # noqa: E402
+check("letters, a paste and a backspace are typing", [typing(b) for b in (b"h", b"\x1b[200~hi\x1b[201~", b"\x7f")], [True, True, True])
+check("clicking away to the browser is not typing, nor is any other sequence the terminal reports",
+      [typing(b) for b in (b"\x1b[O", b"\x1b[I", b"\x1b[<35;40;12M", b"\x1b[A", b"\x1bOA", b"\x1b[24;80R", b"\x1b[200~\x1b[201~")],
+      [False] * 7)
+
 done()
