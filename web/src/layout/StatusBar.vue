@@ -83,12 +83,13 @@ async function runBar(p) {
         <div v-for="p in plans" :key="p.n" :class="['planbar', `planbar-${p.data.status}`]">
             <a class="planbar-link" :href="`#/${route.env}/plan/${p.n}`" :title="`Plan ${p.n}: ${p.title}`">
                 <span class="planbar-n">Plan</span>
+                <span class="planbar-dot">·</span>
                 <span class="planbar-title">{{ p.title }}</span>
                 <template v-if="phaseOf(p)">
                     <span class="planbar-dot">·</span>
                     <span class="planbar-phase">{{ phaseOf(p) }}</span>
                 </template>
-                <span class="planbar-step">phase {{ p.data.current || 1 }}/{{ p.data.phases.length }}</span>
+                <span class="planbar-step">{{ p.data.current || 1 }}/{{ p.data.phases.length }}</span>
                 <span class="planbar-track" role="progressbar">
                     <span :style="{width: `${(100 * done(p)) / Math.max(1, rowsOf(p).length)}%`}" />
                 </span>
