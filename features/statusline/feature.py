@@ -34,8 +34,15 @@ def outcome(result: dict) -> list[dict]:
     return [{"value": f"{failed} failed", "kind": "failed"} if failed else {"value": "passed", "kind": "passed"}]
 
 
+def its_own(run: dict, step: dict) -> bool:
+    return bool(step.get("what")) and step.get("effect") == run.get(RUNNING.effect)
+
+
 def rolling(run: dict) -> dict:
-    steps = [step for step in (run.get(RUNNING.steps) or []) if step]
+    steps = []
+    for step in run.get(RUNNING.steps) or []:
+        if its_own(run, step) and (not steps or steps[-1] != step["what"]):
+            steps.append(step["what"])
     return {"every": ROLL_EVERY, "items": steps[-MOST_STEPS:]} if scoped(run) and not run.get(RUNNING.done) and len(steps) > 1 else {}
 
 
