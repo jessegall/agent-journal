@@ -5,6 +5,11 @@ from features.statusline.spoken import spoken
 from resources.types import COMMAND
 
 JOURNAL = "journal"
+GIT = "git"
+GIT_WORDS = {"add": "tracking", "commit": "committing changes", "push": "pushing changes", "pull": "pulling changes",
+             "fetch": "fetching", "clone": "cloning", "init": "starting a repository", "tag": "tagging",
+             "checkout": "switching branch", "switch": "switching branch", "branch": "branching", "merge": "merging",
+             "rebase": "rebasing", "stash": "stashing", "reset": "resetting", "restore": "restoring", "cherry-pick": "picking"}
 TOUCHED = ("writes", "deletes")
 NAMED = ("reads", "tests")
 GIVEN = ("installs", "searches")
@@ -21,13 +26,21 @@ def piece_of(one: dict) -> dict:
     return found[0] if found else {}
 
 
+def git_of(piece: dict) -> str:
+    root = (piece.get("root") or "").split(" ")
+    return GIT_WORDS.get(root[1]) if len(root) > 1 and root[0] == GIT else None
+
+
 def kind_of(one: dict) -> str:
     said = one.get(COMMAND.effect) or ""
     if said in TOUCHED and not one.get(COMMAND.files) and not by_hand(one) and one.get(COMMAND.done):
-        return ""
-    if said or by_hand(one):
+        said = ""
+    elif said or by_hand(one):
         return said
-    return JOURNAL if piece_of(one).get("own") else ""
+    piece = piece_of(one)
+    if piece.get("own"):
+        return JOURNAL
+    return GIT if git_of(piece) else said
 
 
 def base(path: str) -> str:
@@ -60,6 +73,9 @@ def names_of(one: dict, kind: str) -> list[dict]:
         return []
     if piece["own"]:
         return [said_name(piece["root"])]
+    if kind == GIT:
+        said = git_of(piece)
+        return [said_name(f"{said} {' '.join(piece['args'])}".strip() if said == GIT_WORDS["add"] else said)]
     if kind in NAMED:
         found = a_path(piece["args"])
         return [whole(base(found))] if found else []
