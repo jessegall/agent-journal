@@ -10,7 +10,7 @@ import features  # noqa: E402
 from controllers.types import Agents, Works  # noqa: E402
 from engine.hooks import handle  # noqa: E402
 from features.statusline.feature import bar  # noqa: E402
-from features.statusline.queue import GRAY, VERBS  # noqa: E402
+from features.statusline.queue import DRAINING, GRAY, VERBS  # noqa: E402
 from providers import PROVIDERS  # noqa: E402
 from resources.base import AGENT, SYSTEM  # noqa: E402
 from tests.kit import check, done, fresh  # noqa: E402
@@ -78,10 +78,10 @@ def a_test():
 DOING = (an_edit, a_read, a_journal, a_shell, a_test)
 
 
-def settled(message):
+def settled(message, at=-1):
     said = []
     for part in message["parts"]:
-        value = part["value"][-1] if isinstance(part["value"], list) else part["value"]
+        value = part["value"][at] if isinstance(part["value"], list) else part["value"]
         if value != "":
             said.append(f"{part.get('prefix', '')}{value}")
     return " ".join(said)
@@ -132,8 +132,13 @@ console.log(JSON.stringify(runs.map((queue) => {
 """
 played = json.loads(subprocess.run(["node", "--input-type=module", "-e", script, "x", json.dumps(queues[::5])],
                                    cwd=Path(__file__).resolve().parents[3], text=True, capture_output=True, check=True, timeout=300).stdout)
-missing = [(settled(m), frames) for queue, frames in zip(queues[::5], played) for m in queue if settled(m) not in frames]
-check("the viewer plays every message of every queue, settled, exactly as the journal wrote it", missing[:2], [])
+def shows(message):
+    return settled(message, 0) if message["hold"] == DRAINING else settled(message)
+
+
+missing = [(shows(m), frames) for queue, frames in zip(queues[::5], played) for m in queue if shows(m) not in frames]
+check("the viewer plays every message of every queue, exactly as the journal wrote it, settled unless the queue is draining",
+      missing[:2], [])
 check("a queue of several messages shows several lines, one after the other", max(len(f) for f in played) > 2, True)
 check("the whole run took less than two minutes", time.time() - began < 120, True)
 
