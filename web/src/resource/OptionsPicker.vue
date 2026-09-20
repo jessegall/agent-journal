@@ -83,9 +83,8 @@ onUnmounted(save);
         </template>
         <template v-if="settled">
             <template v-if="ownWords">
-                <div class="choice">
-                    <span class="choice-label">Your choice</span>
-                    <span class="choice-text">{{ resource.outcome }}</span>
+                <div class="option chosen">
+                    <span class="label">{{ resource.outcome }}</span>
                 </div>
             </template>
             <div class="after">
