@@ -79,7 +79,7 @@ codes = iter((terminal.RELOAD, 0))
 children = iter(((0, 0), (41, 0)))
 originals = (terminal.spawn_agent, terminal.spawn_supervisor, terminal.child, terminal.termios.tcgetattr,
              terminal.os.write, terminal.os.close, drivers.DRIVERS.get("fake"))
-terminal.spawn_agent = lambda command, cwd: (41, 17)
+terminal.spawn_agent = lambda command, cwd, env='': (41, 17)
 terminal.spawn_supervisor = lambda root, cwd, env, agent, fd, session, lifeline=-1: launched.append((fd, session, lifeline)) or Coordinator(next(codes))
 terminal.child = lambda pid, block=False: next(children)
 terminal.termios.tcgetattr = no_terminal
@@ -96,5 +96,11 @@ else:
     drivers.DRIVERS["fake"] = originals[6]
 check("a reload keeps the agent session and PTY while replacing its supervisor", (result, [(fd, session) for fd, session, _ in launched]), (0, [(17, "fake-41"), (17, "fake-41")]))
 check("and every supervisor holds the same lifeline, so services live across a reload", len({line for _, _, line in launched}), 1)
+
+# LAUNCHING SEATS THE SESSION so the environment is chosen and taken before the agent says anything
+from engine.sessions import Sessions  # noqa: E402
+seated = Sessions(root).read("fake-41")
+check("the session is bound to the environment it was launched on, with its provider and pid", (seated.get("environment"), seated.get("provider"), seated.get("pid")), ("main", "fake", 41))
+check("and the agent is handed that environment, so its hooks prefer it", terminal.agent_environment({"PATH": "/bin"}, "main").get("JOURNAL_ENV"), "main")
 
 done()
