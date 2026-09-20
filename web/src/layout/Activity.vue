@@ -1,7 +1,34 @@
 <script setup>
-import {computed, onMounted, ref} from "vue";
+import {computed, onMounted, onUnmounted, ref} from "vue";
+import {api} from "../api.js";
 import {peek} from "../route.js";
+import {route} from "../route.js";
 import {age, byRef, meta, store, word} from "../store.js";
+
+const EVERY = 4000;
+const TABS = [
+    ["events", "Activity"],
+    ["files", "Files"],
+];
+const tab = ref("events");
+const changes = ref([]);
+
+async function readChanges() {
+    if (tab.value !== "files") return;
+    try {
+        changes.value = (await api("GET", `/${route.value.env}/changes`)).changes || [];
+    } catch {
+        changes.value = [];
+    }
+}
+
+const reading = setInterval(readChanges, EVERY);
+onUnmounted(() => clearInterval(reading));
+
+function show(name) {
+    tab.value = name;
+    readChanges();
+}
 
 const updated = (e) =>
     e.type === "notification" && e.action === "created" && (byRef(`notification:${e.n}`) || {data: {}}).data.kind === "update";
@@ -27,8 +54,18 @@ const who = (e) => e.actor[0].toUpperCase() + e.actor.slice(1);
 <template>
     <aside class="activity-dock">
         <div class="activity-panel">
-            <div class="activity-head"><span class="group-label">Activity</span></div>
-            <TransitionGroup tag="div" class="activity-list" :name="settled ? 'act' : ''">
+            <div class="activity-head">
+                <button
+                    v-for="[name, label] in TABS"
+                    :key="name"
+                    :class="['activity-tab', {on: tab === name}]"
+                    type="button"
+                    @click="show(name)"
+                >
+                    {{ label }}
+                </button>
+            </div>
+            <TransitionGroup v-if="tab === 'events'" tag="div" class="activity-list" :name="settled ? 'act' : ''">
                 <a
                     v-for="e in shown"
                     :key="e.id"
@@ -46,6 +83,21 @@ const who = (e) => e.actor[0].toUpperCase() + e.actor.slice(1);
                     <span class="activity-age">{{ who(e) }} · {{ age(e.at) || "just now" }}</span>
                 </a>
             </TransitionGroup>
+            <div v-else class="activity-list">
+                <div v-for="(change, i) in changes" :key="`${change.at}-${change.path}-${i}`" class="activity-row">
+                    <span class="activity-text">
+                        {{ change.path.split("/").pop() }}
+                        <span :class="['activity-kind', change.kind]">{{ change.kind }}</span>
+                    </span>
+                    <span class="activity-title">{{ change.path }}</span>
+                    <span class="activity-age">
+                        <span v-if="change.added" class="activity-added">+{{ change.added }}</span>
+                        <span v-if="change.removed" class="activity-removed">−{{ change.removed }}</span>
+                        {{ age(change.at) || "just now" }}
+                    </span>
+                </div>
+                <p v-if="!changes.length" class="activity-none">No file has changed yet.</p>
+            </div>
         </div>
     </aside>
 </template>
@@ -75,11 +127,58 @@ const who = (e) => e.actor[0].toUpperCase() + e.actor.slice(1);
     flex: none;
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    gap: 8px;
+    justify-content: flex-start;
+    gap: 4px;
     margin: 0 -10px;
     padding: 0 10px;
     border-bottom: 1px solid var(--border);
+}
+
+.activity-tab {
+    padding: 4px 8px;
+    border-radius: 7px;
+    font-size: 11.5px;
+    font-weight: 500;
+    color: var(--text-3);
+}
+
+.activity-tab:hover {
+    background: var(--hover);
+}
+
+.activity-tab.on {
+    color: var(--text);
+    background: var(--hover);
+}
+
+.activity-kind {
+    margin-left: 5px;
+    font-size: 10px;
+    color: var(--text-3);
+}
+
+.activity-kind.created {
+    color: var(--created);
+}
+
+.activity-kind.deleted {
+    color: var(--danger);
+}
+
+.activity-added {
+    margin-right: 5px;
+    color: var(--created);
+}
+
+.activity-removed {
+    margin-right: 5px;
+    color: var(--danger);
+}
+
+.activity-none {
+    margin: 10px 8px;
+    font-size: 12px;
+    color: var(--text-3);
 }
 
 .group-label {

@@ -91,6 +91,9 @@ told.write_text("".join(f"line {i}\n" for i in range(1, 6)))
 code, read = call("GET", "/api/plugins/works/log?lines=2")
 check("a plugin's log is read over HTTP, the last lines first asked for", (code, read), (200, {"name": "works", "log": "line 4\nline 5"}))
 
+code, changed = call("GET", "/api/main/changes")
+check("the file changes are served in the order they happened, newest first", (code, changed), (200, {"changes": []}))
+
 code, bar = call("GET", "/api/main/bar")
 check("the bar is served by the journal as a queue, empty while nothing has run", (code, bar), (200, {"queue": []}))
 
