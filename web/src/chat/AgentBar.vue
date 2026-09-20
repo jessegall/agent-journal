@@ -1,6 +1,6 @@
 <script setup>
 import {computed, onUnmounted, ref, watch} from "vue";
-import {agentControls, agentUsage, appoint, controlAgent, onlineAgents} from "../api.js";
+import {agentControls, appoint, controlAgent, onlineAgents} from "../api.js";
 import {modelFamily, providerName} from "../agents.js";
 import Icon from "../kit/Icon.vue";
 import Spinner from "../kit/Spinner.vue";
@@ -41,7 +41,6 @@ const available = ref([]);
 const assigning = ref("");
 const controls = ref({groups: [], note: ""});
 const controlling = ref("");
-const usageInfo = ref({note: ""});
 const error = ref("");
 const anchor = ref({left: 0, top: 0});
 function toggle(key, e) {
@@ -92,16 +91,9 @@ async function control(action, value) {
     }
 }
 const waiting = (key, value) => controlling.value === `${key}:${value}` || pending(key) === value;
-async function usageDetails(e) {
+function usageDetails(e) {
     toggle("usage", e);
-    if (open.value !== "usage") return;
     error.value = "";
-    usageInfo.value = {note: "Loading usage…"};
-    try {
-        usageInfo.value = await agentUsage(data.value.provider);
-    } catch (e) {
-        error.value = e.message;
-    }
 }
 function resetLabel(window) {
     const seconds = window.resets - Date.now() / 1000;
@@ -320,7 +312,6 @@ onUnmounted(() => window.removeEventListener("click", away));
                             <small>{{ resetLabel(window) }}</small>
                         </div>
                         <p v-if="!usage.length && !error" class="bar-none">No current plan window has been reported here.</p>
-                        <p class="bar-none">{{ usageInfo.note }}</p>
                     </template>
                     <template #shells>
                         <CrewList :rows="data.shell_rows || []" :total="data.shells || 0" />

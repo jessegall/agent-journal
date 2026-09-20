@@ -56,7 +56,6 @@ class Claude(Provider):
         ],
         "note": "Changes apply immediately to this Claude Code session.",
     }
-    usage_note = "Claude reports plan limits to its status line; the journal reads them there, unless you have a status line of your own."
 
     def setting(self, project: Path, key: str) -> str:
         found = ""

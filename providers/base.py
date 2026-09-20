@@ -55,7 +55,6 @@ class Provider(ABC):
     link_skills = False
     retired_skill_homes = ()
     controls = {"groups": [], "note": "This CLI does not expose model controls."}
-    usage_note = "This CLI does not expose plan usage."
 
     @classmethod
     def control_options(cls, current_model: str = "") -> dict:

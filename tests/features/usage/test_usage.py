@@ -10,7 +10,7 @@ import features
 from commands.http import dispatch
 from controllers.types import Agents
 from engine.record import Record
-from features.usage.usage import observe, options
+from features.usage.usage import observe
 from providers.claude import Claude
 from providers.codex import Codex
 from resources.base import SYSTEM
@@ -70,8 +70,5 @@ with transcript.open("a") as out:
     out.write(json.dumps({"type": "event_msg", "payload": {"type": "token_count", "rate_limits": limits}}) + "\n")
 agents.update(agent.n, status="working")
 check("one agent event refreshes both reported windows", [window["used"] for window in agents.load(agent.n).usage["windows"]], [43.4, 82.0])
-
-reply = dispatch("GET", "/api/agent-usage/claude", root, {}, {})
-check("Claude explains its supported fallback without changing configuration", reply.body, options("claude"))
 
 done()
