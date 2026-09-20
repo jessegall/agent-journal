@@ -48,5 +48,6 @@ class PlansFeature(Feature):
         self.catch_up(record)
 
     @on("plan.updated")
+    @on("agent.updated")
     def settle(self, event, record) -> None:
         self.catch_up(record)
