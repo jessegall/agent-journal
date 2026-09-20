@@ -1,12 +1,12 @@
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 import features  # noqa: E402
 from commands.http import dispatch  # noqa: E402
 from controllers.types import Agents, Messages, Plans, Questions, Todos, Works  # noqa: E402
 from engine.record import Record  # noqa: E402
-from features.hub.summary import environment, summarize  # noqa: E402
+from surfaces.summary import environment, summarize  # noqa: E402
 from resources.base import AGENT, SYSTEM, USER  # noqa: E402
 from tests.features.kit import idle, report  # noqa: E402
 from tests.kit import check, done, fresh  # noqa: E402
@@ -15,8 +15,6 @@ features.unload()
 features.load()
 
 record = fresh("main")
-hub = features.FEATURES["hub"]
-check("the hub is fixed on", (hub.enabled(record), hub.describe()["fixed"]), (True, True))
 
 empty = environment(record)
 check("an environment nobody has visited has no agent, no work and nothing counted",

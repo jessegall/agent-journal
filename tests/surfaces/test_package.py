@@ -3,18 +3,16 @@ import sys
 import zipfile
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 import features  # noqa: E402
 from commands.http import dispatch  # noqa: E402
-from features.extension.package import archive, info  # noqa: E402
+from surfaces.package import archive, info  # noqa: E402
 from tests.kit import check, done, fresh  # noqa: E402
 
 features.unload()
 features.load()
 
 record = fresh()
-extension = features.FEATURES["extension"]
-check("the extension is fixed on", (extension.enabled(record), extension.describe()["fixed"]), (True, True))
 check("the package advertises the extension", info()["available"], True)
 
 names = zipfile.ZipFile(io.BytesIO(archive())).namelist()

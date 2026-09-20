@@ -9,7 +9,7 @@ import features
 from engine import bus
 from engine.actors import Actor, Agent, BUSY, COMPACTING, IDLE, STOPPED, System, User, WORKING
 from engine.inputs import FORCE, take
-from features.sessioncontrol.control import CARRY_ON, delivered
+from surfaces.control import CARRY_ON, delivered
 from features.start.feature import WAIT_FOR_REPORT, hello
 from engine.record import Record
 from engine.terminal import pid_of

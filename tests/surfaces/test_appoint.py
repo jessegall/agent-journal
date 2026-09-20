@@ -4,13 +4,13 @@ import tempfile
 import time
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 import features
 from commands.http import dispatch
 from controllers.types import Agents
 from engine.record import Record
 from engine.sessions import Sessions
-from features.appointments.appoint import appoint, online
+from surfaces.appoint import appoint, online
 from resources.base import AGENT
 from tests.kit import check, done, refused
 
