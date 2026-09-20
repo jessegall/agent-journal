@@ -160,9 +160,9 @@ class Plugins(Feature):
 
     def runs(self, manifest: dict) -> list[str]:
         steps = [f"setup {step['name']}: {step['run']}" for step in manifest.get("setup") or []]
-        services = [f"service {name}: {spec['run']}" for name, spec in (manifest.get("services") or {}).items()]
+        servers = [f"service {name}: {spec['run']}" for name, spec in (manifest.get("services") or {}).items()]
         handlers = [f"on {pattern}: {handler.get('post') or handler.get('run')}" for pattern, handler in (manifest.get("on") or {}).items()]
-        return [*steps, *services, *handlers]
+        return [*steps, *servers, *handlers]
 
     def place(self, plugins, where: Path, linked: bool, manifest: dict, source: str, ref: str, commit: str, secret: str, row=None, ports: dict | None = None):
         name = manifest["name"]
