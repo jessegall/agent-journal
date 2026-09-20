@@ -21,10 +21,16 @@ DRAINING = 0.25
 
 def worked(group: list[dict]) -> list[dict]:
     found: list[dict] = []
+    running = dict.fromkeys(dict(COUNTS).values(), 0)
     for one in group:
+        for key in running:
+            running[key] += one["changed"].get(key, 0)
         for name in one["names"]:
-            if not any(name["value"] == was["value"] for was in found):
-                found.append(name)
+            if any(name["value"] == was["value"] for was in found):
+                continue
+            found.append({**name, **running})
+        if found:
+            found[-1] = {**found[-1], **running}
     return found[-MOST:]
 
 
@@ -53,12 +59,18 @@ def verb_for(group: list[dict], kind: str) -> dict:
     return {"value": USING if not kind and group[-1]["hand"] else VERBS.get(kind, VERBS[""]), "color": GRAY}
 
 
-def counted(group: list[dict]) -> list[dict]:
-    if group[0]["kind"] not in (*TOUCHED, MADE):
+def counted(group: list[dict], found: list[dict]) -> list[dict]:
+    if group[0]["kind"] not in (*TOUCHED, MADE) or not found:
         return []
-    totals = {sign: sum(one["changed"].get(key, 0) for one in group) for sign, key in COUNTS}
-    return [{"value": totals[sign], "prefix": sign, "increments": True, "color": color}
-            for sign, color in ((PLUS, GREEN), (MINUS, RED)) if totals[sign]]
+    parts = []
+    for (sign, key), color in zip(COUNTS, (GREEN, RED)):
+        counts = [name.get(key, 0) for name in found]
+        if not counts[-1]:
+            continue
+        said = counts[0] if len(set(counts)) == 1 else counts
+        parts.append({"value": said, "prefix": sign, "increments": True, "color": color,
+                      **({"duration": FLIP_EVERY} if isinstance(said, list) else {})})
+    return parts
 
 
 def outcome(result: dict) -> list[dict]:
@@ -88,7 +100,7 @@ def message(group: list[dict], closed: bool, now: float, behind: int = 0) -> dic
     return {
         "id": group[0]["at"],
         "key": key_of(said),
-        "parts": [*said, *counted(group), *(outcome(last["result"]) if last["done"] and last["result"] else [])],
+        "parts": [*said, *counted(group, found), *(outcome(last["result"]) if last["done"] and last["result"] else [])],
         "at": group[0]["at"],
         "done": over,
         "for": int(ran),
