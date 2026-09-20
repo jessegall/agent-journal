@@ -153,7 +153,7 @@ def post_hook(req: Request) -> Reply:
         return Reply(409, {})
     provider = PROVIDERS[req.params["provider"]]()
     with bus.held() as heard:
-        out = answer(provider, req.root, req.body, int(req.query.get("pid") or 0), req.query.get("env") or "")
+        out = answer(provider, req.root, {**req.body, "inbox": req.query.get("inbox") or ""}, int(req.query.get("pid") or 0), req.query.get("env") or "")
     return Reply(403 if provider.refused(out) else 200, out, after=lambda: bus.release(heard))
 
 
