@@ -188,7 +188,9 @@ class Engine:
                         CONTROLLERS[e.type](self.record, actor=AGENT).read(e.n)
                     actor.notified(e)
                     continue
-                if e.actor == actor.name or actor.name not in TYPES[e.type].notify or self.private(e) or "seen" in e.data:
+                told = TYPES[e.type].heard
+                if (e.actor == actor.name or actor.name not in TYPES[e.type].notify or self.private(e) or "seen" in e.data
+                        or (actor is self.agent and told and e.action not in told)):
                     actor.notified(e)
                     continue
                 actor.notify(e)
