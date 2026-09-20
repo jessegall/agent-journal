@@ -96,6 +96,9 @@ check("editing names the files that actually changed, never the command that cha
 check("a write still running does not know its files yet, so it says so and waits",
       [(one["pending"], [p["value"] for p in one["parts"]]) for one in queue([shell("git mv a b", effect="writes")], NOW)],
       [(True, ["editing", "…"])])
+check("the waiting mark is a value like any other, so it rolls into what it was waiting for",
+      [[q["value"] for q in one["parts"]] for one in queue([edit("a.py", done=NOW + 1), shell("sed -i x", NOW + 2, effect="writes")], NOW + 3)],
+      [["editing", ["a.py", "…"]]])
 check("once it knows them it is not waiting any more",
       [(one["pending"], [p["value"] for p in one["parts"]]) for one in queue([shell("git mv a b", effect="writes", done=NOW + 1, files=["b"])], NOW + 2)],
       [(False, ["editing", "b"])])
