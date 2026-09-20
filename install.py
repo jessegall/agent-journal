@@ -7,6 +7,7 @@ import tempfile
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+from commands.cli import OVER_HTTP  # noqa: E402
 from migrations import run as migrate  # noqa: E402
 from features.law.policy import brief  # noqa: E402
 from providers import PROVIDERS  # noqa: E402
@@ -68,7 +69,7 @@ def retire(root: Path) -> int:
     return len(old)
 
 
-ASKS = """if read -r at url < "$root/runtime/heartbeat" 2>/dev/null && [ $(( $(date +%s) - at )) -le 5 ]; then
+ASKS = """case "$1" in __SERVED__) ;; *) false ;; esac && if read -r at url < "$root/runtime/heartbeat" 2>/dev/null && [ $(( $(date +%s) - at )) -le 5 ]; then
 reply=$(printf '%s\\0' "$@" | curl -s -m 20 -w '\\n%{http_code}' -H 'Content-Type: text/plain' --url-query "actor=$JOURNAL_ACTOR" --url-query "env=$JOURNAL_ENV" --data-binary @- "${url}api/run")
 said=${reply##*
 }
@@ -81,6 +82,7 @@ case "$said" in
 esac
 fi
 """
+ASKS = ASKS.replace("__SERVED__", "|".join(sorted(OVER_HTTP)))
 
 SHIM = """#!/bin/sh
 dir="$(pwd)"
