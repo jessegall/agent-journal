@@ -20,6 +20,7 @@ FILE = re.compile(r"^[\w.-]+\.\w+$")
 PICTURES = (".png", ".jpg", ".jpeg", ".gif", ".webp", ".svg", ".bmp", ".heic", ".pdf")
 MOVIES = (".mp4", ".mov", ".webm", ".m4v", ".avi")
 NAME_CAP = 42
+HERE = "here"
 
 
 def by_hand(one: dict) -> bool:
@@ -60,7 +61,8 @@ def kind_of(one: dict) -> str:
 
 
 def base(path: str) -> str:
-    return path.rsplit("/", 1)[-1]
+    said = path.rstrip("/") or path
+    return HERE if said in (".", "./") else said.rsplit("/", 1)[-1]
 
 
 def capped(said: str) -> str:
@@ -97,7 +99,7 @@ def names_of(one: dict, kind: str) -> list[dict]:
         found = a_path(piece["args"])
         return [whole(base(found))] if found else []
     if kind in GIVEN:
-        return [said_name(" ".join(piece["args"]))] if piece["args"] else []
+        return [said_name(" ".join(base(x) if x.strip(".") == "" else x for x in piece["args"]))] if piece["args"] else []
     if piece["root"] in RUNNERS:
         found = a_path(piece["args"])
         return [said_name(f"{piece['root']} {base(found)}")] if found else [said_name(piece["root"])]

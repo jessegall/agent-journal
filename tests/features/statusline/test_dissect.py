@@ -48,6 +48,9 @@ check("cat is always reading, wherever it stands in the line",
 check("a glob or a grep is searching, not reading, and it names what it looked for",
       [(shell(c, effect="searches")["kind"], names(shell(c, effect="searches"))) for c in ("grep -rn def features", "cat *.md")],
       [("searches", ["def features"]), ("searches", ["*.md"])])
+check("a bare dot is the folder it is standing in",
+      (names(shell("find . -name x.py", effect="searches")), names(shell("grep -rn def .", effect="searches"))),
+      (["here x.py"], ["def here"]))
 check("a search names what the searching command looked for, never the command beside it",
       names(shell("sed -n 160,175p web/src/layout/TopBar.vue; grep -rn z-index web/src | head -8", effect="searches")), ["z-index web/src"])
 check("a read names the file the reading command read, not a URL beside it",
