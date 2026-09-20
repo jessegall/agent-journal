@@ -361,8 +361,8 @@ class Nudge(Shape, Resource):
 
 
 PHASE = names("title", "when", "checkpoint", "brief", "todos")
-RUNNING = names("what", "tool", "at", "done", "changed", "files", "effect", "result", "before")
-COMMAND = names("what", "tool", "at", "effect", "subject", "done", "result", "files", "changed")
+RUNNING = names("what", "tool", "at", "done", "changed", "files", "made", "effect", "result", "before")
+COMMAND = names("what", "tool", "at", "effect", "subject", "done", "result", "files", "made", "changed")
 
 TYPES = {c.type: c for c in (Message, Todo, Work, Plan, Doc, Report, Pin, Rule, Reminder, Question, Suggestion, Comment, AgentRow, Notification, Notice, Reaction, Tool, Style, Connection, Plugin, Environment, Ask, Nudge)}
 PRIORITY = ("message", "question", "suggestion", "comment", "plan", "todo", "report", "doc", "pin", "rule", "reminder", "notice", "reaction", "style", "tool", "connection", "plugin", "environment", "work", "agent", "notification", "browser", "nudge")

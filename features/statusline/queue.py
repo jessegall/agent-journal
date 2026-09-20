@@ -1,12 +1,12 @@
-from features.statusline.dissect import TOUCHED
+from features.statusline.dissect import MADE, TOUCHED
 from features.statusline.shell import words
 
 GRAY, MUTED, RED, GREEN = "gray", "muted", "red", "green"
-VERBS = {"writes": "editing", "reads": "reading", "deletes": "deleting", "tests": "testing",
+VERBS = {"writes": "editing", "creates": "creating", "reads": "reading", "deletes": "deleting", "tests": "testing",
          "installs": "installing", "builds": "building", "journal": "journalling", "git": "git", "": "running",
          "searches": "searching", "views": "viewing", "watches": "watching", "fetches": "fetching", "dispatches": "dispatching", "loads": "loading"}
 NOUNS = {"reads": "files", "tests": "tests", "installs": "dependencies"}
-HELD = ("writes", "deletes", "tests")
+HELD = ("writes", "deletes", "creates", "tests")
 USING = "using"
 PLUS, MINUS = "+", "-"
 COUNTS = ((PLUS, "added"), (MINUS, "removed"))
@@ -54,7 +54,7 @@ def verb_for(group: list[dict], kind: str) -> dict:
 
 
 def counted(group: list[dict]) -> list[dict]:
-    if group[0]["kind"] not in TOUCHED:
+    if group[0]["kind"] not in (*TOUCHED, MADE):
         return []
     totals = {sign: sum(one["changed"].get(key, 0) for one in group) for sign, key in COUNTS}
     return [{"value": totals[sign], "prefix": sign, "increments": True, "color": color}

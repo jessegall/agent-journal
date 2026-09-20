@@ -37,6 +37,10 @@ check("a tool that is not the shell is worked by hand, and never a journal comma
 check("a picture is viewed and a film is watched, not read",
       [dissect({"what": f"reading {f}", "tool": "Read", "at": NOW, "effect": "reads", "files": [f]})["kind"]
        for f in ("shot.png", "clip.mp4", "notes.md")], ["views", "watches", "reads"])
+check("a file made from nothing is creating, not editing",
+      [dissect({"what": "x", "tool": "Bash", "at": NOW, "effect": "writes", "files": f, "made": m})["kind"]
+       for f, m in ((["a.py"], ["a.py"]), (["a.py", "b.py"], ["a.py", "b.py"]), (["a.py", "b.py"], ["b.py"]), (["a.py"], []))],
+      ["creates", "creates", "writes", "writes"])
 check("a file tool names the file the provider reported", names(tool("Edit", effect="writes", files=["web/src/a.vue"])), ["a.vue"])
 check("a file name stays whole, a spoken name does not",
       [name["whole"] for name in tool("Read", effect="reads", files=["a b c.png"])["names"] + tool("mcp__x__y", subject="x · y z")["names"]],
