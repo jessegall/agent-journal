@@ -20,7 +20,7 @@ from engine.stored import write_json
 
 TICK = 1.0
 SETTLE, STEP = 3.0, 0.1
-TYPING_HOLD = 30.0
+TYPING_HOLD = 10.0
 WEB_HOSTS = ("github.com", "gitlab.com", "bitbucket.org")
 
 

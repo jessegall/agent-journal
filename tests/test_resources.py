@@ -89,6 +89,32 @@ made = Todos(record, actor=PLUGIN).create("filed by a plugin")
 check("a plugin writes as itself", (made.seen, [e.actor for e in record.events() if e.type == "todo"][-1]), ([PLUGIN], PLUGIN))
 check("and it is one of the actors the manifest offers", PLUGIN in ACTORS, True)
 
+# A ROW BEING WRITTEN is never half a row to whoever is reading it
+import threading  # noqa: E402
+racing = Todos(fresh(), actor=AGENT)
+row = racing.create("read me while I am written")
+trouble = []
+
+
+def rewrite():
+    for i in range(200):
+        racing.update(row.n, brief="x" * (i % 97) * 40)
+
+
+def reread():
+    for _ in range(200):
+        try:
+            racing.load(row.n)
+        except Exception as e:
+            trouble.append(repr(e))
+
+
+writer = threading.Thread(target=rewrite)
+reader = threading.Thread(target=reread)
+writer.start(), reader.start()
+writer.join(), reader.join()
+check("two hundred reads during two hundred writes see a whole row every time", trouble, [])
+
 # WHAT COMPLETING A ROW IS TOLD is kept on the row, not only on the event
 rows = Todos(fresh(), actor=AGENT)
 struck = rows.strike(rows.create("abandon me").n, "it stopped being worth doing")

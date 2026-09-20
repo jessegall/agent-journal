@@ -10,7 +10,7 @@ from controllers.types import Agents, Messages, Nudges, Pins, Questions, Todos, 
 from engine import bus  # noqa: E402
 from engine.actors import BUSY, IDLE, STOPPED, WORKING, User  # noqa: E402
 from engine.drivers import Driver  # noqa: E402
-from engine.engine import Engine  # noqa: E402
+from engine.engine import Engine, TYPING_HOLD  # noqa: E402
 from engine.record import Record  # noqa: E402
 from engine.sessions import ACTIVE_ENV  # noqa: E402
 from engine.terminal import agent_environment  # noqa: E402
@@ -291,11 +291,12 @@ driver.report = None
 (root / "runtime").mkdir(parents=True, exist_ok=True)
 driver.typed.touch()
 check("a keystroke moments ago holds everything the engine would type", engine.typing(), "holding: the user is typing in the terminal")
-old = time.time() - 31
+check("the hold is ten seconds, not half a minute", TYPING_HOLD, 10.0)
+old = time.time() - TYPING_HOLD - 1
 os.utime(driver.typed, (old, old))
 cleared = []
 driver.clear_input = lambda: cleared.append(True)
-check("a draft untouched for half a minute no longer holds it, and is cleared before the engine types", (engine.typing(), cleared, driver.typed.exists()), ("", [True], False))
+check("a draft untouched past the hold no longer holds it, and is cleared before the engine types", (engine.typing(), cleared, driver.typed.exists()), ("", [True], False))
 check("after the user pressed Enter nothing holds and nothing is cleared", (engine.typing(), len(cleared)), ("", 1))
 
 # A SESSION THAT NEVER REPORTS is woken once, so it does not sit there until the user types
