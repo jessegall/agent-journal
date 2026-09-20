@@ -120,6 +120,8 @@ def run(root: Path, cwd: Path, env: str, agent: str, fd: int, session: str, life
                 if not data:
                     break
                 os.write(stdout, rows_below.feed(data))
+                if (keys := driver.confirm(data)):
+                    os.write(fd, keys)
                 if any(mark in data for mark in REDRAWS):
                     os.write(stdout, band.region(shape[0]) + top.draw(shape[1], force=True))
                 elif data.rstrip().endswith(FRAME_END):

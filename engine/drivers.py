@@ -32,6 +32,7 @@ class Driver(ABC):
         self.session = session
         self.fd = fd
         self.born = time.time()
+        self.answered = False
         self.printed = record.root / "runtime" / f"printed-{session}"
         self.typed = record.root / "runtime" / f"typed-{session}"
 
@@ -45,6 +46,9 @@ class Driver(ABC):
 
     def alive(self) -> bool:
         return self.fd >= 0
+
+    def confirm(self, printed: bytes) -> bytes:
+        return b""
 
     def send(self, text: str) -> bool:
         line = " ".join(part.strip() for part in text.splitlines() if part.strip())
@@ -147,9 +151,16 @@ class Claude(Driver):
     TAKES_OURS = ("--settings", json.dumps({"crossSessionInbound": "accept"}))
     CHANNEL = ("--dangerously-load-development-channels", "server:journal")
     LISTENING = 15.0
+    OURS_TO_ANSWER = (b"Loading development channels", b"Enter to confirm")
 
     def command(self, args: list[str]) -> list[str]:
         return ["claude", *(() if self.TAKES_OURS[0] in args else self.TAKES_OURS), *self.CHANNEL, *args]
+
+    def confirm(self, printed: bytes) -> bytes:
+        if self.answered or not all(mark in printed for mark in self.OURS_TO_ANSWER):
+            return b""
+        self.answered = True
+        return b"\r"
 
     def post(self, line: str) -> bool:
         return self.handed(line) or super().post(line)
