@@ -92,7 +92,7 @@ code, read = call("GET", "/api/plugins/works/log?lines=2")
 check("a plugin's log is read over HTTP, the last lines first asked for", (code, read), (200, {"name": "works", "log": "line 4\nline 5"}))
 
 code, bar = call("GET", "/api/main/bar")
-check("the bar is served by the journal, empty while nothing is running", (code, bar), (200, {"line": {}, "commands": []}))
+check("the bar is served by the journal as a queue, empty while nothing has run", (code, bar), (200, {"queue": []}))
 
 # SETTINGS, SEARCH AND FILES
 code, got = call("GET", "/api/main/settings")

@@ -8,7 +8,7 @@ from features.base import Feature, on
 from providers import PROVIDERS
 from resources.base import SYSTEM, names
 from resources.shapes import CHANGE, COMMIT
-from resources.types import RUNNING
+from resources.types import COMMAND, RUNNING
 from skills import LIBRARY
 
 DELTA = names("edited", "created", "deleted", "added", "removed")
@@ -137,7 +137,8 @@ class Files(Feature):
 
     def count(self, record, n: int, ran: float, delta: dict, touched: list) -> None:
         agents = Agents(record, actor=SYSTEM)
-        running = agents.load(n).running
+        row = agents.load(n)
+        running = row.running
         late = running.get(RUNNING.at) != ran
         edited = running.get(RUNNING.before) or {} if late else running
         if not ran or edited.get(RUNNING.at) != ran:
@@ -146,4 +147,6 @@ class Files(Feature):
         known = edited.get(RUNNING.files) or []
         edited = {**edited, RUNNING.changed: {key: prior.get(key, 0) + value for key, value in delta.items()},
                   RUNNING.files: [*known, *(p for p in touched if p not in known)]}
-        agents.update(n, running={**running, RUNNING.before: edited} if late else edited)
+        agents.update(n, running={**running, RUNNING.before: edited} if late else edited,
+                      commands=[{**one, COMMAND.files: edited[RUNNING.files], COMMAND.changed: edited[RUNNING.changed]}
+                                if one.get(COMMAND.at) == ran else one for one in row.commands])
