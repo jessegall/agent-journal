@@ -186,7 +186,14 @@ class Todos(Controller):
 class Works(Controller):
     resource = types.Work
 
+    def active(self):
+        return next((w for w in self.all() if not w.completed and not w.parked), None)
+
     def create(self, title: str, abstract: str = "", brief: str = "", **data):
+        busy = self.active()
+        if busy:
+            raise Refused(f'work {busy.n} is open: end it with journal work end --how "<what landed>", '
+                          f'or set it aside with journal work park "<why>", before starting another')
         if data.get(types.Work.todo):
             row = Todos(self.record, actor=self.actor).load(int(data[types.Work.todo]))
             if row.completed:
