@@ -37,6 +37,8 @@ const shapes = {
     book: '<path d="M4 2.5h8.5v11H4a1.5 1.5 0 0 1 0-3h8.5M4 2.5a1.5 1.5 0 0 0 0 3h8.5"/>',
     auto: '<path d="M5 3.4 12.4 8 5 12.6z" fill="currentColor" stroke-width="1"/>',
     branch: '<circle cx="5" cy="3.6" r="1.6"/><circle cx="5" cy="12.4" r="1.6"/><circle cx="11.6" cy="5.4" r="1.6"/><path d="M5 5.2v5.6M11.6 7v.6a3.6 3.6 0 0 1-3.6 3.6H6.6"/>',
+    wide: '<path d="M6.2 2.6H2.6v3.6M9.8 2.6h3.6v3.6M6.2 13.4H2.6V9.8M9.8 13.4h3.6V9.8"/>',
+    narrow: '<path d="M2.6 6.2h3.6V2.6M13.4 6.2H9.8V2.6M2.6 9.8h3.6v3.6M13.4 9.8H9.8v3.6"/>',
     up: '<path d="M8 12.5V4M4.5 7.5L8 4l3.5 3.5"/>',
     down: '<path d="M8 3.5V12M4.5 8.5L8 12l3.5-3.5"/>',
     open: '<path d="M9 3.5h3.5V7"/><path d="M12.5 3.5L7.5 8.5"/><path d="M11 9.5v3H3.5V5h3"/>',

@@ -5,7 +5,7 @@ import Icon from "../kit/Icon.vue";
 import RunningCommand from "./RunningCommand.vue";
 import Switch from "../kit/Switch.vue";
 import {go, peek, route} from "../route.js";
-import {agent, autoOn, rows} from "../store.js";
+import {agent, autoOn, rows, store} from "../store.js";
 import {currentWork, doneOf, lineOf, phaseOf, planButton, queued, rowsOf, shownPlans, stateOf, wordOf} from "./statusline.js";
 
 const current = computed(() => currentWork(rows("work")));
@@ -69,6 +69,14 @@ async function runBar(p) {
                 "
                 @change="setAuto"
             />
+            <button
+                type="button"
+                class="statusbar-wide"
+                :title="store.wide ? 'Show the sidebar and the top bar' : 'Hide the sidebar and the top bar'"
+                @click="store.wide = !store.wide"
+            >
+                <Icon :name="store.wide ? 'narrow' : 'wide'" />
+            </button>
         </span>
     </div>
     <TransitionGroup name="planbar">
@@ -208,6 +216,21 @@ async function runBar(p) {
 .roll-leave-to {
     opacity: 0;
     transform: translateY(-5px);
+}
+
+.statusbar-wide {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px;
+    border: 0;
+    border-radius: 6px;
+    background: none;
+    color: var(--text-3);
+    cursor: pointer;
+}
+
+.statusbar-wide:hover {
+    color: var(--text-1);
 }
 
 .statusbar-tools {
