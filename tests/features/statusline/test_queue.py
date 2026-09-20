@@ -5,7 +5,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 import features  # noqa: E402
 from features.statusline.feature import bar  # noqa: E402
 from features.statusline.group import grouped, ran  # noqa: E402
-from features.statusline.queue import CLOCK_AFTER, FLIP_EVERY, HOLD, LINGERS, MOST  # noqa: E402
+from features.statusline.queue import CLOCK_AFTER, DRAINING, FLIP_EVERY, HOLD, LINGERS, MOST  # noqa: E402
 from features.statusline.queue import queue as messages  # noqa: E402
 from tests.kit import check, done  # noqa: E402
 
@@ -118,6 +118,9 @@ check("editing, deleting and a test run hold their message; nothing else does",
       [HOLD, HOLD, HOLD, 0.0, 0.0])
 check("a message stays long enough to walk every name it has",
       queue([edit("a.py"), edit("b.py", NOW + 1), edit("c.py", NOW + 2)], NOW)[0]["hold"], 3 * FLIP_EVERY)
+check("a message gives way at once when the queue has backed up behind it",
+      [one["hold"] for one in queue([edit(f"f{i}.py", NOW + i) if i % 2 else shell(f"echo {i}", NOW + i) for i in range(24)], NOW + 30)][:2],
+      [DRAINING, DRAINING])
 check("a message with nothing to replace it lingers", queue([shell("ls")], NOW)[0]["lingers"], LINGERS)
 check("only the last message of the queue can still be running",
       [one["done"] for one in queue([edit("a.vue"), shell("git commit -m x", NOW + 1)], NOW + 2)], [True, False])
