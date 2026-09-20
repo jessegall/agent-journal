@@ -90,8 +90,17 @@ check("a one-liner of several commands is named once, by the first of them",
 check("editing names the files that actually changed, never the command that changed them",
       said([shell("python3 - <<'EOF'\nopen('x','w')\nEOF", effect="writes", files=["web/src/a.vue", "tests/t.py"])]),
       [["editing", ["a.vue", "t.py"]]])
+check("a write still running does not know its files yet, so it says so and waits",
+      [(one["pending"], [p["value"] for p in one["parts"]]) for one in queue([shell("git mv a b", effect="writes")], NOW)],
+      [(True, ["editing", ""])])
+check("once it knows them it is not waiting any more",
+      [(one["pending"], [p["value"] for p in one["parts"]]) for one in queue([shell("git mv a b", effect="writes", done=NOW + 1, files=["b"])], NOW + 2)],
+      [(False, ["editing", "b"])])
+check("every message carries an id, which is when its run began",
+      [one["id"] for one in queue([edit("a.py"), shell("ls", NOW + 1, effect="reads")], NOW + 2)], [NOW, NOW + 1])
 check("an edit that named no file is not editing anything: it is the command, running",
-      (said([shell("python3 - <<'EOF'\nopen('x','w')\nEOF", effect="writes")]), said([shell("git commit -m x", effect="writes")])),
+      (said([shell("python3 - <<'EOF'\nopen('x','w')\nEOF", effect="writes", done=NOW + 1)]),
+       said([shell("git commit -m x", effect="writes", done=NOW + 1)])),
       ([["running", "python3"]], [["running", "git", "commit"]]))
 check("only editing and deleting count lines; a read that was stamped with them says nothing",
       said([read("t.py", changed={"added": 8, "removed": 1})]), [["reading", "t.py"]])

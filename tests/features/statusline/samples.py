@@ -1,4 +1,5 @@
 import json
+import os
 import random
 import subprocess
 import sys
@@ -162,7 +163,8 @@ check("every verb the journal has a word for is driven end to end",
 
 script = """
 import {line, shown} from "./web/src/layout/bar.js";
-const runs = JSON.parse(process.argv[2]);
+import {readFileSync} from "node:fs";
+const runs = JSON.parse(readFileSync(process.argv[2], "utf8"));
 console.log(JSON.stringify(runs.map((queue) => {
     let state = {at: 0, since: 0};
     const seen = [];
@@ -176,7 +178,9 @@ console.log(JSON.stringify(runs.map((queue) => {
     return seen;
 })));
 """
-played = json.loads(subprocess.run(["node", "--input-type=module", "-e", script, "x", json.dumps(queues[::5])],
+sampled = Path(os.environ.get("TMPDIR", "/tmp")) / "statusline-queues.json"
+sampled.write_text(json.dumps(queues[::5]))
+played = json.loads(subprocess.run(["node", "--input-type=module", "-e", script, str(sampled)],
                                    cwd=Path(__file__).resolve().parents[3], text=True, capture_output=True, check=True, timeout=300).stdout)
 def shows(message):
     return settled(message, 0) if message["hold"] == DRAINING else settled(message)

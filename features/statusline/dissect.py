@@ -23,8 +23,8 @@ def piece_of(one: dict) -> dict:
 
 def kind_of(one: dict) -> str:
     said = one.get(COMMAND.effect) or ""
-    if said in TOUCHED and not one.get(COMMAND.files):
-        return "" if not by_hand(one) else said
+    if said in TOUCHED and not one.get(COMMAND.files) and not by_hand(one) and one.get(COMMAND.done):
+        return ""
     if said or by_hand(one):
         return said
     return JOURNAL if piece_of(one).get("own") else ""

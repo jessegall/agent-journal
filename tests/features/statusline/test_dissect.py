@@ -26,8 +26,10 @@ check("a command's kind is the effect the provider reported",
       ["writes", "reads", "deletes", "tests", "installs", "builds"])
 check("a shell command with no effect is a plain run, and a journal command is its own kind",
       (shell("git commit -m x")["kind"], shell("journal message read 7")["kind"]), ("", "journal"))
-check("a shell command that changed no file is not editing, whatever it looked like",
-      (shell("git commit -m x", effect="writes")["kind"], shell("x", effect="writes", files=["a.py"])["kind"]), ("", "writes"))
+check("a shell command that finished and changed no file is not editing, whatever it looked like",
+      (shell("git commit -m x", effect="writes", done=NOW + 1)["kind"], shell("x", effect="writes", files=["a.py"])["kind"]), ("", "writes"))
+check("while it is still running it is editing and does not know its files yet",
+      (shell("git mv a b", effect="writes")["kind"], shell("git mv a b", effect="writes")["names"]), ("writes", []))
 check("a tool that is not the shell is worked by hand, and never a journal command",
       (tool("Read", effect="reads")["hand"], tool("mcp__x__y")["kind"], shell("ls")["hand"]), (True, "", False))
 
@@ -47,7 +49,7 @@ check("a read names a path and never a flag's value",
       (names(shell("sed -n 88,94p providers/base.py", effect="reads")), names(shell("ls", effect="reads"))), (["base.py"], []))
 check("a test run names its subject, never its runner", names(shell("python3 tests/test_serve.py", effect="tests")), ["test_serve.py"])
 check("a write is only editing when a file really changed",
-      (shell("echo hi > out.txt", effect="writes", files=["out.txt"])["kind"], shell("echo hi > out.txt", effect="writes")["kind"]),
+      (shell("echo hi > out.txt", effect="writes", files=["out.txt"])["kind"], shell("echo hi > out.txt", effect="writes", done=NOW + 1)["kind"]),
       ("writes", ""))
 check("a plain shell command is named by its root and subcommand",
       (names(shell("npx prettier --write a.vue")), names(shell("git add -A && git commit -m x"))), (["npx prettier"], ["git add"]))
