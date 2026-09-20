@@ -3,7 +3,7 @@ from features.statusline.shell import words
 GRAY, MUTED, RED, GREEN = "gray", "muted", "red", "green"
 VERBS = {"writes": "editing", "reads": "reading", "deletes": "deleting", "tests": "testing",
          "installs": "installing", "builds": "building", "journal": "journalling", "git": "git", "": "running",
-         "searches": "searching", "fetches": "fetching", "dispatches": "dispatching", "loads": "loading"}
+         "searches": "searching", "views": "viewing", "watches": "watching", "fetches": "fetching", "dispatches": "dispatching", "loads": "loading"}
 NOUNS = {"reads": "files", "tests": "tests", "installs": "dependencies"}
 HELD = ("writes", "deletes", "tests")
 TOUCHED = ("writes", "deletes")

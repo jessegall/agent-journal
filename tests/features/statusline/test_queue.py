@@ -57,7 +57,7 @@ check("a command with nothing to say is left out", said([shell("")]), [])
 
 # EVERY SPACE IS A PART, and only the part that differs rolls
 check("a file name stays one part however many spaces it has",
-      said([read("Screenshot 2026-09-20 at 15.40.08.png")]), [["reading", "Screenshot 2026-09-20 at 15.40.08.png"]])
+      said([read("Screenshot 2026-09-20 at 15.40.08.png")]), [["viewing", "Screenshot 2026-09-20 at 15.40.08.png"]])
 check("a read names a path, never a flag's value",
       said([shell("sed -n 88,94p providers/base.py", effect="reads")]), [["reading", "base.py"]])
 check("every word of a name is a part of its own",
@@ -76,6 +76,9 @@ check("the verb is gray and everything else muted",
 check("a run of git commands is one message, rooted under git",
       said([shell("git add -A"), shell("git commit -m x", NOW + 1, effect="writes", done=NOW + 2), shell("git push", NOW + 3)]),
       [["git", ["tracking", "committing changes", "pushing changes"]]])
+check("a picture and a film have their own words",
+      [said([{"what": f"reading {f}", "tool": "Read", "at": NOW, "effect": "reads", "files": [f]}])[0][0] for f in ("a.png", "b.mp4")],
+      ["viewing", "watching"])
 check("every kind has its own verb",
       [said([shell("x", effect=e, files=["a.py"])])[0][0] for e in ("writes", "reads", "deletes", "tests", "installs", "builds", "")],
       ["editing", "reading", "deleting", "testing", "installing", "building", "running"])

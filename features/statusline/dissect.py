@@ -16,6 +16,8 @@ GIVEN = ("installs", "searches")
 SEARCHERS = ("grep", "rg", "ag", "find", "fd")
 READERS = ("cat", "head", "tail", "less", "sed", "wc", "ls", "stat", "file", "diff", "git")
 FILE = re.compile(r"^[\w.-]+\.\w+$")
+PICTURES = (".png", ".jpg", ".jpeg", ".gif", ".webp", ".svg", ".bmp", ".heic", ".pdf")
+MOVIES = (".mp4", ".mov", ".webm", ".m4v", ".avi")
 NAME_CAP = 42
 
 
@@ -100,12 +102,22 @@ def names_of(one: dict, kind: str) -> list[dict]:
     return [said_name(piece["root"])]
 
 
+def looked(kind: str, names: list[dict]) -> str:
+    if kind != "reads" or not names:
+        return kind
+    shown = [name["value"].lower() for name in names]
+    if all(said.endswith(PICTURES) for said in shown):
+        return "views"
+    return "watches" if all(said.endswith(MOVIES) for said in shown) else kind
+
+
 def dissect(one: dict) -> dict:
     kind = kind_of(one)
+    names = names_of(one, kind)
     return {
-        "kind": kind,
+        "kind": looked(kind, names),
         "hand": by_hand(one),
-        "names": names_of(one, kind),
+        "names": names,
         "at": float(one.get(COMMAND.at) or 0),
         "done": float(one.get(COMMAND.done) or 0),
         "result": one.get(COMMAND.result) or {},
