@@ -68,10 +68,27 @@ def retire(root: Path) -> int:
     return len(old)
 
 
+LAUNCHER = """#!/bin/sh
+root="{root}"
+if read -r at url < "$root/runtime/heartbeat" 2>/dev/null && [ $(( $(date +%s) - at )) -le 5 ]; then
+  reply=$(printf '%s\\0' "$@" | curl -s -m 20 -w '\\n%{{http_code}}' -H 'Content-Type: text/plain' --data-binary @- "${{url}}api/run")
+  code=${{reply##*
+}}
+  body=${{reply%
+*}}
+  case "$code" in
+    200) printf '%s' "$body"; exit 0 ;;
+    400) printf '%s' "$body" >&2; exit 1 ;;
+  esac
+fi
+exec "{python}" "{script}" --root "$root" "$@"
+"""
+
+
 def alias(project: Path, root: Path) -> Path:
     f = root / "journal"
     f.parent.mkdir(parents=True, exist_ok=True)
-    f.write_text(f'#!/bin/sh\nexec "{sys.executable}" "{code(root) / "journal.py"}" --root "{root}" "$@"\n')
+    f.write_text(LAUNCHER.format(python=sys.executable, script=code(root) / "journal.py", root=root))
     f.chmod(f.stat().st_mode | stat.S_IEXEC)
     bin_ = Path.home() / ".local" / "bin"
     if bin_.is_dir():
