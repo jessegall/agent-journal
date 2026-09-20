@@ -4,7 +4,7 @@ import Icon from "../kit/Icon.vue";
 import {peek} from "../route.js";
 import {age, byRef, linkedTo, meta} from "../store.js";
 
-const props = defineProps({resource: Object});
+const props = defineProps({resource: Object, except: {type: Array, default: () => []}});
 const skip = (type) => meta(type).mirror || (meta(type).fields.options && meta(type).attention);
 const bar = (ref, direction) => {
     const [type, n] = ref.split(":");
@@ -18,7 +18,7 @@ const bar = (ref, direction) => {
     };
 };
 const rows = computed(() => [
-    ...props.resource.refs.filter((r) => !skip(r.split(":")[0])).map((r) => bar(r, "to")),
+    ...props.resource.refs.filter((r) => !skip(r.split(":")[0]) && !props.except.includes(r)).map((r) => bar(r, "to")),
     ...linkedTo(props.resource.ref)
         .filter((r) => !skip(r.type))
         .map((r) => bar(r.ref, "from")),

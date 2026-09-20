@@ -3,11 +3,13 @@ import {computed, provide, ref, watch} from "vue";
 import {rows} from "../store.js";
 import ResourceBody from "./ResourceBody.vue";
 import Comments from "./Comments.vue";
+import Links from "./Links.vue";
 import Highlight from "./Highlight.vue";
 
 const props = defineProps({resource: Object, focus: {type: Number, default: 0}});
 const emit = defineEmits(["close"]);
 const quote = ref("");
+const shownAlready = computed(() => ((props.resource.data || {}).phases || []).flatMap((ph) => (ph.todos || []).map((n) => `todo:${n}`)));
 const count = computed(() => rows("comment").filter((c) => c.refs.includes(props.resource.ref) && !c.deleted).length);
 const talking = ref(count.value > 0 || props.focus > 0);
 const shifted = ref(talking.value);
@@ -45,6 +47,7 @@ provide("talk", {talking, count, toggle: () => (talking.value = !talking.value),
                 <slot>
                     <ResourceBody :resource="resource" :comments="false" @close="emit('close')" />
                 </slot>
+                <Links :resource="resource" :except="shownAlready" />
             </Highlight>
         </div>
         <Transition name="aside" @after-leave="panelLeft">
