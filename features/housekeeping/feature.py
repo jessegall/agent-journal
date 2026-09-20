@@ -1,7 +1,7 @@
 import time
 
 from features import trigger
-from features.base import Feature, on
+from features.base import Feature, event
 
 
 class Housekeeping(Feature):
@@ -16,7 +16,7 @@ class Housekeeping(Feature):
     tails = {"printed-*": 64 * 1024, "*.log": 1024 * 1024}
     sessions = ("printed-*", "typed-*", "trigger-*.json", "gate-*.json", "seat-*.json", "session-*.json")
 
-    @on("agent.updated")
+    @event("agent.updated")
     def sweep(self, event, record) -> None:
         if self.agent_due(event, record):
             self.tidy(record)

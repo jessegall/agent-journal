@@ -1,6 +1,6 @@
 from controllers.types import Agents, Comments, Messages, Reactions
 from features import trigger
-from features.base import Feature, on
+from features.base import Feature, event
 from resources.base import AGENT, SYSTEM
 
 
@@ -22,12 +22,12 @@ class Status(Feature):
         faces = Reactions(record, actor=SYSTEM).linked_to(message.ref)
         return any(r.seen[:1] == [AGENT] for r in replies + faces)
 
-    @on("message.created")
+    @event("message.created")
     def arrived(self, event, record) -> None:
         for agent in Agents(record, actor=SYSTEM).all():
             trigger.write(record, agent, self.name, uses=int(agent.uses or 0), count=0)
 
-    @on("agent.updated")
+    @event("agent.updated")
     def owed(self, event, record) -> None:
         agent = self.agent(event, record)
         held = self.in_hand(record)

@@ -5,7 +5,7 @@ from pathlib import Path
 
 from controllers.types import Notifications, Plugins as Rows
 from engine.services import UP, want
-from features.base import Feature, command, on, refuses
+from features.base import Feature, command, event, interceptor
 from features.plugins.host import watch
 from features.plugins.manifest import fill, read
 from features.plugins.payload import refusal
@@ -31,7 +31,7 @@ class Plugins(Feature):
         threading.Thread(target=watch, args=(Path(root),), daemon=True).start()
         services.watch(Path(root), self.enabled)
 
-    @refuses
+    @interceptor
     def guard(self, provider, record, hook, session) -> str:
         writes = provider.writes(hook)
         left = self.ALTOGETHER
@@ -139,7 +139,7 @@ class Plugins(Feature):
         shutil.rmtree(kept, ignore_errors=True)
         return f"everything {name} kept in {kept} is gone"
 
-    @on("plugin.completed")
+    @event("plugin.completed")
     def removed(self, event, record) -> None:
         rows = Rows(record, actor=SYSTEM)
         name = self.called(rows.load(event.n))

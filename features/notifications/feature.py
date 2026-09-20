@@ -1,5 +1,5 @@
 from controllers.types import CONTROLLERS, Notifications
-from features.base import Feature, on
+from features.base import Feature, event
 from resources.base import AGENT, SYSTEM, USER
 from resources.types import TYPES
 
@@ -12,7 +12,7 @@ class NotificationsFeature(Feature):
     abstract_ = "Every act of the agent the user should hear of becomes a notification"
     help_ = "A type that does not notify the user makes none; the agent may write one itself to say a long piece of work landed."
 
-    @on("*")
+    @event("*")
     def tell(self, event, record) -> None:
         kind = TYPES[event.type]
         if event.actor != AGENT or USER not in kind.notify or "seen" in event.data:

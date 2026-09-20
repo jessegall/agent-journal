@@ -1,7 +1,7 @@
 import re
 
 from features import trigger
-from features.base import Feature, on
+from features.base import Feature, event
 from features.tags.feature import last_said
 from resources.base import AGENT, SYSTEM
 
@@ -18,7 +18,7 @@ class Deferral(Feature):
     def parked_since(self, record, when: float) -> bool:
         return any(e.actor == AGENT and e.type == "todo" and e.action == "created" and e.at >= when for e in record.events())
 
-    @on("agent.updated")
+    @event("agent.updated")
     def check(self, event, record) -> None:
         agent = self.agent_due(event, record)
         if not agent:

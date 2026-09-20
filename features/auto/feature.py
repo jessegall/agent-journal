@@ -1,6 +1,6 @@
 from controllers.types import Works
 from features import trigger
-from features.base import Feature, on, refuses
+from features.base import Feature, event, interceptor
 from features.auto.next import next
 from features.auto.policy import refusal
 
@@ -13,11 +13,11 @@ class Auto(Feature):
     trigger = {"on": trigger.IDLE}
     default = False
 
-    @refuses
+    @interceptor
     def no_blocking_question(self, provider, record, hook, session) -> str:
         return refusal(provider, hook)
 
-    @on("agent.updated")
+    @event("agent.updated")
     def offer(self, event, record) -> None:
         agent = self.agent_due(event, record)
         if not agent:

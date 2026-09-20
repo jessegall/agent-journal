@@ -4,7 +4,7 @@ import subprocess
 from pathlib import Path
 
 from controllers.types import Messages
-from features.base import Feature, on
+from features.base import Feature, event
 from resources.base import SYSTEM
 
 MAX_FRAMES = 60
@@ -33,7 +33,7 @@ class Video(Feature):
     abstract_ = "A video attached to a message is sampled into frames the agent can inspect"
     help_ = "Short clips yield a frame every half second, medium clips every two seconds, and long clips at most sixty frames."
 
-    @on("message.updated")
+    @event("message.updated")
     def frames(self, event, record) -> None:
         name = str(event.data.get("file") or "")
         if not name or not (mimetypes.guess_type(name)[0] or "").startswith("video/"):

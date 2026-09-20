@@ -23,19 +23,19 @@ def held(record, session: str) -> str:
     return "; ".join(why for why in holds.values() if why)
 
 
-def on(pattern: str):
+def event(pattern: str):
     def mark(fn):
         fn.patterns = (*getattr(fn, "patterns", ()), pattern)
         return fn
     return mark
 
 
-def formats(fn):
+def chatformatter(fn):
     fn.formats = True
     return fn
 
 
-def refuses(fn):
+def interceptor(fn):
     fn.refuses = True
     return fn
 
@@ -144,7 +144,7 @@ class Recital(Feature):
     controller: ClassVar[type]
     said = "standing, read them"
 
-    @on("agent.updated")
+    @event("agent.updated")
     def repeat(self, event, record) -> None:
         agent = self.agent_due(event, record)
         rows = self.standing(record, self.controller) if agent else []

@@ -1,5 +1,5 @@
 from controllers.types import Styles
-from features.base import Feature, on
+from features.base import Feature, event
 from resources.base import SYSTEM
 from skills import LIBRARY, link, unlink
 
@@ -10,7 +10,7 @@ class Style(Feature):
     abstract_ = "Every style rule is written as a skill the agent loads before writing code on its subject"
     help_ = ".agents/skills/style-<subject>/SKILL.md is rewritten on every change to the rule, linked for Claude, and removed when it is struck."
 
-    @on("style")
+    @event("style")
     def write(self, event, record) -> None:
         rule = Styles(record, actor=SYSTEM).load(event.n)
         if not rule.subject:

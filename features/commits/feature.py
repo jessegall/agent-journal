@@ -2,7 +2,7 @@ import re
 import subprocess
 
 from controllers.types import Todos
-from features.base import Feature, on
+from features.base import Feature, event
 from resources.base import Refused, SYSTEM
 
 TRAILER = re.compile(r"^Journal: todos done (\d+)(?: (.*))?$", re.MULTILINE)
@@ -31,7 +31,7 @@ class Commits(Feature):
             except Refused:
                 continue
 
-    @on("agent.updated")
+    @event("agent.updated")
     def read(self, event, record) -> None:
         commits = self.log(record.root.parent)
         if not commits:

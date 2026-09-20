@@ -1,5 +1,5 @@
 from features import trigger
-from features.base import Feature, on
+from features.base import Feature, event
 from features.cleanup.query import evidence, read_owed
 
 
@@ -10,7 +10,7 @@ class Cleanup(Feature):
     help_ = "cleanup lists claims naming a file that is gone or a verb the CLI lacks, and rows waiting on the user too long; cleanup read is every rule and pin in full."
     trigger = {"every": 1440, "unit": trigger.MINUTES}
 
-    @on("agent.updated")
+    @event("agent.updated")
     def report(self, event, record) -> None:
         agent = self.agent_due(event, record)
         if not agent:

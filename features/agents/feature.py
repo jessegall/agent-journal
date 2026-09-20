@@ -1,7 +1,7 @@
 import time
 
 from controllers.types import Agents, CONTROLLERS, Todos
-from features.base import Feature, on
+from features.base import Feature, event
 from resources.base import SYSTEM
 
 SUBAGENT = "subagent"
@@ -19,7 +19,7 @@ class Subagents(Feature):
     def rows(self, record):
         return Agents(record, actor=SYSTEM)
 
-    @on("created")
+    @event("created")
     def alive(self, event, record) -> None:
         if event.type == "agent":
             return
@@ -30,7 +30,7 @@ class Subagents(Feature):
         row = self.rows(record).by_session(who)
         self.rows(record).update(row.n, active=time.time(), dispatcher=made.dispatcher or "", status=SUBAGENT)
 
-    @on("todo.updated")
+    @event("todo.updated")
     def reported(self, event, record) -> None:
         todos = Todos(record, actor=SYSTEM)
         todo = todos.load(event.n)
@@ -42,7 +42,7 @@ class Subagents(Feature):
             dispatcher = self.rows(record).by_session(said["dispatcher"])
             self.nudge(record, dispatcher, f"agent {said.get('agent')} reports todo {todo.n} done", f"{said.get('how', '')} — journal todo done {todo.n} is yours")
 
-    @on("agent.updated")
+    @event("agent.updated")
     def lapsed(self, event, record) -> None:
         limit = record.agents.get(self.LAPSE, LAPSE_MINUTES) * 60
         todos = Todos(record, actor=SYSTEM)
