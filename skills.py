@@ -100,9 +100,20 @@ def unlink(project: Path, name: str) -> None:
             shutil.rmtree(target)
 
 
+def pruned(project: Path, names: list[str]) -> list[Path]:
+    gone = []
+    for home in (LIBRARY, *LINKED.values()):
+        for stale in sorted((project / home).glob("journal*")):
+            if stale.name not in names and (stale.is_symlink() or stale.is_dir()):
+                unlink(project, stale.name)
+                gone.append(stale)
+    return gone
+
+
 def publish(project: Path, agents: tuple[str, ...]) -> tuple[list[Path], list[Path]]:
     written = write(project / LIBRARY)
     names = sorted({f.parent.name for f in written})
+    pruned(project, names)
     for home in RETIRED:
         for stale in (project / home).glob("journal*"):
             if stale.is_dir() and not stale.is_symlink():

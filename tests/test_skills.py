@@ -5,6 +5,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 import features  # noqa: E402
 from controllers.types import CONTROLLERS  # noqa: E402
+import skills  # noqa: E402
 from skills import reference, render, write  # noqa: E402
 from tests.kit import check, done  # noqa: E402
 
@@ -32,5 +33,14 @@ check("future work is filed before other work continues", (
 folder = Path(tempfile.mkdtemp())
 written = write(folder)
 check("written as SKILL.md files, one folder each", (len(written), (folder / "journal" / "SKILL.md").is_file(), (folder / "journal-work" / "SKILL.md").is_file()), (len(got), True, True))
+
+# A SKILL WHOSE FEATURE IS GONE is taken away, in the library and in every harness that linked it
+project = Path(tempfile.mkdtemp())
+stale = project / skills.LIBRARY / "journal-gone"
+stale.mkdir(parents=True, exist_ok=True)
+(stale / "SKILL.md").write_text("a feature that no longer exists")
+skills.publish(project, ("claude",))
+check("a skill whose feature is gone is pruned from the library and its links",
+      (stale.exists(), (project / skills.LINKED["claude"] / "journal-gone").exists()), (False, False))
 
 done()
