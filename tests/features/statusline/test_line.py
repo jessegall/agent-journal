@@ -13,45 +13,52 @@ NOW = 1_000_000.0
 
 
 def running(**more):
-    return {"what": "python3 tests/x.py", "tool": "Bash", "at": NOW, **more}
+    return {"what": "cat x.py", "tool": "Bash", "at": NOW, **more}
 
 
 # THE JOURNAL SAYS THE WORDS, so the viewer has nothing to decide
-check("a command that changes files is named as editing files",
-      [t["value"] for t in line(running(effect="writes"), NOW)["tokens"]], ["editing", "files"])
-check("every kind worth naming has its words",
-      [line(running(effect=e), NOW)["key"] for e in ("tests", "deletes", "reads", "installs", "builds")],
-      ["running tests", "deleting files", "reading files", "installing dependencies", "building"])
-check("a command it has no words for is left to the viewer", line(running(), NOW), {})
-check("and nothing running is no line", (line({}, NOW), line({"tool": "Bash"}, NOW)), ({}, {}))
+check("with nothing to flip through, a kind falls back to its plural",
+      [line(running(effect=e), [], NOW)["key"] for e in ("writes", "tests", "deletes", "reads", "installs", "builds")],
+      ["editing files", "running tests", "deleting files", "reading files", "installing dependencies", "building"])
+check("a command with no kind of its own is said in a few words", line(running(what="git status"), [], NOW)["key"], "git status")
+check("and nothing running is no line", (line({}, [], NOW), line({"tool": "Bash"}, [], NOW)), ({}, {}))
+
+# THE FILES THEMSELVES flip beside the verb, and the plural disappears
+edits = [{"what": "/a/one.py", "tool": "Edit", "at": 1, "effect": "writes"}, {"what": "/a/two.py", "tool": "Write", "at": 2, "effect": "writes"}]
+editing = line({"what": "/a/three.py", "tool": "Edit", "at": 3, "effect": "writes"}, edits, NOW)
+check("editing names the files it is editing, not the word files", (editing["key"], editing["roll"]["items"]),
+      ("editing", ["/a/one.py", "/a/two.py", "/a/three.py"]))
+check("a command of another kind is not one of them", line({"what": "/a/x.py", "tool": "Edit", "at": 3, "effect": "writes"},
+      [*edits, {"what": "cat y", "tool": "Bash", "at": 2.5, "effect": "reads"}], NOW)["roll"]["items"],
+      ["/a/one.py", "/a/two.py", "/a/x.py"])
 
 # WHAT IT FLIPS THROUGH comes with how often, and only while the line stands for several steps
 def read(*what):
     return [{"what": w, "effect": "reads"} for w in what]
 
 
-rolled = line(running(effect="reads", steps=read("cat a.py", "cat b.py")), NOW)["roll"]
-check("a scoped line hands over its steps and how often to flip", (rolled["every"], rolled["items"]), (ROLL_EVERY, ["cat a.py", "cat b.py"]))
-check("one step alone is nothing to flip through", line(running(effect="reads", steps=read("cat a.py")), NOW)["roll"], {})
-check("a command that has finished stops flipping", line(running(effect="reads", steps=read("a", "b"), done=NOW + 1), NOW)["roll"], {})
-check("only the last steps are kept", len(line(running(effect="writes", steps=[{"what": f"s{i}", "effect": "writes"} for i in range(40)]), NOW)["roll"]["items"]), MOST_STEPS)
+rolled = line(running(effect="reads", steps=read("cat a.py", "cat b.py")), [], NOW)["roll"]
+check("a scoped line hands over the names and how often to flip", (rolled["every"], rolled["items"]), (ROLL_EVERY, ["cat x.py", "cat a.py", "cat b.py"]))
+check("one name alone is nothing to flip through", line(running(effect="reads"), [], NOW)["roll"], {})
+check("a command that has finished stops flipping", line(running(effect="reads", steps=read("a", "b"), done=NOW + 1), [], NOW)["roll"], {})
+check("only the last names are kept", len(line(running(effect="writes", steps=[{"what": f"s{i}", "effect": "writes"} for i in range(40)]), [], NOW)["roll"]["items"]), MOST_STEPS)
 mixed = running(effect="reads", steps=[*read("cat a.py"), {"what": "sleep 1", "effect": ""}, *read("cat a.py", "cat b.py")])
-check("what the line is not about is left out, and the same step twice over is one", line(mixed, NOW)["roll"]["items"], ["cat a.py", "cat b.py"])
+check("what the line is not about is left out, and the same name twice over is one", line(mixed, [], NOW)["roll"]["items"], ["cat x.py", "cat a.py", "cat b.py"])
 
 # HOW LONG IT LINGERS and when a clock appears are the journal's call too
-check("editing and deleting hold their line; nothing else does",
-      [line(running(effect=e), NOW)["hold"] for e in ("writes", "deletes", "tests", "reads")], [HOLD, HOLD, 0.0, 0.0])
+check("editing, deleting and a test run hold their line; nothing else does",
+      [line(running(effect=e), [], NOW)["hold"] for e in ("writes", "deletes", "tests", "reads", "builds")], [HOLD, HOLD, HOLD, 0.0, 0.0])
 check("a clock appears once it has run long enough",
-      [line(running(effect="tests"), NOW + s)["clock"] for s in (1, CLOCK_AFTER + 1)], [False, True])
+      [line(running(effect="tests"), [], NOW + s)["clock"] for s in (1, CLOCK_AFTER + 1)], [False, True])
 check("a finished run is timed by when it finished, not by now",
-      line(running(effect="tests", done=NOW + 1), NOW + 600)["clock"], False)
+      line(running(effect="tests", done=NOW + 1), [], NOW + 600)["clock"], False)
 
 # A TEST RUN SAYS HOW IT WENT once it is done
-check("a passing run says passed", line(running(effect="tests", done=NOW + 2, result={"passed": 9}), NOW)["tokens"][-1],
+check("a passing run says passed", line(running(effect="tests", done=NOW + 2, result={"passed": 9}), [], NOW)["tokens"][-1],
       {"value": "passed", "kind": "passed"})
-check("a failing run says how many failed", line(running(effect="tests", done=NOW + 2, result={"failed": 3}), NOW)["tokens"][-1],
+check("a failing run says how many failed", line(running(effect="tests", done=NOW + 2, result={"failed": 3}), [], NOW)["tokens"][-1],
       {"value": "3 failed", "kind": "failed"})
 check("while it is still running it says nothing about the outcome",
-      [t["kind"] for t in line(running(effect="tests", result={"failed": 3}), NOW)["tokens"]], ["command", "argument"])
+      [t["kind"] for t in line(running(effect="tests", result={"failed": 3}), [], NOW)["tokens"]], ["command", "argument"])
 
 done()

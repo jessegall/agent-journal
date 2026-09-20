@@ -1,8 +1,6 @@
 <script setup>
 import {computed, nextTick, onUnmounted, ref, watch} from "vue";
-import {gists, gistTokens} from "../gist.js";
-import {spoken} from "../spoken.js";
-import {agent, store, types} from "../store.js";
+import {agent, store} from "../store.js";
 
 const STEP = 700;
 const HOLD_EDITS = 1000;
@@ -11,9 +9,13 @@ const SHOW_CLOCK_AFTER = 10;
 const COUNT_UP = 360;
 const told = computed(() => {
     const run = data.value && data.value.running;
-    const bar = store.bar;
-    return run && bar && bar.at === run.at && bar.tokens && bar.tokens.length ? bar : null;
+    const words = store.bar && store.bar.line;
+    return run && words && words.at === run.at && words.tokens && words.tokens.length ? words : null;
 });
+
+function ownWords() {
+    return null;
+}
 const data = computed(() => (agent.value && ["working", "compacting"].includes(agent.value.data.status) ? agent.value.data : null));
 const ticks = ref(0);
 const timer = setInterval(() => (ticks.value += 1), 500);
@@ -27,40 +29,20 @@ const tally = new Map();
 const retired = new Set();
 let rolls = null;
 
-function sentence(words) {
-    return spoken(words, types.value);
-}
-
-function ownWords(c) {
-    return c.tool && c.tool !== "Bash";
-}
-
-function said(c) {
-    if (ownWords(c)) return [c.what];
-    return gists(c.what, sentence);
-}
-
-function tokensOf(c, text) {
-    return gistTokens(text);
-}
-
 function roll() {
     rolling.value = pending.shift() || null;
     rolls = rolling.value ? setTimeout(roll, STEP) : null;
 }
 
 watch(
-    () => data.value && data.value.commands,
+    () => store.bar && store.bar.commands,
     (ring) => {
         if (!ring) return;
         const first = !seen.at;
         for (const c of ring) {
             if (c.at <= seen.at) continue;
             seen.at = c.at;
-            if (!first) {
-                const shown = said(c).slice(0, 1);
-                shown.forEach((text) => pending.push({key: text, text, tokens: tokensOf(c, text)}));
-            }
+            if (!first) pending.push({key: c.key, text: c.key, tokens: c.tokens});
         }
         if (first && !seen.at) seen.at = 1;
         if (pending.length && !rolls) roll();
@@ -102,20 +84,7 @@ function fromJournal(run, words) {
 }
 
 function lineFor(run, words = null) {
-    if (!run || !run.what) return null;
-    if (words) return fromJournal(run, words);
-    const step = run.step && !run.done ? {what: run.step, tool: "Bash"} : null;
-    const now = step && said(step).length ? step : run;
-    const parts = said(now);
-    if (!parts.length) return null;
-    const text = parts[0];
-    return {
-        key: text,
-        text,
-        tokens: tokensOf(now, text),
-        clock: clock(Math.floor((run.done || Date.now() / 1000) - run.at)),
-        done: !!run.done,
-    };
+    return run && run.what && words ? fromJournal(run, words) : null;
 }
 
 const line = computed(() => {
