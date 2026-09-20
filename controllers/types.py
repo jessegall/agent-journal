@@ -264,6 +264,9 @@ class Plans(Controller):
             r.refs = [x for x in r.refs if x != ref] if off else r.refs + [ref] * (ref not in r.refs)
         return self.save(r, "linked", phase=int(p), todos=[int(t) for t in todos], off=off)
 
+    def build(self, n: int):
+        return self._status(self.load(n), BUILDING, READY, DRAFT)
+
     def ready(self, n: int):
         r = self.load(n)
         for i, ph in enumerate(r.phases, 1):
