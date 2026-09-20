@@ -1,10 +1,16 @@
+import io
 import re
+import time
 
 from features import trigger
+from engine.stored import read_json, write_json
 from features.base import Behaviour, Feature, event, textformatter
-from support.transcript import last_said
+from resources.base import AGENT
+from support.transcript import last_said, last_turn
 
 TAGS = ("discovery", "correction", "blocked", "info", "reply")
+RUNS = {"reply": "message reply {n} {text}", "log": "work log {text} --n {n}", "end": "work end {n} --how {text}"}
+CARRIED = re.compile(r"^[ \t]*(?:>\s?)?(?:\*\*)?\[!([a-z]+):([0-9]+)\]", re.M)
 
 
 def written(names) -> list[str]:
@@ -27,12 +33,16 @@ def visible(text: str) -> str:
 class Tags(Feature):
     name = "tags"
     title_ = "Tagging"
-    abstract_ = "The agent's last message opens with one tag, or it is told so at the end of the turn"
-    help_ = "The tags are settings: tags.names lists them, and a tag is written [!name] at the start of a message."
+    abstract_ = "A message opens with one tag, and a tag carrying a number runs the command it stands for"
+    help_ = "The tags are settings. tags.names lists them and tags.runs maps a tag to the command it stands for, so [!reply:12] runs journal message reply 12 with the turn as its text. A tag runs once, keyed to the turn it came from; two tags in one turn run in the order they appear; and a refusal comes back as a nudge on the next turn rather than at the moment of acting."
     behaviours = {"naming": Behaviour("Name a message that opens without a tag",
                                       "Said at the end of the turn, every turn, until one is used",
-                                      trigger={"on": trigger.IDLE})}
+                                      trigger={"on": trigger.IDLE}),
+                  "running": Behaviour("Run the command a tag stands for",
+                                       "A tag carrying a number runs its command with the turn as the text",
+                                       trigger={"on": trigger.IDLE})}
     NAMES = "names"
+    RUNS = "runs"
 
     def names(self, record) -> list[str]:
         return [str(name).strip().lstrip("[!").rstrip("]") for name in record.setting(self.name, {}).get(self.NAMES, TAGS) if str(name).strip()] or list(TAGS)
@@ -53,3 +63,38 @@ class Tags(Feature):
     @textformatter
     def without_tags(self, text, record):
         return (self.reader(record) if record else ANY).sub(lambda found: found.group(1) or "", str(text or ""))
+
+    def runs(self, record) -> dict:
+        return {**RUNS, **record.setting(self.name, {}).get(self.RUNS, {})}
+
+    def argv(self, template: str, n: str, text: str) -> list[str]:
+        return [text if word == "{text}" else n if word == "{n}" else word for word in template.split()]
+
+    def already(self, record, agent, turn) -> bool:
+        f = record.root / "runtime" / f"tagged-{agent.title}.json"
+        done = read_json(f, {})
+        key = f"{agent.transcript}:{turn.line}"
+        if key in done:
+            return True
+        write_json(f, {**done, key: time.time()})
+        return False
+
+    @event("agent.updated")
+    def expand(self, event, record) -> None:
+        from commands.cli import run
+        agent = self.agent(event, record)
+        if not agent or not self.due(record, agent, "running"):
+            return
+        turn = last_turn(record, agent)
+        carried = CARRIED.findall(turn.text) if turn else []
+        if not carried or self.already(record, agent, turn):
+            return
+        runs, text = self.runs(record), self.reader(record).sub("", turn.text).strip()
+        for name, n in carried:
+            if name not in runs:
+                continue
+            said, wrong = io.StringIO(), io.StringIO()
+            code = run(["--root", str(record.root), "--env", record.env, "--session", agent.title, "--as", AGENT,
+                        *self.argv(runs[name], n, text)], out=said, err=wrong)
+            if code:
+                self.nudge(record, agent, f"the {name} tag on {n} did not run", (wrong.getvalue() or said.getvalue()).strip(), private=True)
