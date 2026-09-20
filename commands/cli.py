@@ -1,4 +1,5 @@
 import argparse
+import contextlib
 import inspect
 import io
 import json
@@ -349,10 +350,16 @@ def captured(argv: list[str], root: Path) -> tuple[str, int | None]:
         return f"{noun_of(argv) or 'this'} is not a command the server runs", None
     said, wrong = io.StringIO(), io.StringIO()
     try:
-        code = run(["--root", str(root), *argv], out=said, err=wrong)
+        with contextlib.redirect_stdout(said), contextlib.redirect_stderr(wrong):
+            code = run(["--root", str(root), *argv], out=said, err=wrong)
     except SystemExit as e:
         code = int(e.code or 0)
-    return (said.getvalue() or wrong.getvalue()), code
+    except Exception as e:
+        return f"! {type(e).__name__}: {e}", 1
+    spoke = said.getvalue() or wrong.getvalue()
+    if code and not spoke.strip():
+        return f"! {' '.join(argv)} was refused and said nothing", code
+    return spoke, code
 
 
 def run(argv: list[str], out=None, err=None) -> int:

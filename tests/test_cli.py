@@ -97,4 +97,15 @@ found = journal("search", "header", session="s-1")[1]
 check("search covers every agent transcript and identifies its source", ("claude:s-1" in found, "codex:s-2" in found), (True, True))
 check("search deduplicates transcript paths and ignores unreadable ones", (found.count("fix the header everywhere"), "s-3" in found, "s-4" in found), (1, False, False))
 
+# A REFUSAL SAYS WHY AND EXITS NON-ZERO, OVER HTTP AS WELL AS IN THE SHELL
+from commands.cli import captured  # noqa: E402
+
+for argv, why in ((["todo", "nosuchword", "x"], "a word no type has"), (["todo", "update", "1", "--set", "priority=critical"], "a value the field refuses")):
+    said, code = captured(argv, root)
+    check(f"{why} exits non-zero over http", code not in (0, None), True)
+    check(f"{why} says why over http", said.strip() != "", True)
+
+check("a word no type has exits non-zero in the shell", journal("todo", "nosuchword", "x")[0] != 0, True)
+check("a word no type has says why in the shell", journal("todo", "nosuchword", "x")[1].strip() != "", True)
+
 done()
