@@ -8,6 +8,7 @@ from engine import bus
 from engine.actors import Actor, Agent, BUSY, COMPACTING, IDLE, STOPPED, System, User, WORKING
 from engine.inputs import FORCE, take
 from features.sessioncontrol.control import CARRY_ON, delivered
+from features.start.feature import WAIT_FOR_REPORT, hello
 from engine import steps
 from engine.record import Record
 from engine.terminal import pid_of
@@ -48,6 +49,7 @@ class Engine:
         self.relayed = None
         self.typed_at = 0.0
         self.probed_at = 0.0
+        self.greeted = False
         self.controlled_at = 0.0
         self.stepped = ""
         self.carry_on = False
@@ -62,7 +64,7 @@ class Engine:
 
     def tick(self) -> str:
         self.relay()
-        self.why = self.follow() or self.probe() or self.forced() or self.typing() or self.control() or self.deliver() or self.nudge()
+        self.why = self.follow() or self.probe() or self.forced() or self.typing() or self.control() or self.begin() or self.deliver() or self.nudge()
         self.seat()
         return self.why
 
@@ -159,6 +161,17 @@ class Engine:
         if queued.get("action") in row.pending:
             self.agent.mark(row.status or "", row.event or "", pending={k: v for k, v in row.pending.items() if k != queued["action"]})
         return f"controlled: {queued['label']}"
+
+    def begin(self) -> str:
+        driver = self.agent.driver
+        if self.greeted or driver.last_report() is not None:
+            return ""
+        if time.time() - self.born < WAIT_FOR_REPORT or not driver.at_prompt():
+            return ""
+        self.greeted = True
+        driver.send(hello(self.record.env))
+        self.typed_at = time.time()
+        return "typed the opening line"
 
     def deliver(self) -> str:
         if self.agent.driver.last_report() is None:       # the agent has not reported yet: it may still be at a dialog
