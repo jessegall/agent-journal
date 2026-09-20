@@ -37,6 +37,8 @@ code, m = call("GET", "/api/manifest")
 check("the manifest says every type, its view and nav, the actions, actors and priority", (code, sorted(m["types"]), m["actions"], m["types"]["todo"]["names"]),
       (200, sorted(TYPES), list(ACTIONS), {"complete": "done", "create": "add"}))
 check("every view in the manifest is one of the three", all(t["view"] in VIEWS for t in m["types"].values()), True)
+check("a type says how its events read in the viewer", (m["types"]["work"]["shown"]["created"], m["types"]["pin"]["shown"]["completed"]),
+      ("Work started", "Pin struck"))
 code, files = call("GET", "/api/main/files")
 check("the files route lists every attachment on the environment, newest first, with where it hangs", (code, isinstance(files, list)), (200, True))
 code, who = call("GET", "/api/identity")
