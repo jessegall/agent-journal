@@ -1,103 +1,104 @@
 from features.base import Feature
-from features.statusline.gist import gists, names
+from features.statusline.gist import parsed, words
 from features.statusline.spoken import spoken
-from resources.types import COMMAND, RUNNING
+from resources.types import COMMAND
 
 GRAY, MUTED, RED, GREEN = "gray", "muted", "red", "green"
-RIGHT = "right"
-HELD = ("writes", "deletes", "tests")
-VERBS = {"writes": "editing", "reads": "reading", "deletes": "deleting", "tests": "testing",
-         "installs": "installing", "builds": "building", "journal": "journal", "": "running"}
+JOURNAL = "journal"
 USING = "using"
-FILED = ("writes", "deletes")
+VERBS = {"writes": "editing", "reads": "reading", "deletes": "deleting", "tests": "testing",
+         "installs": "installing", "builds": "building", JOURNAL: "journalling", "": "running"}
 NOUNS = {"writes": "files", "reads": "files", "deletes": "files", "tests": "tests", "installs": "dependencies"}
-ROLL_EVERY = 0.5
+HELD = ("writes", "deletes", "tests")
+TOUCHED = ("writes", "deletes")
+NAMED = ("reads", "tests")
+FLIP_EVERY = 1.0
 HOLD = 1.0
 LINGERS = 10.0
 CLOCK_AFTER = 10.0
 MOST = 12
 NAME_CAP = 42
-VERBED = ("reading", "editing", "writing", "searching", "dispatching", "fetching", "loading")
-
-
-JOURNAL = "journal"
-
-
-def kind_of(one: dict) -> str:
-    said = one.get(COMMAND.effect) or ""
-    return JOURNAL if not said and speaks_for_itself(one) else said
-
-
-def speaks_for_itself(one: dict) -> bool:
-    if by_hand(one):
-        return False
-    said = names(one.get(COMMAND.what) or "", spoken)[:1]
-    return bool(said) and said[0]["own"]
-
-
-def capped(said: str) -> str:
-    return said if len(said) <= NAME_CAP else f"{said[:NAME_CAP - 1].rstrip()}…"
+PLUS, MINUS = "+", "-"
+COUNTS = ((PLUS, "added"), (MINUS, "removed"))
 
 
 def by_hand(one: dict) -> bool:
     return (one.get(COMMAND.tool) or "Bash") != "Bash"
 
 
-def named(one: dict) -> list[dict]:
-    what = (one.get(COMMAND.what) or "").strip()
-    if not what:
-        return []
+def piece_of(one: dict) -> dict:
+    found = parsed(one.get(COMMAND.what) or "", spoken)[:1]
+    return found[0] if found else {}
+
+
+def kind_of(one: dict) -> str:
+    said = one.get(COMMAND.effect) or ""
+    if said or by_hand(one):
+        return said
+    return JOURNAL if piece_of(one).get("own") else ""
+
+
+def capped(said: str) -> str:
+    return said if len(said) <= NAME_CAP else f"{said[:NAME_CAP - 1].rstrip()}…"
+
+
+def base(path: str) -> str:
+    return path.rsplit("/", 1)[-1]
+
+
+def touched(one: dict) -> list[str]:
+    return [base(path) for path in one.get(COMMAND.files) or []]
+
+
+def names_of(one: dict, kind: str) -> list[str]:
     if by_hand(one):
-        said = what.split(" ", 1)
-        return [{"value": capped(said[1] if len(said) > 1 and said[0] in VERBED else what), "own": False}]
-    if kind_of(one) == "tests":
-        subject = gists(what, spoken)[:1]
-        return [{"value": capped(subject[0]), "own": False}] if subject else []
-    return [{**name, "value": capped(name["value"])} for name in names(what, spoken)[:1]]
+        return [one[COMMAND.subject]] if one.get(COMMAND.subject) else []
+    if kind in TOUCHED:
+        return touched(one)
+    piece = piece_of(one)
+    if not piece:
+        return []
+    if piece["own"]:
+        return [piece["root"]]
+    if kind in NAMED:
+        return [base(piece["args"][0])] if piece["args"] else []
+    return [piece["root"]]
 
 
-def files_of(one: dict) -> list[dict]:
-    return [{"value": capped(path.rsplit("/", 1)[-1]), "own": False} for path in one.get(RUNNING.files) or []]
-
-
-def worked(one: dict, kind: str) -> list[dict]:
-    if kind not in FILED:
-        return named(one)
-    return files_of(one) if not by_hand(one) else named(one)
-
-
-def working(run: dict, commands: list) -> list[dict]:
-    kind = kind_of(run)
-    seen: list[dict] = []
-    for one in [*(commands or []), run]:
-        if kind_of(one) != kind:
-            continue
-        for name in worked(one, kind):
-            if not any(name["value"] == was["value"] for was in seen):
-                seen.append(name)
-    return seen[-MOST:]
+def worked(group: list[dict], kind: str) -> list[str]:
+    found: list[str] = []
+    for one in group:
+        for name in names_of(one, kind):
+            if name not in found:
+                found.append(name)
+    return [capped(name) for name in found[-MOST:]]
 
 
 def shared(said: list[list[str]]) -> int:
-    for i in range(min(len(words) for words in said)):
-        if len({words[i] for words in said}) > 1:
+    for i in range(min(len(w) for w in said)):
+        if len({w[i] for w in said}) > 1:
             return i
-    return min(len(words) for words in said)
+    return min(len(w) for w in said)
 
 
-def columns(found: list[dict], root: bool) -> list[dict]:
-    said = [name["value"].split(" ") for name in found]
+def columns(found: list[str]) -> list[dict]:
+    said = [words(name) for name in found]
     same = shared(said)
-    parts = [{"value": word, "color": GRAY if root and i == 0 else MUTED, "align": RIGHT} for i, word in enumerate(said[0][:same])]
-    rest = list(dict.fromkeys(" ".join(words[same:]) for words in said if words[same:]))
+    parts = [{"value": word, "color": MUTED} for word in said[0][:same]]
+    rest = list(dict.fromkeys(" ".join(w[same:]) for w in said if w[same:]))
     if rest:
-        parts.append({"value": rest[0] if len(rest) == 1 else rest, "duration": ROLL_EVERY,
-                      "color": GRAY if root and not parts else MUTED, "align": RIGHT})
+        parts.append({"value": rest[0] if len(rest) == 1 else rest, "duration": FLIP_EVERY, "color": MUTED})
     return parts
 
 
-def flipping(found: list[dict], root: bool) -> list[dict]:
-    return columns(found, root) if found else []
+def verb_of(group: list[dict], kind: str) -> dict:
+    said = USING if not kind and by_hand(group[-1]) else VERBS.get(kind, VERBS[""])
+    return {"value": said, "color": GRAY}
+
+
+def counted(group: list[dict]) -> list[dict]:
+    totals = {sign: sum((one.get(COMMAND.changed) or {}).get(key, 0) for one in group) for sign, key in COUNTS}
+    return [{"value": totals[sign], "prefix": sign, "increments": True, "color": color} for sign, color in ((PLUS, GREEN), (MINUS, RED)) if totals[sign]]
 
 
 def outcome(result: dict) -> list[dict]:
@@ -105,56 +106,56 @@ def outcome(result: dict) -> list[dict]:
     return [{"value": f"{failed} failed", "color": RED} if failed else {"value": "passed", "color": GREEN}]
 
 
-def verb_for(run: dict) -> list[dict]:
-    kind = kind_of(run)
-    return [{"value": USING if not kind and by_hand(run) else VERBS[kind], "color": GRAY}]
-
-
-def parts_for(run: dict, commands: list) -> list[dict]:
-    found = working(run, commands)
-    said = verb_for(run)
-    if found:
-        return [*said, *flipping(found, False)]
-    noun = NOUNS.get(kind_of(run))
-    return [*said, *([{"value": noun, "color": MUTED}] if noun else [])]
-
-
 def key_of(parts: list[dict]) -> str:
     return " ".join(p["value"] if isinstance(p["value"], str) else (p["value"][0] if p["value"] else "") for p in parts)
 
 
-def line(run: dict, commands: list | None = None, now: float = 0.0) -> dict:
-    if not run or not run.get(RUNNING.what):
-        return {}
-    said = parts_for(run, commands or [])
-    if not said:
-        return {}
-    done = float(run.get(RUNNING.done) or 0)
-    result = run.get(RUNNING.result) or {}
-    ran = max(0.0, (done or now or 0) - float(run.get(RUNNING.at) or 0))
+def message(group: list[dict], kind: str, closed: bool, now: float) -> dict:
+    found = worked(group, kind)
+    noun = NOUNS.get(kind)
+    said = [verb_of(group, kind), *(columns(found) if found else [{"value": noun, "color": MUTED}] if noun else [])]
+    last = group[-1]
+    ended = float(last.get(COMMAND.done) or 0)
+    result = last.get(COMMAND.result) or {}
+    at = float(group[0].get(COMMAND.at) or 0)
+    stopped = ended or float(last.get(COMMAND.at) or 0)
+    ran = max(0.0, (stopped if closed or ended else now) - at)
     return {
         "key": key_of(said),
-        "parts": [*said, *(outcome(result) if done and result else [])],
-        "at": run.get(RUNNING.at) or 0,
-        "done": bool(done),
+        "parts": [*said, *counted(group), *(outcome(result) if ended and result else [])],
+        "at": at,
+        "done": bool(closed or ended),
         "for": int(ran),
         "clock": ran >= CLOCK_AFTER,
-        "hold": HOLD if kind_of(run) in HELD else 0.0,
+        "hold": HOLD if kind in HELD else 0.0,
         "lingers": LINGERS,
     }
 
 
-def said_once(run: dict) -> dict:
-    said = parts_for(run, [])
-    return {"at": run.get(RUNNING.at) or 0, "key": key_of(said), "parts": said} if said else {}
+def runs(commands: list[dict]) -> list[tuple[str, list[dict]]]:
+    grouped: list[tuple[str, list[dict]]] = []
+    for one in commands:
+        if not (one.get(COMMAND.what) or "").strip():
+            continue
+        kind = kind_of(one)
+        if grouped and grouped[-1][0] == kind:
+            grouped[-1][1].append(one)
+            continue
+        grouped.append((kind, [one]))
+    return grouped
+
+
+def queue(commands: list[dict] | None, now: float = 0.0) -> list[dict]:
+    grouped = runs(commands or [])
+    return [message(group, kind, i < len(grouped) - 1, now) for i, (kind, group) in enumerate(grouped)]
 
 
 def bar(row, now: float = 0.0) -> dict:
-    return {"line": line(row.running, row.commands, now), "commands": [c for c in (said_once(one) for one in row.commands or []) if c]}
+    return {"queue": queue(row.commands, now)}
 
 
 class StatusLine(Feature):
     name = "statusline"
     title_ = "What the status bar shows"
-    abstract_ = "The journal says what the bar shows, what it flips through and how long it lingers; the viewer renders it"
-    help_ = "Every line is what the agent is doing — running, reading, editing, testing, installing, building — and the names it works through, flipping every half second: the files for a file tool, the command and its subcommand for a shell. Editing, deleting and a test run hold their line a second so their counts and outcome can be read; a line with nothing to replace it stays ten seconds."
+    abstract_ = "The journal says what the bar shows, in a queue of messages, and the viewer renders them in turn"
+    help_ = "The agent's ring of commands is the record of what actually ran; nothing reaches the bar before it runs. Consecutive commands of one kind — editing, reading, deleting, testing, installing, building, journalling, running — make one message, whose verb is the root and only unmuted word. Every space is a part of its own, and only the part that differs between two names flips, one value a second. Editing, deleting and a test run hold their message a second when the next one arrives; the last message lingers ten seconds with nothing to replace it."

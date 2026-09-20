@@ -1,6 +1,5 @@
 import re
 
-CAP = 60
 NOISE = {"cd", "echo", "sleep", "true", "false", "set", "export", "clear", "printf", "done", "fi", "for", "while",
          "until", "if", "elif", "case", "esac", "read", "shift", "wait", "exit"}
 LEAD = {"do", "then", "else"}
@@ -102,25 +101,23 @@ def journal_words(w: list[str]) -> list[str]:
     return out
 
 
-def piece_gist(piece: str, translate=None) -> str:
+def piece_parts(piece: str, translate=None) -> dict:
     w = verb_of(piece)
     if not w or w[0] in NOISE:
-        return ""
+        return {}
     if w[0].split("/")[-1].lower() in RUNNERS and JOURNAL_SCRIPT.search(w[1] if len(w) > 1 else ""):
         w = w[1:]
     verb = w[0].split("/")[-1]
     if translate and JOURNAL_VERB.match(verb):
-        return translate(journal_words(w[1:]))
-    if any(x.startswith("<<") for x in w):
-        return f"{verb} script"
-    rest = f"{verb} {w[1]}" if verb in SUBVERBS and len(w) > 1 and not w[1].startswith("-") else verb
-    given = w[len(rest.split(" ")):]
+        said = translate(journal_words(w[1:]))
+        return {"own": True, "root": said, "args": []} if said else {}
+    root = [verb]
+    while verb in SUBVERBS and len(w) > len(root) and not w[len(root)].startswith("-") and (len(root) == 1 or root[-1] == "run"):
+        root.append(w[len(root)])
+    given = w[len(root):]
     args = [x for i, x in enumerate(given)
             if not DROPPED.match(x) and not (DIGITS.match(x) and (given[i - 1] if i else "").startswith("-"))]
-    scripted = verb in RUNNERS and any(x[:1] in "\"'" for x in given)
-    first = args[0] if args else ""
-    shown = f"{rest} {[p for p in first.split('/') if p][-1] if '/' in first else first}" if args else f"{rest} script" if scripted else rest
-    return f"{shown[:CAP - 1].rstrip()}…" if len(shown) > CAP else shown
+    return {"own": False, "root": " ".join(root), "args": args}
 
 
 def without_scripts(command: str) -> str:
@@ -160,47 +157,7 @@ def expanded(parts: list[str]) -> list[str]:
     return out
 
 
-def gists(command: str, translate=None) -> list[str]:
+def parsed(command: str, translate=None) -> list[dict]:
     parts = expanded(pieces(without_scripts(command)))
     kept = [p for i, p in enumerate(parts) if not (i > 0 and (verb_of(p) or [""])[0] in FILTERS)]
-    return [said for said in (piece_gist(p, translate) for p in kept) if said]
-
-
-def piece_name(piece: str, translate=None) -> dict:
-    w = verb_of(piece)
-    if not w or w[0] in NOISE:
-        return {}
-    if w[0].split("/")[-1].lower() in RUNNERS and JOURNAL_SCRIPT.search(w[1] if len(w) > 1 else ""):
-        w = w[1:]
-    verb = w[0].split("/")[-1]
-    if translate and JOURNAL_VERB.match(verb):
-        said = translate(journal_words(w[1:]))
-        return {"value": said, "own": True} if said else {}
-    said = [verb]
-    while verb in SUBVERBS and len(w) > len(said) and not w[len(said)].startswith("-") and (len(said) == 1 or said[-1] == "run"):
-        said.append(w[len(said)])
-    return {"value": " ".join(said), "own": False}
-
-
-def names(command: str, translate=None) -> list[dict]:
-    parts = expanded(pieces(without_scripts(command)))
-    kept = [p for i, p in enumerate(parts) if not (i > 0 and (verb_of(p) or [""])[0] in FILTERS)]
-    return [name for name in (piece_name(p, translate) for p in kept) if name]
-
-
-def gist(command: str, translate=None) -> str:
-    real = gists(command, translate)
-    if not real:
-        return ""
-    kept = [real[-1]]
-    for said in reversed(real[:-1]):
-        if CAP - len(" · ".join(kept)) - 3 < 12:
-            break
-        kept.insert(0, said)
-    return " · ".join(kept)
-
-
-def gist_tokens(text: str) -> list[dict]:
-    found = [t for t in str(text or "").split() if t]
-    command = 2 if found and found[0] in SUBVERBS else 1
-    return [{"value": value, "kind": "command" if i < command else "argument"} for i, value in enumerate(found)]
+    return [one for one in (piece_parts(p, translate) for p in kept) if one]

@@ -50,6 +50,19 @@ class ToolUse:
             return f"{server} · {tool.replace('_', ' ')}"
         return self.name.lower()
 
+    @property
+    def subject(self) -> str:
+        if self.name == "Bash":
+            return ""
+        if self.file_path:
+            return Path(self.file_path).name
+        if self.name.startswith("mcp__"):
+            server, _, tool = self.name[5:].partition("__")
+            return f"{server} · {tool.replace('_', ' ')}"
+        if self.url:
+            return self.url.split("/")[2] if self.url.count("/") > 2 else self.url
+        return self.pattern or self.skill or self.subagent_type or self.task_name
+
 
 @dataclass(frozen=True)
 class Hook:

@@ -38,6 +38,12 @@ QUOTED = re.compile(r'"(?:[^"\\]|\\.)*"' + r"|'[^']*'")
 JOURNAL_CALL = re.compile(r"(^|[;&|(]\s*|\$\()\S*journal(?:\.py)?\s(?:\"(?:[^\"\\]|\\.)*\"|'[^']*'|\d*>&\d|[^;&|)\n])*")
 
 
+def stamped(commands: list, running: dict) -> list:
+    at = running.get(RUNNING.at)
+    ended = {COMMAND.done: running.get(RUNNING.done), COMMAND.result: running.get(RUNNING.result)}
+    return [{**one, **{k: v for k, v in ended.items() if v}} if at and one.get(COMMAND.at) == at else one for one in list(commands)]
+
+
 class Provider(ABC):
     name = ""
     question_tools = frozenset()
@@ -101,14 +107,15 @@ class Provider(ABC):
             effect = self.effect(hook)
             running = {RUNNING.what: doing, RUNNING.tool: hook.tool.name, RUNNING.at: now, **({RUNNING.effect: effect} if effect else {}),
                        **({RUNNING.before: before} if before.get(RUNNING.done) else {})}
-            return {AgentRow.running: running, AgentRow.commands: (list(row.commands) + [{COMMAND.what: doing, COMMAND.tool: hook.tool.name, COMMAND.at: now,
-                                                                                          **({COMMAND.effect: effect} if effect else {})}])[-RING:]}
+            ran = {COMMAND.what: doing, COMMAND.tool: hook.tool.name, COMMAND.at: now,
+                   **({COMMAND.effect: effect} if effect else {}), **({COMMAND.subject: hook.tool.subject} if hook.tool.subject else {})}
+            return {AgentRow.running: running, AgentRow.commands: (list(row.commands) + [ran])[-RING:]}
         if running and not running.get(RUNNING.done):
             running[RUNNING.done] = time.time()
             result = self.test_result(hook) if running.get(RUNNING.effect) == "tests" else None
             if result:
                 running[RUNNING.result] = result
-        return {AgentRow.running: running, AgentRow.commands: list(row.commands)}
+        return {AgentRow.running: running, AgentRow.commands: stamped(row.commands, running)}
 
     def test_result(self, hook: Hook) -> dict | None:
         output = f"{hook.tool.response.get('stdout') or ''}\n{hook.tool.response.get('stderr') or ''}"
