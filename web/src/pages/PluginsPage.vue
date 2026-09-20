@@ -133,6 +133,9 @@ async function plugin(p, action, body = {}) {
                     </template>
                     <footer class="acts">
                         <Btn small :disabled="busy === `${p.n}`" @click="plugin(p, 'upgrade', {yes: true})">Upgrade</Btn>
+                        <Btn small :disabled="busy === `${p.n}`" @click="plugin(p, 'upgrade', {yes: true, again: true})">
+                            Run setup again
+                        </Btn>
                         <Btn
                             kind="danger"
                             small

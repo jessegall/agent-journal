@@ -87,17 +87,22 @@ class Plugins(Feature):
         return made
 
     @command("plugin")
-    def upgrade(self, plugins, n: int, ref: str = "", yes: bool = False):
+    def upgrade(self, plugins, n: int, ref: str = "", yes: bool = False, again: bool = False):
         row = plugins.load(n)
         root = plugins.record.root
         if row.linked:
-            manifest = read(folder(root, self.called(row)), VERSION)
-            return plugins.update(n, manifest=manifest, version=manifest.get("version") or "", abstract=manifest.get("description") or "")
+            where = folder(root, self.called(row))
+            manifest = read(where, VERSION)
+            if again:
+                ports = {**ports_for(root, manifest), **((row.settings or {}).get("ports") or {})}
+                prepared(manifest, where, environment(root, manifest["name"], manifest, row.token, ports), log(root, manifest["name"]))
+                self.restarted(root, manifest)
+            return plugins.update(n, manifest=manifest, version=said_version(where, manifest), abstract=manifest.get("description") or "")
         where, manifest, commit, linked = staged(root, row.source, ref or row.revision, VERSION)
         kept = False
         try:
-            if commit == row.commit and not ref:
-                return f"{row.manifest['name']} is already at {commit[:12]}"
+            if commit == row.commit and not ref and not again:
+                return f"{row.manifest['name']} is already at {commit[:12]}; to run its setup again anyway, run it with --again --yes"
             if not yes:
                 return f"{preview(manifest, row.source, commit)}\n\n{self.difference(row.manifest, manifest)}\nNothing has changed yet. To upgrade to exactly this, run it again with --yes --ref {commit}"
             ports = {**ports_for(root, manifest), **((row.settings or {}).get("ports") or {})}
@@ -105,7 +110,7 @@ class Plugins(Feature):
             checked(manifest, where, env)
             prepared(manifest, where, env, log(root, manifest["name"]))
             self.place(plugins, where, linked, manifest, row.source, ref, commit, row.token, row=row, ports=ports)
-            self.again(root, manifest)
+            self.restarted(root, manifest)
             kept = True
         finally:
             if not kept:
@@ -171,7 +176,7 @@ class Plugins(Feature):
             return plugins.update(row.n, abstract=manifest.get("description") or "", settings={**(row.settings or {}), "ports": ports or {}}, **kept)
         return plugins.create(manifest.get("title") or name, abstract=manifest.get("description") or "", enabled=True, settings={"ports": ports or {}}, token=secret, **kept)
 
-    def again(self, root: Path, manifest: dict) -> None:
+    def restarted(self, root: Path, manifest: dict) -> None:
         for service in (manifest.get("services") or {}):
             want(root, f"{manifest['name']}.{service}", UP, nonce=time.time())
 
