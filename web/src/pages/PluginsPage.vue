@@ -1,5 +1,5 @@
 <script setup>
-import {computed, onMounted, onUnmounted, ref, watch} from "vue";
+import {computed, nextTick, onMounted, onUnmounted, ref, watch} from "vue";
 import {act, api, command} from "../api.js";
 import Btn from "../kit/Btn.vue";
 import Icon from "../kit/Icon.vue";
@@ -15,6 +15,7 @@ const plugins = computed(() => rows("plugin").filter((p) => !p.completed && !p.d
 const services = ref([]);
 const reading = ref("");
 const logged = ref("");
+const tail = ref(null);
 const EVERY = 3000;
 const WHILE_BUSY = 1000;
 let timer = 0;
@@ -90,6 +91,8 @@ async function readLog() {
     } catch (e) {
         logged.value = e.message;
     }
+    await nextTick();
+    if (tail.value) tail.value.scrollTop = tail.value.scrollHeight;
 }
 
 function readingOf(p) {
@@ -165,7 +168,7 @@ function toggleLog(p) {
                         </div>
                     </template>
                     <template v-if="readingOf(p)">
-                        <pre class="log">{{ logged || (busy === `${p.n}` ? "Starting…" : "Nothing is logged yet.") }}</pre>
+                        <pre ref="tail" class="log">{{ logged || (busy === `${p.n}` ? "Starting…" : "Nothing is logged yet.") }}</pre>
                     </template>
                     <footer class="acts">
                         <Btn small :disabled="busy === `${p.n}`" @click="plugin(p, 'upgrade', {yes: true})">
