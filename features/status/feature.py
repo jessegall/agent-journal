@@ -7,11 +7,11 @@ from resources.base import AGENT, SYSTEM
 class Status(Feature):
     name = "status"
     PATIENCE = "patience"
-    title_ = "A status update owed"
-    abstract_ = "A message read and not answered for ten tool uses earns a private nudge to give the user a status update; at twenty the writes wait for a reply"
-    help_ = "triggers.status sets the cadence (every 10 uses); status.patience (2) is how many nudges go unheeded before the hold. A reply, a reaction or processing the message settles it."
-    trigger = {"every": 10, "unit": trigger.USES}
-    patience = 2
+    title_ = "A message is answered before the next write"
+    abstract_ = "A message the agent has read is answered before it writes anything: the user hears back before the work starts"
+    help_ = "Reading is free — the agent may look at whatever it needs — but the first write after reading a message is refused until the message has a reply, a reaction, or every part processed. triggers.status sets how soon it is said (every tool use) and status.patience (0) how many sayings go unheeded before the hold."
+    trigger = {"every": 1, "unit": trigger.USES}
+    patience = 0
 
     def in_hand(self, record):
         messages = Messages(record, actor=SYSTEM)
@@ -40,6 +40,6 @@ class Status(Feature):
         count = int(trigger.last(record, agent.title, self.name).get("count") or 0) + 1
         trigger.write(record, agent, self.name, count=count)
         names = ", ".join(f"message {m.n}" for m in held[-3:])
-        self.nudge(record, agent, f"give the user a status update on {names}", "read and unanswered for a while: journal message reply <n> \"<where it stands>\", a reaction, or journal message processed <n>", private=True)
+        self.nudge(record, agent, f"answer {names} before you write anything", "journal message reply <n> \"<what you make of it>\", a reaction, or journal message processed <n>", private=True)
         if count > record.status.get(self.PATIENCE, self.patience):
-            self.hold(record, f"the user waits on a status update for {names}: reply, react or process before any other write")
+            self.hold(record, f"{names} is read and unanswered: reply, react or process it before any write — the user hears back before the work starts")
