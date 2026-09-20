@@ -93,6 +93,7 @@ class Resource:
     notify: ClassVar[tuple] = (USER, AGENT)   # who is told of its events, besides the actor
     spoken: ClassVar[bool] = False            # typed to the agent as its title, not as "type n action"
     alone: ClassVar[tuple] = ()               # the actions delivered on their own line, at once, never held for the batch
+    heard: ClassVar[tuple] = ()               # the actions the agent is told about; empty means all of them
     told: ClassVar[bool] = False              # the row is stamped with the moment the agent was told of it
     files = Field(default=dict)               # what is attached: name → what became of it
     pictures = Field(default=dict)            # an attached image's width and height, known before it loads

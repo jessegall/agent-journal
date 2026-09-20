@@ -19,7 +19,8 @@ def load(root: Path | None = None) -> list[str]:
     if root:
         for name, cls in REGISTRY.items():
             for was in cls.was:
-                rename(root, was, name)
+                old, key = was if isinstance(was, tuple) else (was, "")
+                rename(root, old, f"{name}.{key}" if key else name)
     for name, cls in REGISTRY.items():
         if name not in FEATURES:
             FEATURES[name] = cls()
