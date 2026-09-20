@@ -278,22 +278,6 @@ class Tool(Shape, Resource):
     scope = PROJECT
 
 
-class Style(Reasoned, Resource):
-    type = "style"
-    shown = {"completed": "Style struck"}
-    says = {"complete": "striking"}
-    lent = False
-    icon = "brush"
-    names = {"complete": "strike"}
-    title_ = "Coding style"
-    abstract_ = "One rule of the project's coding style, on one subject, written as a skill"
-    help_ = "A style rule names its subject and its decision; the style feature writes the skill for it."
-    subject = Field(TEXT)
-    decision = Field(TEXT)
-    when = Field(TEXT)
-    scope = PROJECT
-
-
 class Connection(Shape, Resource):
     type = "connection"
     lent = False
@@ -375,5 +359,5 @@ PHASE = names("title", "when", "checkpoint", "brief", "todos")
 RUNNING = names("what", "tool", "at", "done", "changed", "files", "made", "effect", "result", "before")
 COMMAND = names("what", "tool", "at", "effect", "subject", "done", "result", "files", "made", "changed")
 
-TYPES = {c.type: c for c in (Message, Todo, Work, Plan, Doc, Report, Pin, Rule, Reminder, Question, Suggestion, Comment, AgentRow, Notification, Notice, Reaction, Tool, Style, Connection, Plugin, Environment, Ask, Nudge)}
-PRIORITY = ("message", "question", "suggestion", "comment", "plan", "todo", "report", "doc", "pin", "rule", "reminder", "notice", "reaction", "style", "tool", "connection", "plugin", "environment", "work", "agent", "notification", "browser", "nudge")
+TYPES = {c.type: c for c in (Message, Todo, Work, Plan, Doc, Report, Pin, Rule, Reminder, Question, Suggestion, Comment, AgentRow, Notification, Notice, Reaction, Tool, Connection, Plugin, Environment, Ask, Nudge)}
+PRIORITY = ("message", "question", "suggestion", "comment", "plan", "todo", "report", "doc", "pin", "rule", "reminder", "notice", "reaction", "tool", "connection", "plugin", "environment", "work", "agent", "notification", "browser", "nudge")

@@ -444,10 +444,6 @@ class Tools(Controller):
         return {"code": done.returncode, "out": done.stdout, "err": done.stderr}
 
 
-class Styles(Controller):
-    resource = types.Style
-
-
 class Connections(Controller):
     resource = types.Connection
 
@@ -604,4 +600,4 @@ class Nudges(Controller):
 
 
 CONTROLLERS = {c.resource.type: c for c in (Messages, Todos, Works, Plans, Docs, Reports, Pins, Rules, Reminders, Suggestions,
-                                            Questions, Comments, Agents, Notifications, Notices, Reactions, Tools, Styles, Connections, Plugins, Environments, Asks, Nudges)}
+                                            Questions, Comments, Agents, Notifications, Notices, Reactions, Tools, Connections, Plugins, Environments, Asks, Nudges)}

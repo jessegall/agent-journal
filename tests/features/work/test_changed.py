@@ -60,8 +60,8 @@ elsewhere = linked.root.parent
 from engine.record import Record  # noqa: E402
 marks = internal(Record(elsewhere / "worktree" / ".journal", "linked"), elsewhere / "worktree")
 check("a journal reached through a symlink is still the journal's own, and so are the skills it generates",
-      (journals_own(".journal/environments/main/todo/001.json", marks), journals_own(".agents/skills/journal-auto/SKILL.md", marks), journals_own(".claude/skills/style-imports/SKILL.md", marks), journals_own("src/app.js", marks), journals_own(".claude/skills/mine/SKILL.md", marks)),
-      (True, True, True, False, False))
+      (journals_own(".journal/environments/main/todo/001.json", marks), journals_own(".agents/skills/journal-auto/SKILL.md", marks), journals_own("src/app.js", marks), journals_own(".claude/skills/mine/SKILL.md", marks)),
+      (True, True, False, False))
 second = Agents(record, actor=SYSTEM).by_session("claude-1").running["changed"]
 check("one active turn accumulates its writes, each file counted once", (second["edited"], second["created"], second["deleted"]), (first["edited"], first["created"], 1))
 

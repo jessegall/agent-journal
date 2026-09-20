@@ -17,7 +17,7 @@ for name, t in TYPES.items():
 shared = [n for n, t in TYPES.items() if Options in t.__mro__]
 reasoned = sorted(n for n, t in TYPES.items() if Reasoned in t.__mro__)
 check("options belong to questions and suggestions", shared, ["question", "suggestion"])
-check("pins, rules and style rules share one reasoning shape", reasoned, ["pin", "rule", "style"])
+check("pins and rules share one reasoning shape", reasoned, ["pin", "rule"])
 check("the reasoning shape names the brief and the strike", TYPES["pin"].labels, {"brief": "Reasoning", "outcome": "Why struck"})
 check("a shape declared once is the same object on both", TYPES["pin"].labels == TYPES["rule"].labels, True)
 
