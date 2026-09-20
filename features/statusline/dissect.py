@@ -14,6 +14,7 @@ TOUCHED = ("writes", "deletes")
 NAMED = ("reads", "tests")
 GIVEN = ("installs", "searches")
 SEARCHERS = ("grep", "rg", "ag", "find", "fd")
+READERS = ("cat", "head", "tail", "less", "sed", "wc", "ls", "stat", "file", "diff", "git")
 FILE = re.compile(r"^[\w.-]+\.\w+$")
 NAME_CAP = 42
 
@@ -24,16 +25,18 @@ def by_hand(one: dict) -> bool:
 
 def piece_of(one: dict, kind: str = "") -> dict:
     what = one.get(COMMAND.what) or ""
-    if kind == "searches":
-        looked = [p for p in parsed(what, spoken, filtered=False) if searching(p)]
-        if looked:
-            return looked[0]
+    roots = {"searches": SEARCHERS, "reads": READERS}.get(kind)
+    if roots:
+        own = [p for p in parsed(what, spoken, filtered=False) if does(p, roots)]
+        named = [p for p in own if a_path(p["args"])]
+        if named or own:
+            return (named or own)[0]
     found = parsed(what, spoken)
     return found[0] if found else {}
 
 
-def searching(piece: dict) -> bool:
-    return piece["root"].split(" ")[0] in SEARCHERS or any("*" in x for x in piece["args"])
+def does(piece: dict, roots: tuple) -> bool:
+    return piece["root"].split(" ")[0] in roots or any("*" in x for x in piece["args"])
 
 
 def git_of(piece: dict) -> str:
