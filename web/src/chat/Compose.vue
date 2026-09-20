@@ -12,6 +12,7 @@ const props = defineProps({
     up: Function,
     down: Function,
     tools: {type: Array, default: () => []},
+    note: {type: String, default: ""},
 });
 const emit = defineEmits(["unquote"]);
 const draft = reactive({text: "", files: [], sending: false, error: ""});
@@ -140,6 +141,9 @@ async function use(tool) {
         </div>
         <template v-if="draft.error">
             <p class="error">{{ draft.error }}</p>
+        </template>
+        <template v-else-if="note">
+            <p class="compose-note">{{ note }}</p>
         </template>
     </form>
 </template>
@@ -305,6 +309,12 @@ async function use(tool) {
 .error {
     margin: 0;
     color: var(--danger);
+    font-size: 12px;
+}
+
+.compose-note {
+    margin: 0;
+    color: var(--text-4);
     font-size: 12px;
 }
 </style>
