@@ -11,7 +11,7 @@ from engine.actors import Actor, Agent, BUSY, COMPACTING, IDLE, STOPPED, System,
 from engine.inputs import FORCE, take
 from features.sessioncontrol.control import CARRY_ON, delivered
 from features.start.feature import WAIT_FOR_REPORT, hello
-from features.statusline.feature import MOST
+from features.statusline.queue import MOST
 from engine import steps
 from engine.record import Record
 from engine.terminal import pid_of

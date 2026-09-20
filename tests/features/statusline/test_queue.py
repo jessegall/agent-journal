@@ -3,7 +3,10 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 import features  # noqa: E402
-from features.statusline.feature import CLOCK_AFTER, FLIP_EVERY, HOLD, LINGERS, MOST, bar, queue  # noqa: E402
+from features.statusline.feature import bar  # noqa: E402
+from features.statusline.group import grouped, ran  # noqa: E402
+from features.statusline.queue import CLOCK_AFTER, FLIP_EVERY, HOLD, LINGERS, MOST  # noqa: E402
+from features.statusline.queue import queue as messages  # noqa: E402
 from tests.kit import check, done  # noqa: E402
 
 features.unload()
@@ -20,12 +23,16 @@ def used(tool, subject, at=NOW, **more):
     return {"what": f"using {subject}", "tool": tool, "subject": subject, "at": at, **more}
 
 
-def read(name, at=NOW):
-    return {"what": f"reading {name}", "tool": "Read", "files": [name], "at": at, "effect": "reads"}
+def read(name, at=NOW, **more):
+    return {"what": f"reading {name}", "tool": "Read", "files": [name], "at": at, "effect": "reads", **more}
 
 
 def edit(name, at=NOW, **more):
     return {"what": f"editing {name}", "tool": "Edit", "files": [name], "at": at, "effect": "writes", **more}
+
+
+def queue(commands, now=NOW):
+    return messages(grouped(ran(list(commands))), now)
 
 
 def said(commands, now=NOW):
@@ -67,7 +74,7 @@ check("the rolling part says how often",
 check("the verb is gray and everything else muted",
       coloured([used("mcp__x__y", "playwright · browser evaluate")])[0][:2], [("using", "gray"), ("playwright", "muted")])
 check("every kind has its own verb",
-      [said([shell("x", effect=e)])[0][0] for e in ("writes", "reads", "deletes", "tests", "installs", "builds", "")],
+      [said([shell("x", effect=e, files=["a.py"])])[0][0] for e in ("writes", "reads", "deletes", "tests", "installs", "builds", "")],
       ["editing", "reading", "deleting", "testing", "installing", "building", "running"])
 check("a run of journal commands is one message whose every column rolls on its own",
       said([shell("journal question answer 10"), shell("journal todo add 12", NOW + 1), shell("journal work log 12 x", NOW + 2)]),
@@ -83,8 +90,11 @@ check("a one-liner of several commands is named once, by the first of them",
 check("editing names the files that actually changed, never the command that changed them",
       said([shell("python3 - <<'EOF'\nopen('x','w')\nEOF", effect="writes", files=["web/src/a.vue", "tests/t.py"])]),
       [["editing", ["a.vue", "t.py"]]])
-check("an edit that changed nothing nameable falls back to the plural",
-      said([shell("python3 - <<'EOF'\nopen('x','w')\nEOF", effect="writes")]), [["editing", "files"]])
+check("an edit that named no file is not editing anything: it is the command, running",
+      (said([shell("python3 - <<'EOF'\nopen('x','w')\nEOF", effect="writes")]), said([shell("git commit -m x", effect="writes")])),
+      ([["running", "python3"]], [["running", "git", "commit"]]))
+check("only editing and deleting count lines; a read that was stamped with them says nothing",
+      said([read("t.py", changed={"added": 8, "removed": 1})]), [["reading", "t.py"]])
 check("reading never names the command, only what it read",
       (said([read("VERSION")]), said([shell("cat features/statusline/feature.py", effect="reads")]), said([shell("ls", effect="reads")])),
       ([["reading", "VERSION"]], [["reading", "feature.py"]], [["reading", "files"]]))
@@ -104,7 +114,8 @@ check("a run that changed no lines says nothing about them", len(queue([edit("a.
 
 # HOW LONG IT STAYS, and what it reports when it ends
 check("editing, deleting and a test run hold their message; nothing else does",
-      [queue([shell("x", effect=e)], NOW)[0]["hold"] for e in ("writes", "deletes", "tests", "reads", "builds")], [HOLD, HOLD, HOLD, 0.0, 0.0])
+      [queue([shell("x", effect=e, files=["a.py"])], NOW)[0]["hold"] for e in ("writes", "deletes", "tests", "reads", "builds")],
+      [HOLD, HOLD, HOLD, 0.0, 0.0])
 check("a message with nothing to replace it lingers", queue([shell("ls")], NOW)[0]["lingers"], LINGERS)
 check("only the last message of the queue can still be running",
       [one["done"] for one in queue([edit("a.vue"), shell("git commit -m x", NOW + 1)], NOW + 2)], [True, False])

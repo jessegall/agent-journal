@@ -1,0 +1,55 @@
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
+from features.statusline.dissect import NAME_CAP, dissect  # noqa: E402
+from tests.kit import check, done  # noqa: E402
+
+NOW = 1_000_000.0
+
+
+def shell(what, **more):
+    return dissect({"what": what, "tool": "Bash", "at": NOW, **more})
+
+
+def tool(name, **more):
+    return dissect({"what": "doing something", "tool": name, "at": NOW, **more})
+
+
+def names(said):
+    return [name["value"] for name in said["names"]]
+
+
+# WHAT KIND A COMMAND IS, which is what decides its verb and its group
+check("a command's kind is the effect the provider reported",
+      [shell("x", effect=e, files=["a.py"])["kind"] for e in ("writes", "reads", "deletes", "tests", "installs", "builds")],
+      ["writes", "reads", "deletes", "tests", "installs", "builds"])
+check("a shell command with no effect is a plain run, and a journal command is its own kind",
+      (shell("git commit -m x")["kind"], shell("journal message read 7")["kind"]), ("", "journal"))
+check("a shell command that changed no file is not editing, whatever it looked like",
+      (shell("git commit -m x", effect="writes")["kind"], shell("x", effect="writes", files=["a.py"])["kind"]), ("", "writes"))
+check("a tool that is not the shell is worked by hand, and never a journal command",
+      (tool("Read", effect="reads")["hand"], tool("mcp__x__y")["kind"], shell("ls")["hand"]), (True, "", False))
+
+# WHAT IT WORKED ON, taken from facts and never from the words of the command
+check("a file tool names the file the provider reported", names(tool("Edit", effect="writes", files=["web/src/a.vue"])), ["a.vue"])
+check("a file name stays whole, a spoken name does not",
+      [name["whole"] for name in tool("Read", effect="reads", files=["a b c.png"])["names"] + tool("mcp__x__y", subject="x · y z")["names"]],
+      [True, False])
+check("a shell edit names the files the tree diff saw change, not the command",
+      names(shell("python3 - <<'EOF'\nopen('x','w')\nEOF", effect="writes", files=["a.py", "b.py"])), ["a.py", "b.py"])
+check("a read names a path and never a flag's value",
+      (names(shell("sed -n 88,94p providers/base.py", effect="reads")), names(shell("ls", effect="reads"))), (["base.py"], []))
+check("a test run names its subject, never its runner", names(shell("python3 tests/test_serve.py", effect="tests")), ["test_serve.py"])
+check("a plain shell command is named by its root and subcommand",
+      (names(shell("npx prettier --write a.vue")), names(shell("git add -A && git commit -m x"))), (["npx prettier"], ["git add"]))
+check("a journal command is named in its own words", names(shell("journal message read 7")), ["reading message 7"])
+check("a name too long to show is cut", len(names(tool("Read", effect="reads", files=["a" * 80]))[0]), NAME_CAP)
+
+# WHAT ELSE IT CARRIES, so a finished message keeps what it did
+check("when it started, when it finished, what it changed and how it came out",
+      {k: v for k, v in shell("pytest", done=NOW + 2, effect="tests", result={"failed": 3}, changed={"added": 4}).items()
+       if k in ("at", "done", "result", "changed")},
+      {"at": NOW, "done": NOW + 2, "result": {"failed": 3}, "changed": {"added": 4}})
+
+done()

@@ -2,8 +2,8 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
-from features.statusline.feature import base  # noqa: E402
-from features.statusline.gist import parsed  # noqa: E402
+from features.statusline.dissect import base  # noqa: E402
+from features.statusline.shell import parsed  # noqa: E402
 from features.statusline.spoken import spoken  # noqa: E402
 from tests.kit import check, done  # noqa: E402
 
