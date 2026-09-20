@@ -36,6 +36,7 @@ class Work(Traced, Resource):
     says = {"create": "starting", "complete": "ending"}
     todo = Field()
     status = Field()
+    parked = Field()
     handed = "STILL OPEN, from this or an earlier session"
     icon = "play"
     notify = (USER,)

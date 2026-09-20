@@ -165,7 +165,7 @@ onUnmounted(() => window.removeEventListener("click", away));
     position: absolute;
     right: 0;
     top: 34px;
-    z-index: 30;
+    z-index: 95;
     width: 340px;
     max-height: 60vh;
     display: flex;

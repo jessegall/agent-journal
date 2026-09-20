@@ -6,6 +6,7 @@ import features  # noqa: E402
 from controllers.base import COMMANDS  # noqa: E402
 from controllers.types import Todos, Works  # noqa: E402
 from resources.base import AGENT, SYSTEM, USER  # noqa: E402
+from features import FEATURES  # noqa: E402
 from features.base import held  # noqa: E402
 from tests.features.kit import idle, nudges, report  # noqa: E402
 from tests.kit import check, done, fresh, refused  # noqa: E402
@@ -80,5 +81,17 @@ check("its log command refuses while the feature is off", refused(lambda: Works(
 
 # THE LOG COMMAND is the feature's own, reached by its word like any other
 check("work log is registered by the feature, not the controller", ("log" in COMMANDS["work"], hasattr(Works, "log")), (True, False))
+
+# PARKED WORK is set aside with no clock: it stays open, stops being nudged, and the next log entry picks it up
+parking = Works(record, actor=AGENT)
+aside = parking.create("something that waits on the user")
+FEATURES["work"].park(parking, aside.n, "the question is with the user")
+check("parked work says why, stays open, and is not standing",
+      (parking.load(aside.n).parked, bool(parking.load(aside.n).completed),
+       [w.n for w in FEATURES["work"].standing(record, Works) if w.n == aside.n]),
+      ("the question is with the user", False, []))
+FEATURES["work"].log(parking, aside.n, "the user answered")
+check("the next log entry picks it up again",
+      (parking.load(aside.n).parked, [w.n for w in FEATURES["work"].standing(record, Works) if w.n == aside.n]), ("", [aside.n]))
 
 done()
