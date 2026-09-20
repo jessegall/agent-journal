@@ -41,6 +41,10 @@ check("a test run is testing", said(shell("python3 tests/test_serve.py", effect=
 check("every other kind has its own word",
       [said(shell("rm x", effect=e))[0] for e in ("deletes", "installs", "builds")], ["deleting", "installing", "building"])
 check("a journal command speaks for itself, with no verb in front", said(shell("journal message read 7")), [["reading message 7"]])
+check("journal commands group with each other, and a shell command is not one of them",
+      (said(shell("journal todo add x"), [shell("journal message unread", NOW - 1), shell("curl http://x", NOW - 2)]),
+       said(shell("curl http://x"), [shell("journal message unread", NOW - 1)])),
+      ([["checking for unread messages", "adding a to-do"]], ["running", ["curl"]]))
 check("a tool that is neither a file nor a shell is being used, and keeps its whole phrase",
       said({"what": "playwright · browser evaluate", "tool": "mcp__playwright__browser_evaluate", "at": NOW}),
       ["using", ["playwright · browser evaluate"]])

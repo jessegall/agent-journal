@@ -20,8 +20,19 @@ NAME_CAP = 42
 VERBED = ("reading", "editing", "writing", "searching", "dispatching", "fetching", "loading")
 
 
+JOURNAL = "journal"
+
+
 def kind_of(one: dict) -> str:
-    return one.get(COMMAND.effect) or ""
+    said = one.get(COMMAND.effect) or ""
+    return JOURNAL if not said and speaks_for_itself(one) else said
+
+
+def speaks_for_itself(one: dict) -> bool:
+    if by_hand(one):
+        return False
+    said = names(one.get(COMMAND.what) or "", spoken)[:1]
+    return bool(said) and said[0]["own"]
 
 
 def capped(said: str) -> str:
@@ -75,11 +86,10 @@ def outcome(result: dict) -> list[dict]:
 
 
 def verb_for(run: dict, found: list[dict]) -> list[dict]:
-    if found and all(name["own"] for name in found):
-        return []
     kind = kind_of(run)
-    said = USING if not kind and by_hand(run) else VERBS[kind]
-    return [{"value": said, "color": GRAY}]
+    if kind == JOURNAL:
+        return []
+    return [{"value": USING if not kind and by_hand(run) else VERBS[kind], "color": GRAY}]
 
 
 def parts_for(run: dict, commands: list) -> list[dict]:
