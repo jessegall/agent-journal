@@ -37,7 +37,7 @@ export function clock(message) {
 
 export function line(message, elapsed) {
     if (!message) return null;
-    const parts = frames(message, elapsed);
+    const parts = frames(message, elapsed).filter((part) => part.value !== "");
     return {
         key: message.key,
         parts,

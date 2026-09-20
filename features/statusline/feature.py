@@ -115,8 +115,8 @@ def message(group: list[dict], kind: str, closed: bool, now: float) -> dict:
     ended = float(last.get(COMMAND.done) or 0)
     result = last.get(COMMAND.result) or {}
     at = float(group[0].get(COMMAND.at) or 0)
-    stopped = ended or float(last.get(COMMAND.at) or 0)
-    ran = max(0.0, (stopped if closed or ended else now) - at)
+    changed = float(last.get(COMMAND.at) or 0)
+    ran = max(0.0, (ended if closed or ended else now) - changed)
     return {
         "key": key_of(said),
         "parts": [*said, *counted(group), *(outcome(result) if ended and result else [])],

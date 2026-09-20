@@ -106,6 +106,8 @@ check("only the last message of the queue can still be running",
       [one["done"] for one in queue([edit("a.vue"), shell("git commit -m x", NOW + 1)], NOW + 2)], [True, False])
 check("a run that has finished is done and timed by when it finished",
       [(one["done"], one["for"]) for one in queue([shell("ls", done=NOW + 2)], NOW + 600)], [(True, 2)])
+check("a message whose newest command has just started shows no clock",
+      queue([shell("journal todo read 1"), shell("journal todo read 2", NOW + 19)], NOW + 20)[0]["clock"], False)
 check("a clock appears once a running message has been up long enough",
       [(queue([shell("ls")], NOW + s)[0]["clock"], queue([shell("ls")], NOW + s)[0]["for"]) for s in (1, CLOCK_AFTER + 1)],
       [(False, 1), (True, 11)])
