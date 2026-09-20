@@ -98,11 +98,6 @@ async function run(action, body = {}) {
                     <template v-if="p.when">
                         <div class="when">complete when {{ p.when }}</div>
                     </template>
-                    <template v-if="building && stage === 'todos' && !p.rows.length">
-                        <template v-for="j in 3" :key="`row-bone-${j}`">
-                            <div class="line bones" aria-hidden="true"><span class="bone row-bone" /></div>
-                        </template>
-                    </template>
                     <template v-for="t in p.rows" :key="t.n">
                         <div class="line">
                             <button type="button" :class="['row', {completed: t.completed}]" @click="peek('todo', t.n)">
@@ -116,6 +111,11 @@ async function run(action, body = {}) {
                                 </button>
                             </template>
                         </div>
+                    </template>
+                    <template v-if="building && stage === 'todos'">
+                        <template v-for="j in Math.max(0, 3 - p.rows.length)" :key="`row-bone-${j}`">
+                            <div class="line bones" aria-hidden="true"><span class="bone row-bone" /></div>
+                        </template>
                     </template>
                 </li>
             </template>
