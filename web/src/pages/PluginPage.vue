@@ -30,7 +30,7 @@ async function look() {
     }
 }
 
-async function askPlugin(want) {
+async function runPluginAction(want) {
     if (!page.value) return;
     await api("POST", `/services/${page.value.service}`, {want});
     await look();
@@ -70,7 +70,7 @@ onUnmounted(() => clearInterval(timer));
                     {{ page.title }} is not running: its service {{ page.service }} is {{ page.state }}.
                 </p>
                 <span class="acts">
-                    <Btn kind="primary" small @click="askPlugin('up')">Start it</Btn>
+                    <Btn kind="primary" small @click="runPluginAction('up')">Start it</Btn>
                     <Btn small @click="read">Read the log</Btn>
                     <template v-if="page.url">
                         <a class="out" :href="page.url" target="_blank">Open in a new tab</a>
