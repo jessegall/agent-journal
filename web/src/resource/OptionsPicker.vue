@@ -3,12 +3,12 @@ import {computed, onUnmounted, ref} from "vue";
 import {act} from "../api.js";
 import Btn from "../kit/Btn.vue";
 import {route} from "../route.js";
-import {word} from "../store.js";
+import {store, word} from "../store.js";
 
-const PICK_DELAY_MS = 5000;
+const HOLD_SECONDS = 3;
 const props = defineProps({resource: Object});
-const pendingPick = ref(-1);
-let pickTimer = 0;
+const holdingPick = ref(-1);
+let holdTimer = 0;
 const own = ref("");
 const changing = ref(false);
 const optionText = (option = {}) => String(option.title || option.label || option.value || "");
@@ -18,6 +18,7 @@ const options = computed(() =>
         return {...value, title: optionText(value), code: value.code ?? value.value ?? ""};
     })
 );
+const held = computed(() => Number((store.settings && store.settings.answers && store.settings.answers.hold) ?? HOLD_SECONDS) * 1000);
 const pick = computed(() => props.resource.data.pick || 0);
 const settled = computed(() => !!props.resource.completed && !changing.value);
 const ownWords = computed(() => settled.value && !options.value.some((o) => o.title === props.resource.outcome));
@@ -31,19 +32,19 @@ async function submit(text) {
 }
 
 function choose(i) {
-    clearTimeout(pickTimer);
-    if (pendingPick.value === i) {
-        pendingPick.value = -1;
+    clearTimeout(holdTimer);
+    if (holdingPick.value === i) {
+        holdingPick.value = -1;
         return;
     }
-    pendingPick.value = i;
-    pickTimer = setTimeout(save, PICK_DELAY_MS);
+    holdingPick.value = i;
+    holdTimer = setTimeout(save, held.value);
 }
 
 function save() {
-    const i = pendingPick.value;
-    clearTimeout(pickTimer);
-    pendingPick.value = -1;
+    const i = holdingPick.value;
+    clearTimeout(holdTimer);
+    holdingPick.value = -1;
     if (i >= 0) submit(options.value[i].title);
 }
 
@@ -57,7 +58,7 @@ onUnmounted(save);
                 type="button"
                 :class="[
                     'option',
-                    {picked: i + 1 === pick && !settled, chosen: resource.outcome === o.title, pendingPick: pendingPick === i},
+                    {picked: i + 1 === pick && !settled, chosen: resource.outcome === o.title, holdingPick: holdingPick === i},
                 ]"
                 :disabled="settled"
                 @click="choose(i)"
@@ -74,9 +75,9 @@ onUnmounted(save);
                 <template v-if="o.code">
                     <code class="code">{{ o.code }}</code>
                 </template>
-                <template v-if="pendingPick === i">
-                    <span class="pickTimer-note">Saving this choice… click it again to cancel</span>
-                    <span class="pickTimer-bar" :style="{'--pickTimer': `${PICK_DELAY_MS}ms`}" />
+                <template v-if="holdingPick === i">
+                    <span class="hold-note">Saving this choice… click it again to cancel</span>
+                    <span class="hold-bar" :style="{'--hold': `${held}ms`}" />
                 </template>
             </button>
         </template>
@@ -149,10 +150,10 @@ onUnmounted(save);
     left: 0;
     height: 2px;
     background: var(--progress);
-    animation: pickTimer var(--pickTimer) linear forwards;
+    animation: hold var(--hold) linear forwards;
 }
 
-@keyframes pickTimer {
+@keyframes hold {
     from {
         width: 0;
     }
