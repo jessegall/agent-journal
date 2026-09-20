@@ -28,26 +28,35 @@ def said(run, commands=(), now=NOW):
     return [p["value"] for p in line(run, list(commands), now)["parts"]]
 
 
+def coloured(run, commands=(), now=NOW):
+    return [(p["value"], p["color"]) for p in line(run, list(commands), now)["parts"]]
+
+
 # EVERY LINE SAYS WHAT IS BEING DONE, and names what it is doing it to
-check("a shell command is running, named by its root and subcommand", said(shell("git commit -m 'a long message'")), ["running", ["git commit"]])
-check("no flags, no arguments, no quoted strings", said(shell("npx prettier --write src/a.vue >/dev/null 2>&1")), ["running", ["npx prettier"]])
+check("a shell command is running, named by its root and subcommand", said(shell("git commit -m 'a long message'")), ["running", "git", "commit"])
+check("no flags, no arguments, no quoted strings", said(shell("npx prettier --write src/a.vue >/dev/null 2>&1")), ["running", "npx", "prettier"])
 check("editing names the files that actually changed, never the command that changed them",
       said(shell("python3 - <<'EOF'\nopen('x','w')\nEOF", effect="writes", files=["web/src/a.vue", "tests/t.py"])), ["editing", ["a.vue", "t.py"]])
 check("a shell edit that changed nothing nameable falls back to the plural",
       said(shell("python3 - <<'EOF'\nopen('x','w')\nEOF", effect="writes")), ["editing", "files"])
-check("reading a file is reading, and names the file", said(read("VERSION")), ["reading", ["VERSION"]])
-check("editing a file is editing, and names the file", said(edit("feature.py")), ["editing", ["feature.py"]])
-check("a test run is testing", said(shell("python3 tests/test_serve.py", effect="tests")), ["testing", ["python3"]])
+check("reading a file is reading, and names the file", said(read("VERSION")), ["reading", "VERSION"])
+check("editing a file is editing, and names the file", said(edit("feature.py")), ["editing", "feature.py"])
+check("a test run names what it is testing", said(shell("python3 tests/test_serve.py 2>&1|tail -2", effect="tests")),
+      ["testing", "python3", "test_serve.py"])
 check("every other kind has its own word",
       [said(shell("rm x", effect=e))[0] for e in ("deletes", "installs", "builds")], ["deleting", "installing", "building"])
-check("a journal command speaks for itself, with no verb in front", said(shell("journal message read 7")), [["reading message 7"]])
+check("a journal command speaks for itself, with no verb in front", said(shell("journal message read 7")), ["reading", "message", "7"])
 check("journal commands group with each other, and a shell command is not one of them",
       (said(shell("journal todo add x"), [shell("journal message unread", NOW - 1), shell("curl http://x", NOW - 2)]),
        said(shell("curl http://x"), [shell("journal message unread", NOW - 1)])),
-      ([["checking for unread messages", "adding a to-do"]], ["running", ["curl"]]))
-check("a tool that is neither a file nor a shell is being used, and keeps its whole phrase",
+      ([["checking for unread messages", "adding a to-do"]], ["running", "curl"]))
+check("a tool that is neither a file nor a shell is being used, and every word of it is a part of its own",
       said({"what": "playwright · browser evaluate", "tool": "mcp__playwright__browser_evaluate", "at": NOW}),
-      ["using", ["playwright · browser evaluate"]])
+      ["using", "playwright", "·", "browser", "evaluate"])
+check("the verb is the root and the only unmuted part",
+      coloured({"what": "playwright · browser evaluate", "tool": "mcp__x", "at": NOW})[:2], [("using", "gray"), ("playwright", "muted")])
+check("a line with no verb makes its own first word the root",
+      coloured(shell("journal message read 601"))[:2], [("reading", "gray"), ("message", "muted")])
 check("nothing running is no line", (line({}, [], NOW), line({"tool": "Bash"}, [], NOW)), ({}, {}))
 
 # A RUN OF THE SAME KIND is one line, flipping through what it worked on
@@ -58,13 +67,15 @@ check("the flipping part says how often and hugs the right", (run["parts"][1]["d
 check("a command of another kind is left out of the names",
       said(edit("x.py"), [edit("one.py", NOW - 2), read("y.py", NOW - 1)]), ["editing", ["one.py", "x.py"]])
 check("a one-liner of several commands is named once, by the first of them", said(shell("git add -A && git commit -m x && git push")),
-      ["running", ["git add"]])
+      ["running", "git", "add"])
+check("what two names share stays still and only the word that differs flips",
+      said(shell("git commit -m x"), [shell("git add -A", NOW - 1)]), ["running", "git", ["add", "commit"]])
 
 check("only the last names are kept", len(line(edit("last.py"), [edit(f"f{i}.py", NOW - 40 + i) for i in range(40)], NOW)["parts"][1]["value"]), MOST)
 check("a name too long to show is cut with an ellipsis",
-      said(edit("a-name-far-longer-than-any-status-bar-would-ever-show.py"))[1], ["a-name-far-longer-than-any-status-bar-wou…"])
+      said(edit("a-name-far-longer-than-any-status-bar-would-ever-show.py"))[1], "a-name-far-longer-than-any-status-bar-wou…")
 check("with no name at all it falls back to the plural", said(shell("cd /x", effect="writes")), ["editing", "files"])
-check("the same name twice in a run is named once", said(edit("x.py"), [edit("x.py", NOW - 1)]), ["editing", ["x.py"]])
+check("the same name twice in a run is named once", said(edit("x.py"), [edit("x.py", NOW - 1)]), ["editing", "x.py"])
 
 # HOW LONG IT STAYS and what it reports when it ends
 check("editing, deleting and a test run hold their line; nothing else does",
