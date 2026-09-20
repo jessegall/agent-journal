@@ -23,6 +23,14 @@ def held(record, session: str) -> str:
     return "; ".join(why for why in holds.values() if why)
 
 
+class Behaviour:
+    def __init__(self, title: str, abstract: str = "", default: bool = True, trigger: dict | None = None):
+        self.title, self.abstract, self.default, self.trigger = title, abstract, default, trigger or {}
+
+    def describe(self) -> dict:
+        return {"title": self.title, "abstract": self.abstract, "default": self.default, "trigger": dict(self.trigger)}
+
+
 def event(pattern: str):
     def mark(fn):
         fn.patterns = (*getattr(fn, "patterns", ()), pattern)
@@ -53,6 +61,7 @@ class Feature(ABC):
     abstract_: ClassVar[str] = ""
     help_: ClassVar[str] = ""
     trigger: ClassVar[dict] = {}
+    behaviours: ClassVar[dict] = {}
     default: ClassVar[bool] = True
     fixed: ClassVar[bool] = False
 
@@ -115,19 +124,31 @@ class Feature(ABC):
     def standing(self, record, controller: type) -> list:
         return [r for r in controller(record, actor=SYSTEM).all() if not r.completed]
 
-    def due(self, record, agent) -> bool:
-        if not self.trigger or not trigger.due(record, agent, self.name, self.trigger):
+    def keyed(self, key: str = "") -> str:
+        return f"{self.name}.{key}" if key else self.name
+
+    def on(self, record, key: str = "") -> bool:
+        if not self.enabled(record):
             return False
-        trigger.fired(record, agent, self.name)
+        return record.features.get(self.keyed(key), self.behaviours[key].default) if key else True
+
+    def cadence(self, record, key: str = "") -> dict:
+        return self.behaviours[key].trigger if key else self.trigger
+
+    def due(self, record, agent, key: str = "") -> bool:
+        spec = self.cadence(record, key)
+        if not self.on(record, key) or not spec or not trigger.due(record, agent, self.keyed(key), spec):
+            return False
+        trigger.fired(record, agent, self.keyed(key))
         return True
 
-    def hold(self, record, why: str) -> None:
+    def hold(self, record, why: str, key: str = "") -> None:
         for agent in Agents(record, actor=SYSTEM).all():
             f = gate_file(record.root, record.env, agent.title)
-            write_json(f, {**read_json(f, {}), self.name: why})
+            write_json(f, {**read_json(f, {}), self.keyed(key): why})
 
-    def release(self, record) -> None:
-        self.hold(record, "")
+    def release(self, record, key: str = "") -> None:
+        self.hold(record, "", key)
 
     def nudge(self, record, agent, title: str, brief: str = "", private: bool = False) -> None:
         Nudges(record, actor=SYSTEM).create(title, brief=brief, session=agent.title, private=private)
@@ -137,31 +158,36 @@ class Feature(ABC):
 
     def describe(self) -> dict:
         return {"name": self.name, "title": self.title_, "abstract": self.abstract_, "help": self.help_, "default": self.default, "fixed": self.fixed,
-                "listens": sorted({p for p, _ in self.listeners()}), "trigger": dict(self.trigger)}
+                "listens": sorted({p for p, _ in self.listeners()}), "trigger": dict(self.trigger),
+                "behaviours": {key: b.describe() for key, b in self.behaviours.items()}}
 
 
 class Recital(Feature):
     controller: ClassVar[type]
     said = "standing, read them"
+    behaviours = {"whisper": Behaviour("Whisper a row when one of its keywords appears",
+                                       "Said again once this many of the agent's tool uses have passed since it last spoke",
+                                       trigger={"every": 50, "unit": trigger.USES})}
 
     @interceptor
     def touched(self, provider, record, hook, session) -> str:
         said = hook.tool.said.lower()
-        if not said:
+        if not said or not self.on(record, "whisper"):
             return ""
         agent = Agents(record, actor=SYSTEM).by_session(session)
         for row in self.standing(record, self.controller):
             words = [w for w in row.data.get(KEYWORDS) or [] if w and str(w).lower() in said]
-            if words and self.first_time(record, session, row.ref):
+            if words and self.quiet_enough(record, session, row.ref, agent):
                 self.nudge(record, agent, f"{self.controller.resource.type} {row.n} — {row.title}", row.brief, private=True)
         return ""
 
-    def first_time(self, record, session: str, ref: str) -> bool:
+    def quiet_enough(self, record, session: str, ref: str, agent) -> bool:
         f = record.root / "runtime" / f"touched-{session}.json"
-        seen = read_json(f, {})
-        if ref in seen:
+        spoke, uses = read_json(f, {}), int(agent.uses or 0)
+        since = self.cadence(record, "whisper").get("every") or 0
+        if ref in spoke and uses - int(spoke[ref] or 0) < float(since):
             return False
-        write_json(f, {**seen, ref: True})
+        write_json(f, {**spoke, ref: uses})
         return True
 
     @event("agent.updated")

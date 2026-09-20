@@ -12,10 +12,22 @@ import {route} from "../route.js";
 import {load, rows, store} from "../store.js";
 
 const triggerOf = (f) => (store.settings && store.settings.triggers && store.settings.triggers[f.name]) || f.trigger;
+const cadenceOf = (key, declared) => (store.settings && store.settings.triggers && store.settings.triggers[key]) || declared;
 const features = computed(() =>
-    Object.values(store.spec.features).map((f) => ({...f, when: f.trigger && Object.keys(f.trigger).length ? triggerOf(f) : null}))
+    Object.values(store.spec.features).map((f) => ({
+        ...f,
+        when: f.trigger && Object.keys(f.trigger).length ? triggerOf(f) : null,
+        parts: Object.entries(f.behaviours || {}).map(([key, b]) => ({
+            ...b,
+            name: `${f.name}.${key}`,
+            when: b.trigger && Object.keys(b.trigger).length ? cadenceOf(`${f.name}.${key}`, b.trigger) : null,
+        })),
+    }))
 );
-const on = (name) => !!(store.settings && store.settings.features[name]);
+const on = (name, fallback = false) => {
+    const set = store.settings && store.settings.features;
+    return set && name in set ? !!set[name] : fallback;
+};
 const source = ref("");
 const shown = ref("");
 const busy = ref("");
@@ -70,14 +82,18 @@ async function setTrigger(f, next) {
     await saveSettings(route.value.env, {triggers: {...((store.settings && store.settings.triggers) || {}), [f.name]: next}});
 }
 
+function cadence(f) {
+    return f.parts ? triggerOf(f) : f.when || {};
+}
+
 function every(f, value) {
-    const t = triggerOf(f);
+    const t = cadence(f);
     const n = Number(value);
     if (n > 0) setTrigger(f, {every: n, unit: COUNTED.includes(t.unit) ? t.unit : "percent"});
 }
 
 function unit(f, u) {
-    const t = triggerOf(f);
+    const t = cadence(f);
     setTrigger(f, EVENTS.includes(u) ? {on: u} : {every: t.every || (u === "minutes" ? 5 : 10), unit: u});
 }
 
@@ -173,8 +189,20 @@ async function remove(e) {
                             <span class="note">Always on</span>
                         </template>
                         <template v-else>
-                            <Switch :on="on(f.name)" @change="(v) => flip(f.name, v)" />
+                            <Switch :on="on(f.name, f.default)" @change="(v) => flip(f.name, v)" />
                         </template>
+                    </span>
+                </div>
+                <div v-for="part in f.parts" :key="part.name" class="row part">
+                    <span class="text">
+                        <span class="title">{{ part.title }}</span>
+                        <span class="help">{{ part.abstract }}</span>
+                        <template v-if="part.when">
+                            <UList :f="part" @marks="marks" @every="every" @unit="unit" />
+                        </template>
+                    </span>
+                    <span class="control">
+                        <Switch :on="on(part.name, part.default)" @change="(v) => flip(part.name, v)" />
                     </span>
                 </div>
             </template>
@@ -304,6 +332,17 @@ h2 {
     display: flex;
     flex-direction: column;
     gap: 2px;
+}
+
+.part {
+    padding-left: 20px;
+    border-left: 2px solid var(--border);
+    margin-left: 2px;
+}
+
+.part .title {
+    font-weight: 400;
+    color: var(--text-2);
 }
 
 .title {
