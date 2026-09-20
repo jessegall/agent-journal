@@ -110,8 +110,6 @@ class Driver(ABC):
 
 class Claude(Driver):
     name = "claude"
-    ASIDE = "/btw {line}"
-    ASIDE = "/btw {line}"
     AUTO_ARGS = ("--permission-mode", "auto")
     APPROVAL_FLAGS = frozenset({"--permission-mode", "--dangerously-skip-permissions"})
 
