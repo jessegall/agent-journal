@@ -3,6 +3,7 @@ import time
 from controllers.types import Agents, Todos, Works
 from features import trigger
 from features.base import Feature, command, on
+from features.work.tracker import tracker
 from resources.base import SYSTEM
 from resources.types import Work
 
@@ -26,6 +27,22 @@ class WorkFeature(Feature):
     def park(self, works: Works, n: int, why: str):
         return works.update(n, parked=why)
 
+
+    @on("work.created")
+    def opened(self, event, record) -> None:
+        tracker.begin(event, record)
+
+    @on("work.completed")
+    def closed(self, event, record) -> None:
+        tracker.end(event, record)
+
+    @on("agent.updated")
+    def tracked(self, event, record) -> None:
+        agent = self.agent(event, record)
+        if agent.event != "PostToolUse":
+            return
+        for work in self.standing(record, Works)[:1]:
+            tracker.record_files(agent, record, work)
 
     @on("work.created")
     def started(self, event, record) -> None:

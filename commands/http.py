@@ -297,7 +297,7 @@ def post_run(req: Request) -> Reply:
 
 @route("GET", "/api/{env}/changes")
 def get_changes(req: Request) -> Reply:
-    from features.files.feature import changes
+    from features.work.tracker import changes
     return Reply(200, {"changes": list(reversed(changes(req.record())))})
 
 
