@@ -1,5 +1,7 @@
 import subprocess
+import sys
 import time
+import traceback
 from pathlib import Path
 
 from controllers.types import CONTROLLERS, Agents
@@ -9,10 +11,11 @@ from engine.actors import Actor, Agent, BUSY, COMPACTING, IDLE, STOPPED, System,
 from engine.inputs import FORCE, take
 from features.sessioncontrol.control import CARRY_ON, delivered
 from features.start.feature import WAIT_FOR_REPORT, hello
-from features.statusline.feature import MOST_STEPS
+from features.statusline.feature import MOST
 from engine import steps
 from engine.record import Record
 from engine.terminal import pid_of
+from engine.watch import broke
 from engine.sessions import Sessions
 from providers import PROVIDERS
 from resources.base import AGENT, SYSTEM
@@ -270,7 +273,7 @@ class Engine:
         running[RUNNING.step_effect] = provider().effect_of(command) if provider and command else ""
         if command:
             step = {"what": command, "effect": running[RUNNING.step_effect]}
-            running[RUNNING.steps] = [*(running.get(RUNNING.steps) or []), step][-MOST_STEPS:]
+            running[RUNNING.steps] = [*(running.get(RUNNING.steps) or []), step][-MOST:]
         self.agent.mark(row.status or "", row.event or "", running=running)
 
     def seat(self) -> None:
@@ -285,5 +288,11 @@ class Engine:
     def run(self) -> None:
         self.start()
         while self.running:
-            self.tick()
+            try:
+                self.tick()
+            except Exception:
+                trouble = traceback.format_exc()
+                sys.stderr.write(trouble)
+                sys.stderr.flush()
+                broke(self.record, trouble, self.agent.driver)
             time.sleep(TICK)
