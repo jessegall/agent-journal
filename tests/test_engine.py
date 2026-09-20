@@ -313,7 +313,13 @@ check("a CLI with no aside always says it plainly", agent.aside("2 new messages"
 launching = Claude(record, "launch")
 check("the journal launches claude ready to accept its messages",
       launching.command(["--continue"])[:3], ["claude", "--settings", '{"crossSessionInbound": "accept"}'])
-check("a settings argument of the user's own is left alone", launching.command(["--settings", "mine.json"]), ["claude", "--settings", "mine.json"])
+check("a settings argument of the user's own is left alone", launching.command(["--settings", "mine.json"])[-2:], ["--settings", "mine.json"])
+check("and it loads the journal's own channel", launching.command([])[-2:], ["--dangerously-load-development-channels", "server:journal"])
+check("with the channel not listening, a line is not handed to it", launching.handed("x"), False)
+(record.root / "runtime").mkdir(exist_ok=True)
+(record.root / "runtime" / "channel.on").touch()
+check("with the channel listening, the line is queued for it",
+      (launching.handed("a notice"), json.loads((record.root / "runtime" / "channel.jsonl").read_text().splitlines()[-1])["content"]), (True, "a notice"))
 
 # A SESSION'S INBOX SOCKET takes the line; without one, or when it refuses, the line is typed
 inbox = Path(tempfile.mkdtemp()) / "inbox.sock"

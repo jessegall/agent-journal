@@ -145,9 +145,25 @@ class Claude(Driver):
     AUTO_ARGS = ("--permission-mode", "auto")
     APPROVAL_FLAGS = frozenset({"--permission-mode", "--dangerously-skip-permissions"})
     TAKES_OURS = ("--settings", json.dumps({"crossSessionInbound": "accept"}))
+    CHANNEL = ("--dangerously-load-development-channels", "server:journal")
+    LISTENING = 15.0
 
     def command(self, args: list[str]) -> list[str]:
-        return ["claude", *(() if self.TAKES_OURS[0] in args else self.TAKES_OURS), *args]
+        return ["claude", *(() if self.TAKES_OURS[0] in args else self.TAKES_OURS), *self.CHANNEL, *args]
+
+    def post(self, line: str) -> bool:
+        return self.handed(line) or super().post(line)
+
+    def handed(self, line: str) -> bool:
+        runtime = self.record.root / "runtime"
+        try:
+            if time.time() - (runtime / "channel.on").stat().st_mtime > self.LISTENING:
+                return False
+            with (runtime / "channel.jsonl").open("a") as queue:
+                queue.write(json.dumps({"content": line, "meta": {"from": "journal"}}) + "\n")
+            return True
+        except OSError:
+            return False
 
 
 class Codex(Driver):
