@@ -13,7 +13,7 @@ const saving = ref(false);
 const events = computed(() => Object.keys(hooks.value).sort());
 const changed = computed(() => JSON.stringify(hooks.value) !== saved.value);
 
-function keepHooks(got) {
+function showHooks(got) {
     hooks.value = JSON.parse(JSON.stringify(got));
     saved.value = JSON.stringify(got);
 }
@@ -22,7 +22,7 @@ async function fetchHooks() {
     try {
         const got = await api("GET", `/agent-hooks/${props.provider}`);
         path.value = got.path;
-        keepHooks(got.hooks);
+        showHooks(got.hooks);
         error.value = "";
     } catch (reason) {
         error.value = reason.message;
@@ -32,7 +32,7 @@ async function fetchHooks() {
 async function save() {
     saving.value = true;
     try {
-        keepHooks((await api("POST", `/agent-hooks/${props.provider}`, {hooks: hooks.value})).hooks);
+        showHooks((await api("POST", `/agent-hooks/${props.provider}`, {hooks: hooks.value})).hooks);
         error.value = "";
     } catch (reason) {
         error.value = reason.message;

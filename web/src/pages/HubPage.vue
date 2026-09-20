@@ -17,7 +17,7 @@ function baseOf(j) {
     return j.current ? "" : `http://127.0.0.1:${j.port}`;
 }
 
-function keepWatching() {
+function pollHub() {
     try {
         localStorage.setItem("journal.hub", JSON.stringify([...opened]));
     } catch (e) {}
@@ -26,7 +26,7 @@ function keepWatching() {
 function toggle(j) {
     if (opened.has(j.root)) opened.delete(j.root);
     else opened.add(j.root);
-    keepWatching();
+    pollHub();
 }
 
 async function refresh(j) {

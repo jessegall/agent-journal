@@ -5,10 +5,10 @@ import Btn from "../kit/Btn.vue";
 import {route} from "../route.js";
 import {word} from "../store.js";
 
-const HOLD_PICK_MS = 5000;
+const PICK_DELAY_MS = 5000;
 const props = defineProps({resource: Object});
-const holdingPick = ref(-1);
-let holdPick = 0;
+const pendingPick = ref(-1);
+let pickTimer = 0;
 const own = ref("");
 const changing = ref(false);
 const optionText = (option = {}) => String(option.title || option.label || option.value || "");
@@ -23,28 +23,27 @@ const settled = computed(() => !!props.resource.completed && !changing.value);
 const ownWords = computed(() => settled.value && !options.value.some((o) => o.title === props.resource.outcome));
 
 async function submit(text) {
-    const pickedAnswer = String(text || "").trim();
-    if (!pickedAnswer) return;
-    if (props.resource.completed)
-        await act(route.value.env, props.resource.type, props.resource.n, "set", {key: "outcome", value: pickedAnswer});
-    else await act(route.value.env, props.resource.type, props.resource.n, word(props.resource.type, "complete"), {how: pickedAnswer});
+    const choice = String(text || "").trim();
+    if (!choice) return;
+    if (props.resource.completed) await act(route.value.env, props.resource.type, props.resource.n, "set", {key: "outcome", value: choice});
+    else await act(route.value.env, props.resource.type, props.resource.n, word(props.resource.type, "complete"), {how: choice});
     changing.value = false;
 }
 
 function choose(i) {
-    clearTimeout(holdPick);
-    if (holdingPick.value === i) {
-        holdingPick.value = -1;
+    clearTimeout(pickTimer);
+    if (pendingPick.value === i) {
+        pendingPick.value = -1;
         return;
     }
-    holdingPick.value = i;
-    holdPick = setTimeout(save, HOLD_PICK_MS);
+    pendingPick.value = i;
+    pickTimer = setTimeout(save, PICK_DELAY_MS);
 }
 
 function save() {
-    const i = holdingPick.value;
-    clearTimeout(holdPick);
-    holdingPick.value = -1;
+    const i = pendingPick.value;
+    clearTimeout(pickTimer);
+    pendingPick.value = -1;
     if (i >= 0) submit(options.value[i].title);
 }
 
@@ -58,7 +57,7 @@ onUnmounted(save);
                 type="button"
                 :class="[
                     'option',
-                    {picked: i + 1 === pick && !settled, chosen: resource.outcome === o.title, holdingPick: holdingPick === i},
+                    {picked: i + 1 === pick && !settled, chosen: resource.outcome === o.title, pendingPick: pendingPick === i},
                 ]"
                 :disabled="settled"
                 @click="choose(i)"
@@ -75,26 +74,26 @@ onUnmounted(save);
                 <template v-if="o.code">
                     <code class="code">{{ o.code }}</code>
                 </template>
-                <template v-if="holdingPick === i">
-                    <span class="holdPick-note">Saving this pickedAnswer… click it again to cancel</span>
-                    <span class="holdPick-bar" :style="{'--holdPick': `${HOLD_PICK_MS}ms`}" />
+                <template v-if="pendingPick === i">
+                    <span class="pickTimer-note">Saving this choice… click it again to cancel</span>
+                    <span class="pickTimer-bar" :style="{'--pickTimer': `${PICK_DELAY_MS}ms`}" />
                 </template>
             </button>
         </template>
         <template v-if="settled">
             <template v-if="ownWords">
-                <div class="pickedAnswer">
-                    <span class="pickedAnswer-label">Your pickedAnswer</span>
-                    <span class="pickedAnswer-text">{{ resource.outcome }}</span>
+                <div class="choice">
+                    <span class="choice-label">Your choice</span>
+                    <span class="choice-text">{{ resource.outcome }}</span>
                 </div>
             </template>
             <div class="after">
-                <Btn small @click="changing = true">Change pickedAnswer</Btn>
+                <Btn small @click="changing = true">Change choice</Btn>
             </div>
         </template>
         <template v-else>
             <form class="own" @submit.prevent="submit(own)">
-                <input v-model="own" placeholder="Or pickedAnswer in your own words…" />
+                <input v-model="own" placeholder="Or choice in your own words…" />
                 <Btn kind="primary" small @click="submit(own)">{{ word(resource.type, "complete") }}</Btn>
                 <template v-if="changing">
                     <Btn small @click="changing = false">Keep it</Btn>
@@ -150,10 +149,10 @@ onUnmounted(save);
     left: 0;
     height: 2px;
     background: var(--progress);
-    animation: holdPick var(--holdPick) linear forwards;
+    animation: pickTimer var(--pickTimer) linear forwards;
 }
 
-@keyframes holdPick {
+@keyframes pickTimer {
     from {
         width: 0;
     }

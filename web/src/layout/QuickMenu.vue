@@ -4,6 +4,7 @@ import Compose from "../chat/Compose.vue";
 import {projectFiles, saveSettings} from "../api.js";
 import {sendMessage} from "../chat/outbox.js";
 import Icon from "../kit/Icon.vue";
+import SwitchCase from "../kit/SwitchCase.vue";
 import {go, peek, route} from "../route.js";
 import {autoOn, meta, navTypes, showAway, store, types, unreadByUser} from "../store.js";
 
@@ -229,94 +230,96 @@ function onFileKey(e) {
     <div class="quick-shell">
         <div class="quick-scrim" @click="emit('close')" />
         <div class="quick-menu" role="dialog" aria-label="Quick menu">
-            <template v-if="screen === 'menu'">
-                <div class="quick-head">
-                    <Icon name="search" />
-                    <input
-                        ref="input"
-                        class="quick-input"
-                        :value="q"
-                        placeholder="Search actions…"
-                        aria-label="Search actions"
-                        @input="onInput"
-                        @keydown="onKey"
-                    />
-                    <button type="button" class="quick-key" @click="emit('close')">esc</button>
-                </div>
-                <div class="quick-rows">
-                    <template v-for="(r, n) in rows" :key="r.label">
-                        <button type="button" :class="['quick-row', {on: n === cursor}]" @click="r.run" @mouseenter="i = n">
-                            <Icon :name="r.icon" />
-                            <span class="quick-label">{{ r.label }}</span>
-                            <template v-if="r.hk">
-                                <span class="quick-cap">{{ r.hk }}</span>
-                            </template>
-                        </button>
-                    </template>
-                </div>
-                <div class="quick-foot">
-                    <span>↑↓ move</span>
-                    <span>↵ run</span>
-                    <span class="quick-foot-note">
-                        {{ q.trim() ? `${rows.length} ${rows.length === 1 ? "match" : "matches"}` : "press a key, or search" }}
-                    </span>
-                </div>
-            </template>
-            <template v-else-if="screen === 'files'">
-                <div class="quick-head browsing">
-                    <Icon name="file" />
-                    <input
-                        ref="fileInput"
-                        class="quick-input"
-                        :value="fileQuery"
-                        placeholder="Open project file…"
-                        aria-label="Open project file"
-                        @input="onFileInput"
-                        @keydown="onFileKey"
-                    />
-                    <button type="button" class="quick-key" @click="back">esc</button>
-                </div>
-                <div class="quick-files">
-                    <template v-if="filesLoading">
-                        <div class="quick-file-empty">Loading project files…</div>
-                    </template>
-                    <template v-else-if="filesError">
-                        <div class="quick-file-empty">{{ filesError }}</div>
-                    </template>
-                    <template v-else-if="!matchingFiles.length">
-                        <div class="quick-file-empty">No project files match.</div>
-                    </template>
-                    <template v-else>
-                        <template v-for="(file, n) in matchingFiles" :key="file.path">
-                            <button
-                                type="button"
-                                :class="['quick-file', {on: n === fileIndex}]"
-                                @click="openFile(file)"
-                                @mouseenter="fileIndex = n"
-                            >
-                                <Icon name="file" />
-                                <span class="quick-file-path">{{ file.path }}</span>
-                                <span class="quick-file-size">{{ size(file.size) }}</span>
+            <SwitchCase :value="screen">
+                <template #menu>
+                    <div class="quick-head">
+                        <Icon name="search" />
+                        <input
+                            ref="input"
+                            class="quick-input"
+                            :value="q"
+                            placeholder="Search actions…"
+                            aria-label="Search actions"
+                            @input="onInput"
+                            @keydown="onKey"
+                        />
+                        <button type="button" class="quick-key" @click="emit('close')">esc</button>
+                    </div>
+                    <div class="quick-rows">
+                        <template v-for="(r, n) in rows" :key="r.label">
+                            <button type="button" :class="['quick-row', {on: n === cursor}]" @click="r.run" @mouseenter="i = n">
+                                <Icon :name="r.icon" />
+                                <span class="quick-label">{{ r.label }}</span>
+                                <template v-if="r.hk">
+                                    <span class="quick-cap">{{ r.hk }}</span>
+                                </template>
                             </button>
                         </template>
-                    </template>
-                </div>
-                <div class="quick-foot">
-                    <span>↑↓ move</span>
-                    <span>↵ open</span>
-                    <span class="quick-foot-note">{{ matchingFiles.length }} {{ matchingFiles.length === 1 ? "file" : "files" }}</span>
-                </div>
-            </template>
-            <template v-else>
-                <div class="quick-head writing">
-                    <Icon name="arrow" />
-                    <span class="quick-write-title">Message the agent</span>
-                    <button type="button" class="quick-key" @click="back">esc</button>
-                </div>
-                <div class="quick-write" @keydown.esc.prevent.stop="back">
-                    <Compose :send="send" placeholder="Ask it something, or tell it what to do next…" />
-                </div>
-            </template>
+                    </div>
+                    <div class="quick-foot">
+                        <span>↑↓ move</span>
+                        <span>↵ run</span>
+                        <span class="quick-foot-note">
+                            {{ q.trim() ? `${rows.length} ${rows.length === 1 ? "match" : "matches"}` : "press a key, or search" }}
+                        </span>
+                    </div>
+                </template>
+                <template #files>
+                    <div class="quick-head browsing">
+                        <Icon name="file" />
+                        <input
+                            ref="fileInput"
+                            class="quick-input"
+                            :value="fileQuery"
+                            placeholder="Open project file…"
+                            aria-label="Open project file"
+                            @input="onFileInput"
+                            @keydown="onFileKey"
+                        />
+                        <button type="button" class="quick-key" @click="back">esc</button>
+                    </div>
+                    <div class="quick-files">
+                        <template v-if="filesLoading">
+                            <div class="quick-file-empty">Loading project files…</div>
+                        </template>
+                        <template v-else-if="filesError">
+                            <div class="quick-file-empty">{{ filesError }}</div>
+                        </template>
+                        <template v-else-if="!matchingFiles.length">
+                            <div class="quick-file-empty">No project files match.</div>
+                        </template>
+                        <template v-else>
+                            <template v-for="(file, n) in matchingFiles" :key="file.path">
+                                <button
+                                    type="button"
+                                    :class="['quick-file', {on: n === fileIndex}]"
+                                    @click="openFile(file)"
+                                    @mouseenter="fileIndex = n"
+                                >
+                                    <Icon name="file" />
+                                    <span class="quick-file-path">{{ file.path }}</span>
+                                    <span class="quick-file-size">{{ size(file.size) }}</span>
+                                </button>
+                            </template>
+                        </template>
+                    </div>
+                    <div class="quick-foot">
+                        <span>↑↓ move</span>
+                        <span>↵ open</span>
+                        <span class="quick-foot-note">{{ matchingFiles.length }} {{ matchingFiles.length === 1 ? "file" : "files" }}</span>
+                    </div>
+                </template>
+                <template #default>
+                    <div class="quick-head writing">
+                        <Icon name="arrow" />
+                        <span class="quick-write-title">Message the agent</span>
+                        <button type="button" class="quick-key" @click="back">esc</button>
+                    </div>
+                    <div class="quick-write" @keydown.esc.prevent.stop="back">
+                        <Compose :send="send" placeholder="Ask it something, or tell it what to do next…" />
+                    </div>
+                </template>
+            </SwitchCase>
         </div>
     </div>
 </template>
