@@ -13,7 +13,7 @@ features.unload()
 features.load()
 
 record = fresh()
-sessions = features.FEATURES["sessions"]
+sessions = features.FEATURES["agents"]
 agents = Agents(record, actor=SYSTEM)
 
 report(record, "working", "PreToolUse", session="claude-1")
@@ -26,7 +26,7 @@ check("one silent past the hour is marked stopped", ([r.title for r in sessions.
 check("the one still writing keeps its status", agents.by_session("claude-1").status, "working")
 check("and it is not marked twice", [r.title for r in sessions.quieted(record)], [])
 
-record.set_setting("sessions", {"quiet": 1})
+record.set_setting("agents", {"quiet": 1})
 agents.stamp(agents.by_session("claude-1").n, at=time.time() - 5 * 60)
 check("the setting says how long the silence may be", [r.title for r in sessions.quieted(record)], ["claude-1"])
 
