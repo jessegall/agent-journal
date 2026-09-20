@@ -134,4 +134,13 @@ todos.complete(row.n, "done before the plan ran")
 by_user.activate(late.n)
 check("a plan whose rows are already closed completes itself when it is activated", by_agent.load(late.n).data["status"], "done")
 
+# THE STAGE a plan is being written at, so the viewer knows what is still to come
+stages = fresh()
+writing = Plans(stages, actor=AGENT)
+row = writing.create("a plan being written", goal="g")
+check("a plan the agent starts is at the phases stage", writing.load(row.n).data["stage"], "phases")
+writing.stage(row.n, "todos")
+check("the agent says when it moves on to the rows", writing.load(row.n).data["stage"], "todos")
+check("and nothing else is a stage", "written in stages" in refused(lambda: writing.stage(row.n, "whenever")), True)
+
 done()

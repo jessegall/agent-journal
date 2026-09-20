@@ -26,4 +26,4 @@ class Deferral(Feature):
         said = last_said(record, agent)
         found = DEFERS.search(said or "")
         if found and not self.parked_since(record, float(agent.at or 0) - 600):
-            self.nudge(record, agent, "work deferred in words, not parked", f"\"{found.group(0)}\" is the title of a to-do: journal todo add \"<title>\" --brief, then say so")
+            self.nudge(record, agent, "work deferred in words, not parked", f"\"{found.group(0)}\" is the title of a to-do: journal todo create \"<title>\" --brief, then say so")

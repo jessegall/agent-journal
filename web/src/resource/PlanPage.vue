@@ -23,6 +23,8 @@ const phases = computed(() =>
     }))
 );
 const done = (p) => p.rows.length > 0 && p.rows.every((t) => t.completed);
+const building = computed(() => status.value === "building");
+const stage = computed(() => props.resource.data.stage || (phases.value.length ? "todos" : "phases"));
 const button = computed(
     () =>
         ({
@@ -96,6 +98,11 @@ async function run(action, body = {}) {
                     <template v-if="p.when">
                         <div class="when">complete when {{ p.when }}</div>
                     </template>
+                    <template v-if="building && stage === 'todos' && !p.rows.length">
+                        <template v-for="j in 3" :key="`row-bone-${j}`">
+                            <div class="line bones" aria-hidden="true"><span class="bone row-bone" /></div>
+                        </template>
+                    </template>
                     <template v-for="t in p.rows" :key="t.n">
                         <div class="line">
                             <button type="button" :class="['row', {completed: t.completed}]" @click="peek('todo', t.n)">
@@ -112,16 +119,13 @@ async function run(action, body = {}) {
                     </template>
                 </li>
             </template>
-            <template v-if="status === 'building'">
-                <template v-for="i in 2" :key="`skeleton-${i}`">
+            <template v-if="building && stage === 'phases'">
+                <template v-for="i in 2" :key="`phase-bone-${i}`">
                     <li class="phase skeleton" aria-hidden="true">
                         <div class="phead">
                             <span class="mark"><Icon name="circle" :size="14" /></span>
                             <span class="ptitle bone" />
                         </div>
-                        <template v-for="j in 3" :key="j">
-                            <div class="line"><span class="bone row-bone" /></div>
-                        </template>
                     </li>
                 </template>
             </template>
@@ -172,9 +176,17 @@ async function run(action, body = {}) {
     width: 42%;
 }
 
+.line.bones {
+    height: 26px;
+}
+
 .row-bone {
-    width: 62%;
+    width: 58%;
     margin-left: 22px;
+}
+
+.line.bones:nth-child(odd) .row-bone {
+    width: 44%;
 }
 
 @keyframes bone {

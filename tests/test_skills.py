@@ -28,7 +28,7 @@ check("a feature's skill says what it listens to, when it speaks and its default
 check("message tracing names the automatic message-to-resource links", "# Message tracing" in got["journal-became/SKILL.md"], True)
 check("subject skills use v2's singular noun and word commands", ("journal todo start" in got["journal-todos/SKILL.md"], "journal report create" in got["journal-reports/SKILL.md"]), (True, True))
 check("future work is filed before other work continues", (
-    "becomes `journal todo add` immediately" in got["journal-todos/SKILL.md"],
+    "becomes `journal todo create` immediately" in got["journal-todos/SKILL.md"],
     "file the to-do immediately before investigating or implementing it" in got["journal-messages/SKILL.md"],
     "file it immediately before the reply or next implementation" in got["journal-deferral/SKILL.md"],
 ), (True, True, True))

@@ -206,13 +206,15 @@ class Works(Controller):
 
 BUILDING, DRAFT, READY, ACTIVE, WAITING, DONE, ABANDONED = "building", "draft", "ready", "active", "waiting", "done", "abandoned"
 ENDED = (DONE, ABANDONED)
+PHASES, TODOS = "phases", "todos"
+STAGES = (PHASES, TODOS)
 
 
 class Plans(Controller):
     resource = types.Plan
 
     def create(self, title: str, abstract: str = "", brief: str = "", **data):
-        return super().create(title, abstract, brief, status=BUILDING if self.actor == AGENT else DRAFT, phases=[], current=1, **data)
+        return super().create(title, abstract, brief, status=BUILDING if self.actor == AGENT else DRAFT, stage=PHASES, phases=[], current=1, **data)
 
     def from_doc(self, doc: int):
         source = Docs(self.record, actor=self.actor).load(int(doc))
@@ -221,6 +223,11 @@ class Plans(Controller):
             if s[SECTION.title].lower().startswith("phase"):
                 self.phase(plan.n, s[SECTION.title].split(":", 1)[-1].split("—", 1)[-1].strip() or s[SECTION.title], brief=s[SECTION.body])
         return self.link(plan.n, source.ref)
+
+    def stage(self, n: int, at: str):
+        if at not in STAGES:
+            raise Refused(f"a plan is written in stages: {' or '.join(STAGES)}")
+        return self.update(n, stage=at)
 
     def phases(self, n: int) -> list[dict]:
         return self.load(n).phases
