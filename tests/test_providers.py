@@ -117,7 +117,7 @@ effects = {
     "echo hi > out.txt": "writes",
     "cat a.py": "reads",
     "grep -n foo x.py | head": "reads",
-    "cd web && npm run build": "",
+    "cd web && npm run build": "builds",
     "git status": "",
     "journal todo all": "",
     'journal work log 5 "done > shipped" >/dev/null; python3 - <<\'EOF\'\nimport pathlib\npathlib.Path("a").write_text("x")\nEOF': "writes",
@@ -210,8 +210,13 @@ outcomes = {
     "Finished in 0.2 seconds\n7 tests, 0 failures": {"passed": 7, "failed": 0},
 }
 check("PHPUnit, .NET, Maven, RSpec and mix summaries are read", {out: claude.test_result(Hook.read({"tool_name": "Bash", "tool_response": {"stdout": out}})) for out in outcomes}, outcomes)
-check("more test runners are recognised", [claude.effect_of(c) for c in ("dotnet test", "mvn -q test", "./gradlew test", "bundle exec rspec", "mix test", "mvn package")],
-      ["tests", "tests", "tests", "tests", "tests", ""])
+check("more test runners are recognised", [claude.effect_of(c) for c in ("dotnet test", "mvn -q test", "./gradlew test", "bundle exec rspec", "mix test")],
+      ["tests", "tests", "tests", "tests", "tests"])
+check("installing dependencies is its own kind", [claude.effect_of(c) for c in ("npm ci", "pip install -r req.txt", "composer install --no-scripts", "go mod tidy", "uv pip install ruff")],
+      ["installs", "installs", "installs", "installs", "installs"])
+check("building is its own kind", [claude.effect_of(c) for c in ("npm run build", "npx vite build", "make", "cargo build --release", "mvn package")],
+      ["builds", "builds", "builds", "builds", "builds"])
+check("a test run is still a test run, not a build", [claude.effect_of(c) for c in ("npm test", "mvn -q test", "cargo test")], ["tests", "tests", "tests"])
 check("output with no summary gives no outcome", claude.test_result(Hook.read({"tool_name": "Bash", "tool_response": {"stdout": "built"}})), None)
 
 # SUBAGENTS AND BACKGROUND SHELLS are listed with whether they run, and a subagent with its own session
