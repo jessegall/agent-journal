@@ -91,11 +91,8 @@ driver.report = {"at": time.time(), "event": "PreToolUse", "status": WORKING}
 driver.quiet = 0.1
 check("before a tick nothing is typed", driver.sent, [])
 why = engine.tick()
-check("the tick collects the user's event for the agent, typing nothing yet", (why, driver.sent), ("delivered 1", []))
+check("the user's own message does not wait for the batch: it is typed at once", (why, driver.sent), ("typed 1 in one line", ["1 new message"]))
 check("the user is not notified of their own event", User(record).unread(), [])
-check("a second tick within the quiet spell types nothing and collects nothing twice", (engine.tick(), driver.sent, len(engine.agent.pending)), (BUSY, [], 1))
-engine.agent.pending_at -= 5
-check("five quiet seconds later the batch is typed as one counted line", (engine.tick(), driver.sent), ("typed 1 in one line", ["1 new message"]))
 check("the cursor moved: a further tick types nothing more", (engine.tick(), len(driver.sent)), (BUSY, 1))
 check("the line landed, so the message it named says when the agent was told", bool(Messages(record, actor=SYSTEM).load(1).data.get("delivered")), True)
 check("and the stamp is quiet: no event was written about it", [e.action for e in record.events() if e.type == "message"], ["created"])
@@ -253,7 +250,7 @@ check("a nudge from before the engine was born is marked read and not typed", (A
 stale_engine.typed_at = 0
 check("and nothing counts it as owed", stale_engine.tick(), "nothing owed")
 
-# A BATCH: ten waiting events are typed at once, one counted line, without waiting for the quiet spell
+# A BATCH: record noise waits for the quiet spell, and ten of it is typed at once as one counted line
 driver.report = {"at": time.time(), "event": "PreToolUse", "status": WORKING}
 driver.quiet = 0.1
 engine.typed_at = 0
@@ -261,9 +258,23 @@ engine.tick()
 engine.agent.pending_at -= 5
 engine.tick()
 driver.sent.clear()
+Todos(engine.record, actor=USER).create("a chore of its own")
+check("an ordinary event is collected and nothing is typed yet", (engine.tick(), driver.sent, len(engine.agent.pending)), ("delivered 1", [], 1))
+check("a second tick within the quiet spell types nothing and collects nothing twice", (engine.tick(), driver.sent, len(engine.agent.pending)), (BUSY, [], 1))
+engine.agent.pending_at -= 5
+check("five quiet seconds later the batch is typed as one counted line", (engine.tick(), driver.sent), ("typed 1 in one line", ["1 new todo"]))
+engine.typed_at = 0
+driver.sent.clear()
 for i in range(10):
-    Messages(engine.record, actor=USER).create(f"note {i}")
-check("ten waiting events are typed at once, without waiting for quiet", (engine.tick(), driver.sent), ("typed 10 in one line", ["10 new messages"]))
+    Todos(engine.record, actor=USER).create(f"note {i}")
+check("ten waiting events are typed at once, without waiting for quiet", (engine.tick(), driver.sent), ("typed 10 in one line", ["10 new todos"]))
+
+engine.typed_at = 0
+driver.sent.clear()
+Todos(engine.record, actor=USER).create("more noise")
+Messages(engine.record, actor=USER).create("but this is mine")
+check("a message riding with the noise still gets its own line, and does not wait for it",
+      (engine.tick(), driver.sent), ("typed 2 in one line", ["1 new message", "1 new todo"]))
 
 # THE USER TYPING IN THE TERMINAL holds the engine's typing, until the draft has sat untouched for a while
 root = Path(tempfile.mkdtemp()) / ".journal"
