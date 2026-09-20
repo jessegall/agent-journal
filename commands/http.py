@@ -285,7 +285,11 @@ def post_upgrade(req: Request) -> Reply:
 def post_run(req: Request) -> Reply:
     from commands.cli import spoken
     raw = req.body.get("_raw") or b""
-    said, code = spoken([a for a in raw.decode().split("\0") if a], req.root)
+    args = [a for a in raw.decode().split("\0") if a]
+    for flag, given in (("--as", req.query.get("actor")), ("--env", req.query.get("env"))):
+        if given and flag not in args:
+            args = [flag, given, *args]
+    said, code = spoken(args, req.root)
     if code is None:
         return Reply(409, said, kind=PLAIN)
     return Reply(200 if not code else 400, said, kind=PLAIN)

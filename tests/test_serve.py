@@ -101,7 +101,7 @@ def ran(*args):
         return e.code, e.read().decode()
 
 
-check("a resource command runs in the viewer, in the CLI's own words", ran("todo", "all")[0], 200)
+check("a resource command runs in the server, in the CLI's own words", ran("todo", "all")[0], 200)
 check("a command the viewer will not run is handed back for the caller to run itself", ran("speed")[0], 409)
 check("a refusal comes back as a failure with the reason", ran("message", "show", "999999"), (400, "! no message 999999\n"))
 
