@@ -40,8 +40,9 @@ check("every view in the manifest is one of the three", all(t["view"] in VIEWS f
 check("a type says what its list can be narrowed to, and what each tab is called",
       (m["types"]["todo"]["filters"], [f["title"] for f in m["types"]["rule"]["filters"]]),
       ([{"key": "open", "title": "Open", "shows": "open"}, {"key": "closed", "title": "Done", "shows": "closed"}], ["Open", "Struck"]))
-check("a type says whether it leaves the highlights only once it is decided",
-      sorted(name for name, t in m["types"].items() if t["settled"]), ["question", "suggestion"])
+check("a type says what takes it off the user's list",
+      (sorted(name for name, t in m["types"].items() if t["clears"] == "completed"), m["types"]["message"]["clears"], m["types"]["report"]["clears"]),
+      (["question", "suggestion"], "opened", "cleared"))
 check("a type says how its events read in the viewer", (m["types"]["work"]["shown"]["created"], m["types"]["pin"]["shown"]["completed"]),
       ("Work started", "Pin struck"))
 code, files = call("GET", "/api/main/files")

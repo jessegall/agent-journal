@@ -30,7 +30,7 @@ from engine.record import Record
 from engine.transcript import page
 from providers import PROVIDERS
 from features.format import formatted
-from resources.base import shown as given, USER, Refused, titled
+from resources.base import shown as given, OPENED, USER, Refused, titled
 from resources.types import Ask
 from engine.stored import write_json
 
@@ -605,7 +605,9 @@ def post_create(req: Request) -> Reply:
 @route("GET", "/api/{env}/{type}/{n}")
 def get_one(req: Request) -> Reply:
     try:
-        return Reply(200, shaped(req.controller().show(int(req.params["n"])), req.record()))
+        controller = req.controller()
+        n = int(req.params["n"])
+        return Reply(200, shaped(controller.show(n) if controller.resource.clears == OPENED else controller.load(n), req.record()))
     except Refused as e:
         raise Missing(str(e))
 
