@@ -1,6 +1,6 @@
 <script setup>
 import {computed, nextTick, onMounted, onUnmounted, ref, watch} from "vue";
-import {act, create} from "../api.js";
+import {act, api, create} from "../api.js";
 import {sendMessage} from "./outbox.js";
 import Icon from "../kit/Icon.vue";
 import {route} from "../route.js";
@@ -41,6 +41,24 @@ const away = ref(false);
 const missed = ref(0);
 const settledOnce = ref(false);
 const ready = ref(false);
+const unseen = computed(() =>
+    rows("message")
+        .filter((m) => !m.deleted && m.seen[0] === "agent" && !m.seen.includes("user"))
+        .map((m) => m.n)
+);
+let marking = false;
+
+async function markSeen(numbers) {
+    if (marking || !numbers.length || !ready.value) return;
+    marking = true;
+    try {
+        await api("POST", `/${route.value.env}/message/read-all`, {numbers});
+    } finally {
+        marking = false;
+    }
+}
+
+watch([unseen, ready], ([numbers]) => markSeen(numbers), {immediate: true});
 const rendering = ref(false);
 const topMark = ref(null);
 const AHEAD = "1600px 0px 0px 0px";
