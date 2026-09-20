@@ -6,7 +6,7 @@ from pathlib import Path
 
 from controllers.types import Notifications, Plugins as Rows
 from engine.services import UP, want
-from features.base import Feature, chatformatter, command, event, interceptor
+from features.base import Feature, textformatter, command, event, interceptor
 from features.plugins.host import watch
 from features.plugins.manifest import fill, read
 from features.plugins.payload import refusal
@@ -28,7 +28,7 @@ class Plugins(Feature):
     LONGEST_EACH = 3.0
     ALTOGETHER = 5.0
 
-    @chatformatter
+    @textformatter
     def plugin_rules(self, text: str, record) -> str:
         said = text
         for row in Rows(record, actor=SYSTEM).all() if record else []:

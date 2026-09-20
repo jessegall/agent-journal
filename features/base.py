@@ -38,9 +38,14 @@ def event(pattern: str):
     return mark
 
 
-def chatformatter(fn):
-    fn.chatformats = True
-    return fn
+def textformatter(*surfaces):
+    bare = surfaces[0] if len(surfaces) == 1 and callable(surfaces[0]) else None
+    where = () if bare else tuple(surfaces)
+
+    def mark(fn):
+        fn.formats = where
+        return fn
+    return mark(bare) if bare else mark
 
 
 def interceptor(fn):
@@ -79,7 +84,7 @@ class Feature(ABC):
         return [getattr(self, attr) for attr in dir(type(self)) for fn in [getattr(type(self), attr)] if callable(fn) and getattr(fn, "intercepts", False)]
 
     def formatters(self) -> list:
-        return [getattr(self, attr) for attr in dir(type(self)) for fn in [getattr(type(self), attr)] if callable(fn) and getattr(fn, "chatformats", False)]
+        return [getattr(self, attr) for attr in dir(type(self)) for fn in [getattr(type(self), attr)] if callable(fn) and getattr(fn, "formats", None) is not None]
 
     def commands(self) -> list:
         return [getattr(self, attr) for attr in dir(type(self)) for fn in [getattr(type(self), attr)] if callable(fn) and getattr(fn, "command", "")]
@@ -100,7 +105,7 @@ class Feature(ABC):
         for handler in self.refusals():
             POLICIES.append(lambda provider, record, payload, session, handler=handler: handler(provider, record, payload, session) if self.enabled(record) else "")
         for shaper in self.formatters():
-            FORMATTERS.append(lambda text, record, shaper=shaper: shaper(text, record) if not record or self.enabled(record) else text)
+            FORMATTERS.append((lambda text, record, shaper=shaper: shaper(text, record) if not record or self.enabled(record) else text, tuple(shaper.formats)))
 
     @classmethod
     def on_for(cls, record) -> bool:

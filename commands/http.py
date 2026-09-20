@@ -40,9 +40,9 @@ JSON = "application/json"
 PLAIN = "text/plain; charset=utf-8"
 
 
-def shaped(r, record=None) -> dict:
+def shaped(r, record=None, surface: str = "") -> dict:
     row = given(r)
-    return {**row, **{key: formatted(row.get(key), record) for key in SAID if row.get(key)}}
+    return {**row, **{key: formatted(row.get(key), record, surface) for key in SAID if row.get(key)}}
 
 
 @dataclass
