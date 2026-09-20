@@ -91,6 +91,7 @@ function marks(f, value) {
 }
 const retention = computed(() => (store.settings && store.settings.keep) || {});
 const days = ref({});
+const answerHold = ref("");
 const envs = computed(() => rows("environment").filter((e) => !e.completed));
 const extension = ref(null);
 
@@ -100,6 +101,10 @@ onMounted(async () => {
 
 async function flip(name, value) {
     await saveSettings(route.value.env, {features: {...store.settings.features, [name]: value}});
+}
+
+async function saveAnswerHold() {
+    await saveSettings(route.value.env, {answers: {hold: Number(answerHold.value)}});
 }
 
 async function saveRetention(type) {
@@ -174,6 +179,29 @@ async function remove(e) {
                     </span>
                 </div>
             </template>
+        </section>
+        <section class="group">
+            <header class="group-head">
+                <h2>Answers</h2>
+                <p class="lead">How long a picked answer waits before it is saved, so it can be taken back.</p>
+            </header>
+            <div class="row">
+                <span class="text">
+                    <span class="title">Hold a picked answer</span>
+                    <span class="help">click the same answer again within this time to cancel it</span>
+                </span>
+                <span class="control">
+                    <input
+                        v-model="answerHold"
+                        class="days"
+                        type="number"
+                        min="0"
+                        :placeholder="String((store.settings && store.settings.answers && store.settings.answers.hold) ?? 3)"
+                        @change="saveAnswerHold"
+                    />
+                    <span class="unit">seconds</span>
+                </span>
+            </div>
         </section>
         <section class="group">
             <header class="group-head">
