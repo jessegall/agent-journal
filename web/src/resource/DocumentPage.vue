@@ -35,7 +35,7 @@ function panelLeft() {
     else shifted.value = false;
 }
 
-provide("talk", {talking, count, toggle: () => (talking.value = !talking.value)});
+provide("talk", {talking, count, toggle: () => (talking.value = !talking.value), say: (text) => (quote.value = text)});
 </script>
 
 <template>

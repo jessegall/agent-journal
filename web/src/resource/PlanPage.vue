@@ -1,5 +1,5 @@
 <script setup>
-import {computed, ref} from "vue";
+import {computed, inject, ref} from "vue";
 import {act} from "../api.js";
 import Btn from "../kit/Btn.vue";
 import CommentToggle from "./CommentToggle.vue";
@@ -11,6 +11,7 @@ import Markdown from "./Markdown.vue";
 const props = defineProps({resource: Object});
 const emit = defineEmits(["close"]);
 const error = ref("");
+const talk = inject("talk", null);
 const status = computed(() => props.resource.data.status);
 const current = computed(() => props.resource.data.current || 1);
 const phases = computed(() =>
@@ -86,16 +87,28 @@ async function run(action, body = {}) {
                             <span class="cp">checkpoint</span>
                         </template>
                         <span class="progress">{{ p.rows.filter((t) => t.completed).length }}/{{ p.rows.length }}</span>
+                        <template v-if="talk">
+                            <button type="button" class="say" title="Comment on this phase" @click="talk.say(`Phase ${p.i}: ${p.title}`)">
+                                <Icon name="bubble" :size="12" />
+                            </button>
+                        </template>
                     </div>
                     <template v-if="p.when">
                         <div class="when">complete when {{ p.when }}</div>
                     </template>
                     <template v-for="t in p.rows" :key="t.n">
-                        <button type="button" :class="['row', {completed: t.completed}]" @click="peek('todo', t.n)">
-                            <Icon :name="t.completed ? 'check' : 'circle'" :size="12" />
-                            <span class="rn">#{{ t.n }}</span>
-                            <span class="rt">{{ t.title }}</span>
-                        </button>
+                        <div class="line">
+                            <button type="button" :class="['row', {completed: t.completed}]" @click="peek('todo', t.n)">
+                                <Icon :name="t.completed ? 'check' : 'circle'" :size="12" />
+                                <span class="rn">#{{ t.n }}</span>
+                                <span class="rt">{{ t.title }}</span>
+                            </button>
+                            <template v-if="talk">
+                                <button type="button" class="say" title="Comment on this to-do" @click="talk.say(`#${t.n} ${t.title}`)">
+                                    <Icon name="bubble" :size="12" />
+                                </button>
+                            </template>
+                        </div>
                     </template>
                 </li>
             </template>
@@ -205,6 +218,38 @@ async function run(action, body = {}) {
     color: var(--text-3);
     font-size: 12.5px;
 }
+.line {
+    display: flex;
+    align-items: center;
+}
+
+.line .row {
+    flex: 1;
+    min-width: 0;
+}
+
+.say {
+    flex: none;
+    display: inline-flex;
+    padding: 3px;
+    border: 0;
+    border-radius: 6px;
+    background: none;
+    color: var(--text-3);
+    opacity: 0;
+    cursor: pointer;
+}
+
+.line:hover .say,
+.phead:hover .say,
+.say:focus-visible {
+    opacity: 1;
+}
+
+.say:hover {
+    color: var(--accent-text);
+}
+
 .row {
     display: flex;
     align-items: center;
