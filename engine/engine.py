@@ -11,8 +11,6 @@ from engine.actors import Actor, Agent, BUSY, COMPACTING, IDLE, STOPPED, System,
 from engine.inputs import FORCE, take
 from features.sessioncontrol.control import CARRY_ON, delivered
 from features.start.feature import WAIT_FOR_REPORT, hello
-from features.statusline.queue import MOST
-from engine import steps
 from engine.record import Record
 from engine.terminal import pid_of
 from engine.watch import STEADY_AFTER, broke, steady
@@ -55,7 +53,6 @@ class Engine:
         self.probed_at = 0.0
         self.greeted = False
         self.controlled_at = 0.0
-        self.stepped = ""
         self.carry_on = False
         self.why = ""
 
@@ -257,29 +254,9 @@ class Engine:
             status = COMPACTING if compacting else WORKING if compacting is False and last.status == COMPACTING else last.status or ""
             self.agent.mark(status, last.event or "", at=last.at, **facts)
 
-    def step(self) -> None:
-        pid = pid_of(self.agent.driver.session)
-        command = steps.running(pid) if pid else ""
-        if command == self.stepped:
-            return
-        self.stepped = command
-        last = self.agent.driver.last_report()
-        row = Agents(self.record, actor=SYSTEM).by_session((last and last.title) or self.agent.driver.session)
-        running = dict(row.running)
-        if not running.get(RUNNING.what) or running.get(RUNNING.done):
-            return
-        running[RUNNING.step] = command
-        provider = PROVIDERS.get(self.agent.driver.name)
-        running[RUNNING.step_effect] = provider().effect_of(command) if provider and command else ""
-        if command:
-            step = {"what": command, "effect": running[RUNNING.step_effect]}
-            running[RUNNING.steps] = [*(running.get(RUNNING.steps) or []), step][-MOST:]
-        self.agent.mark(row.status or "", row.event or "", running=running)
-
     def seat(self) -> None:
         self.branch()
         self.crew()
-        self.step()
         last = self.agent.driver.last_report()
         write_json(self.record.root / "runtime" / f"seat-{self.agent.driver.session}.json", {"at": time.time(), "agent": self.agent.driver.name, "state": self.agent.state(), "env": self.record.env,
                                  "why": self.why, "printed": self.agent.driver.last_printed(),
