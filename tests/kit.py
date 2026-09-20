@@ -7,11 +7,20 @@ os.environ["AGENT_JOURNAL_HOME"] = tempfile.mkdtemp()
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from engine.record import Record  # noqa: E402
 
-ok = fail = 0
+ok = fail = skipped = 0
+only = [word.lower() for word in sys.argv[sys.argv.index("--only") + 1:]] if "--only" in sys.argv else []
+
+
+def wanted(label: str) -> bool:
+    said = label.lower()
+    return all(word in said for word in only)
 
 
 def check(label, got, want):
-    global ok, fail
+    global ok, fail, skipped
+    if not wanted(label):
+        skipped += 1
+        return
     if got == want:
         ok += 1
     else:
@@ -32,5 +41,5 @@ def refused(fn) -> str:
 
 
 def done() -> None:
-    print(f"\n{ok} passed, {fail} failed")
+    print(f"\n{ok} passed, {fail} failed" + (f", {skipped} not asked for" if skipped else ""))
     sys.exit(1 if fail else 0)
