@@ -2,7 +2,7 @@ import re
 
 from features import trigger
 from features.base import Feature, chatformatter, event
-from providers import PROVIDERS
+from support.transcript import last_said
 
 TAGS = ("[!discovery]", "[!correction]", "[!blocked]", "[!info]", "[!reply]")
 TAG = re.compile(
@@ -14,15 +14,6 @@ TAG = re.compile(
 
 def visible(text: str) -> str:
     return TAG.sub(lambda found: found.group(1) or "", str(text or ""))
-
-
-def last_said(record, agent) -> str:
-    provider = PROVIDERS.get(agent.provider)
-    if not provider or not agent.transcript:
-        return ""
-    turns = provider().transcript(agent.transcript)
-    said = [t for t in turns if t.who == "agent" and t.text.strip()]
-    return said[-1].text if said else ""
 
 
 class Tags(Feature):

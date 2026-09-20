@@ -2,7 +2,7 @@ import re
 
 from features import trigger
 from features.base import Feature, event
-from features.tags.feature import last_said
+from support.transcript import last_said
 from resources.base import AGENT, SYSTEM
 
 DEFERS = re.compile(r"\b(I'?ll (do|get to|come back to|handle|look at) (that|it|this)|after this|once (the|this|that) \w+ (is|are|finishes|lands)|next,? I'?ll|later on|I'?ll come back)\b", re.IGNORECASE)
