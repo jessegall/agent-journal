@@ -15,6 +15,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from engine import band  # noqa: E402
 from engine import viewer  # noqa: E402
 from engine.services import Manager  # noqa: E402
+from engine import watch  # noqa: E402
 from engine.stop import asked  # noqa: E402
 from engine.terminal import RELOAD, STOP, watched  # noqa: E402
 
@@ -52,7 +53,10 @@ FRAME_END = b"\x1b[?25h"
 
 def spawn_driver(root: Path, cwd: Path, env: str, agent: str, fd: int, session: str) -> subprocess.Popen:
     main = Path(__file__).resolve().with_name("engine_main.py")
-    return subprocess.Popen([sys.executable, str(main), str(root), env, agent, str(fd), session], cwd=cwd, pass_fds=(fd,))
+    said = watch.log_file(root)
+    said.parent.mkdir(parents=True, exist_ok=True)
+    return subprocess.Popen([sys.executable, str(main), str(root), env, agent, str(fd), session], cwd=cwd, pass_fds=(fd,),
+                            stderr=said.open("a"))
 
 
 def stop_driver(driver: subprocess.Popen) -> None:
@@ -84,6 +88,7 @@ def run(root: Path, cwd: Path, env: str, agent: str, fd: int, session: str, life
     printed.parent.mkdir(parents=True, exist_ok=True)
     out = printed.open("ab")
     driver = spawn_driver(root, cwd, env, agent, fd, session)
+    started = time.time()
     stamps = watched(root)
     stdin, stdout = sys.stdin.fileno(), sys.stdout.fileno()
     shape = [rows, cols]
@@ -147,6 +152,8 @@ def run(root: Path, cwd: Path, env: str, agent: str, fd: int, session: str, life
             if now - last_check >= RELOAD_EVERY:
                 last_check = now
                 if driver.poll() is not None or watched(root) != stamps:
+                    if watch.crashed(driver.poll(), started) and watch.told(root, env, watch.why(root)):
+                        os.write(fd, f"{watch.SAID} {watch.why(root, 3)}\r".encode())
                     result = RELOAD
                     break
     finally:
