@@ -2,6 +2,7 @@
 import {computed, ref} from "vue";
 import {act, readAll as readAllRows} from "../api.js";
 import Icon from "../kit/Icon.vue";
+import Spinner from "../kit/Spinner.vue";
 import {peek, route} from "../route.js";
 import {age, rows} from "../store.js";
 
@@ -79,7 +80,7 @@ async function openNote(n) {
     <template v-if="sub === 'unread' && unread.length">
         <div class="rail-foot">
             <button type="button" class="rail-foot-act" :disabled="reading" @click="readAll">
-                <span v-if="reading" class="rail-foot-spinner" />
+                <Spinner v-if="reading" />
                 {{ reading ? "Marking…" : "Mark all as read" }}
             </button>
         </div>
@@ -280,21 +281,6 @@ async function openNote(n) {
     white-space: nowrap;
     color: var(--text-2);
     cursor: pointer;
-}
-
-.rail-foot-spinner {
-    width: 9px;
-    height: 9px;
-    border: 1px solid currentColor;
-    border-right-color: transparent;
-    border-radius: 50%;
-    animation: rail-spin 0.7s linear infinite;
-}
-
-@keyframes rail-spin {
-    to {
-        transform: rotate(360deg);
-    }
 }
 
 .rail-foot-act:hover:not(:disabled) {

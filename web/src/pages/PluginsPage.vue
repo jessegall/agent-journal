@@ -1,8 +1,9 @@
 <script setup>
-import {computed, onMounted, onUnmounted, ref} from "vue";
+import {computed, onMounted, onUnmounted, ref, watch} from "vue";
 import {act, api, command} from "../api.js";
 import Btn from "../kit/Btn.vue";
 import Icon from "../kit/Icon.vue";
+import Spinner from "../kit/Spinner.vue";
 import Switch from "../kit/Switch.vue";
 import {route} from "../route.js";
 import {load, rows, store} from "../store.js";
@@ -12,7 +13,10 @@ const shown = ref("");
 const busy = ref("");
 const plugins = computed(() => rows("plugin").filter((p) => !p.completed && !p.deleted));
 const services = ref([]);
+const reading = ref("");
+const logged = ref("");
 const EVERY = 3000;
+const WHILE_BUSY = 1000;
 let timer = 0;
 const pagesOf = (p) => (store.pages || []).filter((page) => page.plugin === p.data.manifest.name);
 
@@ -26,13 +30,20 @@ async function look() {
     } catch (e) {
         services.value = [];
     }
+    if (busy.value) await readLog();
+}
+
+function watching() {
+    clearInterval(timer);
+    timer = setInterval(look, busy.value ? WHILE_BUSY : EVERY);
 }
 
 onMounted(() => {
     look();
-    timer = setInterval(look, EVERY);
+    watching();
 });
 onUnmounted(() => clearInterval(timer));
+watch(busy, watching);
 
 async function preview() {
     busy.value = "preview";
@@ -60,6 +71,8 @@ async function install() {
 
 async function plugin(p, action, body = {}) {
     busy.value = `${p.n}`;
+    reading.value = p.data.manifest.name;
+    await readLog();
     try {
         await act(route.value.env, "plugin", p.n, action, body);
         await load("plugin");
@@ -67,6 +80,26 @@ async function plugin(p, action, body = {}) {
         shown.value = e.message;
     }
     busy.value = "";
+    await readLog();
+}
+
+async function readLog() {
+    if (!reading.value) return;
+    try {
+        logged.value = (await api("GET", `/plugins/${reading.value}/log?lines=200`)).log;
+    } catch (e) {
+        logged.value = e.message;
+    }
+}
+
+function readingOf(p) {
+    return reading.value === p.data.manifest.name;
+}
+
+function toggleLog(p) {
+    reading.value = readingOf(p) ? "" : p.data.manifest.name;
+    logged.value = "";
+    readLog();
 }
 </script>
 
@@ -131,11 +164,18 @@ async function plugin(p, action, body = {}) {
                             </template>
                         </div>
                     </template>
+                    <template v-if="readingOf(p)">
+                        <pre class="log">{{ logged || (busy === `${p.n}` ? "Starting…" : "Nothing is logged yet.") }}</pre>
+                    </template>
                     <footer class="acts">
-                        <Btn small :disabled="busy === `${p.n}`" @click="plugin(p, 'upgrade', {yes: true})">Upgrade</Btn>
+                        <Btn small :disabled="busy === `${p.n}`" @click="plugin(p, 'upgrade', {yes: true})">
+                            <Spinner v-if="busy === `${p.n}`" />
+                            Upgrade
+                        </Btn>
                         <Btn small :disabled="busy === `${p.n}`" @click="plugin(p, 'upgrade', {yes: true, again: true})">
                             Run setup again
                         </Btn>
+                        <Btn small @click="toggleLog(p)">{{ readingOf(p) ? "Hide log" : "Log" }}</Btn>
                         <Btn
                             kind="danger"
                             small
@@ -308,6 +348,19 @@ h2 {
 .link {
     color: var(--accent-text);
     font-size: 12.5px;
+}
+
+.log {
+    margin: 0;
+    max-height: 260px;
+    overflow: auto;
+    padding: 10px 12px;
+    border: 1px solid var(--border-2);
+    border-radius: 9px;
+    background: var(--code-bg);
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: 11.5px;
+    white-space: pre-wrap;
 }
 
 .acts {

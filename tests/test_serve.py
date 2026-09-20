@@ -84,6 +84,12 @@ check("a restart is the same ask with a fresh nonce", (code, said["want"], said[
 check("anything else is refused", call("POST", "/api/services/works.web", {"want": "sideways"})[0], 404)
 code, read = call("GET", "/api/services/works.web/log")
 check("a log that does not exist yet reads empty", (code, read), (200, {"id": "works.web", "log": ""}))
+from features.plugins.source import log as plugin_log  # noqa: E402
+told = plugin_log(root, "works")
+told.parent.mkdir(parents=True, exist_ok=True)
+told.write_text("".join(f"line {i}\n" for i in range(1, 6)))
+code, read = call("GET", "/api/plugins/works/log?lines=2")
+check("a plugin's log is read over HTTP, the last lines first asked for", (code, read), (200, {"name": "works", "log": "line 4\nline 5"}))
 
 # SETTINGS, SEARCH AND FILES
 code, got = call("GET", "/api/main/settings")
