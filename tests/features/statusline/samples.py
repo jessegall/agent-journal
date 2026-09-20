@@ -19,10 +19,20 @@ from tests.kit import check, done, fresh  # noqa: E402
 features.unload()
 features.load()
 
-SAMPLES = 2000
+SAMPLES = 5000
 SESSION = "s"
-JOURNALS = ["journal message read 7", "journal todo add 12", "journal work log 3 x", "journal question answer 9"]
-SHELL = ["git commit -m x", "npm run build", "curl http://x", "npx prettier --write a.vue"]
+JOURNALS = ["journal message read 7", "journal todo add 12", "journal work log 3 x", "journal question answer 9",
+            "journal message unread", "journal pin strike 4", "journal report archive 2", "journal plan acknowledge 1",
+            "journal doc final 5", "journal suggestion withdraw 3", "journal environment prepare side"]
+SHELL = ["curl http://x", "npx prettier --write a.vue", "mkdir -p a/b/c", "mv one.py two.py", "echo hi",
+         "while read -r l; do echo $l; done < a.txt", "timeout 60 node build.js", "env FOO=1 python3 -c \'print(1)\'"]
+GIT = ["git commit -m x", "git add -A", "git push", "git checkout -b dev", "git stash", "git merge main"]
+READS = ["cat notes.md", "sed -n 1,20p features/statusline/queue.py", "ls -la", "head -3 VERSION", "wc -l web/src/store.js",
+         "git log --oneline -5", "curl -s http://127.0.0.1/api | head -c 200; ls runtime/changes.json"]
+SEARCHES = ["grep -rn def features", "rg needle src", "find . -name 'test_*.py'", "cat *.md", "ls web/src/*.js"]
+BUILDS = ["npm run build", "cd web && npm run build", "npx vite build"]
+PICTURES = ["shot.png", "diagram.svg", "notes.pdf"]
+MOVIES = ["clip.mp4", "screen.mov"]
 random.seed(20260920)
 
 record = fresh("main")
@@ -64,13 +74,38 @@ def a_journal():
     return "journalling", ""
 
 
-VERBS_FOR = {"npm run build": "building", "git commit -m x": "git"}
-
-
 def a_shell():
-    command = random.choice(SHELL)
-    ran("Bash", {"command": command})
-    return VERBS_FOR.get(command, "running"), ""
+    ran("Bash", {"command": random.choice(SHELL)})
+    return "running", ""
+
+
+def a_git():
+    ran("Bash", {"command": random.choice(GIT)})
+    return "git", ""
+
+
+def a_shell_read():
+    ran("Bash", {"command": random.choice(READS)})
+    return "reading", ""
+
+
+def a_build():
+    ran("Bash", {"command": random.choice(BUILDS)})
+    return "building", ""
+
+
+def a_picture():
+    name = random.choice(PICTURES)
+    (project / name).write_text(str(random.random()))
+    ran("Read", {"file_path": str(project / name)})
+    return "viewing", name
+
+
+def a_film():
+    name = random.choice(MOVIES)
+    (project / name).write_text(str(random.random()))
+    ran("Read", {"file_path": str(project / name)})
+    return "watching", name
 
 
 def a_test():
@@ -93,12 +128,10 @@ def an_install():
     return "installing", "requests"
 
 
-def a_build():
-    ran("Bash", {"command": "npm run build"})
-    return "building", ""
-
-
 def a_search():
+    if random.random() < 0.5:
+        ran("Bash", {"command": random.choice(SEARCHES)})
+        return "searching", ""
     ran("Grep", {"pattern": "def foo"})
     return "searching", "def foo"
 
@@ -123,7 +156,8 @@ def an_mcp():
     return "using", "playwright"
 
 
-DOING = (an_edit, a_read, a_journal, a_shell, a_test, a_delete, an_install, a_build, a_search, a_fetch, a_dispatch, a_skill, an_mcp)
+DOING = (an_edit, a_read, a_journal, a_shell, a_test, a_delete, an_install, a_build, a_search, a_fetch, a_dispatch, a_skill,
+         an_mcp, a_git, a_shell_read, a_picture, a_film)
 
 
 def settled(message, at=-1):

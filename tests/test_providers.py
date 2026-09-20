@@ -150,6 +150,11 @@ check("every tool says what it did: reading a file wherever it is, searching, fe
 check("a write outside the project is not counted as one",
       claude.effect(Hook.read({"hook_event_name": "PreToolUse", "cwd": "/p", "tool_name": "Edit", "tool_input": {"file_path": "/somewhere/else/x"}})), "")
 shelled = claude.shell(AgentRow(n=1, title="s"), Hook.read({"hook_event_name": "PreToolUse", "tool_name": "Bash", "tool_input": {"command": "rm x", "description": "Remove x"}}))
+ring = AgentRow(n=1, title="s", data={"running": {}, "commands": [{"what": "sleep 90", "tool": "Bash", "at": 1.0},
+                                                                  {"what": "echo done", "tool": "Bash", "at": 2.0}]})
+late = claude.shell(ring, Hook.read({"hook_event_name": "PostToolUse", "tool_name": "Bash", "tool_input": {"command": "echo done"}}))
+check("a command that reports back is the one marked finished, even when another is still running",
+      [(c["what"], bool(c.get("done"))) for c in late["commands"]], [("sleep 90", False), ("echo done", True)])
 check("the effect rides on the running command and on its entry in the recent commands", (shelled["running"].get("effect"), shelled["commands"][-1].get("effect")), ("deletes", "deletes"))
 
 # THE CURRENT EFFORT is a fact each provider reads from its own settings; the project's settings win over the user's

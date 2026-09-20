@@ -43,10 +43,16 @@ QUOTED = re.compile(r'"(?:[^"\\]|\\.)*"' + r"|'[^']*'")
 JOURNAL_CALL = re.compile(r"(^|[;&|(]\s*|\$\()\S*journal(?:\.py)?\s(?:\"(?:[^\"\\]|\\.)*\"|'[^']*'|\d*>&\d|[^;&|)\n])*")
 
 
-def stamped(commands: list, running: dict) -> list:
-    at = running.get(RUNNING.at)
-    ended = {COMMAND.done: running.get(RUNNING.done), COMMAND.result: running.get(RUNNING.result)}
-    return [{**one, **{k: v for k, v in ended.items() if v}} if at and one.get(COMMAND.at) == at else one for one in list(commands)]
+def stamped(commands: list, running: dict, doing: str = "", at: float = 0.0) -> list:
+    rows = list(commands)
+    ended = {COMMAND.done: running.get(RUNNING.done) or at, COMMAND.result: running.get(RUNNING.result)}
+    ended = {k: v for k, v in ended.items() if v}
+    when = running.get(RUNNING.at)
+    which = next((i for i in reversed(range(len(rows))) if when and rows[i].get(COMMAND.at) == when), None)
+    if which is None:
+        which = next((i for i in reversed(range(len(rows)))
+                      if doing and rows[i].get(COMMAND.what) == doing and not rows[i].get(COMMAND.done)), None)
+    return [{**one, **ended} if i == which else one for i, one in enumerate(rows)]
 
 
 class Provider(ABC):
@@ -122,7 +128,7 @@ class Provider(ABC):
             result = self.test_result(hook) if running.get(RUNNING.effect) == "tests" else None
             if result:
                 running[RUNNING.result] = result
-        return {AgentRow.running: running, AgentRow.commands: stamped(row.commands, running)}
+        return {AgentRow.running: running, AgentRow.commands: stamped(row.commands, running, doing, time.time())}
 
     def test_result(self, hook: Hook) -> dict | None:
         output = f"{hook.tool.response.get('stdout') or ''}\n{hook.tool.response.get('stderr') or ''}"
