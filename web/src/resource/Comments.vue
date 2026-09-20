@@ -83,12 +83,6 @@ async function send(text) {
                             <button type="button" class="tool" title="Delete this comment" @click="remove(c)">Delete</button>
                         </span>
                     </span>
-                    <template v-if="c.completed">
-                        <div class="done">
-                            · handled:
-                            <Markdown class="done-text" :text="c.outcome" />
-                        </div>
-                    </template>
                     <template v-if="editing.n === c.n">
                         <textarea v-model="editing.text" rows="3" @keydown.esc="editing.n = 0" @keydown.meta.enter.prevent="save" />
                         <span class="edit-row">
@@ -104,6 +98,12 @@ async function send(text) {
                             <span class="quoted">{{ c.quote }}</span>
                         </template>
                         <Markdown :text="c.text" />
+                    </template>
+                    <template v-if="c.completed">
+                        <p class="done">
+                            <span class="done-label">Handled:</span>
+                            <Markdown class="done-text" :text="c.outcome" />
+                        </p>
                     </template>
                 </div>
             </template>
@@ -215,10 +215,16 @@ textarea {
 }
 
 .done {
-    display: inline-flex;
-    align-items: baseline;
-    gap: 4px;
+    margin: 6px 0 0;
     color: var(--text-3);
+}
+
+.done-label {
+    color: var(--text-2);
+}
+
+.done-text {
+    display: inline;
 }
 
 .done-text :deep(p) {

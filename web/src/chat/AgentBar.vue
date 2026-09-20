@@ -1,8 +1,9 @@
 <script setup>
 import {computed, onUnmounted, ref, watch} from "vue";
-import {agentControls, agentUsage, appoint, controlAgent, forceAgent, onlineAgents} from "../api.js";
+import {agentControls, agentUsage, appoint, controlAgent, onlineAgents} from "../api.js";
 import {modelFamily, providerName} from "../agents.js";
 import Icon from "../kit/Icon.vue";
+import Spinner from "../kit/Spinner.vue";
 import CrewList from "./CrewList.vue";
 import SwitchCase from "../kit/SwitchCase.vue";
 import {go, peek, route} from "../route.js";
@@ -90,21 +91,7 @@ async function control(action, value) {
         controlling.value = "";
     }
 }
-const forced = ref("");
-async function pushThrough() {
-    forced.value = open.value;
-    error.value = "";
-    try {
-        await forceAgent(route.value.env, agent.value.title);
-    } catch (e) {
-        forced.value = "";
-        error.value = e.message;
-    }
-}
-watch(
-    () => pending(forced.value),
-    (still) => still || (forced.value = "")
-);
+const waiting = (key, value) => controlling.value === `${key}:${value}` || pending(key) === value;
 async function usageDetails(e) {
     toggle("usage", e);
     if (open.value !== "usage") return;
@@ -190,6 +177,7 @@ onUnmounted(() => window.removeEventListener("click", away));
                     >
                         <Icon name="model" />
                         {{ pending("model") || family }}
+                        <Spinner v-if="pending('model')" />
                     </button>
                     <button
                         type="button"
@@ -204,6 +192,7 @@ onUnmounted(() => window.removeEventListener("click", away));
                     >
                         <Icon name="bolt" />
                         {{ pending("effort") || data.effort || "effort" }}
+                        <Spinner v-if="pending('effort')" />
                     </button>
                 </template>
                 <button
@@ -302,14 +291,6 @@ onUnmounted(() => window.removeEventListener("click", away));
                         <p class="bar-current">{{ current }}</p>
                         <div v-if="pending(open)" class="bar-waiting">
                             <span>{{ pending(open) }} is waiting for the agent to finish its turn.</span>
-                            <button
-                                type="button"
-                                :class="['bar-act', {forcing: forced === open}]"
-                                :disabled="Boolean(controlling) || forced === open"
-                                @click="pushThrough"
-                            >
-                                {{ forced === open ? "Forcing" : "Force now" }}
-                            </button>
                         </div>
                         <template v-for="group in chosen" :key="group.key">
                             <p class="bar-label">{{ group.label }}</p>
@@ -322,6 +303,7 @@ onUnmounted(() => window.removeEventListener("click", away));
                                     :disabled="Boolean(controlling)"
                                     @click="control(group.key, choice.value)"
                                 >
+                                    <Spinner v-if="waiting(group.key, choice.value)" />
                                     {{ choice.label }}
                                 </button>
                             </div>
@@ -622,6 +604,9 @@ onUnmounted(() => window.removeEventListener("click", away));
 }
 
 .bar-control-choice {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
     padding: 5px 8px;
     border: 1px solid var(--border);
     border-radius: 6px;
@@ -701,42 +686,12 @@ onUnmounted(() => window.removeEventListener("click", away));
     color: var(--progress);
 }
 
-.agent-fact.waiting::after {
-    content: "";
-    width: 7px;
-    height: 7px;
-    margin-left: 3px;
-    border: 1.5px solid currentColor;
-    border-right-color: transparent;
-    border-radius: 50%;
-    animation: waiting 0.8s linear infinite;
-}
-
-@keyframes waiting {
-    to {
-        transform: rotate(360deg);
-    }
-}
-
 .bar-waiting {
     display: flex;
     align-items: center;
-    justify-content: space-between;
     gap: 10px;
     margin: 4px 0 8px;
     font-size: 12px;
     color: var(--progress);
-}
-
-.bar-act.forcing::after {
-    content: "";
-    display: inline-block;
-    width: 7px;
-    height: 7px;
-    margin-left: 5px;
-    border: 1.5px solid currentColor;
-    border-right-color: transparent;
-    border-radius: 50%;
-    animation: waiting 0.8s linear infinite;
 }
 </style>
