@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import {COUNTED, EVENTS} from "./cadence.js";
+
 defineProps<{f: unknown}>();
 defineEmits<{marks: [unknown, unknown]; every: [unknown, unknown]; unit: [unknown, unknown]}>();
 </script>

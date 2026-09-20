@@ -18,7 +18,7 @@ def offers_choices(text: str) -> bool:
 
 class Choices(Feature):
     name = "choices"
-    title_ = "Choices asked properly"
+    title_ = "Options on a question"
     abstract_ = "A message that offers the user choices in prose holds the agent until it asks through a question"
     help_ = "Two or more listed options and a question in the same message: the agent is told to use journal question ask --set options=…; the hold lifts when a question is created. A line that names a question by number points at one already asked and does not count."
     trigger = {"on": trigger.IDLE}

@@ -4,7 +4,7 @@ from features.base import Feature, event
 
 class Context(Feature):
     name = "context"
-    title_ = "The context decision"
+    title_ = "Memory"
     abstract_ = "At each mark of the context window the agent decides — pin, rule or nothing — before any other write"
     help_ = "The marks are the trigger's at list; a pin, a rule, or journal nothing \"<why>\" releases the hold."
     trigger = {"at": [50, 70, 90, 95], "unit": trigger.PERCENT}

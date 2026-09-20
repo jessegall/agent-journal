@@ -29,7 +29,7 @@ def probe(source: Path) -> float:
 
 class Video(Feature):
     name = "video"
-    title_ = "Video frames"
+    title_ = "Reading video files"
     abstract_ = "A video attached to a message is sampled into frames the agent can inspect"
     help_ = "Short clips yield a frame every half second, medium clips every two seconds, and long clips at most sixty frames."
 

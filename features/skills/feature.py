@@ -5,7 +5,7 @@ from resources.types import AgentRow
 
 class Skills(Feature):
     name = "skills"
-    title_ = "The journal skill loaded"
+    title_ = "Skills"
     abstract_ = "An agent working on with no journal skill is told once per context window to load one"
     help_ = "A session start or compaction opens a fresh window; triggers.skills sets how long the feature waits before its one reminder."
     trigger = {"every": 25, "unit": trigger.USES}

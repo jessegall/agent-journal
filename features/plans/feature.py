@@ -8,7 +8,7 @@ from resources.types import PHASE
 
 class PlansFeature(Feature):
     name = "plans"
-    title_ = "Plans"
+    title_ = "Planning"
     abstract_ = "A plan advances as its rows close: a phase completes, a checkpoint waits, the last phase ends it"
     help_ = "Only the user activates a plan and continues it past a checkpoint; with the auto feature on, checkpoints are passed without waiting."
 
