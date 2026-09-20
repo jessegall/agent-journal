@@ -193,6 +193,6 @@ missing = [(shows(m), frames) for queue, frames in zip(queues[::5], played) for 
 check("the viewer plays every message of every queue, exactly as the journal wrote it, settled unless the queue is draining",
       missing[:2], [])
 check("a queue of several messages shows several lines, one after the other", max(len(f) for f in played) > 2, True)
-check("the whole run took less than two minutes", time.time() - began < 120, True)
+check("a sample costs less than a second", (time.time() - began) / SAMPLES < 1, True)
 
 done()

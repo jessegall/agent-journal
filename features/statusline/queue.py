@@ -83,8 +83,8 @@ def waiting(kind: str, last: dict) -> bool:
 def message(group: list[dict], closed: bool, now: float, behind: int = 0) -> dict:
     kind = group[0]["kind"]
     last = group[-1]
-    pending = waiting(kind, last)
-    found = [*worked(group), *([{"value": WAITING, "whole": True}] if pending else [])]
+    unknown = waiting(kind, last)
+    found = [*worked(group), *([{"value": WAITING, "whole": True}] if unknown else [])]
     noun = NOUNS.get(kind)
     said = [verb_for(group, kind), *(columns(found) if found else [{"value": noun, "color": MUTED}] if noun else [])]
     last = group[-1]
@@ -100,7 +100,7 @@ def message(group: list[dict], closed: bool, now: float, behind: int = 0) -> dic
         "clock": ran >= CLOCK_AFTER and not over,
         "hold": DRAINING if behind >= DRAIN else max(HOLD if kind in HELD else 0.0, walked(said)),
         "lingers": LINGERS,
-        "pending": pending,
+        "waiting": unknown,
     }
 
 
