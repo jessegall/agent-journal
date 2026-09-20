@@ -30,6 +30,8 @@ def one(record, given) -> dict:
         pass
     if isinstance(given.get("body"), dict):
         kept["body"] = given["body"]
+    if given.get("again"):
+        kept["again"] = True
     return kept
 
 
@@ -43,7 +45,7 @@ class Buttons(Feature):
     name = "buttons"
     title_ = "Buttons on a message"
     abstract_ = "A message the agent writes can carry buttons, each running one journal command when the user presses it"
-    help_ = "journal message create \"Ready when you are\" --set buttons='[{\"label\": \"Okay, start\", \"type\": \"plan\", \"n\": 3, \"action\": \"activate\"}]'. A button runs that one command and nothing else; a button naming a type or an action that does not exist is dropped when the message is written."
+    help_ = "journal message create \"Ready when you are\" --set buttons='[{\"label\": \"Okay, start\", \"type\": \"plan\", \"n\": 3, \"action\": \"activate\"}]'. A button runs that one command and nothing else; a button naming a type or an action that does not exist is dropped when the message is written. A button goes once it is pressed, and the message says which one; \"again\": true keeps it there to be pressed as often as the user likes."
 
     @on("message.created")
     def check(self, event, record) -> None:

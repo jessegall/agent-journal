@@ -28,6 +28,7 @@ check("an action the type does not have is dropped", shaped(record, [{"label": "
 check("a button with no label is dropped", shaped(record, [{"label": "  ", "type": "plan", "n": 1, "action": "activate"}]), [])
 check("what is not a list of objects is nothing", (shaped(record, "go"), shaped(record, [7])), ([], []))
 check("no more than five are kept", len(shaped(record, [start] * (MOST + 3))), MOST)
+check("a button may say it can be pressed again", shaped(record, [{**start, "again": True}]), [{**start, "again": True}])
 
 # WRITING THE MESSAGE cleans what the agent put on it
 made = rows.create("Ready when you are", buttons=[start, {"label": "Go", "type": "plan", "n": 1, "action": "detonate"}])
