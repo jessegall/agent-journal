@@ -18,7 +18,7 @@ class PlansFeature(Feature):
 
     @event("agent.updated")
     def pass_checkpoints(self, event, record) -> None:
-        if not switched(record, "auto"):
+        if not switched(record, "work.auto"):
             return
         plans = Plans(record, actor=SYSTEM)
         for plan in plans.all():
@@ -31,7 +31,7 @@ class PlansFeature(Feature):
             return False
         i = plan.current
         last = i == len(plan.phases)
-        waits = bool(phase[PHASE.checkpoint]) and not switched(record, "auto")
+        waits = bool(phase[PHASE.checkpoint]) and not switched(record, "work.auto")
         plan.status = DONE if last else WAITING if waits else ACTIVE
         plan.current = i if last or waits else i + 1
         Plans(record, actor=SYSTEM).save(plan, "updated", phase=i, complete=True, status=plan.status,

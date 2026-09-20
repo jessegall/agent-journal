@@ -214,7 +214,7 @@ class Engine:
         return f"typed: {line[:60]}"
 
     def check_in(self) -> str:
-        from features.auto.policy import ASK_AGAIN, still_there
+        from features.work.auto import ASK_AGAIN, still_there
         if time.time() - self.checked_at < ASK_AGAIN:
             return ""
         line = still_there(self.record, self.agent.driver.quiet_for(), self.agent.state())

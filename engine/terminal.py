@@ -80,7 +80,7 @@ def seat(root: Path, env: str, session: str, pid: int, agent: str) -> None:
 def run(root: Path, cwd: Path, env: str, agent: str, args: list[str]) -> int:
     from engine.drivers import DRIVERS
     from engine.record import Record
-    from features.auto.policy import launch_args
+    from features.work.auto import launch_args
 
     driver = DRIVERS[agent]
     command = driver.command(driver, launch_args(Record(root, env), agent, args))

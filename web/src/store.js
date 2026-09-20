@@ -258,7 +258,7 @@ export const unreadByUser = (type) => open(type).filter((r) => !r.seen.includes(
 export const agent = computed(
     () => [...store.agents].filter((a) => !a.data.parent).sort((a, b) => (b.data.at || 0) - (a.data.at || 0))[0] || null
 );
-export const autoOn = computed(() => !!(store.settings && store.settings.features.auto));
+export const autoOn = computed(() => !!(store.settings && store.settings.features["work.auto"]));
 
 export function age(at) {
     if (!at) return "";

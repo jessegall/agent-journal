@@ -34,7 +34,7 @@ def environment(record: Record) -> dict:
         "work": work(current),
         "last": work(last),
         "plans": [plan(p, todos) for p in Plans(record, actor=SYSTEM).all() if p.status in SHOWN and not p.completed],
-        "auto": switched(record, "auto"),
+        "auto": switched(record, "work.auto"),
         "counts": {
             "messages": len(Messages(record, actor=SYSTEM).unread(USER)),
             "questions": len([q for q in Questions(record, actor=SYSTEM).all() if not q.completed]),

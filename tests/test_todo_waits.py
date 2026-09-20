@@ -3,7 +3,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from controllers.types import Plans, Todos  # noqa: E402
-from features.auto.next import ready  # noqa: E402
+from features.work.next import ready  # noqa: E402
 from migrations import m0005_todo_waits  # noqa: E402
 from resources.base import AGENT, USER  # noqa: E402
 from tests.kit import check, done, fresh, refused  # noqa: E402
