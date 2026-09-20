@@ -1,68 +1,53 @@
 from features.base import Feature
-from features.statusline.gist import gist, gist_tokens
+from features.statusline.gist import names
 from features.statusline.spoken import spoken
 from resources.types import COMMAND, RUNNING
 
-HELD = ("writes", "deletes", "tests")
-SCOPED = (*HELD, "installs", "builds", "reads")
-VERBS = {"tests": "running", "deletes": "deleting", "writes": "editing", "reads": "reading",
-         "installs": "installing", "builds": "building"}
-NOUNS = {"tests": "tests", "deletes": "files", "writes": "files", "reads": "files", "installs": "dependencies"}
 GRAY, MUTED, RED, GREEN = "gray", "muted", "red", "green"
-LEFT, RIGHT = "left", "right"
+RIGHT = "right"
+HELD = ("writes", "deletes", "tests")
+VERBS = {"writes": "editing", "reads": "reading", "deletes": "deleting", "tests": "testing",
+         "installs": "installing", "builds": "building", "": "running"}
+NOUNS = {"writes": "files", "reads": "files", "deletes": "files", "tests": "tests", "installs": "dependencies"}
 ROLL_EVERY = 0.5
 HOLD = 1.0
 LINGERS = 10.0
 CLOCK_AFTER = 10.0
-MOST_STEPS = 12
+MOST = 12
 NAME_CAP = 42
 
 
-def scoped(run: dict) -> bool:
-    return run.get(RUNNING.effect) in SCOPED
-
-
-def own_words(run: dict) -> bool:
-    return bool(run.get(RUNNING.tool)) and run.get(RUNNING.tool) != "Bash"
-
-
-def parted(tokens: list[dict]) -> list[dict]:
-    return [{"value": t["value"], "color": GRAY if t["kind"] == "command" else MUTED} for t in tokens]
-
-
-def gisted(run: dict) -> list[dict]:
-    what = run.get(RUNNING.what) or ""
-    return parted(gist_tokens(what if own_words(run) else gist(what, spoken)))
-
-
-def named(run: dict) -> list[dict]:
-    verb = VERBS.get(run.get(RUNNING.effect) or "")
-    return [{"value": verb, "color": GRAY}] if verb else []
+def kind_of(one: dict) -> str:
+    return one.get(COMMAND.effect) or ""
 
 
 def capped(said: str) -> str:
     return said if len(said) <= NAME_CAP else f"{said[:NAME_CAP - 1].rstrip()}…"
 
 
-def shown(one: dict) -> str:
+def named(one: dict) -> list[dict]:
     what = (one.get(COMMAND.what) or "").strip()
-    if not what or not one.get(COMMAND.tool) or one.get(COMMAND.tool) == "Bash":
-        return ""
-    return capped(what.split(" ", 1)[-1] if " " in what else what)
-
-
-def flipping(run: dict, commands: list) -> list[dict]:
-    effect = run.get(RUNNING.effect)
-    if not scoped(run) or run.get(RUNNING.done):
+    if not what:
         return []
-    names: list[str] = []
+    if (one.get(COMMAND.tool) or "Bash") != "Bash":
+        return [{"value": capped(what.split(" ", 1)[-1] if " " in what else what), "own": False}]
+    return [{**name, "value": capped(name["value"])} for name in names(what, spoken)]
+
+
+def working(run: dict, commands: list) -> list[dict]:
+    kind = kind_of(run)
+    seen: list[dict] = []
     for one in [*(commands or []), run, *(run.get(RUNNING.steps) or [])]:
-        if one.get(COMMAND.effect) != effect:
+        if kind_of(one) != kind:
             continue
-        name = shown(one)
-        if name and (not names or names[-1] != name):
-            names.append(name)
-    return [{"value": names[-MOST_STEPS:], "duration": ROLL_EVERY, "color": MUTED, "align": RIGHT}] if names else []
+        for name in named(one):
+            if not seen or seen[-1]["value"] != name["value"]:
+                seen.append(name)
+    return seen[-MOST:]
+
+
+def flipping(found: list[dict]) -> list[dict]:
+    return [{"value": [name["value"] for name in found], "duration": ROLL_EVERY, "color": MUTED, "align": RIGHT}] if found else []
 
 
 def outcome(result: dict) -> list[dict]:
@@ -70,48 +55,47 @@ def outcome(result: dict) -> list[dict]:
     return [{"value": f"{failed} failed", "color": RED} if failed else {"value": "passed", "color": GREEN}]
 
 
-def inner(run: dict) -> dict:
-    step = run.get(RUNNING.step) or ""
-    if not step or run.get(RUNNING.done) or scoped(run):
-        return {}
-    return {RUNNING.what: step, RUNNING.tool: "Bash", RUNNING.effect: run.get(RUNNING.step_effect) or ""}
+def verb_for(run: dict, found: list[dict]) -> list[dict]:
+    own = found and all(name["own"] for name in found)
+    return [] if own else [{"value": VERBS[kind_of(run)], "color": GRAY}]
 
 
-def words_for(run: dict, flips: list) -> list[dict]:
-    said = named(run)
-    if not said:
-        return gisted(run)
-    noun = NOUNS.get(run.get(RUNNING.effect) or "")
-    return [*said, *flips] if flips else [*said, *([{"value": noun, "color": MUTED}] if noun else [])]
-
-
-def line(run: dict, commands: list | None = None, now: float = 0.0) -> dict:
-    if not run or not run.get(RUNNING.what):
-        return {}
-    step = inner(run)
-    said = words_for(step, []) if step else words_for(run, flipping(run, commands or []))
-    if not said:
-        return {}
-    done = float(run.get(RUNNING.done) or 0)
-    result = run.get(RUNNING.result) or {}
-    return {
-        "key": key_of(said),
-        "parts": [*said, *(outcome(result) if done and result else [])],
-        "at": run.get(RUNNING.at) or 0,
-        "done": bool(done),
-        "for": int(max(0.0, (done or now or 0) - float(run.get(RUNNING.at) or 0))),
-        "clock": (done or now or 0) - float(run.get(RUNNING.at) or 0) >= CLOCK_AFTER,
-        "hold": HOLD if run.get(RUNNING.effect) in HELD else 0.0,
-        "lingers": LINGERS,
-    }
+def parts_for(run: dict, commands: list) -> list[dict]:
+    found = working(run, commands)
+    said = verb_for(run, found)
+    if found:
+        return [*said, *flipping(found)]
+    noun = NOUNS.get(kind_of(run))
+    return [*said, *([{"value": noun, "color": MUTED}] if noun else [])]
 
 
 def key_of(parts: list[dict]) -> str:
     return " ".join(p["value"] if isinstance(p["value"], str) else (p["value"][0] if p["value"] else "") for p in parts)
 
 
+def line(run: dict, commands: list | None = None, now: float = 0.0) -> dict:
+    if not run or not run.get(RUNNING.what):
+        return {}
+    said = parts_for(run, commands or [])
+    if not said:
+        return {}
+    done = float(run.get(RUNNING.done) or 0)
+    result = run.get(RUNNING.result) or {}
+    ran = max(0.0, (done or now or 0) - float(run.get(RUNNING.at) or 0))
+    return {
+        "key": key_of(said),
+        "parts": [*said, *(outcome(result) if done and result else [])],
+        "at": run.get(RUNNING.at) or 0,
+        "done": bool(done),
+        "for": int(ran),
+        "clock": ran >= CLOCK_AFTER,
+        "hold": HOLD if kind_of(run) in HELD else 0.0,
+        "lingers": LINGERS,
+    }
+
+
 def said_once(run: dict) -> dict:
-    said = words_for(run, [])
+    said = parts_for(run, [])
     return {"at": run.get(RUNNING.at) or 0, "key": key_of(said), "parts": said} if said else {}
 
 
@@ -123,4 +107,4 @@ class StatusLine(Feature):
     name = "statusline"
     title_ = "What the status bar shows"
     abstract_ = "The journal says what the bar shows, what it flips through and how long it lingers; the viewer renders it"
-    help_ = "A command worth naming as one act keeps its line and the bar flips through the files it is working on, every half second. Editing, deleting and a test run hold their line a second when something else replaces them, so their counts and their outcome can be read."
+    help_ = "Every line is what the agent is doing — running, reading, editing, testing, installing, building — and the names it works through, flipping every half second: the files for a file tool, the command and its subcommand for a shell. Editing, deleting and a test run hold their line a second so their counts and outcome can be read; a line with nothing to replace it stays ten seconds."
