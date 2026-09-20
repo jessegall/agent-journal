@@ -64,13 +64,6 @@ watch(told, (now) => {
                 <TransitionGroup tag="span" name="token" class="statusbar-run-text" :title="told.text">
                     <span v-for="(part, i) in told.parts" :key="`${i}-${part.value}`" :class="['statusbar-run-token', part.color]">
                         <template v-if="part.increments">{{ amount(part) }}</template>
-                        <template v-else-if="part.values.length > 1">
-                            <span class="statusbar-run-roll">
-                                <span v-for="(one, j) in part.values" :key="one" :class="['statusbar-run-item', {on: j === part.at}]">
-                                    {{ one }}
-                                </span>
-                            </span>
-                        </template>
                         <template v-else>{{ part.value }}</template>
                     </span>
                 </TransitionGroup>
@@ -99,27 +92,6 @@ watch(told, (now) => {
     font-size: 10.5px;
     color: var(--text-3);
     pointer-events: none;
-}
-
-.statusbar-run-roll {
-    display: inline-grid;
-    min-width: 0;
-}
-
-.statusbar-run-item {
-    grid-area: 1 / 1;
-    min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    visibility: hidden;
-    opacity: 0;
-    transition: opacity 160ms ease;
-}
-
-.statusbar-run-item.on {
-    visibility: visible;
-    opacity: 1;
 }
 
 .statusbar-run-line {

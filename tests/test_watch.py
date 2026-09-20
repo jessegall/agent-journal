@@ -49,7 +49,14 @@ watch.broke(record, "Traceback\nTypeError: bad", spoke)
 told = [n for n in notices.all() if n.title == watch.FAULT]
 check("an error while it runs raises its own notice and is typed to the agent",
       (len(told), "TypeError" in told[0].brief, "TypeError" in spoke.said[0]), (1, True, True))
-watch.broke(record, "Traceback\nTypeError: bad again", spoke)
+watch.broke(record, "Traceback\nTypeError: bad", spoke)
 check("the same trouble is not said twice", (len([n for n in notices.all() if n.title == watch.FAULT]), len(spoke.said)), (1, 1))
+watch.broke(record, "Traceback\nValueError: something else", spoke)
+check("a different error is its own notice, and is said too",
+      (len([n for n in notices.all() if n.title == watch.FAULT]), len(spoke.said), "ValueError" in spoke.said[-1]), (2, 2, True))
+watch.steady(record)
+check("a stretch of clean ticks closes every fault it left behind",
+      ([n.outcome for n in notices.all() if n.title == watch.FAULT], watch.broke(record, "Traceback\nTypeError: bad", spoke) or len(spoke.said)),
+      ([watch.STEADY, watch.STEADY], 3))
 
 done()

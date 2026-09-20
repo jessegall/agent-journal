@@ -15,7 +15,7 @@ from features.statusline.feature import MOST
 from engine import steps
 from engine.record import Record
 from engine.terminal import pid_of
-from engine.watch import broke
+from engine.watch import STEADY_AFTER, broke, steady
 from engine.sessions import Sessions
 from providers import PROVIDERS
 from resources.base import AGENT, SYSTEM
@@ -287,10 +287,15 @@ class Engine:
 
     def run(self) -> None:
         self.start()
+        clean = 0
         while self.running:
             try:
                 self.tick()
+                clean += 1
+                if clean == STEADY_AFTER:
+                    steady(self.record)
             except Exception:
+                clean = 0
                 trouble = traceback.format_exc()
                 sys.stderr.write(trouble)
                 sys.stderr.flush()

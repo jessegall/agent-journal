@@ -89,6 +89,7 @@ def run(root: Path, cwd: Path, env: str, agent: str, fd: int, session: str, life
     out = printed.open("ab")
     driver = spawn_driver(root, cwd, env, agent, fd, session)
     started = time.time()
+    settled = False
     stamps = watched(root)
     stdin, stdout = sys.stdin.fileno(), sys.stdout.fileno()
     shape = [rows, cols]
@@ -151,6 +152,9 @@ def run(root: Path, cwd: Path, env: str, agent: str, fd: int, session: str, life
                 watching = keep_viewer(root, cwd, watching)
             if now - last_check >= RELOAD_EVERY:
                 last_check = now
+                if not settled and driver.poll() is None and now - started >= watch.CRASH_WITHIN:
+                    settled = True
+                    watch.cleared(root, env)
                 if driver.poll() is not None or watched(root) != stamps:
                     if watch.crashed(driver.poll(), started) and watch.told(root, env, watch.why(root)):
                         os.write(fd, f"{watch.SAID} {watch.why(root, 3)}\r".encode())
