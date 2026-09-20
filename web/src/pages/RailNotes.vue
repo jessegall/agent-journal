@@ -1,15 +1,45 @@
 <script setup>
-import {computed, ref} from "vue";
+import {computed, onMounted, onUnmounted, ref, watch} from "vue";
 import {act, readAll as readAllRows} from "../api.js";
 import Icon from "../kit/Icon.vue";
 import Spinner from "../kit/Spinner.vue";
 import {peek, route} from "../route.js";
-import {age, rows} from "../store.js";
+import {age, earlier, rows} from "../store.js";
 
+const STEP = 25;
 const sub = ref("unread");
+const limit = ref(STEP);
 const notes = computed(() => [...rows("notification")].sort((a, b) => b.created - a.created));
 const unread = computed(() => notes.value.filter((n) => !n.seen.includes("user")));
-const shown = computed(() => (sub.value === "unread" ? unread.value : notes.value.filter((n) => n.seen.includes("user"))));
+const listed = computed(() => (sub.value === "unread" ? unread.value : notes.value.filter((n) => n.seen.includes("user"))));
+const shown = computed(() => listed.value.slice(0, limit.value));
+const more = ref(null);
+let watching = null;
+let loading = false;
+
+watch(sub, () => (limit.value = STEP));
+
+async function further() {
+    if (loading) return;
+    loading = true;
+    try {
+        if (limit.value < listed.value.length) limit.value += STEP;
+        else if (await earlier("notification")) limit.value += STEP;
+    } finally {
+        loading = false;
+    }
+}
+
+onMounted(() => {
+    watching = new IntersectionObserver((seen) => seen.some((e) => e.isIntersecting) && further());
+    if (more.value) watching.observe(more.value);
+});
+onUnmounted(() => watching && watching.disconnect());
+watch(more, (el) => {
+    if (!watching) return;
+    watching.disconnect();
+    if (el) watching.observe(el);
+});
 const reading = ref(false);
 const noteTitle = (n) => {
     const number = (n.refs[0] || "").split(":")[1];
@@ -29,10 +59,10 @@ async function readAll() {
     }
 }
 
-async function openNote(n) {
-    await act(route.value.env, "notification", n.n, "read");
-    const [type, num] = n.refs[0].split(":");
-    peek(type, Number(num));
+function openNote(n) {
+    const [type, num] = (n.refs[0] || "").split(":");
+    if (type) peek(type, Number(num));
+    act(route.value.env, "notification", n.n, "read");
 }
 </script>
 
@@ -77,6 +107,9 @@ async function openNote(n) {
             </span>
         </button>
     </TransitionGroup>
+    <template v-if="shown.length >= STEP">
+        <div ref="more" class="rail-more" />
+    </template>
     <template v-if="sub === 'unread' && unread.length">
         <div class="rail-foot">
             <button type="button" class="rail-foot-act" :disabled="reading" @click="readAll">
@@ -88,6 +121,10 @@ async function openNote(n) {
 </template>
 
 <style scoped>
+.rail-more {
+    height: 24px;
+}
+
 .qrow-enter-active {
     transition:
         opacity 0.24s ease-out,
