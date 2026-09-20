@@ -45,6 +45,6 @@ for name, provider_cls in PROVIDERS.items():
     check(f"{name}: the same edit passes", hook("PreToolUse", "Edit", file_path="x.py"), {})
     Works(record, actor=AGENT).complete(work.n, "done")
     check(f"{name}: work ended, nothing open: refused again", hook("PreToolUse", "Write", file_path="y.py"), {"decision": "block", "reason": REFUSED})
-    check(f"{name}: the flag is a file per environment and session, with the why", json.loads((root / "runtime" / f"gate-{env}-{session}.json").read_text())["gate"], REFUSED)
+    check(f"{name}: the flag is a file per environment and session, with the why", json.loads((root / "runtime" / f"gate-{env}-{session}.json").read_text())["work"], REFUSED)
 
 done()
