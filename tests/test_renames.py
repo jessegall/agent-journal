@@ -1,10 +1,12 @@
 import json
 
+import features
+from features.base import Feature
 from features.renames import rename
 from tests.conftest import fresh
 
 
-def test_renames():
+def test_renaming_a_feature_moves_all_of_its_stored_state_and_a_stale_hold_is_released_on_load():
     record = fresh("main")
     root = record.root
     home = root / "environments" / "main"
@@ -48,12 +50,9 @@ def test_renames():
     assert again == {"settings": 0, "gates": 0, "triggers": 0, "cursors": 0}, \
         "running it again does nothing, so it is safe on every load"
 
-    import features
-    from features.base import Feature
-
     class Moved(Feature):
         name = "moved"
-        was = ("gone",)
+        aliases = ("gone",)
 
     (root / "runtime" / "gate-main-s2.json").write_text(json.dumps({"gone": "held under the old name"}))
     features.load(root)

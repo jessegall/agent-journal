@@ -4,13 +4,12 @@ from resources.shapes import FLAG, TEXT, Field, Options, Ranked, Reasoned, Shape
 
 class Message(Shape, Resource):
     type = "message"
-    heard = ("created",)
     shown = {"created": "Message", "completed": "Message processed"}
     icon = "mail"
     idempotency = Field(TEXT)
     delivered = Field()
     told = True
-    alone = ("created",)
+    urgent_actions = ("created",)
     clears = OPENED
     names = {"complete": "processed"}
     title_ = "Message"
@@ -20,7 +19,6 @@ class Message(Shape, Resource):
 
 class Todo(Ranked, Resource):
     type = "todo"
-    heard = ("created",)
     shown = {"created": "To-do created", "completed": "To-do done"}
     status = Field()
     work = Field()
@@ -58,7 +56,7 @@ class Work(Traced, Resource):
 
 class Plan(Shape, Resource):
     type = "plan"
-    heard = ("created", "updated")
+    notify_actions = ("updated",)
     shown = {"completed": "Plan acknowledged"}
     says = {"complete": "acknowledging"}
     status = Field()
@@ -77,7 +75,6 @@ class Plan(Shape, Resource):
 
 class Doc(Shape, Resource):
     type = "doc"
-    heard = ("created",)
     shown = {"completed": "Doc settled"}
     says = {"complete": "settling"}
     status = Field()
@@ -95,7 +92,6 @@ class Doc(Shape, Resource):
 
 class Report(Shape, Resource):
     type = "report"
-    heard = ("created",)
     shown = {"completed": "Report archived"}
     says = {"complete": "archiving"}
     attention = True
@@ -110,7 +106,6 @@ class Report(Shape, Resource):
 
 class Pin(Reasoned, Resource):
     type = "pin"
-    heard = ("created",)
     shown = {"completed": "Pin struck"}
     says = {"complete": "striking"}
     handed = "PINS on this environment"
@@ -125,7 +120,6 @@ class Pin(Reasoned, Resource):
 
 class Rule(Reasoned, Resource):
     type = "rule"
-    heard = ("created",)
     shown = {"completed": "Rule struck"}
     says = {"complete": "striking"}
     injected = Field(FLAG)
@@ -142,7 +136,6 @@ class Rule(Reasoned, Resource):
 
 class Reminder(Shape, Resource):
     type = "reminder"
-    heard = ("created",)
     shown = {"completed": "Reminder retired"}
     says = {"complete": "retiring"}
     handed = "REMINDERS, said again at every stop"
@@ -157,11 +150,10 @@ class Reminder(Shape, Resource):
 
 class Question(Options, Resource):
     type = "question"
-    heard = ("completed",)
     shown = {"created": "Question asked", "completed": "Question answered"}
     says = {"create": "asking", "complete": "answering"}
     attention = True
-    alone = ("completed",)
+    urgent_actions = ("completed",)
     clears = COMPLETED
     nav = False
     icon = "help"
@@ -174,7 +166,6 @@ class Question(Options, Resource):
 
 class Suggestion(Options, Resource):
     type = "suggestion"
-    heard = ("completed",)
     shown = {"created": "Suggestion made", "completed": "Suggestion decided"}
     says = {"create": "suggesting", "complete": "deciding", "delete": "withdrawing"}
     decision = Field()
@@ -191,7 +182,6 @@ class Suggestion(Options, Resource):
 
 class Comment(Shape, Resource):
     type = "comment"
-    heard = ("created",)
     shown = {"created": "Comment", "completed": "Comment done"}
     mirror = True
     icon = "bubble"
@@ -267,7 +257,6 @@ class Notice(Shape, Resource):
 
 class Reaction(Shape, Resource):
     type = "reaction"
-    heard = ("created",)
     face = Field()
     mirror = True
     icon = "smile"
@@ -279,7 +268,6 @@ class Reaction(Shape, Resource):
 
 class Tool(Shape, Resource):
     type = "tool"
-    heard = ("created",)
     lent = False
     icon = "wrench"
     title_ = "Tool"
@@ -292,7 +280,6 @@ class Tool(Shape, Resource):
 
 class Style(Reasoned, Resource):
     type = "style"
-    heard = ("created",)
     shown = {"completed": "Style struck"}
     says = {"complete": "striking"}
     lent = False
@@ -309,7 +296,6 @@ class Style(Reasoned, Resource):
 
 class Connection(Shape, Resource):
     type = "connection"
-    heard = ("created",)
     lent = False
     icon = "plug"
     title_ = "Connection"
@@ -321,7 +307,6 @@ class Connection(Shape, Resource):
 
 class Plugin(Shape, Resource):
     type = "plugin"
-    heard = ("created",)
     shown = {"created": "Plugin installed", "completed": "Plugin removed"}
     says = {"complete": "removing"}
     lent = False
@@ -373,6 +358,7 @@ class Ask(Shape, Resource):
 
 class Nudge(Shape, Resource):
     type = "nudge"
+    notify_actions = ("created",)
     private = Field()
     session = Field()
     mirror = True

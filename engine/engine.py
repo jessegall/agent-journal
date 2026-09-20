@@ -16,7 +16,7 @@ from engine.terminal import pid_of
 from engine.watch import STEADY_AFTER, broke, steady
 from engine.sessions import Sessions
 from providers import PROVIDERS
-from resources.base import AGENT, SYSTEM
+from resources.base import AGENT, SYSTEM, USER
 from resources.types import PRIORITY, RUNNING, TYPES
 from engine.stored import write_json
 
@@ -188,9 +188,8 @@ class Engine:
                         CONTROLLERS[e.type](self.record, actor=AGENT).read(e.n)
                     actor.notified(e)
                     continue
-                told = TYPES[e.type].heard
-                if (e.actor == actor.name or actor.name not in TYPES[e.type].notify or self.private(e) or "seen" in e.data
-                        or (actor is self.agent and told and e.action not in told)):
+                mine = actor is self.agent and e.actor != USER and e.action not in TYPES[e.type].notify_actions
+                if e.actor == actor.name or actor.name not in TYPES[e.type].notify or self.private(e) or "seen" in e.data or mine:
                     actor.notified(e)
                     continue
                 actor.notify(e)

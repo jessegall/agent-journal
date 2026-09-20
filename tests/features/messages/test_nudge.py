@@ -18,7 +18,7 @@ features.load()
 record = fresh()
 def gate():
     f = gate_file(record.root, record.env, "claude-1")
-    return json.loads(f.read_text()).get("inbox", "") if f.is_file() else ""
+    return json.loads(f.read_text()).get("messages.unread", "") if f.is_file() else ""
 Works(record, actor=AGENT).create("something open")
 inbox = lambda: [n for n in nudges(record) if "inbox" in n]
 
@@ -51,7 +51,7 @@ Messages(record, actor=USER).create("another")
 use(19)
 check("a new message: told at once again, the count starting over", (len(inbox()), gate()), (7, ""))
 patient = fresh()
-patient.set_setting("inbox", {"patience": 0})
+patient.set_setting("messages", {"unread.patience": 0})
 Works(patient, actor=AGENT).create("open")
 Messages(patient, actor=USER).create("hi")
 report(patient, "working", "PreToolUse", uses=3)
