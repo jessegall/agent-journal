@@ -144,9 +144,10 @@ class Claude(Driver):
     name = "claude"
     AUTO_ARGS = ("--permission-mode", "auto")
     APPROVAL_FLAGS = frozenset({"--permission-mode", "--dangerously-skip-permissions"})
+    TAKES_OURS = ("--settings", json.dumps({"crossSessionInbound": "accept"}))
 
     def command(self, args: list[str]) -> list[str]:
-        return ["claude", *args]
+        return ["claude", *(() if self.TAKES_OURS[0] in args else self.TAKES_OURS), *args]
 
 
 class Codex(Driver):
