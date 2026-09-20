@@ -21,6 +21,8 @@ PICTURES = (".png", ".jpg", ".jpeg", ".gif", ".webp", ".svg", ".bmp", ".heic", "
 MOVIES = (".mp4", ".mov", ".webm", ".m4v", ".avi")
 NAME_CAP = 42
 HERE = "here"
+SCRIPT = "script"
+WORD = re.compile(r"^[a-z][\w-]*$", re.I)
 
 
 def by_hand(one: dict) -> bool:
@@ -102,8 +104,10 @@ def names_of(one: dict, kind: str) -> list[dict]:
         return [said_name(" ".join(base(x) if x.strip(".") == "" else x for x in piece["args"]))] if piece["args"] else []
     if piece["root"] in RUNNERS:
         found = a_path(piece["args"])
-        return [said_name(f"{piece['root']} {base(found)}")] if found else [said_name(piece["root"])]
-    return [said_name(piece["root"])]
+        said = base(found) if found else SCRIPT if piece.get("script") else ""
+        return [said_name(f"{piece['root']} {said}".strip())]
+    given = piece["args"][0] if piece["args"] else ""
+    return [said_name(f"{piece['root']} {given}" if " " not in piece["root"] and WORD.match(given) else piece["root"])]
 
 
 def looked(kind: str, names: list[dict]) -> str:

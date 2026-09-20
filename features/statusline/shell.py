@@ -117,7 +117,7 @@ def piece_parts(piece: str, translate=None) -> dict:
     given = w[len(root):]
     args = [x for i, x in enumerate(given)
             if not DROPPED.match(x) and not (DIGITS.match(x) and (given[i - 1] if i else "").startswith("-"))]
-    return {"own": False, "root": " ".join(root), "args": args}
+    return {"own": False, "root": " ".join(root), "args": args, "script": any(x.startswith("<<") for x in w)}
 
 
 def without_scripts(command: str) -> str:

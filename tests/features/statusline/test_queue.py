@@ -109,7 +109,7 @@ check("every message carries an id, which is when its run began",
 check("an edit that named no file is not editing anything: it is the command, running",
       (said([shell("python3 - <<'EOF'\nopen('x','w')\nEOF", effect="writes", done=NOW + 1)]),
        said([shell("cd /x && touch a", effect="writes", done=NOW + 1)])),
-      ([["running", "python3"]], [["running", "touch"]]))
+      ([["running", "python3", "script"]], [["running", "touch", "a"]]))
 check("only editing and deleting count lines; a read that was stamped with them says nothing",
       said([read("t.py", changed={"added": 8, "removed": 1})]), [["reading", "t.py"]])
 check("reading never names the command, only what it read",
