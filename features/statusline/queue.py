@@ -14,6 +14,8 @@ HOLD = 1.0
 LINGERS = 10.0
 CLOCK_AFTER = 10.0
 MOST = 12
+DRAIN = 10
+DRAINING = 0.25
 
 
 def worked(group: list[dict]) -> list[dict]:
@@ -72,7 +74,7 @@ def walked(parts: list[dict]) -> float:
     return steps * FLIP_EVERY if steps > 1 else 0.0
 
 
-def message(group: list[dict], closed: bool, now: float) -> dict:
+def message(group: list[dict], closed: bool, now: float, waiting: int = 0) -> dict:
     kind = group[0]["kind"]
     found = worked(group)
     noun = NOUNS.get(kind)
@@ -87,10 +89,10 @@ def message(group: list[dict], closed: bool, now: float) -> dict:
         "done": over,
         "for": int(ran),
         "clock": ran >= CLOCK_AFTER and not over,
-        "hold": max(HOLD if kind in HELD else 0.0, walked(said)),
+        "hold": DRAINING if waiting >= DRAIN else max(HOLD if kind in HELD else 0.0, walked(said)),
         "lingers": LINGERS,
     }
 
 
 def queue(groups: list[list[dict]], now: float = 0.0) -> list[dict]:
-    return [message(group, i < len(groups) - 1, now) for i, group in enumerate(groups)]
+    return [message(group, i < len(groups) - 1, now, len(groups) - 1 - i) for i, group in enumerate(groups)]
