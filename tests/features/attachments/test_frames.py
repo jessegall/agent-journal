@@ -6,7 +6,7 @@ from types import SimpleNamespace
 sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 import features  # noqa: E402
 from controllers.types import Messages  # noqa: E402
-from features.video import feature  # noqa: E402
+from features.attachments import feature  # noqa: E402
 from resources.base import USER  # noqa: E402
 from tests.kit import check, done, fresh  # noqa: E402
 
