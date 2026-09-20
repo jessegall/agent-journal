@@ -341,7 +341,7 @@ class Ask(Shape, Resource):
     icon = "open"
     title_ = "Browser ask"
     abstract_ = "What the agent asks of the tab the user is driving — a picture, its text, a click — answered by the extension"
-    help_ = "journal browser shot|url|text|dom|console|click <selector>|type <selector> <words>|goto <url>|eval <js>|scroll top|bottom|<selector>; the user turns driving on in the chat window's bar."
+    help_ = "journal browser ask shot|url|text|dom|console|click <selector>|type <selector> <words>|goto <url>|eval <js>|scroll top|bottom|<selector>; the user turns driving on in the chat window's bar."
     nav = False
     notify = ()
 

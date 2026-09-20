@@ -51,7 +51,7 @@ A session works one environment; `journal environment switch <n>` takes a free o
 
 ## Skills
 
-The start block names the skills to load before the first write — every `journal-*` skill until the user chooses otherwise on the viewer's Skills page, where each skill has a Load button (a message asking you to load it now) and an every-start switch. Load what the block names with the Skill tool, then work; the skills feature reminds you every 25 tool uses if no journal skill is in the window, because a compaction empties it.
+The start block names the skills to load before the first write — every `journal-*` skill until the user chooses otherwise on the viewer's Skills page, where each skill has a Load button (a message asking you to load it now) and an every-start switch. Load what the block names with the Skill tool, then work; the skills feature reminds you once per window, after 25 tool uses, if no journal skill is in it, because a compaction empties it.
 
 ## Features
 
