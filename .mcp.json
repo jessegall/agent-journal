@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "journal": {
+      "command": "python3",
+      "args": [
+        "/Users/jessegall/projects/agent-journal/.journal/src/channel.py",
+        "/Users/jessegall/projects/agent-journal/.journal"
+      ]
+    }
+  }
+}
