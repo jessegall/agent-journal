@@ -1,5 +1,5 @@
 from features.base import Feature
-from features.statusline.gist import names
+from features.statusline.gist import gists, names
 from features.statusline.spoken import spoken
 from resources.types import COMMAND, RUNNING
 
@@ -50,8 +50,10 @@ def named(one: dict) -> list[dict]:
     if by_hand(one):
         said = what.split(" ", 1)
         return [{"value": capped(said[1] if len(said) > 1 and said[0] in VERBED else what), "own": False}]
-    first = names(what, spoken)[:1]
-    return [{**name, "value": capped(name["value"])} for name in first]
+    if kind_of(one) == "tests":
+        subject = gists(what, spoken)[:1]
+        return [{"value": capped(subject[0]), "own": False}] if subject else []
+    return [{**name, "value": capped(name["value"])} for name in names(what, spoken)[:1]]
 
 
 def files_of(one: dict) -> list[dict]:
@@ -76,8 +78,26 @@ def working(run: dict, commands: list) -> list[dict]:
     return seen[-MOST:]
 
 
-def flipping(found: list[dict]) -> list[dict]:
-    return [{"value": [name["value"] for name in found], "duration": ROLL_EVERY, "color": MUTED, "align": RIGHT}] if found else []
+def shared(said: list[list[str]]) -> int:
+    for i in range(min(len(words) for words in said)):
+        if len({words[i] for words in said}) > 1:
+            return i
+    return min(len(words) for words in said)
+
+
+def columns(found: list[dict], root: bool) -> list[dict]:
+    said = [name["value"].split(" ") for name in found]
+    same = shared(said)
+    parts = [{"value": word, "color": GRAY if root and i == 0 else MUTED, "align": RIGHT} for i, word in enumerate(said[0][:same])]
+    rest = list(dict.fromkeys(" ".join(words[same:]) for words in said if words[same:]))
+    if rest:
+        parts.append({"value": rest[0] if len(rest) == 1 else rest, "duration": ROLL_EVERY,
+                      "color": GRAY if root and not parts else MUTED, "align": RIGHT})
+    return parts
+
+
+def flipping(found: list[dict], root: bool) -> list[dict]:
+    return columns(found, root) if found else []
 
 
 def outcome(result: dict) -> list[dict]:
@@ -96,7 +116,7 @@ def parts_for(run: dict, commands: list) -> list[dict]:
     found = working(run, commands)
     said = verb_for(run, found)
     if found:
-        return [*said, *flipping(found)]
+        return [*said, *flipping(found, not said)]
     noun = NOUNS.get(kind_of(run))
     return [*said, *([{"value": noun, "color": MUTED}] if noun else [])]
 
