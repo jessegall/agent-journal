@@ -117,7 +117,8 @@ export function rows(type) {
 }
 
 const ENDED = ["done", "abandoned"];
-export const GROUPS = {started: "In progress", blocked: "Blocked", waiting: "Waiting on others", asked: "Waiting on you", open: "Open"};
+export const GROUPS = {started: "In progress", blocked: "Blocked", planned: "Planned", waiting: "Waiting on others", asked: "Waiting on you", open: "Open"};
+const UNSTARTED = ["building", "ready"];
 
 export function waitsOn(r) {
     return [].concat(r.data.after || []).filter((ref) => {
@@ -131,8 +132,14 @@ export function planOf(r) {
     return rows("plan").find((p) => !p.deleted && (p.data.phases || []).some((f) => (f.todos || []).includes(r.n))) || null;
 }
 
+export function planned(r) {
+    const plan = planOf(r);
+    return !!plan && UNSTARTED.includes(plan.data.status);
+}
+
 export function groupOf(r) {
     if (r.data.blocked) return "blocked";
+    if (planned(r)) return "planned";
     if (waitsOn(r).length) return "waiting";
     if (r.data.status === "started") return "started";
     return rows("question").some((q) => !q.completed && q.refs.includes(r.ref)) ? "asked" : "open";
@@ -252,7 +259,7 @@ export async function boot() {
 }
 
 export const state = (r) =>
-    r.data.struck ? "struck" : r.completed ? "done" : r.data.blocked ? "blocked" : r.data.status === "started" ? "started" : "open";
+    r.data.struck ? "struck" : r.completed ? "done" : r.data.blocked ? "blocked" : planned(r) ? "planned" : r.data.status === "started" ? "started" : "open";
 export const open = (type) => rows(type).filter((r) => !r.completed);
 export const unreadByUser = (type) => open(type).filter((r) => !r.seen.includes("user"));
 export const agent = computed(
