@@ -5,7 +5,7 @@ import time
 from unittest.mock import patch
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from commands.http import dispatch
 from controllers.types import Agents, Notices, Notifications
 from engine.drivers import Driver
@@ -13,7 +13,7 @@ from engine.engine import Engine
 from engine.inputs import FORCE, queue, take
 from engine.record import Record
 from engine.sessions import Sessions
-from features.sessioncontrol.control import CARRY_ON, force, options, request
+from surfaces.control import CARRY_ON, force, options, request
 from providers.codex import Codex
 from resources.base import SYSTEM
 from resources.types import AgentRow

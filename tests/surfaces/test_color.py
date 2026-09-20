@@ -2,18 +2,16 @@ import json
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 import features  # noqa: E402
 from commands.http import dispatch  # noqa: E402
-from features.identity.color import default, identity, set_color  # noqa: E402
+from surfaces.color import default, identity, set_color  # noqa: E402
 from tests.kit import check, done, fresh, refused  # noqa: E402
 
 features.unload()
 features.load()
 
 record = fresh()
-feature = features.FEATURES["identity"]
-check("project identity is fixed on", (feature.enabled(record), feature.describe()["fixed"]), (True, True))
 check("the project name always chooses the same palette color", (default("agent-journal"), default("agent-journal")), ("#0090ff", "#0090ff"))
 check("identity starts with its hashed project color", identity(record.root), {
     "project": record.root.parent.name,

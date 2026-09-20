@@ -4,7 +4,7 @@ import zipfile
 from pathlib import Path
 
 
-HERE = Path(__file__).resolve().parents[2] / "extension"
+HERE = Path(__file__).resolve().parents[1] / "extension"
 
 
 def info() -> dict:
