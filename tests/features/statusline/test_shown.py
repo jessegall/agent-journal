@@ -75,7 +75,51 @@ def a_test():
     return "testing", "test_queue.py"
 
 
-DOING = (an_edit, a_read, a_journal, a_shell, a_test)
+def a_delete():
+    path = project / "gone.txt"
+    path.write_text("bye\n")
+    ran("Bash", {"command": "true"})
+    path.unlink()
+    ran("Bash", {"command": f"rm {path.name}"})
+    return "deleting", path.name
+
+
+def an_install():
+    ran("Bash", {"command": "pip install requests"})
+    return "installing", "requests"
+
+
+def a_build():
+    ran("Bash", {"command": "npm run build"})
+    return "building", ""
+
+
+def a_search():
+    ran("Grep", {"pattern": "def foo"})
+    return "searching", "def foo"
+
+
+def a_fetch():
+    ran("WebFetch", {"url": "https://docs.example.com/a/b"})
+    return "fetching", "docs.example.com"
+
+
+def a_dispatch():
+    ran("Agent", {"subagent_type": "auditor"})
+    return "dispatching", "auditor"
+
+
+def a_skill():
+    ran("Skill", {"skill": "journal"})
+    return "loading", "journal"
+
+
+def an_mcp():
+    ran("mcp__playwright__browser_take_screenshot", {})
+    return "using", "playwright"
+
+
+DOING = (an_edit, a_read, a_journal, a_shell, a_test, a_delete, an_install, a_build, a_search, a_fetch, a_dispatch, a_skill, an_mcp)
 
 
 def settled(message, at=-1):
@@ -113,6 +157,8 @@ check("a reading message never carries line counts", counted_reads[:3], [])
 check("no message ever renders an empty part or a double space", empties[:3], [])
 check("every verb on the bar is one the journal knows",
       sorted({q[-1]["parts"][0]["value"] for q in queues} - set(VERBS.values()) - {"using"}), [])
+check("every verb the journal has a word for is driven end to end",
+      sorted((set(VERBS.values()) | {"using"}) - {q[-1]["parts"][0]["value"] for q in queues}), [])
 
 script = """
 import {line, shown} from "./web/src/layout/bar.js";
