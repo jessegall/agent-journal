@@ -10,15 +10,22 @@ from resources.types import Work
 class WorkFeature(Feature):
     name = "work"
     title_ = "Work"
-    abstract_ = "Work started for a to-do is linked to it; its log is kept, and twenty edits without an entry hold the writes; work ended --todo closes the row"
-    help_ = 'Start work with --todo=<n> to take a row; log each decision and turn with journal work log <n> "<message>" (work.log_after, 20 edits, without an entry holds the writes); end it with --todo to close the row with it.'
+    abstract_ = "Work started for a to-do is linked to it; its log is kept, and twenty edits without an entry hold the writes; work parked is set aside until the next log entry"
+    help_ = 'Start work with --todo=<n> to take a row; log each decision and turn with journal work log <n> "<message>" (work.log_after, 20 edits, without an entry holds the writes); end it with --todo to close the row with it. journal work park <n> "<why>" sets it aside with no clock — it stays open, stops being nudged and stops holding writes, and the next log entry picks it up.'
     trigger = {"on": trigger.WORKED}
     EDITS, LOG_AFTER = "edits", "log_after"
     log_after = 20
 
     @command("work")
     def log(self, works: Works, n: int, text: str):
+        if works.load(n).parked:
+            works.update(n, parked="")
         return works.section(n, f"{len(works.load(n).sections) + 1} · {time.strftime('%Y-%m-%d %H:%M')}", text)
+
+    @command("work")
+    def park(self, works: Works, n: int, why: str):
+        return works.update(n, parked=why)
+
 
     @on("work.created")
     def started(self, event, record) -> None:
