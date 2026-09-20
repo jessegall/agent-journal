@@ -7,7 +7,7 @@ GRAY, MUTED, RED, GREEN = "gray", "muted", "red", "green"
 JOURNAL = "journal"
 USING = "using"
 VERBS = {"writes": "editing", "reads": "reading", "deletes": "deleting", "tests": "testing",
-         "installs": "installing", "builds": "building", JOURNAL: "journalling", "": "running"}
+         "installs": "installing", "builds": "building", JOURNAL: "journal", "": "running"}
 NOUNS = {"writes": "files", "reads": "files", "deletes": "files", "tests": "tests", "installs": "dependencies"}
 HELD = ("writes", "deletes", "tests")
 TOUCHED = ("writes", "deletes")
@@ -74,20 +74,17 @@ def worked(group: list[dict], kind: str) -> list[str]:
     return [capped(name) for name in found[-MOST:]]
 
 
-def shared(said: list[list[str]]) -> int:
-    for i in range(min(len(w) for w in said)):
-        if len({w[i] for w in said}) > 1:
-            return i
-    return min(len(w) for w in said)
-
-
 def columns(found: list[str]) -> list[dict]:
     said = [words(name) for name in found]
-    same = shared(said)
-    parts = [{"value": word, "color": MUTED} for word in said[0][:same]]
-    rest = list(dict.fromkeys(" ".join(w[same:]) for w in said if w[same:]))
-    if rest:
-        parts.append({"value": rest[0] if len(rest) == 1 else rest, "duration": FLIP_EVERY, "color": MUTED})
+    wide = max(len(w) for w in said)
+    rows = [[*w, *([""] * (wide - len(w)))] for w in said]
+    parts = []
+    for i in range(wide):
+        column = [row[i] for row in rows]
+        if len(set(column)) > 1:
+            parts.append({"value": column, "duration": FLIP_EVERY, "color": MUTED})
+        elif column[0]:
+            parts.append({"value": column[0], "color": MUTED})
     return parts
 
 
