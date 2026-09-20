@@ -47,6 +47,9 @@ check("a glob or a grep is searching, not reading, and it names what it looked f
       [("searches", ["def features"]), ("searches", ["*.md"])])
 check("a search names what the searching command looked for, never the command beside it",
       names(shell("sed -n 160,175p web/src/layout/TopBar.vue; grep -rn z-index web/src | head -8", effect="searches")), ["z-index web/src"])
+check("a read names the file the reading command read, not a URL beside it",
+      names(shell("curl -s http://x/api/main/changes | head -c 300; ls -la .journal/runtime/changes.json", effect="reads")),
+      ["changes.json"])
 check("a read names a path and never a flag's value",
       (names(shell("sed -n 88,94p providers/base.py", effect="reads")), names(shell("ls", effect="reads"))), (["base.py"], []))
 check("a test run names its subject, never its runner", names(shell("python3 tests/test_serve.py", effect="tests")), ["test_serve.py"])
