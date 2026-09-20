@@ -144,9 +144,12 @@ check("a package file an older installer did not copy is fetched before the hook
 
 # THE LAUNCHER asks the running viewer first and always falls back to running it here
 launcher = (project / ".journal" / "journal").read_text()
-check("it reads the heartbeat rather than trying a connection, and runs the command here when the viewer is not up",
+check("it reads the heartbeat rather than trying a connection, and runs the command here when the server is not up",
       ("runtime/heartbeat" in launcher, "api/run" in launcher, launcher.rstrip().endswith('"$@"')), (True, True, True))
-check("only what the viewer answered is taken: anything else falls through",
+check("only what the server answered is taken: anything else falls through",
       ("200)" in launcher and "400)" in launcher, "409" in launcher), (True, False))
+shim = (test_home / ".local" / "bin" / "journal").read_text()
+check("the shared command asks the server too, once it has found the journal above it",
+      ("runtime/heartbeat" in shim, shim.rstrip().endswith("exit 1")), (True, True))
 
 done()

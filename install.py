@@ -68,32 +68,53 @@ def retire(root: Path) -> int:
     return len(old)
 
 
-LAUNCHER = """#!/bin/sh
-root="{root}"
-if read -r at url < "$root/runtime/heartbeat" 2>/dev/null && [ $(( $(date +%s) - at )) -le 5 ]; then
-  reply=$(printf '%s\\0' "$@" | curl -s -m 20 -w '\\n%{{http_code}}' -H 'Content-Type: text/plain' --data-binary @- "${{url}}api/run")
-  code=${{reply##*
-}}
-  body=${{reply%
-*}}
-  case "$code" in
-    200) printf '%s' "$body"; exit 0 ;;
-    400) printf '%s' "$body" >&2; exit 1 ;;
-  esac
+ASKS = """if read -r at url < "$root/runtime/heartbeat" 2>/dev/null && [ $(( $(date +%s) - at )) -le 5 ]; then
+reply=$(printf '%s\\0' "$@" | curl -s -m 20 -w '\\n%{http_code}' -H 'Content-Type: text/plain' --data-binary @- "${url}api/run")
+said=${reply##*
+}
+body=${reply%
+*}
+case "$said" in
+200) printf '%s' "$body"; exit 0 ;;
+400) printf '%s' "$body" >&2; exit 1 ;;
+esac
 fi
-exec "{python}" "{script}" --root "$root" "$@"
 """
+
+SHIM = """#!/bin/sh
+dir="$(pwd)"
+while [ "$dir" != "/" ]; do
+for src in "$dir/.journal/src" "$dir/.journal"; do
+if [ -f "$src/journal.py" ]; then
+root="$dir/.journal"
+""" + ASKS + """exec python3 "$src/journal.py" --root "$root" "$@"
+fi
+done
+dir="$(dirname "$dir")"
+done
+echo "no .journal/ here or above: install agent-journal in this project first" >&2
+exit 1
+"""
+
+LAUNCHER = """#!/bin/sh
+root="__ROOT__"
+""" + ASKS + """exec "__PYTHON__" "__SCRIPT__" --root "$root" "$@"
+"""
+
+
+def launcher(python: str, script: Path, root: Path) -> str:
+    return LAUNCHER.replace("__PYTHON__", python).replace("__SCRIPT__", str(script)).replace("__ROOT__", str(root))
 
 
 def alias(project: Path, root: Path) -> Path:
     f = root / "journal"
     f.parent.mkdir(parents=True, exist_ok=True)
-    f.write_text(LAUNCHER.format(python=sys.executable, script=code(root) / "journal.py", root=root))
+    f.write_text(launcher(sys.executable, code(root) / "journal.py", root))
     f.chmod(f.stat().st_mode | stat.S_IEXEC)
     bin_ = Path.home() / ".local" / "bin"
     if bin_.is_dir():
         shim = bin_ / "journal"
-        shim.write_text('#!/bin/sh\ndir="$(pwd)"\nwhile [ "$dir" != "/" ]; do\n  for code in "$dir/.journal/src" "$dir/.journal"; do\n    if [ -f "$code/journal.py" ]; then exec python3 "$code/journal.py" --root "$dir/.journal" "$@"; fi\n  done\n  dir="$(dirname "$dir")"\ndone\necho "no .journal/ here or above: install agent-journal in this project first" >&2\nexit 1\n')
+        shim.write_text(SHIM)
         shim.chmod(shim.stat().st_mode | stat.S_IEXEC)
     return f
 
