@@ -1,6 +1,6 @@
 import re
 
-from features.statusline.shell import parsed
+from features.statusline.shell import RUNNERS, parsed
 from features.statusline.spoken import spoken
 from resources.types import COMMAND
 
@@ -64,7 +64,10 @@ def names_of(one: dict, kind: str) -> list[dict]:
         found = a_path(piece["args"])
         return [whole(base(found))] if found else []
     if kind in GIVEN:
-        return [whole(piece["args"][0])] if piece["args"] else []
+        return [said_name(" ".join(piece["args"]))] if piece["args"] else []
+    if piece["root"] in RUNNERS:
+        found = a_path(piece["args"])
+        return [said_name(f"{piece['root']} {base(found)}")] if found else [said_name(piece["root"])]
     return [said_name(piece["root"])]
 
 
