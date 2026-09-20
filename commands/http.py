@@ -42,7 +42,9 @@ PLAIN = "text/plain; charset=utf-8"
 
 def shaped(r, record=None, surface: str = "") -> dict:
     row = given(r)
-    return {**row, **{key: formatted(row.get(key), record, surface) for key in SAID if row.get(key)}}
+    tags = features.FEATURES.get("tags")
+    place = {"place": tags.place(row.get("brief"), record)} if tags and record and row.get("brief") else {}
+    return {**row, **place, **{key: formatted(row.get(key), record, surface) for key in SAID if row.get(key)}}
 
 
 @dataclass
@@ -144,7 +146,7 @@ def switches(record: Record) -> dict:
 def settings(record: Record) -> dict:
     return {Record.features: switches(record),
             Record.triggers: record.triggers, Record.keep: record.keep, Record.delivery: record.delivery,
-            Record.tags: {"names": features.FEATURES["tags"].names(record)},
+            Record.tags: {"names": features.FEATURES["tags"].names(record), "places": features.FEATURES["tags"].places(record)},
             Record.questions: {"hold": features.FEATURES["questions"].held_for(record)}}
 
 

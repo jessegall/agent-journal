@@ -1,7 +1,7 @@
 <script setup>
 import PSection from "./PSection.vue";
 
-import {computed, ref, watch} from "vue";
+import {computed, onMounted, onUnmounted, ref, watch} from "vue";
 import {act, saveSettings} from "../api.js";
 import Icon from "../kit/Icon.vue";
 import RunningCommand from "./RunningCommand.vue";
@@ -33,6 +33,16 @@ const sentence = computed(() => {
 });
 watch(line, (now, before) => (was.value = before || ""));
 const plans = computed(() => shownPlans(rows("plan")));
+const LINGERS = 120;
+const now = ref(Date.now() / 1000);
+let clock = 0;
+onMounted(() => (clock = setInterval(() => (now.value = Date.now() / 1000), 5000)));
+onUnmounted(() => clearInterval(clock));
+const aside = computed(() => {
+    const said = [...rows("message"), ...rows("comment")].filter((r) => !r.deleted && r.place === "bar" && r.seen[0] === "agent");
+    const newest = said.reduce((a, b) => (!a || b.created > a.created ? b : a), null);
+    return newest && now.value - newest.created < LINGERS ? newest.brief : "";
+});
 const error = ref("");
 const done = (p) => doneOf(p, rows("todo"));
 
@@ -86,6 +96,9 @@ async function runBar(p) {
             </button>
         </span>
     </div>
+    <Transition name="planbar">
+        <div v-if="aside" class="statusbar-aside">{{ aside }}</div>
+    </Transition>
     <TransitionGroup name="planbar">
         <PSection v-for="p in plans" :key="p.n" :plans="plans" :error="error" :data="p.data" :p="p" @run-bar="runBar" />
     </TransitionGroup>
@@ -103,6 +116,17 @@ async function runBar(p) {
     border-bottom: 1px solid var(--border);
     background: #17181b;
     cursor: pointer;
+}
+
+.statusbar-aside {
+    padding: 6px 20px 6px 40px;
+    border-bottom: 1px solid var(--border);
+    background: #141518;
+    color: var(--text-2);
+    font-size: 12.5px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .statusbar:hover {

@@ -10,6 +10,8 @@ from support.transcript import last_said, last_turn
 
 TAGS = ("discovery", "correction", "blocked", "info", "reply")
 RUNS = {"reply": "message reply {n} {text}", "log": "work log {text} --n {n}", "end": "work end {n} --how {text}"}
+PLACES = {"info": "bar"}
+LEADING = re.compile(r"^[ \t]*(?:>\s?)?(?:\*\*)?\[!([a-z]+)(?::[^\]\s]+)?\]")
 CARRIED = re.compile(r"^[ \t]*(?:>\s?)?(?:\*\*)?\[!([a-z]+):([0-9]+)\]", re.M)
 
 
@@ -43,6 +45,7 @@ class Tags(Feature):
                                        trigger={"on": trigger.IDLE})}
     NAMES = "names"
     RUNS = "runs"
+    PLACES = "places"
 
     def names(self, record) -> list[str]:
         return [str(name).strip().lstrip("[!").rstrip("]") for name in record.setting(self.name, {}).get(self.NAMES, TAGS) if str(name).strip()] or list(TAGS)
@@ -98,3 +101,10 @@ class Tags(Feature):
                         *self.argv(runs[name], n, text)], out=said, err=wrong)
             if code:
                 self.nudge(record, agent, f"the {name} tag on {n} did not run", (wrong.getvalue() or said.getvalue()).strip(), private=True)
+
+    def places(self, record) -> dict:
+        return {**PLACES, **record.setting(self.name, {}).get(self.PLACES, {})}
+
+    def place(self, text: str, record) -> str:
+        found = LEADING.match(str(text or ""))
+        return self.places(record).get(found.group(1), "chat") if found else "chat"
