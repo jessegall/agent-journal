@@ -166,6 +166,28 @@ def gists(command: str, translate=None) -> list[str]:
     return [said for said in (piece_gist(p, translate) for p in kept) if said]
 
 
+def piece_name(piece: str, translate=None) -> dict:
+    w = verb_of(piece)
+    if not w or w[0] in NOISE:
+        return {}
+    if w[0].split("/")[-1].lower() in RUNNERS and JOURNAL_SCRIPT.search(w[1] if len(w) > 1 else ""):
+        w = w[1:]
+    verb = w[0].split("/")[-1]
+    if translate and JOURNAL_VERB.match(verb):
+        said = translate(journal_words(w[1:]))
+        return {"value": said, "own": True} if said else {}
+    said = [verb]
+    while verb in SUBVERBS and len(w) > len(said) and not w[len(said)].startswith("-") and (len(said) == 1 or said[-1] == "run"):
+        said.append(w[len(said)])
+    return {"value": " ".join(said), "own": False}
+
+
+def names(command: str, translate=None) -> list[dict]:
+    parts = expanded(pieces(without_scripts(command)))
+    kept = [p for i, p in enumerate(parts) if not (i > 0 and (verb_of(p) or [""])[0] in FILTERS)]
+    return [name for name in (piece_name(p, translate) for p in kept) if name]
+
+
 def gist(command: str, translate=None) -> str:
     real = gists(command, translate)
     if not real:
