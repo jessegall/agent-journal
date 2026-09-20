@@ -7,7 +7,7 @@ from resources.types import COMMAND
 JOURNAL = "journal"
 TOUCHED = ("writes", "deletes")
 NAMED = ("reads", "tests")
-GIVEN = ("installs",)
+GIVEN = ("installs", "searches")
 FILE = re.compile(r"^[\w.-]+\.\w+$")
 NAME_CAP = 42
 

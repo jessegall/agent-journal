@@ -27,6 +27,8 @@ EFFECTS = (
     ("builds", re.compile(START + r"(?:npm run build|yarn build|pnpm (?:run )?build|npx (?:vite|tsc|webpack|esbuild|rollup)|vite build|tsc|webpack|make|cargo build|go build|dotnet build|docker build|mvn\b[^;&|]*\b(?:package|compile)|\S*gradlew?\b[^;&|]*\bbuild)\b")),
     ("deletes", re.compile(START + r"(?:rm|rmdir|unlink|git rm)\s")),
     ("writes", re.compile(START + r"(?:perl\s+-\w*i|sed\s+-i)|\.write_text\(|\.write\(|open\([^)]*,\s*(?:mode=)?['\"][wa]b?\+?['\"]")),
+    ("searches", re.compile(READING + r"(?:grep|rg|ag|find|fd)\b")),
+    ("searches", re.compile(READING + r"(?:cat|head|tail|less|sed -n|wc|ls|stat)\b[^;&|]*\*")),
     ("reads", re.compile(READING + r"(?:cat|head|tail|less|grep|rg|sed -n|wc|ls|find|tree|stat|file|diff|git (?:log|show|diff|status))\b")),
 )
 PASSED = re.compile(r"\b(\d+) passed\b")

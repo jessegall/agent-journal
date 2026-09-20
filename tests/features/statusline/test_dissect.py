@@ -40,6 +40,9 @@ check("a shell edit names the files the tree diff saw change, not the command",
       names(shell("python3 - <<'EOF'\nopen('x','w')\nEOF", effect="writes", files=["a.py", "b.py"])), ["a.py", "b.py"])
 check("cat is always reading, wherever it stands in the line",
       [shell(c, effect="reads")["kind"] for c in ("cat a.py", "cd web && cat a.py", "for f in x; do cat $f; done")], ["reads"] * 3)
+check("a glob or a grep is searching, not reading, and it names what it looked for",
+      [(shell(c, effect="searches")["kind"], names(shell(c, effect="searches"))) for c in ("grep -rn def features", "cat *.md")],
+      [("searches", ["def"]), ("searches", ["*.md"])])
 check("a read names a path and never a flag's value",
       (names(shell("sed -n 88,94p providers/base.py", effect="reads")), names(shell("ls", effect="reads"))), (["base.py"], []))
 check("a test run names its subject, never its runner", names(shell("python3 tests/test_serve.py", effect="tests")), ["test_serve.py"])

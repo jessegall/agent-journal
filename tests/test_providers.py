@@ -118,7 +118,9 @@ effects = {
     "sed -i '' 's/a/b/' f.py": "writes",
     "echo hi > out.txt": "writes",
     "cat a.py": "reads",
-    "grep -n foo x.py | head": "reads",
+    "grep -n foo x.py | head": "searches",
+    "cat *.md": "searches",
+    "find . -name x": "searches",
     "cd web && npm run build": "builds",
     "git status": "reads",
     "journal todo all": "",
@@ -134,10 +136,10 @@ check("a heredoc that only reads is neither editing nor a write", (claude.effect
 reading = 'cd /x && journal todo start 221 2>&1|tail -1; grep -n "a\\|<template v-if=\\"family\\">\\|b" f.vue | sed -n 1,40p'
 check("a journal call with 2>&1 is set aside whole, and a > inside escaped quotes is not a redirect",
       (claude.without_journal(reading).startswith("cd /x && |tail"), claude.effects(reading), claude.writes(Hook.read({"hook_event_name": "PreToolUse", "tool_name": "Bash", "tool_input": {"command": reading}}))),
-      (True, ["reads"], False))
+      (True, ["searches", "reads"], False))
 check("a quoted > is text, not a redirect; tests then a commit is still a write",
       ([claude.effect_of(c) for c in ("grep 'c>=2' f", "git commit -m 'a > b'")], claude.writes(Hook.read({"hook_event_name": "PostToolUse", "tool_name": "Bash", "tool_input": {"command": "python3 tests/x.py && git commit -m y"}}))),
-      (["reads", "writes"], True))
+      (["searches", "writes"], True))
 check("an edit next to a journal call is still a write, and journal calls alone never are",
       [claude.writes(Hook.read({"hook_event_name": "PostToolUse", "tool_name": "Bash", "tool_input": {"command": c}})) for c in ('journal work log 5 "x"; git commit -m y', 'journal message reply 3 "a > b"', ".journal/journal todo add x")], [True, False, False])
 check("a command labelled editing is one whose line changes are counted", all(claude.writes(Hook.read({"hook_event_name": "PostToolUse", "tool_name": "Bash", "tool_input": {"command": c}})) for c, e in effects.items() if e in ("writes", "deletes")), True)
