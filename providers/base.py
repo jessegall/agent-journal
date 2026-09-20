@@ -12,11 +12,14 @@ from resources.types import AgentRow, COMMAND, RUNNING
 
 WRITES = ("Edit", "Write", "MultiEdit", "NotebookEdit")
 READS = ("Read", "NotebookRead")
+TOOLS = {"Grep": "searches", "Glob": "searches", "WebSearch": "searches", "WebFetch": "fetches",
+         "Agent": "dispatches", "Task": "dispatches", "Skill": "loads"}
 WRITING_COMMANDS = re.compile(r"(^|[;&|]\s*)(rm|mv|cp|git (commit|push|rm|mv)|sed -i|tee|touch|mkdir|npm install|pip install)\b|(?<![\d&])>>?\s*(?!/dev/null|&)\S")
 RING = 12
 JOURNAL_DIR = ".journal"
 CHANGING = ("writes", "deletes")
 START = r"(?:^|[;&|(]\s*|\b(?:do|then)\s+)"
+READING = r"(?:^|[;&]\s*|\b(?:do|then)\s+)"
 EFFECTS = (
     ("tests", re.compile(START + r"(?:\S*[Pp]ython[\d.]*\s+(?:-m\s+)?\S*tests?/\S*|pytest|npm (?:run )?test|npx (?:vitest|jest)|vitest|jest|go test|cargo test|phpunit|php artisan test|dotnet test|mvn\b[^;&|]*\btest|\S*gradlew?\b[^;&|]*\btest|(?:bundle exec )?rspec|mix test)\b")),
     ("tests", re.compile(r"(?=.*\btest_)(?=.*\b[Pp]ython[\d.]*\s+\"?\$\w)", re.S)),
@@ -24,7 +27,7 @@ EFFECTS = (
     ("builds", re.compile(START + r"(?:npm run build|yarn build|pnpm (?:run )?build|npx (?:vite|tsc|webpack|esbuild|rollup)|vite build|tsc|webpack|make|cargo build|go build|dotnet build|docker build|mvn\b[^;&|]*\b(?:package|compile)|\S*gradlew?\b[^;&|]*\bbuild)\b")),
     ("deletes", re.compile(START + r"(?:rm|rmdir|unlink|git rm)\s")),
     ("writes", re.compile(START + r"(?:perl\s+-\w*i|sed\s+-i)|\.write_text\(|\.write\(|open\([^)]*,\s*(?:mode=)?['\"][wa]b?\+?['\"]")),
-    ("reads", re.compile(r"^\s*(?:cd \S+\s*(?:&&|;)\s*)?(?:cat|head|tail|less|grep|rg|sed -n|wc|ls|find|tree|stat)\b")),
+    ("reads", re.compile(READING + r"(?:cat|head|tail|less|grep|rg|sed -n|wc|ls|find|tree|stat|file|diff|git (?:log|show|diff|status))\b")),
 )
 PASSED = re.compile(r"\b(\d+) passed\b")
 FAILED = re.compile(r"\b(\d+) failed\b")
@@ -144,6 +147,8 @@ class Provider(ABC):
             return "reads"
         if hook.tool.name in WRITES:
             return "writes" if self.in_project(hook.tool.file_path, hook.cwd) else ""
+        if hook.tool.name in TOOLS:
+            return TOOLS[hook.tool.name]
         return self.effect_of(hook.command) if hook.tool.name == "Bash" else ""
 
     def effect_of(self, command: str) -> str:

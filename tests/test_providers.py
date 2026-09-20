@@ -118,7 +118,7 @@ effects = {
     "cat a.py": "reads",
     "grep -n foo x.py | head": "reads",
     "cd web && npm run build": "builds",
-    "git status": "",
+    "git status": "reads",
     "journal todo all": "",
     'journal work log 5 "done > shipped" >/dev/null; python3 - <<\'EOF\'\nimport pathlib\npathlib.Path("a").write_text("x")\nEOF': "writes",
     'journal message reply 3 "use a > b" >/dev/null': "",
@@ -132,17 +132,17 @@ check("a heredoc that only reads is neither editing nor a write", (claude.effect
 reading = 'cd /x && journal todo start 221 2>&1|tail -1; grep -n "a\\|<template v-if=\\"family\\">\\|b" f.vue | sed -n 1,40p'
 check("a journal call with 2>&1 is set aside whole, and a > inside escaped quotes is not a redirect",
       (claude.without_journal(reading).startswith("cd /x && |tail"), claude.effects(reading), claude.writes(Hook.read({"hook_event_name": "PreToolUse", "tool_name": "Bash", "tool_input": {"command": reading}}))),
-      (True, [], False))
+      (True, ["reads"], False))
 check("a quoted > is text, not a redirect; tests then a commit is still a write",
       ([claude.effect_of(c) for c in ("grep 'c>=2' f", "git commit -m 'a > b'")], claude.writes(Hook.read({"hook_event_name": "PostToolUse", "tool_name": "Bash", "tool_input": {"command": "python3 tests/x.py && git commit -m y"}}))),
       (["reads", "writes"], True))
 check("an edit next to a journal call is still a write, and journal calls alone never are",
       [claude.writes(Hook.read({"hook_event_name": "PostToolUse", "tool_name": "Bash", "tool_input": {"command": c}})) for c in ('journal work log 5 "x"; git commit -m y', 'journal message reply 3 "a > b"', ".journal/journal todo add x")], [True, False, False])
 check("a command labelled editing is one whose line changes are counted", all(claude.writes(Hook.read({"hook_event_name": "PostToolUse", "tool_name": "Bash", "tool_input": {"command": c}})) for c, e in effects.items() if e in ("writes", "deletes")), True)
-check("reading any file is reading, and a tool with no file of its own has no effect",
+check("every tool says what it did: reading a file wherever it is, searching, fetching, dispatching, loading",
       [claude.effect(Hook.read({"hook_event_name": "PreToolUse", "cwd": "/p", "tool_name": name, "tool_input": {"file_path": path}}))
-       for name, path in (("Read", "x"), ("Read", "/somewhere/else/x"), ("Grep", ""))],
-      ["reads", "reads", ""])
+       for name, path in (("Read", "x"), ("Read", "/somewhere/else/x"), ("Grep", ""), ("WebFetch", ""), ("Agent", ""), ("Skill", ""), ("TodoWrite", ""))],
+      ["reads", "reads", "searches", "fetches", "dispatches", "loads", ""])
 check("a write outside the project is not counted as one",
       claude.effect(Hook.read({"hook_event_name": "PreToolUse", "cwd": "/p", "tool_name": "Edit", "tool_input": {"file_path": "/somewhere/else/x"}})), "")
 shelled = claude.shell(AgentRow(n=1, title="s"), Hook.read({"hook_event_name": "PreToolUse", "tool_name": "Bash", "tool_input": {"command": "rm x", "description": "Remove x"}}))
