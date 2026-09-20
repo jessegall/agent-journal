@@ -97,7 +97,7 @@ git("add", "-A", cwd=origin)
 git("commit", "-q", "-m", "one", cwd=origin)
 url = origin.as_uri()
 first = rows.action("install")(url, yes=True)
-check("an upgrade with nothing new says so", rows.action("upgrade")(first.n), f"moving is already at {first.commit[:12]}")
+check("an upgrade with nothing new says so", rows.action("upgrade")(first.n).startswith(f"moving is already at {first.commit[:12]}"), True)
 (origin / MANIFEST).write_text(json.dumps({**WORKS, "name": "moving", "version": "2.0.0", "setup": [{"name": "build", "run": "echo built > built.txt"}]}))
 git("commit", "-q", "-am", "two", cwd=origin)
 shown = rows.action("upgrade")(first.n)
@@ -109,6 +109,16 @@ check("the ports it was installed with are kept", moved.settings.get("ports"), f
 git("commit", "-q", "-am", "three", cwd=origin)
 rows.action("upgrade")(first.n, yes=True)
 check("and every service of the plugin is asked to start over", read_json(want_file(moving.root, "moving.web"), {}).get("nonce", 0) > 0, True)
+
+# AT THE SAME COMMIT nothing runs, unless the setup is asked for again
+(origin / MANIFEST).write_text(json.dumps({**WORKS, "name": "moving", "version": "3.1.0", "setup": [{"name": "count", "run": "echo x >> $JOURNAL_PLUGIN_DATA/ran.txt"}]}))
+git("commit", "-q", "-am", "four", cwd=origin)
+rows.action("upgrade")(first.n, yes=True)
+ran = data(moving.root, "moving") / "ran.txt"
+check("the setup ran once for the new commit", ran.read_text().count("x"), 1)
+check("asking again at the same commit says how to force it", "--again --yes" in rows.action("upgrade")(first.n), True)
+rows.action("upgrade")(first.n, yes=True, again=True)
+check("with --again the setup runs a second time at the same commit", ran.read_text().count("x"), 2)
 
 # ENABLE AND DISABLE flip the row
 check("a plugin can be switched off and on", (rows.action("disable")(first.n).enabled, rows.action("enable")(first.n).enabled), (False, True))
