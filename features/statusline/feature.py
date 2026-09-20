@@ -33,9 +33,14 @@ def named(run: dict) -> list[dict]:
     return [{"value": verb, "kind": "command"}] if verb else []
 
 
-def shown(what: str) -> str:
-    what = (what or "").strip()
-    return what if len(what) <= NAME_CAP else (what.rsplit("/", 1)[-1] or what)[-NAME_CAP:]
+def shown(one: dict) -> str:
+    what = (one.get(COMMAND.what) or "").strip()
+    if not what:
+        return ""
+    if (one.get(COMMAND.tool) or "Bash") != "Bash":
+        return what.split(" ", 1)[-1] if " " in what else what
+    said = gist(what, spoken) or what
+    return said if len(said) <= NAME_CAP else f"{said[:NAME_CAP - 1].rstrip()}…"
 
 
 def flipping(run: dict, commands: list) -> dict:
@@ -46,7 +51,7 @@ def flipping(run: dict, commands: list) -> dict:
     for one in [*(commands or []), run, *(run.get(RUNNING.steps) or [])]:
         if one.get(COMMAND.effect) != effect:
             continue
-        name = shown(one.get(COMMAND.what))
+        name = shown(one)
         if name and (not names or names[-1] != name):
             names.append(name)
     return {"every": ROLL_EVERY, "items": names[-MOST_STEPS:]} if len(names) > 1 else {}
