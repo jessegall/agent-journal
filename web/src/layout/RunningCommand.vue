@@ -10,6 +10,7 @@ const DELTA_LEAVE = 240;
 const SHOW_CLOCK_AFTER = 10;
 const COUNT_UP = 360;
 const CHANGING = ["writes", "deletes"];
+const SCOPED = [...CHANGING, "tests", "installs", "builds"];
 const EFFECTS = {
     tests: [
         {value: "running", kind: "command"},
@@ -27,6 +28,11 @@ const EFFECTS = {
         {value: "reading", kind: "command"},
         {value: "files", kind: "argument"},
     ],
+    installs: [
+        {value: "installing", kind: "command"},
+        {value: "dependencies", kind: "argument"},
+    ],
+    builds: [{value: "building", kind: "command"}],
 };
 const data = computed(() => (agent.value && ["working", "compacting"].includes(agent.value.data.status) ? agent.value.data : null));
 const ticks = ref(0);
@@ -103,7 +109,7 @@ function outcome(result) {
 
 function lineFor(run) {
     if (!run || !run.what) return null;
-    const scoped = CHANGING.includes(run.effect) || run.effect === "tests";
+    const scoped = SCOPED.includes(run.effect);
     const step = run.step && !run.done && !scoped ? {what: run.step, tool: "Bash", effect: run.step_effect} : null;
     const now = step && said(step).length ? step : run;
     const parts = said(now);
