@@ -1,7 +1,12 @@
 const REPORTED = ["stopped", "idle", "compacting"];
 
 export function currentWork(works) {
-    return works.find((w) => !w.completed) || null;
+    const open = works.filter((w) => !w.completed);
+    return open.find((w) => !w.data.parked) || null;
+}
+
+export function parkedWork(works) {
+    return works.filter((w) => !w.completed && w.data.parked);
 }
 
 export function stateOf(agent, works) {

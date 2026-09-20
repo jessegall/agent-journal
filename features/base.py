@@ -8,6 +8,7 @@ from controllers.types import Agents, Nudges
 from engine import bus
 from features import trigger
 from engine.hooks import POLICIES, gate_file
+from features.format import FORMATTERS
 from resources.base import Refused, SYSTEM
 from engine.stored import read_json, write_json
 
@@ -27,6 +28,11 @@ def on(pattern: str):
         fn.patterns = (*getattr(fn, "patterns", ()), pattern)
         return fn
     return mark
+
+
+def formats(fn):
+    fn.formats = True
+    return fn
 
 
 def refuses(fn):
@@ -62,6 +68,9 @@ class Feature(ABC):
     def refusals(self) -> list:
         return [getattr(self, attr) for attr in dir(type(self)) for fn in [getattr(type(self), attr)] if callable(fn) and getattr(fn, "refuses", False)]
 
+    def formatters(self) -> list:
+        return [getattr(self, attr) for attr in dir(type(self)) for fn in [getattr(type(self), attr)] if callable(fn) and getattr(fn, "formats", False)]
+
     def commands(self) -> list:
         return [getattr(self, attr) for attr in dir(type(self)) for fn in [getattr(type(self), attr)] if callable(fn) and getattr(fn, "command", "")]
 
@@ -80,6 +89,8 @@ class Feature(ABC):
             bus.on(pattern, handler, enabled=self.enabled)
         for handler in self.refusals():
             POLICIES.append(lambda provider, record, payload, session, handler=handler: handler(provider, record, payload, session) if self.enabled(record) else "")
+        for shaper in self.formatters():
+            FORMATTERS.append(lambda text, record, shaper=shaper: shaper(text, record) if not record or self.enabled(record) else text)
 
     @classmethod
     def on_for(cls, record) -> bool:

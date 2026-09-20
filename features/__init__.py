@@ -25,7 +25,9 @@ def load() -> list[str]:
 def unload() -> None:
     from controllers.base import COMMANDS
     from engine.hooks import POLICIES
+    from features.format import FORMATTERS
     COMMANDS.clear()
+    FORMATTERS.clear()
     bus.clear()
     POLICIES.clear()
     FEATURES.clear()
