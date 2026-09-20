@@ -49,7 +49,7 @@ def resize(fd: int) -> tuple[int, int]:
 
 
 REDRAWS = (b"\x1b[2J", b"\x1b[?1049h", b"\x1b[?1049l", b"\x1bc", b"\x1b[r")
-STARTUP, EARLY = 30.0, 16384
+STARTUP, EARLY = 10.0, 16384
 FRAME_END = b"\x1b[?25h"
 
 
@@ -124,17 +124,19 @@ def run(root: Path, cwd: Path, env: str, agent: str, fd: int, session: str, life
                 if not data:
                     break
                 os.write(stdout, rows_below.feed(data))
-                if not answered and time.time() - started < STARTUP:
-                    early = (early + data)[-EARLY:]
-                    if (keys := DRIVERS[agent].confirm(early)):
-                        answered = True
-                        os.write(fd, keys)
+                early = (early + data)[-EARLY:] if not answered else early
                 if any(mark in data for mark in REDRAWS):
                     os.write(stdout, band.region(shape[0]) + top.draw(shape[1], force=True))
                 elif data.rstrip().endswith(FRAME_END):
                     os.write(stdout, top.draw(shape[1]))
                 out.write(data[-4096:])
                 out.flush()
+            if not answered and time.time() - started < STARTUP:
+                if (keys := DRIVERS[agent].confirm(early)):
+                    answered = True
+                    os.write(fd, keys)
+            elif not answered and early:
+                answered, early = True, b""
             if time.time() - last_band >= 1.0:
                 last_band = time.time()
                 os.write(stdout, top.draw(shape[1]))
