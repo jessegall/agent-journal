@@ -6,7 +6,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from controllers.types import Works  # noqa: E402
-from engine.band import ROWS, Band, Translator  # noqa: E402
+from engine.band import ROWS, Band, Translator, unshifted  # noqa: E402
 from engine.record import Record  # noqa: E402
 from engine.viewer import ensure, remember  # noqa: E402
 from resources.base import AGENT  # noqa: E402
@@ -61,5 +61,12 @@ band_module.marked = lambda _: (asked.append("marker"), url if len(asked) > 2 el
 check("with no viewer yet the band scans once, then asks the marker every second, and shows the URL the moment it answers",
       (late.viewer(), late.viewer(), (setattr(late, "asked_at", 0) or late.viewer()), asked), ("viewer unavailable", "viewer unavailable", url, ["scan", "marker", "marker"]))
 band_module.running, band_module.marked = original, viewer.marked
+
+# A MOUSE REPORT comes back the other way: the terminal says where on the screen, the agent is told where in its own rows
+check("a click is moved up by the band", unshifted(b"\x1b[<0;12;9M"), b"\x1b[<0;12;%dM" % (9 - ROWS))
+check("a release is moved too", unshifted(b"\x1b[<0;12;9m"), b"\x1b[<0;12;%dm" % (9 - ROWS))
+check("a click on the band itself lands on the agent's first row", unshifted(b"\x1b[<0;12;2M"), b"\x1b[<0;12;1M")
+check("the older encoding is moved by the same rows", unshifted(b"\x1b[M" + bytes([32, 44, 32 + 9])), b"\x1b[M" + bytes([32, 44, 32 + 9 - ROWS]))
+check("ordinary keys pass through untouched", (unshifted(b"hello\r"), unshifted(b"\x1b")), (b"hello\r", b"\x1b"))
 
 done()
