@@ -47,7 +47,7 @@ const error = ref("");
 const done = (p) => doneOf(p, rows("todo"));
 
 async function setAuto(on) {
-    await saveSettings(route.value.env, {features: {auto: on}});
+    await saveSettings(route.value.env, {features: {"work.auto": on}});
 }
 
 async function runBar(p) {

@@ -11,7 +11,7 @@ from engine.actors import Agent, BUSY, IDLE, STOPPED, WORKING  # noqa: E402
 from engine.drivers import DRIVERS  # noqa: E402
 from engine.hooks import EVENTS, STATUS, handle  # noqa: E402
 from engine.record import Record  # noqa: E402
-from features.auto.policy import QUESTION_REFUSAL  # noqa: E402
+from features.work.auto import QUESTION_REFUSAL  # noqa: E402
 from providers import PROVIDERS  # noqa: E402
 from providers.payload import Hook  # noqa: E402
 from resources.types import AgentRow  # noqa: E402

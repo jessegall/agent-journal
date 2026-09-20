@@ -4,7 +4,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 import features  # noqa: E402
 from controllers.types import Docs, Plans, Todos  # noqa: E402
-from features.auto.next import next  # noqa: E402
+from features.work.next import next  # noqa: E402
 from resources.base import AGENT, SYSTEM, USER  # noqa: E402
 from tests.kit import check, done, fresh, refused  # noqa: E402
 
@@ -47,7 +47,7 @@ check("every phase filled: ready", by_agent.load(plan.n).data["status"], "ready"
 check("the agent cannot activate", refused(lambda: by_agent.activate(plan.n)), "only the user can activate a plan: they do it in the viewer")
 check("a plan not yet started holds its rows: next skips them", next(record), None)
 by_user.activate(plan.n)
-check("active: rows of the current phase are ready, in order; the others wait", [t.n for t in __import__("features.auto.next", fromlist=["ready"]).ready(record)], [1, 2])
+check("active: rows of the current phase are ready, in order; the others wait", [t.n for t in __import__("features.work.next", fromlist=["ready"]).ready(record)], [1, 2])
 second = by_agent.create("Another")
 check("one plan at a time", refused(lambda: by_user.activate(second.n)), "one plan is active at a time on an environment")
 

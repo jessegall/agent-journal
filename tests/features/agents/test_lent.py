@@ -56,7 +56,7 @@ row = todos.create("a row for the runner")
 Todos(record, actor=AGENT).assign(row.n, to="runner-1")
 check("assigned to one agent", todos.load(row.n).data.get("assigned"), "runner-1")
 check("another cannot start it", refused(lambda: Works(record, actor=AGENT).create("taking it", todo=row.n)), f"todo {row.n} is assigned to runner-1; nobody else may take it")
-from features.auto.next import ready  # noqa: E402
+from features.work.next import ready  # noqa: E402
 check("auto mode skips an assigned row", row.n in [t.n for t in ready(record)], False)
 code, out = cli("work", "start", "the runner takes it", "--set", f"todo={row.n}", agent="runner-1")
 check("the agent it is assigned to may", code, 0)

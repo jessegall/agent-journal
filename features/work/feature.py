@@ -2,8 +2,10 @@ import time
 
 from controllers.types import Agents, Todos, Works
 from features import trigger
-from features.base import Feature, command, event, held, interceptor
+from features.base import Behaviour, Feature, command, event, held, interceptor
 from features.work import tracker
+from features.work.auto import refusal
+from features.work.next import next
 from resources.base import Refused, SYSTEM
 from resources.types import Work
 
@@ -12,7 +14,11 @@ class WorkFeature(Feature):
     name = "work"
     title_ = "Working"
     abstract_ = "A write is refused until work is open; work started for a to-do is linked to it, its log is kept, twenty edits without an entry hold the writes, and parked work is set aside until the next log entry"
-    help_ = 'One piece of work is in hand at a time: starting another is refused until this one is ended or parked. Take a row with journal todo start <n>, or start work of its own with journal work start "<title>"; log each decision and turn with journal work log "<message>" (work.log_after, 20 edits without an entry holds the writes); end it with journal work end <n> --how "<what landed>", and --set todo=<n> closes the row with it. journal work park "<why>" sets it aside with no clock — it stays open, stops being nudged and stops holding writes, and journal work resume <n> picks it up again. Park when you are stuck or when something else has to happen first; never to wait for an answer you could carry on without, because under auto the list stops.'
+    help_ = ('One piece of work is in hand at a time: starting another is refused until this one is ended or parked. Take a row with journal todo start <n>, or start work of its own with journal work start "<title>"; log each decision and turn with journal work log "<message>" (work.log_after, 20 edits without an entry holds the writes); end it with journal work end <n> --how "<what landed>", and --set todo=<n> closes the row with it. journal work park "<why>" sets it aside with no clock — it stays open, stops being nudged and stops holding writes, and journal work resume <n> picks it up again. Park when you are stuck or when something else has to happen first; never to wait for an answer you could carry on without, because under auto the list stops.'
+             " Auto mode is off by default: turning it on is the user's word to work the list and decide without blocking questions. The next ready row by priority is offered on idle while nothing is open; five minutes quiet with unparked work open earns a direct question, are you still working? A row is ready when it is not blocked, waits on no open row or question, and its plan's phase is current.")
+    aliases = (("auto", "auto"),)
+    behaviours = {"auto": Behaviour("Work the list without asking", "The next ready row is offered on idle, and blocking questions are refused",
+                                    default=False, trigger={"on": trigger.IDLE})}
     trigger = {"on": trigger.WORKED}
     EDITS, LOG_AFTER, SAID_AFTER = "edits", "log_after", "said_after"
     log_after = 20
@@ -132,3 +138,18 @@ class WorkFeature(Feature):
         for agent in Agents(record, actor=SYSTEM).all():
             trigger.write(record, agent, self.name, edits=0)
         self.release(record)
+
+    @interceptor
+    def no_blocking_question(self, provider, record, hook, session) -> str:
+        return refusal(provider, hook) if self.on(record, "auto") else ""
+
+    @event("agent.updated")
+    def offer(self, event, record) -> None:
+        agent = self.agent(event, record)
+        if not agent or not self.due(record, agent, "auto"):
+            return
+        if [w for w in self.standing(record, Works) if not w.parked]:
+            return
+        row = next(record)
+        if row:
+            self.nudge(record, agent, f"todo {row.n} next")

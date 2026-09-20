@@ -107,7 +107,7 @@ const goTo = (page) => () => {
 
 async function setAuto(on) {
     emit("close");
-    await saveSettings(route.value.env, {features: {auto: on}});
+    await saveSettings(route.value.env, {features: {"work.auto": on}});
 }
 
 const highlights = computed(() => types.value.filter((t) => t.attention).flatMap((t) => unreadByUser(t.name)));

@@ -4,8 +4,8 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 import features  # noqa: E402
 from controllers.types import Questions, Todos, Works  # noqa: E402
-from features.auto.policy import QUIET_FOR, launch_args, still_there  # noqa: E402
-from features.auto.next import next, ready  # noqa: E402
+from features.work.auto import QUIET_FOR, launch_args, still_there  # noqa: E402
+from features.work.next import next, ready  # noqa: E402
 from resources.base import AGENT, USER  # noqa: E402
 from tests.features.kit import idle, nudges  # noqa: E402
 from tests.kit import check, done, fresh, refused  # noqa: E402
@@ -48,7 +48,7 @@ todos.create("first")
 todos.create("second")
 idle(record)
 check("auto off: nothing offered", nudges(record), [])
-features.FEATURES["auto"].enable(record)
+record.features = {**record.features, "work.auto": True}
 idle(record)
 check("auto on: the next row is offered once per idle stretch", nudges(record), ["todo 1 next"])
 check("auto launches Claude with its automatic approval mode", launch_args(record, "claude", ["--model", "sonnet"]), ["--permission-mode", "auto", "--model", "sonnet"])

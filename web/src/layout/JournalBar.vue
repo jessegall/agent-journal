@@ -22,7 +22,7 @@ async function manage(fn) {
     }
 }
 
-const setAuto = (e, on) => manage(() => saveSettings(e.name, {features: {auto: on}}, base.value));
+const setAuto = (e, on) => manage(() => saveSettings(e.name, {features: {"work.auto": on}}, base.value));
 const runPlan = (e, p) => manage(() => act(e.name, "plan", p.n, planButton({data: p})[0], {}, base.value));
 const wordFor = (p) => (planButton({data: p}) || [])[1];
 const pageUrl = (e, page = "") => `${base.value}/#/${e.name}${page ? `/${page}` : ""}`;
