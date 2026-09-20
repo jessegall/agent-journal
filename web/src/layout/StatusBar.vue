@@ -11,7 +11,12 @@ import {currentWork, doneOf, lineOf, phaseOf, planButton, queued, rowsOf, shownP
 const current = computed(() => currentWork(rows("work")));
 const state = computed(() => stateOf(agent.value, rows("work")));
 const waiting = computed(() => queued(rows("todo"), autoOn.value, rows("question")));
-const line = computed(() => lineOf(agent.value, rows("work"), waiting.value));
+const doing = computed(() => {
+    const queue = (store.bar && store.bar.queue) || [];
+    const last = queue[queue.length - 1];
+    return last && !last.done ? last.key : "";
+});
+const line = computed(() => lineOf(agent.value, rows("work"), waiting.value, doing.value));
 function inspect() {
     if (current.value) peek("work", current.value.n);
     else go(route.value.env);
