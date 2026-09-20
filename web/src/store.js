@@ -244,6 +244,8 @@ export async function boot() {
     listen();
 }
 
+export const state = (r) =>
+    r.data.struck ? "struck" : r.completed ? "done" : r.data.blocked ? "blocked" : r.data.status === "started" ? "started" : "open";
 export const open = (type) => rows(type).filter((r) => !r.completed);
 export const unreadByUser = (type) => open(type).filter((r) => !r.seen.includes("user"));
 export const agent = computed(

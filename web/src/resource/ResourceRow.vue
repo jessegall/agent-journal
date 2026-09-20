@@ -2,10 +2,8 @@
 import Dot from "../kit/Dot.vue";
 import Icon from "../kit/Icon.vue";
 import PriorityIcon from "../kit/PriorityIcon.vue";
-import {age, meta} from "../store.js";
+import {age, meta, state} from "../store.js";
 defineProps({resource: Object, selected: Boolean});
-
-const state = (r) => (r.completed ? "done" : r.data.blocked ? "blocked" : r.data.status === "started" ? "started" : "open");
 </script>
 
 <template>
