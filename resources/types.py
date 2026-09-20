@@ -149,6 +149,7 @@ class Question(Options, Resource):
     shown = {"created": "Question asked", "completed": "Question answered"}
     says = {"create": "asking", "complete": "answering"}
     attention = True
+    settled = True
     nav = False
     icon = "help"
     names = {"complete": "answer", "create": "ask"}
@@ -165,6 +166,7 @@ class Suggestion(Options, Resource):
     decision = Field()
     handed = "SUGGESTIONS waiting on the user"
     attention = True
+    settled = True
     icon = "up"
     names = {"complete": "decide", "create": "suggest", "delete": "withdraw"}
     labels = {"outcome": "Decision", "brief": "Why"}

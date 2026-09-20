@@ -43,7 +43,7 @@ async function dismiss(r) {
                 <div v-for="r in cards" :key="r.ref" :class="['needs-card', r.type]" @click="open(r)">
                     <div class="needs-card-top">
                         <span class="needs-card-kind">{{ meta(r.type).title }}</span>
-                        <template v-if="r.type !== 'question' || r.completed">
+                        <template v-if="!meta(r.type).settled || r.completed">
                             <button type="button" class="needs-dismiss" title="Seen — take it off the list" @click.stop="dismiss(r)">
                                 <Icon name="close" />
                             </button>
