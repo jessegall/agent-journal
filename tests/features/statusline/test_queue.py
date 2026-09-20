@@ -154,6 +154,9 @@ check("a message whose newest command has just started shows no clock",
 check("a clock appears once a running message has been up long enough",
       [(queue([shell("ls")], NOW + s)[0]["clock"], queue([shell("ls")], NOW + s)[0]["for"]) for s in (1, CLOCK_AFTER + 1)],
       [(False, 1), (True, 11)])
+check("a build says whether it built or failed",
+      [queue([shell("npm run build", effect="builds", done=NOW + 2, result=r)], NOW)[0]["parts"][-1] for r in ({"ok": True}, {"ok": False})],
+      [{"value": "built", "color": "green"}, {"value": "failed", "color": "red"}])
 check("a passing test run says passed",
       queue([shell("pytest", effect="tests", done=NOW + 2, result={"passed": 9})], NOW)[0]["parts"][-1], {"value": "passed", "color": "green"})
 check("a failing test run says how many failed",
