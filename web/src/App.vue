@@ -132,7 +132,7 @@ watch(
                     </Transition>
                 </div>
                 <Transition name="column">
-                    <Activity v-if="store.activity" />
+                    <Activity v-if="store.activity && !store.wide" />
                 </Transition>
                 <Reader :type="opened.type" :n="opened.n" />
                 <Lightbox />
