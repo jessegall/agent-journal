@@ -319,7 +319,9 @@ watch(
                 :tools="composeTools"
             />
         </div>
-        <ThreadSkeleton v-if="!ready" />
+        <template v-if="!ready">
+            <ThreadSkeleton />
+        </template>
         <div
             ref="scroller"
             :class="['thread-scroll', {focusing: store.focus, loading: !ready}]"

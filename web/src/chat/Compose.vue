@@ -123,20 +123,17 @@ async function use(tool) {
             />
             <div class="compose-foot">
                 <template v-for="action in actions" :key="action.icon">
-                    <label v-if="action.attachment" class="compose-attach" title="Attach files" aria-label="Attach files">
-                        <Icon name="paperclip" />
-                        <input type="file" multiple hidden @change="picked" />
-                    </label>
-                    <button
-                        v-else
-                        type="button"
-                        class="compose-attach"
-                        :title="action.title"
-                        :aria-label="action.title"
-                        @click="use(action)"
-                    >
-                        <Icon :name="action.icon" />
-                    </button>
+                    <template v-if="action.attachment">
+                        <label class="compose-attach" title="Attach files" aria-label="Attach files">
+                            <Icon name="paperclip" />
+                            <input type="file" multiple hidden @change="picked" />
+                        </label>
+                    </template>
+                    <template v-else>
+                        <button type="button" class="compose-attach" :title="action.title" :aria-label="action.title" @click="use(action)">
+                            <Icon :name="action.icon" />
+                        </button>
+                    </template>
                 </template>
                 <button type="submit" class="compose-send" :disabled="draft.sending || !draft.text.trim()">{{ submit }}</button>
             </div>

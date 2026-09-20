@@ -23,7 +23,7 @@ async function manage(fn) {
 const setAuto = (e, on) => manage(() => saveSettings(e.name, {features: {auto: on}}, base.value));
 const runPlan = (e, p) => manage(() => act(e.name, "plan", p.n, planButton({data: p})[0], {}, base.value));
 const wordFor = (p) => (planButton({data: p}) || [])[1];
-const at = (e, page = "") => `${base.value}/#/${e.name}${page ? `/${page}` : ""}`;
+const pageUrl = (e, page = "") => `${base.value}/#/${e.name}${page ? `/${page}` : ""}`;
 
 function worksOf(e) {
     const row = (w, completed) => ({...w, completed, data: {todo: w.todo}});
@@ -140,7 +140,12 @@ const counts = (c) => [
                     <span class="jbar-line">{{ lineFor(e) }}</span>
                     <span class="jbar-counts">
                         <template v-for="[key, n, what] in counts(e.counts)" :key="key">
-                            <a v-if="n" :class="['jbar-count', key]" :title="`${n} ${what}`" :href="at(e, key === 'todos' ? 'todo' : '')">
+                            <a
+                                v-if="n"
+                                :class="['jbar-count', key]"
+                                :title="`${n} ${what}`"
+                                :href="pageUrl(e, key === 'todos' ? 'todo' : '')"
+                            >
                                 <Icon :name="key === 'messages' ? 'mail' : key === 'questions' ? 'help' : 'todos'" :size="12" />
                                 {{ n }}
                             </a>

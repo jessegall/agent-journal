@@ -287,18 +287,18 @@ function onFileKey(e) {
                         <div class="quick-file-empty">No project files match.</div>
                     </template>
                     <template v-else>
-                        <button
-                            v-for="(file, n) in matchingFiles"
-                            :key="file.path"
-                            type="button"
-                            :class="['quick-file', {on: n === fileIndex}]"
-                            @click="openFile(file)"
-                            @mouseenter="fileIndex = n"
-                        >
-                            <Icon name="file" />
-                            <span class="quick-file-path">{{ file.path }}</span>
-                            <span class="quick-file-size">{{ size(file.size) }}</span>
-                        </button>
+                        <template v-for="(file, n) in matchingFiles" :key="file.path">
+                            <button
+                                type="button"
+                                :class="['quick-file', {on: n === fileIndex}]"
+                                @click="openFile(file)"
+                                @mouseenter="fileIndex = n"
+                            >
+                                <Icon name="file" />
+                                <span class="quick-file-path">{{ file.path }}</span>
+                                <span class="quick-file-size">{{ size(file.size) }}</span>
+                            </button>
+                        </template>
                     </template>
                 </div>
                 <div class="quick-foot">

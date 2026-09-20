@@ -170,7 +170,9 @@ function toggleLog(p) {
                     </template>
                     <footer class="acts">
                         <Btn small :disabled="busy === `${p.n}`" @click="plugin(p, 'upgrade', {yes: true})">
-                            <Spinner v-if="busy === `${p.n}`" />
+                            <template v-if="busy === `${p.n}`">
+                                <Spinner />
+                            </template>
                             Upgrade
                         </Btn>
                         <Btn small :disabled="busy === `${p.n}`" @click="plugin(p, 'upgrade', {yes: true, again: true})">

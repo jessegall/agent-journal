@@ -219,7 +219,9 @@ function close() {
         <template v-if="!shell.shut">
             <Thread />
         </template>
-        <span v-if="floating && !shell.shut" class="shell-grip" @pointerdown="resize" />
+        <template v-if="floating && !shell.shut">
+            <span class="shell-grip" @pointerdown="resize" />
+        </template>
     </div>
 </template>
 

@@ -14,7 +14,14 @@ let onlineBound = false;
 let changed = () => {};
 
 window.addEventListener("message", (event) => {
-    if (event.source !== window || event.origin !== window.location.origin || !event.data || event.data.source !== "journal-extension" || event.data.kind !== "outbox") return;
+    if (
+        event.source !== window ||
+        event.origin !== window.location.origin ||
+        !event.data ||
+        event.data.source !== "journal-extension" ||
+        event.data.kind !== "outbox"
+    )
+        return;
     const resolve = bridge.get(event.data.request);
     if (!resolve) return;
     bridge.delete(event.data.request);

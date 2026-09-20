@@ -98,25 +98,31 @@ async function save() {
         <template v-else-if="resource.abstract">
             <Markdown class="abstract" :text="resource.abstract" />
         </template>
-        <div v-if="!editing" class="controls">
-            <ResourceActions :resource="resource" @edit="edit" />
-            <template v-if="ranked">
-                <Priority :resource="resource" />
-            </template>
-        </div>
-        <p v-if="!resource.completed && (resource.data.blocked || waits.length)" class="waits">
-            <template v-if="resource.data.blocked">Blocked: {{ resource.data.blocked }}</template>
-            <template v-if="waits.length">
-                Waits on
-                <template v-for="(ref, i) in waits" :key="ref">
-                    <button type="button" class="wait" @click="peek(ref.split(':')[0], Number(ref.split(':')[1]))">
-                        {{ ref.replace("todo:", "to-do ").replace("plan:", "plan ") }}
-                    </button>
-                    {{ i < waits.length - 1 ? ", " : "" }}
+        <template v-if="!editing">
+            <div class="controls">
+                <ResourceActions :resource="resource" @edit="edit" />
+                <template v-if="ranked">
+                    <Priority :resource="resource" />
                 </template>
-            </template>
-        </p>
-        <RuleControls v-if="resource.type === 'rule' && !resource.completed" :resource="resource" />
+            </div>
+        </template>
+        <template v-if="!resource.completed && (resource.data.blocked || waits.length)">
+            <p class="waits">
+                <template v-if="resource.data.blocked">Blocked: {{ resource.data.blocked }}</template>
+                <template v-if="waits.length">
+                    Waits on
+                    <template v-for="(ref, i) in waits" :key="ref">
+                        <button type="button" class="wait" @click="peek(ref.split(':')[0], Number(ref.split(':')[1]))">
+                            {{ ref.replace("todo:", "to-do ").replace("plan:", "plan ") }}
+                        </button>
+                        {{ i < waits.length - 1 ? ", " : "" }}
+                    </template>
+                </template>
+            </p>
+        </template>
+        <template v-if="resource.type === 'rule' && !resource.completed">
+            <RuleControls :resource="resource" />
+        </template>
         <template v-if="kind.fields.options">
             <OptionsPicker :resource="resource" />
         </template>
@@ -128,7 +134,9 @@ async function save() {
                 <Markdown :text="resource.brief" />
             </section>
         </template>
-        <Sections v-if="resource.type !== 'message'" :sections="resource.sections" />
+        <template v-if="resource.type !== 'message'">
+            <Sections :sections="resource.sections" />
+        </template>
         <template v-if="traced">
             <Trace :resource="resource" />
         </template>

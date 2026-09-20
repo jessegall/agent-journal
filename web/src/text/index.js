@@ -138,7 +138,8 @@ function markdown(text) {
             continue;
         }
         let end = i;
-        while (end < lines.length && lines[end].trim() && !/^(#{1,6}\s|```|~~~|(?:>|&gt;)\s?|\s*(?:[-*+]|\d+[.)])\s+)/.test(lines[end])) end += 1;
+        while (end < lines.length && lines[end].trim() && !/^(#{1,6}\s|```|~~~|(?:>|&gt;)\s?|\s*(?:[-*+]|\d+[.)])\s+)/.test(lines[end]))
+            end += 1;
         out.push(`<p>${spans(lines.slice(i, end).join("\n")).replace(/\n/g, "<br>")}</p>`);
         i = end;
     }

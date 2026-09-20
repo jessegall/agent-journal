@@ -1,4 +1,6 @@
 <script setup>
+import ExtensionSection from "./ExtensionSection.vue";
+
 import {computed, onMounted, onUnmounted, ref, watch} from "vue";
 import {route} from "./route.js";
 import {away, boot, listen, reload, store} from "./store.js";
@@ -143,7 +145,9 @@ watch(
                     <AwayCard />
                 </template>
                 <ProjectFlash />
-                <ChatWindow v-if="store.detached && !store.extension.holding && !store.extension.pending" floating />
+                <template v-if="store.detached && !store.extension.holding && !store.extension.pending">
+                    <ExtensionSection :extension="store.extension" />
+                </template>
             </div>
         </div>
     </template>

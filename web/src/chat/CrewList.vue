@@ -27,22 +27,22 @@ onUnmounted(() => clearInterval(clock));
 
 <template>
     <p class="crew-none">{{ running }} running, {{ total }} {{ started }} in this session.</p>
-    <button
-        v-for="row in listed"
-        :key="row.id || row.cell || `${row.task}-${row.model}`"
-        type="button"
-        :class="['crew-row', {done: !row.running}]"
-        :disabled="!row.session"
-        :title="row.session ? 'Open this session' : ''"
-        @click="emit('open', row)"
-    >
-        <span :class="['crew-dot', {on: row.running}]" />
-        <span class="crew-what">
-            {{ row.task || row.command }}
-            <small>{{ detail(row) }}</small>
-        </span>
-        <small class="crew-when">{{ lasted(row) }}</small>
-    </button>
+    <template v-for="row in listed" :key="row.id || row.cell || `${row.task}-${row.model}`">
+        <button
+            type="button"
+            :class="['crew-row', {done: !row.running}]"
+            :disabled="!row.session"
+            :title="row.session ? 'Open this session' : ''"
+            @click="emit('open', row)"
+        >
+            <span :class="['crew-dot', {on: row.running}]" />
+            <span class="crew-what">
+                {{ row.task || row.command }}
+                <small>{{ detail(row) }}</small>
+            </span>
+            <small class="crew-when">{{ lasted(row) }}</small>
+        </button>
+    </template>
 </template>
 
 <style scoped>

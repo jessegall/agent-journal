@@ -55,49 +55,53 @@ const who = (e) => e.actor[0].toUpperCase() + e.actor.slice(1);
     <aside class="activity-dock">
         <div class="activity-panel">
             <div class="activity-head">
-                <button
-                    v-for="[name, label] in TABS"
-                    :key="name"
-                    :class="['activity-tab', {on: tab === name}]"
-                    type="button"
-                    @click="show(name)"
-                >
-                    {{ label }}
-                </button>
+                <template v-for="[name, label] in TABS" :key="name">
+                    <button :class="['activity-tab', {on: tab === name}]" type="button" @click="show(name)">
+                        {{ label }}
+                    </button>
+                </template>
             </div>
-            <TransitionGroup v-if="tab === 'events'" tag="div" class="activity-list" :name="settled ? 'act' : ''">
-                <a
-                    v-for="e in shown"
-                    :key="e.id"
-                    :class="['activity-row', 'activity-link', {'activity-update': updated(e)}]"
-                    href="#"
-                    @click.prevent="peek(e.type, e.n)"
-                >
-                    <span class="activity-text">
-                        {{ heading(e) }}
-                        <span class="activity-n">{{ e.n }}</span>
-                    </span>
-                    <template v-if="title(e)">
-                        <span class="activity-title">{{ title(e) }}</span>
-                    </template>
-                    <span class="activity-age">{{ who(e) }} · {{ age(e.at) || "just now" }}</span>
-                </a>
-            </TransitionGroup>
-            <TransitionGroup v-else tag="div" class="activity-list" :name="settled ? 'act' : ''">
-                <div v-for="change in changes" :key="`${change.at}-${change.path}`" class="activity-row">
-                    <span class="activity-text">
-                        {{ change.path.split("/").pop() }}
-                        <span :class="['activity-kind', change.kind]">{{ change.kind }}</span>
-                    </span>
-                    <span class="activity-title">{{ change.path }}</span>
-                    <span class="activity-age">
-                        <span v-if="change.added" class="activity-added">+{{ change.added }}</span>
-                        <span v-if="change.removed" class="activity-removed">−{{ change.removed }}</span>
-                        {{ age(change.at) || "just now" }}
-                    </span>
-                </div>
-                <p v-if="!changes.length" key="none" class="activity-none">No file has changed yet.</p>
-            </TransitionGroup>
+            <template v-if="tab === 'events'">
+                <TransitionGroup tag="div" class="activity-list" :name="settled ? 'act' : ''">
+                    <a
+                        v-for="e in shown"
+                        :key="e.id"
+                        :class="['activity-row', 'activity-link', {'activity-update': updated(e)}]"
+                        href="#"
+                        @click.prevent="peek(e.type, e.n)"
+                    >
+                        <span class="activity-text">
+                            {{ heading(e) }}
+                            <span class="activity-n">{{ e.n }}</span>
+                        </span>
+                        <template v-if="title(e)">
+                            <span class="activity-title">{{ title(e) }}</span>
+                        </template>
+                        <span class="activity-age">{{ who(e) }} · {{ age(e.at) || "just now" }}</span>
+                    </a>
+                </TransitionGroup>
+            </template>
+            <template v-else>
+                <TransitionGroup tag="div" class="activity-list" :name="settled ? 'act' : ''">
+                    <div v-for="change in changes" :key="`${change.at}-${change.path}`" class="activity-row">
+                        <span class="activity-text">
+                            {{ change.path.split("/").pop() }}
+                            <span :class="['activity-kind', change.kind]">{{ change.kind }}</span>
+                        </span>
+                        <span class="activity-title">{{ change.path }}</span>
+                        <span class="activity-age">
+                            <template v-if="change.added">
+                                <span class="activity-added">+{{ change.added }}</span>
+                            </template>
+                            <template v-if="change.removed">
+                                <span class="activity-removed">−{{ change.removed }}</span>
+                            </template>
+                            {{ age(change.at) || "just now" }}
+                        </span>
+                    </div>
+                    <p v-if="!changes.length" key="none" class="activity-none">No file has changed yet.</p>
+                </TransitionGroup>
+            </template>
         </div>
     </aside>
 </template>
