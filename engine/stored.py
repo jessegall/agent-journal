@@ -11,9 +11,13 @@ def read_json(path: Path, default=None):
         return default
 
 
-def write_json(path: Path, data, indent: int | None = None) -> None:
+def write_text(path: Path, text: str) -> None:
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
     spare = path.with_name(f".{path.name}.{os.getpid()}.{threading.get_ident()}")
-    spare.write_text(json.dumps(data, indent=indent))
+    spare.write_text(text)
     os.replace(spare, path)
+
+
+def write_json(path: Path, data, indent: int | None = None) -> None:
+    write_text(path, json.dumps(data, indent=indent))

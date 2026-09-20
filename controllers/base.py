@@ -9,7 +9,7 @@ from engine.record import Record
 from resources.base import Refused, Resource, SECTION, check_abstract, check_title, titled
 from resources.pictures import dimensions
 from resources.shapes import Options, check, normalize_options
-from engine.stored import read_json, write_json
+from engine.stored import read_json, write_json, write_text
 
 INDEX = "index.json"
 COMMANDS: dict[str, dict] = {}
@@ -65,7 +65,7 @@ class Controller:
         if self.actor not in r.seen:
             r.seen.append(self.actor)                # whoever acts on it has seen it
         r.updated = time.time()
-        self.path(r.n).write_text(r.dump())
+        write_text(self.path(r.n), r.dump())
         self.record.emit(self.type, r.n, action, self.actor, **event)
         return r
 
@@ -235,7 +235,7 @@ class Controller:
         with there.record.locked():
             m = (there.numbers() or [0])[-1] + 1
             moved = self.resource(**{**asdict(r), "n": m})
-            there.path(m).write_text(moved.dump())
+            write_text(there.path(m), moved.dump())
             if any(self.folder(n).iterdir()):
                 shutil.copytree(self.folder(n), there.folder(m), dirs_exist_ok=True)
             there.record.emit(self.type, m, "created", self.actor, moved_from=f"{self.record.env}/{n}")
@@ -260,7 +260,7 @@ class Controller:
                     continue
                 r.seen.append(self.actor)
                 r.updated = time.time()
-                self.path(r.n).write_text(r.dump())
+                write_text(self.path(r.n), r.dump())
                 changed.append(r)
             if changed:
                 self.record.emit(self.type, changed[0].n, "updated", self.actor, numbers=[r.n for r in changed], seen=self.actor)
