@@ -11,10 +11,15 @@ def names() -> list[str]:
     return sorted(p.name for p in HERE.iterdir() if (p / "feature.py").is_file())
 
 
-def load() -> list[str]:
+def load(root: Path | None = None) -> list[str]:
     from features.base import REGISTRY
+    from features.renames import rename
     for name in names():
         importlib.import_module(f"features.{name}.feature")
+    if root:
+        for name, cls in REGISTRY.items():
+            for was in cls.was:
+                rename(root, was, name)
     for name, cls in REGISTRY.items():
         if name not in FEATURES:
             FEATURES[name] = cls()

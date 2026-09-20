@@ -1,0 +1,69 @@
+import json
+from pathlib import Path
+
+from engine.stored import read_json, write_json
+
+KEYED = ("features", "triggers")
+
+
+def under(key: str, was: str, now: str) -> str:
+    head, dot, rest = key.partition(".")
+    return f"{now}{dot}{rest}" if head == was else key
+
+
+def moved(mapping: dict, was: str, now: str) -> dict:
+    return {under(key, was, now): value for key, value in mapping.items()}
+
+
+def in_settings(home: Path, was: str, now: str) -> bool:
+    f = home / "settings.json"
+    kept = read_json(f, {})
+    after = {k: moved(v, was, now) if k in KEYED and isinstance(v, dict) else v for k, v in kept.items()}
+    if after == kept:
+        return False
+    write_json(f, after, indent=2)
+    return True
+
+
+def in_gates(runtime: Path, was: str, now: str) -> int:
+    changed = 0
+    for f in sorted(runtime.glob("gate-*.json")):
+        try:
+            holds = json.loads(f.read_text())
+        except (OSError, ValueError):
+            continue
+        after = moved(holds, was, now)
+        if after != holds:
+            write_json(f, after)
+            changed += 1
+    return changed
+
+
+def in_triggers(runtime: Path, was: str, now: str) -> int:
+    changed = 0
+    for f in sorted(runtime.glob(f"trigger-*-{was}.json")) + sorted(runtime.glob(f"trigger-*-{was}.*.json")):
+        session = f.name[len("trigger-"):-len(".json")].rsplit(f"-{was}", 1)[0]
+        tail = f.name[len(f"trigger-{session}-{was}"):-len(".json")]
+        target = f.with_name(f"trigger-{session}-{now}{tail}.json")
+        if not target.exists():
+            f.rename(target)
+            changed += 1
+    return changed
+
+
+def in_cursors(home: Path, was: str, now: str) -> int:
+    f = home / "runtime" / f"cursor-{was}"
+    target = home / "runtime" / f"cursor-{now}"
+    if not f.is_file() or target.exists():
+        return 0
+    f.rename(target)
+    return 1
+
+
+def rename(root: Path, was: str, now: str) -> dict:
+    root = Path(root)
+    homes = sorted(p for p in (root / "environments").glob("*") if p.is_dir())
+    return {"settings": sum(in_settings(home, was, now) for home in homes),
+            "gates": in_gates(root / "runtime", was, now),
+            "triggers": in_triggers(root / "runtime", was, now),
+            "cursors": sum(in_cursors(home, was, now) for home in homes)}

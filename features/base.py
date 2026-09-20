@@ -62,6 +62,7 @@ class Feature(ABC):
     help_: ClassVar[str] = ""
     trigger: ClassVar[dict] = {}
     behaviours: ClassVar[dict] = {}
+    was: ClassVar[tuple] = ()
     default: ClassVar[bool] = True
     fixed: ClassVar[bool] = False
 
