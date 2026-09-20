@@ -8,11 +8,12 @@ import {route} from "../route.js";
 const props = defineProps({resource: Object});
 const running = ref(-1);
 const error = ref("");
-const buttons = computed(() => (Array.isArray(props.resource.data.buttons) ? props.resource.data.buttons : []));
+const all = computed(() => (Array.isArray(props.resource.data.buttons) ? props.resource.data.buttons : []));
 const pressed = computed(() => props.resource.data.pressed || "");
+const buttons = computed(() => all.value.filter((b) => !pressed.value || b.again));
 
 async function press(button, i) {
-    if (pressed.value || running.value >= 0) return;
+    if (running.value >= 0 || (pressed.value && !button.again)) return;
     running.value = i;
     error.value = "";
     try {
@@ -27,20 +28,17 @@ async function press(button, i) {
 </script>
 
 <template>
-    <template v-if="buttons.length">
-        <div class="buttons">
-            <template v-for="(button, i) in buttons" :key="i">
-                <Btn
-                    small
-                    :kind="i === 0 && !pressed ? 'primary' : 'ghost'"
-                    :disabled="!!pressed || running >= 0"
-                    @click="press(button, i)"
-                >
-                    <Spinner v-if="running === i" />
-                    {{ button.label }}
-                </Btn>
-            </template>
-        </div>
+    <template v-if="buttons.length || pressed">
+        <template v-if="buttons.length">
+            <div class="buttons">
+                <template v-for="(button, i) in buttons" :key="i">
+                    <Btn small :kind="i === 0 && !pressed ? 'primary' : 'ghost'" :disabled="running >= 0" @click="press(button, i)">
+                        <Spinner v-if="running === i" />
+                        {{ button.label }}
+                    </Btn>
+                </template>
+            </div>
+        </template>
         <template v-if="pressed">
             <p class="said">You pressed {{ pressed }}.</p>
         </template>
