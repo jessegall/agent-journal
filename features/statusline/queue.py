@@ -6,6 +6,7 @@ VERBS = {"writes": "editing", "reads": "reading", "deletes": "deleting", "tests"
          "searches": "searching", "fetches": "fetching", "dispatches": "dispatching", "loads": "loading"}
 NOUNS = {"reads": "files", "tests": "tests", "installs": "dependencies"}
 HELD = ("writes", "deletes", "tests")
+TOUCHED = ("writes", "deletes")
 USING = "using"
 PLUS, MINUS = "+", "-"
 COUNTS = ((PLUS, "added"), (MINUS, "removed"))
@@ -75,17 +76,17 @@ def walked(parts: list[dict]) -> float:
     return steps * FLIP_EVERY if steps > 1 else 0.0
 
 
-def waited(kind: str, last: dict) -> list[dict]:
-    if kind in HELD[:2] and not last["done"]:
-        return [{"value": WAITING, "pending": True, "color": MUTED}]
-    return [{"value": NOUNS[kind], "color": MUTED}] if kind in NOUNS else []
+def waiting(kind: str, last: dict) -> bool:
+    return kind in TOUCHED and not last["names"] and not last["done"]
 
 
-def message(group: list[dict], closed: bool, now: float, waiting: int = 0) -> dict:
+def message(group: list[dict], closed: bool, now: float, behind: int = 0) -> dict:
     kind = group[0]["kind"]
-    found = worked(group)
     last = group[-1]
-    said = [verb_for(group, kind), *(columns(found) if found else waited(kind, last))]
+    pending = waiting(kind, last)
+    found = [*worked(group), *([{"value": WAITING, "whole": True}] if pending else [])]
+    noun = NOUNS.get(kind)
+    said = [verb_for(group, kind), *(columns(found) if found else [{"value": noun, "color": MUTED}] if noun else [])]
     last = group[-1]
     over = closed or bool(last["done"])
     ran = max(0.0, (last["done"] if over else now) - last["at"])
@@ -97,9 +98,9 @@ def message(group: list[dict], closed: bool, now: float, waiting: int = 0) -> di
         "done": over,
         "for": int(ran),
         "clock": ran >= CLOCK_AFTER and not over,
-        "hold": DRAINING if waiting >= DRAIN else max(HOLD if kind in HELD else 0.0, walked(said)),
+        "hold": DRAINING if behind >= DRAIN else max(HOLD if kind in HELD else 0.0, walked(said)),
         "lingers": LINGERS,
-        "pending": any(p.get("pending") for p in said),
+        "pending": pending,
     }
 
 
