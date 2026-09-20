@@ -12,7 +12,7 @@ GRAY, MUTED, RED, GREEN = "gray", "muted", "red", "green"
 LEFT, RIGHT = "left", "right"
 ROLL_EVERY = 0.5
 HOLD = 1.0
-LINGER = 10.0
+LINGERS = 10.0
 CLOCK_AFTER = 10.0
 MOST_STEPS = 12
 NAME_CAP = 42
@@ -101,7 +101,7 @@ def line(run: dict, commands: list | None = None, now: float = 0.0) -> dict:
         "done": bool(done),
         "clock": (done or now or 0) - float(run.get(RUNNING.at) or 0) >= CLOCK_AFTER,
         "hold": HOLD if run.get(RUNNING.effect) in HELD else 0.0,
-        "linger": LINGER,
+        "lingers": LINGERS,
     }
 
 

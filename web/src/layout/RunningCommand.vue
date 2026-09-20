@@ -87,7 +87,8 @@ function lineFor(run, words = null) {
     return run && run.what && words ? fromJournal(run, words) : null;
 }
 
-const last = {line: null, at: 0, linger: 0};
+const LINGERS = 10;
+const last = {line: null, at: 0, lingers: 0};
 
 const line = computed(() => {
     ticks.value;
@@ -97,10 +98,11 @@ const line = computed(() => {
     if (now) {
         last.line = now;
         last.at = Date.now();
-        last.linger = (told.value && told.value.linger ? told.value.linger : 0) * 1000;
+        const lingers = told.value ? told.value.lingers : LINGERS;
+        last.lingers = lingers === true ? Infinity : (lingers === undefined ? LINGERS : lingers) * 1000;
         return now;
     }
-    return last.line && Date.now() - last.at < last.linger ? {...last.line, done: true} : null;
+    return last.line && Date.now() - last.at < last.lingers ? {...last.line, done: true} : null;
 });
 
 const text = ref(null);

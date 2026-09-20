@@ -3,7 +3,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 import features  # noqa: E402
-from features.statusline.feature import CLOCK_AFTER, HOLD, LINGER, MOST_STEPS, ROLL_EVERY, line  # noqa: E402
+from features.statusline.feature import CLOCK_AFTER, HOLD, LINGERS, MOST_STEPS, ROLL_EVERY, line  # noqa: E402
 from tests.kit import check, done  # noqa: E402
 
 features.unload()
@@ -63,7 +63,7 @@ check("what the line is not about is left out, and the same name twice over is o
 # HOW LONG IT LINGERS and when a clock appears are the journal's call too
 check("editing, deleting and a test run hold their line; nothing else does",
       [line(running(effect=e), [], NOW)["hold"] for e in ("writes", "deletes", "tests", "reads", "builds")], [HOLD, HOLD, HOLD, 0.0, 0.0])
-check("a line with nothing to replace it may stay a while", line(running(effect="tests"), [], NOW)["linger"], LINGER)
+check("a line with nothing to replace it may stay a while", line(running(effect="tests"), [], NOW)["lingers"], LINGERS)
 check("a clock appears once it has run long enough",
       [line(running(effect="tests"), [], NOW + s)["clock"] for s in (1, CLOCK_AFTER + 1)], [False, True])
 check("a finished run is timed by when it finished, not by now",
