@@ -20,6 +20,7 @@ from engine.transcript import Turn, conversation, search as search_transcript, u
 from features.tags.feature import visible
 from providers import PROVIDERS
 from resources.base import AGENT, Refused, SYSTEM
+from resources.shapes import typed
 from resources.types import AgentRow
 
 HIDDEN = ("path", "numbers", "summaries", "load", "save", "named", "method", "action", "sessions", "mark", "saw", "waits", "waitable", "chain")
@@ -315,13 +316,6 @@ def context(args: dict) -> dict:
 
 READS = {"all", "show", "find", "search", "files", "folder", "comments", "linked_to", "unread", "read"}
 OVER_HTTP = frozenset(CONTROLLERS) - {"browser"}
-
-
-def typed(value: str):
-    try:
-        return json.loads(value) if value[:1] in "[{" or value in ("true", "false") or value.lstrip("-").replace(".", "", 1).isdigit() else value
-    except ValueError:
-        return value
 
 
 def invoke(fn, args: dict, extra: dict):

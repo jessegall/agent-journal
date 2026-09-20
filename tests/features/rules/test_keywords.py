@@ -7,7 +7,7 @@ from controllers.types import Nudges, Pins, Rules  # noqa: E402
 from engine.hooks import handle, whispered  # noqa: E402
 from providers import PROVIDERS  # noqa: E402
 from resources.base import USER  # noqa: E402
-from tests.kit import check, done, fresh  # noqa: E402
+from tests.kit import check, done, fresh, refused  # noqa: E402
 
 features.unload()
 features.load()
@@ -46,5 +46,11 @@ check("a pin whose word is in what is being written is whispered", said().starts
 Rules(record, actor=USER).create("Write clean code")
 use("Bash", {"command": "write clean code"})
 check("a row with no keywords is never whispered", said(), "")
+
+# THE ROW SAYS WHAT ITS KEYWORDS ARE, so the viewer can show them, and set reads a list
+check("keywords are a field of the type, not loose data", "keywords" in type(rule).fields, True)
+Rules(record, actor=USER).set(rule.n, "keywords", '["git checkout", "git rebase"]')
+check("set reads a list the same way --set does", Rules(record).load(rule.n).data["keywords"], ["git checkout", "git rebase"])
+check("a value that is not a list is refused", "keywords is a list" in refused(lambda: Rules(record, actor=USER).set(rule.n, "keywords", "git checkout")), True)
 
 done()

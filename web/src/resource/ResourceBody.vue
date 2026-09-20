@@ -27,6 +27,7 @@ const kind = computed(() => meta(props.resource.type));
 const files = computed(() => Object.entries(props.resource.data.files || {}));
 const ranked = computed(() => !!kind.value.fields.priority && !props.resource.completed);
 const traced = computed(() => !!kind.value.fields.changed);
+const keywords = computed(() => (kind.value.fields.keywords && Array.isArray(props.resource.data.keywords) ? props.resource.data.keywords : []));
 const waits = computed(() => (props.resource.completed ? [] : waitsOn(props.resource)));
 const editing = ref(false);
 const draft = reactive({title: "", abstract: "", brief: "", error: ""});
@@ -125,6 +126,17 @@ async function save() {
         </template>
         <template v-if="kind.fields.options">
             <OptionsPicker :resource="resource" />
+        </template>
+        <template v-if="keywords.length">
+            <section class="block">
+                <h3>Keywords</h3>
+                <p class="lead">Said to the agent when one of these comes up in what it is about to run or write.</p>
+                <div class="keywords">
+                    <template v-for="word in keywords" :key="word">
+                        <span class="keyword">{{ word }}</span>
+                    </template>
+                </div>
+            </section>
         </template>
         <template v-if="resource.brief && !editing">
             <section class="block">
@@ -262,6 +274,27 @@ async function save() {
 }
 .block {
     margin-top: 16px;
+}
+
+.lead {
+    margin: 0 0 8px;
+    color: var(--text-4);
+    font-size: 12px;
+}
+
+.keywords {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.keyword {
+    padding: 2px 8px;
+    border: 1px solid var(--border-2);
+    border-radius: 99px;
+    background: var(--raised);
+    color: var(--text-2);
+    font-size: 12px;
 }
 .block h3 {
     margin: 0 0 4px;
