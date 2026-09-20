@@ -59,10 +59,10 @@ async function remove(c) {
 }
 
 async function send(text) {
-    const made = await act(route.value.env, props.resource.type, props.resource.n, "comment", {text: withQuote(props.quote, text)});
+    const written = await act(route.value.env, props.resource.type, props.resource.n, "comment", {text: withQuote(props.quote, text)});
     emit("sent");
     await nextTick();
-    const row = document.querySelector(`[data-comment="${made.n}"]`);
+    const row = document.querySelector(`[data-comment="${written.n}"]`);
     if (row) row.scrollIntoView({behavior: "smooth", block: "nearest"});
 }
 </script>

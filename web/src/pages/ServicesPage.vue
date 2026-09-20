@@ -28,7 +28,7 @@ async function look() {
     now.value = Date.now() / 1000;
 }
 
-async function ask(id, want) {
+async function askService(id, want) {
     try {
         await api("POST", `/services/${id}`, {want});
         await look();
@@ -71,10 +71,10 @@ onUnmounted(() => clearInterval(timer));
                 </template>
                 <span class="since">{{ row.since ? `up ${span(now - row.since)}` : "" }}</span>
                 <span class="acts">
-                    <Btn small @click="ask(row.id, RUNNING.includes(row.state) ? 'down' : 'up')">
+                    <Btn small @click="askService(row.id, RUNNING.includes(row.state) ? 'down' : 'up')">
                         {{ RUNNING.includes(row.state) ? "Stop" : "Start" }}
                     </Btn>
-                    <Btn small @click="ask(row.id, 'restart')">Restart</Btn>
+                    <Btn small @click="askService(row.id, 'restart')">Restart</Btn>
                     <Btn small @click="read(row.id)">{{ reading === row.id ? "Hide log" : "Log" }}</Btn>
                 </span>
             </div>

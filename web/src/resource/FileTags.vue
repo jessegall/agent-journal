@@ -27,17 +27,20 @@ async function save() {
 </script>
 
 <template>
-    <input
-        v-if="editing"
-        v-model="draft"
-        class="editor"
-        aria-label="File tags"
-        autofocus
-        @blur="save"
-        @keydown.enter.prevent="save"
-        @keydown.esc.prevent="cancel"
-    />
-    <button v-else type="button" class="tags" :class="{empty: !file.what}" @click="edit">{{ file.what || "Add tags" }}</button>
+    <template v-if="editing">
+        <input
+            v-model="draft"
+            class="editor"
+            aria-label="File tags"
+            autofocus
+            @blur="save"
+            @keydown.enter.prevent="save"
+            @keydown.esc.prevent="cancel"
+        />
+    </template>
+    <template v-else>
+        <button type="button" class="tags" :class="{empty: !file.what}" @click="edit">{{ file.what || "Add tags" }}</button>
+    </template>
 </template>
 
 <style scoped>

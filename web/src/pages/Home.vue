@@ -30,54 +30,58 @@ const tabs = computed(() => [
 
 <template>
     <div class="home">
-        <div v-if="!ready" class="home-loading">
-            <ThreadSkeleton />
-        </div>
-        <div v-else class="home-main">
-            <section :class="['home-section', 'home-thread', {roomy: !store.activity, wide: store.wide}]">
-                <AgentBar />
-                <TransitionGroup name="act">
-                    <Notice v-for="x in notices" :key="x.n" :notice="x" />
-                </TransitionGroup>
-                <template v-if="store.detached">
-                    <div class="home-away">
-                        <p>
-                            {{
-                                store.extension.holding
-                                    ? "The chat is following you through the extension."
-                                    : "The chat is floating over this page."
-                            }}
-                        </p>
-                        <button type="button" class="home-away-back" @click="detach(false)">Put it back here</button>
-                    </div>
-                </template>
-                <template v-else>
-                    <Thread />
-                </template>
-            </section>
-            <div class="home-divider" role="separator" aria-orientation="vertical" />
-            <div :class="['home-rail', {wide: store.wide}]">
-                <div class="rail-tabs" role="tablist">
-                    <template v-for="[key, label, n, warm] in tabs" :key="key">
-                        <button
-                            type="button"
-                            role="tab"
-                            :aria-selected="tab === key"
-                            :class="['rail-tab', {on: tab === key}]"
-                            @click="tab = key"
-                        >
-                            {{ label }}
-                            <span :class="['rail-tab-n', {hot: n && warm}]">{{ n }}</span>
-                        </button>
-                    </template>
-                </div>
-                <SwitchCase :value="tab">
-                    <template #todos><RailTodos /></template>
-                    <template #notes><RailNotes /></template>
-                    <template #default><RailWaiting /></template>
-                </SwitchCase>
+        <template v-if="!ready">
+            <div class="home-loading">
+                <ThreadSkeleton />
             </div>
-        </div>
+        </template>
+        <template v-else>
+            <div class="home-main">
+                <section :class="['home-section', 'home-thread', {roomy: !store.activity, wide: store.wide}]">
+                    <AgentBar />
+                    <TransitionGroup name="act">
+                        <Notice v-for="x in notices" :key="x.n" :notice="x" />
+                    </TransitionGroup>
+                    <template v-if="store.detached">
+                        <div class="home-away">
+                            <p>
+                                {{
+                                    store.extension.holding
+                                        ? "The chat is following you through the extension."
+                                        : "The chat is floating over this page."
+                                }}
+                            </p>
+                            <button type="button" class="home-away-back" @click="detach(false)">Put it back here</button>
+                        </div>
+                    </template>
+                    <template v-else>
+                        <Thread />
+                    </template>
+                </section>
+                <div class="home-divider" role="separator" aria-orientation="vertical" />
+                <div :class="['home-rail', {wide: store.wide}]">
+                    <div class="rail-tabs" role="tablist">
+                        <template v-for="[key, label, n, warm] in tabs" :key="key">
+                            <button
+                                type="button"
+                                role="tab"
+                                :aria-selected="tab === key"
+                                :class="['rail-tab', {on: tab === key}]"
+                                @click="tab = key"
+                            >
+                                {{ label }}
+                                <span :class="['rail-tab-n', {hot: n && warm}]">{{ n }}</span>
+                            </button>
+                        </template>
+                    </div>
+                    <SwitchCase :value="tab">
+                        <template #todos><RailTodos /></template>
+                        <template #notes><RailNotes /></template>
+                        <template #default><RailWaiting /></template>
+                    </SwitchCase>
+                </div>
+            </div>
+        </template>
     </div>
 </template>
 

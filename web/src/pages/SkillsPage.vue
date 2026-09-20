@@ -19,8 +19,8 @@ async function reload() {
     if (!loaded.value) {
         folded.value = new Set(
             groups(got).flatMap((group) =>
-                group.skill ? [] : [group.key, ...group.items.filter((item) => !item.skill).map((item) => item.key)],
-            ),
+                group.skill ? [] : [group.key, ...group.items.filter((item) => !item.skill).map((item) => item.key)]
+            )
         );
     }
     rows.value = got;
@@ -106,71 +106,73 @@ async function always(s, on) {
         <template v-if="loaded && !rows.length">
             <p class="empty">No skills are installed under .claude/skills or .codex/skills.</p>
         </template>
-        <div v-if="rows.length" class="rows">
-            <div
-                v-for="group in skillGroups"
-                :key="group.key"
-                :class="['cluster', group.skill ? 'individual' : 'named']"
-            >
-                <SkillsRow
-                    v-if="group.skill"
-                    :skill="group.skill"
-                    :busy="busy"
-                    :opened="opened"
-                    :text="text"
-                    @open="open"
-                    @load="loadNow"
-                    @always="always"
-                />
-                <template v-else>
-                    <button type="button" :class="['group', {folded: folded.has(group.key)}]" @click="fold(group.key)">
-                        <span class="group-name">{{ group.name }}</span>
-                        <span class="group-count">{{ group.count }}</span>
-                        <Icon name="down" />
-                    </button>
-                    <template v-if="!folded.has(group.key)">
-                        <template v-for="item in group.items" :key="item.key">
+        <template v-if="rows.length">
+            <div class="rows">
+                <template v-for="group in skillGroups" :key="group.key">
+                    <div :class="['cluster', group.skill ? 'individual' : 'named']">
+                        <template v-if="group.skill">
                             <SkillsRow
-                                v-if="item.skill"
-                                :skill="item.skill"
+                                :skill="group.skill"
                                 :busy="busy"
                                 :opened="opened"
                                 :text="text"
-                                :depth="1"
                                 @open="open"
                                 @load="loadNow"
                                 @always="always"
                             />
-                            <template v-else>
-                                <button
-                                    type="button"
-                                    :class="['group', 'subgroup', {folded: folded.has(item.key)}]"
-                                    @click="fold(item.key)"
-                                >
-                                    <span class="group-name">{{ item.name }}</span>
-                                    <span class="group-count">{{ item.rows.length }}</span>
-                                    <Icon name="down" />
-                                </button>
-                                <template v-if="!folded.has(item.key)">
-                                    <SkillsRow
-                                        v-for="skill in item.rows"
-                                        :key="skill.name"
-                                        :skill="skill"
-                                        :busy="busy"
-                                        :opened="opened"
-                                        :text="text"
-                                        :depth="2"
-                                        @open="open"
-                                        @load="loadNow"
-                                        @always="always"
-                                    />
+                        </template>
+                        <template v-else>
+                            <button type="button" :class="['group', {folded: folded.has(group.key)}]" @click="fold(group.key)">
+                                <span class="group-name">{{ group.name }}</span>
+                                <span class="group-count">{{ group.count }}</span>
+                                <Icon name="down" />
+                            </button>
+                            <template v-if="!folded.has(group.key)">
+                                <template v-for="item in group.items" :key="item.key">
+                                    <template v-if="item.skill">
+                                        <SkillsRow
+                                            :skill="item.skill"
+                                            :busy="busy"
+                                            :opened="opened"
+                                            :text="text"
+                                            :depth="1"
+                                            @open="open"
+                                            @load="loadNow"
+                                            @always="always"
+                                        />
+                                    </template>
+                                    <template v-else>
+                                        <button
+                                            type="button"
+                                            :class="['group', 'subgroup', {folded: folded.has(item.key)}]"
+                                            @click="fold(item.key)"
+                                        >
+                                            <span class="group-name">{{ item.name }}</span>
+                                            <span class="group-count">{{ item.rows.length }}</span>
+                                            <Icon name="down" />
+                                        </button>
+                                        <template v-if="!folded.has(item.key)">
+                                            <template v-for="skill in item.rows" :key="skill.name">
+                                                <SkillsRow
+                                                    :skill="skill"
+                                                    :busy="busy"
+                                                    :opened="opened"
+                                                    :text="text"
+                                                    :depth="2"
+                                                    @open="open"
+                                                    @load="loadNow"
+                                                    @always="always"
+                                                />
+                                            </template>
+                                        </template>
+                                    </template>
                                 </template>
                             </template>
                         </template>
-                    </template>
+                    </div>
                 </template>
             </div>
-        </div>
+        </template>
     </section>
 </template>
 

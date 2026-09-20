@@ -31,12 +31,14 @@ watch(() => route.value.q, load);
         <template v-if="matches.length">
             <p class="empty">{{ matches.length }} files in the project are named {{ route.q }}:</p>
             <ul class="matches">
-                <li v-for="path in matches" :key="path">
-                    <a :href="`#/${route.env}/file?q=${encodeURIComponent(path)}`">
-                        <Icon name="file" />
-                        <code>{{ path }}</code>
-                    </a>
-                </li>
+                <template v-for="path in matches" :key="path">
+                    <li>
+                        <a :href="`#/${route.env}/file?q=${encodeURIComponent(path)}`">
+                            <Icon name="file" />
+                            <code>{{ path }}</code>
+                        </a>
+                    </li>
+                </template>
             </ul>
         </template>
         <template v-else-if="file">

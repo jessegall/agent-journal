@@ -36,15 +36,23 @@ watch(
             <p class="empty">Nothing matches “{{ route.q }}”.</p>
         </template>
         <div class="cards">
-            <div v-for="r in hits" :key="r.ref" class="hit">
-                <ResourceCard :resource="r" @click="peek(r.type, r.n)" />
-                <div v-if="r.matches.length" class="matches">
-                    <a v-for="f in r.matches" :key="f.name" :href="f.url" target="_blank">
-                        <span>{{ f.name }}</span>
-                        <small v-if="f.tags">{{ f.tags }}</small>
-                    </a>
+            <template v-for="r in hits" :key="r.ref">
+                <div class="hit">
+                    <ResourceCard :resource="r" @click="peek(r.type, r.n)" />
+                    <template v-if="r.matches.length">
+                        <div class="matches">
+                            <template v-for="f in r.matches" :key="f.name">
+                                <a :href="f.url" target="_blank">
+                                    <span>{{ f.name }}</span>
+                                    <template v-if="f.tags">
+                                        <small>{{ f.tags }}</small>
+                                    </template>
+                                </a>
+                            </template>
+                        </div>
+                    </template>
                 </div>
-            </div>
+            </template>
         </div>
     </section>
 </template>

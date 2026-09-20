@@ -142,18 +142,21 @@ onUnmounted(() => window.removeEventListener("click", away));
                     <Icon name="agents" />
                     {{ name }}
                 </button>
-                <button
-                    v-if="['claude', 'codex'].includes(data.provider)"
-                    type="button"
-                    :class="['agent-fact', 'agent-count', 'agent-usage', {open: open === 'usage'}]"
-                    :title="usage.length ? `${usageLabel} plan allowance used` : `Open ${name} usage`"
-                    :aria-expanded="open === 'usage'"
-                    @click="usageDetails"
-                >
-                    <Icon name="activity" />
-                    <span v-if="usage.length" class="usage-gauge"><span :style="{width: `${used(usage[0])}%`}" /></span>
-                    {{ usageLabel }}
-                </button>
+                <template v-if="['claude', 'codex'].includes(data.provider)">
+                    <button
+                        type="button"
+                        :class="['agent-fact', 'agent-count', 'agent-usage', {open: open === 'usage'}]"
+                        :title="usage.length ? `${usageLabel} plan allowance used` : `Open ${name} usage`"
+                        :aria-expanded="open === 'usage'"
+                        @click="usageDetails"
+                    >
+                        <Icon name="activity" />
+                        <template v-if="usage.length">
+                            <span class="usage-gauge"><span :style="{width: `${used(usage[0])}%`}" /></span>
+                        </template>
+                        {{ usageLabel }}
+                    </button>
+                </template>
                 <span class="agent-fact agent-context" :title="`context ${Math.round(Number(data.context || 0))}% full`">
                     <Icon name="gauge" />
                     <span class="agent-context-bar"><span :style="{width: `${Math.round(Number(data.context || 0))}%`}" /></span>
@@ -169,7 +172,9 @@ onUnmounted(() => window.removeEventListener("click", away));
                     >
                         <Icon name="model" />
                         {{ pending("model") || family }}
-                        <Spinner v-if="pending('model')" />
+                        <template v-if="pending('model')">
+                            <Spinner />
+                        </template>
                     </button>
                     <button
                         type="button"
@@ -184,7 +189,9 @@ onUnmounted(() => window.removeEventListener("click", away));
                     >
                         <Icon name="bolt" />
                         {{ pending("effort") || data.effort || "effort" }}
-                        <Spinner v-if="pending('effort')" />
+                        <template v-if="pending('effort')">
+                            <Spinner />
+                        </template>
                     </button>
                 </template>
                 <button
@@ -220,48 +227,57 @@ onUnmounted(() => window.removeEventListener("click", away));
                 </template>
             </template>
         </div>
-        <div v-if="data" class="agent-actions">
-            <button
-                v-for="c in activityCounts"
-                :key="c.key"
-                type="button"
-                :class="['agent-fact', 'agent-count', `agent-activity-${c.key}`, {none: !c.n, open: open === c.key}]"
-                :title="c.title"
-                :aria-expanded="open === c.key"
-                @click="toggle(c.key, $event)"
-            >
-                <Icon :name="c.icon" />
-                {{ c.n }}
-            </button>
-            <button
-                v-if="!alone"
-                type="button"
-                :class="['agent-fact', 'agent-count', 'agent-detach', {on: store.detached}]"
-                :title="store.detached ? 'Put the chat back on the page' : 'Detach the chat into its own window'"
-                :aria-pressed="store.detached"
-                @click="detach(!store.detached)"
-            >
-                <Icon name="sidepanel" />
-            </button>
-        </div>
+        <template v-if="data">
+            <div class="agent-actions">
+                <template v-for="c in activityCounts" :key="c.key">
+                    <button
+                        type="button"
+                        :class="['agent-fact', 'agent-count', `agent-activity-${c.key}`, {none: !c.n, open: open === c.key}]"
+                        :title="c.title"
+                        :aria-expanded="open === c.key"
+                        @click="toggle(c.key, $event)"
+                    >
+                        <Icon :name="c.icon" />
+                        {{ c.n }}
+                    </button>
+                </template>
+                <template v-if="!alone">
+                    <button
+                        type="button"
+                        :class="['agent-fact', 'agent-count', 'agent-detach', {on: store.detached}]"
+                        :title="store.detached ? 'Put the chat back on the page' : 'Detach the chat into its own window'"
+                        :aria-pressed="store.detached"
+                        @click="detach(!store.detached)"
+                    >
+                        <Icon name="sidepanel" />
+                    </button>
+                </template>
+            </div>
+        </template>
         <Transition name="drop">
             <div v-if="open && (data || open === 'appoint')" class="bar-drop" :style="{left: `${anchor.left}px`, top: `${anchor.top}px`}">
                 <SwitchCase :value="CONTROLS.includes(open) ? 'model' : open">
                     <template #appoint>
-                        <p v-if="error" class="bar-error">{{ error }}</p>
-                        <p v-else-if="!available.length" class="bar-none">No online agents are available.</p>
-                        <button
-                            v-for="candidate in available"
-                            :key="candidate.session"
-                            type="button"
-                            class="bar-agent-choice"
-                            :disabled="assigning === candidate.session"
-                            @click="choose(candidate)"
-                        >
-                            <Icon name="agents" />
-                            <span>{{ providerName(candidate.provider, "Agent") }}{{ candidate.model ? ` · ${candidate.model}` : "" }}</span>
-                            <small>{{ candidate.environment || "unassigned" }}</small>
-                        </button>
+                        <template v-if="error">
+                            <p class="bar-error">{{ error }}</p>
+                        </template>
+                        <template v-else-if="!available.length">
+                            <p class="bar-none">No online agents are available.</p>
+                        </template>
+                        <template v-for="candidate in available" :key="candidate.session">
+                            <button
+                                type="button"
+                                class="bar-agent-choice"
+                                :disabled="assigning === candidate.session"
+                                @click="choose(candidate)"
+                            >
+                                <Icon name="agents" />
+                                <span>
+                                    {{ providerName(candidate.provider, "Agent") }}{{ candidate.model ? ` · ${candidate.model}` : "" }}
+                                </span>
+                                <small>{{ candidate.environment || "unassigned" }}</small>
+                            </button>
+                        </template>
                     </template>
                     <template #skills>
                         <p class="bar-none">Loaded in this window, newest last. A compaction empties it.</p>
@@ -279,39 +295,51 @@ onUnmounted(() => window.removeEventListener("click", away));
                         </div>
                     </template>
                     <template #model>
-                        <p v-if="error" class="bar-error">{{ error }}</p>
+                        <template v-if="error">
+                            <p class="bar-error">{{ error }}</p>
+                        </template>
                         <p class="bar-current">{{ current }}</p>
-                        <div v-if="pending(open)" class="bar-waiting">
-                            <span>{{ pending(open) }} is waiting for the agent to finish its turn.</span>
-                        </div>
+                        <template v-if="pending(open)">
+                            <div class="bar-waiting">
+                                <span>{{ pending(open) }} is waiting for the agent to finish its turn.</span>
+                            </div>
+                        </template>
                         <template v-for="group in chosen" :key="group.key">
                             <p class="bar-label">{{ group.label }}</p>
                             <div class="bar-choices">
-                                <button
-                                    v-for="choice in group.choices"
-                                    :key="choice.value"
-                                    type="button"
-                                    class="bar-control-choice"
-                                    :disabled="Boolean(controlling)"
-                                    @click="control(group.key, choice.value)"
-                                >
-                                    <Spinner v-if="waiting(group.key, choice.value)" />
-                                    {{ choice.label }}
-                                </button>
+                                <template v-for="choice in group.choices" :key="choice.value">
+                                    <button
+                                        type="button"
+                                        class="bar-control-choice"
+                                        :disabled="Boolean(controlling)"
+                                        @click="control(group.key, choice.value)"
+                                    >
+                                        <template v-if="waiting(group.key, choice.value)">
+                                            <Spinner />
+                                        </template>
+                                        {{ choice.label }}
+                                    </button>
+                                </template>
                             </div>
                         </template>
                         <p class="bar-none">{{ controls.note }}</p>
                     </template>
                     <template #usage>
-                        <p v-if="error" class="bar-error">{{ error }}</p>
+                        <template v-if="error">
+                            <p class="bar-error">{{ error }}</p>
+                        </template>
                         <p class="bar-current">Plan allowance used</p>
-                        <div v-for="window in usage" :key="window.key" class="bar-usage">
-                            <span>{{ window.label }}</span>
-                            <strong>{{ Math.round(used(window)) }}%</strong>
-                            <span class="bar-usage-track"><span :style="{width: `${used(window)}%`}" /></span>
-                            <small>{{ resetLabel(window) }}</small>
-                        </div>
-                        <p v-if="!usage.length && !error" class="bar-none">No current plan window has been reported here.</p>
+                        <template v-for="window in usage" :key="window.key">
+                            <div class="bar-usage">
+                                <span>{{ window.label }}</span>
+                                <strong>{{ Math.round(used(window)) }}%</strong>
+                                <span class="bar-usage-track"><span :style="{width: `${used(window)}%`}" /></span>
+                                <small>{{ resetLabel(window) }}</small>
+                            </div>
+                        </template>
+                        <template v-if="!usage.length && !error">
+                            <p class="bar-none">No current plan window has been reported here.</p>
+                        </template>
                     </template>
                     <template #shells>
                         <CrewList :rows="data.shell_rows || []" :total="data.shells || 0" />

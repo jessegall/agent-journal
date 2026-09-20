@@ -79,7 +79,7 @@ function unit(f, u) {
 }
 
 function marks(f, value) {
-    const at = String(value)
+    const said = String(value)
         .split(/[\s,]+/)
         .map(Number)
         .filter((n) => n > 0 && n <= 100);

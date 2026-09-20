@@ -37,7 +37,9 @@ async function press(button, i) {
             <div class="buttons">
                 <template v-for="(button, i) in buttons" :key="i">
                     <Btn small :kind="i === 0 && !pressed.length ? 'primary' : 'ghost'" :disabled="running >= 0" @click="press(button, i)">
-                        <Spinner v-if="running === i" />
+                        <template v-if="running === i">
+                            <Spinner />
+                        </template>
                         {{ button.label }}
                     </Btn>
                 </template>

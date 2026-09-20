@@ -26,7 +26,7 @@ onUnmounted(() => {
     Object.values(frames).forEach(cancelAnimationFrame);
 });
 
-const told = computed(() => line(message.value, elapsed.value));
+const shownLine = computed(() => line(message.value, elapsed.value));
 
 function countTo(sign, to) {
     cancelAnimationFrame(frames[sign]);
@@ -52,24 +52,24 @@ watch(
     () => state.value.at,
     () => (counted.value = {})
 );
-watch(told, (now) => {
+watch(shownLine, (now) => {
     for (const part of (now && now.parts) || []) if (part.increments) countTo(part.prefix, part.value);
 });
 </script>
 
 <template>
-    <span :class="['statusbar-running', {ending: !told}]">
+    <span :class="['statusbar-running', {ending: !shownLine}]">
         <Transition name="roll">
-            <span v-if="told" :key="told.key" :class="['statusbar-run-line', {done: told.done}]">
-                <TransitionGroup tag="span" name="token" class="statusbar-run-text" :title="told.text">
-                    <span v-for="(part, i) in told.parts" :key="`${i}-${part.value}`" :class="['statusbar-run-token', part.color]">
+            <span v-if="shownLine" :key="shownLine.key" :class="['statusbar-run-line', {done: shownLine.done}]">
+                <TransitionGroup tag="span" name="token" class="statusbar-run-text" :title="shownLine.text">
+                    <span v-for="(part, i) in shownLine.parts" :key="`${i}-${part.value}`" :class="['statusbar-run-token', part.color]">
                         <template v-if="part.increments">{{ amount(part) }}</template>
                         <template v-else>{{ part.value }}</template>
                     </span>
                 </TransitionGroup>
                 <span class="statusbar-running-slot">
                     <Transition name="clock">
-                        <span v-if="told.clock" class="statusbar-running-for">{{ told.clock }}</span>
+                        <span v-if="shownLine.clock" class="statusbar-running-for">{{ shownLine.clock }}</span>
                     </Transition>
                 </span>
             </span>

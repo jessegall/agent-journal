@@ -214,47 +214,59 @@ onUnmounted(() => {
                     {{ label }}
                 </button>
             </template>
-            <span v-if="tab === 'transcript'" class="tab-note">
-                {{ turns.length ? `${turns.length} of ${total} lines · live` : "live" }}
-            </span>
-        </div>
-        <section v-if="tab === 'work'" class="block">
-            <template v-for="w in works" :key="w.n">
-                <div class="work">
-                    <span :class="['dot', {open: !w.completed}]" />
-                    <span class="work-title">{{ w.title }}</span>
-                    <span class="work-when">{{ w.completed ? "ended" : "open" }}</span>
-                </div>
-                <Trace :resource="w" />
+            <template v-if="tab === 'transcript'">
+                <span class="tab-note">
+                    {{ turns.length ? `${turns.length} of ${total} lines · live` : "live" }}
+                </span>
             </template>
-            <p v-if="!works.length" class="none">No work on this agent yet.</p>
-        </section>
-        <section v-if="tab === 'hooks'" class="block">
-            <AgentHooks :provider="data.provider" />
-        </section>
-        <section v-show="tab === 'transcript'" class="block">
-            <div v-if="subagents.length" class="sessions">
-                <button type="button" :class="['session-pick', {on: !session}]" @click="showSession('')">This session</button>
-                <template v-for="r in subagents" :key="r.session">
-                    <button
-                        type="button"
-                        :class="['session-pick', {on: session === r.session}]"
-                        :title="r.type ? `${r.type} · ${r.model}` : r.model"
-                        @click="showSession(r.session)"
-                    >
-                        <span :class="['dot', {open: r.running}]" />
-                        {{ r.task }}
-                    </button>
+        </div>
+        <template v-if="tab === 'work'">
+            <section class="block">
+                <template v-for="w in works" :key="w.n">
+                    <div class="work">
+                        <span :class="['dot', {open: !w.completed}]" />
+                        <span class="work-title">{{ w.title }}</span>
+                        <span class="work-when">{{ w.completed ? "ended" : "open" }}</span>
+                    </div>
+                    <Trace :resource="w" />
                 </template>
-            </div>
-            <p v-if="picked" class="session-note">
-                Subagent {{ picked.type || "" }} · {{ picked.model || "inherited model" }} ·
-                {{
-                    picked.running
-                        ? `running ${span(Date.now() / 1000 - picked.at)}`
-                        : `${picked.status || "finished"} after ${span(picked.ended - picked.at)}`
-                }}
-            </p>
+                <template v-if="!works.length">
+                    <p class="none">No work on this agent yet.</p>
+                </template>
+            </section>
+        </template>
+        <template v-if="tab === 'hooks'">
+            <section class="block">
+                <AgentHooks :provider="data.provider" />
+            </section>
+        </template>
+        <section v-show="tab === 'transcript'" class="block">
+            <template v-if="subagents.length">
+                <div class="sessions">
+                    <button type="button" :class="['session-pick', {on: !session}]" @click="showSession('')">This session</button>
+                    <template v-for="r in subagents" :key="r.session">
+                        <button
+                            type="button"
+                            :class="['session-pick', {on: session === r.session}]"
+                            :title="r.type ? `${r.type} · ${r.model}` : r.model"
+                            @click="showSession(r.session)"
+                        >
+                            <span :class="['dot', {open: r.running}]" />
+                            {{ r.task }}
+                        </button>
+                    </template>
+                </div>
+            </template>
+            <template v-if="picked">
+                <p class="session-note">
+                    Subagent {{ picked.type || "" }} · {{ picked.model || "inherited model" }} ·
+                    {{
+                        picked.running
+                            ? `running ${span(Date.now() / 1000 - picked.at)}`
+                            : `${picked.status || "finished"} after ${span(picked.ended - picked.at)}`
+                    }}
+                </p>
+            </template>
             <div ref="scroller" class="transcript">
                 <div ref="topMark" class="edge">
                     {{
@@ -267,10 +279,12 @@ onUnmounted(() => {
                                 : ""
                     }}
                 </div>
-                <p v-if="error" class="read-error">
-                    {{ error }}
-                    <button type="button" @click="retry">Try again</button>
-                </p>
+                <template v-if="error">
+                    <p class="read-error">
+                        {{ error }}
+                        <button type="button" @click="retry">Try again</button>
+                    </p>
+                </template>
                 <template v-if="loading && !turns.length">
                     <p class="none">Loading…</p>
                 </template>
@@ -287,7 +301,9 @@ onUnmounted(() => {
                                 @click="toggle(t.line)"
                             >
                                 {{ WHO[t.kind] || t.kind }}
-                                <span v-if="t.text" class="fold-mark">{{ folded.has(t.line) ? "show" : "hide" }}</span>
+                                <template v-if="t.text">
+                                    <span class="fold-mark">{{ folded.has(t.line) ? "show" : "hide" }}</span>
+                                </template>
                             </button>
                             <span class="when">{{ when(t.at) }}</span>
                             <span class="line">#{{ t.line }}</span>

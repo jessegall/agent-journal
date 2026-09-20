@@ -113,7 +113,9 @@ function openNote(n) {
     <template v-if="sub === 'unread' && unread.length">
         <div class="rail-foot">
             <button type="button" class="rail-foot-act" :disabled="reading" @click="readAll">
-                <Spinner v-if="reading" />
+                <template v-if="reading">
+                    <Spinner />
+                </template>
                 {{ reading ? "Marking…" : "Mark all as read" }}
             </button>
         </div>

@@ -31,45 +31,51 @@ watch(
 <template>
     <Transition name="reader">
         <div v-if="resource" :key="panel" :class="['reader', shape]" @click.self="close">
-            <aside v-if="panel === 'inspector'" :class="['inspector', {swapping, 'focusing-comment': focusComment}]">
-                <div class="inspector-pages">
-                    <Transition name="inspector-page">
-                        <div :key="resource.ref" :class="['inspector-page', shape]">
-                            <template v-if="swapping">
-                                <div class="skeleton">
-                                    <span class="blank short" />
-                                    <span class="blank wide" />
-                                    <span class="blank" />
-                                    <span class="blank" />
-                                    <span class="blank half" />
-                                </div>
-                            </template>
-                            <ResourceBody v-else :resource="resource" :comment-composer="false" @close="close" />
-                        </div>
-                    </Transition>
+            <template v-if="panel === 'inspector'">
+                <aside :class="['inspector', {swapping, 'focusing-comment': focusComment}]">
+                    <div class="inspector-pages">
+                        <Transition name="inspector-page">
+                            <div :key="resource.ref" :class="['inspector-page', shape]">
+                                <template v-if="swapping">
+                                    <div class="skeleton">
+                                        <span class="blank short" />
+                                        <span class="blank wide" />
+                                        <span class="blank" />
+                                        <span class="blank" />
+                                        <span class="blank half" />
+                                    </div>
+                                </template>
+                                <template v-else>
+                                    <ResourceBody :resource="resource" :comment-composer="false" @close="close" />
+                                </template>
+                            </div>
+                        </Transition>
+                    </div>
+                    <Comments :resource="resource" :show-thread="!!focusComment" :focus="focusComment" />
+                </aside>
+            </template>
+            <template v-else>
+                <div class="page">
+                    <SwitchCase :value="shape">
+                        <template #plan>
+                            <DocumentPage :resource="resource" :focus="focusComment" @close="close">
+                                <PlanPage :resource="resource" @close="close" />
+                            </DocumentPage>
+                        </template>
+                        <template #agent>
+                            <DocumentPage :resource="resource" :focus="focusComment" @close="close">
+                                <AgentPage :resource="resource" @close="close" />
+                            </DocumentPage>
+                        </template>
+                        <template #document>
+                            <DocumentPage :resource="resource" :focus="focusComment" @close="close" />
+                        </template>
+                        <template #default>
+                            <ResourceBody :resource="resource" @close="close" />
+                        </template>
+                    </SwitchCase>
                 </div>
-                <Comments :resource="resource" :show-thread="!!focusComment" :focus="focusComment" />
-            </aside>
-            <div v-else class="page">
-                <SwitchCase :value="shape">
-                    <template #plan>
-                        <DocumentPage :resource="resource" :focus="focusComment" @close="close">
-                            <PlanPage :resource="resource" @close="close" />
-                        </DocumentPage>
-                    </template>
-                    <template #agent>
-                        <DocumentPage :resource="resource" :focus="focusComment" @close="close">
-                            <AgentPage :resource="resource" @close="close" />
-                        </DocumentPage>
-                    </template>
-                    <template #document>
-                        <DocumentPage :resource="resource" :focus="focusComment" @close="close" />
-                    </template>
-                    <template #default>
-                        <ResourceBody :resource="resource" @close="close" />
-                    </template>
-                </SwitchCase>
-            </div>
+            </template>
         </div>
     </Transition>
 </template>

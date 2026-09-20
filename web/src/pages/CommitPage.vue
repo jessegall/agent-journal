@@ -84,7 +84,9 @@ const hunks = computed(() =>
                         </a>
                         <span class="count">{{ f.count }}</span>
                         <span class="bar">
-                            <span v-for="(kind, i) in blocks(f)" :key="i" :class="['block', kind]" />
+                            <template v-for="(kind, i) in blocks(f)" :key="i">
+                                <span :class="['block', kind]" />
+                            </template>
                         </span>
                     </div>
                 </template>
