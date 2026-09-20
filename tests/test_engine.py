@@ -10,7 +10,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from controllers.types import Agents, Messages, Nudges, Pins, Questions, Todos, Works  # noqa: E402
 from engine import bus  # noqa: E402
 from engine.actors import Agent, BUSY, IDLE, STOPPED, WORKING, User  # noqa: E402
-from engine.drivers import Driver  # noqa: E402
+from engine.drivers import Claude, Driver  # noqa: E402
 from engine.engine import Engine, TYPING_HOLD  # noqa: E402
 from engine.record import Record  # noqa: E402
 from engine.sessions import ACTIVE_ENV  # noqa: E402
@@ -308,6 +308,12 @@ driver.quiet_for = lambda: 9.0
 check("a line delivered at rest is said plainly", agent.aside("2 new messages"), "2 new messages")
 driver.__class__.ASIDE = ""
 check("a CLI with no aside always says it plainly", agent.aside("2 new messages"), "2 new messages")
+
+# THE LAUNCH COMMAND tells the session to take what the journal posts, without overruling the user's own settings
+launching = Claude(record, "launch")
+check("the journal launches claude ready to accept its messages",
+      launching.command(["--continue"])[:3], ["claude", "--settings", '{"crossSessionInbound": "accept"}'])
+check("a settings argument of the user's own is left alone", launching.command(["--settings", "mine.json"]), ["claude", "--settings", "mine.json"])
 
 # A SESSION'S INBOX SOCKET takes the line; without one, or when it refuses, the line is typed
 inbox = Path(tempfile.mkdtemp()) / "inbox.sock"
