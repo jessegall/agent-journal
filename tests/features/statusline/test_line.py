@@ -31,23 +31,34 @@ check("editing names the files it is editing, not the word files",
       (["editing", ["one.py", "two.py", "three.py"]], "gray"))
 check("a command of another kind is not one of them", line({"what": "editing x.py", "tool": "Edit", "at": 3, "effect": "writes"},
       [*edits, {"what": "cat y", "tool": "Bash", "at": 2.5, "effect": "reads"}], NOW)["parts"][1]["value"], ["one.py", "two.py", "x.py"])
-check("a shell step is named by its gist, never by its tail",
-      line({"what": "writing x.py", "tool": "Write", "at": 3, "effect": "writes"},
-           [{"what": "python3 - <<'EOF'\nopen('x','w')\nEOF", "tool": "Bash", "at": 2, "effect": "writes"}], NOW)["parts"][1]["value"],
-      ["python3 script", "x.py"])
+check("a name too long to show is cut with an ellipsis, and the flipping part hugs the right",
+      [line({"what": "writing x.py", "tool": "Write", "at": 3, "effect": "writes"},
+            [{"what": "editing a-name-far-longer-than-any-status-bar-would-ever-show.py", "tool": "Edit", "at": 2, "effect": "writes"}], NOW)["parts"][1][k]
+       for k in ("value", "align")],
+      [["a-name-far-longer-than-any-status-bar-wou…", "x.py"], "right"])
+check("a shell command is never one of the files, however it was classed",
+      [p["value"] for p in line({"what": "writing x.py", "tool": "Write", "at": 3, "effect": "writes"},
+                                [{"what": "git add -A && git commit -m x", "tool": "Bash", "at": 2, "effect": "writes"}], NOW)["parts"]],
+      ["editing", "files"])
 
 # WHAT IT FLIPS THROUGH comes with how often, and only while the line stands for several steps
 def read(*what):
     return [{"what": w, "effect": "reads"} for w in what]
 
 
-rolled = line(running(effect="reads", steps=read("cat a.py", "cat b.py")), [], NOW)["parts"][1]
-check("a scoped line hands over the names and how often to flip", (rolled["duration"], rolled["value"]), (ROLL_EVERY, ["cat x.py", "cat a.py", "cat b.py"]))
+rolled = line({"what": "reading a.py", "tool": "Read", "at": NOW, "effect": "reads"},
+              [{"what": "reading b.py", "tool": "Read", "at": NOW - 1, "effect": "reads"}], NOW)["parts"][1]
+check("a scoped line hands over the names and how often to flip", (rolled["duration"], rolled["value"]), (ROLL_EVERY, ["b.py", "a.py"]))
 check("one name alone is nothing to flip through", len(line(running(effect="reads"), [], NOW)["parts"]), 2)
-check("a command that has finished stops flipping", line(running(effect="reads", steps=read("a", "b"), done=NOW + 1), [], NOW)["parts"][-1]["value"], "files")
-check("only the last names are kept", len(line(running(effect="writes", steps=[{"what": f"s{i}", "effect": "writes"} for i in range(40)]), [], NOW)["parts"][1]["value"]), MOST_STEPS)
-mixed = running(effect="reads", steps=[*read("cat a.py"), {"what": "sleep 1", "effect": ""}, *read("cat a.py", "cat b.py")])
-check("what the line is not about is left out, and the same name twice over is one", line(mixed, [], NOW)["parts"][1]["value"], ["cat x.py", "cat a.py", "cat b.py"])
+check("a run of shell reads has no files to name", [p["value"] for p in line(running(effect="reads", steps=read("cat a.py", "cat b.py")), [], NOW)["parts"]], ["reading", "files"])
+check("a command that has finished stops flipping", line({"what": "reading a.py", "tool": "Read", "at": NOW, "effect": "reads", "done": NOW + 1},
+      [{"what": "reading b.py", "tool": "Read", "at": NOW - 1, "effect": "reads"}], NOW)["parts"][-1]["value"], "files")
+check("only the last names are kept", len(line(running(effect="writes"),
+      [{"what": f"editing s{i}.py", "tool": "Edit", "at": i, "effect": "writes"} for i in range(40)], NOW)["parts"][1]["value"]), MOST_STEPS)
+mixed = [{"what": "reading a.py", "tool": "Read", "at": 1, "effect": "reads"}, {"what": "editing z.py", "tool": "Edit", "at": 2, "effect": "writes"},
+         {"what": "reading a.py", "tool": "Read", "at": 3, "effect": "reads"}, {"what": "reading b.py", "tool": "Read", "at": 4, "effect": "reads"}]
+check("what the line is not about is left out, and the same name twice over is one",
+      line({"what": "reading b.py", "tool": "Read", "at": 5, "effect": "reads"}, mixed, NOW)["parts"][1]["value"], ["a.py", "b.py"])
 
 # HOW LONG IT LINGERS and when a clock appears are the journal's call too
 check("editing, deleting and a test run hold their line; nothing else does",

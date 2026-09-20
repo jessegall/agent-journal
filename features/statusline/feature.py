@@ -9,6 +9,7 @@ VERBS = {"tests": "running", "deletes": "deleting", "writes": "editing", "reads"
          "installs": "installing", "builds": "building"}
 NOUNS = {"tests": "tests", "deletes": "files", "writes": "files", "reads": "files", "installs": "dependencies"}
 GRAY, MUTED, RED, GREEN = "gray", "muted", "red", "green"
+LEFT, RIGHT = "left", "right"
 ROLL_EVERY = 0.5
 HOLD = 1.0
 CLOCK_AFTER = 10.0
@@ -38,14 +39,15 @@ def named(run: dict) -> list[dict]:
     return [{"value": verb, "color": GRAY}] if verb else []
 
 
+def capped(said: str) -> str:
+    return said if len(said) <= NAME_CAP else f"{said[:NAME_CAP - 1].rstrip()}…"
+
+
 def shown(one: dict) -> str:
     what = (one.get(COMMAND.what) or "").strip()
-    if not what:
+    if not what or not one.get(COMMAND.tool) or one.get(COMMAND.tool) == "Bash":
         return ""
-    if (one.get(COMMAND.tool) or "Bash") != "Bash":
-        return what.split(" ", 1)[-1] if " " in what else what
-    said = gist(what, spoken) or what
-    return said if len(said) <= NAME_CAP else f"{said[:NAME_CAP - 1].rstrip()}…"
+    return capped(what.split(" ", 1)[-1] if " " in what else what)
 
 
 def flipping(run: dict, commands: list) -> list[dict]:
@@ -59,7 +61,7 @@ def flipping(run: dict, commands: list) -> list[dict]:
         name = shown(one)
         if name and (not names or names[-1] != name):
             names.append(name)
-    return [{"value": names[-MOST_STEPS:], "duration": ROLL_EVERY, "color": MUTED}] if len(names) > 1 else []
+    return [{"value": names[-MOST_STEPS:], "duration": ROLL_EVERY, "color": MUTED, "align": RIGHT}] if len(names) > 1 else []
 
 
 def outcome(result: dict) -> list[dict]:

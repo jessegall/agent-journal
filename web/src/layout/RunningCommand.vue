@@ -68,7 +68,7 @@ let heldAt = 0;
 function shownPart(part) {
     const values = Array.isArray(part.value) ? part.value : [part.value];
     const at = values.length > 1 ? Math.floor(Date.now() / ((part.duration || 0.5) * 1000)) % values.length : 0;
-    return {values, at, value: values[at], color: part.color || "muted"};
+    return {values, at, value: values[at], color: part.color || "muted", align: part.align || "left"};
 }
 
 function fromJournal(run, words) {
@@ -256,7 +256,7 @@ function apply(sum) {
                         :class="['statusbar-run-token', part.color, {fresh: fresh.has(`${i}-${part.value}`)}]"
                     >
                         <template v-if="part.values.length > 1">
-                            <span class="statusbar-run-roll">
+                            <span :class="['statusbar-run-roll', part.align]">
                                 <template v-for="(one, j) in part.values" :key="one">
                                     <span :class="['statusbar-run-item', {on: j === part.at}]">{{ one }}</span>
                                 </template>
@@ -305,7 +305,10 @@ function apply(sum) {
 .statusbar-run-roll {
     display: inline-grid;
     min-width: 0;
-    margin-left: 5px;
+}
+
+.statusbar-run-roll.right {
+    justify-items: end;
 }
 
 .statusbar-run-item {
