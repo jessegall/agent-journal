@@ -4,7 +4,7 @@ from controllers.types import Agents, Todos, Works
 from features import trigger
 from features.base import Feature, command, held, on, refuses
 from features.work import tracker
-from resources.base import SYSTEM
+from resources.base import Refused, SYSTEM
 from resources.types import Work
 
 
@@ -12,20 +12,37 @@ class WorkFeature(Feature):
     name = "work"
     title_ = "Work"
     abstract_ = "A write is refused until work is open; work started for a to-do is linked to it, its log is kept, twenty edits without an entry hold the writes, and parked work is set aside until the next log entry"
-    help_ = 'Take a row with journal todo start <n>, or start work of its own with journal work start "<title>"; log each decision and turn with journal work log <n> "<message>" (work.log_after, 20 edits without an entry holds the writes); end it with journal work end <n> --how "<what landed>", and --set todo=<n> closes the row with it. journal work park <n> "<why>" sets it aside with no clock — it stays open, stops being nudged and stops holding writes, and the next log entry picks it up. Park when you are stuck or when something else has to happen first; never to wait for an answer you could carry on without, because under auto the list stops.'
+    help_ = 'One piece of work is in hand at a time: starting another is refused until this one is ended or parked. Take a row with journal todo start <n>, or start work of its own with journal work start "<title>"; log each decision and turn with journal work log "<message>" (work.log_after, 20 edits without an entry holds the writes); end it with journal work end <n> --how "<what landed>", and --set todo=<n> closes the row with it. journal work park "<why>" sets it aside with no clock — it stays open, stops being nudged and stops holding writes, and journal work resume <n> picks it up again. Park when you are stuck or when something else has to happen first; never to wait for an answer you could carry on without, because under auto the list stops.'
     trigger = {"on": trigger.WORKED}
     EDITS, LOG_AFTER = "edits", "log_after"
     log_after = 20
 
     @command("work")
-    def log(self, works: Works, n: int, text: str):
-        if works.load(n).parked:
-            works.update(n, parked="")
-        return works.section(n, f"{len(works.load(n).sections) + 1} · {time.strftime('%Y-%m-%d %H:%M')}", text)
+    def log(self, works: Works, text: str, n: int = 0):
+        row = self.in_hand(works, n)
+        return works.section(row.n, f"{len(row.sections) + 1} · {time.strftime('%Y-%m-%d %H:%M')}", text)
 
     @command("work")
-    def park(self, works: Works, n: int, why: str):
-        return works.update(n, parked=why)
+    def park(self, works: Works, why: str, n: int = 0):
+        return works.update(self.in_hand(works, n).n, parked=why)
+
+    @command("work")
+    def resume(self, works: Works, n: int):
+        busy = works.active()
+        if busy:
+            raise Refused(f"work {busy.n} is open: end it or park it before picking up another")
+        row = works.load(n)
+        if not row.parked:
+            raise Refused(f"work {row.n} is not parked")
+        return works.update(n, parked="")
+
+    def in_hand(self, works: Works, n: int = 0):
+        row = works.load(n) if n else works.active()
+        if not row:
+            raise Refused('nothing is open: journal work start "<the work>" first')
+        if n and (row.completed or row.parked):
+            raise Refused(f"work {row.n} is {'done' if row.completed else 'parked'}; the one in hand is what a log entry means")
+        return row
 
     def working(self, record) -> list:
         return [w for w in self.standing(record, Works) if not w.parked]
@@ -99,7 +116,7 @@ class WorkFeature(Feature):
         edits = int(trigger.last(record, agent.title, self.name).get(self.EDITS) or 0) + 1
         trigger.write(record, agent, self.name, edits=edits)
         if edits >= record.setting(self.name, {}).get(self.LOG_AFTER, self.log_after):
-            self.hold(record, f'{edits} edits since work {work[0].n} was last logged: journal work log {work[0].n} "<what was decided or done, and why>" before any other write')
+            self.hold(record, f'{edits} edits since work {work[0].n} was last logged: journal work log "<what was decided or done, and why>" before any other write')
 
     @on("work.updated")
     def logged(self, event, record) -> None:

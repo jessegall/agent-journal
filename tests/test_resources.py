@@ -28,6 +28,8 @@ for type_ in TYPES:                                                 # the data p
     check(f"{type_}: a title with a colon is refused", refused(lambda: c.create("the thing: explained")), True)
     check(f"{type_}: an abstract past {ABSTRACT_MAX} characters is refused",
           refused(lambda: c.create("fine", abstract="y" * (ABSTRACT_MAX + 1))), True)
+    if type_ == "work":                                             # one piece of work is in hand at a time
+        c.update(1, parked="set aside for the next check")
     long = c.create("fine", brief="z" * 50_000)
     check(f"{type_}: the brief is unlimited", len(c.show(long.n).brief), 50_000)
     c.section(1, "Why", "because")

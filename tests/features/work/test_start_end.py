@@ -36,6 +36,7 @@ check("work cannot start for a completed row", refused(lambda: works.create("onc
 check("the refusal creates no work or to-do event", (len(works.all()), [e.action for e in record.events() if e.type == "todo"].count("completed")), (2, 1))
 plain = works.create("work with no to-do")
 check("work with no to-do: the feature does nothing", [e for e in record.events() if e.n == plain.n and e.type == "work"][-1].action, "created")
+works.complete(plain.n, "done")
 
 # ON IDLE the open work is said, once per idle stretch
 record = fresh()
@@ -46,12 +47,12 @@ works.create("the header")
 idle(record)
 idle(record)
 check("open work with an empty log is said at each idle, asking for the log", nudges(record), ["work 1 open, nothing logged", "work 1 open, nothing logged"])
-works.action("log")(1, "Chose the header, because the footer waits on it")
+works.action("log")("Chose the header, because the footer waits on it")
 idle(record)
 check("once logged, the open work is said plainly", nudges(record)[-1], "work 1 open")
 entry = works.load(1).sections[0]
 check("a log entry is the message under its number and the time it was written", (entry["body"], entry["title"][:4], len(entry["title"])), ("Chose the header, because the footer waits on it", "1 · ", 20))
-works.action("log")(1, "Then the footer")
+works.action("log")("Then the footer")
 check("each entry is its own section", len(works.load(1).sections), 2)
 
 # EDITS without a log entry hold the writes until the work is logged
@@ -65,8 +66,8 @@ check("under the limit: nothing held", held(record, "claude-1"), "")
 report(record, "working", "PostToolUse", wrote=False)
 check("a read is not an edit", held(record, "claude-1"), "")
 report(record, "working", "PostToolUse", wrote=True)
-check("at the limit the writes are held, naming the command", "journal work log 1" in held(record, "claude-1"), True)
-works.action("log")(1, "Three edits in")
+check("at the limit the writes are held, naming the command", "journal work log" in held(record, "claude-1"), True)
+works.action("log")("Three edits in")
 check("a log entry releases the hold", held(record, "claude-1"), "")
 report(record, "working", "PostToolUse", wrote=True)
 check("and the count starts over", held(record, "claude-1"), "")
@@ -84,14 +85,36 @@ check("work log is registered by the feature, not the controller", ("log" in COM
 
 # PARKED WORK is set aside with no clock: it stays open, stops being nudged, and the next log entry picks it up
 parking = Works(record, actor=AGENT)
+for open_row in [w for w in parking.all() if not w.completed]:
+    parking.complete(open_row.n, "tidied for the next check")
 aside = parking.create("something that waits on the user")
-FEATURES["work"].park(parking, aside.n, "the question is with the user")
+FEATURES["work"].park(parking, "the question is with the user", aside.n)
 check("parked work says why, stays open, and is not work in hand",
       (parking.load(aside.n).parked, bool(parking.load(aside.n).completed),
        [w.n for w in FEATURES["work"].working(record) if w.n == aside.n]),
       ("the question is with the user", False, []))
-FEATURES["work"].log(parking, aside.n, "the user answered")
-check("the next log entry picks it up again",
+FEATURES["work"].resume(parking, aside.n)
+check("resume picks it up again",
       (parking.load(aside.n).parked, [w.n for w in FEATURES["work"].working(record) if w.n == aside.n]), ("", [aside.n]))
+
+# ONE PIECE OF WORK IN HAND: a second is refused until the first is ended or parked, and log means the one in hand
+alone = Works(record, actor=AGENT)
+for w in alone.all():
+    if not w.completed:
+        alone.complete(w.n, "tidied for the next check")
+first = alone.create("the first thing")
+check("a second piece of work is refused while one is open", "is open" in refused(lambda: alone.create("the second thing")), True)
+FEATURES["work"].log(alone, "a turn, with no number")
+check("a log entry with no number lands on the work in hand", [s["body"] for s in alone.load(first.n).sections], ["a turn, with no number"])
+FEATURES["work"].park(alone, "waiting on the user")
+second = alone.create("the second thing")
+check("parked work lets the next one start", (alone.load(first.n).parked, alone.active().n), ("waiting on the user", second.n))
+check("picking up parked work is refused while another is in hand",
+      "end it or park it" in refused(lambda: FEATURES["work"].resume(alone, first.n)), True)
+alone.complete(second.n, "done")
+FEATURES["work"].resume(alone, first.n)
+check("resume picks the parked one up", (alone.load(first.n).parked, alone.active().n), ("", first.n))
+check("a log entry aimed at work that is not in hand is refused",
+      "the one in hand" in refused(lambda: FEATURES["work"].log(alone, "x", second.n)), True)
 
 done()
