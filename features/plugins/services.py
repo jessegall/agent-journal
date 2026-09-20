@@ -3,6 +3,7 @@ import time
 from pathlib import Path
 
 from controllers.types import Notices
+from engine.hooks import default_env
 from engine.record import Record
 from engine.services import BLOCKED, FAILED, log_file, states
 from resources.base import SYSTEM
@@ -22,8 +23,7 @@ def keep(root: Path, enabled) -> None:
 
 
 def here(root: Path) -> Record:
-    home = Path(root) / "runtime" / "env"
-    return Record(Path(root), home.read_text().strip() if home.is_file() else "main")
+    return Record(Path(root), default_env(Path(root)))
 
 
 def told(root: Path, enabled) -> list[str]:

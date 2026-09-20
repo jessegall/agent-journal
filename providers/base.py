@@ -5,6 +5,7 @@ import time
 from abc import ABC, abstractmethod
 from pathlib import Path
 
+from engine.shell import without_scripts
 from engine.transcript import Turn
 from providers.payload import Hook
 from resources.base import Refused
@@ -172,7 +173,6 @@ class Provider(ABC):
         return next(iter(self.effects(command)), "")
 
     def effects(self, command: str) -> list[str]:
-        from features.statusline.shell import without_scripts
         whole = self.without_journal(command)
         if not whole.strip():
             return []

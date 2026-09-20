@@ -1,5 +1,7 @@
 import re
 
+from resources.types import TYPES
+
 DIGITS = re.compile(r"^\d+$")
 QUERIES = {
     "open": ("checking", "open work"),
@@ -43,7 +45,6 @@ def ing(word: str) -> str:
 
 
 def kinds() -> list[dict]:
-    from resources.types import TYPES
     return [{"name": t.type, "title": t.title_, "names": t.names, "says": t.says} for t in TYPES.values()]
 
 

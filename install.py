@@ -87,7 +87,7 @@ while [ "$dir" != "/" ]; do
 for src in "$dir/.journal/src" "$dir/.journal"; do
 if [ -f "$src/journal.py" ]; then
 root="$dir/.journal"
-""" + ASKS + """exec python3 "$src/journal.py" --root "$root" "$@"
+__ASKS__exec python3 "$src/journal.py" --root "$root" "$@"
 fi
 done
 dir="$(dirname "$dir")"
@@ -98,12 +98,13 @@ exit 1
 
 LAUNCHER = """#!/bin/sh
 root="__ROOT__"
-""" + ASKS + """exec "__PYTHON__" "__SCRIPT__" --root "$root" "$@"
+__ASKS__exec "__PYTHON__" "__SCRIPT__" --root "$root" "$@"
 """
 
 
 def launcher(python: str, script: Path, root: Path) -> str:
-    return LAUNCHER.replace("__PYTHON__", python).replace("__SCRIPT__", str(script)).replace("__ROOT__", str(root))
+    return (LAUNCHER.replace("__ASKS__", ASKS).replace("__PYTHON__", python)
+            .replace("__SCRIPT__", str(script)).replace("__ROOT__", str(root)))
 
 
 def alias(project: Path, root: Path) -> Path:
@@ -114,7 +115,7 @@ def alias(project: Path, root: Path) -> Path:
     bin_ = Path.home() / ".local" / "bin"
     if bin_.is_dir():
         shim = bin_ / "journal"
-        shim.write_text(SHIM)
+        shim.write_text(SHIM.replace("__ASKS__", ASKS))
         shim.chmod(shim.stat().st_mode | stat.S_IEXEC)
     return f
 

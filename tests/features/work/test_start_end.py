@@ -86,12 +86,12 @@ check("work log is registered by the feature, not the controller", ("log" in COM
 parking = Works(record, actor=AGENT)
 aside = parking.create("something that waits on the user")
 FEATURES["work"].park(parking, aside.n, "the question is with the user")
-check("parked work says why, stays open, and is not standing",
+check("parked work says why, stays open, and is not work in hand",
       (parking.load(aside.n).parked, bool(parking.load(aside.n).completed),
-       [w.n for w in FEATURES["work"].standing(record, Works) if w.n == aside.n]),
+       [w.n for w in FEATURES["work"].working(record) if w.n == aside.n]),
       ("the question is with the user", False, []))
 FEATURES["work"].log(parking, aside.n, "the user answered")
 check("the next log entry picks it up again",
-      (parking.load(aside.n).parked, [w.n for w in FEATURES["work"].standing(record, Works) if w.n == aside.n]), ("", [aside.n]))
+      (parking.load(aside.n).parked, [w.n for w in FEATURES["work"].working(record) if w.n == aside.n]), ("", [aside.n]))
 
 done()

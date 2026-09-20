@@ -1,5 +1,4 @@
 import argparse
-import contextlib
 import inspect
 import io
 import json
@@ -351,19 +350,19 @@ def noun_of(argv: list[str]) -> str:
     return "-"
 
 
-def spoken(argv: list[str], root: Path) -> tuple[str, int | None]:
+def captured(argv: list[str], root: Path) -> tuple[str, int | None]:
     if not argv or noun_of(argv) not in OVER_HTTP:
-        return "", None
+        return f"{noun_of(argv) or 'this'} is not a command the server runs", None
     said, wrong = io.StringIO(), io.StringIO()
-    with contextlib.redirect_stdout(said), contextlib.redirect_stderr(wrong):
-        try:
-            code = run(["--root", str(root), *argv])
-        except SystemExit as e:
-            code = int(e.code or 0)
+    try:
+        code = run(["--root", str(root), *argv], out=said, err=wrong)
+    except SystemExit as e:
+        code = int(e.code or 0)
     return (said.getvalue() or wrong.getvalue()), code
 
 
-def run(argv: list[str]) -> int:
+def run(argv: list[str], out=None, err=None) -> int:
+    out, err = out or sys.stdout, err or sys.stderr
     noun = "" if {"-h", "--help"} & set(argv[:1]) else noun_of(argv)
     parsed, passed = parser(noun).parse_known_args(argv)
     args = vars(parsed)
@@ -376,7 +375,7 @@ def run(argv: list[str]) -> int:
     try:
         if "query" in args:
             query = args.pop("query")
-            print(query({**ctx, **args}))
+            print(query({**ctx, **args}), file=out)
             return 0
         method = args.pop("method")
         args.pop("action", None)
@@ -388,15 +387,15 @@ def run(argv: list[str]) -> int:
         controller = CONTROLLERS[command](ctx["record"], actor=ctx["actor"], session=ctx["session"], agent=ctx["agent"])
         got = invoke(controller.action(method), args, extra)
     except Refused as e:
-        print(f"! {e}", file=sys.stderr)
+        print(f"! {e}", file=err)
         return 1
     if isinstance(got, list):
         for r in got:
-            print(f"{r.n:>4}  {r.title}{controller.mark(r)}" if hasattr(r, "n") else r)
+            print(f"{r.n:>4}  {r.title}{controller.mark(r)}" if hasattr(r, "n") else r, file=out)
     elif isinstance(got, dict):
-        print(got.get("out", "") or got)
+        print(got.get("out", "") or got, file=out)
     elif got is not None:
-        print(got.dump() if hasattr(got, "dump") else got)
+        print(got.dump() if hasattr(got, "dump") else got, file=out)
     return 0
 
 

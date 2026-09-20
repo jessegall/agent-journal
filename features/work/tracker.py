@@ -87,79 +87,83 @@ def committed(project: Path, since: float) -> list[dict]:
     return [{COMMIT.sha: sha, COMMIT.subject: subject} for sha, _, subject in (line.partition("\x1f") for line in out.splitlines()) if sha]
 
 
-class Tracker:
-    TREES = ("base", "last")
+TREES = ("base", "last")
 
-    def begin(self, event, record) -> None:
-        now = blobs(record, record.root.parent)
-        for which in self.TREES:
-            write_json(tree_file(record, event.n, which), now)
 
-    def end(self, event, record) -> None:
-        for which in self.TREES:
-            tree_file(record, event.n, which).unlink(missing_ok=True)
+def begin(event, record) -> None:
+    now = blobs(record, record.root.parent)
+    for which in TREES:
+        write_json(tree_file(record, event.n, which), now)
 
-    def record_files(self, agent, record, work) -> None:
-        project = record.root.parent
-        base, last, now = self.trees(record, work.n, project)
-        delta = {DELTA.edited: 0, DELTA.created: 0, DELTA.deleted: 0, DELTA.added: 0, DELTA.removed: 0}
-        files = {f[CHANGE.path]: f for f in work.changed}
-        touched, entries, at = [], [], time.time()
-        for path in sorted(p for p in set(last) | set(now) if last.get(p) != now.get(p)):
-            touched.append(path)
-            added, removed = numstat(project, last.get(path, EMPTY_BLOB), now.get(path, EMPTY_BLOB))
-            kind = DELTA.created if path not in last else DELTA.deleted if path not in now else DELTA.edited
-            entries.append({NOTE.at: at, NOTE.path: path, NOTE.kind: kind, NOTE.added: added, NOTE.removed: removed})
-            delta[kind] += 1
-            delta[DELTA.added] += added
-            delta[DELTA.removed] += removed
-            if base.get(path) == now.get(path):
-                files.pop(path, None)
-                continue
-            total_added, total_removed = numstat(project, base.get(path, EMPTY_BLOB), now.get(path, EMPTY_BLOB))
-            files[path] = {CHANGE.path: path, CHANGE.added: total_added, CHANGE.removed: total_removed, CHANGE.created: path not in base}
-        noted(record, entries)
-        commits = committed(project, work.created)
-        if list(files.values()) != work.changed or commits != work.commits:
-            Works(record, actor=SYSTEM).update(work.n, changed=list(files.values()), commits=commits)
-        if any(delta[k] for k in (DELTA.edited, DELTA.created, DELTA.deleted)):
-            self.count(record, agent.n, self.finished(agent.running), delta, touched)
 
-    def trees(self, record, n: int, project: Path) -> tuple[dict, dict, dict]:
-        last_file = tree_file(record, n, "last")
-        last_file.parent.mkdir(parents=True, exist_ok=True)
-        with last_file.with_suffix(".lock").open("w") as lock:
-            fcntl.flock(lock, fcntl.LOCK_EX)
-            now = blobs(record, project)
-            last = read_json(last_file)
-            base = read_json(tree_file(record, n, "base"))
-            if base is None:
-                base = last if last is not None else now
-                write_json(tree_file(record, n, "base"), base)
-            write_json(last_file, now)
-        return base, now if last is None else last, now
+def end(event, record) -> None:
+    for which in TREES:
+        tree_file(record, event.n, which).unlink(missing_ok=True)
 
-    def finished(self, running: dict) -> float:
-        run = running if running.get(RUNNING.done) else running.get(RUNNING.before) or {}
-        return run.get(RUNNING.at, 0)
 
-    def could_write(self, one: dict) -> bool:
-        return (one.get(COMMAND.tool) or "Bash") in ("Bash", *WRITES)
+def record_files(agent, record, work) -> None:
+    project = record.root.parent
+    base, last, now = trees(record, work.n, project)
+    delta = {DELTA.edited: 0, DELTA.created: 0, DELTA.deleted: 0, DELTA.added: 0, DELTA.removed: 0}
+    files = {f[CHANGE.path]: f for f in work.changed}
+    touched, entries, at = [], [], time.time()
+    for path in sorted(p for p in set(last) | set(now) if last.get(p) != now.get(p)):
+        touched.append(path)
+        added, removed = numstat(project, last.get(path, EMPTY_BLOB), now.get(path, EMPTY_BLOB))
+        kind = DELTA.created if path not in last else DELTA.deleted if path not in now else DELTA.edited
+        entries.append({NOTE.at: at, NOTE.path: path, NOTE.kind: kind, NOTE.added: added, NOTE.removed: removed})
+        delta[kind] += 1
+        delta[DELTA.added] += added
+        delta[DELTA.removed] += removed
+        if base.get(path) == now.get(path):
+            files.pop(path, None)
+            continue
+        total_added, total_removed = numstat(project, base.get(path, EMPTY_BLOB), now.get(path, EMPTY_BLOB))
+        files[path] = {CHANGE.path: path, CHANGE.added: total_added, CHANGE.removed: total_removed, CHANGE.created: path not in base}
+    noted(record, entries)
+    commits = committed(project, work.created)
+    if list(files.values()) != work.changed or commits != work.commits:
+        Works(record, actor=SYSTEM).update(work.n, changed=list(files.values()), commits=commits)
+    if any(delta[k] for k in (DELTA.edited, DELTA.created, DELTA.deleted)):
+        count(record, agent.n, finished(agent.running), delta, touched)
 
-    def count(self, record, n: int, ran: float, delta: dict, touched: list) -> None:
-        agents = Agents(record, actor=SYSTEM)
-        row = agents.load(n)
-        running = row.running
-        late = running.get(RUNNING.at) != ran
-        edited = running.get(RUNNING.before) or {} if late else running
-        if not ran or edited.get(RUNNING.at) != ran:
-            return
-        prior = edited.get(RUNNING.changed) or {}
-        known = edited.get(RUNNING.files) or []
-        edited = {**edited, RUNNING.changed: {key: prior.get(key, 0) + value for key, value in delta.items()},
-                  RUNNING.files: [*known, *(p for p in touched if p not in known)]}
-        agents.update(n, running={**running, RUNNING.before: edited} if late else edited,
-                      commands=[{**one, COMMAND.files: edited[RUNNING.files], COMMAND.changed: edited[RUNNING.changed]}
-                                if one.get(COMMAND.at) == ran and self.could_write(one) else one for one in row.commands])
 
-tracker = Tracker()
+def trees(record, n: int, project: Path) -> tuple[dict, dict, dict]:
+    last_file = tree_file(record, n, "last")
+    last_file.parent.mkdir(parents=True, exist_ok=True)
+    with last_file.with_suffix(".lock").open("w") as lock:
+        fcntl.flock(lock, fcntl.LOCK_EX)
+        now = blobs(record, project)
+        last = read_json(last_file)
+        base = read_json(tree_file(record, n, "base"))
+        if base is None:
+            base = last if last is not None else now
+            write_json(tree_file(record, n, "base"), base)
+        write_json(last_file, now)
+    return base, now if last is None else last, now
+
+
+def finished(running: dict) -> float:
+    run = running if running.get(RUNNING.done) else running.get(RUNNING.before) or {}
+    return run.get(RUNNING.at, 0)
+
+
+def could_write(one: dict) -> bool:
+    return (one.get(COMMAND.tool) or "Bash") in ("Bash", *WRITES)
+
+
+def count(record, n: int, ran: float, delta: dict, touched: list) -> None:
+    agents = Agents(record, actor=SYSTEM)
+    row = agents.load(n)
+    running = row.running
+    late = running.get(RUNNING.at) != ran
+    edited = running.get(RUNNING.before) or {} if late else running
+    if not ran or edited.get(RUNNING.at) != ran:
+        return
+    prior = edited.get(RUNNING.changed) or {}
+    known = edited.get(RUNNING.files) or []
+    edited = {**edited, RUNNING.changed: {key: prior.get(key, 0) + value for key, value in delta.items()},
+              RUNNING.files: [*known, *(p for p in touched if p not in known)]}
+    agents.update(n, running={**running, RUNNING.before: edited} if late else edited,
+                  commands=[{**one, COMMAND.files: edited[RUNNING.files], COMMAND.changed: edited[RUNNING.changed]}
+                            if one.get(COMMAND.at) == ran and could_write(one) else one for one in row.commands])

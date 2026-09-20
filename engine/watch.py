@@ -1,10 +1,15 @@
 import time
 from pathlib import Path
 
+from controllers.types import Notices
+from engine.record import Record
+from resources.base import SYSTEM
+
 CRASH_WITHIN = 8.0
 SHOWN = 14
 TITLE = "The engine is not running"
 FAULT = "The engine hit an error and carried on"
+WHICH = "fault"
 SAYS = "journal: the engine hit an error and kept going; the last of it is below and the whole of it is in .journal/runtime/engine.log. Fix it, then say so."
 STEADY = "the engine has been running cleanly again"
 STEADY_AFTER = 30
@@ -26,15 +31,23 @@ def crashed(code: int | None, since: float) -> bool:
     return code not in (None, 0) and time.time() - since < CRASH_WITHIN
 
 
-def told(root: Path, env: str, said: str) -> bool:
-    from controllers.types import Notices
-    from engine.record import Record
-    from resources.base import SYSTEM
-    notices = Notices(Record(Path(root), env), actor=SYSTEM)
-    if any(not n.completed and n.title == TITLE for n in notices.all()):
+def once(record, title: str, brief: str, which: str = "") -> bool:
+    notices = Notices(record, actor=SYSTEM)
+    if any(not n.completed and n.title == title and n.data.get(WHICH, "") == which for n in notices.all()):
         return False
-    notices.create(TITLE, brief=said or "It left nothing in its log.", tone="warn")
+    notices.create(title, brief=brief, tone="warn", **{WHICH: which})
     return True
+
+
+def over(record, title: str, how: str) -> None:
+    notices = Notices(record, actor=SYSTEM)
+    for n in notices.all():
+        if not n.completed and n.title == title:
+            notices.complete(n.n, how)
+
+
+def told(root: Path, env: str, said: str) -> bool:
+    return once(Record(Path(root), env), TITLE, said or "It left nothing in its log.")
 
 
 def fault_of(said: str) -> str:
@@ -43,31 +56,14 @@ def fault_of(said: str) -> str:
 
 
 def broke(record, said: str, driver=None) -> None:
-    from controllers.types import Notices
-    from resources.base import SYSTEM
-    notices = Notices(record, actor=SYSTEM)
     fault = fault_of(said)
-    if any(not n.completed and n.title == FAULT and fault_of(n.brief) == fault for n in notices.all()):
-        return
-    notices.create(FAULT, brief=said, tone="warn")
-    if driver and driver.alive():
+    if once(record, FAULT, said, fault) and driver and driver.alive():
         driver.send(f"{SAYS} {fault}")
 
 
 def steady(record) -> None:
-    from controllers.types import Notices
-    from resources.base import SYSTEM
-    notices = Notices(record, actor=SYSTEM)
-    for n in notices.all():
-        if not n.completed and n.title == FAULT:
-            notices.complete(n.n, STEADY)
+    over(record, FAULT, STEADY)
 
 
 def cleared(root: Path, env: str) -> None:
-    from controllers.types import Notices
-    from engine.record import Record
-    from resources.base import SYSTEM
-    notices = Notices(Record(Path(root), env), actor=SYSTEM)
-    for n in notices.all():
-        if not n.completed and n.title == TITLE:
-            notices.complete(n.n, "the engine is running again")
+    over(Record(Path(root), env), TITLE, "the engine is running again")
