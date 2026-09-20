@@ -68,50 +68,54 @@ async function send(text) {
 </script>
 
 <template>
-    <section v-if="props.showThread" ref="list" class="comments">
-        <template v-if="!thread.length">
-            <p class="none">No comments yet.</p>
-        </template>
-        <template v-for="group in groups" :key="group.title">
-            <h3>{{ group.title }}</h3>
-            <template v-for="c in group.rows" :key="c.n">
-                <div :class="['comment', c.seen[0], {focused: c.n === props.focus}]" :data-comment="c.n">
-                    <span class="who">
-                        {{ c.seen[0] }} · {{ age(c.created) }}
-                        <span class="tools">
-                            <button type="button" class="tool" title="Edit this comment" @click="edit(c)">Edit</button>
-                            <button type="button" class="tool" title="Delete this comment" @click="remove(c)">Delete</button>
-                        </span>
-                    </span>
-                    <template v-if="editing.n === c.n">
-                        <textarea v-model="editing.text" rows="3" @keydown.esc="editing.n = 0" @keydown.meta.enter.prevent="save" />
-                        <span class="edit-row">
-                            <Btn kind="primary" small @click="save">Save</Btn>
-                            <Btn small @click="editing.n = 0">Cancel</Btn>
-                            <template v-if="editing.error">
-                                <span class="error">{{ editing.error }}</span>
-                            </template>
-                        </span>
-                    </template>
-                    <template v-else>
-                        <template v-if="c.quote">
-                            <span class="quoted">{{ c.quote }}</span>
-                        </template>
-                        <Markdown :text="c.text" />
-                    </template>
-                    <template v-if="c.completed">
-                        <p class="done">
-                            <span class="done-label">Handled:</span>
-                            <Markdown class="done-text" :text="c.outcome" />
-                        </p>
-                    </template>
-                </div>
+    <template v-if="props.showThread">
+        <section ref="list" class="comments">
+            <template v-if="!thread.length">
+                <p class="none">No comments yet.</p>
             </template>
-        </template>
-    </section>
-    <div v-if="props.compose" class="comment-write">
-        <Compose placeholder="Comment…" submit="Comment" :quote="quote" :send="send" @unquote="emit('sent')" />
-    </div>
+            <template v-for="group in groups" :key="group.title">
+                <h3>{{ group.title }}</h3>
+                <template v-for="c in group.rows" :key="c.n">
+                    <div :class="['comment', c.seen[0], {focused: c.n === props.focus}]" :data-comment="c.n">
+                        <span class="who">
+                            {{ c.seen[0] }} · {{ age(c.created) }}
+                            <span class="tools">
+                                <button type="button" class="tool" title="Edit this comment" @click="edit(c)">Edit</button>
+                                <button type="button" class="tool" title="Delete this comment" @click="remove(c)">Delete</button>
+                            </span>
+                        </span>
+                        <template v-if="editing.n === c.n">
+                            <textarea v-model="editing.text" rows="3" @keydown.esc="editing.n = 0" @keydown.meta.enter.prevent="save" />
+                            <span class="edit-row">
+                                <Btn kind="primary" small @click="save">Save</Btn>
+                                <Btn small @click="editing.n = 0">Cancel</Btn>
+                                <template v-if="editing.error">
+                                    <span class="error">{{ editing.error }}</span>
+                                </template>
+                            </span>
+                        </template>
+                        <template v-else>
+                            <template v-if="c.quote">
+                                <span class="quoted">{{ c.quote }}</span>
+                            </template>
+                            <Markdown :text="c.text" />
+                        </template>
+                        <template v-if="c.completed">
+                            <p class="done">
+                                <span class="done-label">Handled:</span>
+                                <Markdown class="done-text" :text="c.outcome" />
+                            </p>
+                        </template>
+                    </div>
+                </template>
+            </template>
+        </section>
+    </template>
+    <template v-if="props.compose">
+        <div class="comment-write">
+            <Compose placeholder="Comment…" submit="Comment" :quote="quote" :send="send" @unquote="emit('sent')" />
+        </div>
+    </template>
 </template>
 
 <style scoped>

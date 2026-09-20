@@ -72,7 +72,9 @@ onUnmounted(() => clearInterval(timer));
                 <span class="acts">
                     <Btn kind="primary" small @click="askPlugin('up')">Start it</Btn>
                     <Btn small @click="read">Read the log</Btn>
-                    <a v-if="page.url" class="out" :href="page.url" target="_blank">Open in a new tab</a>
+                    <template v-if="page.url">
+                        <a class="out" :href="page.url" target="_blank">Open in a new tab</a>
+                    </template>
                 </span>
                 <template v-if="log">
                     <pre class="log">{{ log }}</pre>

@@ -94,6 +94,7 @@ watch(
         listen();
     }
 );
+const chatFloats = computed(() => store.detached && !store.extension.holding && !store.extension.pending);
 </script>
 
 <template>
@@ -145,7 +146,7 @@ watch(
                     <AwayCard />
                 </template>
                 <ProjectFlash />
-                <template v-if="store.detached && !store.extension.holding && !store.extension.pending">
+                <template v-if="chatFloats">
                     <ExtensionSection :extension="store.extension" />
                 </template>
             </div>

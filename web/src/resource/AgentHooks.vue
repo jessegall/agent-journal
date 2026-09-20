@@ -60,7 +60,9 @@ onMounted(fetchHooks);
             Read from and saved to
             <code>{{ path }}</code>
         </p>
-        <p v-if="error" class="read-error">{{ error }}</p>
+        <template v-if="error">
+            <p class="read-error">{{ error }}</p>
+        </template>
         <template v-for="event in events" :key="event">
             <section class="event">
                 <h4>
@@ -70,7 +72,9 @@ onMounted(fetchHooks);
                 <template v-for="(block, b) in hooks[event]" :key="b">
                     <template v-for="(hook, h) in block.hooks" :key="`${b}-${h}`">
                         <div class="hook">
-                            <span v-if="block.matcher" class="matcher">{{ block.matcher }}</span>
+                            <template v-if="block.matcher">
+                                <span class="matcher">{{ block.matcher }}</span>
+                            </template>
                             <input v-model="hook.command" class="command" spellcheck="false" :placeholder="'command'" />
                             <Btn kind="icon" title="Remove this hook" @click="remove(event, b, h)"><Icon name="x" /></Btn>
                         </div>
@@ -78,7 +82,9 @@ onMounted(fetchHooks);
                 </template>
             </section>
         </template>
-        <p v-if="!events.length && !error" class="none">No hooks are set for this agent.</p>
+        <template v-if="!events.length && !error">
+            <p class="none">No hooks are set for this agent.</p>
+        </template>
         <div class="actions">
             <Btn kind="primary" small :disabled="!changed || saving" @click="save">Save</Btn>
             <Btn small :disabled="!changed || saving" @click="fetchHooks">Discard</Btn>
