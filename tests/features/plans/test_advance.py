@@ -143,4 +143,15 @@ writing.stage(row.n, "todos")
 check("the agent says when it moves on to the rows", writing.load(row.n).data["stage"], "todos")
 check("and nothing else is a stage", "written in stages" in refused(lambda: writing.stage(row.n, "whenever")), True)
 
+# A READY PLAN CAN BE OPENED AGAIN, for when there is more to add
+writing.phase(row.n, "the only phase")
+writing.place(row.n, 1, [Todos(stages, actor=AGENT).create("a row").n])
+writing.ready(row.n)
+check("ready when every phase has a row", writing.load(row.n).data["status"], "ready")
+writing.build(row.n)
+check("build takes it back to being written", writing.load(row.n).data["status"], "building")
+writing.ready(row.n)
+Plans(stages, actor=USER).activate(row.n)
+check("a plan that is running cannot be opened again", "not one that can become building" in refused(lambda: writing.build(row.n)), True)
+
 done()
