@@ -5,7 +5,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from controllers.types import CONTROLLERS, Comments, Todos  # noqa: E402
 from engine.record import Record  # noqa: E402
-from resources.base import ABSTRACT_MAX, ACTORS, AGENT, PLUGIN, TITLE_MAX, ACTIONS  # noqa: E402
+from resources.base import ABSTRACT_MAX, ACTORS, AGENT, PLUGIN, TITLE_MAX, ACTIONS, USER  # noqa: E402
 from resources.types import TYPES  # noqa: E402
 from tests.kit import check, done, fresh, refused as kit_refused  # noqa: E402
 
@@ -49,6 +49,9 @@ for type_ in TYPES:                                                 # the data p
         check("environment: remove is terminal and physical", (refused(lambda: c.show(1)), refused(lambda: c.complete(1))), (True, True))
         continue
     check(f"{type_}: completed is the final phase, marked once", (c.show(1).completed > 0, refused(lambda: c.complete(1))), (True, True))
+    c.reopen(1, "closed too soon")
+    check(f"{type_}: reopening puts it back with no outcome", (c.show(1).completed, c.show(1).outcome), (0.0, ""))
+    c.complete(1, "finished")
     others = [x.n for x in c.all() if x.n > 2]                    # a comment's record also holds the comments made above
     c.delete(1, "no longer needed")
     check(f"{type_}: deleted is soft — gone from the list, still on disk", ([x.n for x in c.all()], c.show(1).deleted > 0), ([2] + others, True))
@@ -58,7 +61,7 @@ for type_ in TYPES:                                                 # the data p
 
 for type_ in TYPES:                                                 # every type emits the same six actions, no more
     mine = [e for e in records[type_].events() if e.type == type_]
-    expected = set(ACTIONS) - ({"completed"} if type_ == "environment" else set())
+    expected = set(ACTIONS) - ({"completed", "reopened"} if type_ == "environment" else set())
     check(f"{type_}: every action left an event, and only its terminal actions", sorted({e.action for e in mine}), sorted(expected))
     check(f"{type_}: an event says who did it and what it is about", (mine[0].actor, mine[0].ref), ("user", f"{type_}:1"))
 
@@ -123,5 +126,19 @@ struck = rows.strike(rows.create("abandon me").n, "it stopped being worth doing"
 check("a struck row says so on the row itself, with its why", (struck.data.get("struck"), struck.outcome), (True, "struck: it stopped being worth doing"))
 closed = rows.complete(rows.create("close me").n, "done", handed="the other agent")
 check("anything else set while completing is kept too", closed.data.get("handed"), "the other agent")
+
+# A ROW CLOSED BY MISTAKE is put back, with the reason on the record
+record = fresh()
+rows = Todos(record, actor=USER)
+row = rows.create("a row closed too soon")
+check("a row that is open cannot be reopened", "is not done" in kit_refused(lambda: rows.reopen(row.n, "x")), True)
+rows.complete(row.n, "closed by a commit trailer that named the wrong number")
+back = rows.reopen(row.n, "the trailer named a plan row, not this work")
+check("it is open again with no outcome", (bool(back.completed), back.outcome), (False, ""))
+check("and the record says it was reopened and why",
+      [(e.action, e.data.get("why")) for e in record.events() if e.type == "todo"][-1],
+      ("reopened", "the trailer named a plan row, not this work"))
+rows.delete(row.n, "archived")
+check("an archived row is restored before it is reopened", "archived" in kit_refused(lambda: rows.reopen(row.n, "x")), True)
 
 done()

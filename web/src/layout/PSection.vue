@@ -2,6 +2,7 @@
 import {act, saveSettings} from "../api.js";
 import Icon from "../kit/Icon.vue";
 import {go, peek, route} from "../route.js";
+import {rows} from "../store.js";
 import {currentWork, doneOf, lineOf, phaseOf, planButton, queued, rowsOf, shownPlans, stateOf, wordOf} from "./statusline.js";
 
 defineProps<{plans: unknown; error: string; data: unknown; p: unknown}>();
@@ -25,7 +26,7 @@ defineEmits<{runBar: [unknown]}>();
             <template v-else>
                 <span class="planbar-step">{{ data.current || 1 }}/{{ data.phases.length }}</span>
                 <span class="planbar-track" role="progressbar">
-                    <span :style="{width: `${(100 * done(p)) / Math.max(1, rowsOf(p).length)}%`}" />
+                    <span :style="{width: `${(100 * doneOf(p, rows('todo'))) / Math.max(1, rowsOf(p).length)}%`}" />
                 </span>
             </template>
         </a>

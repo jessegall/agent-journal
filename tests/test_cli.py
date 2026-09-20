@@ -23,8 +23,8 @@ def journal(*argv, env="t", session=""):
 
 
 # EVERY TYPE'S WORDS, AND THE QUERIES
-code, out = journal("todo", "add", "a row", "--brief", "why")
-check("a to-do is added by the type's own word, as the agent", (code, out.startswith("---")), (0, True))
+code, out = journal("todo", "create", "a row", "--brief", "why")
+check("a to-do is created by the generic word, as the agent", (code, out.startswith("---")), (0, True))
 check("the agent created it", Todos(Record(root, "t")).load(1).seen, ["agent"])
 check("transcript queries need no live session", (journal("search", "nothing")[0], journal("conversation")[0], journal("user")[0]), (0, 0, 0))
 check("all lists it", journal("todo", "all")[1], "   1  a row")
