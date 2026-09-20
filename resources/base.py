@@ -85,6 +85,7 @@ class Resource:
     scope: ClassVar[str] = ENVIRONMENT   # whose it is: one environment's, or the whole project's
     notify: ClassVar[tuple] = (USER, AGENT)   # who is told of its events, besides the actor
     spoken: ClassVar[bool] = False            # typed to the agent as its title, not as "type n action"
+    told: ClassVar[bool] = False              # the row is stamped with the moment the agent was told of it
     files = Field(default=dict)               # what is attached: name → what became of it
     pictures = Field(default=dict)            # an attached image's width and height, known before it loads
     agent = Field()                           # the subagent that wrote it, and its dispatcher

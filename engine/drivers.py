@@ -40,7 +40,7 @@ class Driver(ABC):
     def alive(self) -> bool:
         return self.fd >= 0
 
-    def send(self, text: str) -> None:
+    def send(self, text: str) -> bool:
         line = " ".join(part.strip() for part in text.splitlines() if part.strip())
         try:
             os.write(self.fd, line.encode())
@@ -49,10 +49,12 @@ class Driver(ABC):
             for _ in range(RESUBMITS):
                 time.sleep(RECHECK)
                 if not self.unsent(line):
-                    break
+                    return True
                 os.write(self.fd, b"\r")
+            return not self.unsent(line)
         except OSError:
             self.fd = -1
+            return False
 
     def unsent(self, line: str) -> bool:
         box = INPUT.split(self.last_printed())

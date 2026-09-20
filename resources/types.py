@@ -7,6 +7,8 @@ class Message(Shape, Resource):
     shown = {"created": "Message", "completed": "Message processed"}
     icon = "mail"
     idempotency = Field(TEXT)
+    delivered = Field()
+    told = True
     names = {"complete": "processed"}
     title_ = "Message"
     abstract_ = "What the user left for the agent, or the agent for the user"

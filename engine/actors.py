@@ -87,8 +87,10 @@ class Agent(Actor):
         if not self.pending or (time.time() - self.pending_at < batch["quiet"] and len(self.pending) < batch["size"]):
             return ""
         line = render(self.pending, self.record)
-        self.driver.send(self.aside(line))
+        landed = self.driver.send(self.aside(line))
         for e in self.pending:
+            if landed and TYPES[e.type].told:
+                CONTROLLERS[e.type](self.record, actor=SYSTEM).stamp(e.n, delivered=time.time())
             self.notified(e)
         self.pending = []
         return line

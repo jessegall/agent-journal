@@ -40,6 +40,13 @@ function shaped() {
 
 onMounted(() => nextTick(shaped));
 const mine = computed(() => props.turn.who === "user");
+const SAID = {sent: "sent", delivered: "delivered to the agent", read: "read", filed: "processed"};
+const state = computed(() => {
+    const turn = props.turn;
+    if (turn.completed) return "filed";
+    if (turn.seen.includes("agent")) return "read";
+    return turn.data && turn.data.delivered ? "delivered" : "sent";
+});
 const words = computed(() => quoted(props.turn.brief || props.turn.title));
 const html = computed(() => render(words.value.text, {types: types.value, env: route.value.env}));
 const commentParent = computed(() => {
@@ -238,10 +245,7 @@ async function drop() {
                     <span>{{ clock(turn.created) }}</span>
                 </template>
                 <template v-if="mine && !turn.pending">
-                    <span
-                        :class="['thread-ticks', turn.completed ? 'filed' : turn.seen.includes('agent') ? 'read' : 'sent']"
-                        :title="turn.completed ? 'processed' : turn.seen.includes('agent') ? 'read' : 'sent'"
-                    >
+                    <span :class="['thread-ticks', state]" :title="SAID[state]">
                         <svg
                             viewBox="0 0 19 12"
                             fill="none"
@@ -251,7 +255,7 @@ async function drop() {
                             stroke-linejoin="round"
                         >
                             <path d="M1.5 6.6 4.4 9.5 10 2.8" />
-                            <template v-if="turn.seen.includes('agent')">
+                            <template v-if="state !== 'sent'">
                                 <path d="M8 6.6 10.9 9.5 16.5 2.8" />
                             </template>
                         </svg>
