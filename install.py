@@ -69,7 +69,7 @@ def retire(root: Path) -> int:
 
 
 ASKS = """if read -r at url < "$root/runtime/heartbeat" 2>/dev/null && [ $(( $(date +%s) - at )) -le 5 ]; then
-reply=$(printf '%s\\0' "$@" | curl -s -m 20 -w '\\n%{http_code}' -H 'Content-Type: text/plain' --data-binary @- "${url}api/run")
+reply=$(printf '%s\\0' "$@" | curl -s -m 20 -w '\\n%{http_code}' -H 'Content-Type: text/plain' --url-query "actor=$JOURNAL_ACTOR" --url-query "env=$JOURNAL_ENV" --data-binary @- "${url}api/run")
 said=${reply##*
 }
 body=${reply%
