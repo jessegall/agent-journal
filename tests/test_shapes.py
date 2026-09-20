@@ -27,7 +27,7 @@ class Twice(Options, Reasoned, Shape):
 
 
 check("a Field with a spec is a typed field, read on the class as its name", (Twice.extra, Twice.fields["extra"]), ("extra", FLAG))
-check("shapes compose: fields and labels from every mixin plus its own", (sorted(Twice.fields), Twice.labels), (["extra", "options", "pick"], {"brief": "Reasoning", "outcome": "Why struck"}))
+check("shapes compose: fields and labels from every mixin plus its own", (sorted(Twice.fields), Twice.labels), (["extra", "keywords", "options", "pick"], {"brief": "Reasoning", "outcome": "Why struck"}))
 
 # THE CONTROLLER VALIDATES what a type's shape declares, and leaves the rest of data free
 record = fresh()
