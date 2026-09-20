@@ -11,6 +11,7 @@ INSTRUCTION_FILES = ("AGENTS.md", "CLAUDE.md")
 
 class RulesFeature(Recital):
     name = "rules"
+    runs_for_subagents = True
     controller = Rules
     said = "in force, read them"
     title_ = "Rules"

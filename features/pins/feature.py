@@ -5,6 +5,7 @@ from features.base import Recital
 
 class PinsFeature(Recital):
     name = "pins"
+    runs_for_subagents = True
     controller = Pins
     title_ = "Pins"
     abstract_ = "The environment's pins said again to the agent at every tenth of the context"

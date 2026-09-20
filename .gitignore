@@ -50,3 +50,4 @@ __pycache__/
 /.claude/skills/journal*
 /.claude/skills/style-*
 /.codex/skills/journal*
+.venv/
