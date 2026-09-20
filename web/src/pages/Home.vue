@@ -9,7 +9,6 @@ import Notice from "../chat/Notice.vue";
 import AgentBar from "../chat/AgentBar.vue";
 import RailWaiting from "./RailWaiting.vue";
 import RailTodos from "./RailTodos.vue";
-import RailNotes from "./RailNotes.vue";
 
 const tab = ref("waiting");
 const ready = ref(false);
@@ -22,9 +21,8 @@ onMounted(() => {
 onUnmounted(() => cancelAnimationFrame(frame));
 const notices = computed(() => open("notice"));
 const tabs = computed(() => [
-    ["waiting", "Highlights", types.value.filter((t) => t.attention).flatMap((t) => unreadByUser(t.name)).length, true],
+    ["waiting", "Notifications", types.value.filter((t) => t.attention).flatMap((t) => unreadByUser(t.name)).length, true],
     ["todos", "To-dos", open("todo").length, false],
-    ["notes", "Notifications", unreadByUser("notification").length, true],
 ]);
 </script>
 
@@ -76,7 +74,6 @@ const tabs = computed(() => [
                     </div>
                     <SwitchCase :value="tab">
                         <template #todos><RailTodos /></template>
-                        <template #notes><RailNotes /></template>
                         <template #default><RailWaiting /></template>
                     </SwitchCase>
                 </div>

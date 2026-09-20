@@ -1,9 +1,9 @@
 <script setup>
 import {computed, onUnmounted, ref} from "vue";
 import Icon from "../kit/Icon.vue";
-import RailNotes from "../pages/RailNotes.vue";
+import RailWaiting from "../pages/RailWaiting.vue";
 import {route} from "../route.js";
-import {meta, store, unreadByUser} from "../store.js";
+import {meta, store, types, unreadByUser} from "../store.js";
 
 const PAGES = {
     settings: "Settings",
@@ -20,7 +20,7 @@ const PAGES = {
 const title = computed(() =>
     !route.value.page ? "Home" : PAGES[route.value.page] || (meta(route.value.page) ? `${meta(route.value.page).title}s` : route.value.page)
 );
-const waiting = computed(() => unreadByUser("notification").length);
+const waiting = computed(() => types.value.filter((t) => t.attention).flatMap((t) => unreadByUser(t.name)).length);
 const drop = ref(false);
 const wrap = ref(null);
 const away = (e) => {
@@ -50,9 +50,9 @@ onUnmounted(() => window.removeEventListener("click", away));
                     </template>
                 </button>
                 <Transition name="drop">
-                    <div v-if="drop" class="drop" @click="(e) => e.target.closest('.note-row') && (drop = false)">
+                    <div v-if="drop" class="drop" @click="(e) => e.target.closest('.needs-card') && (drop = false)">
                         <div class="drop-head">Notifications</div>
-                        <RailNotes />
+                        <RailWaiting />
                     </div>
                 </Transition>
             </div>
