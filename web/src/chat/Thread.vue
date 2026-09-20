@@ -130,13 +130,13 @@ const receipt = (m) => {
 const turns = computed(() =>
     [
         ...rows("message")
-            .filter((m) => !m.deleted && !pending.value.some((p) => promisedFor(p, m) && !delivered(p, m)))
+            .filter((m) => !m.deleted && m.place !== "bar" && !pending.value.some((p) => promisedFor(p, m) && !delivered(p, m)))
             .map((m) => ({...m, who: m.seen[0]})),
         ...rows("message")
             .filter((m) => !m.deleted && m.seen[0] === "user" && m.completed && filed(m).length && !acknowledged(m))
             .map(receipt),
         ...rows("comment")
-            .filter((c) => !c.deleted && hasParent(c))
+            .filter((c) => !c.deleted && c.place !== "bar" && hasParent(c))
             .map((c) => ({...c, who: c.seen[0]})),
         ...rows("question")
             .filter((q) => !q.deleted)
