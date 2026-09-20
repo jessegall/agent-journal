@@ -30,6 +30,13 @@ m = Messages(record, actor=USER)
 for i in range(1, 11):
     m.create(f"m {i}")
 page = dispatch("GET", "/api/main/message", record.root, {"last": "3"}, {}).body
-check("open older messages are kept beside the window", [r["n"] for r in page["rows"]], list(range(1, 11)))
+check("open older messages are kept beside the window, no more than a window of them", [r["n"] for r in page["rows"]], list(range(5, 11)))
+
+record = fresh("main")
+m = Messages(record, actor=USER)
+for i in range(1, 501):
+    m.create(f"m {i}")
+page = dispatch("GET", "/api/main/message", record.root, {"last": "100"}, {}).body
+check("a thread of open rows still comes back as a page", (len(page["rows"]), page["more"]), (200, True))
 
 done()
