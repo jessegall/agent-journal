@@ -9,7 +9,7 @@ from engine import bus
 from features import trigger
 from engine.hooks import POLICIES, gate_file
 from features.format import FORMATTERS
-from resources.base import Refused, SYSTEM, WHOM
+from resources.base import KEYWORDS, Refused, SYSTEM, WHOM
 from engine.stored import read_json, write_json
 
 REGISTRY: dict[str, type] = {}
@@ -143,6 +143,26 @@ class Feature(ABC):
 class Recital(Feature):
     controller: ClassVar[type]
     said = "standing, read them"
+
+    @interceptor
+    def touched(self, provider, record, hook, session) -> str:
+        said = hook.tool.said.lower()
+        if not said:
+            return ""
+        agent = Agents(record, actor=SYSTEM).by_session(session)
+        for row in self.standing(record, self.controller):
+            words = [w for w in row.data.get(KEYWORDS) or [] if w and str(w).lower() in said]
+            if words and self.first_time(record, session, row.ref):
+                self.nudge(record, agent, f"{self.controller.resource.type} {row.n} — {row.title}", row.brief, private=True)
+        return ""
+
+    def first_time(self, record, session: str, ref: str) -> bool:
+        f = record.root / "runtime" / f"touched-{session}.json"
+        seen = read_json(f, {})
+        if ref in seen:
+            return False
+        write_json(f, {**seen, ref: True})
+        return True
 
     @event("agent.updated")
     def repeat(self, event, record) -> None:
