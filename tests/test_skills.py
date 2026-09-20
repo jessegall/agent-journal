@@ -10,7 +10,9 @@ from skills import reference, render, write  # noqa: E402
 from tests.kit import check, done  # noqa: E402
 
 got = render()
-subjects = [path for path in (Path(__file__).resolve().parents[1] / "skills").glob("*.md") if path.name != "journal.md"]
+subjects = [path for path in (Path(__file__).resolve().parents[1] / "skills").glob("*.md") if path.name != "journal.md" and path.stem not in features.FEATURES]
+check("a subject a feature covers is written into that feature's skill, not beside it",
+      ("journal question ask" in render()["journal-questions/SKILL.md"], "questions" in [p.stem for p in subjects]), (True, False))
 check("the core, subject skills and one per feature", (sorted(got)[:1], len(got)), (["journal-agents/SKILL.md"], 1 + len(subjects) + len(features.FEATURES)))
 core = got["journal/SKILL.md"]
 check("the core skill has its front matter and the reference", (core.startswith("---\nname: journal\n"), "## Reference: every noun and its words" in core), (True, True))

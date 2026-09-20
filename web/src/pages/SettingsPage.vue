@@ -104,7 +104,7 @@ async function flip(name, value) {
 }
 
 async function saveAnswerHold() {
-    await saveSettings(route.value.env, {answers: {hold: Number(answerHold.value)}});
+    await saveSettings(route.value.env, {questions: {hold: Number(answerHold.value)}});
 }
 
 async function saveRetention(type) {
@@ -196,7 +196,7 @@ async function remove(e) {
                         class="days"
                         type="number"
                         min="0"
-                        :placeholder="String((store.settings && store.settings.answers && store.settings.answers.hold) ?? 3)"
+                        :placeholder="String((store.settings && store.settings.questions && store.settings.questions.hold) ?? 3)"
                         @change="saveAnswerHold"
                     />
                     <span class="unit">seconds</span>
