@@ -60,14 +60,3 @@ def evidence(record) -> list[dict]:
         if waiting and time.time() - min(q.created for q in waiting) > WAITING_DAYS * 86400:
             found.append({"ref": t.ref, "title": t.title, "evidence": f"waiting on the user for over {WAITING_DAYS} days (question {waiting[0].n})", "retire": f"journal todo {t.n} done \"<why>\""})
     return found
-
-
-def read(record) -> list:
-    record.cleanup_read_at = time.time()
-    return [r for controller in (Rules, Pins) for r in controller(record, actor=SYSTEM).all() if not r.completed]
-
-
-def read_owed(record, days: int = 7) -> bool:
-    events = record.events()
-    since = float(record.cleanup_read_at) or (events[0].at if events else time.time())
-    return time.time() - since > days * 86400

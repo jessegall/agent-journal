@@ -5,7 +5,8 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 import features  # noqa: E402
 from controllers.types import Pins, Questions, Reminders, Rules, Todos  # noqa: E402
-from features.cleanup.query import evidence, read, read_owed  # noqa: E402
+from features.cleanup.audit import evidence  # noqa: E402
+from features.context.reread import owed as read_owed, standing  # noqa: E402
 from resources.base import AGENT, USER  # noqa: E402
 from tests.features.kit import nudges, report  # noqa: E402
 from tests.kit import check, done, fresh  # noqa: E402
@@ -49,8 +50,9 @@ check("eight days waiting: evidence", [e["evidence"] for e in evidence(record) i
 # THE READING PASS is owed until done, and records when it ran
 check("a young record owes no reading pass yet", read_owed(record), False)
 check("a week after its first event, never read: owed", read_owed(record, days=0), True)
-got = read(record)
-check("read returns every standing rule and pin in full", sorted(r.ref for r in got), ["pin:1", "pin:3", "rule:1", "rule:2", "rule:3"])
+check("the pass covers every standing rule and pin", sorted(r.ref for r in standing(record)), ["pin:1", "pin:3", "rule:1", "rule:2", "rule:3"])
+said = features.FEATURES["context"].reread(Rules(record))
+check("rule reread prints each of them in full", [said.count(f"{kind} {n}  ") for kind, n in (("pin", 1), ("pin", 3), ("rule", 1), ("rule", 2), ("rule", 3))], [1, 1, 1, 1, 1])
 check("read: no longer owed", read_owed(record), False)
 
 # SAID ONCE A DAY
