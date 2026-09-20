@@ -43,11 +43,12 @@ const shown = computed(() =>
 const words = {created: "New", updated: "Updated", deleted: "Deleted", linked: "Linked", commented: "Commented on"};
 function heading(e) {
     if (updated(e)) return "Journal updated";
-    const own = (meta(e.type).shown || {})[e.action];
+    const own = (meta(e.type).shown || {})[said(e)];
     if (own) return own;
     if (e.action === "completed") return `${meta(e.type).title} ${word(e.type, "complete")}`;
     return `${words[e.action]} ${meta(e.type).title.toLowerCase()}`;
 }
+const said = (e) => (e.action === "updated" && e.data && e.data.section ? "sectioned" : e.action);
 const title = (e) => (byRef(`${e.type}:${e.n}`) || {}).title || "";
 const who = (e) => e.actor[0].toUpperCase() + e.actor.slice(1);
 </script>

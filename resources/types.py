@@ -35,7 +35,7 @@ class Todo(Ranked, Resource):
 
 class Work(Traced, Resource):
     type = "work"
-    shown = {"created": "Work started", "updated": "Work logged", "completed": "Work ended"}
+    shown = {"created": "Work started", "sectioned": "Work logged", "completed": "Work ended"}
     says = {"create": "starting", "complete": "ending"}
     todo = Field()
     status = Field()
