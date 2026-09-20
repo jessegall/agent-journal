@@ -35,6 +35,7 @@ from engine.stored import write_json
 
 WEB = Path(__file__).resolve().parents[1] / "web" / "dist"
 JSON = "application/json"
+PLAIN = "text/plain; charset=utf-8"
 
 
 @dataclass
@@ -63,7 +64,9 @@ class Reply:
     after: Callable[[], None] | None = None
 
     def bytes(self) -> bytes:
-        return self.body if isinstance(self.body, bytes) else json.dumps(self.body).encode()
+        if isinstance(self.body, bytes):
+            return self.body
+        return self.body.encode() if self.kind == PLAIN else json.dumps(self.body).encode()
 
 
 class Missing(Exception):
@@ -276,6 +279,16 @@ def get_upstream(req: Request) -> Reply:
 def post_upgrade(req: Request) -> Reply:
     from install import upgrade
     return Reply(200, {"lines": upgrade(req.root.parent, req.root)})
+
+
+@route("POST", "/api/run")
+def post_run(req: Request) -> Reply:
+    from commands.cli import spoken
+    raw = req.body.get("_raw") or b""
+    said, code = spoken([a for a in raw.decode().split("\0") if a], req.root)
+    if code is None:
+        return Reply(409, said, kind=PLAIN)
+    return Reply(200 if not code else 400, said, kind=PLAIN)
 
 
 @route("GET", "/api/{env}/changes")

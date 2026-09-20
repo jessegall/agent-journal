@@ -37,7 +37,7 @@ def shared(said: list[list[str]]) -> int:
 
 def columns(found: list[dict]) -> list[dict]:
     said = [[name["value"]] if name["whole"] else words(name["value"]) for name in found]
-    if len({len(w) for w in said}) > 1:
+    if not all(name.get("columnar") for name in found) or len({len(w) for w in said}) > 1:
         same = shared(said)
         said = [[*w[:same], " ".join(w[same:])] for w in said]
     parts = []

@@ -91,6 +91,20 @@ told.write_text("".join(f"line {i}\n" for i in range(1, 6)))
 code, read = call("GET", "/api/plugins/works/log?lines=2")
 check("a plugin's log is read over HTTP, the last lines first asked for", (code, read), (200, {"name": "works", "log": "line 4\nline 5"}))
 
+def ran(*args):
+    req = urllib.request.Request(base + "/api/run", method="POST", data="\0".join(args).encode(),
+                                 headers={"Content-Type": "text/plain"})
+    try:
+        with urllib.request.urlopen(req) as r:
+            return r.status, r.read().decode()
+    except urllib.error.HTTPError as e:
+        return e.code, e.read().decode()
+
+
+check("a resource command runs in the viewer, in the CLI's own words", ran("todo", "all")[0], 200)
+check("a command the viewer will not run is handed back for the caller to run itself", ran("speed")[0], 409)
+check("a refusal comes back as a failure with the reason", ran("message", "show", "999999"), (400, "! no message 999999\n"))
+
 code, changed = call("GET", "/api/main/changes")
 check("the file changes are served in the order they happened, newest first", (code, changed), (200, {"changes": []}))
 

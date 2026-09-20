@@ -142,4 +142,11 @@ finished = subprocess.run([sys.executable, str(older / ".journal" / "src" / "ins
                           env={**git_env, "AGENT_JOURNAL_REPO": str(source)})
 check("a package file an older installer did not copy is fetched before the hooks point at it", ((older / ".journal" / "src" / "hook.sh").is_file(), "package files an older installer did not know: fetched" in finished.stdout), (True, True))
 
+# THE LAUNCHER asks the running viewer first and always falls back to running it here
+launcher = (project / ".journal" / "journal").read_text()
+check("it reads the heartbeat rather than trying a connection, and runs the command here when the viewer is not up",
+      ("runtime/heartbeat" in launcher, "api/run" in launcher, launcher.rstrip().endswith('"$@"')), (True, True, True))
+check("only what the viewer answered is taken: anything else falls through",
+      ("200)" in launcher and "400)" in launcher, "409" in launcher), (True, False))
+
 done()

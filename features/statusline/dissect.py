@@ -67,11 +67,11 @@ def capped(said: str) -> str:
 
 
 def whole(value: str) -> dict:
-    return {"value": capped(value), "whole": True}
+    return {"value": capped(value), "whole": True, "columnar": False}
 
 
-def said_name(value: str) -> dict:
-    return {"value": capped(value), "whole": False}
+def said_name(value: str, columnar: bool = False) -> dict:
+    return {"value": capped(value), "whole": False, "columnar": columnar}
 
 
 def a_path(args: list[str]) -> str:
@@ -87,10 +87,10 @@ def names_of(one: dict, kind: str) -> list[dict]:
     if not piece:
         return []
     if piece["own"]:
-        return [said_name(piece["root"])]
+        return [said_name(piece["root"], columnar=True)]
     if kind == GIT:
         said = git_of(piece)
-        return [said_name(f"{said} {' '.join(piece['args'])}".strip() if said == GIT_WORDS["add"] else said)]
+        return [said_name(f"{said} {' '.join(piece['args'])}".strip() if said == GIT_WORDS["add"] else said, columnar=True)]
     if kind in NAMED:
         found = a_path(piece["args"])
         return [whole(base(found))] if found else []

@@ -4,6 +4,16 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.15.0 — The bar says what the agent is doing, and says it exactly
+
+The status bar is a queue of status messages. Every command the agent runs lands on its ring the moment it starts, and a run of consecutive commands of one kind becomes one message: `editing [a.vue → b.py] +13 −4`, `journalling reading message 7`, `git committing changes`, `testing test_queue.py 3 failed`. The verb is the root and the only unmuted word; every space is a part of its own, a quoted string and a file name stay whole, and only the part that actually differs rolls, one value a second, once. A message stays long enough to walk every name it has, holds a second when the next one arrives, lingers ten seconds with nothing behind it, and gives way at once when ten are waiting. Nothing half-known is ever shown: a command that has not been told which files it touched is not on the bar at all, and a command that has not run cannot be, because it is not on the ring.
+
+Each thing the agent does has its own word — editing, reading, searching, viewing a picture, watching a film, deleting, testing, installing, building, journalling, dispatching, loading, fetching, using — read from what the command did, never from what it was called: a read names the file it read, a search names what it looked for, a runner names its script, a build says whether it built or failed, and what a script contains is not what the command does. The journal decides all of it; the viewer only plays it, and its own rival vocabulary is gone.
+
+Also: work can be parked with a reason and no clock, and the next log entry picks it up. A plan finishes itself when its rows are already closed. The activity sidebar has a Files tab listing every edit, creation and removal as it happens. An effort change on Claude lands at once instead of waiting for the turn. Every engine error is reported, not just the first, and a clean stretch closes it. A skill whose feature is gone is taken away. An indented block in a message renders as one code block. Resource commands can run through the running server instead of booting Python, falling back the moment it is not there.
+
+What to do about it: `journal upgrade`.
+
 ## 2.14.0 — Plugins from a GitHub URL
 
 Paste a repository on the Plugins page and it installs into the project: a repo with a `.journal-plugin/` folder and a manifest says what it needs, what to run to set itself up, which events it listens to, which services it runs and which pages it shows. You see every command before anything runs, and it installs at that exact commit. A private repository is reached with the GitHub CLI's token, which is never stored or printed. A plugin hears the bus — each event is posted to it or piped to a command — and its answer can whisper to the agent, notify, raise a notice, file a to-do or hold the agent; a plugin that stops answering backs off and tells you once. Its services are owned by a keeper that dies with the session, so nothing is left running; `journal services` lists them, starts, stops, restarts one or reads its log. A plugin's pages show in the sidebar with the state of the service behind them.

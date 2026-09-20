@@ -1,5 +1,7 @@
 import argparse
+import contextlib
 import inspect
+import io
 import json
 import os
 import sys
@@ -313,6 +315,7 @@ def context(args: dict) -> dict:
 
 
 READS = {"all", "show", "find", "search", "files", "folder", "comments", "linked_to", "unread", "read"}
+OVER_HTTP = frozenset(CONTROLLERS) - {"browser"}
 
 
 def typed(value: str):
@@ -346,6 +349,18 @@ def noun_of(argv: list[str]) -> str:
         else:
             return word if word in CONTROLLERS else "-"
     return "-"
+
+
+def spoken(argv: list[str], root: Path) -> tuple[str, int | None]:
+    if not argv or noun_of(argv) not in OVER_HTTP:
+        return "", None
+    said, wrong = io.StringIO(), io.StringIO()
+    with contextlib.redirect_stdout(said), contextlib.redirect_stderr(wrong):
+        try:
+            code = run(["--root", str(root), *argv])
+        except SystemExit as e:
+            code = int(e.code or 0)
+    return (said.getvalue() or wrong.getvalue()), code
 
 
 def run(argv: list[str]) -> int:
