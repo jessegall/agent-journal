@@ -1,3 +1,5 @@
+import re
+
 from features.base import Feature
 from features.statusline.gist import parsed, words
 from features.statusline.spoken import spoken
@@ -18,6 +20,7 @@ LINGERS = 10.0
 CLOCK_AFTER = 10.0
 MOST = 12
 NAME_CAP = 42
+FILE = re.compile(r"^[\w.-]+\.\w+$")
 PLUS, MINUS = "+", "-"
 COUNTS = ((PLUS, "added"), (MINUS, "removed"))
 
@@ -46,36 +49,51 @@ def base(path: str) -> str:
     return path.rsplit("/", 1)[-1]
 
 
-def touched(one: dict) -> list[str]:
-    return [base(path) for path in one.get(COMMAND.files) or []]
+def whole(value: str) -> dict:
+    return {"value": value, "whole": True}
 
 
-def names_of(one: dict, kind: str) -> list[str]:
-    if by_hand(one):
-        return [one[COMMAND.subject]] if one.get(COMMAND.subject) else []
-    if kind in TOUCHED:
+def spoken_name(value: str) -> dict:
+    return {"value": value, "whole": False}
+
+
+def touched(one: dict) -> list[dict]:
+    return [whole(base(path)) for path in one.get(COMMAND.files) or []]
+
+
+def a_path(args: list[str]) -> str:
+    return next((x for x in args if "/" in x or FILE.match(x)), "")
+
+
+def names_of(one: dict, kind: str) -> list[dict]:
+    if one.get(COMMAND.files):
         return touched(one)
+    if by_hand(one):
+        return [spoken_name(one[COMMAND.subject])] if one.get(COMMAND.subject) else []
+    if kind in TOUCHED:
+        return []
     piece = piece_of(one)
     if not piece:
         return []
     if piece["own"]:
-        return [piece["root"]]
+        return [spoken_name(piece["root"])]
     if kind in NAMED:
-        return [base(piece["args"][0])] if piece["args"] else []
-    return [piece["root"]]
+        found = a_path(piece["args"])
+        return [whole(base(found))] if found else []
+    return [spoken_name(piece["root"])]
 
 
-def worked(group: list[dict], kind: str) -> list[str]:
-    found: list[str] = []
+def worked(group: list[dict], kind: str) -> list[dict]:
+    found: list[dict] = []
     for one in group:
         for name in names_of(one, kind):
-            if name not in found:
+            if not any(name["value"] == was["value"] for was in found):
                 found.append(name)
-    return [capped(name) for name in found[-MOST:]]
+    return [{**name, "value": capped(name["value"])} for name in found[-MOST:]]
 
 
-def columns(found: list[str]) -> list[dict]:
-    said = [words(name) for name in found]
+def columns(found: list[dict]) -> list[dict]:
+    said = [[name["value"]] if name["whole"] else words(name["value"]) for name in found]
     wide = max(len(w) for w in said)
     rows = [[*w, *([""] * (wide - len(w)))] for w in said]
     parts = []

@@ -21,11 +21,11 @@ def used(tool, subject, at=NOW, **more):
 
 
 def read(name, at=NOW):
-    return used("Read", name, at, effect="reads")
+    return {"what": f"reading {name}", "tool": "Read", "files": [name], "at": at, "effect": "reads"}
 
 
 def edit(name, at=NOW, **more):
-    return used("Edit", name, at, effect="writes", **more)
+    return {"what": f"editing {name}", "tool": "Edit", "files": [name], "at": at, "effect": "writes", **more}
 
 
 def said(commands, now=NOW):
@@ -49,6 +49,10 @@ check("nothing that has not run is in the queue: an empty ring is an empty queue
 check("a command with nothing to say is left out", said([shell("")]), [])
 
 # EVERY SPACE IS A PART, and only the part that differs rolls
+check("a file name stays one part however many spaces it has",
+      said([read("Screenshot 2026-09-20 at 15.40.08.png")]), [["reading", "Screenshot 2026-09-20 at 15.40.08.png"]])
+check("a read names a path, never a flag's value",
+      said([shell("sed -n 88,94p providers/base.py", effect="reads")]), [["reading", "base.py"]])
 check("every word of a name is a part of its own",
       said([used("mcp__playwright__browser_evaluate", "playwright · browser evaluate")]),
       [["using", "playwright", "·", "browser", "evaluate"]])
