@@ -75,7 +75,7 @@ check("the verb is gray and everything else muted",
       coloured([used("mcp__x__y", "playwright · browser evaluate")])[0][:2], [("using", "gray"), ("playwright", "muted")])
 check("a run of git commands is one message, rooted under git",
       said([shell("git add -A"), shell("git commit -m x", NOW + 1, effect="writes", done=NOW + 2), shell("git push", NOW + 3)]),
-      [["git", ["tracking", "committing changes", "pushing changes"]]])
+      [["git", ["tracking", "committing", "pushing"], ["files", "changes", "changes"]]])
 check("a picture and a film have their own words",
       [said([{"what": f"reading {f}", "tool": "Read", "at": NOW, "effect": "reads", "files": [f]}])[0][0] for f in ("a.png", "b.mp4")],
       ["viewing", "watching"])
@@ -92,7 +92,7 @@ check("a journal command is rooted under journalling and what it did there is mu
 check("a shell command is named by its root and subcommand, with no flags or arguments",
       said([shell("npx prettier --write src/a.vue >/dev/null 2>&1")]), [["running", "npx", "prettier"]])
 check("a one-liner of several commands is named once, by the first of them",
-      said([shell("git add -A && git commit -m x && git push")]), [["git", "tracking"]])
+      said([shell("git add -A && git commit -m x && git push")]), [["git", "tracking", "files"]])
 check("editing names the files that actually changed, never the command that changed them",
       said([shell("python3 - <<'EOF'\nopen('x','w')\nEOF", effect="writes", files=["web/src/a.vue", "tests/t.py"])]),
       [["editing", ["a.vue", "t.py"]]])

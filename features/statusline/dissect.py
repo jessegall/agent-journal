@@ -6,10 +6,11 @@ from resources.types import COMMAND
 
 JOURNAL = "journal"
 GIT = "git"
-GIT_WORDS = {"add": "tracking", "commit": "committing changes", "push": "pushing changes", "pull": "pulling changes",
-             "fetch": "fetching", "clone": "cloning", "init": "starting a repository", "tag": "tagging",
-             "checkout": "switching branch", "switch": "switching branch", "branch": "branching", "merge": "merging",
-             "rebase": "rebasing", "stash": "stashing", "reset": "resetting", "restore": "restoring", "cherry-pick": "picking"}
+GIT_WORDS = {"add": "tracking files", "commit": "committing changes", "push": "pushing changes", "pull": "pulling changes",
+             "fetch": "fetching changes", "clone": "cloning a repository", "init": "starting a repository", "tag": "tagging a commit",
+             "checkout": "switching branch", "switch": "switching branch", "branch": "branching", "merge": "merging a branch",
+             "rebase": "rebasing", "stash": "stashing changes", "reset": "resetting changes", "restore": "restoring files",
+             "cherry-pick": "picking a commit"}
 TOUCHED = ("writes", "deletes")
 NAMED = ("reads", "tests")
 GIVEN = ("installs", "searches")
@@ -90,7 +91,8 @@ def names_of(one: dict, kind: str) -> list[dict]:
         return [said_name(piece["root"], columnar=True)]
     if kind == GIT:
         said = git_of(piece)
-        return [said_name(f"{said} {' '.join(piece['args'])}".strip() if said == GIT_WORDS["add"] else said, columnar=True)]
+        named = " ".join(base(x) for x in piece["args"] if "/" in x or FILE.match(x))
+        return [said_name(f"tracking {named}" if said == GIT_WORDS["add"] and named else said, columnar=True)]
     if kind in NAMED:
         found = a_path(piece["args"])
         return [whole(base(found))] if found else []

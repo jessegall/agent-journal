@@ -67,7 +67,7 @@ check("a plain shell command is named by its root and subcommand",
 check("a journal command is named in its own words", names(shell("journal message read 7")), ["reading message 7"])
 check("a git command says what it does, not what it is called",
       [(shell(c)["kind"], names(shell(c))) for c in ("git add web/src/a.vue", "git push", "git checkout -b dev")],
-      [("git", ["tracking web/src/a.vue"]), ("git", ["pushing changes"]), ("git", ["switching branch"])])
+      [("git", ["tracking a.vue"]), ("git", ["pushing changes"]), ("git", ["switching branch"])])
 check("a git command that changed files is editing, and one that read them is reading",
       (shell("git mv a b", effect="writes", files=["b"])["kind"], shell("git log -3", effect="reads")["kind"]), ("writes", "reads"))
 check("a command that did not edit anything never takes the name of a file it was blamed for",
