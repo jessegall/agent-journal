@@ -1,4 +1,4 @@
-from resources.base import AGENT, DOCUMENT, PROJECT, USER, Resource
+from resources.base import AGENT, COMPLETED, DOCUMENT, OPENED, PROJECT, USER, Resource
 from resources.shapes import FLAG, TEXT, Field, Options, Ranked, Reasoned, Shape, Traced, names
 
 
@@ -9,6 +9,7 @@ class Message(Shape, Resource):
     idempotency = Field(TEXT)
     delivered = Field()
     told = True
+    clears = OPENED
     names = {"complete": "processed"}
     title_ = "Message"
     abstract_ = "What the user left for the agent, or the agent for the user"
@@ -149,7 +150,7 @@ class Question(Options, Resource):
     shown = {"created": "Question asked", "completed": "Question answered"}
     says = {"create": "asking", "complete": "answering"}
     attention = True
-    settled = True
+    clears = COMPLETED
     nav = False
     icon = "help"
     names = {"complete": "answer", "create": "ask"}
@@ -166,7 +167,7 @@ class Suggestion(Options, Resource):
     decision = Field()
     handed = "SUGGESTIONS waiting on the user"
     attention = True
-    settled = True
+    clears = COMPLETED
     icon = "up"
     names = {"complete": "decide", "create": "suggest", "delete": "withdraw"}
     labels = {"outcome": "Decision", "brief": "Why"}
