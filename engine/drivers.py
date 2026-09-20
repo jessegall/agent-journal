@@ -12,7 +12,6 @@ ANSI = re.compile(rb"\x1b\[[0-?]*[ -/]*[@-~]|\x1b\][^\x07\x1b]*(?:\x07|\x1b\\)|\
 
 
 class Driver(ABC):
-    ASIDE = ""   # how this CLI takes a line while it is working, if it does
     STOP = b"\x1b"
     CLEAR_LINE = b"\x05\x15"
     name = ""
