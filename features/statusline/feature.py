@@ -62,7 +62,7 @@ def flipping(run: dict, commands: list) -> list[dict]:
         name = shown(one)
         if name and (not names or names[-1] != name):
             names.append(name)
-    return [{"value": names[-MOST_STEPS:], "duration": ROLL_EVERY, "color": MUTED, "align": RIGHT}] if len(names) > 1 else []
+    return [{"value": names[-MOST_STEPS:], "duration": ROLL_EVERY, "color": MUTED, "align": RIGHT}] if names else []
 
 
 def outcome(result: dict) -> list[dict]:
