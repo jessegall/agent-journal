@@ -26,6 +26,8 @@ const ownWords = computed(() => settled.value && !options.value.some((o) => o.ti
 async function submit(text) {
     const choice = String(text || "").trim();
     if (!choice) return;
+    clearTimeout(holdTimer);
+    holdingPick.value = -1;
     if (props.resource.completed) await act(route.value.env, props.resource.type, props.resource.n, "set", {key: "outcome", value: choice});
     else await act(route.value.env, props.resource.type, props.resource.n, word(props.resource.type, "complete"), {how: choice});
     changing.value = false;
@@ -63,12 +65,10 @@ onUnmounted(save);
                 :disabled="settled"
                 @click="choose(i)"
             >
-                <span class="label">
-                    {{ o.title }}
-                    <template v-if="i + 1 === pick && !settled">
-                        <span class="pick">the agent's pick</span>
-                    </template>
-                </span>
+                <template v-if="i + 1 === pick && !settled">
+                    <span class="pick">The agent's pick</span>
+                </template>
+                <span class="label">{{ o.title }}</span>
                 <template v-if="o.description">
                     <span class="desc">{{ o.description }}</span>
                 </template>
@@ -173,8 +173,15 @@ onUnmounted(save);
     gap: 8px;
 }
 .pick {
+    display: block;
+    margin: -9px -12px 8px;
+    padding: 4px 12px;
+    border-radius: 7px 7px 0 0;
+    background: color-mix(in srgb, var(--accent) 22%, var(--raised));
     color: var(--accent-text);
-    font-size: 11.5px;
+    font-size: 11px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
 }
 .desc {
     color: var(--text-3);
