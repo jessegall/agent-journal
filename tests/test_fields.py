@@ -25,4 +25,12 @@ check("an unset setting reads as its default", (record.keep, record.cleanup_read
 record.keep = {"report": 7}
 check("setting it writes settings.json and reads back", (record.keep, record.setting("keep")), ({"report": 7}, {"report": 7}))
 
+# A LIST FIELD TAKES PLAIN WORDS AS WELL AS JSON
+from resources.shapes import LIST, TEXT, check as checked  # noqa: E402
+
+check("a list field takes comma-separated words", checked("keywords", LIST, "test, tests , suite"), ["test", "tests", "suite"])
+check("a list field still takes a list", checked("keywords", LIST, ["a", "b"]), ["a", "b"])
+check("one word is a list of one", checked("keywords", LIST, "test"), ["test"])
+check("a text field with commas stays one string", checked("title", TEXT, "a, b, c"), "a, b, c")
+
 done()

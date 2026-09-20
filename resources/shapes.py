@@ -31,6 +31,8 @@ def check(name: str, spec, value):
                 if column in row:
                     check(f"{name}.{column}", kind, row[column])
         return value
+    if spec == LIST and isinstance(value, str):
+        value = [word.strip() for word in value.split(",") if word.strip()]
     if not isinstance(value, KINDS[spec]) or isinstance(value, bool) and spec != FLAG:
         raise Refused(f"{name} is a {spec}")
     return value
