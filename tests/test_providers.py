@@ -45,10 +45,13 @@ for name, cls in PROVIDERS.items():                       # every provider, the 
     record = Record(root, "main")
     agents = Agents(record, actor=SYSTEM)
     payload = {"session_id": "abc-1", "transcript_path": f"/tmp/{name}/abc-1.jsonl", "cwd": str(project)}
+    was = ""
     for event in EVENTS:
         handle(provider, root, "main", {**payload, "hook_event_name": event, "tool_name": "Bash" if "Tool" in event else ""})
         row = agents.by_session("abc-1")
-        check(f"{name}: {event} writes the agent's status {STATUS[event]}", (row.data["status"], row.data["event"], row.data["provider"]), (STATUS[event], event, name))
+        want = STATUS[event] or was or "idle"
+        check(f"{name}: {event} writes the agent's status {want}", (row.data["status"], row.data["event"], row.data["provider"]), (want, event, name))
+        was = want
     check(f"{name}: one agent row per session, not one per hook", len(agents.all()), 1)
     check(f"{name}: an unknown hook writes nothing", (handle(provider, root, "main", {**payload, "hook_event_name": "Whatever"}), len(record.events())),
           ({}, 1 + len(EVENTS)))
@@ -142,7 +145,7 @@ check("a quoted > is text, not a redirect; tests then a commit is still a write"
       ([claude.effect_of(c) for c in ("grep 'c>=2' f", "git commit -m 'a > b'")], claude.writes(Hook.read({"hook_event_name": "PostToolUse", "tool_name": "Bash", "tool_input": {"command": "python3 tests/x.py && git commit -m y"}}))),
       (["searches", "writes"], True))
 check("an edit next to a journal call is still a write, and journal calls alone never are",
-      [claude.writes(Hook.read({"hook_event_name": "PostToolUse", "tool_name": "Bash", "tool_input": {"command": c}})) for c in ('journal work log 5 "x"; git commit -m y', 'journal message reply 3 "a > b"', ".journal/journal todo add x")], [True, False, False])
+      [claude.writes(Hook.read({"hook_event_name": "PostToolUse", "tool_name": "Bash", "tool_input": {"command": c}})) for c in ('journal work log 5 "x"; git commit -m y', 'journal message reply 3 "a > b"', ".journal/journal todo create x")], [True, False, False])
 check("a command labelled editing is one whose line changes are counted", all(claude.writes(Hook.read({"hook_event_name": "PostToolUse", "tool_name": "Bash", "tool_input": {"command": c}})) for c, e in effects.items() if e in ("writes", "deletes")), True)
 check("every tool says what it did: reading a file wherever it is, searching, fetching, dispatching, loading",
       [claude.effect(Hook.read({"hook_event_name": "PreToolUse", "cwd": "/p", "tool_name": name, "tool_input": {"file_path": path}}))

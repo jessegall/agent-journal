@@ -35,7 +35,7 @@ def call(method, path, body=None):
 
 code, m = call("GET", "/api/manifest")
 check("the manifest says every type, its view and nav, the actions, actors and priority", (code, sorted(m["types"]), m["actions"], m["types"]["todo"]["names"]),
-      (200, sorted(TYPES), list(ACTIONS), {"complete": "done", "create": "add"}))
+      (200, sorted(TYPES), list(ACTIONS), {"complete": "done"}))
 check("every view in the manifest is one of the three", all(t["view"] in VIEWS for t in m["types"].values()), True)
 check("a type says what its list can be narrowed to, and what each tab is called",
       (m["types"]["todo"]["filters"], [f["title"] for f in m["types"]["rule"]["filters"]]),
