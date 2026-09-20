@@ -7,7 +7,7 @@ from resources.base import AGENT, SYSTEM
 class Status(Feature):
     name = "status"
     PATIENCE = "patience"
-    title_ = "A message is answered before the next write"
+    title_ = "Answering before writing"
     abstract_ = "A message the agent has read is answered before it writes anything: the user hears back before the work starts"
     help_ = "Said at the first tool use after a message is read and a few times more, then it lets the agent be; nothing is ever refused over it. A reply, a reaction or processing every part settles it. triggers.status sets how soon it is said (every tool use) and status.patience (3) how many times."
     trigger = {"every": 1, "unit": trigger.USES}

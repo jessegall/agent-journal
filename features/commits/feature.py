@@ -10,7 +10,7 @@ TRAILER = re.compile(r"^Journal: todos done (\d+)(?: (.*))?$", re.MULTILINE)
 
 class Commits(Feature):
     name = "commits"
-    title_ = "Commits"
+    title_ = "Closing rows from commits"
     abstract_ = "A commit whose message carries Journal: todos done <n> closes that row"
     help_ = "The trailer starts at column 0; prose and indented examples close nothing."
 

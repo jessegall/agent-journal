@@ -5,7 +5,7 @@ from features.cleanup.query import evidence, read_owed
 
 class Cleanup(Feature):
     name = "cleanup"
-    title_ = "Cleanup"
+    title_ = "The record audit"
     abstract_ = "What in the record has evidence against it, said to the agent once a day; and the reading pass it owes"
     help_ = "cleanup lists claims naming a file that is gone or a verb the CLI lacks, and rows waiting on the user too long; cleanup read is every rule and pin in full."
     trigger = {"every": 1440, "unit": trigger.MINUTES}

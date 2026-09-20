@@ -5,7 +5,7 @@ from resources.base import AGENT, SECTION, SYSTEM, USER
 
 class Handled(Feature):
     name = "handled"
-    title_ = "Handled messages close"
+    title_ = "Closing a message"
     abstract_ = "A message is closed once the other side has dealt with it: the agent by answering, the user by reading"
     help_ = "A reply or a reaction by the agent answers the user's message and closes it; so does processing each part with journal message process <n> \"<their words>\" \"<resource ref>\" until every paragraph is covered. A message the agent writes asks nothing of the user, so it closes as soon as they have seen it."
     ANSWERS = {"comment": "answered", "reaction": "acknowledged"}

@@ -7,11 +7,10 @@ import {computed, onMounted, ref} from "vue";
 import {act, api, command, saveIdentity, saveSettings} from "../api.js";
 import Btn from "../kit/Btn.vue";
 import Switch from "../kit/Switch.vue";
+import {COUNTED, EVENTS} from "./cadence.js";
 import {route} from "../route.js";
 import {load, rows, store} from "../store.js";
 
-const COUNTED = ["percent", "uses", "minutes"];
-const EVENTS = ["idle", "worked", "start"];
 const triggerOf = (f) => (store.settings && store.settings.triggers && store.settings.triggers[f.name]) || f.trigger;
 const features = computed(() =>
     Object.values(store.spec.features).map((f) => ({...f, when: f.trigger && Object.keys(f.trigger).length ? triggerOf(f) : null}))

@@ -5,7 +5,7 @@ from resources.base import SYSTEM
 
 class SuggestionsDecided(Feature):
     name = "suggestions"
-    title_ = "Suggestions decided"
+    title_ = "Suggestions"
     abstract_ = "An accepted or adjusted suggestion becomes a to-do that cites it; a decline files nothing"
     help_ = "The to-do carries the suggestion's title and brief — or the user's own words when adjusted — and auto mode works it like any other."
 

@@ -8,7 +8,7 @@ from resources.base import SYSTEM, titled
 
 class Attachments(Feature):
     name = "attachments"
-    title_ = "Attachment tags"
+    title_ = "Attachments"
     abstract_ = "Images and videos are described in a few searchable words by the agent"
     help_ = "When a media file needs tags, inspect it and run `journal <type> tag <n> <name> <tags>` with a few words describing what it shows."
 

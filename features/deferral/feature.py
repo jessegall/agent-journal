@@ -10,7 +10,7 @@ DEFERS = re.compile(r"\b(I'?ll (do|get to|come back to|handle|look at) (that|it|
 
 class Deferral(Feature):
     name = "deferral"
-    title_ = "Deferral"
+    title_ = "Catching work put off"
     abstract_ = "Work put off in words, with no to-do parked, is named back to the agent once"
     help_ = "A sentence like 'I'll do that after this' is the title of a to-do; file it immediately before the reply or next implementation."
     trigger = {"on": trigger.IDLE}

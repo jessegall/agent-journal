@@ -7,7 +7,7 @@ from features.auto.policy import refusal
 
 class Auto(Feature):
     name = "auto"
-    title_ = "Auto mode"
+    title_ = "Working the list"
     abstract_ = "The next ready row, by priority, offered on idle while nothing is open"
     help_ = "Off by default: enabling it is the user's word to work the list and decide without blocking questions. Five minutes quiet with unparked work open earns a direct question — are you still working? — and parked work is skipped by that and by the next-row offer alike. A row is ready when it is not blocked, waits on no open row or question, and its plan's phase is current. Questions only the user can answer go through the journal so work can continue."
     trigger = {"on": trigger.IDLE}
