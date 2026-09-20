@@ -13,6 +13,7 @@ ACTIONS = ("created", "updated", "deleted", "linked", "commented", "completed")
 SMALL, WIDE, DOCUMENT = "small", "wide", "document"
 VIEWS = (SMALL, WIDE, DOCUMENT)
 USER, AGENT, SYSTEM, PLUGIN = "user", "agent", "system", "plugin"
+WHOM = "whom"
 ENVIRONMENT, PROJECT = "environment", "project"
 SCOPES = (ENVIRONMENT, PROJECT)
 ACTORS = (USER, AGENT, SYSTEM, PLUGIN)

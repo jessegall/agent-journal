@@ -4,7 +4,8 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 import features  # noqa: E402
 from controllers.types import Nudges, Reminders  # noqa: E402
-from resources.base import USER  # noqa: E402
+from engine.queries import start_block  # noqa: E402
+from resources.base import AGENT, USER  # noqa: E402
 from tests.features.kit import report  # noqa: E402
 from tests.kit import check, done, fresh  # noqa: E402
 
@@ -76,5 +77,19 @@ record.set_setting("features", {"reminders": False})
 Reminders(record, actor=USER).create("keep going")
 report(record, "idle", "Stop")
 check("feature off: nothing said", nudges(record), [])
+
+# AIMED AT ONE AGENT: written with whom, it is said to that session alone and stays out of the start block
+record = fresh()
+record.set_setting("triggers", {"reminders": {"on": "worked"}})
+Reminders(record, actor=USER).create("everyone hears this")
+Reminders(record, actor=AGENT).create("only claude-2 hears this", whom="claude-2")
+report(record, "working", "PreToolUse", session="claude-1")
+report(record, "idle", "Stop", session="claude-1")
+check("a session hears only what is standing for everyone", nudges(record)[-1], ("1 reminder standing, read them", "1. everyone hears this"))
+report(record, "working", "PreToolUse", session="claude-2")
+report(record, "idle", "Stop", session="claude-2")
+check("the session it names hears both", nudges(record)[-1], ("2 reminders standing, read them", "1. everyone hears this; 2. only claude-2 hears this"))
+check("what is aimed at one session is not in the start block", "only claude-2" in start_block(record), False)
+check("and an agent may write one, where it may not write a pin", bool(Reminders(record).load(2).data.get("whom")), True)
 
 done()
