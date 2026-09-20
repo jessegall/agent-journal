@@ -44,6 +44,11 @@ p = run_hook(record.root, "Stop")
 row = agents.by_session("srv-1")
 check("the hook's row is written by the server", (p.returncode, row.status, row.event), (0, "idle", "Stop"))
 check("the server's features heard the write", record.events()[-1].heard, True)
+run_hook(record.root, "SubagentStop")
+check("a subagent stopping does not put the agent back to work", agents.by_session("srv-1").status, "idle")
+run_hook(record.root, "PreToolUse")
+run_hook(record.root, "SubagentStart")
+check("nor does one starting take it off work", agents.by_session("srv-1").status, "working")
 
 # THE ANSWER COMES FIRST: a slow feature runs on the hook's write after the reply is sent
 ran = []

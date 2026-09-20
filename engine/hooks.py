@@ -10,8 +10,8 @@ from resources.base import AGENT, SYSTEM
 from resources.types import AgentRow
 
 STATUS = {"SessionStart": IDLE, "Stop": IDLE, "UserPromptSubmit": WORKING, "PreToolUse": WORKING,
-          "PostToolUse": WORKING, "PreCompact": COMPACTING, "SubagentStart": WORKING,
-          "SubagentStop": WORKING, "SessionEnd": STOPPED}
+          "PostToolUse": WORKING, "PreCompact": COMPACTING, "SubagentStart": "",
+          "SubagentStop": "", "SessionEnd": STOPPED}
 EVENTS = tuple(STATUS)
 POLICIES: list = []
 
@@ -82,7 +82,7 @@ def handle(provider, root: Path, env: str, raw: dict) -> dict:
     uses = int(row.uses or 0) + (hook.event == "PreToolUse")
     context = provider.context(hook)
     agents.saw(row.n, {"hook": hook.event, "tool": hook.tool.name, "file": hook.tool.file_path, "session": hook.session},
-               status=STATUS[hook.event], event=hook.event, tool=hook.tool.name, **provider.shell(row, hook),
+               status=STATUS[hook.event] or row.status or IDLE, event=hook.event, tool=hook.tool.name, **provider.shell(row, hook),
                **provider.session(hook.transcript), file=hook.tool.file_path,
                wrote=hook.event == "PostToolUse" and provider.writes(hook), cwd=hook.cwd or row.cwd or "", at=time.time(),
                provider=provider.name, uses=uses, transcript=str(hook.transcript or row.transcript or ""), inbox=provider.inbox() or row.inbox or "",
