@@ -284,6 +284,13 @@ def post_upgrade(req: Request) -> Reply:
     return Reply(200, {"lines": upgrade(req.root.parent, req.root)})
 
 
+@route("POST", "/api/stop")
+def post_stop(req: Request) -> Reply:
+    from engine.stop import ask
+    ask(req.root)
+    return Reply(200, {"stopping": True})
+
+
 @route("GET", "/api/journals")
 def get_journals(req: Request) -> Reply:
     found = []

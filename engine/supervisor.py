@@ -14,6 +14,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from engine import band  # noqa: E402
 from engine import viewer  # noqa: E402
 from engine.services import Manager  # noqa: E402
+from engine.stop import asked  # noqa: E402
 from engine.terminal import RELOAD, STOP, watched  # noqa: E402
 
 RELOAD_EVERY = 5.0
@@ -89,6 +90,7 @@ def run(root: Path, cwd: Path, env: str, agent: str, fd: int, session: str, life
 
     signal.signal(signal.SIGWINCH, lambda *_: frame())
     os.write(stdout, band.region(rows) + top.draw(cols, force=True))
+    began = time.time()
     last_check = 0.0
     last_viewer = time.time()
     last_services = 0.0
@@ -126,6 +128,9 @@ def run(root: Path, cwd: Path, env: str, agent: str, fd: int, session: str, life
                 elif time.time() - typed_at >= TYPED_EVERY:
                     typed.touch()
                     typed_at = time.time()
+            if asked(root, began):
+                result = STOP
+                break
             now = time.time()
             if now - last_services >= SERVICES_EVERY:
                 last_services = now
