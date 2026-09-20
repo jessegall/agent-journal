@@ -66,6 +66,11 @@ def key_of(parts: list[dict]) -> str:
     return " ".join(p["value"] if isinstance(p["value"], str) else (p["value"][0] if p["value"] else "") for p in parts)
 
 
+def walked(parts: list[dict]) -> float:
+    steps = max((len(p["value"]) for p in parts if isinstance(p["value"], list)), default=1)
+    return steps * FLIP_EVERY if steps > 1 else 0.0
+
+
 def message(group: list[dict], closed: bool, now: float) -> dict:
     kind = group[0]["kind"]
     found = worked(group)
@@ -81,7 +86,7 @@ def message(group: list[dict], closed: bool, now: float) -> dict:
         "done": over,
         "for": int(ran),
         "clock": ran >= CLOCK_AFTER and not over,
-        "hold": HOLD if kind in HELD else 0.0,
+        "hold": max(HOLD if kind in HELD else 0.0, walked(said)),
         "lingers": LINGERS,
     }
 
