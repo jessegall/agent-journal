@@ -8,7 +8,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from controllers.types import Agents, Messages, Nudges, Pins, Questions, Todos, Works  # noqa: E402
 from engine import bus  # noqa: E402
-from engine.actors import BUSY, IDLE, STOPPED, WORKING, User  # noqa: E402
+from engine.actors import Agent, BUSY, IDLE, STOPPED, WORKING, User  # noqa: E402
 from engine.drivers import Driver  # noqa: E402
 from engine.engine import Engine, TYPING_HOLD  # noqa: E402
 from engine.record import Record  # noqa: E402
@@ -291,5 +291,17 @@ spoke.report = {"at": time.time(), "event": "PreToolUse", "status": WORKING}
 awake = Engine(record, spoke)
 awake.born = time.time() - WAIT_FOR_REPORT - 1
 check("a session that has reported is left alone", (awake.begin(), spoke.sent), ("", []))
+
+# A LINE OWED WHILE THE AGENT IS WORKING goes in as the CLI's own aside, not as the next turn's prompt
+record = Record(Path(tempfile.mkdtemp()) / ".journal", "main")
+driver = Fake(record)
+agent = Agent(record, driver)
+driver.__class__.ASIDE = "/btw {line}"
+driver.quiet_for = lambda: 0.2
+check("a line delivered while it works is an aside", agent.aside("2 new messages"), "/btw 2 new messages")
+driver.quiet_for = lambda: 9.0
+check("a line delivered at rest is said plainly", agent.aside("2 new messages"), "2 new messages")
+driver.__class__.ASIDE = ""
+check("a CLI with no aside always says it plainly", agent.aside("2 new messages"), "2 new messages")
 
 done()

@@ -12,9 +12,11 @@ ANSI = re.compile(rb"\x1b\[[0-?]*[ -/]*[@-~]|\x1b\][^\x07\x1b]*(?:\x07|\x1b\\)|\
 
 
 class Driver(ABC):
+    ASIDE = ""   # how this CLI takes a line while it is working, if it does
     STOP = b"\x1b"
     CLEAR_LINE = b"\x05\x15"
     name = ""
+    ASIDE = ""
     AUTO_ARGS = ()
     APPROVAL_FLAGS = frozenset()
     QUIET = 3.0
@@ -108,6 +110,8 @@ class Driver(ABC):
 
 class Claude(Driver):
     name = "claude"
+    ASIDE = "/btw {line}"
+    ASIDE = "/btw {line}"
     AUTO_ARGS = ("--permission-mode", "auto")
     APPROVAL_FLAGS = frozenset({"--permission-mode", "--dangerously-skip-permissions"})
 
