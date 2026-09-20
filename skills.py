@@ -5,6 +5,7 @@ from pathlib import Path
 
 import features
 from commands.cli import actions
+from controllers.base import COMMANDS
 from controllers.types import CONTROLLERS
 from providers import PROVIDERS
 
@@ -15,7 +16,8 @@ RETIRED = tuple(dict.fromkeys(home for cls in PROVIDERS.values() for home in cls
 
 
 def signature(controller: type, name: str) -> str:
-    params = list(inspect.signature(getattr(controller, name)).parameters.values())[1:]
+    fn = COMMANDS.get(controller.resource.type, {}).get(name) or getattr(controller, name)
+    params = list(inspect.signature(fn).parameters.values())[1:]
     words = []
     for p in params:
         if p.kind is inspect.Parameter.VAR_KEYWORD:
@@ -33,7 +35,7 @@ def reference() -> str:
         r = controller.resource
         out.append(f"### {type_} — {r.abstract_}")
         out.append(f"{r.help_}  Scope: {r.scope}. Seen by: {', '.join(r.notify) or 'nobody'}.")
-        for name in actions(controller):
+        for name in sorted({*actions(controller), *COMMANDS.get(type_, {})}):
             word = r.names.get(name, name)
             out.append(f"    journal {type_} {word} {signature(controller, name)}".rstrip())
         out.append("")

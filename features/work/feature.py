@@ -12,7 +12,7 @@ class WorkFeature(Feature):
     name = "work"
     title_ = "Work"
     abstract_ = "A write is refused until work is open; work started for a to-do is linked to it, its log is kept, twenty edits without an entry hold the writes, and parked work is set aside until the next log entry"
-    help_ = 'Start work with --todo=<n> to take a row; log each decision and turn with journal work log <n> "<message>" (work.log_after, 20 edits, without an entry holds the writes); end it with --todo to close the row with it. journal work park <n> "<why>" sets it aside with no clock — it stays open, stops being nudged and stops holding writes, and the next log entry picks it up.'
+    help_ = 'Take a row with journal todo start <n>, or start work of its own with journal work start "<title>"; log each decision and turn with journal work log <n> "<message>" (work.log_after, 20 edits without an entry holds the writes); end it with journal work end <n> --how "<what landed>", and --set todo=<n> closes the row with it. journal work park <n> "<why>" sets it aside with no clock — it stays open, stops being nudged and stops holding writes, and the next log entry picks it up. Park when you are stuck or when something else has to happen first; never to wait for an answer you could carry on without, because under auto the list stops.'
     trigger = {"on": trigger.WORKED}
     EDITS, LOG_AFTER = "edits", "log_after"
     log_after = 20
