@@ -22,7 +22,6 @@ class Codex(Provider):
     briefing_file = "AGENTS.md"
     skill_home = ".agents/skills"
     retired_skill_homes = (".codex/skills",)
-    usage_note = "Codex reports plan limits here after its next response."
 
     @classmethod
     def control_options(cls, current_model: str = "") -> dict:

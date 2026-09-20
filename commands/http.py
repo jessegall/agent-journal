@@ -22,7 +22,6 @@ from features.identity.color import identity, set_color
 from features.updates.feature import newer
 from features.sessioncontrol.control import force as force_session, options as control_options, request as control_session
 from features.skills.catalogue import SKILL, always, catalogue, load_now, skills
-from features.usage.usage import options as usage_options
 from controllers.types import Agents, Asks, CONTROLLERS, Environments
 from engine import bus, viewer
 from engine.manifest import manifest
@@ -218,11 +217,6 @@ def post_agent_hooks(req: Request) -> Reply:
         return Reply(200, {"hooks": provider.set_hooks(req.root.parent, req.body.get("hooks") or {})})
     except ValueError as e:
         return Reply(400, {"error": str(e)})
-
-
-@route("GET", "/api/agent-usage/{provider}")
-def get_agent_usage(req: Request) -> Reply:
-    return Reply(200, usage_options(req.params["provider"]))
 
 
 @route("GET", "/api/extension")

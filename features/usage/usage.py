@@ -4,11 +4,6 @@ from pathlib import Path
 from providers import PROVIDERS
 
 
-def options(provider: str) -> dict:
-    cls = PROVIDERS.get(provider)
-    return {"provider": provider, "note": cls.usage_note if cls else "This CLI does not expose plan usage."}
-
-
 def observe(provider: str, transcript: str, current: dict, now: float | None = None) -> dict | None:
     cls = PROVIDERS.get(provider)
     at = time.time() if now is None else now
