@@ -102,7 +102,7 @@ class Feature(ABC):
         return agent if self.due(record, agent) else None
 
     def standing(self, record, controller: type) -> list:
-        return [r for r in controller(record, actor=SYSTEM).all() if not r.completed and not r.data.get("parked")]
+        return [r for r in controller(record, actor=SYSTEM).all() if not r.completed]
 
     def due(self, record, agent) -> bool:
         if not self.trigger or not trigger.due(record, agent, self.name, self.trigger):

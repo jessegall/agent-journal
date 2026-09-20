@@ -1,4 +1,6 @@
+from controllers.types import Works
 from engine.drivers import DRIVERS
+from resources.base import SYSTEM
 
 
 QUESTION_REFUSAL = "Auto mode is on. Decide and continue without a blocking question. If only the user can supply the answer, ask with journal question ask or journal todo ask, end any waiting work, and continue with the next ready row."
@@ -13,14 +15,12 @@ ASK_AGAIN = 300.0
 STILL_THERE = "journal: you have been quiet for {minutes} minutes with work still open. Are you still working? Say where it stands, or carry on."
 
 
-def panicking(record, quiet: float, state: str) -> str:
-    from controllers.types import Works
+def still_there(record, quiet: float, state: str) -> str:
     from features.auto.feature import Auto
-    from resources.base import SYSTEM
     if not Auto.on_for(record) or quiet < QUIET_FOR or state in ("idle", "stopped"):
         return ""
-    open_work = [w for w in Works(record, actor=SYSTEM).all() if not w.completed and not w.parked]
-    return STILL_THERE.format(minutes=int(quiet // 60)) if open_work else ""
+    waiting = [w for w in Works(record, actor=SYSTEM).all() if not w.completed and not w.parked]
+    return STILL_THERE.format(minutes=int(quiet // 60)) if waiting else ""
 
 
 def launch_args(record, provider: str, args: list[str]) -> list[str]:

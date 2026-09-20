@@ -3,7 +3,7 @@ import time
 from controllers.types import Agents, Todos, Works
 from features import trigger
 from features.base import Feature, command, held, on, refuses
-from features.work.tracker import tracker
+from features.work import tracker
 from resources.base import SYSTEM
 from resources.types import Work
 
@@ -27,20 +27,16 @@ class WorkFeature(Feature):
     def park(self, works: Works, n: int, why: str):
         return works.update(n, parked=why)
 
-
-    def open_work(self, record) -> bool:
-        return any(not w.completed for w in Works(record, actor=SYSTEM).all())
+    def working(self, record) -> list:
+        return [w for w in self.standing(record, Works) if not w.parked]
 
     @on("work")
+    @on("agent.created")
     def gate(self, event, record) -> None:
-        if self.open_work(record):
+        if self.working(record):
             self.release(record)
         else:
             self.hold(record, 'nothing is open, so this write would not be filed: journal work start "<the work>" first')
-
-    @on("agent.created")
-    def gate_at_start(self, event, record) -> None:
-        self.gate(event, record)
 
     @refuses
     def held(self, provider, record, hook, session) -> str:
@@ -59,7 +55,7 @@ class WorkFeature(Feature):
         agent = self.agent(event, record)
         if agent.event != "PostToolUse":
             return
-        for work in self.standing(record, Works)[:1]:
+        for work in self.working(record)[:1]:
             tracker.record_files(agent, record, work)
 
     @on("work.created")
@@ -88,7 +84,7 @@ class WorkFeature(Feature):
         agent = self.agent_due(event, record)
         if not agent:
             return
-        for w in self.standing(record, Works)[:1]:
+        for w in self.working(record)[:1]:
             if w.sections:
                 self.nudge(record, agent, f"work {w.n} open")
             else:
@@ -97,7 +93,7 @@ class WorkFeature(Feature):
     @on("agent.updated")
     def edited(self, event, record) -> None:
         agent = self.agent(event, record)
-        work = self.standing(record, Works)[:1]
+        work = self.working(record)[:1]
         if not agent or not agent.wrote or not work:
             return
         edits = int(trigger.last(record, agent.title, self.name).get(self.EDITS) or 0) + 1

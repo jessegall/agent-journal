@@ -4,7 +4,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 import features  # noqa: E402
 from controllers.types import Questions, Todos, Works  # noqa: E402
-from features.auto.policy import QUIET_FOR, launch_args, panicking  # noqa: E402
+from features.auto.policy import QUIET_FOR, launch_args, still_there  # noqa: E402
 from features.auto.next import next, ready  # noqa: E402
 from resources.base import AGENT, USER  # noqa: E402
 from tests.features.kit import idle, nudges  # noqa: E402
@@ -67,10 +67,10 @@ quiet_record = fresh()
 quiet_record.features = {**quiet_record.features, "auto": True}
 Works(quiet_record, actor=AGENT).create("something still open")
 check("quiet for long enough, with work open and auto on, earns the question",
-      "still working" in panicking(quiet_record, QUIET_FOR + 60, "busy"), True)
+      "still working" in still_there(quiet_record, QUIET_FOR + 60, "busy"), True)
 check("not while it is answering, not while it is idle, and not before the time is up",
-      [panicking(quiet_record, QUIET_FOR + 60, "idle"), panicking(quiet_record, 5.0, "busy")], ["", ""])
+      [still_there(quiet_record, QUIET_FOR + 60, "idle"), still_there(quiet_record, 5.0, "busy")], ["", ""])
 quiet_record.features = {**quiet_record.features, "auto": False}
-check("and never with auto off", panicking(quiet_record, QUIET_FOR + 60, "busy"), "")
+check("and never with auto off", still_there(quiet_record, QUIET_FOR + 60, "busy"), "")
 
 done()

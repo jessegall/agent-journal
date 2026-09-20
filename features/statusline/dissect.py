@@ -35,7 +35,7 @@ def piece_of(one: dict, kind: str = "") -> dict:
     if roots:
         own = [p for p in parsed(what, spoken, filtered=False) if does(p, roots)]
         named = [p for p in own if a_path(p["args"])]
-        if named or own:
+        if own:
             return (named or own)[0]
     found = parsed(what, spoken)
     return found[0] if found else {}
@@ -47,7 +47,7 @@ def does(piece: dict, roots: tuple) -> bool:
 
 def git_of(piece: dict) -> str:
     root = (piece.get("root") or "").split(" ")
-    return GIT_WORDS.get(root[1]) if len(root) > 1 and root[0] == GIT else None
+    return GIT_WORDS.get(root[1], "") if len(root) > 1 and root[0] == GIT else ""
 
 
 def kind_of(one: dict) -> str:

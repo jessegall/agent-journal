@@ -1,5 +1,7 @@
 import re
 
+from engine.shell import without_scripts
+
 NOISE = {"cd", "echo", "sleep", "true", "false", "set", "export", "clear", "printf", "done", "fi", "for", "while",
          "until", "if", "elif", "case", "esac", "read", "shift", "wait", "exit"}
 LEAD = {"do", "then", "else"}
@@ -15,7 +17,6 @@ JOURNAL_VERB = re.compile(r"^journal(\.py)?$")
 CAPTURE = re.compile(r"^([A-Za-z_]\w*)=\$\((.*)\)$", re.S)
 ASSIGN = re.compile(r"^([A-Za-z_]\w*)=([^\s=]\S*)$")
 VARIABLE = re.compile(r"\$\{?([A-Za-z_]\w*)\}?")
-HEREDOC = re.compile(r"<<-?\s*['\"]?(\w+)")
 DROPPED = re.compile(r"^(-|[\"'$]|\d*[<>]|&|/dev/)")
 DIGITS = re.compile(r"^\d+$")
 
@@ -118,27 +119,6 @@ def piece_parts(piece: str, translate=None) -> dict:
     args = [x for i, x in enumerate(given)
             if not DROPPED.match(x) and not (DIGITS.match(x) and (given[i - 1] if i else "").startswith("-"))]
     return {"own": False, "root": " ".join(root), "args": args, "script": any(x.startswith("<<") for x in w)}
-
-
-def without_scripts(command: str) -> str:
-    kept, end, patch = [], "", False
-    for line in str(command or "").split("\n"):
-        if line.strip() == "*** Begin Patch":
-            patch = True
-            continue
-        if patch:
-            if line.strip() == "*** End Patch":
-                patch = False
-            continue
-        if end:
-            if line.strip() == end:
-                end = ""
-            continue
-        kept.append(line)
-        found = HEREDOC.search(line)
-        if found:
-            end = found.group(1)
-    return "\n".join(kept)
 
 
 def expanded(parts: list[str]) -> list[str]:

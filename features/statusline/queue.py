@@ -1,3 +1,4 @@
+from features.statusline.dissect import TOUCHED
 from features.statusline.shell import words
 
 GRAY, MUTED, RED, GREEN = "gray", "muted", "red", "green"
@@ -6,7 +7,6 @@ VERBS = {"writes": "editing", "reads": "reading", "deletes": "deleting", "tests"
          "searches": "searching", "views": "viewing", "watches": "watching", "fetches": "fetching", "dispatches": "dispatching", "loads": "loading"}
 NOUNS = {"reads": "files", "tests": "tests", "installs": "dependencies"}
 HELD = ("writes", "deletes", "tests")
-TOUCHED = ("writes", "deletes")
 USING = "using"
 PLUS, MINUS = "+", "-"
 COUNTS = ((PLUS, "added"), (MINUS, "removed"))
@@ -54,7 +54,7 @@ def verb_for(group: list[dict], kind: str) -> dict:
 
 
 def counted(group: list[dict]) -> list[dict]:
-    if group[0]["kind"] not in HELD[:2]:
+    if group[0]["kind"] not in TOUCHED:
         return []
     totals = {sign: sum(one["changed"].get(key, 0) for one in group) for sign, key in COUNTS}
     return [{"value": totals[sign], "prefix": sign, "increments": True, "color": color}
@@ -79,7 +79,6 @@ def walked(parts: list[dict]) -> float:
 
 def message(group: list[dict], closed: bool, now: float, behind: int = 0) -> dict:
     kind = group[0]["kind"]
-    last = group[-1]
     found = worked(group)
     noun = NOUNS.get(kind)
     said = [verb_for(group, kind), *(columns(found) if found else [{"value": noun, "color": MUTED}] if noun else [])]

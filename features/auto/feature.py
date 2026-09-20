@@ -22,7 +22,7 @@ class Auto(Feature):
         agent = self.agent_due(event, record)
         if not agent:
             return
-        if self.standing(record, Works):
+        if [w for w in self.standing(record, Works) if not w.parked]:
             return
         row = next(record)
         if row:
