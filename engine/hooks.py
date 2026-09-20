@@ -1,4 +1,5 @@
 import json
+import re
 import time
 from pathlib import Path
 
@@ -31,6 +32,14 @@ def log_command(root: Path, hook) -> None:
     target.parent.mkdir(parents=True, exist_ok=True)
     with target.open("a") as out:
         out.write(f"{time.time():.3f}\t{hook.command!r}\n")
+
+
+JOURNAL = re.compile(r"(?:\A|[|;&]|\$\()\s*(journal\s+[^|;&\n]+)")
+
+
+def alongside(hook) -> str:
+    ran = [found.group(1).strip() for found in JOURNAL.finditer(hook.command or "")]
+    return f" — and these were on the same line, so they did not run either: {'; '.join(ran)}" if ran else ""
 
 
 def whispered(record: Record, session: str) -> str:
@@ -90,7 +99,7 @@ def handle(provider, root: Path, env: str, raw: dict) -> dict:
                context=row.context or 0 if context is None else context)
     if hook.event == "PreToolUse":
         why = next((reason for policy in POLICIES if (reason := policy(provider, record, hook, row.title))), "")
-        return provider.response(blocked=why)
+        return provider.response(blocked=f"{why}{alongside(hook)}" if why else "")
     if hook.event == "SessionStart":
         return provider.response(hook.event, start(root, env, provider.compacted(hook)))
     if hook.event in ("PostToolUse", "UserPromptSubmit"):

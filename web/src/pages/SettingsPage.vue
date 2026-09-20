@@ -104,6 +104,14 @@ function marks(f, value) {
         .filter((n) => n > 0 && n <= 100);
     if (at.length) setTrigger(f, {unit: "percent", at});
 }
+const delivers = (how) => {
+    const set = (store.settings && store.settings.delivery) || {};
+    return how in set ? !!set[how] : true;
+};
+
+async function setDelivery(how, value) {
+    await saveSettings(route.value.env, {delivery: {...((store.settings && store.settings.delivery) || {}), [how]: value}});
+}
 const retention = computed(() => (store.settings && store.settings.keep) || {});
 const days = ref({});
 const answerHold = ref("");
@@ -227,6 +235,30 @@ async function remove(e) {
                         @change="saveAnswerHold"
                     />
                     <span class="unit">seconds</span>
+                </span>
+            </div>
+        </section>
+        <section class="group">
+            <header class="group-head">
+                <h2>Delivery</h2>
+                <p class="lead">How the engine gets a line to the agent. With both off it types into the terminal.</p>
+            </header>
+            <div class="row">
+                <span class="text">
+                    <span class="title">Use the channel</span>
+                    <span class="help">The agent reads it mid-turn, with nothing wrapped around it</span>
+                </span>
+                <span class="control">
+                    <Switch :on="delivers('channel')" @change="(v) => setDelivery('channel', v)" />
+                </span>
+            </div>
+            <div class="row">
+                <span class="text">
+                    <span class="title">Use the socket</span>
+                    <span class="help">Delivered without typing, but the agent's own client says another session sent it</span>
+                </span>
+                <span class="control">
+                    <Switch :on="delivers('socket')" @change="(v) => setDelivery('socket', v)" />
                 </span>
             </div>
         </section>

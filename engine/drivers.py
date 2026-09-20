@@ -23,6 +23,7 @@ class Driver(ABC):
     CLEAR_LINE = b"\x05\x15"
     name = ""
     ASIDE = ""
+    FROM = "The journal, for the user:"
     AUTO_ARGS = ()
     APPROVAL_FLAGS = frozenset()
     QUIET = 3.0
@@ -55,7 +56,15 @@ class Driver(ABC):
         line = " ".join(part.strip() for part in text.splitlines() if part.strip())
         return self.post(line) or self.type_in(line)
 
+    def posts(self) -> bool:
+        return bool(self.record.delivery.get("socket", True))
+
+    def posted(self, line: str) -> str:
+        return f"{self.FROM}\n{line}" if self.FROM else line
+
     def inbox(self) -> str:
+        if not self.posts():
+            return ""
         agents = Agents(self.record, actor=SYSTEM)
         try:
             mine = agents.by_session(self.session)
@@ -68,7 +77,7 @@ class Driver(ABC):
         path = self.inbox()
         if not path:
             return False
-        said = json.dumps({"type": "user", "message": {"role": "user", "content": line}}) + "\n"
+        said = json.dumps({"type": "user", "message": {"role": "user", "content": self.posted(line)}}) + "\n"
         try:
             with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as post:
                 post.settimeout(POST_WAIT)
@@ -167,7 +176,7 @@ class Claude(Driver):
     def handed(self, line: str) -> bool:
         runtime = self.record.root / "runtime"
         try:
-            if time.time() - (runtime / "channel.on").stat().st_mtime > self.LISTENING:
+            if not self.record.delivery.get("channel", True) or time.time() - (runtime / "channel.on").stat().st_mtime > self.LISTENING:
                 return False
             with (runtime / "channel.jsonl").open("a") as queue:
                 queue.write(json.dumps({"content": line, "meta": {"from": "journal"}}) + "\n")
