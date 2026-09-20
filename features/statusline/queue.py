@@ -74,15 +74,22 @@ def walked(parts: list[dict]) -> float:
     return steps * FLIP_EVERY if steps > 1 else 0.0
 
 
+def waited(kind: str, last: dict) -> list[dict]:
+    if kind in HELD[:2] and not last["done"]:
+        return [{"value": "", "pending": True, "color": MUTED}]
+    return [{"value": NOUNS[kind], "color": MUTED}] if kind in NOUNS else []
+
+
 def message(group: list[dict], closed: bool, now: float, waiting: int = 0) -> dict:
     kind = group[0]["kind"]
     found = worked(group)
-    noun = NOUNS.get(kind)
-    said = [verb_for(group, kind), *(columns(found) if found else [{"value": noun, "color": MUTED}] if noun else [])]
+    last = group[-1]
+    said = [verb_for(group, kind), *(columns(found) if found else waited(kind, last))]
     last = group[-1]
     over = closed or bool(last["done"])
     ran = max(0.0, (last["done"] if over else now) - last["at"])
     return {
+        "id": group[0]["at"],
         "key": key_of(said),
         "parts": [*said, *counted(group), *(outcome(last["result"]) if last["done"] and last["result"] else [])],
         "at": group[0]["at"],
@@ -91,6 +98,7 @@ def message(group: list[dict], closed: bool, now: float, waiting: int = 0) -> di
         "clock": ran >= CLOCK_AFTER and not over,
         "hold": DRAINING if waiting >= DRAIN else max(HOLD if kind in HELD else 0.0, walked(said)),
         "lingers": LINGERS,
+        "pending": any(p.get("pending") for p in said),
     }
 
 
