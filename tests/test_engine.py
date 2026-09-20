@@ -328,6 +328,9 @@ class Posting(Fake):
 
 posting = Posting(record)
 check("with no socket on the row the line is typed", (posting.send("nothing to post to"), posting.sent), (True, ["nothing to post to"]))
+elsewhere = Posting(record)
+elsewhere.session = "a-name-no-row-has"
+check("a driver whose own session has no row still finds the live one's socket", elsewhere.inbox(), "")
 Agents(record, actor=SYSTEM).saw(Agents(record, actor=SYSTEM).by_session("fake-1").n, {}, inbox=str(inbox))
 posting.sent.clear()
 check("with a socket the line is posted, not typed", (posting.send("over the socket"), posting.sent), (True, []))
