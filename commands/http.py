@@ -592,8 +592,9 @@ def get_all(req: Request) -> Reply:
     if not last:
         return Reply(200, [shaped(r, req.record()) for r in controller.all()])
     rows = [row for row in controller.summaries() if not row["deleted"]]
-    kept = [row for row in rows[:-last] if not row["completed"]] + rows[-last:]
-    return Reply(200, {"rows": [shaped(controller.load(row["n"]), req.record()) for row in kept], "more": len(rows) > last})
+    older = [row for row in rows[:-last] if not row["completed"]][-last:]
+    kept = older + rows[-last:]
+    return Reply(200, {"rows": [shaped(controller.load(row["n"]), req.record()) for row in kept], "more": len(rows) > len(kept)})
 
 
 @route("POST", "/api/{env}/{type}")

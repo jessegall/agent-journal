@@ -49,7 +49,7 @@ let topWatcher = null;
 
 async function older() {
     const s = scroller.value;
-    if (!ready.value || prepending || !s) return;
+    if (!ready.value || !settledOnce.value || prepending || !s) return;
     prepending = true;
     const fromBottom = s.scrollHeight - s.scrollTop;
     try {
