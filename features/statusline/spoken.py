@@ -26,19 +26,7 @@ ACTIONS = {
     "end": "ending",
     "done": "closing",
     "processed": "closing",
-    "answer": "answering",
     "add": "adding",
-    "ask": "asking",
-    "strike": "striking",
-    "retire": "retiring",
-    "archive": "archiving",
-    "acknowledge": "acknowledging",
-    "decide": "deciding",
-    "suggest": "suggesting",
-    "withdraw": "withdrawing",
-    "final": "settling",
-    "remove": "removing",
-    "prepare": "preparing",
     "process": "filing",
 }
 MANY = ("unread", "all", "search")
@@ -56,7 +44,7 @@ def ing(word: str) -> str:
 
 def kinds() -> list[dict]:
     from resources.types import TYPES
-    return [{"name": t.type, "title": t.title_, "names": t.names} for t in TYPES.values()]
+    return [{"name": t.type, "title": t.title_, "names": t.names, "says": t.says} for t in TYPES.values()]
 
 
 def spoken(said_words: list[str], types: list[dict] | None = None) -> str:
@@ -69,8 +57,9 @@ def spoken(said_words: list[str], types: list[dict] | None = None) -> str:
         return f"{action} {name}"
     if not said:
         return f"listing {kind['name']}s"
-    method = next((m for m, own in kind["names"].items() if own == said), "")
-    action = ACTIONS.get(said) or ACTIONS.get(method) or ing(said)
+    method = next((m for m, own in kind["names"].items() if own == said), "") or said
+    says = kind.get("says") or {}
+    action = says.get(method) or ACTIONS.get(said) or ACTIONS.get(method) or ing(said)
     name = f"{kind['name']}s" if said in MANY else kind["name"]
     n = next((x for x in said_words[2:] if DIGITS.match(x)), "")
     return f"{action} {name} {n}".strip()

@@ -71,6 +71,7 @@ class Resource:
     abstract_ = ""
     help_ = ""
     names: ClassVar[dict] = {}   # what this type calls a controller method: {"complete": "done", "create": "add"}
+    says: ClassVar[dict] = {}    # how the bar says a command on it: {"complete": "answering"}
     view: ClassVar[str] = SMALL  # how it is read: a small inspector, a wide one, or a document page
     nav: ClassVar[bool] = True   # whether it sits in the sidebar
     icon: ClassVar[str] = "dot"  # the viewer's glyph for it
