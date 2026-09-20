@@ -3,7 +3,7 @@ import {computed, onMounted, ref} from "vue";
 import {peek} from "../route.js";
 import {age, byRef, meta, store, word} from "../store.js";
 
-const WORDS = {created: "New", updated: "Updated", deleted: "Deleted", linked: "Linked", commented: "Commented on"};
+const WORDS = {created: "New", updated: "Updated", deleted: "Deleted", linked: "Linked", commented: "Commented on", reopened: "Reopened"};
 const settled = ref(false);
 onMounted(() => setTimeout(() => (settled.value = true), 400));
 const announced = (e) =>

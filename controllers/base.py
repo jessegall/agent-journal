@@ -131,6 +131,16 @@ class Controller:
         r.data.update(self._shaped(data))
         return self.save(r, "completed", how=how, **data)
 
+    def reopen(self, n: int, why: str) -> Resource:
+        r = self.load(n)
+        if r.deleted:
+            raise Refused(f"{self.type} {n} is archived; restore it before reopening it")
+        if not r.completed:
+            raise Refused(f"{self.type} {n} is not {self.named('complete')}")
+        r.completed = 0.0
+        r.outcome = ""
+        return self.save(r, "reopened", why=why)
+
     def named(self, method: str) -> str:
         return self.resource.names.get(method, method)
 
