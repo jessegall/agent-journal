@@ -16,6 +16,7 @@ from engine.stored import read_json, write_json
 
 PORTS = range(8420, 8440)
 HEARTBEAT = 2.0
+PORT_WAIT = 5.0
 URL = re.compile(r"http://127\.0\.0\.1:\d+/")
 
 
@@ -96,14 +97,30 @@ def marked(root: Path) -> str:
     return url[0] if url and answers(url[0], root, timeout=0.2) else ""
 
 
+def free(port: int) -> bool:
+    with socket.socket() as sock:
+        sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        try:
+            sock.bind(("127.0.0.1", port))
+        except OSError:
+            return False
+        return True
+
+
+def waited(port: int, seconds: float = PORT_WAIT) -> bool:
+    until = time.time() + seconds
+    while not free(port):
+        if time.time() >= until:
+            return False
+        time.sleep(0.1)
+    return True
+
+
 def available(prefer: int = 0) -> int:
-    for port in ([prefer] if prefer in PORTS else []) + list(PORTS):
-        with socket.socket() as sock:
-            sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-            try:
-                sock.bind(("127.0.0.1", port))
-            except OSError:
-                continue
+    if prefer in PORTS and waited(prefer):
+        return prefer
+    for port in PORTS:
+        if free(port):
             return port
     raise OSError("no viewer port available from 8420 through 8439")
 
@@ -116,10 +133,7 @@ def restart(root: Path, project: Path) -> str:
     was = last(root)
     if was.get("pid") and running(root):
         os.kill(int(was["pid"]), signal.SIGTERM)
-        for _ in range(50):
-            if not running(root):
-                break
-            time.sleep(0.1)
+        waited(int(was.get("port") or 0))
     return start(root, project)
 
 
