@@ -23,7 +23,8 @@ def region(rows: int) -> bytes:
 
 
 def release() -> bytes:
-    return f"{ESC}[r".encode()
+    wiped = "".join(f"{ESC}[{n};1H{ESC}[2K" for n in range(1, ROWS + 1))
+    return f"{ESC}[r{ESC}7{wiped}{ESC}8".encode()
 
 
 CURSOR = re.compile(rb"\x1b\[(\d*)(?:;(\d*))?([Hfdr])")
