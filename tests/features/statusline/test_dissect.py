@@ -62,9 +62,12 @@ check("a test run names its subject, never its runner", names(shell("python3 tes
 check("a write is only editing when a file really changed",
       (shell("echo hi > out.txt", effect="writes", files=["out.txt"])["kind"], shell("echo hi > out.txt", effect="writes", done=NOW + 1)["kind"]),
       ("writes", ""))
-check("a runner names the script it runs",
-      [names(shell(c)) for c in ("python3 tests/features/statusline/samples.py", "node build.js", 'python3 -c "print(1)"')],
-      [["python3 samples.py"], ["node build.js"], ["python3"]])
+check("a runner names the script it runs, and says script when the script is written inline",
+      [names(shell(c)) for c in ("python3 tests/features/statusline/samples.py", "node build.js", "python3 - <<'PY'\nx = 1\nPY")],
+      [["python3 samples.py"], ["node build.js"], ["python3 script"]])
+check("a command with a subcommand names it, whatever the command is",
+      [names(shell(c)) for c in ("commandments judge ../agent-journal", "curl -s http://x", "mkdir -p a/b")],
+      [["commandments judge"], ["curl"], ["mkdir"]])
 check("a plain shell command is named by its root and subcommand",
       (names(shell("npx prettier --write a.vue")), names(shell("cd web && npm run build"))), (["npx prettier"], ["npm run build"]))
 check("a journal command is named in its own words", names(shell("journal message read 7")), ["reading message 7"])
