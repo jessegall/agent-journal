@@ -14,7 +14,7 @@ from skills import LIBRARY, LINKED, publish  # noqa: E402
 
 PACKAGE = Path(__file__).resolve().parent
 PACKAGE_DIRS = ("commands", "controllers", "engine", "extension", "features", "migrations", "providers", "resources", "skills", "surfaces")
-PACKAGE_FILES = ("VERSION", "claude-status.sh", "hook.py", "hook.sh", "install.py", "journal.py", "serve.py", "skills.py")
+PACKAGE_FILES = ("VERSION", "channel.py", "claude-status.sh", "hook.py", "hook.sh", "install.py", "journal.py", "serve.py", "skills.py")
 PACKAGE_TREES = (*PACKAGE_DIRS, "web/dist")
 REPOSITORY = "https://github.com/jessegall/agent-journal"
 SRC = "src"

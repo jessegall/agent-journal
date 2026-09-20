@@ -84,8 +84,20 @@ class Claude(Provider):
         configured = self.setting(Path(hook.cwd or "."), "model")
         return LONG_WINDOW if LONG_MARK in f"{hook.model}{configured}" or used > WINDOW else WINDOW
 
+    def channel(self, project: Path, command: str) -> None:
+        f = project / ".mcp.json"
+        try:
+            known = json.loads(f.read_text())
+        except (OSError, ValueError):
+            known = {}
+        servers = known.get("mcpServers") or {}
+        said = command.split()
+        servers["journal"] = {"command": "python3", "args": [str(Path(said[1]).with_name("channel.py")), said[3]]}
+        f.write_text(json.dumps({**known, "mcpServers": servers}, indent=2) + "\n")
+
     def wire(self, project: Path, command: str) -> Path:
         wired = super().wire(project, command)
+        self.channel(project, command)
         settings = self.settings(project)
         if "statusLine" not in settings:
             script = Path(command.split()[1]).with_name(STATUS_SCRIPT)
