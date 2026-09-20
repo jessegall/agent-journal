@@ -83,11 +83,10 @@ let resetting = 0;
 let started = 0;
 let heldAt = 0;
 
-function flipped(words) {
+function flipping(words) {
     const items = (words.roll && words.roll.items) || [];
-    if (!items.length) return [];
-    const every = (words.roll.every || 0.5) * 1000;
-    return [{value: items[Math.floor(Date.now() / every) % items.length], kind: "argument"}];
+    if (!items.length) return {items: [], at: 0};
+    return {items, at: Math.floor(Date.now() / ((words.roll.every || 0.5) * 1000)) % items.length};
 }
 
 function fromJournal(run, words) {
@@ -95,9 +94,10 @@ function fromJournal(run, words) {
     return {
         key: words.key,
         text: words.key,
-        tokens: [...words.tokens, ...flipped(words)],
+        tokens: words.tokens,
         clock: words.clock ? clock(secs) : "",
         done: words.done,
+        ...flipping(words),
     };
 }
 
@@ -289,6 +289,13 @@ function apply(sum) {
                         {{ token.value }}
                     </span>
                 </TransitionGroup>
+                <template v-if="line.items && line.items.length">
+                    <span class="statusbar-run-roll">
+                        <template v-for="(item, i) in line.items" :key="item">
+                            <span :class="['statusbar-run-token', 'argument', 'statusbar-run-item', {on: i === line.at}]">{{ item }}</span>
+                        </template>
+                    </span>
+                </template>
                 <span class="statusbar-running-slot">
                     <Transition name="clock">
                         <span v-if="line.clock" class="statusbar-running-for">{{ line.clock }}</span>
@@ -324,6 +331,28 @@ function apply(sum) {
 .statusbar-running > .statusbar-run-line {
     grid-area: 1 / 1;
     justify-self: end;
+}
+
+.statusbar-run-roll {
+    display: inline-grid;
+    min-width: 0;
+    margin-left: 5px;
+}
+
+.statusbar-run-item {
+    grid-area: 1 / 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    visibility: hidden;
+    opacity: 0;
+    transition: opacity 160ms ease;
+}
+
+.statusbar-run-item.on {
+    visibility: visible;
+    opacity: 1;
 }
 
 .statusbar-run-line {
