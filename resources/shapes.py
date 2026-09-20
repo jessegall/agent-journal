@@ -1,9 +1,20 @@
 from typing import ClassVar
 
+import json
+
 from resources.base import Field, Refused, names
 
-TEXT, NUMBER, FLAG = "text", "number", "flag"
-KINDS = {TEXT: str, NUMBER: (int, float), FLAG: bool}
+TEXT, NUMBER, FLAG, LIST = "text", "number", "flag", "list"
+KINDS = {TEXT: str, NUMBER: (int, float), FLAG: bool, LIST: list}
+
+
+def typed(value):
+    if not isinstance(value, str):
+        return value
+    try:
+        return json.loads(value) if value[:1] in "[{" or value in ("true", "false") or value.lstrip("-").replace(".", "", 1).isdigit() else value
+    except ValueError:
+        return value
 
 
 def rows(**columns: str) -> dict:
@@ -64,7 +75,7 @@ class Options(Shape):
 
 
 class Reasoned(Shape):
-    keywords = Field(default=list)
+    keywords = Field(LIST, list)
     labels = {"brief": "Reasoning", "outcome": "Why struck"}
 
 

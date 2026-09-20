@@ -8,7 +8,7 @@ from pathlib import Path
 from engine.record import Record
 from resources.base import Refused, Resource, SECTION, check_abstract, check_title, titled
 from resources.pictures import dimensions
-from resources.shapes import Options, check, normalize_options
+from resources.shapes import Options, check, normalize_options, typed
 from engine.stored import read_json, write_json, write_text
 
 INDEX = "index.json"
@@ -105,7 +105,7 @@ class Controller:
         return r
 
     def set(self, n: int, key: str, value: str) -> Resource:
-        return self.update(n, **{key: value})
+        return self.update(n, **{key: typed(value)})
 
     def section(self, n: int, title: str, body: str) -> Resource:
         r = self.load(n)
