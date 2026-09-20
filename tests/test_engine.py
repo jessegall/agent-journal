@@ -318,6 +318,11 @@ check("a settings argument of the user's own is left alone", launching.command([
 check("and it loads the journal's own channel", launching.command([])[-2:], ["--dangerously-load-development-channels", "server:journal"])
 warned = b"WARNING: Loading development channels\n1. I am using this for local development\nEnter to confirm"
 check("the journal answers for the flag it passed", Claude.confirm(warned), b"\r")
+piecemeal = b""
+for chunk in (b"WARNING: Loading development", b" channels\n1. I am using this\n", b"Enter to confirm"):
+    piecemeal += chunk
+check("it answers a prompt drawn over several writes, not only one", Claude.confirm(piecemeal), b"\r")
+check("and not a half-drawn one", Claude.confirm(b"WARNING: Loading development channels\n"), b"")
 check("and answers nothing else", Claude.confirm(b"an ordinary line of output"), b"")
 check("a driver that never passes the flag never answers", Codex.confirm(warned), b"")
 check("with the channel not listening, a line is not handed to it", launching.handed("x"), False)
