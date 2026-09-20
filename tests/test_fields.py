@@ -1,36 +1,70 @@
-import sys
-from pathlib import Path
+from engine.record import Record
+from resources.shapes import LIST, TEXT, Field
+from resources.shapes import check as checked
+from resources.types import AgentRow, Plan, Todo, Tool
+from tests.conftest import fresh
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from engine.record import Record  # noqa: E402
-from resources.shapes import Field  # noqa: E402
-from resources.types import AgentRow, Plan, Todo, Tool  # noqa: E402
-from tests.kit import check, done, fresh  # noqa: E402
 
-check("a field read on the class is its own name — the one definition of the key", (Todo.priority, AgentRow.status, Plan.phases), ("priority", "status", "phases"))
-t = Todo(n=1, data={"priority": 150})
-check("a field read on a row is the value in its data", t.priority, 150)
-check("an undeclared value reads as the field's default", (t.assigned, Plan().current), (None, 1))
-p = Plan()
-p.phases.append({"title": "one"})
-check("a mutable default is made once and kept in the data, so appending to it sticks", p.data, {"phases": [{"title": "one"}]})
-p.status = "active"
-check("setting a field writes its data", p.data["status"], "active")
-check("a field with a spec is one of the type's typed fields; one without is not", (Tool.fields, "status" in Plan.fields), ({"entry": "text", "usage": "text"}, False))
-check("Field is the one declaration", isinstance(vars(Todo)["assigned"], Field), True)
+def test_a_field_read_on_the_class_is_its_own_name_the_one_definition_of_the_key():
+    assert (Todo.priority, AgentRow.status, Plan.phases) == ("priority", "status", "phases")
 
-record = fresh()
-check("a setting read on the class is its key", (Record.keep, Record.triggers), ("keep", "triggers"))
-check("an unset setting reads as its default", (record.keep, record.cleanup_read_at), ({}, 0))
-record.keep = {"report": 7}
-check("setting it writes settings.json and reads back", (record.keep, record.setting("keep")), ({"report": 7}, {"report": 7}))
 
-# A LIST FIELD TAKES PLAIN WORDS AS WELL AS JSON
-from resources.shapes import LIST, TEXT, check as checked  # noqa: E402
+def test_a_field_read_on_a_row_is_the_value_in_its_data():
+    t = Todo(n=1, data={"priority": 150})
+    assert t.priority == 150
 
-check("a list field takes comma-separated words", checked("keywords", LIST, "test, tests , suite"), ["test", "tests", "suite"])
-check("a list field still takes a list", checked("keywords", LIST, ["a", "b"]), ["a", "b"])
-check("one word is a list of one", checked("keywords", LIST, "test"), ["test"])
-check("a text field with commas stays one string", checked("title", TEXT, "a, b, c"), "a, b, c")
 
-done()
+def test_an_undeclared_value_reads_as_the_fields_default():
+    t = Todo(n=1, data={"priority": 150})
+    assert (t.assigned, Plan().current) == (None, 1)
+
+
+def test_a_mutable_default_is_made_once_and_kept_in_the_data_so_appending_to_it_sticks():
+    p = Plan()
+    p.phases.append({"title": "one"})
+    assert p.data == {"phases": [{"title": "one"}]}
+
+
+def test_setting_a_field_writes_its_data():
+    p = Plan()
+    p.status = "active"
+    assert p.data["status"] == "active"
+
+
+def test_a_field_with_a_spec_is_one_of_the_types_typed_fields_one_without_is_not():
+    assert (Tool.fields, "status" in Plan.fields) == ({"entry": "text", "usage": "text"}, False)
+
+
+def test_field_is_the_one_declaration():
+    assert isinstance(vars(Todo)["assigned"], Field) is True
+
+
+def test_a_setting_read_on_the_class_is_its_key():
+    assert (Record.keep, Record.triggers) == ("keep", "triggers")
+
+
+def test_an_unset_setting_reads_as_its_default():
+    record = fresh()
+    assert (record.keep, record.cleanup_read_at) == ({}, 0)
+
+
+def test_setting_it_writes_settings_json_and_reads_back():
+    record = fresh()
+    record.keep = {"report": 7}
+    assert (record.keep, record.setting("keep")) == ({"report": 7}, {"report": 7})
+
+
+def test_a_list_field_takes_comma_separated_words():
+    assert checked("keywords", LIST, "test, tests , suite") == ["test", "tests", "suite"]
+
+
+def test_a_list_field_still_takes_a_list():
+    assert checked("keywords", LIST, ["a", "b"]) == ["a", "b"]
+
+
+def test_one_word_is_a_list_of_one():
+    assert checked("keywords", LIST, "test") == ["test"]
+
+
+def test_a_text_field_with_commas_stays_one_string():
+    assert checked("title", TEXT, "a, b, c") == "a, b, c"
