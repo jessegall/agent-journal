@@ -83,7 +83,7 @@ const who = (e) => e.actor[0].toUpperCase() + e.actor.slice(1);
                     <span class="activity-age">{{ who(e) }} · {{ age(e.at) || "just now" }}</span>
                 </a>
             </TransitionGroup>
-            <div v-else class="activity-list">
+            <TransitionGroup v-else tag="div" class="activity-list" :name="settled ? 'act' : ''">
                 <div v-for="(change, i) in changes" :key="`${change.at}-${change.path}-${i}`" class="activity-row">
                     <span class="activity-text">
                         {{ change.path.split("/").pop() }}
@@ -96,8 +96,8 @@ const who = (e) => e.actor[0].toUpperCase() + e.actor.slice(1);
                         {{ age(change.at) || "just now" }}
                     </span>
                 </div>
-                <p v-if="!changes.length" class="activity-none">No file has changed yet.</p>
-            </div>
+                <p v-if="!changes.length" key="none" class="activity-none">No file has changed yet.</p>
+            </TransitionGroup>
         </div>
     </aside>
 </template>
