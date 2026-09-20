@@ -14,8 +14,9 @@ class WorkFeature(Feature):
     abstract_ = "A write is refused until work is open; work started for a to-do is linked to it, its log is kept, twenty edits without an entry hold the writes, and parked work is set aside until the next log entry"
     help_ = 'One piece of work is in hand at a time: starting another is refused until this one is ended or parked. Take a row with journal todo start <n>, or start work of its own with journal work start "<title>"; log each decision and turn with journal work log "<message>" (work.log_after, 20 edits without an entry holds the writes); end it with journal work end <n> --how "<what landed>", and --set todo=<n> closes the row with it. journal work park "<why>" sets it aside with no clock — it stays open, stops being nudged and stops holding writes, and journal work resume <n> picks it up again. Park when you are stuck or when something else has to happen first; never to wait for an answer you could carry on without, because under auto the list stops.'
     trigger = {"on": trigger.WORKED}
-    EDITS, LOG_AFTER = "edits", "log_after"
+    EDITS, LOG_AFTER, SAID_AFTER = "edits", "log_after", "said_after"
     log_after = 20
+    said_after = 10
 
     @command("work")
     def log(self, works: Works, text: str, n: int = 0):
@@ -115,6 +116,10 @@ class WorkFeature(Feature):
             return
         edits = int(trigger.last(record, agent.title, self.name).get(self.EDITS) or 0) + 1
         trigger.write(record, agent, self.name, edits=edits)
+        said = record.setting(self.name, {}).get(self.SAID_AFTER, self.said_after)
+        if said and edits % said == 0:
+            self.nudge(record, agent, f"work {work[0].n} in hand — {work[0].title}",
+                       brief="if this is not what you are doing, end it or park it and start the work you are in", private=True)
         if edits >= record.setting(self.name, {}).get(self.LOG_AFTER, self.log_after):
             self.hold(record, f'{edits} edits since work {work[0].n} was last logged: journal work log "<what was decided or done, and why>" before any other write')
 

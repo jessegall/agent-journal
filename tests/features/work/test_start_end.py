@@ -57,7 +57,7 @@ check("each entry is its own section", len(works.load(1).sections), 2)
 
 # EDITS without a log entry hold the writes until the work is logged
 record = fresh()
-record.set_setting("work", {"log_after": 3})
+record.set_setting("work", {"log_after": 3, "said_after": 2})
 works = Works(record, actor=AGENT)
 works.create("editing")
 report(record, "working", "PostToolUse", wrote=True)
@@ -69,6 +69,7 @@ report(record, "working", "PostToolUse", wrote=True)
 check("at the limit the writes are held, naming the command", "journal work log" in held(record, "claude-1"), True)
 works.action("log")("Three edits in")
 check("a log entry releases the hold", held(record, "claude-1"), "")
+check("the work in hand is whispered as the edits go by", [n for n in nudges(record) if "in hand" in n], ["work 1 in hand — editing"])
 report(record, "working", "PostToolUse", wrote=True)
 check("and the count starts over", held(record, "claude-1"), "")
 
