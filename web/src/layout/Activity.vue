@@ -41,12 +41,13 @@ const shown = computed(() =>
         .slice(0, 80)
 );
 const words = {created: "New", updated: "Updated", deleted: "Deleted", linked: "Linked", commented: "Commented on"};
-const heading = (e) =>
-    updated(e)
-        ? "Journal updated"
-        : e.action === "completed"
-          ? `${meta(e.type).title} ${word(e.type, "complete")}`
-          : `${words[e.action]} ${meta(e.type).title.toLowerCase()}`;
+function heading(e) {
+    if (updated(e)) return "Journal updated";
+    const own = (meta(e.type).shown || {})[e.action];
+    if (own) return own;
+    if (e.action === "completed") return `${meta(e.type).title} ${word(e.type, "complete")}`;
+    return `${words[e.action]} ${meta(e.type).title.toLowerCase()}`;
+}
 const title = (e) => (byRef(`${e.type}:${e.n}`) || {}).title || "";
 const who = (e) => e.actor[0].toUpperCase() + e.actor.slice(1);
 </script>

@@ -4,6 +4,7 @@ from resources.shapes import FLAG, TEXT, Field, Options, Ranked, Reasoned, Shape
 
 class Message(Shape, Resource):
     type = "message"
+    shown = {"created": "Message", "completed": "Message processed"}
     icon = "mail"
     idempotency = Field(TEXT)
     names = {"complete": "processed"}
@@ -14,6 +15,7 @@ class Message(Shape, Resource):
 
 class Todo(Ranked, Resource):
     type = "todo"
+    shown = {"created": "To-do added", "completed": "To-do done"}
     status = Field()
     work = Field()
     assigned = Field()
@@ -33,6 +35,7 @@ class Todo(Ranked, Resource):
 
 class Work(Traced, Resource):
     type = "work"
+    shown = {"created": "Work started", "updated": "Work logged", "completed": "Work ended"}
     says = {"create": "starting", "complete": "ending"}
     todo = Field()
     status = Field()
@@ -49,6 +52,7 @@ class Work(Traced, Resource):
 
 class Plan(Shape, Resource):
     type = "plan"
+    shown = {"completed": "Plan acknowledged"}
     says = {"complete": "acknowledging"}
     status = Field()
     phases = Field(default=list)
@@ -65,6 +69,7 @@ class Plan(Shape, Resource):
 
 class Doc(Shape, Resource):
     type = "doc"
+    shown = {"completed": "Doc settled"}
     says = {"complete": "settling"}
     status = Field()
     handed = "DOCS catalogued — read one before you re-investigate what it settles"
@@ -81,6 +86,7 @@ class Doc(Shape, Resource):
 
 class Report(Shape, Resource):
     type = "report"
+    shown = {"completed": "Report archived"}
     says = {"complete": "archiving"}
     attention = True
     icon = "report"
@@ -94,6 +100,7 @@ class Report(Shape, Resource):
 
 class Pin(Reasoned, Resource):
     type = "pin"
+    shown = {"completed": "Pin struck"}
     says = {"complete": "striking"}
     handed = "PINS on this environment"
     lent = False
@@ -107,6 +114,7 @@ class Pin(Reasoned, Resource):
 
 class Rule(Reasoned, Resource):
     type = "rule"
+    shown = {"completed": "Rule struck"}
     says = {"complete": "striking"}
     injected = Field(FLAG)
     handed = "RULES, in force on every environment"
@@ -122,6 +130,7 @@ class Rule(Reasoned, Resource):
 
 class Reminder(Shape, Resource):
     type = "reminder"
+    shown = {"completed": "Reminder retired"}
     says = {"complete": "retiring"}
     handed = "REMINDERS, said again at every stop"
     lent = False
@@ -135,6 +144,7 @@ class Reminder(Shape, Resource):
 
 class Question(Options, Resource):
     type = "question"
+    shown = {"created": "Question asked", "completed": "Question answered"}
     says = {"create": "asking", "complete": "answering"}
     attention = True
     nav = False
@@ -148,6 +158,7 @@ class Question(Options, Resource):
 
 class Suggestion(Options, Resource):
     type = "suggestion"
+    shown = {"created": "Suggestion made", "completed": "Suggestion decided"}
     says = {"create": "suggesting", "complete": "deciding", "delete": "withdrawing"}
     decision = Field()
     handed = "SUGGESTIONS waiting on the user"
@@ -162,6 +173,7 @@ class Suggestion(Options, Resource):
 
 class Comment(Shape, Resource):
     type = "comment"
+    shown = {"created": "Comment", "completed": "Comment done"}
     mirror = True
     icon = "bubble"
     names = {"complete": "done"}
@@ -223,6 +235,7 @@ class Notification(Shape, Resource):
 
 class Notice(Shape, Resource):
     type = "notice"
+    shown = {"created": "Notice", "completed": "Notice closed"}
     icon = "band"
     names = {"complete": "close"}
     title_ = "Notice"
@@ -257,6 +270,7 @@ class Tool(Shape, Resource):
 
 class Style(Reasoned, Resource):
     type = "style"
+    shown = {"completed": "Style struck"}
     says = {"complete": "striking"}
     lent = False
     icon = "brush"
@@ -283,6 +297,7 @@ class Connection(Shape, Resource):
 
 class Plugin(Shape, Resource):
     type = "plugin"
+    shown = {"created": "Plugin installed", "completed": "Plugin removed"}
     says = {"complete": "removing"}
     lent = False
     nav = False
@@ -305,6 +320,7 @@ class Plugin(Shape, Resource):
 
 class Environment(Shape, Resource):
     type = "environment"
+    shown = {"created": "Environment prepared", "completed": "Environment removed"}
     says = {"create": "preparing", "complete": "removing"}
     lent = False
     icon = "branch"
