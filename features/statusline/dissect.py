@@ -33,11 +33,11 @@ def piece_of(one: dict, kind: str = "") -> dict:
     what = one.get(COMMAND.what) or ""
     roots = {"searches": SEARCHERS, "reads": READERS}.get(kind)
     if roots:
-        own = [p for p in parsed(what, spoken, filtered=False) if does(p, roots)]
-        named = [p for p in own if a_path(p["args"])]
-        if own:
-            return (named or own)[0]
-    found = parsed(what, spoken)
+        doing = [p for p in parsed(what, spoken, filtered=False) if does(p, roots)]
+        named = [p for p in doing if a_path(p["args"])]
+        if doing:
+            return (named or doing)[0]
+    found = [p for p in parsed(what, spoken) if kind in ("", JOURNAL) or not p["own"]]
     return found[0] if found else {}
 
 

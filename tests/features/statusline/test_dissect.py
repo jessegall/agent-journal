@@ -76,6 +76,9 @@ check("a git command says what it does, not what it is called",
       [("git", ["tracking a.vue"]), ("git", ["pushing changes"]), ("git", ["switching branch"])])
 check("a git command that changed files is editing, and one that read them is reading",
       (shell("git mv a b", effect="writes", files=["b"])["kind"], shell("git log -3", effect="reads")["kind"]), ("writes", "reads"))
+check("a journal command's own words are only used under the journal's own verb",
+      (shell("for n in 1 2; do journal reaction read $n; done", effect="reads")["kind"],
+       names(shell("for n in 1 2; do journal reaction read $n; done", effect="reads"))), ("reads", []))
 check("a command that did not edit anything never takes the name of a file it was blamed for",
       (names(shell("journal message read 7", files=["web/dist/assets/index.js"])), names(shell("ls", effect="reads", files=["a.js"]))),
       (["reading message 7"], []))
