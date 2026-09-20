@@ -19,7 +19,7 @@ def main(argv: list[str]) -> int:
         raw = json.load(sys.stdin)
     except ValueError:
         return 0
-    features.load()
+    features.load(root)
     out = answer(provider, root, raw, os.getppid(), os.environ.get("JOURNAL_ENV", ""))
     if out:
         print(json.dumps(out))

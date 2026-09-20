@@ -307,7 +307,7 @@ def decided(ctx) -> str:
 def context(args: dict) -> dict:
     root = Path(args.pop("root")).resolve()
     migrations.run(root)
-    features.load()
+    features.load(root)
     sessions = Sessions(root)
     session = args.pop("session")
     env = args.pop("bound") or (sessions.environment(session) if session else "") or ((root / "runtime" / "env").read_text().strip() if (root / "runtime" / "env").is_file() else "main")

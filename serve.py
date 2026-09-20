@@ -77,7 +77,7 @@ class Handler(BaseHTTPRequestHandler):
 def serve(root: Path, port: int = 8430) -> ThreadingHTTPServer:
     Handler.root = root
     migrations.run(root)
-    features.load()
+    features.load(root)
     updates.announce(root)
     features.FEATURES["plugins"].host(root)
     server = ThreadingHTTPServer(("127.0.0.1", port), Handler)
