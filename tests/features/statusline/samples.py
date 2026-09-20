@@ -18,7 +18,7 @@ from tests.kit import check, done, fresh  # noqa: E402
 features.unload()
 features.load()
 
-SAMPLES = 500
+SAMPLES = 2000
 SESSION = "s"
 JOURNALS = ["journal message read 7", "journal todo add 12", "journal work log 3 x", "journal question answer 9"]
 SHELL = ["git commit -m x", "npm run build", "curl http://x", "npx prettier --write a.vue"]
