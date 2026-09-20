@@ -31,7 +31,10 @@ def said():
 check("before the next tool use nothing is said", said(), [])
 report(record, "working", "PreToolUse")
 check("the first tool use after reading names the message and says to answer it", said(), ["answer message 1 before you write anything"])
-check("and the writes wait at once: the user hears back before the work starts", "read and unanswered" in holds().get("status", ""), True)
+check("nothing is refused over it: it tells, it does not hold", holds().get("status", ""), "")
+for i in range(5):
+    report(record, "working", "PreToolUse")
+check("said three times in all and then it lets the agent be", len(said()), 3)
 Messages(record, actor=AGENT).reply(m.n, "halfway: the build is green, wiring the last route")
 report(record, "working", "PreToolUse")
 check("a reply settles it and lifts the hold", holds().get("status", ""), "")
