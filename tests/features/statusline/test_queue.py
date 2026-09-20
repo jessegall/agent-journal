@@ -95,7 +95,7 @@ check("editing names the files that actually changed, never the command that cha
       [["editing", ["a.vue", "t.py"]]])
 check("a write still running does not know its files yet, so it says so and waits",
       [(one["pending"], [p["value"] for p in one["parts"]]) for one in queue([shell("git mv a b", effect="writes")], NOW)],
-      [(True, ["editing", ""])])
+      [(True, ["editing", "…"])])
 check("once it knows them it is not waiting any more",
       [(one["pending"], [p["value"] for p in one["parts"]]) for one in queue([shell("git mv a b", effect="writes", done=NOW + 1, files=["b"])], NOW + 2)],
       [(False, ["editing", "b"])])
