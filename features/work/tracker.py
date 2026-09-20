@@ -36,7 +36,7 @@ def internal(record, project: Path) -> tuple[str, ...]:
             except ValueError:
                 continue
     homes = (LIBRARY, *(cls.skill_home for cls in PROVIDERS.values() if cls.skill_home))
-    return (*(f"{r}/" for r in dict.fromkeys(roots)), *(f"{h}/journal" for h in homes), *(f"{h}/style-" for h in homes))
+    return (*(f"{r}/" for r in dict.fromkeys(roots)), *(f"{h}/journal" for h in homes))
 
 
 def journals_own(path: str, marks: tuple[str, ...]) -> bool:
