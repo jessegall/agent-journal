@@ -370,7 +370,14 @@ check("with a socket the line is posted, not typed", (posting.send("over the soc
 conn, _ = listener.accept()
 posted.append(json.loads(conn.recv(4096).decode().strip()))
 conn.close()
-check("the frame names the line as a user message", posted[0], {"type": "user", "message": {"role": "user", "content": "over the socket"}})
+check("the frame names the line as a user message, and the line says who is writing",
+      posted[0], {"type": "user", "message": {"role": "user", "content": "The journal, for the user:\nover the socket"}})
+
+record.delivery = {"socket": False}
+posting.sent.clear()
+check("with the socket switched off the line is typed instead", (posting.send("typed instead"), posting.sent), (True, ["typed instead"]))
+record.delivery = {}
+posting.sent.clear()
 listener.close()
 inbox.unlink()
 check("a socket that has gone falls back to typing", (posting.send("after it closed"), posting.sent), (True, ["after it closed"]))

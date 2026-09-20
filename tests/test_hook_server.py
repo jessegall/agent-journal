@@ -125,5 +125,20 @@ p = subprocess.run(["sh", str(HERE / "hook.sh"), "claude", str(record.root)], in
                    env={k: v for k, v in os.environ.items() if k != ACTIVE_ENV})
 check("an inactive hook returns before asking anyone", (p.returncode, p.stdout), (0, ""))
 
+# A REFUSAL NAMES WHAT ELSE WAS ON THE LINE and did not run, so it can be run again
+from engine.hooks import alongside  # noqa: E402
+
+
+class Line:
+    def __init__(self, command):
+        self.command = command
+
+
+check("a journal command sharing the line with a refused write is named",
+      alongside(Line('git commit -m x && journal todo done 5 --how "done"')).endswith('journal todo done 5 --how "done"'), True)
+check("every one of them is named, in the order they were written",
+      alongside(Line('cd x && journal work log "a" ; journal todo create "b"')).endswith('journal work log "a"; journal todo create "b"'), True)
+check("a line with no journal command on it says nothing extra", (alongside(Line("echo hi")), alongside(Line(""))), ("", ""))
+
 server.shutdown()
 done()

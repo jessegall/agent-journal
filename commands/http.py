@@ -132,9 +132,18 @@ def represented(got, record=None):
     return shaped(got, record) if hasattr(got, "ref") else got
 
 
+def switches(record: Record) -> dict:
+    out = {}
+    for name, f in features.FEATURES.items():
+        out[name] = f.enabled(record)
+        for key, behaviour in f.behaviours.items():
+            out[f.keyed(key)] = bool(record.features.get(f.keyed(key), behaviour.default))
+    return out
+
+
 def settings(record: Record) -> dict:
-    return {Record.features: {name: f.enabled(record) for name, f in features.FEATURES.items()},
-            Record.triggers: record.triggers, Record.keep: record.keep,
+    return {Record.features: switches(record),
+            Record.triggers: record.triggers, Record.keep: record.keep, Record.delivery: record.delivery,
             Record.questions: {"hold": features.FEATURES["questions"].held_for(record)}}
 
 

@@ -39,8 +39,9 @@ class Record:
     agents = Setting(dict)
     skills = Setting(list)
     questions = Setting(dict)
+    delivery = Setting(dict)
     cleanup_read_at = Setting(0)
-    SETTINGS = ("features", "triggers", "keep", "batch", "inbox", "status", "agents", "skills", "questions")
+    SETTINGS = ("features", "triggers", "keep", "batch", "inbox", "status", "agents", "skills", "questions", "delivery")
 
     def __init__(self, root: Path, env: str, memo: bool = False):
         self.root = Path(root)
