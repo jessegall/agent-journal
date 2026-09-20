@@ -5,7 +5,6 @@ from pathlib import Path
 
 from controllers.types import Agents, Works
 from engine.stored import read_json, write_json
-from features.base import Feature, on
 from providers import PROVIDERS
 from providers.base import WRITES
 from resources.base import SYSTEM, names
@@ -88,54 +87,43 @@ def committed(project: Path, since: float) -> list[dict]:
     return [{COMMIT.sha: sha, COMMIT.subject: subject} for sha, _, subject in (line.partition("\x1f") for line in out.splitlines()) if sha]
 
 
-class Files(Feature):
-    name = "files"
-    title_ = "Files changed"
-    abstract_ = "Every file a piece of work changes, and every commit made during it, is recorded on the work"
-    help_ = "The work's opening tree is its baseline; after each tool use the tree is compared with the last one, and every file that differs from the baseline is kept with its exact line counts. A script's writes count too."
+class Tracker:
     TREES = ("base", "last")
 
-    @on("work.created")
     def begin(self, event, record) -> None:
         now = blobs(record, record.root.parent)
         for which in self.TREES:
             write_json(tree_file(record, event.n, which), now)
 
-    @on("work.completed")
     def end(self, event, record) -> None:
         for which in self.TREES:
             tree_file(record, event.n, which).unlink(missing_ok=True)
 
-    @on("agent.updated")
-    def record_files(self, event, record) -> None:
-        agent = self.agent(event, record)
-        if agent.event != "PostToolUse":
-            return
-        for work in self.standing(record, Works)[:1]:
-            project = record.root.parent
-            base, last, now = self.trees(record, work.n, project)
-            delta = {DELTA.edited: 0, DELTA.created: 0, DELTA.deleted: 0, DELTA.added: 0, DELTA.removed: 0}
-            files = {f[CHANGE.path]: f for f in work.changed}
-            touched, entries, at = [], [], time.time()
-            for path in sorted(p for p in set(last) | set(now) if last.get(p) != now.get(p)):
-                touched.append(path)
-                added, removed = numstat(project, last.get(path, EMPTY_BLOB), now.get(path, EMPTY_BLOB))
-                kind = DELTA.created if path not in last else DELTA.deleted if path not in now else DELTA.edited
-                entries.append({NOTE.at: at, NOTE.path: path, NOTE.kind: kind, NOTE.added: added, NOTE.removed: removed})
-                delta[kind] += 1
-                delta[DELTA.added] += added
-                delta[DELTA.removed] += removed
-                if base.get(path) == now.get(path):
-                    files.pop(path, None)
-                    continue
-                total_added, total_removed = numstat(project, base.get(path, EMPTY_BLOB), now.get(path, EMPTY_BLOB))
-                files[path] = {CHANGE.path: path, CHANGE.added: total_added, CHANGE.removed: total_removed, CHANGE.created: path not in base}
-            noted(record, entries)
-            commits = committed(project, work.created)
-            if list(files.values()) != work.changed or commits != work.commits:
-                Works(record, actor=SYSTEM).update(work.n, changed=list(files.values()), commits=commits)
-            if any(delta[k] for k in (DELTA.edited, DELTA.created, DELTA.deleted)):
-                self.count(record, agent.n, self.finished(agent.running), delta, touched)
+    def record_files(self, agent, record, work) -> None:
+        project = record.root.parent
+        base, last, now = self.trees(record, work.n, project)
+        delta = {DELTA.edited: 0, DELTA.created: 0, DELTA.deleted: 0, DELTA.added: 0, DELTA.removed: 0}
+        files = {f[CHANGE.path]: f for f in work.changed}
+        touched, entries, at = [], [], time.time()
+        for path in sorted(p for p in set(last) | set(now) if last.get(p) != now.get(p)):
+            touched.append(path)
+            added, removed = numstat(project, last.get(path, EMPTY_BLOB), now.get(path, EMPTY_BLOB))
+            kind = DELTA.created if path not in last else DELTA.deleted if path not in now else DELTA.edited
+            entries.append({NOTE.at: at, NOTE.path: path, NOTE.kind: kind, NOTE.added: added, NOTE.removed: removed})
+            delta[kind] += 1
+            delta[DELTA.added] += added
+            delta[DELTA.removed] += removed
+            if base.get(path) == now.get(path):
+                files.pop(path, None)
+                continue
+            total_added, total_removed = numstat(project, base.get(path, EMPTY_BLOB), now.get(path, EMPTY_BLOB))
+            files[path] = {CHANGE.path: path, CHANGE.added: total_added, CHANGE.removed: total_removed, CHANGE.created: path not in base}
+        noted(record, entries)
+        commits = committed(project, work.created)
+        if list(files.values()) != work.changed or commits != work.commits:
+            Works(record, actor=SYSTEM).update(work.n, changed=list(files.values()), commits=commits)
+        if any(delta[k] for k in (DELTA.edited, DELTA.created, DELTA.deleted)):
+            self.count(record, agent.n, self.finished(agent.running), delta, touched)
 
     def trees(self, record, n: int, project: Path) -> tuple[dict, dict, dict]:
         last_file = tree_file(record, n, "last")
@@ -173,3 +161,5 @@ class Files(Feature):
         agents.update(n, running={**running, RUNNING.before: edited} if late else edited,
                       commands=[{**one, COMMAND.files: edited[RUNNING.files], COMMAND.changed: edited[RUNNING.changed]}
                                 if one.get(COMMAND.at) == ran and self.could_write(one) else one for one in row.commands])
+
+tracker = Tracker()
