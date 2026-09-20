@@ -1,41 +1,52 @@
-import sys
-from pathlib import Path
+import pytest
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
-import features  # noqa: E402
-from controllers.types import Agents, Pins, Rules, Works  # noqa: E402
-from features.base import held  # noqa: E402
-from resources.base import AGENT, SYSTEM  # noqa: E402
-from tests.features.kit import nudges as all_nudges, report  # noqa: E402
-from tests.kit import check, done, fresh  # noqa: E402
+import features
+from controllers.types import Agents, Pins, Rules, Works
+from features.base import held
+from resources.base import AGENT, SYSTEM
+from tests.features.kit import nudges as all_nudges, report
+from tests.conftest import fresh
 
-features.unload()
-features.load()
-nudges = lambda r: [n for n in all_nudges(r) if n.startswith("context")]
 
-record = fresh()
-gate = lambda: held(record, "claude-1")
-Works(record, actor=AGENT).create("something open")
-report(record, "working", "PostToolUse", context=30)
-check("under the first mark: no hold, nothing said", (gate(), nudges(record)), ("", []))
-report(record, "working", "PostToolUse", context=52)
-check("50 crossed: a hold on writes and a nudge to decide", (gate(), nudges(record)), ('context 52% full — decide before any other write — journal pin, journal rule, or journal nothing "<why>"', ["context 52% full, decide"]))
-report(record, "working", "PostToolUse", context=60)
-check("between marks: the hold stands, nothing new said", (bool(gate()), len(nudges(record))), (True, 1))
-Pins(record, actor=AGENT).create("what a later reader needs")
-check("a pin decides it: released", gate(), "")
-report(record, "working", "PostToolUse", context=71)
-check("70 crossed: asked again", len(nudges(record)), 2)
-Rules(record, actor=AGENT).create("what binds everywhere")
-check("a rule decides it", gate(), "")
-report(record, "working", "PostToolUse", context=91)
-check("90 crossed", bool(gate()), True)
-agents = Agents(record, actor=SYSTEM)
-row = agents.by_session("claude-1")
-agents.update(row.n, **{**row.data, "decided": "nothing here worth pinning"})
-check("journal nothing decides it too", gate(), "")
-record.set_setting("triggers", {"context": {"at": [96], "unit": "percent"}})
-report(record, "working", "PostToolUse", context=95)
-check("the marks are a setting", bool(gate()), False)
+@pytest.fixture(autouse=True)
+def loaded_features():
+    features.unload()
+    features.load()
+    yield
+    features.unload()
 
-done()
+
+def nudges(record):
+    return [n for n in all_nudges(record) if n.startswith("context")]
+
+
+def test_a_context_mark_holds_writes_until_the_agent_pins_rules_or_says_nothing():
+    record = fresh()
+
+    def gate():
+        return held(record, "claude-1")
+
+    Works(record, actor=AGENT).create("something open")
+    report(record, "working", "PostToolUse", context=30)
+    assert (gate(), nudges(record)) == ("", []), "under the first mark: no hold, nothing said"
+    report(record, "working", "PostToolUse", context=52)
+    assert (gate(), nudges(record)) == \
+        ('context 52% full — decide before any other write — journal pin, journal rule, or journal nothing "<why>"', ["context 52% full, decide"]), \
+        "50 crossed: a hold on writes and a nudge to decide"
+    report(record, "working", "PostToolUse", context=60)
+    assert (bool(gate()), len(nudges(record))) == (True, 1), "between marks: the hold stands, nothing new said"
+    Pins(record, actor=AGENT).create("what a later reader needs")
+    assert gate() == "", "a pin decides it: released"
+    report(record, "working", "PostToolUse", context=71)
+    assert len(nudges(record)) == 2, "70 crossed: asked again"
+    Rules(record, actor=AGENT).create("what binds everywhere")
+    assert gate() == "", "a rule decides it"
+    report(record, "working", "PostToolUse", context=91)
+    assert bool(gate()) is True, "90 crossed"
+    agents = Agents(record, actor=SYSTEM)
+    row = agents.by_session("claude-1")
+    agents.update(row.n, **{**row.data, "decided": "nothing here worth pinning"})
+    assert gate() == "", "journal nothing decides it too"
+    record.set_setting("triggers", {"context": {"at": [96], "unit": "percent"}})
+    report(record, "working", "PostToolUse", context=95)
+    assert bool(gate()) is False, "the marks are a setting"
