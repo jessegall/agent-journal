@@ -2,41 +2,21 @@
 import {computed, nextTick, onUnmounted, ref, watch} from "vue";
 import {gists, gistTokens} from "../gist.js";
 import {spoken} from "../spoken.js";
-import {agent, types} from "../store.js";
+import {agent, store, types} from "../store.js";
 
 const STEP = 700;
 const HOLD_EDITS = 1000;
 const DELTA_LEAVE = 240;
 const SHOW_CLOCK_AFTER = 10;
 const COUNT_UP = 360;
-const CHANGING = ["writes", "deletes"];
-const SCOPED = [...CHANGING, "tests", "installs", "builds"];
-const EFFECTS = {
-    tests: [
-        {value: "running", kind: "command"},
-        {value: "tests", kind: "argument"},
-    ],
-    deletes: [
-        {value: "deleting", kind: "command"},
-        {value: "files", kind: "argument"},
-    ],
-    writes: [
-        {value: "editing", kind: "command"},
-        {value: "files", kind: "argument"},
-    ],
-    reads: [
-        {value: "reading", kind: "command"},
-        {value: "files", kind: "argument"},
-    ],
-    installs: [
-        {value: "installing", kind: "command"},
-        {value: "dependencies", kind: "argument"},
-    ],
-    builds: [{value: "building", kind: "command"}],
-};
+const told = computed(() => {
+    const run = data.value && data.value.running;
+    const bar = store.bar;
+    return run && bar && bar.at === run.at && bar.tokens && bar.tokens.length ? bar : null;
+});
 const data = computed(() => (agent.value && ["working", "compacting"].includes(agent.value.data.status) ? agent.value.data : null));
 const ticks = ref(0);
-const timer = setInterval(() => (ticks.value += 1), 1000);
+const timer = setInterval(() => (ticks.value += 1), 500);
 const seen = {at: 0};
 const pending = [];
 const rolling = ref(null);
@@ -57,11 +37,11 @@ function ownWords(c) {
 
 function said(c) {
     if (ownWords(c)) return [c.what];
-    return c.effect ? [EFFECTS[c.effect].map((t) => t.value).join(" ")] : gists(c.what, sentence);
+    return gists(c.what, sentence);
 }
 
 function tokensOf(c, text) {
-    return c.effect && !ownWords(c) ? EFFECTS[c.effect] : gistTokens(text);
+    return gistTokens(text);
 }
 
 function roll() {
@@ -103,25 +83,37 @@ let resetting = 0;
 let started = 0;
 let heldAt = 0;
 
-function outcome(result) {
-    return result.failed ? {value: `${result.failed} failed`, kind: "failed"} : {value: "passed", kind: "passed"};
+function flipped(words) {
+    const items = (words.roll && words.roll.items) || [];
+    if (!items.length) return [];
+    const every = (words.roll.every || 0.5) * 1000;
+    return [{value: items[Math.floor(Date.now() / every) % items.length], kind: "argument"}];
 }
 
-function lineFor(run) {
+function fromJournal(run, words) {
+    const secs = Math.floor((run.done || Date.now() / 1000) - run.at);
+    return {
+        key: words.key,
+        text: words.key,
+        tokens: [...words.tokens, ...flipped(words)],
+        clock: words.clock ? clock(secs) : "",
+        done: words.done,
+    };
+}
+
+function lineFor(run, words = null) {
     if (!run || !run.what) return null;
-    const scoped = SCOPED.includes(run.effect);
-    const step = run.step && !run.done && !scoped ? {what: run.step, tool: "Bash", effect: run.step_effect} : null;
+    if (words) return fromJournal(run, words);
+    const step = run.step && !run.done ? {what: run.step, tool: "Bash"} : null;
     const now = step && said(step).length ? step : run;
     const parts = said(now);
     if (!parts.length) return null;
-    const secs = Math.floor((run.done || Date.now() / 1000) - run.at);
     const text = parts[0];
-    const result = run.done && run.result ? outcome(run.result) : null;
     return {
         key: text,
         text,
-        tokens: [...tokensOf(now, text), ...(result ? [result] : [])],
-        clock: clock(secs),
+        tokens: tokensOf(now, text),
+        clock: clock(Math.floor((run.done || Date.now() / 1000) - run.at)),
         done: !!run.done,
     };
 }
@@ -130,7 +122,7 @@ const line = computed(() => {
     ticks.value;
     if (stay.value) return stay.value;
     if (rolling.value) return rolling.value;
-    return lineFor(data.value && data.value.running);
+    return lineFor(data.value && data.value.running, told.value);
 });
 
 const text = ref(null);
@@ -169,8 +161,17 @@ watch(
     }
 );
 
-function editing(run) {
-    return CHANGING.includes(run.effect);
+const holds = {at: 0, ms: 0, line: null};
+
+watch(told, (words) => {
+    if (!words || !words.hold) return;
+    holds.at = words.at;
+    holds.ms = words.hold * 1000;
+    holds.line = fromJournal(data.value.running, words);
+});
+
+function held(run) {
+    return run && holds.at === run.at && holds.ms > 0;
 }
 
 function total() {
@@ -194,7 +195,7 @@ function endStreak() {
         retire();
         apply(total());
         resetting = setTimeout(() => (stay.value = null), DELTA_LEAVE);
-    }, HOLD_EDITS);
+    }, holds.ms || HOLD_EDITS);
 }
 
 function counted(run) {
@@ -220,11 +221,11 @@ watch(
             started = run.at;
             clearTimeout(resetting);
             stay.value = null;
-            if (!editing(run) && before && editing(before)) {
+            if (!held(run) && held(before)) {
                 heldAt = before.at;
-                stay.value = lineFor(before);
+                stay.value = holds.line;
                 endStreak();
-            } else if (!editing(run)) {
+            } else if (!held(run)) {
                 retire();
             }
         } else if (late && stay.value && before.at === heldAt) {
