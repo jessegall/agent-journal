@@ -29,13 +29,20 @@ from engine.hooks import answer
 from engine.record import Record
 from engine.transcript import page
 from providers import PROVIDERS
-from resources.base import shown as shaped, USER, Refused, titled
+from features.format import formatted
+from resources.base import shown as given, USER, Refused, titled
 from resources.types import Ask
 from engine.stored import write_json
 
 WEB = Path(__file__).resolve().parents[1] / "web" / "dist"
+SAID = ("brief",)
 JSON = "application/json"
 PLAIN = "text/plain; charset=utf-8"
+
+
+def shaped(r, record=None) -> dict:
+    row = given(r)
+    return {**row, **{key: formatted(row.get(key), record) for key in SAID if row.get(key)}}
 
 
 @dataclass
