@@ -99,7 +99,9 @@ class Files(Feature):
             base, last, now = self.trees(record, work.n, project)
             delta = {DELTA.edited: 0, DELTA.created: 0, DELTA.deleted: 0, DELTA.added: 0, DELTA.removed: 0}
             files = {f[CHANGE.path]: f for f in work.changed}
-            for path in {p for p in set(last) | set(now) if last.get(p) != now.get(p)}:
+            touched = []
+            for path in sorted(p for p in set(last) | set(now) if last.get(p) != now.get(p)):
+                touched.append(path)
                 added, removed = numstat(project, last.get(path, EMPTY_BLOB), now.get(path, EMPTY_BLOB))
                 delta[DELTA.created if path not in last else DELTA.deleted if path not in now else DELTA.edited] += 1
                 delta[DELTA.added] += added
@@ -113,7 +115,7 @@ class Files(Feature):
             if list(files.values()) != work.changed or commits != work.commits:
                 Works(record, actor=SYSTEM).update(work.n, changed=list(files.values()), commits=commits)
             if any(delta[k] for k in (DELTA.edited, DELTA.created, DELTA.deleted)):
-                self.count(record, agent.n, self.finished(agent.running), delta)
+                self.count(record, agent.n, self.finished(agent.running), delta, touched)
 
     def trees(self, record, n: int, project: Path) -> tuple[dict, dict, dict]:
         last_file = tree_file(record, n, "last")
@@ -133,7 +135,7 @@ class Files(Feature):
         run = running if running.get(RUNNING.done) else running.get(RUNNING.before) or {}
         return run.get(RUNNING.at, 0)
 
-    def count(self, record, n: int, ran: float, delta: dict) -> None:
+    def count(self, record, n: int, ran: float, delta: dict, touched: list) -> None:
         agents = Agents(record, actor=SYSTEM)
         running = agents.load(n).running
         late = running.get(RUNNING.at) != ran
@@ -141,5 +143,7 @@ class Files(Feature):
         if not ran or edited.get(RUNNING.at) != ran:
             return
         prior = edited.get(RUNNING.changed) or {}
-        edited = {**edited, RUNNING.changed: {key: prior.get(key, 0) + value for key, value in delta.items()}}
+        known = edited.get(RUNNING.files) or []
+        edited = {**edited, RUNNING.changed: {key: prior.get(key, 0) + value for key, value in delta.items()},
+                  RUNNING.files: [*known, *(p for p in touched if p not in known)]}
         agents.update(n, running={**running, RUNNING.before: edited} if late else edited)
