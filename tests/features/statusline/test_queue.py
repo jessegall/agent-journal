@@ -116,6 +116,8 @@ check("a run that changed no lines says nothing about them", len(queue([edit("a.
 check("editing, deleting and a test run hold their message; nothing else does",
       [queue([shell("x", effect=e, files=["a.py"])], NOW)[0]["hold"] for e in ("writes", "deletes", "tests", "reads", "builds")],
       [HOLD, HOLD, HOLD, 0.0, 0.0])
+check("a message stays long enough to walk every name it has",
+      queue([edit("a.py"), edit("b.py", NOW + 1), edit("c.py", NOW + 2)], NOW)[0]["hold"], 3 * FLIP_EVERY)
 check("a message with nothing to replace it lingers", queue([shell("ls")], NOW)[0]["lingers"], LINGERS)
 check("only the last message of the queue can still be running",
       [one["done"] for one in queue([edit("a.vue"), shell("git commit -m x", NOW + 1)], NOW + 2)], [True, False])

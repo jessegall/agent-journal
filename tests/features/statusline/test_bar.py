@@ -40,7 +40,7 @@ got = json.loads(subprocess.run(["node", "--input-type=module", "-e", script], c
 
 # NOTHING IS SHOWN THAT HAS NOT BEEN SENT
 check("an empty queue shows nothing", got["nothing"], {"at": 0, "since": 0, "key": None})
-check("a client opening mid-flight joins at the newest message", got["joins"], {"at": 200, "since": 500, "key": "m200"})
+check("a client that has shown nothing starts at the oldest message it was sent", got["joins"], {"at": 100, "since": 500, "key": "m100"})
 check("a running message with nothing after it stays", got["staysWhileRunning"], {"at": 200, "since": 400, "key": "m200"})
 check("a running last message never ages out", got["aRunningLastOneNeverGoes"], "m200")
 

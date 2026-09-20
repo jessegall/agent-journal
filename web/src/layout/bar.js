@@ -5,7 +5,7 @@ export function shown(queue, state, now) {
     const held = queue.find((one) => one.at === state.at) || null;
     const later = queue.filter((one) => one.at > state.at);
     if (!held) {
-        const first = state.at ? later[0] : queue[queue.length - 1];
+        const first = later[0] || (state.at ? null : queue[0]);
         return first ? {at: first.at, since: now, message: first} : {at: state.at, since: state.since, message: null};
     }
     if (later.length && now - state.since >= (held.hold || 0)) return {at: later[0].at, since: now, message: later[0]};
