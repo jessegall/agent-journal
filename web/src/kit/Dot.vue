@@ -7,6 +7,7 @@ const COLOR = {
     done: "var(--progress)",
     asked: "var(--blocking)",
     open: "var(--open)",
+    struck: "var(--text-3)",
 };
 const props = defineProps({kind: {type: String, default: "open"}});
 const color = computed(() => COLOR[props.kind] || COLOR.open);

@@ -3,9 +3,10 @@ import {computed, inject, ref} from "vue";
 import {act} from "../api.js";
 import Btn from "../kit/Btn.vue";
 import CommentToggle from "./CommentToggle.vue";
+import Dot from "../kit/Dot.vue";
 import Icon from "../kit/Icon.vue";
 import {peek, route} from "../route.js";
-import {rows} from "../store.js";
+import {rows, state} from "../store.js";
 import Markdown from "./Markdown.vue";
 
 const props = defineProps({resource: Object});
@@ -99,7 +100,7 @@ async function run(action, body = {}) {
                     <template v-for="t in p.rows" :key="t.n">
                         <div class="line">
                             <button type="button" :class="['row', {completed: t.completed}]" @click="peek('todo', t.n)">
-                                <Icon :name="t.completed ? 'check' : 'circle'" :size="12" />
+                                <Dot :kind="state(t)" />
                                 <span class="rn">#{{ t.n }}</span>
                                 <span class="rt">{{ t.title }}</span>
                             </button>
