@@ -2,6 +2,7 @@
 import {computed, nextTick, onMounted, onUnmounted, ref, watch} from "vue";
 import {act, api, command} from "../api.js";
 import Btn from "../kit/Btn.vue";
+import Dialog from "../kit/Dialog.vue";
 import Icon from "../kit/Icon.vue";
 import Spinner from "../kit/Spinner.vue";
 import Switch from "../kit/Switch.vue";
@@ -167,9 +168,6 @@ function toggleLog(p) {
                             </template>
                         </div>
                     </template>
-                    <template v-if="readingOf(p)">
-                        <pre ref="tail" class="log">{{ logged || (busy === `${p.n}` ? "Starting…" : "Nothing is logged yet.") }}</pre>
-                    </template>
                     <footer class="acts">
                         <Btn small :disabled="busy === `${p.n}`" @click="plugin(p, 'upgrade', {yes: true})">
                             <Spinner v-if="busy === `${p.n}`" />
@@ -194,6 +192,11 @@ function toggleLog(p) {
                 <p class="none">No plugin is installed on this project.</p>
             </template>
         </div>
+        <template v-if="reading">
+            <Dialog :title="`${reading} log`" @close="reading = ''">
+                <pre ref="tail" class="log">{{ logged || (busy ? "Starting…" : "Nothing is logged yet.") }}</pre>
+            </Dialog>
+        </template>
     </section>
 </template>
 
@@ -355,12 +358,8 @@ h2 {
 
 .log {
     margin: 0;
-    max-height: 260px;
-    overflow: auto;
-    padding: 10px 12px;
-    border: 1px solid var(--border-2);
-    border-radius: 9px;
-    background: var(--code-bg);
+    padding: 0;
+    background: none;
     font-family: ui-monospace, "SF Mono", Menlo, monospace;
     font-size: 11.5px;
     white-space: pre-wrap;
