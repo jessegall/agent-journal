@@ -87,11 +87,20 @@ function lineFor(run, words = null) {
     return run && run.what && words ? fromJournal(run, words) : null;
 }
 
+const last = {line: null, at: 0, linger: 0};
+
 const line = computed(() => {
     ticks.value;
     if (stay.value) return stay.value;
     if (rolling.value) return rolling.value;
-    return lineFor(data.value && data.value.running, told.value);
+    const now = lineFor(data.value && data.value.running, told.value);
+    if (now) {
+        last.line = now;
+        last.at = Date.now();
+        last.linger = (told.value && told.value.linger ? told.value.linger : 0) * 1000;
+        return now;
+    }
+    return last.line && Date.now() - last.at < last.linger ? {...last.line, done: true} : null;
 });
 
 const text = ref(null);
