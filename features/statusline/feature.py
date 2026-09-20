@@ -7,7 +7,7 @@ GRAY, MUTED, RED, GREEN = "gray", "muted", "red", "green"
 RIGHT = "right"
 HELD = ("writes", "deletes", "tests")
 VERBS = {"writes": "editing", "reads": "reading", "deletes": "deleting", "tests": "testing",
-         "installs": "installing", "builds": "building", "": "running"}
+         "installs": "installing", "builds": "building", "journal": "journal", "": "running"}
 USING = "using"
 FILED = ("writes", "deletes")
 NOUNS = {"writes": "files", "reads": "files", "deletes": "files", "tests": "tests", "installs": "dependencies"}
@@ -105,18 +105,16 @@ def outcome(result: dict) -> list[dict]:
     return [{"value": f"{failed} failed", "color": RED} if failed else {"value": "passed", "color": GREEN}]
 
 
-def verb_for(run: dict, found: list[dict]) -> list[dict]:
+def verb_for(run: dict) -> list[dict]:
     kind = kind_of(run)
-    if kind == JOURNAL:
-        return []
     return [{"value": USING if not kind and by_hand(run) else VERBS[kind], "color": GRAY}]
 
 
 def parts_for(run: dict, commands: list) -> list[dict]:
     found = working(run, commands)
-    said = verb_for(run, found)
+    said = verb_for(run)
     if found:
-        return [*said, *flipping(found, not said)]
+        return [*said, *flipping(found, False)]
     noun = NOUNS.get(kind_of(run))
     return [*said, *([{"value": noun, "color": MUTED}] if noun else [])]
 
