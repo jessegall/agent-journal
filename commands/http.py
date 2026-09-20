@@ -19,7 +19,7 @@ from features.appointments.appoint import appoint, online
 from features.extension.package import archive as extension_archive, info as extension_info
 from features.hub.summary import summarize
 from features.identity.color import identity, set_color
-from features.updates.feature import newer
+from surfaces.updates import newer
 from features.sessioncontrol.control import force as force_session, options as control_options, request as control_session
 from features.skills.catalogue import SKILL, always, catalogue, load_now, skills
 from controllers.types import Agents, Asks, CONTROLLERS, Environments

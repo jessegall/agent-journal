@@ -4,7 +4,7 @@ from pathlib import Path
 
 from engine.hooks import EVENTS
 from features.base import REGISTRY
-from features.updates.feature import newer
+from surfaces.updates import newer
 from resources.base import ACTIONS, Refused
 from resources.types import TYPES
 

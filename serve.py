@@ -9,7 +9,8 @@ from pathlib import Path
 from urllib.parse import parse_qsl, urlparse
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-import features  # noqa: E402
+import features
+from surfaces import updates  # noqa: E402
 import migrations  # noqa: E402
 from commands.http import dispatch  # noqa: E402
 from engine.stop import asked  # noqa: E402
@@ -77,7 +78,7 @@ def serve(root: Path, port: int = 8430) -> ThreadingHTTPServer:
     Handler.root = root
     migrations.run(root)
     features.load()
-    features.FEATURES["updates"].announce(root)
+    updates.announce(root)
     features.FEATURES["plugins"].host(root)
     server = ThreadingHTTPServer(("127.0.0.1", port), Handler)
     remember(root, server.server_address[1])
