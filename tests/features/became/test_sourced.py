@@ -1,43 +1,47 @@
-import sys
-from pathlib import Path
+import pytest
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
-import features  # noqa: E402
-from controllers.types import Docs, Plans, Reports  # noqa: E402
-from resources.base import AGENT  # noqa: E402
-from tests.features.kit import nudges, report  # noqa: E402
-from tests.kit import check, done, fresh  # noqa: E402
+import features
+from controllers.types import Docs, Plans, Reports
+from resources.base import AGENT
+from tests.features.kit import nudges, report
+from tests.conftest import fresh
 
-features.unload()
-features.load()
+
+@pytest.fixture(autouse=True)
+def loaded_features():
+    features.unload()
+    features.load()
+    yield
+    features.unload()
 
 
 def said(record):
     return [n for n in nudges(record) if "cites nothing" in n]
 
 
-# A PLAN BUILT ON A REPORT the agent just read, citing none of it, is named back to it
-record = fresh()
-report(record, "working", "PreToolUse")
-source = Reports(record, actor=AGENT).create("what the audit found")
-Reports(record, actor=AGENT).read(source.n)
-plan = Plans(record, actor=AGENT).create("the plan it led to", goal="g")
-check("the plan cites nothing, so the agent is told which link to make", said(record), [f"plan {plan.n} cites nothing it was built on"])
-cited = Plans(record, actor=AGENT).create("one that cites its source", goal="g", about=source.ref)
-check("one that cites the report is left alone", [n for n in said(record) if f"plan {cited.n}" in n], [])
+def test_a_plan_built_on_a_report_just_read_citing_none_of_it_is_named_back_to_the_agent():
+    record = fresh()
+    report(record, "working", "PreToolUse")
+    source = Reports(record, actor=AGENT).create("what the audit found")
+    Reports(record, actor=AGENT).read(source.n)
+    plan = Plans(record, actor=AGENT).create("the plan it led to", goal="g")
+    assert said(record) == [f"plan {plan.n} cites nothing it was built on"], \
+        "the plan cites nothing, so the agent is told which link to make"
+    cited = Plans(record, actor=AGENT).create("one that cites its source", goal="g", about=source.ref)
+    assert [n for n in said(record) if f"plan {cited.n}" in n] == [], "one that cites the report is left alone"
 
-# NOTHING READ LATELY: nothing said
-quiet = fresh()
-report(quiet, "working", "PreToolUse")
-Plans(quiet, actor=AGENT).create("a plan out of nowhere", goal="g")
-check("with nothing read there is nothing to cite", said(quiet), [])
 
-# A DOC counts as a source too
-also = fresh()
-report(also, "working", "PreToolUse")
-doc = Docs(also, actor=AGENT).create("what stays true")
-Docs(also, actor=AGENT).read(doc.n)
-made = Plans(also, actor=AGENT).create("built on the doc", goal="g")
-check("a doc read just now is offered as the source", said(also), [f"plan {made.n} cites nothing it was built on"])
+def test_with_nothing_read_lately_nothing_is_said():
+    quiet = fresh()
+    report(quiet, "working", "PreToolUse")
+    Plans(quiet, actor=AGENT).create("a plan out of nowhere", goal="g")
+    assert said(quiet) == [], "with nothing read there is nothing to cite"
 
-done()
+
+def test_a_doc_counts_as_a_source_too():
+    also = fresh()
+    report(also, "working", "PreToolUse")
+    doc = Docs(also, actor=AGENT).create("what stays true")
+    Docs(also, actor=AGENT).read(doc.n)
+    made = Plans(also, actor=AGENT).create("built on the doc", goal="g")
+    assert said(also) == [f"plan {made.n} cites nothing it was built on"], "a doc read just now is offered as the source"
