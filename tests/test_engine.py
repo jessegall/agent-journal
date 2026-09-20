@@ -1,6 +1,7 @@
 import json
 import os
 import socket
+import subprocess
 import sys
 import tempfile
 import time
@@ -387,5 +388,10 @@ lost = Messages(record, actor=USER).create("one that never lands")
 engine.agent.pending_at -= 5
 engine.tick()
 check("a line that never left the input box stamps nothing", Messages(record, actor=SYSTEM).load(lost.n).data.get("delivered"), None)
+
+# THE SUPERVISOR RUNS AS A SCRIPT, from anywhere, so its imports must resolve without the package on the path
+ran = subprocess.run([sys.executable, str(Path(__file__).resolve().parents[1] / "engine" / "supervisor.py")],
+                     capture_output=True, text=True, cwd=tempfile.mkdtemp(), timeout=30)
+check("the supervisor imports cleanly when started as a script", ("ModuleNotFoundError" in ran.stderr, "sys.argv" in ran.stderr), (False, True))
 
 done()

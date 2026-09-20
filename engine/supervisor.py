@@ -11,10 +11,9 @@ import threading
 import time
 from pathlib import Path
 
-from engine.drivers import DRIVERS
-
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from engine import band  # noqa: E402
+from engine.drivers import DRIVERS  # noqa: E402
 from engine import viewer  # noqa: E402
 from engine.services import Manager  # noqa: E402
 from engine import watch  # noqa: E402
