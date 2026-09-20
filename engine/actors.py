@@ -87,11 +87,15 @@ class Agent(Actor):
         if not self.pending or (time.time() - self.pending_at < batch["quiet"] and len(self.pending) < batch["size"]):
             return ""
         line = render(self.pending, self.record)
-        self.driver.send(line)
+        self.driver.send(self.aside(line))
         for e in self.pending:
             self.notified(e)
         self.pending = []
         return line
+
+    def aside(self, line: str) -> str:
+        said = self.driver.ASIDE
+        return said.format(line=line) if said and self.state() != IDLE else line
 
     def state(self) -> str:
         if not self.driver.alive():
