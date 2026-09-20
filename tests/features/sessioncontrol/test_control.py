@@ -159,4 +159,16 @@ with patch.object(Codex, "configuration", classmethod(lambda cls, path=None: {"m
     check("an unknown id falls back to the configured model's efforts", [g["key"] for g in unknown["groups"]], ["model", "effort"])
     check("an effort choice for an unmatched model still builds the picker's keys", Codex.commands(models, "effort", "high", "something-else", "medium")[0], "/model")
 
+# A CONTROL THE CLI APPLIES AT ONCE never shows as waiting
+Sessions(root).write("claude-live", environment="main", seen=time.time())
+(root / "runtime" / "seat-claude-live.json").write_text(json.dumps(
+    {"at": time.time(), "agent": "claude", "state": "idle", "env": "main",
+     "report": {"title": "claude-live", "provider": "claude", "model": "opus"}}))
+claude_live = "claude-live"
+at_once = request(root, "main", claude_live, "effort", "high")
+check("an effort change on Claude is not queued and never shows as waiting",
+      (at_once["queued"], "effort" in Agents(record, actor=SYSTEM).by_session(claude_live).pending,
+       [n for n in Notices(record).all() if n.data.get("action") == "effort" and not n.completed]),
+      (False, False, []))
+
 done()

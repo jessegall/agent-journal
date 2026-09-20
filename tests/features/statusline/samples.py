@@ -145,8 +145,9 @@ for _ in range(SAMPLES):
     said = settled(last)
     if last["parts"][0]["value"] != verb:
         wrong_verb.append((verb, said))
-    if name and name not in said:
-        unnamed.append((name, said))
+    values = " ".join(str(v) for part in last["parts"] for v in (part["value"] if isinstance(part["value"], list) else [part["value"]]))
+    if name and name not in values:
+        unnamed.append((name, values))
     if any(p["color"] == GRAY for p in last["parts"][1:]) or last["parts"][0]["color"] != GRAY:
         grays.append(said)
     if last["parts"][0]["value"] == "reading" and any(p.get("increments") for p in last["parts"]):
