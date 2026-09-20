@@ -317,11 +317,10 @@ check("the journal launches claude ready to accept its messages",
 check("a settings argument of the user's own is left alone", launching.command(["--settings", "mine.json"])[-2:], ["--settings", "mine.json"])
 check("and it loads the journal's own channel", launching.command([])[-2:], ["--dangerously-load-development-channels", "server:journal"])
 warned = b"WARNING: Loading development channels\n1. I am using this for local development\nEnter to confirm"
+from engine.band import ROWS, release  # noqa: E402
 check("the journal answers for the flag it passed", Claude.confirm(warned), b"\r")
-piecemeal = b""
-for chunk in (b"WARNING: Loading development", b" channels\n1. I am using this\n", b"Enter to confirm"):
-    piecemeal += chunk
-check("it answers a prompt drawn over several writes, not only one", Claude.confirm(piecemeal), b"\r")
+check("it answers the prompt as the terminal really prints it, word by word with no spaces",
+      Claude.confirm(b"\x1b[31mWARNING:\x1b[0m\x1b[3;9HLoading\x1b[3;17Hdevelopment\x1b[3;29Hchannels\n\x1b[9;3HEnter\x1b[9;9Hto\x1b[9;12Hconfirm"), b"\r")
 check("and not a half-drawn one", Claude.confirm(b"WARNING: Loading development channels\n"), b"")
 check("and answers nothing else", Claude.confirm(b"an ordinary line of output"), b"")
 check("a driver that never passes the flag never answers", Codex.confirm(warned), b"")
@@ -398,5 +397,8 @@ check("a line that never left the input box stamps nothing", Messages(record, ac
 ran = subprocess.run([sys.executable, str(Path(__file__).resolve().parents[1] / "engine" / "supervisor.py")],
                      capture_output=True, text=True, cwd=tempfile.mkdtemp(), timeout=30)
 check("the supervisor imports cleanly when started as a script", ("ModuleNotFoundError" in ran.stderr, "sys.argv" in ran.stderr), (False, True))
+
+check("letting the band go clears the rows it painted, not only its region",
+      (release().startswith(b"\x1b[r"), all(f"[{n};1H".encode() in release() for n in range(1, ROWS + 1))), (True, True))
 
 done()
