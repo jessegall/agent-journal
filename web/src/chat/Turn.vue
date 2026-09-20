@@ -2,6 +2,7 @@
 import {computed, nextTick, onMounted, ref, watch} from "vue";
 import {act} from "../api.js";
 import Icon from "../kit/Icon.vue";
+import Buttons from "../resource/Buttons.vue";
 import OptionsPicker from "../resource/OptionsPicker.vue";
 import Attachments from "./Attachments.vue";
 import {peek, route} from "../route.js";
@@ -79,9 +80,9 @@ function worded(ref, word) {
 }
 
 const became = computed(() => {
-    const declared = props.turn.sections.flatMap((s) =>
-        s.body.split(/,\s*/).map((word) => ({part: s.title, word: worded(refOf(word), word), ref: refOf(word)}))
-    ).filter((b) => b.ref.type);
+    const declared = props.turn.sections
+        .flatMap((s) => s.body.split(/,\s*/).map((word) => ({part: s.title, word: worded(refOf(word), word), ref: refOf(word)})))
+        .filter((b) => b.ref.type);
     const named = new Set(declared.map((b) => `${b.ref.type}:${b.ref.n}`));
     const linked = props.turn.refs
         .filter((ref) => !named.has(ref) && refOf(ref).type)
@@ -127,7 +128,10 @@ async function drop() {
     </template>
     <template v-else>
         <div
-            :class="['thread-turn', {mine, ask: turn.type === 'question', lit: store.focus === turn.ref, 'comment-origin': resourceComment}]"
+            :class="[
+                'thread-turn',
+                {mine, ask: turn.type === 'question', lit: store.focus === turn.ref, 'comment-origin': resourceComment},
+            ]"
             :data-ref="turn.ref"
             @mouseleave="picking = false"
         >
@@ -151,7 +155,9 @@ async function drop() {
                     </div>
                 </template>
                 <template v-if="words.quote">
-                    <p class="thread-quote" title="Go to what this answers" @click.stop="resourceComment ? openComment() : toQuoted()">{{ words.quote }}</p>
+                    <p class="thread-quote" title="Go to what this answers" @click.stop="resourceComment ? openComment() : toQuoted()">
+                        {{ words.quote }}
+                    </p>
                 </template>
                 <div class="thread-text" @click="follow" v-html="html" />
                 <template v-if="turn.type === 'question'">
@@ -159,6 +165,9 @@ async function drop() {
                         <p class="thread-context">{{ turn.abstract }}</p>
                     </template>
                     <OptionsPicker :resource="turn" />
+                </template>
+                <template v-if="turn.type === 'message'">
+                    <Buttons :resource="turn" />
                 </template>
                 <template v-if="files.length">
                     <Attachments :resource="turn" @grew="emit('grew')" />
