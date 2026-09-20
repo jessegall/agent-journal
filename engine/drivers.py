@@ -7,7 +7,7 @@ from abc import ABC, abstractmethod
 from pathlib import Path
 
 from controllers.types import Agents
-from resources.base import SYSTEM
+from resources.base import Refused, SYSTEM
 
 ENTER_AFTER = 0.3
 POST_WAIT = 5.0
@@ -51,10 +51,13 @@ class Driver(ABC):
         return self.post(line) or self.type_in(line)
 
     def inbox(self) -> str:
+        agents = Agents(self.record, actor=SYSTEM)
         try:
-            return str(Agents(self.record, actor=SYSTEM).by_session(self.session).inbox or "")
-        except Exception:
-            return ""
+            mine = agents.by_session(self.session)
+        except Refused:
+            mine = None
+        live = agents.primary()
+        return str((mine and mine.inbox) or (live and live.inbox) or "")
 
     def post(self, line: str) -> bool:
         path = self.inbox()
