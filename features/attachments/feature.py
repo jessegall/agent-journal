@@ -28,7 +28,7 @@ class Attachments(Feature):
         if event.type not in CONTROLLERS or not name or not kind.startswith(("image/", "video/")):
             return
         row = CONTROLLERS[event.type](record, actor=SYSTEM).load(event.n)
-        if row.files.get(name):
+        if name not in row.files or row.files.get(name):
             return
         for agent in Agents(record, actor=SYSTEM).all():
             if agent.status and agent.status != "stopped":

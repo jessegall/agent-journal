@@ -40,8 +40,8 @@ check("the gradient bar keeps the centered brand and puts project left with cont
       ((180 - len("JOURNAL")) // 2, True, True, True))
 check("the bare URL sits centred under the brand, without a label or the model",
       (lines[1].strip(), "gpt-5" in lines[1], lines[1].index(url) + len(url) // 2 - (lines[0].index("JOURNAL") + len("JOURNAL") // 2) in (-1, 0, 1)), (url, False, True))
-check("a blank line, then the border, and nothing else",
-      (lines[2].strip(), set(lines[3].strip()), len(lines)), ("", {"─"}, ROWS))
+check("the border sits straight under the URL, with no blank line between",
+      (set(lines[2].strip()), len(lines)), ({"─"}, ROWS))
 (root / "runtime" / "seat-s-1.json").write_text(json.dumps({"env": "other", "state": "idle", "report": {"title": "real-session", "provider": "claude", "model": "sonnet", "context": 52, "running": {"what": "npm run build", "at": 1}, "started": 1}}))
 updated = [plain(line) for line in band.lines(180)]
 check("a redraw reads fresh seat data", ("other" in updated[0], "sonnet" in updated[0], "context 52%" in updated[0]), (True, False, True))
