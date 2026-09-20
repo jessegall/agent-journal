@@ -14,6 +14,7 @@ HOLD = 1.0
 LINGERS = 10.0
 CLOCK_AFTER = 10.0
 MOST = 12
+WAITING = "…"
 DRAIN = 10
 DRAINING = 0.25
 
@@ -76,7 +77,7 @@ def walked(parts: list[dict]) -> float:
 
 def waited(kind: str, last: dict) -> list[dict]:
     if kind in HELD[:2] and not last["done"]:
-        return [{"value": "", "pending": True, "color": MUTED}]
+        return [{"value": WAITING, "pending": True, "color": MUTED}]
     return [{"value": NOUNS[kind], "color": MUTED}] if kind in NOUNS else []
 
 
