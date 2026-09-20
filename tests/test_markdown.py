@@ -23,6 +23,7 @@ console.log(JSON.stringify({
         render("const a = 1;\\nconst b = a + 2;", ctx),
         render("I think it is fine, honestly. Nothing to do here.", ctx),
     ].map((h) => h.replace(/<span class="tok-\\w+">|<\\/span>/g, "")),
+    indented: render("Four stages:\\n\\n    1  RECORD    base.py     lands on the ring\\n           |\\n    2  DISSECT   dissect.py  taken apart\\n\\nlast word.", ctx).replace(/<span class="tok-\\w+">|<\\/span>/g, ""),
 }));
 '''
 got = json.loads(subprocess.run(["node", "--input-type=module", "-e", script], cwd=root, text=True, capture_output=True, check=True).stdout)
@@ -31,6 +32,9 @@ check("headings, emphasis, code spans, lists, fences and quotes", got["blocks"],
 check("a table, with the record's refs still turned into pills inside cells", got["table"],
       '<table><thead><tr><th>a</th><th>b</th></tr></thead><tbody><tr><td>1</td><td><a class="row-pill" href="#" data-peek="todo:75">to-do 75</a></td></tr></tbody></table>')
 check("a bare extension is no file; a name, a path and a dotfile are", [("file-pill" in h) for h in got["files"]], [False, False, True, True, True])
+check("an indented block is one code block, first line and all",
+      got["indented"],
+      '<p>Four stages:</p><pre class="chat-code"><code>    1  RECORD    base.py     lands on the ring\n           |\n    2  DISSECT   dissect.py  taken apart</code></pre><p>last word.</p>')
 check("plain lines are one paragraph with breaks", got["plain"], "<p>just text<br>next line</p>")
 check("console errors keep both collapse labels in the formatter output", (
     '<summary><span class="console-more-collapsed">Show all 2 errors</span><span class="console-more-expanded">Show fewer errors</span></summary>' in got["console"],

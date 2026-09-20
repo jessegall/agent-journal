@@ -13,6 +13,7 @@ const SIGNALS = [
     /\w\.\w+\(/,
     /^\s*[\w.]+\s*=\s*\S/,
 ];
+const INDENTED = /^\s{4,}\S/;
 const PROSE = /^[A-Z][a-z]+ [a-z]+ [a-z]+ [a-z]+/;
 const LANGS = [
     ["py", /\b(def |elif |None\b|self\b|lambda |print\(|import \w+$)|:\s*$/m],
@@ -66,6 +67,17 @@ function lift(text) {
             out.push(block(lines.slice(i + 1, stop), fence[2] ? fence[2].toLowerCase() : ""));
             i = stop + 1;
             continue;
+        }
+        if (INDENTED.test(lines[i])) {
+            let stop = i;
+            while (stop < lines.length && (INDENTED.test(lines[stop]) || !lines[stop].trim())) stop += 1;
+            while (stop > i && !lines[stop - 1].trim()) stop -= 1;
+            if (stop - i >= 2) {
+                flush();
+                out.push(block(lines.slice(i, stop), ""));
+                i = stop;
+                continue;
+            }
         }
         let end = i;
         while (end < lines.length && coded(lines[end]) >= (end === i ? 2 : 1)) end += 1;
