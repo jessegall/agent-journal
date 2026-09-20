@@ -1,6 +1,6 @@
 from controllers.types import ACTIVE, DONE, Plans, Todos, WAITING
 from features.auto.feature import Auto
-from features.base import Feature, on
+from features.base import Feature, event
 from features.plans.query import current_phase, running
 from resources.base import SYSTEM
 from resources.types import PHASE
@@ -16,7 +16,7 @@ class PlansFeature(Feature):
         todos = Todos(record, actor=SYSTEM)
         return all(todos.load(n).completed for n in phase[PHASE.todos])
 
-    @on("agent.updated")
+    @event("agent.updated")
     def pass_checkpoints(self, event, record) -> None:
         if not Auto.on_for(record):
             return
@@ -43,11 +43,11 @@ class PlansFeature(Feature):
             while self.step(record, plan):
                 pass
 
-    @on("todo.completed")
+    @event("todo.completed")
     def advance(self, event, record) -> None:
         self.catch_up(record)
 
-    @on("plan.updated")
-    @on("agent.updated")
+    @event("plan.updated")
+    @event("agent.updated")
     def settle(self, event, record) -> None:
         self.catch_up(record)

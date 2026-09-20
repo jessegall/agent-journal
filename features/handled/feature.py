@@ -1,5 +1,5 @@
 from controllers.types import CONTROLLERS, Messages
-from features.base import Feature, on
+from features.base import Feature, event
 from resources.base import AGENT, SECTION, SYSTEM
 
 
@@ -19,7 +19,7 @@ class Handled(Feature):
         paragraphs = self.paragraphs(message)
         return bool(paragraphs) and all(any(p in block or block in p for p in parts) for block in paragraphs)
 
-    @on("message.updated")
+    @event("message.updated")
     def processed(self, event, record) -> None:
         if not event.data.get("section"):
             return
@@ -30,8 +30,8 @@ class Handled(Feature):
         became = ", ".join(s[SECTION.body] for s in message.sections)
         messages.complete(message.n, how=f"every part became a record: {became}")
 
-    @on("comment.created")
-    @on("reaction.created")
+    @event("comment.created")
+    @event("reaction.created")
     def answered(self, event, record) -> None:
         if event.actor != AGENT:
             return

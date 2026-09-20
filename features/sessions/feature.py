@@ -1,5 +1,5 @@
 from engine.sessions import Sessions
-from features.base import Feature, on
+from features.base import Feature, event
 
 
 class Evicted(Feature):
@@ -8,7 +8,7 @@ class Evicted(Feature):
     abstract_ = "A session evicted from its environment is held from writing until it switches or claims"
     help_ = "Another session claimed the environment with a reason; the hold names it."
 
-    @on("agent.updated")
+    @event("agent.updated")
     def check(self, event, record) -> None:
         agent = self.agent(event, record)
         sessions = Sessions(record.root)

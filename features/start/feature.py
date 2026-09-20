@@ -1,6 +1,6 @@
 from engine.hooks import start_file
 from engine.queries import start_block
-from features.base import Feature, on
+from features.base import Feature, event
 
 
 HELLO = "journal: started on {env} — say what waits"
@@ -27,7 +27,7 @@ class Start(Feature):
     abstract_ = "What a session is handed at its start, kept current on every change to the record"
     help_ = "The hook hands the file over at SessionStart; nothing is computed inside the hook."
 
-    @on("*")
+    @event("*")
     def write(self, event, record) -> None:
         block = start_block(record)
         for compacted in (False, True):

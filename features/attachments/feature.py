@@ -2,7 +2,7 @@ import json
 import mimetypes
 
 from controllers.types import Agents, CONTROLLERS
-from features.base import Feature, on
+from features.base import Feature, event
 from resources.base import SYSTEM, titled
 
 
@@ -21,7 +21,7 @@ class Attachments(Feature):
         command = f"journal {type_} tag {row.n} {json.dumps(name)} \"<a few words describing what it shows>\""
         self.nudge(record, agent, titled(f"{type_} {row.n} file {name} needs tags"), f"inspect the attachment, then {command}")
 
-    @on("updated")
+    @event("updated")
     def tag_media(self, event, record) -> None:
         name = str(event.data.get("file") or "")
         kind = mimetypes.guess_type(name)[0] or ""
@@ -34,7 +34,7 @@ class Attachments(Feature):
             if agent.status and agent.status != "stopped":
                 self.tell(record, agent, event.type, row, name)
 
-    @on("agent.updated")
+    @event("agent.updated")
     def at_start(self, event, record) -> None:
         agent = Agents(record, actor=SYSTEM).load(event.n)
         if agent.event == "SessionStart":

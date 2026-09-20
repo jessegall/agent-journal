@@ -1,7 +1,7 @@
 import re
 
 from features import trigger
-from features.base import Feature, on
+from features.base import Feature, event
 from providers import PROVIDERS
 
 TAGS = ("[!discovery]", "[!correction]", "[!blocked]", "[!info]", "[!reply]")
@@ -32,7 +32,7 @@ class Tags(Feature):
     help_ = " ".join(TAGS)
     trigger = {"on": trigger.IDLE}
 
-    @on("agent.updated")
+    @event("agent.updated")
     def check(self, event, record) -> None:
         agent = self.agent_due(event, record)
         if not agent:

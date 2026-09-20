@@ -1,4 +1,4 @@
-from features.base import Feature, refuses
+from features.base import Feature, interceptor
 from features.law.policy import refusal
 
 
@@ -9,6 +9,6 @@ class Law(Feature):
     help_ = "Always on. The laws are handed to every session, kept in AGENTS.md and CLAUDE.md, and enforced before a subagent dispatch."
     fixed = True
 
-    @refuses
+    @interceptor
     def dispatch(self, provider, record, hook, session) -> str:
         return refusal(provider, hook.tool)

@@ -2,7 +2,7 @@ import time
 
 from controllers.types import CONTROLLERS
 from features import trigger
-from features.base import Feature, on
+from features.base import Feature, event
 from resources.base import SYSTEM, USER
 
 
@@ -15,7 +15,7 @@ class Retention(Feature):
     keep = {"report": 14, "todo": 7, "notification": 3}
     forgotten = ("notification",)
 
-    @on("agent.updated")
+    @event("agent.updated")
     def sweep(self, event, record) -> None:
         agent = self.agent_due(event, record)
         if not agent:

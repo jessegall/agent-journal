@@ -1,5 +1,5 @@
 from controllers.types import CONTROLLERS, Messages
-from features.base import Feature, on
+from features.base import Feature, event
 from resources.base import Refused, SYSTEM
 
 MOST = 5
@@ -47,8 +47,8 @@ class Buttons(Feature):
     abstract_ = "A message the agent writes can carry buttons, each running one journal command when the user presses it"
     help_ = "journal message create \"Ready when you are\" --set buttons='[{\"label\": \"Okay, start\", \"type\": \"plan\", \"n\": 3, \"action\": \"activate\"}]'. A button runs that one command and nothing else; a button naming a type or an action that does not exist is dropped when the message is written. A button goes once it is pressed, and the message says which one; \"again\": true keeps it there to be pressed as often as the user likes."
 
-    @on("message.created")
-    @on("message.updated")
+    @event("message.created")
+    @event("message.updated")
     def check(self, event, record) -> None:
         rows = Messages(record, actor=SYSTEM)
         given = (rows.load(event.n).data or {}).get("buttons")

@@ -1,5 +1,5 @@
 from features import trigger
-from features.base import Feature, on
+from features.base import Feature, event
 from resources.types import AgentRow
 
 
@@ -11,7 +11,7 @@ class Skills(Feature):
     trigger = {"every": 25, "unit": trigger.USES}
     windows = ("SessionStart", "PreCompact")
 
-    @on("agent.updated")
+    @event("agent.updated")
     def check(self, event, record) -> None:
         agent = self.agent(event, record)
         state = trigger.last(record, agent.title, self.name)

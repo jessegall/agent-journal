@@ -1,5 +1,5 @@
 from controllers.types import Messages
-from features.base import Feature, on
+from features.base import Feature, event
 from resources.base import AGENT, SYSTEM
 
 
@@ -14,7 +14,7 @@ class Became(Feature):
         held = [m for m in messages.all() if AGENT in m.seen and not m.completed and m.seen[0] != AGENT]
         return (messages, held[-1]) if held else (messages, None)
 
-    @on("created")
+    @event("created")
     def link(self, event, record) -> None:
         if event.actor != AGENT or event.type in ("message", "comment", "reaction", "nudge", "notification", "agent"):
             return

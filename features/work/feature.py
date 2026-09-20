@@ -2,7 +2,7 @@ import time
 
 from controllers.types import Agents, Todos, Works
 from features import trigger
-from features.base import Feature, command, held, on, refuses
+from features.base import Feature, command, event, held, interceptor
 from features.work import tracker
 from resources.base import Refused, SYSTEM
 from resources.types import Work
@@ -48,27 +48,27 @@ class WorkFeature(Feature):
     def working(self, record) -> list:
         return [w for w in self.standing(record, Works) if not w.parked]
 
-    @on("work")
-    @on("agent.created")
+    @event("work")
+    @event("agent.created")
     def gate(self, event, record) -> None:
         if self.working(record):
             self.release(record)
         else:
             self.hold(record, 'nothing is open, so this write would not be filed: journal work start "<the work>" first')
 
-    @refuses
+    @interceptor
     def held(self, provider, record, hook, session) -> str:
         return held(record, session) if provider.writes(hook) else ""
 
-    @on("work.created")
+    @event("work.created")
     def opened(self, event, record) -> None:
         tracker.begin(event, record)
 
-    @on("work.completed")
+    @event("work.completed")
     def closed(self, event, record) -> None:
         tracker.end(event, record)
 
-    @on("agent.updated")
+    @event("agent.updated")
     def tracked(self, event, record) -> None:
         agent = self.agent(event, record)
         if agent.event != "PostToolUse":
@@ -76,7 +76,7 @@ class WorkFeature(Feature):
         for work in self.working(record)[:1]:
             tracker.record_files(agent, record, work)
 
-    @on("work.created")
+    @event("work.created")
     def started(self, event, record) -> None:
         works = Works(record, actor=SYSTEM)
         n = works.load(event.n).todo
@@ -87,7 +87,7 @@ class WorkFeature(Feature):
         works.link(event.n, todo.ref)
         todos.update(todo.n, status="started", work=event.n)
 
-    @on("work.completed")
+    @event("work.completed")
     def ended(self, event, record) -> None:
         work = Works(record, actor=SYSTEM).load(event.n)
         n = work.todo
@@ -97,7 +97,7 @@ class WorkFeature(Feature):
         if not todos.load(int(n)).completed:
             todos.complete(int(n), how=f"work {work.n} ended")
 
-    @on("agent.updated")
+    @event("agent.updated")
     def remind(self, event, record) -> None:
         agent = self.agent_due(event, record)
         if not agent:
@@ -108,7 +108,7 @@ class WorkFeature(Feature):
             else:
                 self.nudge(record, agent, f"work {w.n} open, nothing logged", brief=f'journal work log {w.n} "<what was decided or done, and why>"')
 
-    @on("agent.updated")
+    @event("agent.updated")
     def edited(self, event, record) -> None:
         agent = self.agent(event, record)
         work = self.working(record)[:1]
@@ -123,7 +123,7 @@ class WorkFeature(Feature):
         if edits >= record.setting(self.name, {}).get(self.LOG_AFTER, self.log_after):
             self.hold(record, f'{edits} edits since work {work[0].n} was last logged: journal work log "<what was decided or done, and why>" before any other write')
 
-    @on("work.updated")
+    @event("work.updated")
     def logged(self, event, record) -> None:
         if not event.data.get("section"):
             return

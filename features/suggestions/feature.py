@@ -1,5 +1,5 @@
 from controllers.types import ACCEPT, ADJUST, Suggestions, Todos
-from features.base import Feature, on
+from features.base import Feature, event
 from resources.base import SYSTEM
 
 
@@ -9,7 +9,7 @@ class SuggestionsDecided(Feature):
     abstract_ = "An accepted or adjusted suggestion becomes a to-do that cites it; a decline files nothing"
     help_ = "The to-do carries the suggestion's title and brief — or the user's own words when adjusted — and auto mode works it like any other."
 
-    @on("suggestion.completed")
+    @event("suggestion.completed")
     def filed(self, event, record) -> None:
         suggestions = Suggestions(record, actor=SYSTEM)
         s = suggestions.load(event.n)

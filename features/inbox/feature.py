@@ -1,6 +1,6 @@
 from controllers.types import Agents, Messages
 from features import trigger
-from features.base import Feature, on
+from features.base import Feature, event
 from resources.base import AGENT, SYSTEM
 
 
@@ -16,12 +16,12 @@ class Inbox(Feature):
     def unread(self, record) -> list:
         return Messages(record, actor=SYSTEM).unread(AGENT)
 
-    @on("message.created")
+    @event("message.created")
     def arrived(self, event, record) -> None:
         for agent in Agents(record, actor=SYSTEM).all():
             trigger.write(record, agent, self.name, uses=int(agent.uses or 0) - self.trigger[trigger.TRIGGER.every])
 
-    @on("agent.updated")
+    @event("agent.updated")
     def remind(self, event, record) -> None:
         agent = self.agent(event, record)
         if not self.unread(record):
