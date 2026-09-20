@@ -42,7 +42,7 @@ watch(
         for (const c of ring) {
             if (c.at <= seen.at) continue;
             seen.at = c.at;
-            if (!first) pending.push({key: c.key, text: c.key, tokens: c.tokens});
+            if (!first) pending.push({key: c.key, text: c.key, parts: (c.parts || []).map(shownPart)});
         }
         if (first && !seen.at) seen.at = 1;
         if (pending.length && !rolls) roll();
@@ -65,21 +65,21 @@ let resetting = 0;
 let started = 0;
 let heldAt = 0;
 
-function flipping(words) {
-    const items = (words.roll && words.roll.items) || [];
-    if (!items.length) return {items: [], at: 0};
-    return {items, at: Math.floor(Date.now() / ((words.roll.every || 0.5) * 1000)) % items.length};
+function shownPart(part) {
+    const values = Array.isArray(part.value) ? part.value : [part.value];
+    const at = values.length > 1 ? Math.floor(Date.now() / ((part.duration || 0.5) * 1000)) % values.length : 0;
+    return {values, at, value: values[at], color: part.color || "muted"};
 }
 
 function fromJournal(run, words) {
     const secs = Math.floor((run.done || Date.now() / 1000) - run.at);
+    const parts = (words.parts || []).map(shownPart);
     return {
         key: words.key,
-        text: words.key,
-        tokens: words.tokens,
+        text: parts.map((p) => p.value).join(" "),
+        parts,
         clock: words.clock ? clock(secs) : "",
         done: words.done,
-        ...flipping(words),
     };
 }
 
@@ -112,7 +112,7 @@ function settledWidth() {
 }
 
 watch(
-    () => (line.value ? line.value.tokens.map((t, i) => `${i}-${t.value}`) : []),
+    () => (line.value ? line.value.parts.map((p, i) => `${i}-${p.value}`) : []),
     async (now, before) => {
         const el = text.value && text.value.$el;
         if (!el || !now.length || !before.length) return;
@@ -251,20 +251,20 @@ function apply(sum) {
                     @before-leave="pinned"
                 >
                     <span
-                        v-for="(token, i) in line.tokens"
-                        :key="`${i}-${token.value}`"
-                        :class="['statusbar-run-token', token.kind, {fresh: fresh.has(`${i}-${token.value}`)}]"
+                        v-for="(part, i) in line.parts"
+                        :key="`${i}-${part.value}`"
+                        :class="['statusbar-run-token', part.color, {fresh: fresh.has(`${i}-${part.value}`)}]"
                     >
-                        {{ token.value }}
+                        <template v-if="part.values.length > 1">
+                            <span class="statusbar-run-roll">
+                                <template v-for="(one, j) in part.values" :key="one">
+                                    <span :class="['statusbar-run-item', {on: j === part.at}]">{{ one }}</span>
+                                </template>
+                            </span>
+                        </template>
+                        <template v-else>{{ part.value }}</template>
                     </span>
                 </TransitionGroup>
-                <template v-if="line.items && line.items.length">
-                    <span class="statusbar-run-roll">
-                        <template v-for="(item, i) in line.items" :key="item">
-                            <span :class="['statusbar-run-token', 'argument', 'statusbar-run-item', {on: i === line.at}]">{{ item }}</span>
-                        </template>
-                    </span>
-                </template>
                 <span class="statusbar-running-slot">
                     <Transition name="clock">
                         <span v-if="line.clock" class="statusbar-running-for">{{ line.clock }}</span>
@@ -373,12 +373,12 @@ function apply(sum) {
     transform: translateY(-10px);
 }
 
-.statusbar-run-token.command {
+.statusbar-run-token.gray {
     color: var(--text-2);
     font-weight: 500;
 }
 
-.statusbar-run-token.argument {
+.statusbar-run-token.muted {
     flex: 0 1 auto;
     min-width: 0;
     overflow: hidden;
@@ -524,11 +524,11 @@ function apply(sum) {
     opacity: 0;
 }
 
-.statusbar-run-token.passed {
+.statusbar-run-token.green {
     color: var(--created);
 }
 
-.statusbar-run-token.failed {
+.statusbar-run-token.red {
     color: var(--danger);
 }
 </style>

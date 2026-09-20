@@ -8,6 +8,7 @@ SCOPED = (*HELD, "installs", "builds", "reads")
 VERBS = {"tests": "running", "deletes": "deleting", "writes": "editing", "reads": "reading",
          "installs": "installing", "builds": "building"}
 NOUNS = {"tests": "tests", "deletes": "files", "writes": "files", "reads": "files", "installs": "dependencies"}
+GRAY, MUTED, RED, GREEN = "gray", "muted", "red", "green"
 ROLL_EVERY = 0.5
 HOLD = 1.0
 CLOCK_AFTER = 10.0
@@ -23,14 +24,18 @@ def own_words(run: dict) -> bool:
     return bool(run.get(RUNNING.tool)) and run.get(RUNNING.tool) != "Bash"
 
 
+def parted(tokens: list[dict]) -> list[dict]:
+    return [{"value": t["value"], "color": GRAY if t["kind"] == "command" else MUTED} for t in tokens]
+
+
 def gisted(run: dict) -> list[dict]:
     what = run.get(RUNNING.what) or ""
-    return gist_tokens(what if own_words(run) else gist(what, spoken))
+    return parted(gist_tokens(what if own_words(run) else gist(what, spoken)))
 
 
 def named(run: dict) -> list[dict]:
     verb = VERBS.get(run.get(RUNNING.effect) or "")
-    return [{"value": verb, "kind": "command"}] if verb else []
+    return [{"value": verb, "color": GRAY}] if verb else []
 
 
 def shown(one: dict) -> str:
@@ -43,10 +48,10 @@ def shown(one: dict) -> str:
     return said if len(said) <= NAME_CAP else f"{said[:NAME_CAP - 1].rstrip()}…"
 
 
-def flipping(run: dict, commands: list) -> dict:
+def flipping(run: dict, commands: list) -> list[dict]:
     effect = run.get(RUNNING.effect)
     if not scoped(run) or run.get(RUNNING.done):
-        return {}
+        return []
     names: list[str] = []
     for one in [*(commands or []), run, *(run.get(RUNNING.steps) or [])]:
         if one.get(COMMAND.effect) != effect:
@@ -54,12 +59,12 @@ def flipping(run: dict, commands: list) -> dict:
         name = shown(one)
         if name and (not names or names[-1] != name):
             names.append(name)
-    return {"every": ROLL_EVERY, "items": names[-MOST_STEPS:]} if len(names) > 1 else {}
+    return [{"value": names[-MOST_STEPS:], "duration": ROLL_EVERY, "color": MUTED}] if len(names) > 1 else []
 
 
 def outcome(result: dict) -> list[dict]:
     failed = result.get("failed")
-    return [{"value": f"{failed} failed", "kind": "failed"} if failed else {"value": "passed", "kind": "passed"}]
+    return [{"value": f"{failed} failed", "color": RED} if failed else {"value": "passed", "color": GREEN}]
 
 
 def inner(run: dict) -> dict:
@@ -69,28 +74,26 @@ def inner(run: dict) -> dict:
     return {RUNNING.what: step, RUNNING.tool: "Bash", RUNNING.effect: run.get(RUNNING.step_effect) or ""}
 
 
-def words_for(run: dict, roll: dict) -> list[dict]:
+def words_for(run: dict, flips: list) -> list[dict]:
     said = named(run)
     if not said:
         return gisted(run)
     noun = NOUNS.get(run.get(RUNNING.effect) or "")
-    return said if roll.get("items") else [*said, *([{"value": noun, "kind": "argument"}] if noun else [])]
+    return [*said, *flips] if flips else [*said, *([{"value": noun, "color": MUTED}] if noun else [])]
 
 
 def line(run: dict, commands: list | None = None, now: float = 0.0) -> dict:
     if not run or not run.get(RUNNING.what):
         return {}
     step = inner(run)
-    roll = flipping(run, commands or [])
-    said = words_for(step, {}) if step else words_for(run, roll)
+    said = words_for(step, []) if step else words_for(run, flipping(run, commands or []))
     if not said:
         return {}
     done = float(run.get(RUNNING.done) or 0)
     result = run.get(RUNNING.result) or {}
     return {
-        "key": " ".join(t["value"] for t in said),
-        "tokens": [*said, *(outcome(result) if done and result else [])],
-        "roll": {} if step else roll,
+        "key": key_of(said),
+        "parts": [*said, *(outcome(result) if done and result else [])],
         "at": run.get(RUNNING.at) or 0,
         "done": bool(done),
         "clock": (done or now or 0) - float(run.get(RUNNING.at) or 0) >= CLOCK_AFTER,
@@ -98,9 +101,13 @@ def line(run: dict, commands: list | None = None, now: float = 0.0) -> dict:
     }
 
 
+def key_of(parts: list[dict]) -> str:
+    return " ".join(p["value"] if isinstance(p["value"], str) else (p["value"][0] if p["value"] else "") for p in parts)
+
+
 def said_once(run: dict) -> dict:
-    said = words_for(run, {})
-    return {"at": run.get(RUNNING.at) or 0, "key": " ".join(t["value"] for t in said), "tokens": said} if said else {}
+    said = words_for(run, [])
+    return {"at": run.get(RUNNING.at) or 0, "key": key_of(said), "parts": said} if said else {}
 
 
 def bar(row, now: float = 0.0) -> dict:
