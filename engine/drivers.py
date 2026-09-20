@@ -71,16 +71,24 @@ class Driver(ABC):
             return False
 
     def type_in(self, line: str) -> bool:
+        self.clear_input()
+        if not self.wrote(line.encode()):
+            return False
+        time.sleep(ENTER_AFTER)
+        if not self.wrote(b"\r"):
+            return False
+        for _ in range(RESUBMITS):
+            time.sleep(RECHECK)
+            if not self.unsent(line):
+                return True
+            self.wrote(b"\r")
+        return not self.unsent(line)
+
+    def wrote(self, raw: bytes) -> bool:
         try:
-            os.write(self.fd, line.encode())
-            time.sleep(ENTER_AFTER)
-            os.write(self.fd, b"\r")
-            for _ in range(RESUBMITS):
-                time.sleep(RECHECK)
-                if not self.unsent(line):
-                    return True
-                os.write(self.fd, b"\r")
-            return not self.unsent(line)
+            while raw:
+                raw = raw[os.write(self.fd, raw):]
+            return True
         except OSError:
             self.fd = -1
             return False
@@ -90,22 +98,13 @@ class Driver(ABC):
         return len(box) > 1 and bool(line) and line[:SAMPLE] in box[-1]
 
     def stop_turn(self) -> None:
-        try:
-            os.write(self.fd, self.STOP)
-        except OSError:
-            self.fd = -1
+        self.wrote(self.STOP)
 
     def interrupt(self) -> None:
-        try:
-            os.write(self.fd, b"\x03")
-        except OSError:
-            self.fd = -1
+        self.wrote(b"\x03")
 
     def clear_input(self) -> None:
-        try:
-            os.write(self.fd, self.CLEAR_LINE + (b"\x7f" + self.CLEAR_LINE) * DRAFT_LINES)
-        except OSError:
-            self.fd = -1
+        self.wrote(self.CLEAR_LINE + (b"\x7f" + self.CLEAR_LINE) * DRAFT_LINES)
 
     def user_typing(self, within: float) -> bool:
         try:

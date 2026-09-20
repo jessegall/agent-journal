@@ -339,6 +339,30 @@ listener.close()
 inbox.unlink()
 check("a socket that has gone falls back to typing", (posting.send("after it closed"), posting.sent), (True, ["after it closed"]))
 
+# A TYPED LINE goes to the terminal whole: a short write is finished, and the box is cleared first
+
+
+class Typing(Fake):
+    def send(self, text):
+        return Driver.send(self, text)
+
+    def last_printed(self):
+        return "\u276f "
+
+
+read, write = os.pipe()
+typing = Typing(record)
+typing.fd = write
+line = "a line far longer than one short write would ever carry to the terminal"
+sent = typing.type_in(line)
+os.close(write)
+raw = b""
+while chunk := os.read(read, 4096):
+    raw += chunk
+os.close(read)
+check("the whole line reaches the terminal, and the box is cleared before it",
+      (sent, raw.startswith(Driver.CLEAR_LINE), line.encode() in raw, raw.endswith(b"\r")), (True, True, True, True))
+
 driver.lands = False
 lost = Messages(record, actor=USER).create("one that never lands")
 engine.agent.pending_at -= 5
