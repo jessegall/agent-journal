@@ -47,13 +47,22 @@ def core() -> str:
     return f"---\nname: journal\ndescription: The journal, its commands and when each applies; load it before the first write\n---\n\n{text}\n{reference()}"
 
 
+def subject(name: str) -> str:
+    source = HERE / "skills" / f"{name}.md"
+    if not source.is_file():
+        return ""
+    body = source.read_text().split("---", 2)[-1].strip()
+    return "\n".join(line for line in body.splitlines() if not line.startswith("# ")).strip()
+
+
 def feature_skill(f) -> str:
     d = f.describe()
     trigger = d["trigger"]
     when = (f"on {trigger['on']}" if trigger.get("on") else f"at {', '.join(map(str, trigger['at']))} percent of the context" if trigger.get("at")
             else f"every {trigger['every']} {trigger['unit']}" if trigger else "on the events it listens to")
-    return (f"---\nname: journal-{d['name']}\ndescription: {d['abstract']}\n---\n\n# {d['title']}\n\n{d['abstract']}.\n\n{d['help']}\n\n"
-            f"It listens to: {', '.join(d['listens'])}. It speaks {when}. "
+    said = subject(d["name"])
+    return (f"---\nname: journal-{d['name']}\ndescription: {d['abstract']}\n---\n\n# {d['title']}\n\n{d['abstract']}.\n\n{d['help']}\n\n{said + chr(10) + chr(10) if said else ''}"
+            f"{f'It listens to: ' + ', '.join(d['listens']) + f'. It speaks {when}. ' if d['listens'] else ''}"
             f"{'On' if d['default'] else 'Off'} by default; the viewer's Settings switches it per environment, and `triggers.{d['name']}` in the environment's settings tunes it.\n")
 
 
@@ -61,7 +70,7 @@ def render() -> dict[str, str]:
     features.load()
     out = {"journal/SKILL.md": core()}
     for source in sorted((HERE / "skills").glob("*.md")):
-        if source.name != "journal.md":
+        if source.name != "journal.md" and source.stem not in features.FEATURES:
             out[f"journal-{source.stem}/SKILL.md"] = source.read_text()
     for name, f in features.FEATURES.items():
         out[f"journal-{name}/SKILL.md"] = feature_skill(f)

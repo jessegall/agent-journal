@@ -135,7 +135,7 @@ def represented(got, record=None):
 def settings(record: Record) -> dict:
     return {Record.features: {name: f.enabled(record) for name, f in features.FEATURES.items()},
             Record.triggers: record.triggers, Record.keep: record.keep,
-            Record.answers: {"hold": features.FEATURES["answers"].held_for(record)}}
+            Record.questions: {"hold": features.FEATURES["questions"].held_for(record)}}
 
 
 def static(path: str) -> Reply:
