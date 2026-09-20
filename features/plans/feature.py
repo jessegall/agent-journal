@@ -25,16 +25,28 @@ class PlansFeature(Feature):
             if plan.status == WAITING:
                 plans.resume(plan.n)
 
+    def step(self, record, plan) -> bool:
+        phase = current_phase(plan)
+        if plan.status != ACTIVE or phase is None or not self.phase_complete(record, phase):
+            return False
+        i = plan.current
+        last = i == len(plan.phases)
+        waits = bool(phase[PHASE.checkpoint]) and not Auto.on_for(record)
+        plan.status = DONE if last else WAITING if waits else ACTIVE
+        plan.current = i if last or waits else i + 1
+        Plans(record, actor=SYSTEM).save(plan, "updated", phase=i, complete=True, status=plan.status,
+                                         passed=bool(phase[PHASE.checkpoint]) and not waits)
+        return not (last or waits)
+
+    def catch_up(self, record) -> None:
+        for plan in running(record):
+            while self.step(record, plan):
+                pass
+
     @on("todo.completed")
     def advance(self, event, record) -> None:
-        plans = Plans(record, actor=SYSTEM)
-        for plan in running(record):
-            phase = current_phase(plan)
-            if event.ref not in plan.refs or plan.status != ACTIVE or phase is None or not self.phase_complete(record, phase):
-                continue
-            i = plan.current
-            last = i == len(plan.phases)
-            waits = bool(phase[PHASE.checkpoint]) and not Auto.on_for(record)
-            plan.status = DONE if last else WAITING if waits else ACTIVE
-            plan.current = i if last or waits else i + 1
-            plans.save(plan, "updated", phase=i, complete=True, status=plan.status, passed=bool(phase[PHASE.checkpoint]) and not waits)
+        self.catch_up(record)
+
+    @on("plan.updated")
+    def settle(self, event, record) -> None:
+        self.catch_up(record)
