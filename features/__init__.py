@@ -18,8 +18,8 @@ def load(root: Path | None = None) -> list[str]:
         importlib.import_module(f"features.{name}.feature")
     if root:
         for name, cls in REGISTRY.items():
-            for was in cls.was:
-                old, key = was if isinstance(was, tuple) else (was, "")
+            for alias in cls.aliases:
+                old, key = alias if isinstance(alias, tuple) else (alias, "")
                 rename(root, old, f"{name}.{key}" if key else name)
     for name, cls in REGISTRY.items():
         if name not in FEATURES:

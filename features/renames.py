@@ -15,10 +15,18 @@ def moved(mapping: dict, was: str, now: str) -> dict:
     return {under(key, was, now): value for key, value in mapping.items()}
 
 
+def owned(kept: dict, was: str, now: str) -> dict:
+    if was not in kept or not isinstance(kept[was], dict):
+        return kept
+    name, _, key = now.partition(".")
+    mine = {f"{key}.{k}" if key else k: v for k, v in kept.pop(was).items()}
+    return {**kept, name: {**kept.get(name, {}), **mine}}
+
+
 def in_settings(home: Path, was: str, now: str) -> bool:
     f = home / "settings.json"
     kept = read_json(f, {})
-    after = {k: moved(v, was, now) if k in KEYED and isinstance(v, dict) else v for k, v in kept.items()}
+    after = owned({k: moved(v, was, now) if k in KEYED and isinstance(v, dict) else v for k, v in kept.items()}, was, now)
     if after == kept:
         return False
     write_json(f, after, indent=2)
