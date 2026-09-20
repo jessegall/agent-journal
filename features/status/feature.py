@@ -9,9 +9,9 @@ class Status(Feature):
     PATIENCE = "patience"
     title_ = "A message is answered before the next write"
     abstract_ = "A message the agent has read is answered before it writes anything: the user hears back before the work starts"
-    help_ = "Reading is free — the agent may look at whatever it needs — but the first write after reading a message is refused until the message has a reply, a reaction, or every part processed. triggers.status sets how soon it is said (every tool use) and status.patience (0) how many sayings go unheeded before the hold."
+    help_ = "Said at the first tool use after a message is read and a few times more, then it lets the agent be; nothing is ever refused over it. A reply, a reaction or processing every part settles it. triggers.status sets how soon it is said (every tool use) and status.patience (3) how many times."
     trigger = {"every": 1, "unit": trigger.USES}
-    patience = 0
+    patience = 3
 
     def in_hand(self, record):
         messages = Messages(record, actor=SYSTEM)
@@ -39,7 +39,7 @@ class Status(Feature):
             return
         count = int(trigger.last(record, agent.title, self.name).get("count") or 0) + 1
         trigger.write(record, agent, self.name, count=count)
+        if count > record.status.get(self.PATIENCE, self.patience):
+            return
         names = ", ".join(f"message {m.n}" for m in held[-3:])
         self.nudge(record, agent, f"answer {names} before you write anything", "journal message reply <n> \"<what you make of it>\", a reaction, or journal message processed <n>", private=True)
-        if count > record.status.get(self.PATIENCE, self.patience):
-            self.hold(record, f"{names} is read and unanswered: reply, react or process it before any write — the user hears back before the work starts")

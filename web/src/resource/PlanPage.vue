@@ -67,7 +67,6 @@ async function run(action, body = {}) {
                 <Btn kind="primary" @click="run(button[0])">{{ button[1] }}</Btn>
             </template>
             <template v-else-if="status === 'building'">
-                <Btn kind="primary" disabled>Start</Btn>
                 <span class="note">The agent is still writing this plan. It can be started once it is ready.</span>
             </template>
             <template v-if="!['done', 'abandoned'].includes(status)">
@@ -113,6 +112,19 @@ async function run(action, body = {}) {
                     </template>
                 </li>
             </template>
+            <template v-if="status === 'building'">
+                <template v-for="i in 2" :key="`skeleton-${i}`">
+                    <li class="phase skeleton" aria-hidden="true">
+                        <div class="phead">
+                            <span class="mark"><Icon name="circle" :size="14" /></span>
+                            <span class="ptitle bone" />
+                        </div>
+                        <template v-for="j in 3" :key="j">
+                            <div class="line"><span class="bone row-bone" /></div>
+                        </template>
+                    </li>
+                </template>
+            </template>
         </ol>
     </article>
 </template>
@@ -142,6 +154,39 @@ async function run(action, body = {}) {
 .status.waiting {
     color: var(--blocking);
 }
+.phase.skeleton {
+    opacity: 0.4;
+    pointer-events: none;
+}
+
+.bone {
+    display: block;
+    height: 11px;
+    border-radius: 4px;
+    background: linear-gradient(90deg, var(--border) 25%, var(--border-2) 37%, var(--border) 63%);
+    background-size: 400% 100%;
+    animation: bone 1.4s ease infinite;
+}
+
+.ptitle.bone {
+    width: 42%;
+}
+
+.row-bone {
+    width: 62%;
+    margin-left: 22px;
+}
+
+@keyframes bone {
+    from {
+        background-position: 100% 50%;
+    }
+
+    to {
+        background-position: 0 50%;
+    }
+}
+
 .status.building {
     color: var(--accent-text);
 }
