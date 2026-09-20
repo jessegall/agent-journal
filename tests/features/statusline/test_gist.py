@@ -41,13 +41,15 @@ check("the inbox-reading compound command keeps each journal step",
 check("the journal run through Python by its full path reads as the journal command, flags and their values left out",
       [said("/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python /u/.journal/src/journal.py --root /u/.journal todo add x", lambda w: spoken(w, TODO)),
        said("journal --env main message read 7", lambda w: spoken(w, MESSAGE))],
-      [["adding a to-do"], ["reading message 7"]])
+      [["adding todo"], ["reading message 7"]])
 check("a shell variable is never shown as if it were a number",
-      [spoken(["message", "read", "$n"], MESSAGE), spoken(["work", "log", "$W"], WORK)], ["reading the message", "logging the work"])
+      [spoken(["message", "read", "$n"], MESSAGE), spoken(["work", "log", "$W"], WORK)], ["reading message", "logging work"])
 check("an unknown word ending in s is a thing of the row, not a verb to conjugate",
       (spoken(["message", "paths", "104"], MESSAGE), spoken(["message", "tag", "105", "x.png", "words"], MESSAGE)),
-      ("the paths of message 104", "tagging message 105"))
-check("a type's own word for a method is understood", spoken(["todo", "add", "5"], TODO), "adding a to-do")
-check("a query of the journal is said plainly", [spoken(["open"], MESSAGE), spoken(["status"], MESSAGE)], ["the open work", "where things stand"])
+      ("reading message 104", "tagging message 105"))
+check("a type's own word for a method is understood", spoken(["todo", "add", "5"], TODO), "adding todo 5")
+check("every journal command is an action, a resource and an id, and a query has no id",
+      [spoken(["open"], MESSAGE), spoken(["status"], MESSAGE), spoken(["message", "reply", "625"], MESSAGE)],
+      ["checking open work", "checking status", "replying message 625"])
 
 done()
