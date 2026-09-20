@@ -1,4 +1,6 @@
 <script setup>
+import AgentSection from "./AgentSection.vue";
+
 import {computed, ref} from "vue";
 import {act, saveSettings} from "../api.js";
 import Icon from "../kit/Icon.vue";
@@ -89,10 +91,12 @@ const counts = (c) => [
             </template>
             <span class="jbar-counts">
                 <template v-for="[key, n, what] in counts(totals)" :key="key">
-                    <span v-if="n" :class="['jbar-count', key]" :title="`${n} ${what}`">
-                        <Icon :name="key === 'messages' ? 'mail' : key === 'questions' ? 'help' : 'todos'" :size="12" />
-                        {{ n }}
-                    </span>
+                    <template v-if="n">
+                        <span :class="['jbar-count', key]" :title="`${n} ${what}`">
+                            <Icon :name="key === 'messages' ? 'mail' : key === 'questions' ? 'help' : 'todos'" :size="12" />
+                            {{ n }}
+                        </span>
+                    </template>
                 </template>
             </span>
             <span class="jbar-meta">
@@ -128,65 +132,74 @@ const counts = (c) => [
                     <Icon name="bubble" :size="12" />
                     Open chat
                 </a>
-                <span v-if="error" class="jbar-error">{{ error }}</span>
+                <template v-if="error">
+                    <span class="jbar-error">{{ error }}</span>
+                </template>
             </div>
         </template>
-        <div v-if="open && journal.summary" class="jbar-body">
-            <div v-for="e in environments" :key="e.name" class="jbar-row">
-                <div class="jbar-envline">
-                    <span :class="['jbar-dot', {live: stateFor(e) !== 'stopped'}]" />
-                    <a class="jbar-envname" :href="`${base}/#/${e.name}`">{{ e.name }}</a>
-                    <span class="jbar-state">{{ wordOf(stateFor(e), e.auto && e.counts.todos > 0) }}</span>
-                    <span class="jbar-line">{{ lineFor(e) }}</span>
-                    <span class="jbar-counts">
-                        <template v-for="[key, n, what] in counts(e.counts)" :key="key">
-                            <a
-                                v-if="n"
-                                :class="['jbar-count', key]"
-                                :title="`${n} ${what}`"
-                                :href="pageUrl(e, key === 'todos' ? 'todo' : '')"
-                            >
-                                <Icon :name="key === 'messages' ? 'mail' : key === 'questions' ? 'help' : 'todos'" :size="12" />
-                                {{ n }}
-                            </a>
+        <template v-if="open && journal.summary">
+            <div class="jbar-body">
+                <template v-for="e in environments" :key="e.name">
+                    <div class="jbar-row">
+                        <div class="jbar-envline">
+                            <span :class="['jbar-dot', {live: stateFor(e) !== 'stopped'}]" />
+                            <a class="jbar-envname" :href="`${base}/#/${e.name}`">{{ e.name }}</a>
+                            <span class="jbar-state">{{ wordOf(stateFor(e), e.auto && e.counts.todos > 0) }}</span>
+                            <span class="jbar-line">{{ lineFor(e) }}</span>
+                            <span class="jbar-counts">
+                                <template v-for="[key, n, what] in counts(e.counts)" :key="key">
+                                    <template v-if="n">
+                                        <a
+                                            :class="['jbar-count', key]"
+                                            :title="`${n} ${what}`"
+                                            :href="pageUrl(e, key === 'todos' ? 'todo' : '')"
+                                        >
+                                            <Icon :name="key === 'messages' ? 'mail' : key === 'questions' ? 'help' : 'todos'" :size="12" />
+                                            {{ n }}
+                                        </a>
+                                    </template>
+                                </template>
+                            </span>
+                            <Switch
+                                :on="e.auto"
+                                word="auto"
+                                :title="
+                                    e.auto
+                                        ? 'The agent works through the to-do list without asking'
+                                        : 'The agent asks before picking up the next to-do'
+                                "
+                                @change="(on) => setAuto(e, on)"
+                            />
+                            <span class="jbar-agent">
+                                <template v-if="e.agent && e.agent.status !== 'stopped'">
+                                    <AgentSection :agent="e.agent" />
+                                </template>
+                            </span>
+                        </div>
+                        <template v-for="p in e.plans" :key="p.n">
+                            <div :class="['jbar-plan', `jbar-plan-${p.status}`]">
+                                <span class="jbar-plan-n">Plan</span>
+                                <span class="jbar-plan-title">{{ p.title }}</span>
+                                <template v-if="p.phase">
+                                    <span class="jbar-plan-dot">·</span>
+                                    <span class="jbar-plan-phase">{{ p.phase }}</span>
+                                </template>
+                                <span class="jbar-plan-step">phase {{ p.current || 1 }}/{{ p.phases }}</span>
+                                <span class="jbar-track" role="progressbar">
+                                    <span :style="{width: `${(100 * p.done) / Math.max(1, p.rows)}%`}" />
+                                </span>
+                                <template v-if="wordFor(p)">
+                                    <button type="button" :class="['jbar-act', {ack: p.status === 'done'}]" @click="runPlan(e, p)">
+                                        {{ wordFor(p) }}
+                                        <Icon name="arrow" />
+                                    </button>
+                                </template>
+                            </div>
                         </template>
-                    </span>
-                    <Switch
-                        :on="e.auto"
-                        word="auto"
-                        :title="
-                            e.auto
-                                ? 'The agent works through the to-do list without asking'
-                                : 'The agent asks before picking up the next to-do'
-                        "
-                        @change="(on) => setAuto(e, on)"
-                    />
-                    <span class="jbar-agent">
-                        <template v-if="e.agent && e.agent.status !== 'stopped'">
-                            {{ e.agent.provider }}{{ e.agent.model ? ` · ${e.agent.model}` : "" }} · context
-                            {{ Math.round(e.agent.context || 0) }}% ·
-                            {{ age(e.agent.at) }}
-                        </template>
-                    </span>
-                </div>
-                <div v-for="p in e.plans" :key="p.n" :class="['jbar-plan', `jbar-plan-${p.status}`]">
-                    <span class="jbar-plan-n">Plan</span>
-                    <span class="jbar-plan-title">{{ p.title }}</span>
-                    <template v-if="p.phase">
-                        <span class="jbar-plan-dot">·</span>
-                        <span class="jbar-plan-phase">{{ p.phase }}</span>
-                    </template>
-                    <span class="jbar-plan-step">phase {{ p.current || 1 }}/{{ p.phases }}</span>
-                    <span class="jbar-track" role="progressbar">
-                        <span :style="{width: `${(100 * p.done) / Math.max(1, p.rows)}%`}" />
-                    </span>
-                    <button v-if="wordFor(p)" type="button" :class="['jbar-act', {ack: p.status === 'done'}]" @click="runPlan(e, p)">
-                        {{ wordFor(p) }}
-                        <Icon name="arrow" />
-                    </button>
-                </div>
+                    </div>
+                </template>
             </div>
-        </div>
+        </template>
     </section>
 </template>
 

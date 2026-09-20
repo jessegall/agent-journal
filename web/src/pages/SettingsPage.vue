@@ -1,4 +1,8 @@
 <script setup>
+import UList from "./UList.vue";
+
+import Section from "./Section.vue";
+
 import {computed, onMounted, ref} from "vue";
 import {act, api, command, saveIdentity, saveSettings} from "../api.js";
 import Btn from "../kit/Btn.vue";
@@ -123,16 +127,7 @@ async function remove(e) {
                     <span class="title">Color</span>
                     <span class="help">Defaults to a stable color chosen from the project name.</span>
                 </span>
-                <span class="control color-control">
-                    <input
-                        class="color"
-                        type="color"
-                        :value="store.identity.color"
-                        aria-label="Project color"
-                        @change="saveColor($event.target.value)"
-                    />
-                    <Btn v-if="store.identity.custom_color" small @click="saveColor(null)">Reset</Btn>
-                </span>
+                <Section @save-color="saveColor" />
             </div>
         </section>
         <section class="group">
@@ -145,10 +140,14 @@ async function remove(e) {
                     <span class="title">Agent journal for Chrome</span>
                     <span class="help">The unpacked extension is served from this exact journal version.</span>
                 </span>
-                <span v-if="extension && extension.available" class="control">
-                    <a v-if="extension.store" class="download" :href="extension.store" target="_blank" rel="noopener">Add to Chrome</a>
-                    <a class="download" href="/extension.zip">Download</a>
-                </span>
+                <template v-if="extension && extension.available">
+                    <span class="control">
+                        <template v-if="extension.store">
+                            <a class="download" :href="extension.store" target="_blank" rel="noopener">Add to Chrome</a>
+                        </template>
+                        <a class="download" href="/extension.zip">Download</a>
+                    </span>
+                </template>
             </div>
         </section>
         <section class="group">
@@ -162,42 +161,16 @@ async function remove(e) {
                         <span class="title">{{ f.title }}</span>
                         <span class="help">{{ f.abstract }}</span>
                         <template v-if="f.when">
-                            <span class="cadence">
-                                <template v-if="f.when.at">
-                                    <span class="note">at</span>
-                                    <input class="days marks" :value="f.when.at.join(', ')" @change="marks(f, $event.target.value)" />
-                                    <span class="note">percent</span>
-                                </template>
-                                <template v-else-if="f.when.on">
-                                    <span class="note">on</span>
-                                </template>
-                                <template v-else>
-                                    <span class="note">every</span>
-                                    <input
-                                        class="days"
-                                        type="number"
-                                        min="1"
-                                        :value="f.when.every"
-                                        @change="every(f, $event.target.value)"
-                                    />
-                                </template>
-                                <span class="units">
-                                    <template v-for="u in [...COUNTED, ...EVENTS]" :key="u">
-                                        <button
-                                            type="button"
-                                            :class="['unit-pick', {on: f.when.on ? f.when.on === u : f.when.unit === u}]"
-                                            @click="unit(f, u)"
-                                        >
-                                            {{ u }}
-                                        </button>
-                                    </template>
-                                </span>
-                            </span>
+                            <UList :f="f" @marks="marks" @every="every" @unit="unit" />
                         </template>
                     </span>
                     <span class="control">
-                        <span v-if="f.fixed" class="note">Always on</span>
-                        <Switch v-else :on="on(f.name)" @change="(v) => flip(f.name, v)" />
+                        <template v-if="f.fixed">
+                            <span class="note">Always on</span>
+                        </template>
+                        <template v-else>
+                            <Switch :on="on(f.name)" @change="(v) => flip(f.name, v)" />
+                        </template>
                     </span>
                 </div>
             </template>

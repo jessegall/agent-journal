@@ -146,14 +146,9 @@ onUnmounted(() => {
         </template>
         <div class="bars">
             <template v-for="j in journals" :key="j.root">
-                <JournalBar
-                    v-if="j.summary || j.unreadable || !j.running"
-                    :journal="j"
-                    :open="opened.has(j.root)"
-                    @toggle="toggle(j)"
-                    @changed="refresh(j)"
-                    @forget="forget(j)"
-                />
+                <template v-if="j.summary || j.unreadable || !j.running">
+                    <JournalBar :journal="j" :open="opened.has(j.root)" @toggle="toggle(j)" @changed="refresh(j)" @forget="forget(j)" />
+                </template>
             </template>
         </div>
     </section>

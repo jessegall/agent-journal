@@ -12,7 +12,20 @@ import {load, rows, store} from "../store.js";
 const source = ref("");
 const shown = ref("");
 const busy = ref("");
-const plugins = computed(() => rows("plugin").filter((p) => !p.completed && !p.deleted));
+const plugins = computed(() =>
+    rows("plugin")
+        .filter((p) => !p.completed && !p.deleted)
+        .map((p) => ({
+            row: p,
+            n: p.n,
+            title: p.title,
+            what: p.abstract || "It says nothing about itself.",
+            version: p.data.version || "no version",
+            source: p.data.source,
+            commit: p.data.commit ? p.data.commit.slice(0, 12) : "linked folder",
+            enabled: !!p.data.enabled,
+        }))
+);
 const services = ref([]);
 const reading = ref("");
 const logged = ref("");
@@ -142,18 +155,18 @@ function toggleLog(p) {
                         <Icon name="plug" />
                         <span class="name">
                             {{ p.title }}
-                            <small>{{ p.data.version || "no version" }}</small>
+                            <small>{{ p.version }}</small>
                         </span>
-                        <Switch :on="!!p.data.enabled" @change="(v) => plugin(p, v ? 'enable' : 'disable')" />
+                        <Switch :on="p.enabled" @change="(v) => plugin(p.row, v ? 'enable' : 'disable')" />
                     </header>
-                    <p class="what">{{ p.abstract || "It says nothing about itself." }}</p>
+                    <p class="what">{{ p.what }}</p>
                     <p class="from">
-                        {{ p.data.source }}
-                        <small>{{ p.data.commit ? p.data.commit.slice(0, 12) : "linked folder" }}</small>
+                        {{ p.source }}
+                        <small>{{ p.commit }}</small>
                     </p>
-                    <template v-if="servicesOf(p).length">
+                    <template v-if="servicesOf(p.row).length">
                         <div class="services">
-                            <template v-for="s in servicesOf(p)" :key="s.id">
+                            <template v-for="s in servicesOf(p.row)" :key="s.id">
                                 <span :class="['service', s.state]" :title="s.why || s.state">
                                     <span class="dot" />
                                     {{ s.service }}
@@ -161,15 +174,15 @@ function toggleLog(p) {
                             </template>
                         </div>
                     </template>
-                    <template v-if="pagesOf(p).length">
+                    <template v-if="pagesOf(p.row).length">
                         <div class="links">
-                            <template v-for="page in pagesOf(p)" :key="page.name">
+                            <template v-for="page in pagesOf(p.row)" :key="page.name">
                                 <a class="link" :href="`#/${route.env}/page/${page.plugin}.${page.name}`">{{ page.title }}</a>
                             </template>
                         </div>
                     </template>
                     <footer class="acts">
-                        <Btn small :disabled="busy === `${p.n}`" @click="plugin(p, 'upgrade', {yes: true})">
+                        <Btn small :disabled="busy === `${p.n}`" @click="plugin(p.row, 'upgrade', {yes: true})">
                             <template v-if="busy === `${p.n}`">
                                 <Spinner />
                             </template>
@@ -183,7 +196,7 @@ function toggleLog(p) {
                             kind="danger"
                             small
                             :disabled="busy === `${p.n}`"
-                            @click="plugin(p, 'remove', {how: 'removed from the viewer'})"
+                            @click="plugin(p.row, 'remove', {how: 'removed from the viewer'})"
                         >
                             Remove
                         </Btn>
