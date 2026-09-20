@@ -210,6 +210,7 @@ export function listen() {
 }
 
 const RECENT = 100;
+const TICK = 500;
 let ticking = 0;
 let ticks = 0;
 
@@ -219,15 +220,16 @@ function poll() {
     ticking = setInterval(async () => {
         ticks += 1;
         const env = route.value.env;
-        store.agents = await http.all(env, "agent");
         store.bar = await http.api("GET", `/${env}/bar`);
-        if (ticks % 5) return;
+        if (ticks % 2) return;
+        store.agents = await http.all(env, "agent");
+        if (ticks % 10) return;
         store.pages = await http.api("GET", "/pages");
         const last = store.events.length ? store.events[store.events.length - 1].id : 0;
         const fresh = await http.events(env, last);
         if (fresh.length) await reload();
-        if (ticks % 30 === 0) await rebuilt();
-    }, 1000);
+        if (ticks % 60 === 0) await rebuilt();
+    }, TICK);
 }
 
 async function rebuilt() {
