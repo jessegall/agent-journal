@@ -26,7 +26,7 @@ watch(
 onUnmounted(() => trim(props.type));
 const SHOWS = {open: () => open(props.type), closed: () => all.value.filter((r) => r.completed), every: () => all.value};
 const filters = computed(() => (kind.value.filters || []).map((f) => ({...f, count: (SHOWS[f.shows] || SHOWS.every)().length})));
-const shown = computed(() => (SHOWS[filter.value] || SHOWS.open)());
+const shown = computed(() => [...(SHOWS[filter.value] || SHOWS.open)()].sort((a, b) => b.created - a.created));
 const groups = computed(() => {
     const buckets = {};
     for (const r of shown.value) (buckets[groupOf(r)] ||= []).push(r);
