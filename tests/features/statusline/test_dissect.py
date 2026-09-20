@@ -43,6 +43,9 @@ check("cat is always reading, wherever it stands in the line",
 check("a read names a path and never a flag's value",
       (names(shell("sed -n 88,94p providers/base.py", effect="reads")), names(shell("ls", effect="reads"))), (["base.py"], []))
 check("a test run names its subject, never its runner", names(shell("python3 tests/test_serve.py", effect="tests")), ["test_serve.py"])
+check("a write is only editing when a file really changed",
+      (shell("echo hi > out.txt", effect="writes", files=["out.txt"])["kind"], shell("echo hi > out.txt", effect="writes")["kind"]),
+      ("writes", ""))
 check("a plain shell command is named by its root and subcommand",
       (names(shell("npx prettier --write a.vue")), names(shell("git add -A && git commit -m x"))), (["npx prettier"], ["git add"]))
 check("a journal command is named in its own words", names(shell("journal message read 7")), ["reading message 7"])
