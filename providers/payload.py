@@ -13,6 +13,7 @@ class ToolUse:
     pattern: str = ""
     url: str = ""
     skill: str = ""
+    written: str = ""
     response: dict = field(default_factory=dict)
 
     @classmethod
@@ -22,7 +23,12 @@ class ToolUse:
         return cls(name=str(raw.get("tool_name") or ""), command=str(given.get("command") or ""), file_path=str(given.get("file_path") or ""),
                    subagent_type=str(given.get("subagent_type") or ""), model=str(given.get("model") or ""), task_name=str(given.get("task_name") or ""),
                    pattern=str(given.get("pattern") or given.get("query") or ""), url=str(given.get("url") or ""), skill=str(given.get("skill") or ""),
+                   written=str(given.get("content") or given.get("new_string") or given.get("prompt") or ""),
                    response=response if isinstance(response, dict) else {})
+
+    @property
+    def said(self) -> str:
+        return " ".join(part for part in (self.command, self.file_path, self.pattern, self.url, self.skill, self.subagent_type, self.task_name, self.written) if part)
 
     @property
     def doing(self) -> str:

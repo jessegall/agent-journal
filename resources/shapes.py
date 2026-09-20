@@ -64,6 +64,7 @@ class Options(Shape):
 
 
 class Reasoned(Shape):
+    keywords = Field(default=list)
     labels = {"brief": "Reasoning", "outcome": "Why struck"}
 
 
