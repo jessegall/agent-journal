@@ -2,7 +2,7 @@ import time
 
 from controllers.types import Agents, Todos, Works
 from features import trigger
-from features.base import Feature, command, on
+from features.base import Feature, command, held, on, refuses
 from features.work.tracker import tracker
 from resources.base import SYSTEM
 from resources.types import Work
@@ -11,7 +11,7 @@ from resources.types import Work
 class WorkFeature(Feature):
     name = "work"
     title_ = "Work"
-    abstract_ = "Work started for a to-do is linked to it; its log is kept, and twenty edits without an entry hold the writes; work parked is set aside until the next log entry"
+    abstract_ = "A write is refused until work is open; work started for a to-do is linked to it, its log is kept, twenty edits without an entry hold the writes, and parked work is set aside until the next log entry"
     help_ = 'Start work with --todo=<n> to take a row; log each decision and turn with journal work log <n> "<message>" (work.log_after, 20 edits, without an entry holds the writes); end it with --todo to close the row with it. journal work park <n> "<why>" sets it aside with no clock — it stays open, stops being nudged and stops holding writes, and the next log entry picks it up.'
     trigger = {"on": trigger.WORKED}
     EDITS, LOG_AFTER = "edits", "log_after"
@@ -27,6 +27,24 @@ class WorkFeature(Feature):
     def park(self, works: Works, n: int, why: str):
         return works.update(n, parked=why)
 
+
+    def open_work(self, record) -> bool:
+        return any(not w.completed for w in Works(record, actor=SYSTEM).all())
+
+    @on("work")
+    def gate(self, event, record) -> None:
+        if self.open_work(record):
+            self.release(record)
+        else:
+            self.hold(record, 'nothing is open, so this write would not be filed: journal work start "<the work>" first')
+
+    @on("agent.created")
+    def gate_at_start(self, event, record) -> None:
+        self.gate(event, record)
+
+    @refuses
+    def held(self, provider, record, hook, session) -> str:
+        return held(record, session) if provider.writes(hook) else ""
 
     @on("work.created")
     def opened(self, event, record) -> None:
