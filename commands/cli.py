@@ -322,8 +322,24 @@ def invoke(fn, args: dict, extra: dict):
     return fn(*positional, **args, **extra)
 
 
+TAKES = {"--root", "--env", "--as", "--session", "--agent"}
+
+
+def noun_of(argv: list[str]) -> str:
+    at = 0
+    while at < len(argv):
+        word = argv[at]
+        if word in TAKES:
+            at += 2
+        elif word.startswith("-"):
+            at += 1
+        else:
+            return word if word in CONTROLLERS else "-"
+    return "-"
+
+
 def run(argv: list[str]) -> int:
-    noun = "" if {"-h", "--help"} & set(argv[:1]) else next((word for word in argv if word in CONTROLLERS), "-")
+    noun = "" if {"-h", "--help"} & set(argv[:1]) else noun_of(argv)
     parsed, passed = parser(noun).parse_known_args(argv)
     args = vars(parsed)
     command = args.pop("command")

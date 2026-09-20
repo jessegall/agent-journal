@@ -7,10 +7,12 @@ from pathlib import Path
 
 from controllers.types import Notices, Plugins
 from engine.bus import ANY
+from engine.hooks import default_env
 from engine.record import Record
 from features.plugins.answer import apply
 from features.plugins.manifest import fill
 from features.plugins.payload import of
+from features.plugins.queue import drain
 from features.plugins.run import SECONDS, call
 from features.plugins.source import environment, folder, log
 from resources.base import PLUGIN, Refused, SYSTEM
@@ -77,6 +79,7 @@ class Host:
         self.root = Path(root)
         self.replay = replay
         self.trouble: dict = {}
+        self.turn = 0
 
     def environments(self) -> list[Record]:
         home = self.root / "environments"
@@ -93,10 +96,19 @@ class Host:
 
     def step(self, now: float = 0.0) -> int:
         sent = 0
+        names: list[str] = []
         for record in self.environments():
             for row in self.installed(record):
                 sent += self.deliver(record, row, now)
-        return sent
+                if self.name(row) not in names:
+                    names.append(self.name(row))
+        return sent + self.drained(names)
+
+    def drained(self, names: list[str]) -> int:
+        if not names:
+            return 0
+        self.turn = (self.turn + 1) % len(names)
+        return drain(self.root, names[self.turn], default_env(self.root))
 
     def deliver(self, record, row, now: float = 0.0) -> int:
         plugin = self.name(row)
