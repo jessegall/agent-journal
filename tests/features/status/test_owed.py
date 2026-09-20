@@ -25,21 +25,13 @@ def holds():
 
 
 def said():
-    return [n for n in nudges(record) if "status update" in n]
+    return [n for n in nudges(record) if "before you write" in n]
 
 
-for i in range(9):
-    report(record, "working", "PreToolUse")
-check("nine tool uses after reading: nothing yet", said(), [])
+check("before the next tool use nothing is said", said(), [])
 report(record, "working", "PreToolUse")
-check("ten: a private nudge to give a status update, naming the message", said(), ["give the user a status update on message 1"])
-for i in range(10):
-    report(record, "working", "PreToolUse")
-check("twenty: said again", len(said()), 2)
-check("still no hold after two", holds().get("status", ""), "")
-for i in range(10):
-    report(record, "working", "PreToolUse")
-check("thirty: the third goes unheeded and the writes wait", bool(holds().get("status")), True)
+check("the first tool use after reading names the message and says to answer it", said(), ["answer message 1 before you write anything"])
+check("and the writes wait at once: the user hears back before the work starts", "read and unanswered" in holds().get("status", ""), True)
 Messages(record, actor=AGENT).reply(m.n, "halfway: the build is green, wiring the last route")
 report(record, "working", "PreToolUse")
 check("a reply settles it and lifts the hold", holds().get("status", ""), "")
@@ -49,8 +41,8 @@ Agents(fresh_record, actor=AGENT).by_session("claude-1")
 m2 = Messages(fresh_record, actor=USER).create("noted?")
 Messages(fresh_record, actor=AGENT).read(m2.n)
 Messages(fresh_record, actor=AGENT).react(m2.n, "👍")
-for i in range(12):
+for i in range(3):
     report(fresh_record, "working", "PreToolUse")
-check("a reaction counts as an answer", [n for n in nudges(fresh_record) if "status update" in n], [])
+check("a reaction counts as an answer", [n for n in nudges(fresh_record) if "before you write" in n], [])
 
 done()

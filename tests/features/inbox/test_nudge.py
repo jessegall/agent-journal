@@ -1,10 +1,11 @@
+import json
 import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 import features  # noqa: E402
 from controllers.types import Messages, Nudges, Works  # noqa: E402
-from engine.hooks import handle  # noqa: E402
+from engine.hooks import gate_file, handle  # noqa: E402
 from features.base import held  # noqa: E402
 from providers import PROVIDERS  # noqa: E402
 from resources.base import AGENT, USER  # noqa: E402
@@ -15,7 +16,9 @@ features.unload()
 features.load()
 
 record = fresh()
-gate = lambda: held(record, "claude-1")
+def gate():
+    f = gate_file(record.root, record.env, "claude-1")
+    return json.loads(f.read_text()).get("inbox", "") if f.is_file() else ""
 Works(record, actor=AGENT).create("something open")
 inbox = lambda: [n for n in nudges(record) if "inbox" in n]
 
