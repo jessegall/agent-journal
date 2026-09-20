@@ -39,7 +39,9 @@ check("a name too long to show is cut with an ellipsis, and the flipping part hu
 check("a shell command is never one of the files, however it was classed",
       [p["value"] for p in line({"what": "writing x.py", "tool": "Write", "at": 3, "effect": "writes"},
                                 [{"what": "git add -A && git commit -m x", "tool": "Bash", "at": 2, "effect": "writes"}], NOW)["parts"]],
-      ["editing", "files"])
+      ["editing", ["x.py"]])
+check("a run of shell writes with no file to name falls back to the plural",
+      [p["value"] for p in line({"what": "sed -i s/a/b/ x", "tool": "Bash", "at": 3, "effect": "writes"}, [], NOW)["parts"]], ["editing", "files"])
 
 # WHAT IT FLIPS THROUGH comes with how often, and only while the line stands for several steps
 def read(*what):
@@ -49,9 +51,10 @@ def read(*what):
 rolled = line({"what": "reading a.py", "tool": "Read", "at": NOW, "effect": "reads"},
               [{"what": "reading b.py", "tool": "Read", "at": NOW - 1, "effect": "reads"}], NOW)["parts"][1]
 check("a scoped line hands over the names and how often to flip", (rolled["duration"], rolled["value"]), (ROLL_EVERY, ["b.py", "a.py"]))
-check("one name alone is nothing to flip through", len(line(running(effect="reads"), [], NOW)["parts"]), 2)
+check("one file alone is named on its own, with nothing to flip through",
+      [p["value"] for p in line({"what": "reading a.py", "tool": "Read", "at": NOW, "effect": "reads"}, [], NOW)["parts"]], ["reading", ["a.py"]])
 check("a run of shell reads has no files to name", [p["value"] for p in line(running(effect="reads", steps=read("cat a.py", "cat b.py")), [], NOW)["parts"]], ["reading", "files"])
-check("a command that has finished stops flipping", line({"what": "reading a.py", "tool": "Read", "at": NOW, "effect": "reads", "done": NOW + 1},
+check("a command that has finished names no files", line({"what": "reading a.py", "tool": "Read", "at": NOW, "effect": "reads", "done": NOW + 1},
       [{"what": "reading b.py", "tool": "Read", "at": NOW - 1, "effect": "reads"}], NOW)["parts"][-1]["value"], "files")
 check("only the last names are kept", len(line(running(effect="writes"),
       [{"what": f"editing s{i}.py", "tool": "Edit", "at": i, "effect": "writes"} for i in range(40)], NOW)["parts"][1]["value"]), MOST_STEPS)
