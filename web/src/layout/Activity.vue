@@ -128,27 +128,34 @@ const who = (e) => e.actor[0].toUpperCase() + e.actor.slice(1);
     display: flex;
     align-items: center;
     justify-content: flex-start;
-    gap: 4px;
+    gap: 14px;
+    padding: 0 18px;
     margin: 0 -10px;
     padding: 0 10px;
     border-bottom: 1px solid var(--border);
 }
 
 .activity-tab {
-    padding: 4px 8px;
-    border-radius: 7px;
+    display: inline-flex;
+    align-items: center;
+    height: 100%;
+    padding: 0;
+    border: 0;
+    background: none;
     font-size: 11.5px;
-    font-weight: 500;
+    letter-spacing: 0.03em;
     color: var(--text-3);
+    white-space: nowrap;
+    cursor: pointer;
 }
 
 .activity-tab:hover {
-    background: var(--hover);
+    color: var(--text-2);
 }
 
 .activity-tab.on {
     color: var(--text);
-    background: var(--hover);
+    box-shadow: inset 0 -1px 0 var(--accent);
 }
 
 .activity-kind {
