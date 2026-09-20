@@ -2,6 +2,7 @@ import json
 import os
 import socket
 import subprocess
+import tempfile
 import sys
 import threading
 import time
@@ -21,10 +22,10 @@ from tests.kit import check, done, fresh  # noqa: E402
 HERE = Path(__file__).resolve().parents[1]
 
 
-def run_hook(root: Path, event: str, tool: str = "Read", session: str = "srv-1") -> subprocess.CompletedProcess:
+def run_hook(root: Path, event: str, tool: str = "Read", session: str = "srv-1", inbox: str = "") -> subprocess.CompletedProcess:
     payload = json.dumps({"hook_event_name": event, "session_id": session, "tool_name": tool, "tool_input": {"file_path": "x"}})
     return subprocess.run(["sh", str(HERE / "hook.sh"), "claude", str(root)], input=payload, capture_output=True, text=True, timeout=60,
-                          cwd=root.parent, env={**os.environ, ACTIVE_ENV: "1", "JOURNAL_ENV": "main"})
+                          cwd=root.parent, env={**os.environ, ACTIVE_ENV: "1", "JOURNAL_ENV": "main", "CLAUDE_CODE_MESSAGING_SOCKET": inbox})
 
 
 def point(root: Path, url: str, at: float = 0) -> None:
@@ -49,6 +50,18 @@ check("a subagent stopping does not put the agent back to work", agents.by_sessi
 run_hook(record.root, "PreToolUse")
 run_hook(record.root, "SubagentStart")
 check("nor does one starting take it off work", agents.by_session("srv-1").status, "working")
+
+# THE SESSION'S INBOX travels from the session to the server, which has no environment of its own
+where = Path(tempfile.mkdtemp()) / "inbox.sock"
+listener = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+listener.bind(str(where))
+listener.listen(1)
+run_hook(record.root, "PreToolUse", inbox=str(where))
+check("the row carries the socket the session named", agents.by_session("srv-1").inbox, str(where))
+listener.close()
+where.unlink()
+run_hook(record.root, "PreToolUse", inbox=str(where))
+check("a path that is no longer a socket is not taken, and the last known one stays", agents.by_session("srv-1").inbox, str(where))
 
 # THE ANSWER COMES FIRST: a slow feature runs on the hook's write after the reply is sent
 ran = []

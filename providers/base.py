@@ -199,7 +199,7 @@ class Provider(ABC):
     def session(self, path: Path | None) -> dict:
         return {}
 
-    def inbox(self) -> str:
+    def inbox(self, hook: Hook) -> str:
         return ""
 
     def model(self, hook: Hook) -> str:

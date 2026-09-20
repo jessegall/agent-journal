@@ -1,5 +1,4 @@
 import json
-import os
 import re
 import shutil
 import time
@@ -17,7 +16,6 @@ WINDOW, LONG_WINDOW, LONG_MARK = 200_000, 1_000_000, "[1m]"
 TAIL = 1_000_000
 STATUS_SCRIPT = "claude-status.sh"
 STATUS_HOME = (".journal", "claude-status")
-INBOX = "CLAUDE_CODE_MESSAGING_SOCKET"
 PLAN_WINDOWS = {"five_hour": ("5h", 300), "seven_day": ("7d", 10080)}
 NOTIFIED = re.compile(r"<tool-use-id>([^<]+)</tool-use-id>.*?<status>([^<]+)</status>", re.S)
 DISPATCHES = ("Agent", "Task")
@@ -59,9 +57,8 @@ class Claude(Provider):
         "note": "Changes apply immediately to this Claude Code session.",
     }
 
-    def inbox(self) -> str:
-        path = os.environ.get(INBOX, "")
-        return path if path and Path(path).is_socket() else ""
+    def inbox(self, hook: Hook) -> str:
+        return hook.inbox if hook.inbox and Path(hook.inbox).is_socket() else ""
 
     def setting(self, project: Path, key: str) -> str:
         found = ""

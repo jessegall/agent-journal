@@ -78,6 +78,7 @@ class Hook:
     cwd: str = ""
     model: str = ""
     source: str = ""
+    inbox: str = ""
     tool: ToolUse = field(default_factory=ToolUse)
 
     @classmethod
@@ -85,7 +86,7 @@ class Hook:
         transcript = str(raw.get("transcript_path") or "")
         return cls(event=str(raw.get("hook_event_name") or ""), session=Path(transcript or str(raw.get("session_id") or "")).stem,
                    transcript=Path(transcript) if transcript else None, cwd=str(raw.get("cwd") or ""), model=str(raw.get("model") or ""),
-                   source=str(raw.get("source") or ""), tool=ToolUse.read(raw))
+                   source=str(raw.get("source") or ""), inbox=str(raw.get("inbox") or ""), tool=ToolUse.read(raw))
 
     @property
     def command(self) -> str:
