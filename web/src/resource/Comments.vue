@@ -220,6 +220,7 @@ textarea {
 }
 
 .done-label {
+    margin-right: 5px;
     color: var(--text-2);
 }
 
