@@ -62,6 +62,8 @@ def counted(group: list[dict]) -> list[dict]:
 
 
 def outcome(result: dict) -> list[dict]:
+    if "ok" in result:
+        return [{"value": "built", "color": GREEN} if result["ok"] else {"value": "failed", "color": RED}]
     failed = result.get("failed")
     return [{"value": f"{failed} failed", "color": RED} if failed else {"value": "passed", "color": GREEN}]
 

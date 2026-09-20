@@ -39,6 +39,7 @@ DOTNET = re.compile(r"\bFailed:\s*(\d+),\s*Passed:\s*(\d+)")
 EXAMPLES = re.compile(r"\b(\d+) (?:examples?|tests?), (\d+) failures?")
 TALLY = re.compile(r"\bTests(?: run)?: (\d+),.*$", re.M)
 TALLY_FAILED = re.compile(r"\b(?:Failures|Errors): (\d+)")
+BROKE = re.compile(r"^(?:npm ERR!|ERROR in |error TS\d+|Build failed|Compilation failed|.*failed to compile)", re.M | re.I)
 QUOTED = re.compile(r'"(?:[^"\\]|\\.)*"' + r"|'[^']*'")
 JOURNAL_CALL = re.compile(r"(^|[;&|(]\s*|\$\()\S*journal(?:\.py)?\s(?:\"(?:[^\"\\]|\\.)*\"|'[^']*'|\d*>&\d|[^;&|)\n])*")
 
@@ -125,10 +126,18 @@ class Provider(ABC):
             return {AgentRow.running: running, AgentRow.commands: (list(row.commands) + [ran])[-RING:]}
         if running and not running.get(RUNNING.done):
             running[RUNNING.done] = time.time()
-            result = self.test_result(hook) if running.get(RUNNING.effect) == "tests" else None
+            result = self.outcome_of(hook, running.get(RUNNING.effect) or "")
             if result:
                 running[RUNNING.result] = result
         return {AgentRow.running: running, AgentRow.commands: stamped(row.commands, running, doing, time.time())}
+
+    def outcome_of(self, hook: Hook, effect: str) -> dict | None:
+        if effect == "tests":
+            return self.test_result(hook)
+        if effect != "builds":
+            return None
+        output = f"{hook.tool.response.get('stdout') or ''}\n{hook.tool.response.get('stderr') or ''}"
+        return {"ok": not BROKE.search(output)} if output.strip() else None
 
     def test_result(self, hook: Hook) -> dict | None:
         output = f"{hook.tool.response.get('stdout') or ''}\n{hook.tool.response.get('stderr') or ''}"
@@ -163,11 +172,14 @@ class Provider(ABC):
         return next(iter(self.effects(command)), "")
 
     def effects(self, command: str) -> list[str]:
-        rest = self.without_journal(command)
-        if not rest.strip():
+        from features.statusline.shell import without_scripts
+        whole = self.without_journal(command)
+        if not whole.strip():
             return []
-        bare = QUOTED.sub("''", rest)
-        return [name for name, pattern in EFFECTS if pattern.search(rest) or (name == "writes" and WRITING_COMMANDS.search(bare))]
+        said = without_scripts(whole)
+        bare = QUOTED.sub("''", whole)
+        return [name for name, pattern in EFFECTS
+                if pattern.search(whole if name == "writes" else said) or (name == "writes" and WRITING_COMMANDS.search(bare))]
 
     def without_journal(self, command: str) -> str:
         return JOURNAL_CALL.sub(r"\1", command)

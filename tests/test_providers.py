@@ -213,6 +213,10 @@ running = claude.shell(AgentRow(n=1, title="s"), Hook.read({"hook_event_name": "
 ended = claude.shell(AgentRow(n=1, title="s", data={"running": running}), Hook.read({"hook_event_name": "PostToolUse", "tool_name": "Bash", "tool_input": {"command": "python3 tests/a.py"},
                                                                                       "tool_response": {"stdout": "a.py: 12 passed, 0 failed\nb.py: 3 passed, 1 failed"}}))["running"]
 check("the summed outcome rides on the finished test command", ended.get("result"), {"passed": 15, "failed": 1})
+check("a build is read as built or failed from what it printed",
+      [claude.outcome_of(Hook.read({"tool_name": "Bash", "tool_response": {"stdout": out}}), "builds")
+       for out in ("✓ built in 700ms", "npm ERR! code 1", "")],
+      [{"ok": True}, {"ok": False}, None])
 check("pytest and jest summaries are read too", [claude.test_result(Hook.read({"tool_name": "Bash", "tool_response": {"stdout": out}})) for out in ("== 2 failed, 40 passed in 1s ==", "Tests: 1 failed, 9 passed, 10 total")],
       [{"passed": 40, "failed": 2}, {"passed": 9, "failed": 1}])
 outcomes = {
