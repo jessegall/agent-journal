@@ -146,8 +146,8 @@ check("a package file an older installer did not copy is fetched before the hook
 launcher = (project / ".journal" / "journal").read_text()
 check("it reads the heartbeat rather than trying a connection, and runs the command here when the server is not up",
       ("runtime/heartbeat" in launcher, "api/run" in launcher, launcher.rstrip().endswith('"$@"')), (True, True, True))
-check("only what the server answered is taken: anything else falls through",
-      ("200)" in launcher and "400)" in launcher, "409" in launcher), (True, False))
+check("an answer is final, and only what the server does not run falls through",
+      ("200)" in launcher, "404|\"\")" in launcher, "*)" in launcher), (True, True, True))
 shim = (test_home / ".local" / "bin" / "journal").read_text()
 check("the shared command asks the server too, once it has found the journal above it",
       ("runtime/heartbeat" in shim, shim.rstrip().endswith("exit 1")), (True, True))

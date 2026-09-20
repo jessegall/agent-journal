@@ -300,7 +300,7 @@ def post_run(req: Request) -> Reply:
     said, code = captured(args, req.root)
     if code is None:
         return Reply(409, said, kind=PLAIN)
-    return Reply(200 if not code else 400, said, kind=PLAIN)
+    return Reply(404 if code is None else (200 if not code else 400), said, kind=PLAIN)
 
 
 @route("GET", "/api/{env}/changes")
