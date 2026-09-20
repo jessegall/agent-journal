@@ -197,6 +197,7 @@ class AgentRow(Shape, Resource):
     provider = Field(default="")
     uses = Field(default=0)
     transcript = Field(default="")
+    inbox = Field(default="")
     model = Field(default="")
     effort = Field(default="")
     pending = Field(default=dict)
