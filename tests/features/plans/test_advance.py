@@ -124,4 +124,14 @@ check("from-doc: a plan being built with the doc's phases, goal and link", (draf
 check("the type's own words", (by_agent.named("place"), by_agent.named("resume"), by_agent.named("complete")), ("todos", "continue", "acknowledge"))
 check("continue resolves to resume", by_user.method("continue").__name__, "resume")
 
+# A PLAN ACTIVATED WITH ITS ROWS ALREADY CLOSED catches up by itself, without waiting for another event
+late = by_agent.create("already done", goal="nothing left to do")
+by_agent.phase(late.n, "only phase", when="its row is closed")
+row = todos.create("a row that is already closed")
+by_agent.place(late.n, 1, [row.n])
+by_agent.ready(late.n)
+todos.complete(row.n, "done before the plan ran")
+by_user.activate(late.n)
+check("a plan whose rows are already closed completes itself when it is activated", by_agent.load(late.n).data["status"], "done")
+
 done()
