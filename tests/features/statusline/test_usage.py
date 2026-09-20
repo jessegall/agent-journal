@@ -10,7 +10,7 @@ import features
 from commands.http import dispatch
 from controllers.types import Agents
 from engine.record import Record
-from features.usage.usage import observe
+from features.statusline.usage import observe
 from providers.claude import Claude
 from providers.codex import Codex
 from resources.base import SYSTEM
