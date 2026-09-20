@@ -50,6 +50,7 @@ class Engine:
         self.crewed_size = -1
         self.relayed = None
         self.typed_at = 0.0
+        self.panicked_at = time.time()
         self.probed_at = 0.0
         self.greeted = False
         self.controlled_at = 0.0
@@ -65,7 +66,8 @@ class Engine:
 
     def tick(self) -> str:
         self.relay()
-        self.why = self.follow() or self.probe() or self.forced() or self.typing() or self.control() or self.begin() or self.deliver() or self.nudge()
+        self.why = (self.follow() or self.probe() or self.forced() or self.typing() or self.control() or self.begin()
+                    or self.deliver() or self.nudge() or self.panic())
         self.seat()
         return self.why
 
@@ -209,6 +211,17 @@ class Engine:
         self.agent.driver.send(line)
         self.typed_at = time.time()
         return f"typed: {line[:60]}"
+
+    def panic(self) -> str:
+        from features.auto.policy import ASK_AGAIN, panicking
+        if time.time() - self.panicked_at < ASK_AGAIN:
+            return ""
+        line = panicking(self.record, self.agent.driver.quiet_for(), self.agent.state())
+        if not line:
+            return ""
+        self.panicked_at = time.time()
+        self.agent.driver.send(line)
+        return "asked whether it is still working"
 
     def owed(self) -> str:
         for type_ in PRIORITY:
