@@ -144,6 +144,7 @@ def switches(record: Record) -> dict:
 def settings(record: Record) -> dict:
     return {Record.features: switches(record),
             Record.triggers: record.triggers, Record.keep: record.keep, Record.delivery: record.delivery,
+            Record.tags: {"names": features.FEATURES["tags"].names(record)},
             Record.questions: {"hold": features.FEATURES["questions"].held_for(record)}}
 
 
