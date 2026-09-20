@@ -139,7 +139,10 @@ check("a quoted > is text, not a redirect; tests then a commit is still a write"
 check("an edit next to a journal call is still a write, and journal calls alone never are",
       [claude.writes(Hook.read({"hook_event_name": "PostToolUse", "tool_name": "Bash", "tool_input": {"command": c}})) for c in ('journal work log 5 "x"; git commit -m y', 'journal message reply 3 "a > b"', ".journal/journal todo add x")], [True, False, False])
 check("a command labelled editing is one whose line changes are counted", all(claude.writes(Hook.read({"hook_event_name": "PostToolUse", "tool_name": "Bash", "tool_input": {"command": c}})) for c, e in effects.items() if e in ("writes", "deletes")), True)
-check("a tool that is not the shell has no effect to report", claude.effect(Hook.read({"hook_event_name": "PreToolUse", "tool_name": "Read", "tool_input": {"file_path": "x"}})), "")
+check("reading a file of the project is reading, and a tool with no file of its own has no effect",
+      [claude.effect(Hook.read({"hook_event_name": "PreToolUse", "cwd": "/p", "tool_name": name, "tool_input": {"file_path": path}}))
+       for name, path in (("Read", "x"), ("Read", "/somewhere/else/x"), ("Grep", ""))],
+      ["reads", "", ""])
 shelled = claude.shell(AgentRow(n=1, title="s"), Hook.read({"hook_event_name": "PreToolUse", "tool_name": "Bash", "tool_input": {"command": "rm x", "description": "Remove x"}}))
 check("the effect rides on the running command and on its entry in the recent commands", (shelled["running"].get("effect"), shelled["commands"][-1].get("effect")), ("deletes", "deletes"))
 
