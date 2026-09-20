@@ -298,4 +298,20 @@ driver.clear_input = lambda: cleared.append(True)
 check("a draft untouched for half a minute no longer holds it, and is cleared before the engine types", (engine.typing(), cleared, driver.typed.exists()), ("", [True], False))
 check("after the user pressed Enter nothing holds and nothing is cleared", (engine.typing(), len(cleared)), ("", 1))
 
+# A SESSION THAT NEVER REPORTS is woken once, so it does not sit there until the user types
+from features.start.feature import WAIT_FOR_REPORT, hello  # noqa: E402
+waking = Fake(record)
+started = Engine(record, waking)
+started.born = time.time()
+check("while it may still be starting, nothing is typed", (started.begin(), waking.sent), ("", []))
+started.born = time.time() - WAIT_FOR_REPORT - 1
+check("once it has had its time at the prompt with nothing reported, it is woken", (started.begin(), waking.sent), ("typed the opening line", [hello("main")]))
+check("and only once", (started.begin(), len(waking.sent)), ("", 1))
+spoke = Fake(record)
+spoke.born = time.time() - WAIT_FOR_REPORT - 1
+spoke.report = {"at": time.time(), "event": "PreToolUse", "status": WORKING}
+awake = Engine(record, spoke)
+awake.born = time.time() - WAIT_FOR_REPORT - 1
+check("a session that has reported is left alone", (awake.begin(), spoke.sent), ("", []))
+
 done()

@@ -3,6 +3,14 @@ from engine.queries import start_block
 from features.base import Feature, on
 
 
+HELLO = "journal: started on {env} — say what waits"
+WAIT_FOR_REPORT = 8.0
+
+
+def hello(env: str) -> str:
+    return HELLO.format(env=env)
+
+
 COMPACTED = """THIS WINDOW WAS JUST COMPACTED. The summary kept what was done and dropped what was decided. Before touching anything:
   journal conversation --back=1   the stretch the summary replaced
   journal user                    the user's own words, in full
