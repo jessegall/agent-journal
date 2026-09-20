@@ -3,7 +3,7 @@ import {computed} from "vue";
 import Icon from "../kit/Icon.vue";
 import {act} from "../api.js";
 import {peek, route} from "../route.js";
-import {focusTurn, meta, types, unreadByUser} from "../store.js";
+import {age, focusTurn, meta, types, unreadByUser} from "../store.js";
 
 const TINT = {
     question: "var(--blocking)",
@@ -43,7 +43,6 @@ async function dismiss(r) {
                 <div v-for="r in cards" :key="r.ref" :class="['needs-card', r.type]" @click="open(r)">
                     <div class="needs-card-top">
                         <span class="needs-card-kind">{{ meta(r.type).title }}</span>
-                        <span class="needs-card-meta">{{ r.type }} {{ r.n }}</span>
                         <template v-if="r.type !== 'question' || r.completed">
                             <button type="button" class="needs-dismiss" title="Seen — take it off the list" @click.stop="dismiss(r)">
                                 <Icon name="close" />
@@ -54,6 +53,10 @@ async function dismiss(r) {
                     <template v-if="r.abstract">
                         <p class="needs-card-text">{{ r.abstract }}</p>
                     </template>
+                    <p class="needs-card-foot">
+                        <span class="needs-card-meta">{{ r.type }} {{ r.n }}</span>
+                        <span class="needs-card-when">{{ age(r.created) || "just now" }}</span>
+                    </p>
                 </div>
             </TransitionGroup>
         </section>
@@ -196,6 +199,19 @@ async function dismiss(r) {
 .needs-dismiss .ico {
     width: 12px;
     height: 12px;
+}
+
+.needs-card-foot {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 6px 0 0;
+}
+
+.needs-card-when {
+    font-size: 11px;
+    color: var(--text-3);
+    white-space: nowrap;
 }
 
 .needs-card-meta {
