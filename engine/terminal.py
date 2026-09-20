@@ -21,8 +21,8 @@ def watched(root: Path) -> tuple:
     return tuple((str(f), f.stat().st_mtime_ns) for f in files if f.is_file())
 
 
-def agent_environment(base: dict | None = None) -> dict:
-    return {**(base if base is not None else os.environ), ACTIVE_ENV: "1"}
+def agent_environment(base: dict | None = None, env: str = "") -> dict:
+    return {**(base if base is not None else os.environ), ACTIVE_ENV: "1", **({"JOURNAL_ENV": env} if env else {})}
 
 
 def session_of(agent: str, pid: int) -> str:
@@ -34,11 +34,11 @@ def pid_of(session: str) -> int:
     return int(tail) if tail.isdigit() else 0
 
 
-def spawn_agent(command: list[str], cwd: Path) -> tuple[int, int]:
+def spawn_agent(command: list[str], cwd: Path, env: str = "") -> tuple[int, int]:
     pid, fd = pty.fork()
     if pid == 0:
         os.chdir(cwd)
-        os.execvpe(command[0], command, agent_environment())
+        os.execvpe(command[0], command, agent_environment(env=env))
     return pid, fd
 
 
@@ -70,6 +70,13 @@ def stop(pid: int) -> int:
     return child(pid, block=True)[1]
 
 
+def seat(root: Path, env: str, session: str, pid: int, agent: str) -> None:
+    from engine.hooks import seated
+    from engine.sessions import Sessions
+    Sessions(root).bind(session, env, pid=pid, provider=agent)
+    seated(root, env, session)
+
+
 def run(root: Path, cwd: Path, env: str, agent: str, args: list[str]) -> int:
     from engine.drivers import DRIVERS
     from engine.record import Record
@@ -77,12 +84,13 @@ def run(root: Path, cwd: Path, env: str, agent: str, args: list[str]) -> int:
 
     driver = DRIVERS[agent]
     command = driver.command(driver, launch_args(Record(root, env), agent, args))
-    pid, fd = spawn_agent(command, cwd)
+    pid, fd = spawn_agent(command, cwd, env)
     session = session_of(agent, pid)
     runtime = root / "runtime"
     runtime.mkdir(parents=True, exist_ok=True)
     (runtime / "env").write_text(env)
-    print(f"journal: environment {env} — a session bound elsewhere is followed there")
+    seat(root, env, session, pid, agent)
+    print(f"journal: environment {env}")
     stdin, stdout = sys.stdin.fileno(), sys.stdout.fileno()
     saved = None
     coordinator = None
