@@ -25,7 +25,7 @@ check("every listener is gated by its feature's enabled", all(callable(g) for en
 check("auto mode is a feature off by default; the rest are on", ([n for n, f in features.FEATURES.items() if not f.default]), ["auto"])
 from features.base import Feature, REGISTRY  # noqa: E402
 check("the registry holds one class per feature, each a Feature", (sorted(REGISTRY), all(issubclass(c, Feature) for c in REGISTRY.values())), (loaded, True))
-check("a feature describes itself for a menu: name, words, what it listens to, its trigger", sorted(features.describe()["work"]), ["abstract", "default", "fixed", "help", "listens", "name", "title", "trigger"])
+check("a feature describes itself for a menu: name, words, what it listens to, its trigger", sorted(features.describe()["work"]), ["abstract", "behaviours", "default", "fixed", "help", "listens", "name", "title", "trigger"])
 check("the work feature listens to what its methods say", features.describe()["work"]["listens"], ["agent.created", "agent.updated", "work", "work.completed", "work.created", "work.updated"])
 r = fresh()
 work = features.FEATURES["work"]
@@ -64,5 +64,26 @@ post("/api/t/todo", {"title": "a row"})
 post("/api/t/work", {"title": "the work", "todo": 1, "actor": AGENT})
 check("posted through HTTP: the feature linked the work to the to-do", Works(Record(root, "t")).load(1).refs, ["todo:1"])
 server.shutdown()
+
+# A FEATURE DECLARES ITS SETTINGS, ONE PER BEHAVIOUR
+from features.base import Behaviour, Feature  # noqa: E402
+
+
+class Two(Feature):
+    name = "two"
+    trigger = {"every": 1, "unit": "uses"}
+    behaviours = {"loud": Behaviour("Say it", trigger={"every": 50, "unit": "uses"}),
+                  "quiet": Behaviour("Do not say it", default=False)}
+
+
+two, r = Two(), Record(root, "t")
+check("a behaviour is keyed under its feature, the feature under its own name", (two.keyed(), two.keyed("loud")), ("two", "two.loud"))
+check("a behaviour with no setting takes the default it declared", (two.on(r, "loud"), two.on(r, "quiet")), (True, False))
+r.features = {**r.features, "two.loud": False, "two.quiet": True}
+check("a stored setting wins over the declared default", (two.on(r, "loud"), two.on(r, "quiet")), (False, True))
+r.features = {**r.features, "two": False}
+check("a behaviour is off when its feature is off, whatever it says", (two.on(r), two.on(r, "quiet")), (False, False))
+check("a behaviour carries its own cadence, the feature its own", (two.cadence(r, "loud")["every"], two.cadence(r)["every"]), (50, 1))
+check("a feature hands its behaviours to the viewer", two.describe()["behaviours"]["quiet"], {"title": "Do not say it", "abstract": "", "default": False, "trigger": {}})
 
 done()
