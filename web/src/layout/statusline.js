@@ -87,7 +87,7 @@ export function capital(word) {
     return word[0].toUpperCase() + word.slice(1);
 }
 
-export const SHOWN = ["ready", "active", "waiting", "done"];
+export const SHOWN = ["building", "ready", "active", "waiting", "done"];
 
 export function shownPlans(plans) {
     return plans.filter((p) => SHOWN.includes(p.data.status) && !p.completed);
