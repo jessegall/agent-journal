@@ -122,6 +122,7 @@ class Controller:
             raise Refused(f"{self.type} {n} is already {self.named('complete')}")
         r.completed = time.time()
         r.outcome = how
+        r.data.update(self._shaped(data))
         return self.save(r, "completed", how=how, **data)
 
     def named(self, method: str) -> str:

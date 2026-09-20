@@ -20,6 +20,7 @@ class Todo(Ranked, Resource):
     blocked = Field()
     reported = Field()
     after = Field()
+    struck = Field()
     handed = "TO-DOS waiting — delayed work, not an instruction to start any of it"
     counted = True
     icon = "circle"
