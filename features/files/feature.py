@@ -6,6 +6,7 @@ from controllers.types import Agents, Works
 from engine.stored import read_json, write_json
 from features.base import Feature, on
 from providers import PROVIDERS
+from providers.base import WRITES
 from resources.base import SYSTEM, names
 from resources.shapes import CHANGE, COMMIT
 from resources.types import COMMAND, RUNNING
@@ -135,6 +136,9 @@ class Files(Feature):
         run = running if running.get(RUNNING.done) else running.get(RUNNING.before) or {}
         return run.get(RUNNING.at, 0)
 
+    def could_write(self, one: dict) -> bool:
+        return (one.get(COMMAND.tool) or "Bash") in ("Bash", *WRITES)
+
     def count(self, record, n: int, ran: float, delta: dict, touched: list) -> None:
         agents = Agents(record, actor=SYSTEM)
         row = agents.load(n)
@@ -149,4 +153,4 @@ class Files(Feature):
                   RUNNING.files: [*known, *(p for p in touched if p not in known)]}
         agents.update(n, running={**running, RUNNING.before: edited} if late else edited,
                       commands=[{**one, COMMAND.files: edited[RUNNING.files], COMMAND.changed: edited[RUNNING.changed]}
-                                if one.get(COMMAND.at) == ran else one for one in row.commands])
+                                if one.get(COMMAND.at) == ran and self.could_write(one) else one for one in row.commands])

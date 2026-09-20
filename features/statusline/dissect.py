@@ -7,6 +7,7 @@ from resources.types import COMMAND
 JOURNAL = "journal"
 TOUCHED = ("writes", "deletes")
 NAMED = ("reads", "tests")
+GIVEN = ("installs",)
 FILE = re.compile(r"^[\w.-]+\.\w+$")
 NAME_CAP = 42
 
@@ -64,6 +65,8 @@ def names_of(one: dict, kind: str) -> list[dict]:
     if kind in NAMED:
         found = a_path(piece["args"])
         return [whole(base(found))] if found else []
+    if kind in GIVEN:
+        return [whole(piece["args"][0])] if piece["args"] else []
     return [said_name(piece["root"])]
 
 
