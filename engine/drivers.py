@@ -14,6 +14,7 @@ POST_WAIT = 5.0
 RECHECK, RESUBMITS, SAMPLE = 0.6, 2, 24
 DRAFT_LINES = 8
 INPUT = re.compile("[❯›]")
+CHOICE = re.compile(rb"1\..+?2\.", re.S)
 ANSI = re.compile(rb"\x1b\[[0-?]*[ -/]*[@-~]|\x1b\][^\x07\x1b]*(?:\x07|\x1b\\)|\x1b[@-Z\\-_]|[\x00-\x08\x0b-\x1f\x7f]")
 
 
@@ -151,7 +152,6 @@ class Claude(Driver):
     TAKES_OURS = ("--settings", json.dumps({"crossSessionInbound": "accept"}))
     CHANNEL = ("--dangerously-load-development-channels", "server:journal")
     LISTENING = 15.0
-    OURS_TO_ANSWER = (b"Loadingdevelopmentchannels", b"Entertoconfirm")
 
     def command(self, args: list[str]) -> list[str]:
         return ["claude", *(() if self.TAKES_OURS[0] in args else self.TAKES_OURS), *self.CHANNEL, *args]
@@ -159,7 +159,7 @@ class Claude(Driver):
     @classmethod
     def confirm(cls, printed: bytes) -> bytes:
         plain = b"".join(ANSI.sub(b"", printed).split())
-        return b"\r" if all(mark in plain for mark in cls.OURS_TO_ANSWER) else b""
+        return b"\r" if cls.CHANNEL[0].encode() in plain and CHOICE.search(plain) else b""
 
     def post(self, line: str) -> bool:
         return self.handed(line) or super().post(line)

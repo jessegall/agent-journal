@@ -316,12 +316,13 @@ check("the journal launches claude ready to accept its messages",
       launching.command(["--continue"])[:3], ["claude", "--settings", '{"crossSessionInbound": "accept"}'])
 check("a settings argument of the user's own is left alone", launching.command(["--settings", "mine.json"])[-2:], ["--settings", "mine.json"])
 check("and it loads the journal's own channel", launching.command([])[-2:], ["--dangerously-load-development-channels", "server:journal"])
-warned = b"WARNING: Loading development channels\n1. I am using this for local development\nEnter to confirm"
+warned = b"WARNING: --dangerously-load-development-channels is for local development\n1. I am using this\n2. Exit"
 from engine.band import ROWS, release  # noqa: E402
 check("the journal answers for the flag it passed", Claude.confirm(warned), b"\r")
-check("it answers the prompt as the terminal really prints it, word by word with no spaces",
-      Claude.confirm(b"\x1b[31mWARNING:\x1b[0m\x1b[3;9HLoading\x1b[3;17Hdevelopment\x1b[3;29Hchannels\n\x1b[9;3HEnter\x1b[9;9Hto\x1b[9;12Hconfirm"), b"\r")
-check("and not a half-drawn one", Claude.confirm(b"WARNING: Loading development channels\n"), b"")
+check("it knows the prompt by the flag it passed rather than by the words around it",
+      Claude.confirm(b"\x1b[31mSOME\x1b[0m\x1b[3;9Hentirely\x1b[3;17Hnew\x1b[3;29Hwording --dangerously-load-development-channels\n1. go on\n2. Exit"), b"\r")
+check("the flag alone, before the choice is drawn, is not answered", Claude.confirm(b"--dangerously-load-development-channels is for local development only."), b"")
+check("and a choice that is not about our flag is not answered", Claude.confirm(b"1. one\n2. two"), b"")
 check("and answers nothing else", Claude.confirm(b"an ordinary line of output"), b"")
 check("a driver that never passes the flag never answers", Codex.confirm(warned), b"")
 check("with the channel not listening, a line is not handed to it", launching.handed("x"), False)
