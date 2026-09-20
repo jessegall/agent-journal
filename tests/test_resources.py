@@ -5,7 +5,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from controllers.types import CONTROLLERS, Comments, Todos  # noqa: E402
 from engine.record import Record  # noqa: E402
-from resources.base import ABSTRACT_MAX, ACTORS, PLUGIN, TITLE_MAX, ACTIONS  # noqa: E402
+from resources.base import ABSTRACT_MAX, ACTORS, AGENT, PLUGIN, TITLE_MAX, ACTIONS  # noqa: E402
 from resources.types import TYPES  # noqa: E402
 from tests.kit import check, done, fresh, refused as kit_refused  # noqa: E402
 
@@ -88,5 +88,12 @@ record = fresh()
 made = Todos(record, actor=PLUGIN).create("filed by a plugin")
 check("a plugin writes as itself", (made.seen, [e.actor for e in record.events() if e.type == "todo"][-1]), ([PLUGIN], PLUGIN))
 check("and it is one of the actors the manifest offers", PLUGIN in ACTORS, True)
+
+# WHAT COMPLETING A ROW IS TOLD is kept on the row, not only on the event
+rows = Todos(fresh(), actor=AGENT)
+struck = rows.strike(rows.create("abandon me").n, "it stopped being worth doing")
+check("a struck row says so on the row itself, with its why", (struck.data.get("struck"), struck.outcome), (True, "struck: it stopped being worth doing"))
+closed = rows.complete(rows.create("close me").n, "done", handed="the other agent")
+check("anything else set while completing is kept too", closed.data.get("handed"), "the other agent")
 
 done()
