@@ -27,6 +27,7 @@ class Fake(Driver):
     def __init__(self, record):
         super().__init__(record, "fake-1", fd=1)
         self.sent = []
+        self.lands = True
         self.report = None
         self.quiet = 10.0
         self.up = True
@@ -39,6 +40,7 @@ class Fake(Driver):
 
     def send(self, text):
         self.sent.append(text)
+        return self.lands
 
     def last_report(self):
         return AgentRow(title=self.report.pop("session", ""), data=self.report) if self.report else None
@@ -93,6 +95,8 @@ check("a second tick within the quiet spell types nothing and collects nothing t
 engine.agent.pending_at -= 5
 check("five quiet seconds later the batch is typed as one counted line", (engine.tick(), driver.sent), ("typed 1 in one line", ["1 new message"]))
 check("the cursor moved: a further tick types nothing more", (engine.tick(), len(driver.sent)), (BUSY, 1))
+check("the line landed, so the message it named says when the agent was told", bool(Messages(record, actor=SYSTEM).load(1).data.get("delivered")), True)
+check("and the stamp is quiet: no event was written about it", [e.action for e in record.events() if e.type == "message"], ["created"])
 driver.sent.clear()
 Messages(record, actor=AGENT).complete(1, "read and filed")
 engine.tick()
@@ -303,5 +307,11 @@ driver.quiet_for = lambda: 9.0
 check("a line delivered at rest is said plainly", agent.aside("2 new messages"), "2 new messages")
 driver.__class__.ASIDE = ""
 check("a CLI with no aside always says it plainly", agent.aside("2 new messages"), "2 new messages")
+
+driver.lands = False
+lost = Messages(record, actor=USER).create("one that never lands")
+engine.agent.pending_at -= 5
+engine.tick()
+check("a line that never left the input box stamps nothing", Messages(record, actor=SYSTEM).load(lost.n).data.get("delivered"), None)
 
 done()

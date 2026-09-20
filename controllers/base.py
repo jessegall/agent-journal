@@ -98,6 +98,12 @@ class Controller:
         r.data.update(self._shaped(data))
         return self.save(r, "updated")
 
+    def stamp(self, n: int, **data) -> Resource:
+        r = self.load(n)
+        r.data.update(self._shaped(data))
+        write_text(self.path(r.n), r.dump())
+        return r
+
     def set(self, n: int, key: str, value: str) -> Resource:
         return self.update(n, **{key: value})
 
