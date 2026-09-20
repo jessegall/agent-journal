@@ -99,6 +99,7 @@ def line(run: dict, commands: list | None = None, now: float = 0.0) -> dict:
         "parts": [*said, *(outcome(result) if done and result else [])],
         "at": run.get(RUNNING.at) or 0,
         "done": bool(done),
+        "for": int(max(0.0, (done or now or 0) - float(run.get(RUNNING.at) or 0))),
         "clock": (done or now or 0) - float(run.get(RUNNING.at) or 0) >= CLOCK_AFTER,
         "hold": HOLD if run.get(RUNNING.effect) in HELD else 0.0,
         "lingers": LINGERS,

@@ -8,9 +8,8 @@ const DELTA_LEAVE = 240;
 const SHOW_CLOCK_AFTER = 10;
 const COUNT_UP = 360;
 const told = computed(() => {
-    const run = data.value && data.value.running;
     const words = store.bar && store.bar.line;
-    return run && words && words.at === run.at && words.tokens && words.tokens.length ? words : null;
+    return words && words.parts && words.parts.length ? words : null;
 });
 
 function ownWords() {
@@ -71,20 +70,19 @@ function shownPart(part) {
     return {values, at, value: values[at], color: part.color || "muted", align: part.align || "left"};
 }
 
-function fromJournal(run, words) {
-    const secs = Math.floor((run.done || Date.now() / 1000) - run.at);
+function fromJournal(words) {
     const parts = (words.parts || []).map(shownPart);
     return {
         key: words.key,
         text: parts.map((p) => p.value).join(" "),
         parts,
-        clock: words.clock ? clock(secs) : "",
+        clock: words.clock ? clock(words.for || 0) : "",
         done: words.done,
     };
 }
 
-function lineFor(run, words = null) {
-    return run && run.what && words ? fromJournal(run, words) : null;
+function lineFor(words) {
+    return words ? fromJournal(words) : null;
 }
 
 const LINGERS = 10;
@@ -94,7 +92,7 @@ const line = computed(() => {
     ticks.value;
     if (stay.value) return stay.value;
     if (rolling.value) return rolling.value;
-    const now = lineFor(data.value && data.value.running, told.value);
+    const now = lineFor(told.value);
     if (now) {
         last.line = now;
         last.at = Date.now();
@@ -147,7 +145,7 @@ watch(told, (words) => {
     if (!words || !words.hold) return;
     holds.at = words.at;
     holds.ms = words.hold * 1000;
-    holds.line = fromJournal(data.value.running, words);
+    holds.line = fromJournal(words);
 });
 
 function held(run) {
