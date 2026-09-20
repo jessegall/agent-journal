@@ -24,13 +24,16 @@ check("a command with no kind of its own is said in a few words", line(running(w
 check("and nothing running is no line", (line({}, [], NOW), line({"tool": "Bash"}, [], NOW)), ({}, {}))
 
 # THE FILES THEMSELVES flip beside the verb, and the plural disappears
-edits = [{"what": "/a/one.py", "tool": "Edit", "at": 1, "effect": "writes"}, {"what": "/a/two.py", "tool": "Write", "at": 2, "effect": "writes"}]
-editing = line({"what": "/a/three.py", "tool": "Edit", "at": 3, "effect": "writes"}, edits, NOW)
+edits = [{"what": "editing one.py", "tool": "Edit", "at": 1, "effect": "writes"}, {"what": "writing two.py", "tool": "Write", "at": 2, "effect": "writes"}]
+editing = line({"what": "editing three.py", "tool": "Edit", "at": 3, "effect": "writes"}, edits, NOW)
 check("editing names the files it is editing, not the word files", (editing["key"], editing["roll"]["items"]),
-      ("editing", ["/a/one.py", "/a/two.py", "/a/three.py"]))
-check("a command of another kind is not one of them", line({"what": "/a/x.py", "tool": "Edit", "at": 3, "effect": "writes"},
-      [*edits, {"what": "cat y", "tool": "Bash", "at": 2.5, "effect": "reads"}], NOW)["roll"]["items"],
-      ["/a/one.py", "/a/two.py", "/a/x.py"])
+      ("editing", ["one.py", "two.py", "three.py"]))
+check("a command of another kind is not one of them", line({"what": "editing x.py", "tool": "Edit", "at": 3, "effect": "writes"},
+      [*edits, {"what": "cat y", "tool": "Bash", "at": 2.5, "effect": "reads"}], NOW)["roll"]["items"], ["one.py", "two.py", "x.py"])
+check("a shell step is named by its gist, never by its tail",
+      line({"what": "writing x.py", "tool": "Write", "at": 3, "effect": "writes"},
+           [{"what": "python3 - <<'EOF'\nopen('x','w')\nEOF", "tool": "Bash", "at": 2, "effect": "writes"}], NOW)["roll"]["items"],
+      ["python3 script", "x.py"])
 
 # WHAT IT FLIPS THROUGH comes with how often, and only while the line stands for several steps
 def read(*what):
