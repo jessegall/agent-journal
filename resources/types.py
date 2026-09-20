@@ -135,13 +135,13 @@ class Reminder(Shape, Resource):
     shown = {"completed": "Reminder retired"}
     says = {"complete": "retiring"}
     handed = "REMINDERS, said again at every stop"
-    lent = False
+    whom = Field()
     attention = True
     icon = "clock"
     names = {"complete": "retire"}
     title_ = "Reminder"
     abstract_ = "An instruction said again until it is retired"
-    help_ = "A reminder repeats at every start and every so often mid-work, because knowing is not doing."
+    help_ = "A reminder repeats at every start and every so often mid-work, because knowing is not doing. One written with --set whom=<session> is said to that agent alone, which is how an agent reminds itself or leaves one for another."
 
 
 class Question(Options, Resource):

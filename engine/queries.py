@@ -1,5 +1,5 @@
 from controllers.types import ACTIVE, CONTROLLERS, WAITING
-from resources.base import SYSTEM
+from resources.base import SYSTEM, WHOM
 from resources.types import PHASE, PRIORITY, Plan, TYPES
 
 
@@ -27,7 +27,7 @@ def status(record) -> str:
 
 
 def handed(record, type_: str) -> list:
-    return [r for r in standing(record, type_) if r.data.get(Plan.status, ACTIVE) in (ACTIVE, WAITING)]
+    return [r for r in standing(record, type_) if r.data.get(Plan.status, ACTIVE) in (ACTIVE, WAITING) and not r.data.get(WHOM)]
 
 
 def describe(r) -> str:

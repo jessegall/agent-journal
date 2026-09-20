@@ -9,7 +9,7 @@ from engine import bus
 from features import trigger
 from engine.hooks import POLICIES, gate_file
 from features.format import FORMATTERS
-from resources.base import Refused, SYSTEM
+from resources.base import Refused, SYSTEM, WHOM
 from engine.stored import read_json, write_json
 
 REGISTRY: dict[str, type] = {}
@@ -147,6 +147,6 @@ class Recital(Feature):
     @event("agent.updated")
     def repeat(self, event, record) -> None:
         agent = self.agent_due(event, record)
-        rows = self.standing(record, self.controller) if agent else []
+        rows = [r for r in self.standing(record, self.controller) if r.data.get(WHOM, agent.title) == agent.title] if agent else []
         if rows:
             self.nudge(record, agent, f"{self.plural(len(rows), self.controller.resource.type)} {self.said}", "; ".join(f"{r.n}. {r.title}" for r in rows))
