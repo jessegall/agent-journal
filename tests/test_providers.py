@@ -122,6 +122,7 @@ effects = {
     "cat *.md": "searches",
     "find . -name x": "searches",
     "cd web && npm run build": "builds",
+    'git commit -m "npm run build is not what this does"': "writes",
     "git status": "reads",
     "journal todo all": "",
     'journal work log 5 "done > shipped" >/dev/null; python3 - <<\'EOF\'\nimport pathlib\npathlib.Path("a").write_text("x")\nEOF': "writes",
