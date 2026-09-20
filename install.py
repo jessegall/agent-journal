@@ -76,7 +76,7 @@ body=${reply%
 *}
 case "$said" in
 200) printf '%s' "$body"; exit 0 ;;
-"") ;;
+404|"") ;;
 *) [ -n "$body" ] && printf '%s' "$body" >&2 || echo "! the journal server answered $said and said nothing" >&2; exit 1 ;;
 esac
 fi

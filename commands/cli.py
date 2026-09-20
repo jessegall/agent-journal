@@ -332,7 +332,7 @@ def invoke(fn, args: dict, extra: dict):
 TAKES = {"--root", "--env", "--as", "--session", "--agent"}
 
 
-def noun_of(argv: list[str]) -> str:
+def first_word(argv: list[str]) -> str:
     at = 0
     while at < len(argv):
         word = argv[at]
@@ -341,13 +341,18 @@ def noun_of(argv: list[str]) -> str:
         elif word.startswith("-"):
             at += 1
         else:
-            return word if word in CONTROLLERS else "-"
-    return "-"
+            return word
+    return ""
+
+
+def noun_of(argv: list[str]) -> str:
+    word = first_word(argv)
+    return word if word in CONTROLLERS else "-"
 
 
 def captured(argv: list[str], root: Path) -> tuple[str, int | None]:
     if not argv or noun_of(argv) not in OVER_HTTP:
-        return f"{noun_of(argv) or 'this'} is not a command the server runs", None
+        return f"{first_word(argv) or 'the journal'} is not a command the server runs", None
     said, wrong = io.StringIO(), io.StringIO()
     try:
         with contextlib.redirect_stdout(said), contextlib.redirect_stderr(wrong):
@@ -364,6 +369,8 @@ def captured(argv: list[str], root: Path) -> tuple[str, int | None]:
 
 def run(argv: list[str], out=None, err=None) -> int:
     out, err = out or sys.stdout, err or sys.stderr
+    if not first_word(argv) and not {"-h", "--help"} & set(argv):
+        argv = [*argv, "help"]
     noun = "" if {"-h", "--help"} & set(argv[:1]) else noun_of(argv)
     parsed, passed = parser(noun).parse_known_args(argv)
     args = vars(parsed)

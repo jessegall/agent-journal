@@ -28,7 +28,7 @@ def last_said(record, agent) -> str:
 class Tags(Feature):
     name = "tags"
     title_ = "Tagging"
-    abstract_ = "The agent's last message opens with one tag, or it is told so once"
+    abstract_ = "The agent's last message opens with one tag, or it is told so at the end of the turn"
     help_ = " ".join(TAGS)
     trigger = {"on": trigger.IDLE}
 
