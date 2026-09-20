@@ -34,7 +34,7 @@ const tabs = computed(() => [
             <ThreadSkeleton />
         </div>
         <div v-else class="home-main">
-            <section :class="['home-section', 'home-thread', {roomy: !store.activity}]">
+            <section :class="['home-section', 'home-thread', {roomy: !store.activity, wide: store.wide}]">
                 <AgentBar />
                 <TransitionGroup name="act">
                     <Notice v-for="x in notices" :key="x.n" :notice="x" />
@@ -56,7 +56,7 @@ const tabs = computed(() => [
                 </template>
             </section>
             <div class="home-divider" role="separator" aria-orientation="vertical" />
-            <div class="home-rail">
+            <div :class="['home-rail', {wide: store.wide}]">
                 <div class="rail-tabs" role="tablist">
                     <template v-for="[key, label, n, warm] in tabs" :key="key">
                         <button
@@ -146,6 +146,14 @@ const tabs = computed(() => [
     .home-thread.roomy {
         --home-gutter: 72px;
     }
+}
+
+.home-thread.wide {
+    max-width: none;
+}
+
+.home-rail.wide {
+    width: clamp(320px, 32%, 560px);
 }
 
 .home-away {

@@ -26,11 +26,17 @@ check("a command it has no words for is left to the viewer", line(running(), NOW
 check("and nothing running is no line", (line({}, NOW), line({"tool": "Bash"}, NOW)), ({}, {}))
 
 # WHAT IT FLIPS THROUGH comes with how often, and only while the line stands for several steps
-rolled = line(running(effect="reads", steps=["cat a.py", "cat b.py"]), NOW)["roll"]
+def read(*what):
+    return [{"what": w, "effect": "reads"} for w in what]
+
+
+rolled = line(running(effect="reads", steps=read("cat a.py", "cat b.py")), NOW)["roll"]
 check("a scoped line hands over its steps and how often to flip", (rolled["every"], rolled["items"]), (ROLL_EVERY, ["cat a.py", "cat b.py"]))
-check("one step alone is nothing to flip through", line(running(effect="reads", steps=["cat a.py"]), NOW)["roll"], {})
-check("a command that has finished stops flipping", line(running(effect="reads", steps=["a", "b"], done=NOW + 1), NOW)["roll"], {})
-check("only the last steps are kept", len(line(running(effect="writes", steps=[f"s{i}" for i in range(40)]), NOW)["roll"]["items"]), MOST_STEPS)
+check("one step alone is nothing to flip through", line(running(effect="reads", steps=read("cat a.py")), NOW)["roll"], {})
+check("a command that has finished stops flipping", line(running(effect="reads", steps=read("a", "b"), done=NOW + 1), NOW)["roll"], {})
+check("only the last steps are kept", len(line(running(effect="writes", steps=[{"what": f"s{i}", "effect": "writes"} for i in range(40)]), NOW)["roll"]["items"]), MOST_STEPS)
+mixed = running(effect="reads", steps=[*read("cat a.py"), {"what": "sleep 1", "effect": ""}, *read("cat a.py", "cat b.py")])
+check("what the line is not about is left out, and the same step twice over is one", line(mixed, NOW)["roll"]["items"], ["cat a.py", "cat b.py"])
 
 # HOW LONG IT LINGERS and when a clock appears are the journal's call too
 check("editing and deleting hold their line; nothing else does",

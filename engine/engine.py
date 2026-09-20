@@ -269,7 +269,8 @@ class Engine:
         provider = PROVIDERS.get(self.agent.driver.name)
         running[RUNNING.step_effect] = provider().effect_of(command) if provider and command else ""
         if command:
-            running[RUNNING.steps] = [*(running.get(RUNNING.steps) or []), command][-MOST_STEPS:]
+            step = {"what": command, "effect": running[RUNNING.step_effect]}
+            running[RUNNING.steps] = [*(running.get(RUNNING.steps) or []), step][-MOST_STEPS:]
         self.agent.mark(row.status or "", row.event or "", running=running)
 
     def seat(self) -> None:
