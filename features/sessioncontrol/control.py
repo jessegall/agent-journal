@@ -66,6 +66,8 @@ def request(root: Path, env: str, session: str, action: str, value: str) -> dict
     queued = None
     for line in commands:
         queued = queue(root, session, line, selected["label"], provider=found["provider"], action=action, value=value)
+    if action in (PROVIDERS[found["provider"]].at_once if found["provider"] in PROVIDERS else ()):
+        return {k: v for k, v in queued.items() if k != "line"} | {"queued": False}
     record = Record(root, env)
     agents = Agents(record, actor=SYSTEM)
     row = agents.by_session(session)
