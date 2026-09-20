@@ -93,15 +93,14 @@ check("a one-liner of several commands is named once, by the first of them",
 check("editing names the files that actually changed, never the command that changed them",
       said([shell("python3 - <<'EOF'\nopen('x','w')\nEOF", effect="writes", files=["web/src/a.vue", "tests/t.py"])]),
       [["editing", ["a.vue", "t.py"]]])
-check("a write still running does not know its files yet, so it says so and waits",
-      [(one["waiting"], [p["value"] for p in one["parts"]]) for one in queue([shell("git mv a b", effect="writes")], NOW)],
-      [(True, ["editing", "…"])])
-check("the waiting mark is a value like any other, so it rolls into what it was waiting for",
+check("a write that does not know its files yet says nothing at all, rather than half of it",
+      queue([shell("git mv a b", effect="writes")], NOW), [])
+check("a write still running does not add a name it does not have",
       [[q["value"] for q in one["parts"]] for one in queue([edit("a.py", done=NOW + 1), shell("sed -i x", NOW + 2, effect="writes")], NOW + 3)],
-      [["editing", ["a.py", "…"]]])
-check("once it knows them it is not waiting any more",
-      [(one["waiting"], [p["value"] for p in one["parts"]]) for one in queue([shell("git mv a b", effect="writes", done=NOW + 1, files=["b"])], NOW + 2)],
-      [(False, ["editing", "b"])])
+      [["editing", "a.py"]])
+check("once it knows them it says so",
+      [[p["value"] for p in one["parts"]] for one in queue([shell("git mv a b", effect="writes", done=NOW + 1, files=["b"])], NOW + 2)],
+      [["editing", "b"]])
 check("every message carries an id, which is when its run began",
       [one["id"] for one in queue([edit("a.py"), shell("ls", NOW + 1, effect="reads")], NOW + 2)], [NOW, NOW + 1])
 check("an edit that named no file is not editing anything: it is the command, running",

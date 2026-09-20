@@ -15,7 +15,6 @@ HOLD = 1.0
 LINGERS = 10.0
 CLOCK_AFTER = 10.0
 MOST = 12
-WAITING = "…"
 DRAIN = 10
 DRAINING = 0.25
 
@@ -76,15 +75,10 @@ def walked(parts: list[dict]) -> float:
     return steps * FLIP_EVERY if steps > 1 else 0.0
 
 
-def waiting(kind: str, last: dict) -> bool:
-    return kind in TOUCHED and not last["names"] and not last["done"]
-
-
 def message(group: list[dict], closed: bool, now: float, behind: int = 0) -> dict:
     kind = group[0]["kind"]
     last = group[-1]
-    unknown = waiting(kind, last)
-    found = [*worked(group), *([{"value": WAITING, "whole": True}] if unknown else [])]
+    found = worked(group)
     noun = NOUNS.get(kind)
     said = [verb_for(group, kind), *(columns(found) if found else [{"value": noun, "color": MUTED}] if noun else [])]
     last = group[-1]
@@ -100,9 +94,13 @@ def message(group: list[dict], closed: bool, now: float, behind: int = 0) -> dic
         "clock": ran >= CLOCK_AFTER and not over,
         "hold": DRAINING if behind >= DRAIN else max(HOLD if kind in HELD else 0.0, walked(said)),
         "lingers": LINGERS,
-        "waiting": unknown,
     }
 
 
+def known(group: list[dict]) -> bool:
+    return group[0]["kind"] not in TOUCHED or bool(worked(group))
+
+
 def queue(groups: list[list[dict]], now: float = 0.0) -> list[dict]:
-    return [message(group, i < len(groups) - 1, now, len(groups) - 1 - i) for i, group in enumerate(groups)]
+    said = [group for group in groups if known(group)]
+    return [message(group, i < len(said) - 1, now, len(said) - 1 - i) for i, group in enumerate(said)]
