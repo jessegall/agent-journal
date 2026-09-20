@@ -12,7 +12,7 @@ import NewResource from "../resource/NewResource.vue";
 
 const props = defineProps({type: String});
 const kind = computed(() => meta(props.type));
-const archive = ref(false);
+const filter = ref("open");
 const adding = ref(false);
 const all = computed(() => rows(props.type));
 watch(
@@ -24,7 +24,9 @@ watch(
     {immediate: true}
 );
 onUnmounted(() => trim(props.type));
-const shown = computed(() => (archive.value ? all.value.filter((r) => r.completed) : open(props.type)));
+const SHOWS = {open: () => open(props.type), closed: () => all.value.filter((r) => r.completed), every: () => all.value};
+const filters = computed(() => (kind.value.filters || []).map((f) => ({...f, count: (SHOWS[f.shows] || SHOWS.every)().length})));
+const shown = computed(() => (SHOWS[filter.value] || SHOWS.open)());
 const groups = computed(() => {
     const buckets = {};
     for (const r of shown.value) (buckets[groupOf(r)] ||= []).push(r);
@@ -32,7 +34,7 @@ const groups = computed(() => {
         .filter((k) => buckets[k])
         .map((k) => ({
             key: k,
-            title: k === "open" && archive.value ? word(props.type, "complete").replace(/^\w/, (c) => c.toUpperCase()) : GROUPS[k],
+            title: k === "open" && filter.value !== "open" ? word(props.type, "complete").replace(/^\w/, (c) => c.toUpperCase()) : GROUPS[k],
             list: buckets[k],
         }));
 });
@@ -47,10 +49,16 @@ async function select(n) {
 <template>
     <section class="index">
         <div class="bar">
-            <span class="count">{{ all.length }} {{ kind.title.toLowerCase() }}s, {{ open(type).length }} open</span>
-            <span class="sep" />
-            <button type="button" :class="['flat', {on: archive}]" @click="archive = !archive">Archive</button>
+            <div class="tabs" role="tablist">
+                <template v-for="f in filters" :key="f.key">
+                    <button type="button" role="tab" :aria-selected="filter === f.key" :class="['tab', {on: filter === f.key}]" @click="filter = f.key">
+                        {{ f.title }}
+                        <span class="tab-n">{{ f.count }}</span>
+                    </button>
+                </template>
+            </div>
             <template v-if="kind.view === 'document'">
+                <span class="sep" />
                 <a class="flat" :href="`#/${route.env}/files`">Files</a>
             </template>
             <span class="grow" />
@@ -64,8 +72,8 @@ async function select(n) {
         </template>
         <template v-if="!shown.length">
             <p class="empty">
-                No {{ kind.title.toLowerCase() }}s {{ archive ? "archived" : all.length ? "open" : "on this environment"
-                }}{{ archive || !all.length ? " yet" : "" }}.
+                No {{ kind.title.toLowerCase() }}s {{ filter === "open" ? (all.length ? "open" : "on this environment") : filters.find((f) => f.key === filter).title.toLowerCase()
+                }}{{ filter !== "open" || !all.length ? " yet" : "" }}.
             </p>
         </template>
         <SwitchCase :value="kind.view">
@@ -98,6 +106,47 @@ async function select(n) {
     width: 1px;
     height: 16px;
     background: var(--border-2);
+}
+
+.tabs {
+    display: flex;
+    align-items: stretch;
+    align-self: stretch;
+    gap: 14px;
+}
+
+.tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0;
+    border: 0;
+    border-bottom: 2px solid transparent;
+    background: none;
+    color: var(--text-3);
+    font-size: 11.5px;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    cursor: pointer;
+}
+
+.tab:hover {
+    color: var(--text-2);
+}
+
+.tab.on {
+    border-bottom-color: var(--accent);
+    color: var(--text);
+}
+
+.tab-n {
+    font-size: 11px;
+    color: var(--text-3);
+    font-variant-numeric: tabular-nums;
+}
+
+.tab.on .tab-n {
+    color: var(--accent-text);
 }
 
 .flat {

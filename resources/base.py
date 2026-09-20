@@ -13,6 +13,7 @@ ACTIONS = ("created", "updated", "deleted", "linked", "commented", "completed")
 SMALL, WIDE, DOCUMENT = "small", "wide", "document"
 VIEWS = (SMALL, WIDE, DOCUMENT)
 USER, AGENT, SYSTEM, PLUGIN = "user", "agent", "system", "plugin"
+OPEN, CLOSED, EVERY = "open", "closed", "every"
 WHOM = "whom"
 KEYWORDS = "keywords"
 ENVIRONMENT, PROJECT = "environment", "project"
@@ -80,6 +81,7 @@ class Resource:
     icon: ClassVar[str] = "dot"  # the viewer's glyph for it
     attention: ClassVar[bool] = False   # unread by the user, it waits on them
     settled: ClassVar[bool] = False     # it leaves the user's highlights only once it is completed, never by being waved away
+    filters: ClassVar[tuple] = (OPEN, CLOSED)   # the ways its list can be narrowed, shown as the tabs above it
     handed: ClassVar[str] = ""          # its heading in the start block, empty when it is not handed to a session
     counted: ClassVar[bool] = False     # handed as a count, not row by row
     lent: ClassVar[bool] = True         # a subagent lent the environment may write it

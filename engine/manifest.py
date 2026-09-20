@@ -5,8 +5,16 @@ import features
 from commands.cli import actions
 from controllers.base import Controller
 from controllers.types import CONTROLLERS
-from resources.base import ACTIONS, ACTORS, SCOPES, VIEWS, Resource
+from resources.base import ACTIONS, ACTORS, CLOSED, EVERY, OPEN, SCOPES, VIEWS, Resource
 from resources.types import PRIORITY, TYPES
+
+
+SHOWN = {OPEN: "Open", EVERY: "All"}
+
+
+def tabs(kind) -> list[dict]:
+    titles = {**SHOWN, CLOSED: kind.shown.get("completed", "Closed").split()[-1].capitalize()}
+    return [{"key": key, "title": titles[key], "shows": key} for key in kind.filters]
 
 
 def manifest(root: Path | None = None) -> dict:
@@ -22,7 +30,7 @@ def manifest(root: Path | None = None) -> dict:
         "priority": list(PRIORITY),
         "fields": [f.name for f in fields(Resource)],
         "methods": actions(Controller),
-        "types": {name: {"title": c.title_, "abstract": c.abstract_, "help": c.help_, "view": c.view, "nav": c.nav, "scope": c.scope, "icon": c.icon, "attention": c.attention, "settled": c.settled, "mirror": c.mirror, "closed_first": c.closed_first, "notify": list(c.notify), "spoken": c.spoken, "counted": c.counted, "fields": c.fields, "labels": c.labels,
+        "types": {name: {"title": c.title_, "abstract": c.abstract_, "help": c.help_, "view": c.view, "nav": c.nav, "scope": c.scope, "icon": c.icon, "attention": c.attention, "settled": c.settled, "filters": tabs(c), "mirror": c.mirror, "closed_first": c.closed_first, "notify": list(c.notify), "spoken": c.spoken, "counted": c.counted, "fields": c.fields, "labels": c.labels,
                          "names": dict(c.names), "shown": dict(c.shown), "methods": actions(CONTROLLERS[name])}
                   for name, c in TYPES.items()},
         "features": features.describe(),
