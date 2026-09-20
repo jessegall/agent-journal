@@ -92,15 +92,22 @@ def worked(group: list[dict], kind: str) -> list[dict]:
     return [{**name, "value": capped(name["value"])} for name in found[-MOST:]]
 
 
+def shared(said: list[list[str]]) -> int:
+    for i in range(min(len(w) for w in said)):
+        if len({w[i] for w in said}) > 1:
+            return i
+    return min(len(w) for w in said)
+
+
 def columns(found: list[dict]) -> list[dict]:
     said = [[name["value"]] if name["whole"] else words(name["value"]) for name in found]
-    wide = max(len(w) for w in said)
-    rows = [[*w, *([""] * (wide - len(w)))] for w in said]
+    if len({len(w) for w in said}) > 1:
+        same = shared(said)
+        said = [[*w[:same], " ".join(w[same:])] for w in said]
     parts = []
-    for i in range(wide):
-        column = [row[i] for row in rows]
+    for column in zip(*said):
         if len(set(column)) > 1:
-            parts.append({"value": column, "duration": FLIP_EVERY, "color": MUTED})
+            parts.append({"value": list(column), "duration": FLIP_EVERY, "color": MUTED})
         elif column[0]:
             parts.append({"value": column[0], "color": MUTED})
     return parts
@@ -141,7 +148,7 @@ def message(group: list[dict], kind: str, closed: bool, now: float) -> dict:
         "at": at,
         "done": bool(closed or ended),
         "for": int(ran),
-        "clock": ran >= CLOCK_AFTER,
+        "clock": ran >= CLOCK_AFTER and not (closed or ended),
         "hold": HOLD if kind in HELD else 0.0,
         "lingers": LINGERS,
     }

@@ -70,8 +70,8 @@ check("every kind has its own verb",
       [said([shell("x", effect=e)])[0][0] for e in ("writes", "reads", "deletes", "tests", "installs", "builds", "")],
       ["editing", "reading", "deleting", "testing", "installing", "building", "running"])
 check("a run of journal commands is one message whose every column rolls on its own",
-      said([shell("journal question answer 10"), shell("journal todo add x", NOW + 1), shell("journal work log 12 x", NOW + 2)]),
-      [["journalling", ["answering", "adding", "logging"], ["question", "todo", "work"], ["10", "", "12"]]])
+      said([shell("journal question answer 10"), shell("journal todo add 12", NOW + 1), shell("journal work log 12 x", NOW + 2)]),
+      [["journalling", ["answering", "adding", "logging"], ["question", "todo", "work"], ["10", "12", "12"]]])
 check("a journal command is rooted under journalling and what it did there is muted",
       coloured([shell("journal message read 601")])[0][:2], [("journalling", "gray"), ("reading", "muted")])
 
@@ -110,6 +110,12 @@ check("only the last message of the queue can still be running",
       [one["done"] for one in queue([edit("a.vue"), shell("git commit -m x", NOW + 1)], NOW + 2)], [True, False])
 check("a run that has finished is done and timed by when it finished",
       [(one["done"], one["for"]) for one in queue([shell("ls", done=NOW + 2)], NOW + 600)], [(True, 2)])
+check("a message that has finished never shows a clock, however long it took",
+      queue([shell("ls", done=NOW + 60)], NOW + 61)[0]["clock"], False)
+check("only the tail differs when two names are not the same length",
+      said([used("mcp__playwright__browser_take_screenshot", "playwright · browser take screenshot"),
+            used("mcp__playwright__browser_navigate", "playwright · browser navigate", NOW + 1)]),
+      [["using", "playwright", "·", "browser", ["take screenshot", "navigate"]]])
 check("a message whose newest command has just started shows no clock",
       queue([shell("journal todo read 1"), shell("journal todo read 2", NOW + 19)], NOW + 20)[0]["clock"], False)
 check("a clock appears once a running message has been up long enough",
