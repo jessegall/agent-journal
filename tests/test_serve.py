@@ -91,6 +91,9 @@ told.write_text("".join(f"line {i}\n" for i in range(1, 6)))
 code, read = call("GET", "/api/plugins/works/log?lines=2")
 check("a plugin's log is read over HTTP, the last lines first asked for", (code, read), (200, {"name": "works", "log": "line 4\nline 5"}))
 
+code, bar = call("GET", "/api/main/bar")
+check("the bar is served by the journal, empty while nothing is running", (code, bar), (200, {}))
+
 # SETTINGS, SEARCH AND FILES
 code, got = call("GET", "/api/main/settings")
 check("settings say every feature's switch, the triggers and the keep days", (code, got["features"]["auto"], got["features"]["work"], got["triggers"], got["keep"]), (200, False, True, {}, {}))

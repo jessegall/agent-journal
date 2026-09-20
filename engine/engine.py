@@ -9,6 +9,7 @@ from engine.actors import Actor, Agent, BUSY, COMPACTING, IDLE, STOPPED, System,
 from engine.inputs import FORCE, take
 from features.sessioncontrol.control import CARRY_ON, delivered
 from features.start.feature import WAIT_FOR_REPORT, hello
+from features.statusline.feature import MOST_STEPS
 from engine import steps
 from engine.record import Record
 from engine.terminal import pid_of
@@ -267,6 +268,8 @@ class Engine:
         running[RUNNING.step] = command
         provider = PROVIDERS.get(self.agent.driver.name)
         running[RUNNING.step_effect] = provider().effect_of(command) if provider and command else ""
+        if command:
+            running[RUNNING.steps] = [*(running.get(RUNNING.steps) or []), command][-MOST_STEPS:]
         self.agent.mark(row.status or "", row.event or "", running=running)
 
     def seat(self) -> None:
