@@ -127,9 +127,15 @@ check("a name too long to show is cut with an ellipsis",
       "a-name-far-longer-than-any-status-bar-wou…")
 
 # LINES CHANGED count up, they do not roll
+check("the counts climb with the file being shown, one step per name",
+      [q["value"] for q in queue([edit("a.py", changed={"added": 5, "removed": 1}, done=NOW + 1),
+                                  edit("b.py", NOW + 2, changed={"added": 7, "removed": 0}, done=NOW + 3),
+                                  edit("c.py", NOW + 4, changed={"added": 2, "removed": 4})], NOW + 5)[0]["parts"][2:]],
+      [[5, 12, 14], [1, 1, 5]])
 check("what a run added and removed are two parts of their own, which increment",
       queue([edit("a.vue", changed={"added": 10, "removed": 4}), edit("b.py", NOW + 1, changed={"added": 3, "removed": 0})], NOW)[0]["parts"][2:],
-      [{"value": 13, "prefix": "+", "increments": True, "color": "green"}, {"value": 4, "prefix": "-", "increments": True, "color": "red"}])
+      [{"value": [10, 13], "prefix": "+", "increments": True, "color": "green", "duration": FLIP_EVERY},
+       {"value": 4, "prefix": "-", "increments": True, "color": "red"}])
 check("a run that changed no lines says nothing about them", len(queue([edit("a.vue")], NOW)[0]["parts"]), 2)
 
 # HOW LONG IT STAYS, and what it reports when it ends
