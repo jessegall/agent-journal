@@ -17,7 +17,6 @@ TAIL = 1_000_000
 STATUS_SCRIPT = "claude-status.sh"
 STATUS_HOME = (".journal", "claude-status")
 PLAN_WINDOWS = {"five_hour": ("5h", 300), "seven_day": ("7d", 10080)}
-EFFORT_SET = re.compile(r"<local-command-stdout>Set effort level to (\w+)")
 NOTIFIED = re.compile(r"<tool-use-id>([^<]+)</tool-use-id>.*?<status>([^<]+)</status>", re.S)
 DISPATCHES = ("Agent", "Task")
 QUIET_SUBAGENT = 600
@@ -68,26 +67,15 @@ class Claude(Provider):
         return found
 
     def effort(self, project: Path, transcript: Path | None = None) -> str:
-        return self.chosen_effort(transcript) or self.setting(project, "effortLevel")
+        return self.reported(transcript, "effort").get("level", "") or self.setting(project, "effortLevel")
 
-    def chosen_effort(self, transcript: Path | None) -> str:
+    def reported(self, transcript: Path | None, key: str) -> dict:
         try:
-            with Path(transcript).open("rb") as source:
-                source.seek(0, 2)
-                source.seek(max(0, source.tell() - TAIL))
-                lines = source.read().decode(errors="replace").splitlines()
-        except (OSError, TypeError):
-            return ""
-        for raw in reversed(lines):
-            try:
-                row = json.loads(raw)
-            except ValueError:
-                continue
-            content = (row.get("message") or {}).get("content") if row.get("type") == "user" else None
-            found = EFFORT_SET.match(content) if isinstance(content, str) else None
-            if found:
-                return found.group(1)
-        return ""
+            said = json.loads(Path.home().joinpath(*STATUS_HOME, f"{Path(transcript).stem}.json").read_text())
+        except (OSError, ValueError, TypeError):
+            return {}
+        found = said.get(key)
+        return found if isinstance(found, dict) else {}
 
     def window(self, hook: Hook, used: int) -> int:
         configured = self.setting(Path(hook.cwd or "."), "model")
@@ -102,11 +90,8 @@ class Claude(Provider):
         return wired
 
     def usage(self, path: Path, now: float | None = None) -> dict | None:
-        try:
-            limits = json.loads(Path.home().joinpath(*STATUS_HOME, f"{Path(path).stem}.json").read_text()).get("rate_limits")
-        except (OSError, ValueError, TypeError):
-            return None
-        if not isinstance(limits, dict):
+        limits = self.reported(path, "rate_limits")
+        if not limits:
             return None
         windows = []
         for key, (label, minutes) in PLAN_WINDOWS.items():
