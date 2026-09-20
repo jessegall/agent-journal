@@ -10,6 +10,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 import features  # noqa: E402
 from controllers.types import Agents, Notices, Nudges, Plugins, Todos  # noqa: E402
 from features.plugins.host import Host  # noqa: E402
+from features.plugins.queue import path  # noqa: E402
 from features.plugins.source import folder, home, log  # noqa: E402
 from resources.base import AGENT, PLUGIN, SYSTEM  # noqa: E402
 from tests.kit import check, done, fresh  # noqa: E402
@@ -164,5 +165,23 @@ for _ in range(40):
     time.sleep(0.25)
 check("the running host delivers without being stepped", (landed.exists(), [n.brief for n in Nudges(live).all()]), (True, ["heard it"]))
 check("a second host on the same journal does not double up", FEATURES["plugins"].host(live.root) or True, True)
+
+# A PLUGIN'S QUEUE is a file of journal commands, drained a few lines a step, run as the plugin
+lined = fresh("lined")
+(lined.root / "runtime").mkdir(parents=True, exist_ok=True)
+(lined.root / "runtime" / "env").write_text(lined.env)
+host = Host(lined.root)
+installed(lined, {"name": "queued"})
+queue = path(lined.root, "queued")
+queue.parent.mkdir(parents=True, exist_ok=True)
+queue.write_text("".join(f'todo add "row {i}"\n' for i in range(1, 8)))
+check("a step takes five lines and leaves the rest", (host.step(), len(Todos(lined).all()), queue.read_text().splitlines()),
+      (5, 5, ['todo add "row 6"', 'todo add "row 7"']))
+check("the next step takes what is left", (host.step(), len(Todos(lined).all()), queue.read_text().strip()), (2, 7, ""))
+check("every queued row is written as the plugin", {tuple(t.seen) for t in Todos(lined).all()}, {(PLUGIN,)})
+queue.write_text("nonsense here\n")
+host.step()
+check("a line that is not a journal command is refused and logged, and the queue still empties",
+      ("nonsense here was refused" in log(lined.root, "queued").read_text(), queue.read_text().strip()), (True, ""))
 
 done()

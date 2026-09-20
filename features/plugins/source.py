@@ -52,6 +52,7 @@ def address(source: str) -> str:
 def values(root: Path, name: str, token: str, ports: dict | None = None) -> dict:
     return {"dir": str(folder(root, name)), "data": str(data(root, name)), "root": str(Path(root)),
             "journal.url": running(Path(root)) or "", "journal.env": default_env(Path(root)), "token": token,
+            "queue": str(Path(root) / "runtime" / "plugins" / f"{name}.queue"),
             **{f"ports.{service}": port for service, port in (ports or {}).items()}}
 
 
@@ -76,7 +77,7 @@ def environment(root: Path, name: str, manifest: dict, token: str, ports: dict |
     return {**os.environ, **{str(k): str(v) for k, v in given.items()},
             "JOURNAL_ROOT": where["root"], "JOURNAL_URL": where["journal.url"], "JOURNAL_TOKEN": token,
             "JOURNAL": str(Path(root) / "journal"), "JOURNAL_ENV": where["journal.env"], "JOURNAL_PLUGIN": name,
-            "JOURNAL_PLUGIN_DIR": where["dir"], "JOURNAL_PLUGIN_DATA": where["data"]}
+            "JOURNAL_PLUGIN_DIR": where["dir"], "JOURNAL_PLUGIN_DATA": where["data"], "JOURNAL_QUEUE": where["queue"]}
 
 
 def run(command, cwd: Path, env: dict, seconds: int) -> tuple[int, str]:
