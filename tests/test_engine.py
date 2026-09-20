@@ -1,5 +1,6 @@
 import json
 import os
+import socket
 import sys
 import tempfile
 import time
@@ -307,6 +308,36 @@ driver.quiet_for = lambda: 9.0
 check("a line delivered at rest is said plainly", agent.aside("2 new messages"), "2 new messages")
 driver.__class__.ASIDE = ""
 check("a CLI with no aside always says it plainly", agent.aside("2 new messages"), "2 new messages")
+
+# A SESSION'S INBOX SOCKET takes the line; without one, or when it refuses, the line is typed
+inbox = Path(tempfile.mkdtemp()) / "inbox.sock"
+listener = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+listener.bind(str(inbox))
+listener.listen(1)
+posted = []
+
+
+class Posting(Fake):
+    def send(self, text):
+        return Driver.send(self, text)
+
+    def type_in(self, line):
+        self.sent.append(line)
+        return True
+
+
+posting = Posting(record)
+check("with no socket on the row the line is typed", (posting.send("nothing to post to"), posting.sent), (True, ["nothing to post to"]))
+Agents(record, actor=SYSTEM).saw(Agents(record, actor=SYSTEM).by_session("fake-1").n, {}, inbox=str(inbox))
+posting.sent.clear()
+check("with a socket the line is posted, not typed", (posting.send("over the socket"), posting.sent), (True, []))
+conn, _ = listener.accept()
+posted.append(json.loads(conn.recv(4096).decode().strip()))
+conn.close()
+check("the frame names the line as a user message", posted[0], {"type": "user", "message": {"role": "user", "content": "over the socket"}})
+listener.close()
+inbox.unlink()
+check("a socket that has gone falls back to typing", (posting.send("after it closed"), posting.sent), (True, ["after it closed"]))
 
 driver.lands = False
 lost = Messages(record, actor=USER).create("one that never lands")

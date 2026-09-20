@@ -1,10 +1,16 @@
+import json
 import os
 import re
+import socket
 import time
 from abc import ABC, abstractmethod
 from pathlib import Path
 
+from controllers.types import Agents
+from resources.base import SYSTEM
+
 ENTER_AFTER = 0.3
+POST_WAIT = 5.0
 RECHECK, RESUBMITS, SAMPLE = 0.6, 2, 24
 DRAFT_LINES = 8
 INPUT = re.compile("[❯›]")
@@ -42,6 +48,29 @@ class Driver(ABC):
 
     def send(self, text: str) -> bool:
         line = " ".join(part.strip() for part in text.splitlines() if part.strip())
+        return self.post(line) or self.type_in(line)
+
+    def inbox(self) -> str:
+        try:
+            return str(Agents(self.record, actor=SYSTEM).by_session(self.session).inbox or "")
+        except Exception:
+            return ""
+
+    def post(self, line: str) -> bool:
+        path = self.inbox()
+        if not path:
+            return False
+        said = json.dumps({"type": "user", "message": {"role": "user", "content": line}}) + "\n"
+        try:
+            with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as post:
+                post.settimeout(POST_WAIT)
+                post.connect(path)
+                post.sendall(said.encode())
+            return True
+        except OSError:
+            return False
+
+    def type_in(self, line: str) -> bool:
         try:
             os.write(self.fd, line.encode())
             time.sleep(ENTER_AFTER)
