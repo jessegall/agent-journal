@@ -34,7 +34,7 @@ def log_command(root: Path, hook) -> None:
         out.write(f"{time.time():.3f}\t{hook.command!r}\n")
 
 
-JOURNAL = re.compile(r"(?:\A|[|;&]|\$\()\s*(journal\s+[^|;&\n]+)")
+JOURNAL = re.compile(r"(?:\A|[|;&\n]|\$\()[ \t]*(journal[ \t]+[^|;&\n]+)")
 
 
 def serving(policy, provider, hook) -> bool:

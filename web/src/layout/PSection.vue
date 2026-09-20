@@ -24,7 +24,9 @@ defineEmits<{runBar: [unknown]}>();
                 <span class="planbar-track building" role="progressbar"><span /></span>
             </template>
             <template v-else>
-                <span class="planbar-step">{{ data.current || 1 }}/{{ data.phases.length }}</span>
+                <span class="planbar-step" :title="`Phase ${data.current || 1} of ${data.phases.length}`">
+                    {{ doneOf(p, rows("todo")) }}/{{ rowsOf(p).length }}
+                </span>
                 <span class="planbar-track" role="progressbar">
                     <span :style="{width: `${(100 * doneOf(p, rows('todo'))) / Math.max(1, rowsOf(p).length)}%`}" />
                 </span>
