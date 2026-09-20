@@ -112,6 +112,15 @@ const delivers = (how) => {
 async function setDelivery(how, value) {
     await saveSettings(route.value.env, {delivery: {...((store.settings && store.settings.delivery) || {}), [how]: value}});
 }
+const tagNames = computed(() => ((store.settings && store.settings.tags) || {}).names || []);
+
+async function saveTags(value) {
+    const names = String(value)
+        .split(",")
+        .map((name) => name.trim().replace(/^\[!|\]$/g, ""))
+        .filter(Boolean);
+    if (names.length) await saveSettings(route.value.env, {tags: {names}});
+}
 const retention = computed(() => (store.settings && store.settings.keep) || {});
 const days = ref({});
 const answerHold = ref("");
@@ -235,6 +244,21 @@ async function remove(e) {
                         @change="saveAnswerHold"
                     />
                     <span class="unit">seconds</span>
+                </span>
+            </div>
+        </section>
+        <section class="group">
+            <header class="group-head">
+                <h2>Tags</h2>
+                <p class="lead">The words a message may open with. The agent is told when it opens with none of them.</p>
+            </header>
+            <div class="row">
+                <span class="text">
+                    <span class="title">Tag names</span>
+                    <span class="help">Written [!name] at the start of a message, separated by commas</span>
+                </span>
+                <span class="control">
+                    <input class="names" :value="tagNames.join(', ')" @change="saveTags($event.target.value)" />
                 </span>
             </div>
         </section>
@@ -364,6 +388,16 @@ h2 {
     display: flex;
     flex-direction: column;
     gap: 2px;
+}
+
+.names {
+    width: 280px;
+    padding: 6px 8px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--bg-2);
+    color: var(--text);
+    font-size: 13px;
 }
 
 .part {
