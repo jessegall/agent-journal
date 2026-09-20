@@ -82,18 +82,27 @@ class Agent(Actor):
     def heard(self) -> int:
         return self.pending[-1].id if self.pending else self.cursor()
 
+    def alone(self, event: Event) -> bool:
+        return event.action in TYPES[event.type].alone
+
+    def lines(self) -> list[str]:
+        apart = [render([e], self.record) for e in self.pending if self.alone(e)]
+        together = [e for e in self.pending if not self.alone(e)]
+        return [line for line in apart + ([render(together, self.record)] if together else []) if line]
+
     def flush(self) -> str:
         batch = {**BATCH, **self.record.batch}
-        if not self.pending or (time.time() - self.pending_at < batch["quiet"] and len(self.pending) < batch["size"]):
+        urgent = any(self.alone(e) for e in self.pending)
+        if not self.pending or (not urgent and time.time() - self.pending_at < batch["quiet"] and len(self.pending) < batch["size"]):
             return ""
-        line = render(self.pending, self.record)
-        landed = self.driver.send(self.aside(line))
+        lines = self.lines()
+        landed = all([self.driver.send(self.aside(line)) for line in lines])
         for e in self.pending:
             if landed and TYPES[e.type].told:
                 CONTROLLERS[e.type](self.record, actor=SYSTEM).stamp(e.n, delivered=time.time())
             self.notified(e)
         self.pending = []
-        return line
+        return "; ".join(lines)
 
     def aside(self, line: str) -> str:
         said = self.driver.ASIDE
