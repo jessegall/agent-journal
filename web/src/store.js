@@ -24,6 +24,7 @@ export const store = reactive({
     stream: null,
     booted: false,
     activity: remembered("journal.activity", true),
+    wide: remembered("journal.wide", false),
     focus: "",
     detached: false,
     extension: {here: false, holding: false, pending: false, everywhere: false},
@@ -92,6 +93,15 @@ watch(
     (on) => {
         try {
             localStorage.setItem("journal.activity", JSON.stringify(on));
+        } catch (e) {}
+    }
+);
+
+watch(
+    () => store.wide,
+    (on) => {
+        try {
+            localStorage.setItem("journal.wide", JSON.stringify(on));
         } catch (e) {}
     }
 );
@@ -228,6 +238,7 @@ export async function boot() {
         return boot();
     }
     await Promise.all(types.value.filter((t) => t.name !== "nudge").map((t) => load(t.name)));
+    store.pages = await http.api("GET", "/pages");
     await reload();
     store.booted = true;
     listen();

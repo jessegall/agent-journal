@@ -63,13 +63,25 @@ function onSpace(e) {
     e.preventDefault();
     quick.value = true;
 }
+function onWide(e) {
+    if (e.key === "Escape" && store.wide) {
+        store.wide = false;
+        return;
+    }
+    if (e.key.toLowerCase() === "f" && e.shiftKey && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault();
+        store.wide = !store.wide;
+    }
+}
 window.addEventListener("pointerdown", sawPointer, true);
 window.addEventListener("keydown", sawKeyMove, true);
 window.addEventListener("keydown", onSpace);
+window.addEventListener("keydown", onWide);
 onUnmounted(() => {
     window.removeEventListener("pointerdown", sawPointer, true);
     window.removeEventListener("keydown", sawKeyMove, true);
     window.removeEventListener("keydown", onSpace);
+    window.removeEventListener("keydown", onWide);
 });
 
 onMounted(boot);
@@ -94,10 +106,10 @@ watch(
     <template v-else-if="store.spec">
         <div class="viewer">
             <IdentityBand />
-            <div class="app">
-                <Sidebar />
+            <div :class="['app', {wide: store.wide}]">
+                <div class="rail"><Sidebar /></div>
                 <div class="main">
-                    <TopBar />
+                    <div class="bar"><TopBar /></div>
                     <UpgradeBand />
                     <StatusBar />
                     <Transition name="page" mode="out-in">
@@ -154,6 +166,39 @@ watch(
     flex: 1;
     min-height: 0;
     display: flex;
+}
+
+.rail {
+    display: flex;
+    transition:
+        margin-left 0.26s cubic-bezier(0.2, 0.8, 0.2, 1),
+        opacity 0.18s ease;
+}
+
+.bar {
+    height: 48px;
+    overflow: hidden;
+    transition:
+        height 0.26s cubic-bezier(0.2, 0.8, 0.2, 1),
+        opacity 0.18s ease;
+}
+
+.app.wide .rail {
+    margin-left: -236px;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.app.wide .bar {
+    height: 0;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.app.wide .page {
+    margin: 0 6px 6px;
+    border: 1px solid var(--border-2);
+    border-radius: 8px;
 }
 .main {
     flex: 1;
