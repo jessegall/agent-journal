@@ -109,6 +109,8 @@ effects = {
     "python3 tests/test_gist.py 2>&1 | tail -2": "tests",
     "/opt/homebrew/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python tests/features/files/test_changed.py": "tests",
     "for t in $(find tests -name 'test_*.py'); do python3 $t; done": "tests",
+    "for t in tests/*.py; do python3 $t; done": "tests",
+    "for f in src/*.py; do python3 $f; done": "",
     "cd web && npm test": "tests",
     "rm -rf build": "deletes",
     "git rm old.py": "deletes",
