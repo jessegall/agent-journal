@@ -1,5 +1,6 @@
 import fcntl
 import os
+import re
 import select
 import signal
 import struct
@@ -17,10 +18,15 @@ from engine.services import Manager  # noqa: E402
 from engine.stop import asked  # noqa: E402
 from engine.terminal import RELOAD, STOP, watched  # noqa: E402
 
+ESCAPES = re.compile(rb"\x1b(?:\[[\x30-\x3f]*[\x20-\x2f]*[\x40-\x7e]|\][^\x07\x1b]*(?:\x07|\x1b\\)|O[\x40-\x7e]|[@-_])")
 RELOAD_EVERY = 5.0
 VIEWER_EVERY = 10.0
 SERVICES_EVERY = 1.0
 TYPED_EVERY = 1.0
+
+
+def typing(data: bytes) -> bool:
+    return any(byte >= 0x20 for byte in ESCAPES.sub(b"", data))
 
 
 def size() -> tuple[int, int]:
@@ -125,7 +131,7 @@ def run(root: Path, cwd: Path, env: str, agent: str, fd: int, session: str, life
                 os.write(fd, data)
                 if b"\r" in data or b"\n" in data:
                     typed.unlink(missing_ok=True)
-                elif time.time() - typed_at >= TYPED_EVERY:
+                elif typing(data) and time.time() - typed_at >= TYPED_EVERY:
                     typed.touch()
                     typed_at = time.time()
             if asked(root, began):
