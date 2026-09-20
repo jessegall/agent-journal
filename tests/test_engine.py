@@ -101,7 +101,7 @@ check("and the stamp is quiet: no event was written about it", [e.action for e i
 driver.sent.clear()
 Messages(record, actor=AGENT).complete(1, "read and filed")
 engine.tick()
-check("the agent's completion reaches the user as a notification and not the agent", ([n.refs[0] for n in User(record).unread()], driver.sent), (["message:1"], []))
+check("the agent's own act is not told to the user or back to the agent: it is read in the activity", ([n.refs for n in User(record).unread()], driver.sent), ([], []))
 
 # THE NUDGE: only idle, and in priority order — unread resources first; open work and the next to-do are features
 def settle():                                          # deliver whatever is pending, then read the nudge alone

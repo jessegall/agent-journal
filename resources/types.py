@@ -229,11 +229,11 @@ class AgentRow(Shape, Resource):
 
 class Notification(Shape, Resource):
     type = "notification"
-    mirror = True
+    attention = True
     icon = "bell"
     title_ = "Notification"
-    abstract_ = "What the agent did, told to the user once"
-    help_ = "A notification is written for the user by a feature for every act of the agent, or by the agent to say a long piece of work landed."
+    abstract_ = "Something the user should hear about, told to them once"
+    help_ = "A notification is for the user: an update that landed, a plugin that installed, a setting the agent changed. The agent's own acts are not notifications; they are read in the activity."
     nav = False
     notify = ()
 
