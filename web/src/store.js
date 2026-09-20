@@ -2,7 +2,6 @@ import {computed, reactive, ref, watch} from "vue";
 import * as http from "./api.js";
 import {onOutboxChange, startOutbox} from "./chat/outbox.js";
 import {go, route} from "./route.js";
-import {visible} from "./text/index.js";
 
 export function remembered(key, fallback) {
     try {
@@ -286,9 +285,9 @@ export function clock(at) {
 }
 
 export function quoted(text) {
-    const lines = visible(text).split("\n");
+    const lines = String(text ?? "").split("\n");
     const quote = [];
-    while (lines.length && lines[0].startsWith(">")) quote.push(visible(lines.shift().replace(/^> ?/, "")));
+    while (lines.length && lines[0].startsWith(">")) quote.push(lines.shift().replace(/^> ?/, ""));
     return {quote: quote.join("\n"), text: lines.join("\n").trim()};
 }
 

@@ -1,9 +1,4 @@
 const transformers = [];
-const TAG = /^\s*(?:\*\*)?\[!(?:discovery|correction|blocked|info|reply)\](?:\*\*)?\s*/;
-
-export function visible(text) {
-    return String(text ?? "").replace(TAG, "");
-}
 
 export function register(fn) {
     transformers.push(fn);
@@ -18,7 +13,7 @@ export function escape(text) {
 }
 
 function transformed(text, context) {
-    const blocks = [{kind: "text", text: escape(visible(text)).replace(/\r\n/g, "\n")}];
+    const blocks = [{kind: "text", text: escape(text).replace(/\r\n/g, "\n")}];
     for (const fn of transformers) {
         for (let i = blocks.length - 1; i >= 0; i--) {
             const b = blocks[i];

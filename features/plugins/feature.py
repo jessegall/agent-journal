@@ -1,3 +1,4 @@
+import re
 import shutil
 import threading
 import time
@@ -5,7 +6,7 @@ from pathlib import Path
 
 from controllers.types import Notifications, Plugins as Rows
 from engine.services import UP, want
-from features.base import Feature, command, event, interceptor
+from features.base import Feature, chatformatter, command, event, interceptor
 from features.plugins.host import watch
 from features.plugins.manifest import fill, read
 from features.plugins.payload import refusal
@@ -26,6 +27,16 @@ class Plugins(Feature):
     EACH = 1.5
     LONGEST_EACH = 3.0
     ALTOGETHER = 5.0
+
+    @chatformatter
+    def plugin_rules(self, text: str, record) -> str:
+        said = text
+        for row in Rows(record, actor=SYSTEM).all() if record else []:
+            if row.completed or not row.enabled:
+                continue
+            for rule in (row.manifest or {}).get("chat") or []:
+                said = re.sub(rule["find"], rule["as"], said)
+        return said
 
     def host(self, root: Path) -> None:
         threading.Thread(target=watch, args=(Path(root),), daemon=True).start()

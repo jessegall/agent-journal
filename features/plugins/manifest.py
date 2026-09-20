@@ -9,7 +9,7 @@ from resources.base import ACTIONS, Refused
 from resources.types import TYPES
 
 MANIFEST = Path(".journal-plugin") / "plugin.json"
-KEYS = ("name", "version", "title", "description", "journal", "requires", "env", "setup", "services", "on", "refuse", "pages", "settings")
+KEYS = ("name", "version", "title", "description", "journal", "requires", "env", "setup", "services", "on", "refuse", "chat", "pages", "settings")
 NAME = re.compile(r"[a-z0-9][a-z0-9-]{1,31}$")
 WORD = re.compile(r"[a-z][a-z0-9_-]*$")
 PLACEHOLDER = re.compile(r"\{([a-z][a-z0-9_.]*)\}")
@@ -48,6 +48,7 @@ def read(folder: Path, version: str = "") -> dict:
     checked["setup"] = steps(name, given.get("setup") or [])
     checked["services"] = services(name, given.get("services") or {})
     checked["on"] = handlers(name, given.get("on") or {})
+    checked["chat"] = chat(name, given.get("chat") or [])
     checked["pages"] = pages(name, given.get("pages") or [], checked["services"])
     checked["settings"] = shaped(name, given.get("settings") or {}, "settings", SETTING, ())
     return checked
@@ -117,6 +118,21 @@ def services(name: str, given) -> dict:
         if restart not in RESTARTS:
             raise Refused(f"plugin.json: service {service!r} restarts {', '.join(RESTARTS)}, not {restart!r}")
         out[service] = {**value, "run": command(name, f"service {service!r}", value.get("run")), "restart": restart}
+    return out
+
+
+def chat(name: str, given) -> list:
+    if not isinstance(given, list):
+        raise Refused("plugin.json: chat is a list of {\"find\": \"<regex>\", \"as\": \"<markdown>\"}")
+    out = []
+    for rule in given:
+        if not isinstance(rule, dict) or set(rule) - {"find", "as"} or not str(rule.get("find") or "") or not str(rule.get("as") or ""):
+            raise Refused(f"plugin.json: each chat rule is {{\"find\": \"<regex>\", \"as\": \"<markdown>\"}}, got {rule!r}")
+        try:
+            re.compile(rule["find"])
+        except re.error as broken:
+            raise Refused(f"plugin.json: chat find {rule['find']!r} is not a pattern: {broken}") from None
+        out.append({"find": rule["find"], "as": rule["as"]})
     return out
 
 
