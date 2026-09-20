@@ -84,7 +84,7 @@ const who = (e) => e.actor[0].toUpperCase() + e.actor.slice(1);
                 </a>
             </TransitionGroup>
             <TransitionGroup v-else tag="div" class="activity-list" :name="settled ? 'act' : ''">
-                <div v-for="(change, i) in changes" :key="`${change.at}-${change.path}-${i}`" class="activity-row">
+                <div v-for="change in changes" :key="`${change.at}-${change.path}`" class="activity-row">
                     <span class="activity-text">
                         {{ change.path.split("/").pop() }}
                         <span :class="['activity-kind', change.kind]">{{ change.kind }}</span>
