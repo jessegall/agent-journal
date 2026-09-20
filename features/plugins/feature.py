@@ -10,6 +10,7 @@ from features.plugins.host import watch
 from features.plugins.manifest import fill, read
 from features.plugins.payload import refusal
 from features.plugins.run import call
+from features.plugins import services
 from features.plugins.source import alone, checked, data, environment, folder, home, log, ports_for, prepared, preview, said_version, staged, token
 from resources.base import Refused, SYSTEM
 
@@ -20,7 +21,7 @@ class Plugins(Feature):
     name = "plugins"
     title_ = "Plugins"
     abstract_ = "A repository installed into the journal hears the bus, answers it, and may run services of its own"
-    help_ = "Install one with journal plugin install <url>: its .journal-plugin/plugin.json says what it listens to, what it runs and which pages it shows. A plugin runs as you; install shows every command before it runs any. It writes back by calling the journal itself, or by appending journal commands to the file at $JOURNAL_QUEUE, one per line, which the host drains a few at a time."
+    help_ = "The servers a plugin declares are kept up while the session runs and die with it; one that gives up is said once over the chat. Install one with journal plugin install <url>: its .journal-plugin/plugin.json says what it listens to, what it runs and which pages it shows. A plugin runs as you; install shows every command before it runs any. It writes back by calling the journal itself, or by appending journal commands to the file at $JOURNAL_QUEUE, one per line, which the host drains a few at a time."
     fixed = True
     EACH = 1.5
     LONGEST_EACH = 3.0
@@ -28,6 +29,7 @@ class Plugins(Feature):
 
     def host(self, root: Path) -> None:
         threading.Thread(target=watch, args=(Path(root),), daemon=True).start()
+        services.watch(Path(root), self.enabled)
 
     @refuses
     def guard(self, provider, record, hook, session) -> str:
