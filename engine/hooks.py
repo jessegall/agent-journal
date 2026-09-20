@@ -37,6 +37,11 @@ def log_command(root: Path, hook) -> None:
 JOURNAL = re.compile(r"(?:\A|[|;&]|\$\()\s*(journal\s+[^|;&\n]+)")
 
 
+def serving(policy, provider, hook) -> bool:
+    feature = getattr(policy, "feature", None)
+    return not feature or feature.runs_for_subagents or not provider.is_subagent(hook.transcript)
+
+
 def alongside(hook) -> str:
     ran = [found.group(1).strip() for found in JOURNAL.finditer(hook.command or "")]
     return f" — and these were on the same line, so they did not run either: {'; '.join(ran)}" if ran else ""
@@ -98,7 +103,7 @@ def handle(provider, root: Path, env: str, raw: dict) -> dict:
                model=provider.model(hook) or row.model or "", effort=provider.effort(Path(hook.cwd or root.parent), hook.transcript), started=row.started or time.time(),
                context=row.context or 0 if context is None else context)
     if hook.event == "PreToolUse":
-        why = next((reason for policy in POLICIES if (reason := policy(provider, record, hook, row.title))), "")
+        why = next((reason for policy in POLICIES if serving(policy, provider, hook) and (reason := policy(provider, record, hook, row.title))), "")
         return provider.response(blocked=f"{why}{alongside(hook)}" if why else "")
     if hook.event == "SessionStart":
         return provider.response(hook.event, start(root, env, provider.compacted(hook)))

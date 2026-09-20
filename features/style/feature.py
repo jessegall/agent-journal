@@ -6,6 +6,7 @@ from skills import LIBRARY, link, unlink
 
 class Style(Feature):
     name = "style"
+    runs_for_subagents = True
     title_ = "Coding style"
     abstract_ = "Every style rule is written as a skill the agent loads before writing code on its subject"
     help_ = ".agents/skills/style-<subject>/SKILL.md is rewritten on every change to the rule, linked for Claude, and removed when it is struck."

@@ -68,6 +68,7 @@ class Feature(ABC):
     trigger: ClassVar[dict] = {}
     behaviours: ClassVar[dict] = {}
     aliases: ClassVar[tuple] = ()      # names this feature used to have; a pair says the old feature is now one of its behaviours
+    runs_for_subagents: ClassVar[bool] = False   # whether it acts on a subagent's session as well as the one the user talks to
     default: ClassVar[bool] = True
     fixed: ClassVar[bool] = False
 
@@ -103,7 +104,9 @@ class Feature(ABC):
         for pattern, handler in self.listeners():
             bus.on(pattern, handler, enabled=self.enabled)
         for handler in self.refusals():
-            POLICIES.append(lambda provider, record, payload, session, handler=handler: handler(provider, record, payload, session) if self.enabled(record) else "")
+            policy = lambda provider, record, payload, session, handler=handler: handler(provider, record, payload, session) if self.enabled(record) else ""  # noqa: E731
+            policy.feature = self
+            POLICIES.append(policy)
         for shaper in self.formatters():
             FORMATTERS.append((lambda text, record, shaper=shaper: shaper(text, record) if not record or self.enabled(record) else text, tuple(shaper.formats)))
 

@@ -288,3 +288,6 @@ class Claude(Provider):
     def subagent_transcript(self, path: Path, session: str) -> Path | None:
         found = Path(path).with_suffix("").joinpath("subagents", f"agent-{session}.jsonl")
         return found if found.is_file() else None
+
+    def is_subagent(self, path) -> bool:
+        return "subagents" in Path(path).parts if path else False
