@@ -344,7 +344,7 @@ class Nudge(Shape, Resource):
 
 
 PHASE = names("title", "when", "checkpoint", "brief", "todos")
-RUNNING = names("what", "tool", "at", "done", "changed", "files", "effect", "step", "step_effect", "steps", "result", "before")
+RUNNING = names("what", "tool", "at", "done", "changed", "files", "effect", "result", "before")
 COMMAND = names("what", "tool", "at", "effect", "subject", "done", "result", "files", "changed")
 
 TYPES = {c.type: c for c in (Message, Todo, Work, Plan, Doc, Report, Pin, Rule, Reminder, Question, Suggestion, Comment, AgentRow, Notification, Notice, Reaction, Tool, Style, Connection, Plugin, Environment, Ask, Nudge)}
