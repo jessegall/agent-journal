@@ -157,7 +157,7 @@ def expanded(parts: list[str]) -> list[str]:
     return out
 
 
-def parsed(command: str, translate=None) -> list[dict]:
+def parsed(command: str, translate=None, filtered: bool = True) -> list[dict]:
     parts = expanded(pieces(without_scripts(command)))
-    kept = [p for i, p in enumerate(parts) if not (i > 0 and (verb_of(p) or [""])[0] in FILTERS)]
+    kept = [p for i, p in enumerate(parts) if not (filtered and i > 0 and (verb_of(p) or [""])[0] in FILTERS)]
     return [one for one in (piece_parts(p, translate) for p in kept) if one]

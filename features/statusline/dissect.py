@@ -13,6 +13,7 @@ GIT_WORDS = {"add": "tracking", "commit": "committing changes", "push": "pushing
 TOUCHED = ("writes", "deletes")
 NAMED = ("reads", "tests")
 GIVEN = ("installs", "searches")
+SEARCHERS = ("grep", "rg", "ag", "find", "fd")
 FILE = re.compile(r"^[\w.-]+\.\w+$")
 NAME_CAP = 42
 
@@ -21,9 +22,18 @@ def by_hand(one: dict) -> bool:
     return (one.get(COMMAND.tool) or "Bash") != "Bash"
 
 
-def piece_of(one: dict) -> dict:
-    found = parsed(one.get(COMMAND.what) or "", spoken)[:1]
+def piece_of(one: dict, kind: str = "") -> dict:
+    what = one.get(COMMAND.what) or ""
+    if kind == "searches":
+        looked = [p for p in parsed(what, spoken, filtered=False) if searching(p)]
+        if looked:
+            return looked[0]
+    found = parsed(what, spoken)
     return found[0] if found else {}
+
+
+def searching(piece: dict) -> bool:
+    return piece["root"].split(" ")[0] in SEARCHERS or any("*" in x for x in piece["args"])
 
 
 def git_of(piece: dict) -> str:
@@ -68,7 +78,7 @@ def names_of(one: dict, kind: str) -> list[dict]:
         if one.get(COMMAND.files):
             return [whole(base(path)) for path in one[COMMAND.files]]
         return [said_name(one[COMMAND.subject])] if one.get(COMMAND.subject) else []
-    piece = piece_of(one)
+    piece = piece_of(one, kind)
     if not piece:
         return []
     if piece["own"]:
