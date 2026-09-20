@@ -140,7 +140,7 @@ export function groupOf(r) {
 }
 
 const PAGE = 100;
-const PAGED = new Set(["message", "comment", "notification"]);
+const PAGED = new Set(["message", "comment", "notification", "todo", "work"]);
 export const paging = reactive({size: {}, more: {}});
 
 export async function load(type) {
