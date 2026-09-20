@@ -79,6 +79,9 @@ check("a run of git commands is one message, rooted under git",
 check("a picture and a film have their own words",
       [said([{"what": f"reading {f}", "tool": "Read", "at": NOW, "effect": "reads", "files": [f]}])[0][0] for f in ("a.png", "b.mp4")],
       ["viewing", "watching"])
+check("creating has its own word and holds its line like editing",
+      (said([shell("x", effect="writes", files=["a.py"], made=["a.py"])])[0][0],
+       queue([shell("x", effect="writes", files=["a.py"], made=["a.py"])], NOW)[0]["hold"]), ("creating", HOLD))
 check("every kind has its own verb",
       [said([shell("x", effect=e, files=["a.py"])])[0][0] for e in ("writes", "reads", "deletes", "tests", "installs", "builds", "")],
       ["editing", "reading", "deleting", "testing", "installing", "building", "running"])

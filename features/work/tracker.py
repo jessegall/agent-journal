@@ -125,7 +125,7 @@ def record_files(agent, record, work) -> None:
     if list(files.values()) != work.changed or commits != work.commits:
         Works(record, actor=SYSTEM).update(work.n, changed=list(files.values()), commits=commits)
     if any(delta[k] for k in (DELTA.edited, DELTA.created, DELTA.deleted)):
-        count(record, agent.n, finished(agent.running), delta, touched)
+        count(record, agent.n, finished(agent.running), delta, touched, [e[NOTE.path] for e in entries if e[NOTE.kind] == DELTA.created])
 
 
 def trees(record, n: int, project: Path) -> tuple[dict, dict, dict]:
@@ -152,7 +152,7 @@ def could_write(one: dict) -> bool:
     return (one.get(COMMAND.tool) or "Bash") in ("Bash", *WRITES)
 
 
-def count(record, n: int, ran: float, delta: dict, touched: list) -> None:
+def count(record, n: int, ran: float, delta: dict, touched: list, made: list) -> None:
     agents = Agents(record, actor=SYSTEM)
     row = agents.load(n)
     running = row.running
@@ -162,8 +162,11 @@ def count(record, n: int, ran: float, delta: dict, touched: list) -> None:
         return
     prior = edited.get(RUNNING.changed) or {}
     known = edited.get(RUNNING.files) or []
+    fresh = edited.get(RUNNING.made) or []
     edited = {**edited, RUNNING.changed: {key: prior.get(key, 0) + value for key, value in delta.items()},
-              RUNNING.files: [*known, *(p for p in touched if p not in known)]}
+              RUNNING.files: [*known, *(p for p in touched if p not in known)],
+              RUNNING.made: [*fresh, *(p for p in made if p not in fresh)]}
     agents.update(n, running={**running, RUNNING.before: edited} if late else edited,
-                  commands=[{**one, COMMAND.files: edited[RUNNING.files], COMMAND.changed: edited[RUNNING.changed]}
+                  commands=[{**one, COMMAND.files: edited[RUNNING.files], COMMAND.made: edited[RUNNING.made],
+                              COMMAND.changed: edited[RUNNING.changed]}
                             if one.get(COMMAND.at) == ran and could_write(one) else one for one in row.commands])

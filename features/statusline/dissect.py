@@ -12,6 +12,7 @@ GIT_WORDS = {"add": "tracking files", "commit": "committing changes", "push": "p
              "rebase": "rebasing", "stash": "stashing changes", "reset": "resetting changes", "restore": "restoring files",
              "cherry-pick": "picking a commit"}
 TOUCHED = ("writes", "deletes")
+MADE = "creates"
 NAMED = ("reads", "tests")
 GIVEN = ("installs", "searches")
 SEARCHERS = ("grep", "rg", "ag", "find", "fd")
@@ -110,6 +111,12 @@ def names_of(one: dict, kind: str) -> list[dict]:
     return [said_name(f"{piece['root']} {given}" if " " not in piece["root"] and WORD.match(given) else piece["root"])]
 
 
+def whole_cloth(one: dict, kind: str) -> str:
+    made = one.get(COMMAND.made) or []
+    files = one.get(COMMAND.files) or []
+    return MADE if kind == "writes" and files and all(path in made for path in files) else kind
+
+
 def looked(kind: str, names: list[dict]) -> str:
     if kind != "reads" or not names:
         return kind
@@ -123,7 +130,7 @@ def dissect(one: dict) -> dict:
     kind = kind_of(one)
     names = names_of(one, kind)
     return {
-        "kind": looked(kind, names),
+        "kind": whole_cloth(one, looked(kind, names)),
         "hand": by_hand(one),
         "names": names,
         "at": float(one.get(COMMAND.at) or 0),
