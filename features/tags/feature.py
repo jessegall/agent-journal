@@ -1,7 +1,7 @@
 import re
 
 from features import trigger
-from features.base import Feature, chatformatter, event
+from features.base import Feature, textformatter, event
 from support.transcript import last_said
 
 TAGS = ("[!discovery]", "[!correction]", "[!blocked]", "[!info]", "[!reply]")
@@ -32,6 +32,6 @@ class Tags(Feature):
         if said and not TAG.match(said):
             self.nudge(record, agent, "your last message has no tag", f"open every message with exactly one of {' '.join(TAGS)}")
 
-    @chatformatter
+    @textformatter
     def without_tags(self, text, record):
         return visible(text)

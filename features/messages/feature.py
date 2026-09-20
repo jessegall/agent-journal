@@ -1,10 +1,13 @@
+import re
+
 from controllers.types import Agents, CONTROLLERS, Messages
 from features import trigger
-from features.base import Behaviour, Feature, event
+from features.base import Behaviour, Feature, event, textformatter
 from resources.base import AGENT, SECTION, SYSTEM, USER
 from support.messages import in_hand, theirs, unanswered
 
 LINKED = ("message", "comment", "reaction", "nudge", "notification", "agent")
+CODE = re.compile(r"(?<![`\w-])(?:journal(?:\s+[a-z_]+){1,2}|--[a-z][a-z-]*)(?![`\w])")
 ANSWERS = {"comment": "answered", "reaction": "acknowledged"}
 
 
@@ -117,3 +120,8 @@ class MessagesFeature(Feature):
         message = in_hand(record)
         if message and event.ref not in message.refs:
             Messages(record, actor=SYSTEM).link(message.n, event.ref)
+
+    @textformatter
+    def as_code(self, text, record):
+        return "`".join(part if at % 2 else CODE.sub(lambda found: f"`{found.group(0)}`", part)
+                        for at, part in enumerate(str(text or "").split("`")))
