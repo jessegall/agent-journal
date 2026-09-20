@@ -64,10 +64,13 @@ def a_journal():
     return "journalling", ""
 
 
+VERBS_FOR = {"npm run build": "building", "git commit -m x": "git"}
+
+
 def a_shell():
     command = random.choice(SHELL)
     ran("Bash", {"command": command})
-    return "building" if command.startswith("npm run build") else "running", ""
+    return VERBS_FOR.get(command, "running"), ""
 
 
 def a_test():
@@ -164,7 +167,7 @@ check("every verb the journal has a word for is driven end to end",
 script = """
 import {line, shown} from "./web/src/layout/bar.js";
 import {readFileSync} from "node:fs";
-const runs = JSON.parse(readFileSync(process.argv[2], "utf8"));
+const runs = JSON.parse(readFileSync(process.argv[1], "utf8"));
 console.log(JSON.stringify(runs.map((queue) => {
     let state = {at: 0, since: 0};
     const seen = [];
