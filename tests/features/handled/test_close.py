@@ -63,4 +63,13 @@ m = Messages(record, actor=USER).create("one ask")
 Messages(record, actor=AGENT).process(m.n, "one ask", "todo 1")
 check("switched off: the message stays open", Messages(record).load(m.n).completed, 0.0)
 
+# A MESSAGE THE AGENT WRITES asks nothing of the user, so it closes once they have read it
+record = fresh()
+messages = Messages(record, actor=AGENT)
+mine = messages.create("Something I wanted you to know", brief="no answer needed")
+check("it stays open until the user has seen it", bool(Messages(record).load(mine.n).completed), False)
+Messages(record, actor=USER).read(mine.n)
+row = Messages(record).load(mine.n)
+check("once read by the user it is closed, saying so", (bool(row.completed), row.outcome), (True, "read by the user"))
+
 done()
