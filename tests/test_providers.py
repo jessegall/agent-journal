@@ -191,13 +191,13 @@ check("more than 200,000 in use can only be a million window", used(), 40.0)
 
 # CLAUDE'S CURRENT EFFORT is the last one it confirmed in its transcript, even one kept for the session only
 said = lambda text, kind="user": json.dumps({"type": kind, "message": {"role": kind, "content": text}})
-transcript.write_text("\n".join([
-    said("<local-command-stdout>Set effort level to medium (saved as your default for new sessions): Balanced</local-command-stdout>"),
-    said("<local-command-stdout>Set effort level to max (this session only): Maximum</local-command-stdout>"),
-    said("I quoted <local-command-stdout>Set effort level to low in my own words", "assistant"),
-]) + "\n")
 (home / ".claude" / "settings.json").write_text(json.dumps({"effortLevel": "medium"}))
-check("the transcript's last confirmed effort wins over the settings, and the agent's own words never count", PROVIDERS["claude"]().effort(project, transcript), "max")
+said_home = home / ".journal" / "claude-status"
+said_home.mkdir(parents=True)
+(said_home / f"{transcript.stem}.json").write_text(json.dumps({"effort": {"level": "max"}}))
+check("the effort the CLI reports wins over the settings", PROVIDERS["claude"]().effort(project, transcript), "max")
+(said_home / f"{transcript.stem}.json").write_text(json.dumps({"model": {"id": "x"}}))
+check("with nothing reported, the settings say what it is", PROVIDERS["claude"]().effort(project, transcript), "medium")
 check("with no confirmation in the transcript, the settings say", PROVIDERS["claude"]().effort(project, project / "none.jsonl"), "medium")
 
 # THE HOOK'S FACTS RIDE ON THE AGENT'S EVENT, so a later reader knows what the hook saw
