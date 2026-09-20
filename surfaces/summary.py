@@ -6,7 +6,7 @@ from engine.record import Record
 from features.auto.feature import Auto
 from resources.base import SYSTEM, USER
 
-SHOWN = ("ready", "active", "waiting", "done")
+SHOWN = ("building", "ready", "active", "waiting", "done")
 
 
 def rows_of(p) -> list[int]:

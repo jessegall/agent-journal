@@ -54,7 +54,9 @@ got = environment(record)["plans"]
 check("an active plan says its phase and how many of its rows are done", got, [{"n": 1, "title": "the plan", "status": "active", "current": 1, "phase": "First", "phases": 2, "rows": 2, "done": 0}])
 Todos(record, actor=AGENT).complete(1, how="shipped")
 check("each row done counts towards the plan, whichever phase it sits in", environment(record)["plans"][0]["done"], 1)
-check("a draft plan is not shown", len([plans.create(title="draft", goal="g")]) and len(environment(record)["plans"]), 1)
+made = plans.create(title="draft", goal="g")
+check("a plan still being written is shown too, so the user can watch it take shape",
+      [(p["n"], p["status"]) for p in environment(record)["plans"]], [(1, "active"), (made.n, "building")])
 
 whole = summarize(record.root)
 check("the summary names the project, its root, version, start environment and every environment",

@@ -184,10 +184,16 @@ const counts = (c) => [
                                     <span class="jbar-plan-dot">·</span>
                                     <span class="jbar-plan-phase">{{ p.phase }}</span>
                                 </template>
-                                <span class="jbar-plan-step">phase {{ p.current || 1 }}/{{ p.phases }}</span>
-                                <span class="jbar-track" role="progressbar">
-                                    <span :style="{width: `${(100 * p.done) / Math.max(1, p.rows)}%`}" />
-                                </span>
+                                <template v-if="p.status === 'building'">
+                                    <span class="jbar-plan-step">being written</span>
+                                    <span class="jbar-track building" role="progressbar"><span /></span>
+                                </template>
+                                <template v-else>
+                                    <span class="jbar-plan-step">phase {{ p.current || 1 }}/{{ p.phases }}</span>
+                                    <span class="jbar-track" role="progressbar">
+                                        <span :style="{width: `${(100 * p.done) / Math.max(1, p.rows)}%`}" />
+                                    </span>
+                                </template>
                                 <template v-if="wordFor(p)">
                                     <button type="button" :class="['jbar-act', {ack: p.status === 'done'}]" @click="runPlan(e, p)">
                                         {{ wordFor(p) }}
@@ -489,5 +495,20 @@ a.jbar-count:hover {
     border-radius: 3px;
     background: var(--accent);
     transition: width 0.3s ease;
+}
+
+.jbar-track.building > span {
+    width: 40%;
+    animation: writing 1.6s ease-in-out infinite;
+}
+
+@keyframes writing {
+    from {
+        transform: translateX(-100%);
+    }
+
+    to {
+        transform: translateX(250%);
+    }
 }
 </style>
