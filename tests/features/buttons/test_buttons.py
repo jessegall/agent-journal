@@ -35,5 +35,8 @@ made = rows.create("Ready when you are", buttons=[start, {"label": "Go", "type":
 check("the message keeps the button that runs and drops the one that does not", rows.load(made.n).data["buttons"], [start])
 plain = rows.create("Nothing to press")
 check("a message with no buttons is left alone", "buttons" in rows.load(plain.n).data, False)
+later = rows.create("buttons put on afterwards")
+rows.update(later.n, buttons=[{"label": "Go", "type": "plan", "n": 1, "action": "detonate"}, start])
+check("buttons added after the message was written are cleaned the same way", rows.load(later.n).data["buttons"], [start])
 
 done()
