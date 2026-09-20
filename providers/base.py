@@ -11,6 +11,7 @@ from resources.base import Refused
 from resources.types import AgentRow, COMMAND, RUNNING
 
 WRITES = ("Edit", "Write", "MultiEdit", "NotebookEdit")
+READS = ("Read", "NotebookRead")
 WRITING_COMMANDS = re.compile(r"(^|[;&|]\s*)(rm|mv|cp|git (commit|push|rm|mv)|sed -i|tee|touch|mkdir|npm install|pip install)\b|(?<![\d&])>>?\s*(?!/dev/null|&)\S")
 RING = 12
 JOURNAL_DIR = ".journal"
@@ -130,8 +131,9 @@ class Provider(ABC):
         return {"passed": passed, "failed": failed}
 
     def effect(self, hook: Hook) -> str:
-        if hook.tool.name in WRITES:
-            return "writes" if self.in_project(hook.tool.file_path, hook.cwd) else ""
+        if hook.tool.name in WRITES or hook.tool.name in READS:
+            kind = "writes" if hook.tool.name in WRITES else "reads"
+            return kind if self.in_project(hook.tool.file_path, hook.cwd) else ""
         return self.effect_of(hook.command) if hook.tool.name == "Bash" else ""
 
     def effect_of(self, command: str) -> str:
