@@ -27,7 +27,14 @@ def release() -> bytes:
 
 
 CURSOR = re.compile(rb"\x1b\[(\d*)(?:;(\d*))?([Hfdr])")
+SGR_CLICK = re.compile(rb"\x1b\[<(\d+);(\d+);(\d+)([Mm])")
+OLD_CLICK = re.compile(rb"\x1b\[M(...)", re.S)
 PARTIAL = re.compile(rb"\x1b(\[[\d;?]*|\][^\x07\x1b]*\x1b?)?$")
+
+
+def unshifted(data: bytes) -> bytes:
+    data = SGR_CLICK.sub(lambda m: b"\x1b[<%s;%s;%d%s" % (m.group(1), m.group(2), max(1, int(m.group(3)) - ROWS), m.group(4)), data)
+    return OLD_CLICK.sub(lambda m: b"\x1b[M" + m.group(1)[:2] + bytes([max(33, m.group(1)[2] - ROWS)]), data)
 
 
 class Translator:

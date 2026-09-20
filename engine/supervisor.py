@@ -134,7 +134,7 @@ def run(root: Path, cwd: Path, env: str, agent: str, fd: int, session: str, life
                 if not data:
                     result = STOP
                     break
-                os.write(fd, data)
+                os.write(fd, band.unshifted(data))
                 if b"\r" in data or b"\n" in data:
                     typed.unlink(missing_ok=True)
                 elif typing(data) and time.time() - typed_at >= TYPED_EVERY:
