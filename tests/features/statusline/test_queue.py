@@ -44,7 +44,7 @@ check("a command of another kind closes the message and opens the next",
       [["editing", "a.vue"], ["running", "git", "commit"], ["editing", "c.md"]])
 check("the user's case: two writes, a journal command, a commit, a write",
       said([edit("one.py"), edit("two.py"), shell("journal todo add x", NOW + 1), shell("git commit -m x", NOW + 2), edit("three.py", NOW + 3)]),
-      [["editing", ["one.py", "two.py"]], ["journal", "adding", "todo"], ["running", "git", "commit"], ["editing", "three.py"]])
+      [["editing", ["one.py", "two.py"]], ["journalling", "adding", "todo"], ["running", "git", "commit"], ["editing", "three.py"]])
 check("nothing that has not run is in the queue: an empty ring is an empty queue", queue([], NOW), [])
 check("a command with nothing to say is left out", said([shell("")]), [])
 
@@ -54,7 +54,7 @@ check("every word of a name is a part of its own",
       [["using", "playwright", "·", "browser", "evaluate"]])
 check("what two names share stands still and only the word that differs rolls",
       said([shell("journal message read 109"), shell("journal message read 110", NOW + 1)]),
-      [["journal", "reading", "message", ["109", "110"]]])
+      [["journalling", "reading", "message", ["109", "110"]]])
 check("a quoted string stays one part", said([shell("git commit -m 'a long message'")]), [["running", "git", "commit"]])
 check("the rolling part says how often",
       queue([shell("git add -A"), shell("git commit -m x", NOW + 1)], NOW)[0]["parts"][-1]["duration"], FLIP_EVERY)
@@ -67,9 +67,9 @@ check("every kind has its own verb",
       ["editing", "reading", "deleting", "testing", "installing", "building", "running"])
 check("a run of journal commands is one message whose every column rolls on its own",
       said([shell("journal question answer 10"), shell("journal todo add x", NOW + 1), shell("journal work log 12 x", NOW + 2)]),
-      [["journal", ["answering", "adding", "logging"], ["question", "todo", "work"], ["10", "", "12"]]])
-check("a journal command is rooted under journal and what it did there is muted",
-      coloured([shell("journal message read 601")])[0][:2], [("journal", "gray"), ("reading", "muted")])
+      [["journalling", ["answering", "adding", "logging"], ["question", "todo", "work"], ["10", "", "12"]]])
+check("a journal command is rooted under journalling and what it did there is muted",
+      coloured([shell("journal message read 601")])[0][:2], [("journalling", "gray"), ("reading", "muted")])
 
 # WHAT A MESSAGE NAMES depends on what it is doing
 check("a shell command is named by its root and subcommand, with no flags or arguments",

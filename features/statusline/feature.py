@@ -7,7 +7,7 @@ GRAY, MUTED, RED, GREEN = "gray", "muted", "red", "green"
 JOURNAL = "journal"
 USING = "using"
 VERBS = {"writes": "editing", "reads": "reading", "deletes": "deleting", "tests": "testing",
-         "installs": "installing", "builds": "building", JOURNAL: "journal", "": "running"}
+         "installs": "installing", "builds": "building", JOURNAL: "journalling", "": "running"}
 NOUNS = {"writes": "files", "reads": "files", "deletes": "files", "tests": "tests", "installs": "dependencies"}
 HELD = ("writes", "deletes", "tests")
 TOUCHED = ("writes", "deletes")
