@@ -1,13 +1,13 @@
 from controllers.types import CONTROLLERS, Messages
 from features.base import Feature, event
-from resources.base import AGENT, SECTION, SYSTEM
+from resources.base import AGENT, SECTION, SYSTEM, USER
 
 
 class Handled(Feature):
     name = "handled"
     title_ = "Handled messages close"
-    abstract_ = "A message is closed once the agent replies to it, reacts to it, or processes every paragraph into a part"
-    help_ = "A reply or a reaction by the agent answers the user's message and closes it; so does processing each part with journal message process <n> \"<their words>\" \"<resource ref>\" until every paragraph is covered."
+    abstract_ = "A message is closed once the other side has dealt with it: the agent by answering, the user by reading"
+    help_ = "A reply or a reaction by the agent answers the user's message and closes it; so does processing each part with journal message process <n> \"<their words>\" \"<resource ref>\" until every paragraph is covered. A message the agent writes asks nothing of the user, so it closes as soon as they have seen it."
     ANSWERS = {"comment": "answered", "reaction": "acknowledged"}
 
     def paragraphs(self, message) -> list[str]:
@@ -29,6 +29,14 @@ class Handled(Feature):
             return
         became = ", ".join(s[SECTION.body] for s in message.sections)
         messages.complete(message.n, how=f"every part became a record: {became}")
+
+    @event("message.updated")
+    def seen(self, event, record) -> None:
+        messages = Messages(record, actor=SYSTEM)
+        message = messages.load(event.n)
+        if message.completed or message.seen[:1] != [AGENT] or USER not in message.seen:
+            return
+        messages.complete(message.n, how="read by the user")
 
     @event("comment.created")
     @event("reaction.created")
