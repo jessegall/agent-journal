@@ -17,6 +17,9 @@ def typed(value):
         return value
 
 
+LEVELS = {"low": 50, "default": 100, "high": 150, "critical": 200}
+
+
 def rows(**columns: str) -> dict:
     return {"rows": columns}
 
@@ -33,6 +36,8 @@ def check(name: str, spec, value):
         return value
     if spec == LIST and isinstance(value, str):
         value = [word.strip() for word in value.split(",") if word.strip()]
+    if spec == NUMBER and isinstance(value, str) and value.lower() in LEVELS:
+        value = LEVELS[value.lower()]
     if not isinstance(value, KINDS[spec]) or isinstance(value, bool) and spec != FLAG:
         raise Refused(f"{name} is a {spec}")
     return value
@@ -81,7 +86,6 @@ class Reasoned(Shape):
     labels = {"brief": "Reasoning", "outcome": "Why struck"}
 
 
-LEVELS = {"low": 50, "default": 100, "high": 150, "critical": 200}
 
 
 class Ranked(Shape):
