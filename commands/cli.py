@@ -13,6 +13,7 @@ from pathlib import Path
 from controllers.base import COMMANDS
 from controllers.types import Agents, CONTROLLERS
 import features
+from features.base import generation
 import migrations
 from engine import queries
 from engine.drivers import DRIVERS
@@ -123,7 +124,19 @@ def search_text(record, term: str, page: int) -> str:
     return "\n".join(part for part in (transcript_matches, "\n".join(file_hits)) if part)
 
 
+PARSERS: dict[tuple, argparse.ArgumentParser] = {}
+DEFAULTS = ("JOURNAL_ROOT", "JOURNAL_ENV", "JOURNAL_ACTOR", "JOURNAL_SESSION", "JOURNAL_AGENT")
+
+
 def parser(only: str = "") -> argparse.ArgumentParser:
+    features.load()
+    key = (only, generation(), *(os.environ.get(name, "") for name in DEFAULTS))
+    if key not in PARSERS:
+        PARSERS[key] = built(only)
+    return PARSERS[key]
+
+
+def built(only: str) -> argparse.ArgumentParser:
     top = argparse.ArgumentParser(prog="journal", description="the journal, every type a noun and every method its word")
     top.add_argument("--root", default=os.environ.get("JOURNAL_ROOT", ".journal"))
     top.add_argument("--env", dest="bound", default=os.environ.get("JOURNAL_ENV", ""))
