@@ -311,10 +311,8 @@ class Agents(Controller):
     resource = types.AgentRow
 
     def by_session(self, session: str):
-        for r in self._every():
-            if r.title == session:
-                return r
-        return self.create(session, status="stopped")
+        found = next((row["n"] for row in self.summaries() if row["title"] == session and not row["deleted"]), None)
+        return self.load(found) if found else self.create(session, status="stopped")
 
     def saw(self, n: int, fact: dict, **data):
         r = self.load(n)
