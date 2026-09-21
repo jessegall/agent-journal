@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.21.0 — The terminal header shows the installed version
+
+The band at the top of the agent's terminal reads `JOURNAL 2.21.0` — the version that is installed — so which journal a session runs is visible at a glance. An upgrade restarts the band, so the number follows every install.
+
+What to do about it: `journal upgrade`.
+
 ## 2.20.2 — A new session's greeting is typed even when its engine starts late
 
 A session's engine starts a few seconds after Claude does. In a fresh journal a new engine marks every event older than itself as read, so history is not replayed — and the start greeting, created at SessionStart, was older than the engine and was dropped without being typed. A message addressed to the engine's own session is never dropped that way now; it is delivered.
