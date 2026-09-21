@@ -8,7 +8,7 @@ from controllers.types import Agents
 from engine.stored import read_json, write_json
 from features.base import Behaviour, Feature, event, formats, interceptor, Line
 from resources.base import AGENT, SYSTEM
-from engine.transcript import IDLE, Turn, last_said, turns
+from engine.transcript import Turn, last_said, turns
 
 TAGS = ("discovery", "correction", "blocked", "info", "reply")
 RECENT_TURNS, RECENT_SECONDS = 6, 1800.0
@@ -48,7 +48,7 @@ class Tags(Feature):
     abstract_ = "A message opens with one tag, and a tag carrying a number runs the command it stands for"
     help_ = "The tags are settings. tags.names lists them and tags.runs maps a tag to the command it stands for, so [!reply:12] runs journal message reply 12 with the turn as its text, and [!todo=\"the title\"] files a to-do with that title and the turn as its brief. A tag runs once, keyed to the turn it came from; two tags in one turn run in the order they appear; and a refusal comes back as a nudge on the next turn rather than at the moment of acting."
     behaviours = {"naming": Behaviour("Name a message that opens without a tag",
-                                      "Said the moment a turn's last message is seen without one"),
+                                      "Said the moment any message is seen without one"),
                   "replying": Behaviour("Remind the agent to reply by tag",
                                         "When the agent runs journal message reply, it is told the reply tag does the same")}
     NAMES = "names"
@@ -68,12 +68,11 @@ class Tags(Feature):
     @event("agent.said")
     def check(self, event, record) -> None:
         agent = self.agent(event, record)
-        if not agent or agent.status != IDLE or not self.on(record, "naming"):
+        if not agent or not self.on(record, "naming"):
             return
-        said = agent.said if agent.event == "Stop" and agent.said else last_said(record, agent)
-        ending = Turn(line=-1, who="agent", text=said, at=time.time())
-        if said and not self.reader(record).match(said) and not self.already(record, agent, ending, "untagged"):
-            self.say(record, agent, "untagged", tags=" ".join(written(self.names(record))))
+        for turn in self.written(record, agent):
+            if not self.reader(record).match(turn.text) and not self.already(record, agent, turn, "untagged"):
+                self.say(record, agent, "untagged", tags=" ".join(written(self.names(record))))
 
     @formats
     def without_tags(self, text, record):
@@ -101,10 +100,14 @@ class Tags(Feature):
         agent = self.agent(event, record)
         if not agent:
             return
-        spoken = [Turn(line=-1, who="agent", text=agent.said, at=time.time())] if agent.said and agent.event == "Stop" else []
-        for turn in [*(turns(record, agent)[-RECENT_TURNS:] if agent.transcript else []), *spoken]:
-            if time.time() - turn.at < RECENT_SECONDS and CARRIED.search(turn.text) and not self.already(record, agent, turn):
+        for turn in self.written(record, agent):
+            if CARRIED.search(turn.text) and not self.already(record, agent, turn):
                 self.carried(record, agent, turn)
+
+    def written(self, record, agent) -> list:
+        spoken = [Turn(line=-1, who="agent", text=agent.said, at=time.time())] if agent.said and agent.event == "Stop" else []
+        recent = [t for t in (turns(record, agent)[-RECENT_TURNS:] if agent.transcript else []) if time.time() - t.at < RECENT_SECONDS]
+        return [*recent, *spoken]
 
     def carried(self, record, agent, turn) -> None:
         from commands.cli import run
