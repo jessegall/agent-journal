@@ -1,4 +1,4 @@
-import {reactive, watch} from "vue";
+import {reactive, ref, watch} from "vue";
 import {api, onWrite} from "../api/client.js";
 import {onOutboxChange} from "../chat/outbox.js";
 import {report} from "../faults.js";
@@ -10,6 +10,7 @@ export const RECENT = 100;
 export const paging = reactive({size: {}, more: {}});
 
 const shown = new Set();
+const seen = ref(0);
 const loaded = new Set();
 const changed = new Set();
 const owed = new Set();
@@ -17,6 +18,7 @@ let owedWhole = false;
 let draining = null;
 
 export function rows(type) {
+    seen.value;
     if (!shown.has(type)) {
         shown.add(type);
         if (store.booted && (!loaded.has(type) || changed.has(type))) queueMicrotask(() => refresh([type], false));
@@ -35,12 +37,22 @@ function trimmed(type) {
 function forget() {
     shown.forEach(trimmed);
     shown.clear();
+    seen.value += 1;
 }
 
 watch(() => `${route.value.env}/${route.value.page}/${route.value.open ? route.value.open.type : ""}`, forget);
 watch(
     () => route.value.env,
     () => loaded.clear()
+);
+watch(
+    () => store.booted,
+    (booted) =>
+        booted &&
+        refresh(
+            [...shown].filter((type) => !loaded.has(type)),
+            false
+        )
 );
 
 function took(type, got) {

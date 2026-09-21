@@ -7,7 +7,8 @@ import Icon from "../kit/Icon.vue";
 import {route} from "../route.js";
 import {quoted, withQuote} from "../format/quote.js";
 import {chatOnly, laidOut} from "../platform/view.js";
-import {agent, meta, store} from "../state/store.js";
+import {threadTurns} from "../domain/thread.js";
+import {agent, store} from "../state/store.js";
 import {polled} from "../sync/polled.js";
 import {earlier, rows} from "../sync/rows.js";
 import Compose from "./Compose.vue";
@@ -108,57 +109,10 @@ async function loaded() {
     ]);
 }
 const reading = ref({inside: false, moved: 0});
-const acknowledged = (m) =>
-    rows("comment").some((c) => !c.deleted && c.refs.includes(m.ref) && c.seen[0] === "agent") ||
-    rows("reaction").some((r) => !r.deleted && r.refs.includes(m.ref) && r.seen[0] === "agent");
-const filed = (m) => m.refs.filter((r) => !r.startsWith("message:") && meta(r.split(":")[0]));
-const hasParent = (c) =>
-    c.refs.some((ref) => {
-        const [type] = ref.split(":");
-        return type !== "comment" && meta(type);
-    });
-const receipt = (m) => {
-    const refs = filed(m);
-    return {
-        ref: `receipt:${m.n}`,
-        type: "receipt",
-        n: m.n,
-        who: "agent",
-        created: m.updated + 0.001,
-        seen: ["agent"],
-        refs,
-        data: {},
-        sections: [],
-        title: `Filed ${refs.map((r) => `${meta(r.split(":")[0]).title.toLowerCase()} ${r.split(":")[1]}`).join(", ")} from your message.`,
-        brief: "",
-    };
-};
-const turns = computed(() =>
-    [
-        ...rows("message")
-            .filter((m) => !m.deleted && m.place !== "bar" && !pending.value.some((p) => promisedFor(p, m) && !delivered(p, m)))
-            .map((m) => ({...m, who: m.seen[0]})),
-        ...rows("message")
-            .filter((m) => !m.deleted && m.seen[0] === "user" && m.completed && filed(m).length && !acknowledged(m))
-            .map(receipt),
-        ...rows("comment")
-            .filter((c) => !c.deleted && c.place !== "bar" && hasParent(c))
-            .map((c) => ({...c, who: c.seen[0]})),
-        ...rows("question")
-            .filter((q) => !q.deleted)
-            .map((q) => ({...q, who: "agent"})),
-        ...pending.value.filter(
-            (p) =>
-                !rows("message").some(
-                    (m) =>
-                        !m.deleted &&
-                        m.brief === p.brief &&
-                        m.created >= p.created - 5 &&
-                        Object.keys(m.data.files || {}).length >= Object.keys(p.data.files).length
-                )
-        ),
-    ].sort((a, b) => a.created - b.created)
+const thread = computed(() =>
+    threadTurns({message: rows("message"), comment: rows("comment"), question: rows("question"), reaction: rows("reaction")}, pending.value)
 );
+const turns = computed(() => thread.value.turns);
 
 function toBottom() {
     if (scroller.value) scroller.value.scrollTop = scroller.value.scrollHeight;
@@ -221,20 +175,8 @@ async function post(text, files) {
     toBottom();
 }
 
-const borrowed = new Map();
-
-function promisedFor(p, m) {
-    const yes = m.brief === p.brief && m.created >= p.created - 5;
-    if (yes) borrowed.set(m.ref, p.ref);
-    return yes;
-}
-
 function keyOf(t) {
-    return borrowed.get(t.ref) || t.ref;
-}
-
-function delivered(p, m) {
-    return Object.keys(m.data.files || {}).length >= Object.keys(p.data.files).length;
+    return thread.value.keys.get(t.ref) || t.ref;
 }
 
 function measured(url) {
