@@ -83,3 +83,12 @@ def test_the_whole_bar_is_the_queue_and_nothing_else():
         commands = [read("before.py"), edit("now.py", NOW + 1)]
 
     assert [one["key"] for one in bar(Row(), NOW + 2)["queue"]] == ["reading before.py", "editing now.py"], "the bar is the queue"
+
+
+def test_the_band_tracks_the_cursor_through_keyboard_codes_and_scroll_regions():
+    from engine.band import ROWS, Cursor, Translator
+    cursor = Cursor(40, 120)
+    cursor.feed(Translator(40).feed(b"\x1b[5;3H\x1b[<u\x1b[>5u\x1b[>4;2m\x1b(B\x0f"))
+    assert (cursor.row, cursor.col) == (5 + ROWS, 3), "a private-parameter code prints nothing, so the column stays put"
+    cursor.feed(Translator(40).feed(b"\x1b[H\x1b[2;30r"))
+    assert (cursor.row, cursor.col) == (ROWS + 1, 1), "setting a region homes the cursor to the top of the agent's screen, below the band"

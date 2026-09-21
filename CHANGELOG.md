@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.17.3 — The terminal's header stops garbling the prompt
+
+Replaying Claude's own terminal output through an emulator, with and without the header, found two ways the header's cursor tracking drifted from the terminal's. Claude's keyboard-mode codes sent around the prompt every frame (ESC[<u, ESC[>5u, ESC[>4;2m) carry parameter bytes the header's pattern did not know, so they were counted as printed text and the tracked column moved about twenty places; the next header redraw put the cursor back there and Claude's prompt line drew offset, which is what left dashes where spaces belonged. And setting a scroll region homes a real terminal's cursor to row 1, inside the header, where Claude expects the top of its own screen; the translation now moves it there. The playback from the next frame on is exact.
+
+What to do about it: `journal upgrade`.
+
 ## 2.17.2 — The chat shows as much of the agent as you choose
 
 A chat-detail control in the agent bar — a bubble with its level — sets which of the agent's tagged messages in its terminal also appear in the chat: replies only; replies and info (blocked too); replies, info and corrections; or everything, discoveries too. A message is copied the moment the engine sees it written, once, with its tag kept as data, and only messages written after the level was chosen count. A reply without a message number now reaches the chat at every level; a numbered reply still answers its message. The stray screenshots in the project are gone, and a Playwright folder is ignored wherever it appears.

@@ -32,7 +32,7 @@ def release() -> bytes:
 CURSOR = re.compile(rb"\x1b\[(\d*)(?:;(\d*))?([Hfdr])")
 SGR_CLICK = re.compile(rb"\x1b\[<(\d+);(\d+);(\d+)([Mm])")
 OLD_CLICK = re.compile(rb"\x1b\[M(...)", re.S)
-PARTIAL = re.compile(rb"\x1b(\[[\d;?]*|\][^\x07\x1b]*\x1b?)?$")
+PARTIAL = re.compile(rb"\x1b(\[[0-?]*[ -/]*|\][^\x07\x1b]*\x1b?)?$")
 
 
 def unfinished(data: bytes) -> int:
@@ -53,7 +53,7 @@ def unshifted(data: bytes) -> bytes:
 
 MOVE = re.compile(rb"\x1b\[(\d*)(?:;(\d*))?([HfdABCDG])")
 SHOW = re.compile(rb"\x1b\[\?25([hl])")
-ESCAPE = re.compile(rb"\x1b(?:\[[\d;?]*[ -/]*[@-~]|\][^\x07\x1b]*(?:\x07|\x1b\\)|[()][0-9A-B]|[78=>cDEHM]|[@-Z\\-_])")
+ESCAPE = re.compile(rb"\x1b(?:\[[0-?]*[ -/]*[@-~]|\][^\x07\x1b]*(?:\x07|\x1b\\)|[()][0-9A-B]|[78=>cDEHM]|[@-Z\\-_])")
 
 
 def wide(ch: str) -> int:
@@ -147,7 +147,7 @@ class Translator:
             return b"\x1b[%dd" % first
         if kind == b"r":
             bottom = int(m.group(2)) + ROWS if m.group(2) else self.rows
-            return b"\x1b[%d;%dr" % (first, bottom)
+            return b"\x1b[%d;%dr\x1b[%d;1H" % (first, bottom, ROWS + 1)
         return b"\x1b[%d;%s%s" % (first, m.group(2) or b"1", kind)
 
     def feed(self, data: bytes) -> bytes:
