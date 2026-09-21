@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.23.4 — The plugin page's Log and Run setup again buttons work
+
+Two buttons on the Plugins page handed over the listed plugin rather than its row, and the page read the plugin's name from a manifest the listed plugin does not carry: Log and Run setup again threw instead of acting. Each listed plugin now carries its name, and every button and panel on the page takes the same listed plugin.
+
+What to do about it: `journal upgrade`.
+
 ## 2.23.3 — An old skills folder that is the library is never emptied
 
 The installer clears journal skills out of `.codex/skills`, where Codex used to read them. In a project where `.codex/skills` is a link to the same folder as `.agents/skills`, that removed every journal skill it had just written, and the agent was held at its next start for want of the journal skill. A retired folder that resolves to the skill library is left alone now.
