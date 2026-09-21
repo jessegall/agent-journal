@@ -1,4 +1,7 @@
+from resources.base import SECTION
+
 FORMATTERS: list = []
+DOWNLOAD = "download"
 
 
 def formatted(text: str, record=None, surface: str = "") -> str:
@@ -11,3 +14,11 @@ def formatted(text: str, record=None, surface: str = "") -> str:
         except Exception:
             continue
     return text
+
+
+def markdown(row, record=None) -> str:
+    parts = [f"# {formatted(row.title, record, DOWNLOAD)}"]
+    parts += [f"_{formatted(row.abstract, record, DOWNLOAD)}_"] if row.abstract else []
+    parts += [formatted(row.brief, record, DOWNLOAD)] if row.brief else []
+    parts += [f"## {formatted(s[SECTION.title], record, DOWNLOAD)}\n\n{formatted(s[SECTION.body], record, DOWNLOAD)}" for s in row.sections]
+    return "\n\n".join(part.strip() for part in parts) + "\n"

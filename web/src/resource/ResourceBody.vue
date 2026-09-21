@@ -3,6 +3,7 @@ import {computed, reactive, ref} from "vue";
 import {api} from "../api/client.js";
 import Btn from "../kit/Btn.vue";
 import CommentToggle from "./CommentToggle.vue";
+import DownloadLink from "./DownloadLink.vue";
 import Icon from "../kit/Icon.vue";
 import {peek, route} from "../route.js";
 import {waitsOn} from "../domain/records.js";
@@ -67,6 +68,9 @@ async function save() {
                     {{ kind.title }} {{ resource.n }}
                 </span>
                 <span class="age">{{ age(resource.created) }}</span>
+                <template v-if="kind.view === 'document'">
+                    <DownloadLink :resource="resource" />
+                </template>
                 <CommentToggle />
                 <Btn kind="icon" @click="emit('close')"><Icon name="x" /></Btn>
             </div>

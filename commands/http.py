@@ -588,6 +588,12 @@ def get_one(req: Request) -> Reply:
         raise Missing(str(e))
 
 
+@route("GET", "/api/{env}/{type}/{n}/markdown")
+def get_markdown(req: Request) -> Reply:
+    from features.format import markdown
+    return Reply(200, markdown(req.controller().load(int(req.params["n"])), req.record()).encode(), "text/markdown; charset=utf-8")
+
+
 @route("GET", "/api/{env}/{type}/{n}/files/{name}")
 def get_file(req: Request) -> Reply:
     f = req.controller().folder(int(req.params["n"])) / req.params["name"]

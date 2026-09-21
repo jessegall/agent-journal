@@ -3,6 +3,7 @@ import {computed, inject, ref, watchEffect} from "vue";
 import {api} from "../api/client.js";
 import Btn from "../kit/Btn.vue";
 import CommentToggle from "./CommentToggle.vue";
+import DownloadLink from "./DownloadLink.vue";
 import Dot from "../kit/Dot.vue";
 import Icon from "../kit/Icon.vue";
 import {peek, route} from "../route.js";
@@ -63,6 +64,7 @@ async function run(action, body = {}) {
                 <template v-if="status === 'active' || status === 'waiting'">· phase {{ current }} of {{ phases.length }}</template>
             </span>
             <span class="grow" />
+            <DownloadLink :resource="resource" />
             <CommentToggle />
             <Btn kind="icon" @click="emit('close')"><Icon name="x" /></Btn>
         </header>

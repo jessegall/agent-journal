@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.66.0 — Download a document as Markdown
+
+Message 1532, to-do 620. Docs, reports, designs and plans have a download button in their header. It saves the row as a Markdown file named after its title: the title as a heading, the abstract in italics, the brief, and every part under its own heading. The text passes through the same formatters as everything else the user reads. The file comes from `GET /api/<env>/<type>/<n>/markdown`. Sharing waits until the journal has a public address.
+
+What to do about it: `journal upgrade`.
+
 ## 2.65.2 — Inspectors slide in and out again
 
 Messages 1775 and 1800, to-do 659. Since the stack in 2.58.0, every inspector mounted as a component of its own, so it appeared and vanished with no transition, a single one as much as a second one on top. Now each inspector slides in when it opens. A closed one stays long enough to slide out, while the one below slides back into place, and it is removed only once that is done.
