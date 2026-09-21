@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.84.0 — Project records live in .journal/resources
+
+Message 2142, to-do 748. An environment's records sit under `.journal/environments/<name>/<type>`, but the project's own records (docs, rules, templates, checks, tools, designs, plugins, connections and the environments list) lay loose at the root of `.journal`, among `src`, `runtime` and the rest. They now live in `.journal/resources/<type>`. A migration moves them on upgrade, merging into any folder already there, and the journal lists exactly what it listed before.
+
+What to do about it: `journal upgrade`.
+
 ## 2.83.2 — A command run while the server restarts just runs
 
 To-do 747. A journal command run in the seconds after an upgrade, while the server restarted, printed `! the journal server answered 000 and said nothing` and did nothing: its heartbeat was still fresh, but no one answered. The `journal` command now treats a server that does not answer the same as no server, and runs the command itself.

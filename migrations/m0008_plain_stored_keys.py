@@ -1,7 +1,7 @@
 import json
 from pathlib import Path
 
-from engine.record import Record
+from engine.record import RESOURCES, Record
 from engine.stored import write_text
 
 EVENT_KEY = ('"heard": ', '"handled": ')
@@ -39,7 +39,7 @@ def rows_in(folder: Path, old: str, new: str) -> int:
 def run(root: Path) -> str:
     root = Path(root)
     logs, kept = 0, 0
-    rows = rows_in(root / "check", *CHECK_KEY)
+    rows = rows_in(root / RESOURCES / "check", *CHECK_KEY) + rows_in(root / "check", *CHECK_KEY)
     for home in sorted(p for p in (root / "environments").glob("*") if p.is_dir()):
         events = home / "events.jsonl"
         if events.is_file():
