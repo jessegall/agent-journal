@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.53.1 — A check keeps every feature in its shape
+
+Plan 9, to-do 608. scripts/checks/feature_shape.py, run by check 6 every hour, fails when a feature has no details.py, holds logic in feature.py (beyond register, settings_view and default_for, and the two named services, faults.reports and plugins.host), imports one of the removed markers, or has a part class over 50 lines.
+
+What to do about it: `journal upgrade`.
+
 ## 2.53.0 — The old way of wiring a feature is gone
 
 Plan 9, to-do 607. @event, @formats, @interceptor, @command and @handles are removed, with the marker machinery behind them. A feature is wired one way only: register(journal) hands over its parts, once, when the features load. A plugin or feature written the old way no longer loads its handlers; write it as details.py and registered parts.
