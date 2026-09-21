@@ -26,6 +26,11 @@ class SkillsDetails(FeatureDetails):
             abstract="A fresh window starts without the skill; the first write waits for Skill: journal",
         ),
         Behaviour(
+            name="chat",
+            title="Show each skill the agent loads as a line in the chat",
+            abstract="Loaded skill and its name, in faint green, where it happened in the conversation",
+        ),
+        Behaviour(
             name="always",
             title="Hold tool calls at a session start until every always-on skill is loaded",
             abstract="The skills switched to every start on the Skills page, again after a compaction",

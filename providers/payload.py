@@ -46,8 +46,15 @@ class ToolUse:
                    response=response if isinstance(response, dict) else {}, tool_input=given if isinstance(given, dict) else {})
 
     @property
+    def loaded_skill(self) -> str:
+        if self.name == "Skill":
+            return self.skill
+        found = SKILL_READ.search(json.dumps(self.tool_input))
+        return found.group(1) if found else ""
+
+    @property
     def loads_skill(self) -> bool:
-        return self.name == "Skill" or bool(SKILL_READ.search(json.dumps(self.tool_input)))
+        return bool(self.loaded_skill)
 
     @property
     def plans(self) -> bool:
