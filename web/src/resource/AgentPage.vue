@@ -1,6 +1,7 @@
 <script setup>
 import {useSighted} from "../composables/scrollback.js";
 import {useTranscript} from "../composables/transcript.js";
+import {withWhispers} from "../domain/transcript.js";
 import {computed, ref, watch} from "vue";
 import {api} from "../api/client.js";
 import Btn from "../kit/Btn.vue";
@@ -48,6 +49,7 @@ const WHO = {
     peer: "Another session",
     summary: "Summary",
     superseded: "You, edited",
+    whisper: "Journal said",
 };
 const subagents = computed(() => (data.value.subagent_rows || []).filter((r) => r.session));
 const session = computed(() => route.value.sub);
@@ -59,6 +61,7 @@ const {turns, total, first, folded, error, loading, paging, atStart, toggle, ear
     scroller
 );
 watch(session, () => (tab.value = "transcript"));
+const heard = computed(() => withWhispers(turns.value, rows("nudge"), props.resource.title));
 useSighted(topMark, earlier, {root: scroller, margin: "400px 0px"});
 </script>
 
@@ -194,7 +197,7 @@ useSighted(topMark, earlier, {root: scroller, margin: "400px 0px"});
                 <template v-else-if="!turns.length && !error">
                     <p class="none">Nothing printed yet, or no transcript on this row.</p>
                 </template>
-                <template v-for="t in turns" :key="t.line">
+                <template v-for="t in heard" :key="t.line">
                     <div :class="['turn', t.kind, {folded: folded.has(t.line)}]">
                         <div class="meta">
                             <button
@@ -209,7 +212,7 @@ useSighted(topMark, earlier, {root: scroller, margin: "400px 0px"});
                                 </template>
                             </button>
                             <span class="when">{{ stamp(t.at) }}</span>
-                            <span class="line">#{{ t.line }}</span>
+                            <span class="line">{{ t.kind === "whisper" ? t.line : `#${t.line}` }}</span>
                             <template v-if="t.tools.length">
                                 <span class="tools">used {{ t.tools.join(", ") }}</span>
                             </template>
@@ -476,6 +479,15 @@ useSighted(topMark, earlier, {root: scroller, margin: "400px 0px"});
 
 .turn.superseded .said {
     text-decoration: line-through;
+}
+
+.turn.whisper {
+    padding-left: 10px;
+    border-left: 2px solid var(--accent-dim);
+}
+
+.turn.whisper .who {
+    color: var(--accent-text);
 }
 
 .meta {
