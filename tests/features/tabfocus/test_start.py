@@ -1,49 +1,47 @@
-import sys
-from pathlib import Path
+import pytest
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
-import features  # noqa: E402
-from controllers.types import Agents  # noqa: E402
-from engine import viewer  # noqa: E402
-from resources.base import SYSTEM  # noqa: E402
-from tests.features.kit import report  # noqa: E402
-from tests.kit import check, done, fresh  # noqa: E402
+import features
+from controllers.types import Agents
+from engine import viewer
+from resources.base import SYSTEM
+from tests.features.kit import report
+from tests.conftest import fresh
 
-features.unload()
-features.load()
 
-shown = []
-up = {"url": "http://127.0.0.1:8422/"}
-viewer.running = lambda root: up["url"]
-viewer.show = lambda url: shown.append(url)
+@pytest.fixture(autouse=True)
+def loaded_features():
+    features.unload()
+    features.load()
+    yield
+    features.unload()
 
-# BEFORE THE SESSION STARTS nothing opens: a startup or resume menu keeps the terminal
-record = fresh()
-Agents(record, actor=SYSTEM).create("claude-1")
-report(record, "working", "UserPromptSubmit")
-check("no session start yet: the tab is left alone", shown, [])
 
-# THE SESSION STARTS: the viewer is shown once
-report(record, "idle", "SessionStart")
-check("the session started: its viewer is shown", shown, ["http://127.0.0.1:8422/"])
-report(record, "idle", "SessionStart")
-report(record, "working", "PreToolUse")
-check("a second start of the same session, a compaction or a clear, shows nothing more", len(shown), 1)
+def test_a_session_starting_shows_the_viewer_once_a_subagent_never_does():
+    shown = []
+    up = {"url": "http://127.0.0.1:8422/"}
+    viewer.running = lambda root: up["url"]
+    viewer.show = lambda url: shown.append(url)
 
-# ANOTHER SESSION starts: it gets its own showing
-report(record, "idle", "SessionStart", session="claude-2")
-check("a new session shows the viewer again", len(shown), 2)
+    record = fresh()
+    Agents(record, actor=SYSTEM).create("claude-1")
+    report(record, "working", "UserPromptSubmit")
+    assert shown == [], "no session start yet: the tab is left alone"
 
-# NO VIEWER RUNNING: nothing to show, and the session may still be shown later
-up["url"] = ""
-report(record, "idle", "SessionStart", session="claude-3")
-up["url"] = "http://127.0.0.1:8424/"
-report(record, "idle", "SessionStart", session="claude-3")
-check("no viewer: nothing; once one runs, the next start shows it", shown[2:], ["http://127.0.0.1:8424/"])
+    report(record, "idle", "SessionStart")
+    assert shown == ["http://127.0.0.1:8422/"], "the session started: its viewer is shown"
+    report(record, "idle", "SessionStart")
+    report(record, "working", "PreToolUse")
+    assert len(shown) == 1, "a second start of the same session, a compaction or a clear, shows nothing more"
 
-# A SUBAGENT'S SESSION is not the launch
-Agents(record, actor=SYSTEM).create("child-1", parent="claude-1")
-report(record, "idle", "SessionStart", session="child-1")
-check("a subagent starting shows nothing", len(shown), 3)
+    report(record, "idle", "SessionStart", session="claude-2")
+    assert len(shown) == 2, "a new session shows the viewer again"
 
-done()
+    up["url"] = ""
+    report(record, "idle", "SessionStart", session="claude-3")
+    up["url"] = "http://127.0.0.1:8424/"
+    report(record, "idle", "SessionStart", session="claude-3")
+    assert shown[2:] == ["http://127.0.0.1:8424/"], "no viewer: nothing; once one runs, the next start shows it"
+
+    Agents(record, actor=SYSTEM).create("child-1", parent="claude-1")
+    report(record, "idle", "SessionStart", session="child-1")
+    assert len(shown) == 3, "a subagent starting shows nothing"

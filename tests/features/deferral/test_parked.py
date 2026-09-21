@@ -1,38 +1,41 @@
 import json
-import sys
-import tempfile
-from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
-import features  # noqa: E402
-from controllers.types import Nudges, Todos  # noqa: E402
-from resources.base import AGENT  # noqa: E402
-from tests.features.kit import idle, nudges  # noqa: E402
-from tests.kit import check, done, fresh  # noqa: E402
+import pytest
 
-features.unload()
-features.load()
-
-transcript = Path(tempfile.mkdtemp()) / "s.jsonl"
+import features
+from controllers.types import Nudges, Todos
+from resources.base import AGENT
+from tests.features.kit import idle, nudges
+from tests.conftest import fresh
 
 
-def said(text):
-    rows = [{"type": "user", "message": {"content": "go"}}, {"type": "assistant", "message": {"content": [{"type": "text", "text": text}]}}]
-    transcript.write_text("\n".join(json.dumps(r) for r in rows) + "\n")
+@pytest.fixture(autouse=True)
+def loaded_features():
+    features.unload()
+    features.load()
+    yield
+    features.unload()
 
 
-record = fresh()
-said("[!reply] the header is fixed; I'll do that after this.")
-idle(record, provider="claude", transcript=str(transcript))
-check("work put off in words with nothing parked: named back, quoting the words", [n for n in nudges(record) if "deferred" in n], ["work deferred in words, not parked"])
-check("the words are quoted in the nudge", "\"I'll do that\"" in Nudges(record).all()[-1].brief or "after this" in Nudges(record).all()[-1].brief, True)
-Todos(record, actor=AGENT).create("the footer, after the header")
-said("[!reply] parked as to-do 1; I'll come back to it.")
-idle(record, provider="claude", transcript=str(transcript))
-check("a to-do parked since: nothing said", len([n for n in nudges(record) if "deferred" in n]), 1)
-plain = fresh()
-said("[!reply] all done.")
-idle(plain, provider="claude", transcript=str(transcript))
-check("nothing deferred: nothing said", [n for n in nudges(plain) if "deferred" in n], [])
+def test_work_deferred_in_words_with_nothing_parked_is_named_back(tmp_path):
+    transcript = tmp_path / "s.jsonl"
 
-done()
+    def said(text):
+        rows = [{"type": "user", "message": {"content": "go"}}, {"type": "assistant", "message": {"content": [{"type": "text", "text": text}]}}]
+        transcript.write_text("\n".join(json.dumps(r) for r in rows) + "\n")
+
+    record = fresh()
+    said("[!reply] the header is fixed; I'll do that after this.")
+    idle(record, provider="claude", transcript=str(transcript))
+    assert [n for n in nudges(record) if "deferred" in n] == ["work deferred in words, not parked"], \
+        "work put off in words with nothing parked: named back, quoting the words"
+    assert ("\"I'll do that\"" in Nudges(record).all()[-1].brief or "after this" in Nudges(record).all()[-1].brief) is True, \
+        "the words are quoted in the nudge"
+    Todos(record, actor=AGENT).create("the footer, after the header")
+    said("[!reply] parked as to-do 1; I'll come back to it.")
+    idle(record, provider="claude", transcript=str(transcript))
+    assert len([n for n in nudges(record) if "deferred" in n]) == 1, "a to-do parked since: nothing said"
+    plain = fresh()
+    said("[!reply] all done.")
+    idle(plain, provider="claude", transcript=str(transcript))
+    assert [n for n in nudges(plain) if "deferred" in n] == [], "nothing deferred: nothing said"

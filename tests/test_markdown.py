@@ -1,13 +1,9 @@
 import json
 import subprocess
-import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from tests.kit import check, done
-
-root = Path(__file__).resolve().parents[1]
-script = '''
+ROOT = Path(__file__).resolve().parents[1]
+SCRIPT = '''
 import "./web/src/text/all.js";
 import {render} from "./web/src/text/index.js";
 const ctx = {types: [{name: "todo", title: "To-do"}], env: "main"};
@@ -26,40 +22,45 @@ console.log(JSON.stringify({
     indented: render("Four stages:\\n\\n    1  RECORD    base.py     lands on the ring\\n           |\\n    2  DISSECT   dissect.py  taken apart\\n\\nlast word.", ctx).replace(/<span class="tok-\\w+">|<\\/span>/g, ""),
 }));
 '''
-got = json.loads(subprocess.run(["node", "--input-type=module", "-e", script], cwd=root, text=True, capture_output=True, check=True).stdout)
-check("headings, emphasis, code spans, lists, fences and quotes", got["blocks"],
-      '<h3>Title</h3><p>A <em>word</em> and <strong>bold</strong> with <code>x &lt; y</code>.</p><ul><li>one</li><li>two</li></ul><ol><li>first</li><li>second</li></ol><pre class="chat-code"><code>raw &lt;b&gt;</code></pre><blockquote><p>quoted</p></blockquote>')
-check("a table, with the record's refs still turned into pills inside cells", got["table"],
-      '<table><thead><tr><th>a</th><th>b</th></tr></thead><tbody><tr><td>1</td><td><a class="row-pill" href="#" data-peek="todo:75">to-do 75</a></td></tr></tbody></table>')
-check("a bare extension is no file; a name, a path and a dotfile are", [("file-pill" in h) for h in got["files"]], [False, False, True, True, True])
-check("an indented block is one code block, first line and all",
-      got["indented"],
-      '<p>Four stages:</p><pre class="chat-code"><code>    1  RECORD    base.py     lands on the ring\n           |\n    2  DISSECT   dissect.py  taken apart</code></pre><p>last word.</p>')
-check("plain lines are one paragraph with breaks", got["plain"], "<p>just text<br>next line</p>")
-check("console errors keep both collapse labels in the formatter output", (
-    '<summary><span class="console-more-collapsed">Show all 2 errors</span><span class="console-more-expanded">Show fewer errors</span></summary>' in got["console"],
-    '<div class="console-entry"><div class="console-head">TypeError: first</div>' in got["console"],
-), (True, True))
-turn = (root / "web/src/chat/Turn.vue").read_text()
-check("the viewer keeps the native console summary visible while switching its label", (
-    ".console-more[open] summary" not in turn,
-    ".console-more[open] .console-more-collapsed" in turn,
-    ".console-more[open] .console-more-expanded" in turn,
-), (True, True, True))
-thread = (root / "web/src/chat/Thread.vue").read_text()
-check("the chat includes comments on any supported resource", (
-    "const hasParent = (c)" in thread,
-    ".filter((c) => !c.deleted && hasParent(c))" in thread,
-), (True, True))
-check("message replies keep reply treatment while resource comments keep comment treatment", (
-    'const messageReply = computed(() => commentParent.value?.type === "message");' in turn,
-    "'comment-origin': resourceComment" in turn,
-    "resourceComment ? openComment() : toQuoted()" in turn,
-), (True, True, True))
-check("a line of code in a chat message becomes a highlighted block; fences and runs too; prose stays prose", got["chat"], [
-    '<p>read the room.</p><pre class="chat-code"><code>return [*automatic, *args] if x.get(&quot;auto&quot;, False) else args</code></pre><p>You fix one thing.</p>',
-    '<p>Try this:</p><pre class="chat-code"><code>def f(x):\n    return x</code></pre><p>ok?</p>',
-    '<pre class="chat-code"><code>const a = 1;\nconst b = a + 2;</code></pre>',
-    '<p>I think it is fine, honestly. Nothing to do here.</p>',
-])
-done()
+
+
+def test_markdown_renders_headings_lists_fences_quotes_tables_and_pills():
+    got = json.loads(subprocess.run(["node", "--input-type=module", "-e", SCRIPT], cwd=ROOT, text=True, capture_output=True, check=True, timeout=60).stdout)
+    assert got["blocks"] == \
+        '<h3>Title</h3><p>A <em>word</em> and <strong>bold</strong> with <code>x &lt; y</code>.</p><ul><li>one</li><li>two</li></ul><ol><li>first</li><li>second</li></ol><pre class="chat-code"><code>raw &lt;b&gt;</code></pre><blockquote><p>quoted</p></blockquote>', \
+        "headings, emphasis, code spans, lists, fences and quotes"
+    assert got["table"] == \
+        '<table><thead><tr><th>a</th><th>b</th></tr></thead><tbody><tr><td>1</td><td><a class="row-pill" href="#" data-peek="todo:75">to-do 75</a></td></tr></tbody></table>', \
+        "a table, with the record's refs still turned into pills inside cells"
+    assert [("file-pill" in h) for h in got["files"]] == [False, False, True, True, True], \
+        "a bare extension is no file; a name, a path and a dotfile are"
+    assert got["indented"] == \
+        '<p>Four stages:</p><pre class="chat-code"><code>    1  RECORD    base.py     lands on the ring\n           |\n    2  DISSECT   dissect.py  taken apart</code></pre><p>last word.</p>', \
+        "an indented block is one code block, first line and all"
+    assert got["plain"] == "<p>just text<br>next line</p>", "plain lines are one paragraph with breaks"
+    assert (
+        '<summary><span class="console-more-collapsed">Show all 2 errors</span><span class="console-more-expanded">Show fewer errors</span></summary>' in got["console"],
+        '<div class="console-entry"><div class="console-head">TypeError: first</div>' in got["console"],
+    ) == (True, True), "console errors keep both collapse labels in the formatter output"
+    turn = (ROOT / "web/src/chat/Turn.vue").read_text()
+    assert (
+        ".console-more[open] summary" not in turn,
+        ".console-more[open] .console-more-collapsed" in turn,
+        ".console-more[open] .console-more-expanded" in turn,
+    ) == (True, True, True), "the viewer keeps the native console summary visible while switching its label"
+    thread = (ROOT / "web/src/chat/Thread.vue").read_text()
+    assert (
+        "const hasParent = (c)" in thread,
+        ".filter((c) => !c.deleted && hasParent(c))" in thread,
+    ) == (True, True), "the chat includes comments on any supported resource"
+    assert (
+        'const messageReply = computed(() => commentParent.value?.type === "message");' in turn,
+        "'comment-origin': resourceComment" in turn,
+        "resourceComment ? openComment() : toQuoted()" in turn,
+    ) == (True, True, True), "message replies keep reply treatment while resource comments keep comment treatment"
+    assert got["chat"] == [
+        '<p>read the room.</p><pre class="chat-code"><code>return [*automatic, *args] if x.get(&quot;auto&quot;, False) else args</code></pre><p>You fix one thing.</p>',
+        '<p>Try this:</p><pre class="chat-code"><code>def f(x):\n    return x</code></pre><p>ok?</p>',
+        '<pre class="chat-code"><code>const a = 1;\nconst b = a + 2;</code></pre>',
+        '<p>I think it is fine, honestly. Nothing to do here.</p>',
+    ], "a line of code in a chat message becomes a highlighted block; fences and runs too; prose stays prose"
