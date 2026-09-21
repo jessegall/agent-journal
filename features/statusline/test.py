@@ -3,7 +3,7 @@ import time
 from features.statusline.group import grouped, ran
 from features.statusline.queue import queue as messages
 from features.statusline.queue import HOLD
-from features.statusline.feature import bar, bar_file, played, shown
+from features.statusline.bar import bar, bar_file, played, shown
 from engine.stored import write_json
 
 
