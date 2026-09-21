@@ -1,7 +1,7 @@
 <script setup>
-import {computed, onMounted, onUnmounted, ref} from "vue";
+import {computed, ref} from "vue";
 import {api} from "../api/client.js";
-import Icon from "../kit/Icon.vue";
+import SidePanel from "../kit/SidePanel.vue";
 import SwitchCase from "../kit/SwitchCase.vue";
 import Switch from "../kit/Switch.vue";
 import {store} from "../state/store.js";
@@ -42,239 +42,139 @@ async function skipPrompts(skip) {
         relaunching.value = false;
     }
 }
-
-const closeOnEscape = (event) => event.key === "Escape" && emit("close");
-onMounted(() => window.addEventListener("keydown", closeOnEscape));
-onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
 </script>
 
 <template>
-    <div class="veil" @click.self="emit('close')">
-        <aside class="panel" role="dialog" :aria-label="feature.title">
-            <header class="head">
-                <div class="names">
-                    <h2>{{ feature.title }}</h2>
-                    <p class="abstract">{{ feature.abstract }}</p>
-                </div>
-                <template v-if="feature.fixed">
-                    <span class="note">Always on</span>
-                </template>
-                <template v-else>
-                    <Switch :on="on(feature.name, feature.default)" @change="(v) => flip(feature.name, v)" />
-                </template>
-                <button type="button" class="close" title="Close" @click="emit('close')"><Icon name="close" /></button>
-            </header>
-            <div class="body">
-                <p class="help">{{ feature.help }}</p>
-                <template v-if="feature.when">
-                    <section class="block">
-                        <h3>When it speaks</h3>
-                        <UList :f="feature" @marks="marks" @every="every" @unit="unit" />
-                    </section>
-                </template>
-                <template v-if="feature.parts.length && (feature.fixed || on(feature.name, feature.default))">
-                    <section class="block">
-                        <h3>What it does</h3>
-                        <template v-for="part in feature.parts" :key="part.name">
-                            <div class="row">
-                                <span class="text">
-                                    <span class="title">{{ part.title }}</span>
-                                    <span class="note">{{ part.abstract }}</span>
-                                    <template v-if="part.when">
-                                        <UList :f="part" @marks="marks" @every="every" @unit="unit" />
-                                    </template>
-                                </span>
-                                <Switch :on="on(part.name, part.default)" @change="(v) => flip(part.name, v)" />
-                            </div>
-                        </template>
-                    </section>
-                </template>
-                <template v-if="feature.settings.length && (feature.fixed || on(feature.name, feature.default))">
-                    <section class="block">
-                        <h3>Settings</h3>
-                        <template v-for="setting in feature.settings" :key="setting.name">
-                            <div class="row">
-                                <span class="text">
-                                    <span class="title">{{ setting.title }}</span>
-                                    <template v-if="setting.abstract">
-                                        <span class="note">{{ setting.abstract }}</span>
-                                    </template>
-                                </span>
-                                <template v-if="setting.kind === 'switch'">
-                                    <Switch :on="!!valueOf(setting)" @change="(v) => saveSetting(setting, v)" />
-                                </template>
-                                <template v-else>
-                                    <span class="amount">
-                                        <input
-                                            class="field"
-                                            :type="setting.kind === 'number' ? 'number' : 'text'"
-                                            :value="valueOf(setting)"
-                                            @change="
-                                                saveSetting(
-                                                    setting,
-                                                    setting.kind === 'number' ? Number($event.target.value) : $event.target.value
-                                                )
-                                            "
-                                        />
-                                        {{ setting.unit }}
-                                    </span>
-                                </template>
-                            </div>
-                        </template>
-                    </section>
-                </template>
-                <SwitchCase :value="feature.name">
-                    <template #auto_archive>
-                        <section class="block">
-                            <h3>Keep</h3>
-                            <p class="note">How long a finished row stays listed before it is archived; 0 keeps it</p>
-                            <template v-for="type in ['report', 'todo']" :key="type">
-                                <div class="row">
-                                    <span class="title">{{ type }}s</span>
-                                    <span class="amount">
-                                        <input
-                                            v-model="days[type]"
-                                            class="field"
-                                            type="number"
-                                            min="0"
-                                            :placeholder="String(retention[type] ?? (type === 'report' ? 14 : 7))"
-                                            @change="saveRetention(type)"
-                                        />
-                                        days
-                                    </span>
-                                </div>
+    <SidePanel :title="feature.title" :abstract="feature.abstract" @close="emit('close')">
+        <template #actions>
+            <template v-if="feature.fixed">
+                <span class="note">Always on</span>
+            </template>
+            <template v-else>
+                <Switch :on="on(feature.name, feature.default)" @change="(v) => flip(feature.name, v)" />
+            </template>
+        </template>
+        <p class="help">{{ feature.help }}</p>
+        <template v-if="feature.when">
+            <section class="block">
+                <h3>When it speaks</h3>
+                <UList :f="feature" @marks="marks" @every="every" @unit="unit" />
+            </section>
+        </template>
+        <template v-if="feature.parts.length && (feature.fixed || on(feature.name, feature.default))">
+            <section class="block">
+                <h3>What it does</h3>
+                <template v-for="part in feature.parts" :key="part.name">
+                    <div class="row">
+                        <span class="text">
+                            <span class="title">{{ part.title }}</span>
+                            <span class="note">{{ part.abstract }}</span>
+                            <template v-if="part.when">
+                                <UList :f="part" @marks="marks" @every="every" @unit="unit" />
                             </template>
-                        </section>
-                    </template>
-                    <template #permission_prompts>
-                        <template v-if="permissions.possible">
-                            <section class="block">
-                                <div class="row">
-                                    <span class="text">
-                                        <span class="title">Skip permission prompts</span>
-                                        <span class="note">
-                                            The agent is running {{ permissions.running ? "without" : "with" }} permission prompts. Changing
-                                            this restarts the agent in the same conversation.
-                                        </span>
-                                    </span>
-                                    <template v-if="relaunching">
-                                        <span class="note">Restarting</span>
-                                    </template>
-                                    <template v-else>
-                                        <Switch :on="!!permissions.skip" @change="skipPrompts" />
-                                    </template>
-                                </div>
-                            </section>
+                        </span>
+                        <Switch :on="on(part.name, part.default)" @change="(v) => flip(part.name, v)" />
+                    </div>
+                </template>
+            </section>
+        </template>
+        <template v-if="feature.settings.length && (feature.fixed || on(feature.name, feature.default))">
+            <section class="block">
+                <h3>Settings</h3>
+                <template v-for="setting in feature.settings" :key="setting.name">
+                    <div class="row">
+                        <span class="text">
+                            <span class="title">{{ setting.title }}</span>
+                            <template v-if="setting.abstract">
+                                <span class="note">{{ setting.abstract }}</span>
+                            </template>
+                        </span>
+                        <template v-if="setting.kind === 'switch'">
+                            <Switch :on="!!valueOf(setting)" @change="(v) => saveSetting(setting, v)" />
                         </template>
+                        <template v-else>
+                            <span class="amount">
+                                <input
+                                    class="field"
+                                    :type="setting.kind === 'number' ? 'number' : 'text'"
+                                    :value="valueOf(setting)"
+                                    @change="
+                                        saveSetting(setting, setting.kind === 'number' ? Number($event.target.value) : $event.target.value)
+                                    "
+                                />
+                                {{ setting.unit }}
+                            </span>
+                        </template>
+                    </div>
+                </template>
+            </section>
+        </template>
+        <SwitchCase :value="feature.name">
+            <template #auto_archive>
+                <section class="block">
+                    <h3>Keep</h3>
+                    <p class="note">How long a finished row stays listed before it is archived; 0 keeps it</p>
+                    <template v-for="type in ['report', 'todo']" :key="type">
+                        <div class="row">
+                            <span class="title">{{ type }}s</span>
+                            <span class="amount">
+                                <input
+                                    v-model="days[type]"
+                                    class="field"
+                                    type="number"
+                                    min="0"
+                                    :placeholder="String(retention[type] ?? (type === 'report' ? 14 : 7))"
+                                    @change="saveRetention(type)"
+                                />
+                                days
+                            </span>
+                        </div>
                     </template>
-                </SwitchCase>
-                <template v-if="feature.lines.length">
+                </section>
+            </template>
+            <template #permission_prompts>
+                <template v-if="permissions.possible">
                     <section class="block">
-                        <h3>What it can say to the agent</h3>
-                        <template v-for="line in feature.lines" :key="line.key">
-                            <div class="line">
-                                <span class="line-title">
-                                    <span v-for="(p, i) in pieces(line.title)" :key="i" :class="{slot: p.slot}">{{ p.piece }}</span>
+                        <div class="row">
+                            <span class="text">
+                                <span class="title">Skip permission prompts</span>
+                                <span class="note">
+                                    The agent is running {{ permissions.running ? "without" : "with" }} permission prompts. Changing this
+                                    restarts the agent in the same conversation.
                                 </span>
-                                <template v-if="line.brief">
-                                    <span class="note">
-                                        <span v-for="(p, i) in pieces(line.brief)" :key="i" :class="{slot: p.slot}">{{ p.piece }}</span>
-                                    </span>
-                                </template>
-                            </div>
-                        </template>
+                            </span>
+                            <template v-if="relaunching">
+                                <span class="note">Restarting</span>
+                            </template>
+                            <template v-else>
+                                <Switch :on="!!permissions.skip" @change="skipPrompts" />
+                            </template>
+                        </div>
                     </section>
                 </template>
-            </div>
-        </aside>
-    </div>
+            </template>
+        </SwitchCase>
+        <template v-if="feature.lines.length">
+            <section class="block">
+                <h3>What it can say to the agent</h3>
+                <template v-for="line in feature.lines" :key="line.key">
+                    <div class="line">
+                        <span class="line-title">
+                            <span v-for="(p, i) in pieces(line.title)" :key="i" :class="{slot: p.slot}">{{ p.piece }}</span>
+                        </span>
+                        <template v-if="line.brief">
+                            <span class="note">
+                                <span v-for="(p, i) in pieces(line.brief)" :key="i" :class="{slot: p.slot}">{{ p.piece }}</span>
+                            </span>
+                        </template>
+                    </div>
+                </template>
+            </section>
+        </template>
+    </SidePanel>
 </template>
 
 <style scoped>
-.veil {
-    position: fixed;
-    inset: 0;
-    z-index: 40;
-    background: color-mix(in srgb, #000 35%, transparent);
-    animation: fade 0.16s ease;
-}
-
-.panel {
-    position: absolute;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    display: flex;
-    flex-direction: column;
-    width: min(520px, 100vw);
-    border-left: 1px solid var(--border);
-    background: var(--bg);
-    box-shadow: -16px 0 40px color-mix(in srgb, #000 30%, transparent);
-    animation: slide 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
-}
-
-@keyframes fade {
-    from {
-        opacity: 0;
-    }
-}
-
-@keyframes slide {
-    from {
-        transform: translateX(24px);
-        opacity: 0;
-    }
-}
-
-.head {
-    display: flex;
-    align-items: flex-start;
-    gap: 12px;
-    padding: 18px 18px 14px 22px;
-    border-bottom: 1px solid var(--border);
-}
-
-.names {
-    flex: 1;
-    min-width: 0;
-}
-
-h2 {
-    margin: 0 0 4px;
-    font-size: 16px;
-    font-weight: 600;
-}
-
-.abstract {
-    margin: 0;
-    color: var(--text-2);
-    font-size: 12.5px;
-    line-height: 1.45;
-}
-
-.close {
-    display: grid;
-    place-items: center;
-    width: 26px;
-    height: 26px;
-    border: 0;
-    border-radius: 6px;
-    background: none;
-    color: var(--text-3);
-    cursor: pointer;
-}
-
-.close:hover {
-    background: var(--hover);
-    color: var(--text);
-}
-
-.body {
-    flex: 1;
-    overflow-y: auto;
-    padding: 16px 22px 28px;
-}
-
 .help {
     margin: 0 0 18px;
     white-space: pre-line;

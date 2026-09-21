@@ -4,6 +4,16 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.69.0 — The plugins page explains how to make a plugin
+
+Message 1591, to-do 625, question 64. The plugins page has two new buttons.
+- **How to make a plugin** opens a side panel. It covers the `.journal-plugin/plugin.json` manifest with an example, what every key does, how a plugin writes back (calling `journal`, or appending commands to `$JOURNAL_QUEUE`), and how to try one from a folder while building it.
+- **Ask the agent to make one** takes an optional GitHub repository link and what the plugin should do, and sends it to the agent as a chat message. With a link, the agent first checks it can reach the repository and says whether it can build the integration there. Without one, it makes a new plugin.
+
+The side-panel shell is now one kit component, used by the feature panel and the guide alike.
+
+What to do about it: `journal upgrade`.
+
 ## 2.68.0 — One gate for opening work
 
 Message 1539, to-do 621, questions 58 and 59. Work could be opened in two ways and resumed in a third, and only one of them checked the active plan. Now every way of opening work passes one gate: `journal todo start`, `journal work start` and `journal work resume`. It allows one piece of work in hand at a time. Parked work does not count, so parking frees the slot (question 59). A to-do's own checks come next (done, assigned to someone else), and then any feature that watches the gate. The plans feature holds a to-do outside the active plan's current phase, as before. It now also refuses work that is not a to-do while a plan is active, since free work stays but passes the same gate (question 58). `--force "<why>"` passes both. Resuming parked work used to skip the plan and now goes through the gate too.

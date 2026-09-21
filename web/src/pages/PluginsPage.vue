@@ -11,10 +11,17 @@ import {store} from "../state/store.js";
 import {polled} from "../sync/polled.js";
 import {rows} from "../sync/rows.js";
 import {usePoll} from "../poll.js";
+import {sendMessage} from "../chat/outbox.js";
+import PluginGuide from "./PluginGuide.vue";
 
 usePoll(...polled.pages);
 
 const source = ref("");
+const guide = ref(false);
+const asking = ref(false);
+const repository = ref("");
+const wish = ref("");
+const asked = ref(false);
 const previewText = ref("");
 const busy = ref("");
 const plugins = computed(() =>
@@ -110,6 +117,17 @@ function toggleLog(p) {
     logged.value = "";
     readLog();
 }
+
+async function askAgent() {
+    const text = repository.value.trim()
+        ? `Please make a journal plugin for ${repository.value.trim()}. First check that you can reach the repository and tell me whether you can build the integration there, then build it.${wish.value.trim() ? ` It should: ${wish.value.trim()}` : ""}`
+        : `Please make a new journal plugin: ${wish.value.trim()}`;
+    await sendMessage(route.value.env, {brief: text});
+    asking.value = false;
+    repository.value = "";
+    wish.value = "";
+    asked.value = true;
+}
 </script>
 
 <template>
@@ -120,6 +138,20 @@ function toggleLog(p) {
                 Paste a repository. You see every command it would run before anything runs, and it installs at that exact commit. A plugin
                 runs as you, with your files and your network.
             </p>
+            <div class="make">
+                <Btn small @click="guide = true">How to make a plugin</Btn>
+                <Btn small @click="((asking = !asking), (asked = false))">Ask the agent to make one</Btn>
+                <template v-if="asked">
+                    <span class="note">Sent to the agent; its answer comes in the chat.</span>
+                </template>
+            </div>
+            <template v-if="asking">
+                <div class="ask">
+                    <input v-model="repository" class="source" placeholder="A GitHub repository to build it in (optional)" />
+                    <textarea v-model="wish" class="wish" rows="2" placeholder="What should the plugin do?" />
+                    <Btn kind="primary" small :disabled="!repository.trim() && !wish.trim()" @click="askAgent">Send to the agent</Btn>
+                </div>
+            </template>
             <div class="add">
                 <input
                     v-model="source"
@@ -204,6 +236,9 @@ function toggleLog(p) {
                 <pre ref="tail" class="log">{{ logged || (busy ? "Starting…" : "Nothing is logged yet.") }}</pre>
             </Dialog>
         </template>
+        <template v-if="guide">
+            <PluginGuide @close="guide = false" />
+        </template>
     </section>
 </template>
 
@@ -234,6 +269,40 @@ h2 {
     color: var(--text-3);
     font-size: 12.5px;
     line-height: 1.5;
+}
+
+.make {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+.note {
+    color: var(--text-3);
+    font-size: 12px;
+}
+
+.ask {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 12px;
+}
+
+.wish {
+    padding: 7px 10px;
+    border: 1px solid var(--border-2);
+    border-radius: 7px;
+    background: var(--raised);
+    color: var(--text);
+    font: inherit;
+    font-size: 12.5px;
+    resize: vertical;
+}
+
+.ask :deep(button) {
+    align-self: flex-start;
 }
 
 .add {
