@@ -15,7 +15,7 @@ import migrations  # noqa: E402
 from commands.http import dispatch  # noqa: E402
 from engine.stop import asked  # noqa: E402
 from engine.viewer import elsewhere, heartbeat, remember  # noqa: E402
-from engine.engines import Engines  # noqa: E402
+from engine.engines import Children  # noqa: E402
 from controllers.types import warm, warm_record  # noqa: E402
 from engine.hooks import default_env  # noqa: E402
 from engine.record import Record  # noqa: E402
@@ -146,13 +146,15 @@ def run(root: Path, port: int = 8430) -> None:
     warm_record(Record(root, default_env(root)))
     threading.Thread(target=warm, args=(root,), daemon=True).start()
     engines = threading.Event()
-    threading.Thread(target=Engines(root).run, args=(engines,), daemon=True).start()
+    children = Children(root)
+    threading.Thread(target=children.run, args=(engines,), daemon=True).start()
     try:
         server.serve_forever()
     except KeyboardInterrupt:
         pass
     finally:
         engines.set()
+        children.stop()
         server.server_close()
     if halting.is_set():
         print("journal: stopped", flush=True)

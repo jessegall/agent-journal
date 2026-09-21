@@ -10,7 +10,6 @@ from engine.inputs import FORCE, PERMIT, take
 from surfaces.control import CARRY_ON, delivered
 from engine.record import Record
 from engine.watch import STEADY_AFTER, broke, steady
-from engine.sessions import Sessions
 from resources.base import AGENT, SYSTEM, USER, Event
 from resources.types import TYPES, priority
 from engine.seat import Seat
@@ -64,7 +63,7 @@ class Engine(Seat):
         self.agent.driver.pump()
         self.relay()
         self.announce_written()
-        self.why = (self.follow() or self.permitted() or self.probe() or self.forced() or self.typing() or self.control()
+        self.why = (self.permitted() or self.probe() or self.forced() or self.typing() or self.control()
                     or self.deliver() or self.nudge() or self.check_in())
         self.seat()
         return self.why
@@ -100,20 +99,6 @@ class Engine(Seat):
     def elsewhere(self, e) -> bool:
         meant = spoken_data(self.record, e).get("session")
         return bool(meant) and meant not in self.names()
-
-    def follow(self) -> str:
-        last = self.agent.driver.last_report()
-        if not last or not last.title:
-            return ""
-        bound = Sessions(self.record.root).environment(last.title)
-        if not bound or bound == self.record.env:
-            return ""
-        self.record = Record(self.record.root, bound)
-        self.relayed = None
-        self.agent.driver.record = self.record
-        self.agent = Agent(self.record, self.agent.driver)
-        self.actors = [User(self.record), self.agent, System(self.record)]
-        return f"following the session to {bound}"
 
     def probe(self) -> str:
         driver = self.agent.driver
