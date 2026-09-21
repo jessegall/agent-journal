@@ -16,7 +16,7 @@ class RulesFeature(Recital):
     said = "in force, read them"
     title_ = "Rules"
     abstract_ = "The rules said again at every tenth of the context, and the injected ones kept in AGENTS.md and CLAUDE.md"
-    help_ = "A rule binds every environment; one control injects the same managed block into both instruction files. A pin or rule can carry keywords, a list of words set with --set keywords. When a command the agent is about to run, or text it is about to write, carries one of them, the row is whispered to that session once, with its reasoning; the call itself is never refused."
+    help_ = "A rule binds every environment; one control injects the same managed block into both instruction files. A fact or rule can carry keywords, a list of words set with --set keywords. When a command the agent is about to run, or text it is about to write, carries one of them, the row is whispered to that session once, with its reasoning; the call itself is never refused."
     trigger = {"every": 10, "unit": trigger.PERCENT}
 
     @event("rule")
