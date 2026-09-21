@@ -77,7 +77,7 @@ class WorkFeature(Feature):
     @event("agent.updated")
     def tracked(self, event, record) -> None:
         agent = self.agent(event, record)
-        if agent.event != "PostToolUse":
+        if agent.event != "PostToolUse" or not agent.wrote:
             return
         for work in self.working(record)[:1]:
             tracker.record_files(agent, record, work)
