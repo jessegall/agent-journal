@@ -11,6 +11,8 @@ from engine import bus
 from resources.base import ACTIONS, ACTORS, PROJECT, Event
 from engine.stored import held_back, read_json, write_json, write_text
 
+RESOURCES = "resources"
+
 
 SETTINGS: dict[str, tuple] = {}
 
@@ -57,9 +59,9 @@ class Record:
         self._made: set[Path] = set()
 
     def folder(self, type: str, scope: str = "") -> Path:
-        f = (self.root if scope == PROJECT else self.home) / type
+        f = (self.root / RESOURCES if scope == PROJECT else self.home) / type
         if f not in self._made:
-            f.mkdir(exist_ok=True)
+            f.mkdir(parents=True, exist_ok=True)
             self._made.add(f)
         return f
 
