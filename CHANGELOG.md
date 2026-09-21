@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.66.1 — A link back down the stack closes what is above it
+
+Message 1808, to-do 663. With inspector A open and B stacked on top, a link to A inside B used to move A above B. Now it closes B and takes you back to A. Opening anything already in the stack cuts the stack back to it.
+
+What to do about it: `journal upgrade`.
+
 ## 2.66.0 — Download a document as Markdown
 
 Message 1532, to-do 620. Docs, reports, designs and plans have a download button in their header. It saves the row as a Markdown file named after its title: the title as a heading, the abstract in italics, the brief, and every part under its own heading. The text passes through the same formatters as everything else the user reads. The file comes from `GET /api/<env>/<type>/<n>/markdown`. Sharing waits until the journal has a public address.

@@ -40,8 +40,9 @@ function opening(stack, sub = "") {
 }
 
 export function peek(type, n, comment = 0, sub = "") {
-    const below = route.value.stack.filter((open) => !(open.type === type && open.n === n));
-    opening([...below, {type, n, comment}], sub);
+    const stack = route.value.stack;
+    const at = stack.findIndex((open) => open.type === type && open.n === n);
+    opening([...(at < 0 ? stack : stack.slice(0, at)), {type, n, comment}], sub);
 }
 
 export function swap(type, n) {
