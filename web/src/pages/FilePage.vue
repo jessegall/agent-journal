@@ -3,6 +3,9 @@ import {computed, onMounted, ref, watch} from "vue";
 import {api} from "../api/client.js";
 import {highlight, languageOf} from "../text/highlight.js";
 import Icon from "../kit/Icon.vue";
+import Btn from "../kit/Btn.vue";
+import Highlight from "../resource/Highlight.vue";
+import {sendMessage} from "../chat/outbox.js";
 import {route} from "../route.js";
 
 const file = ref(null);
@@ -19,6 +22,38 @@ async function load() {
         error.value = e.message;
     }
 }
+const picked = ref(null);
+const words = ref("");
+const sent = ref(false);
+const lineOf = (node) =>
+    Number(((node.nodeType === 1 ? node : node.parentElement).closest("[data-line]") || {dataset: {}}).dataset.line || 0);
+
+function pick(text, range) {
+    const first = range ? lineOf(range.startContainer) : 0;
+    const last = range ? lineOf(range.endContainer) || first : first;
+    picked.value = {text, first, last};
+    words.value = "";
+    sent.value = false;
+}
+
+async function send() {
+    const {text, first, last} = picked.value;
+    const where = first ? (first === last ? `line ${first}` : `lines ${first}-${last}`) : "a selection";
+    const source = first
+        ? file.value.text
+              .split("\n")
+              .slice(first - 1, last)
+              .join("\n")
+        : text;
+    const quoted = source
+        .split("\n")
+        .map((line) => `> ${line}`)
+        .join("\n");
+    await sendMessage(route.value.env, {brief: `About ${file.value.path}, ${where}:\n\n${quoted}\n\n${words.value.trim()}`});
+    picked.value = null;
+    sent.value = true;
+}
+
 onMounted(load);
 watch(() => route.value.q, load);
 </script>
@@ -51,8 +86,34 @@ watch(() => route.value.q, load);
                 <p class="empty">An image; open it from Files if it is an attachment.</p>
             </template>
             <template v-else>
-                <pre class="text"><template v-for="(line, i) in lines" :key="i"><span class="n">{{ i + 1 }}</span><span v-html="line" />
+                <template v-if="picked">
+                    <div class="ask">
+                        <p class="lines">
+                            {{
+                                picked.first
+                                    ? picked.first === picked.last
+                                        ? `Line ${picked.first}`
+                                        : `Lines ${picked.first}-${picked.last}`
+                                    : "Selection"
+                            }}
+                            of {{ file.path }}
+                        </p>
+                        <textarea v-model="words" rows="3" placeholder="Your comment, sent to the agent" autofocus />
+                        <div class="actions">
+                            <Btn small @click="picked = null">Cancel</Btn>
+                            <Btn kind="primary" small :disabled="!words.trim()" @click="send">Send to the agent</Btn>
+                        </div>
+                    </div>
+                </template>
+                <template v-if="sent">
+                    <p class="sent">Sent to the agent; the file itself is unchanged.</p>
+                </template>
+                <Highlight @quote="pick">
+                    <pre
+                        class="text"
+                    ><template v-for="(line, i) in lines" :key="i"><span class="line" :data-line="i + 1"><span class="n">{{ i + 1 }}</span><span v-html="line" /></span>
 </template></pre>
+                </Highlight>
             </template>
         </template>
     </section>
@@ -62,6 +123,41 @@ watch(() => route.value.q, load);
 .filepage {
     max-width: 1080px;
     padding: 22px 28px 60px;
+}
+
+.ask {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 14px;
+    padding: 12px;
+    border: 1px solid var(--border-2);
+    border-radius: 10px;
+    background: var(--raised);
+}
+
+.lines,
+.sent {
+    margin: 0;
+    color: var(--text-2);
+    font-size: 12.5px;
+}
+
+.ask textarea {
+    padding: 7px 10px;
+    border: 1px solid var(--border-2);
+    border-radius: 7px;
+    background: var(--bg);
+    color: var(--text);
+    font: inherit;
+    font-size: 13px;
+    resize: vertical;
+}
+
+.actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
 }
 
 .empty {
