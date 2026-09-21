@@ -137,7 +137,7 @@ def timed(reply: Reply, root: Path, env: str, method: str, path: str, began: tup
         return reply
     took = (time.perf_counter() - began[0]) * 1000
     working = (time.thread_time() - began[1]) * 1000
-    return later(reply, lambda: faults.spent(root, env, "hook" if "/hook/" in path else "request", f"{method} {path}", took, working))
+    return later(reply, lambda: faults.reports.spent(root, env, "hook" if "/hook/" in path else "request", f"{method} {path}", took, working))
 
 
 def dispatch(method: str, path: str, root: Path, query: dict, body: dict) -> Reply:

@@ -76,7 +76,7 @@ def post_console(req: Request) -> Reply:
     faults = features.FEATURES.get("faults")
     said = str(req.body.get("said") or "")[:200]
     where, stack, kind = str(req.body.get("where") or "")[:200], str(req.body.get("stack") or "")[:2000], str(req.body.get("kind") or "threw")
-    heard = (lambda: faults.heard(req.root, req.params["env"], said, where, stack, kind)) if faults and said else None
+    heard = (lambda: faults.reports.heard(req.root, req.params["env"], said, where, stack, kind)) if faults and said else None
     return Reply(200, {"queued": bool(heard)}, after=heard)
 
 

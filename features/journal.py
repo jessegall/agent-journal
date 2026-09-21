@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
 from functools import cached_property
 
-from controllers.base import Controller
+from controllers.base import NAMED, Controller
 from controllers.types import CONTROLLERS, Notices, Notifications, Nudges
 from engine.drivers import CHANNEL, TERMINAL
 from features.parts import AgentHooks, Client, Commands, Events
@@ -24,7 +24,7 @@ class BoundJournal:
         self.journal, self.record, self.actor = journal, record, actor
 
     def __getattr__(self, name: str) -> Controller:
-        found = {controller.__name__.lower(): controller for controller in CONTROLLERS.values()}.get(name)
+        found = NAMED.get(name)
         if found is None:
             raise AttributeError(f"the journal has no resource called {name}")
         return found(self.record, actor=self.actor)
