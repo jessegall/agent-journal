@@ -2,7 +2,7 @@ import re
 
 from controllers.types import Agents, CONTROLLERS, Messages
 from features import trigger
-from features.base import Behaviour, Feature, event, formats
+from features.base import Behaviour, Feature, event, formats, Line
 from resources.base import AGENT, SECTION, SYSTEM, USER
 from features.messages.answering import in_hand, theirs, unanswered
 from engine.transcript import last_said
@@ -15,6 +15,10 @@ ANSWERS = {"comment": "answered", "reaction": "acknowledged"}
 
 class MessagesFeature(Feature):
     name = "messages"
+    lines = {"inbox": Line("there are new messages in your inbox", "journal message unread, then journal message read <n> for each"),
+             "inbox held": Line("your inbox is unread: journal message unread, then journal message read <n> for each, before any other write"),
+             "answer": Line("answer {{messages}} before you write anything", 'journal message reply <n> "<what you make of it>", a reaction, or journal message processed <n>'),
+             "paragraphs": Line("your last message ran its paragraphs together", "a blank line between parts is what makes a message readable: one thought to a paragraph")}
     aliases = (("inbox", "unread"), ("handled", "closing"), ("status", "answering"))
     title_ = "Messaging"
     abstract_ = "What the user leaves for the agent is named until it is read, answered before the work starts, and closed once it is dealt with"
@@ -56,9 +60,9 @@ class MessagesFeature(Feature):
             return
         if not self.due(record, agent, "unread"):
             return
-        self.nudge(record, agent, "there are new messages in your inbox", "journal message unread, then journal message read <n> for each", private=True)
+        self.say(record, agent, "inbox", private=True)
         if self.counted(record, agent, "unread") > self.patient(record, "unread"):
-            self.hold(record, "your inbox is unread: journal message unread, then journal message read <n> for each, before any other write", "unread")
+            self.hold(record, "inbox held", "unread")
 
     @event("agent.updated")
     def owed(self, event, record) -> None:
@@ -70,7 +74,7 @@ class MessagesFeature(Feature):
         if not self.due(record, agent, "answering") or self.counted(record, agent, "answering") > self.patient(record, "answering"):
             return
         names = ", ".join(f"message {m.n}" for m in held[-3:])
-        self.nudge(record, agent, f"answer {names} before you write anything", 'journal message reply <n> "<what you make of it>", a reaction, or journal message processed <n>', private=True)
+        self.say(record, agent, "answer", private=True, messages=names)
 
     def paragraphs(self, message) -> list[str]:
         blocks = (b.strip() for b in (message.brief or message.title).split("\n\n"))
@@ -138,5 +142,4 @@ class MessagesFeature(Feature):
         said = last_said(record, agent).strip()
         if len(said) < RUN_ON or "\n\n" in said or said.count(". ") < SENTENCES:
             return
-        self.nudge(record, agent, "your last message ran its paragraphs together",
-                   "a blank line between parts is what makes a message readable: one thought to a paragraph", private=True)
+        self.say(record, agent, "paragraphs", private=True)

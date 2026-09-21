@@ -5,12 +5,13 @@ import subprocess
 
 from controllers.types import Agents, CONTROLLERS, Messages
 from features.attachments.video import MAX_FRAMES, probe, spacing
-from features.base import Behaviour, Feature, event
-from resources.base import SYSTEM, titled
+from features.base import Behaviour, Feature, event, Line
+from resources.base import SYSTEM
 
 
 class Attachments(Feature):
     name = "attachments"
+    lines = {"untagged": Line("{{type}} {{n}} file {{name}} needs tags", 'inspect the attachment, then journal {{type}} tag {{n}} {{quoted}} "<a few words describing what it shows>"')}
     title_ = "Attachments"
     abstract_ = "An attached file is read for the agent — a video sampled into frames — and each image or video is described in a few searchable words"
     help_ = ("When a media file needs tags, inspect it and run `journal <type> tag <n> <name> <tags>` with a few words describing what it shows. "
@@ -27,8 +28,7 @@ class Attachments(Feature):
                 if (not tags or str(tags).startswith("video; ")) and (mimetypes.guess_type(name)[0] or "").startswith(("image/", "video/"))]
 
     def tell(self, record, agent, type_: str, row, name: str) -> None:
-        command = f"journal {type_} tag {row.n} {json.dumps(name)} \"<a few words describing what it shows>\""
-        self.nudge(record, agent, titled(f"{type_} {row.n} file {name} needs tags"), f"inspect the attachment, then {command}")
+        self.say(record, agent, "untagged", type=type_, n=row.n, name=name, quoted=json.dumps(name))
 
     @event("updated")
     def tag_media(self, event, record) -> None:

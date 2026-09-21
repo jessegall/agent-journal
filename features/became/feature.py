@@ -1,7 +1,7 @@
 import time
 
 from controllers.types import Agents, CONTROLLERS, Docs, Reports
-from features.base import Feature, event
+from features.base import Feature, event, Line
 from resources.base import AGENT, SYSTEM
 
 SOURCES = (Reports, Docs)
@@ -10,6 +10,7 @@ BUILT_ON = ("plan", "doc", "report")
 
 class Became(Feature):
     name = "became"
+    lines = {"uncited": Line("{{type}} {{n}} cites nothing it was built on", 'you read {{read}} just now: journal {{type}} link {{n}} "<ref>" for whichever it came from')}
     title_ = "Where a plan came from"
     abstract_ = "A plan, doc or report that cites nothing it was built on is named back to the agent"
     help_ = "A plan, doc or report created soon after the agent read a report or doc, and citing none of them, earns a private nudge naming the link to make. became.within (minutes, 30) is how recently it must have read one."
@@ -35,5 +36,4 @@ class Became(Feature):
         if not agent:
             return
         names = ", ".join(r.ref for r in uncited[-3:])
-        self.nudge(record, agent, f"{event.type} {event.n} cites nothing it was built on",
-                   f"you read {names} just now: journal {event.type} link {event.n} \"<ref>\" for whichever it came from", private=True)
+        self.say(record, agent, "uncited", private=True, type=event.type, n=event.n, read=names)

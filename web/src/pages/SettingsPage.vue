@@ -26,6 +26,12 @@ const features = computed(() =>
         })),
     }))
 );
+const spoken = computed(() =>
+    features.value
+        .map((f) => ({name: f.name, title: f.title, lines: Object.entries(f.lines || {}).map(([key, line]) => ({key, ...line}))}))
+        .filter((f) => f.lines.length)
+);
+const pieces = (text) => String(text || "").split(/(\{\{\w+\}\})/).filter(Boolean).map((piece) => ({piece, slot: /^\{\{\w+\}\}$/.test(piece)}));
 const on = (name, fallback = false) => {
     const set = store.settings && store.settings.features;
     return set && name in set ? !!set[name] : fallback;
@@ -201,6 +207,33 @@ async function sweep(e) {
                     </span>
                     <span class="control">
                         <Switch :on="on(part.name, part.default)" @change="(v) => flip(part.name, v)" />
+                    </span>
+                </div>
+            </template>
+        </section>
+        <section class="group" :class="{shut: !open('lines')}">
+            <header class="group-head" role="button" tabindex="0" @click="fold('lines')">
+                <span class="fold" />
+                <h2>What the features say</h2>
+                <p class="lead">Every line a feature can say to the agent. A feature can only say its own lines, and the parts in braces are filled in when it is said.</p>
+            </header>
+            <template v-for="f in spoken" :key="f.name">
+                <div class="row">
+                    <span class="text">
+                        <span class="title">{{ f.title }}</span>
+                    </span>
+                </div>
+                <div v-for="line in f.lines" :key="line.key" class="row part">
+                    <span class="text">
+                        <span class="title">
+                            <span v-for="(p, i) in pieces(line.title)" :key="i" :class="{slot: p.slot}">{{ p.piece }}</span>
+                        </span>
+                        <span v-if="line.brief" class="help">
+                            <span v-for="(p, i) in pieces(line.brief)" :key="i" :class="{slot: p.slot}">{{ p.piece }}</span>
+                        </span>
+                    </span>
+                    <span class="control">
+                        <span class="note">{{ f.name }}.{{ line.key }}</span>
                     </span>
                 </div>
             </template>
@@ -456,6 +489,10 @@ h2 {
 .help {
     color: var(--text-2);
     font-size: 12.5px;
+}
+
+.slot {
+    color: var(--accent-text);
 }
 
 .note {

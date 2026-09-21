@@ -3,7 +3,7 @@ from pathlib import Path
 
 from features import trigger
 from features.trigger import USES
-from features.base import Behaviour, Feature, event
+from features.base import Behaviour, Feature, event, Line
 from features.skills.catalogue import SKILL, skills
 from providers import PROVIDERS
 from resources.types import AgentRow
@@ -11,6 +11,9 @@ from resources.types import AgentRow
 
 class Skills(Feature):
     name = "skills"
+    lines = {"unloaded": Line("no journal skill is loaded in this window", "load the journal skill (Skill: journal) before the next write; a compaction emptied it"),
+             "reload held": Line("a fresh window has no journal skill: load it first - Skill: journal"),
+             "stale": Line("{{count}} changed since you loaded {{them}}", "load again: {{skills}}")}
     title_ = "Skills"
     abstract_ = "An agent working on with no journal skill is told once per context window to load one"
     help_ = "A session start or compaction opens a fresh window; triggers.skills sets how long the feature waits before its one reminder."
@@ -36,7 +39,7 @@ class Skills(Feature):
         loaded = agent.skills
         if any(s == "journal" or s.startswith("journal-") for s in loaded):
             return
-        self.nudge(record, agent, "no journal skill is loaded in this window", "load the journal skill (Skill: journal) before the next write; a compaction emptied it", private=True)
+        self.say(record, agent, "unloaded", private=True)
         trigger.write(record, agent, self.name, told=True)
 
     @event("agent.updated")
@@ -52,7 +55,7 @@ class Skills(Feature):
         if any(name == "journal" and float(at or 0) >= since for name, at in loaded.items()):
             self.release(record, "reload", agent)
         else:
-            self.hold(record, "a fresh window has no journal skill: load it first - Skill: journal", "reload", agent)
+            self.hold(record, "reload held", "reload", agent)
 
     @event("agent.updated")
     def stale(self, event, record) -> None:
@@ -61,5 +64,5 @@ class Skills(Feature):
             return
         changed = [s[SKILL.name] for s in skills(record, agent.n) if s[SKILL.stale]]
         if changed:
-            self.nudge(record, agent, f"{self.plural(len(changed), 'skill')} changed since you loaded {'it' if len(changed) == 1 else 'them'}",
-                       f"load again: {', '.join(f'Skill: {name}' for name in changed)}", private=True)
+            self.say(record, agent, "stale", private=True, count=self.plural(len(changed), "skill"), them="it" if len(changed) == 1 else "them",
+                     skills=", ".join(f"Skill: {name}" for name in changed))

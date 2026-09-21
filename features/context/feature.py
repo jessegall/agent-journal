@@ -2,12 +2,15 @@ import time
 
 from controllers.types import Rules
 from features import trigger
-from features.base import Behaviour, Feature, command, event
+from features.base import Behaviour, Feature, command, event, Line
 from features.context.reread import owed, standing
 
 
 class Context(Feature):
     name = "context"
+    lines = {"decide": Line("context {{percent}}% full, decide", 'a fact is what a later reader would get wrong without, a rule binds every environment, or nothing "<why>"'),
+             "decide held": Line('context {{percent}}% full — decide before any other write — journal fact, journal rule, or journal nothing "<why>"'),
+             "reread": Line("the reading pass over every rule and fact is owed", "journal rule reread")}
     title_ = "Memory"
     abstract_ = "At each mark of the context window the agent decides — fact, rule or nothing — before any other write; and every week it reads every rule and fact again"
     help_ = ("The marks are the trigger's at list; a fact, a rule, or journal nothing \"<why>\" releases the hold. "
@@ -23,8 +26,8 @@ class Context(Feature):
             return self.release(record, agent=agent)
         if self.due(record, agent):
             pct = agent.context
-            self.hold(record, f"context {pct}% full — decide before any other write — journal fact, journal rule, or journal nothing \"<why>\"", agent=agent)
-            self.nudge(record, agent, f"context {pct}% full, decide", "a fact is what a later reader would get wrong without, a rule binds every environment, or nothing \"<why>\"")
+            self.hold(record, "decide held", agent=agent, percent=pct)
+            self.say(record, agent, "decide", percent=pct)
 
     @event("fact.created")
     @event("rule.created")
@@ -35,7 +38,7 @@ class Context(Feature):
     def reread_owed(self, event, record) -> None:
         agent = self.agent(event, record)
         if agent and self.due(record, agent, "rereading") and owed(record):
-            self.nudge(record, agent, "the reading pass over every rule and fact is owed", "journal rule reread")
+            self.say(record, agent, "reread")
 
     @command("rule")
     def reread(self, rules: Rules) -> str:

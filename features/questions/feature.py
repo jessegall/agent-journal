@@ -1,7 +1,7 @@
 import re
 
 from features import trigger
-from features.base import Behaviour, Feature, event
+from features.base import Behaviour, Feature, event, Line
 from engine.transcript import last_said
 
 LISTED = re.compile(r"^\s*(?:\(?[A-Za-z]\)|\(?[A-Za-z][.)]|\d+[.)]|[-*•])\s+\S", re.MULTILINE)
@@ -17,6 +17,8 @@ def offers_choices(text: str) -> bool:
 
 class Questions(Feature):
     name = "questions"
+    lines = {"prose": Line("your last message offers choices in prose", 'ask through journal question ask "<one line>" --set options=\'[{"title": …, "description": …}]\' --set pick=<n>, so the viewer renders it; your writes wait until you do'),
+             "prose held": Line("your last message offered the user choices in prose: ask them through journal question ask --set options=… before any other write")}
     title_ = "Questions"
     abstract_ = "A decision only the user can make is asked as a question, never offered in prose, and the answer they pick is held for a moment before it is saved"
     help_ = ("A question or a suggestion is answered by clicking a choice; the choice is held for a moment before it is saved, and clicking it again in that moment takes it back. "
@@ -41,9 +43,8 @@ class Questions(Feature):
         agent = self.agent(event, record)
         if not agent or not self.due(record, agent, "asking") or not offers_choices(last_said(record, agent)):
             return
-        self.nudge(record, agent, "your last message offers choices in prose",
-                   "ask through journal question ask \"<one line>\" --set options='[{\"title\": …, \"description\": …}]' --set pick=<n>, so the viewer renders it; your writes wait until you do")
-        self.hold(record, "your last message offered the user choices in prose: ask them through journal question ask --set options=… before any other write", "asking", agent)
+        self.say(record, agent, "prose")
+        self.hold(record, "prose held", "asking", agent)
 
     @event("question.created")
     def asked(self, event, record) -> None:
