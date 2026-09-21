@@ -141,25 +141,27 @@ const cutPart = (title) => run("cut", {title});
 
         <nav class="revisions" aria-label="Revisions">
             <div class="steps">
-                <Btn kind="icon" small :disabled="at <= 0" title="Earlier revision" @click="go(at - 1)">
-                    <Icon name="chevron" class="back" />
-                </Btn>
-                <template v-if="ticks.from > 0">
-                    <span class="earlier">+{{ ticks.from }}</span>
+                <template v-if="numbers.length > 1">
+                    <Btn kind="icon" small :disabled="at <= 0" title="Earlier revision" @click="go(at - 1)">
+                        <Icon name="chevron" class="back" />
+                    </Btn>
+                    <template v-if="ticks.from > 0">
+                        <span class="earlier">+{{ ticks.from }}</span>
+                    </template>
+                    <template v-for="i in ticks.shown" :key="numbers[i]">
+                        <button
+                            type="button"
+                            :class="['tick', {current: i === at, open: open && i === numbers.length - 1}]"
+                            :title="open && i === numbers.length - 1 ? `Revision ${i + 1}, open for edits` : `Revision ${i + 1}`"
+                            :aria-current="i === at ? 'true' : undefined"
+                            @click="go(i)"
+                        />
+                    </template>
+                    <Btn kind="icon" small :disabled="latest" title="Later revision" @click="go(at + 1)">
+                        <Icon name="chevron" />
+                    </Btn>
+                    <span class="count">Revision {{ at + 1 }} of {{ numbers.length }}</span>
                 </template>
-                <template v-for="i in ticks.shown" :key="numbers[i]">
-                    <button
-                        type="button"
-                        :class="['tick', {current: i === at, open: open && i === numbers.length - 1}]"
-                        :title="open && i === numbers.length - 1 ? `Revision ${i + 1}, open for edits` : `Revision ${i + 1}`"
-                        :aria-current="i === at ? 'true' : undefined"
-                        @click="go(i)"
-                    />
-                </template>
-                <Btn kind="icon" small :disabled="latest" title="Later revision" @click="go(at + 1)">
-                    <Icon name="chevron" />
-                </Btn>
-                <span class="count">Revision {{ at + 1 }} of {{ numbers.length }}</span>
                 <span class="grow" />
                 <template v-if="latest && open">
                     <Btn small title="Keep this revision as it is; the next edit starts a new one" @click="run('keep', {})">
