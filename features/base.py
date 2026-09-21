@@ -15,7 +15,7 @@ from features.format import FORMATTERS
 from features.journal import Journal
 from features.settings import Setting, Settings
 from features.text import paragraphs
-from resources.base import KEYWORDS, Refused, SYSTEM, WHOM
+from resources.base import Refused, SYSTEM
 from engine.stored import read_json, write_json
 from engine.wording import plural
 
@@ -115,6 +115,8 @@ class FeatureDetails:
     behaviours: ClassVar[list[Behaviour]] = []
     settings: ClassVar[list[Setting]] = []
     trigger: ClassVar[dict] = {}
+    aliases: ClassVar[tuple] = ()
+    runs_for_subagents: ClassVar[bool] = False
 
     @classmethod
     def values(cls, record) -> Settings:
@@ -143,6 +145,7 @@ class Feature(ABC):
             d = cls.details
             cls.name, cls.lines, cls.behaviours, cls.settings, cls.trigger = d.name, {line.name: line for line in d.lines}, {b.name: b for b in d.behaviours}, d.settings, d.trigger
             cls.title_, cls.abstract_, cls.help_ = paragraphs(d.title), paragraphs(d.abstract), paragraphs(d.help)
+            cls.aliases, cls.runs_for_subagents = d.aliases, d.runs_for_subagents
         if cls.name:
             REGISTRY[cls.name] = cls
 
@@ -303,40 +306,3 @@ class Feature(ABC):
                 "behaviours": {key: b.describe() for key, b in self.behaviours.items()},
                 "lines": {key: line.describe() for key, line in self.lines.items()},
                 "settings": [s.describe() for s in self.settings]}
-
-
-class Recital(Feature):
-    controller: ClassVar[type]
-    lines = {"whisper": Line("{{type}} {{n}} — {{title}}", "{{brief}}"),
-             "standing": Line("{{count}} standing, read them", "{{rows}}")}
-    behaviours = {"whisper": Behaviour("Whisper a row when one of its keywords appears",
-                                       "Said again once this many of the agent's tool uses have passed since it last spoke",
-                                       trigger={"every": 50, "unit": trigger.USES})}
-
-    @interceptor
-    def touched(self, provider, record, hook, session) -> str:
-        said = hook.tool.said.lower()
-        if not said or not self.on(record, "whisper"):
-            return ""
-        agent = Agents(record, actor=SYSTEM).by_session(session)
-        for row in self.standing(record, self.controller):
-            words = [w for w in row.data.get(KEYWORDS) or [] if w and str(w).lower() in said]
-            if words and self.quiet_enough(record, session, row.ref, agent):
-                self.journal.whisper(record, agent, "whisper", type=self.controller.resource.type, n=row.n, title=row.title, brief=row.brief)
-        return ""
-
-    def quiet_enough(self, record, session: str, ref: str, agent) -> bool:
-        f = record.root / "runtime" / f"touched-{session}.json"
-        spoke, uses = read_json(f, {}), int(agent.uses or 0)
-        since = self.cadence(record, "whisper").get("every") or 0
-        if ref in spoke and uses - int(spoke[ref] or 0) < float(since):
-            return False
-        write_json(f, {**spoke, ref: uses})
-        return True
-
-    @event("agent.updated")
-    def repeat(self, event, record) -> None:
-        agent = self.agent_due(event, record)
-        rows = [r for r in self.standing(record, self.controller) if r.data.get(WHOM, agent.title) == agent.title] if agent else []
-        if rows:
-            self.journal.say(record, agent, "standing", count=self.plural(len(rows), self.controller.resource.type), rows="; ".join(f"{r.n}. {r.title}" for r in rows))

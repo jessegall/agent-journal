@@ -12,6 +12,16 @@ class TypedEvent:
 
 
 @dataclass(frozen=True)
+class ResourceEvent(TypedEvent):
+    n: int = 0
+    action: str = ""
+
+    @classmethod
+    def read(cls, event) -> "ResourceEvent":
+        return cls(n=event.n, action=event.action)
+
+
+@dataclass(frozen=True)
 class AgentEvent(TypedEvent):
     agent: int = 0
 
