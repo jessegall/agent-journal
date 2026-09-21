@@ -52,6 +52,20 @@ const opened = computed(() =>
         ? route.value.stack
         : [route.value.n && page.value === "index" ? {type: route.value.page, n: route.value.n} : {type: "", n: 0}]
 );
+const keyOf = (open) => `${open.type}:${open.n}`;
+const layers = ref([]);
+watch(
+    opened,
+    (now) => {
+        const keys = now.map(keyOf);
+        const leaving = layers.value.filter((layer) => layer.type && !keys.includes(layer.key)).map((layer) => ({...layer, leaving: true}));
+        layers.value = [...now.map((open) => ({...open, key: keyOf(open), leaving: false})), ...leaving];
+    },
+    {immediate: true}
+);
+const visibleLayers = computed(() => layers.value.filter((layer) => !layer.leaving));
+const depthOf = (layer) => (layer.leaving ? 0 : visibleLayers.value.length - 1 - visibleLayers.value.indexOf(layer));
+const gone = (key) => (layers.value = layers.value.filter((layer) => !(layer.key === key && layer.leaving)));
 
 const quick = ref(false);
 let pointed = false;
@@ -147,8 +161,15 @@ const chatFloats = computed(() => store.detached && !store.extension.holding && 
                 <Transition name="column">
                     <Activity v-if="store.activity && !store.wide" />
                 </Transition>
-                <template v-for="(open, i) in opened" :key="`${i}:${open.type}:${open.n}`">
-                    <Reader :type="open.type" :n="open.n" :depth="opened.length - 1 - i" :over="i > 0" />
+                <template v-for="layer in layers" :key="layer.key">
+                    <Reader
+                        :type="layer.type"
+                        :n="layer.n"
+                        :depth="depthOf(layer)"
+                        :over="layer.leaving || visibleLayers.indexOf(layer) > 0"
+                        :leaving="layer.leaving"
+                        @gone="gone(layer.key)"
+                    />
                 </template>
                 <Lightbox />
                 <Transition name="quick">

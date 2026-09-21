@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.65.2 — Inspectors slide in and out again
+
+Messages 1775 and 1800, to-do 659. Since the stack in 2.58.0, every inspector mounted as a component of its own, so it appeared and vanished with no transition, a single one as much as a second one on top. Now each inspector slides in when it opens. A closed one stays long enough to slide out, while the one below slides back into place, and it is removed only once that is done.
+
+What to do about it: `journal upgrade`.
+
 ## 2.65.1 — The notifications dropdown opens over the chat
 
 Message 1784, to-do 662. The top bar's wrapper cropped everything to its own 48 pixels so it could collapse in wide mode, which cut the notifications dropdown off right under the bar, where the chat and the status bar showed through. The bar now crops only while it is collapsed, so the dropdown opens whole over the chat.
