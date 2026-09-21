@@ -135,7 +135,7 @@ class WorkFeature(Feature):
     def logged(self, event, record) -> None:
         if not event.data.get("section"):
             return
-        for agent in Agents(record, actor=SYSTEM)._every():
+        for agent in self.live(record):
             trigger.write(record, agent, self.name, edits=0)
         self.release(record)
 
