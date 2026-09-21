@@ -11,6 +11,8 @@ from resources.base import SYSTEM
 if TYPE_CHECKING:
     from features.journal import BoundJournal
 
+from features.settings import Settings
+
 
 class Speaker:
     def __init__(self, feature, record, row):
@@ -45,8 +47,8 @@ class Context:
         return self.feature.journal.at(self.record)
 
     @property
-    def settings(self) -> dict:
-        return self.record.setting(self.feature.name, {}) if self.record else {}
+    def settings(self) -> "Settings":
+        return self.feature.values(self.record) if self.record else Settings(self.feature.settings, {})
 
     def on(self, behaviour: str = "") -> bool:
         return self.feature.on(self.record, behaviour)

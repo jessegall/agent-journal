@@ -5,11 +5,11 @@ import resources.types as resources_module
 from controllers.base import Controller
 from controllers.types import Docs
 from engine.stored import write_text
+from features.designs.details import DesignsDetails
 from features.designs.resource import Design
 from resources.base import PART_OF, SECTION, Refused, check_abstract, check_title
 
 STAMPED, REVISION, CHANGE = "stamped", "revision", "change"
-KEEP_AFTER_MINUTES = 30
 
 
 class Designs(Controller):
@@ -66,7 +66,7 @@ class Designs(Controller):
         return bool(r.revisions) and time.time() < float(r.open_until or 0)
 
     def _keep_after(self) -> float:
-        return float(self.record.setting("designs", {}).get("keep_after_minutes", KEEP_AFTER_MINUTES)) * 60
+        return float(DesignsDetails.values(self.record).keep_after_minutes) * 60
 
     def _noted(self, said: str, change: str) -> str:
         return "; ".join(dict.fromkeys([*(said.split("; ") if said else []), change]))

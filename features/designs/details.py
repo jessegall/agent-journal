@@ -1,4 +1,5 @@
 from features.base import FeatureDetails
+from features.settings import Setting
 
 
 class DesignsDetails(FeatureDetails):
@@ -24,3 +25,13 @@ class DesignsDetails(FeatureDetails):
         through, and what each revision changed. The revisions are documents underneath: the
         Documents page lists a design once, as its latest revision.
     """
+
+    settings = [
+        Setting(
+            name="keep_after_minutes",
+            default=30,
+            title="Keep an open revision after",
+            abstract="An open revision is kept by itself when nobody has edited it for this long",
+            unit="minutes",
+        ),
+    ]

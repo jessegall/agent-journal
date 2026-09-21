@@ -12,7 +12,6 @@ const props = defineProps({feature: Object});
 const emit = defineEmits(["close"]);
 const saved = (key) => (store.settings && store.settings[key]) || {};
 
-const hold = ref("");
 const days = ref({});
 const retention = computed(() => saved("keep"));
 const permissions = computed(() => saved("permissions"));
@@ -24,8 +23,10 @@ const pieces = (text) =>
         .filter(Boolean)
         .map((piece) => ({piece, slot: /^\{\{\w+\}\}$/.test(piece)}));
 
-async function saveHold() {
-    await api.saveSettings({questions: {hold: Number(hold.value)}});
+const valueOf = (setting) => saved(props.feature.name)[setting.name] ?? setting.default;
+
+async function saveSetting(setting, value) {
+    store.settings = await api.saveSettings({[props.feature.name]: {...saved(props.feature.name), [setting.name]: value}});
 }
 
 async function saveRetention(type) {
@@ -88,24 +89,41 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
                         </template>
                     </section>
                 </template>
+                <template v-if="feature.settings.length && (feature.fixed || on(feature.name, feature.default))">
+                    <section class="block">
+                        <h3>Settings</h3>
+                        <template v-for="setting in feature.settings" :key="setting.name">
+                            <div class="row">
+                                <span class="text">
+                                    <span class="title">{{ setting.title }}</span>
+                                    <template v-if="setting.abstract">
+                                        <span class="note">{{ setting.abstract }}</span>
+                                    </template>
+                                </span>
+                                <template v-if="setting.kind === 'switch'">
+                                    <Switch :on="!!valueOf(setting)" @change="(v) => saveSetting(setting, v)" />
+                                </template>
+                                <template v-else>
+                                    <span class="amount">
+                                        <input
+                                            class="field"
+                                            :type="setting.kind === 'number' ? 'number' : 'text'"
+                                            :value="valueOf(setting)"
+                                            @change="
+                                                saveSetting(
+                                                    setting,
+                                                    setting.kind === 'number' ? Number($event.target.value) : $event.target.value
+                                                )
+                                            "
+                                        />
+                                        {{ setting.unit }}
+                                    </span>
+                                </template>
+                            </div>
+                        </template>
+                    </section>
+                </template>
                 <SwitchCase :value="feature.name">
-                    <template #questions>
-                        <section class="block">
-                            <h3>Hold a picked answer</h3>
-                            <p class="note">Click the same answer again within this time to cancel it</p>
-                            <span class="amount">
-                                <input
-                                    v-model="hold"
-                                    class="field"
-                                    type="number"
-                                    min="0"
-                                    :placeholder="String(saved('questions').hold ?? 3)"
-                                    @change="saveHold"
-                                />
-                                seconds
-                            </span>
-                        </section>
-                    </template>
                     <template #retention>
                         <section class="block">
                             <h3>Keep</h3>
@@ -259,6 +277,7 @@ h2 {
 
 .help {
     margin: 0 0 18px;
+    white-space: pre-line;
     color: var(--text-2);
     font-size: 12.5px;
     line-height: 1.55;
