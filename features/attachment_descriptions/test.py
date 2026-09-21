@@ -103,7 +103,7 @@ def test_an_uploaded_image_is_nudged_for_tags_and_the_cli_tag_command_files_and_
     later_row.files["walkthrough.mp4"] = "video; 4 frames every 0.5 seconds"
     later_messages.save(later_row, "updated")
     later_agent = Agents(later, actor=SYSTEM).create("new session", status="working")
-    Agents(later, actor=SYSTEM).update(later_agent.n, event="SessionStart")
+    Agents(later, actor=SYSTEM).saw(later_agent.n, {"hook": "SessionStart"}, event="SessionStart")
     assert len([n for n in Nudges(later, actor=SYSTEM).all() if n.data.get("feature") == "attachment_descriptions"]) == 2, "a starting agent hears about media attached while none was live"
 
     real = folder / "shot.png"

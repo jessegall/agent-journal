@@ -6,12 +6,11 @@ from dataclasses import dataclass
 from typing import ClassVar
 
 from controllers.types import CONTROLLERS
-from engine.events import AgentUpdated, ResourceEvent
+from engine.events import ResourceEvent, SessionStarted
 from features.attachment_descriptions.video import MAX_FRAMES, probe, spacing
 from features.parts import Context, Handler
 
 MEDIA = ("image/", "video/")
-SESSION_START = "SessionStart"
 
 
 @dataclass(frozen=True)
@@ -54,8 +53,8 @@ class TagNewMedia(Handler):
 class TagMissingAtStart(Handler):
     behaviour = "tagging"
 
-    def handle(self, context: Context, event: AgentUpdated) -> None:
-        if not context.agent or context.agent.row.event != SESSION_START:
+    def handle(self, context: Context, event: SessionStarted) -> None:
+        if not context.agent:
             return
         for type_ in CONTROLLERS:
             for row in context.journal.of(type_)._every():

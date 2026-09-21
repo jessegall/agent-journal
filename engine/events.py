@@ -5,10 +5,14 @@ from typing import ClassVar
 @dataclass(frozen=True)
 class TypedEvent:
     on: ClassVar[str] = ""
+    event_name: ClassVar[str] = ""
 
     @classmethod
     def read(cls, event) -> "TypedEvent":
         return cls()
+
+    def wanted(self) -> bool:
+        return True
 
 
 @dataclass(frozen=True)
@@ -81,6 +85,7 @@ class AgentMessageSent(AgentEvent):
 @dataclass(frozen=True)
 class AgentUpdated(AgentEvent):
     on: ClassVar[str] = "agent.updated"
+    hook_name: ClassVar[str] = ""
     hook: str = ""
     tool: str = ""
     file: str = ""
@@ -92,3 +97,54 @@ class AgentUpdated(AgentEvent):
         return cls(agent=event.n, hook=str(event.data.get("hook") or ""), tool=str(event.data.get("tool") or ""),
                    file=str(event.data.get("file") or ""), session=str(event.data.get("session") or ""),
                    size=int(event.data.get("size") or 0))
+
+    def wanted(self) -> bool:
+        return not self.hook_name or self.hook == self.hook_name
+
+
+@dataclass(frozen=True)
+class SessionStarted(AgentUpdated):
+    hook_name: ClassVar[str] = "SessionStart"
+    event_name: ClassVar[str] = "agent.session.started"
+
+
+@dataclass(frozen=True)
+class PromptSubmitted(AgentUpdated):
+    hook_name: ClassVar[str] = "UserPromptSubmit"
+    event_name: ClassVar[str] = "agent.prompt.submitted"
+
+
+@dataclass(frozen=True)
+class ToolStarted(AgentUpdated):
+    hook_name: ClassVar[str] = "PreToolUse"
+    event_name: ClassVar[str] = "agent.tool.started"
+
+
+@dataclass(frozen=True)
+class ToolFinished(AgentUpdated):
+    hook_name: ClassVar[str] = "PostToolUse"
+    event_name: ClassVar[str] = "agent.tool.finished"
+
+
+@dataclass(frozen=True)
+class TurnStopped(AgentUpdated):
+    hook_name: ClassVar[str] = "Stop"
+    event_name: ClassVar[str] = "agent.turn.stopped"
+
+
+@dataclass(frozen=True)
+class ContextCompacting(AgentUpdated):
+    hook_name: ClassVar[str] = "PreCompact"
+    event_name: ClassVar[str] = "agent.context.compacting"
+
+
+@dataclass(frozen=True)
+class SessionEnded(AgentUpdated):
+    hook_name: ClassVar[str] = "SessionEnd"
+    event_name: ClassVar[str] = "agent.session.ended"
+
+
+@dataclass(frozen=True)
+class PermissionRequested(AgentUpdated):
+    hook_name: ClassVar[str] = "PermissionRequest"
+    event_name: ClassVar[str] = "agent.permission.requested"

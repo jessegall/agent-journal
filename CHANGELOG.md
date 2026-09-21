@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.67.0 — One typed event per hook
+
+Design 1, to-do 624. `agent.updated` fired on every hook, and a handler then had to check which hook it was. Each hook now has a typed event of its own, and a handler names the one it means: SessionStarted, PromptSubmitted, ToolStarted, ToolFinished, TurnStopped, ContextCompacting, SessionEnded and PermissionRequested. The greeting and the media-tags nudge listen to a session starting. File tracking and the largest-result notice listen to a tool finishing. The "It listens to" line of a feature's skill uses these names, such as agent.tool.finished. AgentUpdated stays for handlers that want every change. The test helper reports a hook the way real hooks do.
+
+What to do about it: `journal upgrade`.
+
 ## 2.66.1 — A link back down the stack closes what is above it
 
 Message 1808, to-do 663. With inspector A open and B stacked on top, a link to A inside B used to move A above B. Now it closes B and takes you back to A. Opening anything already in the stack cuts the stack back to it.
