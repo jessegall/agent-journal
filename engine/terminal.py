@@ -79,7 +79,7 @@ def seat(root: Path, env: str, session: str, pid: int, agent: str) -> None:
 
 
 def run(root: Path, cwd: Path, env: str, agent: str, args: list[str]) -> int:
-    from engine.drivers import DRIVERS
+    from providers import DRIVERS
     from engine.record import Record
     from features.work.auto import launch_args
 

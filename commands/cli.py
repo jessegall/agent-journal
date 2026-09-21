@@ -14,7 +14,7 @@ import features
 from features.base import generation
 import migrations
 from engine import queries
-from engine.drivers import DRIVERS
+from providers import DRIVERS
 from engine.record import Record
 from engine.sessions import Sessions, allowed
 from engine.transcript import Turn, conversation, search as search_transcript, user

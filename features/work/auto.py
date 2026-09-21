@@ -1,5 +1,5 @@
 from controllers.types import Works
-from engine.drivers import DRIVERS
+from providers import DRIVERS
 from resources.base import SYSTEM
 
 AUTO = "work.auto"

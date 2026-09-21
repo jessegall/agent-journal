@@ -2,18 +2,14 @@ import re
 from pathlib import Path
 
 from controllers.types import Agents, Environments, Nudges
-from engine.actors import COMPACTING, IDLE, STOPPED, WORKING
+from engine.actors import IDLE
 from engine.record import Record
 from engine.sessions import Sessions, agent_pid
 from resources.base import AGENT, SYSTEM
 from engine import runtime
-from providers.payload import EVENTS
+from providers.payload import STATUS
 from features.statusline import commands
 
-STATUS = {"SessionStart": IDLE, "Stop": IDLE, "UserPromptSubmit": WORKING, "PreToolUse": WORKING,
-          "PostToolUse": WORKING, "PreCompact": COMPACTING, "SubagentStart": "",
-          "SubagentStop": "", "SessionEnd": STOPPED}
-assert tuple(STATUS) == EVENTS
 POLICIES: list = []
 
 

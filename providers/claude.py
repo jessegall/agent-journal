@@ -11,6 +11,8 @@ from providers.base import Provider
 from providers.payload import Hook
 from resources.types import AgentRow
 from engine.stored import read_json, write_text
+from engine import runtime
+from engine.drivers import ANSI, CHOICE, Driver
 
 ASKS = frozenset({"AskUserQuestion"})
 WINDOW, LONG_WINDOW, LONG_MARK = 200_000, 1_000_000, "[1m]"
@@ -291,3 +293,34 @@ class Claude(Provider):
     def is_subagent(self, hook) -> bool:
         where = Path(getattr(hook, "transcript", "") or "").parts + Path(getattr(hook, "cwd", "") or "").parts
         return "subagents" in where or "worktrees" in where
+
+
+class ClaudeDriver(Driver):
+    name = "claude"
+    AUTO_ARGS = ("--permission-mode", "auto")
+    APPROVAL_FLAGS = frozenset({"--permission-mode", "--dangerously-skip-permissions"})
+    TAKES_OURS = ("--settings", json.dumps({"crossSessionInbound": "accept"}))
+    CHANNEL = ("--dangerously-load-development-channels", "server:journal")
+    LISTENING = 15.0
+
+    def command(self, args: list[str]) -> list[str]:
+        return ["claude", *(() if self.TAKES_OURS[0] in args else self.TAKES_OURS), *self.CHANNEL, *args]
+
+    @classmethod
+    def confirm(cls, printed: bytes) -> bytes:
+        plain = b"".join(ANSI.sub(b"", printed).split())
+        return b"\r" if cls.CHANNEL[0].encode() in plain and CHOICE.search(plain) else b""
+
+    def _post(self, line: str) -> bool:
+        return self._handed(line) or super()._post(line)
+
+    def _handed(self, line: str) -> bool:
+        root = self.record.root
+        try:
+            if not self.record.delivery.get("channel", True) or time.time() - runtime.channel_alive(root).stat().st_mtime > self.LISTENING:
+                return False
+            with runtime.channel_queue(root).open("a") as queue:
+                queue.write(json.dumps({"content": line, "meta": {"from": "journal"}}) + "\n")
+            return True
+        except OSError:
+            return False
