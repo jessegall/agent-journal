@@ -35,6 +35,7 @@ class Driver(ABC):
     FROM = "The journal, for the user:"
     AUTO_ARGS = ()
     APPROVAL_FLAGS = frozenset()
+    CONFIRM_AFTER = 0.0
     SKIP_ARGS = ()
     RESUMING: dict[str, int] = {}
     ALLOW, DENY = b"1", b"\x1b"

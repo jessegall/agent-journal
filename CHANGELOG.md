@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.78.1 — The journal starts a Codex session itself
+
+Messages 1954 and a follow-up, to-do 695. Codex starts its session, and tells the journal through its SessionStart hook, only when a first prompt is sent. So the journal's greeting waited until you typed something. Now the journal watches Codex's screen until its "Ask Codex to do anything" box is ready, waits three seconds for Codex to settle, and types an opening line itself. It pauses before pressing Enter, so the line is not taken as a paste. That starts the session, and the journal's greeting follows. The start-up watch now lasts 30 seconds instead of 10, since Codex can take that long to be ready.
+
+What to do about it: `journal upgrade`, then start Codex with `journal codex`.
+
 ## 2.78.0 — A template's instructions come first for the agent
 
 Design 2, to-do 635. When something is made from a template, the agent reads the template's instructions before working on it:

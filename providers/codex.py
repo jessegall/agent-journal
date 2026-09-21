@@ -9,7 +9,7 @@ from providers.base import Provider
 from providers.payload import Hook
 from resources.types import AgentRow
 from engine.stored import tail
-from engine.drivers import Driver
+from engine.drivers import ANSI, Driver
 
 TOOLS = {"exec": "Bash", "exec_command": "Bash", "shell": "Bash", "shell_command": "Bash", "apply_patch": "Edit"}
 SKILL_LOOP = re.compile(r"for\s+\w+\s+in\s+([^;]+);\s*do")
@@ -316,6 +316,14 @@ class CodexDriver(Driver):
     APPROVAL_FLAGS = frozenset({"-a", "--ask-for-approval", "--approve-for-me", "--full-auto", "--dangerously-bypass-approvals-and-sandbox"})
 
     TRUSTS_HOOKS = "--dangerously-bypass-hook-trust"
+    READY = b"AskCodextodoanything"
+    OPENING = "The journal started this session."
+    CONFIRM_AFTER = 3.0
+
+    @classmethod
+    def confirm(cls, printed: bytes) -> bytes:
+        plain = b"".join(ANSI.sub(b"", printed).split())
+        return f"{cls.OPENING}\r".encode() if cls.READY in plain else b""
 
     def command(self, args: list[str], cwd: Path | None = None) -> list[str]:
         trusted = ["-c", f'projects."{Path(cwd).resolve()}".trust_level="trusted"'] if cwd else []
