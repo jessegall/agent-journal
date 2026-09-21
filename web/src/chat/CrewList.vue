@@ -10,7 +10,10 @@ const props = defineProps({
 const emit = defineEmits(["open"]);
 const now = ref(Date.now() / 1000);
 const clock = setInterval(() => (now.value = Date.now() / 1000), 1000);
-const listed = computed(() => [...props.rows.filter((r) => r.running), ...props.rows.filter((r) => !r.running).reverse()]);
+const RECENT = 3600;
+const recent = computed(() => props.rows.filter((r) => r.running || now.value - (r.ended || r.at || 0) <= RECENT));
+const listed = computed(() => [...recent.value.filter((r) => r.running), ...recent.value.filter((r) => !r.running).reverse()]);
+const dropped = computed(() => props.rows.length - recent.value.length);
 const running = computed(() => props.rows.filter((r) => r.running).length);
 
 function lasted(row) {
@@ -26,7 +29,7 @@ onUnmounted(() => clearInterval(clock));
 </script>
 
 <template>
-    <p class="crew-none">{{ running }} running, {{ total }} {{ started }} in this session.</p>
+    <p class="crew-none">{{ running }} running, {{ total }} {{ started }} in this session<template v-if="dropped">, {{ dropped }} older than an hour not shown</template>.</p>
     <template v-for="row in listed" :key="row.id || row.cell || `${row.task}-${row.model}`">
         <button
             type="button"
@@ -57,9 +60,9 @@ onUnmounted(() => clearInterval(clock));
 .crew-row {
     width: 100%;
     display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 5px 8px;
+    align-items: flex-start;
+    gap: 9px;
+    padding: 8px 10px;
     border: 0;
     border-radius: 6px;
     background: none;
@@ -82,6 +85,7 @@ onUnmounted(() => clearInterval(clock));
 
 .crew-dot {
     flex: none;
+    margin-top: 5px;
     width: 6px;
     height: 6px;
     border-radius: 50%;
@@ -112,8 +116,14 @@ onUnmounted(() => clearInterval(clock));
 
 .crew-when {
     flex: none;
+    align-self: flex-start;
     color: var(--text-3);
-    font-size: 11px;
+    font-size: 10.5px;
+    line-height: 1.5;
     font-variant-numeric: tabular-nums;
+}
+
+.crew-none {
+    padding-bottom: 8px;
 }
 </style>

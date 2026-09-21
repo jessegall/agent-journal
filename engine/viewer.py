@@ -16,7 +16,7 @@ from engine.stored import read_json, write_json
 
 PORTS = range(8420, 8440)
 HEARTBEAT = 2.0
-PORT_WAIT = 5.0
+PORT_WAIT = 30.0
 URL = re.compile(r"http://127\.0\.0\.1:\d+/")
 
 
@@ -119,6 +119,8 @@ def waited(port: int, seconds: float = PORT_WAIT) -> bool:
 def available(prefer: int = 0) -> int:
     if prefer in PORTS and waited(prefer):
         return prefer
+    if prefer:
+        print(f"journal: port {prefer} is still taken after {PORT_WAIT:g}s; the viewer moves, and a tab left open on it will not reach this journal", file=sys.stderr)
     for port in PORTS:
         if free(port):
             return port

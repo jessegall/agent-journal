@@ -494,7 +494,7 @@ onUnmounted(() => window.removeEventListener("click", away));
 .bar-drop {
     position: absolute;
     z-index: 30;
-    width: 280px;
+    width: 380px;
     max-height: 60vh;
     overflow-y: auto;
     padding: 5px;
