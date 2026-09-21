@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.16.14 — The final message comes from the Stop hook, and prose stays prose
+
+Claude Code's Stop hook carries the final message's full text, so the tags in it run at the Stop from that text, without waiting for the transcript file; the engine's once-a-second watch of the transcript still runs every tag written mid-turn, and a message is keyed by its text so the two never post it twice. In the chat, "journal" followed by ordinary words is no longer set as code — only a real command is: a type and its word, or a top-level command such as `journal status`.
+
+What to do about it: `journal upgrade`.
+
 ## 2.16.13 — Plain names for the written-message step
 
 The engine's step that announces a newly written message is named announce_written, and the line it remembers last_written_line.

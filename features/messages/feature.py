@@ -4,12 +4,13 @@ from controllers.types import Agents, CONTROLLERS, Messages
 from features import trigger
 from features.base import Behaviour, Feature, event, formats, Line
 from resources.base import AGENT, SECTION, SYSTEM, USER
+from resources.types import TYPES
 from features.messages.answering import in_hand, read_and_open, theirs, unanswered
 from engine.transcript import IDLE, last_said
 
 LINKED = ("message", "comment", "reaction", "nudge", "notification", "agent")
 RUN_ON, SENTENCES = 400, 3
-CODE = re.compile(r"(?<![`\w-])(?:journal(?:\s+[a-z_]+){1,2}|--[a-z][a-z-]*)(?![`\w])")
+CODE = re.compile(r"(?<![`\w-])(?:journal\s+([a-z_]+)(?:\s+[a-z_]+)?|--[a-z][a-z-]*)(?![`\w])")
 ANSWERS = {"comment": "answered", "reaction": "acknowledged"}
 
 
@@ -126,8 +127,20 @@ class MessagesFeature(Feature):
 
     @formats
     def as_code(self, text, record):
-        return "`".join(part if at % 2 else CODE.sub(lambda found: f"`{found.group(0)}`", part)
+        return "`".join(part if at % 2 else CODE.sub(self.command_code, part)
                         for at, part in enumerate(str(text or "").split("`")))
+
+    def command_code(self, found) -> str:
+        from commands.parser import QUERIES, parser
+        if not QUERIES:
+            parser()
+        noun = found.group(1)
+        if noun is None or noun in TYPES:
+            return f"`{found.group(0)}`"
+        if noun in QUERIES:
+            command = f"journal {noun}"
+            return f"`{command}`{found.group(0)[found.group(0).index(noun) + len(noun):]}"
+        return found.group(0)
 
     @event("agent.updated")
     def spaced(self, event, record) -> None:

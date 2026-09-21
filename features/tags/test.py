@@ -103,3 +103,16 @@ def test_a_tagged_message_runs_the_moment_the_engine_sees_it_written(tmp_path):
     engine.announce_written()
     assert [c.title for c in Comments(record, actor=SYSTEM).linked_to(message.ref)] == ["yes, here"], \
         "written mid-turn, no hook fired: the reply is posted as soon as the engine sees it"
+
+
+def test_the_final_message_the_stop_hook_carries_runs_its_tags_before_the_transcript_has_it():
+    from controllers.types import Comments
+    from engine.hooks import handle
+    from providers import PROVIDERS
+    from resources.base import SYSTEM
+    record = fresh()
+    message = Messages(record, actor="user").create("done yet?")
+    stop = {"hook_event_name": "Stop", "session_id": "claude-1", "last_assistant_message": f"[!reply:{message.n}] done"}
+    handle(PROVIDERS["claude"](), record.root, record.env, stop)
+    handle(PROVIDERS["claude"](), record.root, record.env, stop)
+    assert [c.title for c in Comments(record, actor=SYSTEM).linked_to(message.ref)] == ["done"], "posted once, from the hook's own text"

@@ -198,6 +198,7 @@ class AgentRow(Shape, Resource):
     effort = Field(default="")
     pending = Field(default=dict)
     asking = Field(default=dict)
+    said = Field(default="")
     started = Field()
     context = Field(default=0)
     usage = Field(default=dict)

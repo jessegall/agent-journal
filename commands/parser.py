@@ -40,7 +40,11 @@ def add_method(acts, controller: type, name: str) -> None:
         else:
             a.add_argument(flag, type=int if p.annotation is int else str, **({} if required else {"default": p.default}))
 
+QUERIES: set[str] = set()
+
+
 def add_query(cmds, name: str, help_: str, fn, *flags) -> None:
+    QUERIES.add(name)
     q = cmds.add_parser(name, help=help_)
     q.set_defaults(query=fn)
     for flag, kw in flags:
