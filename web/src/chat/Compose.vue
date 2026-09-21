@@ -142,14 +142,15 @@ async function use(tool) {
         <template v-if="draft.error">
             <p class="error">{{ draft.error }}</p>
         </template>
-        <template v-else-if="note">
-            <p class="compose-note">{{ note }}</p>
-        </template>
+        <Transition name="note">
+            <p v-if="!draft.error && note" class="compose-note">{{ note }}</p>
+        </Transition>
     </form>
 </template>
 
 <style scoped>
 .compose {
+    position: relative;
     display: flex;
     flex-direction: column;
     gap: 8px;
@@ -313,8 +314,22 @@ async function use(tool) {
 }
 
 .compose-note {
+    position: absolute;
+    bottom: calc(100% + 6px);
+    left: 4px;
     margin: 0;
     color: var(--text-4);
     font-size: 12px;
+    pointer-events: none;
+}
+
+.note-enter-active,
+.note-leave-active {
+    transition: opacity 0.2s ease;
+}
+
+.note-enter-from,
+.note-leave-to {
+    opacity: 0;
 }
 </style>

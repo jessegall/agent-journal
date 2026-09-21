@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.16.8 — Sending a message no longer makes the chat jump
+
+Recorded frame by frame with Playwright: when the server confirmed a sent message, the waiting copy left and the confirmed one entered under a new key, and a "Waiting for the agent" note appeared under the composer for a moment, pushing the thread up 25 pixels. The thread now keeps the key it gave the waiting copy, the waiting copy stays until the confirmed message replaces it, and the note floats above the composer and fades instead of taking room.
+
+What to do about it: `journal upgrade`.
+
 ## 2.16.7 — One server per journal
 
 A server restarting itself after a code change stops answering for a moment; the supervisor saw nothing running in that moment and started a second server, which found the port still held and moved to another. Both then served the same journal, hooks alternated between them, and each kept its own view of the session — which is how a turn's reply tag could go unseen. Starting a server now waits for a recorded one that is still alive, and a server that finds another already serving its journal exits.

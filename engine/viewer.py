@@ -13,6 +13,7 @@ from urllib.request import urlopen
 
 from features.tabfocus.focus import existing_tab
 from engine.stored import read_json, write_json, write_text
+from engine.sessions import alive
 
 PORTS = range(8420, 8440)
 HEARTBEAT = 2.0
@@ -142,14 +143,6 @@ def restart(root: Path, project: Path) -> str:
         os.kill(int(was["pid"]), signal.SIGTERM)
         waited(int(was.get("port") or 0))
     return start(root, project)
-
-
-def alive(pid: int) -> bool:
-    try:
-        os.kill(int(pid), 0)
-        return True
-    except (OSError, ValueError, TypeError):
-        return False
 
 
 def elsewhere(root: Path) -> str:
