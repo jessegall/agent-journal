@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.21.1 — The server fills its cache before it answers
+
+Every restart of the server — each upgrade — left its row cache empty while it filled it in the background, and the viewer's first requests landed on the cold cache: the dashboard took 80–140 ms against its 50 ms budget, and the faults feature reported it. The start environment is now loaded before the server answers its first request; the other environments and the transcripts still fill in the background.
+
+What to do about it: `journal upgrade`.
+
 ## 2.21.0 — The terminal header shows the installed version
 
 The band at the top of the agent's terminal reads `JOURNAL 2.21.0` — the version that is installed — so which journal a session runs is visible at a glance. An upgrade restarts the band, so the number follows every install.
