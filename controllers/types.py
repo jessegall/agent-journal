@@ -535,6 +535,7 @@ WARM_PAUSE = 0.02
 
 
 def warm(root: Path) -> None:
+    from providers import PROVIDERS
     for home in sorted((Path(root) / "environments").glob("*/")):
         record = Record(Path(root), home.name)
         for controller in CONTROLLERS.values():
@@ -543,3 +544,6 @@ def warm(root: Path) -> None:
             except (OSError, Refused):
                 pass
             time.sleep(WARM_PAUSE)
+        for agent in Agents(record, actor=SYSTEM)._standing():
+            if agent.status != "stopped" and agent.transcript and agent.provider in PROVIDERS:
+                PROVIDERS[agent.provider]().read_ahead(Path(agent.transcript))
