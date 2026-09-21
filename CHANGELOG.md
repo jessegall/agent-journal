@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.16.18 — Every message without a tag is named at once
+
+The tags feature listens to the agent's message event: the moment the engine sees any new message in the transcript — mid-turn or at the end — that opens without a tag, the agent is told, once for that message. Nothing waits for the turn to end.
+
+What to do about it: `journal upgrade`.
+
 ## 2.16.17 — Settings opens each feature on its own, and a missing tag is named at once
 
 Settings lists the features as a compact grid, each with its switch; opening one shows a panel with that feature alone — what it does, when it speaks, its behaviours with their switches, its own settings (tag names, the answer hold, keep days, permission prompts) and every line it can say to the agent. The long page and its separate lines section are gone. Setting percentage marks on a trigger no longer throws.

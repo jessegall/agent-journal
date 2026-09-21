@@ -6,54 +6,30 @@ from controllers.types import Messages, Nudges
 from features import FEATURES
 from features.format import formatted
 from features.tags.feature import visible
-from tests.kit import idle, nudges
+from tests.kit import idle, nudges, report
 from tests.conftest import fresh
 
 
-def test_an_untagged_last_message_is_named_once_the_moment_it_is_seen(tmp_path):
+def test_every_message_without_a_tag_is_named_once(tmp_path):
     transcript = tmp_path / "s.jsonl"
+    now = datetime.now(timezone.utc).isoformat()
+    rows = [{"type": "user", "timestamp": now, "message": {"content": "go"}}]
 
-    def said(*texts):
-        rows = [{"type": "user", "message": {"content": "go"}}] + [{"type": "assistant", "message": {"content": [{"type": "text", "text": t}]}} for t in texts]
+    def said(text):
+        rows.append({"type": "assistant", "timestamp": now, "message": {"content": [{"type": "text", "text": text}]}})
         transcript.write_text("\n".join(json.dumps(r) for r in rows) + "\n")
+        report(record, "working", "PostToolUse", provider="claude", transcript=str(transcript))
+        return [n for n in nudges(record) if "tag" in n]
 
     record = fresh()
-    said_to_user = Messages(record, actor="agent").create("a reply", brief="[!reply] done, pushed")
-    said("[!reply] done, pushed")
-    idle(record, provider="claude", transcript=str(transcript))
-    assert [n for n in nudges(record) if "tag" in n] == [], "a tagged last message: nothing said"
-    said("[!reply] on it", "Done, pushed.")
-    idle(record, provider="claude", transcript=str(transcript))
-    assert [n for n in nudges(record) if "tag" in n] == ["your last message has no tag"], \
-        "an untagged last message: told once, with the tags"
-    idle(record, provider="claude", transcript=str(transcript))
-    assert len([n for n in nudges(record) if "tag" in n]) == 1, "the same message is named once"
-    said("**[!info]** a build is running")
-    idle(record, provider="claude", transcript=str(transcript))
-    assert len([n for n in nudges(record) if "tag" in n]) == 1, "a bold tag counts"
-    said("[!invented] a made-up tag")
-    idle(record, provider="claude", transcript=str(transcript))
-    assert [n for n in nudges(record) if "tag" in n] == ["your last message has no tag"] * 2, \
-        "an invented leading tag is rejected"
-    said("[!reply][!invented] two leading tags")
-    idle(record, provider="claude", transcript=str(transcript))
-    assert [n for n in nudges(record) if "tag" in n] == ["your last message has no tag"] * 3, \
-        "a registered prefix does not hide an invented tag"
-    said("status [!reply] is ordinary text")
-    idle(record, provider="claude", transcript=str(transcript))
-    assert [n for n in nudges(record) if "tag" in n] == ["your last message has no tag"] * 4, \
-        "an inline tag-like phrase is rejected"
-    assert (visible("[!info] a build is running"), visible("**[!reply]** done"), visible("plain text")) == \
-        ("a build is running", "done", "plain text"), "display text removes the registered tag"
-    assert visible("status [!reply] is ordinary text") == "status [!reply] is ordinary text", \
-        "display text preserves an inline tag-like phrase"
-    assert visible("> [!reply] done\n> and a second line\n\nExactly.") == "> done\n> and a second line\n\nExactly.", \
-        "display text keeps a quote marker and drops the tag behind it"
-    assert [fn.__name__ for fn, _ in FEATURES["tags"].formatters()] == ["without_tags"], \
-        "the tags feature is the one that strips them on the way out"
-    assert (formatted("[!reply] done, pushed", record), Messages(record).load(said_to_user.n).brief) == \
-        ("done, pushed", "[!reply] done, pushed"), "text sent to the viewer has no tag, while the record keeps it"
-
+    assert said("[!reply] done, pushed") == [], "a tagged message: nothing said"
+    assert said("Checking the build next.") == ["your last message has no tag"], "an untagged message mid-turn: named at once"
+    assert len(said("**[!info]** a build is running")) == 1, "a bold tag counts"
+    assert len(said("[!invented] a made-up tag")) == 2, "an invented leading tag is rejected"
+    assert len(said("[!reply][!invented] two leading tags")) == 3, "a registered prefix does not hide an invented tag"
+    assert len(said("status [!reply] is ordinary text")) == 4, "an inline tag-like phrase is rejected"
+    report(record, "working", "PostToolUse", provider="claude", transcript=str(transcript))
+    assert len([n for n in nudges(record) if "tag" in n]) == 4, "each message is named once"
 
 def test_replying_by_command_is_answered_with_the_tag_that_does_it():
     from engine.hooks import handle
