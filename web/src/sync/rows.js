@@ -74,8 +74,11 @@ export async function earlier(...types) {
     await Promise.all(
         growing.map(async (type) => {
             const held = store.rows[type] || [];
-            const got = await api.list(type, {last: PAGE, completed: true, before: held.length ? held[0].n : 0});
-            store.rows[type] = [...got.rows, ...held];
+            const closed = held.filter((r) => r.completed);
+            const before = (closed.length ? closed : held).reduce((low, r) => Math.min(low, r.n), Infinity);
+            const got = await api.list(type, {last: PAGE, completed: true, before: Number.isFinite(before) ? before : 0});
+            const known = new Set(held.map((r) => r.n));
+            store.rows[type] = [...got.rows.filter((r) => !known.has(r.n)), ...held].sort((a, b) => a.n - b.n);
             paging.size[type] = store.rows[type].length;
             paging.more[type] = got.more;
         })
