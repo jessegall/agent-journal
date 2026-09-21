@@ -1,9 +1,9 @@
 <script setup>
-import {computed, ref, watch} from "vue";
+import {computed, ref, watch, watchEffect} from "vue";
 import SwitchCase from "../kit/SwitchCase.vue";
 import {go, route, unpeek} from "../route.js";
 import {meta} from "../state/store.js";
-import {rows} from "../sync/rows.js";
+import {holding, rows} from "../sync/rows.js";
 import ResourceBody from "./ResourceBody.vue";
 import DocumentPage from "./DocumentPage.vue";
 import PlanPage from "./PlanPage.vue";
@@ -12,6 +12,9 @@ import Comments from "./Comments.vue";
 
 const props = defineProps({type: String, n: Number});
 const resource = computed(() => (props.type ? rows(props.type).find((r) => r.n === props.n) : null) || null);
+watchEffect(() => {
+    if (props.type && props.n && !resource.value) holding(props.type, [props.n]);
+});
 const focusComment = computed(() => route.value.open?.comment || 0);
 const shape = computed(() => (!props.type ? "" : ["plan", "agent"].includes(props.type) ? props.type : meta(props.type).view));
 const panel = computed(() => (["small", "wide"].includes(shape.value) ? "inspector" : shape.value));
