@@ -10,8 +10,9 @@ from engine.sessions import Sessions
 from resources import types
 from resources.base import AGENT, SECTION, SYSTEM, Refused, check_title, names, titled
 from resources.shapes import LEVELS
-from engine.stored import read_json, write_text
+from engine.stored import read_json
 from engine.proc import ran
+from engine import runtime
 
 UPLOAD = names("name", "data")
 
@@ -420,9 +421,7 @@ class Environments(Controller):
         if before and before != env.title:
             self.sessions().write(who, before=before)
         if project:
-            f = self.record.root / "runtime" / "env"
-            f.parent.mkdir(parents=True, exist_ok=True)
-            write_text(f, env.title)
+            runtime.set_env(self.record.root, env.title)
         return self.update(n, holder=who)
 
     def complete(self, n: int, how: str = "", yes: bool = False, **data):
@@ -512,7 +511,7 @@ class Asks(Controller):
         return self._standing()
 
     def answer(self, n: int, text: str, ok: bool = True, files: list | None = None):
-        r = self.complete(n, text, ok=ok)
+        self.complete(n, text, ok=ok)
         for f in files or []:
             with tempfile.TemporaryDirectory() as folder:
                 path = Path(folder) / Path(f[UPLOAD.name]).name

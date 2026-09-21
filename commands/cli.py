@@ -24,6 +24,7 @@ from resources.base import AGENT, Refused, SYSTEM
 from resources.shapes import typed
 from resources.types import AgentRow
 from engine.stored import write_text
+from engine import runtime
 
 VERSION_FILE = Path(__file__).resolve().parents[1] / "VERSION"
 VERSION = VERSION_FILE.read_text().strip() if VERSION_FILE.is_file() else "0"
@@ -179,7 +180,7 @@ def built(only: str) -> argparse.ArgumentParser:
 
 
 def switched(ctx, on: bool) -> str:
-    f = ctx["record"].root / "runtime" / "off"
+    f = runtime.off_file(ctx["record"].root)
     if on:
         f.unlink(missing_ok=True)
         return "the journal is in force"
@@ -191,7 +192,7 @@ def switched(ctx, on: bool) -> str:
 def verify(ctx) -> str:
     from providers import PROVIDERS
     root = ctx["record"].root
-    lines = [f"root {root}", f"environment {ctx['record'].env}", "off" if (root / "runtime" / "off").is_file() else "in force"]
+    lines = [f"root {root}", f"environment {ctx['record'].env}", "off" if runtime.off(root) else "in force"]
     for name, provider in PROVIDERS.items():
         settings = provider().config(root.parent)
         wired = settings.is_file() and "hook.py" in settings.read_text()
@@ -325,7 +326,7 @@ def context(args: dict) -> dict:
     features.load(root)
     sessions = Sessions(root)
     session = args.pop("session")
-    env = args.pop("bound") or (sessions.environment(session) if session else "") or ((root / "runtime" / "env").read_text().strip() if (root / "runtime" / "env").is_file() else "main")
+    env = args.pop("bound") or (sessions.environment(session) if session else "") or runtime.env(root)
     session = session or sessions.holder(env)
     return {"record": Record(root, env, memo=True), "session": session, "actor": args.pop("as_actor"), "agent": args.pop("agent"),
             "force": "", "sessions": sessions}

@@ -8,6 +8,7 @@ from abc import ABC, abstractmethod
 from controllers.types import Agents
 from engine import typist
 from resources.base import Refused, SYSTEM
+from engine import runtime
 
 ENTER_AFTER = 0.3
 POST_WAIT = 5.0
@@ -219,11 +220,11 @@ class Claude(Driver):
         return self._handed(line) or super()._post(line)
 
     def _handed(self, line: str) -> bool:
-        runtime = self.record.root / "runtime"
+        root = self.record.root
         try:
-            if not self.record.delivery.get("channel", True) or time.time() - (runtime / "channel.on").stat().st_mtime > self.LISTENING:
+            if not self.record.delivery.get("channel", True) or time.time() - runtime.channel_alive(root).stat().st_mtime > self.LISTENING:
                 return False
-            with (runtime / "channel.jsonl").open("a") as queue:
+            with runtime.channel_queue(root).open("a") as queue:
                 queue.write(json.dumps({"content": line, "meta": {"from": "journal"}}) + "\n")
             return True
         except OSError:
