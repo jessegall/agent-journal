@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.64.0 — AskUserQuestion is asked in the journal
+
+Messages 1499 and 1505, to-do 618, question 56. When the agent calls a question tool, such as Claude Code's AskUserQuestion or Codex's request_user_input, it never opens in the terminal, where it would leave the session waiting. Each question in the call is filed as a journal question, with its options and each option's description. The call is refused with those question numbers, so the agent carries on and hears your answer as an event. You answer in the viewer, as with any journal question. Auto mode's separate refusal of question tools is gone, since this replaces it.
+
+What to do about it: `journal upgrade`.
+
 ## 2.63.2 — The stored keys say what they hold too
 
 To-dos 653 and 644, rule 34. The names that were stored data are renamed, and migration m0008 moves the stored values:
