@@ -156,6 +156,14 @@ export class ApiClient {
         return this.post(this.here(`/${type}/${action}`), body);
     }
 
+    board({plan, agent} = {}) {
+        return this.command("todo", "board", {plan: plan || 0, agent: agent || ""});
+    }
+
+    shift(n, lane, {why, how} = {}) {
+        return this.act("todo", n, "shift", {lane, why: why || "", how: how || ""});
+    }
+
     readAll(type, numbers) {
         return this.post(this.here(`/${type}/read-all`), {numbers});
     }

@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.72.0 — The Board page
+
+Plan 10, phase 3, to-dos 672 to 675. The Kanban board has a page of its own, Board, right under Home in the sidebar, showing the number of open to-dos. It shows the five lanes side by side with their cards. A card shows its number, priority, title, why it is held, and its plan and phase. Clicking a card opens the to-do over the board, and the plan chip opens the plan. When a plan is active, its hold shows as one line above the lanes. The page refreshes every five seconds. While it loads, the lanes show blank cards. With nothing on the list, it offers New to-do. With the feature switched off, it says so and links to Settings. Dragging cards comes in the next phase.
+
+What to do about it: `journal upgrade`.
+
 ## 2.71.0 — Moving a card on the Kanban board
 
 Plan 10, phase 2, to-dos 669 to 671. `journal todo shift <n> <lane> [--why] [--how]` moves a card through the journal's own actions, so every event and check stays as it is:

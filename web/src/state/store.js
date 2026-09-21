@@ -17,6 +17,7 @@ export const store = reactive({
     booted: false,
     activity: remembered("journal.activity", true),
     wide: remembered("journal.wide", false),
+    board: {lanes: [], agents: [], planHold: "", loaded: false, lens: remembered("journal.board.lens", {plan: 0, agent: "", done: true})},
     focus: "",
     detached: false,
     extension: {here: false, holding: false, pending: false, everywhere: false},
@@ -30,6 +31,7 @@ export const store = reactive({
 
 kept("journal.activity", () => store.activity);
 kept("journal.wide", () => store.wide);
+kept("journal.board.lens", () => store.board.lens);
 kept("journal.window", () => store.chatWindow);
 
 export const types = computed(() => (store.spec ? store.spec.priority.map((t) => ({name: t, ...store.spec.types[t]})) : []));
@@ -41,4 +43,5 @@ export const counted = (type, key = "open") => (store.counts && store.counts[typ
 export const agent = computed(
     () => [...store.agents].filter((a) => !a.data.parent).sort((a, b) => (b.data.at || 0) - (a.data.at || 0))[0] || null
 );
+export const boardOn = computed(() => !store.settings || store.settings.features.kanban !== false);
 export const autoOn = computed(() => !!(store.settings && store.settings.features["work_tracking.auto"]));
