@@ -1,5 +1,6 @@
 <script setup>
-import {keepingPlace, useSighted} from "../composables/scrollback.js";
+import {useSighted} from "../composables/scrollback.js";
+import {useTranscript} from "../composables/transcript.js";
 import {computed, ref, watch} from "vue";
 import {api} from "../api/client.js";
 import Btn from "../kit/Btn.vue";
@@ -8,12 +9,11 @@ import {modelFamily, providerName} from "../agents.js";
 import Icon from "../kit/Icon.vue";
 import {go, route, showSession} from "../route.js";
 import {span} from "../format/time.js";
-import {PAGE, rows} from "../sync/rows.js";
+import {rows} from "../sync/rows.js";
 import {render} from "../text/index.js";
 import "../text/all.js";
 import Trace from "./Trace.vue";
 import AgentHooks from "./AgentHooks.vue";
-import {usePoll} from "../poll.js";
 import {stamp} from "../format/time.js";
 
 const props = defineProps({resource: Object});
@@ -37,18 +37,8 @@ const TABS = [
     ["hooks", "Hooks"],
 ];
 const tab = ref("transcript");
-const turns = ref([]);
-const total = ref(0);
-const first = ref(0);
 const scroller = ref(null);
 const topMark = ref(null);
-const folded = ref(new Set());
-const error = ref("");
-const loading = ref(true);
-const paging = ref(false);
-const TRANSCRIPT_EVERY = 3000;
-let fetching = false;
-
 const WHO = {
     human: "You",
     agent: "Agent",
@@ -63,80 +53,12 @@ const subagents = computed(() => (data.value.subagent_rows || []).filter((r) => 
 const session = computed(() => route.value.sub);
 const picked = computed(() => subagents.value.find((r) => r.session === session.value));
 
-const transcriptKey = () => `${route.value.env}:${props.resource.n}:${session.value || ""}`;
-
-const earliest = computed(() => (turns.value.length ? turns.value[0].line : 0));
-const atStart = computed(() => turns.value.length > 0 && earliest.value <= first.value);
-
-function toggle(line) {
-    const next = new Set(folded.value);
-    if (next.has(line)) next.delete(line);
-    else next.add(line);
-    folded.value = next;
-}
-
-function foldTools(fresh) {
-    const next = new Set(folded.value);
-    fresh.filter((turn) => turn.kind === "tool").forEach((turn) => next.add(turn.line));
-    folded.value = next;
-}
-
-async function fetchTurns() {
-    if (fetching) return;
-    fetching = true;
-    try {
-        const since = turns.value.length ? turns.value[turns.value.length - 1].line : 0;
-        const path = transcriptKey();
-        const got = await api.transcript(props.resource.n, session.value, {since, last: PAGE});
-        if (path !== transcriptKey()) return;
-        error.value = "";
-        total.value = got.total;
-        first.value = got.first;
-        if (!got.turns.length) return;
-        const atBottom = !scroller.value || scroller.value.scrollHeight - scroller.value.scrollTop - scroller.value.clientHeight < 60;
-        foldTools(got.turns);
-        turns.value = [...turns.value, ...got.turns];
-        if (atBottom) requestAnimationFrame(() => scroller.value && (scroller.value.scrollTop = scroller.value.scrollHeight));
-    } catch (reason) {
-        error.value = reason.message;
-    } finally {
-        fetching = false;
-        loading.value = false;
-    }
-}
-
-async function earlier() {
-    if (paging.value || atStart.value || !turns.value.length) return;
-    paging.value = true;
-    try {
-        await keepingPlace(scroller, async () => {
-            const path = transcriptKey();
-            const got = await api.transcript(props.resource.n, session.value, {before: earliest.value, last: PAGE});
-            if (path !== transcriptKey()) return false;
-            error.value = "";
-            foldTools(got.turns);
-            turns.value = [...got.turns, ...turns.value];
-        });
-    } catch (reason) {
-        error.value = reason.message;
-    } finally {
-        paging.value = false;
-    }
-}
-
-const retry = () => (turns.value.length && !atStart.value ? earlier() : fetchTurns());
-
-watch(session, () => {
-    turns.value = [];
-    total.value = 0;
-    first.value = 0;
-    loading.value = true;
-    error.value = "";
-    tab.value = "transcript";
-    fetchTurns();
-});
-
-usePoll(`transcript:${props.resource.n}`, fetchTurns, TRANSCRIPT_EVERY);
+const {turns, total, first, folded, error, loading, paging, atStart, toggle, earlier, retry} = useTranscript(
+    () => props.resource.n,
+    session,
+    scroller
+);
+watch(session, () => (tab.value = "transcript"));
 useSighted(topMark, earlier, {root: scroller, margin: "400px 0px"});
 </script>
 
