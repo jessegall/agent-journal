@@ -268,12 +268,11 @@ class Claude(Provider):
         for use in (u for u in uses if u["name"] in DISPATCHES):
             given, session = use["input"], sessions.get(use["id"])
             status, done = ended.get(use["id"], ("", 0.0))
-            waiting = bool(given.get("run_in_background")) and status == "returned"
-            quiet = session is None or not session.is_file() or now - session.stat().st_mtime > QUIET_SUBAGENT
-            running = (not status or waiting) and not (waiting and quiet)
+            writing = session is not None and session.is_file() and now - session.stat().st_mtime <= QUIET_SUBAGENT
+            running = not status or writing
             subagents.append({"id": use["id"], "task": str(given.get("description") or "subagent"), "type": str(given.get("subagent_type") or ""),
                               "model": str(given.get("model") or ""), "running": running, "at": use["at"], "ended": 0.0 if running else done,
-                              "status": "" if running else status if status != "returned" or not given.get("run_in_background") else "stopped",
+                              "status": "" if running else status,
                               "session": session.stem.removeprefix("agent-") if session else ""})
         shells = []
         for use in (u for u in uses if u["name"] == "Bash" and u["input"].get("run_in_background")):
