@@ -134,13 +134,19 @@ def represented(got, record=None):
     return shaped(got, record) if hasattr(got, "ref") else got
 
 
+def renamed() -> dict:
+    return {(alias if isinstance(alias, str) else alias[0]):
+            (name if isinstance(alias, str) else f"{name}.{alias[1]}")
+            for name, f in features.FEATURES.items() for alias in f.aliases}
+
+
 def switches(record: Record) -> dict:
     out = {}
     for name, f in features.FEATURES.items():
         out[name] = f.enabled(record)
         for key, behaviour in f.behaviours.items():
             out[f.keyed(key)] = bool(record.features.get(f.keyed(key), behaviour.default))
-    return out
+    return {**out, **{was: out[now] for was, now in renamed().items() if now in out}}
 
 
 def settings(record: Record) -> dict:
@@ -268,10 +274,13 @@ def post_settings(req: Request) -> Reply:
     record = req.record()
     for key, value in req.body.items():
         if key == Record.features and isinstance(value, dict):
-            rows = Features(record, actor=USER)
-            for name, on in value.items():
-                rows.switch(name, on) if "." not in name else None
-            record.set_setting(key, {name: on for name, on in value.items() if "." in name})
+            moved, rows = renamed(), Features(record, actor=USER)
+            asked = {moved.get(name, name): on for name, on in value.items()}
+            for name, on in asked.items():
+                if "." not in name:
+                    rows.switch(name, on)
+            record.set_setting(key, {**{n: o for n, o in record.features.items() if "." in n},
+                                     **{n: o for n, o in asked.items() if "." in n}})
             continue
         record.set_setting(key, value)
     return Reply(200, settings(record))
