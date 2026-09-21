@@ -32,6 +32,7 @@ const kind = computed(() => meta(props.resource.type));
 const files = computed(() => Object.entries(props.resource.data.files || {}));
 const ranked = computed(() => !!kind.value.fields.priority && !props.resource.completed);
 const traced = computed(() => !!kind.value.fields.changed);
+const madeFor = computed(() => (kind.value.fields.applies_to ? props.resource.data.applies_to || [] : null));
 const keywords = computed(() =>
     kind.value.fields.keywords && Array.isArray(props.resource.data.keywords) ? props.resource.data.keywords : []
 );
@@ -145,6 +146,21 @@ async function save() {
         </template>
         <template v-if="kind.fields.options">
             <OptionsPicker :resource="resource" />
+        </template>
+        <template v-if="madeFor">
+            <section class="block">
+                <h3>Made for</h3>
+                <div class="keywords">
+                    <template v-if="madeFor.length">
+                        <template v-for="type in madeFor" :key="type">
+                            <span class="keyword">{{ meta(type) ? meta(type).title : type }}</span>
+                        </template>
+                    </template>
+                    <template v-else>
+                        <span class="keyword">any kind of row</span>
+                    </template>
+                </div>
+            </section>
         </template>
         <template v-if="keywords.length">
             <section class="block">
