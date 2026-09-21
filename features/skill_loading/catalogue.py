@@ -9,6 +9,7 @@ from resources.base import SYSTEM, names
 
 SKILL = names("name", "description", "path", "changed", "loaded", "stale", "always", "size")
 from skills import LIBRARY, skill_name
+from engine.package import data
 
 HOMES = (LIBRARY, *(cls.skill_home for cls in PROVIDERS.values() if cls.skill_home))
 
@@ -29,7 +30,7 @@ def catalogue(root: Path) -> list[dict]:
 
 
 def subjects() -> set[str]:
-    folder = Path(__file__).resolve().parents[2] / "skills"
+    folder = data("skills")
     return {"journal", *(skill_name(path.stem) for path in folder.glob("*.md") if path.name != "journal.md")}
 
 

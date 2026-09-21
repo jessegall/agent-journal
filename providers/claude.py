@@ -95,7 +95,7 @@ class Claude(Provider):
         known = read_json(f, {})
         servers = known.get("mcpServers") or {}
         words = command.split()
-        servers["journal"] = {"command": "python3", "args": [str(Path(words[1]).with_name("channel.py")), words[3]]}
+        servers["journal"] = {"command": "python3", "args": [str(Path(words[3]) / "journal.py"), "-m", "channel", words[3]]}
         write_text(f, json.dumps({**known, "mcpServers": servers}, indent=2) + "\n")
 
     def wire(self, project: Path, command: str) -> Path:

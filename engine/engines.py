@@ -9,8 +9,8 @@ from engine import typist
 from engine.record import Record
 from engine.sessions import Sessions
 from engine.engine import TICK, Engine
+from engine.package import CODE
 
-SRC = Path(__file__).resolve().parents[1]
 ENDING = 5.0
 
 
@@ -85,7 +85,7 @@ class Children:
         log = self.root / "runtime" / f"engine-{env}.log"
         log.parent.mkdir(parents=True, exist_ok=True)
         with log.open("a") as output:
-            return subprocess.Popen([sys.executable, "-c", f"import sys; sys.path.insert(0, {str(SRC)!r}); from engine.engines import child; child(sys.argv[1], sys.argv[2])",
+            return subprocess.Popen([sys.executable, "-c", f"import sys; sys.path.insert(0, {str(CODE)!r}); from engine.engines import child; child(sys.argv[1], sys.argv[2])",
                                      str(self.root), env], cwd=self.root.parent, stdin=subprocess.DEVNULL, stdout=output, stderr=output)
 
     def end(self, env: str) -> None:

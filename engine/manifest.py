@@ -9,6 +9,7 @@ from resources.base import ACTIONS, ACTORS, CLOSED, EVERY, OPEN, SCOPES, VIEWS, 
 from resources.types import TYPES, priority
 from engine import runtime
 from engine.version import version
+from engine.package import data
 
 
 SHOWN = {OPEN: "Open", EVERY: "All"}
@@ -20,7 +21,7 @@ def tabs(kind) -> list[dict]:
 
 
 def built() -> str:
-    assets = Path(__file__).resolve().parents[1] / "web" / "dist" / "assets"
+    assets = data("web", "dist", "assets")
     return next((f.name for f in sorted(assets.glob("index-*.js"))), "") if assets.is_dir() else ""
 
 

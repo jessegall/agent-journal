@@ -1,14 +1,15 @@
 import importlib
 import json
+import re
 import time
 from pathlib import Path
+from engine.package import modules
 from engine.stored import read_json, write_text
 
-HERE = Path(__file__).parent
 
 
 def names() -> list[str]:
-    return sorted(p.stem for p in HERE.glob("m[0-9][0-9][0-9][0-9]_*.py"))
+    return [name for name, _ in modules("migrations") if re.fullmatch(r"m\d{4}_\w+", name)]
 
 
 def ledger(root: Path) -> Path:

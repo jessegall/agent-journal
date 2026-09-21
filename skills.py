@@ -8,8 +8,9 @@ from commands.parser import actions
 from controllers.base import COMMANDS
 from controllers.types import CONTROLLERS
 from providers import PROVIDERS
+from engine.package import data
 
-HERE = Path(__file__).resolve().parent
+HERE = data()
 LIBRARY = ".agents/skills"
 
 

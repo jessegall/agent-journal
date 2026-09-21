@@ -13,9 +13,10 @@ from engine import bus
 from engine.record import Record
 from features.format import formatted
 from resources.base import as_dict, USER, Refused
+from engine.package import data
 
 
-WEB = Path(__file__).resolve().parents[1] / "web" / "dist"
+WEB = data("web", "dist")
 
 SAID = ("title", "abstract", "brief", "outcome")
 

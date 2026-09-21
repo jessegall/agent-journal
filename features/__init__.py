@@ -1,16 +1,19 @@
 import importlib
+import importlib.util
+from functools import cache
 from pathlib import Path
 
 from engine import bus
+from engine.package import modules
 
-HERE = Path(__file__).parent
 FEATURES: dict[str, object] = {}
 SWITCHED: list = []
 CHANGE_SWITCHES = ("feature", "plugin")
 
 
+@cache
 def names() -> list[str]:
-    return sorted(p.name for p in HERE.iterdir() if (p / "feature.py").is_file())
+    return [name for name, package in modules("features") if package and importlib.util.find_spec(f"features.{name}.feature")]
 
 
 def load(root: Path | None = None) -> list[str]:

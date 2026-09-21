@@ -2,13 +2,13 @@ import os
 import signal
 import socket
 import subprocess
-import sys
 import time
 from pathlib import Path
 
 from engine.keeper import gone, teardown
 from engine.record import Record
 from engine.stored import read_json, write_json
+from engine.package import entry
 
 PORTS = range(8440, 8500)
 UP, DOWN = "up", "down"
@@ -16,7 +16,6 @@ BLOCKED, FAILED = "blocked", "failed"
 RESTING = (BLOCKED, FAILED, "stopped", "exited")
 BACKOFF = (1.0, 2.0, 4.0, 8.0, 16.0, 30.0)
 CRASHES, WITHIN = 5, 60.0
-KEEPER = Path(__file__).resolve().parent / "keeper.py"
 
 
 def runtime(root: Path, name: str) -> Path:
@@ -142,7 +141,7 @@ def spawn(spec: dict, lifeline: int) -> int:
     write_json(Path(spec["status"]), {**read_json(Path(spec["status"]), {}), **{k: spec[k] for k in ("port", "url")}, "owner": os.getpid()})
     Path(spec["log"]).parent.mkdir(parents=True, exist_ok=True)
     with open(spec["log"], "ab", buffering=0) as log:
-        kept = subprocess.Popen([sys.executable, str(KEEPER), str(lifeline), str(spec["spec"])],
+        kept = subprocess.Popen([*entry("engine.keeper"), str(lifeline), str(spec["spec"])],
                                 pass_fds=(lifeline,) if lifeline >= 0 else (), stdin=subprocess.DEVNULL,
                                 stdout=log, stderr=log, start_new_session=True)
     return kept.pid

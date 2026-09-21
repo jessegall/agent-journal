@@ -8,7 +8,7 @@ to-dos, messages, facts, rules, reminders, plans, reports, docs, and the history
 them. Every new session receives the part it needs, while the full record stays readable in
 plain files and in the browser.
 
-The current package is 2.79.1. Claude and Codex use the same record, engine, viewer, and command
+The current package is 2.80.0. Claude and Codex use the same record, engine, viewer, and command
 line.
 
 ## Install
@@ -17,7 +17,9 @@ From the root of your project, with `git` and `python3` available:
 
     curl -fsSL https://raw.githubusercontent.com/jessegall/agent-journal/main/install.sh | sh
 
-The installer copies the package into `.journal/`, preserves the project record on upgrades,
+The installer fetches the package as plain source and packs its Python on your machine into one
+file, `.journal/journal.pyz`, with the viewer, skills and hook scripts beside it in `.journal/src`. It
+preserves the project record on upgrades,
 wires each agent it finds, writes that agent's generated journal skills, installs a `journal`
 shim in `~/.local/bin` when that directory exists, injects the journal's immutable dispatch law
 into `CLAUDE.md` and `AGENTS.md`, and runs migrations. Run the installer again, or use

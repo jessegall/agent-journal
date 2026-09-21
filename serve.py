@@ -19,6 +19,7 @@ from engine.engines import Children  # noqa: E402
 from controllers.types import warm, warm_record  # noqa: E402
 from engine.hooks import default_env  # noqa: E402
 from engine.record import Record  # noqa: E402
+from engine.package import CODE, entry
 
 LOOPBACK = re.compile(r"^http://(127\.0\.0\.1|localhost)(:\d+)?$")
 
@@ -102,6 +103,8 @@ IGNORED_CODE_FOLDERS = {"__pycache__", "environments", "runtime", "tests"}
 
 
 def code_snapshot(package: Path) -> tuple[tuple[str, int], ...]:
+    if package.is_file():
+        return ((str(package), package.stat().st_mtime_ns),)
     files = []
     for path in package.rglob("*.py"):
         relative = path.relative_to(package)
@@ -141,7 +144,7 @@ def run(root: Path, port: int = 8430) -> None:
     print(f"http://127.0.0.1:{server.server_address[1]}/", flush=True)
     changed = threading.Event()
     halting = threading.Event()
-    threading.Thread(target=watch_code, args=(Path(__file__).resolve().parent, server, changed), daemon=True).start()
+    threading.Thread(target=watch_code, args=(CODE, server, changed), daemon=True).start()
     threading.Thread(target=watch_stop, args=(root, server, halting, time.time()), daemon=True).start()
     warm_record(Record(root, default_env(root)))
     threading.Thread(target=warm, args=(root,), daemon=True).start()
@@ -161,7 +164,7 @@ def run(root: Path, port: int = 8430) -> None:
         return
     if changed.is_set():
         print("journal: Python code changed; restarting on the same port", flush=True)
-        command = [sys.executable, str(Path(__file__).resolve().with_name("journal.py")), "--root", str(root), "serve", "--port", str(server.server_port)]
+        command = [*entry("journal"), "--root", str(root), "serve", "--port", str(server.server_port)]
         os.execv(sys.executable, command)
 
 

@@ -1,6 +1,6 @@
-from pathlib import Path
+from engine.package import data
 
-FILE = Path(__file__).resolve().parents[1] / "VERSION"
+FILE = data("VERSION")
 
 
 def version() -> str:

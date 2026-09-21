@@ -3,7 +3,11 @@ import shutil
 import stat
 import subprocess
 import sys
+import marshal
 import tempfile
+import time
+import zipfile
+from importlib.util import MAGIC_NUMBER
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -15,12 +19,17 @@ from skills import LIBRARY, LINKED, publish  # noqa: E402
 
 PACKAGE = Path(__file__).resolve().parent
 PACKAGE_DIRS = ("commands", "controllers", "engine", "extension", "features", "migrations", "providers", "resources", "skills", "surfaces")
-PACKAGE_FILES = ("VERSION", "channel.py", "claude-status.sh", "hook.sh", "install.py", "journal.py", "serve.py", "skills.py")
+PACKAGE_FILES = ("VERSION", "__main__.py", "channel.py", "claude-status.sh", "hook.sh", "install.py", "journal.py", "serve.py", "skills.py")
 PACKAGE_TREES = (*PACKAGE_DIRS, "web/dist")
 LEFT_BEHIND = (".DS_Store", "test.py")
 RETIRED = ("hook.py", "support")
 REPOSITORY = "https://github.com/jessegall/agent-journal"
 SRC = "src"
+ARCHIVE = "journal.pyz"
+STUBS = {"journal.py": "journal", "channel.py": "channel", "serve.py": "serve", "engine/supervisor.py": "engine.supervisor", "engine/keeper.py": "engine.keeper"}
+STUB = ("import runpy\nimport sys\nfrom pathlib import Path\n\n"
+        "sys.path.insert(0, str(Path(__file__).resolve().parents[{up}] / \"{archive}\"))\nrunpy.run_module(\"{module}\", run_name=\"__main__\", alter_sys=True)\n")
+PACKED_DIRS = ("commands", "controllers", "engine", "features", "migrations", "providers", "resources", "surfaces")
 
 
 def code(root: Path) -> Path:
@@ -61,7 +70,9 @@ def refresh(source: Path, target: Path) -> tuple[set, set]:
     return changed, gone
 
 
-FORWARD = '#!/usr/bin/env python3\nimport runpy\nimport sys\nfrom pathlib import Path\n\nsys.argv[0] = str(Path(__file__).resolve().parent / "src" / Path(__file__).name)\nrunpy.run_path(sys.argv[0], run_name="__main__")\n'
+FORWARD = ('#!/usr/bin/env python3\nimport runpy\nimport sys\nfrom pathlib import Path\n\nhere = Path(__file__).resolve().parent\n'
+           f'packed = here / "{ARCHIVE}"\nsys.argv[0] = str(packed if packed.is_file() else here / "src" / "__main__.py")\n'
+           'runpy.run_path(sys.argv[0], run_name="__main__")\n')
 HOOK = ('#!/usr/bin/env python3\nimport os\nimport sys\nfrom pathlib import Path\n\nroot = Path(__file__).resolve().parent\n'
         'os.execvp("sh", ["sh", str(root / "src" / "hook.sh"), *(sys.argv[1:2] or ["claude"]), str(root)])\n')
 ENTRYPOINTS = {"journal.py": FORWARD, "hook.py": HOOK}
@@ -128,7 +139,7 @@ def launcher(python: str, script: Path, root: Path) -> str:
 def alias(project: Path, root: Path) -> Path:
     f = root / "journal"
     f.parent.mkdir(parents=True, exist_ok=True)
-    f.write_text(launcher(sys.executable, code(root) / "journal.py", root))
+    f.write_text(launcher(sys.executable, root / "journal.py", root))
     f.chmod(f.stat().st_mode | stat.S_IEXEC)
     bin_ = Path.home() / ".local" / "bin"
     if bin_.is_dir():
@@ -211,7 +222,7 @@ def upgrade(project: Path, root: Path | None = None) -> list[str]:
     root = root or project / ".journal"
     done = []
     source, temporary = PACKAGE, None
-    reloaded = PACKAGE.resolve() in (root.resolve(), code(root).resolve()) and not os.environ.get("AGENT_JOURNAL_BOOTSTRAPPED")
+    reloaded = PACKAGE.resolve() in (root.resolve(), code(root).resolve(), (root / ARCHIVE).resolve()) and not os.environ.get("AGENT_JOURNAL_BOOTSTRAPPED")
     if reloaded:
         temporary = Path(tempfile.mkdtemp())
         source = temporary / "package"
@@ -268,7 +279,54 @@ def finish(project: Path, root: Path) -> list[str]:
     moved = retire(root)
     if moved:
         done.append(f"package moved into {SRC}/: {moved} files out of the record")
+    done.append(pack(root))
     return done
+
+
+def python_files(src: Path) -> list[Path]:
+    top = [src / name for name in PACKAGE_FILES if name.endswith(".py") and (src / name).is_file()]
+    return top + sorted(f for name in PACKED_DIRS if (src / name).is_dir() for f in (src / name).rglob("*.py") if "__pycache__" not in f.parts)
+
+
+def compiled(source: bytes, name: str, stamp: float) -> bytes:
+    code = compile(source, name, "exec", dont_inherit=True)
+    return MAGIC_NUMBER + (0).to_bytes(4, "little") + int(stamp).to_bytes(4, "little") + (len(source) & 0xFFFFFFFF).to_bytes(4, "little") + marshal.dumps(code)
+
+
+def pack(root: Path) -> str:
+    src = code(root)
+    files = python_files(src)
+    if not (src / "__main__.py").is_file():
+        return f"the Python is already in {ARCHIVE}"
+    built = root / f"{ARCHIVE}.new"
+    stamp = int(time.time()) // 2 * 2
+    moment = time.localtime(stamp)[:6]
+    with zipfile.ZipFile(built, "w", zipfile.ZIP_DEFLATED) as archive:
+        for f in files:
+            name = f.relative_to(src).as_posix()
+            source = f.read_bytes()
+            archive.writestr(zipfile.ZipInfo(name, moment), source)
+            archive.writestr(zipfile.ZipInfo(name[:-3] + ".pyc", moment), compiled(source, str(root / ARCHIVE / name), stamp))
+    started = subprocess.run([sys.executable, str(built), "--root", str(root), "version"], cwd=root.parent, capture_output=True, text=True, timeout=120)
+    if started.returncode != 0:
+        built.unlink(missing_ok=True)
+        return f"{ARCHIVE} not built, the journal still runs from {SRC}/: {started.stderr.strip()[-300:]}"
+    built.replace(root / ARCHIVE)
+    for f in files:
+        f.unlink()
+    for name in PACKED_DIRS:
+        for cache in sorted((src / name).rglob("__pycache__"), reverse=True) if (src / name).is_dir() else ():
+            shutil.rmtree(cache, ignore_errors=True)
+        for folder in sorted((p for p in (src / name).rglob("*") if p.is_dir()), key=lambda p: len(p.parts), reverse=True) if (src / name).is_dir() else ():
+            if not any(folder.iterdir()):
+                folder.rmdir()
+        if (src / name).is_dir() and not any((src / name).iterdir()):
+            (src / name).rmdir()
+    for name, module in STUBS.items():
+        stub = src / name
+        stub.parent.mkdir(parents=True, exist_ok=True)
+        stub.write_text(STUB.format(up=len(Path(name).parts), archive=ARCHIVE, module=module))
+    return f"the Python is packed into {ARCHIVE}: {len(files)} files in one"
 
 
 def main(argv: list[str]) -> list[str]:

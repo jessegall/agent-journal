@@ -1,10 +1,10 @@
 import io
 import json
 import zipfile
-from pathlib import Path
+from engine.package import data
 
 
-HERE = Path(__file__).resolve().parents[1] / "extension"
+HERE = data("extension")
 
 
 def info() -> dict:
