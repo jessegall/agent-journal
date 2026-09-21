@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.61.2 — Long chat messages fold
+
+Message 1487, to-do 616. A chat message whose text runs taller than about twenty lines is folded to sixteen, fading out at the bottom, with a Show more button under it that becomes Show less once opened.
+
+What to do about it: `journal upgrade`.
+
 ## 2.61.1 — No waiting line in the chat
 
 Message 1482, to-do 615. The chat no longer shows "Waiting for the agent to finish what it is doing" under the composer while a message waits for a busy agent.
