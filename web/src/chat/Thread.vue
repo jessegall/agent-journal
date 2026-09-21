@@ -109,10 +109,24 @@ async function loaded() {
     ]);
 }
 const reading = ref({inside: false, moved: 0});
-const thread = computed(() =>
-    threadTurns({message: rows("message"), comment: rows("comment"), question: rows("question"), reaction: rows("reaction")}, pending.value)
-);
+const pending = ref([]);
+const linked = new Map();
+const thread = computed(() => {
+    const made = threadTurns(
+        {message: rows("message"), comment: rows("comment"), question: rows("question"), reaction: rows("reaction")},
+        pending.value
+    );
+    made.keys.forEach((placeholder, ref) => linked.set(ref, placeholder));
+    return made;
+});
 const turns = computed(() => thread.value.turns);
+watch(turns, (list) => {
+    const shown = new Set(list.map((t) => t.ref));
+    const replaced = pending.value.filter((p) => !shown.has(p.ref));
+    if (!replaced.length) return;
+    replaced.forEach((p) => Object.values(p.data.previews).forEach(URL.revokeObjectURL));
+    pending.value = pending.value.filter((p) => shown.has(p.ref));
+});
 
 function toBottom() {
     if (scroller.value) scroller.value.scrollTop = scroller.value.scrollHeight;
@@ -167,16 +181,17 @@ async function post(text, files) {
     toBottom();
     try {
         await sendMessage(route.value.env, {brief: body, about}, files);
-    } finally {
+    } catch (e) {
         pending.value = pending.value.filter((p) => p.ref !== placeholder.ref);
         Object.values(placeholder.data.previews).forEach(URL.revokeObjectURL);
+        throw e;
     }
     await nextTick();
     toBottom();
 }
 
 function keyOf(t) {
-    return thread.value.keys.get(t.ref) || t.ref;
+    return linked.get(t.ref) || t.ref;
 }
 
 function measured(url) {
@@ -188,7 +203,6 @@ function measured(url) {
     });
 }
 
-const pending = ref([]);
 let promises = 0;
 
 async function promised(body, files) {
