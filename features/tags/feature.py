@@ -9,10 +9,12 @@ from resources.base import AGENT
 from engine.transcript import last_said, last_turn
 
 TAGS = ("discovery", "correction", "blocked", "info", "reply")
-RUNS = {"reply": "message reply {n} {text}", "log": "work log {text} --n {n}", "end": "work end {n} --how {text}"}
+RUNS = {"reply": "message reply {n} {text}", "log": "work log {text} --n {n}", "end": "work end {n} --how {text}",
+        "todo": "todo create {name} --brief {text}", "fact": "fact create {name} --brief {text}"}
 PLACES = {"info": "bar"}
-LEADING = re.compile(r"^[ \t]*(?:>\s?)?(?:\*\*)?\[!([a-z]+)(?::[^\]\s]+)?\]")
-CARRIED = re.compile(r"^[ \t]*(?:>\s?)?(?:\*\*)?\[!([a-z]+):([0-9]+)\]", re.M)
+ARGUMENT = r'(?::[^\]\s]+|="[^"]*")?'
+LEADING = re.compile(r"^[ \t]*(?:>\s?)?(?:\*\*)?\[!([a-z]+)" + ARGUMENT + r"\]")
+CARRIED = re.compile(r'^[ \t]*(?:>\s?)?(?:\*\*)?\[!([a-z]+)(?::([0-9]+)|="([^"]*)")\]', re.M)
 
 
 def written(names) -> list[str]:
@@ -22,10 +24,10 @@ def written(names) -> list[str]:
 def pattern(names) -> re.Pattern:
     return re.compile(r"^[ \t]*(> ?)?(?:\*\*)?\[!(?:"
                       + "|".join(re.escape(name) for name in names)
-                      + r")(?::[^\]\s]+)?\](?:\*\*)?(?:[ \t]+|$)", re.M)
+                      + r")" + ARGUMENT + r"\](?:\*\*)?(?:[ \t]+|$)", re.M)
 
 
-ANY = pattern(TAGS)
+ANY = pattern(dict.fromkeys((*TAGS, *RUNS)))
 
 
 def visible(text: str) -> str:
@@ -36,7 +38,7 @@ class Tags(Feature):
     name = "tags"
     title_ = "Tagging"
     abstract_ = "A message opens with one tag, and a tag carrying a number runs the command it stands for"
-    help_ = "The tags are settings. tags.names lists them and tags.runs maps a tag to the command it stands for, so [!reply:12] runs journal message reply 12 with the turn as its text. A tag runs once, keyed to the turn it came from; two tags in one turn run in the order they appear; and a refusal comes back as a nudge on the next turn rather than at the moment of acting."
+    help_ = "The tags are settings. tags.names lists them and tags.runs maps a tag to the command it stands for, so [!reply:12] runs journal message reply 12 with the turn as its text, and [!todo=\"the title\"] files a to-do with that title and the turn as its brief. A tag runs once, keyed to the turn it came from; two tags in one turn run in the order they appear; and a refusal comes back as a nudge on the next turn rather than at the moment of acting."
     behaviours = {"naming": Behaviour("Name a message that opens without a tag",
                                       "Said at the end of the turn, every turn, until one is used",
                                       trigger={"on": trigger.IDLE}),
@@ -73,8 +75,8 @@ class Tags(Feature):
     def runs(self, record) -> dict:
         return {**RUNS, **self.setting(record, self.RUNS, {})}
 
-    def argv(self, template: str, n: str, text: str) -> list[str]:
-        return [text if word == "{text}" else n if word == "{n}" else word for word in template.split()]
+    def argv(self, template: str, n: str, name: str, text: str) -> list[str]:
+        return [{"{text}": text, "{n}": n, "{name}": name}.get(word, word) for word in template.split()]
 
     def already(self, record, agent, turn) -> bool:
         f = record.root / "runtime" / f"tagged-{agent.title}.json"
@@ -95,15 +97,15 @@ class Tags(Feature):
         carried = CARRIED.findall(turn.text) if turn else []
         if not carried or self.already(record, agent, turn):
             return
-        runs, text = self.runs(record), self.reader(record).sub("", turn.text).strip()
-        for name, n in carried:
+        runs, text = self.runs(record), CARRIED.sub("", self.reader(record).sub("", turn.text)).strip()
+        for name, n, argument in carried:
             if name not in runs:
                 continue
             said, wrong = io.StringIO(), io.StringIO()
             code = run(["--root", str(record.root), "--env", record.env, "--session", agent.title, "--as", AGENT,
-                        *self.argv(runs[name], n, text)], out=said, err=wrong)
+                        *self.argv(runs[name], n, argument, text)], out=said, err=wrong)
             if code:
-                self.nudge(record, agent, f"the {name} tag on {n} did not run", (wrong.getvalue() or said.getvalue()).strip(), private=True)
+                self.nudge(record, agent, f"the {name} tag on {n or argument} did not run", (wrong.getvalue() or said.getvalue()).strip(), private=True)
 
     def places(self, record) -> dict:
         return {**PLACES, **self.setting(record, self.PLACES, {})}
