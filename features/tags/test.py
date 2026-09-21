@@ -86,6 +86,12 @@ def test_a_tagged_message_runs_the_moment_the_engine_sees_it_written(tmp_path):
     engine.announce_written()
     assert [c.title for c in Comments(record, actor=SYSTEM).linked_to(message.ref)] == ["yes, here"], \
         "written mid-turn, no hook fired: the reply is posted as soon as the engine sees it"
+    later = Messages(record, actor="user").create("still there?")
+    rows.append({"type": "assistant", "timestamp": now, "message": {"content": [{"type": "text", "text": f"[!reply:{later.n}] said while it restarted"}]}})
+    transcript.write_text("\n".join(json.dumps(r) for r in rows) + "\n")
+    watching(record, transcript)
+    assert [c.title for c in Comments(record, actor=SYSTEM).linked_to(later.ref)] == ["said while it restarted"], \
+        "a restarted engine announces what was said while it was down"
 
 
 def test_the_final_message_the_stop_hook_carries_runs_its_tags_before_the_transcript_has_it(tmp_path):

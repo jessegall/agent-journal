@@ -4,6 +4,14 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.20.1 — A restart loses no message, and one skills folder is never linked onto itself
+
+A freshly started engine took everything already in the transcript as heard, so a message the agent wrote while the server was restarting — after an upgrade, say — never raised `agent.said`: its tags did not run and a chat-detail level never copied it into the chat. The engine now keeps the last turn it announced per session in `runtime/announced-<session>.json` and, after a restart, announces everything said since.
+
+The installer linked each journal skill from `.claude/skills` to `.agents/skills`; in a project where both are links to the same folder, that removed the real skill folder and left a link pointing at itself, and the next install failed with `FileExistsError`. Linking onto the same folder is skipped now, and a skill folder that is a link is replaced by the real one, so such a project mends itself on its next install.
+
+What to do about it: `journal upgrade`, or run the install again in a project that failed.
+
 ## 2.20.0 — A message says how it is delivered, and a new session is greeted in its terminal
 
 A message the journal sends the agent now carries its delivery: `channel` (the default — the channel where the provider has one, typed otherwise) or `terminal`, which is always typed into the agent's own prompt and never handed to a channel or inbox, whatever the provider. A feature asks for it with `journal.say(..., delivery="terminal")` or `journal.type(...)`.
