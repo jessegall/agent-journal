@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.56.1 — Choosing the agent's effort works
+
+Message 1597. An effort chosen in the agent bar was treated as done at once, but the line waits for the agent to finish its turn like any other, and after ten minutes of work it was dropped without a word. Effort now waits the way a model change does: the bar says it is waiting for the agent, the line is typed when the turn ends, it is never dropped for being old, and a newer choice replaces an older one. A feature can send the same kind of command itself with context.agent.command("effort medium"), which goes through the provider's own control, so each provider says it in its own syntax (message 1599).
+
+What to do about it: `journal upgrade`.
+
 ## 2.56.0 — A trigger is an object, not a dictionary
 
 Message 1550, to-do 622. A feature's or behaviour's cadence is declared like its lines and behaviours: Trigger(every=10, unit=USES), Trigger(at=(50, 70, 90, 95), unit=PERCENT), Trigger(on=IDLE). A cadence the user sets in the viewer is still saved as before and read back into a Trigger, and the viewer and the skills see the same shape they always did.

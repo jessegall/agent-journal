@@ -32,7 +32,6 @@ class Claude(Provider):
     briefing_file = "CLAUDE.md"
     skill_home = ".claude/skills"
     link_skills = True
-    at_once = ("effort",)
     controls = {
         "groups": [
             {
