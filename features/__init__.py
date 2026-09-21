@@ -29,10 +29,11 @@ def load(root: Path | None = None) -> list[str]:
 
 
 def unload() -> None:
-    from controllers.base import COMMANDS
+    from controllers.base import COMMANDS, HANDLERS
     from engine.hooks import POLICIES
     from features.format import FORMATTERS
     COMMANDS.clear()
+    HANDLERS.clear()
     FORMATTERS.clear()
     bus.clear()
     POLICIES.clear()

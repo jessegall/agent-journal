@@ -13,6 +13,7 @@ from engine.stored import read_json, write_json, write_text
 
 INDEX = "index.json"
 COMMANDS: dict[str, dict] = {}
+HANDLERS: dict[str, list] = {}
 FACES = ("👍", "❤️", "🎉", "😄", "👀", "🙏", "👎", "💔", "😠")
 
 
@@ -84,11 +85,21 @@ class Controller:
         self.record.emit(self.type, r.n, action, self.actor, **event)
         return r
 
+    def handled(self, action: str, **args):
+        for fn in HANDLERS.get(f"{self.type}.{action}", []) + HANDLERS.get(action, []):
+            taken = fn(self, **args)
+            if taken is not None:
+                return taken
+        return None
+
     def _shaped(self, data: dict) -> dict:
         fields = self.resource.fields
         return {k: check(k, fields[k], normalize_options(v) if k == Options.options else v) if k in fields else v for k, v in data.items()}
 
     def create(self, title: str, abstract: str = "", brief: str = "", **data) -> Resource:
+        taken = self.handled("create", title=title, abstract=abstract, brief=brief, **data)
+        if taken is not None:
+            return taken
         with self.record.locked():
             n = (self.numbers() or [0])[-1] + 1
             about, supersedes = data.pop("about", None), data.pop("supersedes", 0)
@@ -101,6 +112,9 @@ class Controller:
             return r
 
     def update(self, n: int, title: str | None = None, abstract: str | None = None, brief: str | None = None, outcome: str | None = None, **data) -> Resource:
+        taken = self.handled("update", n=n, title=title, abstract=abstract, brief=brief, outcome=outcome, **data)
+        if taken is not None:
+            return taken
         r = self.load(n)
         if title is not None:
             r.title = check_title(title)
@@ -133,11 +147,17 @@ class Controller:
         return self.save(r, "updated", section=title)
 
     def delete(self, n: int, why: str = "") -> Resource:
+        taken = self.handled("delete", n=n, why=why)
+        if taken is not None:
+            return taken
         r = self.load(n)
         r.deleted = time.time()
         return self.save(r, "deleted", why=why)
 
     def complete(self, n: int, how: str = "", **data) -> Resource:
+        taken = self.handled("complete", n=n, how=how, **data)
+        if taken is not None:
+            return taken
         r = self.load(n)
         if r.completed:
             self.refuse(f"{self.type} {n} is already {self.named('complete')}")
