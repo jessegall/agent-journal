@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.84.7 — The hub opens the journal you pick
+
+Messages 2101 and 2166, to-do 739. The links in a journal's card on the hub (Open, its chat, each environment) were built from an address that was never set, so they read `undefined/#/main` and sent you to `/undefined/` on the journal you were already in. They now use that journal's own address.
+
+What to do about it: `journal upgrade`, then reload the viewer.
+
 ## 2.84.6 — The journal sets itself up once, and commands answer in milliseconds
 
 Messages 2220 and 2224, to-do 758, rule 47. Every command the server ran set parts of the journal up again: it re-seated every feature row and retried every damaged record file it had failed to read before, costing 100 ms or more a command. Set-up now happens once, when the server starts, and again only when a feature is switched, a plugin changes or an environment is added. A record file that cannot be read is remembered in its folder's index by its time and size, and skipped until it changes. Warm, `journal todo all` and `message unread` take about 2 ms.
