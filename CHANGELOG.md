@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.24.5 — A row fetched for the inspector survives the list reloading
+
+The viewer remembered every row number it had fetched on its own and never asked for it again, so when the page reloaded its list a moment later — dropping the fetched row — the inspector was left with nothing; on Home this hid a deleted to-do opened by its link. A number now counts as asked only while its request is running, and a number the server has no row for is not asked again.
+
+What to do about it: `journal upgrade`.
+
 ## 2.24.4 — A deleted row still opens
 
 A link to a deleted row — a to-do deleted after a message cited it, say — opened nothing: fetching a row by number left deleted rows out. A row asked for by number is returned even when deleted, and the inspector shows it; the lists still leave deleted rows out.
