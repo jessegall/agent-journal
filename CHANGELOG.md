@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.17.7 — The missing-tag reminder leads the line it arrives in
+
+The engine sends the agent everything waiting as one line, and a terminal shows only its start, so "your last message has no tag" arrived buried after a row of other lines. A feature's line can now lead: it is placed first in the line it is sent in, and the missing-tag reminder does.
+
+What to do about it: `journal upgrade`.
+
 ## 2.17.6 — The missing-tag reminder appears in the agent's terminal
 
 The reminder is sent straight to the agent's terminal, the moment a message without a tag is seen: "your last message has no tag — open every message with one of …". It no longer goes into the web chat as a message, which showed in the terminal only as "1 new message".
