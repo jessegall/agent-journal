@@ -1,10 +1,10 @@
 import re
-import subprocess
 from pathlib import Path
 
 from controllers.types import Todos
 from features.base import Feature, event
 from resources.base import Refused, SYSTEM
+from engine.proc import git
 
 TRAILER = re.compile(r"^Journal: todos done (\d+(?:, *\d+)*)(?: (.*))?$", re.MULTILINE)
 
@@ -19,11 +19,7 @@ class Commits(Feature):
         self.seen: dict[str, int] = {}
 
     def log(self, project) -> list[tuple[str, str, str]]:
-        try:
-            out = subprocess.run(["git", "log", "--format=%H%x1f%s%x1f%B%x1e", "-n", "50"], cwd=project,
-                                 capture_output=True, text=True, timeout=5).stdout
-        except (OSError, subprocess.SubprocessError):
-            return []
+        out = git(["log", "--format=%H%x1f%s%x1f%B%x1e", "-n", "50"], project)
         return [tuple(c.strip("\n").split("\x1f", 2)) for c in out.split("\x1e") if c.strip()]
 
     def close(self, record, sha: str, subject: str, body: str) -> None:

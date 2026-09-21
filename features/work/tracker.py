@@ -1,5 +1,4 @@
 import fcntl
-import subprocess
 import time
 from pathlib import Path
 
@@ -11,6 +10,7 @@ from resources.base import SYSTEM, names
 from resources.shapes import CHANGE, COMMIT
 from resources.types import COMMAND, RUNNING
 from skills import LIBRARY
+from engine.proc import run
 
 DELTA = names("edited", "created", "deleted", "added", "removed")
 NOTE = names("at", "path", "kind", "added", "removed")
@@ -19,10 +19,7 @@ EMPTY_BLOB = "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
 
 
 def git(project: Path, *args: str, stdin: str | None = None) -> str:
-    try:
-        return subprocess.run(["git", *args], cwd=project, input=stdin, capture_output=True, text=True, timeout=5).stdout
-    except (OSError, subprocess.SubprocessError):
-        return ""
+    return run(["git", *args], project, stdin=stdin)
 
 
 def internal(record, project: Path) -> tuple[str, ...]:

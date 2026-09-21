@@ -1,5 +1,4 @@
 import base64
-import subprocess
 import tempfile
 import time
 from pathlib import Path
@@ -12,6 +11,7 @@ from resources import types
 from resources.base import AGENT, SECTION, SYSTEM, Refused, check_title, names, titled
 from resources.shapes import LEVELS
 from engine.stored import read_json, write_text
+from engine.proc import ran
 
 UPLOAD = names("name", "data")
 
@@ -347,7 +347,9 @@ class Tools(Controller):
     def run(self, n: int, *args: str):
         tool = self.load(n)
         project = self.record.root.parent
-        done = subprocess.run([*tool.entry.split(), *args], cwd=project, capture_output=True, text=True, timeout=600)
+        done = ran([*tool.entry.split(), *args], project, timeout=600)
+        if done is None:
+            raise Refused(f"tool {n} could not run: {tool.entry}")
         return {"code": done.returncode, "out": done.stdout, "err": done.stderr}
 
 
