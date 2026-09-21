@@ -288,13 +288,13 @@ async function tick() {
     if (document.hidden) return;
     ticks += 1;
     const env = route.value.env;
-    store.bar = await http.poll(`/${env}/bar`);
+    store.bar = await http.api("GET", `/${env}/bar`);
     if (ticks % 2) return;
-    store.agents = (await http.poll(`/${env}/agent?completed=1`)).rows;
+    store.agents = (await http.api("GET", `/${env}/agent?completed=1`)).rows;
     if (ticks % 10) return;
-    store.pages = await http.poll("/pages");
+    store.pages = await http.api("GET", "/pages");
     const last = store.events.length ? store.events[store.events.length - 1].id : 0;
-    const fresh = await http.poll(`/${env}/events?since=${last}&last=0`);
+    const fresh = await http.api("GET", `/${env}/events?since=${last}&last=0`);
     if (fresh.length) {
         store.events = [...store.events, ...fresh].slice(-RECENT);
         await refresh([...new Set(fresh.map((e) => e.type))].filter((type) => type !== "agent"));
