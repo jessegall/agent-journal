@@ -209,9 +209,7 @@ def switches(record: Record) -> dict:
 def settings(record: Record) -> dict:
     return {Record.features: switches(record),
             Record.triggers: record.triggers, Record.keep: record.keep, Record.delivery: record.delivery,
-            Record.tags: {"names": features.FEATURES["tags"].names(record), "places": features.FEATURES["tags"].places(record)},
-            Record.agents: {"recent": record.agents.get("recent", 60), "lapse": record.agents.get("lapse", 20)},
-            Record.questions: {"hold": features.FEATURES["questions"].held_for(record)}}
+            **{name: shown for name, f in features.FEATURES.items() if (shown := f.settings_view(record)) is not None}}
 
 
 def static(path: str) -> Reply:
@@ -498,9 +496,7 @@ def post_skill_load(req: Request) -> Reply:
 @route("POST", "/api/{env}/skills/{name}/always")
 def post_skill_always(req: Request) -> Reply:
     record = req.record()
-    got = always(record, req.params["name"], bool(req.body.get("on")))
-    features.FEATURES["start"].write(None, record)
-    return Reply(200, {"skills": got})
+    return Reply(200, {"skills": always(record, req.params["name"], bool(req.body.get("on")))})
 
 
 def shown_types() -> list[str]:

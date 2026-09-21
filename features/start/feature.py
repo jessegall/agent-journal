@@ -32,10 +32,11 @@ class Start(Feature):
 
     @event("*")
     def write(self, event, record) -> None:
-        if event.type not in TYPES or not (TYPES[event.type].handed or event.type in SHAPING):
-            return
+        if event.type in TYPES and (TYPES[event.type].handed or event.type in SHAPING):
+            self.rebuild(record)
+
+    def rebuild(self, record) -> None:
         block = start_block(record)
         for compacted in (False, True):
             f = start_file(record.root, record.env, compacted)
-            f.parent.mkdir(parents=True, exist_ok=True)
             write_text(f, COMPACTED + block if compacted else block)
