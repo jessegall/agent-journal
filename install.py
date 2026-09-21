@@ -223,8 +223,8 @@ def upgrade(project: Path, root: Path | None = None) -> list[str]:
     return done
 
 
-RESTARTS = {"engine/terminal.py": "the terminal changed: start journal claude again to run it",
-            "channel.py": "the channel changed: run /mcp and reconnect journal to load it"}
+RESTARTS = {"engine/terminal.py": "The journal's terminal was updated - quit and run journal claude again",
+            "channel.py": "The journal's channel was updated - run /mcp and reconnect journal"}
 
 
 def owed(root: Path, changed: set) -> list[str]:
@@ -234,7 +234,9 @@ def owed(root: Path, changed: set) -> list[str]:
         from engine import runtime
         from engine.record import Record
         from resources.base import SYSTEM
-        Notices(Record(root, runtime.env(root)), actor=SYSTEM).create("A restart is owed", brief="; ".join(said))
+        notices = Notices(Record(root, runtime.env(root)), actor=SYSTEM)
+        for why in said:
+            notices.create(why, tone="warn")
     return said
 
 
