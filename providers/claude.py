@@ -23,7 +23,6 @@ NOTIFIED = re.compile(r"<tool-use-id>([^<]+)</tool-use-id>.*?<status>([^<]+)</st
 DISPATCHES = ("Agent", "Task")
 QUIET_SUBAGENT = 600
 SETTLE_BYTES = 65536
-BOOKKEEPING = frozenset({"attachment", "queue-operation", "file-history-snapshot"})
 
 
 class Claude(Provider):
@@ -298,8 +297,8 @@ class Claude(Provider):
                 row = json.loads(line)
             except ValueError:
                 continue
-            if row.get("type") not in BOOKKEEPING:
-                parts = (row.get("message") or {}).get("content")
+            if row.get("type") in ("user", "assistant") and row.get("message"):
+                parts = row["message"].get("content")
                 thinking = isinstance(parts, list) and parts and all(isinstance(p, dict) and p.get("type") == "thinking" for p in parts)
                 return row.get("type") == "user" or bool(thinking)
         return False
