@@ -34,7 +34,7 @@ from features.format import formatted
 from resources.base import shown as given, OPENED, USER, Refused, titled
 from resources.types import Ask
 from engine.stored import write_json
-from features.budget.feature import watched
+from features.faults.feature import watched
 
 WEB = Path(__file__).resolve().parents[1] / "web" / "dist"
 SAID = ("title", "abstract", "brief", "outcome")
@@ -182,6 +182,14 @@ def post_hook(req: Request) -> Reply:
     with bus.held() as heard:
         out = answer(provider, req.root, {**req.body, "inbox": req.query.get("inbox") or ""}, int(req.query.get("pid") or 0), req.query.get("env") or "")
     return Reply(403 if provider.refused(out) else 200, out, after=lambda: bus.release(heard))
+
+
+@route("POST", "/api/{env}/console")
+def post_console(req: Request) -> Reply:
+    from features.faults.feature import threw
+    said = str(req.body.get("said") or "")[:200]
+    filed = threw(req.root, req.params["env"], said, str(req.body.get("where") or "")[:200], str(req.body.get("stack") or "")[:2000]) if said else False
+    return Reply(200, {"filed": filed})
 
 
 @route("GET", "/api/manifest")
