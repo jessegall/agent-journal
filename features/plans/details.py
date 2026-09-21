@@ -24,6 +24,14 @@ class PlansDetails(FeatureDetails):
 
     lines = [
         Line(
+            name="started",
+            title="the user started plan {{n}}, {{title}} - build it with them",
+            brief="""
+                journal plan show {{n}} for what they want, and a template's instructions come
+                first; ask what you cannot settle, then add its phases and rows
+            """,
+        ),
+        Line(
             name="phases",
             title="plan {{n}} is building - add its phases",
             brief="""

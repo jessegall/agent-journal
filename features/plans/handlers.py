@@ -7,7 +7,7 @@ from features.plans.progress import catch_up
 from features.plans.resource import PHASE
 from features.work_tracking.auto import automatic
 from features.parts import Context, Handler
-from resources.base import AGENT
+from resources.base import AGENT, USER
 
 WRITTEN = ("created", "updated", "linked")
 ADVANCES = {("todo", "completed"), ("plan", "updated"), ("agent", "updated")}
@@ -16,6 +16,14 @@ ADVANCES = {("todo", "completed"), ("plan", "updated"), ("agent", "updated")}
 @dataclass(frozen=True)
 class PlanChanged(ResourceEvent):
     on: ClassVar[str] = "plan"
+
+
+class StartBuilding(Handler):
+    def handle(self, context: Context, event: PlanChanged) -> None:
+        agent = context.journal.agents.primary()
+        if event.action == "created" and event.actor == USER and agent:
+            plan = context.journal.plans.load(event.n)
+            context.speaking_to(agent).agent.say("started", n=plan.n, title=plan.title)
 
 
 class GuideBuilding(Handler):

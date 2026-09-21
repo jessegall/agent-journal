@@ -18,7 +18,7 @@ class Plans(Controller):
         return r.status in ENDED
 
     def create(self, title: str, abstract: str = "", brief: str = "", **data):
-        return super().create(title, abstract, brief, status=BUILDING if self.actor == AGENT else DRAFT, stage=PHASES, phases=[], current=1, **data)
+        return super().create(title, abstract, brief, status=BUILDING, stage=PHASES, phases=[], current=1, **data)
 
     def from_doc(self, doc: int):
         source = Docs(self.record, actor=self.actor).load(int(doc))

@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.81.0 — You start a plan, the agent builds it with you
+
+Message 1457, to-do 701. New plan on the Plans page no longer makes a draft for you to fill in by hand. You give it a title, one line about what is true when it is done, and what you want in your own words, and you start it from no template, the Blank plan, or Functional design, then technical implementation. The plan opens as building, and the agent is told at once that you started it and to build it with you: it reads what you wrote and the template's instructions, asks what it cannot settle, and adds the phases and rows. You activate it once it is ready, as before. The template choice now reads No template instead of Blank, so it is not mistaken for the Blank plan template.
+
+What to do about it: `journal upgrade`.
+
 ## 2.80.2 — Two plan templates ship with the journal
 
 To-do 705, from design 7. Every project now has two plan templates. Blank plan carries the usual steps of building a plan with the user. Functional design, then technical implementation is Redmar's case (message 1457): its first phase writes a functional doc and ends at a checkpoint where you approve it, and only its second phase files and builds the technical to-dos. Both appear under Start from when a plan is created. They are added once, by a migration, and a template you edit or retire is never added again.
@@ -12,7 +18,7 @@ What to do about it: `journal upgrade`.
 
 ## 2.80.1 — A New dialog offers the templates that fit
 
-To-do 704, from design 7. Every New dialog now ends with Start from: Blank, or any template whose applies_to includes that type (or names no type). Picking one creates the resource from it, with its parts and a link to it, the same as `--set template=<n>`. The inspector of anything made from a template shows Made from template n at the top, and clicking it opens the template.
+To-do 704, from design 7. Every New dialog now ends with Start from: No template, or any template whose applies_to includes that type (or names no type). Picking one creates the resource from it, with its parts and a link to it, the same as `--set template=<n>`. The inspector of anything made from a template shows Made from template n at the top, and clicking it opens the template.
 
 What to do about it: `journal upgrade`.
 

@@ -16,7 +16,7 @@ const templates = ref([]);
 const template = ref(0);
 
 const choices = computed(() => [
-    {value: 0, label: "Blank", current: template.value === 0},
+    {value: 0, label: "No template", current: template.value === 0},
     ...templates.value.map((t) => ({value: t.n, label: t.title, current: template.value === t.n})),
 ]);
 
