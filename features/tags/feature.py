@@ -6,7 +6,7 @@ from features import trigger
 from engine.stored import read_json, write_json
 from features.base import Behaviour, Feature, event, formats
 from resources.base import AGENT
-from support.transcript import last_said, last_turn
+from engine.transcript import last_said, last_turn
 
 TAGS = ("discovery", "correction", "blocked", "info", "reply")
 RUNS = {"reply": "message reply {n} {text}", "log": "work log {text} --n {n}", "end": "work end {n} --how {text}"}

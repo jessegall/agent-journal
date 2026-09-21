@@ -1,8 +1,8 @@
 from controllers.types import Todos
 from features.plans.controller import ACTIVE, DONE, Plans, WAITING
-from support.features import switched
+from features.work.auto import automatic
 from features.base import Feature, event, handles
-from support.plans import current_phase, held, running
+from features.plans.progress import current_phase, held, running
 from resources.base import SYSTEM
 from features.plans.resource import PHASE
 
@@ -26,7 +26,7 @@ class PlansFeature(Feature):
 
     @event("agent.updated")
     def pass_checkpoints(self, event, record) -> None:
-        if not switched(record, "work.auto"):
+        if not automatic(record):
             return
         plans = Plans(record, actor=SYSTEM)
         for plan in plans._every():
@@ -39,7 +39,7 @@ class PlansFeature(Feature):
             return False
         i = plan.current
         last = i == len(plan.phases)
-        waits = bool(phase[PHASE.checkpoint]) and not switched(record, "work.auto")
+        waits = bool(phase[PHASE.checkpoint]) and not automatic(record)
         plan.status = DONE if last else WAITING if waits else ACTIVE
         plan.current = i if last or waits else i + 1
         Plans(record, actor=SYSTEM).save(plan, "updated", phase=i, complete=True, status=plan.status,
