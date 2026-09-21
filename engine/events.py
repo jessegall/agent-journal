@@ -24,3 +24,17 @@ class AgentMessageCreated(AgentEvent):
     @classmethod
     def read(cls, event) -> "AgentMessageCreated":
         return cls(agent=event.n, text=str(event.data.get("text") or ""))
+
+
+@dataclass(frozen=True)
+class AgentUpdated(AgentEvent):
+    on: ClassVar[str] = "agent.updated"
+    hook: str = ""
+    tool: str = ""
+    file: str = ""
+    session: str = ""
+
+    @classmethod
+    def read(cls, event) -> "AgentUpdated":
+        return cls(agent=event.n, hook=str(event.data.get("hook") or ""), tool=str(event.data.get("tool") or ""),
+                   file=str(event.data.get("file") or ""), session=str(event.data.get("session") or ""))

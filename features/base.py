@@ -114,6 +114,7 @@ class FeatureDetails:
     lines: ClassVar[list[Line]] = []
     behaviours: ClassVar[list[Behaviour]] = []
     settings: ClassVar[list[Setting]] = []
+    trigger: ClassVar[dict] = {}
 
     @classmethod
     def values(cls, record) -> Settings:
@@ -140,7 +141,7 @@ class Feature(ABC):
         super().__init_subclass__(**kw)
         if cls.details:
             d = cls.details
-            cls.name, cls.lines, cls.behaviours, cls.settings = d.name, {line.name: line for line in d.lines}, {b.name: b for b in d.behaviours}, d.settings
+            cls.name, cls.lines, cls.behaviours, cls.settings, cls.trigger = d.name, {line.name: line for line in d.lines}, {b.name: b for b in d.behaviours}, d.settings, d.trigger
             cls.title_, cls.abstract_, cls.help_ = paragraphs(d.title), paragraphs(d.abstract), paragraphs(d.help)
         if cls.name:
             REGISTRY[cls.name] = cls

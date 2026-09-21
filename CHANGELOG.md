@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.45.0 — Agent updates are a typed event; Deferral is the first feature moved whole
+
+Plan 9, to-do 601. AgentUpdated(agent, hook, tool, file, session) is the typed form of agent.updated, so the handlers that listen to every change of an agent can become Handler classes. A part may declare behaviour = WHOLE_FEATURE to be called on the feature's own switch and cadence, and details.py may declare the feature's trigger. Deferral is now details.py, one handler (NameDeferredWork) and a feature.py that only registers it.
+
+What to do about it: `journal upgrade`.
+
 ## 2.44.0 — Commands are registered parts
 
 Plan 9, to-do 600. A feature adds a command with journal.commands.add("rule", Reread()): a Command class whose run(context, controller, ...) arguments become the command's arguments, exactly as a controller method's do. journal.commands.intercept("todo.start", HoldWhilePlanned()) puts an ActionInterceptor in front of a controller action, which may refuse it or take it over. Memory's journal rule reread and Planning's hold on starting a row outside the current phase use them; @command and @handles still work for the features not moved yet.
