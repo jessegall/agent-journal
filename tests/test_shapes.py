@@ -12,7 +12,7 @@ def test_every_type_is_shaped_fields_and_labels_gathered_from_its_mixins():
     shared = [n for n, t in TYPES.items() if Options in t.__mro__]
     reasoned = sorted(n for n, t in TYPES.items() if Reasoned in t.__mro__)
     assert shared == ["question", "suggestion"], "options belong to questions and suggestions"
-    assert reasoned == ["fact", "rule", "style"], "pins, rules and style rules share one reasoning shape"
+    assert reasoned == ["fact", "rule"], "facts and rules share one reasoning shape"
     assert TYPES["fact"].labels == {"brief": "Reasoning", "outcome": "Why struck"}, "the reasoning shape names the brief and the strike"
     assert (TYPES["fact"].labels == TYPES["rule"].labels) is True, "a shape declared once is the same object on both"
 
