@@ -37,7 +37,7 @@ __pycache__/
 # the IDE's own folder, never this project's
 /.idea
 # the browser tool's snapshots and screenshots
-/.playwright-mcp
+.playwright-mcp/
 
 # screenshots taken while checking the viewer: scratch, not the project
 *.png

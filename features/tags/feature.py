@@ -4,10 +4,10 @@ import re
 import threading
 import time
 
-from controllers.types import Agents
+from controllers.types import Agents, Messages
 from engine.stored import read_json, write_json
 from features.base import Behaviour, Feature, event, formats, interceptor, Line
-from resources.base import AGENT, SYSTEM
+from resources.base import AGENT, SYSTEM, titled
 from engine.transcript import Turn, last_said, turns
 
 TAGS = ("discovery", "correction", "blocked", "info", "reply")
@@ -16,6 +16,8 @@ MARKING = threading.Lock()
 RUNS = {"reply": "message reply {n} {text}", "log": "work log {text} --n {n}", "end": "work end {n} --how {text}",
         "todo": "todo create {name} --brief {text}", "fact": "fact create {name} --brief {text}"}
 PLACES = {"info": "bar"}
+SHOWN = {"replies": ("reply",), "info": ("reply", "info", "blocked"), "corrections": ("reply", "info", "blocked", "correction"),
+         "discoveries": ("reply", "info", "blocked", "correction", "discovery")}
 ARGUMENT = r'(?::[^\]\s]+|="[^"]*")?'
 LEADING = re.compile(r"^[ \t]*(?:>\s?)?(?:\*\*)?\[!([a-z]+)" + ARGUMENT + r"\]")
 REPLIED = re.compile(r"\bjournal\s+message\s+reply\s+(\d+)")
@@ -54,9 +56,15 @@ class Tags(Feature):
     NAMES = "names"
     RUNS = "runs"
     PLACES = "places"
+    VERBOSITY = "verbosity"
+    SINCE = "since"
 
     def settings_view(self, record) -> dict:
-        return {"names": self.names(record), "places": self.places(record)}
+        return {"names": self.names(record), "places": self.places(record), "verbosity": self.verbosity(record), "levels": list(SHOWN)}
+
+    def verbosity(self, record) -> str:
+        chosen = self.setting(record, self.VERBOSITY, "replies")
+        return chosen if chosen in SHOWN else "replies"
 
     def names(self, record) -> list[str]:
         return [str(name).strip().lstrip("[!").rstrip("]") for name in self.setting(record, self.NAMES, TAGS) if str(name).strip()] or list(TAGS)
@@ -100,9 +108,19 @@ class Tags(Feature):
         agent = self.agent(event, record)
         if not agent:
             return
+        shown, since = SHOWN[self.verbosity(record)], float(self.setting(record, self.SINCE, 0) or 0)
         for turn in self.written(record, agent):
             if CARRIED.search(turn.text) and not self.already(record, agent, turn):
                 self.carried(record, agent, turn)
+            leading = LEADING.match(turn.text)
+            carried = CARRIED.match(turn.text)
+            if leading and not carried and leading.group(1) in shown and turn.at >= since and not self.already(record, agent, turn, "shown"):
+                self.show(record, leading.group(1), turn)
+
+    def show(self, record, tag: str, turn) -> None:
+        text = LEADING.sub("", turn.text, count=1).strip()
+        if text:
+            Messages(record, actor=AGENT).create(titled(text), brief=text, tag=tag)
 
     def written(self, record, agent) -> list:
         spoken = [Turn(line=-1, who="agent", text=agent.said, at=time.time())] if agent.said and agent.event == "Stop" else []
