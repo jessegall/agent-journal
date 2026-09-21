@@ -16,6 +16,7 @@ from resources.types import TYPES, priority
 from engine.seat import Seat
 from engine.wording import plural
 from engine.transcript import turns
+from engine.stored import read_json, write_json
 
 TICK = 1.0
 STAMPED = "stamped"
@@ -46,8 +47,6 @@ class Engine(Seat):
         self.carry_on = False
         self.why = ""
         self.clean = 0
-        self.last_written_line = None
-        self.last_said = None
 
     def start(self) -> None:
         features.load(self.record.root)
@@ -81,12 +80,16 @@ class Engine(Seat):
             return
         row = Agents(self.record, actor=SYSTEM).by_session(last.title)
         written = turns(self.record, row)
-        known = next((i for i, t in enumerate(written) if t.line == self.last_written_line), None)
+        f = self.record.root / "runtime" / f"announced-{row.title}.json"
+        last = read_json(f, None)
+        now = {"line": written[-1].line if written else -1, "said": row.said or ""}
+        if last == now:
+            return
+        write_json(f, now)
+        known = next((i for i, t in enumerate(written) if last and t.line == last["line"]), None)
         fresh = [t.text for t in (written[known + 1:] if known is not None else written[-1:])]
-        stopped = [row.said] if row.said and row.event == "Stop" and row.said != self.last_said else []
-        first = self.last_written_line is None and self.last_said is None
-        self.last_written_line, self.last_said = written[-1].line if written else -1, row.said
-        for text in [] if first else [*fresh, *stopped]:
+        stopped = [row.said] if row.said and row.event == "Stop" and last and row.said != last["said"] else []
+        for text in [*fresh, *stopped] if last else []:
             bus.emit(Event(id=0, at=time.time(), type="agent", n=row.n, action="said", actor=AGENT, data={"text": text}), self.record)
 
     def elsewhere(self, e) -> bool:

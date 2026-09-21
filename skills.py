@@ -82,6 +82,8 @@ def write(folder: Path) -> list[Path]:
     written = []
     for path, text in render().items():
         f = folder / path
+        if f.parent.is_symlink():
+            f.parent.unlink()
         f.parent.mkdir(parents=True, exist_ok=True)
         if not f.is_file() or f.read_text() != text:
             f.write_text(text)
@@ -95,6 +97,8 @@ def link(project: Path, name: str, agents: tuple[str, ...] = tuple(LINKED)) -> l
     for agent in agents:
         target = project / LINKED[agent] / name
         target.parent.mkdir(parents=True, exist_ok=True)
+        if target.parent.resolve() == source.parent.resolve():
+            continue
         if target.is_symlink() or target.is_file():
             target.unlink()
         elif target.is_dir():
