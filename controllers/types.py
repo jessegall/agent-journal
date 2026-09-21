@@ -163,7 +163,11 @@ class Todos(Controller):
         return self.complete(n, f"struck: {why}", struck=True)
 
     def start(self, n: int):
+        from support.plans import held
         row = self.load(n)
+        if held(self.record, row):
+            self.refuse(f"todo {n} is not in the active plan's current phase: finish the plan, raise it to critical, or --force \"<why>\"")
+            row = self.save(row, "updated", forced=True)
         return Works(self.record, actor=self.actor, session=self.session, agent=self.agent).create(row.title, brief=row.brief, todo=row.n)
 
     def prune(self, days: int = 30):

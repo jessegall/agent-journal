@@ -156,8 +156,13 @@ class Feature(ABC):
         trigger.fired(record, agent, self.keyed(key))
         return True
 
+    def mine(self, agent) -> bool:
+        return self.runs_for_subagents or not agent.subagent
+
     def hold(self, record, why: str, key: str = "") -> None:
         for agent in Agents(record, actor=SYSTEM).all():
+            if not self.mine(agent):
+                continue
             f = gate_file(record.root, record.env, agent.title)
             write_json(f, {**read_json(f, {}), self.keyed(key): why})
 
@@ -165,7 +170,8 @@ class Feature(ABC):
         self.hold(record, "", key)
 
     def nudge(self, record, agent, title: str, brief: str = "", private: bool = False) -> None:
-        Nudges(record, actor=SYSTEM).create(title, brief=brief, session=agent.title, private=private)
+        if self.mine(agent):
+            Nudges(record, actor=SYSTEM).create(title, brief=brief, session=agent.title, private=private)
 
     def plural(self, n: int, word: str) -> str:
         return f"{n} {word}{'s' if n != 1 else ''}"

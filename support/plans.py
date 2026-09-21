@@ -1,5 +1,6 @@
 from controllers.types import ACTIVE, Plans, WAITING
 from resources.base import SYSTEM
+from resources.shapes import LEVELS
 from resources.types import PHASE
 
 
@@ -14,9 +15,10 @@ def current_phase(plan) -> dict | None:
 
 
 def held(record, todo) -> bool:
-    for plan in Plans(record, actor=SYSTEM).all():
+    plans = Plans(record, actor=SYSTEM).all()
+    for plan in plans:
         if todo.ref not in plan.refs:
             continue
         phase = current_phase(plan)
         return plan.status != ACTIVE or phase is None or todo.n not in phase[PHASE.todos]
-    return False
+    return any(p.status == ACTIVE for p in plans) and int(todo.priority or LEVELS["default"]) < LEVELS["critical"]
