@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.82.3 — The launch works in a terminal left in raw mode
+
+Message 2099, to-do 740. A session that ended without putting the terminal back left it in raw mode, and the next `journal codex` or `journal claude` could not be answered: Enter sent a carriage return the question never read as the end of a line, and each line started where the last one ended. The launch now resets the terminal to normal mode before it draws anything, and the header's box no longer fills the last column, which made every row wrap into a blank line.
+
+What to do about it: `journal upgrade`. In a terminal that is stuck now, press Ctrl+J instead of Enter, or run `stty sane`.
+
 ## 2.82.2 — Lines the journal types start with [journal]
 
 Message 2081, to-do 736. Codex took the lines the journal types into its terminal, such as "answer message 22 before you write anything", for the user's words and answered them in the chat, so a joke came twice and a line about message 22 being processed ended up in the conversation. Every line the journal types into an agent's terminal now starts with `[journal]`, the opening line included, and the start block, handed at every start and after a compaction, tells every agent: a line that starts with [journal] is the journal speaking, not the user; act on it, and never answer it in the chat.

@@ -1,6 +1,7 @@
 import argparse
 import os
 import shutil
+import subprocess
 import sys
 import time
 from dataclasses import dataclass
@@ -185,7 +186,7 @@ def asked_for(record: Record, args: list[str], ask=input, answering=None) -> str
 
 
 def banner(agent: str, project: Path) -> str:
-    width = max(40, shutil.get_terminal_size().columns - 2)
+    width = max(40, shutil.get_terminal_size().columns - 4)
     version = package_version()
     lines = [f"agent-journal {version}", "", f"You're about to start {agent.capitalize()} under the journal,", f"in {project}.", "",
              "A question or two first. Enter takes the choice marked [Enter]."]
@@ -224,6 +225,7 @@ def supervise(ctx, agent: str) -> str:
     record = ctx["record"]
     project = Path.cwd()
     if sys.stdin.isatty():
+        subprocess.run(["stty", "sane"], stdin=sys.stdin, check=False)
         print(banner(agent, project))
     env = asked_for(record, ctx["args"] or [])
     here = Record(record.root, env)
