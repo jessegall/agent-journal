@@ -19,6 +19,7 @@ def test_every_message_without_a_tag_is_named_once(tmp_path):
         rows.append({"type": "assistant", "timestamp": now, "message": {"content": [{"type": "text", "text": text}]}})
         transcript.write_text("\n".join(json.dumps(r) for r in rows) + "\n")
         report(record, "working", "PostToolUse", provider="claude", transcript=str(transcript))
+        Nudges(record, actor="agent").read_all([n.n for n in Nudges(record).all()])
         return told()
 
     def told():
@@ -33,6 +34,11 @@ def test_every_message_without_a_tag_is_named_once(tmp_path):
     assert len(said("status [!reply] is ordinary text")) == 4, "an inline tag-like phrase is rejected"
     report(record, "working", "PostToolUse", provider="claude", transcript=str(transcript))
     assert len(told()) == 4, "each message is named once, in the terminal"
+    rows.append({"type": "assistant", "timestamp": now, "message": {"content": [{"type": "text", "text": "no tag here"}]}})
+    rows.append({"type": "assistant", "timestamp": now, "message": {"content": [{"type": "text", "text": "nor here"}]}})
+    transcript.write_text("\n".join(json.dumps(r) for r in rows) + "\n")
+    report(record, "working", "PostToolUse", provider="claude", transcript=str(transcript))
+    assert len(told()) == 5, "one reminder waits at a time: a second is not added before the first is delivered"
 
 def test_replying_by_command_is_answered_with_the_tag_that_does_it():
     from engine.hooks import handle
