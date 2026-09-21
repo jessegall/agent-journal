@@ -1,29 +1,36 @@
-import sys
-from pathlib import Path
+import pytest
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
-import features  # noqa: E402
-from controllers.types import Works  # noqa: E402
-from features.start.feature import COMPACTED  # noqa: E402
-from engine.hooks import handle, start_file  # noqa: E402
-from providers import PROVIDERS  # noqa: E402
-from resources.base import AGENT  # noqa: E402
-from tests.kit import check, done, fresh  # noqa: E402
+import features
+from controllers.types import Works
+from features.start.feature import COMPACTED
+from engine.hooks import handle, start_file
+from providers import PROVIDERS
+from resources.base import AGENT
+from tests.conftest import fresh
 
-features.unload()
-features.load()
 
-record = fresh()
-Works(record, actor=AGENT).create("the header")
-plain = start_file(record.root, record.env).read_text()
-compacted = start_file(record.root, record.env, compacted=True).read_text()
-check("every write also rewrites the compacted block, the recovery steps before the same block", compacted, COMPACTED + plain)
-check("the steps name the reads that recover what the summary dropped", all(w in COMPACTED for w in ("conversation --back=1", "journal user", "journal open", "journal search", "Skill: journal")), True)
+@pytest.fixture(autouse=True)
+def loaded_features():
+    features.unload()
+    features.load()
+    yield
+    features.unload()
 
-provider = PROVIDERS["claude"]()
-start = lambda source: handle(provider, record.root, record.env, {"hook_event_name": "SessionStart", "session_id": "s-1", "source": source})["hookSpecificOutput"]["additionalContext"]
-check("a fresh start is handed the plain block", start("startup"), plain)
-check("a start after a compaction is handed the recovery steps first", start("compact"), compacted)
-check("a resume is a fresh start", start("resume"), plain)
 
-done()
+def test_a_compacted_start_hands_the_recovery_steps_before_the_same_block():
+    record = fresh()
+    Works(record, actor=AGENT).create("the header")
+    plain = start_file(record.root, record.env).read_text()
+    compacted = start_file(record.root, record.env, compacted=True).read_text()
+    assert compacted == COMPACTED + plain, "every write also rewrites the compacted block, the recovery steps before the same block"
+    assert all(w in COMPACTED for w in ("conversation --back=1", "journal user", "journal open", "journal search", "Skill: journal")) is True, \
+        "the steps name the reads that recover what the summary dropped"
+
+    provider = PROVIDERS["claude"]()
+
+    def start(source):
+        return handle(provider, record.root, record.env, {"hook_event_name": "SessionStart", "session_id": "s-1", "source": source})["hookSpecificOutput"]["additionalContext"]
+
+    assert start("startup") == plain, "a fresh start is handed the plain block"
+    assert start("compact") == compacted, "a start after a compaction is handed the recovery steps first"
+    assert start("resume") == plain, "a resume is a fresh start"
