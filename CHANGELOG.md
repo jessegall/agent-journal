@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.84.2 — The chat keeps updating without a refresh
+
+Messages 2149, 2151 and 2152, to-do 749. After a while the viewer stopped showing new messages and replies until the page was reloaded. The page heard every event, but its refreshes never went out: requests to one address go one after another, and a single request that never got an answer, as can happen while the server restarts after an upgrade, held every later one forever. Every request now gives up after twenty seconds (five minutes for an upload), so the next refresh always goes through. The live stream also no longer passes on the engine's one-minute clock, which is not a stored event.
+
+What to do about it: `journal upgrade`, then reload the viewer once.
+
 ## 2.84.1 — Project records live in .journal/project, and an upgrade never removes them
 
 To-do 748. 2.84.0 moved the project's records into `.journal/resources`, which is also the name of one of the journal's own Python packages: the installer's clean-up of the old layout then took the folder for leftover package files and deleted the records in it. The folder is now `.journal/project`, which nothing in the package uses, and a migration gathers records from the root or from `resources/` into it. The boot test now writes a project record, upgrades, and checks the record is still there.

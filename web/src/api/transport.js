@@ -1,3 +1,6 @@
+const WAIT_MS = 20000;
+const UPLOAD_WAIT_MS = 300000;
+
 class Transport {
     constructor() {
         this.flying = new Map();
@@ -21,6 +24,7 @@ class Transport {
             method,
             headers: body === undefined || raw ? {} : {"Content-Type": "application/json"},
             body: body === undefined || raw ? body : JSON.stringify(body),
+            signal: AbortSignal.timeout(raw ? UPLOAD_WAIT_MS : WAIT_MS),
         }).finally(() => this.watcher("answered", method, url));
         if (!res.ok) {
             const body = await res.json().catch(() => ({}));
