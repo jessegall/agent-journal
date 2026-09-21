@@ -155,12 +155,13 @@ def later(reply: Reply, then) -> Reply:
     return reply
 
 
-def timed(reply: Reply, root: Path, env: str, method: str, path: str, began: float) -> Reply:
+def timed(reply: Reply, root: Path, env: str, method: str, path: str, began: tuple) -> Reply:
     faults = features.FEATURES.get("faults")
     if not faults:
         return reply
-    took = (time.perf_counter() - began) * 1000
-    return later(reply, lambda: faults.spent(root, env, "hook" if "/hook/" in path else "request", f"{method} {path}", took))
+    took = (time.perf_counter() - began[0]) * 1000
+    working = (time.thread_time() - began[1]) * 1000
+    return later(reply, lambda: faults.spent(root, env, "hook" if "/hook/" in path else "request", f"{method} {path}", took, working))
 
 
 def dispatch(method: str, path: str, root: Path, query: dict, body: dict) -> Reply:
@@ -168,7 +169,7 @@ def dispatch(method: str, path: str, root: Path, query: dict, body: dict) -> Rep
     if not found:
         return static(path) if method == "GET" else Reply(404, {"error": "no such route"})
     r, params = found
-    began = time.perf_counter()
+    began = (time.perf_counter(), time.thread_time())
     try:
         with bus.held() as heard:
             reply = r.handler(Request(root, params, query, body))

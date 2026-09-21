@@ -60,9 +60,9 @@ class Faults(Feature):
         if agent:
             self.nudge(record, agent, title, said)
 
-    def slow(self, record, kind: str, name: str, took: float) -> None:
+    def slow(self, record, kind: str, name: str, took: float, working: float | None = None) -> None:
         self.file(record, f"{kind} {name} {OVER}"[:80],
-                  f"{took:.0f}ms last, against a budget of {self.milliseconds(record, kind)}ms.",
+                  f"{took:.0f}ms last{'' if working is None else f' ({working:.0f}ms of it working)'}, against a budget of {self.milliseconds(record, kind)}ms.",
                   kind=kind, target=name, worst=took)
 
     def threw(self, record, said: str, where: str, stack: str, kind: str = "threw") -> None:
@@ -78,13 +78,13 @@ class Faults(Feature):
         finally:
             self.spent(root, env, kind, name, (time.perf_counter() - began) * 1000)
 
-    def spent(self, root, env: str, kind: str, name: str, took: float) -> None:
+    def spent(self, root, env: str, kind: str, name: str, took: float, working: float | None = None) -> None:
         if took < min(self.budget.values() or [0]):
             return
         try:
             record = Record(Path(root), env)
             if self.on(record, "budget") and 0 < self.milliseconds(record, kind) < took:
-                self.slow(record, kind, name, took)
+                self.slow(record, kind, name, took, working)
         except (OSError, ValueError, KeyError):
             return
 
