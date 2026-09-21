@@ -1,38 +1,14 @@
-import re
-from pathlib import Path
-
-from controllers.types import Rules
-from features import trigger
-from features.base import Recital, event, Line
-from engine.stored import write_text
-
-BLOCK = re.compile(r"\n?<!-- journal rules -->.*?<!-- /journal rules -->\n?", re.DOTALL)
-INSTRUCTION_FILES = ("AGENTS.md", "CLAUDE.md")
+from features.base import Feature
+from features.journal import Journal
+from features.recital import RepeatStanding, WhisperOnKeyword
+from features.rules.details import RulesDetails
+from features.rules.handlers import InjectRules
 
 
-class RulesFeature(Recital):
-    name = "rules"
-    runs_for_subagents = True
-    controller = Rules
-    lines = {**Recital.lines, "standing": Line("{{count}} in force, read them", "{{rows}}")}
-    title_ = "Rules"
-    abstract_ = "The rules said again at every tenth of the context, and the injected ones kept in AGENTS.md and CLAUDE.md"
-    help_ = "A rule binds every environment; one control injects the same managed block into both instruction files. A fact or rule can carry keywords, a list of words set with --set keywords. When a command the agent is about to run, or text it is about to write, carries one of them, the row is whispered to that session once, with its reasoning; the call itself is never refused."
-    trigger = {"every": 10, "unit": trigger.PERCENT}
+class RulesFeature(Feature):
+    details = RulesDetails
 
-    @event("rule")
-    def inject(self, event, record) -> None:
-        injected = [r for r in self.standing(record, Rules) if r.injected]
-        for name in INSTRUCTION_FILES:
-            self._write(record.root.parent / name, injected)
-
-    def _write(self, target: Path, injected: list) -> None:
-        had = target.read_text() if target.is_file() else ""
-        stripped = BLOCK.sub("\n", had).strip("\n")
-        if not injected:
-            if had != stripped:
-                write_text(target, stripped + "\n" if stripped else "")
-            return
-        lines = "\n".join(f"- {r.title}" for r in injected)
-        block = f"<!-- journal rules -->\n# Rules\n\n{lines}\n<!-- /journal rules -->"
-        write_text(target, f"{stripped}\n\n{block}\n" if stripped else f"{block}\n")
+    def register(self, journal: Journal) -> None:
+        journal.agent.interceptor(WhisperOnKeyword("rules"))
+        journal.events.handler(RepeatStanding("rules"))
+        journal.events.handler(InjectRules())

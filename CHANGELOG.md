@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.47.0 — Facts, rules and reminders share parts, not a base class
+
+Plan 9, to-do 602. The Recital base class is gone. Facts, Rules and Reminders are each a details.py and a feature.py that registers two shared parts from features/recital.py, WhisperOnKeyword and RepeatStanding, given the resources they read ("facts", "rules", "reminders"). Rules adds InjectRules, which keeps the managed block in AGENTS.md and CLAUDE.md, on a RuleChanged event built from the new generic ResourceEvent. details.py can now carry a feature's old names (aliases) and whether it runs for subagents.
+
+What to do about it: `journal upgrade`.
+
 ## 2.46.0 — The agent's words reach the chat through the core
 
 Plan 9, to-do 590, message 1350. What the agent writes, from the display hook or the transcript, goes to one core function, engine/chat.said. It fires agent.message.sending, whose listeners may change the text or stop it, then agent.message.sent, which the viewer's stream carries. Tags now runs its commands, takes the tags off and stops a reply's plain copy on sending; Messages saves the chat row when a message is sent. Tags' CopyToChat is gone, and no feature creates a message just to show text.
