@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.38.1 — A feature's details read like a page
+
+Message 1391. A details.py writes its long text as wrapped, indented blocks: FeatureDetails, Line and Behaviour join the wrapped lines of a block into one paragraph, and a blank line starts the next one. Lines and behaviours are written with one keyword argument per line. Tags and Designs are written this way.
+
+What to do about it: `journal upgrade`.
+
 ## 2.38.0 — A resource type's settings are named for what they hold
 
 Messages 1360 and 1365. The class attributes that describe a resource type read like prose; they now say what they hold, in the code, the manifest and the viewer alike: names is command_names, says is status_labels, shown is event_labels, nav is in_sidebar, attention is needs_attention, finished_is_news is lists_completed_unread, clears is cleared_by, handed is start_heading, counted is start_as_count, lent is subagent_writable, mirror is nested, notify is notified, spoken is typed_as_title, answered is answer_command and told is stamped_when_told. Every Field attribute carries its type, ClassVar[Field]. The tag names field left over in the tags settings panel is gone.

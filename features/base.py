@@ -1,4 +1,5 @@
 import fcntl
+import inspect
 import hashlib
 import re
 import time
@@ -25,9 +26,13 @@ def held(record, session: str) -> str:
     return "; ".join(why for why in holds.values() if why)
 
 
+def paragraphs(text: str) -> str:
+    return "\n\n".join(" ".join(line.strip() for line in part.splitlines()) for part in inspect.cleandoc(text).split("\n\n") if part.strip())
+
+
 class Behaviour:
     def __init__(self, title: str, abstract: str = "", default: bool = True, trigger: dict | None = None):
-        self.title, self.abstract, self.default, self.trigger = title, abstract, default, trigger or {}
+        self.title, self.abstract, self.default, self.trigger = paragraphs(title), paragraphs(abstract), default, trigger or {}
 
     def describe(self) -> dict:
         return {"title": self.title, "abstract": self.abstract, "default": self.default, "trigger": dict(self.trigger)}
@@ -38,7 +43,7 @@ PLACEHOLDER = re.compile(r"\{\{(\w+)\}\}")
 
 class Line:
     def __init__(self, title: str, brief: str = "", lead: bool = False):
-        self.title, self.brief, self.lead = title, brief, lead
+        self.title, self.brief, self.lead = paragraphs(title), paragraphs(brief), lead
 
     def placeholders(self) -> list[str]:
         return list(dict.fromkeys(PLACEHOLDER.findall(self.title + self.brief)))
@@ -132,7 +137,8 @@ class Feature(ABC):
         super().__init_subclass__(**kw)
         if cls.details:
             d = cls.details
-            cls.name, cls.title_, cls.abstract_, cls.help_, cls.lines, cls.behaviours = d.name, d.title, d.abstract, d.help, d.lines, d.behaviours
+            cls.name, cls.lines, cls.behaviours = d.name, d.lines, d.behaviours
+            cls.title_, cls.abstract_, cls.help_ = paragraphs(d.title), paragraphs(d.abstract), paragraphs(d.help)
         if cls.name:
             REGISTRY[cls.name] = cls
 
