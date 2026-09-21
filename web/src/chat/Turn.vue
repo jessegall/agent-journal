@@ -146,6 +146,9 @@ async function drop() {
             :data-ref="turn.ref"
             @mouseleave="picking = false"
         >
+            <template v-if="turn.who === 'system'">
+                <span class="thread-from">journal</span>
+            </template>
             <div ref="bubble" class="thread-bubble md" @click="resourceComment && openComment()">
                 <template v-if="resourceComment">
                     <button type="button" class="thread-comment-context" @click.stop="openComment">
@@ -307,7 +310,14 @@ async function drop() {
     text-decoration: none;
 }
 
-.thread-turn > .thread-bubble {
+.thread-turn > .thread-from {
+    margin: 0 0 3px 2px;
+    color: var(--accent-text);
+    font-size: 11px;
+    font-weight: 500;
+}
+
+.thread-bubble {
     width: fit-content;
     max-width: 100%;
 }

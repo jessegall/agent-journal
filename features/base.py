@@ -4,7 +4,7 @@ from functools import wraps
 from typing import ClassVar
 
 from controllers.base import COMMANDS, HANDLERS
-from controllers.types import Agents, Features, Nudges
+from controllers.types import Agents, Features, Messages, Nudges
 from engine import bus
 from features import trigger
 from engine.hooks import POLICIES, gate_file
@@ -243,6 +243,10 @@ class Feature(ABC):
 
     def release(self, record, key: str = "", agent=None) -> None:
         self._gate(record, "", key, agent)
+
+    def tell(self, record, line: str, **values) -> None:
+        title, brief = self.line(line, values)
+        Messages(record, actor=SYSTEM).create(titled(title), brief=brief, told=self.name)
 
     def say(self, record, agent, line: str, private: bool = False, **values) -> None:
         title, brief = self.line(line, values)
