@@ -1,6 +1,6 @@
 import os
 from pathlib import Path
-from resources.base import LAZY, MEMORY, Refused, Resource
+from resources.base import LAZY, MEMORY, PART_OF, Refused, Resource
 from engine.stored import read_json, write_json
 from controllers.marks import internal
 
@@ -25,7 +25,7 @@ class Stored:
         held = SUMMARIES.get(str(folder))
         if held and held[0] == moved:
             return held[1]
-        rows = self._indexed(folder)
+        rows = [row for row in self._indexed(folder) if not row.get(PART_OF)]
         SUMMARIES[str(folder)] = (folder.stat().st_mtime_ns, rows)
         return rows
 
@@ -34,14 +34,14 @@ class Stored:
         known = {int(n): row for n, row in (read_json(folder / INDEX) or {}).items()}
         rows = {}
         for n, stamp in stamps.items():
-            if known.get(n, {}).get("stamp") == stamp and all(k in known[n] for k in ("files", *self.resource.indexed)):
+            if known.get(n, {}).get("stamp") == stamp and all(k in known[n] for k in ("files", PART_OF, *self.resource.indexed)):
                 rows[n] = known[n]
                 continue
             try:
                 r = self.load(n)
             except (Refused, OSError):
                 continue
-            rows[n] = {"n": n, "title": r.title, "deleted": r.deleted, "completed": r.completed, "seen": r.seen, "refs": r.refs, "updated": r.updated, "files": len(r.files), **{k: r.data.get(k) for k in self.resource.indexed}, "stamp": stamp}
+            rows[n] = {"n": n, "title": r.title, "deleted": r.deleted, "completed": r.completed, "seen": r.seen, "refs": r.refs, "updated": r.updated, "files": len(r.files), PART_OF: r.data.get(PART_OF, ""), **{k: r.data.get(k) for k in self.resource.indexed}, "stamp": stamp}
         if rows != known:
             write_json(folder / INDEX, rows)
         return [rows[n] for n in sorted(rows)]
@@ -80,7 +80,7 @@ class Stored:
         memo = self.record.memo
         if memo is None or (self.type, deleted) not in memo:
             rows = [self.load(n) for n in self.numbers()]
-            rows = rows if deleted else [r for r in rows if not r.deleted]
+            rows = [r for r in rows if (deleted or not r.deleted) and not r.data.get(PART_OF)]
             if memo is None:
                 return rows
             memo[self.type, deleted] = rows
