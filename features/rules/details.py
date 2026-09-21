@@ -1,4 +1,4 @@
-from features.trigger import PERCENT
+from features.trigger import PERCENT, Trigger
 from features.base import FeatureDetails, Line
 from features.recital import BEHAVIOURS, LINES, WHISPER
 
@@ -25,7 +25,7 @@ class RulesDetails(FeatureDetails):
 
     runs_for_subagents = True
 
-    trigger = {"every": 10, "unit": PERCENT}
+    trigger = Trigger(every=10, unit=PERCENT)
 
     lines = [
         *(line for line in LINES if line.name == WHISPER),

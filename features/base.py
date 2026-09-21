@@ -8,6 +8,7 @@ from typing import ClassVar
 
 from controllers.types import Agents, Features
 from features import trigger
+from features.trigger import NEVER, Trigger
 from engine.hooks import gate_file
 from features.journal import Journal
 from features.settings import Setting, Settings
@@ -25,11 +26,11 @@ def held(record, session: str) -> str:
 
 
 class Behaviour:
-    def __init__(self, title: str, abstract: str = "", default: bool = True, trigger: dict | None = None, name: str = ""):
-        self.name, self.title, self.abstract, self.default, self.trigger = name, paragraphs(title), paragraphs(abstract), default, trigger or {}
+    def __init__(self, title: str, abstract: str = "", default: bool = True, trigger: Trigger = NEVER, name: str = ""):
+        self.name, self.title, self.abstract, self.default, self.trigger = name, paragraphs(title), paragraphs(abstract), default, trigger
 
     def describe(self) -> dict:
-        return {"title": self.title, "abstract": self.abstract, "default": self.default, "trigger": dict(self.trigger)}
+        return {"title": self.title, "abstract": self.abstract, "default": self.default, "trigger": self.trigger.spec()}
 
 
 PLACEHOLDER = re.compile(r"\{\{(\w+)\}\}")
@@ -86,7 +87,7 @@ class FeatureDetails:
     lines: ClassVar[list[Line]] = []
     behaviours: ClassVar[list[Behaviour]] = []
     settings: ClassVar[list[Setting]] = []
-    trigger: ClassVar[dict] = {}
+    trigger: ClassVar[Trigger] = NEVER
     aliases: ClassVar[tuple] = ()
     runs_for_subagents: ClassVar[bool] = False
     fixed: ClassVar[bool] = False
@@ -103,7 +104,7 @@ class Feature(ABC):
     title: ClassVar[str] = ""
     abstract: ClassVar[str] = ""
     help: ClassVar[str] = ""
-    trigger: ClassVar[dict] = {}
+    trigger: ClassVar[Trigger] = NEVER
     behaviours: ClassVar[dict] = {}
     lines: ClassVar[dict[str, Line]] = {}
     settings: ClassVar[list[Setting]] = []
@@ -233,7 +234,7 @@ class Feature(ABC):
 
     def describe(self) -> dict:
         return {"name": self.name, "title": self.title, "abstract": self.abstract, "help": self.help, "default": self.default, "fixed": self.fixed,
-                "listens": sorted(set(self.journal.events.names)), "trigger": dict(self.trigger),
+                "listens": sorted(set(self.journal.events.names)), "trigger": self.trigger.spec(),
                 "behaviours": {key: b.describe() for key, b in self.behaviours.items()},
                 "lines": {key: line.describe() for key, line in self.lines.items()},
                 "settings": [s.describe() for s in self.settings]}

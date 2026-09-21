@@ -1,4 +1,4 @@
-from features.trigger import PERCENT
+from features.trigger import PERCENT, Trigger
 from features.base import FeatureDetails
 from features.recital import BEHAVIOURS, LINES
 
@@ -20,7 +20,7 @@ class RemindersDetails(FeatureDetails):
         forgetting, or leaves one for the agent it is about to dispatch.
     """
 
-    trigger = {"every": 10, "unit": PERCENT}
+    trigger = Trigger(every=10, unit=PERCENT)
 
     lines = LINES
 

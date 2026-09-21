@@ -1,4 +1,5 @@
 import time
+from dataclasses import dataclass
 
 from resources.base import names
 from resources.types import AgentRow
@@ -10,8 +11,32 @@ HELD: dict[str, dict] = {}
 TRIGGER = names("unit", "on", "every", "at")
 
 
-def spec(record, name: str, default: dict) -> dict:
-    return record.triggers.get(name, default)
+@dataclass(frozen=True)
+class Trigger:
+    unit: str = ""
+    every: float = 0
+    at: tuple = ()
+    on: str = ""
+
+    def __bool__(self) -> bool:
+        return bool(self.unit or self.on)
+
+    def spec(self) -> dict:
+        return {key: list(value) if key == TRIGGER.at else value for key, value in
+                ((TRIGGER.unit, self.unit), (TRIGGER.every, self.every), (TRIGGER.at, self.at), (TRIGGER.on, self.on)) if value}
+
+    @classmethod
+    def read(cls, spec: dict) -> "Trigger":
+        return cls(unit=str(spec.get(TRIGGER.unit) or ""), every=spec.get(TRIGGER.every) or 0, at=tuple(spec.get(TRIGGER.at) or ()),
+                   on=str(spec.get(TRIGGER.on) or ""))
+
+
+NEVER = Trigger()
+
+
+def spec(record, name: str, default: Trigger) -> Trigger:
+    saved = record.triggers.get(name)
+    return Trigger.read(saved) if isinstance(saved, dict) else default
 
 
 def _file(record, session: str, name: str):
@@ -25,16 +50,16 @@ def last(record, session: str, name: str) -> dict:
     return dict(HELD[f])
 
 
-def due(record, agent, name: str, default: dict) -> bool:
+def due(record, agent, name: str, default: Trigger) -> bool:
     s = spec(record, name, default)
     if not s:
         return False
     was = last(record, agent.title, name)
     observe(record, agent, name, was)
-    unit, every = s.get(TRIGGER.unit) or s.get(TRIGGER.on), float(s.get(TRIGGER.every) or 1)
+    unit, every = s.unit or s.on, float(s.every or 1)
     context, uses, status, event = (float(was.get(AgentRow.context) or 0), int(was.get(AgentRow.uses) or 0), was.get(AgentRow.status), was.get(AgentRow.event))
-    if unit == PERCENT and s.get(TRIGGER.at):
-        return any(context < mark <= float(agent.context or 0) for mark in s[TRIGGER.at])
+    if unit == PERCENT and s.at:
+        return any(context < mark <= float(agent.context or 0) for mark in s.at)
     if unit == PERCENT:
         return int(float(agent.context or 0) // every) > int(context // every)
     if unit == USES:

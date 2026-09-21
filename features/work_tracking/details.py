@@ -1,6 +1,6 @@
 from features.base import Behaviour, FeatureDetails, Line
 from features.settings import Setting
-from features.trigger import IDLE, WORKED
+from features.trigger import IDLE, Trigger, WORKED
 
 
 class WorkDetails(FeatureDetails):
@@ -35,7 +35,7 @@ class WorkDetails(FeatureDetails):
 
     aliases = (("auto", "auto"), "work")
 
-    trigger = {"on": WORKED}
+    trigger = Trigger(on=WORKED)
 
     behaviours = [
         Behaviour(
@@ -43,7 +43,7 @@ class WorkDetails(FeatureDetails):
             title="Work the list without asking",
             abstract="The next ready row is offered on idle, and blocking questions are refused",
             default=False,
-            trigger={"on": IDLE},
+            trigger=Trigger(on=IDLE),
         ),
     ]
 

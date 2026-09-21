@@ -1,6 +1,6 @@
 from features.base import Behaviour, FeatureDetails, Line
 from features.settings import Setting
-from features.trigger import IDLE, USES
+from features.trigger import IDLE, Trigger, USES
 
 
 class MessagesDetails(FeatureDetails):
@@ -30,13 +30,13 @@ class MessagesDetails(FeatureDetails):
             name="unread",
             title="Name the unread messages",
             abstract="Said at the first tool use after one arrives and every third after",
-            trigger={"every": 3, "unit": USES},
+            trigger=Trigger(every=3, unit=USES),
         ),
         Behaviour(
             name="answering",
             title="Answer a message before writing",
             abstract="Said before the next write while a message sits read and unanswered",
-            trigger={"every": 1, "unit": USES},
+            trigger=Trigger(every=1, unit=USES),
         ),
         Behaviour(
             name="closing",
@@ -52,7 +52,7 @@ class MessagesDetails(FeatureDetails):
             name="paragraphs",
             title="Keep the paragraphs of a message apart",
             abstract="A message of several sentences run together is named back once, at the end of the turn",
-            trigger={"on": IDLE},
+            trigger=Trigger(on=IDLE),
         ),
     ]
 

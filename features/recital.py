@@ -1,6 +1,7 @@
 from engine.events import AgentUpdated
 from engine.stored import read_json, write_json
 from features import trigger
+from features.trigger import Trigger
 from features.base import Behaviour, Line
 from features.parts import WHOLE_FEATURE, Context, Handler, ToolInterceptor
 from resources.base import KEYWORDS, WHOM
@@ -25,7 +26,7 @@ BEHAVIOURS = [
         name=WHISPER,
         title="Whisper a row when one of its keywords appears",
         abstract="Said again once this many of the agent's tool uses have passed since it last spoke",
-        trigger={"every": 50, "unit": trigger.USES},
+        trigger=Trigger(every=50, unit=trigger.USES),
     ),
 ]
 
@@ -48,7 +49,7 @@ class WhisperOnKeyword(ToolInterceptor):
     def quiet_enough(self, context: Context, ref: str) -> bool:
         f = context.record.root / "runtime" / f"touched-{context.agent.session}.json"
         spoke, uses = read_json(f, {}), int(context.agent.row.uses or 0)
-        since = context.feature.cadence(context.record, WHISPER).get("every") or 0
+        since = context.feature.cadence(context.record, WHISPER).every
         if ref in spoke and uses - int(spoke[ref] or 0) < float(since):
             return False
         write_json(f, {**spoke, ref: uses})
