@@ -2,6 +2,7 @@
 import {computed, onUnmounted, ref} from "vue";
 import {span} from "../format/time.js";
 import {store} from "../state/store.js";
+import {useNow} from "../composables/now.js";
 
 const props = defineProps({
     rows: {type: Array, default: () => []},
@@ -9,8 +10,7 @@ const props = defineProps({
     started: {type: String, default: "started"},
 });
 const emit = defineEmits(["open"]);
-const now = ref(Date.now() / 1000);
-const clock = setInterval(() => (now.value = Date.now() / 1000), 1000);
+const now = useNow();
 const minutes = computed(() => Number(((store.settings && store.settings.agents) || {}).recent ?? 60));
 const recent = computed(() => props.rows.filter((r) => r.running || now.value - (r.ended || r.at || 0) <= minutes.value * 60));
 const listed = computed(() => [...recent.value.filter((r) => r.running), ...recent.value.filter((r) => !r.running).reverse()]);
@@ -25,8 +25,6 @@ function lasted(row) {
 function detail(row) {
     return row.command && row.task ? row.command : row.cell || [row.type, row.model].filter(Boolean).join(" · ");
 }
-
-onUnmounted(() => clearInterval(clock));
 </script>
 
 <template>

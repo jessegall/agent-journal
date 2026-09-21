@@ -234,6 +234,10 @@ export class ApiClient {
         return `${this.base}/#/${env}${page ? `/${page}` : ""}`;
     }
 
+    origin() {
+        return this.base || location.origin;
+    }
+
     journal(j) {
         return this.at(j.current ? "" : `http://127.0.0.1:${j.port}`);
     }

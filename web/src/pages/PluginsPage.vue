@@ -37,33 +37,22 @@ const logged = ref("");
 const tail = ref(null);
 const EVERY = 3000;
 const WHILE_BUSY = 1000;
-let timer = 0;
 const pagesOf = (p) => (store.pages || []).filter((page) => page.plugin === p.data.manifest.name);
 
 function servicesOf(p) {
     return services.value.filter((s) => s.plugin === p.data.manifest.name);
 }
 
-async function look() {
-    try {
-        services.value = await api.services();
-    } catch (e) {
-        services.value = [];
+const look = usePoll(
+    "services",
+    () => api.services(),
+    () => (busy.value ? WHILE_BUSY : EVERY),
+    (got) => {
+        services.value = got;
+        if (busy.value) readLog();
     }
-    if (busy.value) await readLog();
-}
-
-function watching() {
-    clearInterval(timer);
-    timer = setInterval(look, busy.value ? WHILE_BUSY : EVERY);
-}
-
-onMounted(() => {
-    look();
-    watching();
-});
-onUnmounted(() => clearInterval(timer));
-watch(busy, watching);
+);
+watch(busy, () => look());
 
 async function preview() {
     busy.value = "preview";

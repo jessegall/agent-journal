@@ -8,8 +8,10 @@ import {go, route} from "../route.js";
 import {detach, tellShell} from "../platform/extension.js";
 import {store} from "../state/store.js";
 import {rows} from "../sync/rows.js";
+import {usePoll} from "../poll.js";
 
 const props = defineProps({floating: Boolean});
+const JOURNALS_EVERY = 20000;
 const shell = reactive({hosted: false, shut: false, journals: false, envs: false, driving: false, drivingUrl: ""});
 const journals = ref([]);
 const framed = window.parent !== window;
@@ -104,13 +106,16 @@ function pick(name) {
     go(name);
 }
 
-async function loadJournals() {
-    journals.value = await api.journals();
-}
+usePoll(
+    "journals",
+    () => api.journals(),
+    JOURNALS_EVERY,
+    (got) => (journals.value = got)
+);
 
 function pickJournal(journal) {
     shell.journals = false;
-    const url = journal.current ? location.origin : `http://127.0.0.1:${journal.port}`;
+    const url = api.journal(journal).origin();
     toShell("pick", {url, env: ""});
     if (!journal.current) location.href = `${url}/?chat`;
 }
@@ -121,16 +126,8 @@ function outside(e) {
     shell.envs = false;
 }
 
-let journalTimer = null;
-onMounted(() => {
-    loadJournals();
-    journalTimer = setInterval(loadJournals, 20000);
-    document.addEventListener("mousedown", outside);
-});
-onUnmounted(() => {
-    clearInterval(journalTimer);
-    document.removeEventListener("mousedown", outside);
-});
+onMounted(() => document.addEventListener("mousedown", outside));
+onUnmounted(() => document.removeEventListener("mousedown", outside));
 
 function close() {
     if (props.floating) detach(false);

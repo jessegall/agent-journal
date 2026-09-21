@@ -12,6 +12,7 @@ import {polled} from "../sync/polled.js";
 import {rows} from "../sync/rows.js";
 import {currentWork, doneOf, lineOf, phaseOf, planButton, queued, rowsOf, shownPlans, stateOf, wordOf} from "./statusline.js";
 import {usePoll} from "../poll.js";
+import {useNow} from "../composables/now.js";
 
 usePoll(...polled.bar);
 usePoll(...polled.agents);
@@ -40,10 +41,7 @@ const sentence = computed(() => {
 watch(line, (now, before) => (was.value = before || ""));
 const plans = computed(() => shownPlans(rows("plan")));
 const LINGERS = 120;
-const now = ref(Date.now() / 1000);
-let clock = 0;
-onMounted(() => (clock = setInterval(() => (now.value = Date.now() / 1000), 5000)));
-onUnmounted(() => clearInterval(clock));
+const now = useNow(5000);
 const aside = computed(() => {
     const said = [...rows("message"), ...rows("comment")].filter((r) => !r.deleted && r.place === "bar" && r.seen[0] === "agent");
     const newest = said.reduce((a, b) => (!a || b.created > a.created ? b : a), null);

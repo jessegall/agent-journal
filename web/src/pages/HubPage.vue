@@ -4,6 +4,7 @@ import {api} from "../api/client.js";
 import JournalBar from "../layout/JournalBar.vue";
 import {remembered} from "../composables/remembered.js";
 import {store} from "../state/store.js";
+import {usePoll} from "../poll.js";
 
 const LINGER = 60000;
 const journals = ref([]);
@@ -11,7 +12,7 @@ const loaded = ref(false);
 const running = computed(() => journals.value.filter((j) => j.running));
 const opened = reactive(new Set(remembered("journal.hub", [])));
 const streams = new Map();
-let ticking = 0;
+const SCAN_EVERY = 2000;
 let scanning = false;
 
 function pollHub() {
@@ -114,13 +115,8 @@ watch(
     }
 );
 
-onMounted(async () => {
-    await scan();
-    ticking = setInterval(scan, 2000);
-});
-
+usePoll("hub", scan, SCAN_EVERY);
 onUnmounted(() => {
-    clearInterval(ticking);
     for (const j of [...journals.value]) drop(j.root);
 });
 </script>

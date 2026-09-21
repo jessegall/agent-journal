@@ -5,6 +5,8 @@ import Btn from "../kit/Btn.vue";
 import Icon from "../kit/Icon.vue";
 import {route} from "../route.js";
 import {span} from "../format/time.js";
+import {usePoll} from "../poll.js";
+import {useNow} from "../composables/now.js";
 
 const EVERY = 2000;
 const RUNNING = ["ready", "starting"];
@@ -12,21 +14,25 @@ const rows = ref([]);
 const error = ref("");
 const reading = ref("");
 const log = ref("");
-const now = ref(Date.now() / 1000);
-let timer = 0;
+const now = useNow();
 
 const running = computed(() => rows.value.filter((r) => RUNNING.includes(r.state)).length);
 
-async function look() {
-    try {
-        rows.value = await api.services();
+const look = usePoll(
+    "services",
+    () => api.services(),
+    EVERY,
+    (got) => {
+        rows.value = got;
         error.value = "";
-        if (reading.value) log.value = (await api.serviceLog(reading.value)).log;
-    } catch (e) {
-        error.value = e.message;
     }
-    now.value = Date.now() / 1000;
-}
+);
+const readLog = usePoll(
+    "service-log",
+    () => (reading.value ? api.serviceLog(reading.value) : Promise.resolve(null)),
+    EVERY,
+    (got) => got && (log.value = got.log)
+);
 
 async function runServiceAction(id, want) {
     try {
@@ -40,14 +46,8 @@ async function runServiceAction(id, want) {
 function read(id) {
     reading.value = reading.value === id ? "" : id;
     log.value = "";
-    look();
+    readLog();
 }
-
-onMounted(() => {
-    look();
-    timer = setInterval(look, EVERY);
-});
-onUnmounted(() => clearInterval(timer));
 </script>
 
 <template>
