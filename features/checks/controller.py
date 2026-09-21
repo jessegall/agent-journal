@@ -1,15 +1,28 @@
+import re
 import threading
 import time
 
 import controllers.types as types_module
 import resources.types as resources_module
 from controllers.base import Controller
-from engine.proc import ran
+from engine.proc import streamed
 from features.checks.resource import Check
 from resources.base import Refused
 
 TIMEOUT = 600
 SAID_LINES = 40
+KEPT_RUNS = 20
+TOLD_EVERY = 1.0
+PERCENT = re.compile(r"(\d{1,3})%")
+
+
+def tail(output: str) -> str:
+    return "\n".join(output.strip().splitlines()[-SAID_LINES:])
+
+
+def percent(output: str) -> int | None:
+    found = PERCENT.findall(output[-2000:])
+    return min(100, int(found[-1])) if found else None
 
 
 class Checks(Controller):
@@ -34,10 +47,20 @@ class Checks(Controller):
     def _ran(self, n: int):
         check = self.load(n)
         began = time.time()
-        done = ran(["/bin/sh", "-c", check.command], self.record.root.parent, timeout=TIMEOUT)
-        said = ((done.stdout + done.stderr) if done else "the command did not finish").strip().splitlines()
-        check.last = {"ok": bool(done) and done.returncode == 0, "code": done.returncode if done else -1,
-                      "at": began, "took": round(time.time() - began, 2), "said": "\n".join(said[-SAID_LINES:])}
+        self.stamp(n, running={"at": began, "said": "", "percent": None})
+        told = [began]
+
+        def heard(output: str) -> None:
+            if time.time() - told[0] >= TOLD_EVERY:
+                told[0] = time.time()
+                self.stamp(n, running={"at": began, "said": tail(output), "percent": percent(output)})
+
+        code, output = streamed(["/bin/sh", "-c", check.command], self.record.root.parent, TIMEOUT, heard)
+        check = self.load(n)
+        check.last = {"ok": code == 0, "code": -1 if code is None else code, "at": began, "took": round(time.time() - began, 2),
+                      "said": tail(output) or ("" if code is not None else "the command did not finish")}
+        check.runs = [{k: check.last[k] for k in ("ok", "code", "at", "took")}, *(check.runs or [])][:KEPT_RUNS]
+        check.running = {}
         return self.save(check, "updated", ran=True)
 
     def _due(self, now: float) -> list:

@@ -13,3 +13,6 @@ class Check(Shape, Resource):
     command = Field(TEXT)
     every = Field(NUMBER, default=0)
     last = Field(default=dict)
+    running = Field(default=dict)
+    runs = Field(default=list)
+    view = "check"

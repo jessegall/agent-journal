@@ -11,6 +11,7 @@ import {counted, meta, word} from "../state/store.js";
 import {earlier, paging, rows} from "../sync/rows.js";
 import RowGroups from "../resource/RowGroups.vue";
 import ResourceCard from "../resource/ResourceCard.vue";
+import CheckCard from "../resource/CheckCard.vue";
 import NewResource from "../resource/NewResource.vue";
 
 const props = defineProps({type: String});
@@ -102,6 +103,13 @@ async function select(n) {
                 <div class="cards">
                     <template v-for="r in shown" :key="r.n">
                         <ResourceCard :resource="r" @click="go(route.env, type, r.n)" />
+                    </template>
+                </div>
+            </template>
+            <template #check>
+                <div class="cards">
+                    <template v-for="r in shown" :key="r.n">
+                        <CheckCard :resource="r" @click="go(route.env, type, r.n)" />
                     </template>
                 </div>
             </template>

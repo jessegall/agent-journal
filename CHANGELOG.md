@@ -4,6 +4,14 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.16.2 — Checks you can watch, and a suite that boots the journal
+
+Checks are a full page. The index shows each check as a card with its state, its run history as bars and a Run button; while a check runs, its card shows live progress — the percentage the command prints, or an estimate from its last run — and how long is left. A check's page shows the same at the top, lets you edit its command and interval in place, streams its output as it runs, and lists its recent runs. Checks are in the sidebar; types a feature registers were left out of it before.
+
+The suite now boots the journal: every agent is launched end to end with a stand-in binary, every import in the package is resolved, and each launch's viewer is stopped afterwards. Booting found that the typing socket could exceed the Unix path limit in a deep project folder; it now lives in a short folder under /tmp. Running `journal message reply` is answered with a whisper that the `[!reply:<n>]` tag does the same, and the skills teach the tag. A skill that changed since it was loaded is named every tenth tool use instead of every twentieth.
+
+What to do about it: `journal upgrade`.
+
 ## 2.16.1 — journal claude starts again
 
 2.16.0 moved seating a session into the environments controller, but the terminal still imported the old function, so `journal claude` stopped at launch with an ImportError. The terminal seats through Environments now, and a new check imports every from-import in the package, so a moved name cannot break a launch that no test starts. The restart notice says in its title what was updated and what to do, instead of "A restart is owed".
