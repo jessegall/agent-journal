@@ -3,10 +3,10 @@ import time
 from argparse import _SubParsersAction
 
 from commands.cli import parser
-from controllers.types import Pins, Questions, Reminders, Rules, Todos
+from controllers.types import Facts, Questions, Reminders, Rules, Todos
 from resources.base import SYSTEM
 
-CLAIMS = (Rules, Pins, Reminders)
+CLAIMS = (Rules, Facts, Reminders)
 PATH = re.compile(r"(?<![\w/])((?:[\w.-]+/)+[\w.-]+\.\w+|[\w-]+\.(?:py|js|vue|md|json|css|html|sh))\b")
 COMMAND = re.compile(r"`journal\s+([a-z][a-z-]*)(?:\s+([a-z][a-z-]*))?[^`]*`|^\s*journal\s+([a-z][a-z-]*)(?:\s+([a-z][a-z-]*))?", re.MULTILINE)
 WAITING_DAYS = 7

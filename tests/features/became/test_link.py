@@ -3,7 +3,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 import features  # noqa: E402
-from controllers.types import Messages, Pins, Todos  # noqa: E402
+from controllers.types import Messages, Facts, Todos  # noqa: E402
 from resources.base import AGENT, USER  # noqa: E402
 from tests.kit import check, done, fresh  # noqa: E402
 
@@ -22,7 +22,7 @@ check("a message the agent has not read is not in its hands", messages.load(m.n)
 # THE MESSAGE READ AND NOT CLOSED IS IN HAND: what the agent files meanwhile is linked to it
 Messages(record, actor=AGENT).read(m.n)
 todo = todos.create("the widget work")
-pin = Pins(record, actor=AGENT).create("the port is 8422")
+pin = Facts(record, actor=AGENT).create("the port is 8422")
 check("a to-do and a pin filed while the message is in hand are linked to it, by the feature", messages.load(m.n).refs, [todo.ref, pin.ref])
 check("the loose row from before stays unlinked", loose.n in [int(r.split(":")[1]) for r in messages.load(m.n).refs if r.startswith("todo:")], False)
 

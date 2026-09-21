@@ -17,9 +17,9 @@ for name, t in TYPES.items():
 shared = [n for n, t in TYPES.items() if Options in t.__mro__]
 reasoned = sorted(n for n, t in TYPES.items() if Reasoned in t.__mro__)
 check("options belong to questions and suggestions", shared, ["question", "suggestion"])
-check("pins and rules share one reasoning shape", reasoned, ["pin", "rule"])
-check("the reasoning shape names the brief and the strike", TYPES["pin"].labels, {"brief": "Reasoning", "outcome": "Why struck"})
-check("a shape declared once is the same object on both", TYPES["pin"].labels == TYPES["rule"].labels, True)
+check("facts and rules share one reasoning shape", reasoned, ["fact", "rule"])
+check("the reasoning shape names the brief and the strike", TYPES["fact"].labels, {"brief": "Reasoning", "outcome": "Why struck"})
+check("a shape declared once is the same object on both", TYPES["fact"].labels == TYPES["rule"].labels, True)
 
 
 class Twice(Options, Reasoned, Shape):
@@ -42,6 +42,6 @@ check("a flag takes only a bool", refused(lambda: Todos(record).create("t")) == 
 # THE MANIFEST carries every type's fields and labels
 m = manifest()
 check("the manifest says a question's fields", m["types"]["question"]["fields"], Options.fields)
-check("the manifest says a pin's labels", m["types"]["pin"]["labels"], {"brief": "Reasoning", "outcome": "Why struck"})
+check("the manifest says a pin's labels", m["types"]["fact"]["labels"], {"brief": "Reasoning", "outcome": "Why struck"})
 
 done()

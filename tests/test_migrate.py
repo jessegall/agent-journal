@@ -5,7 +5,7 @@ import tempfile
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from controllers.types import Docs, Environments, Messages, Notifications, Pins, Questions, Reminders, Reports, Rules, Todos, Works  # noqa: E402
+from controllers.types import Docs, Environments, Messages, Notifications, Facts, Questions, Reminders, Reports, Rules, Todos, Works  # noqa: E402
 from features.plans.controller import Plans  # noqa: E402
 from engine.record import Record  # noqa: E402
 from migrations import applied, names, run as migrate  # noqa: E402
@@ -40,7 +40,7 @@ record = Record(root, "main")
 todos = Todos(record)
 check("to-dos keep their numbers, their state, their how, blocked, priority and after", (sorted(todos.numbers()), bool(todos.load(2).completed), todos.load(2).outcome, todos.load(4).data["blocked"], todos.load(4).data["priority"], todos.load(4).refs),
       ([2, 4], True, "shipped (abc1234)", "after the release", 200, ["todo:2"]))
-pins = Pins(record)
+pins = Facts(record)
 check("pins with their reasoning; a struck one is struck with its why", (pins.load(1).brief, bool(pins.load(2).completed), pins.load(2).outcome), ("measured on the first of the month", True, "no longer true"))
 check("reminders with their until", Reminders(record).load(1).data["until"], "CI is green")
 m = Messages(record).load(1)

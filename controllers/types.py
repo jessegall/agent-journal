@@ -237,8 +237,8 @@ class Reports(Controller):
         return made
 
 
-class Pins(Controller):
-    resource = types.Pin
+class Facts(Controller):
+    resource = types.Fact
 
     def promote(self, n: int):
         pin = self.load(n)
@@ -369,7 +369,7 @@ class Plugins(Controller):
 
 class Environments(Controller):
     resource = types.Environment
-    OPEN_BEFORE_REMOVING = (Todos, Pins, Reminders, Messages, Questions)
+    OPEN_BEFORE_REMOVING = (Todos, Facts, Reminders, Messages, Questions)
     PICKED_UP = (Works, Todos, Questions, Messages)
 
     def unused(self, name: str, hint: str = "") -> str:
@@ -450,7 +450,7 @@ class Environments(Controller):
         record = Record(self.record.root, env.title)
         return {"environment": env.title, "holder": self.sessions().holder(env.title),
                 **{f"open {c.resource.type}s": [f"{r.n} {r.title}" for r in c(record, actor=SYSTEM).all() if not r.completed][:10] for c in self.PICKED_UP},
-                "pins": [f"{r.n} {r.title}" for r in Pins(record, actor=SYSTEM).all() if not r.completed][:10]}
+                "facts": [f"{r.n} {r.title}" for r in Facts(record, actor=SYSTEM).all() if not r.completed][:10]}
 
     def claim(self, n: int, why: str):
         env = self.load(n)
@@ -518,5 +518,5 @@ def register(*classes) -> None:
     CONTROLLERS.update({c.resource.type: c for c in classes})
 
 
-CONTROLLERS = {c.resource.type: c for c in (Messages, Todos, Works, Docs, Reports, Pins, Rules, Reminders, Suggestions,
+CONTROLLERS = {c.resource.type: c for c in (Messages, Todos, Works, Docs, Reports, Facts, Rules, Reminders, Suggestions,
                                             Questions, Comments, Agents, Notifications, Notices, Reactions, Tools, Features, Connections, Plugins, Environments, Asks, Nudges)}

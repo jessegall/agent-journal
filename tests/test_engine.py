@@ -7,7 +7,7 @@ import tempfile
 import time
 from pathlib import Path
 
-from controllers.types import Agents, Messages, Nudges, Pins, Questions, Todos, Works
+from controllers.types import Agents, Messages, Nudges, Facts, Questions, Todos, Works
 from engine import bus
 from engine import engine as engine_module
 from engine.actors import Agent, BUSY, IDLE, STOPPED, WORKING, User
@@ -152,8 +152,8 @@ def test_engine_state_delivery_nudges_probing_and_session_following():
 
     heard = []
     bus.on("*", lambda e, r: heard.append((e.type, e.action)))
-    Pins(record, actor=USER).create("a fact")
-    assert heard[-1] == ("pin", "created"), "record.emit reaches the bus"
+    Facts(record, actor=USER).create("a fact")
+    assert heard[-1] == ("fact", "created"), "record.emit reaches the bus"
     bus.clear()
 
     driver.report = {"at": time.time(), "event": "PreToolUse", "status": WORKING}
