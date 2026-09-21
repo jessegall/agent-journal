@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.83.1 — Upgrades stop asking you to reconnect or restart for nothing
+
+Messages 1755 and 2102, to-do 718. Since 2.80.0 every upgrade told you to run /mcp and reconnect the journal, and to quit and run journal claude again, even when neither had changed: it compared the new code with the small stubs the zip leaves behind. It now compares with the code inside the previous `journal.pyz`. The /mcp notice is gone altogether: the channel keeps working after an upgrade and takes the new code at the next session start. The terminal notice remains only for a real change to the terminal, which cannot reload itself.
+
+What to do about it: `journal upgrade`.
+
 ## 2.83.0 — Every launch runs the newest journal
 
 Message 2130, to-do 743. `journal claude` and `journal codex` now ask GitHub for the newest published version before anything else. When it is newer than the one installed, it is installed first, with its skills, and the launch starts again on it, so a launch never runs code that has already been fixed. It gives GitHub three seconds; offline or already current, the launch goes straight on. It follows the Auto-update feature's install switch, and the repository being developed never installs itself.

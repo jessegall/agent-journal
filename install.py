@@ -233,11 +233,12 @@ def upgrade(project: Path, root: Path | None = None) -> list[str]:
     elif (PACKAGE / ".git").is_dir() and shutil.which("git"):
         pulled = subprocess.run(["git", "-C", str(PACKAGE), "pull", "--ff-only", "-q"], capture_output=True, text=True, timeout=120)
         done.append("package pulled" if pulled.returncode == 0 else f"package not pulled: {pulled.stderr.strip()}")
+    running = {name: previous(root, name) for name in RESTARTS}
     changed, gone = refresh(source, code(root))
     if temporary:
         shutil.rmtree(temporary, ignore_errors=True)
     done.append(f"package refreshed: {len(changed)} changed, {len(gone)} retired")
-    done += owed(root, changed)
+    done += owed(root, {name for name, was in running.items() if was is not None and was != (source / name).read_bytes()})
     if reloaded:
         finished = subprocess.run([sys.executable, str(code(root) / "install.py"), "finish", str(project)], capture_output=True, text=True, timeout=120)
         return done + (finished.stdout.strip().splitlines() if finished.returncode == 0 else [f"package refreshed but configuration failed: {finished.stderr.strip()}"])
@@ -245,12 +246,20 @@ def upgrade(project: Path, root: Path | None = None) -> list[str]:
     return done
 
 
-RESTARTS = {"engine/terminal.py": "The journal's terminal was updated - quit and run journal claude again",
-            "channel.py": "The journal's channel was updated - run /mcp and reconnect journal"}
+RESTARTS = {"engine/terminal.py": "The journal's terminal was updated - quit and run journal claude again"}
+
+
+def previous(root: Path, name: str) -> bytes | None:
+    try:
+        with zipfile.ZipFile(root / ARCHIVE) as archive:
+            return archive.read(name)
+    except (OSError, KeyError, zipfile.BadZipFile):
+        f = code(root) / name
+        return f.read_bytes() if f.is_file() else None
 
 
 def owed(root: Path, changed: set) -> list[str]:
-    reasons = [why for name, why in RESTARTS.items() if Path(name) in changed]
+    reasons = [why for name, why in RESTARTS.items() if name in changed]
     if reasons:
         from controllers.types import Notices
         from engine import runtime
