@@ -33,10 +33,8 @@ class ResumeWork(Command):
     name = "resume"
 
     def run(self, context: Context, works: Works, n: int):
-        busy = works.active()
-        if busy:
-            raise Refused(f"work {busy.n} is open: end it or park it before picking up another")
         row = works.load(n)
         if not row.parked:
             raise Refused(f"work {row.n} is not parked")
+        works._gate(int(row.todo or 0))
         return works.update(n, parked="")

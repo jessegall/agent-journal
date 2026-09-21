@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.68.0 — One gate for opening work
+
+Message 1539, to-do 621, questions 58 and 59. Work could be opened in two ways and resumed in a third, and only one of them checked the active plan. Now every way of opening work passes one gate: `journal todo start`, `journal work start` and `journal work resume`. It allows one piece of work in hand at a time. Parked work does not count, so parking frees the slot (question 59). A to-do's own checks come next (done, assigned to someone else), and then any feature that watches the gate. The plans feature holds a to-do outside the active plan's current phase, as before. It now also refuses work that is not a to-do while a plan is active, since free work stays but passes the same gate (question 58). `--force "<why>"` passes both. Resuming parked work used to skip the plan and now goes through the gate too.
+
+What to do about it: `journal upgrade`.
+
 ## 2.67.0 — One typed event per hook
 
 Design 1, to-do 624. `agent.updated` fired on every hook, and a handler then had to check which hook it was. Each hook now has a typed event of its own, and a handler names the one it means: SessionStarted, PromptSubmitted, ToolStarted, ToolFinished, TurnStopped, ContextCompacting, SessionEnded and PermissionRequested. The greeting and the media-tags nudge listen to a session starting. File tracking and the largest-result notice listen to a tool finishing. The "It listens to" line of a feature's skill uses these names, such as agent.tool.finished. AgentUpdated stays for handlers that want every change. The test helper reports a hook the way real hooks do.

@@ -13,4 +13,4 @@ class PlansFeature(Feature):
         journal.events.handler(PassCheckpointsInAuto())
         journal.events.handler(AdvancePlans())
         journal.agent.interceptor(RefusePlanMode())
-        journal.commands.intercept("todo.start", HoldWhilePlanned())
+        journal.commands.intercept("work.open", HoldWhilePlanned())
