@@ -10,7 +10,7 @@ from tests.kit import idle, nudges
 from tests.conftest import fresh
 
 
-def test_an_untagged_last_message_is_told_once_per_idle_stretch(tmp_path):
+def test_an_untagged_last_message_is_named_once_the_moment_it_is_seen(tmp_path):
     transcript = tmp_path / "s.jsonl"
 
     def said(*texts):
@@ -27,21 +27,21 @@ def test_an_untagged_last_message_is_told_once_per_idle_stretch(tmp_path):
     assert [n for n in nudges(record) if "tag" in n] == ["your last message has no tag"], \
         "an untagged last message: told once, with the tags"
     idle(record, provider="claude", transcript=str(transcript))
-    assert len([n for n in nudges(record) if "tag" in n]) == 2, "told once per idle stretch"
+    assert len([n for n in nudges(record) if "tag" in n]) == 1, "the same message is named once"
     said("**[!info]** a build is running")
     idle(record, provider="claude", transcript=str(transcript))
-    assert len([n for n in nudges(record) if "tag" in n]) == 2, "a bold tag counts"
+    assert len([n for n in nudges(record) if "tag" in n]) == 1, "a bold tag counts"
     said("[!invented] a made-up tag")
     idle(record, provider="claude", transcript=str(transcript))
-    assert [n for n in nudges(record) if "tag" in n] == ["your last message has no tag"] * 3, \
+    assert [n for n in nudges(record) if "tag" in n] == ["your last message has no tag"] * 2, \
         "an invented leading tag is rejected"
     said("[!reply][!invented] two leading tags")
     idle(record, provider="claude", transcript=str(transcript))
-    assert [n for n in nudges(record) if "tag" in n] == ["your last message has no tag"] * 4, \
+    assert [n for n in nudges(record) if "tag" in n] == ["your last message has no tag"] * 3, \
         "a registered prefix does not hide an invented tag"
     said("status [!reply] is ordinary text")
     idle(record, provider="claude", transcript=str(transcript))
-    assert [n for n in nudges(record) if "tag" in n] == ["your last message has no tag"] * 5, \
+    assert [n for n in nudges(record) if "tag" in n] == ["your last message has no tag"] * 4, \
         "an inline tag-like phrase is rejected"
     assert (visible("[!info] a build is running"), visible("**[!reply]** done"), visible("plain text")) == \
         ("a build is running", "done", "plain text"), "display text removes the registered tag"

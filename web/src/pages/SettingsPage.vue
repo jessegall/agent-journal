@@ -1,5 +1,6 @@
 <script setup>
-import UList from "./UList.vue";
+import FeaturePanel from "./FeaturePanel.vue";
+import {features, flip, on} from "./featureSettings.js";
 
 import Section from "./Section.vue";
 
@@ -7,39 +8,13 @@ import {computed, onMounted, ref} from "vue";
 import {api} from "../api/client.js";
 import Btn from "../kit/Btn.vue";
 import Switch from "../kit/Switch.vue";
-import {COUNTED, EVENTS} from "./cadence.js";
 import {route} from "../route.js";
 import {remember, remembered} from "../composables/remembered.js";
 import {store} from "../state/store.js";
 import {rows} from "../sync/rows.js";
 
-const triggerOf = (f) => (store.settings && store.settings.triggers && store.settings.triggers[f.name]) || f.trigger;
-const cadenceOf = (key, declared) => (store.settings && store.settings.triggers && store.settings.triggers[key]) || declared;
-const features = computed(() =>
-    Object.values(store.spec.features).map((f) => ({
-        ...f,
-        when: f.trigger && Object.keys(f.trigger).length ? triggerOf(f) : null,
-        parts: Object.entries(f.behaviours || {}).map(([key, b]) => ({
-            ...b,
-            name: `${f.name}.${key}`,
-            when: b.trigger && Object.keys(b.trigger).length ? cadenceOf(`${f.name}.${key}`, b.trigger) : null,
-        })),
-    }))
-);
-const spoken = computed(() =>
-    features.value
-        .map((f) => ({name: f.name, title: f.title, lines: Object.entries(f.lines || {}).map(([key, line]) => ({key, ...line}))}))
-        .filter((f) => f.lines.length)
-);
-const pieces = (text) =>
-    String(text || "")
-        .split(/(\{\{\w+\}\})/)
-        .filter(Boolean)
-        .map((piece) => ({piece, slot: /^\{\{\w+\}\}$/.test(piece)}));
-const on = (name, fallback = false) => {
-    const set = store.settings && store.settings.features;
-    return set && name in set ? !!set[name] : fallback;
-};
+const chosen = ref("");
+const feature = computed(() => features.value.find((f) => f.name === chosen.value) || null);
 const stopping = ref(false);
 
 async function stop() {
@@ -51,32 +26,6 @@ async function stop() {
     }
 }
 
-async function setTrigger(f, next) {
-    await api.saveSettings({triggers: {...((store.settings && store.settings.triggers) || {}), [f.name]: next}});
-}
-
-function cadence(f) {
-    return f.parts ? triggerOf(f) : f.when || {};
-}
-
-function every(f, value) {
-    const t = cadence(f);
-    const n = Number(value);
-    if (n > 0) setTrigger(f, {every: n, unit: COUNTED.includes(t.unit) ? t.unit : "percent"});
-}
-
-function unit(f, u) {
-    const t = cadence(f);
-    setTrigger(f, EVENTS.includes(u) ? {on: u} : {every: t.every || (u === "minutes" ? 5 : 10), unit: u});
-}
-
-function marks(f, value) {
-    const text = String(value)
-        .split(/[\s,]+/)
-        .map(Number)
-        .filter((n) => n > 0 && n <= 100);
-    if (at.length) setTrigger(f, {unit: "percent", at});
-}
 const delivers = (how) => {
     const set = (store.settings && store.settings.delivery) || {};
     return how in set ? !!set[how] : true;
@@ -84,27 +33,6 @@ const delivers = (how) => {
 
 async function setDelivery(how, value) {
     await api.saveSettings({delivery: {...((store.settings && store.settings.delivery) || {}), [how]: value}});
-}
-const permissions = computed(() => (store.settings && store.settings.permissions) || {});
-const relaunching = ref(false);
-
-async function skipPrompts(skip) {
-    relaunching.value = true;
-    try {
-        await api.relaunchAgent(permissions.value.session, skip);
-        store.settings = await api.settings();
-    } finally {
-        relaunching.value = false;
-    }
-}
-const tagNames = computed(() => ((store.settings && store.settings.tags) || {}).names || []);
-
-async function saveTags(value) {
-    const names = String(value)
-        .split(",")
-        .map((name) => name.trim().replace(/^\[!|\]$/g, ""))
-        .filter(Boolean);
-    if (names.length) await api.saveSettings({tags: {names}});
 }
 const OPENED = "journal.settings.opened";
 const opened = ref(remembered(OPENED, []));
@@ -114,27 +42,12 @@ function fold(key) {
     opened.value = open(key) ? opened.value.filter((k) => k !== key) : [...opened.value, key];
     remember(OPENED, opened.value);
 }
-const retention = computed(() => (store.settings && store.settings.keep) || {});
-const days = ref({});
-const answerHold = ref("");
 const envs = computed(() => rows("environment").filter((e) => !e.completed));
 const extension = ref(null);
 
 onMounted(async () => {
     extension.value = await api.extension();
 });
-
-async function flip(name, value) {
-    await api.saveSettings({features: {...store.settings.features, [name]: value}});
-}
-
-async function saveAnswerHold() {
-    await api.saveSettings({questions: {hold: Number(answerHold.value)}});
-}
-
-async function saveRetention(type) {
-    await api.saveSettings({keep: {...retention.value, [type]: Number(days.value[type])}});
-}
 
 async function saveColor(color) {
     store.identity = await api.saveIdentity({color});
@@ -193,132 +106,25 @@ async function sweep(e) {
             <header class="group-head" role="button" tabindex="0" @click="fold('features-on')">
                 <span class="fold" />
                 <h2>Features on {{ route.env }}</h2>
-                <p class="lead">Each is a switch; its trigger says when it speaks to the agent.</p>
+                <p class="lead">Open a feature to see what it does, when it speaks and what it says.</p>
             </header>
-            <template v-for="f in features" :key="f.name">
-                <div class="row">
-                    <span class="text">
-                        <span class="title">{{ f.title }}</span>
-                        <span class="help">{{ f.abstract }}</span>
-                        <template v-if="f.when">
-                            <UList :f="f" @marks="marks" @every="every" @unit="unit" />
-                        </template>
-                    </span>
-                    <span class="control">
-                        <template v-if="f.fixed">
-                            <span class="note">Always on</span>
-                        </template>
-                        <template v-else>
-                            <Switch :on="on(f.name, f.default)" @change="(v) => flip(f.name, v)" />
-                        </template>
-                    </span>
-                </div>
-                <div v-for="part in f.parts" :key="part.name" class="row part">
-                    <span class="text">
-                        <span class="title">{{ part.title }}</span>
-                        <span class="help">{{ part.abstract }}</span>
-                        <template v-if="part.when">
-                            <UList :f="part" @marks="marks" @every="every" @unit="unit" />
-                        </template>
-                    </span>
-                    <span class="control">
-                        <Switch :on="on(part.name, part.default)" @change="(v) => flip(part.name, v)" />
-                    </span>
-                </div>
-            </template>
-        </section>
-        <section class="group" :class="{shut: !open('lines')}">
-            <header class="group-head" role="button" tabindex="0" @click="fold('lines')">
-                <span class="fold" />
-                <h2>What the features say</h2>
-                <p class="lead">
-                    Every line a feature can say to the agent. A feature can only say its own lines, and the parts in braces are filled in
-                    when it is said.
-                </p>
-            </header>
-            <template v-for="f in spoken" :key="f.name">
-                <div class="row">
-                    <span class="text">
-                        <span class="title">{{ f.title }}</span>
-                    </span>
-                </div>
-                <div v-for="line in f.lines" :key="line.key" class="row part">
-                    <span class="text">
-                        <span class="title">
-                            <span v-for="(p, i) in pieces(line.title)" :key="i" :class="{slot: p.slot}">{{ p.piece }}</span>
+            <div class="features">
+                <template v-for="f in features" :key="f.name">
+                    <div class="feature" role="button" tabindex="0" @click="chosen = f.name" @keydown.enter="chosen = f.name">
+                        <span class="text">
+                            <span class="title">{{ f.title }}</span>
+                            <span class="help clamp">{{ f.abstract }}</span>
                         </span>
-                        <span v-if="line.brief" class="help">
-                            <span v-for="(p, i) in pieces(line.brief)" :key="i" :class="{slot: p.slot}">{{ p.piece }}</span>
+                        <span class="control" @click.stop>
+                            <template v-if="f.fixed">
+                                <span class="note">Always on</span>
+                            </template>
+                            <template v-else>
+                                <Switch :on="on(f.name, f.default)" @change="(v) => flip(f.name, v)" />
+                            </template>
                         </span>
-                    </span>
-                    <span class="control">
-                        <span class="note">{{ f.name }}.{{ line.key }}</span>
-                    </span>
-                </div>
-            </template>
-        </section>
-        <section class="group" :class="{shut: !open('answers')}">
-            <header class="group-head" role="button" tabindex="0" @click="fold('answers')">
-                <span class="fold" />
-                <h2>Answers</h2>
-                <p class="lead">How long a picked answer waits before it is saved, so it can be taken back.</p>
-            </header>
-            <div class="row">
-                <span class="text">
-                    <span class="title">Hold a picked answer</span>
-                    <span class="help">click the same answer again within this time to cancel it</span>
-                </span>
-                <span class="control">
-                    <input
-                        v-model="answerHold"
-                        class="days"
-                        type="number"
-                        min="0"
-                        :placeholder="String((store.settings && store.settings.questions && store.settings.questions.hold) ?? 3)"
-                        @change="saveAnswerHold"
-                    />
-                    <span class="unit">seconds</span>
-                </span>
-            </div>
-        </section>
-        <section v-if="permissions.possible" class="group" :class="{shut: !open('permissions')}">
-            <header class="group-head" role="button" tabindex="0" @click="fold('permissions')">
-                <span class="fold" />
-                <h2>Permissions</h2>
-                <p class="lead">Whether the agent stops to ask before it runs a tool.</p>
-            </header>
-            <div class="row">
-                <span class="text">
-                    <span class="title">Skip permission prompts</span>
-                    <span class="help">
-                        The agent is running {{ permissions.running ? "without" : "with" }} permission prompts. Changing this restarts the
-                        agent in the same conversation.
-                    </span>
-                </span>
-                <span class="control">
-                    <template v-if="relaunching">
-                        <span class="note">Restarting</span>
-                    </template>
-                    <template v-else>
-                        <Switch :on="!!permissions.skip" @change="skipPrompts" />
-                    </template>
-                </span>
-            </div>
-        </section>
-        <section class="group" :class="{shut: !open('tags')}">
-            <header class="group-head" role="button" tabindex="0" @click="fold('tags')">
-                <span class="fold" />
-                <h2>Tags</h2>
-                <p class="lead">The words a message may open with. The agent is told when it opens with none of them.</p>
-            </header>
-            <div class="row">
-                <span class="text">
-                    <span class="title">Tag names</span>
-                    <span class="help">Written [!name] at the start of a message, separated by commas</span>
-                </span>
-                <span class="control">
-                    <input class="names" :value="tagNames.join(', ')" @change="saveTags($event.target.value)" />
-                </span>
+                    </div>
+                </template>
             </div>
         </section>
         <section class="group" :class="{shut: !open('delivery')}">
@@ -345,32 +151,6 @@ async function sweep(e) {
                     <Switch :on="delivers('socket')" @change="(v) => setDelivery('socket', v)" />
                 </span>
             </div>
-        </section>
-        <section class="group" :class="{shut: !open('keep')}">
-            <header class="group-head" role="button" tabindex="0" @click="fold('keep')">
-                <span class="fold" />
-                <h2>Keep</h2>
-                <p class="lead">How long a finished row stays listed before it is archived; 0 keeps it.</p>
-            </header>
-            <template v-for="type in ['report', 'todo']" :key="type">
-                <div class="row">
-                    <span class="text">
-                        <span class="title">{{ type }}s</span>
-                        <span class="help">archived this many days after they are done</span>
-                    </span>
-                    <span class="control">
-                        <input
-                            v-model="days[type]"
-                            class="days"
-                            type="number"
-                            min="0"
-                            :placeholder="String(retention[type] ?? (type === 'report' ? 14 : 7))"
-                            @change="saveRetention(type)"
-                        />
-                        <span class="unit">days</span>
-                    </span>
-                </div>
-            </template>
         </section>
         <section class="group" :class="{shut: !open('environments')}">
             <header class="group-head" role="button" tabindex="0" @click="fold('environments')">
@@ -414,6 +194,9 @@ async function sweep(e) {
                 </span>
             </div>
         </section>
+        <template v-if="feature">
+            <FeaturePanel :feature="feature" @close="chosen = ''" />
+        </template>
     </section>
 </template>
 
@@ -485,6 +268,44 @@ h2 {
     margin: 0;
     color: var(--text-3);
     font-size: 12.5px;
+}
+
+.features {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 8px;
+    padding: 4px 0 8px;
+}
+
+.feature {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 11px 14px;
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    background: var(--raised);
+    cursor: pointer;
+    transition:
+        border-color 0.15s,
+        background 0.15s;
+}
+
+.feature:hover {
+    border-color: var(--border-3);
+    background: var(--hover);
+}
+
+.feature .text {
+    flex: 1;
+    min-width: 0;
+}
+
+.clamp {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
 }
 
 .row {
