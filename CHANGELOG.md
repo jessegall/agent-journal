@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.25.0 — The terminal header is switched off
+
+The two-row header the journal drew at the top of the agent's terminal is switched off: the journal no longer draws it, no longer shifts the agent's screen down to make room, and gives the agent the whole terminal. Some terminals rendered the agent's screen garbled with the header in place. The header's code stays, behind `SHOWN` in `engine/band.py`, for when it comes back.
+
+What to do about it: `journal upgrade`; running sessions take it when their supervisor reloads, which the upgrade does.
+
 ## 2.24.8 — Remove in Settings says why, then removes on a second click
 
 An environment with open rows is only removed when that is confirmed, and the Remove button in Settings swallowed the refusal, so clicking it seemed to do nothing. It now shows why, turns into "Remove anyway", and a second click removes it — its record packed into the attic, as the section now says.

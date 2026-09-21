@@ -12,6 +12,7 @@ from engine.viewer import marked, running
 from resources.base import SYSTEM
 
 ROWS = 2
+SHOWN = False
 ESC = "\x1b"
 STYLE = f"{ESC}[48;2;23;24;27m{ESC}[38;2;169;172;179m"
 URL = f"{ESC}[48;2;52;55;105m{ESC}[38;2;238;239;246m"
