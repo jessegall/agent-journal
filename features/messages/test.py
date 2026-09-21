@@ -91,3 +91,17 @@ def test_unread_messages_are_nudged_with_growing_urgency_until_the_inbox_is_read
     provider = PROVIDERS["claude"]()
     assert handle(provider, record.root, record.env, {"hook_event_name": "PostToolUse", "session_id": "claude-1", "tool_name": "Read"}) == {}, \
         "the hook only reports; it hands nothing back"
+
+
+def test_a_private_nudge_reaches_the_session_it_names_whichever_name_it_uses():
+    from types import SimpleNamespace
+    from engine.engine import Engine
+    from providers import DRIVERS
+    record = fresh()
+    engine = Engine(record, DRIVERS["claude"](record, "claude-99"))
+    engine.agent.driver.last_report = lambda: SimpleNamespace(title="claude-1")
+    since = record.last_event()
+    Nudges(record).create("for this session", session="claude-1", private=True)
+    Nudges(record).create("for another", session="claude-2", private=True)
+    heard = {e.data.get("title") or e.n: engine.elsewhere(e) for e in record.events(since)}
+    assert list(heard.values()) == [False, True], "the terminal is claude-99 but the session is claude-1: its own nudge is spoken"

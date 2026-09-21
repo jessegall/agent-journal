@@ -162,11 +162,24 @@ class Manager:
 
     def tick(self) -> list[str]:
         started = []
-        for spec in specs(self.root):
+        declared = specs(self.root)
+        for spec in declared:
             if self.one(spec):
                 started.append(spec["id"])
+        self.retire({spec["id"] for spec in declared})
         self.sweep()
         return started
+
+    def retire(self, declared: set[str]) -> list[str]:
+        gone_now = [sid for sid in states(self.root) if sid not in declared]
+        for sid in gone_now:
+            said = status(self.root, sid)
+            self.stop(sid, said)
+            if int(said.get("pgid") or 0) and not gone(int(said["pgid"])):
+                teardown(int(said["pgid"]), 1.0)
+            for place in (status_file, spec_file, want_file, lock_file, log_file):
+                place(self.root, sid).unlink(missing_ok=True)
+        return gone_now
 
     def one(self, spec: dict) -> bool:
         sid = spec["id"]

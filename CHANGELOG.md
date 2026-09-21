@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.16.3 — Private whispers reach their session, and a removed plugin takes its services
+
+A private nudge names the session it is meant for by Claude's own session id, but the engine compared it with the terminal's name, so every private whisper — an unread inbox, a message waiting for an answer, the reply tag, a stale skill — counted as meant for another session and was never spoken. They reach their session now. A removed or disabled plugin's services are stopped, their process groups torn down, and their files removed, so nothing it ran is left running or listed.
+
+What to do about it: `journal upgrade`.
+
 ## 2.16.2 — Checks you can watch, and a suite that boots the journal
 
 Checks are a full page. The index shows each check as a card with its state, its run history as bars and a Run button; while a check runs, its card shows live progress — the percentage the command prints, or an estimate from its last run — and how long is left. A check's page shows the same at the top, lets you edit its command and interval in place, streams its output as it runs, and lists its recent runs. Checks are in the sidebar; types a feature registers were left out of it before.

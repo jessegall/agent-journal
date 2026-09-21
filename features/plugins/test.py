@@ -4,17 +4,11 @@ import time
 
 from controllers.types import Plugins
 from engine.hooks import handle
-from features.plugins.source import folder, home
-from providers import PROVIDERS
-from resources.base import SYSTEM
-from tests.conftest import fresh
-from controllers.types import Plugins
-from features.plugins.source import folder, home
-from resources.base import AGENT, SYSTEM
-from controllers.types import Plugins
+from engine.services import Manager, status_file
 from features.plugins.manifest import MANIFEST
 from features.plugins.source import alone, folder, home
-from resources.base import AGENT
+from providers import PROVIDERS
+from resources.base import AGENT, SYSTEM
 from tests.conftest import fresh, refused
 
 
@@ -93,3 +87,14 @@ def test_a_failing_setup_step_installs_nothing_and_says_which_step_failed(tmp_pa
         "the failing step, its code and its command are named"
     assert (rows.all(), [p.name for p in home(broken.root).iterdir()] if home(broken.root).exists() else []) == ([], []), \
         "and nothing is left behind"
+
+
+
+def test_a_service_no_plugin_declares_is_stopped_and_forgotten():
+    record = fresh()
+    left = subprocess.Popen(["sleep", "30"], start_new_session=True)
+    status_file(record.root, "gone.web").parent.mkdir(parents=True, exist_ok=True)
+    status_file(record.root, "gone.web").write_text(json.dumps({"state": "running", "keeper": left.pid, "pgid": left.pid}))
+    Manager(record.root).tick()
+    assert left.wait(timeout=5) is not None, "its process is stopped"
+    assert not status_file(record.root, "gone.web").exists(), "and it is no longer listed"

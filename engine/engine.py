@@ -77,7 +77,7 @@ class Engine(Seat):
         if not TYPES[e.type].spoken:
             return False
         meant = CONTROLLERS[e.type](self.record, actor=AGENT).load(e.n).data.get("session")
-        return bool(meant) and meant != self.agent.driver.session
+        return bool(meant) and meant not in self.names()
 
     def follow(self) -> str:
         last = self.agent.driver.last_report()
