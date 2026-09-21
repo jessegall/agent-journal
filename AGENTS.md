@@ -20,4 +20,8 @@ Use a fast, economical model for mechanical work with a known answer, a capable 
 
 Use the most specific available agent type whose declared purpose matches the assignment. On providers without agent types, give the dispatch a concrete task name and bounded prompt. If no suitable specialization exists, keep the work in the main agent instead of manufacturing an unscoped helper.
 
+**L3 — Read narrowly: grep for the line, sed a range, head the file; never print a whole file or long output you do not need.**
+
+Everything a tool returns stays in the context for good and is paid for on every turn after it. Search before you read, read the range you need, and cap output with grep, head or tail. Read a whole file only when you need all of it.
+
 <!-- END: agent-journal law -->
