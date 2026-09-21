@@ -20,10 +20,6 @@ BRAND = "JOURNAL"
 GRADIENT = ((36, 38, 78), (94, 99, 222), (36, 38, 78))
 
 
-def linked(url: str, line: str) -> str:
-    return f"{ESC}]8;;{url}{BELL}{line}{ESC}]8;;{BELL}" if url.startswith("http") else line
-
-
 def region(rows: int) -> bytes:
     return f"{ESC}[{ROWS + 1};{rows}r{ESC}[{ROWS + 1};1H".encode()
 
@@ -188,14 +184,20 @@ class Band:
         seat = self.seat()
         env = seat.get("env") or self.env
         rule = f"{ESC}[38;2;47;49;54m{'─' * cols}"
-        where = self.viewer()
-        return [self.banner(cols, env, self.agent(seat)), linked(where, self.fit(f"{URL}{where}{STYLE}", cols)), self.fit(rule, cols)]
+        return [self.banner(cols, env, self.agent(seat)), self.address(cols), self.fit(rule, cols)]
 
     def shade(self, x: int, cols: int) -> tuple[int, int, int]:
         t = x / max(1, cols - 1) * (len(GRADIENT) - 1)
         a, b = GRADIENT[int(t)], GRADIENT[min(int(t) + 1, len(GRADIENT) - 1)]
         f = t - int(t)
         return tuple(round(a[i] + (b[i] - a[i]) * f) for i in range(3))
+
+    def painted(self, text: list, cols: int, bold: bool = False) -> str:
+        cells = []
+        for x, ch in enumerate(text):
+            r, g, b = self.shade(x, cols)
+            cells.append(f"{ESC}[48;2;{r};{g};{b}m{ch}")
+        return f"{ESC}[{1 if bold else 22}m{ESC}[38;2;245;246;250m" + "".join(cells) + RESET
 
     def banner(self, cols: int, env: str, agent: dict) -> str:
         left = max(0, (cols - len(BRAND)) // 2)
@@ -208,11 +210,14 @@ class Band:
         right = max(2, cols - len(right_text) - 2)
         if right > left + len(BRAND):
             text[right:min(cols, right + len(right_text))] = right_text[:max(0, cols - right)]
-        cells = []
-        for x, ch in enumerate(text):
-            r, g, b = self.shade(x, cols)
-            cells.append(f"{ESC}[48;2;{r};{g};{b}m{ch}")
-        return f"{ESC}[1m{ESC}[38;2;245;246;250m" + "".join(cells)
+        return self.painted(text, cols, bold=True)
+
+    def address(self, cols: int) -> str:
+        where = self.viewer()
+        text = list(" " * cols)
+        at = max(2, (cols - len(where)) // 2)
+        text[at:min(cols, at + len(where))] = where[:max(0, cols - at)]
+        return self.painted(text, cols)
 
     def fit(self, line: str, cols: int, left: int = -1) -> str:
         plain = 0
