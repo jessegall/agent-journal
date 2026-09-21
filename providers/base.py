@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 from pathlib import Path
 
 from engine.transcript import Turn
-from providers.payload import Hook, PERMISSION
+from providers.payload import AskedQuestion, Hook, PERMISSION
 from resources.base import Refused
 from engine.stored import read_json, tail, write_text
 
@@ -77,6 +77,16 @@ class Provider(ABC):
 
     def question(self, tool) -> bool:
         return tool.name in self.question_tools
+
+    def asked_questions(self, tool) -> list[AskedQuestion]:
+        asked = []
+        for question in tool.tool_input.get("questions") or []:
+            if not isinstance(question, dict) or not str(question.get("question") or "").strip():
+                continue
+            options = [{"title": str(option.get("label") or ""), "description": str(option.get("description") or "")}
+                       for option in question.get("options") or [] if isinstance(option, dict) and option.get("label")]
+            asked.append(AskedQuestion(str(question["question"]).strip(), options))
+        return asked
 
     def session(self, path: Path | None) -> dict:
         return {}

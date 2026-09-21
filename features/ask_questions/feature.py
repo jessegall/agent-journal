@@ -2,6 +2,7 @@ from features.base import Feature
 from features.journal import Journal
 from features.ask_questions.details import QuestionsDetails
 from features.ask_questions.handlers import AskInsteadOfProse, ReleaseOnceAsked
+from features.ask_questions.interceptors import AskInTheJournal
 
 
 class Questions(Feature):
@@ -10,3 +11,4 @@ class Questions(Feature):
     def register(self, journal: Journal) -> None:
         journal.events.handler(AskInsteadOfProse())
         journal.events.handler(ReleaseOnceAsked())
+        journal.agent.interceptor(AskInTheJournal())

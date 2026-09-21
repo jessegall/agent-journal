@@ -4,7 +4,7 @@ from features.work_tracking.commands import LogWork, ParkWork, ResumeWork
 from features.work_tracking.details import WorkDetails
 from features.work_tracking.handlers import (CloseWork, CountEdits, HoldUntilDeclared, OfferNextRow, OpenWork, RemindOpenWork, ResetEditsOnLog,
                                     TrackFiles)
-from features.work_tracking.interceptors import RefuseBlockingQuestion, RefuseHeldWrites
+from features.work_tracking.interceptors import RefuseHeldWrites
 
 
 class WorkFeature(Feature):
@@ -23,4 +23,3 @@ class WorkFeature(Feature):
         journal.events.handler(ResetEditsOnLog())
         journal.events.handler(OfferNextRow())
         journal.agent.interceptor(RefuseHeldWrites())
-        journal.agent.interceptor(RefuseBlockingQuestion())

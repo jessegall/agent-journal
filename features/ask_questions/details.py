@@ -1,4 +1,5 @@
 from features.trigger import IDLE, Trigger
+from features.ask_questions.interceptors import FILED
 from features.base import Behaviour, FeatureDetails, Line
 from features.settings import Setting
 
@@ -22,6 +23,11 @@ class QuestionsDetails(FeatureDetails):
         decision to the user, tells the agent to use journal question ask --set options=…; its
         writes wait until a question is created. A line naming a question by number points at
         one already asked and does not count.
+
+        A question tool the provider offers, such as Claude Code's AskUserQuestion, never opens
+        in the terminal: each question in the call is filed as a journal question with its
+        options, and the call is refused with the numbers, so the agent carries on and hears the
+        answer as an event.
     """
 
     fixed = True
@@ -48,6 +54,11 @@ class QuestionsDetails(FeatureDetails):
     ]
 
     lines = [
+        Line(
+            name=FILED,
+            title="asked in the journal as question {{numbers}}",
+            brief="the user answers it in the viewer and the answer reaches you as an event; carry on with what does not depend on it",
+        ),
         Line(
             name="prose",
             title="your last message offers choices in prose",

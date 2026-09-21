@@ -11,6 +11,12 @@ EVENTS = tuple(STATUS)
 
 
 @dataclass(frozen=True)
+class AskedQuestion:
+    text: str
+    options: list[dict]
+
+
+@dataclass(frozen=True)
 class ToolUse:
     name: str = ""
     command: str = ""
@@ -23,6 +29,7 @@ class ToolUse:
     skill: str = ""
     written: str = ""
     response: dict = field(default_factory=dict)
+    tool_input: dict = field(default_factory=dict)
 
     @classmethod
     def read(cls, raw: dict) -> "ToolUse":
@@ -32,7 +39,7 @@ class ToolUse:
                    subagent_type=str(given.get("subagent_type") or ""), model=str(given.get("model") or ""), task_name=str(given.get("task_name") or ""),
                    pattern=str(given.get("pattern") or given.get("query") or ""), url=str(given.get("url") or ""), skill=str(given.get("skill") or ""),
                    written=str(given.get("content") or given.get("new_string") or given.get("prompt") or ""),
-                   response=response if isinstance(response, dict) else {})
+                   response=response if isinstance(response, dict) else {}, tool_input=given if isinstance(given, dict) else {})
 
     @property
     def loads_skill(self) -> bool:

@@ -58,3 +58,16 @@ def test_a_picked_answer_is_held_for_a_configurable_duration():
     assert (got.code, got.body["ask_questions"]["hold"]) == (200, 8), "the viewer is handed the hold with the rest of the settings"
     saved = dispatch("POST", "/api/main/settings", record.root, {}, {"ask_questions": {"hold": 1}})
     assert (saved.code, saved.body["ask_questions"]["hold"]) == (200, 1), "and can set it"
+
+
+def test_a_question_tool_is_asked_in_the_journal_and_never_opens_in_the_terminal():
+    from engine.hooks import handle
+    from providers import PROVIDERS
+    record = fresh()
+    asked = {"questions": [{"question": "Which store: files or SQLite?", "options": [{"label": "Files", "description": "as today"}, {"label": "SQLite"}]}]}
+    result = handle(PROVIDERS["claude"](), record.root, record.env,
+                    {"hook_event_name": "PreToolUse", "session_id": "claude-1", "tool_name": "AskUserQuestion", "tool_input": asked})
+    question = Questions(record, actor=AGENT).all()[-1]
+    assert (question.title, [o["title"] for o in question.data["options"]], question.seen[:1]) == \
+        ("Which store - files or SQLite?", ["Files", "SQLite"], [AGENT]), "the question and its options are filed as the agent's"
+    assert result.get("decision") == "block" and f"question {question.n}" in result.get("reason", ""), "the call is refused with the number"
