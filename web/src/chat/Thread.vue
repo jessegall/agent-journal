@@ -8,7 +8,7 @@ import {quoted, withQuote} from "../format/quote.js";
 import {laidOut} from "../platform/view.js";
 import {agent, meta, store} from "../state/store.js";
 import {polled} from "../sync/polled.js";
-import {earlier, reload, rows} from "../sync/rows.js";
+import {earlier, rows} from "../sync/rows.js";
 import Compose from "./Compose.vue";
 import Turn from "./Turn.vue";
 import ThreadSkeleton from "./ThreadSkeleton.vue";
@@ -222,8 +222,7 @@ async function post(text, files) {
     await nextTick();
     toBottom();
     try {
-        const result = await sendMessage(route.value.env, {brief: body, about}, files);
-        if (!result.queued) await reload();
+        await sendMessage(route.value.env, {brief: body, about}, files);
     } finally {
         pending.value = pending.value.filter((p) => p.ref !== placeholder.ref);
         Object.values(placeholder.data.previews).forEach(URL.revokeObjectURL);

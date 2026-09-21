@@ -6,7 +6,7 @@ import {negative, project, tint} from "../identity.js";
 import {route} from "../route.js";
 import {counted, navTypes, store} from "../state/store.js";
 import {polled} from "../sync/polled.js";
-import {load, rows} from "../sync/rows.js";
+import {rows} from "../sync/rows.js";
 import {usePoll} from "../poll.js";
 
 usePoll(...polled.agents);
@@ -28,7 +28,6 @@ async function makeEnv() {
         await api.create("environment", {title: draft.name.trim()});
         draft.open = false;
         draft.name = "";
-        await load("environment");
     } catch (e) {
         draft.error = e.message;
     }

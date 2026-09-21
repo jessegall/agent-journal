@@ -7,37 +7,30 @@ import {route} from "../route.js";
 import {store} from "../state/store.js";
 import {polled} from "../sync/polled.js";
 import {usePoll} from "../poll.js";
+import {RUNNING} from "../domain/services.js";
 
-usePoll(...polled.pages);
+const refreshPages = usePoll(...polled.pages);
 
-const EVERY = 3000;
-const RUNNING = ["ready", "starting"];
 const pages = computed(() => store.pages || []);
 const log = ref("");
 const error = ref("");
-let timer = 0;
 
 const page = computed(() => pages.value.find((p) => `${p.plugin}.${p.name}` === String(route.value.n)) || null);
 const running = computed(() => !!page.value && RUNNING.includes(page.value.state));
 const src = computed(() => {
     if (!page.value || !page.value.url) return "";
-    const at = route.value.at || page.value.path;
-    return page.value.url.replace(page.value.path, "").replace("127.0.0.1", location.hostname) + at;
+    return api.pluginUrl(page.value, route.value.at || page.value.path);
 });
 
-async function look() {
+async function runPluginAction(want) {
+    if (!page.value) return;
     try {
-        store.pages = await api.pages();
+        await api.setService(page.value.service, want);
         error.value = "";
     } catch (e) {
         error.value = e.message;
     }
-}
-
-async function runPluginAction(want) {
-    if (!page.value) return;
-    await api.setService(page.value.service, want);
-    await look();
+    refreshPages();
 }
 
 async function read() {
@@ -49,11 +42,6 @@ watch(
     () => route.value.n,
     () => (log.value = "")
 );
-onMounted(() => {
-    look();
-    timer = setInterval(look, EVERY);
-});
-onUnmounted(() => clearInterval(timer));
 </script>
 
 <template>

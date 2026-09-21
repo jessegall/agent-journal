@@ -9,7 +9,7 @@ import Switch from "../kit/Switch.vue";
 import {route} from "../route.js";
 import {store} from "../state/store.js";
 import {polled} from "../sync/polled.js";
-import {load, rows} from "../sync/rows.js";
+import {rows} from "../sync/rows.js";
 import {usePoll} from "../poll.js";
 
 usePoll(...polled.pages);
@@ -71,7 +71,6 @@ async function install() {
         await api.command("plugin", "install", {source: source.value, yes: true});
         source.value = "";
         shown.value = "";
-        await load("plugin");
     } catch (e) {
         shown.value = e.message;
     }
@@ -84,7 +83,6 @@ async function plugin(p, action, body = {}) {
     await readLog();
     try {
         await api.act("plugin", p.n, action, body);
-        await load("plugin");
     } catch (e) {
         shown.value = e.message;
     }

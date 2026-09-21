@@ -9,6 +9,7 @@ import {go, peek, route} from "../route.js";
 import {unreadByUser} from "../domain/records.js";
 import {showAway} from "../platform/visibility.js";
 import {autoOn, meta, navTypes, store, types} from "../state/store.js";
+import {setAuto} from "../actions/work.js";
 
 const emit = defineEmits(["close"]);
 const q = ref("");
@@ -107,9 +108,9 @@ const goTo = (page) => () => {
     go(route.value.env, page);
 };
 
-async function setAuto(on) {
+async function switchAuto(on) {
     emit("close");
-    await api.saveSettings({features: {"work.auto": on}});
+    await setAuto(on);
 }
 
 const highlights = computed(() => types.value.filter((t) => t.attention).flatMap((t) => unreadByUser(t.name)));
@@ -138,7 +139,7 @@ const commands = computed(() => {
         label: autoOn.value ? "Pause auto mode" : "Resume auto mode",
         keys: "auto mode",
         icon: "auto",
-        run: () => setAuto(!autoOn.value),
+        run: () => switchAuto(!autoOn.value),
     });
     rows.push({
         label: "Show what happened while you were away",

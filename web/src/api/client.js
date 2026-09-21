@@ -100,6 +100,10 @@ export class ApiClient {
         return this.post(`/services/${id}`, {want});
     }
 
+    pluginUrl(page, at) {
+        return page.url.replace(page.path, "").replace("127.0.0.1", location.hostname) + at;
+    }
+
     pluginLog(name, lines = 200) {
         return this.get(`/plugins/${name}/log${query({lines})}`);
     }

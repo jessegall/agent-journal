@@ -23,3 +23,14 @@ export function span(seconds) {
     const m = Math.floor((s % 3600) / 60);
     return h < 24 ? `${h}h ${m}m` : `${Math.floor(h / 24)}d ${h % 24}h`;
 }
+
+export function stamp(at) {
+    return at
+        ? new Date(at * 1000).toLocaleString([], {month: "short", day: "numeric", hour: "2-digit", minute: "2-digit", second: "2-digit"})
+        : "";
+}
+
+export function stopwatch(seconds) {
+    const secs = Math.max(0, Math.round(seconds || 0));
+    return secs < 60 ? `${secs}s` : `${Math.floor(secs / 60)}m ${secs % 60}s`;
+}

@@ -7,7 +7,7 @@ import SwitchCase from "../kit/SwitchCase.vue";
 import {go, route} from "../route.js";
 import {groupOf, GROUPS, open} from "../domain/records.js";
 import {counted, meta, word} from "../state/store.js";
-import {earlier, load, paging, rows} from "../sync/rows.js";
+import {earlier, paging, rows} from "../sync/rows.js";
 import RowGroups from "../resource/RowGroups.vue";
 import ResourceCard from "../resource/ResourceCard.vue";
 import NewResource from "../resource/NewResource.vue";
@@ -59,7 +59,6 @@ const groups = computed(() => {
 
 async function select(n) {
     adding.value = false;
-    await load(props.type);
     go(route.value.env, props.type, n);
 }
 </script>

@@ -1,3 +1,4 @@
+import {stopwatch} from "../format/time.js";
 export const TICK = 250;
 export const MINUTE = 60;
 
@@ -30,9 +31,7 @@ export function frames(message, elapsed) {
 }
 
 export function clock(message) {
-    if (!message || !message.clock) return "";
-    const secs = Math.max(0, Math.round(message.for || 0));
-    return secs < MINUTE ? `${secs}s` : `${Math.floor(secs / MINUTE)}m ${secs % MINUTE}s`;
+    return message && message.clock ? stopwatch(message.for) : "";
 }
 
 export function line(message, elapsed) {
