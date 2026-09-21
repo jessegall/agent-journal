@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.59.3 — One revision, no revision bar
+
+Message 1657, to-do 639. While a design has only one revision, its strip no longer shows the arrows, a single tick and "Revision 1 of 1". It keeps the status line and Keep this revision.
+
+What to do about it: `journal upgrade`.
+
 ## 2.59.2 — The tab's name stays long enough to read
 
 Message 1449, to-do 611. The project and environment name that flashes when you switch to the viewer's tab now stays for about three seconds instead of one, long enough to read.
