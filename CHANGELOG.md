@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.53.0 — The old way of wiring a feature is gone
+
+Plan 9, to-do 607. @event, @formats, @interceptor, @command and @handles are removed, with the marker machinery behind them. A feature is wired one way only: register(journal) hands over its parts, once, when the features load. A plugin or feature written the old way no longer loads its handlers; write it as details.py and registered parts.
+
+What to do about it: `journal upgrade`.
+
 ## 2.52.0 — Resource types describe themselves the same way as features
 
 Plan 9, to-do 593. A resource type's title, abstract and help sit in details = ResourceDetails(title=..., abstract=..., help=...), written as wrapped text if long, and its data fields are one list, data_fields = [Field(name="status"), Field(LIST, list, name="keywords")]. The underscored title_, abstract_ and help_ are gone from resources and features alike. A highlighted comment has one clean border again instead of an outline ring beside the agent's accent bar (message 1555).
