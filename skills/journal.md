@@ -2,7 +2,7 @@
 
 **If you are a subagent, stop here.** The journal is the main conversation's; report what you found and it files what matters. Reads are fine.
 
-A compaction keeps what was **done** and drops what was **decided**. The journal is the record of what was decided, handed back to you at every start, and the engine beside your terminal is what tells you what to read next. You never poll it: when something is owed — a message the user left, a question answered, a reminder, the next row under auto — the engine types one line into your terminal while you are idle, in a tiny vocabulary: `message 3 created`, `2 unseen question`, `work 1 open`, `todo 5 next`, or a nudge in plain words. Read it as a line from the user's side and act on it.
+A compaction keeps what was **done** and drops what was **decided**. The journal is the record of what was decided, handed back to you at every start, and the engine inside the journal's server is what tells you what to read next. You never poll it: when something is owed — a message the user left, a question answered, a reminder, the next row under auto — the engine sends you one line, at most one every five seconds, with everything waiting merged into counts, in a tiny vocabulary: `3 new messages 314, 315, 316`, `2 unseen question`, `work 1 open`, `todo 5 next`, or a nudge in plain words. Read it as a line from the user's side and act on it.
 
 Everything runs through one command, `journal`, and every command is a **noun and a word**: `journal <type> <word> …`. The nouns are the resource types; the words are the one controller's methods, renamed by the type where the type has its own word (a to-do is *added* and *done*, work *started* and *ended*, a question *asked* and *answered*, a fact *struck*, a report *archived*, a plan *acknowledged*, a message *processed*). Every resource has a title (at most 80 characters, never a colon), an abstract, a brief, sections, links, comments, who has seen it, and an outcome written when it completes. `journal <type> --help` lists the words; the reference at the end lists every noun.
 
@@ -23,7 +23,7 @@ Open every message with exactly one tag: `[!discovery]` `[!correction]` `[!block
 
 **A tag that carries a number runs the command it stands for.** `[!reply:123]` at the start of a turn runs `journal message reply 123` with the turn itself as the text, so the turn is the reply and there is no second command to remember; `[!log:7]` writes the work log and `[!end:7]` ends the work. Which tag maps to which command is `tags.runs`, a setting. It runs once, keyed to the turn it came from, so a re-read after a compaction cannot fire it twice; two tags in one turn run in the order they appear; and the argument is the turn with the tag line removed. A refusal comes back as a private nudge on the next turn rather than at the moment of acting, so tags suit replying and logging rather than anything routinely gated.
 
-## Pin, rule, reminder, or nothing
+## Fact, rule, reminder, or nothing
 
 Would a later reader be WRONG without it? **a fact.** Will you stop DOING it though you know? **a reminder.** One thing to do later? **a to-do.** Binds every environment? **a rule.** Facts and rules carry their reasoning in the brief, and either can carry keywords that whisper it back when you are about to touch what it is about. At each mark of the context window writes are held until you decide: `journal fact create "<claim>"`, `journal rule create "<ruling>"`, or `journal nothing "<why>"`.
 
@@ -58,3 +58,5 @@ The start block names the skills to load before the first write — every `journ
 ## Features
 
 Every capability is a feature the engine loads, switchable per environment in the viewer's Settings and tuned by its trigger. Each has its own skill, `journal-<feature>`, generated from the feature itself.
+
+A listing (`journal <type> all`) returns the last 25 open rows; `--completed` adds closed ones and `--last 0` returns every row. Every request, hook and command has a 50ms budget, and the faults feature reports anything slower while developing.
