@@ -1,5 +1,5 @@
 <script setup>
-import {computed, inject, ref} from "vue";
+import {computed, inject, ref, watchEffect} from "vue";
 import {api} from "../api/client.js";
 import Btn from "../kit/Btn.vue";
 import CommentToggle from "./CommentToggle.vue";
@@ -7,7 +7,7 @@ import Dot from "../kit/Dot.vue";
 import Icon from "../kit/Icon.vue";
 import {peek, route} from "../route.js";
 import {state} from "../domain/records.js";
-import {rows} from "../sync/rows.js";
+import {holding, rows} from "../sync/rows.js";
 import Markdown from "./Markdown.vue";
 
 const props = defineProps({resource: Object});
@@ -23,6 +23,11 @@ const phases = computed(() =>
         rows: p.todos.map((n) => rows("todo").find((t) => t.n === n)).filter(Boolean),
     }))
 );
+watchEffect(() => {
+    const known = new Set(rows("todo").map((t) => t.n));
+    const missing = props.resource.data.phases.flatMap((p) => p.todos).filter((n) => !known.has(n));
+    if (missing.length) holding("todo", missing).catch((e) => (error.value = e.message));
+});
 const done = (p) => p.rows.length > 0 && p.rows.every((t) => t.completed);
 const building = computed(() => status.value === "building");
 const stage = computed(() => props.resource.data.stage || (phases.value.length ? "todos" : "phases"));

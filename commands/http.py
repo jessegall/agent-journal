@@ -515,12 +515,13 @@ def get_stream(req: Request) -> Reply:
 
 
 def listing(controller, record, query: dict) -> dict:
-    last = int(query["last"]) if "last" in query else LAST
+    only = {int(n) for n in query["n"].split(",") if n} if query.get("n") else set()
+    last = 0 if only else int(query["last"]) if "last" in query else LAST
     completed = query.get("completed") in ("1", "true")
     before = int(query.get("before") or 0)
     since = float(query.get("since") or 0)
     rows = [row for row in controller.summaries() if (since or not row["deleted"]) and (completed or not row["completed"])
-            and (not before or row["n"] < before) and row["updated"] > since]
+            and (not before or row["n"] < before) and row["updated"] > since and (not only or row["n"] in only)]
     kept = rows[-last:] if last else rows
     if completed and last:
         standing = [row for row in rows if not row["completed"]][-last:]

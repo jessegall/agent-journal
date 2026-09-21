@@ -126,3 +126,16 @@ def test_a_plan_activated_with_its_rows_already_closed_completes_itself(env):
     by_user.activate(late.n)
     assert by_agent.load(late.n).data["status"] == "done", \
         "a plan whose rows are already closed completes itself when it is activated"
+
+
+def test_an_agent_building_a_plan_is_told_each_next_step():
+    from tests.kit import nudges, report
+    record = fresh()
+    report(record, "working", "PreToolUse")
+    plans = Plans(record, actor="agent")
+    n = plans.create("ship it", goal="it is out").n
+    plans.phase(n, "build", when="it builds")
+    plans.stage(n, "todos")
+    plans.place(n, 1, [Todos(record, actor="agent").create("write it").n])
+    told = [t for t in nudges(record) if f"plan {n}" in t]
+    assert told == [f"plan {n} is building - add its phases", f"plan {n} is at its to-dos", f"every phase of plan {n} has its to-dos"], told

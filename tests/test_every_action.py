@@ -109,6 +109,8 @@ def test_every_listing_is_one_page_of_open_rows_inside_the_budget():
     assert wrong == {}, "a listing returns at most one page, and no completed row unless asked"
     assert slow == {}, f"every listing answers inside {BUDGET}ms"
     assert whole <= BUDGET * 2, f"the whole dashboard answers inside {BUDGET * 2}ms, took {whole:.0f}"
+    named = dispatch("GET", f"/api/{record.env}/todo", record.root, {"n": "1,2,3", "completed": "1"}, {}).body
+    assert [r["n"] for r in named["rows"]] == [1, 2, 3], "a listing asked for rows by number returns those rows, however old"
 
 
 def test_a_row_is_changed_only_by_those_its_resource_names_for_its_author():

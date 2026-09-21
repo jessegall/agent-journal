@@ -1,9 +1,9 @@
-from controllers.types import Todos
-from features.plans.controller import ACTIVE, DONE, Plans, WAITING
+from controllers.types import Agents, Todos
+from features.plans.controller import ACTIVE, BUILDING, DONE, PHASES, Plans, WAITING
 from features.work.auto import automatic
-from features.base import Feature, event, handles
+from features.base import Feature, Line, event, handles
 from features.plans.progress import current_phase, held, running
-from resources.base import SYSTEM
+from resources.base import AGENT, SYSTEM
 from features.plans.resource import PHASE
 
 
@@ -11,7 +11,30 @@ class PlansFeature(Feature):
     name = "plans"
     title_ = "Planning"
     abstract_ = "A plan advances as its rows close: a phase completes, a checkpoint waits, the last phase ends it"
-    help_ = "Only the user activates a plan and continues it past a checkpoint; with the auto feature on, checkpoints are passed without waiting."
+    help_ = ("A plan is built in order. journal plan create \"<name>\" --set goal=\"<what is true when done>\" starts it building, at its phases stage. "
+             "Add every phase with journal plan phase <n> \"<title>\" --when \"<complete when>\" (--checkpoint where the user should look before it goes on). "
+             "Then journal plan stage <n> todos, file the rows and put each under its phase with journal plan todos <n> <phase> <rows...>. "
+             "When every phase has rows, journal plan ready <n> hands it to the user. "
+             "Only the user activates a plan and continues it past a checkpoint; with the auto feature on, checkpoints are passed without waiting.")
+    lines = {"phases": Line("plan {{n}} is building - add its phases",
+                            "journal plan phase {{n}} \"<title>\" --when \"<complete when>\" for each phase, --checkpoint where the user should look; then journal plan stage {{n}} todos"),
+             "todos": Line("plan {{n}} is at its to-dos",
+                           "file each phase's rows and put them under it with journal plan todos {{n}} <phase> <rows...>; when every phase has rows, journal plan ready {{n}}"),
+             "ready": Line("every phase of plan {{n}} has its to-dos", "journal plan ready {{n}} hands it to the user, who activates it")}
+
+    @event("plan.created")
+    @event("plan.updated")
+    @event("plan.linked")
+    def guide(self, event, record) -> None:
+        plan = Plans(record, actor=SYSTEM).load(event.n)
+        agent = Agents(record, actor=SYSTEM).primary()
+        if event.actor != AGENT or plan.status != BUILDING or not agent:
+            return
+        stage = plan.stage or PHASES
+        filled = bool(plan.phases) and all(p[PHASE.todos] for p in plan.phases)
+        line = "ready" if stage != PHASES and filled else stage
+        if not self.already(record, agent.title, "planned", f"{plan.n}:{line}"):
+            self.journal.say(record, agent, line, n=plan.n)
 
     @handles("todo.start")
     def held_back(self, controller, n: int) -> None:
