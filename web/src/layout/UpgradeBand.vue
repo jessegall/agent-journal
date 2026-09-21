@@ -1,11 +1,12 @@
 <script setup>
-import {computed, onMounted, ref} from "vue";
+import {computed, onMounted, ref, watch} from "vue";
 import {api} from "../api/client.js";
 import Btn from "../kit/Btn.vue";
 import {remembered} from "../composables/remembered.js";
 import {store} from "../state/store.js";
 import {polled} from "../sync/polled.js";
 import {usePoll} from "../poll.js";
+import {useNow} from "../composables/now.js";
 
 usePoll(...polled.manifest);
 
@@ -19,6 +20,14 @@ const stale = computed(() => {
     const serving = store.spec && store.spec.build;
     return !!serving && !!mine && !mine.endsWith(serving);
 });
+
+const RELOAD_AFTER = 60;
+const now = useNow();
+const reloadAt = ref(0);
+const left = computed(() => Math.max(0, Math.ceil(reloadAt.value - now.value)));
+
+watch(stale, (is) => (reloadAt.value = is ? now.value + RELOAD_AFTER : 0), {immediate: true});
+watch(left, (seconds) => reloadAt.value && !seconds && reload());
 
 onMounted(async () => {
     try {
@@ -52,8 +61,8 @@ async function upgrade() {
 <template>
     <template v-if="stale">
         <div class="band">
-            <span class="text">This page is running an older build of the viewer than the one being served.</span>
-            <Btn kind="primary" small @click="reload">Reload</Btn>
+            <span class="text">A newer version of the viewer is running. This page reloads in {{ left }}s.</span>
+            <Btn kind="primary" small @click="reload">Continue</Btn>
         </div>
     </template>
     <template v-if="shown">
