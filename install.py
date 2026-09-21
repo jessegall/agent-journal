@@ -36,10 +36,10 @@ def package_files(root: Path, left: tuple = LEFT_BEHIND) -> set[Path]:
     return files
 
 
-def refresh(source: Path, target: Path) -> tuple[int, int]:
+def refresh(source: Path, target: Path) -> tuple[set, set]:
     source, target = source.resolve(), target.resolve()
     if source == target:
-        return 0, 0
+        return set(), set()
     wanted = package_files(source)
     existing = package_files(target, left=())
     gone = existing - wanted
@@ -58,7 +58,7 @@ def refresh(source: Path, target: Path) -> tuple[int, int]:
         destination.parent.mkdir(parents=True, exist_ok=True)
         destination.unlink(missing_ok=True)
         shutil.copy2(source / rel, destination)
-    return len(changed), len(gone)
+    return changed, gone
 
 
 ENTRYPOINTS = ("journal.py",)
@@ -214,12 +214,28 @@ def upgrade(project: Path, root: Path | None = None) -> list[str]:
     changed, gone = refresh(source, code(root))
     if temporary:
         shutil.rmtree(temporary, ignore_errors=True)
-    done.append(f"package refreshed: {changed} changed, {gone} retired")
+    done.append(f"package refreshed: {len(changed)} changed, {len(gone)} retired")
+    done += owed(root, changed)
     if reloaded:
         finished = subprocess.run([sys.executable, str(code(root) / "install.py"), "finish", str(project)], capture_output=True, text=True, timeout=120)
         return done + (finished.stdout.strip().splitlines() if finished.returncode == 0 else [f"package refreshed but configuration failed: {finished.stderr.strip()}"])
     done += finish(project, root)
     return done
+
+
+RESTARTS = {"engine/terminal.py": "the terminal changed: start journal claude again to run it",
+            "channel.py": "the channel changed: run /mcp and reconnect journal to load it"}
+
+
+def owed(root: Path, changed: set) -> list[str]:
+    said = [why for name, why in RESTARTS.items() if Path(name) in changed]
+    if said:
+        from controllers.types import Notices
+        from engine import runtime
+        from engine.record import Record
+        from resources.base import SYSTEM
+        Notices(Record(root, runtime.env(root)), actor=SYSTEM).create("A restart is owed", brief="; ".join(said))
+    return said
 
 
 def finish(project: Path, root: Path) -> list[str]:
