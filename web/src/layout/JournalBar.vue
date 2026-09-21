@@ -502,14 +502,4 @@ a.jbar-count:hover {
     width: 40%;
     animation: writing 1.6s ease-in-out infinite;
 }
-
-@keyframes writing {
-    from {
-        transform: translateX(-100%);
-    }
-
-    to {
-        transform: translateX(250%);
-    }
-}
 </style>

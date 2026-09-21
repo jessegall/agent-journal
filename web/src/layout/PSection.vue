@@ -127,16 +127,6 @@ defineEmits<{runBar: [unknown]}>();
     animation: writing 1.6s ease-in-out infinite;
 }
 
-@keyframes writing {
-    from {
-        transform: translateX(-100%);
-    }
-
-    to {
-        transform: translateX(250%);
-    }
-}
-
 .planbar-track > span {
     display: block;
     height: 100%;
