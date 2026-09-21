@@ -6,7 +6,7 @@ from commands.parser import actions
 from controllers.base import Controller
 from controllers.types import CONTROLLERS
 from resources.base import ACTIONS, ACTORS, CLOSED, EVERY, OPEN, SCOPES, VIEWS, Resource
-from resources.types import PRIORITY, TYPES
+from resources.types import TYPES, priority
 from engine import runtime
 from engine.version import version
 
@@ -34,7 +34,7 @@ def manifest(root: Path | None = None) -> dict:
         "actors": list(ACTORS),
         "views": list(VIEWS),
         "scopes": list(SCOPES),
-        "priority": list(PRIORITY),
+        "priority": priority(),
         "fields": [f.name for f in fields(Resource)],
         "methods": actions(Controller),
         "types": {name: {"title": c.title_, "abstract": c.abstract_, "help": c.help_, "view": c.view, "nav": c.nav, "scope": c.scope, "icon": c.icon, "attention": c.attention, "clears": c.clears, "filters": tabs(c), "mirror": c.mirror, "closed_first": c.closed_first, "notify": list(c.notify), "spoken": c.spoken, "counted": c.counted, "fields": c.fields, "labels": c.labels,

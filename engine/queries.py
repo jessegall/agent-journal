@@ -1,6 +1,6 @@
 from controllers.types import CONTROLLERS
 from resources.base import SYSTEM, WHOM
-from resources.types import PRIORITY, TYPES
+from resources.types import TYPES, priority
 
 
 def standing(record, type_: str) -> list:
@@ -8,7 +8,7 @@ def standing(record, type_: str) -> list:
 
 
 def counts(record) -> dict[str, int]:
-    return {t: len(standing(record, t)) for t in PRIORITY if TYPES[t].nav}
+    return {t: len(standing(record, t)) for t in priority() if TYPES[t].nav}
 
 
 def open_work(record) -> list:
@@ -42,7 +42,7 @@ def start_block(record) -> str:
     from features.law.policy import carry as law
     from features.skills.catalogue import handed as skills_handed
     parts = [f"THE JOURNAL IS IN FORCE HERE — this session is bound to environment `{record.env}`.", law(), skills_handed(record)]
-    for type_ in reversed(PRIORITY):
+    for type_ in reversed(priority()):
         kind = TYPES[type_]
         rows = handed(record, type_) if kind.handed else []
         if not rows:
@@ -53,7 +53,7 @@ def start_block(record) -> str:
 
 def carry(record) -> str:
     out = [start_block(record)]
-    for type_ in PRIORITY:
+    for type_ in priority():
         for r in standing(record, type_) if TYPES[type_].handed else []:
             out.append(f"{TYPES[type_].title_.upper()} {r.n}  {r.title}\n{r.brief}".rstrip())
     return "\n\n".join(out) + "\n"

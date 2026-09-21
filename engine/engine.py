@@ -13,7 +13,7 @@ from engine.record import Record
 from engine.watch import STEADY_AFTER, broke, steady
 from engine.sessions import Sessions
 from resources.base import AGENT, SYSTEM, USER
-from resources.types import PRIORITY, TYPES
+from resources.types import TYPES, priority
 from engine.seat import Seat
 from engine.wording import plural
 
@@ -229,7 +229,7 @@ class Engine(Seat):
 
     def owed(self) -> str:
         waiting = []
-        for type_ in PRIORITY:
+        for type_ in priority():
             if AGENT not in TYPES[type_].notify or TYPES[type_].spoken:
                 continue
             unread = [row["n"] for row in CONTROLLERS[type_](self.record, actor=AGENT).summaries()
