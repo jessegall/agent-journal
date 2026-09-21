@@ -9,7 +9,13 @@ export const route = computed(() => {
     const [path, query = ""] = hash.value.replace(/^#\/?/, "").split("?");
     const [env = "", page = "", n = ""] = path.split("/");
     const params = new URLSearchParams(query);
-    const [openType = "", openN = "", openComment = ""] = (params.get("open") || "").split(":");
+    const stack = (params.get("open") || "")
+        .split(",")
+        .filter(Boolean)
+        .map((entry) => {
+            const [type = "", n = "", comment = ""] = entry.split(":");
+            return {type, n: Number(n), comment: Number(comment) || 0};
+        });
     return {
         env,
         page,
@@ -17,7 +23,8 @@ export const route = computed(() => {
         q: params.get("q") || "",
         sub: params.get("sub") || "",
         at: params.get("at") || "",
-        open: openType ? {type: openType, n: Number(openN), comment: Number(openComment) || 0} : null,
+        stack,
+        open: stack[stack.length - 1] || null,
     };
 });
 
@@ -25,9 +32,20 @@ export function go(env, page = "", n = 0, q = "") {
     location.hash = `#/${env}${page ? `/${page}` : ""}${n ? `/${n}` : ""}${q ? `?q=${encodeURIComponent(q)}` : ""}`;
 }
 
-export function peek(type, n, comment = 0, sub = "") {
+const entry = (open) => `${open.type}:${open.n}${open.comment ? `:${open.comment}` : ""}`;
+
+function opening(stack, sub = "") {
     const [path] = location.hash.replace(/^#/, "").split("?");
-    location.hash = `#${path}?open=${type}:${n}${comment ? `:${comment}` : ""}${sub ? `&sub=${sub}` : ""}`;
+    location.hash = `#${path}${stack.length ? `?open=${stack.map(entry).join(",")}` : ""}${sub ? `&sub=${sub}` : ""}`;
+}
+
+export function peek(type, n, comment = 0, sub = "") {
+    const below = route.value.stack.filter((open) => !(open.type === type && open.n === n));
+    opening([...below, {type, n, comment}], sub);
+}
+
+export function swap(type, n) {
+    opening([...route.value.stack.slice(0, -1), {type, n, comment: 0}]);
 }
 
 export function showSession(sub) {
@@ -40,6 +58,5 @@ export function showSession(sub) {
 }
 
 export function unpeek() {
-    const [path] = location.hash.replace(/^#/, "").split("?");
-    location.hash = `#${path}`;
+    opening(route.value.stack.slice(0, -1));
 }

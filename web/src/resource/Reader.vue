@@ -1,7 +1,7 @@
 <script setup>
 import {computed, ref, watch, watchEffect} from "vue";
 import SwitchCase from "../kit/SwitchCase.vue";
-import {go, peek, route, unpeek} from "../route.js";
+import {go, route, swap, unpeek} from "../route.js";
 import {meta} from "../state/store.js";
 import {holding, rows} from "../sync/rows.js";
 import ResourceBody from "./ResourceBody.vue";
@@ -11,19 +11,19 @@ import DesignPage from "./DesignPage.vue";
 import AgentPage from "./AgentPage.vue";
 import Comments from "./Comments.vue";
 
-const props = defineProps({type: String, n: Number});
+const props = defineProps({type: String, n: Number, depth: {type: Number, default: 0}, over: Boolean});
 const resource = computed(() => (props.type ? rows(props.type).find((r) => r.n === props.n) : null) || null);
 watchEffect(() => {
     if (props.type && props.n && !resource.value) holding(props.type, [props.n]);
 });
 watchEffect(() => {
     const part = resource.value && resource.value.data.part_of;
-    if (!part) return;
+    if (!part || props.depth) return;
     const [type, n] = part.split(":");
-    if (route.value.open) peek(type, Number(n));
+    if (route.value.open) swap(type, Number(n));
     else go(route.value.env, type, Number(n));
 });
-const focusComment = computed(() => route.value.open?.comment || 0);
+const focusComment = computed(() => (props.depth ? 0 : route.value.open?.comment || 0));
 const shape = computed(() => (!props.type ? "" : ["plan", "agent", "design"].includes(props.type) ? props.type : meta(props.type).view));
 const panel = computed(() => (["small", "wide"].includes(shape.value) ? "inspector" : shape.value));
 const close = () => (route.value.open ? unpeek() : go(route.value.env, props.type));
@@ -42,7 +42,13 @@ watch(
 
 <template>
     <Transition name="reader">
-        <div v-if="resource" :key="panel" :class="['reader', shape]" @click.self="close">
+        <div
+            v-if="resource"
+            :key="panel"
+            :class="['reader', shape, {under: depth, over}]"
+            :style="{'--depth': depth, zIndex: 20 - depth}"
+            @click.self="close"
+        >
             <template v-if="panel === 'inspector'">
                 <aside :class="['inspector', {swapping, 'focusing-comment': focusComment}]">
                     <div class="inspector-pages">
@@ -111,6 +117,24 @@ watch(
     background: rgba(0, 0, 0, 0.4);
     backdrop-filter: blur(3px);
 }
+.reader.over {
+    background: transparent;
+    backdrop-filter: none;
+}
+
+.reader.under {
+    pointer-events: none;
+}
+
+.reader.under .inspector,
+.reader.under .page {
+    transform: translateX(calc(var(--depth) * -28px));
+    filter: brightness(0.8);
+    transition:
+        transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1),
+        filter 0.28s ease;
+}
+
 .inspector {
     position: absolute;
     top: 0;

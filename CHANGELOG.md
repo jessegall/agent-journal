@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.58.0 — Inspectors stack
+
+Message 1447, to-do 609. Clicking a resource while an inspector is open used to replace it. Now the new inspector opens on top of it, and the one below shows as an edge behind it. Closing the top one returns to the one below, and a resource that is already in the stack moves to the top. The whole stack lives in the address, as `?open=todo:5,plan:2`, so it survives a reload.
+
+What to do about it: `journal upgrade`.
+
 ## 2.57.0 — Facts and rules need keywords
 
 Message 1347, to-do 589. A fact or a rule is created only with keywords, the words that whisper it back when a command touches them: `journal fact create "<claim>" --set keywords="<word>,<word>"`. A create without them is refused and says how to pass them. A resource field can now be marked required, and the controller refuses any create that leaves one empty.
