@@ -4,6 +4,8 @@ import {route} from "./route.js";
 const BUDGET = 50;
 const PAGE = 25;
 const QUIET = 60000;
+const SETTLE = 1000;
+const KEPT = 200;
 const told = new Map();
 const flying = new Map();
 let reporting = false;
@@ -38,15 +40,21 @@ function watchFetch() {
         if (asked !== null && (Number(asked) === 0 || Number(asked) > PAGE))
             report("page", `${where} asked for ${asked === "0" ? "every row" : `${asked} rows`}`, where);
         flying.set(where, (flying.get(where) || 0) + 1);
-        const began = performance.now();
         try {
             return await was(input, init);
         } finally {
             flying.set(where, flying.get(where) - 1);
-            const took = Math.round(performance.now() - began);
-            if (took > BUDGET) report("slow", `${where} took ${took}ms`, where);
+            setTimeout(() => timed(new URL(typeof input === "string" ? input : input.url, location.origin).href, where), SETTLE);
         }
     };
+}
+
+function timed(href, where) {
+    const entry = performance.getEntriesByName(href).pop();
+    if (performance.getEntriesByType("resource").length > KEPT) performance.clearResourceTimings();
+    if (!entry || !entry.responseStart) return;
+    const took = Math.round(entry.responseStart - entry.requestStart);
+    if (took > BUDGET) report("slow", `${where} took ${took}ms`, where);
 }
 
 export function watchConsole() {
