@@ -78,7 +78,7 @@ class Driver(ABC):
     def send(self, text: str, exact: bool = False) -> bool:
         line = " ".join(part.strip() for part in text.splitlines() if part.strip())
         if exact:
-            return self.deliver(line)
+            return self._deliver(line)
         self.held.append(line)
         return True
 
@@ -87,20 +87,20 @@ class Driver(ABC):
             return ""
         said = f"the journal held back {len(self.held)} lines at once and dropped them - that many is a fault, not news" if len(self.held) > FLOOD else merged(self.held)
         self.held, self.sent_at = [], time.time()
-        self.deliver(said)
+        self._deliver(said)
         return said
 
-    def deliver(self, line: str) -> bool:
-        return self.post(line) or self.type_in(line)
+    def _deliver(self, line: str) -> bool:
+        return self._post(line) or self._type_in(line)
 
-    def posts(self) -> bool:
+    def _posts(self) -> bool:
         return bool(self.record.delivery.get("socket", True))
 
-    def posted(self, line: str) -> str:
+    def _posted(self, line: str) -> str:
         return f"{self.FROM}\n{line}" if self.FROM else line
 
-    def inbox(self) -> str:
-        if not self.posts():
+    def _inbox(self) -> str:
+        if not self._posts():
             return ""
         agents = Agents(self.record, actor=SYSTEM)
         try:
@@ -110,11 +110,11 @@ class Driver(ABC):
         live = agents.primary()
         return str((mine and mine.inbox) or (live and live.inbox) or "")
 
-    def post(self, line: str) -> bool:
-        path = self.inbox()
+    def _post(self, line: str) -> bool:
+        path = self._inbox()
         if not path:
             return False
-        said = json.dumps({"type": "user", "message": {"role": "user", "content": self.posted(line)}}) + "\n"
+        said = json.dumps({"type": "user", "message": {"role": "user", "content": self._posted(line)}}) + "\n"
         try:
             with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as post:
                 post.settimeout(POST_WAIT)
@@ -124,21 +124,21 @@ class Driver(ABC):
         except OSError:
             return False
 
-    def type_in(self, line: str) -> bool:
+    def _type_in(self, line: str) -> bool:
         self.clear_input()
-        if not self.wrote(line.encode()):
+        if not self._wrote(line.encode()):
             return False
         time.sleep(ENTER_AFTER)
-        if not self.wrote(b"\r"):
+        if not self._wrote(b"\r"):
             return False
         for _ in range(RESUBMITS):
             time.sleep(RECHECK)
-            if not self.unsent(line):
+            if not self._unsent(line):
                 return True
-            self.wrote(b"\r")
-        return not self.unsent(line)
+            self._wrote(b"\r")
+        return not self._unsent(line)
 
-    def wrote(self, raw: bytes) -> bool:
+    def _wrote(self, raw: bytes) -> bool:
         if self.fd < 0:
             return typist.send(self.record.root, self.session, raw)
         try:
@@ -149,18 +149,18 @@ class Driver(ABC):
             self.fd = -1
             return False
 
-    def unsent(self, line: str) -> bool:
+    def _unsent(self, line: str) -> bool:
         box = INPUT.split(self.last_printed())
         return len(box) > 1 and bool(line) and line[:SAMPLE] in box[-1]
 
     def stop_turn(self) -> None:
-        self.wrote(self.STOP)
+        self._wrote(self.STOP)
 
     def interrupt(self) -> None:
-        self.wrote(b"\x03")
+        self._wrote(b"\x03")
 
     def clear_input(self) -> None:
-        self.wrote(self.CLEAR_LINE + (b"\x7f" + self.CLEAR_LINE) * DRAFT_LINES)
+        self._wrote(self.CLEAR_LINE + (b"\x7f" + self.CLEAR_LINE) * DRAFT_LINES)
 
     def user_typing(self, within: float) -> bool:
         try:
@@ -209,10 +209,10 @@ class Claude(Driver):
         plain = b"".join(ANSI.sub(b"", printed).split())
         return b"\r" if cls.CHANNEL[0].encode() in plain and CHOICE.search(plain) else b""
 
-    def post(self, line: str) -> bool:
-        return self.handed(line) or super().post(line)
+    def _post(self, line: str) -> bool:
+        return self._handed(line) or super()._post(line)
 
-    def handed(self, line: str) -> bool:
+    def _handed(self, line: str) -> bool:
         runtime = self.record.root / "runtime"
         try:
             if not self.record.delivery.get("channel", True) or time.time() - (runtime / "channel.on").stat().st_mtime > self.LISTENING:

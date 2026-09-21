@@ -1,4 +1,4 @@
-from resources.base import AGENT, COMPLETED, DOCUMENT, OPENED, PROJECT, SYSTEM, USER, Resource
+from resources.base import AGENT, COMPLETED, DOCUMENT, LAZY, OPENED, PROJECT, SYSTEM, USER, Resource
 from resources.shapes import FLAG, TEXT, Field, Options, Ranked, Reasoned, Shape, Traced, names
 
 
@@ -57,6 +57,7 @@ class Work(Traced, Resource):
 
 
 class Doc(Shape, Resource):
+    loading = LAZY
     type = "doc"
     shown = {"completed": "Doc settled"}
     says = {"complete": "settling"}
@@ -74,6 +75,7 @@ class Doc(Shape, Resource):
 
 
 class Report(Shape, Resource):
+    loading = LAZY
     type = "report"
     shown = {"completed": "Report archived"}
     says = {"complete": "archiving"}
@@ -313,6 +315,7 @@ class Environment(Shape, Resource):
 
 
 class Ask(Shape, Resource):
+    loading = LAZY
     type = "browser"
     op = Field()
     args = Field(default=list)
@@ -338,6 +341,7 @@ class FeatureRow(Shape, Resource):
 
 
 class Nudge(Shape, Resource):
+    loading = LAZY
     type = "nudge"
     notify_actions = ("created",)
     private = Field()

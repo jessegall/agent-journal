@@ -522,3 +522,13 @@ def register(*classes) -> None:
 
 CONTROLLERS = {c.resource.type: c for c in (Messages, Todos, Works, Docs, Reports, Facts, Rules, Reminders, Suggestions,
                                             Questions, Comments, Agents, Notifications, Notices, Reactions, Tools, Features, Connections, Plugins, Environments, Asks, Nudges)}
+
+
+def warm(root: Path) -> None:
+    for home in sorted((Path(root) / "environments").glob("*/")):
+        record = Record(Path(root), home.name)
+        for controller in CONTROLLERS.values():
+            try:
+                controller(record, actor=SYSTEM)._warm()
+            except (OSError, Refused):
+                continue
