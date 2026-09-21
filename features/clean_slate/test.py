@@ -11,7 +11,7 @@ def test_the_other_skills_and_hooks_are_set_aside_and_put_back(tmp_path, monkeyp
     record = fresh()
     project = record.root.parent
     for home in (project, tmp_path / "home"):
-        for name in ("journal-todos", "graphify"):
+        for name in ("journal-todos", "graphify", ".system"):
             (home / ".claude" / "skills" / name).mkdir(parents=True)
             (home / ".claude" / "skills" / name / "SKILL.md").write_text(name)
     settings = project / ".claude" / "settings.local.json"
@@ -20,14 +20,14 @@ def test_the_other_skills_and_hooks_are_set_aside_and_put_back(tmp_path, monkeyp
     before = settings.read_text()
 
     set_aside(record, project, "claude")
-    assert sorted(p.name for home in (project, tmp_path / "home") for p in (home / ".claude" / "skills").iterdir()) == ["journal-todos", "journal-todos"], \
-        "every skill that is not the journal's is moved out, in the project and at home"
+    assert sorted(p.name for home in (project, tmp_path / "home") for p in (home / ".claude" / "skills").iterdir()) == [".system", ".system", "journal-todos", "journal-todos"], \
+        "every skill that is not the journal's is moved out, in the project and at home, and a hidden folder like Codex's .system is left alone"
     assert json.loads(settings.read_text()) == {"model": "opus", "hooks": {"Stop": [{"hooks": [{"type": "command", "command": JOURNAL}]}]}}, \
         "only the journal's hooks stay, the rest of the file is untouched"
     assert others(project, "claude") == ([], []), "nothing else is left to set aside"
 
     put_back(record)
-    assert (sorted(p.name for p in (project / ".claude" / "skills").iterdir()), settings.read_text()) == (["graphify", "journal-todos"], before), \
+    assert (sorted(p.name for p in (project / ".claude" / "skills").iterdir()), settings.read_text()) == ([".system", "graphify", "journal-todos"], before), \
         "putting back restores every skill and the hook file as it was"
     assert put_back(record) == 0, "a second put back has nothing to do"
 
