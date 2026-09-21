@@ -73,3 +73,15 @@ def test_a_new_session_is_greeted_in_its_terminal_even_before_its_engine_starts(
     engine.agent.driver.last_report = lambda: SimpleNamespace(title="claude-1", at=time.time())
     engine.deliver()
     assert [engine.agent.typed(e) for e in engine.agent.pending] == [True], "the greeting waits to be typed, never marked read as history"
+
+
+def test_a_restarted_engine_knows_its_session_before_the_agent_acts_again():
+    import time
+    from controllers.types import Agents
+    from engine.sessions import Sessions
+    from providers import DRIVERS
+    record = fresh()
+    agents = Agents(record, actor="system")
+    agents.update(agents.by_session("claude-1").n, provider="claude", event="Stop", inbox="/tmp/cc-socks/777.sock", at=time.time() - 600)
+    Sessions(record.root).bind("claude-777", record.env, pid=777, provider="claude")
+    assert DRIVERS["claude"](record, "claude-777")._report().title == "claude-1", "found by its process, not by a hook after the restart"
