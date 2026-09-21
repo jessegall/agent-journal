@@ -10,7 +10,7 @@ from engine.sessions import Sessions
 from resources import types
 from resources.base import AGENT, SECTION, SYSTEM, Refused, check_title, names, titled
 from resources.shapes import LEVELS
-from engine.stored import read_json
+from engine.stored import read_json, write_json
 from engine.proc import ran
 from engine import runtime
 
@@ -487,6 +487,9 @@ class Asks(Controller):
     def driving(self) -> dict:
         return read_json(driver_file(self.record.root, self.record.env), {})
 
+    def _drive(self, on: bool, url: str = "", title: str = "") -> None:
+        write_json(driver_file(self.record.root, self.record.env), {"on": bool(on), "url": url, "title": title, "at": time.time()})
+
     def ask(self, op: str, *args: str, wait: int = 30):
         if op not in OPS:
             raise Refused(f"an ask is one of {' '.join(OPS)}")
@@ -517,6 +520,12 @@ class Asks(Controller):
 
 class Nudges(Controller):
     resource = types.Nudge
+
+    def _whispered(self, session: str) -> str:
+        mine = [n for n in self.unread() if n.private and n.session == session]
+        for n in mine:
+            self.read(n.n)
+        return "\n".join(dict.fromkeys(f"{n.title}{' — ' + n.brief if n.brief else ''}" for n in mine))
 
 
 def register(*classes) -> None:
