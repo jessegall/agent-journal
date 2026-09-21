@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.59.0 — Tags take named arguments
+
+Messages 1635 and 1640, to-do 630. The first word of a tag names its target, and named arguments may follow in any order: `[!fact="the port is 8423", keywords=("port", "server")]` files the fact with its keywords, which 2.57.0 made required. Each argument reaches the command as `--set name=value`, and a list in brackets becomes a comma list. The tag is taken off the shown message whole, arguments included.
+
+What to do about it: `journal upgrade`.
+
 ## 2.58.0 — Inspectors stack
 
 Message 1447, to-do 609. Clicking a resource while an inspector is open used to replace it. Now the new inspector opens on top of it, and the one below shows as an edge behind it. Closing the top one returns to the one below, and a resource that is already in the stack moves to the top. The whole stack lives in the address, as `?open=todo:5,plan:2`, so it survives a reload.

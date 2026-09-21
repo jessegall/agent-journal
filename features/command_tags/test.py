@@ -125,3 +125,16 @@ def test_a_reply_shown_on_screen_is_posted_even_when_the_transcript_never_gets_i
     displayed(record.root, {**base, "index": 1, "final": True, "delta": "pieces"})
     displayed(record.root, {**base, "message_id": "m2", "index": 0, "final": True, "delta": f"[!reply:{message.n}] shown in two pieces"})
     assert [c.title for c in Comments(record, actor="system").linked_to(message.ref)] == ["shown in two pieces"], "joined, posted once"
+
+
+def test_a_tag_passes_its_named_arguments_to_the_command_in_any_order(tmp_path):
+    from engine.hooks import handle
+    from providers import PROVIDERS
+    from controllers.types import Facts
+    record = fresh()
+    engine = watching(record, tmp_path / "none.jsonl")
+    said = '[!fact="the port is 8423", keywords=("port", "8423")]\nthe server says so'
+    handle(PROVIDERS["claude"](), record.root, record.env, {"hook_event_name": "Stop", "session_id": "claude-1", "last_assistant_message": said})
+    engine.announce_written()
+    fact = Facts(record, actor="system").all()[-1]
+    assert (fact.title, fact.brief, fact.data["keywords"]) == ("the port is 8423", "the server says so", ["port", "8423"]), "keywords ride on the tag"

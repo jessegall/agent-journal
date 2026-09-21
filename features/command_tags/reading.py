@@ -4,9 +4,12 @@ REPLY = "reply"
 RUNS = {REPLY: "message reply {n} {text}", "log": "work log {text} --n {n}", "end": "work end {n} --how {text}",
         "todo": "todo create {name} --brief {text}", "fact": "fact create {name} --brief {text}"}
 RETIRED = ("discovery", "correction", "blocked", "info")
-ARGUMENT = r'(?::[0-9]+|="[^"]*")?'
+VALUE = r'(?:"[^"]*"|\([^)]*\)|[^,\]\s]+)'
+EXTRA = r'\s*,\s*[a-z_]+=' + VALUE
+ARGUMENT = r'(?::[0-9]+|="[^"]*")?(?:' + EXTRA + r')*'
 REPLIED = re.compile(r"\bjournal\s+message\s+reply\s+(\d+)")
-CARRIED = re.compile(r'^[ \t]*(?:>\s?)?(?:\*\*)?\[!([a-z]+)(?::([0-9]+)|="([^"]*)")\]', re.M)
+CARRIED = re.compile(r'^[ \t]*(?:>\s?)?(?:\*\*)?\[!([a-z]+)(?::([0-9]+)|="([^"]*)")((?:' + EXTRA + r')*)\]', re.M)
+NAMED = re.compile(r'([a-z_]+)=(' + VALUE + r')')
 
 
 def pattern(names) -> re.Pattern:
@@ -35,4 +38,9 @@ def stripped(text: str, settings: dict) -> str:
 
 
 def replies(text: str) -> bool:
-    return any(name == REPLY and (n or argument) for name, n, argument in CARRIED.findall(text))
+    return any(name == REPLY and (n or argument) for name, n, argument, _ in CARRIED.findall(text))
+
+
+def named(extras: str) -> dict[str, str]:
+    return {key: ",".join(re.findall(r'"([^"]*)"', value)) if value.startswith("(") else value.strip('"')
+            for key, value in NAMED.findall(extras)}
