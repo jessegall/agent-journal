@@ -20,7 +20,7 @@ class Permissions(Feature):
         agent = self.agent(event, record)
         if not agent or agent.subagent:
             return
-        open_ = [n for n in Notices(record, actor=SYSTEM)._standing() if n.data.get("action") == PERMISSION and n.data.get("session") == agent.title]
+        open_ = [n for n in self.standing(record, Notices) if n.data.get("action") == PERMISSION and n.data.get("session") == agent.title]
         asking = agent.asking or {}
         if asking and not open_:
             self.journal.notice(record, "waiting", tool=asking.get("tool") or "", said=asking.get("said") or "", tone="warn", session=agent.title, action=PERMISSION)

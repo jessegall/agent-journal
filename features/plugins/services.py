@@ -6,19 +6,18 @@ from controllers.types import Notices
 from engine.hooks import default_env
 from engine.record import Record
 from engine.services import BLOCKED, FAILED, log_file, states
-from resources.base import SYSTEM
 
 WATCH = 5.0
 TOLD = "service"
 
 
-def watch(root: Path, enabled, journal) -> None:
-    threading.Thread(target=keep, args=(Path(root), enabled, journal), daemon=True).start()
+def watch(root: Path, feature) -> None:
+    threading.Thread(target=keep, args=(Path(root), feature), daemon=True).start()
 
 
-def keep(root: Path, enabled, journal) -> None:
+def keep(root: Path, feature) -> None:
     while True:
-        told(root, enabled, journal)
+        told(root, feature)
         time.sleep(WATCH)
 
 
@@ -26,17 +25,17 @@ def here(root: Path) -> Record:
     return Record(Path(root), default_env(Path(root)))
 
 
-def told(root: Path, enabled, journal) -> list[str]:
+def told(root: Path, feature) -> list[str]:
     record = here(root)
-    if not enabled(record):
+    if not feature.enabled(record):
         return []
-    open_ = {n.data.get(TOLD): n for n in Notices(record, actor=SYSTEM)._standing() if n.data.get(TOLD)}
+    open_ = {n.data.get(TOLD): n for n in feature.standing(record, Notices) if n.data.get(TOLD)}
     said = []
     for sid, state in states(root).items():
         failing = state.get("state") in (FAILED, BLOCKED)
         if failing and sid not in open_:
-            journal.notice(record, "stopped", name=sid, why=state.get("why") or "it stopped", log=log_file(root, sid), tone="warn", **{TOLD: sid})
+            feature.journal.notice(record, "stopped", name=sid, why=state.get("why") or "it stopped", log=log_file(root, sid), tone="warn", **{TOLD: sid})
             said.append(sid)
         if not failing and sid in open_:
-            journal.clear(record, open_[sid], "it is running again")
+            feature.journal.clear(record, open_[sid], "it is running again")
     return said

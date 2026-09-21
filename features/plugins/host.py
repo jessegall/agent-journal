@@ -168,12 +168,12 @@ class Host:
             f.write(f"{why}\n")
         count = self.trouble.get(plugin, {}).get("failures", 0) + 1
         waited = min(BACKOFF * 2 ** max(0, count - PATIENCE), LONGEST_WAIT) if count >= PATIENCE else 0.0
-        told = self.trouble.get(plugin, {}).get("notice", 0)
+        told = self.trouble.get(plugin, {}).get("told")
         if count == PATIENCE:
             told = self.journal.notice(record, "failing", name=plugin, plugin=plugin, why=str(why).strip().splitlines()[-1], log=where, tone="warn")
-        self.trouble[plugin] = {"failures": count, "until": (now or time.time()) + waited, "notice": told}
+        self.trouble[plugin] = {"failures": count, "until": (now or time.time()) + waited, "told": told}
 
     def cleared(self, record, plugin: str) -> None:
-        told = self.trouble.pop(plugin, {}).get("notice")
+        told = self.trouble.pop(plugin, {}).get("told")
         if told:
             self.journal.clear(record, told, "the plugin is answering again")

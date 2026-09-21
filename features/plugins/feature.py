@@ -53,7 +53,7 @@ class Plugins(Feature):
 
     def host(self, root: Path) -> None:
         threading.Thread(target=watch, args=(Path(root), self.journal), daemon=True).start()
-        services.watch(Path(root), self.enabled, self.journal)
+        services.watch(Path(root), self)
 
     @gate
     def guard(self, provider, record, hook, session) -> str:
