@@ -32,6 +32,7 @@ class Behaviour:
 
 
 SWITCHES: dict[str, dict] = {}
+GENERATION = [0]
 
 
 def booted(record) -> dict[str, bool]:
@@ -44,10 +45,15 @@ def switches(record) -> dict[str, bool]:
 
 
 def rebooted(event=None, record=None) -> None:
+    GENERATION[0] += 1
     if record is None:
         SWITCHES.clear()
     else:
         booted(record)
+
+
+def generation() -> int:
+    return GENERATION[0]
 
 
 MARKS: dict[str, str] = {}
