@@ -233,7 +233,7 @@ async function tick() {
     const env = route.value.env;
     store.bar = await http.poll(`/${env}/bar`);
     if (ticks % 2) return;
-    store.agents = await http.poll(`/${env}/agent`);
+    store.agents = (await http.poll(`/${env}/agent?completed=1`)).rows;
     if (ticks % 10) return;
     store.pages = await http.poll("/pages");
     const last = store.events.length ? store.events[store.events.length - 1].id : 0;
