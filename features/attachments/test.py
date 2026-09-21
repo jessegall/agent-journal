@@ -9,7 +9,7 @@ from features.attachments import feature
 from resources.base import USER
 from tests.conftest import fresh
 from controllers.types import Agents, Messages, Nudges
-from commands.cli import search_text
+from commands.queries import search_text
 from commands.http import dispatch
 from resources.base import SYSTEM, USER
 from tests.conftest import fresh, refused

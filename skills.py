@@ -4,7 +4,7 @@ import shutil
 from pathlib import Path
 
 import features
-from commands.cli import actions
+from commands.parser import actions
 from controllers.base import COMMANDS
 from controllers.types import CONTROLLERS
 from providers import PROVIDERS

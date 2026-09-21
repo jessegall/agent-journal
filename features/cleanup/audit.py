@@ -2,7 +2,7 @@ import re
 import time
 from argparse import _SubParsersAction
 
-from commands.cli import parser
+from commands.parser import parser
 from controllers.types import Facts, Questions, Reminders, Rules, Todos
 from resources.base import SYSTEM
 

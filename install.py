@@ -7,7 +7,7 @@ import tempfile
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from commands.cli import OVER_HTTP  # noqa: E402
+from commands.cli import served  # noqa: E402
 from migrations import run as migrate  # noqa: E402
 from features.law.policy import brief  # noqa: E402
 from providers import PROVIDERS  # noqa: E402
@@ -91,7 +91,10 @@ case "$said" in
 esac
 fi
 """
-ASKS = ASKS.replace("__SERVED__", "|".join(sorted(OVER_HTTP)))
+
+
+def asks() -> str:
+    return ASKS.replace("__SERVED__", "|".join(sorted(served())))
 
 SHIM = """#!/bin/sh
 dir="$(pwd)"
@@ -115,7 +118,7 @@ __ASKS__exec "__PYTHON__" "__SCRIPT__" --root "$root" "$@"
 
 
 def launcher(python: str, script: Path, root: Path) -> str:
-    return (LAUNCHER.replace("__ASKS__", ASKS).replace("__PYTHON__", python)
+    return (LAUNCHER.replace("__ASKS__", asks()).replace("__PYTHON__", python)
             .replace("__SCRIPT__", str(script)).replace("__ROOT__", str(root)))
 
 
@@ -127,7 +130,7 @@ def alias(project: Path, root: Path) -> Path:
     bin_ = Path.home() / ".local" / "bin"
     if bin_.is_dir():
         shim = bin_ / "journal"
-        shim.write_text(SHIM.replace("__ASKS__", ASKS))
+        shim.write_text(SHIM.replace("__ASKS__", asks()))
         shim.chmod(shim.stat().st_mode | stat.S_IEXEC)
     return f
 
