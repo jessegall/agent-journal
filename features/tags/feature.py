@@ -1,5 +1,6 @@
 import io
 import re
+import threading
 import time
 
 from controllers.types import Agents
@@ -7,9 +8,11 @@ from features import trigger
 from engine.stored import read_json, write_json
 from features.base import Behaviour, Feature, event, formats, interceptor, Line
 from resources.base import AGENT, SYSTEM
-from engine.transcript import last_said, last_turn
+from engine.transcript import IDLE, last_said, turns
 
 TAGS = ("discovery", "correction", "blocked", "info", "reply")
+RECENT_TURNS, RECENT_SECONDS = 6, 1800.0
+MARKING = threading.Lock()
 RUNS = {"reply": "message reply {n} {text}", "log": "work log {text} --n {n}", "end": "work end {n} --how {text}",
         "todo": "todo create {name} --brief {text}", "fact": "fact create {name} --brief {text}"}
 PLACES = {"info": "bar"}
@@ -48,8 +51,7 @@ class Tags(Feature):
                                       "Said at the end of the turn, every turn, until one is used",
                                       trigger={"on": trigger.IDLE}),
                   "running": Behaviour("Run the command a tag stands for",
-                                       "A tag carrying a number runs its command with the turn as the text",
-                                       trigger={"on": trigger.IDLE}),
+                                       "A tag carrying a number runs its command with the turn as the text, once the turn is written"),
                   "replying": Behaviour("Remind the agent to reply by tag",
                                         "When the agent runs journal message reply, it is told the reply tag does the same")}
     NAMES = "names"
@@ -86,25 +88,28 @@ class Tags(Feature):
 
     def already(self, record, agent, turn) -> bool:
         f = record.root / "runtime" / f"tagged-{agent.title}.json"
-        done = read_json(f, {})
         key = f"{agent.transcript}:{turn.line}"
-        if key in done:
-            return True
-        write_json(f, {**done, key: time.time()})
+        with MARKING:
+            done = read_json(f, {})
+            if key in done:
+                return True
+            write_json(f, {**done, key: time.time()})
         return False
 
     @event("agent.updated")
     def expand(self, event, record) -> None:
-        from commands.cli import run
         agent = self.agent(event, record)
-        if not agent or not self.due(record, agent, "running"):
+        if not agent or not agent.transcript or not self.on(record, "running"):
             return
-        turn = last_turn(record, agent)
-        carried = CARRIED.findall(turn.text) if turn else []
-        if not carried or self.already(record, agent, turn):
-            return
+        written = turns(record, agent)[-RECENT_TURNS:]
+        for turn in written if agent.status == IDLE else written[:-1]:
+            if time.time() - turn.at < RECENT_SECONDS and CARRIED.search(turn.text) and not self.already(record, agent, turn):
+                self.carried(record, agent, turn)
+
+    def carried(self, record, agent, turn) -> None:
+        from commands.cli import run
         runs, text = self.runs(record), CARRIED.sub("", self.reader(record).sub("", turn.text)).strip()
-        for name, n, argument in carried:
+        for name, n, argument in CARRIED.findall(turn.text):
             if name not in runs:
                 continue
             said, wrong = io.StringIO(), io.StringIO()
