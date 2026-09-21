@@ -5,6 +5,8 @@ from features.base import Feature, Line, event, handles
 from features.plans.progress import current_phase, held, running
 from resources.base import AGENT, SYSTEM
 from features.plans.resource import PHASE
+from features.journal import Journal
+from features.plans.interceptors import RefusePlanMode
 
 
 class PlansFeature(Feature):
@@ -20,7 +22,12 @@ class PlansFeature(Feature):
                             "journal plan phase {{n}} \"<title>\" --when \"<complete when>\" for each phase, --checkpoint where the user should look; then journal plan stage {{n}} todos"),
              "todos": Line("plan {{n}} is at its to-dos",
                            "file each phase's rows and put them under it with journal plan todos {{n}} <phase> <rows...>; when every phase has rows, journal plan ready {{n}}"),
-             "ready": Line("every phase of plan {{n}} has its to-dos", "journal plan ready {{n}} hands it to the user, who activates it")}
+             "ready": Line("every phase of plan {{n}} has its to-dos", "journal plan ready {{n}} hands it to the user, who activates it"),
+             "plan mode": Line("plan mode is not used in a journal project",
+                               "write the plan as a journal plan instead: journal plan create \"<name>\" --set goal=\"<what is true when done>\", then its phases and rows")}
+
+    def register(self, journal: Journal) -> None:
+        journal.agent.interceptor(RefusePlanMode())
 
     @event("plan.created")
     @event("plan.updated")

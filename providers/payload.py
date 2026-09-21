@@ -34,6 +34,10 @@ class ToolUse:
                    response=response if isinstance(response, dict) else {})
 
     @property
+    def plans(self) -> bool:
+        return self.name == "EnterPlanMode"
+
+    @property
     def said(self) -> str:
         return " ".join(part for part in (self.command, self.file_path, self.pattern, self.url, self.skill, self.subagent_type, self.task_name, self.written) if part)
 
