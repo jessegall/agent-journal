@@ -122,11 +122,23 @@ def upgrade_here(ctx) -> str:
 
 def halt(ctx) -> str:
     from engine.stop import ask, clear, gone
-    root = ctx["record"].root
+    record = ctx["record"]
+    root = record.root
+    left = still_open(record)
     ask(root)
     went = gone(root)
     clear(root)
-    return "the journal is stopped: its viewer, its engine and every service it ran" if went else "the viewer is still answering; see .journal/runtime/viewer.log"
+    said = "the journal is stopped: its viewer, its engine and every service it ran" if went else "the viewer is still answering; see .journal/runtime/viewer.log"
+    return "\n".join([said, *left])
+
+
+def still_open(record) -> list[str]:
+    from controllers.types import Works
+    from features.messages.answering import unanswered
+    works = [f"work {w.n} is still open: {w.title} - journal work end {w.n} --how \"<what landed>\", or journal work park \"<why>\" --n {w.n}"
+             for w in Works(record, actor=SYSTEM)._standing()]
+    messages = [f"message {m.n} was read and never answered: {m.title}" for m in unanswered(record)]
+    return works + messages
 
 def supervise(ctx, agent: str) -> str:
     from engine.terminal import run as run_supervisor
