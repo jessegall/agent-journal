@@ -93,7 +93,9 @@ class Record:
                     fh.write(json.dumps(asdict(e)) + "\n")
             if self.memo is not None:
                 self.memo.clear()
-            if not quiet:
+            if quiet:
+                bus.shown(e, self)
+            else:
                 bus.emit(e, self)
             return e
         if held_back(release):

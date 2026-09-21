@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.16.4 — A check's progress bar counts real steps
+
+A running check counts what it has done against what it has to do: an explicit `12/40` in its output, or one mark per finished test against the count pytest printed or the count of the check's last run; a printed percentage comes next, and only a check that gives none of these is estimated from its last run's time. The card and the check's page show "39 of 82 done", with the time taken and the time left, updating every second: a stamp now moves the row's updated time so the server's cache sees it, and the event stream now carries quiet events, which it never did. A reply that carries a file is no longer answered with the reply tag, and a check's runs are told to the user, not typed to the agent; a failure still is.
+
+What to do about it: `journal upgrade`.
+
 ## 2.16.3 — Private whispers reach their session, and a removed plugin takes its services
 
 A private nudge names the session it is meant for by Claude's own session id, but the engine compared it with the terminal's name, so every private whisper — an unread inbox, a message waiting for an answer, the reply tag, a stale skill — counted as meant for another session and was never spoken. They reach their session now. A removed or disabled plugin's services are stopped, their process groups torn down, and their files removed, so nothing it ran is left running or listed.

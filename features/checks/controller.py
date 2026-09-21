@@ -12,17 +12,33 @@ from resources.base import Refused
 TIMEOUT = 600
 SAID_LINES = 40
 KEPT_RUNS = 20
-TOLD_EVERY = 1.0
+STAMP_EVERY = 1.0
 PERCENT = re.compile(r"(\d{1,3})%")
+COUNTED = re.compile(r"\b(\d+)\s*/\s*(\d+)\b")
+ITEMS = re.compile(r"\[(\d+) items?\]|collected (\d+) items?")
+STEPS = re.compile(r"^[.FEsxX]+(?=\s*(?:\[\s*\d+%\])?\s*$)", re.M)
 
 
 def tail(output: str) -> str:
     return "\n".join(output.strip().splitlines()[-SAID_LINES:])
 
 
-def percent(output: str) -> int | None:
-    found = PERCENT.findall(output[-2000:])
-    return min(100, int(found[-1])) if found else None
+def steps(output: str) -> int:
+    return sum(len(found) for found in STEPS.findall(output))
+
+
+def progress(output: str, last_steps: int = 0) -> dict:
+    counted = COUNTED.findall(output[-2000:])
+    if counted and 0 < int(counted[-1][1]) and int(counted[-1][0]) <= int(counted[-1][1]):
+        done, total = int(counted[-1][0]), int(counted[-1][1])
+        return {"done": done, "total": total, "percent": round(done / total * 100, 1)}
+    listed = ITEMS.findall(output)
+    total = int(next(filter(None, listed[-1]))) if listed else last_steps
+    done = steps(output)
+    if done and total:
+        return {"done": min(done, total), "total": total, "percent": round(min(done, total) / total * 100, 1)}
+    printed = PERCENT.findall(output[-2000:])
+    return {"percent": min(100, int(printed[-1]))} if printed else {"percent": None}
 
 
 class Checks(Controller):
@@ -46,19 +62,19 @@ class Checks(Controller):
 
     def _ran(self, n: int):
         check = self.load(n)
-        began = time.time()
+        began, last_steps = time.time(), int((check.last or {}).get("steps") or 0)
         self.stamp(n, running={"at": began, "said": "", "percent": None})
-        told = [began]
+        stamped_at = [began]
 
-        def heard(output: str) -> None:
-            if time.time() - told[0] >= TOLD_EVERY:
-                told[0] = time.time()
-                self.stamp(n, running={"at": began, "said": tail(output), "percent": percent(output)})
+        def on_output(output: str) -> None:
+            if time.time() - stamped_at[0] >= STAMP_EVERY:
+                stamped_at[0] = time.time()
+                self.stamp(n, running={"at": began, "said": tail(output), **progress(output, last_steps)})
 
-        code, output = streamed(["/bin/sh", "-c", check.command], self.record.root.parent, TIMEOUT, heard)
+        code, output = streamed(["/bin/sh", "-c", check.command], self.record.root.parent, TIMEOUT, on_output)
         check = self.load(n)
         check.last = {"ok": code == 0, "code": -1 if code is None else code, "at": began, "took": round(time.time() - began, 2),
-                      "said": tail(output) or ("" if code is not None else "the command did not finish")}
+                      "steps": steps(output), "said": tail(output) or ("" if code is not None else "the command did not finish")}
         check.runs = [{k: check.last[k] for k in ("ok", "code", "at", "took")}, *(check.runs or [])][:KEPT_RUNS]
         check.running = {}
         return self.save(check, "updated", ran=True)

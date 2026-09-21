@@ -128,6 +128,7 @@ class Controller(Stored, Files, Links):
     def stamp(self, n: int, **data) -> Resource:
         r = self.load(n)
         r.data.update(self._shaped(data))
+        r.updated = time.time()
         write_text(self.path(r.n), r.dump())
         self.record.emit(self.type, r.n, "stamped", self.actor, quiet=True, fields=sorted(data))
         return r
