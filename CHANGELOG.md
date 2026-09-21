@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.23.2 — A line typed into the terminal is always submitted
+
+The engine cleared the input and typed the line in one burst, so Claude took it for a paste, stripped the control keys and waited with "review and press Enter to send" — the first Enter was swallowed. Whether the line had gone was judged from the last few hundred bytes of screen output, which Claude only partly redraws, so the leftover line went unnoticed. The engine now pauses after clearing, and knows a line was taken when the agent's next hook arrives; until then it presses Enter again, up to three times.
+
+What to do about it: `journal upgrade`.
+
 ## 2.23.1 — The greeting is typed within a second of the session starting
 
 At startup the agent asks the terminal for its version, and the terminal answers on the keyboard input with a DCS string (`ESC P >|iTerm2 … ESC \`). The supervisor did not know that shape of reply and took it for the user typing, so the engine held everything for its ten-second typing hold: the greeting always came ten seconds late. DCS, APC, PM and SOS replies are recognised as terminal codes now.
