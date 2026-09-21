@@ -25,7 +25,6 @@ def test_writing_a_plan_lays_out_phases_and_advances_through_them_to_done(env):
 
     plan = by_agent.create("Port everything", goal="it all runs on v2")
     assert (plan.data["status"], plan.data["phases"]) == ("building", []), "a plan the agent creates is building, with no phases"
-    assert by_user.create("The user's own").data["status"] == "draft", "a plan the user creates is a draft"
     assert refused(lambda: by_user.activate(plan.n)) == f"plan {plan.n} is building, not one that can become active", \
         "a plan still being built cannot be started"
     by_agent.phase(plan.n, "First", when="the first is done")
@@ -140,6 +139,7 @@ def test_an_agent_building_a_plan_is_told_each_next_step():
     plans.place(n, 1, [Todos(record, actor="agent").create("write it").n])
     notified = [t for t in nudges(record) if f"plan {n}" in t]
     assert notified == [f"plan {n} is building - add its phases", f"plan {n} is at its to-dos", f"every phase of plan {n} has its to-dos"], notified
+    assert (Plans(record, actor="user").create("a digest").status, nudges(record)[-1]) == ("building", f"the user started plan {n + 1}, a digest - build it with them")
 
 
 def test_claude_plan_mode_is_refused_for_a_journal_plan():

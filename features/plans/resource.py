@@ -9,7 +9,8 @@ PHASE = names("title", "when", "checkpoint", "brief", "todos")
 class Plan(Shape, Resource):
     type = "plan"
     notify_actions = ("updated",)
-    event_labels = {"created": "Plan drafted", "completed": "Plan acknowledged"}
+    event_labels = {"created": "Plan started", "completed": "Plan acknowledged"}
+    labels = {"abstract": "One line: what is true when it is done", "brief": "What you want, in your own words; the agent builds the plan with you from here"}
     status_labels = {"complete": "acknowledging"}
     data_fields: ClassVar[list[Field]] = [
         Field(name="status"),
