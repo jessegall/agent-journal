@@ -102,7 +102,9 @@ class Controller:
         if self.type not in SAID_TWICE:
             return None
         since = time.time() - TWICE_WITHIN
-        return next((r for r in reversed(self.all()) if r.created >= since and r.title == title and r.brief == brief
+        lately = [row["n"] for row in self.summaries() if not row["deleted"] and row["updated"] >= since]
+        said = (self.load(n) for n in reversed(lately[-20:]))
+        return next((r for r in said if r.created >= since and r.title == title and r.brief == brief
                      and r.seen[:1] == [self.actor] and (not about or about in r.refs)), None)
 
     def create(self, title: str, abstract: str = "", brief: str = "", **data) -> Resource:
