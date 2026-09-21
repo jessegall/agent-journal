@@ -28,9 +28,13 @@ def catalogue(root: Path) -> list[dict]:
     return list(out.values())
 
 
+def subjects() -> set[str]:
+    folder = Path(__file__).resolve().parents[2] / "skills"
+    return {"journal", *(skill_name(path.stem) for path in folder.glob("*.md") if path.name != "journal.md")}
+
+
 def managed() -> set[str]:
-    subjects = Path(__file__).resolve().parents[2] / "skills"
-    return {"journal", *(skill_name(name) for name in features.names()), *(skill_name(path.stem) for path in subjects.glob("*.md") if path.name != "journal.md")}
+    return subjects() | {skill_name(name) for name in features.names()}
 
 
 def available(root: Path) -> set[str]:
@@ -47,7 +51,7 @@ def loaded_at(agent) -> dict[str, float]:
 def chosen(record: Record) -> list[str]:
     named = record.setting(Record.skills)
     current = managed() & available(record.root.parent)
-    return sorted(current if named is None else current & set(named))
+    return sorted(current & (subjects() if named is None else set(named)))
 
 
 def skills(record: Record, n: int = 0) -> list[dict]:
