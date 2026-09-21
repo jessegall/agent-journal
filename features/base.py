@@ -3,15 +3,12 @@ import hashlib
 import re
 import time
 from abc import ABC
-from functools import cached_property, wraps
+from functools import cached_property
 from typing import ClassVar
 
-from controllers.base import COMMANDS, HANDLERS
 from controllers.types import Agents, Features
-from engine import bus
 from features import trigger
-from engine.hooks import POLICIES, gate_file
-from features.format import FORMATTERS
+from engine.hooks import gate_file
 from features.journal import Journal
 from features.settings import Setting, Settings
 from engine.text import paragraphs
@@ -81,31 +78,6 @@ def generation() -> int:
     return GENERATION[0]
 
 
-MARKS: dict[str, str] = {}
-
-
-def marker(name: str):
-    MARKS.setdefault(name, name)
-
-    def mark(*args):
-        bare = args[0] if len(args) == 1 and callable(args[0]) else None
-
-        def put(fn):
-            fn.marks = {**getattr(fn, "marks", {}), name: (*getattr(fn, "marks", {}).get(name, ()), *(() if bare else args))}
-            return fn
-        return put(bare) if bare else put
-    return mark
-
-
-event = marker("event")
-gate = marker("gate")
-formats = marker("formats")
-command = marker("command")
-handles = marker("handles")
-textformatter = formats
-interceptor = gate
-
-
 class FeatureDetails:
     name: ClassVar[str] = ""
     title: ClassVar[str] = ""
@@ -136,7 +108,6 @@ class Feature(ABC):
     lines: ClassVar[dict[str, Line]] = {}
     settings: ClassVar[list[Setting]] = []
     aliases: ClassVar[tuple] = ()      # names this feature used to have; a pair says the old feature is now one of its behaviours
-    declares: ClassVar[tuple] = ()
     runs_for_subagents: ClassVar[bool] = False
     default: ClassVar[bool] = True
     fixed: ClassVar[bool] = False
@@ -151,53 +122,11 @@ class Feature(ABC):
         if cls.name:
             REGISTRY[cls.name] = cls
 
-    def marked(self, name: str) -> list[tuple[object, tuple]]:
-        return [(getattr(self, attr), fn.marks[name]) for attr in dir(type(self))
-                for fn in [getattr(type(self), attr)] if callable(fn) and name in getattr(fn, "marks", {})]
-
-    def everyone_marked(self, name: str) -> list[tuple[object, tuple]]:
-        from features import FEATURES
-        return [found for feature in FEATURES.values() for found in feature.marked(name)]
-
-    def listeners(self) -> list[tuple[str, object]]:
-        return [(pattern, fn) for fn, patterns in self.marked("event") for pattern in patterns]
-
-    def refusals(self) -> list:
-        return [fn for fn, _ in self.marked("gate")]
-
-    def formatters(self) -> list[tuple[object, tuple]]:
-        return self.marked("formats")
-
-    def commands(self) -> list[tuple[object, tuple]]:
-        return self.marked("command")
-
-    def guarded(self, fn):
-        @wraps(fn)
-        def run(controller, *args, **kwargs):
-            if not self.enabled(controller.record):
-                raise Refused(f"the {self.name} feature is off")
-            return fn(controller, *args, **kwargs)
-        return run
-
     def register(self, journal: Journal) -> None:
         pass
 
     def wire(self) -> None:
         self.register(self.journal)
-        for name in self.declares:
-            MARKS[name] = self.name
-        for fn, (target, *_) in self.marked("handles"):
-            HANDLERS.setdefault(target, []).append(lambda controller, fn=fn, **args: fn(controller, **args) if self.enabled(controller.record) else None)
-        for fn, (type_, *_) in self.commands():
-            COMMANDS.setdefault(type_, {})[fn.__name__] = self.guarded(fn)
-        for pattern, handler in self.listeners():
-            bus.on(pattern, handler, enabled=self.enabled)
-        for handler in self.refusals():
-            policy = lambda provider, record, payload, session, handler=handler: handler(provider, record, payload, session) if self.enabled(record) else ""  # noqa: E731
-            policy.feature = self
-            POLICIES.append(policy)
-        for shaper, where in self.formatters():
-            FORMATTERS.append((lambda text, record, shaper=shaper: shaper(text, record) if not record or self.enabled(record) else text, where))
 
     @classmethod
     def default_for(cls, root) -> bool:
@@ -304,7 +233,7 @@ class Feature(ABC):
 
     def describe(self) -> dict:
         return {"name": self.name, "title": self.title, "abstract": self.abstract, "help": self.help, "default": self.default, "fixed": self.fixed,
-                "listens": sorted({*(p for p, _ in self.listeners()), *self.journal.events.names}), "trigger": dict(self.trigger), "declares": list(self.declares),
+                "listens": sorted(set(self.journal.events.names)), "trigger": dict(self.trigger),
                 "behaviours": {key: b.describe() for key, b in self.behaviours.items()},
                 "lines": {key: line.describe() for key, line in self.lines.items()},
                 "settings": [s.describe() for s in self.settings]}
