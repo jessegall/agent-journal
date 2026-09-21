@@ -1,3 +1,4 @@
+import os
 import time
 from contextlib import contextmanager
 from pathlib import Path
@@ -7,21 +8,36 @@ from engine.record import Record
 from features.base import Behaviour, Feature
 from resources.base import SYSTEM
 
+DEVELOPING = "DEVELOPMENT_MODE"
 OVER = "is slower than its budget"
 THREW = "the viewer threw"
 SAID = 300
+
+
+
+def developing(project: Path) -> bool:
+    said = os.environ.get(DEVELOPING, "")
+    try:
+        said = said or next((line.split("=", 1)[1] for line in (project / ".env").read_text().splitlines() if line.strip().startswith(f"{DEVELOPING}=")), "")
+    except OSError:
+        pass
+    return said.strip().strip("'\"").lower() in ("1", "true", "yes", "on")
 
 
 class Faults(Feature):
     name = "faults"
     title_ = "Faults while developing"
     abstract_ = "While developing, what would otherwise pass in silence is reported: anything local that runs past its budget, and any error the viewer throws"
-    help_ = "Off unless you turn it on; it is for development, not for a release. budget: everything here runs on one machine against files, so anything over the budget is a bug — faults.budget.request, .hook and .command are milliseconds per environment, 50 by default, and 0 drops that budget. console: the viewer posts what it throws and it is filed the same way. One notification per target, carrying the worst time or the last words and how many times it happened."
+    help_ = "Starts on only while developing: DEVELOPMENT_MODE=true in the project's .env or the environment; everywhere else it starts off, and either way it can be switched. budget: everything here runs on one machine against files, so anything over the budget is a bug — faults.budget.request, .hook and .command are milliseconds per environment, 50 by default, and 0 drops that budget. console: the viewer posts what it throws and it is filed the same way. One notification per target, carrying the worst time or the last words and how many times it happened."
     default = False
     aliases = (("budget", "budget"),)
     behaviours = {"budget": Behaviour("Report anything slower than its budget", "Fifty milliseconds for a request, a hook or a command"),
                   "console": Behaviour("Report what the viewer throws", "An error in the client's console is filed and said to the agent")}
     budget = {"request": 50, "hook": 50, "command": 50}
+
+    @classmethod
+    def default_for(cls, root) -> bool:
+        return developing(Path(root).parent) if root else cls.default
 
     def milliseconds(self, record, kind: str) -> int:
         return int(record.budget.get(kind, self.budget.get(kind, 0)))
@@ -45,38 +61,27 @@ class Faults(Feature):
         self.file(record, f"{THREW} {said}"[:80], f"{said}\n\n{where}\n\n{stack}"[:SAID], kind="console", target=where, stack=stack)
 
 
-def feature(record, key: str):
-    from features import FEATURES
-    found = FEATURES.get("faults")
-    return found if found and found.on(record, key) else None
+    @contextmanager
+    def watched(self, root, env: str, kind: str, name: str):
+        began = time.perf_counter()
+        try:
+            yield
+        finally:
+            self.spent(root, env, kind, name, (time.perf_counter() - began) * 1000)
 
+    def spent(self, root, env: str, kind: str, name: str, took: float) -> None:
+        if took < min(self.budget.values() or [0]):
+            return
+        try:
+            record = Record(Path(root), env)
+            if self.on(record, "budget") and 0 < self.milliseconds(record, kind) < took:
+                self.slow(record, kind, name, took)
+        except (OSError, ValueError, KeyError):
+            return
 
-@contextmanager
-def watched(root, env: str, kind: str, name: str):
-    began = time.perf_counter()
-    try:
-        yield
-    finally:
-        spent(root, env, kind, name, (time.perf_counter() - began) * 1000)
-
-
-def spent(root, env: str, kind: str, name: str, took: float) -> None:
-    from features import FEATURES
-    known = FEATURES.get("faults")
-    if not known or took < min(known.budget.values() or [0]):
-        return
-    try:
+    def heard(self, root, env: str, said: str, where: str, stack: str) -> bool:
         record = Record(Path(root), env)
-        if feature(record, "budget") and 0 < known.milliseconds(record, kind) < took:
-            known.slow(record, kind, name, took)
-    except (OSError, ValueError, KeyError):
-        return
-
-
-def threw(root, env: str, said: str, where: str, stack: str) -> bool:
-    record = Record(Path(root), env)
-    found = feature(record, "console")
-    if not found:
-        return False
-    found.threw(record, said, where, stack)
-    return True
+        if not self.on(record, "console"):
+            return False
+        self.threw(record, said, where, stack)
+        return True

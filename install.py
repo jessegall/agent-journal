@@ -17,6 +17,7 @@ PACKAGE = Path(__file__).resolve().parent
 PACKAGE_DIRS = ("commands", "controllers", "engine", "extension", "features", "migrations", "providers", "resources", "skills", "support", "surfaces")
 PACKAGE_FILES = ("VERSION", "channel.py", "claude-status.sh", "hook.py", "hook.sh", "install.py", "journal.py", "serve.py", "skills.py")
 PACKAGE_TREES = (*PACKAGE_DIRS, "web/dist")
+LEFT_BEHIND = (".DS_Store", "test.py")
 REPOSITORY = "https://github.com/jessegall/agent-journal"
 SRC = "src"
 
@@ -25,12 +26,12 @@ def code(root: Path) -> Path:
     return root / SRC
 
 
-def package_files(root: Path) -> set[Path]:
+def package_files(root: Path, left: tuple = LEFT_BEHIND) -> set[Path]:
     files = {Path(name) for name in PACKAGE_FILES if (root / name).is_file()}
     for name in PACKAGE_TREES:
         base = root / name
         if base.is_dir():
-            files.update(f.relative_to(root) for f in base.rglob("*") if f.is_file() and f.name != ".DS_Store" and f.suffix != ".pyc" and "__pycache__" not in f.parts)
+            files.update(f.relative_to(root) for f in base.rglob("*") if f.is_file() and f.name not in left and f.suffix != ".pyc" and "__pycache__" not in f.parts)
     return files
 
 
@@ -39,7 +40,7 @@ def refresh(source: Path, target: Path) -> tuple[int, int]:
     if source == target:
         return 0, 0
     wanted = package_files(source)
-    existing = package_files(target)
+    existing = package_files(target, left=())
     gone = existing - wanted
     changed = {rel for rel in wanted if not (target / rel).is_file() or (source / rel).read_bytes() != (target / rel).read_bytes()}
     for rel in sorted(gone):

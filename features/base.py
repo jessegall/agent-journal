@@ -119,11 +119,15 @@ class Feature(ABC):
             FORMATTERS.append((lambda text, record, shaper=shaper: shaper(text, record) if not record or self.enabled(record) else text, where))
 
     @classmethod
+    def default_for(cls, root) -> bool:
+        return cls.default
+
+    @classmethod
     def on_for(cls, record) -> bool:
         if cls.fixed:
             return True
         row = Features(record, actor=SYSTEM).named(cls.name)
-        return bool(row.enabled) if row else record.features.get(cls.name, cls.default)
+        return bool(row.enabled) if row else record.features.get(cls.name, cls.default_for(record.root))
 
     def enabled(self, record) -> bool:
         return self.on_for(record)

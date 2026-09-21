@@ -121,14 +121,14 @@ async function saveTags(value) {
         .filter(Boolean);
     if (names.length) await saveSettings(route.value.env, {tags: {names}});
 }
-const SHUT = "journal.settings.shut";
-const shut = ref(remembered(SHUT, []));
-const open = (key) => !shut.value.includes(key);
+const OPENED = "journal.settings.opened";
+const opened = ref(remembered(OPENED, []));
+const open = (key) => opened.value.includes(key);
 
 function fold(key) {
-    shut.value = open(key) ? [...shut.value, key] : shut.value.filter((k) => k !== key);
+    opened.value = open(key) ? opened.value.filter((k) => k !== key) : [...opened.value, key];
     try {
-        localStorage.setItem(SHUT, JSON.stringify(shut.value));
+        localStorage.setItem(OPENED, JSON.stringify(opened.value));
     } catch (e) {}
 }
 const retention = computed(() => (store.settings && store.settings.keep) || {});
@@ -166,7 +166,7 @@ async function remove(e) {
     <section class="settings">
         <section class="group" :class="{shut: !open('project-identity')}">
             <header class="group-head" role="button" tabindex="0" @click="fold('project-identity')">
-                    <span class="fold" />
+                <span class="fold" />
                 <h2>Project identity</h2>
                 <p class="lead">The band across the viewer distinguishes this project from other open journals.</p>
             </header>
@@ -180,7 +180,7 @@ async function remove(e) {
         </section>
         <section class="group" :class="{shut: !open('chrome-extension')}">
             <header class="group-head" role="button" tabindex="0" @click="fold('chrome-extension')">
-                    <span class="fold" />
+                <span class="fold" />
                 <h2>Chrome extension</h2>
                 <p class="lead">Float the chat over any page, point at elements, send pictures, and let the agent drive the tab.</p>
             </header>
@@ -201,7 +201,7 @@ async function remove(e) {
         </section>
         <section class="group" :class="{shut: !open('features-on')}">
             <header class="group-head" role="button" tabindex="0" @click="fold('features-on')">
-                    <span class="fold" />
+                <span class="fold" />
                 <h2>Features on {{ route.env }}</h2>
                 <p class="lead">Each is a switch; its trigger says when it speaks to the agent.</p>
             </header>
@@ -239,7 +239,7 @@ async function remove(e) {
         </section>
         <section class="group" :class="{shut: !open('answers')}">
             <header class="group-head" role="button" tabindex="0" @click="fold('answers')">
-                    <span class="fold" />
+                <span class="fold" />
                 <h2>Answers</h2>
                 <p class="lead">How long a picked answer waits before it is saved, so it can be taken back.</p>
             </header>
@@ -263,7 +263,7 @@ async function remove(e) {
         </section>
         <section class="group" :class="{shut: !open('tags')}">
             <header class="group-head" role="button" tabindex="0" @click="fold('tags')">
-                    <span class="fold" />
+                <span class="fold" />
                 <h2>Tags</h2>
                 <p class="lead">The words a message may open with. The agent is told when it opens with none of them.</p>
             </header>
@@ -279,7 +279,7 @@ async function remove(e) {
         </section>
         <section class="group" :class="{shut: !open('delivery')}">
             <header class="group-head" role="button" tabindex="0" @click="fold('delivery')">
-                    <span class="fold" />
+                <span class="fold" />
                 <h2>Delivery</h2>
                 <p class="lead">How the engine gets a line to the agent. With both off it types into the terminal.</p>
             </header>
@@ -304,7 +304,7 @@ async function remove(e) {
         </section>
         <section class="group" :class="{shut: !open('keep')}">
             <header class="group-head" role="button" tabindex="0" @click="fold('keep')">
-                    <span class="fold" />
+                <span class="fold" />
                 <h2>Keep</h2>
                 <p class="lead">How long a finished row stays listed before it is archived; 0 keeps it.</p>
             </header>
@@ -330,7 +330,7 @@ async function remove(e) {
         </section>
         <section class="group" :class="{shut: !open('environments')}">
             <header class="group-head" role="button" tabindex="0" @click="fold('environments')">
-                    <span class="fold" />
+                <span class="fold" />
                 <h2>Environments</h2>
                 <p class="lead">Removing one keeps its record on disk; it leaves the sidebar.</p>
             </header>
@@ -347,7 +347,7 @@ async function remove(e) {
         </section>
         <section class="group" :class="{shut: !open('stop')}">
             <header class="group-head" role="button" tabindex="0" @click="fold('stop')">
-                    <span class="fold" />
+                <span class="fold" />
                 <h2>Stop</h2>
                 <p class="lead">
                     This closes the viewer, ends the engine and takes down every service a plugin runs. The agent's terminal stops with
@@ -544,7 +544,9 @@ h2 {
     background: var(--bg-2);
     color: var(--text);
     font-size: 12.5px;
-    transition: border-color 0.12s ease, background 0.12s ease;
+    transition:
+        border-color 0.12s ease,
+        background 0.12s ease;
 }
 
 .days:hover,

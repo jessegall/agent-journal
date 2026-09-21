@@ -1,5 +1,11 @@
 # agent-journal
 
+## Tests
+
+The default commands carry no hand-written tests. `tests/test_every_action.py` loops over every registered resource type and every action on its controller, and `tests/test_the_gate.py` loops over every provider; between them they cover create, read, update, complete and the rest for every type.
+
+A feature is allowed one test file, `features/<name>/test.py`, beside its `feature.py`, under 150 lines — `tests/test_the_suite.py` holds both. It exists only when the feature does something the generated runs cannot see: a hold on writes, a nudge, a file on disk, a process. A feature that only adds commands has none.
+
 <!-- BEGIN: agent-journal law (auto-generated, run `journal upgrade`) -->
 
 ## The journal's law

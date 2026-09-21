@@ -5,6 +5,7 @@ import re
 import subprocess
 import tempfile
 import time
+from contextlib import nullcontext
 from email import policy
 from email.parser import BytesParser
 from dataclasses import asdict, dataclass, field
@@ -34,7 +35,6 @@ from features.format import formatted
 from resources.base import shown as given, OPENED, USER, Refused, titled
 from resources.types import Ask
 from engine.stored import write_json
-from features.faults.feature import watched
 
 WEB = Path(__file__).resolve().parents[1] / "web" / "dist"
 SAID = ("title", "abstract", "brief", "outcome")
@@ -124,7 +124,8 @@ def dispatch(method: str, path: str, root: Path, query: dict, body: dict) -> Rep
         return static(path) if method == "GET" else Reply(404, {"error": "no such route"})
     r, params = found
     try:
-        with watched(root, params.get("env") or "main", "hook" if "hook" in path else "request", f"{method} {path}"):
+        faults = features.FEATURES.get("faults")
+        with faults.watched(root, params.get("env") or "main", "hook" if "hook" in path else "request", f"{method} {path}") if faults else nullcontext():
             return r.handler(Request(root, params, query, body))
     except Missing as e:
         return Reply(404, {"error": str(e)})
@@ -186,9 +187,9 @@ def post_hook(req: Request) -> Reply:
 
 @route("POST", "/api/{env}/console")
 def post_console(req: Request) -> Reply:
-    from features.faults.feature import threw
+    faults = features.FEATURES.get("faults")
     said = str(req.body.get("said") or "")[:200]
-    filed = threw(req.root, req.params["env"], said, str(req.body.get("where") or "")[:200], str(req.body.get("stack") or "")[:2000]) if said else False
+    filed = faults.heard(req.root, req.params["env"], said, str(req.body.get("where") or "")[:200], str(req.body.get("stack") or "")[:2000]) if faults and said else False
     return Reply(200, {"filed": filed})
 
 
