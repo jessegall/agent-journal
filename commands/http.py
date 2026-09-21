@@ -142,18 +142,23 @@ def resolve(method: str, path: str) -> tuple[Route, dict] | None:
     return None
 
 
-def timed(reply: Reply, root: Path, env: str, method: str, path: str, began: float) -> Reply:
-    faults = features.FEATURES.get("faults")
-    if not faults:
-        return reply
-    took, earlier = (time.perf_counter() - began) * 1000, reply.after
+def later(reply: Reply, then) -> Reply:
+    earlier = reply.after
 
     def after() -> None:
         if earlier:
             earlier()
-        faults.spent(root, env, "hook" if "/hook/" in path else "request", f"{method} {path}", took)
+        then()
     reply.after = after
     return reply
+
+
+def timed(reply: Reply, root: Path, env: str, method: str, path: str, began: float) -> Reply:
+    faults = features.FEATURES.get("faults")
+    if not faults:
+        return reply
+    took = (time.perf_counter() - began) * 1000
+    return later(reply, lambda: faults.spent(root, env, "hook" if "/hook/" in path else "request", f"{method} {path}", took))
 
 
 def dispatch(method: str, path: str, root: Path, query: dict, body: dict) -> Reply:
@@ -163,7 +168,9 @@ def dispatch(method: str, path: str, root: Path, query: dict, body: dict) -> Rep
     r, params = found
     began = time.perf_counter()
     try:
-        return timed(r.handler(Request(root, params, query, body)), root, params.get("env") or "main", method, path, began)
+        with bus.held() as heard:
+            reply = r.handler(Request(root, params, query, body))
+        return timed(later(reply, lambda: bus.release(heard)), root, params.get("env") or "main", method, path, began)
     except Missing as e:
         return Reply(404, {"error": str(e)})
     except Refused as e:
@@ -217,9 +224,8 @@ def post_hook(req: Request) -> Reply:
     if Path(req.query.get("root") or "").resolve() != req.root.resolve() or req.params["provider"] not in PROVIDERS:
         return Reply(409, {})
     provider = PROVIDERS[req.params["provider"]]()
-    with bus.held() as heard:
-        out = answer(provider, req.root, {**req.body, "inbox": req.query.get("inbox") or ""}, int(req.query.get("pid") or 0), req.query.get("env") or "")
-    return Reply(403 if provider.refused(out) else 200, out, after=lambda: bus.release(heard))
+    out = answer(provider, req.root, {**req.body, "inbox": req.query.get("inbox") or ""}, int(req.query.get("pid") or 0), req.query.get("env") or "")
+    return Reply(403 if provider.refused(out) else 200, out)
 
 
 @route("POST", "/api/{env}/console")

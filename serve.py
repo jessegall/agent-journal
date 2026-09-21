@@ -56,6 +56,8 @@ class Handler(BaseHTTPRequestHandler):
             return
         self.send_header("Cache-Control", "no-cache")
         self.end_headers()
+        if reply.after:
+            reply.after()
         try:
             for chunk in reply.chunks:
                 self.wfile.write(chunk)
