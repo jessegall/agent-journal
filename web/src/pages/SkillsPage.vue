@@ -1,6 +1,6 @@
 <script setup>
 import {computed, onMounted, ref, watch} from "vue";
-import {api} from "../api.js";
+import {api} from "../api/client.js";
 import Icon from "../kit/Icon.vue";
 import {route} from "../route.js";
 import {agent, polled} from "../store.js";
@@ -18,7 +18,7 @@ const notice = ref("");
 const folded = ref(new Set());
 
 async function reload() {
-    const got = await api("GET", `/${route.value.env}/skills?agent=${agent.value ? agent.value.n : 0}`);
+    const got = await api.skills(agent.value ? agent.value.n : 0);
     if (!loaded.value) {
         folded.value = new Set(
             groups(got).flatMap((group) =>
@@ -78,21 +78,21 @@ async function open(s) {
         opened.value = "";
         return;
     }
-    const got = await api("GET", `/${route.value.env}/skills/${s.name}`);
+    const got = await api.skill(s.name);
     text.value = got.text.replace(/^---\n[\s\S]*?\n---\n/, "");
     opened.value = s.name;
 }
 
 async function loadNow(s) {
     busy.value = s.name;
-    const got = await api("POST", `/${route.value.env}/skills/${s.name}/load`, {});
+    const got = await api.loadSkill(s.name);
     notice.value = got.said;
     busy.value = "";
 }
 
 async function always(s, on) {
     busy.value = s.name;
-    await api("POST", `/${route.value.env}/skills/${s.name}/always`, {on});
+    await api.alwaysSkill(s.name, on);
     await reload();
     busy.value = "";
 }

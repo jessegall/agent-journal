@@ -1,6 +1,6 @@
 <script setup>
 import {computed, ref} from "vue";
-import {act, command} from "../api.js";
+import {api} from "../api/client.js";
 import Btn from "../kit/Btn.vue";
 import Spinner from "../kit/Spinner.vue";
 import {route} from "../route.js";
@@ -18,9 +18,9 @@ async function press(button, i) {
     running.value = i;
     error.value = "";
     try {
-        if (button.n) await act(route.value.env, button.type, button.n, button.action, button.body || {});
-        else await command(route.value.env, button.type, button.action, button.body || {});
-        await act(route.value.env, props.resource.type, props.resource.n, "set", {
+        if (button.n) await api.act(button.type, button.n, button.action, button.body || {});
+        else await api.command(button.type, button.action, button.body || {});
+        await api.act(props.resource.type, props.resource.n, "set", {
             key: "pressed",
             value: [...new Set([...pressed.value, button.label])],
         });

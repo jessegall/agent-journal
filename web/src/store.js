@@ -1,5 +1,5 @@
 import {computed, reactive, ref, watch} from "vue";
-import * as http from "./api.js";
+import {api, onWrite} from "./api/client.js";
 import {report} from "./faults.js";
 import {onOutboxChange, startOutbox} from "./chat/outbox.js";
 import {go, route} from "./route.js";
@@ -186,7 +186,7 @@ export const paging = reactive({size: {}, more: {}});
 
 export async function load(type) {
     const size = paging.size[type] || PAGE;
-    const got = await http.list(route.value.env, type, {last: size, completed: true});
+    const got = await api.list(type, {last: size, completed: true});
     loaded.add(type);
     store.rows[type] = got.rows;
     paging.size[type] = size;
@@ -199,7 +199,7 @@ export async function earlier(...types) {
     await Promise.all(
         growing.map(async (type) => {
             const held = store.rows[type] || [];
-            const got = await http.list(route.value.env, type, {last: PAGE, completed: true, before: held.length ? held[0].n : 0});
+            const got = await api.list(type, {last: PAGE, completed: true, before: held.length ? held[0].n : 0});
             store.rows[type] = [...got.rows, ...held];
             paging.size[type] = store.rows[type].length;
             paging.more[type] = got.more;
@@ -208,7 +208,7 @@ export async function earlier(...types) {
     return growing.length > 0;
 }
 
-http.onWrite((path) => refresh([path.split("/")[2]]));
+onWrite((type) => refresh([type]));
 onOutboxChange(() => refresh(["message"]));
 
 function took(type, got) {
@@ -230,7 +230,7 @@ async function fetched(types, whole = false) {
     const plain = types.filter((type) => (paging.size[type] || PAGE) === PAGE);
     const sized = types.filter((type) => !plain.includes(type));
     const [got] = await Promise.all([
-        plain.length || whole ? http.dashboard(route.value.env, plain, {last: PAGE, events: whole ? RECENT : null}) : null,
+        plain.length || whole ? api.dashboard(plain, {last: PAGE, events: whole ? RECENT : null}) : null,
         ...sized.map(load),
     ]);
     if (!got) return;
@@ -292,7 +292,7 @@ export function listen() {
     if (store.stream) store.stream.close();
     const env = route.value.env;
     startOutbox(env);
-    store.stream = new EventSource(`/api/${env}/stream`);
+    store.stream = api.stream();
     store.stream.onmessage = heard;
 }
 
@@ -300,13 +300,13 @@ const RECENT = 100;
 const LIVE = 5;
 
 export const polled = {
-    bar: ["bar", () => `/${route.value.env}/bar`, 500, (got) => (store.bar = got)],
-    agents: ["agents", () => `/${route.value.env}/agent?completed=1&last=${LIVE}`, 1000, (got) => (store.agents = got.rows)],
-    pages: ["pages", "/pages", 5000, (got) => (store.pages = got)],
-    manifest: ["manifest", "/manifest", 30000, (got) => (store.spec = got)],
+    bar: ["bar", () => api.bar(), 500, (got) => (store.bar = got)],
+    agents: ["agents", () => api.agents(LIVE), 1000, (got) => (store.agents = got)],
+    pages: ["pages", () => api.pages(), 5000, (got) => (store.pages = got)],
+    manifest: ["manifest", () => api.manifest(), 30000, (got) => (store.spec = got)],
     events: [
         "events",
-        () => `/${route.value.env}/events?since=${store.events.length ? store.events[store.events.length - 1].id : 0}`,
+        () => api.events(store.events.length ? store.events[store.events.length - 1].id : 0),
         5000,
         (fresh) => {
             if (!fresh.length) return;
@@ -317,13 +317,13 @@ export const polled = {
 };
 
 export async function boot() {
-    [store.spec, store.identity] = await Promise.all([http.manifest(), http.identity()]);
+    [store.spec, store.identity] = await Promise.all([api.manifest(), api.identity()]);
     if (!route.value.env) {
         go(store.spec.environment);
         return boot();
     }
     types.value.filter((t) => t.name !== "nudge").forEach((t) => (store.rows[t.name] = store.rows[t.name] || []));
-    store.pages = await http.api("GET", "/pages");
+    store.pages = await api.pages();
     await reload();
     store.booted = true;
     listen();

@@ -1,6 +1,6 @@
 <script setup>
 import {computed, nextTick, onMounted, ref, watch} from "vue";
-import {act} from "../api.js";
+import {api} from "../api/client.js";
 import Icon from "../kit/Icon.vue";
 import Buttons from "../resource/Buttons.vue";
 import OptionsPicker from "../resource/OptionsPicker.vue";
@@ -119,11 +119,11 @@ function refOf(word) {
 
 async function react(face) {
     picking.value = false;
-    await act(route.value.env, props.turn.type, props.turn.n, "react", {face});
+    await api.act(props.turn.type, props.turn.n, "react", {face});
 }
 
 async function drop() {
-    await act(route.value.env, props.turn.type, props.turn.n, "delete", {why: "deleted from the viewer"});
+    await api.act(props.turn.type, props.turn.n, "delete", {why: "deleted from the viewer"});
 }
 </script>
 

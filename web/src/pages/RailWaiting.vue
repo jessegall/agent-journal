@@ -1,7 +1,7 @@
 <script setup>
 import {computed} from "vue";
 import Icon from "../kit/Icon.vue";
-import {act} from "../api.js";
+import {api} from "../api/client.js";
 import {peek, route} from "../route.js";
 import {age, focusTurn, meta, types, unreadByUser} from "../store.js";
 
@@ -26,7 +26,7 @@ function open(r) {
 }
 
 async function dismiss(r) {
-    await act(route.value.env, r.type, r.n, "read");
+    await api.act(r.type, r.n, "read");
 }
 </script>
 

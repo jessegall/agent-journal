@@ -1,6 +1,6 @@
 <script setup>
 import {onMounted, onUnmounted, ref} from "vue";
-import {api} from "../api.js";
+import {api} from "../api/client.js";
 import {route} from "../route.js";
 import {age} from "../store.js";
 
@@ -10,7 +10,7 @@ const settled = ref(false);
 
 async function read() {
     try {
-        changes.value = (await api("GET", `/${route.value.env}/changes`)).changes || [];
+        changes.value = (await api.changes()).changes || [];
     } catch {
         changes.value = [];
     }

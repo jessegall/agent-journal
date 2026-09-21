@@ -1,6 +1,6 @@
 <script setup>
 import {computed, nextTick, onMounted, onUnmounted, ref, watch} from "vue";
-import {act, api, create} from "../api.js";
+import {api} from "../api/client.js";
 import {sendMessage} from "./outbox.js";
 import Icon from "../kit/Icon.vue";
 import {route} from "../route.js";
@@ -57,7 +57,7 @@ async function markSeen(numbers) {
     if (marking || !numbers.length || !ready.value) return;
     marking = true;
     try {
-        await api("POST", `/${route.value.env}/message/read-all`, {numbers});
+        await api.readAll("message", numbers);
     } finally {
         marking = false;
     }
@@ -206,7 +206,7 @@ function stillReading() {
 
 async function post(text, files) {
     if (editing.value) {
-        await act(route.value.env, "message", editing.value.n, "edit", {text});
+        await api.act("message", editing.value.n, "edit", {text});
         editing.value = null;
         return;
     }
@@ -286,7 +286,7 @@ async function promised(body, files) {
 }
 
 async function pin(text, about = "") {
-    await create(route.value.env, "notice", {brief: text, about: about || undefined});
+    await api.create("notice", {brief: text, about: about || undefined});
 }
 
 watch(busy, async () => {

@@ -1,6 +1,6 @@
 <script setup>
 import {computed, reactive} from "vue";
-import {create} from "../api.js";
+import {api} from "../api/client.js";
 import Icon from "../kit/Icon.vue";
 import {negative, project, tint} from "../identity.js";
 import {route} from "../route.js";
@@ -23,7 +23,7 @@ const live = (name) => store.agents.some((a) => a.data.status && a.data.status !
 async function makeEnv() {
     draft.error = "";
     try {
-        await create(route.value.env, "environment", {title: draft.name.trim()});
+        await api.create("environment", {title: draft.name.trim()});
         draft.open = false;
         draft.name = "";
         await load("environment");

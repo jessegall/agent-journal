@@ -1,6 +1,6 @@
 <script setup>
 import {computed, onMounted, onUnmounted, reactive, ref, watch} from "vue";
-import {api} from "../api.js";
+import {api} from "../api/client.js";
 import JournalBar from "../layout/JournalBar.vue";
 import {remembered, store} from "../store.js";
 
@@ -12,10 +12,6 @@ const opened = reactive(new Set(remembered("journal.hub", [])));
 const streams = new Map();
 let ticking = 0;
 let scanning = false;
-
-function baseOf(j) {
-    return j.current ? "" : `http://127.0.0.1:${j.port}`;
-}
 
 function pollHub() {
     try {
@@ -36,7 +32,7 @@ async function refresh(j) {
         return;
     }
     try {
-        j.summary = await api("GET", "/summary", undefined, baseOf(j));
+        j.summary = await api.journal(j).summary();
         j.gone = 0;
         j.unreadable = false;
     } catch (e) {
@@ -49,7 +45,7 @@ function listenTo(j) {
     const have = streams.get(j.root) || new Map();
     for (const name of envs) {
         if (have.has(name)) continue;
-        const source = new EventSource(`${baseOf(j)}/api/${name}/stream`);
+        const source = api.journal(j).in(name).stream();
         source.onmessage = () => refresh(j);
         have.set(name, source);
     }
@@ -68,7 +64,7 @@ function drop(root) {
 }
 
 async function forget(j) {
-    await api("POST", "/journals/forget", {root: j.root});
+    await api.forgetJournal(j.root);
     drop(j.root);
 }
 
@@ -83,7 +79,7 @@ async function scan() {
 }
 
 async function rescan() {
-    const listed = (await api("GET", "/journals")).map((got) => ({...got, current: got.port === Number(location.port)}));
+    const listed = (await api.journals()).map((got) => ({...got, current: got.port === Number(location.port)}));
     const found = listed.filter(
         (got) => got.current || !listed.some((other) => other.root === got.root && (other.current || other.port < got.port))
     );
@@ -103,7 +99,7 @@ async function rescan() {
     for (const j of [...journals.value]) {
         if (found.some((got) => got.port === j.port)) continue;
         j.gone = j.gone || Date.now();
-        if (Date.now() - j.gone > LINGER) drop(j.port);
+        if (Date.now() - j.gone > LINGER) drop(j.root);
     }
     journals.value.sort((a, b) => (b.current ? 1 : 0) - (a.current ? 1 : 0) || a.project.localeCompare(b.project));
     loaded.value = true;

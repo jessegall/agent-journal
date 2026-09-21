@@ -1,6 +1,6 @@
 <script setup>
 import {computed, onMounted, onUnmounted, ref, watch} from "vue";
-import {api} from "../api.js";
+import {api} from "../api/client.js";
 import Btn from "../kit/Btn.vue";
 import Icon from "../kit/Icon.vue";
 import {route} from "../route.js";
@@ -26,7 +26,7 @@ const src = computed(() => {
 
 async function look() {
     try {
-        store.pages = await api("GET", "/pages");
+        store.pages = await api.pages();
         error.value = "";
     } catch (e) {
         error.value = e.message;
@@ -35,13 +35,13 @@ async function look() {
 
 async function runPluginAction(want) {
     if (!page.value) return;
-    await api("POST", `/services/${page.value.service}`, {want});
+    await api.setService(page.value.service, want);
     await look();
 }
 
 async function read() {
     if (!page.value) return;
-    log.value = (await api("GET", `/services/${page.value.service}/log?lines=200`)).log;
+    log.value = (await api.serviceLog(page.value.service)).log;
 }
 
 watch(

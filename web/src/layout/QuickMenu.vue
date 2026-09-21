@@ -1,7 +1,7 @@
 <script setup>
 import {computed, nextTick, onMounted, ref} from "vue";
 import Compose from "../chat/Compose.vue";
-import {projectFiles, saveSettings} from "../api.js";
+import {api} from "../api/client.js";
 import {sendMessage} from "../chat/outbox.js";
 import Icon from "../kit/Icon.vue";
 import SwitchCase from "../kit/SwitchCase.vue";
@@ -75,7 +75,7 @@ async function browseFiles() {
     filesLoading.value = true;
     nextTick(() => fileInput.value && fileInput.value.focus());
     try {
-        files.value = await projectFiles(route.value.env);
+        files.value = await api.projectFiles();
     } catch (e) {
         files.value = [];
         filesError.value = e.message;
@@ -107,7 +107,7 @@ const goTo = (page) => () => {
 
 async function setAuto(on) {
     emit("close");
-    await saveSettings(route.value.env, {features: {"work.auto": on}});
+    await api.saveSettings({features: {"work.auto": on}});
 }
 
 const highlights = computed(() => types.value.filter((t) => t.attention).flatMap((t) => unreadByUser(t.name)));

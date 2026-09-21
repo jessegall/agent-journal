@@ -2,7 +2,7 @@
 import AgentSection from "./AgentSection.vue";
 
 import {computed, ref} from "vue";
-import {act, saveSettings} from "../api.js";
+import {api} from "../api/client.js";
 import Icon from "../kit/Icon.vue";
 import Switch from "../kit/Switch.vue";
 import {age} from "../store.js";
@@ -22,10 +22,10 @@ async function manage(fn) {
     }
 }
 
-const setAuto = (e, on) => manage(() => saveSettings(e.name, {features: {"work.auto": on}}, base.value));
-const runPlan = (e, p) => manage(() => act(e.name, "plan", p.n, planButton({data: p})[0], {}, base.value));
+const setAuto = (e, on) => manage(() => server.value.in(e.name).saveSettings({features: {"work.auto": on}}));
+const runPlan = (e, p) => manage(() => server.value.in(e.name).act("plan", p.n, planButton({data: p})[0]));
 const wordFor = (p) => (planButton({data: p}) || [])[1];
-const pageUrl = (e, page = "") => `${base.value}/#/${e.name}${page ? `/${page}` : ""}`;
+const pageUrl = (e, page = "") => server.value.page(e.name, page);
 
 function worksOf(e) {
     const row = (w, completed) => ({...w, completed, data: {todo: w.todo}});
@@ -64,7 +64,7 @@ const totals = computed(() =>
         {messages: 0, questions: 0, todos: 0}
     )
 );
-const base = computed(() => (props.journal.current ? "" : `http://127.0.0.1:${props.journal.port}`));
+const server = computed(() => api.journal(props.journal));
 const counts = (c) => [
     ["messages", c.messages, "unread messages"],
     ["questions", c.questions, "questions waiting"],

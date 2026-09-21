@@ -1,4 +1,4 @@
-import {create, upload} from "../api.js";
+import {api} from "../api/client.js";
 
 const KEY = "journal.outbox.v1";
 const BRIDGE_WAIT = 500;
@@ -149,18 +149,14 @@ async function enqueue(record) {
 }
 
 async function deliver(record, queue) {
-    const message = await create(
-        record.env,
-        "message",
-        {title: record.title, brief: record.brief, about: record.about, idempotency: record.id},
-        record.origin
-    );
+    const server = api.at(record.origin, record.env);
+    const message = await server.create("message", {title: record.title, brief: record.brief, about: record.about, idempotency: record.id});
     record.message = message.n;
     record.uploaded = Array.isArray(record.uploaded) ? record.uploaded : [];
     await writeQueue(queue);
     for (let n = 0; n < record.files.length; n += 1) {
         if (record.uploaded[n]) continue;
-        await upload(record.env, "message", record.message, fileFrom(record.files[n]), record.origin);
+        await server.upload("message", record.message, fileFrom(record.files[n]));
         record.uploaded[n] = true;
         await writeQueue(queue);
     }

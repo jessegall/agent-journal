@@ -1,6 +1,6 @@
 <script setup>
 import {ref} from "vue";
-import {create} from "../api.js";
+import {api} from "../api/client.js";
 import Btn from "../kit/Btn.vue";
 import {route} from "../route.js";
 import {label, meta, word} from "../store.js";
@@ -15,7 +15,7 @@ const error = ref("");
 async function submit() {
     error.value = "";
     try {
-        const resource = await create(route.value.env, props.type, {title: title.value, abstract: abstract.value, brief: brief.value});
+        const resource = await api.create(props.type, {title: title.value, abstract: abstract.value, brief: brief.value});
         emit("made", resource.n);
     } catch (e) {
         error.value = e.message;

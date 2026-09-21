@@ -1,6 +1,6 @@
 <script setup>
 import {computed, inject, ref} from "vue";
-import {act} from "../api.js";
+import {api} from "../api/client.js";
 import Btn from "../kit/Btn.vue";
 import CommentToggle from "./CommentToggle.vue";
 import Dot from "../kit/Dot.vue";
@@ -38,7 +38,7 @@ const button = computed(
 async function run(action, body = {}) {
     error.value = "";
     try {
-        await act(route.value.env, "plan", props.resource.n, action, body);
+        await api.act("plan", props.resource.n, action, body);
     } catch (e) {
         error.value = e.message;
     }

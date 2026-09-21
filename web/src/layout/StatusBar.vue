@@ -2,7 +2,7 @@
 import PSection from "./PSection.vue";
 
 import {computed, onMounted, onUnmounted, ref, watch} from "vue";
-import {act, saveSettings} from "../api.js";
+import {api} from "../api/client.js";
 import Icon from "../kit/Icon.vue";
 import RunningCommand from "./RunningCommand.vue";
 import Switch from "../kit/Switch.vue";
@@ -51,13 +51,13 @@ const error = ref("");
 const done = (p) => doneOf(p, rows("todo"));
 
 async function setAuto(on) {
-    await saveSettings(route.value.env, {features: {"work.auto": on}});
+    await api.saveSettings({features: {"work.auto": on}});
 }
 
 async function runBar(p) {
     error.value = "";
     try {
-        await act(route.value.env, "plan", p.n, planButton(p)[0]);
+        await api.act("plan", p.n, planButton(p)[0]);
     } catch (e) {
         error.value = e.message;
     }

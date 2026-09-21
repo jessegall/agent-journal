@@ -1,6 +1,6 @@
 <script setup>
 import {ref} from "vue";
-import {act, forceAgent} from "../api.js";
+import {api} from "../api/client.js";
 import Icon from "../kit/Icon.vue";
 import {route} from "../route.js";
 
@@ -11,14 +11,14 @@ const forcing = ref(false);
 async function force() {
     forcing.value = true;
     try {
-        await forceAgent(route.value.env, props.notice.data.session);
+        await api.forceAgent(props.notice.data.session);
     } catch (e) {
         forcing.value = false;
     }
 }
 
 async function close() {
-    await act(route.value.env, "notice", props.notice.n, "close");
+    await api.act("notice", props.notice.n, "close");
 }
 </script>
 

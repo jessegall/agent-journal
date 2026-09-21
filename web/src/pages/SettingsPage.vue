@@ -4,7 +4,7 @@ import UList from "./UList.vue";
 import Section from "./Section.vue";
 
 import {computed, onMounted, ref} from "vue";
-import {act, api, command, saveIdentity, saveSettings} from "../api.js";
+import {api} from "../api/client.js";
 import Btn from "../kit/Btn.vue";
 import Switch from "../kit/Switch.vue";
 import {COUNTED, EVENTS} from "./cadence.js";
@@ -37,7 +37,7 @@ const stopping = ref(false);
 async function stop() {
     stopping.value = true;
     try {
-        await api("POST", "/stop", {});
+        await api.stop();
     } catch (e) {
         stopping.value = false;
     }
@@ -47,7 +47,7 @@ async function preview() {
     busy.value = "preview";
     shown.value = "";
     try {
-        shown.value = await command(route.value.env, "plugin", "preview", {source: source.value});
+        shown.value = await api.command("plugin", "preview", {source: source.value});
     } catch (e) {
         shown.value = e.message;
     }
@@ -57,7 +57,7 @@ async function preview() {
 async function install() {
     busy.value = "install";
     try {
-        await command(route.value.env, "plugin", "install", {source: source.value, yes: true});
+        await api.command("plugin", "install", {source: source.value, yes: true});
         source.value = "";
         shown.value = "";
         await load("plugin");
@@ -70,7 +70,7 @@ async function install() {
 async function plugin(p, action, body = {}) {
     busy.value = `${p.n}`;
     try {
-        await act(route.value.env, "plugin", p.n, action, body);
+        await api.act("plugin", p.n, action, body);
         await load("plugin");
     } catch (e) {
         shown.value = e.message;
@@ -79,7 +79,7 @@ async function plugin(p, action, body = {}) {
 }
 
 async function setTrigger(f, next) {
-    await saveSettings(route.value.env, {triggers: {...((store.settings && store.settings.triggers) || {}), [f.name]: next}});
+    await api.saveSettings({triggers: {...((store.settings && store.settings.triggers) || {}), [f.name]: next}});
 }
 
 function cadence(f) {
@@ -110,7 +110,7 @@ const delivers = (how) => {
 };
 
 async function setDelivery(how, value) {
-    await saveSettings(route.value.env, {delivery: {...((store.settings && store.settings.delivery) || {}), [how]: value}});
+    await api.saveSettings({delivery: {...((store.settings && store.settings.delivery) || {}), [how]: value}});
 }
 const tagNames = computed(() => ((store.settings && store.settings.tags) || {}).names || []);
 
@@ -119,7 +119,7 @@ async function saveTags(value) {
         .split(",")
         .map((name) => name.trim().replace(/^\[!|\]$/g, ""))
         .filter(Boolean);
-    if (names.length) await saveSettings(route.value.env, {tags: {names}});
+    if (names.length) await api.saveSettings({tags: {names}});
 }
 const OPENED = "journal.settings.opened";
 const opened = ref(remembered(OPENED, []));
@@ -138,27 +138,27 @@ const envs = computed(() => rows("environment").filter((e) => !e.completed));
 const extension = ref(null);
 
 onMounted(async () => {
-    extension.value = await api("GET", "/extension");
+    extension.value = await api.extension();
 });
 
 async function flip(name, value) {
-    await saveSettings(route.value.env, {features: {...store.settings.features, [name]: value}});
+    await api.saveSettings({features: {...store.settings.features, [name]: value}});
 }
 
 async function saveAnswerHold() {
-    await saveSettings(route.value.env, {questions: {hold: Number(answerHold.value)}});
+    await api.saveSettings({questions: {hold: Number(answerHold.value)}});
 }
 
 async function saveRetention(type) {
-    await saveSettings(route.value.env, {keep: {...retention.value, [type]: Number(days.value[type])}});
+    await api.saveSettings({keep: {...retention.value, [type]: Number(days.value[type])}});
 }
 
 async function saveColor(color) {
-    store.identity = await saveIdentity({color});
+    store.identity = await api.saveIdentity({color});
 }
 
 async function remove(e) {
-    await act(route.value.env, "environment", e.n, "remove", {how: "removed from the viewer"});
+    await api.act("environment", e.n, "remove", {how: "removed from the viewer"});
 }
 </script>
 
@@ -194,7 +194,7 @@ async function remove(e) {
                         <template v-if="extension.store">
                             <a class="download" :href="extension.store" target="_blank" rel="noopener">Add to Chrome</a>
                         </template>
-                        <a class="download" href="/extension.zip">Download</a>
+                        <a class="download" :href="api.extensionZip()">Download</a>
                     </span>
                 </template>
             </div>

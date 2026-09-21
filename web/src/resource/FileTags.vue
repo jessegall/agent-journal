@@ -1,6 +1,6 @@
 <script setup>
 import {ref} from "vue";
-import {act} from "../api.js";
+import {api} from "../api/client.js";
 import {route} from "../route.js";
 
 const props = defineProps({file: {type: Object, required: true}});
@@ -20,7 +20,7 @@ async function save() {
     const tags = draft.value.trim();
     editing.value = false;
     if (tags !== props.file.what) {
-        await act(route.value.env, props.file.type, props.file.n, "tag", {name: props.file.name, tags});
+        await api.act(props.file.type, props.file.n, "tag", {name: props.file.name, tags});
         props.file.what = tags;
     }
 }

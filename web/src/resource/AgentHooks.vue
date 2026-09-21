@@ -1,6 +1,6 @@
 <script setup>
 import {computed, onMounted, ref} from "vue";
-import {api} from "../api.js";
+import {api} from "../api/client.js";
 import Btn from "../kit/Btn.vue";
 import Icon from "../kit/Icon.vue";
 
@@ -20,7 +20,7 @@ function showHooks(got) {
 
 async function fetchHooks() {
     try {
-        const got = await api("GET", `/agent-hooks/${props.provider}`);
+        const got = await api.agentHooks(props.provider);
         path.value = got.path;
         showHooks(got.hooks);
         error.value = "";
@@ -32,7 +32,7 @@ async function fetchHooks() {
 async function save() {
     saving.value = true;
     try {
-        showHooks((await api("POST", `/agent-hooks/${props.provider}`, {hooks: hooks.value})).hooks);
+        showHooks((await api.saveAgentHooks(props.provider, hooks.value)).hooks);
         error.value = "";
     } catch (reason) {
         error.value = reason.message;

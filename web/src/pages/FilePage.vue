@@ -1,6 +1,6 @@
 <script setup>
 import {computed, onMounted, ref, watch} from "vue";
-import {projectFile} from "../api.js";
+import {api} from "../api/client.js";
 import {highlight, languageOf} from "../text/highlight.js";
 import Icon from "../kit/Icon.vue";
 import {route} from "../route.js";
@@ -14,7 +14,7 @@ async function load() {
     error.value = "";
     file.value = null;
     try {
-        file.value = await projectFile(route.value.env, route.value.q);
+        file.value = await api.projectFile(route.value.q);
     } catch (e) {
         error.value = e.message;
     }

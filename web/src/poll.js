@@ -1,5 +1,4 @@
 import {onMounted, onUnmounted} from "vue";
-import {api} from "./api.js";
 
 const polls = new Map();
 
@@ -8,7 +7,7 @@ function run(key, held) {
         if (polls.get(key) !== held) return;
         if (!document.hidden) {
             try {
-                const got = await api("GET", held.path());
+                const got = await held.ask();
                 held.takers.forEach((take) => take(got));
             } catch (e) {}
         }
@@ -17,7 +16,7 @@ function run(key, held) {
     round();
 }
 
-export function usePoll(key, path, every, take) {
+export function usePoll(key, ask, every, take) {
     onMounted(() => {
         const held = polls.get(key);
         if (held) {
@@ -25,7 +24,7 @@ export function usePoll(key, path, every, take) {
             held.every = Math.min(held.every, every);
             return;
         }
-        const fresh = {path: typeof path === "function" ? path : () => path, every, takers: new Set([take]), timer: 0};
+        const fresh = {ask, every, takers: new Set([take]), timer: 0};
         polls.set(key, fresh);
         run(key, fresh);
     });
