@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.24.3 — The plan bar counts every closed to-do
+
+The plan bar counted a plan's closed to-dos among the rows the page had loaded, which are the latest 25; a plan's older rows were never there, so its bar stood at 0 however many were done. The plan bar now fetches its plan's rows by number, and they stay current as they close.
+
+What to do about it: `journal upgrade`.
+
 ## 2.24.2 — The inspector opens any row, however old
 
 The inspector showed a row only if it was among the rows the page had loaded, and moving to another page trimmed those back to the latest 25. So a to-do opened from a plan — or any older row opened by its link — opened nothing. The inspector now fetches the row it is asked for when it is not loaded.
