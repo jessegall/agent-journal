@@ -14,6 +14,9 @@ STAGES = (PHASES, TODOS)
 class Plans(Controller):
     resource = Plan
 
+    def _finished(self, r) -> bool:
+        return r.status in ENDED
+
     def create(self, title: str, abstract: str = "", brief: str = "", **data):
         return super().create(title, abstract, brief, status=BUILDING if self.actor == AGENT else DRAFT, stage=PHASES, phases=[], current=1, **data)
 

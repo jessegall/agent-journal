@@ -16,7 +16,6 @@ WORDS = ("title", "abstract", "brief", "sections")
 LAST = 25
 SUMMARIES: dict[str, tuple] = {}
 HELD: dict[str, tuple] = {}
-SAID_TWICE = ("comment", "message")
 TWICE_WITHIN = 10.0
 COMMANDS: dict[str, dict] = {}
 HANDLERS: dict[str, list] = {}
@@ -142,6 +141,9 @@ class Controller:
         self.record.emit(self.type, r.n, action, self.actor, **event)
         return r
 
+    def _finished(self, r: Resource) -> bool:
+        return bool(r.completed)
+
     def _handled(self, action: str, **args):
         for fn in HANDLERS.get(f"{self.type}.{action}", []) + HANDLERS.get(action, []):
             taken = fn(self, **args)
@@ -154,7 +156,7 @@ class Controller:
         return {k: check(k, fields[k], normalize_options(v) if k == Options.options else v) if k in fields else v for k, v in data.items()}
 
     def _twin(self, title: str, brief: str, about) -> Resource | None:
-        if self.type not in SAID_TWICE:
+        if not self.resource.said_twice:
             return None
         since = time.time() - TWICE_WITHIN
         lately = [row["n"] for row in self.summaries() if not row["deleted"] and row["updated"] >= since]

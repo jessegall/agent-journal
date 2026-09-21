@@ -1,6 +1,7 @@
 from pathlib import Path
 
-from controllers.types import Agents, Environments, Messages, Questions, Suggestions, Todos, Works
+from controllers.types import Agents, Environments, Messages, Questions, Todos, Works
+from features.suggestions.controller import Suggestions
 from features.plans.controller import Plans
 from engine.manifest import manifest
 from engine.record import Record

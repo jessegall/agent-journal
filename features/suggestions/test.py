@@ -1,5 +1,6 @@
 
-from controllers.types import Suggestions, Todos
+from controllers.types import Todos
+from features.suggestions.controller import Suggestions
 from resources.base import AGENT, USER
 from tests.conftest import fresh, refused
 
