@@ -3,7 +3,7 @@ from abc import ABC
 from functools import wraps
 from typing import ClassVar
 
-from controllers.base import COMMANDS
+from controllers.base import COMMANDS, HANDLERS
 from controllers.types import Agents, Nudges
 from engine import bus
 from features import trigger
@@ -51,6 +51,7 @@ event = marker("event")
 gate = marker("gate")
 formats = marker("formats")
 command = marker("command")
+handles = marker("handles")
 textformatter = formats
 interceptor = gate
 
@@ -104,6 +105,8 @@ class Feature(ABC):
     def register(self) -> None:
         for name in self.declares:
             MARKS[name] = self.name
+        for fn, (target, *_) in self.marked("handles"):
+            HANDLERS.setdefault(target, []).append(lambda controller, fn=fn, **args: fn(controller, **args) if self.enabled(controller.record) else None)
         for fn, (type_, *_) in self.commands():
             COMMANDS.setdefault(type_, {})[fn.__name__] = self.guarded(fn)
         for pattern, handler in self.listeners():
