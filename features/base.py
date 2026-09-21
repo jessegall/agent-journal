@@ -31,33 +31,28 @@ class Behaviour:
         return {"title": self.title, "abstract": self.abstract, "default": self.default, "trigger": dict(self.trigger)}
 
 
-def event(pattern: str):
-    def mark(fn):
-        fn.patterns = (*getattr(fn, "patterns", ()), pattern)
-        return fn
+MARKS: dict[str, str] = {}
+
+
+def marker(name: str):
+    MARKS.setdefault(name, name)
+
+    def mark(*args):
+        bare = args[0] if len(args) == 1 and callable(args[0]) else None
+
+        def put(fn):
+            fn.marks = {**getattr(fn, "marks", {}), name: (*getattr(fn, "marks", {}).get(name, ()), *(() if bare else args))}
+            return fn
+        return put(bare) if bare else put
     return mark
 
 
-def textformatter(*surfaces):
-    bare = surfaces[0] if len(surfaces) == 1 and callable(surfaces[0]) else None
-    where = () if bare else tuple(surfaces)
-
-    def mark(fn):
-        fn.formats = where
-        return fn
-    return mark(bare) if bare else mark
-
-
-def interceptor(fn):
-    fn.intercepts = True
-    return fn
-
-
-def command(type_: str):
-    def mark(fn):
-        fn.command = type_
-        return fn
-    return mark
+event = marker("event")
+gate = marker("gate")
+formats = marker("formats")
+command = marker("command")
+textformatter = formats
+interceptor = gate
 
 
 class Feature(ABC):
@@ -68,6 +63,7 @@ class Feature(ABC):
     trigger: ClassVar[dict] = {}
     behaviours: ClassVar[dict] = {}
     aliases: ClassVar[tuple] = ()      # names this feature used to have; a pair says the old feature is now one of its behaviours
+    declares: ClassVar[tuple] = ()     # marks this feature offers: any feature marks a method with marker("<name>"), and this one is handed them all
     runs_for_subagents: ClassVar[bool] = False   # whether it acts on a subagent's session as well as the one the user talks to
     default: ClassVar[bool] = True
     fixed: ClassVar[bool] = False
@@ -77,18 +73,25 @@ class Feature(ABC):
         if cls.name:
             REGISTRY[cls.name] = cls
 
+    def marked(self, name: str) -> list[tuple[object, tuple]]:
+        return [(getattr(self, attr), fn.marks[name]) for attr in dir(type(self))
+                for fn in [getattr(type(self), attr)] if callable(fn) and name in getattr(fn, "marks", {})]
+
+    def everyone_marked(self, name: str) -> list[tuple[object, tuple]]:
+        from features import FEATURES
+        return [found for feature in FEATURES.values() for found in feature.marked(name)]
+
     def listeners(self) -> list[tuple[str, object]]:
-        return [(pattern, getattr(self, attr)) for attr in dir(type(self))
-                for fn in [getattr(type(self), attr)] if callable(fn) for pattern in getattr(fn, "patterns", ())]
+        return [(pattern, fn) for fn, patterns in self.marked("event") for pattern in patterns]
 
     def refusals(self) -> list:
-        return [getattr(self, attr) for attr in dir(type(self)) for fn in [getattr(type(self), attr)] if callable(fn) and getattr(fn, "intercepts", False)]
+        return [fn for fn, _ in self.marked("gate")]
 
-    def formatters(self) -> list:
-        return [getattr(self, attr) for attr in dir(type(self)) for fn in [getattr(type(self), attr)] if callable(fn) and getattr(fn, "formats", None) is not None]
+    def formatters(self) -> list[tuple[object, tuple]]:
+        return self.marked("formats")
 
-    def commands(self) -> list:
-        return [getattr(self, attr) for attr in dir(type(self)) for fn in [getattr(type(self), attr)] if callable(fn) and getattr(fn, "command", "")]
+    def commands(self) -> list[tuple[object, tuple]]:
+        return self.marked("command")
 
     def guarded(self, fn):
         @wraps(fn)
@@ -99,16 +102,18 @@ class Feature(ABC):
         return run
 
     def register(self) -> None:
-        for fn in self.commands():
-            COMMANDS.setdefault(fn.command, {})[fn.__name__] = self.guarded(fn)
+        for name in self.declares:
+            MARKS[name] = self.name
+        for fn, (type_, *_) in self.commands():
+            COMMANDS.setdefault(type_, {})[fn.__name__] = self.guarded(fn)
         for pattern, handler in self.listeners():
             bus.on(pattern, handler, enabled=self.enabled)
         for handler in self.refusals():
             policy = lambda provider, record, payload, session, handler=handler: handler(provider, record, payload, session) if self.enabled(record) else ""  # noqa: E731
             policy.feature = self
             POLICIES.append(policy)
-        for shaper in self.formatters():
-            FORMATTERS.append((lambda text, record, shaper=shaper: shaper(text, record) if not record or self.enabled(record) else text, tuple(shaper.formats)))
+        for shaper, where in self.formatters():
+            FORMATTERS.append((lambda text, record, shaper=shaper: shaper(text, record) if not record or self.enabled(record) else text, where))
 
     @classmethod
     def on_for(cls, record) -> bool:
@@ -167,7 +172,7 @@ class Feature(ABC):
 
     def describe(self) -> dict:
         return {"name": self.name, "title": self.title_, "abstract": self.abstract_, "help": self.help_, "default": self.default, "fixed": self.fixed,
-                "listens": sorted({p for p, _ in self.listeners()}), "trigger": dict(self.trigger),
+                "listens": sorted({p for p, _ in self.listeners()}), "trigger": dict(self.trigger), "declares": list(self.declares),
                 "behaviours": {key: b.describe() for key, b in self.behaviours.items()}}
 
 

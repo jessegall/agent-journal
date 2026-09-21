@@ -4,7 +4,7 @@ import time
 
 from features import trigger
 from engine.stored import read_json, write_json
-from features.base import Behaviour, Feature, event, textformatter
+from features.base import Behaviour, Feature, event, formats
 from resources.base import AGENT
 from support.transcript import last_said, last_turn
 
@@ -63,7 +63,7 @@ class Tags(Feature):
             self.nudge(record, agent, "your last message has no tag",
                        f"open every message with exactly one of {' '.join(written(self.names(record)))}")
 
-    @textformatter
+    @formats
     def without_tags(self, text, record):
         return (self.reader(record) if record else ANY).sub(lambda found: found.group(1) or "", str(text or ""))
 

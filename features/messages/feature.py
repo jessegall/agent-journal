@@ -2,7 +2,7 @@ import re
 
 from controllers.types import Agents, CONTROLLERS, Messages
 from features import trigger
-from features.base import Behaviour, Feature, event, textformatter
+from features.base import Behaviour, Feature, event, formats
 from resources.base import AGENT, SECTION, SYSTEM, USER
 from support.messages import in_hand, theirs, unanswered
 
@@ -121,7 +121,7 @@ class MessagesFeature(Feature):
         if message and event.ref not in message.refs:
             Messages(record, actor=SYSTEM).link(message.n, event.ref)
 
-    @textformatter
+    @formats
     def as_code(self, text, record):
         return "`".join(part if at % 2 else CODE.sub(lambda found: f"`{found.group(0)}`", part)
                         for at, part in enumerate(str(text or "").split("`")))
