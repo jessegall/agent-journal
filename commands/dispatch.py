@@ -12,7 +12,6 @@ from controllers.types import CONTROLLERS
 from engine import bus
 from engine.record import Record
 from features.format import formatted
-from features.tags.reading import place as tagged_place
 from resources.base import shown as given, USER, Refused
 
 
@@ -50,11 +49,9 @@ def shaped(r, record=None, surface: str = "") -> dict:
 
 def shaping(r, record=None, surface: str = "") -> dict:
     row = given(r)
-    tags = features.FEATURES.get("tags")
-    place = {"place": tagged_place(row.get("brief"), record.setting(tags.name, {}))} if tags and record and row.get("brief") else {}
     said = {key: formatted(row.get(key), record, surface) for key in SAID if row.get(key)}
     parts = [{**s, "body": formatted(s.get("body"), record, surface)} for s in row.get("sections") or []]
-    return {**row, **place, **said, **({"sections": parts} if parts else {})}
+    return {**row, **said, **({"sections": parts} if parts else {})}
 
 
 @dataclass

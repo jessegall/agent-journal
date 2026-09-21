@@ -5,6 +5,7 @@ from datetime import datetime, timezone
 from controllers.types import Comments, Messages, Nudges
 from engine.hooks import displayed
 from engine.sessions import Sessions
+from features.tags.reading import visible
 from tests.kit import nudges, report
 from tests.conftest import fresh
 
@@ -22,30 +23,32 @@ def watching(record, transcript):
     return engine
 
 
-def test_every_message_without_a_tag_is_named_once(tmp_path):
+def test_every_message_reaches_the_chat_and_nothing_asks_for_a_tag(tmp_path):
     transcript = tmp_path / "s.jsonl"
     now = datetime.now(timezone.utc).isoformat()
     rows = [{"type": "user", "timestamp": now, "message": {"content": "go"}}]
     transcript.write_text(json.dumps(rows[0]) + "\n")
-
-    def said(*texts):
-        rows.extend({"type": "assistant", "timestamp": now, "message": {"content": [{"type": "text", "text": text}]}} for text in texts)
-        transcript.write_text("\n".join(json.dumps(r) for r in rows) + "\n")
-        engine.announce_written()
-        told = [n for n in nudges(record) if "has no tag" in n]
-        Nudges(record, actor="agent").read_all([n.n for n in Nudges(record).all()])
-        return told
-
     record = fresh()
     engine = watching(record, transcript)
-    assert said("[!reply] done, pushed") == [], "a tagged message: nothing said"
-    assert said("Checking the build next.") == ["your last message has no tag"], "an untagged message: named at once"
-    assert len(said("**[!info]** a build is running")) == 1, "a bold tag counts"
-    assert len(said("[!invented] a made-up tag")) == 2, "an invented leading tag is rejected"
-    assert len(said("[!reply][!invented] two leading tags")) == 3, "a registered prefix does not hide an invented tag"
-    assert len(said("status [!reply] is ordinary text")) == 4, "an inline tag-like phrase is rejected"
-    assert len(said()) == 4, "each message is named once, in the terminal"
-    assert len(said("no tag here", "nor here")) == 5, "one reminder waits at a time: a second is not added before the first is delivered"
+    asked = Messages(record, actor="user").create("are you there?")
+    chat = lambda: [m.brief for m in Messages(record, actor="system").all() if m.seen[:1] == ["agent"]]
+
+    def said(text):
+        rows.append({"type": "assistant", "timestamp": now, "message": {"content": [{"type": "text", "text": text}]}})
+        transcript.write_text("\n".join(json.dumps(r) for r in rows) + "\n")
+        engine.announce_written()
+        engine.announce_written()
+
+    said("Checking the build next.")
+    assert chat() == ["Checking the build next."], "a message without a tag is a plain message in the chat"
+    said("[!info] an old habit")
+    assert chat()[-1] == "an old habit", "a retired label tag is taken off and the message shown"
+    said(f"[!reply:{asked.n}] yes, here")
+    assert chat()[-1] == "an old habit", "a reply is shown as the reply, not copied into the chat"
+    assert [c.title for c in Comments(record, actor="system").linked_to(asked.ref)] == ["yes, here"], "the reply is posted"
+    assert not [n for n in nudges(record) if "has no tag" in n], "nothing asks for a tag"
+    assert visible("[!reply:n] plus the command tags") == "[!reply:n] plus the command tags", "only a real number or name makes a tag"
+
 
 def test_replying_by_command_is_answered_with_the_tag_that_does_it():
     from engine.hooks import handle
@@ -107,33 +110,6 @@ def test_the_final_message_the_stop_hook_carries_runs_its_tags_before_the_transc
         handle(PROVIDERS["claude"](), record.root, record.env, stop)
         engine.announce_written()
     assert [c.title for c in Comments(record, actor=SYSTEM).linked_to(message.ref)] == ["done"], "posted once, from the hook's own text"
-
-
-def test_the_chosen_level_copies_tagged_messages_into_the_chat(tmp_path):
-    transcript = tmp_path / "s.jsonl"
-    now = datetime.now(timezone.utc).isoformat()
-    rows = [{"type": "user", "timestamp": now, "message": {"content": "go"}}]
-    transcript.write_text(json.dumps(rows[0]) + "\n")
-    record = fresh()
-    engine = watching(record, transcript)
-    chat = lambda: [(m.brief, m.data.get("tag")) for m in Messages(record, actor="system").all() if m.seen[:1] == ["agent"]]
-
-    def said(text):
-        rows.append({"type": "assistant", "timestamp": now, "message": {"content": [{"type": "text", "text": text}]}})
-        transcript.write_text("\n".join(json.dumps(r) for r in rows) + "\n")
-        engine.announce_written()
-        engine.announce_written()
-
-    said("[!info] on by default")
-    assert chat() == [("on by default", "info")], "by default an info message reaches the chat"
-    record.set_setting("tags", {"verbosity": "replies"})
-    said("[!info] the build is green")
-    assert chat() == [("on by default", "info")], "replies only: an info message stays in the terminal"
-    said("[!reply] answered in the thread")
-    assert chat()[-1] == ("answered in the thread", "reply"), "a reply without a number reaches the chat at every level"
-    record.set_setting("tags", {"verbosity": "info"})
-    said("[!info] the build is still green")
-    assert chat()[-2:] == [("answered in the thread", "reply"), ("the build is still green", "info")], "with info shown: copied into the chat once, its tag kept as data"
 
 
 def test_a_reply_shown_on_screen_is_posted_even_when_the_transcript_never_gets_it():

@@ -42,11 +42,9 @@ export function threadTurns(rows, pending) {
     const live = rows.message.filter((m) => !m.deleted);
     live.forEach((m) => pending.filter((p) => promisedFor(p, m)).forEach((p) => keys.set(m.ref, p.ref)));
     const turns = [
-        ...live
-            .filter((m) => m.place !== "bar" && !pending.some((p) => promisedFor(p, m) && !delivered(p, m)))
-            .map((m) => ({...m, who: m.seen[0]})),
+        ...live.filter((m) => !pending.some((p) => promisedFor(p, m) && !delivered(p, m))).map((m) => ({...m, who: m.seen[0]})),
         ...live.filter((m) => m.seen[0] === "user" && m.completed && filed(m).length && !acknowledged(m, rows)).map(receipt),
-        ...rows.comment.filter((c) => !c.deleted && c.place !== "bar" && hasParent(c)).map((c) => ({...c, who: c.seen[0]})),
+        ...rows.comment.filter((c) => !c.deleted && hasParent(c)).map((c) => ({...c, who: c.seen[0]})),
         ...rows.question.filter((q) => !q.deleted).map((q) => ({...q, who: "agent"})),
         ...pending.filter((p) => !live.some((m) => promisedFor(p, m) && delivered(p, m))),
     ].sort((a, b) => a.created - b.created);

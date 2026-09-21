@@ -4,6 +4,14 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.36.0 — Everything the agent writes reaches the chat; tags only run commands
+
+Messages 1344, 1345 and 1346, question 51. A message without a tag is a plain message in the chat, and nothing asks the agent to add one. The label tags (info, discovery, correction, blocked) are gone, and so are the level menu in the agent bar, the untagged reminder, the tags.names, tags.places and tags.verbosity settings, and the status bar line they fed. The tags that run a command stay: [!reply:n], [!log:n], [!end:n], [!todo="…"] and [!fact="…"]. A log, end, todo or fact turn also shows in the chat; a reply shows as the reply.
+
+A tag's argument must now be a number or a quoted name. Before, a question answered "[!reply:n] plus the command tags" lost "[!reply:n]" to the tag stripper and was drawn as the user's own words.
+
+What to do about it: `journal upgrade`.
+
 ## 2.35.0 — A feature registers its parts; Tags is the first
 
 Doc 18 section 5a, messages 1338, 1341 and 1342. A feature can now be written as a description and a list of parts. Its details.py holds a FeatureDetails class (name, title, abstract, help, lines, behaviours). Its register(journal) hands each part over: journal.events.handler(...) for a Handler, whose event comes from the type of its event parameter; journal.client.formatter(...) for a TextFormatter; journal.agent.interceptor(...) for a ToolInterceptor. Every part receives a Context: the record, the feature's settings, and the agent it concerns, which can say, whisper and type. Typed events live in engine/events.py; AgentMessageCreated is the first, read from agent.said.
