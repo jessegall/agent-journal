@@ -5,7 +5,7 @@ import Btn from "../kit/Btn.vue";
 import Icon from "../kit/Icon.vue";
 import SwitchCase from "../kit/SwitchCase.vue";
 import {go, route} from "../route.js";
-import {GROUPS, groupOf, load, meta, open, rows, trim, whole, word} from "../store.js";
+import {counted, earlier, GROUPS, groupOf, load, meta, open, paging, rows, word} from "../store.js";
 import RowGroups from "../resource/RowGroups.vue";
 import ResourceCard from "../resource/ResourceCard.vue";
 import NewResource from "../resource/NewResource.vue";
@@ -15,17 +15,22 @@ const kind = computed(() => meta(props.type));
 const filter = ref("open");
 const adding = ref(false);
 const all = computed(() => rows(props.type));
-watch(
-    () => props.type,
-    (type, was) => {
-        if (was) trim(was);
-        whole(type);
-    },
-    {immediate: true}
-);
-onUnmounted(() => trim(props.type));
 const SHOWS = {open: () => open(props.type), closed: () => all.value.filter((r) => r.completed), every: () => all.value};
-const filters = computed(() => (kind.value.filters || []).map((f) => ({...f, count: (SHOWS[f.shows] || SHOWS.every)().length})));
+const COUNTS = {
+    open: () => counted(props.type, "open"),
+    closed: () => counted(props.type, "all") - counted(props.type, "open"),
+    every: () => counted(props.type, "all"),
+};
+const filters = computed(() => (kind.value.filters || []).map((f) => ({...f, count: (COUNTS[f.shows] || COUNTS.every)()})));
+const end = ref(null);
+let watcher = null;
+watch(end, (el) => {
+    if (watcher) watcher.disconnect();
+    if (!el) return;
+    watcher = new IntersectionObserver((seen) => seen.some((e) => e.isIntersecting) && paging.more[props.type] && earlier(props.type));
+    watcher.observe(el);
+});
+onUnmounted(() => watcher && watcher.disconnect());
 const shown = computed(() => [...(SHOWS[filter.value] || SHOWS.open)()].sort((a, b) => b.created - a.created));
 const groups = computed(() => {
     const buckets = {};
@@ -101,6 +106,7 @@ async function select(n) {
                 <RowGroups :groups="groups" :type="type" />
             </template>
         </SwitchCase>
+        <div ref="end" class="end" />
     </section>
 </template>
 

@@ -1,6 +1,5 @@
 import {api} from "./api.js";
 import {route} from "./route.js";
-import {store} from "./store.js";
 
 const BUDGET = 50;
 const QUIET = 60000;
@@ -10,8 +9,7 @@ const flying = new Map();
 
 function report(kind, words, where, stack = "") {
     const key = `${kind}|${where || words}`;
-    const on = store.settings && store.settings.features && store.settings.features.faults;
-    if (!on || !words || !route.value.env || Date.now() - (told.get(key) || 0) < QUIET) return;
+    if (!words || !route.value.env || Date.now() - (told.get(key) || 0) < QUIET) return;
     told.set(key, Date.now());
     api("POST", `/${route.value.env}${REPORTED}`, {
         kind,
