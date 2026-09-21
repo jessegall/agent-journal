@@ -294,6 +294,15 @@ class Provider(ABC):
     def is_subagent(self, hook) -> bool:
         return False
 
+    def facts(self, row, hook, root: Path) -> dict:
+        context = self.context(hook)
+        return {"event": hook.event, "tool": hook.tool.name, **self.shell(row, hook), **self.session(hook.transcript), "file": hook.tool.file_path,
+                "wrote": hook.event == "PostToolUse" and self.writes(hook), "cwd": hook.cwd or row.cwd or "", "at": time.time(),
+                "provider": self.name, "uses": int(row.uses or 0) + (hook.event == "PreToolUse"), "transcript": str(hook.transcript or row.transcript or ""),
+                "inbox": self.inbox(hook) or row.inbox or "", "model": self.model(hook) or row.model or "",
+                "effort": self.effort(Path(hook.cwd or root.parent), hook.transcript), "started": row.started or time.time(),
+                "context": row.context or 0 if context is None else context}
+
     def read_ahead(self, path: Path) -> None:
         self.transcript(path)
         self.loaded_skills(path)
