@@ -39,7 +39,7 @@ def context(args: dict) -> dict:
             "force": "", "sessions": sessions}
 
 
-READS = {"all", "show", "find", "search", "files", "folder", "comments", "linked_to", "unread", "read"}
+READS = {"all", "show", "find", "search", "files", "folder", "comments", "linked_to", "unread", "read", "board"}
 LOCAL = {"browser"}
 
 
