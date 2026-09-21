@@ -3,7 +3,7 @@ import pytest
 from features.plans.controller import Plans  # noqa: E402
 from controllers.types import Agents, Todos
 from engine.record import Record
-from features.work.next import next, ready
+from features.work_tracking.next import next, ready
 from resources.base import AGENT, SYSTEM, USER
 from tests.conftest import fresh, refused
 from tests.kit import idle
@@ -85,7 +85,7 @@ def test_writing_a_plan_lays_out_phases_and_advances_through_them_to_done(env):
 
 def test_under_auto_a_checkpoint_is_passed_not_waited_at():
     auto = fresh("auto")
-    auto.features = {"work.auto": True}
+    auto.features = {"work_tracking.auto": True}
     auto_todos = Todos(auto, actor=USER)
     a, b = auto_todos.create("first").n, auto_todos.create("second").n
     quick = Plans(auto, actor=AGENT)
@@ -108,7 +108,7 @@ def test_under_auto_a_checkpoint_is_passed_not_waited_at():
     auto_todos.complete(b, "done")
     auto_todos.complete(c, "done")
     assert quick.load(run.n).data["status"] == "waiting", "with auto off the later checkpoint waits"
-    auto.features = {"work.auto": True}
+    auto.features = {"work_tracking.auto": True}
     Agents(auto, actor=AGENT).by_session("claude-1")
     idle(auto)
     assert (quick.load(run.n).data["status"], quick.load(run.n).data["current"]) == ("active", 4), \

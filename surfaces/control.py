@@ -78,7 +78,7 @@ def permit(root: Path, env: str, session: str, allow: bool) -> dict:
 def relaunch(root: Path, env: str, session: str, skip: bool) -> dict:
     found = online(root, env, session)
     record = Record(Path(root), env)
-    record.set_setting("permissions", {**record.setting("permissions", {}), "skip": skip})
+    record.set_setting("permission_prompts", {**record.setting("permission_prompts", {}), "skip": skip})
     write_json(runtime.relaunch_file(Path(root), found["terminal"]), {"resume": session})
     return {"relaunching": True, "skip": skip}
 

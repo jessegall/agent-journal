@@ -18,7 +18,9 @@ const options = computed(() =>
         return {...value, title: optionText(value), code: value.code ?? value.value ?? ""};
     })
 );
-const held = computed(() => Number((store.settings && store.settings.questions && store.settings.questions.hold) ?? HOLD_SECONDS) * 1000);
+const held = computed(
+    () => Number((store.settings && store.settings.ask_questions && store.settings.ask_questions.hold) ?? HOLD_SECONDS) * 1000
+);
 const pick = computed(() => props.resource.data.pick || 0);
 const settled = computed(() => !!props.resource.completed && !changing.value);
 const ownWords = computed(() => settled.value && !options.value.some((o) => o.title === props.resource.outcome));

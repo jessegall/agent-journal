@@ -8,7 +8,7 @@ from controllers.types import Agents, CONTROLLERS
 import features
 from engine.record import Record
 from engine.transcript import Turn, search as search_transcript
-from features.tags.reading import visible
+from features.command_tags.reading import visible
 from providers import PROVIDERS
 from resources.base import Refused, SYSTEM
 from resources.types import AgentRow

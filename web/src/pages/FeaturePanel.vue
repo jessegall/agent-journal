@@ -14,7 +14,7 @@ const saved = (key) => (store.settings && store.settings[key]) || {};
 
 const days = ref({});
 const retention = computed(() => saved("keep"));
-const permissions = computed(() => saved("permissions"));
+const permissions = computed(() => saved("permission_prompts"));
 const relaunching = ref(false);
 
 const pieces = (text) =>
@@ -124,7 +124,7 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
                     </section>
                 </template>
                 <SwitchCase :value="feature.name">
-                    <template #retention>
+                    <template #auto_archive>
                         <section class="block">
                             <h3>Keep</h3>
                             <p class="note">How long a finished row stays listed before it is archived; 0 keeps it</p>
@@ -146,7 +146,7 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
                             </template>
                         </section>
                     </template>
-                    <template #permissions>
+                    <template #permission_prompts>
                         <template v-if="permissions.possible">
                             <section class="block">
                                 <div class="row">

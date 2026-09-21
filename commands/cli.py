@@ -141,7 +141,7 @@ def run(argv: list[str], out=None, err=None) -> int:
             if why:
                 raise Refused(why)
         controller = CONTROLLERS[command](ctx["record"], actor=ctx["actor"], session=ctx["session"], agent=ctx["agent"], force=ctx["force"])
-        faults = features.FEATURES.get("faults")
+        faults = features.FEATURES.get("dev_faults")
         with faults.reports.watched(ctx["record"].root, ctx["record"].env, "command", f"{command} {method}") if faults else nullcontext():
             got = invoke(controller.action(method), args, extra)
     except Refused as e:

@@ -86,7 +86,7 @@ def seat(root: Path, env: str, session: str, pid: int, agent: str, command: list
 def launch(root: Path, cwd: Path, env: str, agent: str, args: list[str], conversation: str = "") -> tuple[int, int, str]:
     from providers import DRIVERS
     from engine.record import Record
-    from features.work.auto import launch_args
+    from features.work_tracking.auto import launch_args
 
     driver = DRIVERS[agent]
     command = driver.command(driver, driver.resumed(launch_args(Record(root, env), agent, args), conversation))

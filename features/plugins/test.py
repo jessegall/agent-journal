@@ -17,7 +17,7 @@ CLAUDE = PROVIDERS["claude"]()
 
 def alone(env="t"):
     record = fresh(env)
-    record.set_setting("features", {"gate": False, "work": False})
+    record.set_setting("features", {"gate": False, "work_tracking": False})
     return record
 
 

@@ -39,8 +39,8 @@ def describe(r) -> str:
 
 
 def start_block(record) -> str:
-    from features.law.policy import carry as law
-    from features.skills.catalogue import handed as skills_handed
+    from features.journal_laws.policy import carry as law
+    from features.skill_loading.catalogue import handed as skills_handed
     parts = [f"THE JOURNAL IS IN FORCE HERE — this session is bound to environment `{record.env}`.", law(), skills_handed(record)]
     for type_ in reversed(priority()):
         kind = TYPES[type_]

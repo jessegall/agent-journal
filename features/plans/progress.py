@@ -1,6 +1,6 @@
 from controllers.types import Todos
 from features.plans.controller import ACTIVE, DONE, Plans, WAITING
-from features.work.auto import automatic
+from features.work_tracking.auto import automatic
 from resources.base import SYSTEM
 from resources.shapes import LEVELS
 from features.plans.resource import PHASE

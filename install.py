@@ -9,7 +9,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from commands.cli import served  # noqa: E402
 from migrations import run as migrate  # noqa: E402
-from features.law.policy import brief  # noqa: E402
+from features.journal_laws.policy import brief  # noqa: E402
 from providers import PROVIDERS  # noqa: E402
 from skills import LIBRARY, LINKED, publish  # noqa: E402
 
