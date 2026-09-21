@@ -1,3 +1,4 @@
+import fcntl
 import subprocess
 import sys
 import time
@@ -325,6 +326,16 @@ class Engines:
                 engine.step()
 
     def run(self, stopping) -> None:
-        while not stopping.is_set():
-            self.tick()
-            stopping.wait(TICK)
+        with (self.root / "runtime" / "engines.lock").open("a") as held:
+            while not stopping.is_set() and not self.owned(held):
+                stopping.wait(TICK)
+            while not stopping.is_set():
+                self.tick()
+                stopping.wait(TICK)
+
+    def owned(self, held) -> bool:
+        try:
+            fcntl.flock(held, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            return True
+        except OSError:
+            return False
