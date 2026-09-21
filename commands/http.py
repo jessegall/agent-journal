@@ -35,7 +35,7 @@ from resources.types import Ask
 from engine.stored import write_json
 
 WEB = Path(__file__).resolve().parents[1] / "web" / "dist"
-SAID = ("brief",)
+SAID = ("title", "abstract", "brief", "outcome")
 JSON = "application/json"
 PLAIN = "text/plain; charset=utf-8"
 
@@ -44,7 +44,9 @@ def shaped(r, record=None, surface: str = "") -> dict:
     row = given(r)
     tags = features.FEATURES.get("tags")
     place = {"place": tags.place(row.get("brief"), record)} if tags and record and row.get("brief") else {}
-    return {**row, **place, **{key: formatted(row.get(key), record, surface) for key in SAID if row.get(key)}}
+    said = {key: formatted(row.get(key), record, surface) for key in SAID if row.get(key)}
+    parts = [{**s, "body": formatted(s.get("body"), record, surface)} for s in row.get("sections") or []]
+    return {**row, **place, **said, **({"sections": parts} if parts else {})}
 
 
 @dataclass
