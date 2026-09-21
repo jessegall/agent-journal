@@ -8,6 +8,9 @@ from resources.base import AGENT, SYSTEM
 DEFERS = re.compile(r"\b(I'?ll (do|get to|come back to|handle|look at) (that|it|this)|after this|once (the|this|that) \w+ (is|are|finishes|lands)|next,? I'?ll|later on|I'?ll come back)\b", re.IGNORECASE)
 
 
+RECENT = 200
+
+
 class Deferral(Feature):
     name = "deferral"
     title_ = "Catching work put off"
@@ -16,7 +19,7 @@ class Deferral(Feature):
     trigger = {"on": trigger.IDLE}
 
     def parked_since(self, record, when: float) -> bool:
-        return any(e.actor == AGENT and e.type == "todo" and e.action == "created" and e.at >= when for e in record.events())
+        return any(e.actor == AGENT and e.type == "todo" and e.action == "created" and e.at >= when for e in record.events(last=RECENT))
 
     @event("agent.updated")
     def check(self, event, record) -> None:

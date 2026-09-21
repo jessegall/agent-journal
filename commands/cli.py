@@ -124,6 +124,7 @@ def search_text(record, term: str, page: int) -> str:
 
 
 PARSERS: dict[tuple, argparse.ArgumentParser] = {}
+MIGRATED: set[Path] = set()
 DEFAULTS = ("JOURNAL_ROOT", "JOURNAL_ENV", "JOURNAL_ACTOR", "JOURNAL_SESSION", "JOURNAL_AGENT")
 
 
@@ -319,7 +320,9 @@ def decided(ctx) -> str:
 
 def context(args: dict) -> dict:
     root = Path(args.pop("root")).resolve()
-    migrations.run(root)
+    if root not in MIGRATED:
+        migrations.run(root)
+        MIGRATED.add(root)
     features.load(root)
     sessions = Sessions(root)
     session = args.pop("session")
