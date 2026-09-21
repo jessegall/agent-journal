@@ -4,6 +4,14 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.23.1 — The greeting is typed within a second of the session starting
+
+At startup the agent asks the terminal for its version, and the terminal answers on the keyboard input with a DCS string (`ESC P >|iTerm2 … ESC \`). The supervisor did not know that shape of reply and took it for the user typing, so the engine held everything for its ten-second typing hold: the greeting always came ten seconds late. DCS, APC, PM and SOS replies are recognised as terminal codes now.
+
+The greeting is marked once per session in a file, so the hook process and the server can no longer each create one.
+
+What to do about it: `journal upgrade`.
+
 ## 2.23.0 — Info messages reach the chat by default
 
 A journal whose chat detail level was never chosen copied only replies into the chat, so an agent's `[!info]` messages stayed in the terminal. The default level is now info: replies, info and blocked messages reach the chat unless the level is set otherwise in the agent bar.

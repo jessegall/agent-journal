@@ -100,3 +100,9 @@ def test_the_header_names_the_installed_version(tmp_path):
     from engine.version import version
     shown = re.sub(r"\x1b\[[0-9;]*m", "", Band(tmp_path, "main", "claude-1", "project").banner(120, "main", {}))
     assert f"JOURNAL {version()}" in shown, shown
+
+
+def test_a_terminal_answering_a_query_is_not_the_user_typing():
+    from engine.supervisor import typing
+    assert (typing(b"\x1bP>|iTerm2 3.5\x1b\\"), typing(b"\x1b]11;rgb:1616/1818/1d1d\x07"), typing(b"a")) == (False, False, True), \
+        "a version or colour reply comes in on the keyboard but holds nothing"

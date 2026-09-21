@@ -1,16 +1,11 @@
-import threading
-
 from engine.hooks import start_file
 from engine.queries import start_block
-from controllers.types import Nudges
 from features.base import Feature, Line, event
-from resources.base import SYSTEM
 from resources.types import TYPES
 from engine.stored import write_text
 
 
 SHAPING = ("feature", "plugin", "environment")
-GREETING = threading.Lock()
 
 
 COMPACTED = """THIS WINDOW WAS JUST COMPACTED. The summary kept what was done and dropped what was decided. Before touching anything:
@@ -35,12 +30,17 @@ class Start(Feature):
         agent = self.agent(event, record)
         if not agent or agent.event != "SessionStart":
             return
-        with GREETING:
-            if not self.greeted(record, agent):
-                self.journal.type(record, agent, "ready", env=record.env)
+        if self.first(record, agent):
+            self.journal.type(record, agent, "ready", env=record.env)
 
-    def greeted(self, record, agent) -> bool:
-        return any(n.data.get("feature") == self.name and n.data.get("session") == agent.title for n in Nudges(record, actor=SYSTEM)._every())
+    def first(self, record, agent) -> bool:
+        marker = record.root / "runtime" / f"greeted-{agent.title}"
+        marker.parent.mkdir(parents=True, exist_ok=True)
+        try:
+            marker.open("x").close()
+            return True
+        except FileExistsError:
+            return False
 
     @event("*")
     def write(self, event, record) -> None:
