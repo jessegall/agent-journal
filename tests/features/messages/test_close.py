@@ -59,7 +59,7 @@ def test_a_message_closes_once_every_part_is_processed_naming_what_each_became()
 
 def test_switched_off_per_environment_a_message_stays_open():
     record = fresh()
-    record.set_setting("features", {"handled": False})
+    features.FEATURES["messages"].disable(record)
     m = Messages(record, actor=USER).create("one ask")
     Messages(record, actor=AGENT).process(m.n, "one ask", "todo 1")
     assert Messages(record).load(m.n).completed == 0.0, "switched off: the message stays open"
