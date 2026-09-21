@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.82.2 — Lines the journal types start with [journal]
+
+Message 2081, to-do 736. Codex took the lines the journal types into its terminal, such as "answer message 22 before you write anything", for the user's words and answered them in the chat, so a joke came twice and a line about message 22 being processed ended up in the conversation. Every line the journal types into an agent's terminal now starts with `[journal]`, the opening line included, and the start block, handed at every start and after a compaction, tells every agent: a line that starts with [journal] is the journal speaking, not the user; act on it, and never answer it in the chat.
+
+What to do about it: `journal upgrade`, then start Codex again.
+
 ## 2.82.1 — The command tags skill loads at every start
 
 Message 2081, to-do 734. Codex was not using the reply tags because the command tags skill fell out of the default set in 2.78.6. It is back in it: with nothing chosen on the Skills page, every start loads journal, messages, to-dos, questions, memory, docs, reports, transcripts and command tags, so every agent knows `[!reply:n]` from its first turn.

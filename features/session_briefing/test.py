@@ -127,3 +127,4 @@ def test_enter_is_pressed_again_until_the_agent_takes_the_line(monkeypatch):
     driver._wrote = lambda raw: written.append(raw) or True
     driver._report = lambda: SimpleNamespace(at=time.time()) if written.count(b"\r") >= 2 else None
     assert (driver.type_in("hello"), written.count(b"\r")) == (True, 2), "the first Enter was swallowed: pressed again, then the hook says it was taken"
+    assert b"[journal] hello" in written, "a typed line says it is the journal's, so the agent never takes it for the user"
