@@ -203,15 +203,15 @@ class Feature(ABC):
     def live(self, record) -> list:
         return [agent for agent in Agents(record, actor=SYSTEM)._standing() if self.mine(agent)]
 
-    def hold(self, record, why: str, key: str = "") -> None:
-        for agent in self.live(record):
+    def hold(self, record, why: str, key: str = "", agent=None) -> None:
+        for agent in [agent] if agent else self.live(record):
             f = gate_file(record.root, record.env, agent.title)
             held = read_json(f, {})
             if held.get(self.keyed(key), "") != why:
                 write_json(f, {**held, self.keyed(key): why})
 
-    def release(self, record, key: str = "") -> None:
-        self.hold(record, "", key)
+    def release(self, record, key: str = "", agent=None) -> None:
+        self.hold(record, "", key, agent)
 
     def nudge(self, record, agent, title: str, brief: str = "", private: bool = False) -> None:
         if self.mine(agent):
