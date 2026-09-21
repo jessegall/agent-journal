@@ -5,6 +5,7 @@ from engine.events import AgentUpdated, ResourceEvent
 from engine.transcript import last_text
 from features.parts import Context, Handler
 from features.ask_questions.choices import offers_choices
+from resources.base import USER
 
 ASKING = "asking"
 
@@ -21,6 +22,17 @@ class AskInsteadOfProse(Handler):
         if offers_choices(last_text(context.record, context.agent.row)):
             context.agent.say("prose")
             context.hold("prose held", ASKING)
+
+
+@dataclass(frozen=True)
+class MessageArrived(ResourceEvent):
+    on: ClassVar[str] = "message.created"
+
+
+class ReleaseOnceAnswered(Handler):
+    def handle(self, context: Context, event: MessageArrived) -> None:
+        if event.actor == USER:
+            context.release(ASKING)
 
 
 class ReleaseOnceAsked(Handler):

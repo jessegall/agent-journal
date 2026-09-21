@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.75.1 — Fewer false holds for choices in prose
+
+To-do 631. The journal holds the agent's writes when its message offers you choices in prose, until it asks them as a question. Two things held it by mistake. The hold now lifts when you answer by message too, not only when a question is asked. And a message that points at questions already asked, such as "Questions 60-63" followed by one line per question, no longer counts as offering choices, including the lines that start with those numbers.
+
+What to do about it: `journal upgrade`.
+
 ## 2.75.0 — Comment on lines of a project file
 
 Message 1631, to-do 629. On a project file's page, selecting text shows the same Comment on this button documents have. It opens a small box naming the lines you picked, such as Lines 3-5 of engine/bus.py. Your comment is sent to the agent as a chat message with the file's path, the line range and those lines quoted from the file. Nothing is written into the file, so no comment lingers in a file that keeps changing.
