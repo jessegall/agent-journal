@@ -25,14 +25,13 @@ from resources.base import AGENT, Refused, SYSTEM
 from resources.shapes import typed
 from resources.types import AgentRow
 
-HIDDEN = ("path", "numbers", "summaries", "load", "save", "named", "method", "action", "sessions", "mark", "saw", "waits", "waitable", "chain")
 VERSION_FILE = Path(__file__).resolve().parents[1] / "VERSION"
 VERSION = VERSION_FILE.read_text().strip() if VERSION_FILE.is_file() else "0"
 
 
 def actions(controller: type) -> list[str]:
     return sorted(name for name, f in inspect.getmembers(controller, inspect.isfunction)
-                  if not name.startswith("_") and name not in HIDDEN)
+                  if not name.startswith("_") and not getattr(f, "internal", False))
 
 
 def truthy(word: str) -> bool:
