@@ -1,4 +1,5 @@
 <script setup>
+import {keepingPlace, useSighted} from "../composables/scrollback.js";
 import {computed, nextTick, onMounted, onUnmounted, ref, watch} from "vue";
 import {api} from "../api/client.js";
 import {sendMessage} from "./outbox.js";
@@ -74,18 +75,13 @@ const AHEAD = "200px 0px 0px 0px";
 const scrolledUp = ref(false);
 const NEAR_TOP = 200;
 let prepending = false;
-let topWatcher = null;
 
 async function older() {
     const s = scroller.value;
     if (!ready.value || !settledOnce.value || !scrolledUp.value || prepending || !s) return;
     prepending = true;
-    const fromBottom = s.scrollHeight - s.scrollTop;
     try {
-        if ((await earlier("message", "comment")) && scroller.value) {
-            await nextTick();
-            if (scroller.value) scroller.value.scrollTop = scroller.value.scrollHeight - fromBottom;
-        }
+        await keepingPlace(scroller, () => earlier("message", "comment"));
     } finally {
         prepending = false;
     }
@@ -183,17 +179,12 @@ onMounted(() => {
     frame = requestAnimationFrame(() => {
         frame = requestAnimationFrame(() => (rendering.value = true));
     });
-    topWatcher = new IntersectionObserver((seen) => seen.some((e) => e.isIntersecting) && older(), {
-        root: scroller.value,
-        rootMargin: AHEAD,
-    });
 });
 
-watch(topMark, (el) => el && topWatcher && topWatcher.observe(el));
+useSighted(topMark, older, {root: scroller, margin: AHEAD});
 
 onUnmounted(() => {
     cancelAnimationFrame(frame);
-    if (topWatcher) topWatcher.disconnect();
 });
 
 function watchScroll() {

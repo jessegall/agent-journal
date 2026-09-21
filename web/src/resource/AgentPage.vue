@@ -1,5 +1,6 @@
 <script setup>
-import {computed, nextTick, onMounted, onUnmounted, ref, watch} from "vue";
+import {keepingPlace, useSighted} from "../composables/scrollback.js";
+import {computed, ref, watch} from "vue";
 import {api} from "../api/client.js";
 import Btn from "../kit/Btn.vue";
 import CommentToggle from "./CommentToggle.vue";
@@ -107,17 +108,15 @@ async function fetchTurns() {
 async function earlier() {
     if (paging.value || atStart.value || !turns.value.length) return;
     paging.value = true;
-    const box = scroller.value;
-    const fromBottom = box ? box.scrollHeight - box.scrollTop : 0;
     try {
-        const path = transcriptKey();
-        const got = await api.transcript(props.resource.n, session.value, {before: earliest.value, last: PAGE});
-        if (path !== transcriptKey()) return;
-        error.value = "";
-        foldTools(got.turns);
-        turns.value = [...got.turns, ...turns.value];
-        await nextTick();
-        if (box) box.scrollTop = box.scrollHeight - fromBottom;
+        await keepingPlace(scroller, async () => {
+            const path = transcriptKey();
+            const got = await api.transcript(props.resource.n, session.value, {before: earliest.value, last: PAGE});
+            if (path !== transcriptKey()) return false;
+            error.value = "";
+            foldTools(got.turns);
+            turns.value = [...got.turns, ...turns.value];
+        });
     } catch (reason) {
         error.value = reason.message;
     } finally {
@@ -137,16 +136,8 @@ watch(session, () => {
     fetchTurns();
 });
 
-let watcher = null;
 usePoll(`transcript:${props.resource.n}`, fetchTurns, TRANSCRIPT_EVERY);
-onMounted(() => {
-    watcher = new IntersectionObserver((seen) => seen.some((e) => e.isIntersecting) && earlier(), {
-        root: scroller.value,
-        rootMargin: "400px 0px",
-    });
-    if (topMark.value) watcher.observe(topMark.value);
-});
-onUnmounted(() => watcher && watcher.disconnect());
+useSighted(topMark, earlier, {root: scroller, margin: "400px 0px"});
 </script>
 
 <template>

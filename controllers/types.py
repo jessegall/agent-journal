@@ -531,6 +531,9 @@ CONTROLLERS = {c.resource.type: c for c in (Messages, Todos, Works, Docs, Report
                                             Questions, Comments, Agents, Notifications, Notices, Reactions, Tools, Features, Connections, Plugins, Environments, Asks, Nudges)}
 
 
+WARM_PAUSE = 0.02
+
+
 def warm(root: Path) -> None:
     for home in sorted((Path(root) / "environments").glob("*/")):
         record = Record(Path(root), home.name)
@@ -538,4 +541,5 @@ def warm(root: Path) -> None:
             try:
                 controller(record, actor=SYSTEM)._warm()
             except (OSError, Refused):
-                continue
+                pass
+            time.sleep(WARM_PAUSE)

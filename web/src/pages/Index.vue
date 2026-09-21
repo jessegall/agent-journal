@@ -1,5 +1,6 @@
 <script setup>
-import {computed, onUnmounted, ref, watch} from "vue";
+import {useSighted} from "../composables/scrollback.js";
+import {computed, onUnmounted, ref} from "vue";
 import {api} from "../api/client.js";
 import Btn from "../kit/Btn.vue";
 import Icon from "../kit/Icon.vue";
@@ -27,19 +28,10 @@ const filters = computed(() => (kind.value.filters || []).map((f) => ({...f, cou
 const end = ref(null);
 const scrolled = ref(false);
 const moved = () => (scrolled.value = true);
-let watcher = null;
-watch(end, (el) => {
-    if (watcher) watcher.disconnect();
-    if (!el) return;
-    watcher = new IntersectionObserver(
-        (seen) => scrolled.value && seen.some((e) => e.isIntersecting) && paging.more[props.type] && earlier(props.type)
-    );
-    watcher.observe(el);
-});
+useSighted(end, () => scrolled.value && paging.more[props.type] && earlier(props.type));
 window.addEventListener("wheel", moved, {passive: true});
 window.addEventListener("touchmove", moved, {passive: true});
 onUnmounted(() => {
-    if (watcher) watcher.disconnect();
     window.removeEventListener("wheel", moved);
     window.removeEventListener("touchmove", moved);
 });
