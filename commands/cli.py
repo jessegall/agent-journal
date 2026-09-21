@@ -26,9 +26,8 @@ from resources.types import AgentRow
 from engine.stored import write_text
 from engine import runtime
 from engine.stored import last_lines
+from engine.version import version
 
-VERSION_FILE = Path(__file__).resolve().parents[1] / "VERSION"
-VERSION = VERSION_FILE.read_text().strip() if VERSION_FILE.is_file() else "0"
 
 
 def actions(controller: type) -> list[str]:
@@ -161,7 +160,7 @@ def built(only: str) -> argparse.ArgumentParser:
               ("--back", {"type": int, "default": 1}))
     add_query(cmds, "user", "the user's own words, in full", lambda ctx: say(user(transcript(ctx["record"], ctx["session"]))))
     add_query(cmds, "nothing", "decide that nothing here needs pinning", lambda ctx: decided(ctx), ("why", {}))
-    add_query(cmds, "version", "the version", lambda ctx: VERSION)
+    add_query(cmds, "version", "the version", lambda ctx: version())
     add_query(cmds, "enable", "the journal is in force again: the hooks report, the gate holds", lambda ctx: switched(ctx, on=True))
     add_query(cmds, "disable", "the kill switch — the hooks stay wired but report nothing and hold nothing, until enable", lambda ctx: switched(ctx, on=False))
     add_query(cmds, "verify", "wired and alive: the hooks in the agent's settings, the viewer, the engine, this session's last report", lambda ctx: verify(ctx))
@@ -258,7 +257,7 @@ def supervise(ctx, agent: str) -> str:
 
 
 def services(ctx) -> str:
-    from engine.services import DOWN, UP, log_file, specs, states, want
+    from engine.services import DOWN, UP, listed, log_file, want
     root = ctx["record"].root
     what, which = ctx["what"], ctx["which"]
     if what == "up":
@@ -272,13 +271,7 @@ def services(ctx) -> str:
         return f"{which} is asked to {'stop' if what == 'stop' else 'run'}"
     if what != "list":
         raise Refused(f"services knows list, up, start, stop, restart and log, not {what!r}")
-    known = {spec["id"]: spec for spec in specs(root)}
-    lines = []
-    for sid, said in sorted({**{k: {} for k in known}, **states(root)}.items()):
-        if sid not in known and not said:
-            continue
-        where = (known.get(sid) or {}).get("url") or said.get("url") or ""
-        lines.append(f"{sid:<28} {said.get('state') or 'not running':<10} {where}{'  ' + said['why'] if said.get('why') else ''}")
+    lines = [f"{s['id']:<28} {s['state']:<10} {s['url']}{'  ' + s['why'] if s['why'] else ''}" for s in listed(root)]
     return "\n".join(lines) or "no plugin declares a service"
 
 

@@ -8,6 +8,7 @@ from controllers.types import CONTROLLERS
 from resources.base import ACTIONS, ACTORS, CLOSED, EVERY, OPEN, SCOPES, VIEWS, Resource
 from resources.types import PRIORITY, TYPES
 from engine import runtime
+from engine.version import version
 
 
 SHOWN = {OPEN: "Open", EVERY: "All"}
@@ -27,7 +28,7 @@ def manifest(root: Path | None = None) -> dict:
     return {
         "project": root.resolve().parent.name if root else "",
         "environment": runtime.env(root) if root else runtime.DEFAULT_ENV,
-        "version": next((f.read_text().strip() for f in ((Path(__file__).resolve().parents[1] / "VERSION"),) if f.is_file()), ""),
+        "version": version(),
         "build": built(),
         "actions": list(ACTIONS),
         "actors": list(ACTORS),

@@ -224,3 +224,15 @@ class Manager:
             killed.append(group)
             write_json(status_file(self.root, sid), {**said, "state": "stopped", "why": "its keeper is gone", "at": self.clock()})
         return killed
+
+
+def listed(root: Path) -> list[dict]:
+    known = {spec["id"]: spec for spec in specs(root)}
+    said = states(root)
+    out = []
+    for sid in sorted({*known, *said}):
+        spec, state = known.get(sid, {}), said.get(sid, {})
+        out.append({"id": sid, "plugin": spec.get("plugin") or sid.split(".")[0], "service": spec.get("service") or sid.split(".", 1)[-1],
+                    "state": state.get("state") or "not running", "why": state.get("why") or "", "url": spec.get("url") or state.get("url") or "",
+                    "port": spec.get("port") or state.get("port") or 0, "since": state.get("started") or 0, "declared": sid in known})
+    return out
