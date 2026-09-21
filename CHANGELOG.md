@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.24.6 — The inspector says when a row was deleted
+
+A deleted row opened by its link showed Edit, done and delete as if it were live. The inspector now says it was deleted and offers none of them.
+
+What to do about it: `journal upgrade`.
+
 ## 2.24.5 — A row fetched for the inspector survives the list reloading
 
 The viewer remembered every row number it had fetched on its own and never asked for it again, so when the page reloaded its list a moment later — dropping the fetched row — the inspector was left with nothing; on Home this hid a deleted to-do opened by its link. A number now counts as asked only while its request is running, and a number the server has no row for is not asked again.
