@@ -1,7 +1,7 @@
 <script setup>
 import {computed, ref, watch, watchEffect} from "vue";
 import SwitchCase from "../kit/SwitchCase.vue";
-import {go, route, unpeek} from "../route.js";
+import {go, peek, route, unpeek} from "../route.js";
 import {meta} from "../state/store.js";
 import {holding, rows} from "../sync/rows.js";
 import ResourceBody from "./ResourceBody.vue";
@@ -15,6 +15,13 @@ const props = defineProps({type: String, n: Number});
 const resource = computed(() => (props.type ? rows(props.type).find((r) => r.n === props.n) : null) || null);
 watchEffect(() => {
     if (props.type && props.n && !resource.value) holding(props.type, [props.n]);
+});
+watchEffect(() => {
+    const part = resource.value && resource.value.data.part_of;
+    if (!part) return;
+    const [type, n] = part.split(":");
+    if (route.value.open) peek(type, Number(n));
+    else go(route.value.env, type, Number(n));
 });
 const focusComment = computed(() => route.value.open?.comment || 0);
 const shape = computed(() => (!props.type ? "" : ["plan", "agent", "design"].includes(props.type) ? props.type : meta(props.type).view));

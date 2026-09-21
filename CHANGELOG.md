@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.38.2 — A design is one document on the Documents page
+
+Message 1397. A design's revisions are docs, and the Documents page now lists each design once, as its latest revision; opening it opens the design with its revision strip. The earlier revisions are read through the design and are not listed or found on their own.
+
+What to do about it: `journal upgrade`.
+
 ## 2.38.1 — A feature's details read like a page
 
 Message 1391. A details.py writes its long text as wrapped, indented blocks: FeatureDetails, Line and Behaviour join the wrapped lines of a block into one paragraph, and a blank line starts the next one. Lines and behaviours are written with one keyword argument per line. Tags and Designs are written this way.

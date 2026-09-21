@@ -23,5 +23,6 @@ def test_every_edit_is_a_revision_and_the_earlier_ones_stay_as_they_were():
                     ("How handlers and events are written", [], "cut Goals", AGENT)], "each revision is a copy, never changed after"
 
     docs = Docs(record, actor=USER)
-    assert (docs.all(), docs.search("two"), docs.unread()) == ([], [], []), "the revisions are read through their design, never listed or found as docs"
+    assert [(d.data["revision"], d.data["part_of"]) for d in docs.all()] == [(5, design.ref)], "the design is listed among the docs once, as its latest revision"
+    assert docs.search("two") == [], "an earlier revision is read through its design, never found on its own"
     assert [r.title for r in mine.search("events")] == ["How handlers and events are written"], "the design itself is found"
