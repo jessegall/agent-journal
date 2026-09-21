@@ -57,3 +57,19 @@ def test_a_compacted_start_hands_the_recovery_steps_before_the_same_block():
     assert start("startup") == plain, "a fresh start is handed the plain block"
     assert start("compact") == compacted, "a start after a compaction is handed the recovery steps first"
     assert start("resume") == plain, "a resume is a fresh start"
+
+
+def test_a_new_session_is_greeted_in_its_terminal_even_before_its_engine_starts():
+    import time
+    from types import SimpleNamespace
+    from controllers.types import Agents
+    from engine.engine import Engine
+    from providers import DRIVERS
+    record = fresh()
+    agents = Agents(record, actor="system")
+    agents.update(agents.by_session("claude-1").n, event="SessionStart", status="idle")
+    time.sleep(0.01)
+    engine = Engine(record, DRIVERS["claude"](record, "claude-99"))
+    engine.agent.driver.last_report = lambda: SimpleNamespace(title="claude-1", at=time.time())
+    engine.deliver()
+    assert [engine.agent.typed(e) for e in engine.agent.pending] == [True], "the greeting waits to be typed, never marked read as history"

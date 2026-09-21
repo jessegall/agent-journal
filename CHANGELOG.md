@@ -4,6 +4,14 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.20.2 — A new session's greeting is typed even when its engine starts late
+
+A session's engine starts a few seconds after Claude does. In a fresh journal a new engine marks every event older than itself as read, so history is not replayed — and the start greeting, created at SessionStart, was older than the engine and was dropped without being typed. A message addressed to the engine's own session is never dropped that way now; it is delivered.
+
+The installed `journal` command printed "runtime/heartbeat: No such file or directory" when no server had started yet; it is silent now and runs the package directly.
+
+What to do about it: `journal upgrade`.
+
 ## 2.20.1 — A restart loses no message, and one skills folder is never linked onto itself
 
 A freshly started engine took everything already in the transcript as heard, so a message the agent wrote while the server was restarting — after an upgrade, say — never raised `agent.said`: its tags did not run and a chat-detail level never copied it into the chat. The engine now keeps the last turn it announced per session in `runtime/announced-<session>.json` and, after a restart, announces everything said since.
