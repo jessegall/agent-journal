@@ -12,7 +12,8 @@ DEVELOPING = "DEVELOPMENT_MODE"
 OVER = "is slower than its budget"
 THREW = "the viewer threw"
 SAID = 300
-QUIET = 60
+EVERY = 10
+AGAIN = 300
 
 
 def developing(project: Path) -> bool:
@@ -45,16 +46,17 @@ class Faults(Feature):
     def file(self, record, title: str, brief: str, **data) -> None:
         rows = Notifications(record, actor=SYSTEM)
         found = next((row for row in rows.summaries() if not row["deleted"] and not row["completed"] and row["title"] == title), None)
-        if found and time.time() - found["updated"] < QUIET:
-            return
         standing = rows.load(found["n"]) if found else None
         times = (int(standing.data.get("times", 0)) if standing else 0) + 1
+        told = float(standing.data.get("told", 0)) if standing else 0.0
         said = f"{brief} Seen {self.plural(times, 'time')}."
+        telling = times == 1 or times % EVERY == 0 or time.time() - told >= AGAIN
+        told = time.time() if telling else told
         if standing:
-            rows.update(standing.n, brief=said, times=times, **data)
+            rows.update(standing.n, brief=said, times=times, told=told, **data)
         else:
-            rows.create(title, brief=said, times=times, **data)
-        agent = Agents(record, actor=SYSTEM).primary()
+            rows.create(title, brief=said, times=times, told=told, **data)
+        agent = Agents(record, actor=SYSTEM).primary() if telling else None
         if agent:
             self.nudge(record, agent, title, said)
 
