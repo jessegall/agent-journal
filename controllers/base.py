@@ -347,9 +347,15 @@ class Controller:
         return [self.load(row["n"]) for row in self.summaries() if who not in row["seen"] and not row["completed"] and not row["deleted"]]
 
     def all(self, deleted: bool = False, completed: bool = False, last: int = LAST) -> list[Resource]:
-        rows = self._every(deleted)
+        rows = self._every(deleted) if completed or deleted else self._standing()
         rows = rows if completed else [r for r in rows if not r.completed]
         return rows[-int(last):] if int(last) else rows
+
+    def _standing(self) -> list[Resource]:
+        return self._ordered([self.load(row["n"]) for row in self.summaries() if not row["deleted"] and not row["completed"]])
+
+    def _ordered(self, rows: list[Resource]) -> list[Resource]:
+        return rows
 
     def _every(self, deleted: bool = False) -> list[Resource]:
         memo = self.record.memo

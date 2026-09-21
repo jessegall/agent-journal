@@ -5,7 +5,7 @@ from resources.base import SYSTEM
 
 
 def standing(record) -> list:
-    return [r for controller in (Rules, Facts) for r in controller(record, actor=SYSTEM)._every() if not r.completed]
+    return [r for controller in (Rules, Facts) for r in controller(record, actor=SYSTEM)._standing()]
 
 
 def owed(record, days: int = 7) -> bool:

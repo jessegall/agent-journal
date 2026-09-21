@@ -86,7 +86,7 @@ class Host:
         return [Record(self.root, p.name) for p in sorted(home.iterdir()) if p.is_dir()] if home.is_dir() else []
 
     def installed(self, record) -> list:
-        return [r for r in Plugins(record, actor=SYSTEM)._every() if r.enabled and not r.completed and r.manifest]
+        return [r for r in Plugins(record, actor=SYSTEM)._standing() if r.enabled and r.manifest]
 
     def name(self, row) -> str:
         return str(row.manifest.get("name") or "")

@@ -32,7 +32,7 @@ class Plugins(Feature):
         memo, key = getattr(record, "memo", None), ("chat rules",)
         if memo is not None and key in memo:
             return memo[key]
-        rules = [(rule["find"], rule["as"]) for row in Rows(record, actor=SYSTEM)._every() if not row.completed and row.enabled
+        rules = [(rule["find"], rule["as"]) for row in Rows(record, actor=SYSTEM)._standing() if row.enabled
                  for rule in (row.manifest or {}).get("chat") or []]
         if memo is not None:
             memo[key] = rules
@@ -84,7 +84,7 @@ class Plugins(Feature):
         where, manifest, commit, linked = staged(root, source, ref, VERSION)
         name, kept, held = manifest["name"], False, None
         try:
-            taken = next((r for r in plugins._every() if r.manifest and r.manifest.get("name") == name and not r.completed), None)
+            taken = next((r for r in plugins._standing() if r.manifest and r.manifest.get("name") == name), None)
             if taken:
                 raise Refused(f"a plugin named {name} is installed from {taken.source}: remove it first")
             if not yes:
@@ -161,7 +161,7 @@ class Plugins(Feature):
     def removed(self, event, record) -> None:
         rows = Rows(record, actor=SYSTEM)
         name = self.called(rows.load(event.n))
-        still = any(r.n != event.n and not r.completed and self.called(r) == name for r in rows._every())
+        still = any(r.n != event.n and self.called(r) == name for r in rows._standing())
         if name and not still:
             self.clear(folder(record.root, name))
 

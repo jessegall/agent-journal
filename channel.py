@@ -7,6 +7,8 @@ from pathlib import Path
 PROTOCOL = "2025-06-18"
 NAME = "journal"
 WAIT = 0.3
+BETWEEN = 5.0
+FLOOD = 20
 
 
 def queue(root: Path) -> Path:
@@ -22,29 +24,49 @@ def say(message: dict) -> None:
     sys.stdout.flush()
 
 
+def fresh_lines(f: Path, at: int | None) -> tuple[list[str], int | None]:
+    try:
+        size = f.stat().st_size
+    except OSError:
+        return [], at
+    if at is None or size < at:
+        return [], size
+    if size == at:
+        return [], at
+    with f.open() as lines:
+        lines.seek(at)
+        read = lines.read()
+        return read.splitlines(), lines.tell()
+
+
+def contents(lines: list[str]) -> list[str]:
+    said = []
+    for line in lines:
+        try:
+            said.append(str(json.loads(line).get("content") or ""))
+        except ValueError:
+            continue
+    return [s for s in said if s]
+
+
 def push(root: Path) -> None:
     f = queue(root)
-    at = f.stat().st_size if f.is_file() else 0
+    at = None
+    held: list[str] = []
+    last = 0.0
     while True:
         time.sleep(WAIT)
         alive(root).touch()
-        try:
-            if not f.is_file() or f.stat().st_size <= at:
-                at = min(at, f.stat().st_size) if f.is_file() else 0
-                continue
-            with f.open() as lines:
-                lines.seek(at)
-                fresh = lines.read()
-                at = lines.tell()
-        except OSError:
+        lines, at = fresh_lines(f, at)
+        held.extend(contents(lines))
+        if not held or time.time() - last < BETWEEN:
             continue
-        for line in fresh.splitlines():
-            try:
-                told = json.loads(line)
-            except ValueError:
-                continue
-            say({"jsonrpc": "2.0", "method": "notifications/claude/channel",
-                 "params": {"content": str(told.get("content") or ""), "meta": told.get("meta") or {}}})
+        if len(held) > FLOOD:
+            said = f"the journal held back {len(held)} lines at once and dropped them - that many is a fault, not news"
+        else:
+            said = "; ".join(dict.fromkeys(held))
+        held, last = [], time.time()
+        say({"jsonrpc": "2.0", "method": "notifications/claude/channel", "params": {"content": said, "meta": {"from": "journal"}}})
 
 
 def answer(asked: dict) -> dict | None:

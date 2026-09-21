@@ -91,7 +91,7 @@ def plugins(root: Path) -> list:
     home = Path(root) / "environments"
     first = sorted(p.name for p in home.iterdir() if p.is_dir()) if home.is_dir() else []
     record = Record(Path(root), first[0] if first else "main")
-    return [r for r in Plugins(record, actor=SYSTEM)._every() if r.enabled and not r.completed and r.manifest]
+    return [r for r in Plugins(record, actor=SYSTEM)._standing() if r.enabled and r.manifest]
 
 
 def specs(root: Path) -> list[dict]:
