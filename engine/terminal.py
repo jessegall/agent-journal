@@ -74,11 +74,13 @@ def stop(pid: int) -> int:
 
 
 def seat(root: Path, env: str, session: str, pid: int, agent: str, command: list[str]) -> None:
-    from engine.hooks import seated
+    from controllers.types import Environments
+    from engine.record import Record
     from engine.sessions import Sessions
+    from resources.base import SYSTEM
     Sessions(root).bind(session, env, pid=pid, provider=agent)
     Sessions(root).write(session, args=command)
-    seated(root, env, session)
+    Environments(Record(root, env), actor=SYSTEM)._seat(env, session)
 
 
 def launch(root: Path, cwd: Path, env: str, agent: str, args: list[str], conversation: str = "") -> tuple[int, int, str]:
