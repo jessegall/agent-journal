@@ -153,6 +153,8 @@ def run(argv: list[str], out=None, err=None) -> int:
     elif isinstance(got, dict):
         print(got.get("out", "") or got, file=out)
     elif got is not None:
+        if getattr(got, "preface", ""):
+            print(got.preface, file=out)
         print(got.dump() if hasattr(got, "dump") else got, file=out)
     return 0
 
