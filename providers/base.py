@@ -46,6 +46,8 @@ JOURNAL_CALL = re.compile(r"(^|[;&|(]\s*|\$\()\S*journal(?:\.py)?\s(?:\"(?:[^\"\
 
 RECENT: dict[str, tuple] = {}
 FOLDS: dict[tuple, tuple] = {}
+TRANSCRIPTS: dict[str, tuple] = {}
+SEAM = 256
 RECENT_BYTES = 1_000_000
 
 
@@ -247,8 +249,29 @@ class Provider(ABC):
         return found
 
     def transcript(self, path: Path) -> list:
-        turns = [Turn(i, *turn) for i, row in self.entries(path) for turn in [self.turn(row)] if turn]
-        return self.refine(turns)
+        try:
+            size = Path(path).stat().st_size
+        except (OSError, TypeError):
+            return []
+        held = TRANSCRIPTS.get(str(path))
+        offset, count, turns, seam = held if held and held[0] <= size else (0, 0, [], b"")
+        with Path(path).open("rb") as source:
+            source.seek(max(0, offset - len(seam)))
+            if source.read(len(seam)) != seam:
+                offset, count, turns, seam = 0, 0, [], b""
+            source.seek(offset)
+            raw = source.read(size - offset)
+        if raw:
+            whole = raw[:raw.rfind(b"\n") + 1]
+            for line in whole.split(b"\n")[:-1]:
+                count += 1
+                row = parsed(line.decode(errors="replace"))
+                turn = self.turn(row) if isinstance(row, dict) else None
+                if turn:
+                    turns.append(Turn(count, *turn))
+            turns = self.refine(turns)
+            TRANSCRIPTS[str(path)] = (offset + len(whole), count, turns, (seam + whole)[-SEAM:])
+        return turns
 
     def refine(self, turns: list[Turn]) -> list[Turn]:
         return turns
