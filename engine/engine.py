@@ -190,7 +190,8 @@ class Engine(Seat):
                         CONTROLLERS[e.type](self.record, actor=AGENT).read(e.n)
                     actor.notified(e)
                     continue
-                mine = actor is self.agent and e.actor != USER and e.action not in TYPES[e.type].notify_actions
+                caused = e.data.get("cause") == AGENT and not TYPES[e.type].addressed_to_agent
+                mine = actor is self.agent and ((e.actor != USER and e.action not in TYPES[e.type].notify_actions) or caused)
                 if e.action == STAMPED or e.actor == actor.name or actor.name not in TYPES[e.type].notified or self.elsewhere(e) or "seen" in e.data or mine:
                     actor.notified(e)
                     continue

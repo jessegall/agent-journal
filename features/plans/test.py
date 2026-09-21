@@ -61,11 +61,11 @@ def test_writing_a_plan_lays_out_phases_and_advances_through_them_to_done(env):
 
     todos.complete(1, "done")
     assert by_agent.load(plan.n).data["current"] == 1, "one row done: the phase is not complete"
-    todos.complete(2, "done")
+    Todos(record, actor=AGENT).complete(2, "done")
     assert (by_agent.load(plan.n).data["current"], [e for e in record.events() if e.type == "plan"][-1].actor,
             [e for e in record.events() if e.type == "plan"][-1].data) == \
-        (2, SYSTEM, {"phase": 1, "complete": True, "status": "active", "passed": False}), \
-        "every row done: the next phase is current, by the feature, as SYSTEM"
+        (2, SYSTEM, {"phase": 1, "complete": True, "status": "active", "passed": False, "cause": AGENT}), \
+        "every row done: the next phase is current, by the feature, as SYSTEM, caused by the agent"
     assert next(record).n == 3, "next offers the new phase's row"
     todos.complete(3, "done")
     assert (by_agent.load(plan.n).data["status"], by_agent.load(plan.n).data["current"]) == ("waiting", 2), \

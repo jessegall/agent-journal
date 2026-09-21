@@ -121,6 +121,7 @@ class Resource:
     notified: ClassVar[tuple] = (USER, AGENT)   # who is told of its events, besides the actor
     typed_as_title: ClassVar[bool] = False            # typed to the agent as its title, not as "type n action"
     notify_actions: ClassVar[tuple] = ()      # besides everything the user does, the system actions the agent is notified of
+    addressed_to_agent: ClassVar[bool] = False
     answer_command: ClassVar[str] = "comment"      # the word that answers a row instead of changing it
     editors: ClassVar[dict] = {}              # who may change the words of a row written by whom: {USER: (USER,)}; unnamed authors are open to all
     stamped_when_told: ClassVar[bool] = False              # the row is stamped with the moment the agent was told of it

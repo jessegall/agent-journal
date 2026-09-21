@@ -11,6 +11,7 @@ ANY = "*"
 _listeners: dict[str, list[tuple[str, Listener]]] = defaultdict(list)
 _watchers: list[Listener] = []
 _held = threading.local()
+_cause = threading.local()
 
 
 def always(record) -> bool:
@@ -44,12 +45,21 @@ def emit(event: Event, record=None) -> None:
     run(event, record)
 
 
+def cause() -> str:
+    return getattr(_cause, "actor", "")
+
+
 def run(event: Event, record=None) -> None:
     shown(event, record)
-    for pattern in (ANY, event.type, event.action, f"{event.type}.{event.action}"):
-        for enabled, listener in list(_listeners.get(pattern, ())):
-            if record is None or enabled(record):
-                listener(event, record)
+    before = cause()
+    _cause.actor = event.data.get("cause") or event.actor
+    try:
+        for pattern in (ANY, event.type, event.action, f"{event.type}.{event.action}"):
+            for enabled, listener in list(_listeners.get(pattern, ())):
+                if record is None or enabled(record):
+                    listener(event, record)
+    finally:
+        _cause.actor = before
 
 
 @contextmanager
