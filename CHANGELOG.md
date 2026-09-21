@@ -4,6 +4,14 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.16.17 — Settings opens each feature on its own, and a missing tag is named at once
+
+Settings lists the features as a compact grid, each with its switch; opening one shows a panel with that feature alone — what it does, when it speaks, its behaviours with their switches, its own settings (tag names, the answer hold, keep days, permission prompts) and every line it can say to the agent. The long page and its separate lines section are gone. Setting percentage marks on a trigger no longer throws.
+
+The no-tag reminder has no timing any more: it is a switch, and when on, the message that ends a turn is checked the moment it is seen — from the Stop hook's own text — and named once if it opens without a tag. A final message with a reply tag is also no longer mistaken for the one before it.
+
+What to do about it: `journal upgrade`.
+
 ## 2.16.16 — A struck fact, a struck rule and a finished plan reach the user
 
 The notifications rail listed only open rows, so a fact or rule being struck, or a plan finishing, never reached the user. These types now say their ending is news: when anyone but the user ends one, it becomes unread for the user again and waits in the rail — "Fact struck", "Rule struck", "Plan acknowledged" — until dismissed.

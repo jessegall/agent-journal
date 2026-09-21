@@ -5,11 +5,10 @@ import threading
 import time
 
 from controllers.types import Agents
-from features import trigger
 from engine.stored import read_json, write_json
 from features.base import Behaviour, Feature, event, formats, interceptor, Line
 from resources.base import AGENT, SYSTEM
-from engine.transcript import Turn, last_said, turns
+from engine.transcript import IDLE, Turn, last_said, turns
 
 TAGS = ("discovery", "correction", "blocked", "info", "reply")
 RECENT_TURNS, RECENT_SECONDS = 6, 1800.0
@@ -49,8 +48,7 @@ class Tags(Feature):
     abstract_ = "A message opens with one tag, and a tag carrying a number runs the command it stands for"
     help_ = "The tags are settings. tags.names lists them and tags.runs maps a tag to the command it stands for, so [!reply:12] runs journal message reply 12 with the turn as its text, and [!todo=\"the title\"] files a to-do with that title and the turn as its brief. A tag runs once, keyed to the turn it came from; two tags in one turn run in the order they appear; and a refusal comes back as a nudge on the next turn rather than at the moment of acting."
     behaviours = {"naming": Behaviour("Name a message that opens without a tag",
-                                      "Said at the end of the turn, every turn, until one is used",
-                                      trigger={"on": trigger.IDLE}),
+                                      "Said the moment a turn's last message is seen without one"),
                   "replying": Behaviour("Remind the agent to reply by tag",
                                         "When the agent runs journal message reply, it is told the reply tag does the same")}
     NAMES = "names"
@@ -67,12 +65,14 @@ class Tags(Feature):
         return pattern(self.names(record))
 
     @event("agent.updated")
+    @event("agent.said")
     def check(self, event, record) -> None:
         agent = self.agent(event, record)
-        if not self.due(record, agent, "naming"):
+        if not agent or agent.status != IDLE or not self.on(record, "naming"):
             return
-        said = last_said(record, agent)
-        if said and not self.reader(record).match(said):
+        said = agent.said if agent.event == "Stop" and agent.said else last_said(record, agent)
+        ending = Turn(line=-1, who="agent", text=said, at=time.time())
+        if said and not self.reader(record).match(said) and not self.already(record, agent, ending, "untagged"):
             self.say(record, agent, "untagged", tags=" ".join(written(self.names(record))))
 
     @formats
@@ -85,9 +85,9 @@ class Tags(Feature):
     def argv(self, template: str, n: str, name: str, text: str) -> list[str]:
         return [{"{text}": text, "{n}": n, "{name}": name}.get(word, word) for word in template.split()]
 
-    def already(self, record, agent, turn) -> bool:
-        f = record.root / "runtime" / f"tagged-{agent.title}.json"
-        keys = (f"{agent.transcript}:{turn.line}", hashlib.sha1(turn.text.strip().encode()).hexdigest())
+    def already(self, record, agent, turn, kind: str = "tagged") -> bool:
+        f = record.root / "runtime" / f"{kind}-{agent.title}.json"
+        keys = (*([f"{agent.transcript}:{turn.line}"] if turn.line >= 0 else []), hashlib.sha1(turn.text.strip().encode()).hexdigest())
         with MARKING:
             done = read_json(f, {})
             if any(key in done for key in keys):
