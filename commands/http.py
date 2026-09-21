@@ -8,15 +8,14 @@ import threading
 import time
 from email import policy
 from email.parser import BytesParser
-from dataclasses import asdict, dataclass, field
+from dataclasses import asdict
 from pathlib import Path
 from queue import Empty, Queue
-from typing import Callable, Iterator
-from urllib.parse import quote, unquote
+from typing import Iterator
+from urllib.parse import quote
 from urllib.request import urlopen
 
 import features
-from features.base import generation
 from surfaces.appoint import appoint, online
 from surfaces.package import archive as extension_archive, info as extension_info
 from surfaces.summary import summarize
@@ -33,162 +32,12 @@ from engine.hooks import answer
 from engine.record import Record
 from engine.transcript import page
 from providers import PROVIDERS
-from features.format import formatted
-from resources.base import shown as given, AGENT, OPENED, USER, Refused, titled
+from resources.base import AGENT, OPENED, USER, Refused, titled
 from resources.types import Ask
 from engine.stored import write_text, last_lines
 from engine.proc import git, ran
-
-WEB = Path(__file__).resolve().parents[1] / "web" / "dist"
-SAID = ("title", "abstract", "brief", "outcome")
-JSON = "application/json"
-PLAIN = "text/plain; charset=utf-8"
-
-
-SHAPED: dict = {}
-KEEP_SHAPED = 5000
-
-
-def settled(record) -> tuple:
-    try:
-        stamp = (record.home / "settings.json").stat().st_mtime_ns
-    except OSError:
-        stamp = 0
-    return stamp, generation()
-
-
-def shaped(r, record=None, surface: str = "") -> dict:
-    key = (str(record.home), r.type, r.n, r.updated, surface, settled(record)) if record is not None and hasattr(r, "updated") else None
-    if key in SHAPED:
-        return SHAPED[key]
-    out = shaping(r, record, surface)
-    if key:
-        if len(SHAPED) >= KEEP_SHAPED:
-            SHAPED.clear()
-        SHAPED[key] = out
-    return out
-
-
-def shaping(r, record=None, surface: str = "") -> dict:
-    row = given(r)
-    tags = features.FEATURES.get("tags")
-    place = {"place": tags.place(row.get("brief"), record)} if tags and record and row.get("brief") else {}
-    said = {key: formatted(row.get(key), record, surface) for key in SAID if row.get(key)}
-    parts = [{**s, "body": formatted(s.get("body"), record, surface)} for s in row.get("sections") or []]
-    return {**row, **place, **said, **({"sections": parts} if parts else {})}
-
-
-@dataclass
-class Request:
-    root: Path
-    params: dict
-    query: dict
-    body: dict
-    kept: Record | None = None
-
-    def record(self) -> Record:
-        if self.kept is None:
-            self.kept = Record(self.root, self.params["env"], memo=True)
-        return self.kept
-
-    def controller(self):
-        type_ = self.params["type"]
-        if type_ not in CONTROLLERS:
-            raise Missing(f"no type {type_}")
-        return CONTROLLERS[type_](self.record(), actor=self.body.pop("actor", USER))
-
-
-@dataclass
-class Reply:
-    code: int = 200
-    body: object = None
-    kind: str = JSON
-    chunks: Iterator[bytes] | None = None
-    after: Callable[[], None] | None = None
-
-    def bytes(self) -> bytes:
-        if isinstance(self.body, bytes):
-            return self.body
-        return self.body.encode() if self.kind == PLAIN else json.dumps(self.body).encode()
-
-
-class Missing(Exception):
-    pass
-
-
-@dataclass
-class Route:
-    method: str
-    pattern: str
-    handler: Callable[[Request], Reply]
-    regex: re.Pattern = field(init=False)
-
-    def __post_init__(self):
-        self.regex = re.compile("^" + re.sub(r"{(\w+)}", r"(?P<\1>[^/]+)", self.pattern) + "$")
-
-
-ROUTES: list[Route] = []
-
-
-def route(method: str, pattern: str):
-    def register(fn):
-        ROUTES.append(Route(method, pattern, fn))
-        return fn
-    return register
-
-
-def resolve(method: str, path: str) -> tuple[Route, dict] | None:
-    for r in ROUTES:
-        m = r.regex.match(path)
-        if m and r.method == method:
-            return r, {k: unquote(v) for k, v in m.groupdict().items()}
-    return None
-
-
-def later(reply: Reply, then) -> Reply:
-    earlier = reply.after
-
-    def after() -> None:
-        if earlier:
-            earlier()
-        then()
-    reply.after = after
-    return reply
-
-
-def timed(reply: Reply, root: Path, env: str, method: str, path: str, began: tuple) -> Reply:
-    faults = features.FEATURES.get("faults")
-    if not faults:
-        return reply
-    took = (time.perf_counter() - began[0]) * 1000
-    working = (time.thread_time() - began[1]) * 1000
-    return later(reply, lambda: faults.spent(root, env, "hook" if "/hook/" in path else "request", f"{method} {path}", took, working))
-
-
-def dispatch(method: str, path: str, root: Path, query: dict, body: dict) -> Reply:
-    found = resolve(method, path)
-    if not found:
-        return static(path) if method == "GET" else Reply(404, {"error": "no such route"})
-    r, params = found
-    began = (time.perf_counter(), time.thread_time())
-    try:
-        with bus.held() as heard:
-            reply = r.handler(Request(root, params, query, body))
-        return timed(later(reply, lambda: bus.release(heard)), root, params.get("env") or "main", method, path, began)
-    except Missing as e:
-        return Reply(404, {"error": str(e)})
-    except Refused as e:
-        return Reply(400, {"error": str(e)})
-    except (TypeError, AttributeError) as e:
-        return Reply(400, {"error": f"not an action here: {e}"})
-
-
-def represented(got, record=None):
-    if got is None:
-        return {"ok": True}
-    if isinstance(got, list):
-        return [shaped(item, record) if hasattr(item, "ref") else item for item in got]
-    return shaped(got, record) if hasattr(got, "ref") else got
+from commands.dispatch import JSON, Missing, PLAIN, Reply, Request, represented, route, shaped
+from commands.dispatch import dispatch  # noqa: F401
 
 
 def renamed() -> dict:
@@ -210,15 +59,6 @@ def settings(record: Record) -> dict:
     return {Record.features: switches(record),
             Record.triggers: record.triggers, Record.keep: record.keep, Record.delivery: record.delivery,
             **{name: shown for name, f in features.FEATURES.items() if (shown := f.settings_view(record)) is not None}}
-
-
-def static(path: str) -> Reply:
-    f = WEB / (path.strip("/") or "index.html")
-    if not f.is_file():
-        f = WEB / "index.html"
-    if not f.is_file():
-        return Reply(404, {"error": "no web build; run npm run build in web"})
-    return Reply(200, f.read_bytes(), mimetypes.guess_type(str(f))[0] or "application/octet-stream")
 
 
 @route("POST", "/api/hook/{provider}")
