@@ -1,5 +1,6 @@
 import argparse
 import os
+import sys
 import time
 from dataclasses import dataclass
 from pathlib import Path
@@ -140,13 +141,52 @@ def still_open(record) -> list[str]:
     messages = [f"message {m.n} was read and never answered: {m.title}" for m in unanswered(record)]
     return works + messages
 
+WORKTREE_FLAGS = ("--worktree", "-w")
+
+
+def asked_for(record: Record, args: list[str], ask=input, answering=None) -> str:
+    answering = sys.stdin.isatty() if answering is None else answering
+    if not answering or "--env" in sys.argv or any(a in WORKTREE_FLAGS or a.startswith("--worktree=") for a in args):
+        return record.env
+    from controllers.types import Environments
+    from engine.sessions import Sessions
+    names = [r["title"] for r in Environments(record, actor=SYSTEM).summaries() if not r["deleted"] and not r["completed"]]
+    if not names:
+        return record.env
+    sessions = Sessions(record.root)
+    print("journal: which environment?")
+    for i, name in enumerate(names, 1):
+        print(f"  {i}. {name}" + ("  (an agent is working here)" if sessions.holder(name) else "") + ("  [Enter]" if name == record.env else ""))
+    print(f"  {len(names) + 1}. a new environment")
+    while True:
+        try:
+            picked = ask("> ").strip() or str(names.index(record.env) + 1 if record.env in names else len(names) + 1)
+        except EOFError:
+            return record.env
+        if picked.isdigit() and 1 <= int(picked) <= len(names):
+            name = names[int(picked) - 1]
+            if not sessions.holder(name):
+                return name
+            print(f"an agent is working {name}; pick another")
+        elif picked == str(len(names) + 1):
+            try:
+                return Environments(record, actor=SYSTEM).create(ask("name: ").strip()).title
+            except EOFError:
+                return record.env
+            except Refused as e:
+                print(e)
+        else:
+            print(f"a number from 1 to {len(names) + 1}")
+
+
 def supervise(ctx, agent: str) -> str:
     from engine.terminal import run as run_supervisor
     from engine.viewer import start
     record = ctx["record"]
+    env = asked_for(record, ctx["args"] or [])
     url = start(record.root, Path.cwd())
     print(f"journal: viewer {url}" if url else "journal: the viewer did not start; see .journal/runtime/viewer.log")
-    return str(run_supervisor(record.root, Path.cwd(), record.env, agent, ctx["args"] or []))
+    return str(run_supervisor(record.root, Path.cwd(), env, agent, ctx["args"] or []))
 
 def services(ctx) -> str:
     from engine.services import DOWN, UP, listed, log_file, want

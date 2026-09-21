@@ -4,6 +4,16 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.30.0 — Pick an environment before the agent starts; each environment has its own engine process
+
+`journal claude` now asks which environment to work before the agent starts, whenever one exists: every environment is listed, one with an active agent is marked and cannot be taken, Enter keeps the current one, and "a new environment" asks for a name and creates it. `--worktree`, an explicit `--env`, or no terminal to ask in skip the menu. The choice binds the new session when it starts; a SessionStart after a compaction or a resume keeps the environment the session already has.
+
+The server now runs each environment's engines in a process of its own, started when an agent goes live in that environment and stopped when it leaves, restarted if it dies, and stopped before the server reloads. An engine finds its agent only within its own environment and no longer follows a session into another one, so a message cannot reach another environment's agent. One agent works an environment at a time.
+
+Proven in a test project: two `journal claude` sessions at once, one picked through the menu into a new environment and one in a worktree, each got its own engine process and wrote only into its own environment.
+
+What to do about it: `journal upgrade`.
+
 ## 2.29.0 — A worktree is its own environment
 
 A session started in a git worktree — `claude --worktree <name>`, `journal claude --worktree <name>`, or a session in any linked worktree — now works an environment named after the worktree, created the first time. The journal's terminal wrapper moves with it, and a `journal` command run inside the worktree works that environment too, even when `JOURNAL_ENV` says otherwise; an explicit `--env` still wins. Every worktree's environment sits in the project's one record, beside `main`.

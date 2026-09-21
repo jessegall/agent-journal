@@ -52,7 +52,7 @@ def answer(provider, root: Path, raw: dict, pid: int, prefer: str = "") -> dict:
     env = sessions.environment(session)
     if not env or not sessions.read(session).get("provider"):
         top = checkout(Path(hook.cwd)) if hook.cwd else None
-        env = top.name if top else sessions.choose(session, provider.name, default_env(root, prefer))
+        env = top.name if top else prefer or sessions.choose(session, provider.name, default_env(root))
         sessions.bind(session, env, pid=agent_pid(pid), provider=provider.name)
         environments = Environments(Record(root, env), actor=SYSTEM)
         environments._seat(env, session)

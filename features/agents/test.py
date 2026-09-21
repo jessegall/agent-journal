@@ -117,3 +117,15 @@ def test_a_subagent_writes_only_once_the_environment_is_lent_and_is_bound_by_the
     assert (todos.load(row.n).data.get("assigned"), todos.load(row.n).data.get("lapsed"),
             any("went silent" in t for t in [n.title for n in Nudges(record).all()])) == \
         ("", "runner-1", True), "a silent subagent's row is back on the list, and the dispatcher told which"
+
+
+def test_each_environment_gets_its_own_engine_process_and_sees_only_its_own_agents(monkeypatch):
+    from engine import engines, typist
+    from engine.sessions import Sessions
+    record = fresh()
+    sessions = Sessions(record.root)
+    for session, env in (("claude-1", "main"), ("claude-2", "feature-x"), ("claude-3", "feature-x")):
+        sessions.bind(session, env, provider="claude")
+    monkeypatch.setattr(typist, "live", lambda root: ["claude-1", "claude-2"])
+    assert engines.Children(record.root).wanted() == {"main", "feature-x"}, "one engine process per environment with a live agent"
+    assert engines.Engines(record.root, "feature-x").mine() == ["claude-2"], "a process runs only its own environment's live agents"
