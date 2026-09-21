@@ -43,7 +43,7 @@ def visible(text: str) -> str:
 
 class Tags(Feature):
     name = "tags"
-    lines = {"untagged": Line("your last message has no tag", "open every message with one of {{tags}}"),
+    lines = {"untagged": Line("your last message has no tag", "open every message with one of {{tags}}", lead=True),
              "refused": Line("the {{tag}} tag on {{on}} did not run", "{{said}}"),
              "by tag": Line("reply to message {{n}} with the reply tag", "open your turn with [!reply:{{n}}] and the turn itself becomes the reply, so journal message reply is never needed")}
     title_ = "Tagging"

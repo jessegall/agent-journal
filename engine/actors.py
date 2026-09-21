@@ -12,8 +12,7 @@ STATES = (STOPPED, IDLE, BUSY, WORKING, COMPACTING)
 BATCH = {"quiet": 5.0, "size": 10}
 
 
-def spoken(e: Event, record: Record) -> str:
-    r = CONTROLLERS[e.type](record, actor=AGENT).read(e.n)
+def spoken(r) -> str:
     return f"{r.title} — {r.brief}" if r.brief else r.title
 
 
@@ -25,7 +24,8 @@ def grouped(events: list[Event]) -> dict[tuple, dict]:
 
 
 def render(events: list[Event], record: Record) -> tuple[str, dict]:
-    said = [spoken(e, record) for e in events if TYPES[e.type].spoken]
+    rows = [CONTROLLERS[e.type](record, actor=AGENT).read(e.n) for e in events if TYPES[e.type].spoken]
+    said = [spoken(r) for r in sorted(rows, key=lambda r: not r.data.get("lead"))]
     return "; ".join(dict.fromkeys(said)), grouped([e for e in events if not TYPES[e.type].spoken])
 
 

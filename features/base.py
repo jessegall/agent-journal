@@ -33,8 +33,8 @@ PLACEHOLDER = re.compile(r"\{\{(\w+)\}\}")
 
 
 class Line:
-    def __init__(self, title: str, brief: str = ""):
-        self.title, self.brief = title, brief
+    def __init__(self, title: str, brief: str = "", lead: bool = False):
+        self.title, self.brief, self.lead = title, brief, lead
 
     def placeholders(self) -> list[str]:
         return list(dict.fromkeys(PLACEHOLDER.findall(self.title + self.brief)))
@@ -247,7 +247,7 @@ class Feature(ABC):
     def say(self, record, agent, line: str, private: bool = False, **values) -> None:
         title, brief = self.line(line, values)
         if self.mine(agent):
-            Nudges(record, actor=SYSTEM).create(titled(title), brief=brief, session=agent.title, private=private)
+            Nudges(record, actor=SYSTEM).create(titled(title), brief=brief, session=agent.title, private=private, lead=self.lines[line].lead)
 
     def plural(self, n: int, word: str) -> str:
         return plural(n, word)
