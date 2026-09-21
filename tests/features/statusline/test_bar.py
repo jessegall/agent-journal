@@ -1,13 +1,9 @@
 import json
 import subprocess
-import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
-from tests.kit import check, done  # noqa: E402
-
-root = Path(__file__).resolve().parents[3]
-script = '''
+ROOT = Path(__file__).resolve().parents[3]
+SCRIPT = '''
 import {clock, frames, line, shown} from "./web/src/layout/bar.js";
 
 const message = (at, more = {}) => ({key: `m${at}`, at, parts: [{value: "editing", color: "gray"}], done: false, for: 0,
@@ -36,28 +32,27 @@ console.log(JSON.stringify({
     reads: line(message(100, {parts: [{value: "editing", color: "gray"}, {value: ["a.vue", "b.py"], duration: 1}]}), 1),
 }));
 '''
-got = json.loads(subprocess.run(["node", "--input-type=module", "-e", script], cwd=root, text=True, capture_output=True, check=True, timeout=60).stdout)
 
-# NOTHING IS SHOWN THAT HAS NOT BEEN SENT
-check("an empty queue shows nothing", got["nothing"], {"at": 0, "since": 0, "key": None})
-check("a client that has shown nothing starts at the oldest message it was sent", got["joins"], {"at": 100, "since": 500, "key": "m100"})
-check("a running message with nothing after it stays", got["staysWhileRunning"], {"at": 200, "since": 400, "key": "m200"})
-check("a running last message never ages out", got["aRunningLastOneNeverGoes"], "m200")
 
-# HOW LONG EACH MESSAGE STAYS
-check("a message that holds keeps the bar for its hold, then gives way", got["holdsBeforeTheNext"], ["m100", "m200"])
-check("a message with no hold gives way at once", got["noHoldMovesAtOnce"], "m200")
-check("a finished last message lingers, then the bar empties", got["lingersThenGoes"], ["m100", None])
-check("a message that arrives after the bar went quiet is picked up", got["picksUpAfterItWentQuiet"], "m300")
+def test_the_bar_module_shows_the_oldest_unshown_message_and_holds_it_correctly():
+    got = json.loads(subprocess.run(["node", "--input-type=module", "-e", SCRIPT], cwd=ROOT, text=True, capture_output=True, check=True, timeout=60).stdout)
 
-# WHAT EACH PART SHOWS
-check("a part with several values walks them once and stops on the last", got["rolls"], ["a", "a", "b", "c", "c"])
-check("a part with one value never rolls", got["stillPartsDoNotRoll"],
-      {"values": ["editing"], "at": 0, "value": "editing", "color": "muted", "prefix": "", "increments": False})
-check("a count keeps its sign and says it increments", got["counts"],
-      {"values": [13], "at": 0, "value": 13, "color": "green", "prefix": "+", "increments": True})
-check("the clock says nothing until the journal asks for it", got["clocks"], ["", "", "30s", "1m 35s"])
-check("a line is its key, its parts, its words and whether it is finished",
-      (got["reads"]["key"], got["reads"]["text"], got["reads"]["done"]), ("m100", "editing b.py", False))
+    assert got["nothing"] == {"at": 0, "since": 0, "key": None}, "an empty queue shows nothing"
+    assert got["joins"] == {"at": 100, "since": 500, "key": "m100"}, "a client that has shown nothing starts at the oldest message it was sent"
+    assert got["staysWhileRunning"] == {"at": 200, "since": 400, "key": "m200"}, "a running message with nothing after it stays"
+    assert got["aRunningLastOneNeverGoes"] == "m200", "a running last message never ages out"
 
-done()
+    assert got["holdsBeforeTheNext"] == ["m100", "m200"], "a message that holds keeps the bar for its hold, then gives way"
+    assert got["noHoldMovesAtOnce"] == "m200", "a message with no hold gives way at once"
+    assert got["lingersThenGoes"] == ["m100", None], "a finished last message lingers, then the bar empties"
+    assert got["picksUpAfterItWentQuiet"] == "m300", "a message that arrives after the bar went quiet is picked up"
+
+    assert got["rolls"] == ["a", "a", "b", "c", "c"], "a part with several values walks them once and stops on the last"
+    assert got["stillPartsDoNotRoll"] == \
+        {"values": ["editing"], "at": 0, "value": "editing", "color": "muted", "prefix": "", "increments": False}, \
+        "a part with one value never rolls"
+    assert got["counts"] == {"values": [13], "at": 0, "value": 13, "color": "green", "prefix": "+", "increments": True}, \
+        "a count keeps its sign and says it increments"
+    assert got["clocks"] == ["", "", "30s", "1m 35s"], "the clock says nothing until the journal asks for it"
+    assert (got["reads"]["key"], got["reads"]["text"], got["reads"]["done"]) == ("m100", "editing b.py", False), \
+        "a line is its key, its parts, its words and whether it is finished"
