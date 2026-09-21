@@ -67,7 +67,7 @@ class Doc(Shape, Resource):
     scope = PROJECT
     title_ = "Document"
     abstract_ = "What stays true about the project, catalogued for every session"
-    help_ = "A doc is written once, cited by pins and rules, and read before anything it settles is re-investigated."
+    help_ = "A doc is written once, cited by facts and rules, and read before anything it settles is re-investigated."
     view = DOCUMENT
 
 
@@ -302,7 +302,7 @@ class Environment(Shape, Resource):
     icon = "branch"
     names = {"create": "prepare", "complete": "remove"}
     title_ = "Environment"
-    abstract_ = "One line of work with its own record: messages, to-dos, pins, plans, settings"
+    abstract_ = "One line of work with its own record: messages, to-dos, facts, plans, settings"
     help_ = "A session works one environment at a time; switch takes one that is free, claim takes a held one with a reason."
     scope = PROJECT
     nav = False
