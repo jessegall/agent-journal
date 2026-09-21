@@ -4,7 +4,7 @@ export function onWrite(fn) {
     settle = fn;
 }
 
-export async function api(method, path, body, base = "") {
+async function send(method, path, body, base) {
     const res = await fetch(`${base}/api${path}`, {
         method,
         headers: body === undefined ? {} : {"Content-Type": "application/json"},
@@ -17,15 +17,21 @@ export async function api(method, path, body, base = "") {
 }
 
 const flying = new Map();
+const asked = new Map();
 
-export function poll(path, base = "") {
-    const key = `${base}${path}`;
-    if (!flying.has(key))
-        flying.set(
-            key,
-            api("GET", path, undefined, base).finally(() => flying.delete(key))
-        );
-    return flying.get(key);
+export function api(method, path, body, base = "") {
+    if (method !== "GET") return send(method, path, body, base);
+    const same = `${base}${path}`;
+    if (asked.has(same)) return asked.get(same);
+    const endpoint = `${base}${path.split("?")[0]}`;
+    const call = (flying.get(endpoint) || Promise.resolve()).catch(() => {}).then(() => send(method, path, body, base));
+    flying.set(endpoint, call);
+    asked.set(same, call);
+    call.finally(() => {
+        if (flying.get(endpoint) === call) flying.delete(endpoint);
+        asked.delete(same);
+    }).catch(() => {});
+    return call;
 }
 
 export const manifest = () => api("GET", "/manifest");
