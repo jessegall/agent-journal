@@ -3,6 +3,7 @@ import {computed, onUnmounted, ref} from "vue";
 import {api} from "../api/client.js";
 import PriorityIcon from "../kit/PriorityIcon.vue";
 import {route} from "../route.js";
+import {useOutside} from "../composables/outside.js";
 
 const LEVELS = [
     {value: "low", n: 50},
@@ -15,11 +16,7 @@ const open = ref(false);
 const wrap = ref(null);
 const current = computed(() => Number(props.resource.data.priority ?? 100));
 const name = computed(() => (current.value >= 200 ? "Critical" : current.value > 100 ? "High" : current.value < 100 ? "Low" : "Default"));
-const away = (e) => {
-    if (wrap.value && !wrap.value.contains(e.target)) open.value = false;
-};
-window.addEventListener("click", away);
-onUnmounted(() => window.removeEventListener("click", away));
+useOutside(wrap, () => (open.value = false));
 
 async function pick(level) {
     open.value = false;
@@ -113,21 +110,4 @@ async function pick(level) {
     color: var(--accent-text);
 }
 
-.drop-enter-active {
-    transition:
-        opacity 0.16s ease-out,
-        transform 0.16s cubic-bezier(0.2, 0.8, 0.2, 1);
-}
-
-.drop-leave-active {
-    transition:
-        opacity 0.12s ease-in,
-        transform 0.12s ease-in;
-}
-
-.drop-enter-from,
-.drop-leave-to {
-    opacity: 0;
-    transform: translateY(-4px);
-}
 </style>

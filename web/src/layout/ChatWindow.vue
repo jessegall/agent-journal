@@ -9,6 +9,7 @@ import {detach, tellShell} from "../platform/extension.js";
 import {store} from "../state/store.js";
 import {rows} from "../sync/rows.js";
 import {usePoll} from "../poll.js";
+import {follow} from "../composables/pointer.js";
 
 const props = defineProps({floating: Boolean});
 const JOURNALS_EVERY = 20000;
@@ -49,45 +50,26 @@ toShell("hello");
 function drag(e) {
     if (e.button || e.target.closest("button, .shell-menu")) return;
     e.preventDefault();
-    const bar = e.currentTarget;
-    bar.setPointerCapture(e.pointerId);
     const from = {px: e.clientX, py: e.clientY, x: store.chatWindow.x, y: store.chatWindow.y};
     if (!props.floating) toShell("drag", {sx: e.screenX, sy: e.screenY});
-    const move = (ev) => {
-        if (!props.floating) return toShell("dragmove", {sx: ev.screenX, sy: ev.screenY});
-        store.chatWindow.x = Math.min(Math.max(-store.chatWindow.w + 90, from.x + ev.clientX - from.px), window.innerWidth - 90);
-        store.chatWindow.y = Math.min(Math.max(0, from.y + ev.clientY - from.py), window.innerHeight - 40);
-    };
-    const done = (ev) => {
-        bar.removeEventListener("pointermove", move);
-        bar.removeEventListener("pointerup", done);
-        bar.removeEventListener("pointercancel", done);
-        bar.releasePointerCapture(ev.pointerId);
-        if (!props.floating) toShell("dragend");
-    };
-    bar.addEventListener("pointermove", move);
-    bar.addEventListener("pointerup", done);
-    bar.addEventListener("pointercancel", done);
+    follow(
+        e,
+        (ev) => {
+            if (!props.floating) return toShell("dragmove", {sx: ev.screenX, sy: ev.screenY});
+            store.chatWindow.x = Math.min(Math.max(-store.chatWindow.w + 90, from.x + ev.clientX - from.px), window.innerWidth - 90);
+            store.chatWindow.y = Math.min(Math.max(0, from.y + ev.clientY - from.py), window.innerHeight - 40);
+        },
+        () => !props.floating && toShell("dragend")
+    );
 }
 
 function resize(e) {
     e.preventDefault();
-    const grip = e.currentTarget;
     const from = {px: e.clientX, py: e.clientY, w: store.chatWindow.w, h: store.chatWindow.h};
-    grip.setPointerCapture(e.pointerId);
-    const move = (ev) => {
+    follow(e, (ev) => {
         store.chatWindow.w = Math.max(320, Math.min(from.w + ev.clientX - from.px, window.innerWidth - 24));
         store.chatWindow.h = Math.max(260, Math.min(from.h + ev.clientY - from.py, window.innerHeight - 24));
-    };
-    const done = (ev) => {
-        grip.removeEventListener("pointermove", move);
-        grip.removeEventListener("pointerup", done);
-        grip.removeEventListener("pointercancel", done);
-        grip.releasePointerCapture(ev.pointerId);
-    };
-    grip.addEventListener("pointermove", move);
-    grip.addEventListener("pointerup", done);
-    grip.addEventListener("pointercancel", done);
+    });
 }
 
 function drive(on) {
@@ -443,23 +425,5 @@ function close() {
     font: inherit;
     font-size: 11.5px;
     cursor: pointer;
-}
-
-.drop-enter-active {
-    transition:
-        opacity 0.16s ease-out,
-        transform 0.16s cubic-bezier(0.2, 0.8, 0.2, 1);
-}
-
-.drop-leave-active {
-    transition:
-        opacity 0.12s ease-in,
-        transform 0.12s ease-in;
-}
-
-.drop-enter-from,
-.drop-leave-to {
-    opacity: 0;
-    transform: translateY(-4px);
 }
 </style>

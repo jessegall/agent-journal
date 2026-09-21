@@ -1,5 +1,4 @@
 import json
-import re
 import sys
 import threading
 import time
@@ -8,8 +7,6 @@ from pathlib import Path
 PROTOCOL = "2025-06-18"
 NAME = "journal"
 WAIT = 0.3
-BETWEEN = 5.0
-FLOOD = 20
 
 
 def queue(root: Path) -> Path:
@@ -50,43 +47,16 @@ def contents(lines: list[str]) -> list[str]:
     return [s for s in said if s]
 
 
-CREATED = re.compile(r"^\d+ new (\w+?)s? ([\d, ]+)$")
-CHANGED = re.compile(r"^(\w+?)s? ([\d, ]+) (\w+)$")
-
-
-def merged(held: list[str]) -> str:
-    groups: dict[tuple, dict] = {}
-    rest = []
-    for part in (piece.strip() for line in held for piece in line.split("; ")):
-        found = CREATED.match(part) or CHANGED.match(part)
-        if not found:
-            rest.append(part)
-            continue
-        kind = (found.group(1), "created") if found.re is CREATED else (found.group(1), found.group(3))
-        groups.setdefault(kind, {}).update(dict.fromkeys(n.strip() for n in found.group(2).split(",") if n.strip()))
-    counted = [f"{len(ns)} new {t}{'s' if len(ns) != 1 else ''} {', '.join(ns)}" if a == "created"
-               else f"{t}{'s' if len(ns) != 1 else ''} {', '.join(ns)} {a}" for (t, a), ns in groups.items()]
-    return "; ".join(dict.fromkeys(rest + counted))
-
-
 def push(root: Path) -> None:
     f = queue(root)
     at = None
-    held: list[str] = []
-    last = 0.0
     while True:
         time.sleep(WAIT)
         alive(root).touch()
         lines, at = fresh_lines(f, at)
-        held.extend(contents(lines))
-        if not held or time.time() - last < BETWEEN:
-            continue
-        if len(held) > FLOOD:
-            said = f"the journal held back {len(held)} lines at once and dropped them - that many is a fault, not news"
-        else:
-            said = merged(held)
-        held, last = [], time.time()
-        say({"jsonrpc": "2.0", "method": "notifications/claude/channel", "params": {"content": said, "meta": {"from": "journal"}}})
+        said = contents(lines)
+        if said:
+            say({"jsonrpc": "2.0", "method": "notifications/claude/channel", "params": {"content": "; ".join(said), "meta": {"from": "journal"}}})
 
 
 def answer(asked: dict) -> dict | None:

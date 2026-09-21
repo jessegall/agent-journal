@@ -5,6 +5,7 @@ import RailWaiting from "../pages/RailWaiting.vue";
 import {route} from "../route.js";
 import {unreadByUser} from "../domain/records.js";
 import {meta, store, types} from "../state/store.js";
+import {useOutside} from "../composables/outside.js";
 
 const PAGES = {
     settings: "Settings",
@@ -24,11 +25,7 @@ const title = computed(() =>
 const waiting = computed(() => types.value.filter((t) => t.attention).flatMap((t) => unreadByUser(t.name)).length);
 const drop = ref(false);
 const wrap = ref(null);
-const away = (e) => {
-    if (wrap.value && !wrap.value.contains(e.target)) drop.value = false;
-};
-window.addEventListener("click", away);
-onUnmounted(() => window.removeEventListener("click", away));
+useOutside(wrap, () => (drop.value = false));
 </script>
 
 <template>
@@ -185,21 +182,4 @@ onUnmounted(() => window.removeEventListener("click", away));
     color: var(--text-2);
 }
 
-.drop-enter-active {
-    transition:
-        opacity 0.16s ease-out,
-        transform 0.16s cubic-bezier(0.2, 0.8, 0.2, 1);
-}
-
-.drop-leave-active {
-    transition:
-        opacity 0.12s ease-in,
-        transform 0.12s ease-in;
-}
-
-.drop-enter-from,
-.drop-leave-to {
-    opacity: 0;
-    transform: translateY(-4px);
-}
 </style>

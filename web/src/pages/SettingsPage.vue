@@ -30,10 +30,6 @@ const on = (name, fallback = false) => {
     const set = store.settings && store.settings.features;
     return set && name in set ? !!set[name] : fallback;
 };
-const source = ref("");
-const shown = ref("");
-const busy = ref("");
-const plugins = computed(() => rows("plugin").filter((p) => !p.completed));
 const stopping = ref(false);
 
 async function stop() {
@@ -43,39 +39,6 @@ async function stop() {
     } catch (e) {
         stopping.value = false;
     }
-}
-
-async function preview() {
-    busy.value = "preview";
-    shown.value = "";
-    try {
-        shown.value = await api.command("plugin", "preview", {source: source.value});
-    } catch (e) {
-        shown.value = e.message;
-    }
-    busy.value = "";
-}
-
-async function install() {
-    busy.value = "install";
-    try {
-        await api.command("plugin", "install", {source: source.value, yes: true});
-        source.value = "";
-        shown.value = "";
-    } catch (e) {
-        shown.value = e.message;
-    }
-    busy.value = "";
-}
-
-async function plugin(p, action, body = {}) {
-    busy.value = `${p.n}`;
-    try {
-        await api.act("plugin", p.n, action, body);
-    } catch (e) {
-        shown.value = e.message;
-    }
-    busy.value = "";
 }
 
 async function setTrigger(f, next) {
@@ -531,29 +494,6 @@ h2 {
 .unit {
     color: var(--text-3);
     font-size: 12.5px;
-}
-
-.source {
-    width: 100%;
-    padding: 7px 10px;
-    border: 1px solid var(--border-2);
-    border-radius: 7px;
-    background: var(--bg);
-    color: inherit;
-    font: inherit;
-}
-
-.preview {
-    margin: 0 0 8px;
-    padding: 10px 12px;
-    max-height: 320px;
-    overflow: auto;
-    border: 1px solid var(--border-2);
-    border-radius: 9px;
-    background: var(--code-bg);
-    font-family: ui-monospace, "SF Mono", Menlo, monospace;
-    font-size: 12px;
-    white-space: pre-wrap;
 }
 
 .none {

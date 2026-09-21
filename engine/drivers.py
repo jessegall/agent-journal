@@ -19,6 +19,26 @@ CHOICE = re.compile(rb"1\..+?2\.", re.S)
 ANSI = re.compile(rb"\x1b\[[0-?]*[ -/]*[@-~]|\x1b\][^\x07\x1b]*(?:\x07|\x1b\\)|\x1b[@-Z\\-_]|[\x00-\x08\x0b-\x1f\x7f]")
 
 
+BETWEEN, FLOOD = 5.0, 20
+CREATED = re.compile(r"^\d+ new (\w+?)s? ([\d, ]+)$")
+CHANGED = re.compile(r"^(\w+?)s? ([\d, ]+) (\w+)$")
+
+
+def merged(held: list[str]) -> str:
+    groups: dict[tuple, dict] = {}
+    rest = []
+    for part in (piece.strip() for line in held for piece in line.split("; ")):
+        found = CREATED.match(part) or CHANGED.match(part)
+        if not found:
+            rest.append(part)
+            continue
+        kind = (found.group(1), "created") if found.re is CREATED else (found.group(1), found.group(3))
+        groups.setdefault(kind, {}).update(dict.fromkeys(n.strip() for n in found.group(2).split(",") if n.strip()))
+    counted = [f"{len(ns)} new {t}{'s' if len(ns) != 1 else ''} {', '.join(ns)}" if a == "created"
+               else f"{t}{'s' if len(ns) != 1 else ''} {', '.join(ns)} {a}" for (t, a), ns in groups.items()]
+    return "; ".join(dict.fromkeys(rest + counted))
+
+
 class Driver(ABC):
     STOP = b"\x1b"
     CLEAR_LINE = b"\x05\x15"
@@ -35,6 +55,8 @@ class Driver(ABC):
         self.session = session
         self.fd = fd
         self.born = time.time()
+        self.held: list[str] = []
+        self.sent_at = 0.0
         self.printed = record.root / "runtime" / f"printed-{session}"
         self.typed = record.root / "runtime" / f"typed-{session}"
 
@@ -53,8 +75,22 @@ class Driver(ABC):
     def confirm(cls, printed: bytes) -> bytes:
         return b""
 
-    def send(self, text: str) -> bool:
+    def send(self, text: str, exact: bool = False) -> bool:
         line = " ".join(part.strip() for part in text.splitlines() if part.strip())
+        if exact:
+            return self.deliver(line)
+        self.held.append(line)
+        return True
+
+    def pump(self) -> str:
+        if not self.held or time.time() - self.sent_at < BETWEEN:
+            return ""
+        said = f"the journal held back {len(self.held)} lines at once and dropped them - that many is a fault, not news" if len(self.held) > FLOOD else merged(self.held)
+        self.held, self.sent_at = [], time.time()
+        self.deliver(said)
+        return said
+
+    def deliver(self, line: str) -> bool:
         return self.post(line) or self.type_in(line)
 
     def posts(self) -> bool:

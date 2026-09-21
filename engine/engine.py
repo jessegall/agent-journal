@@ -66,6 +66,7 @@ class Engine:
         self.running = False
 
     def tick(self) -> str:
+        self.agent.driver.pump()
         self.relay()
         self.why = (self.follow() or self.probe() or self.forced() or self.typing() or self.control() or self.begin()
                     or self.deliver() or self.nudge() or self.check_in())
@@ -155,11 +156,11 @@ class Engine:
         queued = take(self.record.root, self.names())
         if not queued:
             return ""
-        self.agent.driver.send(queued["line"])
+        self.agent.driver.send(queued["line"], exact=True)
         self.controlled_at = time.time()
         if self.carry_on:
             self.carry_on = False
-            self.agent.driver.send(CARRY_ON)
+            self.agent.driver.send(CARRY_ON, exact=True)
         if queued.get("action") and queued.get("label"):
             delivered(self.record, self.names(), queued["action"], queued["label"])
         row = Agents(self.record, actor=SYSTEM).by_session((last and last.title) or self.agent.driver.session)
