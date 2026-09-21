@@ -1,17 +1,24 @@
+import shutil
 import time
-from controllers.base import Controller, internal
+from collections import Counter
+from controllers.base import CONTROLLERS, Controller, internal
 from engine import attic
 from engine.record import Record
 from engine.sessions import Sessions
 from resources import types
-from resources.base import SYSTEM, Refused, check_title
+from resources.base import ENVIRONMENT, SYSTEM, Refused, check_title
 from engine import runtime
+from engine.wording import plural
 from controllers.facts import Facts
 from controllers.messages import Messages
 from controllers.questions import Questions
 from controllers.reminders import Reminders
 from controllers.todos import Todos
 from controllers.works import Works
+
+
+SWEPT = ("message", "comment", "reaction", "notification", "notice", "nudge")
+KEPT = ("agent", "feature", "environment")
 
 
 class Environments(Controller):
@@ -76,6 +83,33 @@ class Environments(Controller):
             attic.pack(record.home, f"{env.title}-{int(time.time())}")
         self.force_delete(n)
         return f"environment {env.title!r} removed; its record is packed in attic/ — journal environment unarchive {env.title} brings it back"
+
+    def sweep(self, n: int, yes: bool = False):
+        env = self.load(n)
+        record = Record(self.record.root, env.title)
+        chosen = [(rows, row["n"]) for rows in self._sweepable(record) for row in rows.summaries()
+                  if rows.type in SWEPT or row["completed"] or row["deleted"]]
+        counted = Counter(rows.type for rows, _ in chosen)
+        said = ", ".join(plural(count, kind) for kind, count in sorted(counted.items())) or "nothing"
+        if not yes:
+            return f"a sweep of {env.title!r} packs {said} into the attic and keeps its facts, rules, reminders, docs and open rows; --yes sweeps"
+        if not chosen:
+            return f"environment {env.title!r} has nothing to sweep"
+        stamp = int(time.time())
+        stage = self.record.root / "environments" / f".swept-{env.title}-{stamp}"
+        for rows, number in chosen:
+            kept = stage / rows.type
+            kept.mkdir(parents=True, exist_ok=True)
+            shutil.move(str(rows.path(number)), kept / rows.path(number).name)
+            files = rows.path(number).with_suffix("")
+            if files.is_dir():
+                shutil.move(str(files), kept / files.name)
+        attic.pack(stage, f"{env.title}-swept-{stamp}")
+        return f"swept {said} from {env.title!r} into attic/{env.title}-swept-{stamp}{attic.SUFFIX}"
+
+    def _sweepable(self, record) -> list:
+        return [controller(record, actor=SYSTEM) for controller in CONTROLLERS.values()
+                if controller.resource.scope == ENVIRONMENT and controller.resource.type not in KEPT]
 
     def unarchive(self, name: str):
         archive = attic.latest(self.record.root, name)
