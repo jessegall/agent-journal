@@ -5,10 +5,11 @@ export function onWrite(fn) {
 }
 
 async function send(method, path, body, base) {
+    const raw = body instanceof FormData;
     const res = await fetch(`${base}/api${path}`, {
         method,
-        headers: body === undefined ? {} : {"Content-Type": "application/json"},
-        body: body === undefined ? undefined : JSON.stringify(body),
+        headers: body === undefined || raw ? {} : {"Content-Type": "application/json"},
+        body: body === undefined || raw ? body : JSON.stringify(body),
     });
     const got = await res.json();
     if (!res.ok) throw new Error(got.error || res.statusText);
@@ -60,11 +61,10 @@ export function dashboard(env, types, {last, events = null} = {}) {
 export const all = (env, type, base = "") => list(env, type, {completed: true, base}).then((got) => got.rows);
 export const show = (env, type, n) => api("GET", `/${env}/${type}/${n}`);
 export const create = (env, type, body, base = "") => api("POST", `/${env}/${type}`, body, base);
-export async function upload(env, type, n, file, base = "") {
+export function upload(env, type, n, file, base = "") {
     const body = new FormData();
     body.append("file", file, file.name);
-    const res = await fetch(`${base}/api/${env}/${type}/${n}/upload`, {method: "POST", body});
-    if (!res.ok) throw new Error((await res.json()).error || res.statusText);
+    return api("POST", `/${env}/${type}/${n}/upload`, body, base);
 }
 export const act = (env, type, n, action, body = {}, base = "") => api("POST", `/${env}/${type}/${n}/${action}`, body, base);
 export const command = (env, type, action, body = {}) => api("POST", `/${env}/${type}/${action}`, body);

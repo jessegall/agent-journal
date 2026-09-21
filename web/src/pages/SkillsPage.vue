@@ -3,8 +3,11 @@ import {computed, onMounted, ref, watch} from "vue";
 import {api} from "../api.js";
 import Icon from "../kit/Icon.vue";
 import {route} from "../route.js";
-import {agent} from "../store.js";
+import {agent, polled} from "../store.js";
 import SkillsRow from "./SkillsRow.vue";
+import {usePoll} from "../poll.js";
+
+usePoll(...polled.agents);
 
 const rows = ref([]);
 const loaded = ref(false);

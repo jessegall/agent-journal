@@ -189,7 +189,8 @@ def post_hook(req: Request) -> Reply:
 def post_console(req: Request) -> Reply:
     faults = features.FEATURES.get("faults")
     said = str(req.body.get("said") or "")[:200]
-    filed = faults.heard(req.root, req.params["env"], said, str(req.body.get("where") or "")[:200], str(req.body.get("stack") or "")[:2000]) if faults and said else False
+    filed = faults.heard(req.root, req.params["env"], said, str(req.body.get("where") or "")[:200], str(req.body.get("stack") or "")[:2000],
+                         str(req.body.get("kind") or "threw")) if faults and said else False
     return Reply(200, {"filed": filed})
 
 

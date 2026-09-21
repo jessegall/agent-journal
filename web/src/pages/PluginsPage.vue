@@ -7,7 +7,10 @@ import Icon from "../kit/Icon.vue";
 import Spinner from "../kit/Spinner.vue";
 import Switch from "../kit/Switch.vue";
 import {route} from "../route.js";
-import {load, rows, store} from "../store.js";
+import {load, polled, rows, store} from "../store.js";
+import {usePoll} from "../poll.js";
+
+usePoll(...polled.pages);
 
 const source = ref("");
 const shown = ref("");

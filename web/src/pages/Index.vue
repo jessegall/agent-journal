@@ -34,7 +34,8 @@ const groups = computed(() => {
         .filter((k) => buckets[k])
         .map((k) => ({
             key: k,
-            title: k === "open" && filter.value !== "open" ? word(props.type, "complete").replace(/^\w/, (c) => c.toUpperCase()) : GROUPS[k],
+            title:
+                k === "open" && filter.value !== "open" ? word(props.type, "complete").replace(/^\w/, (c) => c.toUpperCase()) : GROUPS[k],
             list: buckets[k],
         }));
 });
@@ -51,7 +52,13 @@ async function select(n) {
         <div class="bar">
             <div class="tabs" role="tablist">
                 <template v-for="f in filters" :key="f.key">
-                    <button type="button" role="tab" :aria-selected="filter === f.key" :class="['tab', {on: filter === f.key}]" @click="filter = f.key">
+                    <button
+                        type="button"
+                        role="tab"
+                        :aria-selected="filter === f.key"
+                        :class="['tab', {on: filter === f.key}]"
+                        @click="filter = f.key"
+                    >
                         {{ f.title }}
                         <span class="tab-n">{{ f.count }}</span>
                     </button>
@@ -72,7 +79,13 @@ async function select(n) {
         </template>
         <template v-if="!shown.length">
             <p class="empty">
-                No {{ kind.title.toLowerCase() }}s {{ filter === "open" ? (all.length ? "open" : "on this environment") : filters.find((f) => f.key === filter).title.toLowerCase()
+                No {{ kind.title.toLowerCase() }}s
+                {{
+                    filter === "open"
+                        ? all.length
+                            ? "open"
+                            : "on this environment"
+                        : filters.find((f) => f.key === filter).title.toLowerCase()
                 }}{{ filter !== "open" || !all.length ? " yet" : "" }}.
             </p>
         </template>

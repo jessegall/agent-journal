@@ -13,6 +13,7 @@ from engine.stored import read_json, write_json, write_text
 
 INDEX = "index.json"
 LAST = 25
+SUMMARIES: dict[str, tuple] = {}
 SAID_TWICE = ("comment", "message")
 TWICE_WITHIN = 10.0
 COMMANDS: dict[str, dict] = {}
@@ -50,6 +51,15 @@ class Controller:
 
     def summaries(self) -> list[dict]:
         folder = self.record.folder(self.type, self.resource.scope)
+        moved = folder.stat().st_mtime_ns
+        held = SUMMARIES.get(str(folder))
+        if held and held[0] == moved:
+            return held[1]
+        rows = self._indexed(folder)
+        SUMMARIES[str(folder)] = (folder.stat().st_mtime_ns, rows)
+        return rows
+
+    def _indexed(self, folder: Path) -> list[dict]:
         stamps = {int(e.name[:-3]): f"{e.stat().st_mtime_ns}-{e.stat().st_size}" for e in os.scandir(folder) if e.name.endswith(".md") and e.name[:-3].isdigit()}
         known = {int(n): row for n, row in (read_json(folder / INDEX) or {}).items()}
         rows = {}

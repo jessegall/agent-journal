@@ -2,7 +2,10 @@
 import {computed, onMounted, ref} from "vue";
 import {api} from "../api.js";
 import Btn from "../kit/Btn.vue";
-import {remembered, store} from "../store.js";
+import {polled, remembered, store} from "../store.js";
+import {usePoll} from "../poll.js";
+
+usePoll(...polled.manifest);
 
 const upstream = ref(null);
 const dismissed = ref(remembered("journal.upgrade.dismissed", ""));

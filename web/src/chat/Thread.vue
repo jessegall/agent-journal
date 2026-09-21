@@ -4,10 +4,13 @@ import {act, api, create} from "../api.js";
 import {sendMessage} from "./outbox.js";
 import Icon from "../kit/Icon.vue";
 import {route} from "../route.js";
-import {agent, earlier, laidOut, meta, quoted, reload, rows, store, withQuote} from "../store.js";
+import {agent, earlier, laidOut, meta, polled, quoted, reload, rows, store, withQuote} from "../store.js";
 import Compose from "./Compose.vue";
 import Turn from "./Turn.vue";
 import ThreadSkeleton from "./ThreadSkeleton.vue";
+import {usePoll} from "../poll.js";
+
+usePoll(...polled.agents);
 
 const IDLE = 10000;
 const scroller = ref(null);
@@ -75,9 +78,9 @@ async function older() {
     prepending = true;
     const fromBottom = s.scrollHeight - s.scrollTop;
     try {
-        if (await earlier("message", "comment")) {
+        if ((await earlier("message", "comment")) && scroller.value) {
             await nextTick();
-            s.scrollTop = s.scrollHeight - fromBottom;
+            if (scroller.value) scroller.value.scrollTop = scroller.value.scrollHeight - fromBottom;
         }
     } finally {
         prepending = false;
@@ -191,6 +194,7 @@ onUnmounted(() => {
 
 function watchScroll() {
     const s = scroller.value;
+    if (!s) return;
     away.value = s.scrollHeight - s.scrollTop - s.clientHeight > 40;
     if (settledOnce.value && away.value) scrolledUp.value = true;
     if (scrolledUp.value && s.scrollTop < NEAR_TOP) older();

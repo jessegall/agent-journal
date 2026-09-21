@@ -4,7 +4,11 @@ import {create} from "../api.js";
 import Icon from "../kit/Icon.vue";
 import {negative, project, tint} from "../identity.js";
 import {route} from "../route.js";
-import {counted, load, navTypes, rows, store} from "../store.js";
+import {counted, load, navTypes, polled, rows, store} from "../store.js";
+import {usePoll} from "../poll.js";
+
+usePoll(...polled.agents);
+usePoll(...polled.pages);
 
 const envs = computed(() => rows("environment").filter((e) => !e.completed));
 const pages = computed(() => store.pages || []);

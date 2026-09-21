@@ -7,8 +7,12 @@ import Icon from "../kit/Icon.vue";
 import RunningCommand from "./RunningCommand.vue";
 import Switch from "../kit/Switch.vue";
 import {go, peek, route} from "../route.js";
-import {agent, autoOn, rows, store} from "../store.js";
+import {agent, autoOn, polled, rows, store} from "../store.js";
 import {currentWork, doneOf, lineOf, phaseOf, planButton, queued, rowsOf, shownPlans, stateOf, wordOf} from "./statusline.js";
+import {usePoll} from "../poll.js";
+
+usePoll(...polled.bar);
+usePoll(...polled.agents);
 
 const current = computed(() => currentWork(rows("work")));
 const state = computed(() => stateOf(agent.value, rows("work")));
@@ -257,5 +261,4 @@ async function runBar(p) {
     margin: 3px 0;
     background: rgba(255, 255, 255, 0.14);
 }
-
 </style>
