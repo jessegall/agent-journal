@@ -20,6 +20,7 @@ ANSI = re.compile(rb"\x1b\[[0-?]*[ -/]*[@-~]|\x1b\][^\x07\x1b]*(?:\x07|\x1b\\)|\
 
 
 BETWEEN, FLOOD = 5.0, 20
+REPORT_FOR = 0.5
 CREATED = re.compile(r"^\d+ new (\w+?)s? ([\d, ]+)$")
 CHANGED = re.compile(r"^(\w+?)s? ([\d, ]+) (\w+)$")
 
@@ -57,6 +58,7 @@ class Driver(ABC):
         self.born = time.time()
         self.held: list[str] = []
         self.sent_at = 0.0
+        self.reported = (float("-inf"), None)
         self.printed = record.root / "runtime" / f"printed-{session}"
         self.typed = record.root / "runtime" / f"typed-{session}"
 
@@ -172,6 +174,11 @@ class Driver(ABC):
         return bool(self.PROMPT.search(self.last_printed().rstrip()))
 
     def last_report(self):
+        if time.monotonic() - self.reported[0] >= REPORT_FOR:
+            self.reported = (time.monotonic(), self._report())
+        return self.reported[1]
+
+    def _report(self):
         from controllers.types import Agents
         from engine.record import Record
         from resources.base import SYSTEM
