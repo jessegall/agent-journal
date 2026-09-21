@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.43.0 — A part says which behaviour it belongs to
+
+Plan 9, to-do 599. A handler, formatter or interceptor declares behaviour = "<name>", and the journal calls it only while that behaviour is switched on and, when the behaviour speaks on a cadence, only when it is due. The part itself no longer checks context.on(...) or feature.due(...). Tags' reminder to reply by tag declares the replying behaviour.
+
+What to do about it: `journal upgrade`.
+
 ## 2.42.0 — A feature declares its settings, and the viewer draws them
 
 Plan 9, to-do 598. details.py lists a feature's settings: Setting(name=, default=, title=, abstract=, unit=). A part reads them as context.settings.<name>, with the declared default when nothing is saved, and the viewer's feature panel draws every declared setting itself: a number with its unit, a text, or a switch. Designs (keep_after_minutes) and Questions (hold) declare theirs; the Questions block written by hand is gone. A feature's help keeps its paragraphs in the panel.

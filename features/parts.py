@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, get_type_hints
+from typing import TYPE_CHECKING, ClassVar, get_type_hints
 
 from controllers.types import Agents
 from engine import bus
@@ -57,19 +57,32 @@ class Context:
         return not self.feature.already(self.record, self.agent.session, kind, key)
 
 
+def wanted(part, feature, record, row) -> bool:
+    if not part.behaviour:
+        return True
+    if not feature.cadence(record, part.behaviour):
+        return feature.on(record, part.behaviour)
+    return bool(row) and feature.due(record, row, part.behaviour)
+
+
 class Handler:
+    behaviour: ClassVar[str] = ""
+
     def handle(self, context: Context, event) -> None:
         raise NotImplementedError
 
 
 class TextFormatter:
-    surfaces: tuple = ()
+    surfaces: ClassVar[tuple] = ()
+    behaviour: ClassVar[str] = ""
 
     def format(self, context: Context, text: str) -> str:
         raise NotImplementedError
 
 
 class ToolInterceptor:
+    behaviour: ClassVar[str] = ""
+
     def intercept(self, context: Context, call) -> str:
         raise NotImplementedError
 
@@ -85,7 +98,8 @@ class Events:
         def run(event, record) -> None:
             typed = kind.read(event)
             row = Agents(record, actor=SYSTEM).load(typed.agent) if isinstance(typed, AgentEvent) and typed.agent else None
-            handler.handle(Context.of(feature, record, row), typed)
+            if wanted(handler, feature, record, row):
+                handler.handle(Context.of(feature, record, row), typed)
         self.names.append(kind.on)
         bus.on(kind.on, run, enabled=feature.enabled)
 
@@ -96,7 +110,8 @@ class Client:
 
     def formatter(self, formatter: TextFormatter) -> None:
         feature = self.feature
-        FORMATTERS.append((lambda text, record: formatter.format(Context.of(feature, record), text) if not record or feature.enabled(record) else text,
+        FORMATTERS.append((lambda text, record: formatter.format(Context.of(feature, record), text)
+                           if not record or (feature.enabled(record) and wanted(formatter, feature, record, None)) else text,
                            formatter.surfaces))
 
 
@@ -108,8 +123,9 @@ class AgentHooks:
         feature = self.feature
 
         def policy(provider, record, hook, session) -> str:
-            if not feature.enabled(record):
+            row = Agents(record, actor=SYSTEM).by_session(session)
+            if not feature.enabled(record) or not wanted(interceptor, feature, record, row):
                 return ""
-            return interceptor.intercept(Context.of(feature, record, Agents(record, actor=SYSTEM).by_session(session)), hook.tool) or ""
+            return interceptor.intercept(Context.of(feature, record, row), hook.tool) or ""
         policy.feature = feature
         POLICIES.append(policy)

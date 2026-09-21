@@ -60,6 +60,9 @@ def test_replying_by_command_is_answered_with_the_tag_that_does_it():
         "the reply command is answered with the tag"
     handle(PROVIDERS["claude"](), record.root, record.env, {**hook, "tool_input": {"command": 'journal message reply 13 "see" --file a.txt'}})
     assert not [n for n in Nudges(record).all() if "13 with the reply tag" in n.title], "a reply carrying a file is what the command is for"
+    record.set_setting("features", {"tags.replying": False})
+    handle(PROVIDERS["claude"](), record.root, record.env, {**hook, "tool_input": {"command": 'journal message reply 14 "ok"'}})
+    assert not [n for n in Nudges(record).all() if "14 with the reply tag" in n.title], "with its behaviour off, the part is not called"
 
 
 def test_the_last_message_is_read_only_once_claude_has_written_it(tmp_path):
