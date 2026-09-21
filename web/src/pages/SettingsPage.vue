@@ -9,7 +9,7 @@ import Btn from "../kit/Btn.vue";
 import Switch from "../kit/Switch.vue";
 import {COUNTED, EVENTS} from "./cadence.js";
 import {route} from "../route.js";
-import {load, rows, store} from "../store.js";
+import {load, remembered, rows, store} from "../store.js";
 
 const triggerOf = (f) => (store.settings && store.settings.triggers && store.settings.triggers[f.name]) || f.trigger;
 const cadenceOf = (key, declared) => (store.settings && store.settings.triggers && store.settings.triggers[key]) || declared;
@@ -121,6 +121,16 @@ async function saveTags(value) {
         .filter(Boolean);
     if (names.length) await saveSettings(route.value.env, {tags: {names}});
 }
+const SHUT = "journal.settings.shut";
+const shut = ref(remembered(SHUT, []));
+const open = (key) => !shut.value.includes(key);
+
+function fold(key) {
+    shut.value = open(key) ? [...shut.value, key] : shut.value.filter((k) => k !== key);
+    try {
+        localStorage.setItem(SHUT, JSON.stringify(shut.value));
+    } catch (e) {}
+}
 const retention = computed(() => (store.settings && store.settings.keep) || {});
 const days = ref({});
 const answerHold = ref("");
@@ -154,8 +164,9 @@ async function remove(e) {
 
 <template>
     <section class="settings">
-        <section class="group">
-            <header class="group-head">
+        <section class="group" :class="{shut: !open('project-identity')}">
+            <header class="group-head" role="button" tabindex="0" @click="fold('project-identity')">
+                    <span class="fold" />
                 <h2>Project identity</h2>
                 <p class="lead">The band across the viewer distinguishes this project from other open journals.</p>
             </header>
@@ -167,8 +178,9 @@ async function remove(e) {
                 <Section @save-color="saveColor" />
             </div>
         </section>
-        <section class="group">
-            <header class="group-head">
+        <section class="group" :class="{shut: !open('chrome-extension')}">
+            <header class="group-head" role="button" tabindex="0" @click="fold('chrome-extension')">
+                    <span class="fold" />
                 <h2>Chrome extension</h2>
                 <p class="lead">Float the chat over any page, point at elements, send pictures, and let the agent drive the tab.</p>
             </header>
@@ -187,8 +199,9 @@ async function remove(e) {
                 </template>
             </div>
         </section>
-        <section class="group">
-            <header class="group-head">
+        <section class="group" :class="{shut: !open('features-on')}">
+            <header class="group-head" role="button" tabindex="0" @click="fold('features-on')">
+                    <span class="fold" />
                 <h2>Features on {{ route.env }}</h2>
                 <p class="lead">Each is a switch; its trigger says when it speaks to the agent.</p>
             </header>
@@ -224,8 +237,9 @@ async function remove(e) {
                 </div>
             </template>
         </section>
-        <section class="group">
-            <header class="group-head">
+        <section class="group" :class="{shut: !open('answers')}">
+            <header class="group-head" role="button" tabindex="0" @click="fold('answers')">
+                    <span class="fold" />
                 <h2>Answers</h2>
                 <p class="lead">How long a picked answer waits before it is saved, so it can be taken back.</p>
             </header>
@@ -247,8 +261,9 @@ async function remove(e) {
                 </span>
             </div>
         </section>
-        <section class="group">
-            <header class="group-head">
+        <section class="group" :class="{shut: !open('tags')}">
+            <header class="group-head" role="button" tabindex="0" @click="fold('tags')">
+                    <span class="fold" />
                 <h2>Tags</h2>
                 <p class="lead">The words a message may open with. The agent is told when it opens with none of them.</p>
             </header>
@@ -262,8 +277,9 @@ async function remove(e) {
                 </span>
             </div>
         </section>
-        <section class="group">
-            <header class="group-head">
+        <section class="group" :class="{shut: !open('delivery')}">
+            <header class="group-head" role="button" tabindex="0" @click="fold('delivery')">
+                    <span class="fold" />
                 <h2>Delivery</h2>
                 <p class="lead">How the engine gets a line to the agent. With both off it types into the terminal.</p>
             </header>
@@ -286,8 +302,9 @@ async function remove(e) {
                 </span>
             </div>
         </section>
-        <section class="group">
-            <header class="group-head">
+        <section class="group" :class="{shut: !open('keep')}">
+            <header class="group-head" role="button" tabindex="0" @click="fold('keep')">
+                    <span class="fold" />
                 <h2>Keep</h2>
                 <p class="lead">How long a finished row stays listed before it is archived; 0 keeps it.</p>
             </header>
@@ -311,8 +328,9 @@ async function remove(e) {
                 </div>
             </template>
         </section>
-        <section class="group">
-            <header class="group-head">
+        <section class="group" :class="{shut: !open('environments')}">
+            <header class="group-head" role="button" tabindex="0" @click="fold('environments')">
+                    <span class="fold" />
                 <h2>Environments</h2>
                 <p class="lead">Removing one keeps its record on disk; it leaves the sidebar.</p>
             </header>
@@ -327,8 +345,9 @@ async function remove(e) {
                 </div>
             </template>
         </section>
-        <section class="group">
-            <header class="group-head">
+        <section class="group" :class="{shut: !open('stop')}">
+            <header class="group-head" role="button" tabindex="0" @click="fold('stop')">
+                    <span class="fold" />
                 <h2>Stop</h2>
                 <p class="lead">
                     This closes the viewer, ends the engine and takes down every service a plugin runs. The agent's terminal stops with
@@ -358,7 +377,51 @@ async function remove(e) {
 }
 
 .group-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
     margin-bottom: 4px;
+    padding: 6px 8px 6px 4px;
+    border-radius: 8px;
+    cursor: pointer;
+    user-select: none;
+}
+
+.group-head:hover {
+    background: var(--hover);
+}
+
+.fold {
+    flex: none;
+    width: 0;
+    height: 0;
+    border-top: 5px solid transparent;
+    border-bottom: 5px solid transparent;
+    border-left: 7px solid var(--text-3);
+    transform: rotate(90deg);
+    transition: transform 0.15s ease;
+}
+
+.group.shut .fold {
+    transform: rotate(0deg);
+}
+
+.group-head:hover .fold {
+    border-left-color: var(--text);
+}
+
+.group.shut > :not(.group-head) {
+    display: none;
+}
+
+.group.shut .lead {
+    display: none;
+}
+
+.group-head .lead {
+    flex-basis: 100%;
+    padding-left: 19px;
 }
 
 h2 {
@@ -472,15 +535,32 @@ h2 {
     color: var(--text);
 }
 
+.days,
+.names {
+    height: 30px;
+    padding: 0 10px;
+    border: 1px solid var(--border-2);
+    border-radius: 8px;
+    background: var(--bg-2);
+    color: var(--text);
+    font-size: 12.5px;
+    transition: border-color 0.12s ease, background 0.12s ease;
+}
+
+.days:hover,
+.names:hover {
+    border-color: var(--border);
+}
+
+.days:focus,
+.names:focus {
+    outline: none;
+    border-color: var(--progress);
+    background: var(--raised);
+}
+
 .days {
     width: 64px;
-    height: 28px;
-    padding: 0 8px;
-    border: 1px solid var(--border-2);
-    border-radius: 6px;
-    background: var(--raised);
-    color: var(--text);
-    font-size: 12px;
     text-align: right;
 }
 
