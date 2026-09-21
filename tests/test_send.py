@@ -1,16 +1,13 @@
 import os
-import sys
-from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from engine import drivers  # noqa: E402
-from engine.drivers import RESUBMITS, Claude  # noqa: E402
-from tests.kit import check, done, fresh  # noqa: E402
+from engine import drivers
+from engine.drivers import RESUBMITS, Claude
+from tests.conftest import fresh
 
 drivers.time.sleep = lambda seconds: None
 
 
-def typed(screens: list[str]) -> list[bytes]:
+def typed(screens):
     read, write = os.pipe()
     driver = Claude(fresh(), "claude-1", fd=write)
     shown = iter(screens)
@@ -22,9 +19,19 @@ def typed(screens: list[str]) -> list[bytes]:
     return out.split(b"\r")[:-1]
 
 
-check("an Enter that takes is pressed once", typed(["> 3 new messages\n\n❯ "]), [b"3 new messages"])
-check("an Enter lost while the agent was busy is pressed again", typed(["❯ 3 new messages", "> 3 new messages\n❯ "]), [b"3 new messages", b""])
-check("it gives up after a few tries rather than pressing forever", len(typed(["❯ 3 new messages"])), 1 + RESUBMITS)
-check("a screen with no input box is not mistaken for unsent text", typed(["3 new messages were delivered"]), [b"3 new messages"])
+def test_an_enter_that_takes_is_pressed_once():
+    assert typed(["> 3 new messages\n\n❯ "]) == [b"3 new messages"], "an Enter that takes is pressed once"
 
-done()
+
+def test_an_enter_lost_while_the_agent_was_busy_is_pressed_again():
+    assert typed(["❯ 3 new messages", "> 3 new messages\n❯ "]) == [b"3 new messages", b""], \
+        "an Enter lost while the agent was busy is pressed again"
+
+
+def test_it_gives_up_after_a_few_tries_rather_than_pressing_forever():
+    assert len(typed(["❯ 3 new messages"])) == 1 + RESUBMITS, "it gives up after a few tries rather than pressing forever"
+
+
+def test_a_screen_with_no_input_box_is_not_mistaken_for_unsent_text():
+    assert typed(["3 new messages were delivered"]) == [b"3 new messages"], \
+        "a screen with no input box is not mistaken for unsent text"
