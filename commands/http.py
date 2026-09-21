@@ -1,3 +1,4 @@
+from concurrent.futures import ThreadPoolExecutor
 import json
 import mimetypes
 import os
@@ -245,7 +246,7 @@ def get_manifest(req: Request) -> Reply:
 @route("GET", "/api/identity")
 def get_identity(req: Request) -> Reply:
     m = manifest(req.root)
-    names = [e.title for e in Environments(Record(req.root, m["environment"]), actor=USER)._every()]
+    names = [row["title"] for row in Environments(Record(req.root, m["environment"]), actor=USER).summaries() if not row["deleted"]]
     return Reply(200, {**identity(req.root), "root": str(req.root), "version": m["version"], "environments": names})
 
 
@@ -411,16 +412,25 @@ def post_stop(req: Request) -> Reply:
     return Reply(200, {"stopping": True})
 
 
+PROBED: list = [0.0, []]
+PROBE_FOR = 3.0
+
+
+def identity_at(port: int) -> dict | None:
+    try:
+        with urlopen(f"http://127.0.0.1:{port}/api/identity", timeout=0.25) as r:
+            return json.loads(r.read())
+    except (OSError, ValueError):
+        return None
+
+
 @route("GET", "/api/journals")
 def get_journals(req: Request) -> Reply:
-    found = []
-    for port in viewer.PORTS:
-        try:
-            with urlopen(f"http://127.0.0.1:{port}/api/identity", timeout=0.25) as r:
-                got = json.loads(r.read())
-        except (OSError, ValueError):
-            continue
-        found.append({"port": port, "project": got.get("project", ""), "version": got.get("version", ""), "root": got.get("root", ""), "current": got.get("root") == str(req.root), "running": True})
+    if time.time() - PROBED[0] >= PROBE_FOR:
+        with ThreadPoolExecutor(len(viewer.PORTS)) as pool:
+            PROBED[:] = [time.time(), [(port, got) for port, got in zip(viewer.PORTS, pool.map(identity_at, viewer.PORTS)) if got]]
+    found = [{"port": port, "project": got.get("project", ""), "version": got.get("version", ""), "root": got.get("root", ""), "current": got.get("root") == str(req.root), "running": True}
+             for port, got in PROBED[1]]
     up = {str(req.root.resolve()), *(str(Path(j["root"]).resolve()) for j in found)}
     for j in viewer.known():
         if j["root"] not in up and Path(j["root"]).is_dir():
@@ -500,7 +510,20 @@ def get_files(req: Request) -> Reply:
     return Reply(200, sorted(out, key=lambda x: -x["at"]))
 
 
+WALKED: dict[str, tuple] = {}
+WALK_FOR = 5.0
+
+
 def project_paths(project: Path) -> list[Path]:
+    held = WALKED.get(str(project))
+    if held and time.time() - held[0] < WALK_FOR:
+        return held[1]
+    found = walked(project)
+    WALKED[str(project)] = (time.time(), found)
+    return found
+
+
+def walked(project: Path) -> list[Path]:
     found = []
     for folder, dirs, names in os.walk(project):
         dirs[:] = [name for name in dirs if not name.startswith(".") and name != "__pycache__" and name != "node_modules"]
