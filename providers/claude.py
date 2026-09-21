@@ -340,7 +340,7 @@ class ClaudeDriver(Driver):
     CHANNEL = ("--dangerously-load-development-channels", "server:journal")
     LISTENING = 15.0
 
-    def command(self, args: list[str]) -> list[str]:
+    def command(self, args: list[str], cwd: Path | None = None) -> list[str]:
         return ["claude", *(() if self.TAKES_OURS[0] in args else self.TAKES_OURS), *self.CHANNEL, *args]
 
     @classmethod

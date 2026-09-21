@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.77.2 — Codex starts without stopping on its trust questions
+
+Messages 1933 and 1941, to-do 693. When the journal started Codex, Codex first asked whether to trust the project and whether to trust the journal's new or changed hooks. Until someone answered, the first message never reached the agent and the viewer did not open. The journal now starts Codex with `--dangerously-bypass-hook-trust`, the flag Codex offers for automation that vets its own hooks (the journal wrote those hooks), and with `-c projects."<folder>".trust_level="trusted"` for the folder it opens in. Neither question appears. Nothing is written to `~/.codex/config.toml`: the trust holds only for that launch.
+
+What to do about it: `journal upgrade`, then start Codex with `journal codex` as before.
+
 ## 2.77.1 — Codex can load its skills again
 
 Messages 1939 and 1940, to-do 694. Codex has no Skill tool: it loads a skill by reading its SKILL.md, and it read `skills/journal-messages/SKILL.md` by a relative path. The journal only recognised paths starting with `.agents/` or `.codex/`, so the load was never seen. Every tool call then waited for a skill the agent had already read, and the session was locked out. One pattern now recognises a read of any journal skill's SKILL.md, relative or not. That read is never refused, the way a Claude Skill call never is, and it counts as loading the skill.

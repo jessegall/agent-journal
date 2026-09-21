@@ -315,5 +315,8 @@ class CodexDriver(Driver):
     AUTO_ARGS = ("--approve-for-me",)
     APPROVAL_FLAGS = frozenset({"-a", "--ask-for-approval", "--approve-for-me", "--full-auto", "--dangerously-bypass-approvals-and-sandbox"})
 
-    def command(self, args: list[str]) -> list[str]:
-        return ["codex", *args]
+    TRUSTS_HOOKS = "--dangerously-bypass-hook-trust"
+
+    def command(self, args: list[str], cwd: Path | None = None) -> list[str]:
+        trusted = ["-c", f'projects."{Path(cwd).resolve()}".trust_level="trusted"'] if cwd else []
+        return ["codex", *(() if self.TRUSTS_HOOKS in args else (self.TRUSTS_HOOKS,)), *trusted, *args]

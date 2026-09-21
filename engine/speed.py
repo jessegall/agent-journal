@@ -63,7 +63,7 @@ def served(base: str, argv: tuple, runs: int) -> float:
 class Quiet(Driver):
     name = "quiet"
 
-    def command(self, args: list[str]) -> list[str]:
+    def command(self, args: list[str], cwd=None) -> list[str]:
         return ["true"]
 
     def alive(self) -> bool:
