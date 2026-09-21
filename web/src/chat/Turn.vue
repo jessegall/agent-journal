@@ -20,6 +20,14 @@ const emit = defineEmits(["reply", "edit", "grew", "pin"]);
 const picking = ref(false);
 const bubble = ref(null);
 const LONG = 6;
+const FOLD_AT = 420;
+const text = ref(null);
+const tall = ref(false);
+const unfolded = ref(false);
+
+function measure() {
+    tall.value = !!text.value && text.value.scrollHeight > FOLD_AT;
+}
 
 function shaped() {
     const el = bubble.value;
@@ -42,7 +50,12 @@ function shaped() {
     el.style.width = `${high}px`;
 }
 
-onMounted(() => nextTick(shaped));
+onMounted(() =>
+    nextTick(() => {
+        shaped();
+        measure();
+    })
+);
 const mine = computed(() => props.turn.who === "user");
 const SAID = {sent: "sent", delivered: "delivered to the agent", read: "read", filed: "processed"};
 const state = computed(() => {
@@ -113,7 +126,12 @@ const faces = computed(() => {
     return Object.entries(seen).map(([face, who]) => ({face, n: who.length, mine: who.includes("user"), title: who.join(", ")}));
 });
 const files = computed(() => Object.keys(props.turn.data.files || {}));
-watch([html, laidOut], () => nextTick(shaped));
+watch([html, laidOut], () =>
+    nextTick(() => {
+        shaped();
+        measure();
+    })
+);
 
 function refOf(word) {
     const m = word.trim().match(/^([\w-]+)[ :](\d+)$/);
@@ -173,7 +191,12 @@ async function drop() {
                         {{ words.quote }}
                     </p>
                 </template>
-                <div class="thread-text" @click="follow" v-html="html" />
+                <div ref="text" :class="['thread-text', {folded: tall && !unfolded}]" @click="follow" v-html="html" />
+                <template v-if="tall">
+                    <button type="button" class="thread-fold" @click.stop="unfolded = !unfolded">
+                        {{ unfolded ? "Show less" : "Show more" }}
+                    </button>
+                </template>
                 <template v-if="turn.type === 'question'">
                     <template v-if="turn.abstract">
                         <p class="thread-context">{{ turn.abstract }}</p>
@@ -424,6 +447,27 @@ button.thread-pill:hover {
     letter-spacing: 0.04em;
     text-transform: uppercase;
     color: var(--blocking);
+}
+
+.thread-text.folded {
+    max-height: 320px;
+    overflow: hidden;
+    mask-image: linear-gradient(to bottom, #000 75%, transparent);
+}
+
+.thread-fold {
+    margin-top: 4px;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--accent-text);
+    font: inherit;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.thread-fold:hover {
+    text-decoration: underline;
 }
 
 .thread-quote {
