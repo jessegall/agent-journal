@@ -5,8 +5,10 @@ from features import trigger
 from features.base import Behaviour, Feature, event, formats
 from resources.base import AGENT, SECTION, SYSTEM, USER
 from support.messages import in_hand, theirs, unanswered
+from support.transcript import last_said
 
 LINKED = ("message", "comment", "reaction", "nudge", "notification", "agent")
+RUN_ON, SENTENCES = 400, 3
 CODE = re.compile(r"(?<![`\w-])(?:journal(?:\s+[a-z_]+){1,2}|--[a-z][a-z-]*)(?![`\w])")
 ANSWERS = {"comment": "answered", "reaction": "acknowledged"}
 
@@ -25,6 +27,8 @@ class MessagesFeature(Feature):
         "answering": Behaviour("Answer a message before writing", "Said before the next write while a message sits read and unanswered", trigger={"every": 1, "unit": trigger.USES}),
         "closing": Behaviour("Close a message once it is dealt with", "A reply, a reaction, every part processed, or the user reading what the agent wrote"),
         "linking": Behaviour("Link what is filed to the message in hand", "A row the agent creates while a message is open cites that message"),
+        "paragraphs": Behaviour("Keep the paragraphs of a message apart", "A message of several sentences run together is named back once, at the end of the turn",
+                                trigger={"on": trigger.IDLE}),
     }
     PATIENCE = "patience"
     patience = {"unread": 5, "answering": 3}
@@ -125,3 +129,14 @@ class MessagesFeature(Feature):
     def as_code(self, text, record):
         return "`".join(part if at % 2 else CODE.sub(lambda found: f"`{found.group(0)}`", part)
                         for at, part in enumerate(str(text or "").split("`")))
+
+    @event("agent.updated")
+    def spaced(self, event, record) -> None:
+        agent = self.agent(event, record)
+        if not agent or not self.due(record, agent, "paragraphs"):
+            return
+        said = last_said(record, agent).strip()
+        if len(said) < RUN_ON or "\n\n" in said or said.count(". ") < SENTENCES:
+            return
+        self.nudge(record, agent, "your last message ran its paragraphs together",
+                   "a blank line between parts is what makes a message readable: one thought to a paragraph", private=True)
