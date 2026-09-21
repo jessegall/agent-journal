@@ -59,7 +59,7 @@ def delivered(record, sessions: set[str], action: str, label: str) -> None:
     for notice in notices._every():
         if not notice.completed and notice.data.get("action") == action and notice.data.get("session") in sessions:
             notices.complete(notice.n, how="delivered")
-    Notifications(record, actor=SYSTEM).create(f"{action.capitalize()} set to {label.lower()}", brief=f"The {action} change was typed into the agent.")
+    Notifications(record, actor=SYSTEM)._logged(f"{action.capitalize()} set to {label.lower()}", brief=f"The {action} change was typed into the agent.")
 
 
 def force(root: Path, env: str, session: str) -> dict:

@@ -55,7 +55,7 @@ class Faults(Feature):
         if standing:
             rows.update(standing.n, brief=said, times=times, told=told, **data)
         else:
-            rows.create(title, brief=said, times=times, told=told, **data)
+            rows._logged(title, brief=said, times=times, told=told, **data)
         agent = Agents(record, actor=SYSTEM).primary() if telling else None
         if agent:
             self.say(record, agent, "slow", title=title, said=said)

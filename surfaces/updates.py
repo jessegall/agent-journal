@@ -30,6 +30,6 @@ def announce(root: Path, version: str = "") -> str:
     if not before:
         return ""
     record = Record(Path(root), default_env(Path(root)))
-    Notifications(record, actor=SYSTEM).create(f"Journal updated to {version}", brief=f"The journal went from {before} to {version}.",
+    Notifications(record, actor=SYSTEM)._logged(f"Journal updated to {version}", brief=f"The journal went from {before} to {version}.",
                                                kind=KIND, version=version)
     return version
