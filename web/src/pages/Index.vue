@@ -23,14 +23,24 @@ const COUNTS = {
 };
 const filters = computed(() => (kind.value.filters || []).map((f) => ({...f, count: (COUNTS[f.shows] || COUNTS.every)()})));
 const end = ref(null);
+const scrolled = ref(false);
+const moved = () => (scrolled.value = true);
 let watcher = null;
 watch(end, (el) => {
     if (watcher) watcher.disconnect();
     if (!el) return;
-    watcher = new IntersectionObserver((seen) => seen.some((e) => e.isIntersecting) && paging.more[props.type] && earlier(props.type));
+    watcher = new IntersectionObserver(
+        (seen) => scrolled.value && seen.some((e) => e.isIntersecting) && paging.more[props.type] && earlier(props.type)
+    );
     watcher.observe(el);
 });
-onUnmounted(() => watcher && watcher.disconnect());
+window.addEventListener("wheel", moved, {passive: true});
+window.addEventListener("touchmove", moved, {passive: true});
+onUnmounted(() => {
+    if (watcher) watcher.disconnect();
+    window.removeEventListener("wheel", moved);
+    window.removeEventListener("touchmove", moved);
+});
 const shown = computed(() => [...(SHOWS[filter.value] || SHOWS.open)()].sort((a, b) => b.created - a.created));
 const groups = computed(() => {
     const buckets = {};

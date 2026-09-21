@@ -1,5 +1,6 @@
 import {computed, reactive, ref, watch} from "vue";
 import * as http from "./api.js";
+import {report} from "./faults.js";
 import {onOutboxChange, startOutbox} from "./chat/outbox.js";
 import {go, route} from "./route.js";
 
@@ -114,20 +115,35 @@ export const word = (type, method) => meta(type).names[method] || method;
 export const label = (type, field, fallback) => meta(type).labels[field] || fallback;
 
 const shown = new Set();
+const loaded = new Set();
+const changed = new Set();
 
 export function rows(type) {
     if (!shown.has(type)) {
         shown.add(type);
-        if (store.booted) queueMicrotask(() => refresh([type]));
+        if (store.booted && (!loaded.has(type) || changed.has(type))) queueMicrotask(() => refresh([type], false));
     }
     return store.rows[type] || [];
 }
 
+function trimmed(type) {
+    const held = store.rows[type] || [];
+    if (held.length <= PAGE) return;
+    store.rows[type] = held.slice(-PAGE);
+    paging.size[type] = PAGE;
+    paging.more[type] = true;
+}
+
 export function forget() {
+    shown.forEach(trimmed);
     shown.clear();
 }
 
 watch(() => `${route.value.env}/${route.value.page}/${route.value.open ? route.value.open.type : ""}`, forget);
+watch(
+    () => route.value.env,
+    () => loaded.clear()
+);
 
 const ENDED = ["done", "abandoned"];
 export const GROUPS = {
@@ -171,6 +187,7 @@ export const paging = reactive({size: {}, more: {}});
 export async function load(type) {
     const size = paging.size[type] || PAGE;
     const got = await http.list(route.value.env, type, {last: size, completed: true});
+    loaded.add(type);
     store.rows[type] = got.rows;
     paging.size[type] = size;
     paging.more[type] = got.more;
@@ -195,12 +212,21 @@ http.onWrite((path) => refresh([path.split("/")[2]]));
 onOutboxChange(() => refresh(["message"]));
 
 function took(type, got) {
+    loaded.add(type);
     store.rows[type] = got.rows;
     paging.size[type] = paging.size[type] || PAGE;
     paging.more[type] = got.more;
 }
 
+function unasked(types) {
+    types
+        .filter((type) => loaded.has(type) && !changed.has(type))
+        .forEach((type) => report("refetch", `${type} was fetched again with nothing changed`, type));
+    types.forEach((type) => changed.delete(type));
+}
+
 async function fetched(types, whole = false) {
+    if (!whole) unasked(types);
     const plain = types.filter((type) => (paging.size[type] || PAGE) === PAGE);
     const sized = types.filter((type) => !plain.includes(type));
     const [got] = await Promise.all([
@@ -236,8 +262,11 @@ async function drain() {
     return reloadTask;
 }
 
-export function refresh(types) {
-    types.filter(Boolean).forEach((type) => owed.add(type));
+export function refresh(types, because = true) {
+    types.filter(Boolean).forEach((type) => {
+        owed.add(type);
+        if (because) changed.add(type);
+    });
     if (owed.has("settings")) owedWhole = true;
     return drain();
 }
@@ -268,15 +297,16 @@ export function listen() {
 }
 
 const RECENT = 100;
+const LIVE = 5;
 
 export const polled = {
     bar: ["bar", () => `/${route.value.env}/bar`, 500, (got) => (store.bar = got)],
-    agents: ["agents", () => `/${route.value.env}/agent?completed=1`, 1000, (got) => (store.agents = got.rows)],
+    agents: ["agents", () => `/${route.value.env}/agent?completed=1&last=${LIVE}`, 1000, (got) => (store.agents = got.rows)],
     pages: ["pages", "/pages", 5000, (got) => (store.pages = got)],
     manifest: ["manifest", "/manifest", 30000, (got) => (store.spec = got)],
     events: [
         "events",
-        () => `/${route.value.env}/events?since=${store.events.length ? store.events[store.events.length - 1].id : 0}&last=0`,
+        () => `/${route.value.env}/events?since=${store.events.length ? store.events[store.events.length - 1].id : 0}`,
         5000,
         (fresh) => {
             if (!fresh.length) return;
