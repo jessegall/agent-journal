@@ -4,13 +4,13 @@ import traceback
 
 from controllers.types import CONTROLLERS, Agents
 import features
-from engine import bus, runtime
+from engine import bus, chat, runtime
 from engine.actors import Actor, Agent, BUSY, IDLE, STOPPED, System, User, WORKING, spoken_data
 from engine.inputs import FORCE, PERMIT, take
 from surfaces.control import CARRY_ON, delivered
 from engine.record import Record
 from engine.watch import STEADY_AFTER, broke, steady
-from resources.base import AGENT, SYSTEM, USER, Event
+from resources.base import AGENT, SYSTEM, USER
 from resources.types import TYPES, priority
 from engine.seat import Seat
 from engine.wording import plural
@@ -94,7 +94,7 @@ class Engine(Seat):
             return
         stopped = [row.said] if row.said and row.event == "Stop" and row.said != announced["said"] else []
         for text in [*after(written, announced["line"]), *stopped]:
-            bus.emit(Event(id=0, at=time.time(), type="agent", n=row.n, action="said", actor=AGENT, data={"text": text}), self.record)
+            chat.said(self.record, row, text)
 
     def elsewhere(self, e) -> bool:
         meant = spoken_data(self.record, e).get("session")

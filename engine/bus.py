@@ -41,6 +41,10 @@ def emit(event: Event, record=None) -> None:
     if queue is not None:
         queue.append((event, record))
         return
+    run(event, record)
+
+
+def run(event: Event, record=None) -> None:
     shown(event, record)
     for pattern in (ANY, event.type, event.action, f"{event.type}.{event.action}"):
         for enabled, listener in list(_listeners.get(pattern, ())):

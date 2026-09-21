@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.46.0 — The agent's words reach the chat through the core
+
+Plan 9, to-do 590, message 1350. What the agent writes, from the display hook or the transcript, goes to one core function, engine/chat.said. It fires agent.message.sending, whose listeners may change the text or stop it, then agent.message.sent, which the viewer's stream carries. Tags now runs its commands, takes the tags off and stops a reply's plain copy on sending; Messages saves the chat row when a message is sent. Tags' CopyToChat is gone, and no feature creates a message just to show text.
+
+What to do about it: `journal upgrade`.
+
 ## 2.45.0 — Agent updates are a typed event; Deferral is the first feature moved whole
 
 Plan 9, to-do 601. AgentUpdated(agent, hook, tool, file, session) is the typed form of agent.updated, so the handlers that listen to every change of an agent can become Handler classes. A part may declare behaviour = WHOLE_FEATURE to be called on the feature's own switch and cadence, and details.py may declare the feature's trigger. Deferral is now details.py, one handler (NameDeferredWork) and a feature.py that only registers it.

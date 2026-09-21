@@ -1,15 +1,20 @@
 import io
 
-from engine.events import AgentMessageCreated
+from engine.events import AgentMessageSending
 from features.parts import Context, Handler
 from features.tags.reading import CARRIED, reader, replies, runs, stripped
-from resources.base import AGENT, titled
+from resources.base import AGENT
 
 
 class RunTagCommands(Handler):
-    def handle(self, context: Context, event: AgentMessageCreated) -> None:
-        if context.agent and CARRIED.search(event.text) and context.once("tagged", event.text):
-            self.run(context, event.text)
+    def handle(self, context: Context, event: AgentMessageSending) -> None:
+        said = event.text
+        if context.agent and CARRIED.search(said) and context.once("tagged", said):
+            self.run(context, said)
+        if replies(said):
+            event.stop()
+        else:
+            event.change(stripped(said, context.settings).strip())
 
     def run(self, context: Context, said: str) -> None:
         from commands.cli import run
@@ -25,10 +30,3 @@ class RunTagCommands(Handler):
 
     def argv(self, template: str, n: str, name: str, text: str) -> list[str]:
         return [{"{text}": text, "{n}": n, "{name}": name}.get(word, word) for word in template.split()]
-
-
-class CopyToChat(Handler):
-    def handle(self, context: Context, event: AgentMessageCreated) -> None:
-        text = stripped(event.text, context.settings).strip()
-        if context.agent and text and not replies(event.text) and context.once("shown", event.text):
-            context.journal.acting(AGENT).messages.create(titled(text), brief=text)

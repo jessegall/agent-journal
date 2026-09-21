@@ -1,6 +1,5 @@
 import re
 import threading
-import time
 from pathlib import Path
 
 from controllers.types import Agents, Environments
@@ -8,8 +7,8 @@ from engine.actors import IDLE
 from engine.record import Record
 from engine.sessions import Sessions, agent_pid
 from engine.worktree import checkout
-from resources.base import AGENT, SYSTEM, Event
-from engine import bus, runtime
+from resources.base import SYSTEM
+from engine import chat, runtime
 from engine.stored import read_json, write_json
 from providers.payload import PERMISSION, STATUS
 from features.statusline import commands
@@ -61,7 +60,7 @@ def displayed(root: Path, raw: dict) -> None:
     record = Record(root, Sessions(root).environment(session) or runtime.env(root))
     row = Agents(record, actor=SYSTEM)._titled(session)
     if row and text.strip():
-        bus.emit(Event(id=0, at=time.time(), type="agent", n=row.n, action="said", actor=AGENT, data={"text": text}), record)
+        chat.said(record, row, text)
 
 
 def default_env(root: Path, prefer: str = "") -> str:
