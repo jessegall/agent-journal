@@ -15,6 +15,7 @@ from engine.sessions import Sessions
 from resources.base import AGENT, SYSTEM, USER
 from resources.types import PRIORITY, TYPES
 from engine.seat import Seat
+from engine.wording import plural
 
 TICK = 1.0
 STAMPED = "stamped"
@@ -217,13 +218,15 @@ class Engine(Seat):
         return "asked whether it is still working"
 
     def owed(self) -> str:
+        waiting = []
         for type_ in PRIORITY:
             if AGENT not in TYPES[type_].notify or TYPES[type_].spoken:
                 continue
-            unread = CONTROLLERS[type_](self.record, actor=AGENT).unread()
+            unread = [row["n"] for row in CONTROLLERS[type_](self.record, actor=AGENT).summaries()
+                      if AGENT not in row["seen"] and not row["completed"] and not row["deleted"]]
             if unread:
-                return f"{len(unread)} unread {type_}"
-        return ""
+                waiting.append(f"{plural(len(unread), f'unread {type_}')} {', '.join(map(str, unread[-5:]))}")
+        return "waiting: " + "; ".join(waiting) if waiting else ""
 
     def step(self) -> None:
         try:

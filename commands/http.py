@@ -24,7 +24,7 @@ from surfaces.updates import newer
 from surfaces.control import force as force_session, options as control_options, request as control_session
 from features.skills.catalogue import SKILL, always, catalogue, load_now, skills
 from controllers.base import LAST
-from controllers.types import Agents, CONTROLLERS, Environments, Features
+from controllers.types import Agents, CONTROLLERS, Environments, Features, Nudges
 from features.browser.controller import Asks
 from engine import bus, viewer
 from engine.manifest import manifest
@@ -176,6 +176,7 @@ def get_settings(req: Request) -> Reply:
 @route("POST", "/api/{env}/settings")
 def post_settings(req: Request) -> Reply:
     record = req.record()
+    before = switches(record)
     for key, value in req.body.items():
         if key == Record.features and isinstance(value, dict):
             moved, rows = renamed(), Features(record, actor=USER)
@@ -187,6 +188,11 @@ def post_settings(req: Request) -> Reply:
                                      **{n: o for n, o in asked.items() if "." in n}})
             continue
         record.set_setting(key, value)
+    after = switches(record)
+    aliases = renamed()
+    turned = [f"{name} {'on' if on else 'off'}" for name, on in after.items() if name not in aliases and before.get(name) != on]
+    if turned:
+        Nudges(record, actor=USER)._to_primary(f"the user turned {', '.join(turned)}", "journal settings shows every switch")
     return Reply(200, settings(record))
 
 
