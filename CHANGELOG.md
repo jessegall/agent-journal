@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.83.2 — A command run while the server restarts just runs
+
+To-do 747. A journal command run in the seconds after an upgrade, while the server restarted, printed `! the journal server answered 000 and said nothing` and did nothing: its heartbeat was still fresh, but no one answered. The `journal` command now treats a server that does not answer the same as no server, and runs the command itself.
+
+What to do about it: `journal upgrade`, which also rewrites the `journal` command.
+
 ## 2.83.1 — Upgrades stop asking you to reconnect or restart for nothing
 
 Messages 1755 and 2102, to-do 718. Since 2.80.0 every upgrade told you to run /mcp and reconnect the journal, and to quit and run journal claude again, even when neither had changed: it compared the new code with the small stubs the zip leaves behind. It now compares with the code inside the previous `journal.pyz`. The /mcp notice is gone altogether: the channel keeps working after an upgrade and takes the new code at the next session start. The terminal notice remains only for a real change to the terminal, which cannot reload itself.
