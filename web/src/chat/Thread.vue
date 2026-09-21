@@ -45,9 +45,6 @@ function unedit() {
     editing.value = null;
 }
 const busy = computed(() => !!agent.value && ["working", "compacting"].includes(agent.value.data.status));
-const waiting = computed(() =>
-    busy.value && mine.value.some((m) => !m.data.delivered) ? "Waiting for the agent to finish what it is doing" : ""
-);
 const away = ref(false);
 const missed = ref(0);
 const settledOnce = ref(false);
@@ -295,7 +292,6 @@ watch(
                 :up="editLast"
                 :down="unedit"
                 :tools="composeTools"
-                :note="waiting"
             />
         </div>
         <template v-if="!ready">
