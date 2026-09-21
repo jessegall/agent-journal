@@ -1,5 +1,3 @@
-import base64
-import tempfile
 import time
 from pathlib import Path
 
@@ -8,13 +6,11 @@ from engine import attic
 from engine.record import Record
 from engine.sessions import Sessions
 from resources import types
-from resources.base import AGENT, SECTION, SYSTEM, Refused, check_title, names, titled
+from resources.base import AGENT, SECTION, SYSTEM, Refused, check_title, titled
 from resources.shapes import LEVELS
-from engine.stored import read_json, write_json
 from engine.proc import ran
 from engine import runtime
 
-UPLOAD = names("name", "data")
 
 
 class Messages(Controller):
@@ -140,16 +136,15 @@ class Todos(Controller):
 
     @internal
     def waits(self, row) -> list[str]:
-        from features.plans.controller import ENDED
         open_ = []
         for ref in row.after or []:
             kind, _, num = ref.partition(":")
             try:
-                other = self.waitable(kind)(self.record, actor=SYSTEM).load(int(num))
+                rows = self.waitable(kind)(self.record, actor=SYSTEM)
+                other = rows.load(int(num))
             except (TypeError, ValueError, Refused):
                 continue
-            finished = other.status in ENDED if kind == "plan" else other.completed
-            if not finished and not other.deleted:
+            if not rows._finished(other) and not other.deleted:
                 open_.append(ref)
         return open_
 
@@ -168,11 +163,8 @@ class Todos(Controller):
         return self.complete(n, f"struck: {why}", struck=True)
 
     def start(self, n: int):
-        from support.plans import held
+        self._handled("start", n=n)
         row = self.load(n)
-        if held(self.record, row):
-            self._refuse(f"todo {n} is not in the active plan's current phase: finish the plan, raise it to critical, or --force \"<why>\"")
-            row = self.save(row, "updated", forced=True)
         return Works(self.record, actor=self.actor, session=self.session, agent=self.agent).create(row.title, brief=row.brief, todo=row.n)
 
     def prune(self, days: int = 30):
@@ -281,32 +273,6 @@ class Reminders(Controller):
 class Questions(Controller):
     resource = types.Question
 
-
-ACCEPT, ADJUST, DECLINE = "Accept", "Adjust", "Decline"
-OPEN_SUGGESTIONS = 5
-
-
-class Suggestions(Controller):
-    resource = types.Suggestion
-
-    def create(self, title: str, abstract: str = "", brief: str = "", **data):
-        waiting = self._standing()
-        if len(waiting) >= OPEN_SUGGESTIONS:
-            self._refuse(f"{OPEN_SUGGESTIONS} suggestions already wait on the user: {', '.join(str(s.n) for s in waiting)}")
-        declined = [s for s in self._every() if s.decision == DECLINE.lower() and s.title.lower() == title.lower()]
-        if declined and not data.pop("despite", None):
-            s = declined[-1]
-            self._refuse(f"suggestion {s.n} was declined{': ' + s.outcome if s.outcome else ''}; --set despite=true --set because=\"<what changed>\" to propose it again")
-        options = [{"title": ACCEPT, "description": "a to-do is filed from it", "code": ""},
-                   {"title": ADJUST, "description": "say what to do differently below; a to-do is filed from your words", "code": ""},
-                   {"title": DECLINE, "description": "it is not proposed again", "code": ""}]
-        return super().create(title, abstract, brief, options=options, **data)
-
-    def complete(self, n: int, how: str = "", **data):
-        word = how.strip().split(":", 1)[0].strip().lower()
-        decision = word if word in (ACCEPT.lower(), DECLINE.lower()) else ADJUST.lower() if how.strip() else ""
-        self.update(n, decision=decision)
-        return super().complete(n, how, **data)
 
 class Comments(Controller):
     resource = types.Comment
@@ -474,50 +440,6 @@ class Environments(Controller):
         return self.sessions().grant(self.session, env.title, on=not off)
 
 
-OPS = ("shot", "url", "text", "dom", "console", "click", "type", "goto", "eval", "scroll")
-
-
-def driver_file(root: Path, env: str) -> Path:
-    return root / "runtime" / f"browser-{env}.json"
-
-
-class Asks(Controller):
-    resource = types.Ask
-
-    def driving(self) -> dict:
-        return read_json(driver_file(self.record.root, self.record.env), {})
-
-    def _drive(self, on: bool, url: str = "", title: str = "") -> None:
-        write_json(driver_file(self.record.root, self.record.env), {"on": bool(on), "url": url, "title": title, "at": time.time()})
-
-    def ask(self, op: str, *args: str, wait: int = 30):
-        if op not in OPS:
-            raise Refused(f"an ask is one of {' '.join(OPS)}")
-        tab = self.driving()
-        if not tab.get("on"):
-            raise Refused("no tab is being driven: the user turns driving on in the chat window's bar (the wheel)")
-        made = self.create(f"browser {op}", brief=" ".join(args), op=op, args=list(args))
-        end = time.time() + int(wait)
-        while time.time() < end:
-            got = self.load(made.n)
-            if got.completed:
-                return got
-            time.sleep(0.4)
-        return self.load(made.n)
-
-    def pending(self) -> list:
-        return self._standing()
-
-    def answer(self, n: int, text: str, ok: bool = True, files: list | None = None):
-        self.complete(n, text, ok=ok)
-        for f in files or []:
-            with tempfile.TemporaryDirectory() as folder:
-                path = Path(folder) / Path(f[UPLOAD.name]).name
-                path.write_bytes(base64.b64decode(f[UPLOAD.data].split(",", 1)[-1]))
-                self.attach(n, str(path))
-        return self.load(n)
-
-
 class Nudges(Controller):
     resource = types.Nudge
 
@@ -532,8 +454,8 @@ def register(*classes) -> None:
     CONTROLLERS.update({c.resource.type: c for c in classes})
 
 
-CONTROLLERS = {c.resource.type: c for c in (Messages, Todos, Works, Docs, Reports, Facts, Rules, Reminders, Suggestions,
-                                            Questions, Comments, Agents, Notifications, Notices, Reactions, Tools, Features, Connections, Plugins, Environments, Asks, Nudges)}
+CONTROLLERS = {c.resource.type: c for c in (Messages, Todos, Works, Docs, Reports, Facts, Rules, Reminders,
+                                            Questions, Comments, Agents, Notifications, Notices, Reactions, Tools, Features, Connections, Plugins, Environments, Nudges)}
 
 
 WARM_PAUSE = 0.02

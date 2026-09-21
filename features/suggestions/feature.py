@@ -1,4 +1,5 @@
-from controllers.types import ACCEPT, ADJUST, Suggestions, Todos
+from controllers.types import Todos
+from features.suggestions.controller import ACCEPT, ADJUST, Suggestions
 from features.base import Feature, event
 from resources.base import SYSTEM
 

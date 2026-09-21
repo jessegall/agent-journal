@@ -1,8 +1,8 @@
 from controllers.types import Todos
 from features.plans.controller import ACTIVE, DONE, Plans, WAITING
 from support.features import switched
-from features.base import Feature, event
-from support.plans import current_phase, running
+from features.base import Feature, event, handles
+from support.plans import current_phase, held, running
 from resources.base import SYSTEM
 from features.plans.resource import PHASE
 
@@ -12,6 +12,13 @@ class PlansFeature(Feature):
     title_ = "Planning"
     abstract_ = "A plan advances as its rows close: a phase completes, a checkpoint waits, the last phase ends it"
     help_ = "Only the user activates a plan and continues it past a checkpoint; with the auto feature on, checkpoints are passed without waiting."
+
+    @handles("todo.start")
+    def held_back(self, controller, n: int) -> None:
+        row = controller.load(n)
+        if held(controller.record, row):
+            controller._refuse(f"todo {n} is not in the active plan's current phase: finish the plan, raise it to critical, or --force \"<why>\"")
+            controller.save(row, "updated", forced=True)
 
     def phase_complete(self, record, phase: dict) -> bool:
         todos = Todos(record, actor=SYSTEM)
