@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.16.7 — One server per journal
+
+A server restarting itself after a code change stops answering for a moment; the supervisor saw nothing running in that moment and started a second server, which found the port still held and moved to another. Both then served the same journal, hooks alternated between them, and each kept its own view of the session — which is how a turn's reply tag could go unseen. Starting a server now waits for a recorded one that is still alive, and a server that finds another already serving its journal exits.
+
+What to do about it: `journal upgrade`.
+
 ## 2.16.6 — The end of a turn waits past Claude's bookkeeping rows
 
 2.16.5 waited for Claude's final message unless the transcript's last row looked finished, but Claude also writes rows that carry no message — its title, its mode, its permission mode — and one of those counted as finished, so the tags were still read from the message before. Only rows that carry a message are looked at now.

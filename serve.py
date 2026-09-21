@@ -14,7 +14,7 @@ from surfaces import updates  # noqa: E402
 import migrations  # noqa: E402
 from commands.http import dispatch  # noqa: E402
 from engine.stop import asked  # noqa: E402
-from engine.viewer import heartbeat, remember  # noqa: E402
+from engine.viewer import elsewhere, heartbeat, remember  # noqa: E402
 from engine.engines import Engines  # noqa: E402
 from controllers.types import warm  # noqa: E402
 
@@ -80,6 +80,10 @@ class Handler(BaseHTTPRequestHandler):
 
 def serve(root: Path, port: int = 8430) -> ThreadingHTTPServer:
     Handler.root = root
+    other = elsewhere(root)
+    if other:
+        print(f"journal: this journal is already served at {other}", flush=True)
+        raise SystemExit(0)
     migrations.run(root)
     features.load(root)
     updates.announce(root)
