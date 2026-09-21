@@ -55,7 +55,7 @@ def test_evidence_finds_dead_paths_and_verbs_and_a_struck_claim_has_none():
     assert read_owed(record, days=0) is True, "a week after its first event, never read: owed"
     assert sorted(r.ref for r in standing(record)) == ["fact:1", "fact:3", "rule:1", "rule:2", "rule:3"], \
         "the reading pass is every standing rule and fact, in full"
-    FEATURES["context"].reread(Rules(record, actor=AGENT))
+    Rules(record, actor=AGENT).action("reread")()
     assert read_owed(record) is False, "read: no longer owed"
 
     report(record, "idle", "Stop")

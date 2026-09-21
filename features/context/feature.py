@@ -1,9 +1,8 @@
-import time
-
-from controllers.types import Rules
 from features import trigger
-from features.base import Behaviour, Feature, command, event, Line
-from features.context.reread import owed, standing
+from features.base import Behaviour, Feature, event, Line
+from features.context.commands import Reread
+from features.context.reread import owed
+from features.journal import Journal
 
 
 class Context(Feature):
@@ -18,6 +17,9 @@ class Context(Feature):
     behaviours = {"rereading": Behaviour("Read every rule and fact again each week", "Named once a day while the reading is owed",
                                          trigger={"every": 1440, "unit": trigger.MINUTES})}
     trigger = {"at": [50, 70, 90, 95], "unit": trigger.PERCENT}
+
+    def register(self, journal: Journal) -> None:
+        journal.commands.add("rule", Reread())
 
     @event("agent.updated")
     def ask(self, event, record) -> None:
@@ -39,9 +41,3 @@ class Context(Feature):
         agent = self.agent(event, record)
         if agent and self.due(record, agent, "rereading") and owed(record):
             self.journal.say(record, agent, "reread")
-
-    @command("rule")
-    def reread(self, rules: Rules) -> str:
-        rows = standing(rules.record)
-        rules.record.cleanup_read_at = time.time()
-        return "\n\n".join(f"{r.type} {r.n}  {r.title}\n{r.brief}".rstrip() for r in rows)

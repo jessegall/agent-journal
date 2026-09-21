@@ -4,7 +4,7 @@ from functools import cached_property
 from controllers.base import Controller
 from controllers.types import CONTROLLERS, Notices, Notifications, Nudges
 from engine.drivers import CHANNEL, TERMINAL
-from features.parts import AgentHooks, Client, Events
+from features.parts import AgentHooks, Client, Commands, Events
 from resources.base import SYSTEM, titled
 
 
@@ -56,6 +56,10 @@ class Journal:
     @cached_property
     def client(self) -> Client:
         return Client(self.feature)
+
+    @cached_property
+    def commands(self) -> Commands:
+        return Commands(self.feature)
 
     @cached_property
     def agent(self) -> AgentHooks:

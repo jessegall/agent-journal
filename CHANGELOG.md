@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.44.0 — Commands are registered parts
+
+Plan 9, to-do 600. A feature adds a command with journal.commands.add("rule", Reread()): a Command class whose run(context, controller, ...) arguments become the command's arguments, exactly as a controller method's do. journal.commands.intercept("todo.start", HoldWhilePlanned()) puts an ActionInterceptor in front of a controller action, which may refuse it or take it over. Memory's journal rule reread and Planning's hold on starting a row outside the current phase use them; @command and @handles still work for the features not moved yet.
+
+What to do about it: `journal upgrade`.
+
 ## 2.43.0 — A part says which behaviour it belongs to
 
 Plan 9, to-do 599. A handler, formatter or interceptor declares behaviour = "<name>", and the journal calls it only while that behaviour is switched on and, when the behaviour speaks on a cadence, only when it is due. The part itself no longer checks context.on(...) or feature.due(...). Tags' reminder to reply by tag declares the replying behaviour.
