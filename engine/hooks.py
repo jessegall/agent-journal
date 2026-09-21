@@ -98,7 +98,7 @@ def handle(provider, root: Path, env: str, hook) -> dict:
             agents.update(row.n, asking=provider.asking(hook))
         return provider.response(blocked=next((reason for policy in POLICIES if serving(policy, provider, hook)
                                                and (reason := policy(provider, record, hook, row.title))), "")) if hook.event == "PreToolUse" else {}
-    agents.saw(row.n, {"hook": hook.event, "tool": hook.tool.name, "file": hook.tool.file_path, "session": hook.session},
+    agents.saw(row.n, {"hook": hook.event, "tool": hook.tool.name, "file": hook.tool.file_path, "session": hook.session, "size": hook.tool.result_size},
                status=STATUS[hook.event] or row.status or IDLE, **provider.facts(row, hook, root), **commands.shell(row, hook),
                wrote=hook.event == "PostToolUse" and commands.writes(hook))
     if hook.event == "PreToolUse":

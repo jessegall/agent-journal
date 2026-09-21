@@ -85,8 +85,10 @@ class AgentUpdated(AgentEvent):
     tool: str = ""
     file: str = ""
     session: str = ""
+    size: int = 0
 
     @classmethod
     def read(cls, event) -> "AgentUpdated":
         return cls(agent=event.n, hook=str(event.data.get("hook") or ""), tool=str(event.data.get("tool") or ""),
-                   file=str(event.data.get("file") or ""), session=str(event.data.get("session") or ""))
+                   file=str(event.data.get("file") or ""), session=str(event.data.get("session") or ""),
+                   size=int(event.data.get("size") or 0))
