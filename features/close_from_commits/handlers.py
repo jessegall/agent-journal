@@ -7,7 +7,6 @@ from features.parts import Context, Handler
 from resources.base import Refused
 
 TRAILER = re.compile(r"^Journal: todos done (\d+(?:, *\d+)*)(?: (.*))?$", re.MULTILINE)
-CURSOR = "commits"
 
 
 class CloseRowsFromCommits(Handler):
@@ -21,13 +20,13 @@ class CloseRowsFromCommits(Handler):
         commits = self.log(project)
         if not commits:
             return
-        seen = context.record.cursor_text(CURSOR)
+        seen = context.record.cursor_text(context.feature.name)
         if seen:
             for sha, subject, body in commits:
                 if sha == seen:
                     break
                 self.close(context, sha, subject, body)
-        context.record.set_cursor_text(CURSOR, commits[0][0])
+        context.record.set_cursor_text(context.feature.name, commits[0][0])
 
     def log(self, project) -> list[tuple[str, str, str]]:
         out = git(["log", "--format=%H%x1f%s%x1f%B%x1e", "-n", "50"], project)
