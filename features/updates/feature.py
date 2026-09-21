@@ -38,7 +38,7 @@ class Updates(Feature):
         if self.on(record, "install") and not developing(Path(record.root).parent):
             threading.Thread(target=self.install, args=(record, agent, latest), daemon=True).start()
         else:
-            self.say(record, agent, "newer", latest=latest, installed=installed)
+            self.journal.say(record, agent, "newer", latest=latest, installed=installed)
 
     def install(self, record, agent, latest: str) -> None:
         from install import upgrade
@@ -52,4 +52,4 @@ class Updates(Feature):
             INSTALLING.release()
         failed = next((line for line in said if "not refreshed" in line or "failed" in line), "")
         if failed:
-            self.say(record, agent, "failed", latest=latest, why=failed)
+            self.journal.say(record, agent, "failed", latest=latest, why=failed)

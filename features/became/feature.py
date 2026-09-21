@@ -36,4 +36,4 @@ class Became(Feature):
         if not agent:
             return
         names = ", ".join(r.ref for r in uncited[-3:])
-        self.say(record, agent, "uncited", private=True, type=event.type, n=event.n, read=names)
+        self.journal.whisper(record, agent, "uncited", type=event.type, n=event.n, read=names)

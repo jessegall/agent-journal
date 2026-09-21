@@ -1,15 +1,16 @@
 import re
 from abc import ABC
-from functools import wraps
+from functools import cached_property, wraps
 from typing import ClassVar
 
 from controllers.base import COMMANDS, HANDLERS
-from controllers.types import Agents, Features, Nudges
+from controllers.types import Agents, Features
 from engine import bus
 from features import trigger
 from engine.hooks import POLICIES, gate_file
 from features.format import FORMATTERS
-from resources.base import KEYWORDS, Refused, SYSTEM, WHOM, titled
+from features.journal import Journal
+from resources.base import KEYWORDS, Refused, SYSTEM, WHOM
 from engine.stored import read_json, write_json
 from engine.wording import plural
 
@@ -244,10 +245,9 @@ class Feature(ABC):
     def release(self, record, key: str = "", agent=None) -> None:
         self._gate(record, "", key, agent)
 
-    def say(self, record, agent, line: str, private: bool = False, **values) -> None:
-        title, brief = self.line(line, values)
-        if self.mine(agent):
-            Nudges(record, actor=SYSTEM).create(titled(title), brief=brief, session=agent.title, private=private, lead=self.lines[line].lead)
+    @cached_property
+    def journal(self) -> Journal:
+        return Journal(self)
 
     def plural(self, n: int, word: str) -> str:
         return plural(n, word)
@@ -276,7 +276,7 @@ class Recital(Feature):
         for row in self.standing(record, self.controller):
             words = [w for w in row.data.get(KEYWORDS) or [] if w and str(w).lower() in said]
             if words and self.quiet_enough(record, session, row.ref, agent):
-                self.say(record, agent, "whisper", private=True, type=self.controller.resource.type, n=row.n, title=row.title, brief=row.brief)
+                self.journal.whisper(record, agent, "whisper", type=self.controller.resource.type, n=row.n, title=row.title, brief=row.brief)
         return ""
 
     def quiet_enough(self, record, session: str, ref: str, agent) -> bool:
@@ -293,4 +293,4 @@ class Recital(Feature):
         agent = self.agent_due(event, record)
         rows = [r for r in self.standing(record, self.controller) if r.data.get(WHOM, agent.title) == agent.title] if agent else []
         if rows:
-            self.say(record, agent, "standing", count=self.plural(len(rows), self.controller.resource.type), rows="; ".join(f"{r.n}. {r.title}" for r in rows))
+            self.journal.say(record, agent, "standing", count=self.plural(len(rows), self.controller.resource.type), rows="; ".join(f"{r.n}. {r.title}" for r in rows))

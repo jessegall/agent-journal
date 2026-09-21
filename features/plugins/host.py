@@ -5,7 +5,7 @@ import urllib.error
 import urllib.request
 from pathlib import Path
 
-from controllers.types import Notices, Plugins
+from controllers.types import Plugins
 from engine.bus import ANY
 from engine.hooks import default_env
 from engine.record import Record
@@ -57,7 +57,7 @@ def post(url: str, payload: dict, token: str) -> tuple[bool, dict | str]:
     return (True, reply) if isinstance(reply, dict) else (False, f"{url} answered with something other than an object")
 
 
-def watch(root: Path) -> None:
+def watch(root: Path, journal) -> None:
     lock = Path(root) / "runtime" / "plugins.lock"
     lock.parent.mkdir(parents=True, exist_ok=True)
     with lock.open("w") as held:
@@ -65,7 +65,7 @@ def watch(root: Path) -> None:
             fcntl.flock(held, fcntl.LOCK_EX | fcntl.LOCK_NB)
         except BlockingIOError:
             return
-        host = Host(root)
+        host = Host(root, journal)
         while True:
             try:
                 host.step(time.time())
@@ -75,8 +75,9 @@ def watch(root: Path) -> None:
 
 
 class Host:
-    def __init__(self, root: Path, replay: float = REPLAY):
+    def __init__(self, root: Path, journal, replay: float = REPLAY):
         self.root = Path(root)
+        self.journal = journal
         self.replay = replay
         self.trouble: dict = {}
         self.turn = 0
@@ -152,7 +153,7 @@ class Host:
                 if not ok:
                     self.failed(record, plugin, reply, now)
                     continue
-            apply(record, plugin, str(payload.get("agent", {}).get("session") or ""), reply if isinstance(reply, dict) else {})
+            apply(record, self.journal, plugin, str(payload.get("agent", {}).get("session") or ""), reply if isinstance(reply, dict) else {})
             self.cleared(record, plugin)
         return True, 1
 
@@ -169,10 +170,10 @@ class Host:
         waited = min(BACKOFF * 2 ** max(0, count - PATIENCE), LONGEST_WAIT) if count >= PATIENCE else 0.0
         told = self.trouble.get(plugin, {}).get("notice", 0)
         if count == PATIENCE:
-            told = Notices(record, actor=SYSTEM).create(f"Plugin {plugin} is failing", brief=f"{str(why).strip().splitlines()[-1]}\nIts log is {where}.", tone="warn", plugin=plugin).n
+            told = self.journal.notice(record, "failing", name=plugin, plugin=plugin, why=str(why).strip().splitlines()[-1], log=where, tone="warn")
         self.trouble[plugin] = {"failures": count, "until": (now or time.time()) + waited, "notice": told}
 
     def cleared(self, record, plugin: str) -> None:
-        told = self.trouble.pop(plugin, {}).get("notice", 0)
+        told = self.trouble.pop(plugin, {}).get("notice")
         if told:
-            Notices(record, actor=SYSTEM).complete(told, "the plugin is answering again")
+            self.journal.clear(record, told, "the plugin is answering again")

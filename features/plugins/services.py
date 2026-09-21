@@ -12,13 +12,13 @@ WATCH = 5.0
 TOLD = "service"
 
 
-def watch(root: Path, enabled) -> None:
-    threading.Thread(target=keep, args=(Path(root), enabled), daemon=True).start()
+def watch(root: Path, enabled, journal) -> None:
+    threading.Thread(target=keep, args=(Path(root), enabled, journal), daemon=True).start()
 
 
-def keep(root: Path, enabled) -> None:
+def keep(root: Path, enabled, journal) -> None:
     while True:
-        told(root, enabled)
+        told(root, enabled, journal)
         time.sleep(WATCH)
 
 
@@ -26,19 +26,17 @@ def here(root: Path) -> Record:
     return Record(Path(root), default_env(Path(root)))
 
 
-def told(root: Path, enabled) -> list[str]:
+def told(root: Path, enabled, journal) -> list[str]:
     record = here(root)
     if not enabled(record):
         return []
-    notices = Notices(record, actor=SYSTEM)
-    open_ = {n.data.get(TOLD): n for n in notices._standing() if n.data.get(TOLD)}
+    open_ = {n.data.get(TOLD): n for n in Notices(record, actor=SYSTEM)._standing() if n.data.get(TOLD)}
     said = []
     for sid, state in states(root).items():
         failing = state.get("state") in (FAILED, BLOCKED)
         if failing and sid not in open_:
-            notices.create(f"Service {sid} is not running", brief=f"{state.get('why') or 'it stopped'}\nIts log is {log_file(root, sid)}.",
-                           tone="warn", **{TOLD: sid})
+            journal.notice(record, "stopped", name=sid, why=state.get("why") or "it stopped", log=log_file(root, sid), tone="warn", **{TOLD: sid})
             said.append(sid)
         if not failing and sid in open_:
-            notices.complete(open_[sid].n, "it is running again")
+            journal.clear(record, open_[sid], "it is running again")
     return said

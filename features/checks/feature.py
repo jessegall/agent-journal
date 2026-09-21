@@ -9,7 +9,8 @@ from resources.base import SYSTEM
 
 class ChecksFeature(Feature):
     name = "checks"
-    lines = {"failed": Line("{{title}}", "journal check show {{n}} says why; fix it, then journal check run {{n}}")}
+    lines = {"failed": Line("{{title}}", "journal check show {{n}} says why; fix it, then journal check run {{n}}"),
+             "failing": Line("{{title}}", "{{said}}")}
     title_ = "Checks"
     abstract_ = "Scripts that say pass or fail about the project, run on demand or on their own timer; a failure is filed and told to the agent"
     help_ = "A check is a row of its own: journal check create \"<what it guards>\" --set command=\"<command>\" --set every=<minutes>. It runs as its own process from the project root, never inside the server; exit 0 passes. A failing run files a notification and tells the agent; the next pass clears it."
@@ -38,13 +39,12 @@ class ChecksFeature(Feature):
             return
         check = Checks(record, actor=SYSTEM).load(event.n)
         title = f"check {check.n} failed - {check.title}"[:80]
-        notices = Notifications(record, actor=SYSTEM)
         if (check.last or {}).get("ok"):
-            for stale in notices.linked_to(check.ref):
+            for stale in Notifications(record, actor=SYSTEM).linked_to(check.ref):
                 if not stale.completed:
-                    notices.complete(stale.n, how="the check passes again")
+                    self.journal.clear(record, stale, "the check passes again")
             return
-        notices.create(title, brief=(check.last or {}).get("said") or "it said nothing", about=check.ref)
+        self.journal.notify(record, "failing", title=title, said=(check.last or {}).get("said") or "it said nothing", about=check.ref)
         agent = Agents(record, actor=SYSTEM).primary()
         if agent:
-            self.say(record, agent, "failed", title=title, n=check.n)
+            self.journal.say(record, agent, "failed", title=title, n=check.n)

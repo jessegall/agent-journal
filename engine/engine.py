@@ -49,6 +49,7 @@ class Engine(Seat):
         self.why = ""
         self.clean = 0
         self.last_written_line = None
+        self.last_said = None
 
     def start(self) -> None:
         features.load(self.record.root)
@@ -82,12 +83,13 @@ class Engine(Seat):
             return
         row = Agents(self.record, actor=SYSTEM).by_session(last.title)
         written = turns(self.record, row)
-        line = written[-1].line if written else None
-        if line == self.last_written_line:
-            return
-        first, self.last_written_line = self.last_written_line is None, line
-        if not first:
-            bus.emit(Event(id=0, at=time.time(), type="agent", n=row.n, action="said", actor=AGENT, data={"line": line}), self.record)
+        known = next((i for i, t in enumerate(written) if t.line == self.last_written_line), None)
+        fresh = [t.text for t in (written[known + 1:] if known is not None else written[-1:])]
+        stopped = [row.said] if row.said and row.event == "Stop" and row.said != self.last_said else []
+        first = self.last_written_line is None and self.last_said is None
+        self.last_written_line, self.last_said = written[-1].line if written else -1, row.said
+        for text in [] if first else [*fresh, *stopped]:
+            bus.emit(Event(id=0, at=time.time(), type="agent", n=row.n, action="said", actor=AGENT, data={"text": text}), self.record)
 
     def elsewhere(self, e) -> bool:
         if not TYPES[e.type].spoken:
