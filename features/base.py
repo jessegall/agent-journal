@@ -126,8 +126,14 @@ class Feature(ABC):
     def on_for(cls, record) -> bool:
         if cls.fixed:
             return True
+        memo, key = getattr(record, "memo", None), ("on", cls.name)
+        if memo is not None and key in memo:
+            return memo[key]
         row = Features(record, actor=SYSTEM).named(cls.name)
-        return bool(row.enabled) if row else record.features.get(cls.name, cls.default_for(record.root))
+        on = bool(row.enabled) if row else record.features.get(cls.name, cls.default_for(record.root))
+        if memo is not None:
+            memo[key] = on
+        return on
 
     def enabled(self, record) -> bool:
         return self.on_for(record)

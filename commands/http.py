@@ -640,9 +640,9 @@ def listing(controller, record, query: dict) -> dict:
     return {"rows": [shaped(controller.load(row["n"]), record) for row in kept], "more": len(rows) > len(kept)}
 
 
-def counted(record) -> dict:
+def counted(record, types) -> dict:
     out = {}
-    for type_, controller in CONTROLLERS.items():
+    for type_, controller in ((t, CONTROLLERS[t]) for t in types):
         standing = [row for row in controller(record, actor=USER).summaries() if not row["deleted"] and not row["completed"]]
         out[type_] = {"open": len(standing), "unread": sum(USER not in (row.get("seen") or []) for row in standing)}
     return out
@@ -654,7 +654,7 @@ def get_dashboard(req: Request) -> Reply:
     wanted = [t for t in (req.query.get("types") or "").split(",") if t in CONTROLLERS]
     lists = {t: listing(CONTROLLERS[t](record, actor=USER), record, req.query) for t in wanted}
     whole = "events" in req.query
-    return Reply(200, {"rows": lists, "counts": counted(record), **({"events": [asdict(e) for e in record.events(0, int(req.query["events"] or 0))],
+    return Reply(200, {"rows": lists, "counts": counted(record, CONTROLLERS if whole else wanted), **({"events": [asdict(e) for e in record.events(0, int(req.query["events"] or 0))],
                                            "settings": settings(record)} if whole else {})})
 
 
