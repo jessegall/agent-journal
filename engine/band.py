@@ -53,6 +53,7 @@ def unshifted(data: bytes) -> bytes:
 
 MOVE = re.compile(rb"\x1b\[(\d*)(?:;(\d*))?([HfdABCDG])")
 SHOW = re.compile(rb"\x1b\[\?25([hl])")
+MARGINS = re.compile(rb"\x1b\[(\d*)(?:;(\d*))?r")
 ESCAPE = re.compile(rb"\x1b(?:\[[0-?]*[ -/]*[@-~]|\][^\x07\x1b]*(?:\x07|\x1b\\)|[()][0-9A-B]|[78=>cDEHM]|[@-Z\\-_])")
 
 
@@ -69,10 +70,22 @@ class Cursor:
         self.saved = (ROWS + 1, 1)
         self.shown = True
         self.sure = True
+        self.top, self.bottom = ROWS + 1, rows
+        self.holding = False
 
     def resized(self, rows: int, cols: int) -> None:
         self.rows, self.cols = rows, cols
+        self.top, self.bottom = ROWS + 1, rows
         self.sure = False
+
+    def inside(self) -> bool:
+        return self.top <= self.row <= self.bottom
+
+    def down(self, by: int) -> None:
+        self.row = min(self.row + by, self.bottom) if self.inside() else min(self.row + by, self.rows)
+
+    def up(self, by: int) -> None:
+        self.row = max(self.row - by, self.top) if self.inside() else max(self.row - by, 1)
 
     def placed(self, m: re.Match) -> None:
         kind, first, second = m.group(3), m.group(1), m.group(2)
@@ -84,9 +97,9 @@ class Cursor:
         elif kind == b"G":
             self.col = one
         elif kind == b"A":
-            self.row -= max(1, one)
+            self.up(max(1, one))
         elif kind == b"B":
-            self.row += max(1, one)
+            self.down(max(1, one))
         elif kind == b"C":
             self.col += max(1, one)
         elif kind == b"D":
@@ -97,7 +110,7 @@ class Cursor:
     def wrote(self, plain: bytes) -> None:
         for ch in plain.decode("utf-8", "ignore"):
             if ch == "\n":
-                self.row += 1
+                self.down(1)
             elif ch == "\r":
                 self.col = 1
             elif ch == "\b":
@@ -105,9 +118,8 @@ class Cursor:
             elif ch >= " ":
                 self.col += wide(ch)
             if self.col > self.cols:
-                self.row, self.col = self.row + 1, 1
-            if self.row > self.rows:                 # the screen scrolled: the tracker cannot know by how much
-                self.row, self.sure = self.rows, False
+                self.col = 1
+                self.down(1)
 
     def feed(self, data: bytes) -> None:
         at = 0
@@ -119,15 +131,18 @@ class Cursor:
 
     def escaped(self, seq: bytes) -> None:
         if seq == b"\x1b7":
-            self.saved = (self.row, self.col)
+            self.saved, self.holding = (self.row, self.col), True
         elif seq == b"\x1b8":
             self.row, self.col = self.saved
-            self.sure = True
+            self.sure, self.holding = True, False
         elif (shown := SHOW.fullmatch(seq)):
             self.shown = shown.group(1) == b"h"
         elif (move := MOVE.fullmatch(seq)):
             self.placed(move)
             self.sure = True
+        elif (margins := MARGINS.fullmatch(seq)):
+            self.top = int(margins.group(1) or 1)
+            self.bottom = int(margins.group(2) or self.rows)
 
     def at(self) -> bytes:
         if not self.sure:
@@ -139,6 +154,11 @@ class Translator:
     def __init__(self, rows: int):
         self.rows = rows
         self.held = b""
+        self.margins: tuple[int, int] | None = None
+
+    def region(self) -> bytes:
+        first, bottom = self.margins or (ROWS + 1, self.rows)
+        return b"\x1b[%d;%dr\x1b[%d;1H" % (first, bottom, ROWS + 1)
 
     def shifted(self, m: re.Match) -> bytes:
         kind = m.group(3)
@@ -147,6 +167,7 @@ class Translator:
             return b"\x1b[%dd" % first
         if kind == b"r":
             bottom = int(m.group(2)) + ROWS if m.group(2) else self.rows
+            self.margins = (first, bottom) if m.group(1) or m.group(2) else None
             return b"\x1b[%d;%dr\x1b[%d;1H" % (first, bottom, ROWS + 1)
         return b"\x1b[%d;%s%s" % (first, m.group(2) or b"1", kind)
 
@@ -245,10 +266,10 @@ class Band:
         left = max(0, (cols - plain) // 2) if left < 0 else min(left, cols - plain)
         return " " * left + "".join(out) + " " * (cols - plain - left)
 
-    def draw(self, cols: int, force: bool = False, cursor: "Cursor | None" = None) -> bytes:
+    def draw(self, cols: int, force: bool = False, cursor: "Cursor | None" = None, first: bytes = b"") -> bytes:
         body = "".join(f"{ESC}[{n + 1};1H{STYLE}{line}{RESET}" for n, line in enumerate(self.lines(cols)))
-        back = cursor.at() if cursor else b""
-        drawn = (f"{ESC}[?25l" if back else f"{ESC}7").encode() + body.encode() + (back or f"{ESC}8".encode())
+        back = cursor.at() if cursor and cursor.holding else b""
+        drawn = (f"{ESC}[?25l" if back else f"{ESC}7").encode() + first + body.encode() + (back or f"{ESC}8".encode())
         if drawn == self.shown and not force:
             return b""
         self.shown = drawn

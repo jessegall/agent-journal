@@ -49,7 +49,8 @@ def resize(fd: int) -> tuple[int, int]:
     return rows, cols
 
 
-REDRAWS = (b"\x1b[2J", b"\x1b[?1049h", b"\x1b[?1049l", b"\x1bc", b"\x1b[r")
+REDRAWS = (b"\x1b[2J", b"\x1b[?1049h", b"\x1b[?1049l", b"\x1b[r")
+RESET = b"\x1bc"
 STARTUP, EARLY = 10.0, 16384
 FRAME_END = b"\x1b[?25h"
 
@@ -88,19 +89,19 @@ def run(root: Path, cwd: Path, env: str, agent: str, fd: int, session: str, life
         screen.flush()
 
     def sized() -> None:
-        write_json(root / "runtime" / f"screen-{session}.json", {"rows": shape[0], "cols": shape[1], "at": screen.tell()})
+        write_json(root / "runtime" / f"screen-{session}.json", {"rows": shape[0], "cols": shape[1], "at": screen.tell(), "printed": out.tell()})
 
     def frame() -> None:
         shape[0], shape[1] = resize(fd)
         rows_below.rows = shape[0]
         where.resized(shape[0], shape[1])
         sized()
-        show(b"\x1b[2J" + band.region(shape[0]) + top.draw(shape[1], force=True, cursor=where))
+        show(b"\x1b[2J" + top.draw(shape[1], force=True, cursor=where, first=band.region(shape[0])))
 
     where = band.Cursor(rows, cols)
     signal.signal(signal.SIGWINCH, lambda *_: frame())
     sized()
-    show(band.region(rows) + top.draw(cols, force=True, cursor=where))
+    show(top.draw(cols, force=True, cursor=where, first=band.region(rows)))
     began = time.time()
     last_check = 0.0
     last_viewer = time.time()
@@ -128,8 +129,11 @@ def run(root: Path, cwd: Path, env: str, agent: str, fd: int, session: str, life
                 show(shown)
                 where.feed(shown)
                 early = (early + data)[-EARLY:] if not answered else early
-                if any(mark in data for mark in REDRAWS):
-                    show(band.region(shape[0]) + top.draw(shape[1], force=True, cursor=where))
+                if RESET in data:
+                    rows_below.margins = None
+                    show(top.draw(shape[1], force=True, cursor=where, first=band.region(shape[0])))
+                elif any(mark in data for mark in REDRAWS):
+                    show(top.draw(shape[1], force=True, cursor=where, first=rows_below.region()))
                 elif data.rstrip().endswith(FRAME_END):
                     show(top.draw(shape[1], cursor=where))
                 out.write(data[-4096:])

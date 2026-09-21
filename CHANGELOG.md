@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.18.1 — The header puts Claude's cursor back exactly
+
+Replaying a recording of the terminal showed where the drawing drifted: the header put the cursor back where a tracker said Claude had left it, and the tracker did not know Claude's scroll region, so after a line feed on the region's last row it ran a row or more low; Claude's next erase then landed on the wrong line and old text stayed. The header now draws between the terminal's own cursor save and restore, which is exact, and falls back to the tracker only while Claude holds a save of its own; the tracker also knows the scroll region now. Re-sending the scroll region happens inside that save, and it re-sends Claude's own region instead of overwriting it with the header's.
+
+What to do about it: `journal upgrade`.
+
 ## 2.18.0 — Only real slowness is reported, and the terminal is recorded
 
 A request is reported as over budget only when the server's own work passes the budget; time spent waiting behind other requests no longer counts, which removes most of what reached the agent. The viewer, which cannot see the server's working time, reports a request only past four times the budget. The supervisor now writes everything it shows in the user's terminal through one place and keeps a rolling recording of it (runtime/screen-<session>, its size beside it), so a garbled terminal can be replayed exactly; housekeeping keeps its last megabyte.
