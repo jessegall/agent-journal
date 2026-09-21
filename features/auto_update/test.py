@@ -28,6 +28,11 @@ def test_the_installed_command_runs_quietly_before_any_server_has_started(tmp_pa
     shim.write_text(launcher(sys.executable, script, tmp_path / ".journal"))
     ran = subprocess.run(["sh", str(shim), "todo", "all"], capture_output=True, text=True, timeout=20)
     assert (ran.stdout.strip(), ran.stderr) == ("ran", ""), "no heartbeat file yet: it falls through to the package without an error"
+    import time
+    (tmp_path / ".journal" / "runtime").mkdir(parents=True)
+    (tmp_path / ".journal" / "runtime" / "heartbeat").write_text(f"{int(time.time())} http://127.0.0.1:9/\n")
+    ran = subprocess.run(["sh", str(shim), "todo", "all"], capture_output=True, text=True, timeout=20)
+    assert (ran.stdout.strip(), ran.stderr) == ("ran", ""), "a fresh heartbeat but no server answering, as during a restart: it falls through too"
 
 
 def test_the_journals_hook_py_runs_the_current_hook_for_an_older_command_that_passes_nothing(tmp_path):
