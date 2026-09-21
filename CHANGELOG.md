@@ -4,6 +4,14 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.21.2 — An idle session hears the journal right after a restart
+
+A session's engine found its agent only through a hook that arrived after the engine started. Every server restart — each upgrade — starts fresh engines, so an agent sitting idle was deaf until it next ran a tool: no channel lines, no auto-mode nudges, no chat copies of its tagged messages. The Claude driver now knows its agent at once, by the process id its inbox socket carries.
+
+The missing-tag reminder also says why it matters: a message without a tag does not reach the chat.
+
+What to do about it: `journal upgrade`.
+
 ## 2.21.1 — The server fills its cache before it answers
 
 Every restart of the server — each upgrade — left its row cache empty while it filled it in the background, and the viewer's first requests landed on the cold cache: the dashboard took 80–140 ms against its 50 ms budget, and the faults feature reported it. The start environment is now loaded before the server answers its first request; the other environments and the transcripts still fill in the background.

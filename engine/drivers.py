@@ -197,8 +197,11 @@ class Driver(ABC):
         from resources.base import SYSTEM
         homes = sorted(self.record.root.glob("environments/*/agent"), key=lambda f: f.stat().st_mtime)
         rows = [r for f in homes for r in Agents(Record(self.record.root, f.parent.name), actor=SYSTEM)._every()
-                if r.event and (r.title == self.session or (r.provider == self.name and float(r.at or 0) >= self.born - 1))]
+                if r.event and (r.title == self.session or self.owns(r) or (r.provider == self.name and float(r.at or 0) >= self.born - 1))]
         return max(rows, key=lambda r: float(r.at or 0)) if rows else None
+
+    def owns(self, row) -> bool:
+        return False
 
     def quiet_for(self) -> float:
         try:

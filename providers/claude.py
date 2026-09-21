@@ -12,6 +12,7 @@ from providers.payload import Hook
 from resources.types import AgentRow
 from engine.stored import read_json, tail, write_text
 from engine import runtime
+from engine.sessions import Sessions
 from engine.drivers import ANSI, CHOICE, Driver
 
 ASKS = frozenset({"AskUserQuestion"})
@@ -328,6 +329,10 @@ class ClaudeDriver(Driver):
 
     def _post(self, line: str) -> bool:
         return self._handed(line) or super()._post(line)
+
+    def owns(self, row) -> bool:
+        pid = Sessions(self.record.root).read(self.session).get("pid")
+        return bool(pid) and Path(row.inbox or "").stem == str(pid)
 
     def _handed(self, line: str) -> bool:
         root = self.record.root
