@@ -2,7 +2,7 @@
 import {computed, onMounted, ref, watch} from "vue";
 import {api} from "../api/client.js";
 import {route} from "../route.js";
-import {clock} from "../store.js";
+import {clock} from "../format/time.js";
 
 const commit = ref(null);
 const error = ref("");

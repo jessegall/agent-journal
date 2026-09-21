@@ -2,7 +2,9 @@
 import {computed, onMounted, onUnmounted, ref} from "vue";
 import SwitchCase from "../kit/SwitchCase.vue";
 import {route} from "../route.js";
-import {detach, open, store, types, unreadByUser} from "../store.js";
+import {open, unreadByUser} from "../domain/records.js";
+import {detach} from "../platform/extension.js";
+import {store, types} from "../state/store.js";
 import Thread from "../chat/Thread.vue";
 import ThreadSkeleton from "../chat/ThreadSkeleton.vue";
 import Notice from "../chat/Notice.vue";

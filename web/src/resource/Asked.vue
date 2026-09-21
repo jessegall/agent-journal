@@ -1,7 +1,8 @@
 <script setup>
 import {computed} from "vue";
 import OptionsPicker from "./OptionsPicker.vue";
-import {linkedTo, meta} from "../store.js";
+import {linkedTo} from "../domain/records.js";
+import {meta} from "../state/store.js";
 
 const props = defineProps({resource: Object});
 const questions = computed(() => linkedTo(props.resource.ref).filter((r) => meta(r.type).fields.options && meta(r.type).attention));

@@ -5,7 +5,9 @@ import Icon from "../kit/Icon.vue";
 import AgentBar from "../chat/AgentBar.vue";
 import Thread from "../chat/Thread.vue";
 import {go, route} from "../route.js";
-import {detach, keepChatWindow, rows, store} from "../store.js";
+import {detach, tellShell} from "../platform/extension.js";
+import {store} from "../state/store.js";
+import {rows} from "../sync/rows.js";
 
 const props = defineProps({floating: Boolean});
 const shell = reactive({hosted: false, shut: false, journals: false, envs: false, driving: false, drivingUrl: ""});
@@ -25,7 +27,7 @@ const windowStyle = computed(() =>
 );
 
 function toShell(op, extra) {
-    if (framed) window.parent.postMessage({source: "journal-page", kind: "shell", op, ...(extra || {})}, "*");
+    if (framed) tellShell(op, extra || {});
 }
 
 function fromShell(e) {
@@ -59,8 +61,7 @@ function drag(e) {
         bar.removeEventListener("pointerup", done);
         bar.removeEventListener("pointercancel", done);
         bar.releasePointerCapture(ev.pointerId);
-        if (props.floating) keepChatWindow();
-        else toShell("dragend");
+        if (!props.floating) toShell("dragend");
     };
     bar.addEventListener("pointermove", move);
     bar.addEventListener("pointerup", done);
@@ -81,7 +82,6 @@ function resize(e) {
         grip.removeEventListener("pointerup", done);
         grip.removeEventListener("pointercancel", done);
         grip.releasePointerCapture(ev.pointerId);
-        keepChatWindow();
     };
     grip.addEventListener("pointermove", move);
     grip.addEventListener("pointerup", done);
@@ -94,8 +94,7 @@ function drive(on) {
 
 function fold() {
     shell.shut = !shell.shut;
-    if (props.floating) keepChatWindow();
-    else toShell(shell.shut ? "shut" : "open");
+    if (!props.floating) toShell(shell.shut ? "shut" : "open");
 }
 
 function pick(name) {

@@ -4,11 +4,16 @@ import {api} from "../api/client.js";
 import {sendMessage} from "./outbox.js";
 import Icon from "../kit/Icon.vue";
 import {route} from "../route.js";
-import {agent, earlier, laidOut, meta, polled, quoted, reload, rows, store, withQuote} from "../store.js";
+import {quoted, withQuote} from "../format/quote.js";
+import {laidOut} from "../platform/view.js";
+import {agent, meta, store} from "../state/store.js";
+import {polled} from "../sync/polled.js";
+import {earlier, reload, rows} from "../sync/rows.js";
 import Compose from "./Compose.vue";
 import Turn from "./Turn.vue";
 import ThreadSkeleton from "./ThreadSkeleton.vue";
 import {usePoll} from "../poll.js";
+import {tellExtension} from "../platform/extension.js";
 
 usePoll(...polled.agents);
 
@@ -26,7 +31,7 @@ const pageTools = chatOnly
 const composeTools = pageTools;
 
 function point(kind) {
-    window.postMessage({source: "journal-page", kind}, window.location.origin);
+    tellExtension(kind);
 }
 const mine = computed(() => rows("message").filter((m) => !m.deleted && m.seen[0] === "user" && !m.seen.includes("agent")));
 

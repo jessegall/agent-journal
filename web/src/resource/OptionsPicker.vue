@@ -3,7 +3,7 @@ import {computed, onUnmounted, ref} from "vue";
 import {api} from "../api/client.js";
 import Btn from "../kit/Btn.vue";
 import {route} from "../route.js";
-import {store, word} from "../store.js";
+import {store, word} from "../state/store.js";
 
 const HOLD_SECONDS = 3;
 const props = defineProps({resource: Object});

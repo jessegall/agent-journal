@@ -1,6 +1,7 @@
 <script setup>
 import Icon from "../kit/Icon.vue";
-import {age, meta} from "../store.js";
+import {age} from "../format/time.js";
+import {meta} from "../state/store.js";
 defineProps({resource: Object});
 </script>
 

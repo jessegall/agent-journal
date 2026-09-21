@@ -6,7 +6,9 @@ import {sendMessage} from "../chat/outbox.js";
 import Icon from "../kit/Icon.vue";
 import SwitchCase from "../kit/SwitchCase.vue";
 import {go, peek, route} from "../route.js";
-import {autoOn, meta, navTypes, showAway, store, types, unreadByUser} from "../store.js";
+import {unreadByUser} from "../domain/records.js";
+import {showAway} from "../platform/visibility.js";
+import {autoOn, meta, navTypes, store, types} from "../state/store.js";
 
 const emit = defineEmits(["close"]);
 const q = ref("");

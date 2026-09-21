@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {age} from "../store.js";
+import {age} from "../format/time.js";
 
 defineProps<{agent: unknown}>();
 </script>

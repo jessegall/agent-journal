@@ -3,7 +3,7 @@ import {ref} from "vue";
 import {api} from "../api/client.js";
 import Btn from "../kit/Btn.vue";
 import {route} from "../route.js";
-import {label, meta, word} from "../store.js";
+import {label, meta, word} from "../state/store.js";
 
 const props = defineProps({type: String});
 const emit = defineEmits(["made", "close"]);

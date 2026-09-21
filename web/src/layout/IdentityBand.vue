@@ -1,6 +1,6 @@
 <script setup>
 import {computed} from "vue";
-import {store} from "../store.js";
+import {store} from "../state/store.js";
 
 const title = computed(() => `${store.identity.project} project color`);
 </script>

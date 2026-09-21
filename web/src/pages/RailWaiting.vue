@@ -3,7 +3,10 @@ import {computed} from "vue";
 import Icon from "../kit/Icon.vue";
 import {api} from "../api/client.js";
 import {peek, route} from "../route.js";
-import {age, focusTurn, meta, types, unreadByUser} from "../store.js";
+import {unreadByUser} from "../domain/records.js";
+import {age} from "../format/time.js";
+import {focusTurn} from "../platform/view.js";
+import {meta, types} from "../state/store.js";
 
 const TINT = {
     question: "var(--blocking)",

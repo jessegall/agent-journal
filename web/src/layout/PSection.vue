@@ -2,7 +2,7 @@
 import {api} from "../api/client.js";
 import Icon from "../kit/Icon.vue";
 import {go, peek, route} from "../route.js";
-import {rows} from "../store.js";
+import {rows} from "../sync/rows.js";
 import {currentWork, doneOf, lineOf, phaseOf, planButton, queued, rowsOf, shownPlans, stateOf, wordOf} from "./statusline.js";
 
 defineProps<{plans: unknown; error: string; data: unknown; p: unknown}>();

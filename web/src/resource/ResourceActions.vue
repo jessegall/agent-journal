@@ -3,7 +3,7 @@ import {computed, ref} from "vue";
 import {api} from "../api/client.js";
 import Btn from "../kit/Btn.vue";
 import {route} from "../route.js";
-import {meta, word} from "../store.js";
+import {meta, word} from "../state/store.js";
 
 const props = defineProps({resource: Object});
 const emit = defineEmits(["edit"]);

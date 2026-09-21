@@ -1,7 +1,9 @@
 <script setup>
 import {computed, onMounted, ref} from "vue";
 import {peek} from "../route.js";
-import {age, byRef, meta, store, word} from "../store.js";
+import {byRef} from "../domain/records.js";
+import {age} from "../format/time.js";
+import {meta, store, word} from "../state/store.js";
 
 const WORDS = {created: "New", updated: "Updated", deleted: "Deleted", linked: "Linked", commented: "Commented on", reopened: "Reopened"};
 const settled = ref(false);

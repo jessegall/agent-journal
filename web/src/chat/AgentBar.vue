@@ -7,7 +7,10 @@ import Spinner from "../kit/Spinner.vue";
 import CrewList from "./CrewList.vue";
 import SwitchCase from "../kit/SwitchCase.vue";
 import {go, peek, route} from "../route.js";
-import {agent, detach, polled, span, store} from "../store.js";
+import {span} from "../format/time.js";
+import {detach} from "../platform/extension.js";
+import {agent, store} from "../state/store.js";
+import {polled} from "../sync/polled.js";
 import {usePoll} from "../poll.js";
 
 usePoll(...polled.agents);

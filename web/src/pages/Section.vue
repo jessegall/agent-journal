@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import Btn from "../kit/Btn.vue";
-import {load, rows, store} from "../store.js";
+import {store} from "../state/store.js";
+import {load, rows} from "../sync/rows.js";
 
 defineEmits<{saveColor: [unknown]}>();
 </script>

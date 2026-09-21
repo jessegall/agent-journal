@@ -9,7 +9,9 @@ import Btn from "../kit/Btn.vue";
 import Switch from "../kit/Switch.vue";
 import {COUNTED, EVENTS} from "./cadence.js";
 import {route} from "../route.js";
-import {load, remembered, rows, store} from "../store.js";
+import {remembered} from "../composables/remembered.js";
+import {store} from "../state/store.js";
+import {load, rows} from "../sync/rows.js";
 
 const triggerOf = (f) => (store.settings && store.settings.triggers && store.settings.triggers[f.name]) || f.trigger;
 const cadenceOf = (key, declared) => (store.settings && store.settings.triggers && store.settings.triggers[key]) || declared;

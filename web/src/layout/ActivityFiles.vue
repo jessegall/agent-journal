@@ -2,7 +2,7 @@
 import {onMounted, onUnmounted, ref} from "vue";
 import {api} from "../api/client.js";
 import {route} from "../route.js";
-import {age} from "../store.js";
+import {age} from "../format/time.js";
 
 const EVERY = 4000;
 const changes = ref([]);

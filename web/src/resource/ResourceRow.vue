@@ -2,7 +2,9 @@
 import Dot from "../kit/Dot.vue";
 import Icon from "../kit/Icon.vue";
 import PriorityIcon from "../kit/PriorityIcon.vue";
-import {age, meta, state} from "../store.js";
+import {state} from "../domain/records.js";
+import {age} from "../format/time.js";
+import {meta} from "../state/store.js";
 defineProps({resource: Object, selected: Boolean});
 </script>
 

@@ -1,7 +1,7 @@
 <script setup>
 import {onUnmounted, ref, watch} from "vue";
 import {negative, project, tint} from "../identity.js";
-import {flash} from "../store.js";
+import {flash} from "../platform/visibility.js";
 
 const SHOWN_FOR = 1100;
 const showing = ref(false);

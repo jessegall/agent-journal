@@ -3,7 +3,8 @@ import {computed, onUnmounted, ref} from "vue";
 import Icon from "../kit/Icon.vue";
 import RailWaiting from "../pages/RailWaiting.vue";
 import {route} from "../route.js";
-import {meta, store, types, unreadByUser} from "../store.js";
+import {unreadByUser} from "../domain/records.js";
+import {meta, store, types} from "../state/store.js";
 
 const PAGES = {
     settings: "Settings",

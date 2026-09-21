@@ -4,7 +4,9 @@ import {api} from "../api/client.js";
 import Icon from "../kit/Icon.vue";
 import {peek, route} from "../route.js";
 import FileTags from "../resource/FileTags.vue";
-import {age, meta, openPictures} from "../store.js";
+import {age} from "../format/time.js";
+import {openPictures} from "../platform/view.js";
+import {meta} from "../state/store.js";
 
 const files = ref([]);
 const loaded = ref(false);

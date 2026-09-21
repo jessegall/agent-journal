@@ -7,7 +7,9 @@ import Icon from "../kit/Icon.vue";
 import RunningCommand from "./RunningCommand.vue";
 import Switch from "../kit/Switch.vue";
 import {go, peek, route} from "../route.js";
-import {agent, autoOn, polled, rows, store} from "../store.js";
+import {agent, autoOn, store} from "../state/store.js";
+import {polled} from "../sync/polled.js";
+import {rows} from "../sync/rows.js";
 import {currentWork, doneOf, lineOf, phaseOf, planButton, queued, rowsOf, shownPlans, stateOf, wordOf} from "./statusline.js";
 import {usePoll} from "../poll.js";
 

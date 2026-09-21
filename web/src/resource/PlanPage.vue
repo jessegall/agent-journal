@@ -6,7 +6,8 @@ import CommentToggle from "./CommentToggle.vue";
 import Dot from "../kit/Dot.vue";
 import Icon from "../kit/Icon.vue";
 import {peek, route} from "../route.js";
-import {rows, state} from "../store.js";
+import {state} from "../domain/records.js";
+import {rows} from "../sync/rows.js";
 import Markdown from "./Markdown.vue";
 
 const props = defineProps({resource: Object});

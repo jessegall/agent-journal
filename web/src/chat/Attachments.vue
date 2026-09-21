@@ -3,7 +3,7 @@ import {computed} from "vue";
 import Icon from "../kit/Icon.vue";
 import {api} from "../api/client.js";
 import {route} from "../route.js";
-import {openPictures} from "../store.js";
+import {openPictures} from "../platform/view.js";
 
 const props = defineProps({resource: Object});
 const emit = defineEmits(["grew"]);

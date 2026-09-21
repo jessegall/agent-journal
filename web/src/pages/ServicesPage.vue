@@ -4,7 +4,7 @@ import {api} from "../api/client.js";
 import Btn from "../kit/Btn.vue";
 import Icon from "../kit/Icon.vue";
 import {route} from "../route.js";
-import {span} from "../store.js";
+import {span} from "../format/time.js";
 
 const EVERY = 2000;
 const RUNNING = ["ready", "starting"];
