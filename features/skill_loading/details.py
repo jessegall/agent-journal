@@ -26,6 +26,11 @@ class SkillsDetails(FeatureDetails):
             abstract="A fresh window starts without the skill; the first write waits for Skill: journal",
         ),
         Behaviour(
+            name="always",
+            title="Hold tool calls at a session start until every always-on skill is loaded",
+            abstract="The skills switched to every start on the Skills page, again after a compaction",
+        ),
+        Behaviour(
             name="stale",
             title="Hold tool calls when a skill changed since it was loaded",
             abstract="Every tool call waits until the agent loads the changed skill again",

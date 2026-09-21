@@ -28,7 +28,7 @@ SERVICES_EVERY = 1.0
 TYPED_EVERY = 1.0
 
 
-def typed(fd: int, keys: bytes) -> None:
+def press(fd: int, keys: bytes) -> None:
     text = keys.rstrip(b"\r")
     if text:
         os.write(fd, text)
@@ -153,7 +153,7 @@ def run(root: Path, cwd: Path, env: str, agent: str, fd: int, session: str, life
                 out.write(data)
                 out.flush()
             if queued and time.time() >= due:
-                typed(fd, queued)
+                press(fd, queued)
                 queued = b""
             if not answered and time.time() - started < STARTUP:
                 if (keys := DRIVERS[agent].confirm(early)):

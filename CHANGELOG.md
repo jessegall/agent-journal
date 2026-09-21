@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.78.4 — Codex starts again, and loads its always-on skills first
+
+Messages 1969 and 1975, to-do 697. 2.78.3 crashed every Codex session on its first message: the supervisor's function that types it had the same name as a file it keeps, so the call hit the file and raised `TypeError: 'PosixPath' object is not callable`. The function is now `press`. Codex also now loads the skills switched to every start before it works: at each session start, and again after a compaction, every tool call is held until each always-on skill is loaded, and the refusal says how that agent loads one: `Skill: <name>` for Claude, `read .agents/skills/<name>/SKILL.md` for Codex.
+
+What to do about it: `journal upgrade`, then start Codex again with `journal codex`.
+
 ## 2.78.3 — Agents handle the journal quietly
 
 Messages 1960 and 1962, to-do 696. Agents filled the chat with the journal's own mechanics: "I received the journal notification", "the journal server returned no payload", "I'll send the required journal reply". The first message every session is handed, at its start and again after a compaction, now says right under its opening line: handle the journal quietly, talk only about the user's work, never mention the journal's notifications, nudges, hooks, skills or replies, and never announce reading, replying, loading or logging, just do it.
