@@ -86,8 +86,8 @@ class Feature(ABC):
     trigger: ClassVar[dict] = {}
     behaviours: ClassVar[dict] = {}
     aliases: ClassVar[tuple] = ()      # names this feature used to have; a pair says the old feature is now one of its behaviours
-    declares: ClassVar[tuple] = ()     # marks this feature offers: any feature marks a method with marker("<name>"), and this one is handed them all
-    runs_for_subagents: ClassVar[bool] = False   # whether it acts on a subagent's session as well as the one the user talks to
+    declares: ClassVar[tuple] = ()
+    runs_for_subagents: ClassVar[bool] = False
     default: ClassVar[bool] = True
     fixed: ClassVar[bool] = False
 
