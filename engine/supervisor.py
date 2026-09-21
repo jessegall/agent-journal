@@ -4,7 +4,6 @@ import re
 import select
 import signal
 import struct
-import subprocess
 import sys
 import termios
 import threading
@@ -16,7 +15,7 @@ from engine import band  # noqa: E402
 from engine.drivers import DRIVERS  # noqa: E402
 from engine import viewer  # noqa: E402
 from engine.services import Manager  # noqa: E402
-from engine import watch  # noqa: E402
+from engine import typist  # noqa: E402
 from engine.stop import asked  # noqa: E402
 from engine.terminal import RELOAD, STOP, watched  # noqa: E402
 
@@ -53,25 +52,6 @@ STARTUP, EARLY = 10.0, 16384
 FRAME_END = b"\x1b[?25h"
 
 
-def spawn_driver(root: Path, cwd: Path, env: str, agent: str, fd: int, session: str) -> subprocess.Popen:
-    main = Path(__file__).resolve().with_name("engine_main.py")
-    said = watch.log_file(root)
-    said.parent.mkdir(parents=True, exist_ok=True)
-    return subprocess.Popen([sys.executable, str(main), str(root), env, agent, str(fd), session], cwd=cwd, pass_fds=(fd,),
-                            stderr=said.open("a"))
-
-
-def stop_driver(driver: subprocess.Popen) -> None:
-    if driver.poll() is not None:
-        return
-    driver.terminate()
-    try:
-        driver.wait(timeout=5)
-    except subprocess.TimeoutExpired:
-        driver.kill()
-        driver.wait()
-
-
 def keep_viewer(root: Path, cwd: Path, watching) -> object:
     if watching and watching.is_alive():
         return watching
@@ -89,11 +69,10 @@ def run(root: Path, cwd: Path, env: str, agent: str, fd: int, session: str, life
     typed_at = 0.0
     printed.parent.mkdir(parents=True, exist_ok=True)
     out = printed.open("ab")
-    driver = spawn_driver(root, cwd, env, agent, fd, session)
+    ear = typist.listen(root, session)
     answered = False
     early = b""
     started = time.time()
-    settled = False
     stamps = watched(root)
     stdin, stdout = sys.stdin.fileno(), sys.stdout.fileno()
     shape = [rows, cols]
@@ -119,7 +98,10 @@ def run(root: Path, cwd: Path, env: str, agent: str, fd: int, session: str, life
     BETWEEN_FRAMES = 0.12
     try:
         while True:
-            ready, _, _ = select.select([fd, stdin], [], [], 0.5)
+            ready, _, _ = select.select([fd, stdin, ear], [], [], 0.5)
+            if ear in ready:
+                for raw in typist.heard(ear):
+                    os.write(fd, raw)
             if fd in ready:
                 try:
                     data = os.read(fd, 65536)
@@ -170,17 +152,12 @@ def run(root: Path, cwd: Path, env: str, agent: str, fd: int, session: str, life
                 watching = keep_viewer(root, cwd, watching)
             if now - last_check >= RELOAD_EVERY:
                 last_check = now
-                if not settled and driver.poll() is None and now - started >= watch.CRASH_WITHIN:
-                    settled = True
-                    watch.cleared(root, env)
-                if driver.poll() is not None or watched(root) != stamps:
-                    if watch.crashed(driver.poll(), started) and watch.told(root, env, watch.why(root)):
-                        os.write(fd, f"{watch.SAID} {watch.why(root, 3)}\r".encode())
+                if watched(root) != stamps:
                     result = RELOAD
                     break
     finally:
         signal.signal(signal.SIGWINCH, signal.SIG_DFL)
-        stop_driver(driver)
+        typist.close(ear, root, session)
         out.close()
     return result
 

@@ -15,6 +15,7 @@ import migrations  # noqa: E402
 from commands.http import dispatch  # noqa: E402
 from engine.stop import asked  # noqa: E402
 from engine.viewer import heartbeat, remember  # noqa: E402
+from engine.engine import Engines  # noqa: E402
 
 LOOPBACK = re.compile(r"^http://(127\.0\.0\.1|localhost)(:\d+)?$")
 
@@ -133,11 +134,14 @@ def run(root: Path, port: int = 8430) -> None:
     halting = threading.Event()
     threading.Thread(target=watch_code, args=(Path(__file__).resolve().parent, server, changed), daemon=True).start()
     threading.Thread(target=watch_stop, args=(root, server, halting, time.time()), daemon=True).start()
+    engines = threading.Event()
+    threading.Thread(target=Engines(root).run, args=(engines,), daemon=True).start()
     try:
         server.serve_forever()
     except KeyboardInterrupt:
         pass
     finally:
+        engines.set()
         server.server_close()
     if halting.is_set():
         print("journal: stopped", flush=True)

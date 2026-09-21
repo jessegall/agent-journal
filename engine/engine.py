@@ -6,7 +6,7 @@ from pathlib import Path
 
 from controllers.types import CONTROLLERS, Agents
 import features
-from engine import bus
+from engine import bus, typist
 from engine.actors import Actor, Agent, BUSY, COMPACTING, IDLE, STOPPED, System, User, WORKING
 from engine.inputs import FORCE, take
 from surfaces.control import CARRY_ON, delivered
@@ -56,6 +56,7 @@ class Engine:
         self.controlled_at = 0.0
         self.carry_on = False
         self.why = ""
+        self.clean = 0
 
     def start(self) -> None:
         features.load(self.record.root)
@@ -277,19 +278,52 @@ class Engine:
                                  "why": self.why, "printed": self.agent.driver.last_printed(),
                                  "report": {"title": last.title, **last.data} if last else {}})
 
+    def step(self) -> None:
+        try:
+            self.tick()
+            self.clean += 1
+            if self.clean == STEADY_AFTER:
+                steady(self.record)
+        except Exception:
+            self.clean = 0
+            trouble = traceback.format_exc()
+            sys.stderr.write(trouble)
+            sys.stderr.flush()
+            broke(self.record, trouble, self.agent.driver)
+
     def run(self) -> None:
         self.start()
-        clean = 0
         while self.running:
-            try:
-                self.tick()
-                clean += 1
-                if clean == STEADY_AFTER:
-                    steady(self.record)
-            except Exception:
-                clean = 0
-                trouble = traceback.format_exc()
-                sys.stderr.write(trouble)
-                sys.stderr.flush()
-                broke(self.record, trouble, self.agent.driver)
+            self.step()
             time.sleep(TICK)
+
+
+class Engines:
+    def __init__(self, root: Path):
+        self.root = Path(root)
+        self.held: dict[str, Engine] = {}
+
+    def seated(self, session: str) -> Engine | None:
+        from engine.drivers import DRIVERS
+        sessions = Sessions(self.root)
+        provider, env = sessions.read(session).get("provider", ""), sessions.environment(session)
+        if provider not in DRIVERS or not env:
+            return None
+        record = Record(self.root, env)
+        engine = Engine(record, DRIVERS[provider](record, session))
+        engine.start()
+        return engine
+
+    def tick(self) -> None:
+        live = typist.live(self.root)
+        self.held = {session: engine for session, engine in self.held.items() if session in live}
+        for session in live:
+            engine = self.held.get(session) or self.seated(session)
+            if engine:
+                self.held[session] = engine
+                engine.step()
+
+    def run(self, stopping) -> None:
+        while not stopping.is_set():
+            self.tick()
+            stopping.wait(TICK)
