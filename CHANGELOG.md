@@ -4,6 +4,20 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.16.0 — The engine speaks, the funnel holds, and the checks run
+
+Everything the journal says to an agent now goes through one place. The engine runs inside the server and speaks to each session through one send, at most one message every five seconds, with everything waiting folded into counts: `3 new messages 314, 315, 316`. A private nudge is spoken to the session it is meant for, and the hook only reports and refuses. Every line a feature can say is declared by that feature under its own name, with its placeholders; a feature says only its own lines, a line given the wrong values is refused, and Settings lists them all. An agent's transcript panel shows the journal's own lines at the moment they were said.
+
+A command that fails leaves nothing half done: every file it wrote is put back and its events are never told. A hold meant for one session holds only that session. After a start or a compaction, writes wait until the journal skill is loaded again in that window.
+
+Checks are new: a check row names a command and how often it runs, it runs as its own process by hand, by its Run button or on its timer, and a failure is filed and told to the agent until the next pass clears it. A permission prompt in the agent's terminal shows in the chat with Allow and Deny, and Settings can restart the agent in the same conversation without permission prompts. A tag can carry a name as well as a number: `[!todo="the title"]` files a to-do with the turn as its brief, and several tags in one turn run in order. An environment can be swept into the attic, keeping what is still true. A switch the user turns is told to the agent. Stopping names the work still open and any message read and never answered.
+
+It is faster. Each resource type declares its loading — lazy, eager or memory — and memory rows are held and checked against their files; the index, idempotency keys and summaries live in memory. Transcripts are parsed once and then only their new bytes, read ahead at boot. A hook answers in about 5ms, the dashboard in about 11ms, a transcript in 1–2ms. One server runs the engines, and a slow endpoint is reported again only every tenth time or after five minutes.
+
+The code is reorganised: one module per controller with the CRUD funnel in controllers/base.py and storage, files and links as mixins; commands split into dispatch, routes, parser and queries; the engine's tick, seat and engines in modules of their own; the drivers and their flags in their providers; support/ and hook.py are gone. The viewer talks through one API client and one transport, every poll is registered by its page, and a newer build counts down a minute in the banner and reloads itself. The suite is the generated runs plus one test per feature, 76 tests in about six seconds.
+
+What to do about it: `journal upgrade`, then restart the agent's terminal once, because the terminal and the channel do not reload themselves.
+
 ## 2.15.0 — The bar says what the agent is doing, and says it exactly
 
 The status bar is a queue of status messages. Every command the agent runs lands on its ring the moment it starts, and a run of consecutive commands of one kind becomes one message: `editing [a.vue → b.py] +13 −4`, `journalling reading message 7`, `git committing changes`, `testing test_queue.py 3 failed`. The verb is the root and the only unmuted word; every space is a part of its own, a quoted string and a file name stay whole, and only the part that actually differs rolls, one value a second, once. A message stays long enough to walk every name it has, holds a second when the next one arrives, lingers ten seconds with nothing behind it, and gives way at once when ten are waiting. Nothing half-known is ever shown: a command that has not been told which files it touched is not on the bar at all, and a command that has not run cannot be, because it is not on the ring.
