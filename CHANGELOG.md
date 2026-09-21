@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.33.1 — A quoted comment is no longer shown as filed from the message
+
+A message that quotes one of the agent's replies links to that reply, and the chat counted every linked row as something filed from the message, so a reply showed as "Filed comment N from your message." Comments are left out of that note now, like messages already were.
+
+What to do about it: `journal upgrade`.
+
 ## 2.33.0 — A reply is read as it is shown, not only from the transcript
 
 Claude Code sometimes leaves the agent's text out of its transcript (report 24), and the journal read replies only from the transcript and from the Stop hook's final text, so some tagged replies never reached the chat. The journal now also wires Claude Code's MessageDisplay hook, which fires for every piece of text as it is shown. The server answers that hook at once and, after answering, joins the pieces of each message; once the message is whole it is handled like any other the agent said. A reply that arrives both ways is posted once.

@@ -6,7 +6,9 @@ const acknowledged = (m, rows) =>
     rows.comment.some((c) => !c.deleted && c.refs.includes(m.ref) && c.seen[0] === "agent") ||
     rows.reaction.some((r) => !r.deleted && r.refs.includes(m.ref) && r.seen[0] === "agent");
 
-const filed = (m) => m.refs.filter((r) => !r.startsWith("message:") && meta(r.split(":")[0]));
+const QUOTED = ["message", "comment"];
+
+const filed = (m) => m.refs.filter((r) => !QUOTED.includes(r.split(":")[0]) && meta(r.split(":")[0]));
 
 const hasParent = (c) =>
     c.refs.some((ref) => {
