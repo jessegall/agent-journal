@@ -1,5 +1,4 @@
 import fcntl
-import inspect
 import hashlib
 import re
 import time
@@ -14,6 +13,8 @@ from features import trigger
 from engine.hooks import POLICIES, gate_file
 from features.format import FORMATTERS
 from features.journal import Journal
+from features.settings import Setting, Settings
+from features.text import paragraphs
 from resources.base import KEYWORDS, Refused, SYSTEM, WHOM
 from engine.stored import read_json, write_json
 from engine.wording import plural
@@ -24,10 +25,6 @@ REGISTRY: dict[str, type] = {}
 def held(record, session: str) -> str:
     holds = read_json(gate_file(record.root, record.env, session), {})
     return "; ".join(why for why in holds.values() if why)
-
-
-def paragraphs(text: str) -> str:
-    return "\n\n".join(" ".join(line.strip() for line in part.splitlines()) for part in inspect.cleandoc(text).split("\n\n") if part.strip())
 
 
 class Behaviour:
@@ -116,6 +113,11 @@ class FeatureDetails:
     help: ClassVar[str] = ""
     lines: ClassVar[list[Line]] = []
     behaviours: ClassVar[list[Behaviour]] = []
+    settings: ClassVar[list[Setting]] = []
+
+    @classmethod
+    def values(cls, record) -> Settings:
+        return Settings(cls.settings, record.setting(cls.name, {}))
 
 
 class Feature(ABC):
@@ -127,6 +129,7 @@ class Feature(ABC):
     trigger: ClassVar[dict] = {}
     behaviours: ClassVar[dict] = {}
     lines: ClassVar[dict[str, Line]] = {}
+    settings: ClassVar[list[Setting]] = []
     aliases: ClassVar[tuple] = ()      # names this feature used to have; a pair says the old feature is now one of its behaviours
     declares: ClassVar[tuple] = ()
     runs_for_subagents: ClassVar[bool] = False
@@ -137,7 +140,7 @@ class Feature(ABC):
         super().__init_subclass__(**kw)
         if cls.details:
             d = cls.details
-            cls.name, cls.lines, cls.behaviours = d.name, {line.name: line for line in d.lines}, {b.name: b for b in d.behaviours}
+            cls.name, cls.lines, cls.behaviours, cls.settings = d.name, {line.name: line for line in d.lines}, {b.name: b for b in d.behaviours}, d.settings
             cls.title_, cls.abstract_, cls.help_ = paragraphs(d.title), paragraphs(d.abstract), paragraphs(d.help)
         if cls.name:
             REGISTRY[cls.name] = cls
@@ -245,7 +248,10 @@ class Feature(ABC):
         return self.runs_for_subagents or not agent.subagent
 
     def settings_view(self, record) -> dict | None:
-        return None
+        return dict(self.values(record)) if self.settings else None
+
+    def values(self, record) -> Settings:
+        return Settings(self.settings, record.setting(self.name, {}))
 
     def setting(self, record, key: str, default=None):
         return record.setting(self.name, {}).get(key, default)
@@ -294,7 +300,8 @@ class Feature(ABC):
         return {"name": self.name, "title": self.title_, "abstract": self.abstract_, "help": self.help_, "default": self.default, "fixed": self.fixed,
                 "listens": sorted({*(p for p, _ in self.listeners()), *self.journal.events.names}), "trigger": dict(self.trigger), "declares": list(self.declares),
                 "behaviours": {key: b.describe() for key, b in self.behaviours.items()},
-                "lines": {key: line.describe() for key, line in self.lines.items()}}
+                "lines": {key: line.describe() for key, line in self.lines.items()},
+                "settings": [s.describe() for s in self.settings]}
 
 
 class Recital(Feature):

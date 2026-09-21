@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.42.0 — A feature declares its settings, and the viewer draws them
+
+Plan 9, to-do 598. details.py lists a feature's settings: Setting(name=, default=, title=, abstract=, unit=). A part reads them as context.settings.<name>, with the declared default when nothing is saved, and the viewer's feature panel draws every declared setting itself: a number with its unit, a text, or a switch. Designs (keep_after_minutes) and Questions (hold) declare theirs; the Questions block written by hand is gone. A feature's help keeps its paragraphs in the panel.
+
+What to do about it: `journal upgrade`.
+
 ## 2.41.0 — The journal is the way into every resource
 
 Plan 9, to-do 592. A part no longer makes a controller itself: context.journal.messages.create(...) or context.journal.todos.done(12, how="...") reach a resource through the journal, bound to the record and, unless .acting(actor) says otherwise, the system actor. journal.<type> is named after the type's controller (messages, todos, works, asks), and notify, notice and log are bound the same way. Tags uses it.
