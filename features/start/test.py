@@ -97,3 +97,17 @@ def test_the_channel_passes_on_the_first_line_of_a_queue_it_saw_created(tmp_path
     at = start(f)
     f.write_text(json.dumps({"content": "your last message has no tag"}) + "\n")
     assert contents(fresh_lines(f, at)[0]) == ["your last message has no tag"], "the first line written after the channel started is sent"
+
+
+def test_a_line_goes_out_at_once_and_only_one_inside_the_window_waits():
+    from providers import DRIVERS
+    record = fresh()
+    driver = DRIVERS["claude"](record, "claude-99")
+    sent = []
+    driver._deliver = lambda line: sent.append(line) or True
+    driver.send("first")
+    driver.send("second")
+    assert (sent, driver.held) == (["first"], ["second"]), "nothing queued: sent at once; inside the five seconds: queued"
+    driver.sent_at -= 5
+    driver.pump()
+    assert sent == ["first", "second"], "the queue goes out when the window ends"

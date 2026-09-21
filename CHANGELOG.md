@@ -4,6 +4,14 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.22.0 — A journal line reaches the agent at once
+
+A line for the agent went out only after five quiet seconds unless it was a new row, and then waited for the next engine tick. Now it is sent the moment it is handed over, when nothing went out in the last five seconds; only a line that arrives inside those five seconds is queued, and the queue goes out as one line when the window ends. The quiet wait, its per-type exceptions and the `batch` setting are gone.
+
+The missing-tag reminder now tells the agent to just add the tag and never mention tags to the user, who knows nothing of them.
+
+What to do about it: `journal upgrade`.
+
 ## 2.21.3 — The channel passes on its first line, and the greeting is typed at once
 
 The channel server started reading its queue from wherever the file ended when it first saw it, and a queue that did not exist yet was taken to begin at its first line's end: the first line ever sent through a new session's channel — in a fresh project, the missing-tag reminder — was skipped. A queue that appears after the channel starts is read from its start.

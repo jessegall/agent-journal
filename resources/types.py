@@ -13,7 +13,6 @@ class Message(Shape, Resource):
     idempotency = Field(TEXT)
     delivered = Field()
     told = True
-    urgent_actions = ("created",)
     clears = OPENED
     names = {"complete": "processed"}
     title_ = "Message"
@@ -142,7 +141,6 @@ class Question(Options, Resource):
     shown = {"created": "Question asked", "completed": "Question answered"}
     says = {"create": "asking", "complete": "answering"}
     attention = True
-    urgent_actions = ("completed",)
     clears = COMPLETED
     nav = False
     icon = "help"
