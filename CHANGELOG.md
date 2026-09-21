@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.73.0 — Drag cards on the board
+
+Plan 10, phase 4, to-dos 676 to 678. Cards on the Board page are dragged from lane to lane. While a card is dragged, the lanes it may go to light up as it passes and the others dim, using the same rules the server applies. Dropping into Held asks why. Dropping into Done asks how it landed, which is optional. Dropping a done card back into To do asks why it is reopened, and lifts any old block, since a card dropped in To do is free. A card shows it is moving until the server answers. A refused move says why in the board's bar for five seconds. Every card also has a menu with Move to (the same moves without dragging), Assign to (the agents on the board) and Open.
+
+What to do about it: `journal upgrade`.
+
 ## 2.72.0 — The Board page
 
 Plan 10, phase 3, to-dos 672 to 675. The Kanban board has a page of its own, Board, right under Home in the sidebar, showing the number of open to-dos. It shows the five lanes side by side with their cards. A card shows its number, priority, title, why it is held, and its plan and phase. Clicking a card opens the to-do over the board, and the plan chip opens the plan. When a plan is active, its hold shows as one line above the lanes. The page refreshes every five seconds. While it loads, the lanes show blank cards. With nothing on the list, it offers New to-do. With the feature switched off, it says so and links to Settings. Dragging cards comes in the next phase.

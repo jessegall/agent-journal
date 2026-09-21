@@ -83,8 +83,9 @@ def test_a_card_moves_through_the_journals_own_actions_and_refuses_in_words_that
     shift(record, n, "done", how="built it")
     assert todos.load(n).outcome == "built it", "to done closes the row"
     assert "--why" in refused(lambda: shift(record, n, "todo")), "reopening asks why"
+    todos.block(n, "an old block")
     shift(record, n, "todo", why="it came back")
-    assert not todos.load(n).completed, "back to to do reopens it"
+    assert (todos.load(n).completed, lane(record, n)) == (0.0, "todo"), "back to to do reopens it and lifts an old block"
     assert "journal question ask" in refused(lambda: shift(record, n, "asked")), "only a question puts a card in needs you"
     assert refused(lambda: shift(record, n, "sideways")).startswith("a lane is one of"), "an unknown lane is refused"
     shift(record, n, "doing")
