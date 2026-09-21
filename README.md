@@ -8,7 +8,7 @@ to-dos, messages, facts, rules, reminders, plans, reports, docs, and the history
 them. Every new session receives the part it needs, while the full record stays readable in
 plain files and in the browser.
 
-The current package is 2.16.14. Claude and Codex use the same record, engine, viewer, and command
+The current package is 2.16.15. Claude and Codex use the same record, engine, viewer, and command
 line.
 
 ## Install
@@ -164,4 +164,4 @@ Every record command is a noun and a word:
 and `journal help <word>` prints focused help. The generated `journal` skill carries the same
 reference for each agent.
 
-Upgrade with `journal upgrade`. Release history is in [CHANGELOG.md](CHANGELOG.md).
+The journal updates itself: every half hour it checks for a newer published version and installs it (the Updates feature; switch it off in Settings to have the agent told instead). Upgrade by hand with `journal upgrade`. Release history is in [CHANGELOG.md](CHANGELOG.md).

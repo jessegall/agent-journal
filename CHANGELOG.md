@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.16.15 — The journal updates itself
+
+A new feature, Updates: every half hour of an agent's time it compares the version published on GitHub with the one installed, and when a newer one is out it installs it in the background — once per version — and the server and supervisor reload themselves onto it. Switch its install behaviour off in Settings to have the agent told to run `journal upgrade` instead; a failed install is told the same way. A journal being developed, as this repository is, never installs itself.
+
+What to do about it: `journal upgrade` this once; from here on it keeps itself current.
+
 ## 2.16.14 — The final message comes from the Stop hook, and prose stays prose
 
 Claude Code's Stop hook carries the final message's full text, so the tags in it run at the Stop from that text, without waiting for the transcript file; the engine's once-a-second watch of the transcript still runs every tag written mid-turn, and a message is keyed by its text so the two never post it twice. In the chat, "journal" followed by ordinary words is no longer set as code — only a real command is: a type and its word, or a top-level command such as `journal status`.

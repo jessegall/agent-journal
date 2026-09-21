@@ -4,7 +4,6 @@ import mimetypes
 import os
 import re
 import tempfile
-import threading
 import time
 from email import policy
 from email.parser import BytesParser
@@ -13,14 +12,13 @@ from pathlib import Path
 from queue import Empty, Queue
 from typing import Iterator
 from urllib.parse import quote
-from urllib.request import urlopen
 
 import features
 from surfaces.appoint import appoint, online
 from surfaces.package import archive as extension_archive, info as extension_info
 from surfaces.summary import summarize
 from surfaces.color import identity, set_color
-from surfaces.updates import newer
+from surfaces.updates import newer, upstream
 from surfaces.control import force as force_session, options as control_options, permit, relaunch, request as control_session
 from features.skills.catalogue import SKILL, always, catalogue, load_now, skills
 from controllers.base import LAST
@@ -204,37 +202,6 @@ def post_settings(req: Request) -> Reply:
     if turned:
         Nudges(record, actor=USER)._to_primary(f"the user turned {', '.join(turned)}", "journal settings shows every switch")
     return Reply(200, settings(record))
-
-
-UPSTREAM = "https://raw.githubusercontent.com/jessegall/agent-journal/main/VERSION"
-
-
-UPSTREAM_FOR = 900
-FETCHING = threading.Lock()
-
-
-def upstream(root: Path) -> str:
-    cache = root / "runtime" / "upstream.cache"
-    try:
-        stale = time.time() - cache.stat().st_mtime >= UPSTREAM_FOR
-        held = cache.read_text().strip()
-    except OSError:
-        stale, held = True, ""
-    if stale and not FETCHING.locked():
-        threading.Thread(target=fetched, args=(cache,), daemon=True).start()
-    return held
-
-
-def fetched(cache: Path) -> None:
-    with FETCHING:
-        try:
-            with urlopen(UPSTREAM, timeout=3) as r:
-                latest = r.read().decode().strip()
-        except OSError:
-            cache.touch(exist_ok=True)
-            return
-        cache.parent.mkdir(parents=True, exist_ok=True)
-        write_text(cache, latest)
 
 
 @route("GET", "/api/upstream")
