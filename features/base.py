@@ -194,6 +194,9 @@ class Feature(ABC):
     def mine(self, agent) -> bool:
         return self.runs_for_subagents or not agent.subagent
 
+    def settings_view(self, record) -> dict | None:
+        return None
+
     def setting(self, record, key: str, default=None):
         return record.setting(self.name, {}).get(key, default)
 

@@ -30,6 +30,9 @@ class Questions(Feature):
                                       "Choices offered in a message hold the writes until they are asked as a question",
                                       trigger={"on": trigger.IDLE})}
 
+    def settings_view(self, record) -> dict:
+        return {"hold": self.held_for(record)}
+
     def held_for(self, record) -> float:
         return float(record.questions.get("hold", self.hold_for))
 

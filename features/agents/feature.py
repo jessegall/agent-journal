@@ -30,6 +30,9 @@ class AgentsFeature(Feature):
         "subagents": Behaviour("Mind a subagent's rows", "Its writes keep it alive; a report is handed to the dispatcher; silence gives its rows back"),
     }
 
+    def settings_view(self, record) -> dict:
+        return {"recent": record.agents.get("recent", 60), "lapse": record.agents.get("lapse", 20)}
+
     def rows(self, record):
         return Agents(record, actor=SYSTEM)
 

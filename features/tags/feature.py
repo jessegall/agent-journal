@@ -47,6 +47,9 @@ class Tags(Feature):
     RUNS = "runs"
     PLACES = "places"
 
+    def settings_view(self, record) -> dict:
+        return {"names": self.names(record), "places": self.places(record)}
+
     def names(self, record) -> list[str]:
         return [str(name).strip().lstrip("[!").rstrip("]") for name in self.setting(record, self.NAMES, TAGS) if str(name).strip()] or list(TAGS)
 
