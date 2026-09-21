@@ -4,7 +4,7 @@ import {api} from "../api/client.js";
 import Icon from "../kit/Icon.vue";
 import {negative, project, tint} from "../identity.js";
 import {route} from "../route.js";
-import {counted, navTypes, store} from "../state/store.js";
+import {boardOn, counted, navTypes, store} from "../state/store.js";
 import {polled} from "../sync/polled.js";
 import {rows} from "../sync/rows.js";
 import {usePoll} from "../poll.js";
@@ -54,6 +54,13 @@ async function makeEnv() {
                     <Icon name="home" />
                     Home
                 </a>
+                <template v-if="boardOn">
+                    <a :class="['item', {on: route.page === 'board'}]" :href="`#/${route.env}/board`">
+                        <Icon name="board" />
+                        Board
+                        <span class="count">{{ counted("todo") || "" }}</span>
+                    </a>
+                </template>
                 <template v-for="t in navTypes('environment')" :key="t.name">
                     <a :class="['item', {on: route.page === t.name}]" :href="`#/${route.env}/${t.name}`">
                         <Icon :name="t.icon" />
