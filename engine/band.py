@@ -27,6 +27,8 @@ def region(rows: int) -> bytes:
 
 
 def release() -> bytes:
+    if not SHOWN:
+        return b""
     wiped = "".join(f"{ESC}[{n};1H{ESC}[2K" for n in range(1, ROWS + 1))
     return f"{ESC}[r{ESC}7{wiped}{ESC}8".encode()
 

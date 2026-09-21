@@ -13,6 +13,11 @@ FOLDS: dict[tuple, tuple] = {}
 TRANSCRIPTS: dict[str, tuple] = {}
 SEAM = 256
 RECENT_BYTES = 1_000_000
+LEGACY = ".journal/hook.py"
+
+
+def journal_hook(text: str) -> bool:
+    return LEGACY in text or ("/hook.sh " in text and "/.journal" in text)
 
 
 def parsed(line: str):
@@ -242,7 +247,7 @@ class Provider(ABC):
         name, root = command.split("/hook.", 1)[1].split()[1:3]
         ours = f" {name} {root}"
         for event, blocks in self.wiring(command)["hooks"].items():
-            mine = [b for b in hooks.get(event, []) if command in json.dumps(b) or not ("/hook." in json.dumps(b) and ours in json.dumps(b))]
+            mine = [b for b in hooks.get(event, []) if command in json.dumps(b) or not (("/hook." in json.dumps(b) and ours in json.dumps(b)) or LEGACY in json.dumps(b))]
             if not any(command in json.dumps(b) for b in mine):
                 mine.extend(blocks)
             hooks[event] = mine

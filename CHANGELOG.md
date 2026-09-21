@@ -4,6 +4,16 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.28.0 — Every worktree reaches the journal, and version 1's leftovers are cleared
+
+A Claude session in a worktree reads hooks from the worktree's own checked-out `.claude/settings.json`, never the main checkout's — so the journal's hooks reached a worktree only if that file was committed, and a committed file carried one person's absolute paths, wrong on every colleague's machine. Claude's hooks and status line are now wired into `.claude/settings.local.json`: per person, never committed, and read by every worktree of the project, since Claude Code resolves that one file to the main checkout. The install takes the journal's hooks out of the shared `settings.json`, leaving anything else in it alone.
+
+An install over version 1 now clears what version 1 left: its walk-up and direct `.journal/hook.py` hook commands, which with `hook.py` working again would have run every hook twice, and its `post-commit` git hook, which called a command that no longer exists. Leaving the terminal also no longer clears the top two rows now that the header is off.
+
+Proven in real sessions in a test project: `claude --worktree`, `journal claude --worktree`, a sibling `git worktree add` outside the project, a subagent with `isolation: "worktree"`, and a project upgraded from version 1 — each links its `.journal`, writes into the one record, and leaves git clean.
+
+What to do about it: `journal upgrade` in every project, then commit the shared `.claude/settings.json` it cleaned.
+
 ## 2.27.1 — .journal/journal.py runs with Python again
 
 2.26.0 made the journal's entry files executable so `.journal/hook.py` can be run directly, but `.journal/journal.py` had no `#!` line, and anything that ran it directly got the shell reading Python ("import: command not found"). Every entry now starts with `#!/usr/bin/env python3`.
