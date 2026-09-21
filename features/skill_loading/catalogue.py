@@ -34,6 +34,10 @@ def subjects() -> set[str]:
     return {"journal", *(skill_name(path.stem) for path in folder.glob("*.md") if path.name != "journal.md")}
 
 
+def defaults() -> set[str]:
+    return subjects() | {skill_name("command_tags")}
+
+
 def managed() -> set[str]:
     return subjects() | {skill_name(name) for name in features.names()}
 
@@ -52,7 +56,7 @@ def loaded_at(agent) -> dict[str, float]:
 def chosen(record: Record) -> list[str]:
     named = record.setting(Record.skills)
     current = managed() & available(record.root.parent)
-    return sorted(current & (subjects() if named is None else set(named)))
+    return sorted(current & (defaults() if named is None else set(named)))
 
 
 def skills(record: Record, n: int = 0) -> list[dict]:
