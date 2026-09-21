@@ -2,7 +2,7 @@ from features.base import Feature
 from features.journal import Journal
 from features.tags.details import TagsDetails
 from features.tags.formatters import StripTags
-from features.tags.handlers import CopyToChat, RunTagCommands
+from features.tags.handlers import RunTagCommands
 from features.tags.interceptors import NotifyTagNotUsed
 from features.tags.reading import runs
 
@@ -12,7 +12,6 @@ class Tags(Feature):
 
     def register(self, journal: Journal) -> None:
         journal.events.handler(RunTagCommands())
-        journal.events.handler(CopyToChat())
         journal.client.formatter(StripTags())
         journal.agent.interceptor(NotifyTagNotUsed())
 

@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import ClassVar
 
 
@@ -17,12 +17,32 @@ class AgentEvent(TypedEvent):
 
 
 @dataclass(frozen=True)
-class AgentMessageCreated(AgentEvent):
-    on: ClassVar[str] = "agent.said"
+class AgentMessageSending(AgentEvent):
+    on: ClassVar[str] = "agent.message.sending"
+    data: dict = field(default_factory=dict)
+
+    @classmethod
+    def read(cls, event) -> "AgentMessageSending":
+        return cls(agent=event.n, data=event.data)
+
+    @property
+    def text(self) -> str:
+        return str(self.data.get("text") or "")
+
+    def change(self, text: str) -> None:
+        self.data["text"] = text
+
+    def stop(self) -> None:
+        self.data["stopped"] = True
+
+
+@dataclass(frozen=True)
+class AgentMessageSent(AgentEvent):
+    on: ClassVar[str] = "agent.message.sent"
     text: str = ""
 
     @classmethod
-    def read(cls, event) -> "AgentMessageCreated":
+    def read(cls, event) -> "AgentMessageSent":
         return cls(agent=event.n, text=str(event.data.get("text") or ""))
 
 

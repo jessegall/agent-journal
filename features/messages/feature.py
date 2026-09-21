@@ -1,8 +1,10 @@
 import re
 
-from controllers.types import Agents, CONTROLLERS, Messages
+from controllers.types import CONTROLLERS, Messages
 from features import trigger
 from features.base import Behaviour, Feature, event, formats, Line
+from features.journal import Journal
+from features.messages.handlers import SaveAgentMessage
 from resources.base import AGENT, SECTION, SYSTEM, USER
 from resources.types import TYPES
 from features.messages.answering import in_hand, read_and_open, theirs, unanswered
@@ -45,6 +47,10 @@ class MessagesFeature(Feature):
         count = int(trigger.last(record, agent.title, self.keyed(key)).get("count") or 0) + 1
         trigger.write(record, agent, self.keyed(key), count=count)
         return count
+
+
+    def register(self, journal: Journal) -> None:
+        journal.events.handler(SaveAgentMessage())
 
     @event("message.created")
     def arrived(self, event, record) -> None:
