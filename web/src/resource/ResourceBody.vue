@@ -105,7 +105,10 @@ async function save() {
         <template v-else-if="resource.abstract">
             <Markdown class="abstract" :text="resource.abstract" />
         </template>
-        <template v-if="!editing">
+        <template v-if="resource.deleted">
+            <p class="waits">This was deleted.</p>
+        </template>
+        <template v-else-if="!editing">
             <div class="controls">
                 <ResourceActions :resource="resource" @edit="edit" />
                 <template v-if="ranked">
