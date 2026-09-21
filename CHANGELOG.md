@@ -4,6 +4,19 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.70.0 — The Kanban board, read from the record
+
+Plan 10, phase 1, to-dos 665 to 668. A new feature, kanban, shows the to-dos of an environment as cards in five lanes. The lanes are worked out from each to-do's state and never stored:
+- **To do**
+- **Held:** blocked, waiting on another row, or held by its plan's phase.
+- **Doing:** work is open on it.
+- **Needs you:** a question waits on it.
+- **Done:** closed in the last `kanban.done_days` days, 7 by default. Struck rows are left off.
+
+A card carries its plan and phase, the agent it is assigned to, the work and agent on it, an open question, and why it is held. `journal todo board [--plan n] [--agent id]` prints the board lane by lane, and a lent subagent may read it too. While a plan is active, its hold on the rows outside it shows as one line above the lanes, so those cards stay in To do rather than filling Held. Moving cards and the viewer's Board page come in the next phases.
+
+What to do about it: `journal upgrade`.
+
 ## 2.69.0 — The plugins page explains how to make a plugin
 
 Message 1591, to-do 625, question 64. The plugins page has two new buttons.
