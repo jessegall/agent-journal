@@ -4,6 +4,8 @@ from resources.base import LAZY, MEMORY, PART_OF, Refused, Resource
 from engine.stored import read_json, write_json
 from controllers.marks import internal
 
+DAMAGED = "damaged"
+
 INDEX = "index.json"
 
 
@@ -39,17 +41,18 @@ class Stored:
         known = {int(n): row for n, row in (read_json(folder / INDEX) or {}).items()}
         rows = {}
         for n, stamp in stamps.items():
-            if known.get(n, {}).get("stamp") == stamp and all(k in known[n] for k in ("files", PART_OF, *self.resource.indexed)):
+            if known.get(n, {}).get("stamp") == stamp and (known[n].get(DAMAGED) or all(k in known[n] for k in ("files", PART_OF, *self.resource.indexed))):
                 rows[n] = known[n]
                 continue
             try:
                 r = self.load(n)
             except (Refused, OSError):
+                rows[n] = {"n": n, DAMAGED: True, "stamp": stamp}
                 continue
             rows[n] = {"n": n, "title": r.title, "deleted": r.deleted, "completed": r.completed, "seen": r.seen, "refs": r.refs, "updated": r.updated, "files": len(r.files), PART_OF: r.data.get(PART_OF, ""), **{k: r.data.get(k) for k in self.resource.indexed}, "stamp": stamp}
         if rows != known:
             write_json(folder / INDEX, rows)
-        return [rows[n] for n in sorted(rows)]
+        return [rows[n] for n in sorted(rows) if not rows[n].get(DAMAGED)]
 
     def _titled(self, title: str, standing: bool = False) -> Resource | None:
         found = next((row["n"] for row in self.summaries() if row["title"] == title and not row["deleted"] and not (standing and row["completed"])), None)
