@@ -50,7 +50,8 @@ class Close(Shift):
 
 class Reopen(Shift):
     def run(self, todos, todo, why: str, how: str):
-        return todos.reopen(todo.n, why)
+        todos.reopen(todo.n, why)
+        return todos.unblock(todo.n) if todo.blocked else todos.load(todo.n)
 
 
 class Start(Shift):

@@ -1,11 +1,31 @@
 <script setup>
+import {computed, inject, ref} from "vue";
+import {useCardDrag} from "../composables/cardDrag.js";
 import Card from "./Card.vue";
 
-defineProps({lane: Object, loading: Boolean});
+const props = defineProps({lane: Object, loading: Boolean});
+const board = inject("board");
+const drag = useCardDrag();
+const over = ref(false);
+const takes = computed(() => drag.takes(props.lane.key));
+const refuses = computed(() => !!drag.dragged.value && drag.dragged.value.lane !== props.lane.key && !takes.value);
+
+function drop() {
+    over.value = false;
+    const card = drag.dragged.value;
+    const accepted = takes.value;
+    drag.end();
+    if (card && accepted) board.move(card, props.lane.key);
+}
 </script>
 
 <template>
-    <section class="lane">
+    <section
+        :class="['lane', {over: over && takes, refuses}]"
+        @dragover="takes && ($event.preventDefault(), (over = true))"
+        @dragleave="over = false"
+        @drop.prevent="drop"
+    >
         <header class="head">
             <span class="title">{{ lane.title }}</span>
             <span class="count">{{ loading ? "" : lane.cards.length }}</span>
@@ -40,6 +60,15 @@ defineProps({lane: Object, loading: Boolean});
     border: 1px solid var(--border);
     border-radius: 12px;
     background: var(--side);
+}
+
+.lane.over {
+    border-color: var(--accent);
+    background: color-mix(in srgb, var(--accent) 8%, var(--side));
+}
+
+.lane.refuses {
+    opacity: 0.45;
 }
 
 .head {
