@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.24.1 — A to-do whose work is parked is not offered again
+
+Under auto, a to-do whose work was open but parked — handed to a subagent, say — was offered straight back as "todo N next" on every idle, while resuming the work brought back the reminder to end or park it; nothing settled both. A to-do with open work, parked or not, is no longer next. Reported by the transportklok session.
+
+What to do about it: `journal upgrade`.
+
 ## 2.24.0 — Plans are built step by step, and a plan shows all its rows
 
 An agent writing a plan was not told how one is built, and left plans half made. The plans feature now names the next step while a plan is being built: add its phases, then `journal plan stage <n> todos`, then put each phase's rows under it, then `journal plan ready <n>`. The plans skill and the journal skill spell out the same order.

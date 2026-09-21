@@ -93,6 +93,9 @@ def test_ready_rows_are_ordered_by_priority_then_by_number_skipping_what_is_not_
     Questions(record, actor=AGENT).create("which way", about=a.ref).n
     Questions(record, actor=AGENT).link(1, a.ref)
     assert next(record).n == d.n, "a row with an open question waits on the user"
+    work = Todos(record, actor=AGENT).start(d.n)
+    Works(record, actor=AGENT).update(work.n, parked="a subagent holds it")
+    assert next(record).n == e.n, "a row whose work is open, even parked, is not offered again"
     Questions(record, actor=USER).complete(1, "this way")
     assert next(record).n == a.n, "answered: the row is ready"
     for t in ready(record):
