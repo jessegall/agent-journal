@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.27.0 — Running a journal command names the skill that explains it
+
+When the agent runs `journal plan …`, `journal todo …`, `journal plugin …` or any command whose noun has a skill in the library, and that skill was not loaded in this context window, the journal tells it once: "load the journal-plans skill". Agents that skipped the skills at start now load the one they need at the moment they need it.
+
+What to do about it: `journal upgrade`.
+
 ## 2.26.0 — Worktrees share the project's journal, and .journal/hook.py works again
 
 A project wired by version 1 still carries its hook command: it walks up from the project and runs the nearest `.journal/hook.py`, with no arguments. The 2.x installs retired that file, so a session wired that way either heard nothing or — where an older 2.x left a hook behind — failed every hook with `IndexError: list index out of range`. `.journal/hook.py` is an entry again: with nothing passed it runs the current hook for Claude on the journal it sits in.
