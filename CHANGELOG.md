@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.59.1 — Linking a part of the user's message works
+
+To-do 610. `journal message process <n> "<part>" "todo <m>"` on a message the user wrote was refused as a change to their words, although the messages skill asks for exactly that link. A part's link is kept as a section, and the guard counted sections as the user's words. Now the guard protects the title, the abstract and the brief whole, and no existing section can be removed or renamed. Another actor can add a section or change what one links to.
+
+What to do about it: `journal upgrade`.
+
 ## 2.59.0 — Tags take named arguments
 
 Messages 1635 and 1640, to-do 630. The first word of a tag names its target, and named arguments may follow in any order: `[!fact="the port is 8423", keywords=("port", "server")]` files the fact with its keywords, which 2.57.0 made required. Each argument reaches the command as `--set name=value`, and a list in brackets becomes a comma list. The tag is taken off the shown message whole, arguments included.
