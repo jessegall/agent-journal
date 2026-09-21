@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.76.0 — Templates, a resource of their own
+
+Design 2, to-do 633. A new project-wide resource, the template, owned by a templates feature. Its brief holds the instructions the agent reads before working on anything made from a template. Its parts are the skeleton a new resource starts with. `applies_to` lists the types it is for, such as plan or todo, and an empty list means any type. An unknown type is refused and the known ones are listed. `journal template create "<name>" --brief "<instructions>" --set applies_to=plan` writes one, and the usual words (show, section, update, retire) work on it. Applying a template when something is created, the agent reading its instructions first, and its page in the viewer come in the next to-dos.
+
+What to do about it: `journal upgrade`.
+
 ## 2.75.1 — Fewer false holds for choices in prose
 
 To-do 631. The journal holds the agent's writes when its message offers you choices in prose, until it asks them as a question. Two things held it by mistake. The hold now lifts when you answer by message too, not only when a question is asked. And a message that points at questions already asked, such as "Questions 60-63" followed by one line per question, no longer counts as offering choices, including the lines that start with those numbers.
