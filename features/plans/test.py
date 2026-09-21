@@ -1,7 +1,7 @@
 import pytest
 
 from features.plans.controller import Plans  # noqa: E402
-from controllers.types import Agents, Todos
+from controllers.types import Agents, Todos, Works
 from engine.record import Record
 from features.work_tracking.next import next, ready
 from resources.base import AGENT, SYSTEM, USER
@@ -56,6 +56,7 @@ def test_writing_a_plan_lays_out_phases_and_advances_through_them_to_done(env):
     assert next(record) is None, "a plan not yet started holds its rows: next skips them"
     by_user.activate(plan.n)
     assert [t.n for t in ready(record)] == [1, 2], "active: rows of the current phase are ready, in order; the others wait"
+    assert refused(lambda: Works(record, actor=AGENT).create("a quick fix")).startswith("a plan is active"), "free work waits for the plan"
     second = by_agent.create("Another")
     assert refused(lambda: by_user.activate(second.n)) == "one plan is active at a time on an environment", "one plan at a time"
 

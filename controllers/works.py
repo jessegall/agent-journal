@@ -10,15 +10,19 @@ class Works(Controller):
         return next((w for w in self._standing() if not w.parked), None)
 
     def create(self, title: str, abstract: str = "", brief: str = "", **data):
+        self._gate(int(data.get(types.Work.todo) or 0))
+        return super().create(title, abstract, brief, **data)
+
+    def _gate(self, todo: int = 0) -> None:
         busy = self.active()
         if busy:
             self._refuse(f'work {busy.n} is open: end it with journal work end --how "<what landed>", '
                           f'or set it aside with journal work park "<why>", before starting another')
-        if data.get(types.Work.todo):
-            row = Todos(self.record, actor=self.actor).load(int(data[types.Work.todo]))
+        if todo:
+            row = Todos(self.record, actor=self.actor).load(todo)
             if row.completed:
                 self._refuse(f"todo {row.n} is already done")
             held = row.assigned or ""
             if held and held != self.agent:
                 self._refuse(f"todo {row.n} is assigned to {held}; nobody else may take it")
-        return super().create(title, abstract, brief, **data)
+        self._handled("open", todo=todo)
