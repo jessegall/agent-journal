@@ -1,7 +1,7 @@
 import json
 
 
-from controllers.types import Messages
+from controllers.types import Messages, Nudges
 from features import FEATURES
 from features.format import formatted
 from features.tags.feature import visible
@@ -52,3 +52,13 @@ def test_an_untagged_last_message_is_told_once_per_idle_stretch(tmp_path):
         "the tags feature is the one that strips them on the way out"
     assert (formatted("[!reply] done, pushed", record), Messages(record).load(said_to_user.n).brief) == \
         ("done, pushed", "[!reply] done, pushed"), "text sent to the viewer has no tag, while the record keeps it"
+
+
+def test_replying_by_command_is_answered_with_the_tag_that_does_it():
+    from engine.hooks import handle
+    from providers import PROVIDERS
+    record = fresh()
+    hook = {"hook_event_name": "PreToolUse", "session_id": "claude-1", "tool_name": "Bash"}
+    handle(PROVIDERS["claude"](), record.root, record.env, {**hook, "tool_input": {"command": 'journal message reply 12 "on it"'}})
+    assert [n.brief.split(" and ")[0] for n in Nudges(record).all() if "reply tag" in n.title] == ["open your turn with [!reply:12]"], \
+        "the reply command is answered with the tag"
