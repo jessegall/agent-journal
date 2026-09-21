@@ -1,6 +1,7 @@
 import inspect
 from contextlib import nullcontext
 import io
+import os
 import sys
 from pathlib import Path
 
@@ -15,6 +16,7 @@ from resources.shapes import typed
 from engine import runtime
 from commands.parser import Misused, parser
 from engine.stored import undoable
+from engine.worktree import checkout
 
 
 MIGRATED: set[Path] = set()
@@ -29,7 +31,9 @@ def context(args: dict) -> dict:
     sessions = Sessions(root)
     session = args.pop("session")
     fallback = args.pop("fallback")
-    env = args.pop("bound") or (sessions.environment(session) if session else "") or fallback or runtime.env(root)
+    top = checkout(Path(args.pop("cwd") or os.getcwd()))
+    worked = top.name if top and (root / "environments" / top.name).is_dir() else ""
+    env = args.pop("bound") or (sessions.environment(session) if session else "") or worked or fallback or runtime.env(root)
     session = session or sessions.holder(env)
     return {"record": Record(root, env, memo=True), "session": session, "actor": args.pop("as_actor"), "agent": args.pop("agent"),
             "force": "", "sessions": sessions}
@@ -55,7 +59,7 @@ def invoke(fn, args: dict, extra: dict):
         return fn(*positional, **args, **extra)
 
 
-TAKES = {"--root", "--env", "--default-env", "--as", "--session", "--agent", "--force"}
+TAKES = {"--root", "--env", "--default-env", "--as", "--session", "--agent", "--force", "--cwd"}
 
 
 def first_word(argv: list[str]) -> str:

@@ -4,6 +4,16 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.29.0 — A worktree is its own environment
+
+A session started in a git worktree — `claude --worktree <name>`, `journal claude --worktree <name>`, or a session in any linked worktree — now works an environment named after the worktree, created the first time. The journal's terminal wrapper moves with it, and a `journal` command run inside the worktree works that environment too, even when `JOURNAL_ENV` says otherwise; an explicit `--env` still wins. Every worktree's environment sits in the project's one record, beside `main`.
+
+The server no longer fails while announcing an installed update: two places still filed that notice through a helper 2.19.0 had removed. It is back as the one way to file a notification the user has already seen, and the messenger's `log` goes through it.
+
+Proven in real sessions: `claude --worktree envtest4` and `journal claude --worktree envtest5` each landed in their own environment.
+
+What to do about it: `journal upgrade`.
+
 ## 2.28.0 — Every worktree reaches the journal, and version 1's leftovers are cleared
 
 A Claude session in a worktree reads hooks from the worktree's own checked-out `.claude/settings.json`, never the main checkout's — so the journal's hooks reached a worktree only if that file was committed, and a committed file carried one person's absolute paths, wrong on every colleague's machine. Claude's hooks and status line are now wired into `.claude/settings.local.json`: per person, never committed, and read by every worktree of the project, since Claude Code resolves that one file to the main checkout. The install takes the journal's hooks out of the shared `settings.json`, leaving anything else in it alone.

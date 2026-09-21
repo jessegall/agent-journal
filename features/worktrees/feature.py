@@ -1,18 +1,9 @@
 from pathlib import Path
 
+from engine.worktree import checkout
 from features.base import Feature, interceptor
 
 EXCLUDED = "/.journal"
-
-
-def checkout(start: Path) -> Path | None:
-    for here in (start, *start.parents):
-        marker = here / ".git"
-        if marker.is_dir():
-            return None
-        if marker.is_file():
-            return here if "/worktrees/" in marker.read_text() else None
-    return None
 
 
 def excluded(top: Path) -> None:

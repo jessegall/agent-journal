@@ -5,6 +5,7 @@ from controllers.types import Agents, Environments
 from engine.actors import IDLE
 from engine.record import Record
 from engine.sessions import Sessions, agent_pid
+from engine.worktree import checkout
 from resources.base import SYSTEM
 from engine import runtime
 from providers.payload import PERMISSION, STATUS
@@ -50,10 +51,14 @@ def answer(provider, root: Path, raw: dict, pid: int, prefer: str = "") -> dict:
     session = hook.session
     env = sessions.environment(session)
     if not env or not sessions.read(session).get("provider"):
-        env = sessions.choose(session, provider.name, default_env(root, prefer))
+        top = checkout(Path(hook.cwd)) if hook.cwd else None
+        env = top.name if top else sessions.choose(session, provider.name, default_env(root, prefer))
         sessions.bind(session, env, pid=agent_pid(pid), provider=provider.name)
         environments = Environments(Record(root, env), actor=SYSTEM)
         environments._seat(env, session)
+        wrapper = f"{provider.name}-{agent_pid(pid)}"
+        if top and sessions.read(wrapper):
+            sessions.bind(wrapper, env)
     sessions.touch(session)
     return handle(provider, root, env, hook)
 
