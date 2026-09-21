@@ -9,7 +9,7 @@ from pathlib import Path
 
 from engine import bus
 from resources.base import ACTIONS, ACTORS, PROJECT, Event
-from engine.stored import read_json, write_json, write_text
+from engine.stored import held_back, read_json, write_json, write_text
 
 
 SETTINGS: dict[str, tuple] = {}
@@ -86,16 +86,21 @@ class Record:
     def emit(self, type: str, n: int, action: str, actor: str, quiet: bool = False, **data) -> Event:
         if action not in ACTIONS or actor not in ACTORS:
             raise ValueError(f"not an event: {action} by {actor}")
-        log = self.home / "events.jsonl"
-        with self.locked():
-            e = Event(id=self.last_event() + 1, at=time.time(), type=type, n=n, action=action, actor=actor, data=data, pid=os.getpid(), heard=quiet or bus.listening())
-            with log.open("a") as fh:
-                fh.write(json.dumps(asdict(e)) + "\n")
-        if self.memo is not None:
-            self.memo.clear()
-        if not quiet:
-            bus.emit(e, self)
-        return e
+        def release() -> Event:
+            with self.locked():
+                e = Event(id=self.last_event() + 1, at=time.time(), type=type, n=n, action=action, actor=actor, data=data, pid=os.getpid(), heard=quiet or bus.listening())
+                with (self.home / "events.jsonl").open("a") as fh:
+                    fh.write(json.dumps(asdict(e)) + "\n")
+            if self.memo is not None:
+                self.memo.clear()
+            if not quiet:
+                bus.emit(e, self)
+            return e
+        if held_back(release):
+            if self.memo is not None:
+                self.memo.clear()
+            return Event(id=0, at=time.time(), type=type, n=n, action=action, actor=actor, data=data, pid=os.getpid())
+        return release()
 
     def events(self, since: int = 0, last: int = 0) -> list[Event]:
         out = []

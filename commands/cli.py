@@ -14,6 +14,7 @@ from resources.base import Refused
 from resources.shapes import typed
 from engine import runtime
 from commands.parser import parser
+from engine.stored import undoable
 
 
 MIGRATED: set[Path] = set()
@@ -50,7 +51,8 @@ def invoke(fn, args: dict, extra: dict):
     if at is not None:
         positional = [args.pop(p.name) for p in params[:at] if p.kind in (inspect.Parameter.POSITIONAL_ONLY, inspect.Parameter.POSITIONAL_OR_KEYWORD)]
         positional.extend(args.pop(params[at].name))
-    return fn(*positional, **args, **extra)
+    with undoable():
+        return fn(*positional, **args, **extra)
 
 
 TAKES = {"--root", "--env", "--default-env", "--as", "--session", "--agent", "--force"}
