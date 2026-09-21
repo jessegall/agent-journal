@@ -6,7 +6,7 @@ from controllers.types import Todos
 from features.base import Feature, event
 from resources.base import Refused, SYSTEM
 
-TRAILER = re.compile(r"^Journal: todos done (\d+)(?: (.*))?$", re.MULTILINE)
+TRAILER = re.compile(r"^Journal: todos done (\d+(?:, *\d+)*)(?: (.*))?$", re.MULTILINE)
 
 
 class Commits(Feature):
@@ -28,12 +28,16 @@ class Commits(Feature):
 
     def close(self, record, sha: str, subject: str, body: str) -> None:
         todos = Todos(record, actor=SYSTEM)
-        for n, how in TRAILER.findall(body):
-            try:
-                if not todos.load(int(n)).completed:
-                    todos.complete(int(n), how=how or f"{subject} ({sha[:9]})", commit=sha)
-            except Refused:
-                continue
+        for numbers, how in TRAILER.findall(body):
+            for n in re.findall(r"\d+", numbers):
+                self.closed(todos, int(n), how or f"{subject} ({sha[:9]})", sha)
+
+    def closed(self, todos, n: int, how: str, sha: str) -> None:
+        try:
+            if not todos.load(n).completed:
+                todos.complete(n, how=how, commit=sha)
+        except Refused:
+            return
 
     def moved(self, project) -> bool:
         try:
