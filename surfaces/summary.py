@@ -5,7 +5,7 @@ from features.suggestions.controller import Suggestions
 from features.plans.controller import Plans
 from engine.manifest import manifest
 from engine.record import Record
-from features.work.auto import automatic
+from features.work_tracking.auto import automatic
 from resources.base import SYSTEM, USER
 
 SHOWN = ("building", "ready", "active", "waiting", "done")

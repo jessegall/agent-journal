@@ -5,7 +5,7 @@ from engine.events import AgentUpdated, AnyEvent, ResourceEvent
 from features.plans.controller import BUILDING, PHASES, WAITING
 from features.plans.progress import catch_up
 from features.plans.resource import PHASE
-from features.work.auto import automatic
+from features.work_tracking.auto import automatic
 from features.parts import Context, Handler
 from resources.base import AGENT
 

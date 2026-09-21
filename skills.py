@@ -11,6 +11,10 @@ from providers import PROVIDERS
 
 HERE = Path(__file__).resolve().parent
 LIBRARY = ".agents/skills"
+
+
+def skill_name(name: str) -> str:
+    return f"journal-{name.replace('_', '-')}"
 LINKED = {name: cls.skill_home for name, cls in PROVIDERS.items() if cls.link_skills}
 RETIRED = tuple(dict.fromkeys(home for cls in PROVIDERS.values() for home in cls.retired_skill_homes))
 
@@ -61,7 +65,7 @@ def feature_skill(f) -> str:
     when = (f"on {trigger['on']}" if trigger.get("on") else f"at {', '.join(map(str, trigger['at']))} percent of the context" if trigger.get("at")
             else f"every {trigger['every']} {trigger['unit']}" if trigger else "on the events it listens to")
     said = subject(d["name"])
-    return (f"---\nname: journal-{d['name']}\ndescription: {d['abstract']}\n---\n\n# {d['title']}\n\n{d['abstract']}.\n\n{d['help']}\n\n{said + chr(10) + chr(10) if said else ''}"
+    return (f"---\nname: {skill_name(d['name'])}\ndescription: {d['abstract']}\n---\n\n# {d['title']}\n\n{d['abstract']}.\n\n{d['help']}\n\n{said + chr(10) + chr(10) if said else ''}"
             f"{f'It listens to: ' + ', '.join(d['listens']) + f'. It speaks {when}. ' if d['listens'] else ''}"
             f"{'On' if d['default'] else 'Off'} by default. Settings switches it per environment and sets how often it speaks; "
             f"{'each of its behaviours — ' + ', '.join(d['behaviours']) + ' — carries its own switch and cadence beside it' if d['behaviours'] else 'it has one switch'}.\n")
@@ -72,9 +76,9 @@ def render() -> dict[str, str]:
     out = {"journal/SKILL.md": core()}
     for source in sorted((HERE / "skills").glob("*.md")):
         if source.name != "journal.md" and source.stem not in features.FEATURES:
-            out[f"journal-{source.stem}/SKILL.md"] = source.read_text()
+            out[f"{skill_name(source.stem)}/SKILL.md"] = source.read_text()
     for name, f in features.FEATURES.items():
-        out[f"journal-{name}/SKILL.md"] = feature_skill(f)
+        out[f"{skill_name(name)}/SKILL.md"] = feature_skill(f)
     return out
 
 

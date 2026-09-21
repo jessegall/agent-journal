@@ -11,7 +11,7 @@ import webbrowser
 from pathlib import Path
 from urllib.request import urlopen
 
-from features.tabfocus.focus import existing_tab
+from features.open_viewer.focus import existing_tab
 from engine.stored import read_json, write_json, write_text
 from engine.sessions import alive
 from engine.version import version

@@ -20,10 +20,10 @@ from surfaces.summary import summarize
 from surfaces.color import identity, set_color
 from surfaces.updates import newer, upstream
 from surfaces.control import force as force_session, options as control_options, permit, relaunch, request as control_session
-from features.skills.catalogue import SKILL, always, catalogue, load_now, skills
+from features.skill_loading.catalogue import SKILL, always, catalogue, load_now, skills
 from controllers.base import LAST
 from controllers.types import Agents, CONTROLLERS, Environments, Features, Nudges
-from features.browser.controller import Asks
+from features.browser_control.controller import Asks
 from engine import bus, viewer
 from engine.manifest import manifest
 from engine.hooks import answer, displayed
@@ -73,7 +73,7 @@ def post_hook(req: Request) -> Reply:
 
 @route("POST", "/api/{env}/console")
 def post_console(req: Request) -> Reply:
-    faults = features.FEATURES.get("faults")
+    faults = features.FEATURES.get("dev_faults")
     said = str(req.body.get("said") or "")[:200]
     where, stack, kind = str(req.body.get("where") or "")[:200], str(req.body.get("stack") or "")[:2000], str(req.body.get("kind") or "threw")
     heard = (lambda: faults.reports.heard(req.root, req.params["env"], said, where, stack, kind)) if faults and said else None
@@ -236,19 +236,19 @@ def post_run(req: Request) -> Reply:
 
 @route("GET", "/api/{env}/changes")
 def get_changes(req: Request) -> Reply:
-    from features.work.tracker import changes
+    from features.work_tracking.tracker import changes
     return Reply(200, {"changes": list(reversed(changes(req.record())))})
 
 
 @route("GET", "/api/{env}/bar")
 def get_bar(req: Request) -> Reply:
-    from features.statusline.bar import shown
+    from features.status_bar.bar import shown
     return Reply(200, shown(req.root, req.params["env"]))
 
 
 @route("POST", "/api/{env}/bar")
 def post_bar(req: Request) -> Reply:
-    from features.statusline.bar import played
+    from features.status_bar.bar import played
     played(req.root, req.params["env"], float(req.body.get("at") or 0))
     return Reply(200, {})
 

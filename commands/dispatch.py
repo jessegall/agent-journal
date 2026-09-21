@@ -132,7 +132,7 @@ def later(reply: Reply, then) -> Reply:
 
 
 def timed(reply: Reply, root: Path, env: str, method: str, path: str, began: tuple) -> Reply:
-    faults = features.FEATURES.get("faults")
+    faults = features.FEATURES.get("dev_faults")
     if not faults:
         return reply
     took = (time.perf_counter() - began[0]) * 1000

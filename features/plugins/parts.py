@@ -10,7 +10,7 @@ from features.plugins.manifest import fill
 from features.plugins.payload import refusal
 from features.plugins.run import call
 from features.plugins.source import environment, folder
-from features.statusline import commands
+from features.status_bar import commands
 
 EACH = 1.5
 LONGEST_EACH = 3.0

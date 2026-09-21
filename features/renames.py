@@ -66,10 +66,22 @@ def in_cursors(home: Path, was: str, now: str) -> int:
     return 1
 
 
+def in_skills(home: Path, was: str, now: str) -> bool:
+    from skills import skill_name
+    f = home / "settings.json"
+    kept = read_json(f, {})
+    chosen = kept.get("skills")
+    if "." in now or not isinstance(chosen, list) or skill_name(was) not in chosen:
+        return False
+    write_json(f, {**kept, "skills": sorted({skill_name(now) if name == skill_name(was) else name for name in chosen})}, indent=2)
+    return True
+
+
 def rename(root: Path, was: str, now: str) -> dict:
     root = Path(root)
     homes = sorted(p for p in (root / "environments").glob("*") if p.is_dir())
     return {"settings": sum(in_settings(home, was, now) for home in homes),
             "gates": in_gates(root / "runtime", was, now),
             "triggers": in_triggers(root / "runtime", was, now),
-            "cursors": sum(in_cursors(home, was, now) for home in homes)}
+            "cursors": sum(in_cursors(home, was, now) for home in homes),
+            "skills": sum(in_skills(home, was, now) for home in homes)}

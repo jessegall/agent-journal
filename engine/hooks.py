@@ -11,7 +11,7 @@ from resources.base import SYSTEM
 from engine import chat, runtime
 from engine.stored import read_json, write_json
 from providers.payload import PERMISSION, STATUS
-from features.statusline import commands
+from features.status_bar import commands
 
 POLICIES: list = []
 

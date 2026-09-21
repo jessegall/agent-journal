@@ -5,7 +5,7 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parents[2]
 PARTS = {"Handler", "TextFormatter", "ToolInterceptor", "Command", "ActionInterceptor"}
 FEATURE_METHODS = {"register", "settings_view", "default_for"}
-SERVICES = {"faults": {"reports"}, "plugins": {"host"}}
+SERVICES = {"dev_faults": {"reports"}, "plugins": {"host"}}
 PART_LINES = 50
 OLD_MARKERS = {"event", "gate", "formats", "command", "handles", "textformatter", "interceptor"}
 

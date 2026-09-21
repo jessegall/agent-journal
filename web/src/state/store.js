@@ -41,4 +41,4 @@ export const counted = (type, key = "open") => (store.counts && store.counts[typ
 export const agent = computed(
     () => [...store.agents].filter((a) => !a.data.parent).sort((a, b) => (b.data.at || 0) - (a.data.at || 0))[0] || null
 );
-export const autoOn = computed(() => !!(store.settings && store.settings.features["work.auto"]));
+export const autoOn = computed(() => !!(store.settings && store.settings.features["work_tracking.auto"]));

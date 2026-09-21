@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.54.0 — Features are named for what they do
+
+Report 26, agreed in comment 966. Twenty-two features have names you can understand without knowing the code, and the old name of each stays an alias, so every switch, setting, trigger and hold carries over by itself: commits is close_from_commits, context memory_checkpoints, browser browser_control, tabfocus open_viewer, questions ask_questions, agents agent_sessions, buttons message_buttons, cleanup record_audit, deferral put_off_work, faults dev_faults, housekeeping runtime_cleanup, law journal_laws, permissions permission_prompts, retention auto_archive, skills skill_loading, start session_briefing, statusline status_bar, tags command_tags, tracking source_links, updates auto_update, work work_tracking, attachments attachment_descriptions. Their skills follow, spelled with hyphens (journal-work-tracking), and a skill chosen for every start by its old name is found again under the new one.
+
+What to do about it: `journal upgrade`.
+
 ## 2.53.1 — A check keeps every feature in its shape
 
 Plan 9, to-do 608. scripts/checks/feature_shape.py, run by check 6 every hour, fails when a feature has no details.py, holds logic in feature.py (beyond register, settings_view and default_for, and the two named services, faults.reports and plugins.host), imports one of the removed markers, or has a part class over 50 lines.

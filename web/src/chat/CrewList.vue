@@ -11,7 +11,7 @@ const props = defineProps({
 });
 const emit = defineEmits(["open"]);
 const now = useNow();
-const minutes = computed(() => Number(((store.settings && store.settings.agents) || {}).recent ?? 60));
+const minutes = computed(() => Number(((store.settings && store.settings.agent_sessions) || {}).recent ?? 60));
 const recent = computed(() => props.rows.filter((r) => r.running || now.value - (r.ended || r.at || 0) <= minutes.value * 60));
 const listed = computed(() => [...recent.value.filter((r) => r.running), ...recent.value.filter((r) => !r.running).reverse()]);
 const dropped = computed(() => props.rows.length - recent.value.length);

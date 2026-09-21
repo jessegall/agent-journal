@@ -2,7 +2,7 @@ import {api} from "../api/client.js";
 import {planButton} from "../layout/statusline.js";
 
 export function setAuto(on, client = api) {
-    return client.saveSettings({features: {"work.auto": on}});
+    return client.saveSettings({features: {"work_tracking.auto": on}});
 }
 
 export function runPlan(plan, client = api) {
