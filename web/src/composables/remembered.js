@@ -12,7 +12,10 @@ export function remembered(key, fallback) {
 export function remember(key, value) {
     try {
         localStorage.setItem(key, JSON.stringify(value));
-    } catch (e) {}
+        return true;
+    } catch (e) {
+        return false;
+    }
 }
 
 export function kept(key, source) {

@@ -9,7 +9,7 @@ import Btn from "../kit/Btn.vue";
 import Switch from "../kit/Switch.vue";
 import {COUNTED, EVENTS} from "./cadence.js";
 import {route} from "../route.js";
-import {remembered} from "../composables/remembered.js";
+import {remember, remembered} from "../composables/remembered.js";
 import {store} from "../state/store.js";
 import {rows} from "../sync/rows.js";
 
@@ -90,9 +90,7 @@ const open = (key) => opened.value.includes(key);
 
 function fold(key) {
     opened.value = open(key) ? opened.value.filter((k) => k !== key) : [...opened.value, key];
-    try {
-        localStorage.setItem(OPENED, JSON.stringify(opened.value));
-    } catch (e) {}
+    remember(OPENED, opened.value);
 }
 const retention = computed(() => (store.settings && store.settings.keep) || {});
 const days = ref({});

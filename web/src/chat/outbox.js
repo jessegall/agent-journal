@@ -1,3 +1,4 @@
+import {remember, remembered} from "../composables/remembered.js";
 import {api} from "../api/client.js";
 import {tellExtension} from "../platform/extension.js";
 
@@ -83,35 +84,25 @@ async function remoteWrite(queue) {
 }
 
 function localRead() {
-    try {
-        const raw = localStorage.getItem(KEY);
-        return raw ? JSON.parse(raw) : [];
-    } catch (e) {
-        return undefined;
-    }
+    return remembered(KEY, []);
 }
 
 function localWrite(queue) {
-    try {
-        localStorage.setItem(KEY, JSON.stringify(queue));
-        return true;
-    } catch (e) {
-        return false;
-    }
+    return remember(KEY, queue);
 }
 
 async function readQueue() {
     const remote = await remoteRead();
     if (remote !== undefined) {
         storageMode = "extension";
-        const local = localRead() || [];
+        const local = localRead();
         const known = new Set(remote.map((record) => record.id));
         const merged = [...remote, ...local.filter((record) => !known.has(record.id))];
         if (merged.length !== remote.length) await remoteWrite(merged);
         return merged;
     }
     storageMode = "local";
-    return localRead() || [];
+    return localRead();
 }
 
 async function writeQueue(queue) {

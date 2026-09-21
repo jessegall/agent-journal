@@ -1,4 +1,5 @@
 <script setup>
+import {chatOnly} from "./platform/view.js";
 import ExtensionSection from "./ExtensionSection.vue";
 
 import {computed, onMounted, onUnmounted, ref, watch} from "vue";
@@ -50,7 +51,6 @@ const opened = computed(
     () => route.value.open || (route.value.n && page.value === "index" ? {type: route.value.page, n: route.value.n} : {type: "", n: 0})
 );
 
-const chatOnly = new URLSearchParams(location.search).has("chat");
 const quick = ref(false);
 let pointed = false;
 const sawPointer = () => (pointed = true);

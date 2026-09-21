@@ -1,4 +1,5 @@
 <script setup>
+import {framed} from "../platform/view.js";
 import {computed, onMounted, onUnmounted, reactive, ref} from "vue";
 import {api} from "../api/client.js";
 import Icon from "../kit/Icon.vue";
@@ -15,7 +16,6 @@ const props = defineProps({floating: Boolean});
 const JOURNALS_EVERY = 20000;
 const shell = reactive({hosted: false, shut: false, journals: false, envs: false, driving: false, drivingUrl: ""});
 const journals = ref([]);
-const framed = window.parent !== window;
 const project = computed(() => (store.spec && store.spec.project) || "journal");
 const environments = computed(() => rows("environment").map((e) => e.title));
 const windowStyle = computed(() =>
