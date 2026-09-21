@@ -1,19 +1,27 @@
+import re
 import time
 from pathlib import Path
 
+from skills import LIBRARY
+
 from features import trigger
 from features.trigger import USES
-from features.base import Behaviour, Feature, event, Line
-from features.skills.catalogue import SKILL, skills
+from controllers.types import Agents
+from features.base import Behaviour, Feature, event, interceptor, Line
+from features.skills.catalogue import SKILL, loaded_at, skills
 from providers import PROVIDERS
+from resources.base import Refused, SYSTEM
 from resources.types import AgentRow
+
+NOUN = re.compile(r"(?:^|[\s;&|(])journal(?:\s+--\S+)*\s+([a-z]+)\b")
 
 
 class Skills(Feature):
     name = "skills"
     lines = {"unloaded": Line("no journal skill is loaded in this window", "load the journal skill (Skill: journal) before the next write; a compaction emptied it"),
              "reload held": Line("a fresh window has no journal skill: load it first - Skill: journal"),
-             "stale": Line("{{count}} changed since you loaded {{them}}", "load again: {{skills}}")}
+             "stale": Line("{{count}} changed since you loaded {{them}}", "load again: {{skills}}"),
+             "needed": Line("load the {{skill}} skill", "Skill: {{skill}} explains journal {{noun}}, which you just ran")}
     title_ = "Skills"
     abstract_ = "An agent working on with no journal skill is told once per context window to load one"
     help_ = "A session start or compaction opens a fresh window; triggers.skills sets how long the feature waits before its one reminder."
@@ -66,3 +74,20 @@ class Skills(Feature):
         if changed:
             self.journal.whisper(record, agent, "stale", count=self.plural(len(changed), "skill"), them="it" if len(changed) == 1 else "them",
                      skills=", ".join(f"Skill: {name}" for name in changed))
+
+    @interceptor
+    def needed(self, provider, record, hook, session) -> str:
+        found = NOUN.search(hook.tool.command) if hook.tool.command else None
+        library = record.root.parent / LIBRARY
+        skill = next((f"journal-{name}" for name in (found.group(1), f"{found.group(1)}s") if (library / f"journal-{name}" / "SKILL.md").is_file()), "") if found else ""
+        if not skill:
+            return ""
+        try:
+            agent = Agents(record, actor=SYSTEM).by_session(session)
+        except Refused:
+            return ""
+        since = float(trigger.last(record, agent.title, self.name).get("since") or 0)
+        at = float(loaded_at(agent).get(skill) or 0)
+        if not (at and at >= since) and not self.already(record, agent.title, "needed", f"{since}:{skill}"):
+            self.journal.whisper(record, agent, "needed", skill=skill, noun=found.group(1))
+        return ""
