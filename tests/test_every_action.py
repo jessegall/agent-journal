@@ -109,3 +109,20 @@ def test_every_listing_is_one_page_of_open_rows_inside_the_budget():
     assert wrong == {}, "a listing returns at most one page, and no completed row unless asked"
     assert slow == {}, f"every listing answers inside {BUDGET}ms"
     assert whole <= BUDGET * 2, f"the whole dashboard answers inside {BUDGET * 2}ms, took {whole:.0f}"
+
+
+def test_a_row_is_changed_only_by_those_its_resource_names_for_its_author():
+    from resources.base import AGENT, USER
+    guarded = [type_ for type_, resource in TYPES.items() if resource.editors]
+    changed = []
+    for type_ in guarded:
+        record = fresh(type_[:2])
+        row = CONTROLLERS[type_](record, actor=USER).create(f"the user's {type_}", brief="their words")
+        agent = CONTROLLERS[type_](record, actor=AGENT)
+        for change in (lambda: agent.update(row.n, brief="rewritten"), lambda: agent.delete(row.n, why="gone")):
+            try:
+                change()
+                changed.append(type_)
+            except Refused:
+                continue
+    assert (guarded, changed) != ([], []) and changed == [], "the agent answers what the user wrote; it never rewrites or deletes it"

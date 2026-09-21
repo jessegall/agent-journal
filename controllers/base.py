@@ -12,6 +12,7 @@ from resources.shapes import Options, check, normalize_options, typed
 from engine.stored import read_json, write_json, write_text
 
 INDEX = "index.json"
+WORDS = ("title", "abstract", "brief", "sections")
 LAST = 25
 SUMMARIES: dict[str, tuple] = {}
 SAID_TWICE = ("comment", "message")
@@ -89,7 +90,16 @@ class Controller:
                             {"why": self.force, "past": list(self.forced), "who": self.actor, "at": time.time()}]
         self.forced = []
 
+    def _guarded(self, r: Resource, action: str) -> None:
+        allowed = self.resource.editors.get((r.seen or [""])[0])
+        if allowed is None or self.actor in allowed or not self.path(r.n).is_file():
+            return
+        stored = self.load(r.n)
+        if action == "deleted" or any(getattr(stored, f) != getattr(r, f) for f in WORDS):
+            self._refuse(f"{self.type} {r.n} was written by the {stored.seen[0]}: answer it with journal {self.type} {self.resource.answered} {r.n} \"<text>\" instead of changing it")
+
     def save(self, r: Resource, action: str, **event) -> Resource:
+        self._guarded(r, action)
         self._note_force(r)
         if self.actor not in r.seen:
             r.seen.append(self.actor)                # whoever acts on it has seen it

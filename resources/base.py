@@ -94,6 +94,8 @@ class Resource:
     spoken: ClassVar[bool] = False            # typed to the agent as its title, not as "type n action"
     urgent_actions: ClassVar[tuple] = ()      # the actions delivered on their own line, at once, never held for the batch
     notify_actions: ClassVar[tuple] = ()      # besides everything the user does, the system actions the agent is notified of
+    answered: ClassVar[str] = "comment"      # the word that answers a row instead of changing it
+    editors: ClassVar[dict] = {}              # who may change the words of a row written by whom: {USER: (USER,)}; unnamed authors are open to all
     told: ClassVar[bool] = False              # the row is stamped with the moment the agent was told of it
     files = Field(default=dict)               # what is attached: name → what became of it
     pictures = Field(default=dict)            # an attached image's width and height, known before it loads
