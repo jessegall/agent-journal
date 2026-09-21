@@ -15,6 +15,7 @@ const loaded = new Set();
 const changed = new Set();
 const owed = new Set();
 const asked = new Map();
+const absent = new Map();
 let owedWhole = false;
 let draining = null;
 
@@ -44,15 +45,24 @@ function forget() {
 
 export async function holding(type, numbers) {
     const have = new Set((store.rows[type] || []).map((r) => r.n));
-    const wanted = asked.get(type) || new Set();
-    const missing = numbers.filter((n) => !have.has(n) && !wanted.has(n));
+    const pending = asked.get(type) || new Set();
+    const none = absent.get(type) || new Set();
+    const missing = numbers.filter((n) => !have.has(n) && !pending.has(n) && !none.has(n));
     if (!missing.length) return;
-    missing.forEach((n) => wanted.add(n));
-    asked.set(type, wanted);
-    const got = await api.list(type, {completed: true, only: missing});
-    const known = new Set((store.rows[type] || []).map((r) => r.n));
-    store.rows[type] = [...(store.rows[type] || []), ...got.rows.filter((r) => !known.has(r.n))].sort((a, b) => a.n - b.n);
-    paging.size[type] = store.rows[type].length;
+    missing.forEach((n) => pending.add(n));
+    asked.set(type, pending);
+    try {
+        const got = await api.list(type, {completed: true, only: missing});
+        const found = new Set(got.rows.map((r) => r.n));
+        missing.filter((n) => !found.has(n)).forEach((n) => none.add(n));
+        absent.set(type, none);
+        if (!got.rows.length) return;
+        const known = new Set((store.rows[type] || []).map((r) => r.n));
+        store.rows[type] = [...(store.rows[type] || []), ...got.rows.filter((r) => !known.has(r.n))].sort((a, b) => a.n - b.n);
+        paging.size[type] = store.rows[type].length;
+    } finally {
+        missing.forEach((n) => pending.delete(n));
+    }
 }
 
 watch(() => `${route.value.env}/${route.value.page}/${route.value.open ? route.value.open.type : ""}`, forget);
