@@ -61,7 +61,7 @@ def refresh(source: Path, target: Path) -> tuple[set, set]:
     return changed, gone
 
 
-FORWARD = 'import runpy\nimport sys\nfrom pathlib import Path\n\nsys.argv[0] = str(Path(__file__).resolve().parent / "src" / Path(__file__).name)\nrunpy.run_path(sys.argv[0], run_name="__main__")\n'
+FORWARD = '#!/usr/bin/env python3\nimport runpy\nimport sys\nfrom pathlib import Path\n\nsys.argv[0] = str(Path(__file__).resolve().parent / "src" / Path(__file__).name)\nrunpy.run_path(sys.argv[0], run_name="__main__")\n'
 HOOK = ('#!/usr/bin/env python3\nimport os\nimport sys\nfrom pathlib import Path\n\nroot = Path(__file__).resolve().parent\n'
         'os.execvp("sh", ["sh", str(root / "src" / "hook.sh"), *(sys.argv[1:2] or ["claude"]), str(root)])\n')
 ENTRYPOINTS = {"journal.py": FORWARD, "hook.py": HOOK}

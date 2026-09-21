@@ -38,3 +38,5 @@ def test_the_journals_hook_py_runs_the_current_hook_for_an_older_command_that_pa
     (tmp_path / "hook.py").write_text(HOOK)
     ran = subprocess.run([sys.executable, str(tmp_path / "hook.py")], capture_output=True, text=True, timeout=20)
     assert ran.stdout.strip() == f"claude {tmp_path.resolve()}", "no provider given: Claude, on the journal hook.py sits in"
+    from install import ENTRYPOINTS
+    assert all(text.startswith("#!/usr/bin/env python3") for text in ENTRYPOINTS.values()), "an entry made executable runs with Python, never the shell"

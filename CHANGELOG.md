@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.27.1 — .journal/journal.py runs with Python again
+
+2.26.0 made the journal's entry files executable so `.journal/hook.py` can be run directly, but `.journal/journal.py` had no `#!` line, and anything that ran it directly got the shell reading Python ("import: command not found"). Every entry now starts with `#!/usr/bin/env python3`.
+
+What to do about it: `journal upgrade`.
+
 ## 2.27.0 — Running a journal command names the skill that explains it
 
 When the agent runs `journal plan …`, `journal todo …`, `journal plugin …` or any command whose noun has a skill in the library, and that skill was not loaded in this context window, the journal tells it once: "load the journal-plans skill". Agents that skipped the skills at start now load the one they need at the moment they need it.
