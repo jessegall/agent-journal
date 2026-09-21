@@ -35,6 +35,17 @@ OLD_CLICK = re.compile(rb"\x1b\[M(...)", re.S)
 PARTIAL = re.compile(rb"\x1b(\[[\d;?]*|\][^\x07\x1b]*\x1b?)?$")
 
 
+def unfinished(data: bytes) -> int:
+    for back in range(1, min(4, len(data)) + 1):
+        byte = data[-back]
+        if byte < 0x80:
+            return len(data)
+        if byte >= 0xC0:
+            needs = 2 if byte < 0xE0 else 3 if byte < 0xF0 else 4
+            return len(data) - back if back < needs else len(data)
+    return len(data)
+
+
 def unshifted(data: bytes) -> bytes:
     data = SGR_CLICK.sub(lambda m: b"\x1b[<%s;%s;%d%s" % (m.group(1), m.group(2), max(1, int(m.group(3)) - ROWS), m.group(4)), data)
     return OLD_CLICK.sub(lambda m: b"\x1b[M" + m.group(1)[:2] + bytes([max(33, m.group(1)[2] - ROWS)]), data)
@@ -142,10 +153,8 @@ class Translator:
     def feed(self, data: bytes) -> bytes:
         data = self.held + data
         cut = PARTIAL.search(data)
-        if cut:
-            data, self.held = data[:cut.start()], data[cut.start():]
-        else:
-            self.held = b""
+        at = cut.start() if cut else unfinished(data)
+        data, self.held = data[:at], data[at:]
         return CURSOR.sub(self.shifted, data)
 
 

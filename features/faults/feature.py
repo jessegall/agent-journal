@@ -3,7 +3,7 @@ import time
 from contextlib import contextmanager
 from pathlib import Path
 
-from controllers.types import Notifications
+from controllers.types import Agents, Notifications
 from engine.record import Record
 from features.base import Behaviour, Feature
 from resources.base import SYSTEM
@@ -13,7 +13,6 @@ OVER = "is slower than its budget"
 THREW = "the viewer threw"
 SAID = 300
 QUIET = 60
-
 
 
 def developing(project: Path) -> bool:
@@ -55,6 +54,9 @@ class Faults(Feature):
             rows.update(standing.n, brief=said, times=times, **data)
         else:
             rows.create(title, brief=said, times=times, **data)
+        agent = Agents(record, actor=SYSTEM).primary()
+        if agent:
+            self.nudge(record, agent, title, said)
 
     def slow(self, record, kind: str, name: str, took: float) -> None:
         self.file(record, f"{kind} {name} {OVER}"[:80],
@@ -64,7 +66,6 @@ class Faults(Feature):
     def threw(self, record, said: str, where: str, stack: str, kind: str = "threw") -> None:
         title = {"slow": f"the viewer's {where} {OVER}", "overlap": f"the viewer sent {where} twice at once"}.get(kind, f"{THREW} {said}")
         self.file(record, title[:80], f"{said}\n\n{where}\n\n{stack}"[:SAID], kind=kind, target=where, stack=stack)
-
 
     @contextmanager
     def watched(self, root, env: str, kind: str, name: str):

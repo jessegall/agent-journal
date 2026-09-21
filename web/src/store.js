@@ -170,7 +170,7 @@ export const paging = reactive({size: {}, more: {}});
 
 export async function load(type) {
     const size = paging.size[type] || PAGE;
-    const got = await http.list(route.value.env, type, {last: size === Infinity ? 0 : size, completed: true});
+    const got = await http.list(route.value.env, type, {last: size, completed: true});
     store.rows[type] = got.rows;
     paging.size[type] = size;
     paging.more[type] = got.more;
@@ -189,16 +189,6 @@ export async function earlier(...types) {
         })
     );
     return growing.length > 0;
-}
-
-export async function whole(type) {
-    paging.size[type] = Infinity;
-    return load(type);
-}
-
-export async function trim(type) {
-    paging.size[type] = PAGE;
-    return load(type);
 }
 
 http.onWrite((path) => refresh([path.split("/")[2]]));
