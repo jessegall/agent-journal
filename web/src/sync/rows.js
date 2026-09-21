@@ -57,6 +57,18 @@ export async function load(type) {
     return store.rows[type];
 }
 
+async function caughtUp(type) {
+    const held = store.rows[type] || [];
+    const since = Math.max(0, ...held.map((r) => r.updated || 0));
+    const got = await api.list(type, {last: PAGE, completed: true, since});
+    if (got.more) return load(type);
+    const fresh = new Map(got.rows.map((r) => [r.n, r]));
+    const kept = held.filter((r) => !fresh.has(r.n)).concat(got.rows.filter((r) => !r.deleted));
+    store.rows[type] = kept.sort((a, b) => a.n - b.n);
+    paging.size[type] = store.rows[type].length;
+    return store.rows[type];
+}
+
 export async function earlier(...types) {
     const growing = types.filter((type) => paging.more[type]);
     await Promise.all(
@@ -84,7 +96,7 @@ async function fetched(types, whole = false) {
     const sized = types.filter((type) => !plain.includes(type));
     const [got] = await Promise.all([
         plain.length || whole ? api.dashboard(plain, {last: PAGE, events: whole ? RECENT : null}) : null,
-        ...sized.map(load),
+        ...sized.map(caughtUp),
     ]);
     if (!got) return;
     store.counts = {...store.counts, ...got.counts};
@@ -92,7 +104,6 @@ async function fetched(types, whole = false) {
     if (whole) {
         store.events = got.events;
         store.settings = got.settings;
-        if (got.rows.agent) store.agents = got.rows.agent.rows;
     }
 }
 
@@ -102,7 +113,7 @@ async function drain() {
         await new Promise((settle) => setTimeout(settle, 30));
         while (owed.size || owedWhole) {
             const whole = owedWhole;
-            const types = [...(whole ? Object.keys(store.rows) : owed)].filter((type) => shown.has(type) || type === "agent");
+            const types = [...(whole ? Object.keys(store.rows) : owed)].filter((type) => shown.has(type));
             owed.clear();
             owedWhole = false;
             await fetched(types, whole);
