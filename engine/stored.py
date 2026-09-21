@@ -36,3 +36,10 @@ def tail(path, size: int) -> list[str]:
     if start:
         raw = raw.split(b"\n", 1)[-1]
     return raw.decode(errors="replace").splitlines()
+
+
+LOG_BYTES = 262144
+
+
+def last_lines(path, lines: int) -> str:
+    return "\n".join(tail(path, LOG_BYTES)[-lines:])

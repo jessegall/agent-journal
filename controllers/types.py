@@ -316,8 +316,7 @@ class Agents(Controller):
     resource = types.AgentRow
 
     def by_session(self, session: str):
-        found = next((row["n"] for row in self.summaries() if row["title"] == session and not row["deleted"]), None)
-        return self.load(found) if found else self.create(session, status="stopped")
+        return self._titled(session) or self.create(session, status="stopped")
 
     @internal
     def saw(self, n: int, fact: dict, **data):
@@ -326,7 +325,7 @@ class Agents(Controller):
         return self.save(r, "updated", **fact)
 
     def primary(self):
-        rows = [row for row in self._every() if not row.parent]
+        rows = [row for row in self._standing() if not row.parent]
         return max(rows, key=lambda row: float(row.at or 0), default=None)
 
 
@@ -357,10 +356,6 @@ class Tools(Controller):
 class Features(Controller):
     resource = types.FeatureRow
 
-    def _titled(self, name: str):
-        found = next((row["n"] for row in self.summaries() if row["title"] == name and not row["deleted"]), None)
-        return self.load(found) if found else None
-
     def switch(self, name: str, on: bool = True):
         row = self._titled(name)
         return self.update(row.n, enabled=bool(on)) if row else self.create(name, enabled=bool(on))
@@ -384,7 +379,7 @@ class Environments(Controller):
     PICKED_UP = (Works, Todos, Questions, Messages)
 
     def unused(self, name: str, hint: str = "") -> str:
-        if any(e.title == name for e in self._every()):
+        if self._titled(name):
             raise Refused(f"environment {name!r} exists{hint}")
         return name
 

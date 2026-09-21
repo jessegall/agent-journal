@@ -86,6 +86,10 @@ class Controller:
             write_json(folder / INDEX, rows)
         return [rows[n] for n in sorted(rows)]
 
+    def _titled(self, title: str, standing: bool = False) -> Resource | None:
+        found = next((row["n"] for row in self.summaries() if row["title"] == title and not row["deleted"] and not (standing and row["completed"])), None)
+        return self.load(found) if found else None
+
     @internal
     def load(self, n: int) -> Resource:
         r = self._peek(n)
