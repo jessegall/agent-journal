@@ -344,6 +344,10 @@ class Environments(Controller):
     OPEN_BEFORE_REMOVING = (Todos, Facts, Reminders, Messages, Questions)
     PICKED_UP = (Works, Todos, Questions, Messages)
 
+    def _seat(self, name: str, session: str):
+        row = self._titled(name) or self.create(name)
+        return self.update(row.n, holder=session)
+
     def unused(self, name: str, hint: str = "") -> str:
         if self._titled(name):
             raise Refused(f"environment {name!r} exists{hint}")

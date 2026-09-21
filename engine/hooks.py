@@ -1,5 +1,4 @@
 import re
-import time
 from pathlib import Path
 
 from controllers.types import Agents, Environments, Nudges
@@ -22,15 +21,6 @@ def start_file(root: Path, env: str, compacted: bool = False) -> Path:
 
 def gate_file(root: Path, env: str, session: str) -> Path:
     return root / "runtime" / f"gate-{env}-{session}.json"
-
-
-def log_command(root: Path, hook) -> None:
-    if hook.event != "PreToolUse" or not hook.command:
-        return
-    target = root / "runtime" / "commands.log"
-    target.parent.mkdir(parents=True, exist_ok=True)
-    with target.open("a") as out:
-        out.write(f"{time.time():.3f}\t{hook.command!r}\n")
 
 
 JOURNAL = re.compile(r"(?:\A|[|;&\n]|\$\()[ \t]*(journal[ \t]+[^|;&\n]+)")
@@ -64,15 +54,10 @@ def answer(provider, root: Path, raw: dict, pid: int, prefer: str = "") -> dict:
     if not env or not sessions.read(session).get("provider"):
         env = sessions.choose(session, provider.name, default_env(root, prefer))
         sessions.bind(session, env, pid=agent_pid(pid), provider=provider.name)
-        seated(root, env, session)
+        environments = Environments(Record(root, env), actor=SYSTEM)
+        environments._seat(env, session)
     sessions.touch(session)
     return handle(provider, root, env, hook)
-
-
-def seated(root: Path, env: str, session: str) -> None:
-    envs = Environments(Record(root, env), actor=SYSTEM)
-    row = envs._titled(env) or envs.create(env)
-    envs.update(row.n, holder=session)
 
 
 def handle(provider, root: Path, env: str, hook) -> dict:
@@ -80,22 +65,14 @@ def handle(provider, root: Path, env: str, hook) -> dict:
     hook = Hook.read(hook) if isinstance(hook, dict) else hook
     if hook.event not in STATUS or runtime.off(root):
         return {}
-    log_command(root, hook)
     record = Record(root, env, memo=True)
     agents = Agents(record, actor=SYSTEM)
     row = agents.by_session(hook.session)
     if provider.is_subagent(hook):
         return provider.response(blocked=next((reason for policy in POLICIES if serving(policy, provider, hook)
                                                and (reason := policy(provider, record, hook, row.title))), "")) if hook.event == "PreToolUse" else {}
-    uses = int(row.uses or 0) + (hook.event == "PreToolUse")
-    context = provider.context(hook)
     agents.saw(row.n, {"hook": hook.event, "tool": hook.tool.name, "file": hook.tool.file_path, "session": hook.session},
-               status=STATUS[hook.event] or row.status or IDLE, event=hook.event, tool=hook.tool.name, **provider.shell(row, hook),
-               **provider.session(hook.transcript), file=hook.tool.file_path,
-               wrote=hook.event == "PostToolUse" and provider.writes(hook), cwd=hook.cwd or row.cwd or "", at=time.time(),
-               provider=provider.name, uses=uses, transcript=str(hook.transcript or row.transcript or ""), inbox=provider.inbox(hook) or row.inbox or "",
-               model=provider.model(hook) or row.model or "", effort=provider.effort(Path(hook.cwd or root.parent), hook.transcript), started=row.started or time.time(),
-               context=row.context or 0 if context is None else context)
+               status=STATUS[hook.event] or row.status or IDLE, **provider.facts(row, hook, root))
     if hook.event == "PreToolUse":
         why = next((reason for policy in POLICIES if serving(policy, provider, hook) and (reason := policy(provider, record, hook, row.title))), "")
         return provider.response(blocked=f"{why}{alongside(hook)}" if why else "")
