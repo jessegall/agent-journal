@@ -2,7 +2,7 @@ from features.base import Feature
 from features.journal import Journal
 from features.skill_loading.details import SkillsDetails
 from features.skill_loading.handlers import HoldUntilReloaded, NameStaleSkills, RemindUnloaded
-from features.skill_loading.interceptors import NameSkillForCommand
+from features.skill_loading.interceptors import RefuseUntilLoaded, RequireCommandSkill
 
 
 class Skills(Feature):
@@ -12,4 +12,5 @@ class Skills(Feature):
         journal.events.handler(RemindUnloaded())
         journal.events.handler(HoldUntilReloaded())
         journal.events.handler(NameStaleSkills())
-        journal.agent.interceptor(NameSkillForCommand())
+        journal.agent.interceptor(RequireCommandSkill())
+        journal.agent.interceptor(RefuseUntilLoaded())

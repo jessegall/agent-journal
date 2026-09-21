@@ -1,4 +1,5 @@
 from features.base import Behaviour, FeatureDetails, Line
+from features.settings import Setting
 from features.trigger import USES
 
 
@@ -32,6 +33,16 @@ class SkillsDetails(FeatureDetails):
         ),
     ]
 
+    settings = [
+        Setting(
+            name="most_refusals",
+            default=5,
+            title="Refuse tool calls for a missing skill at most",
+            abstract="After this many refusals in a row the call goes through, so an agent is never stuck",
+            unit="times",
+        ),
+    ]
+
     lines = [
         Line(
             name="unloaded",
@@ -39,17 +50,8 @@ class SkillsDetails(FeatureDetails):
             brief="load the journal skill (Skill: journal) before the next write; a compaction emptied it",
         ),
         Line(
-            name="reload held",
-            title="a fresh window has no journal skill: load it first - Skill: journal",
-        ),
-        Line(
-            name="stale",
-            title="{{count}} changed since you loaded {{them}}",
-            brief="load again: {{skills}}",
-        ),
-        Line(
-            name="needed",
-            title="load the {{skill}} skill",
-            brief="Skill: {{skill}} explains journal {{noun}}, which you just ran",
+            name="required",
+            title="load {{skills}} before anything else",
+            brief="every tool call waits until it is loaded: {{loads}}",
         ),
     ]

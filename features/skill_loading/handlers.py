@@ -1,10 +1,10 @@
 import time
-from pathlib import Path
 
 from engine.events import AgentUpdated
 from features import trigger
 from features.parts import Context, Handler
 from features.skill_loading.catalogue import SKILL, skills
+from features.skill_loading.required import require
 from providers import PROVIDERS
 from resources.types import AgentRow
 
@@ -42,18 +42,13 @@ class HoldUntilReloaded(Handler):
         provider = PROVIDERS.get(row.provider) if row else None
         if not since or not provider or not row.transcript:
             return
-        loaded = provider().loaded_skills(Path(row.transcript))
-        if any(name == "journal" and float(at or 0) >= since for name, at in loaded.items()):
-            context.release("reload")
-        else:
-            context.hold("reload held", "reload")
+        require(context.record, row.title, {"journal": since})
 
 
 class NameStaleSkills(Handler):
     behaviour = "stale"
 
     def handle(self, context: Context, event: AgentUpdated) -> None:
-        changed = [s[SKILL.name] for s in skills(context.record, context.agent.row.n) if s[SKILL.stale]]
+        changed = {s[SKILL.name]: s[SKILL.changed] for s in skills(context.record, context.agent.row.n) if s[SKILL.stale]}
         if changed:
-            context.agent.whisper("stale", count=context.feature.plural(len(changed), "skill"), them="it" if len(changed) == 1 else "them",
-                                  skills=", ".join(f"Skill: {name}" for name in changed))
+            require(context.record, context.agent.session, changed)

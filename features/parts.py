@@ -7,6 +7,7 @@ from controllers.types import Agents
 from engine import bus
 from engine.events import AgentEvent
 from engine.hooks import POLICIES
+from engine.stored import read_json, write_json
 from features.format import FORMATTERS
 from resources.base import SYSTEM, Refused
 
@@ -101,6 +102,7 @@ class TextFormatter:
 
 class ToolInterceptor:
     behaviour: ClassVar[str | None] = None
+    limit: ClassVar[str] = ""
 
     def intercept(self, context: Context, call) -> str:
         raise NotImplementedError
@@ -146,6 +148,14 @@ class Client:
                            formatter.surfaces))
 
 
+def limited(context: Context, interceptor: ToolInterceptor, session: str, refused: str) -> str:
+    f = context.record.root / "runtime" / f"refused-{session}.json"
+    counts, key = read_json(f, {}), f"{context.feature.name}.{type(interceptor).__name__}"
+    count = int(counts.get(key, 0)) + 1 if refused else 0
+    write_json(f, {**counts, key: count})
+    return refused if count <= int(context.settings[interceptor.limit]) else ""
+
+
 class AgentHooks:
     def __init__(self, feature):
         self.feature = feature
@@ -154,10 +164,14 @@ class AgentHooks:
         feature = self.feature
 
         def policy(provider, record, hook, session) -> str:
+            if hook.tool.loads_skill:
+                return ""
             row = Agents(record, actor=SYSTEM).by_session(session)
             if not feature.enabled(record) or not wanted(interceptor, feature, record, row, timed=False):
                 return ""
-            return interceptor.intercept(Context.of(feature, record, row, provider, hook), hook.tool) or ""
+            context = Context.of(feature, record, row, provider, hook)
+            refused = interceptor.intercept(context, hook.tool) or ""
+            return limited(context, interceptor, session, refused) if interceptor.limit else refused
         policy.feature = feature
         POLICIES.append(policy)
 

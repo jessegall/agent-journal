@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.55.0 — Every tool call waits until a required skill is loaded
+
+Messages 1464, 1512 and 1596. When the journal says a skill is needed, a journal command whose skill is not loaded, a skill that changed since it was loaded, or the journal skill in a fresh window, the agent's tool calls are refused until it loads it, and the refusal names the Skill to load. Loading a skill is never refused, by any interceptor. So no agent is ever stuck, an interceptor can cap its refusals in a row with a setting: after skill_loading.most_refusals (5) refusals the call goes through.
+
+What to do about it: `journal upgrade`.
+
 ## 2.54.2 — Closing to-dos from commits keeps its place across the rename
 
 The feature that closes to-dos from commit trailers kept its place in the git log under a fixed name, commits, while the rename moved the saved place to close_from_commits. It now reads its place under its own feature name, so a rename carries it along.

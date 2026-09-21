@@ -34,6 +34,10 @@ class ToolUse:
                    response=response if isinstance(response, dict) else {})
 
     @property
+    def loads_skill(self) -> bool:
+        return self.name == "Skill"
+
+    @property
     def plans(self) -> bool:
         return self.name == "EnterPlanMode"
 
