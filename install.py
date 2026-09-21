@@ -48,11 +48,11 @@ def refresh(source: Path, target: Path) -> tuple[int, int]:
         (target / rel).unlink()
     for name in RETIRED:
         for place in (target, target.parent):
-            gone = place / name
-            if gone.is_dir():
-                shutil.rmtree(gone)
+            retired = place / name
+            if retired.is_dir():
+                shutil.rmtree(retired)
             else:
-                gone.unlink(missing_ok=True)
+                retired.unlink(missing_ok=True)
     for rel in sorted(changed):
         destination = target / rel
         destination.parent.mkdir(parents=True, exist_ok=True)
