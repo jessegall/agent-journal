@@ -4,8 +4,8 @@ import traceback
 
 from controllers.types import CONTROLLERS, Agents
 import features
-from engine import bus
-from engine.actors import Actor, Agent, BUSY, IDLE, STOPPED, System, User, WORKING
+from engine import bus, runtime
+from engine.actors import Actor, Agent, BUSY, IDLE, STOPPED, System, User, WORKING, spoken_data
 from engine.inputs import FORCE, PERMIT, take
 from surfaces.control import CARRY_ON, delivered
 from engine.record import Record
@@ -25,6 +25,11 @@ TYPING_HOLD = 10.0
 
 SILENT_AFTER = 120.0
 PROBE_WAIT = 5.0
+
+
+def after(written: list, line: int) -> list[str]:
+    known = next((i for i, t in enumerate(written) if t.line == line), None)
+    return [t.text for t in (written[known + 1:] if known is not None else written[-1:])]
 
 
 class Engine(Seat):
@@ -80,22 +85,20 @@ class Engine(Seat):
             return
         row = Agents(self.record, actor=SYSTEM).by_session(last.title)
         written = turns(self.record, row)
-        f = self.record.root / "runtime" / f"announced-{row.title}.json"
-        last = read_json(f, None)
+        f = runtime.announced_file(self.record.root, row.title)
+        announced = read_json(f, None)
         now = {"line": written[-1].line if written else -1, "said": row.said or ""}
-        if last == now:
+        if announced == now:
             return
         write_json(f, now)
-        known = next((i for i, t in enumerate(written) if last and t.line == last["line"]), None)
-        fresh = [t.text for t in (written[known + 1:] if known is not None else written[-1:])]
-        stopped = [row.said] if row.said and row.event == "Stop" and last and row.said != last["said"] else []
-        for text in [*fresh, *stopped] if last else []:
+        if announced is None:
+            return
+        stopped = [row.said] if row.said and row.event == "Stop" and row.said != announced["said"] else []
+        for text in [*after(written, announced["line"]), *stopped]:
             bus.emit(Event(id=0, at=time.time(), type="agent", n=row.n, action="said", actor=AGENT, data={"text": text}), self.record)
 
     def elsewhere(self, e) -> bool:
-        if not TYPES[e.type].spoken:
-            return False
-        meant = CONTROLLERS[e.type](self.record, actor=AGENT).load(e.n).data.get("session")
+        meant = spoken_data(self.record, e).get("session")
         return bool(meant) and meant not in self.names()
 
     def follow(self) -> str:
@@ -137,7 +140,7 @@ class Engine(Seat):
         return ""
 
     def addressed(self, e) -> bool:
-        return TYPES[e.type].spoken and CONTROLLERS[e.type](self.record, actor=SYSTEM).load(e.n).data.get("session") in self.names()
+        return spoken_data(self.record, e).get("session") in self.names()
 
     def names(self) -> set[str]:
         last = self.agent.driver.last_report()
@@ -178,11 +181,11 @@ class Engine(Seat):
         queued = take(self.record.root, self.names())
         if not queued:
             return ""
-        self.agent.driver.send(queued["line"], exact=True)
+        self.agent.driver.deliver(queued["line"])
         self.controlled_at = time.time()
         if self.carry_on:
             self.carry_on = False
-            self.agent.driver.send(CARRY_ON, exact=True)
+            self.agent.driver.deliver(CARRY_ON)
         if queued.get("action") and queued.get("label"):
             delivered(self.record, self.names(), queued["action"], queued["label"])
         row = Agents(self.record, actor=SYSTEM).by_session((last and last.title) or self.agent.driver.session)

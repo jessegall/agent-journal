@@ -16,7 +16,7 @@ from commands.http import dispatch  # noqa: E402
 from engine.stop import asked  # noqa: E402
 from engine.viewer import elsewhere, heartbeat, remember  # noqa: E402
 from engine.engines import Engines  # noqa: E402
-from controllers.types import warm, warmed  # noqa: E402
+from controllers.types import warm, warm_record  # noqa: E402
 from engine.hooks import default_env  # noqa: E402
 from engine.record import Record  # noqa: E402
 
@@ -143,7 +143,7 @@ def run(root: Path, port: int = 8430) -> None:
     halting = threading.Event()
     threading.Thread(target=watch_code, args=(Path(__file__).resolve().parent, server, changed), daemon=True).start()
     threading.Thread(target=watch_stop, args=(root, server, halting, time.time()), daemon=True).start()
-    warmed(Record(root, default_env(root)))
+    warm_record(Record(root, default_env(root)))
     threading.Thread(target=warm, args=(root,), daemon=True).start()
     engines = threading.Event()
     threading.Thread(target=Engines(root).run, args=(engines,), daemon=True).start()

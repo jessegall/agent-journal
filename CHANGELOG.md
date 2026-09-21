@@ -4,6 +4,18 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.23.6 — The engine and the messenger, tidied after review
+
+A review of the engine and the messenger found the same lookups written several ways; nothing changes for the user.
+
+- One funnel, `spoken_data`, reads a spoken event's row for the engine; the three places that loaded it by hand use it.
+- The announced-turn file lives in `engine/runtime.py` with the other runtime paths, and `announce_written` reads in one pass.
+- `Driver.send` only queues; `deliver` and `type_in` are their own calls instead of two flags on `send`.
+- The messenger reaches controllers by class; its message declares its abstract; a logged notification is sent and then read.
+- `warmed` is `warm_record`; the delivery words `channel` and `terminal` live in the engine, which no longer imports them from a feature.
+
+What to do about it: nothing — `journal upgrade` when convenient.
+
 ## 2.23.5 — A mistyped command says what is wrong
 
 A command the journal could not parse — a word that does not exist, like `journal work list`, or a missing argument — was answered through the server with "was refused and said nothing": the parser wrote its explanation to the server's own error stream, which the command never saw. An agent that mistyped a command was left guessing. The usage and the error now come back with the command, exactly as when the journal runs without its server.
