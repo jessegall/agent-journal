@@ -5,6 +5,7 @@ import os
 import re
 import subprocess
 import tempfile
+import threading
 import time
 from email import policy
 from email.parser import BytesParser
@@ -352,18 +353,32 @@ def post_settings(req: Request) -> Reply:
 UPSTREAM = "https://raw.githubusercontent.com/jessegall/agent-journal/main/VERSION"
 
 
+UPSTREAM_FOR = 900
+FETCHING = threading.Lock()
+
+
 def upstream(root: Path) -> str:
     cache = root / "runtime" / "upstream.cache"
     try:
-        if cache.is_file() and time.time() - cache.stat().st_mtime < 900:
-            return cache.read_text().strip()
-        with urlopen(UPSTREAM, timeout=3) as r:
-            latest = r.read().decode().strip()
+        stale = time.time() - cache.stat().st_mtime >= UPSTREAM_FOR
+        held = cache.read_text().strip()
     except OSError:
-        return cache.read_text().strip() if cache.is_file() else ""
-    cache.parent.mkdir(parents=True, exist_ok=True)
-    cache.write_text(latest)
-    return latest
+        stale, held = True, ""
+    if stale and not FETCHING.locked():
+        threading.Thread(target=fetched, args=(cache,), daemon=True).start()
+    return held
+
+
+def fetched(cache: Path) -> None:
+    with FETCHING:
+        try:
+            with urlopen(UPSTREAM, timeout=3) as r:
+                latest = r.read().decode().strip()
+        except OSError:
+            cache.touch(exist_ok=True)
+            return
+        cache.parent.mkdir(parents=True, exist_ok=True)
+        cache.write_text(latest)
 
 
 @route("GET", "/api/upstream")
