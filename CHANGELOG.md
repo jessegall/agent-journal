@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.40.1 — The revision strip shows the revision you are on
+
+Message 1442. With many revisions the strip clipped its marks, so the open revision could be out of sight, and Show changes wrapped onto two lines. It now shows at most eight marks around the revision you are on, with a count of the earlier ones, and the note about the revision (open for how long, what changed, who, when) sits on its own line below.
+
+What to do about it: `journal upgrade`.
+
 ## 2.40.0 — Claude's plan mode is refused in a journal project
 
 Messages 1421 to 1423. Plans in a journal project are journal plans, and Claude Code's plan mode works around them. The plans feature now refuses the EnterPlanMode tool call at the PreToolUse hook and tells the agent to write the plan with journal plan create, its phases and its rows.
