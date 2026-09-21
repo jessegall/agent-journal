@@ -56,7 +56,7 @@ def evidence(record) -> list[dict]:
     for t in Todos(record, actor=SYSTEM)._every():
         if t.completed:
             continue
-        waiting = [q for q in questions._every() if not q.completed and t.ref in q.refs]
+        waiting = [q for q in questions._standing() if t.ref in q.refs]
         if waiting and time.time() - min(q.created for q in waiting) > WAITING_DAYS * 86400:
             found.append({"ref": t.ref, "title": t.title, "evidence": f"waiting on the user for over {WAITING_DAYS} days (question {waiting[0].n})", "retire": f"journal todo {t.n} done \"<why>\""})
     return found

@@ -4,7 +4,7 @@ from resources.types import PRIORITY, TYPES
 
 
 def standing(record, type_: str) -> list:
-    return [r for r in CONTROLLERS[type_](record, actor=SYSTEM)._every() if not r.completed]
+    return CONTROLLERS[type_](record, actor=SYSTEM)._standing()
 
 
 def counts(record) -> dict[str, int]:

@@ -32,7 +32,7 @@ class Messages(Controller):
         return super().update(n, titled(brief) if title is None and brief is not None else title, abstract, brief, outcome, **data)
 
     def waiting(self) -> list:
-        return [m for m in self._every() if not m.completed and m.seen[:1] != [AGENT]]
+        return [m for m in self._standing() if m.seen[:1] != [AGENT]]
 
     def file(self, n: int, name: str, into: str = "keep"):
         r = self.load(n)
@@ -183,15 +183,18 @@ class Todos(Controller):
             raise Refused(f"a priority is a number or one of {', '.join(LEVELS)}")
         return self.update(n, priority=LEVELS.get(level, int(level) if level.lstrip("-").isdigit() else 0))
 
+    def _ordered(self, rows: list) -> list:
+        return sorted(rows, key=lambda t: (-int(t.priority or LEVELS["default"]), t.n))
+
     def _every(self, deleted: bool = False) -> list:
-        return sorted(super()._every(deleted), key=lambda t: (-int(t.priority or LEVELS["default"]), t.n))
+        return self._ordered(super()._every(deleted))
 
 
 class Works(Controller):
     resource = types.Work
 
     def active(self):
-        return next((w for w in self._every() if not w.completed and not w.parked), None)
+        return next((w for w in self._standing() if not w.parked), None)
 
     def create(self, title: str, abstract: str = "", brief: str = "", **data):
         busy = self.active()
@@ -282,7 +285,7 @@ class Suggestions(Controller):
     resource = types.Suggestion
 
     def create(self, title: str, abstract: str = "", brief: str = "", **data):
-        waiting = [s for s in self._every() if not s.completed]
+        waiting = self._standing()
         if len(waiting) >= OPEN_SUGGESTIONS:
             self._refuse(f"{OPEN_SUGGESTIONS} suggestions already wait on the user: {', '.join(str(s.n) for s in waiting)}")
         declined = [s for s in self._every() if s.decision == DECLINE.lower() and s.title.lower() == title.lower()]
@@ -418,7 +421,7 @@ class Environments(Controller):
     def complete(self, n: int, how: str = "", yes: bool = False, **data):
         env = self.load(n)
         record = Record(self.record.root, env.title)
-        held = {c.resource.type: len([r for r in c(record, actor=SYSTEM)._every() if not r.completed]) for c in self.OPEN_BEFORE_REMOVING}
+        held = {c.resource.type: len(c(record, actor=SYSTEM)._standing()) for c in self.OPEN_BEFORE_REMOVING}
         self.vacant(env.title)
         kept = ", ".join(f"{v} open {k}s" for k, v in held.items() if v)
         if kept and not yes:
@@ -450,8 +453,8 @@ class Environments(Controller):
         env = self.load(n)
         record = Record(self.record.root, env.title)
         return {"environment": env.title, "holder": self.sessions().holder(env.title),
-                **{f"open {c.resource.type}s": [f"{r.n} {r.title}" for r in c(record, actor=SYSTEM)._every() if not r.completed][:10] for c in self.PICKED_UP},
-                "facts": [f"{r.n} {r.title}" for r in Facts(record, actor=SYSTEM)._every() if not r.completed][:10]}
+                **{f"open {c.resource.type}s": [f"{r.n} {r.title}" for r in c(record, actor=SYSTEM)._standing()][:10] for c in self.PICKED_UP},
+                "facts": [f"{r.n} {r.title}" for r in Facts(record, actor=SYSTEM)._standing()][:10]}
 
     def claim(self, n: int, why: str):
         env = self.load(n)
@@ -499,7 +502,7 @@ class Asks(Controller):
         return self.load(made.n)
 
     def pending(self) -> list:
-        return [r for r in self._every() if not r.completed]
+        return self._standing()
 
     def answer(self, n: int, text: str, ok: bool = True, files: list | None = None):
         r = self.complete(n, text, ok=ok)

@@ -33,7 +33,7 @@ def crashed(code: int | None, since: float) -> bool:
 
 def once(record, title: str, brief: str, which: str = "") -> bool:
     notices = Notices(record, actor=SYSTEM)
-    if any(not n.completed and n.title == title and n.data.get(WHICH, "") == which for n in notices._every()):
+    if any(n.title == title and n.data.get(WHICH, "") == which for n in notices._standing()):
         return False
     notices.create(title, brief=brief, tone="warn", **{WHICH: which})
     return True

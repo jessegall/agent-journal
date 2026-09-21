@@ -171,7 +171,7 @@ class Feature(ABC):
         return agent if self.due(record, agent) else None
 
     def standing(self, record, controller: type) -> list:
-        return [r for r in controller(record, actor=SYSTEM)._every() if not r.completed]
+        return controller(record, actor=SYSTEM)._standing()
 
     def keyed(self, key: str = "") -> str:
         return f"{self.name}.{key}" if key else self.name

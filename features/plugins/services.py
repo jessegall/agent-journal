@@ -31,7 +31,7 @@ def told(root: Path, enabled) -> list[str]:
     if not enabled(record):
         return []
     notices = Notices(record, actor=SYSTEM)
-    open_ = {n.data.get(TOLD): n for n in notices._every() if not n.completed and n.data.get(TOLD)}
+    open_ = {n.data.get(TOLD): n for n in notices._standing() if n.data.get(TOLD)}
     said = []
     for sid, state in states(root).items():
         failing = state.get("state") in (FAILED, BLOCKED)
