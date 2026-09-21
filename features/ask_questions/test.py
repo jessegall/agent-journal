@@ -1,10 +1,10 @@
 import features
 import json
 
-from controllers.types import Questions
+from controllers.types import Messages, Questions
 from features.ask_questions.choices import offers_choices
 from engine.hooks import gate_file
-from resources.base import AGENT
+from resources.base import AGENT, USER
 from tests.kit import idle, nudges
 from tests.conftest import fresh
 from commands.http import dispatch
@@ -23,6 +23,8 @@ def test_offers_choices_recognizes_numbered_and_lettered_options_but_not_prose()
     assert offers_choices("Two ways:\n1. blue\n2. red\nLet me know.") is True, \
         "a list and a phrase addressed to the user still offers choices"
     assert offers_choices("See question 3.\nWhich do you want?\n1. blue\n2. red") is True, "choices beside a named question still count"
+    assert offers_choices("Questions 60-63 are yours in the viewer:\n- 60, where it lives?\n- 61, what Doing does?") is False, \
+        "lines naming questions already asked, in the plural, do not count"
 
 
 def test_choices_offered_in_prose_hold_writes_until_a_question_is_asked_properly():
@@ -42,7 +44,11 @@ def test_choices_offered_in_prose_hold_writes_until_a_question_is_asked_properly
     assert ([n for n in nudges(record) if "choices in prose" in n], bool(holds().get("ask_questions.asking"))) == \
         (["your last message offers choices in prose"], True), "choices in prose: the agent is told once, and its writes are held"
     Questions(record, actor=AGENT).create("Which one?", options=[{"title": "the blue one", "description": "", "code": ""}, {"title": "the red one", "description": "", "code": ""}], pick=1)
-    assert holds().get("choices", "") == "", "a question asked properly lifts the hold"
+    assert holds().get("ask_questions.asking", "") == "", "a question asked properly lifts the hold"
+    text("[!reply] Which do you want?\n1. the blue one\n2. the red one")
+    idle(record, provider="claude", transcript=str(transcript))
+    Messages(record, actor=USER).create("the blue one, thanks")
+    assert holds().get("ask_questions.asking", "") == "", "an answer by message lifts it too"
 
 
 def test_a_picked_answer_is_held_for_a_configurable_duration():

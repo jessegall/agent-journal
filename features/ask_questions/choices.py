@@ -4,9 +4,23 @@ import re
 LISTED = re.compile(r"^\s*(?:\(?[A-Za-z]\)|\(?[A-Za-z][.)]|\d+[.)]|[-*•])\s+\S", re.MULTILINE)
 ASKING = re.compile(r"\?|\b(should I|shall I|do you want|would you like|would you prefer|which would you rather|let me know|your call|you decide|up to you"
                     r"|one thing I need from you|one question for you|the one decision|I would want your call|your pick)\b", re.IGNORECASE)
-NAMED = re.compile(r"\bquestion \d+\b", re.IGNORECASE)
+NAMED = re.compile(r"\bquestions? (\d+)(?:\s*(?:-|–|to)\s*(\d+))?", re.IGNORECASE)
+LEADING = re.compile(r"^\s*(?:[-*•]\s*)?\**(\d+)\b")
+
+
+def named_numbers(text: str) -> set[int]:
+    found = set()
+    for first, last in NAMED.findall(text):
+        found |= set(range(int(first), int(last or first) + 1)) if int(last or first) - int(first) < 50 else {int(first)}
+    return found
+
+
+def points_at_named(line: str, named: set[int]) -> bool:
+    found = LEADING.match(line)
+    return bool(NAMED.search(line)) or bool(found and int(found.group(1)) in named)
 
 
 def offers_choices(text: str) -> bool:
-    asked = "\n".join(line for line in text.splitlines() if not NAMED.search(line))
+    named = named_numbers(text)
+    asked = "\n".join(line for line in text.splitlines() if not points_at_named(line, named))
     return len(LISTED.findall(text)) >= 2 and bool(ASKING.search(asked))
