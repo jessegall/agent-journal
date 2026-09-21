@@ -1,5 +1,4 @@
 import argparse
-import contextlib
 import inspect
 from contextlib import nullcontext
 import io
@@ -370,8 +369,7 @@ def captured(argv: list[str], root: Path) -> tuple[str, int | None]:
         return f"{first_word(argv) or 'the journal'} is not a command the server runs", None
     said, wrong = io.StringIO(), io.StringIO()
     try:
-        with contextlib.redirect_stdout(said), contextlib.redirect_stderr(wrong):
-            code = run(["--root", str(root), *argv], out=said, err=wrong)
+        code = run(["--root", str(root), *argv], out=said, err=wrong)
     except SystemExit as e:
         code = int(e.code or 0)
     except Exception as e:
