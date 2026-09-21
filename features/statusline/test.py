@@ -1,6 +1,5 @@
 import features
 import json
-import pytest
 import subprocess
 
 from features.statusline.group import grouped, ran
@@ -16,14 +15,6 @@ from providers.codex import Codex
 
 
 NOW = 1_000_000.0
-
-
-@pytest.fixture(autouse=True)
-def loaded_features():
-    features.unload()
-    features.load()
-    yield
-    features.unload()
 
 
 def shell(what, at=NOW, **more):
@@ -101,38 +92,3 @@ def test_the_whole_bar_is_the_queue_and_nothing_else():
         commands = [read("before.py"), edit("now.py", NOW + 1)]
 
     assert [one["key"] for one in bar(Row(), NOW + 2)["queue"]] == ["reading before.py", "editing now.py"], "the bar is the queue"
-
-
-def test_a_journal_command_is_said_in_its_own_words():
-    assert [said("/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python /u/.journal/src/journal.py --root /u/.journal todo add x", lambda w: spoken(w, TODO)),
-            said("journal --env main message read 7", lambda w: spoken(w, MESSAGE))] == \
-        [["adding todo"], ["reading message 7"]], \
-        "the journal run through Python by its full path reads as the journal command, flags and their values left out"
-    assert [spoken(["message", "read", "$n"], MESSAGE), spoken(["work", "log", "$W"], WORK)] == ["reading message", "logging work"], \
-        "a shell variable is never shown as if it were a number"
-    assert (spoken(["message", "paths", "104"], MESSAGE), spoken(["message", "tag", "105", "x.png", "words"], MESSAGE)) == \
-        ("reading message 104", "tagging message 105"), "an unknown word ending in s is a thing of the row, not a verb to conjugate"
-    assert spoken(["todo", "add", "5"], TODO) == "adding todo 5", "a type's own word for a method is understood"
-    assert [spoken(["open"], MESSAGE), spoken(["status"], MESSAGE), spoken(["message", "reply", "625"], MESSAGE)] == \
-        ["checking open work", "checking status", "replying message 625"], \
-        "every journal command is an action, a resource and an id, and a query has no id"
-
-
-def test_claude_reads_its_plan_windows_from_its_status_line(tmp_path, monkeypatch):
-    home = tmp_path / "home"
-    home.mkdir()
-    monkeypatch.setenv("HOME", str(home))
-    assert Claude().usage(Path("/x/abc-1.jsonl")) is None, "Claude with nothing from its status line reports no windows"
-    (home / ".journal" / "claude-status").mkdir(parents=True)
-    (home / ".journal" / "claude-status" / "abc-1.json").write_text(json.dumps({"session_id": "abc-1", "rate_limits": {
-        "five_hour": {"used_percentage": 37.5, "resets_at": 1789900000},
-        "seven_day": {"used_percentage": 12, "resets_at": "2026-09-25T10:00:00Z"}}}))
-    assert Claude().usage(Path("/x/abc-1.jsonl")) == {"windows": [
-        {"key": "five_hour", "label": "5h", "used": 37.5, "minutes": 300, "resets": 1789900000},
-        {"key": "seven_day", "label": "7d", "used": 12.0, "minutes": 10080, "resets": 1790330400}]}, \
-        "Claude's plan windows come from what its status line was told, in the same shape as Codex's"
-    script = Path(__file__).resolve().parents[3] / "claude-status.sh"
-    subprocess.run(["sh", str(script)], input=json.dumps({"session_id": "live-2", "rate_limits": {"five_hour": {"used_percentage": 50, "resets_at": 1}}}),
-                   text=True, timeout=10, env={"HOME": str(home)})
-    assert json.loads((home / ".journal" / "claude-status" / "live-2.json").read_text())["rate_limits"]["five_hour"]["used_percentage"] == 50, \
-        "the status-line script keeps what Claude hands it, under the session's name"

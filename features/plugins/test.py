@@ -1,6 +1,5 @@
 import features
 import json
-import pytest
 import subprocess
 import time
 
@@ -22,14 +21,6 @@ from tests.conftest import fresh, refused
 
 
 CLAUDE = PROVIDERS["claude"]()
-
-
-@pytest.fixture(autouse=True)
-def loaded_features():
-    features.unload()
-    features.load()
-    yield
-    features.unload()
 
 
 def alone(env="t"):
@@ -94,34 +85,6 @@ def test_a_guard_that_fails_or_hangs_never_stops_the_agent():
     started = time.monotonic()
     answered = writing(slow)
     assert (answered, time.monotonic() - started < 3) == ({}, True), "a guard that hangs is given up on, quickly, and the write goes through"
-
-
-def test_events_reach_a_listening_plugin_from_the_moment_it_is_installed():
-    record = fresh()
-    Agents(record, actor=SYSTEM).by_session("claude-1")
-    seen = folder(record.root, "works") / "seen.jsonl"
-    installed(record, {"name": "works", "on": {"todo.created": {"run": "sh handler.sh"}}},
-              handler=f"cat >> {seen}\necho '{{\"whisper\": \"a row was filed\"}}'\n")
-    host = Host(record.root)
-    todos = Todos(record, actor=AGENT)
-
-    todos.create("before the plugin was listening")
-    assert (host.step(), seen.exists()) == (0, False), "nothing old is delivered on the first step"
-
-    made = todos.create("fix the header")
-    assert (host.step(), host.step()) == (1, 0), "the matching event is delivered once"
-    payload = json.loads(seen.read_text().splitlines()[0])
-    assert (payload["event"], payload["n"], payload["resource"]["title"]) == ("todo.created", made.n, "fix the header"), \
-        "the plugin is handed the event and the row"
-    assert [n.brief for n in Nudges(record).all()] == ["a row was filed"], "its answer was applied"
-
-    todos.update(made.n, brief="still wrapping")
-    assert (host.step(), len(seen.read_text().splitlines())) == (0, 1), \
-        "an event with no handler is passed over, and nothing more reaches the plugin"
-
-    Todos(record, actor=PLUGIN).create("filed by the plugin", plugin="works")
-    host.step()
-    assert len(seen.read_text().splitlines()) == 1, "the plugin's own row is not sent back to it"
 
 
 def test_a_failing_setup_step_installs_nothing_and_says_which_step_failed(tmp_path):

@@ -1,5 +1,4 @@
 import features
-import pytest
 
 from controllers.types import Messages, Facts, Todos
 from resources.base import AGENT, USER
@@ -8,14 +7,6 @@ from features.plans.controller import Plans  # noqa: E402
 from controllers.types import Docs, Reports
 from resources.base import AGENT
 from tests.kit import nudges, report
-
-
-@pytest.fixture(autouse=True)
-def loaded_features():
-    features.unload()
-    features.load()
-    yield
-    features.unload()
 
 
 def test_what_is_filed_while_a_message_is_in_hand_is_linked_to_it_until_it_closes():

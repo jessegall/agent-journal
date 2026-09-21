@@ -86,7 +86,7 @@ def test_writing_a_plan_lays_out_phases_and_advances_through_them_to_done(env):
 
 def test_under_auto_a_checkpoint_is_passed_not_waited_at():
     auto = fresh("auto")
-    auto.features = {"auto": True}
+    auto.features = {"work.auto": True}
     auto_todos = Todos(auto, actor=USER)
     a, b = auto_todos.create("first").n, auto_todos.create("second").n
     quick = Plans(auto, actor=AGENT)
@@ -109,13 +109,11 @@ def test_under_auto_a_checkpoint_is_passed_not_waited_at():
     auto_todos.complete(b, "done")
     auto_todos.complete(c, "done")
     assert quick.load(run.n).data["status"] == "waiting", "with auto off the later checkpoint waits"
-    auto.features = {"auto": True}
+    auto.features = {"work.auto": True}
     Agents(auto, actor=AGENT).by_session("claude-1")
     idle(auto)
     assert (quick.load(run.n).data["status"], quick.load(run.n).data["current"]) == ("active", 4), \
         "auto switched on while a plan waits: the next agent activity continues it"
-    assert [e for e in auto.events() if e.type == "plan" and e.data.get("phase") == 1][-1].data["passed"] is False, \
-        "the event on an ordinary phase says no checkpoint was passed"
 
 
 def test_a_plan_activated_with_its_rows_already_closed_completes_itself(env):

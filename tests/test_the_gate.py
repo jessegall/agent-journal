@@ -1,6 +1,5 @@
 import json
 
-import pytest
 
 import features
 from controllers.types import Works
@@ -11,14 +10,6 @@ from resources.base import AGENT
 from tests.conftest import fresh
 
 REFUSED = 'nothing is open, so this write would not be filed: journal work start "<the work>" first'
-
-
-@pytest.fixture(autouse=True)
-def loaded_features():
-    features.unload()
-    features.load()
-    yield
-    features.unload()
 
 
 def test_a_write_is_refused_until_work_is_open_for_every_provider():

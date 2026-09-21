@@ -1,17 +1,8 @@
-import pytest
 
 import features
 from controllers.types import Suggestions, Todos
 from resources.base import AGENT, USER
 from tests.conftest import fresh, refused
-
-
-@pytest.fixture(autouse=True)
-def loaded_features():
-    features.unload()
-    features.load()
-    yield
-    features.unload()
 
 
 def test_the_agent_proposes_and_the_user_decides_accept_adjust_or_decline():

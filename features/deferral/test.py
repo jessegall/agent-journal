@@ -1,20 +1,11 @@
 import json
 
-import pytest
 
 import features
 from controllers.types import Nudges, Todos
 from resources.base import AGENT
 from tests.kit import idle, nudges
 from tests.conftest import fresh
-
-
-@pytest.fixture(autouse=True)
-def loaded_features():
-    features.unload()
-    features.load()
-    yield
-    features.unload()
 
 
 def test_work_deferred_in_words_with_nothing_parked_is_named_back(tmp_path):

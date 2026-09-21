@@ -1,6 +1,5 @@
 import features
 import json
-import pytest
 
 from controllers.types import Agents, Messages
 from engine.hooks import gate_file
@@ -11,14 +10,6 @@ from controllers.types import Messages, Nudges, Works
 from engine.hooks import gate_file, handle
 from features.base import held
 from providers import PROVIDERS
-
-
-@pytest.fixture(autouse=True)
-def loaded_features():
-    features.unload()
-    features.load()
-    yield
-    features.unload()
 
 
 def test_a_read_message_is_named_back_until_the_agent_answers_it():

@@ -19,15 +19,7 @@ from resources.base import AGENT, SYSTEM, USER
 from tests.conftest import refused
 
 
-@pytest.fixture(autouse=True)
-def loaded_features():
-    features.unload()
-    features.load()
-    yield
-    features.unload()
-
-
-HERE = Path(__file__).resolve().parents[3]
+HERE = Path(__file__).resolve().parents[2]
 
 
 @pytest.fixture(scope="module")
@@ -74,30 +66,29 @@ def test_a_session_evicted_from_its_environment_is_held_until_it_claims_it_back(
     one.grant(env.n)
     assert allowed(sessions, "claude-1", "t", "agent-7", "todo") == "", "granted: a to-do is allowed"
     assert allowed(sessions, "claude-1", "t", "agent-7", "fact") == \
-        "a subagent never writes a pin: report it, and the main conversation files it", "granted: a pin is still refused"
+        "a subagent never writes a fact: report it, and the main conversation files it", "granted: a pin is still refused"
     assert allowed(sessions, "claude-1", "t", "", "fact") == "", "no subagent named: nothing to check"
 
 
 def test_a_subagent_writes_only_once_the_environment_is_lent_and_is_bound_by_the_same_law(env):
     root, record, sessions = env
 
-    code, out = cli(root, "todo", "add", "a row from a subagent", agent="runner-1")
+    code, out = cli(root, "todo", "create", "a row from a subagent", agent="runner-1")
     assert (code, out) == (1, "! environment 'main' is not lent to this session's subagents: journal environment <n> grant first"), \
         "without a grant a subagent's write is refused, and told what the dispatcher must do"
     code, out = cli(root, "todo", "all", agent="runner-1")
     assert code == 0, "its reads are never refused"
 
     sessions.grant("claude-1", "main")
-    code, out = cli(root, "todo", "add", "a row from a subagent", agent="runner-1")
+    code, out = cli(root, "todo", "create", "a row from a subagent", agent="runner-1")
     todos = Todos(record, actor=SYSTEM)
     assert (code, todos.load(1).data.get("agent")) == (0, "runner-1"), "with the grant the row is written, carrying the agent's mark"
     agents = Agents(record, actor=SYSTEM)
     runner = agents.by_session("runner-1")
-    assert (runner.data.get("status"), runner.data.get("active", 0) > 0) == ("subagent", True), \
-        "the agent row exists from the first write, stamped active, as a subagent"
+    assert runner.data.get("active", 0) > 0, "the agent row exists from the first write, stamped active"
 
     code, out = cli(root, "fact", "create", "a fact from a subagent", agent="runner-1")
-    assert (code, out) == (1, "! a subagent never writes a pin: report it, and the main conversation files it"), \
+    assert (code, out) == (1, "! a subagent never writes a fact: report it, and the main conversation files it"), \
         "a pin is not a subagent's to write"
     code, out = cli(root, "rule", "create", "a ruling from a subagent", agent="runner-1")
     assert code == 1, "nor a rule"

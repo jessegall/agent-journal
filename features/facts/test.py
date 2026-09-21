@@ -1,18 +1,9 @@
-import pytest
 
 import features
 from controllers.types import Nudges, Facts, Reminders
 from resources.base import AGENT, USER
 from tests.kit import nudges, report
 from tests.conftest import fresh
-
-
-@pytest.fixture(autouse=True)
-def loaded_features():
-    features.unload()
-    features.load()
-    yield
-    features.unload()
 
 
 def test_standing_pins_are_repeated_at_the_first_tenth_and_superseding_or_promoting_strikes_the_old():

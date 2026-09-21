@@ -1,20 +1,11 @@
 import os
 import time
 
-import pytest
 
 import features
 from features import FEATURES
 from tests.kit import idle
 from tests.conftest import fresh
-
-
-@pytest.fixture(autouse=True)
-def loaded_features():
-    features.unload()
-    features.load()
-    yield
-    features.unload()
 
 
 def test_captures_are_cut_to_their_tail_and_files_of_quiet_sessions_are_removed():

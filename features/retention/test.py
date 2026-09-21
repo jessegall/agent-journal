@@ -1,20 +1,11 @@
 import time
 
-import pytest
 
 import features
 from controllers.types import Notifications, Reports, Todos
 from resources.base import AGENT, USER
 from tests.kit import report
 from tests.conftest import fresh
-
-
-@pytest.fixture(autouse=True)
-def loaded_features():
-    features.unload()
-    features.load()
-    yield
-    features.unload()
 
 
 def age(c, n, **fields):
