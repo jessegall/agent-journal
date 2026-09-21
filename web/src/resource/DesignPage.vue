@@ -73,6 +73,23 @@ const topChanged = computed(() =>
         : {}
 );
 
+const note = computed(() =>
+    [
+        latest.value && open.value ? `Open for edits, kept by itself in ${minutesLeft.value} min` : "",
+        meta.value ? meta.value.data.change : "",
+        meta.value ? meta.value.seen.join(", ") : "",
+        meta.value ? age(meta.value.updated || meta.value.created) || "just now" : "",
+    ]
+        .filter(Boolean)
+        .join(" · ")
+);
+
+const WINDOW = 8;
+const ticks = computed(() => {
+    const from = Math.max(0, Math.min(at.value - WINDOW + 2, numbers.value.length - WINDOW));
+    return {from, shown: Array.from({length: Math.min(WINDOW, numbers.value.length)}, (_, k) => from + k)};
+});
+
 function go(i) {
     at.value = Math.max(0, Math.min(numbers.value.length - 1, i));
     editing.value = "";
@@ -123,11 +140,14 @@ const cutPart = (title) => run("cut", {title});
         </header>
 
         <nav class="revisions" aria-label="Revisions">
-            <Btn kind="icon" small :disabled="at <= 0" title="Earlier revision" @click="go(at - 1)">
-                <Icon name="chevron" class="back" />
-            </Btn>
-            <div class="track">
-                <template v-for="(n, i) in numbers" :key="n">
+            <div class="steps">
+                <Btn kind="icon" small :disabled="at <= 0" title="Earlier revision" @click="go(at - 1)">
+                    <Icon name="chevron" class="back" />
+                </Btn>
+                <template v-if="ticks.from > 0">
+                    <span class="earlier">+{{ ticks.from }}</span>
+                </template>
+                <template v-for="i in ticks.shown" :key="numbers[i]">
                     <button
                         type="button"
                         :class="['tick', {current: i === at, open: open && i === numbers.length - 1}]"
@@ -136,29 +156,26 @@ const cutPart = (title) => run("cut", {title});
                         @click="go(i)"
                     />
                 </template>
-            </div>
-            <Btn kind="icon" small :disabled="latest" title="Later revision" @click="go(at + 1)">
-                <Icon name="chevron" />
-            </Btn>
-            <span class="where">
-                Revision {{ at + 1 }} of {{ numbers.length }}
-                <template v-if="meta">· {{ meta.data.change }} · {{ meta.seen[0] }} · {{ age(meta.created) || "just now" }}</template>
-            </span>
-            <span class="grow" />
-            <template v-if="latest && open">
-                <span class="open-note">Open · kept by itself in {{ minutesLeft }} min</span>
-                <Btn small title="Keep this revision as it is; the next edit starts a new one" @click="run('keep', {})">
-                    Keep this revision
+                <Btn kind="icon" small :disabled="latest" title="Later revision" @click="go(at + 1)">
+                    <Icon name="chevron" />
                 </Btn>
-            </template>
-            <template v-if="at > 0">
-                <button type="button" :class="['switch', {on: changes}]" :aria-pressed="changes" @click="changes = !changes">
-                    Show changes
-                </button>
-            </template>
-            <template v-if="!latest">
-                <Btn small @click="go(numbers.length - 1)">Latest</Btn>
-            </template>
+                <span class="count">Revision {{ at + 1 }} of {{ numbers.length }}</span>
+                <span class="grow" />
+                <template v-if="latest && open">
+                    <Btn small title="Keep this revision as it is; the next edit starts a new one" @click="run('keep', {})">
+                        Keep this revision
+                    </Btn>
+                </template>
+                <template v-if="at > 0">
+                    <button type="button" :class="['switch', {on: changes}]" :aria-pressed="changes" @click="changes = !changes">
+                        Show changes
+                    </button>
+                </template>
+                <template v-if="!latest">
+                    <Btn small @click="go(numbers.length - 1)">Latest</Btn>
+                </template>
+            </div>
+            <p class="where">{{ note }}</p>
         </nav>
 
         <template v-if="!shown">
@@ -277,9 +294,6 @@ const cutPart = (title) => run("cut", {title});
 }
 
 .revisions {
-    display: flex;
-    align-items: center;
-    gap: 8px;
     margin: 12px 0 6px;
     padding: 8px 10px;
     border: 1px solid var(--border);
@@ -289,20 +303,31 @@ const cutPart = (title) => run("cut", {title});
     color: var(--text-3);
 }
 
+.steps {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.earlier {
+    margin-right: 2px;
+    font-size: 11px;
+    color: var(--text-3);
+}
+
+.count {
+    margin-left: 6px;
+    white-space: nowrap;
+    color: var(--text-2);
+}
+
 .back {
     transform: rotate(180deg);
 }
 
-.track {
-    display: flex;
-    align-items: center;
-    gap: 3px;
-    max-width: 40%;
-    overflow-x: auto;
-}
-
 .tick {
     flex: none;
+    margin: 0 1px;
     width: 8px;
     height: 16px;
     padding: 0;
@@ -329,20 +354,16 @@ const cutPart = (title) => run("cut", {title});
     box-shadow: inset 0 0 0 1.5px var(--accent);
 }
 
-.open-note {
-    flex: none;
-    color: var(--text-3);
-    white-space: nowrap;
-}
-
 .where {
-    min-width: 0;
+    margin: 6px 0 0 4px;
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
 }
 
 .switch {
+    flex: none;
+    white-space: nowrap;
     height: 24px;
     padding: 0 9px;
     border: 1px solid var(--border-2);
