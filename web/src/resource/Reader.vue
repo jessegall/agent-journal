@@ -11,7 +11,8 @@ import DesignPage from "./DesignPage.vue";
 import AgentPage from "./AgentPage.vue";
 import Comments from "./Comments.vue";
 
-const props = defineProps({type: String, n: Number, depth: {type: Number, default: 0}, over: Boolean});
+const props = defineProps({type: String, n: Number, depth: {type: Number, default: 0}, over: Boolean, leaving: Boolean});
+const emit = defineEmits(["gone"]);
 const resource = computed(() => (props.type ? rows(props.type).find((r) => r.n === props.n) : null) || null);
 watchEffect(() => {
     if (props.type && props.n && !resource.value) holding(props.type, [props.n]);
@@ -41,9 +42,9 @@ watch(
 </script>
 
 <template>
-    <Transition name="reader">
+    <Transition name="reader" appear @after-leave="emit('gone')">
         <div
-            v-if="resource"
+            v-if="resource && !leaving"
             :key="panel"
             :class="['reader', shape, {under: depth, over}]"
             :style="{'--depth': depth, zIndex: 20 - depth}"
