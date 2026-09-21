@@ -90,9 +90,9 @@ class AgentsFeature(Feature):
         limit = record.agents.get(self.LAPSE, LAPSE_MINUTES) * 60
         todos = Todos(record, actor=SYSTEM)
         rows = {a.title: a for a in self.rows(record)._every() if a.status == SUBAGENT}
-        for t in todos._every():
+        for t in todos._standing():
             who = t.assigned
-            if not who or t.completed or who not in rows or time.time() - float(rows[who].active or 0) < limit:
+            if not who or who not in rows or time.time() - float(rows[who].active or 0) < limit:
                 continue
             todos.update(t.n, assigned="", lapsed=who)
             agent = self.agent(event, record)

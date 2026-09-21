@@ -12,7 +12,7 @@ from pathlib import Path
 from urllib.request import urlopen
 
 from features.tabfocus.focus import existing_tab
-from engine.stored import read_json, write_json
+from engine.stored import read_json, write_json, write_text
 
 PORTS = range(8420, 8440)
 HEARTBEAT = 2.0
@@ -54,10 +54,7 @@ def remember(root: Path, port: int) -> str:
 def beat(root: Path, port: int) -> str:
     url = f"http://127.0.0.1:{port}/"
     for target, text in ((marker(root), json.dumps({"url": url, "at": time.time(), "port": port, "pid": os.getpid()})), (root / "runtime" / "heartbeat", f"{int(time.time())} {url}\n")):
-        target.parent.mkdir(parents=True, exist_ok=True)
-        partial = target.with_name(f".{target.name}.partial")
-        partial.write_text(text)
-        partial.replace(target)
+        write_text(target, text)
     return url
 
 

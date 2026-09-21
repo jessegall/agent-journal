@@ -1,5 +1,6 @@
 import re
 import subprocess
+from pathlib import Path
 
 from controllers.types import Todos
 from features.base import Feature, event
@@ -13,6 +14,9 @@ class Commits(Feature):
     title_ = "Closing rows from commits"
     abstract_ = "A commit whose message carries Journal: todos done <n> closes that row"
     help_ = "The trailer starts at column 0; prose and indented examples close nothing."
+
+    def __init__(self):
+        self.seen: dict[str, int] = {}
 
     def log(self, project) -> list[tuple[str, str, str]]:
         try:
@@ -31,8 +35,20 @@ class Commits(Feature):
             except Refused:
                 continue
 
+    def moved(self, project) -> bool:
+        try:
+            stamp = (Path(project) / ".git" / "logs" / "HEAD").stat().st_mtime_ns
+        except OSError:
+            return True
+        if self.seen.get(str(project)) == stamp:
+            return False
+        self.seen[str(project)] = stamp
+        return True
+
     @event("agent.updated")
     def read(self, event, record) -> None:
+        if not self.moved(record.root.parent):
+            return
         commits = self.log(record.root.parent)
         if not commits:
             return
