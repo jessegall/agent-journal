@@ -15,7 +15,7 @@ SHOWN = {OPEN: "Open", EVERY: "All"}
 
 
 def tabs(kind) -> list[dict]:
-    titles = {**SHOWN, CLOSED: kind.shown.get("completed", "Closed").split()[-1].capitalize()}
+    titles = {**SHOWN, CLOSED: kind.event_labels.get("completed", "Closed").split()[-1].capitalize()}
     return [{"key": key, "title": titles[key], "shows": key} for key in kind.filters]
 
 
@@ -37,8 +37,8 @@ def manifest(root: Path | None = None) -> dict:
         "priority": priority(),
         "fields": [f.name for f in fields(Resource)],
         "methods": actions(Controller),
-        "types": {name: {"title": c.title_, "abstract": c.abstract_, "help": c.help_, "view": c.view, "nav": c.nav, "scope": c.scope, "icon": c.icon, "attention": c.attention, "finished_is_news": c.finished_is_news, "clears": c.clears, "filters": tabs(c), "mirror": c.mirror, "closed_first": c.closed_first, "notify": list(c.notify), "spoken": c.spoken, "counted": c.counted, "fields": c.fields, "labels": c.labels,
-                         "names": dict(c.names), "shown": dict(c.shown), "methods": actions(CONTROLLERS[name])}
+        "types": {name: {"title": c.title_, "abstract": c.abstract_, "help": c.help_, "view": c.view, "in_sidebar": c.in_sidebar, "scope": c.scope, "icon": c.icon, "needs_attention": c.needs_attention, "lists_completed_unread": c.lists_completed_unread, "cleared_by": c.cleared_by, "filters": tabs(c), "nested": c.nested, "closed_first": c.closed_first, "notified": list(c.notified), "typed_as_title": c.typed_as_title, "start_as_count": c.start_as_count, "fields": c.fields, "labels": c.labels,
+                         "command_names": dict(c.command_names), "event_labels": dict(c.event_labels), "methods": actions(CONTROLLERS[name])}
                   for name, c in TYPES.items()},
         "features": features.describe(),
     }

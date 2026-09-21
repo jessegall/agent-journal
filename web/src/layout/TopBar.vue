@@ -22,7 +22,7 @@ const PAGES = {
 const title = computed(() =>
     !route.value.page ? "Home" : PAGES[route.value.page] || (meta(route.value.page) ? `${meta(route.value.page).title}s` : route.value.page)
 );
-const waiting = computed(() => types.value.filter((t) => t.attention).flatMap((t) => unreadByUser(t.name)).length);
+const waiting = computed(() => types.value.filter((t) => t.needs_attention).flatMap((t) => unreadByUser(t.name)).length);
 const drop = ref(false);
 const wrap = ref(null);
 useOutside(wrap, () => (drop.value = false));

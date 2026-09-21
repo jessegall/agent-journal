@@ -61,12 +61,12 @@ export const state = (r) =>
                 ? "started"
                 : "open";
 
-export const toldToUser = (e) => !!meta(e.type) && meta(e.type).notify.includes("user");
+export const toldToUser = (e) => !!meta(e.type) && meta(e.type).notified.includes("user");
 
 export function happened(r) {
     const kind = meta(r.type);
     const action = r.completed ? "completed" : "created";
-    const said = (kind.shown || {})[action];
+    const said = (kind.event_labels || {})[action];
     if (said) return said;
     return r.completed ? `${kind.title} ${word(r.type, "complete")}` : `${kind.title} created`;
 }

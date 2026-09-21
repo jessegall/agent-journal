@@ -55,7 +55,7 @@ class Controller(Stored, Files, Links):
             return
         stored = self.load(r.n)
         if action == "deleted" or any(getattr(stored, f) != getattr(r, f) for f in WORDS):
-            self._refuse(f"{self.type} {r.n} was written by the {stored.seen[0]}: answer it with journal {self.type} {self.resource.answered} {r.n} \"<text>\" instead of changing it")
+            self._refuse(f"{self.type} {r.n} was written by the {stored.seen[0]}: answer it with journal {self.type} {self.resource.answer_command} {r.n} \"<text>\" instead of changing it")
 
     @internal
     def save(self, r: Resource, action: str, **event) -> Resource:
@@ -164,7 +164,7 @@ class Controller(Stored, Files, Links):
         r.completed = time.time()
         r.outcome = how
         r.data.update(self._shaped(data))
-        if self.resource.finished_is_news and self.actor != USER:
+        if self.resource.lists_completed_unread and self.actor != USER:
             r.seen = [who for who in r.seen if who != USER]
         return self.save(r, "completed", how=how, **data)
 
@@ -180,15 +180,15 @@ class Controller(Stored, Files, Links):
 
     @internal
     def named(self, method: str) -> str:
-        return self.resource.names.get(method, method)
+        return self.resource.command_names.get(method, method)
 
     @internal
     def method(self, name: str):
-        for method, alias in self.resource.names.items():
+        for method, alias in self.resource.command_names.items():
             if alias == name:
                 return getattr(self, method)
-        if name in self.resource.names:
-            self._refuse(f"a {self.type} calls that {self.resource.names[name]}")
+        if name in self.resource.command_names:
+            self._refuse(f"a {self.type} calls that {self.resource.command_names[name]}")
         return self.action(name)
 
     @internal
@@ -196,7 +196,7 @@ class Controller(Stored, Files, Links):
         command = COMMANDS.get(self.type, {}).get(name)
         if command:
             return partial(command, self)
-        for method, alias in self.resource.names.items():
+        for method, alias in self.resource.command_names.items():
             if alias == name:
                 return getattr(self, method)
         return getattr(self, name)

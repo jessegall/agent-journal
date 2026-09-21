@@ -8,7 +8,7 @@ def standing(record, type_: str) -> list:
 
 
 def counts(record) -> dict[str, int]:
-    return {t: len(standing(record, t)) for t in priority() if TYPES[t].nav}
+    return {t: len(standing(record, t)) for t in priority() if TYPES[t].in_sidebar}
 
 
 def open_work(record) -> list:
@@ -44,16 +44,16 @@ def start_block(record) -> str:
     parts = [f"THE JOURNAL IS IN FORCE HERE — this session is bound to environment `{record.env}`.", law(), skills_handed(record)]
     for type_ in reversed(priority()):
         kind = TYPES[type_]
-        rows = handed(record, type_) if kind.handed else []
+        rows = handed(record, type_) if kind.start_heading else []
         if not rows:
             continue
-        parts.append(f"{len(rows)} {kind.handed}." if kind.counted else f"{kind.handed} ({len(rows)}):\n{lines(rows, describe)}")
+        parts.append(f"{len(rows)} {kind.start_heading}." if kind.start_as_count else f"{kind.start_heading} ({len(rows)}):\n{lines(rows, describe)}")
     return "\n\n".join(p for p in parts if p) + "\n"
 
 
 def carry(record) -> str:
     out = [start_block(record)]
     for type_ in priority():
-        for r in standing(record, type_) if TYPES[type_].handed else []:
+        for r in standing(record, type_) if TYPES[type_].start_heading else []:
             out.append(f"{TYPES[type_].title_.upper()} {r.n}  {r.title}\n{r.brief}".rstrip())
     return "\n\n".join(out) + "\n"

@@ -45,7 +45,7 @@ def ing(word: str) -> str:
 
 
 def kinds() -> list[dict]:
-    return [{"name": t.type, "title": t.title_, "names": t.names, "says": t.says} for t in TYPES.values()]
+    return [{"name": t.type, "title": t.title_, "names": t.command_names, "says": t.status_labels} for t in TYPES.values()]
 
 
 def spoken(said_words: list[str], types: list[dict] | None = None) -> str:

@@ -23,7 +23,7 @@ onMounted(() => {
 onUnmounted(() => cancelAnimationFrame(frame));
 const notices = computed(() => open("notice"));
 const tabs = computed(() => [
-    ["waiting", "Notifications", types.value.filter((t) => t.attention).flatMap((t) => unreadByUser(t.name)).length, true],
+    ["waiting", "Notifications", types.value.filter((t) => t.needs_attention).flatMap((t) => unreadByUser(t.name)).length, true],
     ["todos", "To-dos", open("todo").length, false],
 ]);
 </script>

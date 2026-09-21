@@ -19,7 +19,7 @@ const folded = reactive({});
 const fold = (key) => {
     folded[key] = !folded[key];
 };
-const count = (t) => counted(t.name, t.attention ? "unread" : "open");
+const count = (t) => counted(t.name, t.needs_attention ? "unread" : "open");
 const live = (name) => store.agents.some((a) => a.data.status && a.data.status !== "stopped" && a.data.env === name);
 
 async function makeEnv() {
@@ -58,7 +58,7 @@ async function makeEnv() {
                     <a :class="['item', {on: route.page === t.name}]" :href="`#/${route.env}/${t.name}`">
                         <Icon :name="t.icon" />
                         {{ t.title }}s
-                        <span :class="['count', {hot: t.attention && count(t)}]">{{ count(t) || "" }}</span>
+                        <span :class="['count', {hot: t.needs_attention && count(t)}]">{{ count(t) || "" }}</span>
                     </a>
                 </template>
                 <a :class="['item', {on: route.page === 'settings'}]" :href="`#/${route.env}/settings`">

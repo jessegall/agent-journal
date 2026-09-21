@@ -77,19 +77,19 @@ OPTION = names("title", "description", "code")
 
 
 class Options(Shape):
-    options = Field(rows(title=TEXT, description=TEXT, code=TEXT), list)
-    pick = Field(NUMBER)
+    options: ClassVar[Field] = Field(rows(title=TEXT, description=TEXT, code=TEXT), list)
+    pick: ClassVar[Field] = Field(NUMBER)
 
 
 class Reasoned(Shape):
-    keywords = Field(LIST, list)
+    keywords: ClassVar[Field] = Field(LIST, list)
     labels = {"brief": "Reasoning", "outcome": "Why struck"}
 
 
 
 
 class Ranked(Shape):
-    priority = Field(NUMBER)
+    priority: ClassVar[Field] = Field(NUMBER)
     labels = {"priority": "Priority"}
 
 
@@ -98,5 +98,5 @@ COMMIT = names("sha", "subject")
 
 
 class Traced(Shape):
-    changed = Field(rows(path=TEXT, added=NUMBER, removed=NUMBER, created=FLAG), list)
-    commits = Field(rows(sha=TEXT, subject=TEXT), list)
+    changed: ClassVar[Field] = Field(rows(path=TEXT, added=NUMBER, removed=NUMBER, created=FLAG), list)
+    commits: ClassVar[Field] = Field(rows(sha=TEXT, subject=TEXT), list)

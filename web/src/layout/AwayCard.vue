@@ -18,7 +18,7 @@ const lines = computed(() =>
             age: age(e.at),
         }))
 );
-const waiting = computed(() => types.value.filter((t) => t.attention).reduce((sum, t) => sum + counted(t.name, "unread"), 0));
+const waiting = computed(() => types.value.filter((t) => t.needs_attention).reduce((sum, t) => sum + counted(t.name, "unread"), 0));
 const forText = computed(() => (away.since ? `${span((away.back - away.since) / 1000)} away` : "last 24 hours"));
 
 function toInbox() {

@@ -12,7 +12,6 @@ const props = defineProps({feature: Object});
 const emit = defineEmits(["close"]);
 const saved = (key) => (store.settings && store.settings[key]) || {};
 
-const tagNames = computed(() => saved("tags").names || []);
 const hold = ref("");
 const days = ref({});
 const retention = computed(() => saved("keep"));
@@ -24,14 +23,6 @@ const pieces = (text) =>
         .split(/(\{\{\w+\}\})/)
         .filter(Boolean)
         .map((piece) => ({piece, slot: /^\{\{\w+\}\}$/.test(piece)}));
-
-async function saveTags(value) {
-    const names = String(value)
-        .split(",")
-        .map((name) => name.trim().replace(/^\[!|\]$/g, ""))
-        .filter(Boolean);
-    if (names.length) await api.saveSettings({tags: {names}});
-}
 
 async function saveHold() {
     await api.saveSettings({questions: {hold: Number(hold.value)}});
@@ -98,13 +89,6 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
                     </section>
                 </template>
                 <SwitchCase :value="feature.name">
-                    <template #tags>
-                        <section class="block">
-                            <h3>Tag names</h3>
-                            <p class="note">Written [!name] at the start of a message, separated by commas</p>
-                            <input class="field wide" :value="tagNames.join(', ')" @change="saveTags($event.target.value)" />
-                        </section>
-                    </template>
                     <template #questions>
                         <section class="block">
                             <h3>Hold a picked answer</h3>

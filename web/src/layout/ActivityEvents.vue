@@ -19,7 +19,7 @@ const shown = computed(() =>
 const did = (e) => (e.action === "updated" && e.data && e.data.section ? "sectioned" : e.action);
 function heading(e) {
     if (announced(e)) return "Journal updated";
-    const own = (meta(e.type).shown || {})[did(e)];
+    const own = (meta(e.type).event_labels || {})[did(e)];
     if (own) return own;
     if (e.action === "completed") return `${meta(e.type).title} ${word(e.type, "complete")}`;
     return `${WORDS[e.action]} ${meta(e.type).title.toLowerCase()}`;

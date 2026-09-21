@@ -20,10 +20,10 @@ const TINT = {
 };
 const cards = computed(() =>
     types.value
-        .filter((t) => t.attention)
+        .filter((t) => t.needs_attention)
         .flatMap((t) => [
             ...unreadByUser(t.name),
-            ...(t.finished_is_news ? finishedUnread(t.name) : []),
+            ...(t.lists_completed_unread ? finishedUnread(t.name) : []),
             ...rows(t.name).filter((r) => r.data.kept && !r.deleted),
         ])
         .filter((r, i, all) => all.findIndex((other) => other.ref === r.ref) === i)
@@ -54,7 +54,7 @@ async function dismiss(r) {
                 <div v-for="r in cards" :key="r.ref" :class="['needs-card', r.type]" @click="open(r)">
                     <div class="needs-card-top">
                         <span class="needs-card-kind">{{ happened(r) }}</span>
-                        <template v-if="meta(r.type).clears !== 'completed' || r.completed || r.data.kept">
+                        <template v-if="meta(r.type).cleared_by !== 'completed' || r.completed || r.data.kept">
                             <button type="button" class="needs-dismiss" title="Seen — take it off the list" @click.stop="dismiss(r)">
                                 <Icon name="close" />
                             </button>

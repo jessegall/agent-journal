@@ -333,7 +333,7 @@ def post_skill_always(req: Request) -> Reply:
 
 
 def shown_types() -> list[str]:
-    return [t for t, c in CONTROLLERS.items() if tuple(c.resource.notify) != (AGENT,)]
+    return [t for t, c in CONTROLLERS.items() if tuple(c.resource.notified) != (AGENT,)]
 
 
 @route("GET", "/api/{env}/files")
@@ -582,7 +582,7 @@ def get_one(req: Request) -> Reply:
     try:
         controller = req.controller()
         n = int(req.params["n"])
-        return Reply(200, shaped(controller.show(n) if controller.resource.clears == OPENED else controller.load(n), req.record()))
+        return Reply(200, shaped(controller.show(n) if controller.resource.cleared_by == OPENED else controller.load(n), req.record()))
     except Refused as e:
         raise Missing(str(e))
 

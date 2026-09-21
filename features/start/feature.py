@@ -36,7 +36,7 @@ class Start(Feature):
 
     @event("*")
     def write(self, event, record) -> None:
-        if event.type in TYPES and (TYPES[event.type].handed or event.type in SHAPING):
+        if event.type in TYPES and (TYPES[event.type].start_heading or event.type in SHAPING):
             self.rebuild(record)
 
     def rebuild(self, record) -> None:

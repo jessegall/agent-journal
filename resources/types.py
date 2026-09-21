@@ -1,3 +1,5 @@
+from typing import ClassVar
+
 from resources.base import AGENT, COMPLETED, DOCUMENT, LAZY, OPENED, PROJECT, SYSTEM, USER, Resource
 from resources.shapes import FLAG, TEXT, Field, Options, Ranked, Reasoned, Shape, Traced, names
 
@@ -5,16 +7,16 @@ from resources.shapes import FLAG, TEXT, Field, Options, Ranked, Reasoned, Shape
 class Message(Shape, Resource):
     deduplicates = True
     indexed = ("idempotency",)
-    answered = "reply"
+    answer_command = "reply"
     editors = {USER: (USER, SYSTEM), AGENT: (AGENT, SYSTEM)}
     type = "message"
-    shown = {"created": "Message", "completed": "Message processed"}
+    event_labels = {"created": "Message", "completed": "Message processed"}
     icon = "mail"
-    idempotency = Field(TEXT)
-    delivered = Field()
-    told = True
-    clears = OPENED
-    names = {"complete": "processed"}
+    idempotency: ClassVar[Field] = Field(TEXT)
+    delivered: ClassVar[Field] = Field()
+    stamped_when_told = True
+    cleared_by = OPENED
+    command_names = {"complete": "processed"}
     title_ = "Message"
     abstract_ = "What the user left for the agent, or the agent for the user"
     help_ = "A message is read once by the other side and processed part by part; what each part became is written on it."
@@ -22,18 +24,18 @@ class Message(Shape, Resource):
 
 class Todo(Ranked, Resource):
     type = "todo"
-    shown = {"created": "To-do created", "completed": "To-do done"}
-    status = Field()
-    work = Field()
-    assigned = Field()
-    blocked = Field()
-    reported = Field()
-    after = Field()
-    struck = Field()
-    handed = "TO-DOS waiting — delayed work, not an instruction to start any of it"
-    counted = True
+    event_labels = {"created": "To-do created", "completed": "To-do done"}
+    status: ClassVar[Field] = Field()
+    work: ClassVar[Field] = Field()
+    assigned: ClassVar[Field] = Field()
+    blocked: ClassVar[Field] = Field()
+    reported: ClassVar[Field] = Field()
+    after: ClassVar[Field] = Field()
+    struck: ClassVar[Field] = Field()
+    start_heading = "TO-DOS waiting — delayed work, not an instruction to start any of it"
+    start_as_count = True
     icon = "circle"
-    names = {"complete": "done"}
+    command_names = {"complete": "done"}
     labels = {"outcome": "How"}
     title_ = "To-do"
     abstract_ = "One thing to do later, with a brief that says why and where to start"
@@ -42,32 +44,32 @@ class Todo(Ranked, Resource):
 
 class Work(Traced, Resource):
     type = "work"
-    shown = {"created": "Work started", "sectioned": "Work logged", "completed": "Work ended"}
-    says = {"create": "starting", "complete": "ending"}
-    todo = Field()
-    status = Field()
-    parked = Field()
-    handed = "STILL OPEN, from this or an earlier session"
+    event_labels = {"created": "Work started", "sectioned": "Work logged", "completed": "Work ended"}
+    status_labels = {"create": "starting", "complete": "ending"}
+    todo: ClassVar[Field] = Field()
+    status: ClassVar[Field] = Field()
+    parked: ClassVar[Field] = Field()
+    start_heading = "STILL OPEN, from this or an earlier session"
     icon = "play"
-    notify = (USER,)
-    names = {"complete": "end", "create": "start"}
+    notified = (USER,)
+    command_names = {"complete": "end", "create": "start"}
     title_ = "Work"
     abstract_ = "What the agent is doing right now, declared before its first write"
     help_ = "Work is opened by the agent, updated as it moves and ended when done; the agent that opened it has seen it."
-    nav = False
+    in_sidebar = False
 
 
 class Doc(Shape, Resource):
     loading = LAZY
     type = "doc"
-    shown = {"created": "Doc written", "completed": "Doc settled"}
-    says = {"complete": "settling"}
-    status = Field()
-    handed = "DOCS catalogued — read one before you re-investigate what it settles"
-    lent = False
-    attention = True
+    event_labels = {"created": "Doc written", "completed": "Doc settled"}
+    status_labels = {"complete": "settling"}
+    status: ClassVar[Field] = Field()
+    start_heading = "DOCS catalogued — read one before you re-investigate what it settles"
+    subagent_writable = False
+    needs_attention = True
     icon = "file"
-    names = {"complete": "final"}
+    command_names = {"complete": "final"}
     scope = PROJECT
     title_ = "Document"
     abstract_ = "What stays true about the project, catalogued for every session"
@@ -78,11 +80,11 @@ class Doc(Shape, Resource):
 class Report(Shape, Resource):
     loading = LAZY
     type = "report"
-    shown = {"created": "Report written", "completed": "Report archived"}
-    says = {"complete": "archiving"}
-    attention = True
+    event_labels = {"created": "Report written", "completed": "Report archived"}
+    status_labels = {"complete": "archiving"}
+    needs_attention = True
     icon = "report"
-    names = {"complete": "archive"}
+    command_names = {"complete": "archive"}
     closed_first = True
     title_ = "Report"
     abstract_ = "What was checked and what was found, written for the user, read once"
@@ -92,14 +94,14 @@ class Report(Shape, Resource):
 
 class Fact(Reasoned, Resource):
     type = "fact"
-    shown = {"created": "Fact noted", "completed": "Fact struck"}
-    says = {"complete": "striking"}
-    handed = "FACTS about this environment"
-    lent = False
-    attention = True
-    finished_is_news = True
+    event_labels = {"created": "Fact noted", "completed": "Fact struck"}
+    status_labels = {"complete": "striking"}
+    start_heading = "FACTS about this environment"
+    subagent_writable = False
+    needs_attention = True
+    lists_completed_unread = True
     icon = "pin"
-    names = {"complete": "strike"}
+    command_names = {"complete": "strike"}
     title_ = "Fact"
     abstract_ = "Something true about this environment that a later session would get wrong without"
     help_ = "A fact is handed to every session on its environment; it is struck when it stops being true."
@@ -107,15 +109,15 @@ class Fact(Reasoned, Resource):
 
 class Rule(Reasoned, Resource):
     type = "rule"
-    shown = {"created": "Rule made", "completed": "Rule struck"}
-    says = {"complete": "striking"}
-    injected = Field(FLAG)
-    handed = "RULES, in force on every environment"
-    lent = False
-    attention = True
-    finished_is_news = True
+    event_labels = {"created": "Rule made", "completed": "Rule struck"}
+    status_labels = {"complete": "striking"}
+    injected: ClassVar[Field] = Field(FLAG)
+    start_heading = "RULES, in force on every environment"
+    subagent_writable = False
+    needs_attention = True
+    lists_completed_unread = True
     icon = "list"
-    names = {"complete": "strike"}
+    command_names = {"complete": "strike"}
     scope = PROJECT
     title_ = "Rule"
     abstract_ = "A ruling that binds every environment of the project"
@@ -124,13 +126,13 @@ class Rule(Reasoned, Resource):
 
 class Reminder(Shape, Resource):
     type = "reminder"
-    shown = {"created": "Reminder set", "completed": "Reminder retired"}
-    says = {"complete": "retiring"}
-    handed = "REMINDERS, said again at every stop"
-    whom = Field()
-    attention = True
+    event_labels = {"created": "Reminder set", "completed": "Reminder retired"}
+    status_labels = {"complete": "retiring"}
+    start_heading = "REMINDERS, said again at every stop"
+    whom: ClassVar[Field] = Field()
+    needs_attention = True
     icon = "clock"
-    names = {"complete": "retire"}
+    command_names = {"complete": "retire"}
     title_ = "Reminder"
     abstract_ = "An instruction said again until it is retired"
     help_ = "A reminder repeats at every start and every so often mid-work, because knowing is not doing. One written with --set whom=<session> is said to that agent alone, which is how an agent reminds itself or leaves one for another."
@@ -138,13 +140,13 @@ class Reminder(Shape, Resource):
 
 class Question(Options, Resource):
     type = "question"
-    shown = {"created": "Question asked", "completed": "Question answered"}
-    says = {"create": "asking", "complete": "answering"}
-    attention = True
-    clears = COMPLETED
-    nav = False
+    event_labels = {"created": "Question asked", "completed": "Question answered"}
+    status_labels = {"create": "asking", "complete": "answering"}
+    needs_attention = True
+    cleared_by = COMPLETED
+    in_sidebar = False
     icon = "help"
-    names = {"complete": "answer", "create": "ask"}
+    command_names = {"complete": "answer", "create": "ask"}
     labels = {"outcome": "Answer", "abstract": "Context"}
     title_ = "Question"
     abstract_ = "Something the agent asks the user, with choices to pick"
@@ -153,14 +155,14 @@ class Question(Options, Resource):
 
 class Suggestion(Options, Resource):
     type = "suggestion"
-    shown = {"created": "Suggestion made", "completed": "Suggestion decided"}
-    says = {"create": "suggesting", "complete": "deciding", "delete": "withdrawing"}
-    decision = Field()
-    handed = "SUGGESTIONS waiting on the user"
-    attention = True
-    clears = COMPLETED
+    event_labels = {"created": "Suggestion made", "completed": "Suggestion decided"}
+    status_labels = {"create": "suggesting", "complete": "deciding", "delete": "withdrawing"}
+    decision: ClassVar[Field] = Field()
+    start_heading = "SUGGESTIONS waiting on the user"
+    needs_attention = True
+    cleared_by = COMPLETED
     icon = "up"
-    names = {"complete": "decide", "create": "suggest", "delete": "withdraw"}
+    command_names = {"complete": "decide", "create": "suggest", "delete": "withdraw"}
     labels = {"outcome": "Decision", "brief": "Why"}
     title_ = "Suggestion"
     abstract_ = "A change the agent proposes unasked; the user accepts, adjusts or declines it, and nothing waits"
@@ -171,194 +173,194 @@ class Comment(Shape, Resource):
     deduplicates = True
     editors = {USER: (USER, SYSTEM), AGENT: (AGENT, SYSTEM)}
     type = "comment"
-    shown = {"created": "Comment", "completed": "Comment done"}
-    mirror = True
+    event_labels = {"created": "Comment", "completed": "Comment done"}
+    nested = True
     icon = "bubble"
-    names = {"complete": "done"}
+    command_names = {"complete": "done"}
     title_ = "Comment"
     abstract_ = "What the user or the agent said about another resource"
     help_ = "A comment is a resource of its own, linked to what it is about."
-    nav = False
+    in_sidebar = False
 
 
 class AgentRow(Shape, Resource):
     type = "agent"
-    status = Field()
-    event = Field()
-    tool = Field()
-    file = Field()
-    wrote = Field()
-    cwd = Field()
-    at = Field(default=0)
-    provider = Field(default="")
-    uses = Field(default=0)
-    transcript = Field(default="")
-    inbox = Field(default="")
-    model = Field(default="")
-    effort = Field(default="")
-    pending = Field(default=dict)
-    asking = Field(default=dict)
-    said = Field(default="")
-    started = Field()
-    context = Field(default=0)
-    usage = Field(default=dict)
-    skills = Field(default=list)
-    shells = Field(default=0)
-    subagents = Field(default=0)
-    shell_rows = Field(default=list)
-    subagent_rows = Field(default=list)
-    parent = Field(default="")
-    subagent = Field(FLAG, False)
-    compacting = Field(FLAG, False)
-    running = Field(default=dict)
-    commands = Field(default=list)
-    branch = Field()
-    branch_url = Field()
-    active = Field()
-    decided = Field()
+    status: ClassVar[Field] = Field()
+    event: ClassVar[Field] = Field()
+    tool: ClassVar[Field] = Field()
+    file: ClassVar[Field] = Field()
+    wrote: ClassVar[Field] = Field()
+    cwd: ClassVar[Field] = Field()
+    at: ClassVar[Field] = Field(default=0)
+    provider: ClassVar[Field] = Field(default="")
+    uses: ClassVar[Field] = Field(default=0)
+    transcript: ClassVar[Field] = Field(default="")
+    inbox: ClassVar[Field] = Field(default="")
+    model: ClassVar[Field] = Field(default="")
+    effort: ClassVar[Field] = Field(default="")
+    pending: ClassVar[Field] = Field(default=dict)
+    asking: ClassVar[Field] = Field(default=dict)
+    said: ClassVar[Field] = Field(default="")
+    started: ClassVar[Field] = Field()
+    context: ClassVar[Field] = Field(default=0)
+    usage: ClassVar[Field] = Field(default=dict)
+    skills: ClassVar[Field] = Field(default=list)
+    shells: ClassVar[Field] = Field(default=0)
+    subagents: ClassVar[Field] = Field(default=0)
+    shell_rows: ClassVar[Field] = Field(default=list)
+    subagent_rows: ClassVar[Field] = Field(default=list)
+    parent: ClassVar[Field] = Field(default="")
+    subagent: ClassVar[Field] = Field(FLAG, False)
+    compacting: ClassVar[Field] = Field(FLAG, False)
+    running: ClassVar[Field] = Field(default=dict)
+    commands: ClassVar[Field] = Field(default=list)
+    branch: ClassVar[Field] = Field()
+    branch_url: ClassVar[Field] = Field()
+    active: ClassVar[Field] = Field()
+    decided: ClassVar[Field] = Field()
     icon = "bot"
     title_ = "Agent"
     abstract_ = "A session of Claude or Codex, and what it is doing right now"
     help_ = "The hooks report activity; the engine distinguishes idle, busy, declared work and compaction."
-    nav = False
-    notify = ()
+    in_sidebar = False
+    notified = ()
 
 
 class Notification(Shape, Resource):
     type = "notification"
-    attention = True
+    needs_attention = True
     icon = "bell"
     title_ = "Notification"
     abstract_ = "Something the user should hear about, told to them once"
     help_ = "A notification is for the user: an update that landed, a plugin that installed, a setting the agent changed. The agent's own acts are not notifications; they are read in the activity."
-    nav = False
-    notify = ()
+    in_sidebar = False
+    notified = ()
 
 
 class Notice(Shape, Resource):
     type = "notice"
-    shown = {"created": "Notice", "completed": "Notice closed"}
+    event_labels = {"created": "Notice", "completed": "Notice closed"}
     icon = "band"
-    names = {"complete": "close"}
+    command_names = {"complete": "close"}
     title_ = "Notice"
     abstract_ = "One line kept over the chat while it matters"
     help_ = "A notice stays until the user's X or the agent's close; a tone and a link may ride on it."
-    nav = False
-    notify = (USER,)
+    in_sidebar = False
+    notified = (USER,)
 
 
 class Reaction(Shape, Resource):
     type = "reaction"
-    face = Field()
-    mirror = True
+    face: ClassVar[Field] = Field()
+    nested = True
     icon = "smile"
     title_ = "Reaction"
     abstract_ = "A face on a message"
     help_ = "A reaction is one face by one actor on one message; the same face again takes it off."
-    nav = False
+    in_sidebar = False
 
 
 class Tool(Shape, Resource):
     type = "tool"
-    lent = False
+    subagent_writable = False
     icon = "wrench"
     title_ = "Tool"
     abstract_ = "A script kept for a job that comes back, catalogued so the next agent runs it instead of writing it again"
     help_ = "A tool names its entry (how to run it), its usage and what it does; run executes it from the project root."
-    entry = Field(TEXT)
-    usage = Field(TEXT)
+    entry: ClassVar[Field] = Field(TEXT)
+    usage: ClassVar[Field] = Field(TEXT)
     scope = PROJECT
 
 
 class Connection(Shape, Resource):
     type = "connection"
-    lent = False
+    subagent_writable = False
     icon = "plug"
     title_ = "Connection"
     abstract_ = "A service the project can reach, and which variable holds its token"
     help_ = "Never the token itself: the name of the variable that holds it."
-    variable = Field(TEXT)
+    variable: ClassVar[Field] = Field(TEXT)
     scope = PROJECT
 
 
 class Plugin(Shape, Resource):
     type = "plugin"
-    shown = {"created": "Plugin installed", "completed": "Plugin removed"}
-    says = {"complete": "removing"}
-    lent = False
-    nav = False
+    event_labels = {"created": "Plugin installed", "completed": "Plugin removed"}
+    status_labels = {"complete": "removing"}
+    subagent_writable = False
+    in_sidebar = False
     icon = "plug"
-    names = {"complete": "remove"}
+    command_names = {"complete": "remove"}
     title_ = "Plugin"
     abstract_ = "A repository installed into the journal: it hears the bus, answers, and may run services of its own"
     help_ = "Installed from a GitHub URL or a local path, pinned to a commit; its manifest says what it listens to, what it runs and which pages it shows."
-    source = Field(TEXT)
-    revision = Field(TEXT)
-    commit = Field(TEXT)
-    version = Field(TEXT)
-    linked = Field(FLAG)
-    enabled = Field(FLAG)
-    manifest = Field()
-    settings = Field()
-    token = Field()
+    source: ClassVar[Field] = Field(TEXT)
+    revision: ClassVar[Field] = Field(TEXT)
+    commit: ClassVar[Field] = Field(TEXT)
+    version: ClassVar[Field] = Field(TEXT)
+    linked: ClassVar[Field] = Field(FLAG)
+    enabled: ClassVar[Field] = Field(FLAG)
+    manifest: ClassVar[Field] = Field()
+    settings: ClassVar[Field] = Field()
+    token: ClassVar[Field] = Field()
     scope = PROJECT
 
 
 class Environment(Shape, Resource):
     type = "environment"
-    shown = {"created": "Environment prepared", "completed": "Environment removed"}
-    says = {"create": "preparing", "complete": "removing"}
-    lent = False
+    event_labels = {"created": "Environment prepared", "completed": "Environment removed"}
+    status_labels = {"create": "preparing", "complete": "removing"}
+    subagent_writable = False
     icon = "branch"
-    names = {"create": "prepare", "complete": "remove"}
+    command_names = {"create": "prepare", "complete": "remove"}
     title_ = "Environment"
     abstract_ = "One line of work with its own record: messages, to-dos, facts, plans, settings"
     help_ = "A session works one environment at a time; switch takes one that is free, claim takes a held one with a reason."
     scope = PROJECT
-    nav = False
-    notify = ()
+    in_sidebar = False
+    notified = ()
 
 
 class Ask(Shape, Resource):
     loading = LAZY
     type = "browser"
-    op = Field()
-    args = Field(default=list)
-    mirror = True
+    op: ClassVar[Field] = Field()
+    args: ClassVar[Field] = Field(default=list)
+    nested = True
     icon = "open"
     title_ = "Browser ask"
     abstract_ = "What the agent asks of the tab the user is driving — a picture, its text, a click — answered by the extension"
     help_ = "journal browser ask shot|url|text|dom|console|click <selector>|type <selector> <words>|goto <url>|eval <js>|scroll top|bottom|<selector>; the user turns driving on in the chat window's bar."
-    nav = False
-    notify = ()
+    in_sidebar = False
+    notified = ()
 
 
 class FeatureRow(Shape, Resource):
     type = "feature"
     icon = "dot"
-    nav = False
-    enabled = Field(FLAG, True)
-    missing = Field(FLAG, False)
+    in_sidebar = False
+    enabled: ClassVar[Field] = Field(FLAG, True)
+    missing: ClassVar[Field] = Field(FLAG, False)
     title_ = "Feature"
     abstract_ = "A capability the engine loads, with its switch"
     help_ = "One row per feature the engine finds, carrying whether it is on. A row whose file is gone stays, switched off."
-    notify = ()
+    notified = ()
 
 
 class Nudge(Shape, Resource):
     loading = LAZY
     type = "nudge"
     notify_actions = ("created",)
-    private = Field()
-    session = Field()
-    mirror = True
+    private: ClassVar[Field] = Field()
+    session: ClassVar[Field] = Field()
+    nested = True
     icon = "arrow"
     title_ = "Nudge"
     abstract_ = "A line a feature has the engine type to the agent"
     help_ = "A nudge is written by a feature and spoken to the agent as it is; the user never hears it."
-    nav = False
-    notify = (AGENT,)
-    spoken = True
+    in_sidebar = False
+    notified = (AGENT,)
+    typed_as_title = True
 
 
 RUNNING = names("what", "tool", "at", "done", "changed", "files", "made", "effect", "result", "before")
