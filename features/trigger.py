@@ -65,7 +65,7 @@ def write(record, agent, name: str, **fields) -> None:
 
 def observe(record, agent, name: str, was: dict) -> None:
     if (was.get(AgentRow.status), was.get(AgentRow.event)) != (agent.status, agent.event):
-        write(record, agent, name, status=agent.status, event=agent.event)
+        HELD[str(_file(record, agent.title, name))] = {**was, AgentRow.status: agent.status, AgentRow.event: agent.event}
 
 
 def fired(record, agent, name: str) -> None:
