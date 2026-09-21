@@ -1,4 +1,4 @@
-from features.text import paragraphs
+from engine.text import paragraphs
 
 
 class Setting:

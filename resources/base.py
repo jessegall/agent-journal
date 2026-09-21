@@ -4,6 +4,8 @@ from dataclasses import dataclass, field, asdict, replace
 from types import SimpleNamespace
 from typing import ClassVar
 
+from engine.text import paragraphs
+
 TITLE_MAX = 80
 ABSTRACT_MAX = 200
 ACTIONS = ("created", "updated", "deleted", "linked", "commented", "completed", "reopened", "stamped")
@@ -27,8 +29,8 @@ def names(*columns: str) -> SimpleNamespace:
 
 
 class Field:
-    def __init__(self, spec=None, default=None):
-        self.spec, self.default = spec, default
+    def __init__(self, spec=None, default=None, name: str = ""):
+        self.spec, self.default, self.name = spec, default, name
 
     def __set_name__(self, owner, name: str) -> None:
         self.name = name
@@ -42,6 +44,22 @@ class Field:
 
     def __set__(self, obj, value) -> None:
         obj.data[self.name] = value
+
+
+def declare(cls) -> None:
+    for field_ in cls.__dict__.get("data_fields", []):
+        setattr(cls, field_.name, field_)
+
+
+@dataclass(frozen=True)
+class ResourceDetails:
+    title: str = ""
+    abstract: str = ""
+    help: str = ""
+
+    def __post_init__(self) -> None:
+        for key in ("title", "abstract", "help"):
+            object.__setattr__(self, key, paragraphs(getattr(self, key)))
 
 
 SECTION = names("title", "body")
@@ -71,6 +89,10 @@ class Event:
     pid: int = 0
     heard: bool = False
 
+    def __init_subclass__(cls, **kw):
+        super().__init_subclass__(**kw)
+        declare(cls)
+
     @property
     def ref(self) -> str:
         return f"{self.type}:{self.n}"
@@ -79,9 +101,7 @@ class Event:
 @dataclass
 class Resource:
     type = ""              # the type's name; its title, abstract and help are the type's own words
-    title_ = ""
-    abstract_ = ""
-    help_ = ""
+    details: ClassVar[ResourceDetails] = ResourceDetails()
     command_names: ClassVar[dict] = {}   # what this type calls a controller method: {"complete": "done", "create": "add"}
     status_labels: ClassVar[dict] = {}    # how the bar says a command on it: {"complete": "answering"}
     event_labels: ClassVar[dict] = {}   # how an event on it reads in the viewer: {"created": "Work started"}
@@ -107,10 +127,12 @@ class Resource:
     deduplicates: ClassVar[bool] = False
     indexed: ClassVar[tuple] = ()
     loading: ClassVar[str] = MEMORY
-    files: ClassVar[Field] = Field(default=dict)               # what is attached: name → what became of it
-    pictures: ClassVar[Field] = Field(default=dict)            # an attached image's width and height, known before it loads
-    agent: ClassVar[Field] = Field()                           # the subagent that wrote it, and its dispatcher
-    dispatcher: ClassVar[Field] = Field()
+    data_fields: ClassVar[list[Field]] = [
+        Field(default=dict, name="files"),
+        Field(default=dict, name="pictures"),
+        Field(name="agent"),
+        Field(name="dispatcher"),
+    ]
     n: int = 0
     title: str = ""
     abstract: str = ""
@@ -149,6 +171,9 @@ class Resource:
         brief = parts[0].strip()
         sections = [{SECTION.title: parts[i].strip(), SECTION.body: parts[i + 1].strip()} for i in range(1, len(parts) - 1, 2)]
         return cls(brief=brief, sections=sections, **got)
+
+
+declare(Resource)
 
 
 class Refused(Exception):

@@ -2,7 +2,7 @@ from typing import ClassVar
 
 import json
 
-from resources.base import Field, Refused, names
+from resources.base import Field, Refused, declare, names
 
 TEXT, NUMBER, FLAG, LIST = "text", "number", "flag", "list"
 KINDS = {TEXT: str, NUMBER: (int, float), FLAG: bool, LIST: list}
@@ -69,6 +69,7 @@ class Shape:
 
     def __init_subclass__(cls, **kw):
         super().__init_subclass__(**kw)
+        declare(cls)
         cls.fields = {k: v.spec for base in reversed(cls.__mro__) for k, v in vars(base).items() if isinstance(v, Field) and v.spec}
         cls.labels = {k: v for base in reversed(cls.__mro__) for k, v in vars(base).get("labels", {}).items()}
 
@@ -77,19 +78,25 @@ OPTION = names("title", "description", "code")
 
 
 class Options(Shape):
-    options: ClassVar[Field] = Field(rows(title=TEXT, description=TEXT, code=TEXT), list)
-    pick: ClassVar[Field] = Field(NUMBER)
+    data_fields: ClassVar[list[Field]] = [
+        Field(rows(title=TEXT, description=TEXT, code=TEXT), list, name="options"),
+        Field(NUMBER, name="pick"),
+    ]
 
 
 class Reasoned(Shape):
-    keywords: ClassVar[Field] = Field(LIST, list)
+    data_fields: ClassVar[list[Field]] = [
+        Field(LIST, list, name="keywords"),
+    ]
     labels = {"brief": "Reasoning", "outcome": "Why struck"}
 
 
 
 
 class Ranked(Shape):
-    priority: ClassVar[Field] = Field(NUMBER)
+    data_fields: ClassVar[list[Field]] = [
+        Field(NUMBER, name="priority"),
+    ]
     labels = {"priority": "Priority"}
 
 
@@ -98,5 +105,7 @@ COMMIT = names("sha", "subject")
 
 
 class Traced(Shape):
-    changed: ClassVar[Field] = Field(rows(path=TEXT, added=NUMBER, removed=NUMBER, created=FLAG), list)
-    commits: ClassVar[Field] = Field(rows(sha=TEXT, subject=TEXT), list)
+    data_fields: ClassVar[list[Field]] = [
+        Field(rows(path=TEXT, added=NUMBER, removed=NUMBER, created=FLAG), list, name="changed"),
+        Field(rows(sha=TEXT, subject=TEXT), list, name="commits"),
+    ]

@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.52.0 — Resource types describe themselves the same way as features
+
+Plan 9, to-do 593. A resource type's title, abstract and help sit in details = ResourceDetails(title=..., abstract=..., help=...), written as wrapped text if long, and its data fields are one list, data_fields = [Field(name="status"), Field(LIST, list, name="keywords")]. The underscored title_, abstract_ and help_ are gone from resources and features alike. A highlighted comment has one clean border again instead of an outline ring beside the agent's accent bar (message 1555).
+
+What to do about it: `journal upgrade`.
+
 ## 2.51.0 — Every feature is details and registered parts
 
 Plan 9, to-do 606. The status bar and plugins are the last two: the bar's queue functions live in statusline/bar.py and two handlers keep it and the plan usage current; a plugin's preview, install, upgrade, enable, disable and purge are Command classes over the helpers in lifecycle.py, its chat rules a TextFormatter, its refusal an interceptor and its clean-up on removal a handler. No feature uses @event, @formats, @interceptor, @command or @handles any more.

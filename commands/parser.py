@@ -83,7 +83,7 @@ def built(only: str) -> argparse.ArgumentParser:
     cmds = top.add_subparsers(dest="command", required=True)
     features.load()
     for type_, controller in CONTROLLERS.items():
-        t = cmds.add_parser(type_, help=controller.resource.abstract_, description=controller.resource.help_)
+        t = cmds.add_parser(type_, help=controller.resource.details.abstract, description=controller.resource.details.help)
         acts = t.add_subparsers(dest="action", required=True)
         for name in sorted({*actions(controller), *COMMANDS.get(type_, {})}) if not only or only == type_ else ():
             add_method(acts, controller, name)
