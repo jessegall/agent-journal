@@ -24,10 +24,10 @@ def test_the_catalogue_reads_skills_from_the_library_and_agent_homes_and_tracks_
         "the catalogue reads every SKILL.md under the library and the agent homes, with its frontmatter"
     listed = skills(record)
     auto = next(row for row in listed if row[SKILL.name] == "journal-work-tracking")
-    assert (auto[SKILL.loaded], auto[SKILL.stale], auto[SKILL.always]) == (0, False, True), \
-        "with no agent nothing is loaded or stale; a current journal skill is always by default"
-    assert ("Skill: journal-work-tracking" in start_block(record), "journal-obsolete" in start_block(record)) == (True, False), \
-        "the start block names current skills in the library, not obsolete provider-only ones"
+    assert (auto[SKILL.loaded], auto[SKILL.stale], auto[SKILL.always]) == (0, False, False), \
+        "with no agent nothing is loaded or stale; a feature's skill is not loaded at every start by default"
+    assert ("Skill: journal-work-tracking" in start_block(record), "journal-obsolete" in start_block(record)) == (False, False), \
+        "the start block names only the skills chosen for every start"
     record.skills = ["journal-work-tracking", "journal-obsolete"]
     assert handed(record) == "SKILLS to load now, at every start, before the first write: Skill: journal-work-tracking", \
         "stale persisted choices are filtered from the start block"

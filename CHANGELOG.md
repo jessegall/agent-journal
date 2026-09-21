@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.78.6 — Only the core skills load at every start by default
+
+Messages 1362 and 1364. With nothing chosen on the Skills page, every start asked for all forty journal skills, and every tool call waited until each was loaded. The default is now the core skills only: journal, messages, to-dos, questions, memory, docs, reports and transcripts. A feature's own skill is loaded when it is needed, or switched to every start on the Skills page.
+
+What to do about it: `journal upgrade`.
+
 ## 2.78.5 — A damaged record file no longer stops the journal
 
 One empty or half-written row file made every journal command crash with `ValueError: not enough values to unpack`, so the journal could not start at all. A row file that cannot be read is now skipped in every listing, and opening it by number says it is damaged and where it is. The boot test now starts the journal on a record with a damaged row, and makes each agent's stand-in wait for the first message the journal types, which would have caught the Codex crash fixed in 2.78.4.
