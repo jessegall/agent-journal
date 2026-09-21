@@ -30,7 +30,7 @@ def test_outside_the_features_only_the_generated_runs_are_tests():
 
 CLIENT = HERE / "web" / "src" / "api"
 ROUTER = HERE / "web" / "src" / "route.js"
-ENDPOINTS = re.compile(r"""\bfetch\(|new EventSource\(|["'`]/api\b|["'`]/\$\{|["'`]/(?:journals|services|plugins|pages|manifest|identity|agents|agent-hooks|agent-controls|upstream|upgrade|stop|extension|summary)\b""")
+ENDPOINTS = re.compile(r"""\bfetch\(|new EventSource\(|https?://(?:127\.0\.0\.1|localhost)|["'`]/api\b|["'`]/\$\{|["'`]/(?:journals|services|plugins|pages|manifest|identity|agents|agent-hooks|agent-controls|upstream|upgrade|stop|extension|summary)\b""")
 
 
 def test_only_the_api_client_names_an_endpoint():

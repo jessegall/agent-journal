@@ -3,25 +3,19 @@ import {onMounted, onUnmounted, ref} from "vue";
 import {api} from "../api/client.js";
 import {route} from "../route.js";
 import {age} from "../format/time.js";
+import {usePoll} from "../poll.js";
 
 const EVERY = 4000;
 const changes = ref([]);
 const settled = ref(false);
 
-async function read() {
-    try {
-        changes.value = (await api.changes()).changes || [];
-    } catch {
-        changes.value = [];
-    }
-}
-
-const reading = setInterval(read, EVERY);
-onMounted(() => {
-    read();
-    setTimeout(() => (settled.value = true), 400);
-});
-onUnmounted(() => clearInterval(reading));
+usePoll(
+    "changes",
+    () => api.changes(),
+    EVERY,
+    (got) => (changes.value = got.changes || [])
+);
+onMounted(() => setTimeout(() => (settled.value = true), 400));
 </script>
 
 <template>

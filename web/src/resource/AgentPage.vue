@@ -12,6 +12,7 @@ import {render} from "../text/index.js";
 import "../text/all.js";
 import Trace from "./Trace.vue";
 import AgentHooks from "./AgentHooks.vue";
+import {usePoll} from "../poll.js";
 
 const props = defineProps({resource: Object});
 const emit = defineEmits(["close"]);
@@ -43,7 +44,7 @@ const folded = ref(new Set());
 const error = ref("");
 const loading = ref(true);
 const paging = ref(false);
-let timer = null;
+const TRANSCRIPT_EVERY = 3000;
 let fetching = false;
 
 const WHO = {
@@ -142,19 +143,15 @@ watch(session, () => {
 });
 
 let watcher = null;
-onMounted(async () => {
-    await fetchTurns();
-    timer = setInterval(fetchTurns, 3000);
+usePoll(`transcript:${props.resource.n}`, fetchTurns, TRANSCRIPT_EVERY);
+onMounted(() => {
     watcher = new IntersectionObserver((seen) => seen.some((e) => e.isIntersecting) && earlier(), {
         root: scroller.value,
         rootMargin: "400px 0px",
     });
     if (topMark.value) watcher.observe(topMark.value);
 });
-onUnmounted(() => {
-    clearInterval(timer);
-    if (watcher) watcher.disconnect();
-});
+onUnmounted(() => watcher && watcher.disconnect());
 </script>
 
 <template>
