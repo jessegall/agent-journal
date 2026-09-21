@@ -88,6 +88,7 @@ class Resource:
     nav: ClassVar[bool] = True   # whether it sits in the sidebar
     icon: ClassVar[str] = "dot"  # the viewer's glyph for it
     attention: ClassVar[bool] = False   # unread by the user, it waits on them
+    finished_is_news: ClassVar[bool] = False
     clears: ClassVar[str] = CLEARED     # what takes it off the user's list: opening it, completing it, or the user clearing it
     filters: ClassVar[tuple] = (OPEN, CLOSED)   # the ways its list can be narrowed, shown as the tabs above it
     handed: ClassVar[str] = ""          # its heading in the start block, empty when it is not handed to a session
