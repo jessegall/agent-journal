@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.81.1 — What the agent's own acts set off is not announced back to it
+
+To-do 706, following 614. The agent's hook reports were written by the system, so whatever they set off counted as the system's doing and was announced to the agent: a row closed by the agent's own commit trailer, and the plan that moved on after it. A hook report now carries the agent as its cause, so what follows from it is known to be the agent's own act and is not told back to it. A nudge meant for the agent still reaches it, and a change you make to the agent row from the viewer is still yours.
+
+What to do about it: `journal upgrade`.
+
 ## 2.81.0 — You start a plan, the agent builds it with you
 
 Message 1457, to-do 701. New plan on the Plans page no longer makes a draft for you to fill in by hand. You give it a title, one line about what is true when it is done, and what you want in your own words, and you start it from no template, the Blank plan, or Functional design, then technical implementation. The plan opens as building, and the agent is told at once that you started it and to build it with you: it reads what you wrote and the template's instructions, asks what it cannot settle, and adds the phases and rows. You activate it once it is ready, as before. The template choice now reads No template instead of Blank, so it is not mistaken for the Blank plan template.

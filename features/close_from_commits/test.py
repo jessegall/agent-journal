@@ -3,7 +3,7 @@ import subprocess
 
 from controllers.types import Todos
 from engine.record import Record
-from resources.base import SYSTEM, USER
+from resources.base import AGENT, SYSTEM, USER
 from tests.kit import report
 
 
@@ -28,8 +28,8 @@ def test_a_journal_trailer_at_column_0_closes_the_row_it_names(tmp_path):
     report(record, "idle", "SessionStart")
     assert [t.completed for t in todos.all()] == [0.0, 0.0, 0.0], "the first look closes nothing: it only marks where the log was"
     commit("a change\n\nJournal: todos done 1")
-    assert (bool(todos.load(1).completed), record.events()[-1].actor, record.events()[-1].data["how"].startswith("a change (")) == \
-        (True, SYSTEM, True), "a trailer at column 0 closes the row it names, as SYSTEM, citing the commit"
+    assert (bool(todos.load(1).completed), record.events()[-1].actor, record.events()[-1].data["how"].startswith("a change ("), record.events()[-1].data["cause"]) == \
+        (True, SYSTEM, True, AGENT), "a trailer at column 0 closes the row it names, as SYSTEM, citing the commit, caused by the agent's own commit"
     commit("only prose\n\nThis closes to-do 2, honestly.\n    Journal: todos done 2")
     assert todos.load(2).completed == 0.0, "prose and an indented example close nothing"
     commit("with a how\n\nJournal: todos done 2 the placement vocabulary is settled")
