@@ -135,10 +135,11 @@ def halt(ctx) -> str:
 
 def still_open(record) -> list[str]:
     from controllers.types import Works
+    from features import FEATURES
     from features.messages.answering import unanswered
     works = [f"work {w.n} is still open: {w.title} - journal work end {w.n} --how \"<what landed>\", or journal work park \"<why>\" --n {w.n}"
              for w in Works(record, actor=SYSTEM)._standing()]
-    messages = [f"message {m.n} was read and never answered: {m.title}" for m in unanswered(record)]
+    messages = [f"message {m.n} was read and never answered: {m.title}" for m in unanswered(FEATURES["messages"].journal.at(record))]
     return works + messages
 
 WORKTREE_FLAGS = ("--worktree", "-w")

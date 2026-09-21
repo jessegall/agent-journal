@@ -14,7 +14,7 @@ LIBRARY = ".agents/skills"
 
 
 def skill_name(name: str) -> str:
-    return f"journal-{name.replace('_', '-')}"
+    return f"journal-{name.removeprefix('journal_').replace('_', '-')}"
 LINKED = {name: cls.skill_home for name, cls in PROVIDERS.items() if cls.link_skills}
 RETIRED = tuple(dict.fromkeys(home for cls in PROVIDERS.values() for home in cls.retired_skill_homes))
 
