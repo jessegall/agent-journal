@@ -61,16 +61,19 @@ def refresh(source: Path, target: Path) -> tuple[set, set]:
     return changed, gone
 
 
-ENTRYPOINTS = ("journal.py",)
 FORWARD = 'import runpy\nimport sys\nfrom pathlib import Path\n\nsys.argv[0] = str(Path(__file__).resolve().parent / "src" / Path(__file__).name)\nrunpy.run_path(sys.argv[0], run_name="__main__")\n'
+HOOK = ('#!/usr/bin/env python3\nimport os\nimport sys\nfrom pathlib import Path\n\nroot = Path(__file__).resolve().parent\n'
+        'os.execvp("sh", ["sh", str(root / "src" / "hook.sh"), *(sys.argv[1:2] or ["claude"]), str(root)])\n')
+ENTRYPOINTS = {"journal.py": FORWARD, "hook.py": HOOK}
 
 
 def retire(root: Path) -> int:
     old = {rel for rel in package_files(root) if str(rel) not in ENTRYPOINTS}
     for rel in old:
         (root / rel).unlink()
-    for name in ENTRYPOINTS:
-        (root / name).write_text(FORWARD)
+    for name, text in ENTRYPOINTS.items():
+        (root / name).write_text(text)
+        (root / name).chmod(0o755)
     for name in (*PACKAGE_DIRS, "web"):
         tree = root / name
         if tree.is_dir() and not any(f.is_file() and "__pycache__" not in f.parts for f in tree.rglob("*")):

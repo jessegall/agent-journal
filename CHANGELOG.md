@@ -4,6 +4,14 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.26.0 — Worktrees share the project's journal, and .journal/hook.py works again
+
+A project wired by version 1 still carries its hook command: it walks up from the project and runs the nearest `.journal/hook.py`, with no arguments. The 2.x installs retired that file, so a session wired that way either heard nothing or — where an older 2.x left a hook behind — failed every hook with `IndexError: list index out of range`. `.journal/hook.py` is an entry again: with nothing passed it runs the current hook for Claude on the journal it sits in.
+
+Worktrees share the journal, as in version 1: when an agent or a subagent works in a linked git worktree that has no `.journal`, the new worktrees feature links it to the project's journal and adds `/.journal` to the repository's exclude file, so git never commits the link. A worktree with a `.journal` of its own is left alone.
+
+What to do about it: `journal upgrade`.
+
 ## 2.25.0 — The terminal header is switched off
 
 The two-row header the journal drew at the top of the agent's terminal is switched off: the journal no longer draws it, no longer shifts the agent's screen down to make room, and gives the agent the whole terminal. Some terminals rendered the agent's screen garbled with the header in place. The header's code stays, behind `SHOWN` in `engine/band.py`, for when it comes back.
