@@ -75,6 +75,10 @@ async function save() {
                 <CommentToggle />
                 <Btn kind="icon" @click="emit('close')"><Icon name="x" /></Btn>
             </div>
+            <button v-if="resource.data?.template" type="button" class="from" @click="peek('template', Number(resource.data.template))">
+                <Icon name="docs" :size="11" />
+                Made from template {{ resource.data.template }}
+            </button>
             <template v-if="editing">
                 <input
                     v-model="draft.title"
@@ -225,6 +229,24 @@ async function save() {
 </template>
 
 <style scoped>
+.from {
+    display: inline-flex;
+    align-items: center;
+    align-self: flex-start;
+    gap: 5px;
+    margin-top: 6px;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--text-3);
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.from:hover {
+    color: var(--text);
+}
+
 .body {
     display: flex;
     flex-direction: column;

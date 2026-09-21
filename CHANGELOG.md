@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.80.1 — A New dialog offers the templates that fit
+
+To-do 704, from design 7. Every New dialog now ends with Start from: Blank, or any template whose applies_to includes that type (or names no type). Picking one creates the resource from it, with its parts and a link to it, the same as `--set template=<n>`. The inspector of anything made from a template shows Made from template n at the top, and clicking it opens the template.
+
+What to do about it: `journal upgrade`.
+
 ## 2.80.0 — The installed journal is one zip
 
 Messages 1619 and 1623, to-do 703, design 6. A project used to carry 308 Python files and their `__pycache__` folders under `.journal/src`. The installer still fetches the plain repository, so what you install is readable, but it now packs the Python on your machine into one file, `.journal/journal.pyz`, with each module compiled inside it, and the journal runs from there. The viewer, the skills, the extension and the hook scripts stay on disk in `.journal/src`. The zip is built and started once before anything is removed, and if that start fails the journal keeps running from the files. A two-line stub stays at each old entry path, so a session that was already running keeps working through the upgrade. In the repository nothing changes: every path goes through `engine/package.py`, which works from the zip and from source alike. The boot test now installs a packed copy and launches Claude and Codex from it.
