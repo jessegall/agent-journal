@@ -66,6 +66,7 @@ const totals = computed(() =>
     )
 );
 const server = computed(() => api.journal(props.journal));
+const base = computed(() => server.value.origin());
 const counts = (c) => [
     ["messages", c.messages, "unread messages"],
     ["questions", c.questions, "questions waiting"],
