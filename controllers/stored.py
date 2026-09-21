@@ -5,6 +5,11 @@ from engine.stored import read_json, write_json
 from controllers.marks import internal
 
 INDEX = "index.json"
+
+
+def newest_parts(rows: list, part_of) -> list:
+    newest = {part_of(row): row for row in rows if part_of(row)}
+    return [row for row in rows if not part_of(row) or newest[part_of(row)] is row]
 SUMMARIES: dict[str, tuple] = {}
 HELD: dict[str, tuple] = {}
 
@@ -25,7 +30,7 @@ class Stored:
         held = SUMMARIES.get(str(folder))
         if held and held[0] == moved:
             return held[1]
-        rows = [row for row in self._indexed(folder) if not row.get(PART_OF)]
+        rows = newest_parts(self._indexed(folder), lambda row: row.get(PART_OF))
         SUMMARIES[str(folder)] = (folder.stat().st_mtime_ns, rows)
         return rows
 
@@ -80,7 +85,7 @@ class Stored:
         memo = self.record.memo
         if memo is None or (self.type, deleted) not in memo:
             rows = [self.load(n) for n in self.numbers()]
-            rows = [r for r in rows if (deleted or not r.deleted) and not r.data.get(PART_OF)]
+            rows = newest_parts([r for r in rows if deleted or not r.deleted], lambda r: r.data.get(PART_OF))
             if memo is None:
                 return rows
             memo[self.type, deleted] = rows
