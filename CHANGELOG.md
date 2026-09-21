@@ -4,6 +4,18 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.23.7 — Features, plugins and skills, tidied after review
+
+A review of the features, the plugin host and the installer found the same things written several ways; nothing changes for the user.
+
+- `Feature.already` is the one "only once" marker, locked across processes; the tags and start features both use it.
+- The tags feature listens to `agent.said` once and then checks the tag and copies the message.
+- Standing notices and nudges are listed through `Feature.standing` in permissions, tags and the plugin services.
+- The plugin services take the feature itself; the plugin host keeps its failing notice under `told`.
+- One helper in the installer says whether a skills folder is the library.
+
+What to do about it: nothing — `journal upgrade` when convenient.
+
 ## 2.23.6 — The engine and the messenger, tidied after review
 
 A review of the engine and the messenger found the same lookups written several ways; nothing changes for the user.

@@ -91,13 +91,17 @@ def write(folder: Path) -> list[Path]:
     return written
 
 
+def library(project: Path, folder: Path) -> bool:
+    return folder.resolve() == (project / LIBRARY).resolve()
+
+
 def link(project: Path, name: str, agents: tuple[str, ...] = tuple(LINKED)) -> list[Path]:
     source = project / LIBRARY / name
     links = []
     for agent in agents:
         target = project / LINKED[agent] / name
         target.parent.mkdir(parents=True, exist_ok=True)
-        if target.parent.resolve() == source.parent.resolve():
+        if library(project, target.parent):
             continue
         if target.is_symlink() or target.is_file():
             target.unlink()
@@ -132,7 +136,7 @@ def publish(project: Path, agents: tuple[str, ...]) -> tuple[list[Path], list[Pa
     names = sorted({f.parent.name for f in written})
     pruned(project, names)
     for home in RETIRED:
-        if (project / home).resolve() == (project / LIBRARY).resolve():
+        if library(project, project / home):
             continue
         for stale in (project / home).glob("journal*"):
             if stale.is_dir() and not stale.is_symlink():

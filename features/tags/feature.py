@@ -1,16 +1,11 @@
-import hashlib
 import io
 import re
-import threading
-import time
 
 from controllers.types import Agents, Messages, Nudges
-from engine.stored import read_json, write_json
 from features.base import Behaviour, Feature, event, formats, interceptor, Line
 from resources.base import AGENT, SYSTEM, titled
 
 TAGS = ("discovery", "correction", "blocked", "info", "reply")
-MARKING = threading.Lock()
 RUNS = {"reply": "message reply {n} {text}", "log": "work log {text} --n {n}", "end": "work end {n} --how {text}",
         "todo": "todo create {name} --brief {text}", "fact": "fact create {name} --brief {text}"}
 PLACES = {"info": "bar"}
@@ -69,14 +64,19 @@ class Tags(Feature):
         return pattern(self.names(record))
 
     @event("agent.said")
-    def check(self, event, record) -> None:
+    def said(self, event, record) -> None:
         agent, text = self.agent(event, record), str(event.data.get("text") or "")
-        if agent and not self.reader(record).match(text) and not self.already(record, agent, text, "untagged") and not self.waiting(record, agent):
+        if agent and text.strip():
+            self.check(record, agent, text)
+            self.expand(record, agent, text)
+
+    def check(self, record, agent, text: str) -> None:
+        if not self.reader(record).match(text) and not self.already(record, agent.title, "untagged", text) and not self.waiting(record, agent):
             self.journal.say(record, agent, "untagged", tags=" ".join(written(self.names(record))))
 
     def waiting(self, record, agent) -> bool:
         title = self.lines["untagged"].title
-        return any(n.title == title and n.data.get("session") == agent.title and AGENT not in n.seen for n in Nudges(record, actor=SYSTEM)._standing())
+        return any(n.title == title and n.data.get("session") == agent.title and AGENT not in n.seen for n in self.standing(record, Nudges))
 
     @formats
     def without_tags(self, text, record):
@@ -88,25 +88,11 @@ class Tags(Feature):
     def argv(self, template: str, n: str, name: str, text: str) -> list[str]:
         return [{"{text}": text, "{n}": n, "{name}": name}.get(word, word) for word in template.split()]
 
-    def already(self, record, agent, text: str, kind: str = "tagged") -> bool:
-        f = record.root / "runtime" / f"{kind}-{agent.title}.json"
-        key = hashlib.sha1(text.strip().encode()).hexdigest()
-        with MARKING:
-            done = read_json(f, {})
-            if key in done:
-                return True
-            write_json(f, {**done, key: time.time()})
-        return False
-
-    @event("agent.said")
-    def expand(self, event, record) -> None:
-        agent, text = self.agent(event, record), str(event.data.get("text") or "")
-        if not agent or not text.strip():
-            return
-        if CARRIED.search(text) and not self.already(record, agent, text):
+    def expand(self, record, agent, text: str) -> None:
+        if CARRIED.search(text) and not self.already(record, agent.title, "tagged", text):
             self.carried(record, agent, text)
         leading = LEADING.match(text)
-        if leading and not CARRIED.match(text) and leading.group(1) in SHOWN[self.verbosity(record)] and not self.already(record, agent, text, "shown"):
+        if leading and not CARRIED.match(text) and leading.group(1) in SHOWN[self.verbosity(record)] and not self.already(record, agent.title, "shown", text):
             self.show(record, leading.group(1), text)
 
     def show(self, record, tag: str, said: str) -> None:
@@ -120,11 +106,11 @@ class Tags(Feature):
         for name, n, argument in CARRIED.findall(said):
             if name not in runs:
                 continue
-            said, wrong = io.StringIO(), io.StringIO()
+            out, err = io.StringIO(), io.StringIO()
             code = run(["--root", str(record.root), "--env", record.env, "--session", agent.title, "--as", AGENT,
-                        *self.argv(runs[name], n, argument, text)], out=said, err=wrong)
+                        *self.argv(runs[name], n, argument, text)], out=out, err=err)
             if code:
-                self.journal.whisper(record, agent, "refused", tag=name, on=n or argument, said=(wrong.getvalue() or said.getvalue()).strip())
+                self.journal.whisper(record, agent, "refused", tag=name, on=n or argument, said=(err.getvalue() or out.getvalue()).strip())
 
     @interceptor
     def replied(self, provider, record, hook, session) -> str:
