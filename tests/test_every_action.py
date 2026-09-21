@@ -114,6 +114,9 @@ def test_every_listing_is_one_page_of_open_rows_inside_the_budget():
     CONTROLLERS["todo"](record, actor=USER).delete(2, why="gone")
     named = dispatch("GET", f"/api/{record.env}/todo", record.root, {"n": "2", "completed": "1"}, {}).body
     assert [r["n"] for r in named["rows"]] == [2], "a row asked for by number is returned even when deleted"
+    CONTROLLERS["todo"](record, actor=USER).update(1, brief="touched last")
+    recent = dispatch("GET", f"/api/{record.env}/todo", record.root, {"last": "1", "by": "updated", "completed": "1"}, {}).body
+    assert 1 in [r["n"] for r in recent["rows"]], "by=updated returns the most recently changed rows, however old their number"
 
 
 def test_a_row_is_changed_only_by_those_its_resource_names_for_its_author():

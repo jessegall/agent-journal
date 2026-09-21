@@ -4,6 +4,14 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.31.0 — The color band names the project and environment, and a live agent is never shown as stopped
+
+The color band at the top of the viewer now reads "project · environment", centered in the project's color, and shows only while agents are live in more than one environment or more than one journal is running — when it helps tell them apart. Switching environments flashes the project and environment name, as opening or returning to a journal already did.
+
+The status bar could say "Stopped — no agent is on this environment" while an agent was working: it read the last five agent rows by number, and a live session keeps its older row while newer, stopped ones pushed it out. The viewer now asks for the most recently active agent rows (a listing takes `by=updated`).
+
+What to do about it: `journal upgrade`.
+
 ## 2.30.0 — Pick an environment before the agent starts; each environment has its own engine process
 
 `journal claude` now asks which environment to work before the agent starts, whenever one exists: every environment is listed, one with an active agent is marked and cannot be taken, Enter keeps the current one, and "a new environment" asks for a name and creates it. `--worktree`, an explicit `--env`, or no terminal to ask in skip the menu. The choice binds the new session when it starts; a SessionStart after a compaction or a resume keeps the environment the session already has.
