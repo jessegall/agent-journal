@@ -31,8 +31,8 @@ def paragraphs(text: str) -> str:
 
 
 class Behaviour:
-    def __init__(self, title: str, abstract: str = "", default: bool = True, trigger: dict | None = None):
-        self.title, self.abstract, self.default, self.trigger = paragraphs(title), paragraphs(abstract), default, trigger or {}
+    def __init__(self, title: str, abstract: str = "", default: bool = True, trigger: dict | None = None, name: str = ""):
+        self.name, self.title, self.abstract, self.default, self.trigger = name, paragraphs(title), paragraphs(abstract), default, trigger or {}
 
     def describe(self) -> dict:
         return {"title": self.title, "abstract": self.abstract, "default": self.default, "trigger": dict(self.trigger)}
@@ -42,8 +42,8 @@ PLACEHOLDER = re.compile(r"\{\{(\w+)\}\}")
 
 
 class Line:
-    def __init__(self, title: str, brief: str = "", lead: bool = False):
-        self.title, self.brief, self.lead = paragraphs(title), paragraphs(brief), lead
+    def __init__(self, title: str, brief: str = "", lead: bool = False, name: str = ""):
+        self.name, self.title, self.brief, self.lead = name, paragraphs(title), paragraphs(brief), lead
 
     def placeholders(self) -> list[str]:
         return list(dict.fromkeys(PLACEHOLDER.findall(self.title + self.brief)))
@@ -114,8 +114,8 @@ class FeatureDetails:
     title: ClassVar[str] = ""
     abstract: ClassVar[str] = ""
     help: ClassVar[str] = ""
-    lines: ClassVar[dict[str, Line]] = {}
-    behaviours: ClassVar[dict[str, Behaviour]] = {}
+    lines: ClassVar[list[Line]] = []
+    behaviours: ClassVar[list[Behaviour]] = []
 
 
 class Feature(ABC):
@@ -137,7 +137,7 @@ class Feature(ABC):
         super().__init_subclass__(**kw)
         if cls.details:
             d = cls.details
-            cls.name, cls.lines, cls.behaviours = d.name, d.lines, d.behaviours
+            cls.name, cls.lines, cls.behaviours = d.name, {line.name: line for line in d.lines}, {b.name: b for b in d.behaviours}
             cls.title_, cls.abstract_, cls.help_ = paragraphs(d.title), paragraphs(d.abstract), paragraphs(d.help)
         if cls.name:
             REGISTRY[cls.name] = cls

@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.39.1 — A feature's lines and behaviours are lists, each named
+
+Messages 1413 and 1414. In details.py, lines and behaviours are lists: each Line and Behaviour carries its own name (Line(name="refused", title=..., brief=...)) instead of being keyed in a dict. The feature still finds them by name. Tags is written this way.
+
+What to do about it: `journal upgrade`.
+
 ## 2.39.0 — A design revision stays open until it is kept
 
 Message 1399. A design's latest revision stays open while it is worked on: every edit, from the agent or the viewer, changes it in place and adds to its note. It is kept when the user presses Keep this revision, when journal design keep runs, or by itself after designs.keep_after_minutes (30) without an edit; the next edit opens a new revision copied from the kept one. The revision strip shows the open revision as a hollow mark with the minutes until it keeps itself.
