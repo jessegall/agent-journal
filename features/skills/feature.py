@@ -1,7 +1,11 @@
+import time
+from pathlib import Path
+
 from features import trigger
 from features.trigger import USES
 from features.base import Behaviour, Feature, event
 from features.skills.catalogue import SKILL, skills
+from providers import PROVIDERS
 from resources.types import AgentRow
 
 
@@ -12,7 +16,9 @@ class Skills(Feature):
     help_ = "A session start or compaction opens a fresh window; triggers.skills sets how long the feature waits before its one reminder."
     trigger = {"every": 25, "unit": trigger.USES}
     windows = ("SessionStart", "PreCompact")
-    behaviours = {"stale": Behaviour("Name a skill that changed since it was loaded", "Said every twentieth tool use until the agent loads it again",
+    behaviours = {"reload": Behaviour("Hold writes after a compaction until the journal skill is loaded again",
+                                      "A fresh window starts without the skill; the first write waits for Skill: journal"),
+                  "stale": Behaviour("Name a skill that changed since it was loaded", "Said every twentieth tool use until the agent loads it again",
                                      trigger={"every": 20, "unit": USES})}
 
     @event("agent.updated")
@@ -20,7 +26,7 @@ class Skills(Feature):
         agent = self.agent(event, record)
         state = trigger.last(record, agent.title, self.name)
         if agent.event in self.windows and state.get(AgentRow.event) != agent.event:
-            trigger.write(record, agent, self.name, told=False, uses=agent.uses or 0, context=agent.context or 0)
+            trigger.write(record, agent, self.name, told=False, uses=agent.uses or 0, context=agent.context or 0, since=time.time())
             state = trigger.last(record, agent.title, self.name)
         if "told" not in state and state.get(AgentRow.at):
             trigger.write(record, agent, self.name, told=True)
@@ -32,6 +38,21 @@ class Skills(Feature):
             return
         self.nudge(record, agent, "no journal skill is loaded in this window", "load the journal skill (Skill: journal) before the next write; a compaction emptied it", private=True)
         trigger.write(record, agent, self.name, told=True)
+
+    @event("agent.updated")
+    def reload(self, event, record) -> None:
+        if not self.on(record, "reload"):
+            return
+        agent = self.agent(event, record)
+        since = float(trigger.last(record, agent.title, self.name).get("since") or 0)
+        provider = PROVIDERS.get(agent.provider)
+        if not since or not provider or not agent.transcript:
+            return
+        loaded = provider().loaded_skills(Path(agent.transcript))
+        if any(name == "journal" and float(at or 0) >= since for name, at in loaded.items()):
+            self.release(record, "reload")
+        else:
+            self.hold(record, "a fresh window has no journal skill: load it first - Skill: journal", "reload")
 
     @event("agent.updated")
     def stale(self, event, record) -> None:
