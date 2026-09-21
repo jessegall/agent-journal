@@ -1,6 +1,7 @@
 import os
 import shutil
 import stat
+import tarfile
 import subprocess
 import sys
 import hashlib
@@ -28,6 +29,8 @@ REPOSITORY = "https://github.com/jessegall/agent-journal"
 SRC = "src"
 ARCHIVE = "journal.pyz"
 KEPT_BUILDS = 3
+KEPT_COPIES = 5
+NOT_RECORD = ("src", "runtime", "attic", "plugin-data")
 STUBS = {"journal.py": "journal", "channel.py": "channel", "serve.py": "serve", "engine/supervisor.py": "engine.supervisor", "engine/keeper.py": "engine.keeper"}
 STUB = ("import runpy\nimport sys\nfrom pathlib import Path\n\n"
         "sys.path.insert(0, str((Path(__file__).resolve().parents[{up}] / \"{archive}\").resolve()))\nrunpy.run_module(\"{module}\", run_name=\"__main__\", alter_sys=True)\n")
@@ -220,9 +223,29 @@ def fetch(into: Path, repository: str = "", ref: str = "") -> tuple[str, str]:
         return "", str(error)
 
 
+def keep_copy(root: Path) -> str:
+    if not (root / "environments").is_dir():
+        return ""
+    version = (code(root) / "VERSION").read_text().strip() if (code(root) / "VERSION").is_file() else "unknown"
+    attic = root / "attic"
+    attic.mkdir(parents=True, exist_ok=True)
+    copy = attic / f"before-{version}-{int(time.time())}.tar.gz"
+    with tarfile.open(copy, "w:gz") as archive:
+        for entry in sorted(root.iterdir()):
+            if entry.name not in NOT_RECORD and not entry.name.startswith(("journal-", ARCHIVE)):
+                archive.add(entry, arcname=entry.name)
+    for old in sorted(attic.glob("before-*.tar.gz"), key=lambda f: f.stat().st_mtime, reverse=True)[KEPT_COPIES:]:
+        old.unlink(missing_ok=True)
+    return f"a copy of the record is kept in {copy.relative_to(root.parent)}"
+
+
+def half_done(root: Path) -> bool:
+    return (code(root) / "__main__.py").is_file() and (root / ARCHIVE).exists()
+
+
 def upgrade(project: Path, root: Path | None = None) -> list[str]:
     root = root or project / ".journal"
-    done = []
+    done = [line for line in [keep_copy(root)] if line]
     source, temporary = PACKAGE, None
     reloaded = PACKAGE.resolve() in (root.resolve(), code(root).resolve(), (root / ARCHIVE).resolve()) and not os.environ.get("AGENT_JOURNAL_BOOTSTRAPPED")
     if reloaded:
@@ -237,7 +260,7 @@ def upgrade(project: Path, root: Path | None = None) -> list[str]:
         done.append("package pulled" if pulled.returncode == 0 else f"package not pulled: {pulled.stderr.strip()}")
     running = {name: previous(root, name) for name in RESTARTS}
     changed, gone = refresh(source, code(root))
-    restarted = {name for name, was in running.items() if was is not None and was != (source / name).read_bytes()}
+    restarted = {name for name, was in running.items() if was is not None and (not (source / name).is_file() or was != (source / name).read_bytes())}
     if temporary:
         shutil.rmtree(temporary, ignore_errors=True)
     done.append(f"package refreshed: {len(changed)} changed, {len(gone)} retired")

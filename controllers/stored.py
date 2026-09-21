@@ -77,7 +77,7 @@ class Stored:
     def _parsed(self, p: Path, n: int) -> Resource:
         try:
             return self.resource.load(p.read_text())
-        except ValueError:
+        except (ValueError, TypeError):
             raise Refused(f"{self.type} {n} is damaged: {p}")
 
     def _warm(self) -> None:

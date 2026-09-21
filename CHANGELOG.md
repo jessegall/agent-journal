@@ -4,6 +4,14 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.84.4 — A journal repairs itself and keeps a copy before every upgrade
+
+Message 2200, to-do 753, and review findings 754 to 757. After tonight's faulty releases a journal can be stuck with an upgrade that stopped halfway, or can have lost its project records to 2.84.0. Every launch now repairs what it can first: an upgrade that stopped halfway is finished and the launch starts again on it. A record that lost its project records to 2.84.0 gets one notice saying so plainly: restore `.journal/resources` from a backup such as Time Machine, and the next launch moves it into place. Every upgrade first saves a copy of the record, everything but code and runtime, in `.journal/attic/before-<version>-<time>.tar.gz`, keeping the last five, so no upgrade can lose it again.
+
+Fixed from the review: a record file whose front matter has an unknown field is skipped instead of crashing every command; clean slate puts back everything it moved on any failure, a git timeout included; the first launch with no network no longer crashes on the update check, and the update check can never stop a launch; an upgrade survives a release that drops a file it compares.
+
+What to do about it: `journal upgrade`. A journal stuck on 2.83.1 to 2.84.2 finishes on its next launch; if it does not, run `python3 .journal/src/install.py upgrade .` in the project.
+
 ## 2.84.3 — Upgrades never break a running session or stop halfway
 
 Messages 2187, 2188 and 2190, to-do 753. Two faults in upgrading. A journal upgrading itself from a release compared its files after it had already deleted the download, so the upgrade stopped halfway, with the new code copied in but never packed. And an upgrade replaced `journal.pyz` under running sessions, whose later imports then read the new file as if it were the old one and failed with "bad local file header". Now the download is compared before it is removed, and each build is written as its own `journal-<version>-<hash>.pyz`, with `journal.pyz` a link to the newest: a running session keeps reading the build it started with, the server and supervisor notice the link moving and reload, and the three newest builds are kept. The start-up test now also has an installed journal upgrade itself from a release, the path that broke, and checks its records survive and it runs from a versioned build.

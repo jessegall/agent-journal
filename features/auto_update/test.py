@@ -92,3 +92,32 @@ def test_a_launch_installs_a_newer_version_first_and_starts_again_on_it(monkeypa
     ran.clear()
     monkeypatch.setattr(launch, "fetched", lambda cache: cache.write_text("0.0.1"))
     assert (launch.latest_first(record), ran) == ("", []), "already current: the launch goes straight on"
+
+
+def test_a_launch_repairs_a_half_done_upgrade_and_says_when_records_were_lost(tmp_path, monkeypatch):
+    import json
+    import shutil
+    import subprocess
+    import sys
+    from pathlib import Path
+    import features
+    import features.auto_update.launch as launch
+    from controllers.types import Notices
+    from engine.record import Record
+    here = Path(__file__).resolve().parents[2]
+    project = tmp_path / "project"
+    project.mkdir()
+    subprocess.run([sys.executable, str(here / "install.py"), "upgrade", str(project)], env={"HOME": str(tmp_path), "PATH": "/usr/bin:/bin", "AGENT_JOURNAL_BOOTSTRAPPED": "1"},
+                   capture_output=True, timeout=120)
+    root = project / ".journal"
+    shutil.copy2(here / "__main__.py", root / "src" / "__main__.py")
+    features.load()
+    record = Record(root, "main")
+    monkeypatch.setattr(launch, "restart", lambda root: None)
+    launch.repaired(record)
+    assert not (root / "src" / "__main__.py").exists() and (root / "journal.pyz").resolve().name.startswith("journal-"), "a half-done install is packed at launch"
+    ledger = json.loads((root / "migrations.json").read_text())
+    (root / "migrations.json").write_text(json.dumps({**ledger, "m0000_project_resources": {"result": "project records moved into resources/: doc"}}))
+    shutil.rmtree(root / "project")
+    assert launch.repaired(record) == launch.LOST and launch.repaired(record) == "", "records lost to 2.84.0 are said once, plainly"
+    assert [n.title for n in Notices(record, actor="system").all()].count(launch.LOST) == 1
