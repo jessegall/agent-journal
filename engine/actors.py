@@ -5,6 +5,7 @@ from controllers.types import Agents, CONTROLLERS, Notifications, Works
 from engine.record import Record
 from resources.base import AGENT, SYSTEM, USER, Event
 from resources.types import AgentRow, TYPES
+from engine.wording import counted
 
 STOPPED, IDLE, BUSY, WORKING, COMPACTING = "stopped", "idle", "busy", "working", "compacting"
 STATES = (STOPPED, IDLE, BUSY, WORKING, COMPACTING)
@@ -16,18 +17,16 @@ def spoken(e: Event, record: Record) -> str:
     return f"{r.title} — {r.brief}" if r.brief else r.title
 
 
-def counted(events: list[Event]) -> list[str]:
+def grouped(events: list[Event]) -> dict[tuple, dict]:
     groups: dict[tuple, dict] = {}
     for e in events:
         groups.setdefault((e.type, e.action), {})[e.n] = True
-    return [f"{len(ns)} new {t}{'s' if len(ns) != 1 else ''} {', '.join(map(str, ns))}" if a == "created"
-            else f"{t}{'s' if len(ns) != 1 else ''} {', '.join(map(str, ns))} {a}"
-            for (t, a), ns in groups.items()]
+    return groups
 
 
-def render(events: list[Event], record: Record) -> str:
+def render(events: list[Event], record: Record) -> tuple[str, dict]:
     said = [spoken(e, record) for e in events if TYPES[e.type].spoken]
-    return "; ".join(list(dict.fromkeys(said)) + counted([e for e in events if not TYPES[e.type].spoken]))
+    return "; ".join(dict.fromkeys(said)), grouped([e for e in events if not TYPES[e.type].spoken])
 
 
 class Actor(ABC):
@@ -85,27 +84,19 @@ class Agent(Actor):
     def urgent(self, event: Event) -> bool:
         return event.action in TYPES[event.type].urgent_actions
 
-    def lines(self) -> list[str]:
-        said = render(self.pending, self.record)
-        return [said] if said else []
-
     def flush(self) -> str:
         batch = {**BATCH, **self.record.batch}
         pressing = any(self.urgent(e) for e in self.pending)
         if not self.pending or (not pressing and time.time() - self.pending_at < batch["quiet"] and len(self.pending) < batch["size"]):
             return ""
-        lines = self.lines()
-        landed = all([self.driver.send(self.aside(line)) for line in lines])
+        said, groups = render(self.pending, self.record)
+        landed = self.driver.send(said, groups=groups)
         for e in self.pending:
             if landed and TYPES[e.type].told:
                 CONTROLLERS[e.type](self.record, actor=SYSTEM).stamp(e.n, delivered=time.time())
             self.notified(e)
         self.pending = []
-        return "; ".join(lines)
-
-    def aside(self, line: str) -> str:
-        said = self.driver.ASIDE
-        return said.format(line=line) if said and self.state() != IDLE else line
+        return "; ".join([said, *counted(groups)] if said else counted(groups))
 
     def state(self) -> str:
         if not self.driver.alive():

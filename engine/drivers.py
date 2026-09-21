@@ -9,6 +9,7 @@ from controllers.types import Agents
 from engine import typist
 from resources.base import Refused, SYSTEM
 from engine import runtime
+from engine.wording import counted
 
 ENTER_AFTER = 0.3
 POST_WAIT = 5.0
@@ -21,30 +22,11 @@ ANSI = re.compile(rb"\x1b\[[0-?]*[ -/]*[@-~]|\x1b\][^\x07\x1b]*(?:\x07|\x1b\\)|\
 
 BETWEEN, FLOOD = 5.0, 20
 REPORT_FOR = 0.5
-CREATED = re.compile(r"^\d+ new (\w+?)s? ([\d, ]+)$")
-CHANGED = re.compile(r"^(\w+?)s? ([\d, ]+) (\w+)$")
-
-
-def merged(held: list[str]) -> str:
-    groups: dict[tuple, dict] = {}
-    rest = []
-    for part in (piece.strip() for line in held for piece in line.split("; ")):
-        found = CREATED.match(part) or CHANGED.match(part)
-        if not found:
-            rest.append(part)
-            continue
-        kind = (found.group(1), "created") if found.re is CREATED else (found.group(1), found.group(3))
-        groups.setdefault(kind, {}).update(dict.fromkeys(n.strip() for n in found.group(2).split(",") if n.strip()))
-    counted = [f"{len(ns)} new {t}{'s' if len(ns) != 1 else ''} {', '.join(ns)}" if a == "created"
-               else f"{t}{'s' if len(ns) != 1 else ''} {', '.join(ns)} {a}" for (t, a), ns in groups.items()]
-    return "; ".join(dict.fromkeys(rest + counted))
-
 
 class Driver(ABC):
     STOP = b"\x1b"
     CLEAR_LINE = b"\x05\x15"
     name = ""
-    ASIDE = ""
     FROM = "The journal, for the user:"
     AUTO_ARGS = ()
     APPROVAL_FLAGS = frozenset()
@@ -57,6 +39,7 @@ class Driver(ABC):
         self.fd = fd
         self.born = time.time()
         self.held: list[str] = []
+        self.groups: dict[tuple, dict] = {}
         self.sent_at = 0.0
         self.reported = (float("-inf"), None)
         self.printed = record.root / "runtime" / f"printed-{session}"
@@ -77,18 +60,22 @@ class Driver(ABC):
     def confirm(cls, printed: bytes) -> bytes:
         return b""
 
-    def send(self, text: str, exact: bool = False) -> bool:
+    def send(self, text: str = "", exact: bool = False, groups: dict | None = None) -> bool:
         line = " ".join(part.strip() for part in text.splitlines() if part.strip())
         if exact:
             return self._deliver(line)
-        self.held.append(line)
+        if line:
+            self.held.append(line)
+        for key, numbers in (groups or {}).items():
+            self.groups.setdefault(key, {}).update(dict.fromkeys(numbers))
         return True
 
     def pump(self) -> str:
-        if not self.held or time.time() - self.sent_at < BETWEEN:
+        if not (self.held or self.groups) or time.time() - self.sent_at < BETWEEN:
             return ""
-        said = f"the journal held back {len(self.held)} lines at once and dropped them - that many is a fault, not news" if len(self.held) > FLOOD else merged(self.held)
-        self.held, self.sent_at = [], time.time()
+        said = (f"the journal held back {len(self.held)} lines at once and dropped them - that many is a fault, not news" if len(self.held) > FLOOD
+                else "; ".join(dict.fromkeys(self.held + counted(self.groups))))
+        self.held, self.groups, self.sent_at = [], {}, time.time()
         self._deliver(said)
         return said
 

@@ -10,6 +10,7 @@ from engine.hooks import POLICIES, gate_file
 from features.format import FORMATTERS
 from resources.base import KEYWORDS, Refused, SYSTEM, WHOM
 from engine.stored import read_json, write_json
+from engine.wording import plural
 
 REGISTRY: dict[str, type] = {}
 
@@ -214,7 +215,7 @@ class Feature(ABC):
             Nudges(record, actor=SYSTEM).create(title, brief=brief, session=agent.title, private=private)
 
     def plural(self, n: int, word: str) -> str:
-        return f"{n} {word}{'s' if n != 1 else ''}"
+        return plural(n, word)
 
     def describe(self) -> dict:
         return {"name": self.name, "title": self.title_, "abstract": self.abstract_, "help": self.help_, "default": self.default, "fixed": self.fixed,
