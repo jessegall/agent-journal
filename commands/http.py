@@ -718,8 +718,9 @@ def listing(controller, record, query: dict) -> dict:
     last = int(query["last"]) if "last" in query else LAST
     completed = query.get("completed") in ("1", "true")
     before = int(query.get("before") or 0)
-    rows = [row for row in controller.summaries() if not row["deleted"] and (completed or not row["completed"])
-            and (not before or row["n"] < before)]
+    since = float(query.get("since") or 0)
+    rows = [row for row in controller.summaries() if (since or not row["deleted"]) and (completed or not row["completed"])
+            and (not before or row["n"] < before) and row["updated"] > since]
     kept = rows[-last:] if last else rows
     return {"rows": [shaped(controller.load(row["n"]), record) for row in kept], "more": len(rows) > len(kept)}
 
