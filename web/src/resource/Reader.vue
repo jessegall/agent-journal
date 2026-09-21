@@ -7,6 +7,7 @@ import {holding, rows} from "../sync/rows.js";
 import ResourceBody from "./ResourceBody.vue";
 import DocumentPage from "./DocumentPage.vue";
 import PlanPage from "./PlanPage.vue";
+import DesignPage from "./DesignPage.vue";
 import AgentPage from "./AgentPage.vue";
 import Comments from "./Comments.vue";
 
@@ -16,7 +17,7 @@ watchEffect(() => {
     if (props.type && props.n && !resource.value) holding(props.type, [props.n]);
 });
 const focusComment = computed(() => route.value.open?.comment || 0);
-const shape = computed(() => (!props.type ? "" : ["plan", "agent"].includes(props.type) ? props.type : meta(props.type).view));
+const shape = computed(() => (!props.type ? "" : ["plan", "agent", "design"].includes(props.type) ? props.type : meta(props.type).view));
 const panel = computed(() => (["small", "wide"].includes(shape.value) ? "inspector" : shape.value));
 const close = () => (route.value.open ? unpeek() : go(route.value.env, props.type));
 const swapping = ref(false);
@@ -64,6 +65,11 @@ watch(
                         <template #plan>
                             <DocumentPage :resource="resource" :focus="focusComment" @close="close">
                                 <PlanPage :resource="resource" @close="close" />
+                            </DocumentPage>
+                        </template>
+                        <template #design>
+                            <DocumentPage :resource="resource" :focus="focusComment" @close="close">
+                                <DesignPage :resource="resource" @close="close" />
                             </DocumentPage>
                         </template>
                         <template #agent>

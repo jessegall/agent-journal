@@ -4,6 +4,14 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.37.0 — Designs: a document rewritten in place, with every revision kept
+
+A design always reads as it stands now. Every edit copies its latest revision and changes the copy, so nothing is lost: journal design create starts one, design section writes or rewrites a part, design cut removes one, design update rewords the top, design revisions lists them and design revision shows one. The revisions are docs underneath, marked as part of their design and kept out of the doc list, search and unread; a row that is part of another is read through it.
+
+The viewer's design page shows the design as it stands, a strip of its revisions to step or jump through, and what each revision changed: parts added, cut or rewritten, and the lines inside a rewritten part. At the latest revision the top and every part can be edited, and each save is a new revision.
+
+What to do about it: `journal upgrade`.
+
 ## 2.36.0 — Everything the agent writes reaches the chat; tags only run commands
 
 Messages 1344, 1345 and 1346, question 51. A message without a tag is a plain message in the chat, and nothing asks the agent to add one. The label tags (info, discovery, correction, blocked) are gone, and so are the level menu in the agent bar, the untagged reminder, the tags.names, tags.places and tags.verbosity settings, and the status bar line they fed. The tags that run a command stay: [!reply:n], [!log:n], [!end:n], [!todo="…"] and [!fact="…"]. A log, end, todo or fact turn also shows in the chat; a reply shows as the reply.

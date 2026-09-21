@@ -8,7 +8,7 @@ to-dos, messages, facts, rules, reminders, plans, reports, docs, and the history
 them. Every new session receives the part it needs, while the full record stays readable in
 plain files and in the browser.
 
-The current package is 2.36.0. Claude and Codex use the same record, engine, viewer, and command
+The current package is 2.37.0. Claude and Codex use the same record, engine, viewer, and command
 line.
 
 ## Install

@@ -56,6 +56,8 @@ const shapes = {
     reports: '<path d="M4 2.5h5.5L12 5v8.5H4z"/><path d="M6.5 8h3M6.5 10.5h3"/>',
     work: '<circle cx="8" cy="8" r="5.5"/><path d="M8 5v3l2 1.5"/>',
     reminders: '<path d="M13 8a5 5 0 1 1-1.5-3.55"/><path d="M13 2.75V5h-2.25"/><path d="M8 5.5V8l1.75 1.25"/>',
+    pencil: '<path d="M10.6 2.8l2.6 2.6-7.4 7.4-3.3.7.7-3.3z"/><path d="M9.2 4.2l2.6 2.6"/>',
+    revisions: '<path d="M5.2 4.4h7v9.8h-7z"/><path d="M3.4 11.8V2.2h6.4"/><path d="M7 7.4h3.4M7 10h3.4"/>',
     docs: '<path d="M4 1.8h5.5L12.5 5v9.2H4V1.8Z"/><path d="M9.5 1.8V5h3"/>',
     rules: '<path d="M3 3.5h10M3 8h10M3 12.5h6"/>',
     folder: '<path d="M2.5 3h4l1.5 1.5h5.5v8.5h-11V3Z"/>',
