@@ -135,10 +135,12 @@ class Events:
 
         def run(event, record) -> None:
             typed = kind.read(event)
+            if not typed.wanted():
+                return
             row = Agents(record, actor=SYSTEM).load(typed.agent) if isinstance(typed, AgentEvent) and typed.agent else None
             if wanted(handler, feature, record, row):
                 handler.handle(Context.of(feature, record, row), typed)
-        self.names.append(kind.on)
+        self.names.append(kind.event_name or kind.on)
         bus.on(kind.on, run, enabled=feature.enabled)
 
 

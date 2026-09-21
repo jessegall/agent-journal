@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import ClassVar
 
-from engine.events import AgentUpdated, AnyEvent, ResourceEvent
+from engine.events import AgentUpdated, AnyEvent, ResourceEvent, ToolFinished
 from features import trigger
 from features.parts import WHOLE_FEATURE, Context, Handler
 from features.work_tracking import tracker
@@ -9,7 +9,6 @@ from features.work_tracking.next import next
 from resources.types import Work
 
 EDITS = "edits"
-POST_TOOL_USE = "PostToolUse"
 
 
 @dataclass(frozen=True)
@@ -75,9 +74,9 @@ class CloseWork(Handler):
 
 
 class TrackFiles(Handler):
-    def handle(self, context: Context, event: AgentUpdated) -> None:
+    def handle(self, context: Context, event: ToolFinished) -> None:
         row = context.agent.row if context.agent else None
-        if not row or row.event != POST_TOOL_USE or not row.wrote:
+        if not row or not row.wrote:
             return
         for work in working(context)[:1]:
             tracker.record_files(row, context.record, work)
