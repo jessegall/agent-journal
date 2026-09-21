@@ -3,6 +3,11 @@ class Transport {
         this.flying = new Map();
         this.asked = new Map();
         this.written = () => {};
+        this.watcher = () => {};
+    }
+
+    watch(fn) {
+        this.watcher = fn;
     }
 
     onWrite(fn) {
@@ -11,11 +16,12 @@ class Transport {
 
     async send(method, url, body) {
         const raw = body instanceof FormData;
+        this.watcher("sent", method, url);
         const res = await fetch(url, {
             method,
             headers: body === undefined || raw ? {} : {"Content-Type": "application/json"},
             body: body === undefined || raw ? body : JSON.stringify(body),
-        });
+        }).finally(() => this.watcher("answered", method, url));
         if (!res.ok) {
             const said = await res.json().catch(() => ({}));
             throw new Error(said.error || `${res.status} ${res.statusText}`);
