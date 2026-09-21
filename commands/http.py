@@ -32,7 +32,7 @@ from engine.record import Record
 from engine.transcript import page
 from providers import PROVIDERS
 from features.format import formatted
-from resources.base import shown as given, OPENED, USER, Refused, titled
+from resources.base import shown as given, AGENT, OPENED, USER, Refused, titled
 from resources.types import Ask
 from engine.stored import write_json
 
@@ -480,13 +480,17 @@ def post_skill_always(req: Request) -> Reply:
     return Reply(200, {"skills": got})
 
 
+def shown_types() -> list[str]:
+    return [t for t, c in CONTROLLERS.items() if tuple(c.resource.notify) != (AGENT,)]
+
+
 @route("GET", "/api/{env}/files")
 def get_files(req: Request) -> Reply:
     record = req.record()
     out = []
-    for type_ in CONTROLLERS:
+    for type_ in shown_types():
         c = CONTROLLERS[type_](record, actor=USER)
-        for r in c._every():
+        for r in c._attached():
             for name in r.files:
                 f = c.folder(r.n) / name
                 if f.is_file():
@@ -644,7 +648,7 @@ def get_search(req: Request) -> Reply:
     record = req.record()
     want = term.lower()
     out = []
-    for type_ in CONTROLLERS:
+    for type_ in shown_types():
         for r in CONTROLLERS[type_](record, actor=USER).search(term):
             matches = [{"name": name, "tags": tags, "url": f"/api/{record.env}/{type_}/{r.n}/files/{quote(name)}"}
                        for name, tags in r.files.items() if want in name.lower() or want in str(tags).lower()]

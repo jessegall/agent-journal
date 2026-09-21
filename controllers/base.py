@@ -66,19 +66,23 @@ class Controller:
         known = {int(n): row for n, row in (read_json(folder / INDEX) or {}).items()}
         rows = {}
         for n, stamp in stamps.items():
-            if known.get(n, {}).get("stamp") == stamp:
+            if known.get(n, {}).get("stamp") == stamp and "files" in known[n]:
                 rows[n] = known[n]
                 continue
             try:
                 r = self.load(n)
             except (Refused, OSError):
                 continue
-            rows[n] = {"n": n, "title": r.title, "deleted": r.deleted, "completed": r.completed, "seen": r.seen, "refs": r.refs, "updated": r.updated, "stamp": stamp}
+            rows[n] = {"n": n, "title": r.title, "deleted": r.deleted, "completed": r.completed, "seen": r.seen, "refs": r.refs, "updated": r.updated, "files": len(r.files), "stamp": stamp}
         if rows != known:
             write_json(folder / INDEX, rows)
         return [rows[n] for n in sorted(rows)]
 
     def load(self, n: int) -> Resource:
+        r = self._peek(n)
+        return r.fork() if self.resource.loading == MEMORY else r
+
+    def _peek(self, n: int) -> Resource:
         p = self.path(n)
         try:
             found = p.stat()
@@ -90,7 +94,7 @@ class Controller:
         held = HELD.get(str(p))
         if not held or held[0] != stamp:
             held = HELD[str(p)] = (stamp, self.resource.load(p.read_text()))
-        return held[1].fork()
+        return held[1]
 
     def _warm(self) -> None:
         if self.resource.loading == LAZY:
@@ -398,9 +402,14 @@ class Controller:
 
     def search(self, term: str) -> list[Resource]:
         want = term.lower()
-        return [r for r in self._every() if want in r.title.lower() or want in r.brief.lower() or want in r.abstract.lower()
+        rows = (self._peek(row["n"]) for row in reversed(self.summaries()) if not row["deleted"])
+        hits = (r for r in rows if want in r.title.lower() or want in r.brief.lower() or want in r.abstract.lower()
                 or any(want in s[SECTION.title].lower() or want in s[SECTION.body].lower() for s in r.sections)
-                or any(want in name.lower() or want in str(tags).lower() for name, tags in r.files.items())]
+                or any(want in name.lower() or want in str(tags).lower() for name, tags in r.files.items()))
+        return [r.fork() for r, _ in zip(hits, range(LAST))]
+
+    def _attached(self) -> list[Resource]:
+        return [self.load(row["n"]) for row in self.summaries() if row.get("files") and not row["deleted"]]
 
     def find(self, name: str) -> Resource:
         if str(name).isdigit():
