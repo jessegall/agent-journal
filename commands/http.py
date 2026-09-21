@@ -16,6 +16,7 @@ from urllib.parse import quote, unquote
 from urllib.request import urlopen
 
 import features
+from features.base import generation
 from surfaces.appoint import appoint, online
 from surfaces.package import archive as extension_archive, info as extension_info
 from surfaces.summary import summarize
@@ -42,7 +43,31 @@ JSON = "application/json"
 PLAIN = "text/plain; charset=utf-8"
 
 
+SHAPED: dict = {}
+KEEP_SHAPED = 5000
+
+
+def settled(record) -> tuple:
+    try:
+        stamp = (record.home / "settings.json").stat().st_mtime_ns
+    except OSError:
+        stamp = 0
+    return stamp, generation()
+
+
 def shaped(r, record=None, surface: str = "") -> dict:
+    key = (str(record.home), r.type, r.n, r.updated, surface, settled(record)) if record is not None and hasattr(r, "updated") else None
+    if key in SHAPED:
+        return SHAPED[key]
+    out = shaping(r, record, surface)
+    if key:
+        if len(SHAPED) >= KEEP_SHAPED:
+            SHAPED.clear()
+        SHAPED[key] = out
+    return out
+
+
+def shaping(r, record=None, surface: str = "") -> dict:
     row = given(r)
     tags = features.FEATURES.get("tags")
     place = {"place": tags.place(row.get("brief"), record)} if tags and record and row.get("brief") else {}
