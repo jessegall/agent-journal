@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.51.0 — Every feature is details and registered parts
+
+Plan 9, to-do 606. The status bar and plugins are the last two: the bar's queue functions live in statusline/bar.py and two handlers keep it and the plan usage current; a plugin's preview, install, upgrade, enable, disable and purge are Command classes over the helpers in lifecycle.py, its chat rules a TextFormatter, its refusal an interceptor and its clean-up on removal a handler. No feature uses @event, @formats, @interceptor, @command or @handles any more.
+
+What to do about it: `journal upgrade`.
+
 ## 2.50.0 — Messages, plans and work are details and registered parts
 
 Plan 9, to-do 605. The three largest behaviour features are each a details.py and a feature.py that registers its parts. Messaging's patience counts are declared settings, and its command formatting is a TextFormatter. A plan's stepping lives in progress.py and runs on any event that can move it. Work's log, park and resume are Command classes, its write gate and auto-mode question refusal are interceptors, and its edit thresholds are settings. An interceptor or formatter now checks its behaviour's switch only, never its cadence. The became feature is now Resource tracking (feature name tracking).

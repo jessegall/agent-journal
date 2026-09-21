@@ -242,13 +242,13 @@ def get_changes(req: Request) -> Reply:
 
 @route("GET", "/api/{env}/bar")
 def get_bar(req: Request) -> Reply:
-    from features.statusline.feature import shown
+    from features.statusline.bar import shown
     return Reply(200, shown(req.root, req.params["env"]))
 
 
 @route("POST", "/api/{env}/bar")
 def post_bar(req: Request) -> Reply:
-    from features.statusline.feature import played
+    from features.statusline.bar import played
     played(req.root, req.params["env"], float(req.body.get("at") or 0))
     return Reply(200, {})
 
