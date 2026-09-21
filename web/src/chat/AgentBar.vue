@@ -12,6 +12,7 @@ import {detach} from "../platform/extension.js";
 import {agent, store} from "../state/store.js";
 import {polled} from "../sync/polled.js";
 import {usePoll} from "../poll.js";
+import {useOutside} from "../composables/outside.js";
 
 usePoll(...polled.agents);
 
@@ -124,11 +125,7 @@ function openSkills() {
     open.value = "";
     go(route.value.env, "skills");
 }
-const away = (e) => {
-    if (bar.value && !bar.value.contains(e.target)) open.value = "";
-};
-window.addEventListener("click", away);
-onUnmounted(() => window.removeEventListener("click", away));
+useOutside(bar, () => (open.value = ""));
 </script>
 
 <template>
@@ -737,23 +734,6 @@ onUnmounted(() => window.removeEventListener("click", away));
     height: 13px;
 }
 
-.drop-enter-active {
-    transition:
-        opacity 0.16s ease-out,
-        transform 0.16s cubic-bezier(0.2, 0.8, 0.2, 1);
-}
-
-.drop-leave-active {
-    transition:
-        opacity 0.12s ease-in,
-        transform 0.12s ease-in;
-}
-
-.drop-enter-from,
-.drop-leave-to {
-    opacity: 0;
-    transform: translateY(-4px);
-}
 
 .agent-fact.waiting {
     color: var(--progress);
