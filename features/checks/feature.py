@@ -1,50 +1,15 @@
-import threading
-import time
-
-from controllers.types import Agents, Notifications
-from features.base import Feature, event, Line
+from features.base import Feature
 from features.checks.controller import Checks
-from resources.base import SYSTEM
+from features.checks.details import ChecksDetails
+from features.checks.handlers import ReportCheckResult, RunDueChecks
+from features.journal import Journal
+
+__all__ = ["Checks"]
 
 
 class ChecksFeature(Feature):
-    name = "checks"
-    lines = {"failed": Line("{{title}}", "journal check show {{n}} says why; fix it, then journal check run {{n}}"),
-             "failing": Line("{{title}}", "{{said}}")}
-    title_ = "Checks"
-    abstract_ = "Scripts that say pass or fail about the project, run on demand or on their own timer; a failure is filed and told to the agent"
-    help_ = "A check is a row of its own: journal check create \"<what it guards>\" --set command=\"<command>\" --set every=<minutes>. It runs as its own process from the project root, never inside the server; exit 0 passes. A failing run files a notification and tells the agent; the next pass clears it."
+    details = ChecksDetails
 
-    def __init__(self):
-        self.running: set[str] = set()
-
-    @event("agent.updated")
-    def timer(self, event, record) -> None:
-        for check in Checks(record, actor=SYSTEM)._due(time.time()):
-            key = f"{record.root}:{check.n}"
-            if key in self.running:
-                continue
-            self.running.add(key)
-            threading.Thread(target=self.ran, args=(record, check.n, key), daemon=True).start()
-
-    def ran(self, record, n: int, key: str) -> None:
-        try:
-            Checks(record, actor=SYSTEM).run(n, wait=True)
-        finally:
-            self.running.discard(key)
-
-    @event("check.updated")
-    def reported(self, event, record) -> None:
-        if not event.data.get("ran"):
-            return
-        check = Checks(record, actor=SYSTEM).load(event.n)
-        title = f"check {check.n} failed - {check.title}"[:80]
-        if (check.last or {}).get("ok"):
-            for stale in Notifications(record, actor=SYSTEM).linked_to(check.ref):
-                if not stale.completed:
-                    self.journal.clear(record, stale, "the check passes again")
-            return
-        self.journal.notify(record, "failing", title=title, said=(check.last or {}).get("said") or "it said nothing", about=check.ref)
-        agent = Agents(record, actor=SYSTEM).primary()
-        if agent:
-            self.journal.say(record, agent, "failed", title=title, n=check.n)
+    def register(self, journal: Journal) -> None:
+        journal.events.handler(RunDueChecks())
+        journal.events.handler(ReportCheckResult())

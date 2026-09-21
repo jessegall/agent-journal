@@ -18,6 +18,7 @@ TWICE_WITHIN = 10.0
 COMMANDS: dict[str, dict] = {}
 HANDLERS: dict[str, list] = {}
 CONTROLLERS: dict[str, type] = {}
+NAMED: dict[str, type] = {}
 
 
 class Controller(Stored, Files, Links):
@@ -280,3 +281,4 @@ class Controller(Stored, Files, Links):
 
 def register(*classes) -> None:
     CONTROLLERS.update({c.resource.type: c for c in classes})
+    NAMED.update({c.__name__.lower(): c for c in classes})

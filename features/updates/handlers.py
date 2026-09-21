@@ -4,7 +4,7 @@ from pathlib import Path
 from engine.events import AgentUpdated
 from engine.stored import read_json, write_json
 from engine.version import version
-from features.faults.feature import developing
+from features.faults.developing import developing
 from features.parts import WHOLE_FEATURE, Context, Handler
 from surfaces.updates import newer, upstream
 

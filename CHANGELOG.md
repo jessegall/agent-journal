@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.49.0 — The middle features are details and registered parts
+
+Plan 9, to-do 604. Context, Became, Cleanup, Start, Attachments, Skills, Checks, Faults and Agents are each a details.py and a feature.py that registers its parts. Faults keeps its timing and error reports as a FaultReports service the core reaches through the feature. Agents declares its quiet, lapse and recent minutes as settings, so the viewer shows them. New generic events: AnyEvent, ResourceCreated and AgentChanged. The names journal.<type> answers to are set when a type registers, at load, never looked up per call.
+
+What to do about it: `journal upgrade`.
+
 ## 2.48.0 — The small features are details and registered parts
 
 Plan 9, to-do 603. Permissions, Suggestions, Updates, Housekeeping, the law, Browser, Buttons, Worktrees, Commits, TabFocus, Retention and Questions are each a details.py, a feature.py that only registers its parts, and the parts themselves (handlers.py, interceptors.py), with their helpers in modules of their own (tidy.py, shaping.py, choices.py, links.py). A part's context now also carries the provider and the hook it came from, and can hold and release the agent's writes. details.py can mark a feature fixed or off by default.
