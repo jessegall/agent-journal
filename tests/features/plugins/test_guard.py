@@ -1,28 +1,33 @@
-import sys
 import time
-from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
-import features  # noqa: E402
-from controllers.types import Plugins  # noqa: E402
-from engine.hooks import handle  # noqa: E402
-from features.plugins.source import folder, home  # noqa: E402
-from providers import PROVIDERS  # noqa: E402
-from resources.base import SYSTEM  # noqa: E402
-from tests.kit import check, done, fresh  # noqa: E402
+import pytest
 
-features.unload()
-features.load()
-claude = PROVIDERS["claude"]()
+import features
+from controllers.types import Plugins
+from engine.hooks import handle
+from features.plugins.source import folder, home
+from providers import PROVIDERS
+from resources.base import SYSTEM
+from tests.conftest import fresh
+
+CLAUDE = PROVIDERS["claude"]()
 
 
-def alone(env: str = "t"):
+@pytest.fixture(autouse=True)
+def loaded_features():
+    features.unload()
+    features.load()
+    yield
+    features.unload()
+
+
+def alone(env="t"):
     record = fresh(env)
     record.set_setting("features", {"gate": False, "work": False})
     return record
 
 
-def installed(record, name: str, guard: str, **manifest):
+def installed(record, name, guard, **manifest):
     where = folder(record.root, name)
     home(record.root).mkdir(parents=True, exist_ok=True)
     where.mkdir(parents=True, exist_ok=True)
@@ -31,50 +36,53 @@ def installed(record, name: str, guard: str, **manifest):
                                                 manifest={"name": name, "refuse": "sh guard.sh", **manifest})
 
 
-def writing(record, file: str = "a.py"):
-    return handle(claude, record.root, record.env, {"hook_event_name": "PreToolUse", "session_id": "claude-1", "tool_name": "Edit",
-                                                    "cwd": str(record.root.parent), "tool_input": {"file_path": str(record.root.parent / file)}})
+def writing(record, file="a.py"):
+    return handle(CLAUDE, record.root, record.env, {"hook_event_name": "PreToolUse", "session_id": "claude-1", "tool_name": "Edit",
+                                                     "cwd": str(record.root.parent), "tool_input": {"file_path": str(record.root.parent / file)}})
 
 
 def reading(record):
-    return handle(claude, record.root, record.env, {"hook_event_name": "PreToolUse", "session_id": "claude-1", "tool_name": "Read",
-                                                    "cwd": str(record.root.parent), "tool_input": {"file_path": str(record.root.parent / "a.py")}})
+    return handle(CLAUDE, record.root, record.env, {"hook_event_name": "PreToolUse", "session_id": "claude-1", "tool_name": "Read",
+                                                     "cwd": str(record.root.parent), "tool_input": {"file_path": str(record.root.parent / "a.py")}})
 
 
-# A PLUGIN MAY REFUSE A WRITE, and its words reach the agent
-record = alone()
-installed(record, "guardian", "read x; echo '{\"refuse\": \"src/Generated is generated; edit the stub instead\"}'\n")
-check("the plugin's reason is given to the agent, under its name", writing(record),
-      {"decision": "block", "reason": "guardian: src/Generated is generated; edit the stub instead"})
-check("a read is not asked about unless the plugin says it reads too", reading(record), {})
+def test_a_plugin_may_refuse_a_write_and_its_words_reach_the_agent():
+    record = alone()
+    installed(record, "guardian", "read x; echo '{\"refuse\": \"src/Generated is generated; edit the stub instead\"}'\n")
+    assert writing(record) == {"decision": "block", "reason": "guardian: src/Generated is generated; edit the stub instead"}, \
+        "the plugin's reason is given to the agent, under its name"
+    assert reading(record) == {}, "a read is not asked about unless the plugin says it reads too"
 
-# WHAT IT DOES NOT REFUSE goes through
-quiet = alone("quiet")
-installed(quiet, "quiet", "read x; echo '{}'\n")
-check("an empty answer lets the write through", writing(quiet), {})
 
-# A GUARD THAT FAILS OR HANGS never stops the agent
-broken = alone("broken")
-installed(broken, "broken", "exit 9\n")
-check("a guard that crashes lets the write through", writing(broken), {})
-slow = alone("slow")
-installed(slow, "slow", "sleep 30\n", refuse_seconds=0.4)
-started = time.monotonic()
-answered = writing(slow)
-check("a guard that hangs is given up on, quickly, and the write goes through", (answered, time.monotonic() - started < 3), ({}, True))
+def test_what_it_does_not_refuse_goes_through():
+    quiet = alone("quiet")
+    installed(quiet, "quiet", "read x; echo '{}'\n")
+    assert writing(quiet) == {}, "an empty answer lets the write through"
 
-# A PLUGIN THAT IS OFF, or removed, is not asked at all
-off = alone("off")
-row = installed(off, "off", "read x; echo '{\"refuse\": \"no\"}'\n")
-Plugins(off, actor=SYSTEM).update(row.n, enabled=False)
-check("a plugin switched off is not asked", writing(off), {})
-Plugins(off, actor=SYSTEM).update(row.n, enabled=True)
-Plugins(off, actor=SYSTEM).complete(row.n, "removed")
-check("a removed plugin is not asked", writing(off), {})
 
-# READS ARE ASKED ABOUT only when the plugin says so
-readers = alone("readers")
-installed(readers, "readers", "read x; echo '{\"refuse\": \"that file is secret\"}'\n", reads=True)
-check("a plugin that asked for reads may refuse one", reading(readers), {"decision": "block", "reason": "readers: that file is secret"})
+def test_a_guard_that_fails_or_hangs_never_stops_the_agent():
+    broken = alone("broken")
+    installed(broken, "broken", "exit 9\n")
+    assert writing(broken) == {}, "a guard that crashes lets the write through"
+    slow = alone("slow")
+    installed(slow, "slow", "sleep 30\n", refuse_seconds=0.4)
+    started = time.monotonic()
+    answered = writing(slow)
+    assert (answered, time.monotonic() - started < 3) == ({}, True), "a guard that hangs is given up on, quickly, and the write goes through"
 
-done()
+
+def test_a_plugin_that_is_off_or_removed_is_not_asked_at_all():
+    off = alone("off")
+    row = installed(off, "off", "read x; echo '{\"refuse\": \"no\"}'\n")
+    Plugins(off, actor=SYSTEM).update(row.n, enabled=False)
+    assert writing(off) == {}, "a plugin switched off is not asked"
+    Plugins(off, actor=SYSTEM).update(row.n, enabled=True)
+    Plugins(off, actor=SYSTEM).complete(row.n, "removed")
+    assert writing(off) == {}, "a removed plugin is not asked"
+
+
+def test_reads_are_asked_about_only_when_the_plugin_says_so():
+    readers = alone("readers")
+    installed(readers, "readers", "read x; echo '{\"refuse\": \"that file is secret\"}'\n", reads=True)
+    assert reading(readers) == {"decision": "block", "reason": "readers: that file is secret"}, \
+        "a plugin that asked for reads may refuse one"
