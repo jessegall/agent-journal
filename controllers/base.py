@@ -135,7 +135,7 @@ class Controller:
         self._guarded(r, action)
         self._note_force(r)
         if self.actor not in r.seen:
-            r.seen.append(self.actor)                # whoever acts on it has seen it
+            r.seen.append(self.actor)
         r.updated = time.time()
         write_text(self.path(r.n), r.dump())
         self.record.emit(self.type, r.n, action, self.actor, **event)

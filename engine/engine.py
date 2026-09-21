@@ -181,7 +181,7 @@ class Engine:
         return "typed the opening line"
 
     def deliver(self) -> str:
-        if self.agent.driver.last_report() is None:       # the agent has not reported yet: it may still be at a dialog
+        if self.agent.driver.last_report() is None:
             return "waiting for the agent's first report"
         count = 0
         for actor in self.actors:
