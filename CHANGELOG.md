@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.24.8 — Remove in Settings says why, then removes on a second click
+
+An environment with open rows is only removed when that is confirmed, and the Remove button in Settings swallowed the refusal, so clicking it seemed to do nothing. It now shows why, turns into "Remove anyway", and a second click removes it — its record packed into the attic, as the section now says.
+
+What to do about it: `journal upgrade`.
+
 ## 2.24.7 — A server left from an older install is replaced, not reused
 
 A journal looking for its viewer took any server that answered for its folder as its own. A server started before the 2.0 layout — still running weeks later, with its web build long since removed — was reused, and the viewer answered "no web build". A server now counts only when it reports the installed version too; an older one is left alone and a current one starts beside it.

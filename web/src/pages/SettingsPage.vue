@@ -53,8 +53,15 @@ async function saveColor(color) {
     store.identity = await api.saveIdentity({color});
 }
 
+const removing = ref({});
+
 async function remove(e) {
-    await api.act("environment", e.n, "remove", {how: "removed from the viewer"});
+    try {
+        await api.act("environment", e.n, "remove", {how: "removed from the viewer", ...(removing.value[e.n] ? {yes: true} : {})});
+        removing.value = {...removing.value, [e.n]: ""};
+    } catch (error) {
+        removing.value = {...removing.value, [e.n]: error.message};
+    }
 }
 
 const sweeping = ref({});
@@ -157,8 +164,8 @@ async function sweep(e) {
                 <span class="fold" />
                 <h2>Environments</h2>
                 <p class="lead">
-                    Removing one keeps its record on disk; it leaves the sidebar. Sweeping one packs its messages, comments, reactions,
-                    notifications and closed rows into the attic and keeps what is still true.
+                    Removing one packs its record into the attic, and journal environment unarchive with its name brings it back. Sweeping
+                    one packs its messages, comments, reactions, notifications and closed rows into the attic and keeps what is still true.
                 </p>
             </header>
             <template v-for="e in envs" :key="e.n">
@@ -168,11 +175,16 @@ async function sweep(e) {
                     </span>
                     <span class="control">
                         <Btn small @click="sweep(e)">{{ sweeping[e.n] ? "Sweep now" : "Sweep" }}</Btn>
-                        <Btn kind="danger" small :disabled="e.title === route.env" @click="remove(e)">Remove</Btn>
+                        <Btn kind="danger" small :disabled="e.title === route.env" @click="remove(e)">
+                            {{ removing[e.n] ? "Remove anyway" : "Remove" }}
+                        </Btn>
                     </span>
                 </div>
                 <template v-if="sweeping[e.n]">
                     <p class="lead">{{ sweeping[e.n] }}</p>
+                </template>
+                <template v-if="removing[e.n]">
+                    <p class="lead">{{ removing[e.n] }}</p>
                 </template>
             </template>
         </section>
