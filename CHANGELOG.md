@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.40.0 — Claude's plan mode is refused in a journal project
+
+Messages 1421 to 1423. Plans in a journal project are journal plans, and Claude Code's plan mode works around them. The plans feature now refuses the EnterPlanMode tool call at the PreToolUse hook and tells the agent to write the plan with journal plan create, its phases and its rows.
+
+What to do about it: `journal upgrade`.
+
 ## 2.39.1 — A feature's lines and behaviours are lists, each named
 
 Messages 1413 and 1414. In details.py, lines and behaviours are lists: each Line and Behaviour carries its own name (Line(name="refused", title=..., brief=...)) instead of being keyed in a dict. The feature still finds them by name. Tags is written this way.
