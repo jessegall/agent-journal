@@ -14,6 +14,7 @@ MARKING = threading.Lock()
 RUNS = {"reply": "message reply {n} {text}", "log": "work log {text} --n {n}", "end": "work end {n} --how {text}",
         "todo": "todo create {name} --brief {text}", "fact": "fact create {name} --brief {text}"}
 PLACES = {"info": "bar"}
+LEVEL = "info"
 SHOWN = {"replies": ("reply",), "info": ("reply", "info", "blocked"), "corrections": ("reply", "info", "blocked", "correction"),
          "discoveries": ("reply", "info", "blocked", "correction", "discovery")}
 ARGUMENT = r'(?::[^\]\s]+|="[^"]*")?'
@@ -58,8 +59,8 @@ class Tags(Feature):
         return {"names": self.names(record), "places": self.places(record), "verbosity": self.verbosity(record), "levels": list(SHOWN)}
 
     def verbosity(self, record) -> str:
-        chosen = self.setting(record, self.VERBOSITY, "replies")
-        return chosen if chosen in SHOWN else "replies"
+        chosen = self.setting(record, self.VERBOSITY, LEVEL)
+        return chosen if chosen in SHOWN else LEVEL
 
     def names(self, record) -> list[str]:
         return [str(name).strip().lstrip("[!").rstrip("]") for name in self.setting(record, self.NAMES, TAGS) if str(name).strip()] or list(TAGS)
