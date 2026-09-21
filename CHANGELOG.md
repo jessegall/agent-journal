@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.16.10 — Notifications are what the user acts on
+
+The notifications rail holds what waits on the user: a question to answer, a suggestion to decide, a plan drafted or waiting at a checkpoint, a report, a doc, a rule or fact made, a reminder, a failing check, and whatever a plugin raises. What the user never acts on — the journal updating itself, a request slower than its budget, a plugin installed, a model or effort change typed into the agent — is still recorded and still in the activity, but filed as already seen, so it no longer fills the rail. The 87 such rows already there were cleared.
+
+What to do about it: `journal upgrade`.
+
 ## 2.16.9 — A dropdown marks what is chosen
 
 The model and effort dropdowns in the chat bar mark the value the agent is running with. The server says which choice is current, since only the provider knows that "opus" is claude-opus-5[1m], and one component, kit/ChoiceList, draws any list of choices with the current one marked, so the next dropdown gets it for free.

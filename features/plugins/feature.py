@@ -105,7 +105,7 @@ class Plugins(Feature):
                 held.close()
             if not kept:
                 self.drop(where, linked)
-        Notifications(plugins.record, actor=SYSTEM).create(f"Plugin {name} installed", brief=f"From {source}" + (f" at {commit[:12]}" if commit else "") + ".", about=made.ref)
+        Notifications(plugins.record, actor=SYSTEM)._logged(f"Plugin {name} installed", brief=f"From {source}" + (f" at {commit[:12]}" if commit else "") + ".", about=made.ref)
         return made
 
     @command("plugin")
