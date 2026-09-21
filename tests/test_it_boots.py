@@ -59,6 +59,19 @@ def test_every_agent_launches_from_an_installed_zip():
     again = subprocess.run([sys.executable, str(HERE / "install.py"), "upgrade", str(place / "project")], env=env, capture_output=True, text=True, timeout=120)
     listed = subprocess.run([*journal, "doc", "all"], cwd=place / "project", env=env, capture_output=True, text=True, timeout=WAIT).stdout
     assert "Kept across upgrades" in listed, f"a project record survives an upgrade:\n{again.stdout}{again.stderr}"
+    repository = place / "release"
+    shipped = subprocess.run(["git", "ls-files", "-co", "--exclude-standard"], cwd=HERE, capture_output=True, text=True, timeout=WAIT).stdout.split()
+    for name in shipped:
+        if (HERE / name).is_file():
+            (repository / name).parent.mkdir(parents=True, exist_ok=True)
+            (repository / name).write_bytes((HERE / name).read_bytes())
+    for step in (["init", "-q"], ["add", "-A"], ["-c", "user.name=t", "-c", "user.email=t@t", "commit", "-q", "-m", "release"]):
+        subprocess.run(["git", *step], cwd=repository, capture_output=True, timeout=WAIT)
+    itself = subprocess.run([*journal, "upgrade"], cwd=place / "project", env={**env, "AGENT_JOURNAL_REPO": str(repository), "AGENT_JOURNAL_BOOTSTRAPPED": ""},
+                            capture_output=True, text=True, timeout=180)
+    listed = subprocess.run([*journal, "doc", "all"], cwd=place / "project", env=env, capture_output=True, text=True, timeout=WAIT).stdout
+    assert ("Traceback" not in itself.stdout + itself.stderr, "Kept across upgrades" in listed, (root / "journal.pyz").resolve().name.startswith("journal-")) == (True, True, True), \
+        f"an installed journal upgrades itself from a release, keeps its records, and runs from a versioned build:\n{itself.stdout}{itself.stderr}"
     for name in DRIVERS:
         launches(place, root / "journal.py", name)
 

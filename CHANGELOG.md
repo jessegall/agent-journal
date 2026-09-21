@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.84.3 — Upgrades never break a running session or stop halfway
+
+Messages 2187, 2188 and 2190, to-do 753. Two faults in upgrading. A journal upgrading itself from a release compared its files after it had already deleted the download, so the upgrade stopped halfway, with the new code copied in but never packed. And an upgrade replaced `journal.pyz` under running sessions, whose later imports then read the new file as if it were the old one and failed with "bad local file header". Now the download is compared before it is removed, and each build is written as its own `journal-<version>-<hash>.pyz`, with `journal.pyz` a link to the newest: a running session keeps reading the build it started with, the server and supervisor notice the link moving and reload, and the three newest builds are kept. The start-up test now also has an installed journal upgrade itself from a release, the path that broke, and checks its records survive and it runs from a versioned build.
+
+What to do about it: `journal upgrade`.
+
 ## 2.84.2 — The chat keeps updating without a refresh
 
 Messages 2149, 2151 and 2152, to-do 749. After a while the viewer stopped showing new messages and replies until the page was reloaded. The page heard every event, but its refreshes never went out: requests to one address go one after another, and a single request that never got an answer, as can happen while the server restarts after an upgrade, held every later one forever. Every request now gives up after twenty seconds (five minutes for an upload), so the next refresh always goes through. The live stream also no longer passes on the engine's one-minute clock, which is not a stored event.
