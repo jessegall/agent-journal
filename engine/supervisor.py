@@ -43,7 +43,7 @@ def size() -> tuple[int, int]:
 def resize(fd: int) -> tuple[int, int]:
     rows, cols = size()
     try:
-        fcntl.ioctl(fd, termios.TIOCSWINSZ, struct.pack("HHHH", max(rows - band.ROWS, 4), cols, 0, 0))
+        fcntl.ioctl(fd, termios.TIOCSWINSZ, struct.pack("HHHH", max(rows - (band.ROWS if band.SHOWN else 0), 4), cols, 0, 0))
     except OSError:
         pass
     return rows, cols
@@ -67,6 +67,9 @@ def run(root: Path, cwd: Path, env: str, agent: str, fd: int, session: str, life
     rows, cols = resize(fd)
     top = band.Band(root, env, session, root.resolve().parent.name)
     rows_below = band.Translator(rows)
+    drawn = top.draw if band.SHOWN else (lambda *_, **__: b"")
+    shifted = rows_below.feed if band.SHOWN else (lambda data: data)
+    unshifted = band.unshifted if band.SHOWN else (lambda data: data)
     printed = root / "runtime" / f"printed-{session}"
     typed = root / "runtime" / f"typed-{session}"
     typed_at = 0.0
@@ -96,12 +99,13 @@ def run(root: Path, cwd: Path, env: str, agent: str, fd: int, session: str, life
         rows_below.rows = shape[0]
         where.resized(shape[0], shape[1])
         sized()
-        show(b"\x1b[2J" + top.draw(shape[1], force=True, cursor=where, first=band.region(shape[0])))
+        if band.SHOWN:
+            show(b"\x1b[2J" + drawn(shape[1], force=True, cursor=where, first=band.region(shape[0])))
 
     where = band.Cursor(rows, cols)
     signal.signal(signal.SIGWINCH, lambda *_: frame())
     sized()
-    show(top.draw(cols, force=True, cursor=where, first=band.region(rows)))
+    show(drawn(cols, force=True, cursor=where, first=band.region(rows)))
     began = time.time()
     last_check = 0.0
     last_viewer = time.time()
@@ -125,17 +129,17 @@ def run(root: Path, cwd: Path, env: str, agent: str, fd: int, session: str, life
                 if not data:
                     break
                 last_out = time.time()
-                shown = rows_below.feed(data)
+                shown = shifted(data)
                 show(shown)
                 where.feed(shown)
                 early = (early + data)[-EARLY:] if not answered else early
                 if RESET in data:
                     rows_below.margins = None
-                    show(top.draw(shape[1], force=True, cursor=where, first=band.region(shape[0])))
+                    show(drawn(shape[1], force=True, cursor=where, first=band.region(shape[0])))
                 elif any(mark in data for mark in REDRAWS):
-                    show(top.draw(shape[1], force=True, cursor=where, first=rows_below.region()))
+                    show(drawn(shape[1], force=True, cursor=where, first=rows_below.region()))
                 elif data.rstrip().endswith(FRAME_END):
-                    show(top.draw(shape[1], cursor=where))
+                    show(drawn(shape[1], cursor=where))
                 out.write(data)
                 out.flush()
             if not answered and time.time() - started < STARTUP:
@@ -146,13 +150,13 @@ def run(root: Path, cwd: Path, env: str, agent: str, fd: int, session: str, life
                 answered, early = True, b""
             if time.time() - last_band >= 1.0 and time.time() - last_out >= BETWEEN_FRAMES and where.sure:
                 last_band = time.time()
-                show(top.draw(shape[1], cursor=where))
+                show(drawn(shape[1], cursor=where))
             if stdin in ready:
                 data = os.read(stdin, 65536)
                 if not data:
                     result = STOP
                     break
-                os.write(fd, band.unshifted(data))
+                os.write(fd, unshifted(data))
                 if b"\r" in data or b"\n" in data:
                     typed.unlink(missing_ok=True)
                 elif typing(data) and time.time() - typed_at >= TYPED_EVERY:
