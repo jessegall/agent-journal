@@ -12,6 +12,8 @@ from resources.shapes import Options, check, normalize_options, typed
 from engine.stored import read_json, write_json, write_text
 
 INDEX = "index.json"
+SAID_TWICE = ("comment", "message")
+TWICE_WITHIN = 10.0
 COMMANDS: dict[str, dict] = {}
 HANDLERS: dict[str, list] = {}
 FACES = ("👍", "❤️", "🎉", "😄", "👀", "🙏", "👎", "💔", "😠")
@@ -30,7 +32,7 @@ class Controller:
         if actor:
             self.actor = actor
 
-    def refuse(self, why: str) -> None:
+    def _refuse(self, why: str) -> None:
         if not self.force:
             raise Refused(why)
         self.forced.append(why)
@@ -69,7 +71,7 @@ class Controller:
             raise Refused(f"no {self.type} {n}")
         return self.resource.load(p.read_text())
 
-    def note_force(self, r: Resource) -> None:
+    def _note_force(self, r: Resource) -> None:
         if not self.forced:
             return
         r.data["forced"] = [*(r.data.get("forced") or []),
@@ -77,7 +79,7 @@ class Controller:
         self.forced = []
 
     def save(self, r: Resource, action: str, **event) -> Resource:
-        self.note_force(r)
+        self._note_force(r)
         if self.actor not in r.seen:
             r.seen.append(self.actor)                # whoever acts on it has seen it
         r.updated = time.time()
@@ -85,7 +87,7 @@ class Controller:
         self.record.emit(self.type, r.n, action, self.actor, **event)
         return r
 
-    def handled(self, action: str, **args):
+    def _handled(self, action: str, **args):
         for fn in HANDLERS.get(f"{self.type}.{action}", []) + HANDLERS.get(action, []):
             taken = fn(self, **args)
             if taken is not None:
@@ -96,8 +98,18 @@ class Controller:
         fields = self.resource.fields
         return {k: check(k, fields[k], normalize_options(v) if k == Options.options else v) if k in fields else v for k, v in data.items()}
 
+    def _twin(self, title: str, brief: str, about) -> Resource | None:
+        if self.type not in SAID_TWICE:
+            return None
+        since = time.time() - TWICE_WITHIN
+        return next((r for r in reversed(self.all()) if r.created >= since and r.title == title and r.brief == brief
+                     and r.seen[:1] == [self.actor] and (not about or about in r.refs)), None)
+
     def create(self, title: str, abstract: str = "", brief: str = "", **data) -> Resource:
-        taken = self.handled("create", title=title, abstract=abstract, brief=brief, **data)
+        said = self._twin(title, brief, data.get("about"))
+        if said is not None:
+            return said
+        taken = self._handled("create", title=title, abstract=abstract, brief=brief, **data)
         if taken is not None:
             return taken
         with self.record.locked():
@@ -112,7 +124,7 @@ class Controller:
             return r
 
     def update(self, n: int, title: str | None = None, abstract: str | None = None, brief: str | None = None, outcome: str | None = None, **data) -> Resource:
-        taken = self.handled("update", n=n, title=title, abstract=abstract, brief=brief, outcome=outcome, **data)
+        taken = self._handled("update", n=n, title=title, abstract=abstract, brief=brief, outcome=outcome, **data)
         if taken is not None:
             return taken
         r = self.load(n)
@@ -147,7 +159,7 @@ class Controller:
         return self.save(r, "updated", section=title)
 
     def delete(self, n: int, why: str = "") -> Resource:
-        taken = self.handled("delete", n=n, why=why)
+        taken = self._handled("delete", n=n, why=why)
         if taken is not None:
             return taken
         r = self.load(n)
@@ -155,12 +167,12 @@ class Controller:
         return self.save(r, "deleted", why=why)
 
     def complete(self, n: int, how: str = "", **data) -> Resource:
-        taken = self.handled("complete", n=n, how=how, **data)
+        taken = self._handled("complete", n=n, how=how, **data)
         if taken is not None:
             return taken
         r = self.load(n)
         if r.completed:
-            self.refuse(f"{self.type} {n} is already {self.named('complete')}")
+            self._refuse(f"{self.type} {n} is already {self.named('complete')}")
         r.completed = time.time()
         r.outcome = how
         r.data.update(self._shaped(data))
@@ -169,9 +181,9 @@ class Controller:
     def reopen(self, n: int, why: str) -> Resource:
         r = self.load(n)
         if r.deleted:
-            self.refuse(f"{self.type} {n} is archived; restore it before reopening it")
+            self._refuse(f"{self.type} {n} is archived; restore it before reopening it")
         if not r.completed:
-            self.refuse(f"{self.type} {n} is not {self.named('complete')}")
+            self._refuse(f"{self.type} {n} is not {self.named('complete')}")
         r.completed = 0.0
         r.outcome = ""
         return self.save(r, "reopened", why=why)
@@ -184,7 +196,7 @@ class Controller:
             if alias == name:
                 return getattr(self, method)
         if name in self.resource.names:
-            self.refuse(f"a {self.type} calls that {self.resource.names[name]}")
+            self._refuse(f"a {self.type} calls that {self.resource.names[name]}")
         return self.action(name)
 
     def action(self, name: str):
@@ -356,6 +368,8 @@ class Controller:
         reactions = Reactions(self.record, actor=self.actor)
         for made in reactions.linked_to(r.ref):
             if made.face == face and self.actor in made.seen[:1]:
+                if time.time() - made.created < TWICE_WITHIN:
+                    return made
                 reactions.force_delete(made.n)
                 return None
         return reactions.create(face, face=face, about=r.ref)

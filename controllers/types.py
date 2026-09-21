@@ -72,7 +72,7 @@ class Messages(Controller):
     def edit(self, n: int, text: str):
         r = self.load(n)
         if AGENT in r.seen and self.actor != AGENT:
-            self.refuse(f"message {n} has been read: leave a new one")
+            self._refuse(f"message {n} has been read: leave a new one")
         return self.update(n, brief=text)
 
     def declare(self, n: int, kind: str):
@@ -166,7 +166,7 @@ class Todos(Controller):
         from support.plans import held
         row = self.load(n)
         if held(self.record, row):
-            self.refuse(f"todo {n} is not in the active plan's current phase: finish the plan, raise it to critical, or --force \"<why>\"")
+            self._refuse(f"todo {n} is not in the active plan's current phase: finish the plan, raise it to critical, or --force \"<why>\"")
             row = self.save(row, "updated", forced=True)
         return Works(self.record, actor=self.actor, session=self.session, agent=self.agent).create(row.title, brief=row.brief, todo=row.n)
 
@@ -196,15 +196,15 @@ class Works(Controller):
     def create(self, title: str, abstract: str = "", brief: str = "", **data):
         busy = self.active()
         if busy:
-            self.refuse(f'work {busy.n} is open: end it with journal work end --how "<what landed>", '
+            self._refuse(f'work {busy.n} is open: end it with journal work end --how "<what landed>", '
                           f'or set it aside with journal work park "<why>", before starting another')
         if data.get(types.Work.todo):
             row = Todos(self.record, actor=self.actor).load(int(data[types.Work.todo]))
             if row.completed:
-                self.refuse(f"todo {row.n} is already done")
+                self._refuse(f"todo {row.n} is already done")
             held = row.assigned or ""
             if held and held != self.agent:
-                self.refuse(f"todo {row.n} is assigned to {held}; nobody else may take it")
+                self._refuse(f"todo {row.n} is assigned to {held}; nobody else may take it")
         return super().create(title, abstract, brief, **data)
 
 
@@ -284,11 +284,11 @@ class Suggestions(Controller):
     def create(self, title: str, abstract: str = "", brief: str = "", **data):
         waiting = [s for s in self.all() if not s.completed]
         if len(waiting) >= OPEN_SUGGESTIONS:
-            self.refuse(f"{OPEN_SUGGESTIONS} suggestions already wait on the user: {', '.join(str(s.n) for s in waiting)}")
+            self._refuse(f"{OPEN_SUGGESTIONS} suggestions already wait on the user: {', '.join(str(s.n) for s in waiting)}")
         declined = [s for s in self.all() if s.decision == DECLINE.lower() and s.title.lower() == title.lower()]
         if declined and not data.pop("despite", None):
             s = declined[-1]
-            self.refuse(f"suggestion {s.n} was declined{': ' + s.outcome if s.outcome else ''}; --set despite=true --set because=\"<what changed>\" to propose it again")
+            self._refuse(f"suggestion {s.n} was declined{': ' + s.outcome if s.outcome else ''}; --set despite=true --set because=\"<what changed>\" to propose it again")
         options = [{"title": ACCEPT, "description": "a to-do is filed from it", "code": ""},
                    {"title": ADJUST, "description": "say what to do differently below; a to-do is filed from your words", "code": ""},
                    {"title": DECLINE, "description": "it is not proposed again", "code": ""}]
@@ -381,7 +381,7 @@ class Environments(Controller):
     def vacant(self, title: str, mine: str = "") -> None:
         holder = Sessions(self.record.root).holder(title)
         if holder and holder != mine:
-            self.refuse(f"environment {title!r} is held by session {holder}; it leaves first")
+            self._refuse(f"environment {title!r} is held by session {holder}; it leaves first")
 
     def create(self, title: str, abstract: str = "", brief: str = "", **data):
         name = self.unused(check_title(title), ": switch to it")
@@ -404,7 +404,7 @@ class Environments(Controller):
         env = self.load(n)
         holder = self.sessions().holder(env.title)
         if holder and holder != who:
-            self.refuse(f"environment {env.title!r} is taken by session {holder}: claim it with a reason, or work another")
+            self._refuse(f"environment {env.title!r} is taken by session {holder}: claim it with a reason, or work another")
         before = self.sessions().environment(who)
         self.sessions().bind(who, env.title)
         if before and before != env.title:
@@ -422,7 +422,7 @@ class Environments(Controller):
         self.vacant(env.title)
         kept = ", ".join(f"{v} open {k}s" for k, v in held.items() if v)
         if kept and not yes:
-            self.refuse(f"environment {env.title!r} holds {kept}; --yes removes it anyway (its record goes to the attic)")
+            self._refuse(f"environment {env.title!r} holds {kept}; --yes removes it anyway (its record goes to the attic)")
         if record.home.is_dir():
             attic.pack(record.home, f"{env.title}-{int(time.time())}")
         self.force_delete(n)
