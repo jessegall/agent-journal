@@ -29,6 +29,9 @@ class BoundJournal:
             raise AttributeError(f"the journal has no resource called {name}")
         return found(self.record, actor=self.actor)
 
+    def of(self, type_: str) -> Controller:
+        return CONTROLLERS[type_](self.record, actor=self.actor)
+
     def acting(self, actor: str) -> "BoundJournal":
         return BoundJournal(self.journal, self.record, actor)
 

@@ -89,11 +89,14 @@ def test_skill_homes_that_are_one_folder_keep_real_skill_files(tmp_path):
 def test_a_command_whose_feature_skill_is_not_loaded_names_the_skill_once():
     from features import FEATURES
     from providers.payload import Hook
+    from controllers.types import Agents
+    from features.parts import Context
+    from features.skills.interceptors import NameSkillForCommand
     record = fresh()
     (record.root.parent / ".agents" / "skills" / "journal-plans").mkdir(parents=True, exist_ok=True)
     (record.root.parent / ".agents" / "skills" / "journal-plans" / "SKILL.md").write_text("---\nname: journal-plans\n---\n")
     report(record, "working", "PreToolUse")
     ran = Hook.read({"hook_event_name": "PreToolUse", "tool_name": "Bash", "tool_input": {"command": "journal plan phase 1 build --when done"}})
     for _ in range(2):
-        FEATURES["skills"].needed(None, record, ran, "claude-1")
+        NameSkillForCommand().intercept(Context.of(FEATURES["skills"], record, Agents(record, actor="system").by_session("claude-1"), hook=ran), ran.tool)
     assert [n for n in nudges(record) if "journal-plans" in n] == ["load the journal-plans skill"], "named once in a window"

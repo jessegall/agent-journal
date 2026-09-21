@@ -1,4 +1,4 @@
-from features import trigger
+from features.trigger import MINUTES
 from features.base import FeatureDetails
 
 
@@ -14,4 +14,4 @@ class RetentionDetails(FeatureDetails):
 
     help = "keep.report, keep.todo and keep.notification are days per environment; 0 keeps everything listed."
 
-    trigger = {"every": 60, "unit": trigger.MINUTES}
+    trigger = {"every": 60, "unit": MINUTES}

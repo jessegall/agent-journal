@@ -15,10 +15,22 @@ class TypedEvent:
 class ResourceEvent(TypedEvent):
     n: int = 0
     action: str = ""
+    type: str = ""
+    actor: str = ""
 
     @classmethod
     def read(cls, event) -> "ResourceEvent":
-        return cls(n=event.n, action=event.action)
+        return cls(n=event.n, action=event.action, type=event.type, actor=event.actor)
+
+
+@dataclass(frozen=True)
+class AnyEvent(ResourceEvent):
+    on: ClassVar[str] = "*"
+
+
+@dataclass(frozen=True)
+class ResourceCreated(ResourceEvent):
+    on: ClassVar[str] = "created"
 
 
 @dataclass(frozen=True)
