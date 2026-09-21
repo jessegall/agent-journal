@@ -218,7 +218,7 @@ async function fetched(types, whole = false) {
         ...sized.map(load),
     ]);
     if (!got) return;
-    store.counts = got.counts;
+    store.counts = {...store.counts, ...got.counts};
     Object.entries(got.rows).forEach(([type, listed]) => took(type, listed));
     if (whole) {
         store.events = got.events;

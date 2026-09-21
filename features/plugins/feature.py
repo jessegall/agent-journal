@@ -28,14 +28,21 @@ class Plugins(Feature):
     LONGEST_EACH = 3.0
     ALTOGETHER = 5.0
 
+    def chat_rules(self, record) -> list:
+        memo, key = getattr(record, "memo", None), ("chat rules",)
+        if memo is not None and key in memo:
+            return memo[key]
+        rules = [(rule["find"], rule["as"]) for row in Rows(record, actor=SYSTEM)._every() if not row.completed and row.enabled
+                 for rule in (row.manifest or {}).get("chat") or []]
+        if memo is not None:
+            memo[key] = rules
+        return rules
+
     @formats
     def plugin_rules(self, text: str, record) -> str:
         said = text
-        for row in Rows(record, actor=SYSTEM)._every() if record else []:
-            if row.completed or not row.enabled:
-                continue
-            for rule in (row.manifest or {}).get("chat") or []:
-                said = re.sub(rule["find"], rule["as"], said)
+        for find, becomes in self.chat_rules(record) if record else []:
+            said = re.sub(find, becomes, said)
         return said
 
     def host(self, root: Path) -> None:
