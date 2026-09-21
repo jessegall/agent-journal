@@ -16,7 +16,7 @@ def test_the_law_is_fixed_on_and_carried_by_every_start():
     assert (law.enabled(record), law.describe()["fixed"]) == (True, True), "the law is fixed on"
     record.features = {"journal_laws": False}
     assert law.enabled(record) is True, "a setting cannot switch the law off"
-    assert all(name in start_block(record) for name in ("L1", "L2")) is True, "every start carries both laws"
+    assert all(name in start_block(record) for name in ("L1", "L2", "L3")) is True, "every start carries every law"
 
 
 def test_the_briefing_writes_both_agent_files_preserving_project_text(tmp_path):
@@ -51,3 +51,16 @@ def test_the_law_refuses_an_unbounded_dispatch_and_allows_a_bounded_one():
     for name, tool, given in allowed:
         result = handle(PROVIDERS[name](), record.root, record.env, {"hook_event_name": "PreToolUse", "session_id": f"{name}-law", "tool_name": tool, "tool_input": given})
         assert result == {}, f"{name}: a bounded dispatch with a model goes through"
+
+
+def test_a_law_is_whispered_on_its_keyword_and_the_largest_result_is_named_once():
+    from controllers.types import Nudges
+    record = fresh()
+    claude = PROVIDERS["claude"]()
+    call = {"session_id": "claude-1", "tool_name": "Bash", "tool_input": {"command": "cat features/parts.py"}}
+    handle(claude, record.root, record.env, {**call, "hook_event_name": "PreToolUse"})
+    assert [n.title for n in Nudges(record).all() if n.title.startswith("law L3")], "a keyword whispers its law"
+    for size in (30_000, 25_000, 40_000, 1_000):
+        handle(claude, record.root, record.env, {**call, "hook_event_name": "PostToolUse", "tool_response": {"stdout": "x" * size}})
+    named = [n.title for n in Nudges(record).all() if "the largest this session" in n.title]
+    assert [title.split(" characters")[0].split()[-1] for title in named] == ["30,014", "40,014"], "only a new largest result is named"

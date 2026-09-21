@@ -1,3 +1,4 @@
+import json
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -40,6 +41,10 @@ class ToolUse:
     @property
     def plans(self) -> bool:
         return self.name == "EnterPlanMode"
+
+    @property
+    def result_size(self) -> int:
+        return len(json.dumps(self.response)) if self.response else 0
 
     @property
     def said(self) -> str:

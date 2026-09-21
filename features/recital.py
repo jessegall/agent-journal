@@ -36,24 +36,25 @@ class WhisperOnKeyword(ToolInterceptor):
         self.resources = resources
 
     def intercept(self, context: Context, call) -> str:
-        said = call.said.lower()
-        if not said or not context.agent or not context.on(WHISPER):
+        text = call.said.lower()
+        if not text or not context.agent or not context.on(WHISPER):
             return ""
         rows = getattr(context.journal, self.resources)
         for row in rows._standing():
-            words = [w for w in row.data.get(KEYWORDS) or [] if w and str(w).lower() in said]
-            if words and self.quiet_enough(context, row.ref):
+            words = [w for w in row.data.get(KEYWORDS) or [] if w and str(w).lower() in text]
+            if words and whisper_due(context, row.ref):
                 context.agent.whisper(WHISPER, type=rows.type, n=row.n, title=row.title, brief=row.brief)
         return ""
 
-    def quiet_enough(self, context: Context, ref: str) -> bool:
-        f = context.record.root / "runtime" / f"touched-{context.agent.session}.json"
-        spoke, uses = read_json(f, {}), int(context.agent.row.uses or 0)
-        since = context.feature.cadence(context.record, WHISPER).every
-        if ref in spoke and uses - int(spoke[ref] or 0) < float(since):
-            return False
-        write_json(f, {**spoke, ref: uses})
-        return True
+
+def whisper_due(context: Context, ref: str) -> bool:
+    f = context.record.root / "runtime" / f"touched-{context.agent.session}.json"
+    last_uses, uses = read_json(f, {}), int(context.agent.row.uses or 0)
+    every = context.feature.cadence(context.record, WHISPER).every
+    if ref in last_uses and uses - int(last_uses[ref] or 0) < float(every):
+        return False
+    write_json(f, {**last_uses, ref: uses})
+    return True
 
 
 class RepeatStanding(Handler):
