@@ -19,7 +19,9 @@ With nothing open, the request is the work: read until you can name it, `journal
 
 ## Tag every message
 
-Open every message with exactly one tag: `[!discovery]` `[!correction]` `[!blocked]` `[!info]` `[!reply]`. When in doubt, `[!reply]`. The tags feature tells you once if the last message had none.
+Open every message with exactly one tag: `[!discovery]` `[!correction]` `[!blocked]` `[!info]` `[!reply]`. When in doubt, `[!reply]`. The tagging feature names it at the end of the turn if the message opened without one, and `tags.names` is a setting, so the words are the user's rather than the code's.
+
+**A tag that carries a number runs the command it stands for.** `[!reply:123]` at the start of a turn runs `journal message reply 123` with the turn itself as the text, so the turn is the reply and there is no second command to remember; `[!log:7]` writes the work log and `[!end:7]` ends the work. Which tag maps to which command is `tags.runs`, a setting. It runs once, keyed to the turn it came from, so a re-read after a compaction cannot fire it twice; two tags in one turn run in the order they appear; and the argument is the turn with the tag line removed. A refusal comes back as a private nudge on the next turn rather than at the moment of acting, so tags suit replying and logging rather than anything routinely gated.
 
 ## Pin, rule, reminder, or nothing
 
