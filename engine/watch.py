@@ -33,7 +33,7 @@ def crashed(code: int | None, since: float) -> bool:
 
 def once(record, title: str, brief: str, which: str = "") -> bool:
     notices = Notices(record, actor=SYSTEM)
-    if any(not n.completed and n.title == title and n.data.get(WHICH, "") == which for n in notices.all()):
+    if any(not n.completed and n.title == title and n.data.get(WHICH, "") == which for n in notices._every()):
         return False
     notices.create(title, brief=brief, tone="warn", **{WHICH: which})
     return True
@@ -41,7 +41,7 @@ def once(record, title: str, brief: str, which: str = "") -> bool:
 
 def over(record, title: str, how: str) -> None:
     notices = Notices(record, actor=SYSTEM)
-    for n in notices.all():
+    for n in notices._every():
         if not n.completed and n.title == title:
             notices.complete(n.n, how)
 

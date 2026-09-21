@@ -51,13 +51,13 @@ def test_every_resource_type_supports_the_common_lifecycle_and_emits_its_actions
         c.reopen(1, "closed too soon")
         assert (c.show(1).completed, c.show(1).outcome) == (0.0, ""), f"{type_}: reopening puts it back with no outcome"
         c.complete(1, "finished")
-        others = [x.n for x in c.all() if x.n > 2]
+        others = [x.n for x in c.all(completed=True, last=0) if x.n > 2]
         c.delete(1, "no longer needed")
-        assert ([x.n for x in c.all()], c.show(1).deleted > 0) == ([2] + others, True), \
+        assert ([x.n for x in c.all(completed=True, last=0)], c.show(1).deleted > 0) == ([2] + others, True), \
             f"{type_}: deleted is soft — gone from the list, still on disk"
         c.restore(1)
         c.force_delete(2)
-        assert ([x.n for x in c.all()], refused(lambda: c.show(2))) == ([1] + others, True), \
+        assert ([x.n for x in c.all(completed=True, last=0)], refused(lambda: c.show(2))) == ([1] + others, True), \
             f"{type_}: force delete removes the file"
 
     for type_ in TYPES:
@@ -73,7 +73,7 @@ def test_scope_a_project_resource_is_one_for_every_environment(tmp_path):
     here, there = Record(root, "here"), Record(root, "there")
     for type_ in TYPES:
         CONTROLLERS[type_](here).create("shared" if TYPES[type_].scope == PROJECT else "own")
-        seen_there = [r.title for r in CONTROLLERS[type_](there).all()]
+        seen_there = [r.title for r in CONTROLLERS[type_](there).all(last=0)]
         if TYPES[type_].scope == PROJECT:
             assert (seen_there, CONTROLLERS[type_](here).path(1).parent.parent) == (["shared"], root), \
                 f"{type_}: project scope, listed from every environment, filed under the root"
@@ -90,7 +90,7 @@ def test_numbers_past_999_are_listed_and_counted_on_never_overwritten(tmp_path):
     todos = CONTROLLERS["todo"](record)
     for i in range(1, 1003):
         todos.create(f"row {i}")
-    rows = todos.all()
+    rows = todos.all(last=0)
     assert (len(rows), [r.n for r in rows][-3:], rows[-1].title) == (1002, [1000, 1001, 1002], "row 1002"), \
         "the thousandth row and those after it are listed, each its own"
 

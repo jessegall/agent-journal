@@ -5,11 +5,11 @@ from resources.shapes import LEVELS
 
 
 def open_rows(record) -> list:
-    return [t for t in Todos(record, actor=SYSTEM).all() if not t.completed]
+    return [t for t in Todos(record, actor=SYSTEM)._every() if not t.completed]
 
 
 def asked(record, todo) -> bool:
-    return any(not q.completed and todo.ref in q.refs for q in Questions(record, actor=SYSTEM).all())
+    return any(not q.completed and todo.ref in q.refs for q in Questions(record, actor=SYSTEM)._every())
 
 
 def ready(record) -> list:

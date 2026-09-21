@@ -12,6 +12,7 @@ from pathlib import Path
 from controllers.base import COMMANDS
 from controllers.types import Agents, CONTROLLERS
 import features
+from features.budget.feature import watched
 import migrations
 from engine import queries
 from engine.drivers import DRIVERS
@@ -96,7 +97,7 @@ class SourcedTurn:
 def environment_transcript(record) -> list[SourcedTurn]:
     seen = set()
     turns = []
-    for row in Agents(record, actor=SYSTEM).all():
+    for row in Agents(record, actor=SYSTEM)._every():
         provider = PROVIDERS.get(row.provider)
         path = Path(row.transcript).expanduser() if row.transcript else None
         try:
@@ -117,7 +118,7 @@ def search_text(record, term: str, page: int) -> str:
     transcript_matches = "\n".join(turn_text(hit.turn, f"{hit.provider}:{hit.session}  ")
                                    for hit in search_transcript(environment_transcript(record), term, page))
     file_hits = [f"  file  {r.ref}  {name}" + (f" — {tags}" if tags else "")
-                 for type_, controller in CONTROLLERS.items() for r in controller(record).all()
+                 for type_, controller in CONTROLLERS.items() for r in controller(record)._every()
                  for name, tags in r.files.items() if want in name.lower() or want in str(tags).lower()]
     return "\n".join(part for part in (transcript_matches, "\n".join(file_hits)) if part)
 
@@ -409,7 +410,8 @@ def run(argv: list[str], out=None, err=None) -> int:
             if why:
                 raise Refused(why)
         controller = CONTROLLERS[command](ctx["record"], actor=ctx["actor"], session=ctx["session"], agent=ctx["agent"], force=ctx["force"])
-        got = invoke(controller.action(method), args, extra)
+        with watched(ctx["record"].root, ctx["record"].env, "command", f"{command} {method}"):
+            got = invoke(controller.action(method), args, extra)
     except Refused as e:
         print(f"! {e}", file=err)
         return 1

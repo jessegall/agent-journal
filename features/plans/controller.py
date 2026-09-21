@@ -56,7 +56,7 @@ class Plans(Controller):
                 phase[PHASE.todos] = [x for x in phase[PHASE.todos] if x != t]
                 continue
             if elsewhere and elsewhere != int(p) and not move:
-                self.refuse(f"todo {t} already sits in phase {elsewhere} of plan {n}; --move takes it out of there")
+                self._refuse(f"todo {t} already sits in phase {elsewhere} of plan {n}; --move takes it out of there")
             for ph in r.phases:
                 ph[PHASE.todos] = [x for x in ph[PHASE.todos] if x != t]
             phase[PHASE.todos].append(t)
@@ -72,14 +72,14 @@ class Plans(Controller):
         r = self.load(n)
         for i, ph in enumerate(r.phases, 1):
             if not ph[PHASE.todos]:
-                self.refuse(f"plan {n} cannot be ready: phase {i} has no to-dos")
+                self._refuse(f"plan {n} cannot be ready: phase {i} has no to-dos")
         return self._status(r, READY, BUILDING, DRAFT)
 
     def activate(self, n: int):
         self._user_only("activate")
         r = self.load(n)
-        if any(x.status in (ACTIVE, WAITING) for x in self.all() if x.n != n):
-            self.refuse("one plan is active at a time on an environment")
+        if any(x.status in (ACTIVE, WAITING) for x in self._every() if x.n != n):
+            self._refuse("one plan is active at a time on an environment")
         return self._status(r, ACTIVE, DRAFT, READY)
 
     def resume(self, n: int):
@@ -105,7 +105,7 @@ class Plans(Controller):
 
     def _user_only(self, word: str) -> None:
         if self.actor == AGENT:
-            self.refuse(f"only the user can {word} a plan: they do it in the viewer")
+            self._refuse(f"only the user can {word} a plan: they do it in the viewer")
 
 
 resources_module.register(Plan)

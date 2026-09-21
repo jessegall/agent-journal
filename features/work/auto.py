@@ -21,7 +21,7 @@ STILL_THERE = "journal: you have been quiet for {minutes} minutes with work stil
 def still_there(record, quiet: float, state: str) -> str:
     if not switched(record, AUTO) or quiet < QUIET_FOR or state in ("idle", "stopped"):
         return ""
-    waiting = [w for w in Works(record, actor=SYSTEM).all() if not w.completed and not w.parked]
+    waiting = [w for w in Works(record, actor=SYSTEM)._every() if not w.completed and not w.parked]
     return STILL_THERE.format(minutes=int(quiet // 60)) if waiting else ""
 
 

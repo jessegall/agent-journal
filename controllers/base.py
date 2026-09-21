@@ -12,6 +12,7 @@ from resources.shapes import Options, check, normalize_options, typed
 from engine.stored import read_json, write_json, write_text
 
 INDEX = "index.json"
+LAST = 25
 SAID_TWICE = ("comment", "message")
 TWICE_WITHIN = 10.0
 COMMANDS: dict[str, dict] = {}
@@ -335,7 +336,12 @@ class Controller:
         who = actor or self.actor
         return [self.load(row["n"]) for row in self.summaries() if who not in row["seen"] and not row["completed"] and not row["deleted"]]
 
-    def all(self, deleted: bool = False) -> list[Resource]:
+    def all(self, deleted: bool = False, completed: bool = False, last: int = LAST) -> list[Resource]:
+        rows = self._every(deleted)
+        rows = rows if completed else [r for r in rows if not r.completed]
+        return rows[-int(last):] if int(last) else rows
+
+    def _every(self, deleted: bool = False) -> list[Resource]:
         memo = self.record.memo
         if memo is None or (self.type, deleted) not in memo:
             rows = [self.load(n) for n in self.numbers()]
@@ -350,14 +356,14 @@ class Controller:
 
     def search(self, term: str) -> list[Resource]:
         want = term.lower()
-        return [r for r in self.all() if want in r.title.lower() or want in r.brief.lower() or want in r.abstract.lower()
+        return [r for r in self._every() if want in r.title.lower() or want in r.brief.lower() or want in r.abstract.lower()
                 or any(want in s[SECTION.title].lower() or want in s[SECTION.body].lower() for s in r.sections)
                 or any(want in name.lower() or want in str(tags).lower() for name, tags in r.files.items())]
 
     def find(self, name: str) -> Resource:
         if str(name).isdigit():
             return self.load(int(name))
-        hits = [r for r in self.all() if name.lower() in r.title.lower()]
+        hits = [r for r in self._every() if name.lower() in r.title.lower()]
         if len(hits) != 1:
             raise Refused(f"{'no' if not hits else len(hits)} {self.type}{'' if len(hits) == 1 else 's'} match {name!r}" + ("; say more of the title" if len(hits) > 1 else ""))
         return hits[0]

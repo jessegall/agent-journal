@@ -53,7 +53,7 @@ class AgentsFeature(Feature):
     def quieted(self, record) -> list:
         agents = Agents(record, actor=SYSTEM)
         silent = time.time() - record.setting(self.name, {}).get(self.QUIET, self.quiet) * 60
-        gone = [row for row in agents.all() if row.status and row.status != STOPPED and float(row.at or 0) < silent]
+        gone = [row for row in agents._every() if row.status and row.status != STOPPED and float(row.at or 0) < silent]
         for row in gone:
             agents.stamp(row.n, status=STOPPED)
         return gone
@@ -89,8 +89,8 @@ class AgentsFeature(Feature):
             return
         limit = record.agents.get(self.LAPSE, LAPSE_MINUTES) * 60
         todos = Todos(record, actor=SYSTEM)
-        rows = {a.title: a for a in self.rows(record).all() if a.status == SUBAGENT}
-        for t in todos.all():
+        rows = {a.title: a for a in self.rows(record)._every() if a.status == SUBAGENT}
+        for t in todos._every():
             who = t.assigned
             if not who or t.completed or who not in rows or time.time() - float(rows[who].active or 0) < limit:
                 continue

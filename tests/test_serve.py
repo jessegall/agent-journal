@@ -50,12 +50,12 @@ def test_the_server_answers_every_route_the_viewer_uses(tmp_path):
             "identity names the project, its root, the version and the environments — what the extension asks a port"
 
         for type_ in TYPES:
-            already = call("GET", f"/api/main/{type_}")[1]
+            already = call("GET", f"/api/main/{type_}?completed=1&last=0")[1]["rows"]
             code, made = call("POST", f"/api/main/{type_}", {"title": f"a {type_}", "abstract": "short"})
             first = 2 if type_ == "environment" else len(already) + 1
             assert (code, made["n"], made["type"], made["seen"]) == (201, first, type_, ["user"]), f"{type_}: create"
-            code, rows = call("GET", f"/api/main/{type_}")
-            assert (code, [r["title"] for r in rows][-1:]) == (200, [f"a {type_}"]), f"{type_}: list"
+            code, listed = call("GET", f"/api/main/{type_}")
+            assert (code, [r["title"] for r in listed["rows"]][-1:]) == (200, [f"a {type_}"]), f"{type_}: list"
             code, one = call("GET", f"/api/main/{type_}/{first}")
             assert (code, one["ref"]) == (200, f"{type_}:{first}"), f"{type_}: show"
             code, got = call("POST", f"/api/main/{type_}/{first}/link", {"ref": "todo:9"})

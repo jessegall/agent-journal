@@ -99,7 +99,7 @@ def measure(live: Path, env: str, runs: int = 5, url: str = "", out: str = "") -
     for type_ in TYPES:
         folder = record.folder(type_, CONTROLLERS[type_].resource.scope)
         count = len([p for p in folder.glob("*.md") if p.stem.isdigit()])
-        rows[f"list {type_} ({count})"] = timed(lambda: CONTROLLERS[type_](record).all(), runs)
+        rows[f"list {type_} ({count})"] = timed(lambda: CONTROLLERS[type_](record)._every(), runs)
     for argv in COMMANDS:
         rows[f"journal {' '.join(argv)}"] = cli(scratch, env, argv, runs)
     rows["hook in-process (hook.py)"] = hook(scratch, env, runs, [sys.executable, str(HERE / "hook.py")])
