@@ -1,10 +1,12 @@
 from engine.hooks import start_file
 from engine.queries import start_block
 from features.base import Feature, event
+from resources.types import TYPES
 
 
 HELLO = "journal: started on {env} — say what waits"
 WAIT_FOR_REPORT = 8.0
+SHAPING = ("feature", "plugin", "environment")
 
 
 def hello(env: str) -> str:
@@ -29,6 +31,8 @@ class Start(Feature):
 
     @event("*")
     def write(self, event, record) -> None:
+        if event.type not in TYPES or not (TYPES[event.type].handed or event.type in SHAPING):
+            return
         block = start_block(record)
         for compacted in (False, True):
             f = start_file(record.root, record.env, compacted)
