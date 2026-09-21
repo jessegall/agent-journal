@@ -12,6 +12,9 @@ from resources.base import ACTIONS, ACTORS, PROJECT, Event
 from engine.stored import read_json, write_json, write_text
 
 
+SETTINGS: dict[str, tuple] = {}
+
+
 class Setting:
     def __init__(self, default=None):
         self.default = default
@@ -148,7 +151,18 @@ class Record:
         self.set_cursor_text(name, str(n))
 
     def setting(self, key: str, default=None):
-        return read_json(self.home / "settings.json", {}).get(key, default)
+        return self.settings().get(key, default)
+
+    def settings(self) -> dict:
+        f = self.home / "settings.json"
+        try:
+            stamp = f.stat().st_mtime_ns
+        except OSError:
+            return {}
+        held = SETTINGS.get(str(f))
+        if not held or held[0] != stamp:
+            held = SETTINGS[str(f)] = (stamp, read_json(f, {}))
+        return held[1]
 
     def set_setting(self, key: str, value) -> None:
         f = self.home / "settings.json"
