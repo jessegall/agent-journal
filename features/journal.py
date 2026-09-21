@@ -4,6 +4,7 @@ from controllers.types import Notices, Notifications, Nudges
 from resources.base import SYSTEM, USER, titled
 
 KINDS = {"nudge": Nudges, "notification": Notifications, "notice": Notices}
+CHANNEL, TERMINAL = "channel", "terminal"
 
 
 @dataclass
@@ -21,11 +22,14 @@ class Journal:
     def __init__(self, feature):
         self.feature = feature
 
-    def say(self, record, agent, line: str, private: bool = False, actor: str = SYSTEM, **values):
+    def say(self, record, agent, line: str, private: bool = False, actor: str = SYSTEM, delivery: str = CHANNEL, **values):
         if not self.feature.mine(agent):
             return None
         lead = self.feature.lines[line].lead
-        return self.send(record, self.message("nudge", line, values, actor, session=agent.title, private=private, lead=lead))
+        return self.send(record, self.message("nudge", line, values, actor, session=agent.title, private=private, lead=lead, delivery=delivery))
+
+    def type(self, record, agent, line: str, **values):
+        return self.say(record, agent, line, private=True, delivery=TERMINAL, **values)
 
     def whisper(self, record, agent, line: str, actor: str = SYSTEM, **values):
         return self.say(record, agent, line, private=True, actor=actor, **values)

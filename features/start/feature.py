@@ -1,17 +1,13 @@
 from engine.hooks import start_file
 from engine.queries import start_block
-from features.base import Feature, event
+from controllers.types import Nudges
+from features.base import Feature, Line, event
+from resources.base import SYSTEM
 from resources.types import TYPES
 from engine.stored import write_text
 
 
-HELLO = "journal: started on {env} — say what waits"
-WAIT_FOR_REPORT = 8.0
 SHAPING = ("feature", "plugin", "environment")
-
-
-def hello(env: str) -> str:
-    return HELLO.format(env=env)
 
 
 COMPACTED = """THIS WINDOW WAS JUST COMPACTED. The summary kept what was done and dropped what was decided. Before touching anything:
@@ -28,7 +24,17 @@ class Start(Feature):
     name = "start"
     title_ = "The start block"
     abstract_ = "What a session is handed at its start, kept current on every change to the record"
-    help_ = "The hook hands the file over at SessionStart; nothing is computed inside the hook."
+    help_ = "The hook hands the file over at SessionStart; nothing is computed inside the hook. The first time a session starts, the journal types a line into the agent's terminal, never the channel, asking it to say something in the chat so the journal's messages reach it."
+    lines = {"ready": Line("the journal is ready on {{env}}", "say hello in the chat, so the journal's messages reach you")}
+
+    @event("agent.updated")
+    def greet(self, event, record) -> None:
+        agent = self.agent(event, record)
+        if agent and agent.event == "SessionStart" and not self.greeted(record, agent):
+            self.journal.type(record, agent, "ready", env=record.env)
+
+    def greeted(self, record, agent) -> bool:
+        return any(n.data.get("feature") == self.name and n.data.get("session") == agent.title for n in Nudges(record, actor=SYSTEM)._every())
 
     @event("*")
     def write(self, event, record) -> None:
