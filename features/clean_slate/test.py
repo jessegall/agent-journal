@@ -30,3 +30,32 @@ def test_the_other_skills_and_hooks_are_set_aside_and_put_back(tmp_path, monkeyp
     assert (sorted(p.name for p in (project / ".claude" / "skills").iterdir()), settings.read_text()) == (["graphify", "journal-todos"], before), \
         "putting back restores every skill and the hook file as it was"
     assert put_back(record) == 0, "a second put back has nothing to do"
+
+
+def test_linked_homes_count_once_git_never_sees_a_deletion_and_a_failure_puts_everything_back(tmp_path, monkeypatch):
+    import subprocess
+    import features.clean_slate.slate as slate
+    monkeypatch.setenv("HOME", str(tmp_path / "home"))
+    record = fresh()
+    project = record.root.parent
+    git = lambda *a: subprocess.run(["git", "-C", str(project), *a], capture_output=True, text=True, timeout=20).stdout
+    git("init", "-q")
+    for name in ("absence", "layout"):
+        (project / "skills" / name).mkdir(parents=True)
+        (project / "skills" / name / "SKILL.md").write_text(name)
+    git("add", "skills")
+    git("-c", "user.name=t", "-c", "user.email=t@t", "commit", "-q", "-m", "skills")
+    for home in (".agents", ".codex"):
+        (project / home).mkdir()
+        (project / home / "skills").symlink_to("../skills")
+    assert [s.name for s in others(project, "codex")[0]] == ["absence", "layout"], "two links to one folder list each skill once"
+    set_aside(record, project, "codex")
+    assert (sorted(p.name for p in (project / "skills").iterdir()), git("status", "--short", "--untracked-files=no")) == ([], ""), "both set aside, and git sees no deletion"
+    put_back(record)
+    assert (sorted(p.name for p in (project / "skills").iterdir()), git("status", "--short", "--untracked-files=no")) == (["absence", "layout"], ""), "both back, git clean"
+    real = slate.shutil.move
+    calls = []
+    monkeypatch.setattr(slate.shutil, "move", lambda a, b: calls.append(a) or ((_ for _ in ()).throw(OSError("disk full")) if len(calls) == 2 else real(a, b)))
+    assert set_aside(record, project, "codex").startswith("nothing set aside"), "a failure part way says so instead of crashing the launch"
+    monkeypatch.setattr(slate.shutil, "move", real)
+    assert sorted(p.name for p in (project / "skills").iterdir()) == ["absence", "layout"], "and what it had moved is back"
