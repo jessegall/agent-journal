@@ -15,6 +15,7 @@ from features.open_viewer.focus import existing_tab
 from engine.stored import read_json, write_json, write_text
 from engine.sessions import alive
 from engine.version import version
+from engine.package import entry
 
 PORTS = range(8420, 8440)
 HEARTBEAT = 2.0
@@ -165,7 +166,7 @@ def start(root: Path, project: Path) -> str:
     port = available(last(root).get("port", 0))
     log = root / "runtime" / "viewer.log"
     log.parent.mkdir(parents=True, exist_ok=True)
-    command = [sys.executable, str(Path(__file__).resolve().parents[1] / "journal.py"), "--root", str(root), "serve", "--port", str(port)]
+    command = [*entry("journal"), "--root", str(root), "serve", "--port", str(port)]
     with log.open("a") as output:
         subprocess.Popen(command, cwd=project, stdin=subprocess.DEVNULL, stdout=output, stderr=output, start_new_session=True)
     for _ in range(60):

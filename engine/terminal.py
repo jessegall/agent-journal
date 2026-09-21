@@ -12,6 +12,7 @@ from engine.sessions import ACTIVE_ENV
 from install import code
 from engine import runtime
 from engine.stored import read_json
+from engine.package import entry
 
 RELOAD = 75
 STOP = 76
@@ -46,8 +47,7 @@ def spawn_agent(command: list[str], cwd: Path, env: str = "") -> tuple[int, int]
 
 
 def spawn_supervisor(root: Path, cwd: Path, env: str, agent: str, fd: int, session: str, lifeline: int = -1) -> subprocess.Popen:
-    main = Path(__file__).resolve().with_name("supervisor.py")
-    return subprocess.Popen([sys.executable, str(main), str(root), str(cwd), env, agent, str(fd), session, str(lifeline)], cwd=cwd,
+    return subprocess.Popen([*entry("engine.supervisor"), str(root), str(cwd), env, agent, str(fd), session, str(lifeline)], cwd=cwd,
                             pass_fds=(fd, lifeline) if lifeline >= 0 else (fd,))
 
 

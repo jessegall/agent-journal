@@ -16,6 +16,7 @@ from resources.types import AgentRow
 from engine.stored import write_text
 from engine import runtime
 from engine.stored import last_lines
+from engine.version import version as package_version
 
 
 def transcript(record, session: str):
@@ -185,7 +186,7 @@ def asked_for(record: Record, args: list[str], ask=input, answering=None) -> str
 
 def banner(agent: str, project: Path) -> str:
     width = max(40, shutil.get_terminal_size().columns - 2)
-    version = (Path(__file__).resolve().parents[1] / "VERSION").read_text().strip()
+    version = package_version()
     lines = [f"agent-journal {version}", "", f"You're about to start {agent.capitalize()} under the journal,", f"in {project}.", "",
              "A question or two first. Enter takes the choice marked [Enter]."]
     rule = "─" * width
