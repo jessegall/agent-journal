@@ -4,6 +4,7 @@ import re
 import socket
 import time
 from abc import ABC, abstractmethod
+from pathlib import Path
 
 from controllers.types import Agents
 from engine import typist
@@ -53,7 +54,7 @@ class Driver(ABC):
         self.typed = record.root / "runtime" / f"typed-{session}"
 
     @abstractmethod
-    def command(self, args: list[str]) -> list[str]: ...
+    def command(self, args: list[str], cwd: Path | None = None) -> list[str]: ...
 
     @classmethod
     def launch_args(cls, args: list[str], automatic: bool = False) -> list[str]:

@@ -89,7 +89,7 @@ def launch(root: Path, cwd: Path, env: str, agent: str, args: list[str], convers
     from features.work_tracking.auto import launch_args
 
     driver = DRIVERS[agent]
-    command = driver.command(driver, driver.resumed(launch_args(Record(root, env), agent, args), conversation))
+    command = driver.command(driver, driver.resumed(launch_args(Record(root, env), agent, args), conversation), cwd)
     pid, fd = spawn_agent(command, cwd, env)
     session = session_of(agent, pid)
     seat(root, env, session, pid, agent, command)
