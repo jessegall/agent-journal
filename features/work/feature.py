@@ -2,7 +2,7 @@ import time
 
 from controllers.types import Agents, Todos, Works
 from features import trigger
-from features.base import Behaviour, Feature, command, event, held, interceptor
+from features.base import Behaviour, Feature, command, event, held, gate
 from features.work import tracker
 from features.work.auto import refusal
 from features.work.next import next
@@ -56,13 +56,13 @@ class WorkFeature(Feature):
 
     @event("work")
     @event("agent.created")
-    def gate(self, event, record) -> None:
+    def declared(self, event, record) -> None:
         if self.working(record):
             self.release(record)
         else:
             self.hold(record, 'nothing is open, so this write would not be filed: journal work start "<the work>" first')
 
-    @interceptor
+    @gate
     def held(self, provider, record, hook, session) -> str:
         return held(record, session) if provider.writes(hook) else ""
 
@@ -139,7 +139,7 @@ class WorkFeature(Feature):
             trigger.write(record, agent, self.name, edits=0)
         self.release(record)
 
-    @interceptor
+    @gate
     def no_blocking_question(self, provider, record, hook, session) -> str:
         return refusal(provider, hook) if self.on(record, "auto") else ""
 
