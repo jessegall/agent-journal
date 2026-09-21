@@ -46,6 +46,7 @@ QUOTED = re.compile(r'"(?:[^"\\]|\\.)*"' + r"|'[^']*'")
 JOURNAL_CALL = re.compile(r"(^|[;&|(]\s*|\$\()\S*journal(?:\.py)?\s(?:\"(?:[^\"\\]|\\.)*\"|'[^']*'|\d*>&\d|[^;&|)\n])*")
 
 RECENT: dict[str, tuple] = {}
+FOLDS: dict[tuple, tuple] = {}
 RECENT_BYTES = 1_000_000
 
 
@@ -272,8 +273,36 @@ class Provider(ABC):
         return False
 
     def loaded_skills(self, path: Path) -> dict[str, float]:
-        return {str((use.get("input") or {}).get("skill")): float(use.get("at") or 0) for use in self.tools(path)
-                if use.get("name") == "Skill" and (use.get("input") or {}).get("skill")}
+        return dict(self.folded(path, self.skill_loads, dict))
+
+    def skill_loads(self, loads: dict, row: dict) -> dict:
+        for use in self.tool_uses(row):
+            skill = (use.get("input") or {}).get("skill")
+            if use.get("name") == "Skill" and skill:
+                loads[str(skill)] = float(use.get("at") or 0)
+        return loads
+
+    def folded(self, path: Path, fold, start):
+        key = (str(path), fold.__name__)
+        try:
+            size = Path(path).stat().st_size
+        except (OSError, TypeError):
+            return start()
+        offset, state = FOLDS.get(key) or (0, start())
+        if size < offset:
+            offset, state = 0, start()
+        if size > offset:
+            with Path(path).open("rb") as source:
+                source.seek(offset)
+                raw = source.read(size - offset)
+            whole = raw[:raw.rfind(b"\n") + 1]
+            for line in whole.decode(errors="replace").splitlines():
+                row = parsed(line)
+                if isinstance(row, dict):
+                    state = fold(state, row)
+            offset += len(whole)
+        FOLDS[key] = (offset, state)
+        return state
 
     @abstractmethod
     def present(self, project: Path) -> bool: ...
