@@ -35,5 +35,7 @@ def test_every_agent_launches_under_the_journal_and_exits_cleanly():
         launched.stdin.close()
         said = launched.stdout.read().decode(errors="replace")
         launched.wait(timeout=WAIT)
+        subprocess.run([sys.executable, str(HERE / "journal.py"), "--root", str(place / "project" / ".journal"), "stop"],
+                       cwd=place / "project", env=env, capture_output=True, timeout=WAIT)
         assert "Traceback" not in said, f"journal {name} crashed:\n{said}"
         assert (place / "bin" / f"{name}.started").exists(), f"journal {name} never started the agent:\n{said}"

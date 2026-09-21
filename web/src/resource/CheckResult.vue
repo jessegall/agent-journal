@@ -1,70 +1,314 @@
 <script setup>
-import {computed} from "vue";
+import {computed, nextTick, ref, watch} from "vue";
+import {api} from "../api/client.js";
 import {age} from "../format/time.js";
+import {useNow} from "../composables/now.js";
+import {checkState, seconds, VERDICTS} from "../domain/checks.js";
+import CheckProgress from "./CheckProgress.vue";
+import CheckRuns from "./CheckRuns.vue";
 
 const props = defineProps({resource: Object});
-const last = computed(() => props.resource.data.last || {});
-const every = computed(() => Number(props.resource.data.every || 0));
+const now = useNow();
+const state = computed(() => checkState(props.resource, now.value));
+const command = ref(props.resource.data.command || "");
+const every = ref(Number(props.resource.data.every || 0));
+const asked = ref(false);
+const output = ref(null);
+const passes = computed(() => state.value.runs.filter((r) => r.ok).length);
+
+watch(
+    () => props.resource.data.command,
+    (value) => (command.value = value || "")
+);
+watch(
+    () => props.resource.data.every,
+    (value) => (every.value = Number(value || 0))
+);
+watch(
+    () => state.value.said,
+    async () => {
+        await nextTick();
+        if (output.value) output.value.scrollTop = output.value.scrollHeight;
+    }
+);
+
+async function run() {
+    asked.value = true;
+    try {
+        await api.act("check", props.resource.n, "run");
+    } finally {
+        asked.value = false;
+    }
+}
+
+async function save(key, value) {
+    if (String(value) === String(props.resource.data[key] ?? "")) return;
+    await api.act("check", props.resource.n, "set", {key, value: String(value)});
+}
 </script>
 
 <template>
-    <section class="block">
-        <h3>Runs</h3>
-        <code class="command">{{ resource.data.command || "no command yet" }}</code>
-        <p class="lead">{{ every ? `Every ${every} minutes, and by hand.` : "By hand." }}</p>
+    <section :class="['hero', state.verdict]">
+        <div class="status">
+            <span class="dot" />
+            <div class="words">
+                <span class="verdict">{{ VERDICTS[state.verdict] }}</span>
+                <span class="since">
+                    <template v-if="state.verdict === 'running'">started {{ seconds(state.elapsed) }} ago</template>
+                    <template v-else-if="state.last.at">
+                        {{ state.last.ok ? "passed" : `failed with exit ${state.last.code}` }} {{ age(state.last.at) }} in
+                        {{ seconds(state.last.took) }}
+                    </template>
+                    <template v-else>press Run to see where it stands</template>
+                </span>
+            </div>
+            <span class="grow" />
+            <button type="button" class="run" :disabled="asked || state.verdict === 'running'" @click="run">
+                {{ state.verdict === "running" ? "Running…" : "Run now" }}
+            </button>
+        </div>
+        <template v-if="state.verdict === 'running'">
+            <CheckProgress :state="state" />
+        </template>
     </section>
-    <template v-if="last.at">
+    <section class="block">
+        <h3>Configuration</h3>
+        <label class="field">
+            <span class="label">Command</span>
+            <span class="help">Run from the project root; exit 0 passes, anything else fails</span>
+            <textarea v-model="command" class="command" rows="2" spellcheck="false" @change="save('command', command)" />
+        </label>
+        <label class="field inline">
+            <span class="text">
+                <span class="label">Runs by itself every</span>
+                <span class="help">0 runs it only by hand or from its button</span>
+            </span>
+            <input v-model.number="every" class="every" type="number" min="0" @change="save('every', every)" />
+            <span class="unit">minutes</span>
+        </label>
+    </section>
+    <template v-if="state.said">
         <section class="block">
-            <h3>Last run</h3>
-            <p :class="['verdict', last.ok ? 'passed' : 'failed']">
-                {{ last.ok ? "Passed" : `Failed (exit ${last.code})` }} · {{ age(last.at) }} · {{ last.took }}s
-            </p>
-            <template v-if="last.said">
-                <pre class="said">{{ last.said }}</pre>
-            </template>
+            <h3>{{ state.verdict === "running" ? "Output so far" : "What it said last" }}</h3>
+            <pre ref="output" :class="['said', state.verdict]">{{ state.said }}</pre>
+        </section>
+    </template>
+    <template v-if="state.runs.length">
+        <section class="block">
+            <h3>History</h3>
+            <p class="lead">{{ passes }} of the last {{ state.runs.length }} runs passed</p>
+            <CheckRuns :runs="state.runs" tall />
+            <ul class="history">
+                <template v-for="(r, i) in state.runs.slice(0, 8)" :key="i">
+                    <li>
+                        <span :class="['mark', r.ok ? 'ok' : 'bad']">{{ r.ok ? "Passed" : `Failed · exit ${r.code}` }}</span>
+                        <span class="grow" />
+                        <span class="meta">{{ seconds(r.took) }} · {{ age(r.at) }}</span>
+                    </li>
+                </template>
+            </ul>
         </section>
     </template>
 </template>
 
 <style scoped>
-.command {
-    display: block;
-    padding: 6px 8px;
-    border: 1px solid var(--border-2);
-    border-radius: 6px;
-    background: var(--code-bg);
-    font-size: 12px;
-    white-space: pre-wrap;
+.hero {
+    --tone: var(--open);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin: 4px 0 18px;
+    padding: 16px 18px;
+    border: 1px solid color-mix(in srgb, var(--tone) 35%, var(--border));
+    border-radius: 12px;
+    background: linear-gradient(135deg, color-mix(in srgb, var(--tone) 12%, var(--raised)), var(--raised) 70%);
 }
 
-.lead {
-    margin: 6px 0 0;
+.hero.passed {
+    --tone: var(--created);
+}
+
+.hero.failed {
+    --tone: var(--danger);
+}
+
+.hero.running {
+    --tone: var(--progress);
+}
+
+.status {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--tone);
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--tone) 22%, transparent);
+}
+
+.running .dot {
+    animation: pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    50% {
+        box-shadow: 0 0 0 8px color-mix(in srgb, var(--tone) 8%, transparent);
+    }
+}
+
+.words {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.verdict {
+    color: var(--tone);
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.since {
     color: var(--text-3);
     font-size: 12px;
 }
 
-.verdict {
-    margin: 0 0 6px;
+.grow {
+    flex: 1;
+}
+
+.run {
+    padding: 6px 14px;
+    border: 1px solid color-mix(in srgb, var(--accent) 50%, transparent);
+    border-radius: 7px;
+    background: color-mix(in srgb, var(--accent) 22%, transparent);
+    color: var(--text);
+    font: inherit;
     font-size: 12.5px;
+    cursor: pointer;
 }
 
-.verdict.passed {
-    color: var(--created);
+.run:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--accent) 34%, transparent);
 }
 
-.verdict.failed {
-    color: var(--danger);
+.run:disabled {
+    opacity: 0.55;
+    cursor: default;
+}
+
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-bottom: 14px;
+}
+
+.field.inline {
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
+}
+
+.field .text {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.label {
+    font-size: 12.5px;
+    font-weight: 500;
+}
+
+.help,
+.unit,
+.lead {
+    color: var(--text-3);
+    font-size: 12px;
+}
+
+.lead {
+    margin: 0 0 8px;
+}
+
+.command,
+.every {
+    padding: 7px 9px;
+    border: 1px solid var(--border-2);
+    border-radius: 6px;
+    background: var(--code-bg);
+    color: var(--text);
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: 12px;
+}
+
+.command {
+    resize: vertical;
+}
+
+.every {
+    width: 72px;
+    text-align: right;
+}
+
+.command:focus,
+.every:focus {
+    border-color: var(--accent);
+    outline: none;
 }
 
 .said {
     margin: 0;
-    padding: 8px 10px;
-    max-height: 260px;
+    padding: 10px 12px;
+    max-height: 320px;
     overflow: auto;
     border: 1px solid var(--border-2);
-    border-radius: 6px;
+    border-radius: 8px;
     background: var(--code-bg);
     font-size: 11.5px;
+    line-height: 1.5;
     white-space: pre-wrap;
+}
+
+.said.failed {
+    border-color: color-mix(in srgb, var(--danger) 35%, var(--border-2));
+}
+
+.said.running {
+    border-color: color-mix(in srgb, var(--progress) 35%, var(--border-2));
+}
+
+.history {
+    display: flex;
+    flex-direction: column;
+    margin: 12px 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.history li {
+    display: flex;
+    padding: 6px 0;
+    border-top: 1px solid var(--line);
+    font-size: 12px;
+}
+
+.mark.ok {
+    color: var(--created);
+}
+
+.mark.bad {
+    color: var(--danger);
+}
+
+.meta {
+    color: var(--text-3);
+    font-variant-numeric: tabular-nums;
 }
 </style>

@@ -21,8 +21,8 @@ class Skills(Feature):
     windows = ("SessionStart", "PreCompact")
     behaviours = {"reload": Behaviour("Hold writes after a compaction until the journal skill is loaded again",
                                       "A fresh window starts without the skill; the first write waits for Skill: journal"),
-                  "stale": Behaviour("Name a skill that changed since it was loaded", "Said every twentieth tool use until the agent loads it again",
-                                     trigger={"every": 20, "unit": USES})}
+                  "stale": Behaviour("Name a skill that changed since it was loaded", "Said every tenth tool use until the agent loads it again",
+                                     trigger={"every": 10, "unit": USES})}
 
     @event("agent.updated")
     def check(self, event, record) -> None:
