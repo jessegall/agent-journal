@@ -6,7 +6,7 @@ from datetime import datetime
 from pathlib import Path
 
 from engine.transcript import AGENT, HUMAN, INJECTED, PEER, SUMMARY, SUPERSEDED, TASK, TOOL, Turn, timestamp
-from providers.payload import EVENTS
+from providers.payload import DISPLAYED, EVENTS
 from providers.base import Provider, journal_hook
 from providers.payload import Hook
 from resources.types import AgentRow
@@ -152,7 +152,7 @@ class Claude(Provider):
             write_text(f, json.dumps(cleaned, indent=2) + "\n")
 
     def wiring(self, command: str) -> dict:
-        return {"hooks": {event: [{"hooks": [{"type": "command", "command": command}]}] for event in EVENTS}}
+        return {"hooks": {event: [{"hooks": [{"type": "command", "command": command}]}] for event in (*EVENTS, DISPLAYED)}}
 
     def compacted(self, hook: Hook) -> bool:
         return hook.source == "compact"

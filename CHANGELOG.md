@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.33.0 — A reply is read as it is shown, not only from the transcript
+
+Claude Code sometimes leaves the agent's text out of its transcript (report 24), and the journal read replies only from the transcript and from the Stop hook's final text, so some tagged replies never reached the chat. The journal now also wires Claude Code's MessageDisplay hook, which fires for every piece of text as it is shown. The server answers that hook at once and, after answering, joins the pieces of each message; once the message is whole it is handled like any other the agent said. A reply that arrives both ways is posted once.
+
+What to do about it: `journal upgrade` — it adds the MessageDisplay hook to `.claude/settings.local.json`.
+
 ## 2.32.0 — Switches stick, a feature's switches show only while it is on, and an opened notification stays
 
 A switch sent under its current name and an older one in the same save — which is how the viewer's Settings sends them — could be turned back by the older name: switching faults.budget (Report anything slower than its budget) off did not stick. The current name now wins.

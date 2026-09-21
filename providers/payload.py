@@ -5,6 +5,7 @@ STATUS = {"SessionStart": "idle", "Stop": "idle", "UserPromptSubmit": "working",
           "PostToolUse": "working", "PreCompact": "compacting", "SubagentStart": "",
           "SubagentStop": "", "SessionEnd": "stopped", "PermissionRequest": ""}
 PERMISSION = "PermissionRequest"
+DISPLAYED = "MessageDisplay"
 EVENTS = tuple(STATUS)
 
 

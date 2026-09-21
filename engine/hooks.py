@@ -1,4 +1,6 @@
 import re
+import threading
+import time
 from pathlib import Path
 
 from controllers.types import Agents, Environments
@@ -6,8 +8,9 @@ from engine.actors import IDLE
 from engine.record import Record
 from engine.sessions import Sessions, agent_pid
 from engine.worktree import checkout
-from resources.base import SYSTEM
-from engine import runtime
+from resources.base import AGENT, SYSTEM, Event
+from engine import bus, runtime
+from engine.stored import read_json, write_json
 from providers.payload import PERMISSION, STATUS
 from features.statusline import commands
 
@@ -38,6 +41,27 @@ def alongside(hook) -> str:
 def start(root: Path, env: str, compacted: bool) -> str:
     path = start_file(root, env, compacted)
     return path.read_text() if path.is_file() else ""
+
+
+SHOWING = threading.Lock()
+
+
+def displayed(root: Path, raw: dict) -> None:
+    session, message = str(raw.get("session_id") or ""), str(raw.get("message_id") or "")
+    f = runtime.folder(root) / f"displayed-{session}.json"
+    with SHOWING:
+        held = read_json(f, {})
+        parts = {**held.get(message, {}), str(int(raw.get("index") or 0)): str(raw.get("delta") or "")}
+        if not raw.get("final"):
+            write_json(f, {**held, message: parts})
+            return
+        held.pop(message, None)
+        write_json(f, held)
+    text = "".join(parts[i] for i in sorted(parts, key=int))
+    record = Record(root, Sessions(root).environment(session) or runtime.env(root))
+    row = Agents(record, actor=SYSTEM)._titled(session)
+    if row and text.strip():
+        bus.emit(Event(id=0, at=time.time(), type="agent", n=row.n, action="said", actor=AGENT, data={"text": text}), record)
 
 
 def default_env(root: Path, prefer: str = "") -> str:

@@ -26,7 +26,8 @@ from controllers.types import Agents, CONTROLLERS, Environments, Features, Nudge
 from features.browser.controller import Asks
 from engine import bus, viewer
 from engine.manifest import manifest
-from engine.hooks import answer
+from engine.hooks import answer, displayed
+from providers.payload import DISPLAYED
 from engine.record import Record
 from engine.transcript import page
 from providers import PROVIDERS
@@ -63,6 +64,8 @@ def settings(record: Record) -> dict:
 def post_hook(req: Request) -> Reply:
     if Path(req.query.get("root") or "").resolve() != req.root.resolve() or req.params["provider"] not in PROVIDERS:
         return Reply(409, {})
+    if req.body.get("hook_event_name") == DISPLAYED:
+        return Reply(200, {}, after=lambda: displayed(req.root, req.body))
     provider = PROVIDERS[req.params["provider"]]()
     out = answer(provider, req.root, {**req.body, "inbox": req.query.get("inbox") or ""}, int(req.query.get("pid") or 0), req.query.get("env") or "")
     return Reply(403 if provider.refused(out) else 200, out)
