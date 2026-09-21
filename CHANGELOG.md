@@ -4,6 +4,16 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.39.0 — A design revision stays open until it is kept
+
+Message 1399. A design's latest revision stays open while it is worked on: every edit, from the agent or the viewer, changes it in place and adds to its note. It is kept when the user presses Keep this revision, when journal design keep runs, or by itself after designs.keep_after_minutes (30) without an edit; the next edit opens a new revision copied from the kept one. The revision strip shows the open revision as a hollow mark with the minutes until it keeps itself.
+
+Message 1400. The notice that a newer viewer is running drains a bar over the 60 seconds before it reloads, and its button says Reload now.
+
+Messages 1407 and 1408. The last status line stays for its ten seconds again when nothing new follows; since 2.34.0 the server dropped it as soon as it was played.
+
+What to do about it: `journal upgrade`.
+
 ## 2.38.2 — A design is one document on the Documents page
 
 Message 1397. A design's revisions are docs, and the Documents page now lists each design once, as its latest revision; opening it opens the design with its revision strip. The earlier revisions are read through the design and are not listed or found on their own.

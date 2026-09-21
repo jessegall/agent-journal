@@ -9,6 +9,7 @@ from features.designs.resource import Design
 from resources.base import PART_OF, SECTION, Refused, check_abstract, check_title
 
 STAMPED, REVISION, CHANGE = "stamped", "revision", "change"
+KEEP_AFTER_MINUTES = 30
 
 
 class Designs(Controller):
@@ -41,6 +42,13 @@ class Designs(Controller):
         r.data.update(self._shaped(data))
         return self._revised(r, "reworded the top")
 
+    def keep(self, n: int):
+        r = self.load(n)
+        if not self._open(r):
+            raise Refused(f"revision {len(r.revisions)} of design {n} is already kept")
+        r.open_until = 0
+        return self.save(r, "updated", kept=len(r.revisions))
+
     def revisions(self, n: int) -> list[str]:
         docs = Docs(self.record, actor=self.actor)
         return [self._listed(docs.load(d)) for d in self.load(n).revisions]
@@ -54,17 +62,33 @@ class Designs(Controller):
     def _listed(self, doc) -> str:
         return f"{doc.data.get(REVISION):>3}  {time.strftime('%Y-%m-%d %H:%M', time.localtime(doc.created))}  {doc.seen[0]:<6} {doc.data.get(CHANGE, '')}"
 
+    def _open(self, r) -> bool:
+        return bool(r.revisions) and time.time() < float(r.open_until or 0)
+
+    def _keep_after(self) -> float:
+        return float(self.record.setting("designs", {}).get("keep_after_minutes", KEEP_AFTER_MINUTES)) * 60
+
+    def _noted(self, said: str, change: str) -> str:
+        return "; ".join(dict.fromkeys([*(said.split("; ") if said else []), change]))
+
     def _revised(self, r, change: str, **event):
         docs = Docs(self.record, actor=self.actor)
         with self.record.locked():
-            k = (docs.numbers() or [0])[-1] + 1
-            copy = docs.resource(n=k, title=r.title, abstract=r.abstract, brief=r.brief, sections=[dict(s) for s in r.sections], created=time.time(),
-                                 seen=[self.actor], refs=[r.ref], data={PART_OF: r.ref, REVISION: len(r.revisions) + 1, CHANGE: change})
-            write_text(docs.path(k), copy.dump())
-            self.record.emit(docs.type, k, STAMPED, self.actor, quiet=True, fields=[REVISION])
-            r.revisions = [*r.revisions, k]
+            if self._open(r):
+                page = docs.load(r.revisions[-1])
+                page.title, page.abstract, page.brief, page.sections = r.title, r.abstract, r.brief, [dict(s) for s in r.sections]
+                page.data[CHANGE] = self._noted(page.data.get(CHANGE, ""), change)
+                page.seen = [*page.seen, self.actor] if self.actor not in page.seen else page.seen
+                page.updated = time.time()
+            else:
+                k = (docs.numbers() or [0])[-1] + 1
+                page = docs.resource(n=k, title=r.title, abstract=r.abstract, brief=r.brief, sections=[dict(s) for s in r.sections], created=time.time(),
+                                     updated=time.time(), seen=[self.actor], refs=[r.ref], data={PART_OF: r.ref, REVISION: len(r.revisions) + 1, CHANGE: change})
+                r.revisions = [*r.revisions, k]
+            write_text(docs.path(page.n), page.dump())
+            self.record.emit(docs.type, page.n, STAMPED, self.actor, quiet=True, fields=[REVISION])
+            r.open_until = time.time() + self._keep_after()
             return self.save(r, "updated", revision=len(r.revisions), change=change, **event)
-
 
 resources_module.register(Design)
 types_module.register(Designs)

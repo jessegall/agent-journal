@@ -58,9 +58,10 @@ async function upgrade() {
 
 <template>
     <template v-if="stale">
-        <div class="band">
+        <div class="band reloading">
             <span class="text">A newer version of the viewer is running. This page reloads in {{ left }}s.</span>
-            <Btn kind="primary" small @click="reload">Continue</Btn>
+            <Btn kind="primary" small @click="reload">Reload now</Btn>
+            <span class="drain" :style="{animationDuration: `${RELOAD_AFTER}s`}" />
         </div>
     </template>
     <template v-if="shown">
@@ -90,6 +91,31 @@ async function upgrade() {
     background: color-mix(in srgb, var(--accent) 12%, var(--bg));
     font-size: 12.5px;
     color: var(--text-2);
+}
+
+.reloading {
+    position: relative;
+}
+
+.drain {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -1px;
+    height: 2px;
+    background: var(--accent);
+    transform-origin: left center;
+    animation: drain linear forwards;
+}
+
+@keyframes drain {
+    from {
+        transform: scaleX(1);
+    }
+
+    to {
+        transform: scaleX(0);
+    }
 }
 
 .text {
