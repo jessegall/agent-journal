@@ -1,5 +1,4 @@
 import fcntl
-import subprocess
 import sys
 import time
 import traceback
@@ -19,6 +18,7 @@ from providers import PROVIDERS
 from resources.base import AGENT, SYSTEM, USER
 from resources.types import PRIORITY, TYPES
 from engine.stored import write_json
+from engine.proc import git
 
 TICK = 1.0
 SETTLE, STEP = 3.0, 0.1
@@ -250,11 +250,8 @@ class Engine:
         if stamp == self.branch_stamp:
             return self.branch_name
         self.branch_stamp = stamp
-        try:
-            self.branch_name = subprocess.run(["git", "-C", cwd, "rev-parse", "--abbrev-ref", "HEAD"], capture_output=True, text=True, timeout=2).stdout.strip()
-            remote = subprocess.run(["git", "-C", cwd, "remote", "get-url", "origin"], capture_output=True, text=True, timeout=2).stdout.strip()
-        except (OSError, subprocess.SubprocessError):
-            self.branch_name, remote = "", ""
+        self.branch_name = git(["rev-parse", "--abbrev-ref", "HEAD"], cwd, timeout=2).strip()
+        remote = git(["remote", "get-url", "origin"], cwd, timeout=2).strip()
         url = f"{web}/tree/{self.branch_name}" if self.branch_name and (web := web_remote(remote)) else ""
         if last and last.title and self.branch_name and (last.branch, last.branch_url) != (self.branch_name, url):
             self.agent.mark(last.status or "", last.event or "", branch=self.branch_name, branch_url=url, at=last.at)

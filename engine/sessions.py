@@ -1,10 +1,10 @@
 import os
-import subprocess
 import time
 from pathlib import Path
 
 from resources.types import TYPES
 from engine.stored import read_json, write_json, write_text
+from engine.proc import run
 
 
 RECENT = 600.0
@@ -29,8 +29,8 @@ def live(session: dict) -> bool:
 def agent_pid(pid: int) -> int:
     for _ in range(4):
         try:
-            parent, name = subprocess.run(["ps", "-o", "ppid=,comm=", "-p", str(pid)], capture_output=True, text=True, timeout=2).stdout.split(None, 1)
-        except (OSError, ValueError, subprocess.TimeoutExpired):
+            parent, name = run(["ps", "-o", "ppid=,comm=", "-p", str(pid)], timeout=2).split(None, 1)
+        except ValueError:
             return pid
         if Path(name.strip()).name.lstrip("-") not in SHELLS:
             return pid

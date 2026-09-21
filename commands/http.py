@@ -3,7 +3,6 @@ import json
 import mimetypes
 import os
 import re
-import subprocess
 import tempfile
 import threading
 import time
@@ -37,6 +36,7 @@ from features.format import formatted
 from resources.base import shown as given, AGENT, OPENED, USER, Refused, titled
 from resources.types import Ask
 from engine.stored import write_json, write_text
+from engine.proc import git, ran
 
 WEB = Path(__file__).resolve().parents[1] / "web" / "dist"
 SAID = ("title", "abstract", "brief", "outcome")
@@ -647,12 +647,11 @@ def get_commit(req: Request) -> Reply:
     sha = req.params["sha"]
     if not re.fullmatch(r"[0-9a-f]{7,40}", sha):
         raise Missing("not a commit")
-    try:
-        head = subprocess.run(["git", "show", "-s", "--format=%H%x1f%an%x1f%at%x1f%s%x1f%b", sha], cwd=req.root.parent, capture_output=True, text=True, timeout=5)
-        stat = subprocess.run(["git", "show", "--stat=120", "--format=", sha], cwd=req.root.parent, capture_output=True, text=True, timeout=5).stdout
-        diff = subprocess.run(["git", "show", "--format=", "--no-color", sha], cwd=req.root.parent, capture_output=True, text=True, timeout=10).stdout
-    except (OSError, subprocess.SubprocessError):
+    head = ran(["git", "show", "-s", "--format=%H%x1f%an%x1f%at%x1f%s%x1f%b", sha], req.root.parent)
+    if head is None:
         raise Missing("git did not answer")
+    stat = git(["show", "--stat=120", "--format=", sha], req.root.parent)
+    diff = git(["show", "--format=", "--no-color", sha], req.root.parent, timeout=10)
     if head.returncode:
         raise Missing(f"no commit {sha}")
     full, author, at, subject, body = (head.stdout.rstrip("\n").split("\x1f", 4) + ["", "", "", ""])[:5]
