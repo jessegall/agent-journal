@@ -66,14 +66,15 @@ def default_env(root: Path, prefer: str = "") -> str:
 def answer(provider, root: Path, raw: dict, pid: int, prefer: str = "") -> dict:
     from providers.payload import Hook
     sessions = Sessions(root)
-    session = Hook.read(raw).session
+    hook = Hook.read(raw)
+    session = hook.session
     env = sessions.environment(session)
     if not env or not sessions.read(session).get("provider"):
         env = sessions.choose(session, provider.name, default_env(root, prefer))
         sessions.bind(session, env, pid=agent_pid(pid), provider=provider.name)
         seated(root, env, session)
     sessions.touch(session)
-    return handle(provider, root, env, raw)
+    return handle(provider, root, env, hook)
 
 
 def seated(root: Path, env: str, session: str) -> None:
@@ -82,9 +83,9 @@ def seated(root: Path, env: str, session: str) -> None:
     envs.update(row.n, holder=session)
 
 
-def handle(provider, root: Path, env: str, raw: dict) -> dict:
+def handle(provider, root: Path, env: str, hook) -> dict:
     from providers.payload import Hook
-    hook = Hook.read(raw)
+    hook = Hook.read(hook) if isinstance(hook, dict) else hook
     if hook.event not in STATUS or runtime.off(root):
         return {}
     log_command(root, hook)

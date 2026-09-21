@@ -15,7 +15,7 @@ from skills import LIBRARY, LINKED, publish  # noqa: E402
 
 PACKAGE = Path(__file__).resolve().parent
 PACKAGE_DIRS = ("commands", "controllers", "engine", "extension", "features", "migrations", "providers", "resources", "skills", "support", "surfaces")
-PACKAGE_FILES = ("VERSION", "channel.py", "claude-status.sh", "hook.py", "hook.sh", "install.py", "journal.py", "serve.py", "skills.py")
+PACKAGE_FILES = ("VERSION", "channel.py", "claude-status.sh", "hook.sh", "install.py", "journal.py", "serve.py", "skills.py")
 PACKAGE_TREES = (*PACKAGE_DIRS, "web/dist")
 LEFT_BEHIND = (".DS_Store", "test.py")
 REPOSITORY = "https://github.com/jessegall/agent-journal"
@@ -53,7 +53,7 @@ def refresh(source: Path, target: Path) -> tuple[int, int]:
     return len(changed), len(gone)
 
 
-ENTRYPOINTS = ("hook.py", "journal.py")
+ENTRYPOINTS = ("journal.py",)
 FORWARD = 'import runpy\nimport sys\nfrom pathlib import Path\n\nsys.argv[0] = str(Path(__file__).resolve().parent / "src" / Path(__file__).name)\nrunpy.run_path(sys.argv[0], run_name="__main__")\n'
 
 

@@ -103,7 +103,6 @@ def measure(live: Path, env: str, runs: int = 5, url: str = "", out: str = "") -
         rows[f"list {type_} ({count})"] = timed(lambda: CONTROLLERS[type_](record)._every(), runs)
     for argv in COMMANDS:
         rows[f"journal {' '.join(argv)}"] = cli(scratch, env, argv, runs)
-    rows["hook in-process (hook.py)"] = hook(scratch, env, runs, [sys.executable, str(HERE / "hook.py")])
     rows["engine tick"] = ticking(scratch, env, runs)
     server = serve(scratch, 0)
     threading.Thread(target=server.serve_forever, daemon=True).start()

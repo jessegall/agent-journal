@@ -196,7 +196,7 @@ def verify(ctx) -> str:
     lines = [f"root {root}", f"environment {ctx['record'].env}", "off" if runtime.off(root) else "in force"]
     for name, provider in PROVIDERS.items():
         settings = provider().config(root.parent)
-        wired = settings.is_file() and "hook.py" in settings.read_text()
+        wired = settings.is_file() and "hook.sh" in settings.read_text()
         lines.append(f"{name}: hooks {'wired' if wired else 'NOT wired'} ({settings})")
     live = [p for p in (root / "runtime").glob("seat-*.json") if time.time() - p.stat().st_mtime < 10]
     lines.append(f"engine: {len(live)} running — {', '.join(p.stem.removeprefix('seat-')[:8] for p in live) or 'none'}")
