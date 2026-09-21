@@ -12,6 +12,7 @@ from resources.base import Refused, SYSTEM
 from engine.wording import counted
 
 ENTER_AFTER = 0.3
+MARK = "[journal]"
 POST_WAIT = 5.0
 RECHECK, RESUBMITS = 1.0, 3
 DRAFT_LINES = 8
@@ -145,7 +146,7 @@ class Driver(ABC):
             return False
 
     def type_in(self, text: str) -> bool:
-        line = joined(text)
+        line = f"{MARK} {joined(text)}"
         started = time.time()
         self.clear_input()
         time.sleep(ENTER_AFTER)

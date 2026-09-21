@@ -9,7 +9,7 @@ from providers.base import Provider
 from providers.payload import Hook
 from resources.types import AgentRow
 from engine.stored import tail
-from engine.drivers import ANSI, Driver
+from engine.drivers import ANSI, MARK, Driver
 
 TOOLS = {"exec": "Bash", "exec_command": "Bash", "shell": "Bash", "shell_command": "Bash", "apply_patch": "Edit"}
 SKILL_LOOP = re.compile(r"for\s+\w+\s+in\s+([^;]+);\s*do")
@@ -324,7 +324,7 @@ class CodexDriver(Driver):
 
     TRUSTS_HOOKS = "--dangerously-bypass-hook-trust"
     READY = b"AskCodextodoanything"
-    OPENING = "The journal started this session."
+    OPENING = f"{MARK} The journal started this session."
     CONFIRM_AFTER = 3.0
 
     @classmethod
