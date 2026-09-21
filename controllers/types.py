@@ -23,9 +23,9 @@ class Messages(Controller):
         with self.record.locked():
             key = data.get(types.Message.idempotency, "")
             if key:
-                existing = next((message for message in self._every(deleted=True) if message.idempotency == key), None)
+                existing = next((row["n"] for row in self.summaries() if row.get(types.Message.idempotency) == key), None)
                 if existing:
-                    return existing
+                    return self.load(existing)
             return super().create(title, abstract, brief, **data)
 
     def update(self, n: int, title: str | None = None, abstract: str | None = None, brief: str | None = None, outcome: str | None = None, **data):

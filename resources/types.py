@@ -3,6 +3,7 @@ from resources.shapes import FLAG, TEXT, Field, Options, Ranked, Reasoned, Shape
 
 
 class Message(Shape, Resource):
+    indexed = ("idempotency",)
     answered = "reply"
     editors = {USER: (USER, SYSTEM), AGENT: (AGENT, SYSTEM)}
     type = "message"
