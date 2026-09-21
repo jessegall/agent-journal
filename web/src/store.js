@@ -239,7 +239,7 @@ async function tick() {
     const last = store.events.length ? store.events[store.events.length - 1].id : 0;
     const fresh = await http.poll(`/${env}/events?since=${last}&last=0`);
     if (fresh.length) await reload();
-    if (ticks % 60 === 0) await rebuilt();
+    if (ticks % 60 === 0) store.spec = await http.manifest();
 }
 
 function poll() {
@@ -260,14 +260,9 @@ function poll() {
     again();
 }
 
-async function rebuilt() {
-    const loaded = (document.querySelector("script[type=module]") || {}).src || "";
-    const served = ((await fetch("/", {cache: "no-store"}).then((r) => r.text())).match(/src="([^"]+)"/) || [])[1] || "";
-    const typing = document.activeElement && document.activeElement.matches("textarea, input") && document.activeElement.value;
-    if (served && loaded && !loaded.endsWith(served) && !typing) location.reload();
-}
-
-export async function boot() {
+    if (fresh.length) await reload();
+    if (ticks % 60 === 0) store.spec = await http.manifest();
+}export async function boot() {
     [store.spec, store.identity] = await Promise.all([http.manifest(), http.identity()]);
     if (!route.value.env) {
         go(store.spec.environment);
