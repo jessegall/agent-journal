@@ -4,7 +4,7 @@ import {negative, project, tint} from "../identity.js";
 import {flash} from "../platform/visibility.js";
 import {route} from "../route.js";
 
-const SHOWN_FOR = 1100;
+const SHOWN_FOR = 3100;
 const showing = ref(false);
 let timer = 0;
 

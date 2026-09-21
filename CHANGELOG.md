@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.59.2 — The tab's name stays long enough to read
+
+Message 1449, to-do 611. The project and environment name that flashes when you switch to the viewer's tab now stays for about three seconds instead of one, long enough to read.
+
+What to do about it: `journal upgrade`.
+
 ## 2.59.1 — Linking a part of the user's message works
 
 To-do 610. `journal message process <n> "<part>" "todo <m>"` on a message the user wrote was refused as a change to their words, although the messages skill asks for exactly that link. A part's link is kept as a section, and the guard counted sections as the user's words. Now the guard protects the title, the abstract and the brief whole, and no existing section can be removed or renamed. Another actor can add a section or change what one links to.
