@@ -166,6 +166,10 @@ export class ApiClient {
         return this.post(this.here(`/${type}/${n}/upload`), body);
     }
 
+    markdownUrl(type, n) {
+        return this.url(this.here(`/${type}/${n}/markdown`));
+    }
+
     fileUrl(type, n, name) {
         return this.url(this.here(`/${type}/${n}/files/${encoded(name)}`));
     }

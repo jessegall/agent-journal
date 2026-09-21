@@ -3,6 +3,7 @@ import {computed, reactive, ref, watch, watchEffect} from "vue";
 import {api} from "../api/client.js";
 import Btn from "../kit/Btn.vue";
 import CommentToggle from "./CommentToggle.vue";
+import DownloadLink from "./DownloadLink.vue";
 import Icon from "../kit/Icon.vue";
 import {age} from "../format/time.js";
 import {sectionChanges} from "../domain/diff.js";
@@ -136,6 +137,7 @@ const cutPart = (title) => run("cut", {title});
                 Design {{ resource.n }}
             </span>
             <span class="grow" />
+            <DownloadLink :resource="resource" />
             <CommentToggle />
             <Btn kind="icon" @click="emit('close')"><Icon name="x" /></Btn>
         </header>
