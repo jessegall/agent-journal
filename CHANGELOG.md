@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.17.6 — The missing-tag reminder appears in the agent's terminal
+
+The reminder is sent straight to the agent's terminal, the moment a message without a tag is seen: "your last message has no tag — open every message with one of …". It no longer goes into the web chat as a message, which showed in the terminal only as "1 new message".
+
+What to do about it: `journal upgrade`.
+
 ## 2.17.5 — The tagging switch is the reminder
 
 The tagging feature no longer has a separate "name a message that opens without a tag" behaviour. Its own switch turns the reminder on or off, and when on, every message without a tag is answered with a message from the journal.
