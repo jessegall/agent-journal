@@ -136,6 +136,9 @@ class Claude(Provider):
     def config(self, project: Path) -> Path:
         return project / ".claude" / "settings.local.json"
 
+    def hook_files(self, project: Path) -> list[Path]:
+        return [Path.home() / ".claude" / "settings.json", project / ".claude" / "settings.json", self.config(project)]
+
     def shared(self, project: Path) -> None:
         f = project / ".claude" / "settings.json"
         had = read_json(f, None)

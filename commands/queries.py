@@ -1,5 +1,6 @@
 import argparse
 import os
+import shutil
 import sys
 import time
 from dataclasses import dataclass
@@ -127,6 +128,8 @@ def halt(ctx) -> str:
     root = record.root
     left = still_open(record)
     ask(root)
+    from features.clean_slate.slate import put_back
+    put_back(record)
     went = gone(root)
     clear(root)
     summary = "the journal is stopped: its viewer, its engine and every service it ran" if went else "the viewer is still answering; see .journal/runtime/viewer.log"
@@ -180,14 +183,60 @@ def asked_for(record: Record, args: list[str], ask=input, answering=None) -> str
             print(f"a number from 1 to {len(names) + 1}")
 
 
+def banner(agent: str, project: Path) -> str:
+    width = max(40, shutil.get_terminal_size().columns - 2)
+    version = (Path(__file__).resolve().parents[1] / "VERSION").read_text().strip()
+    lines = [f"agent-journal {version}", "", f"You're about to start {agent.capitalize()} under the journal,", f"in {project}.", "",
+             "A question or two first. Enter takes the choice marked [Enter]."]
+    rule = "─" * width
+    return "\x1b[2J\x1b[H" + "\n".join([f"┌{rule}┐", *(f"│ {line:<{width - 2}} │" for line in lines), f"└{rule}┘", ""])
+
+
+def asked_slate(record: Record, project: Path, agent: str, ask=input, answering=None) -> bool:
+    from features import FEATURES
+    from features.clean_slate.slate import others, state
+    answering = sys.stdin.isatty() if answering is None else answering
+    skills, hooks = others(project, agent)
+    if not answering or not FEATURES["clean_slate"].enabled(record) or not (skills or hooks):
+        return False
+    last = state(record).get("last", True)
+    names = ", ".join(s.name for s in skills[:6]) + (", …" if len(skills) > 6 else "")
+    print("\njournal: set aside everything that is not the journal's until it stops?")
+    print(f"  {len(skills)} other skills" + (f" ({names})" if skills else "") + f", and the other hooks in {len(hooks)} " + ("file." if len(hooks) == 1 else "files."))
+    print("  They are kept under .journal/runtime/set-aside and put back when the agent exits or the journal stops.")
+    print("  1. yes, a clean slate" + ("  [Enter]" if last else ""))
+    print("  2. no, keep them" + ("" if last else "  [Enter]"))
+    while True:
+        try:
+            picked = ask("> ").strip() or ("1" if last else "2")
+        except EOFError:
+            return False
+        if picked in ("1", "2"):
+            return picked == "1"
+        print("1 or 2")
+
+
 def supervise(ctx, agent: str) -> str:
     from engine.terminal import run as run_supervisor
     from engine.viewer import start
+    from features.clean_slate.slate import put_back, remember, set_aside
     record = ctx["record"]
+    project = Path.cwd()
+    if sys.stdin.isatty():
+        print(banner(agent, project))
     env = asked_for(record, ctx["args"] or [])
-    url = start(record.root, Path.cwd())
+    here = Record(record.root, env)
+    put_back(here)
+    if asked_slate(here, project, agent):
+        print(f"journal: {set_aside(here, project, agent)}")
+    else:
+        remember(here, False)
+    url = start(record.root, project)
     print(f"journal: viewer {url}" if url else "journal: the viewer did not start; see .journal/runtime/viewer.log")
-    return str(run_supervisor(record.root, Path.cwd(), env, agent, ctx["args"] or []))
+    try:
+        return str(run_supervisor(record.root, project, env, agent, ctx["args"] or []))
+    finally:
+        put_back(here)
 
 def services(ctx) -> str:
     from engine.services import DOWN, UP, listed, log_file, want

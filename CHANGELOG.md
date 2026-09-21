@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.79.0 — A clean slate at launch, on a full-screen start
+
+Messages 1990 and 1993, to-dos 698 and 699. `journal claude` and `journal codex` now clear the terminal and open with a header saying what is about to start and where. After the environment, a second question offers a clean slate: every skill that is not a journal skill is moved out of the agent's skill folders, in the project and in your home folder, and each hook file is copied before the hooks that are not the journal's are taken out. Everything is kept under `.journal/runtime/set-aside` and put back when the agent exits, when `journal stop` runs, or at the next launch if the last one ended without putting it back. Enter repeats the last answer. The question is the new Clean slate feature, switchable in Settings.
+
+What to do about it: `journal upgrade`, then start the agent again.
+
 ## 2.78.6 — Only the core skills load at every start by default
 
 Messages 1362 and 1364. With nothing chosen on the Skills page, every start asked for all forty journal skills, and every tool call waited until each was loaded. The default is now the core skills only: journal, messages, to-dos, questions, memory, docs, reports and transcripts. A feature's own skill is loaded when it is needed, or switched to every start on the Skills page.
