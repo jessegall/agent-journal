@@ -4,7 +4,7 @@ import tempfile
 import time
 from pathlib import Path
 
-from controllers.base import Controller
+from controllers.base import Controller, internal
 from engine import attic
 from engine.record import Record
 from engine.sessions import Sessions
@@ -122,9 +122,11 @@ class Todos(Controller):
         held = list(row.after or [])
         return self.update(n, after=[r for r in held if r != ref] if off else held + [ref] * (ref not in held))
 
+    @internal
     def waitable(self, kind: str):
         return {"todo": Todos, "plan": CONTROLLERS.get("plan")}.get(kind)
 
+    @internal
     def chain(self, ref: str) -> set[str]:
         seen, todo = set(), [ref]
         while todo:
@@ -135,6 +137,7 @@ class Todos(Controller):
             todo.extend(self.load(int(num)).after or [])
         return seen
 
+    @internal
     def waits(self, row) -> list[str]:
         from features.plans.controller import ENDED
         open_ = []
@@ -149,6 +152,7 @@ class Todos(Controller):
                 open_.append(ref)
         return open_
 
+    @internal
     def mark(self, r) -> str:
         if r.type != self.type:
             return ""
@@ -314,6 +318,7 @@ class Agents(Controller):
         found = next((row["n"] for row in self.summaries() if row["title"] == session and not row["deleted"]), None)
         return self.load(found) if found else self.create(session, status="stopped")
 
+    @internal
     def saw(self, n: int, fact: dict, **data):
         r = self.load(n)
         r.data.update(self._shaped(data))
@@ -349,15 +354,16 @@ class Tools(Controller):
 class Features(Controller):
     resource = types.FeatureRow
 
-    def named(self, name: str):
-        return next((r for r in self._every() if r.title == name), None)
+    def _titled(self, name: str):
+        found = next((row["n"] for row in self.summaries() if row["title"] == name and not row["deleted"]), None)
+        return self.load(found) if found else None
 
     def switch(self, name: str, on: bool = True):
-        row = self.named(name)
+        row = self._titled(name)
         return self.update(row.n, enabled=bool(on)) if row else self.create(name, enabled=bool(on))
 
     def on(self, name: str, default: bool = True) -> bool:
-        row = self.named(name)
+        row = self._titled(name)
         return bool(row.enabled) if row else default
 
 
@@ -390,6 +396,7 @@ class Environments(Controller):
         Record(self.record.root, name)
         return made
 
+    @internal
     def sessions(self) -> Sessions:
         if not self.session:
             raise Refused("no session to bind: say which with --session")

@@ -23,6 +23,11 @@ HANDLERS: dict[str, list] = {}
 FACES = ("👍", "❤️", "🎉", "😄", "👀", "🙏", "👎", "💔", "😠")
 
 
+def internal(fn):
+    fn.internal = True
+    return fn
+
+
 class Controller:
     resource = Resource
     actor = "user"
@@ -45,12 +50,15 @@ class Controller:
     def type(self) -> str:
         return self.resource.type
 
+    @internal
     def path(self, n: int) -> Path:
         return self.record.folder(self.type, self.resource.scope) / f"{n:03d}.md"
 
+    @internal
     def numbers(self) -> list[int]:
         return sorted(int(p.stem) for p in self.record.folder(self.type, self.resource.scope).glob("*.md") if p.stem.isdigit())
 
+    @internal
     def summaries(self) -> list[dict]:
         folder = self.record.folder(self.type, self.resource.scope)
         moved = folder.stat().st_mtime_ns
@@ -78,6 +86,7 @@ class Controller:
             write_json(folder / INDEX, rows)
         return [rows[n] for n in sorted(rows)]
 
+    @internal
     def load(self, n: int) -> Resource:
         r = self._peek(n)
         return r.fork() if self.resource.loading == MEMORY else r
@@ -118,6 +127,7 @@ class Controller:
         if action == "deleted" or any(getattr(stored, f) != getattr(r, f) for f in WORDS):
             self._refuse(f"{self.type} {r.n} was written by the {stored.seen[0]}: answer it with journal {self.type} {self.resource.answered} {r.n} \"<text>\" instead of changing it")
 
+    @internal
     def save(self, r: Resource, action: str, **event) -> Resource:
         self._guarded(r, action)
         self._note_force(r)
@@ -231,9 +241,11 @@ class Controller:
         r.outcome = ""
         return self.save(r, "reopened", why=why)
 
+    @internal
     def named(self, method: str) -> str:
         return self.resource.names.get(method, method)
 
+    @internal
     def method(self, name: str):
         for method, alias in self.resource.names.items():
             if alias == name:
@@ -242,6 +254,7 @@ class Controller:
             self._refuse(f"a {self.type} calls that {self.resource.names[name]}")
         return self.action(name)
 
+    @internal
     def action(self, name: str):
         command = COMMANDS.get(self.type, {}).get(name)
         if command:
@@ -397,6 +410,7 @@ class Controller:
             memo[self.type, deleted] = rows
         return [r.fork() for r in memo[self.type, deleted]]
 
+    @internal
     def mark(self, r: Resource) -> str:
         return ""
 
