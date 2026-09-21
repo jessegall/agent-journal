@@ -356,10 +356,8 @@ def get_changes(req: Request) -> Reply:
 
 @route("GET", "/api/{env}/bar")
 def get_bar(req: Request) -> Reply:
-    from features.statusline.feature import bar
-    rows = [r for r in Agents(req.record(), actor=USER)._every() if not r.parent]
-    newest = max(rows, key=lambda r: float(r.at or 0)) if rows else None
-    return Reply(200, bar(newest, time.time()) if newest else {"queue": []})
+    from features.statusline.feature import shown
+    return Reply(200, shown(req.root, req.params["env"]))
 
 
 @route("POST", "/api/stop")
