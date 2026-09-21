@@ -9,12 +9,21 @@ const dismissed = ref(remembered("journal.upgrade.dismissed", ""));
 const lines = ref([]);
 const running = ref(false);
 const shown = computed(() => upstream.value && upstream.value.newer && dismissed.value !== upstream.value.latest);
+const mine = (document.querySelector("script[type=module]") || {}).src || "";
+const stale = computed(() => {
+    const serving = store.spec && store.spec.build;
+    return !!serving && !!mine && !mine.endsWith(serving);
+});
 
 onMounted(async () => {
     try {
         upstream.value = await api("GET", "/upstream");
     } catch (e) {}
 });
+
+function reload() {
+    window.location.reload();
+}
 
 function dismiss() {
     dismissed.value = upstream.value.latest;
@@ -36,6 +45,12 @@ async function upgrade() {
 </script>
 
 <template>
+    <template v-if="stale">
+        <div class="band">
+            <span class="text">This page is running an older build of the viewer than the one being served.</span>
+            <Btn kind="primary" small @click="reload">Reload</Btn>
+        </div>
+    </template>
     <template v-if="shown">
         <div class="band">
             <span class="text">
