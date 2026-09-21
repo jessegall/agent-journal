@@ -11,7 +11,7 @@ defineProps({resource: Object, selected: Boolean});
 <template>
     <button type="button" :class="['row', {selected, completed: resource.completed}]">
         <span class="glyph">
-            <template v-if="meta(resource.type).counted">
+            <template v-if="meta(resource.type).start_as_count">
                 <Dot :kind="state(resource)" />
             </template>
             <template v-else>

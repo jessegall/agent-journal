@@ -7,12 +7,12 @@ from resources.shapes import Field, Shape
 class Design(Shape, Resource):
     loading = LAZY
     type = "design"
-    shown = {"created": "Design started", "updated": "Design revised", "completed": "Design settled"}
-    says = {"complete": "settling", "section": "revising", "update": "revising", "cut": "revising"}
+    event_labels = {"created": "Design started", "updated": "Design revised", "completed": "Design settled"}
+    status_labels = {"complete": "settling", "section": "revising", "update": "revising", "cut": "revising"}
     revisions: ClassVar[Field] = Field(default=list)
-    attention = True
+    needs_attention = True
     icon = "revisions"
-    names = {"complete": "settle"}
+    command_names = {"complete": "settle"}
     scope = PROJECT
     title_ = "Design"
     abstract_ = "A document rewritten in place: every edit is a new revision, and every revision stays readable"

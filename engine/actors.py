@@ -17,7 +17,7 @@ def spoken(r) -> str:
 
 
 def spoken_data(record: Record, event: Event) -> dict:
-    return CONTROLLERS[event.type](record, actor=SYSTEM).load(event.n).data if TYPES[event.type].spoken else {}
+    return CONTROLLERS[event.type](record, actor=SYSTEM).load(event.n).data if TYPES[event.type].typed_as_title else {}
 
 
 def grouped(events: list[Event]) -> dict[tuple, dict]:
@@ -28,9 +28,9 @@ def grouped(events: list[Event]) -> dict[tuple, dict]:
 
 
 def render(events: list[Event], record: Record) -> tuple[str, dict]:
-    rows = [CONTROLLERS[e.type](record, actor=AGENT).read(e.n) for e in events if TYPES[e.type].spoken]
+    rows = [CONTROLLERS[e.type](record, actor=AGENT).read(e.n) for e in events if TYPES[e.type].typed_as_title]
     said = [spoken(r) for r in sorted(rows, key=lambda r: not r.data.get("lead"))]
-    return "; ".join(dict.fromkeys(said)), grouped([e for e in events if not TYPES[e.type].spoken])
+    return "; ".join(dict.fromkeys(said)), grouped([e for e in events if not TYPES[e.type].typed_as_title])
 
 
 class Actor(ABC):
@@ -95,7 +95,7 @@ class Agent(Actor):
         if typed:
             landed = self.driver.type_in(render(typed, self.record)[0]) and landed
         for e in self.pending:
-            if landed and TYPES[e.type].told:
+            if landed and TYPES[e.type].stamped_when_told:
                 CONTROLLERS[e.type](self.record, actor=SYSTEM).stamp(e.n, delivered=time.time())
             self.notified(e)
         self.pending = []

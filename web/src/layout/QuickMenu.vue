@@ -113,7 +113,7 @@ async function switchAuto(on) {
     await setAuto(on);
 }
 
-const highlights = computed(() => types.value.filter((t) => t.attention).flatMap((t) => unreadByUser(t.name)));
+const highlights = computed(() => types.value.filter((t) => t.needs_attention).flatMap((t) => unreadByUser(t.name)));
 const commands = computed(() => {
     const pages = [
         {page: "", label: "Home", icon: "home"},

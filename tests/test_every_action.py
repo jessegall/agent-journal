@@ -34,7 +34,7 @@ def given(controller, parameter: inspect.Parameter, row):
 
 
 def call(controller, name, row):
-    fn = controller.action(controller.resource.names.get(name, name))
+    fn = controller.action(controller.resource.command_names.get(name, name))
     parameters = [p for p in inspect.signature(fn).parameters.values() if p.name != "self"]
     args = [given(controller, p, row) for p in parameters
             if p.kind in (p.POSITIONAL_ONLY, p.POSITIONAL_OR_KEYWORD) and p.default is p.empty]
@@ -64,10 +64,10 @@ def test_every_action_is_reachable_as_a_command():
     features.load()
     from commands.parser import parser
     built = parser()._subparsers._group_actions[0].choices
-    missing = [f"{type_} {controller.resource.names.get(name, name)}"
+    missing = [f"{type_} {controller.resource.command_names.get(name, name)}"
                for type_, controller in CONTROLLERS.items()
                for name in actions(type(controller(fresh(type_[:2]), actor=SYSTEM)))
-               if controller.resource.names.get(name, name) not in built[type_]._subparsers._group_actions[0].choices]
+               if controller.resource.command_names.get(name, name) not in built[type_]._subparsers._group_actions[0].choices]
     assert missing == [], "every public action on a controller is a journal command"
 
 

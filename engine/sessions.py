@@ -112,6 +112,6 @@ def allowed(sessions: Sessions, session: str, env: str, actor_id: str, type_: st
         return ""
     if not sessions.granted(session, env):
         return f"environment {env!r} is not lent to this session's subagents: journal environment <n> grant first"
-    if not TYPES[type_].lent:
+    if not TYPES[type_].subagent_writable:
         return f"a subagent never writes a {type_}: report it, and the main conversation files it"
     return ""

@@ -82,35 +82,35 @@ class Resource:
     title_ = ""
     abstract_ = ""
     help_ = ""
-    names: ClassVar[dict] = {}   # what this type calls a controller method: {"complete": "done", "create": "add"}
-    says: ClassVar[dict] = {}    # how the bar says a command on it: {"complete": "answering"}
-    shown: ClassVar[dict] = {}   # how an event on it reads in the viewer: {"created": "Work started"}
+    command_names: ClassVar[dict] = {}   # what this type calls a controller method: {"complete": "done", "create": "add"}
+    status_labels: ClassVar[dict] = {}    # how the bar says a command on it: {"complete": "answering"}
+    event_labels: ClassVar[dict] = {}   # how an event on it reads in the viewer: {"created": "Work started"}
     view: ClassVar[str] = SMALL  # how it is read: a small inspector, a wide one, or a document page
-    nav: ClassVar[bool] = True   # whether it sits in the sidebar
+    in_sidebar: ClassVar[bool] = True   # whether it sits in the sidebar
     icon: ClassVar[str] = "dot"  # the viewer's glyph for it
-    attention: ClassVar[bool] = False   # unread by the user, it waits on them
-    finished_is_news: ClassVar[bool] = False
-    clears: ClassVar[str] = CLEARED     # what takes it off the user's list: opening it, completing it, or the user clearing it
+    needs_attention: ClassVar[bool] = False   # unread by the user, it waits on them
+    lists_completed_unread: ClassVar[bool] = False
+    cleared_by: ClassVar[str] = CLEARED     # what takes it off the user's list: opening it, completing it, or the user clearing it
     filters: ClassVar[tuple] = (OPEN, CLOSED)   # the ways its list can be narrowed, shown as the tabs above it
-    handed: ClassVar[str] = ""          # its heading in the start block, empty when it is not handed to a session
-    counted: ClassVar[bool] = False     # handed as a count, not row by row
-    lent: ClassVar[bool] = True         # a subagent lent the environment may write it
-    mirror: ClassVar[bool] = False      # it exists about another resource and is shown under it, never on its own
+    start_heading: ClassVar[str] = ""          # its heading in the start block, empty when it is not handed to a session
+    start_as_count: ClassVar[bool] = False     # handed as a count, not row by row
+    subagent_writable: ClassVar[bool] = True         # a subagent lent the environment may write it
+    nested: ClassVar[bool] = False      # it exists about another resource and is shown under it, never on its own
     closed_first: ClassVar[bool] = False
     scope: ClassVar[str] = ENVIRONMENT   # whose it is: one environment's, or the whole project's
-    notify: ClassVar[tuple] = (USER, AGENT)   # who is told of its events, besides the actor
-    spoken: ClassVar[bool] = False            # typed to the agent as its title, not as "type n action"
+    notified: ClassVar[tuple] = (USER, AGENT)   # who is told of its events, besides the actor
+    typed_as_title: ClassVar[bool] = False            # typed to the agent as its title, not as "type n action"
     notify_actions: ClassVar[tuple] = ()      # besides everything the user does, the system actions the agent is notified of
-    answered: ClassVar[str] = "comment"      # the word that answers a row instead of changing it
+    answer_command: ClassVar[str] = "comment"      # the word that answers a row instead of changing it
     editors: ClassVar[dict] = {}              # who may change the words of a row written by whom: {USER: (USER,)}; unnamed authors are open to all
-    told: ClassVar[bool] = False              # the row is stamped with the moment the agent was told of it
+    stamped_when_told: ClassVar[bool] = False              # the row is stamped with the moment the agent was told of it
     deduplicates: ClassVar[bool] = False
     indexed: ClassVar[tuple] = ()
     loading: ClassVar[str] = MEMORY
-    files = Field(default=dict)               # what is attached: name → what became of it
-    pictures = Field(default=dict)            # an attached image's width and height, known before it loads
-    agent = Field()                           # the subagent that wrote it, and its dispatcher
-    dispatcher = Field()
+    files: ClassVar[Field] = Field(default=dict)               # what is attached: name → what became of it
+    pictures: ClassVar[Field] = Field(default=dict)            # an attached image's width and height, known before it loads
+    agent: ClassVar[Field] = Field()                           # the subagent that wrote it, and its dispatcher
+    dispatcher: ClassVar[Field] = Field()
     n: int = 0
     title: str = ""
     abstract: str = ""

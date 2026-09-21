@@ -21,7 +21,7 @@ def truthy(word: str) -> bool:
     return word.strip().lower() in ("true", "yes", "on", "1")
 
 def add_method(acts, controller: type, name: str) -> None:
-    a = acts.add_parser(controller.resource.names.get(name, name))
+    a = acts.add_parser(controller.resource.command_names.get(name, name))
     a.set_defaults(method=name)
     fn = COMMANDS.get(controller.resource.type, {}).get(name) or getattr(controller, name)
     for p in list(inspect.signature(fn).parameters.values())[1:]:

@@ -33,9 +33,9 @@ kept("journal.wide", () => store.wide);
 kept("journal.window", () => store.chatWindow);
 
 export const types = computed(() => (store.spec ? store.spec.priority.map((t) => ({name: t, ...store.spec.types[t]})) : []));
-export const navTypes = (scope) => types.value.filter((t) => t.nav && t.scope === scope);
+export const navTypes = (scope) => types.value.filter((t) => t.in_sidebar && t.scope === scope);
 export const meta = (type) => store.spec.types[type];
-export const word = (type, method) => meta(type).names[method] || method;
+export const word = (type, method) => meta(type).command_names[method] || method;
 export const label = (type, field, fallback) => meta(type).labels[field] || fallback;
 export const counted = (type, key = "open") => (store.counts && store.counts[type] && store.counts[type][key]) || 0;
 export const agent = computed(

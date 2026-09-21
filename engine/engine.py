@@ -186,12 +186,12 @@ class Engine(Seat):
             fresh = actor.cursor() == 0
             for e in self.record.events(actor.heard()):
                 if fresh and e.at < self.born and not self.addressed(e):
-                    if actor is self.agent and TYPES[e.type].spoken:
+                    if actor is self.agent and TYPES[e.type].typed_as_title:
                         CONTROLLERS[e.type](self.record, actor=AGENT).read(e.n)
                     actor.notified(e)
                     continue
                 mine = actor is self.agent and e.actor != USER and e.action not in TYPES[e.type].notify_actions
-                if e.action == STAMPED or e.actor == actor.name or actor.name not in TYPES[e.type].notify or self.elsewhere(e) or "seen" in e.data or mine:
+                if e.action == STAMPED or e.actor == actor.name or actor.name not in TYPES[e.type].notified or self.elsewhere(e) or "seen" in e.data or mine:
                     actor.notified(e)
                     continue
                 actor.notify(e)
@@ -229,7 +229,7 @@ class Engine(Seat):
     def owed(self) -> str:
         waiting = []
         for type_ in priority():
-            if AGENT not in TYPES[type_].notify or TYPES[type_].spoken:
+            if AGENT not in TYPES[type_].notified or TYPES[type_].typed_as_title:
                 continue
             unread = [row["n"] for row in CONTROLLERS[type_](self.record, actor=AGENT).summaries()
                       if AGENT not in row["seen"] and not row["completed"] and not row["deleted"]]

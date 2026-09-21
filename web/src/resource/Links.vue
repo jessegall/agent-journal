@@ -7,7 +7,7 @@ import {age} from "../format/time.js";
 import {meta} from "../state/store.js";
 
 const props = defineProps({resource: Object, except: {type: Array, default: () => []}});
-const skip = (type) => meta(type).mirror || (meta(type).fields.options && meta(type).attention);
+const skip = (type) => meta(type).nested || (meta(type).fields.options && meta(type).needs_attention);
 const bar = (ref, direction) => {
     const [type, n] = ref.split(":");
     const r = byRef(ref);
