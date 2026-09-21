@@ -52,7 +52,7 @@ class AgentsFeature(Feature):
 
     def quieted(self, record) -> list:
         agents = Agents(record, actor=SYSTEM)
-        silent = time.time() - record.setting(self.name, {}).get(self.QUIET, self.quiet) * 60
+        silent = time.time() - self.setting(record, self.QUIET, self.quiet) * 60
         gone = [row for row in agents._every() if row.status and row.status != STOPPED and float(row.at or 0) < silent]
         for row in gone:
             agents.stamp(row.n, status=STOPPED)

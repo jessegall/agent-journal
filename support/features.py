@@ -1,9 +1,5 @@
-from features.base import REGISTRY
-
-
 def switched(record, name: str) -> bool:
+    from features import FEATURES
     feature_name, _, key = name.partition(".")
-    feature = REGISTRY.get(feature_name)
-    if not feature or not feature.on_for(record):
-        return False
-    return bool(record.features.get(name, feature.behaviours[key].default)) if key else True
+    feature = FEATURES.get(feature_name)
+    return bool(feature) and bool(feature.on(record, key))

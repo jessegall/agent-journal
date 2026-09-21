@@ -200,8 +200,8 @@ def switches(record: Record) -> dict:
     out = {}
     for name, f in features.FEATURES.items():
         out[name] = f.enabled(record)
-        for key, behaviour in f.behaviours.items():
-            out[f.keyed(key)] = bool(record.features.get(f.keyed(key), behaviour.default))
+        for key in f.behaviours:
+            out[f.keyed(key)] = f.chosen(record, key)
     return {**out, **{was: out[now] for was, now in renamed().items() if now in out}}
 
 

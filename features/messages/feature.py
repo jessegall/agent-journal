@@ -34,7 +34,7 @@ class MessagesFeature(Feature):
     patience = {"unread": 5, "answering": 3}
 
     def patient(self, record, key: str) -> int:
-        return int(record.setting(self.name, {}).get(f"{key}.{self.PATIENCE}", self.patience[key]))
+        return int(self.setting(record, f"{key}.{self.PATIENCE}", self.patience[key]))
 
     def counted(self, record, agent, key: str) -> int:
         count = int(trigger.last(record, agent.title, self.keyed(key)).get("count") or 0) + 1
