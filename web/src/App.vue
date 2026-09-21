@@ -194,7 +194,6 @@ const chatFloats = computed(() => store.detached && !store.extension.holding && 
 
 .bar {
     height: 48px;
-    overflow: hidden;
     transition:
         height 0.26s cubic-bezier(0.2, 0.8, 0.2, 1),
         opacity 0.18s ease;
@@ -208,6 +207,7 @@ const chatFloats = computed(() => store.detached && !store.extension.holding && 
 
 .app.wide .bar {
     height: 0;
+    overflow: hidden;
     opacity: 0;
     pointer-events: none;
 }
