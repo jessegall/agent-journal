@@ -1,4 +1,4 @@
-import {types} from "../state/store.js";
+import {meta, types} from "../state/store.js";
 import {rows} from "../sync/rows.js";
 
 const ENDED = ["done", "abandoned"];
@@ -59,3 +59,5 @@ export const state = (r) =>
               : r.data.status === "started"
                 ? "started"
                 : "open";
+
+export const toldToUser = (e) => !!meta(e.type) && meta(e.type).notify.includes("user");

@@ -1,7 +1,7 @@
 <script setup>
 import {computed, onMounted, ref} from "vue";
 import {peek} from "../route.js";
-import {byRef} from "../domain/records.js";
+import {byRef, toldToUser} from "../domain/records.js";
 import {age} from "../format/time.js";
 import {meta, store, word} from "../state/store.js";
 
@@ -13,7 +13,7 @@ const announced = (e) =>
 const shown = computed(() =>
     [...store.events]
         .reverse()
-        .filter((e) => e.action !== "stamped" && (meta(e.type).notify.includes("user") || announced(e)))
+        .filter((e) => e.action !== "stamped" && (toldToUser(e) || announced(e)))
         .slice(0, 80)
 );
 const did = (e) => (e.action === "updated" && e.data && e.data.section ? "sectioned" : e.action);
