@@ -98,6 +98,7 @@ class Fact(Reasoned, Resource):
     handed = "FACTS about this environment"
     lent = False
     attention = True
+    finished_is_news = True
     icon = "pin"
     names = {"complete": "strike"}
     title_ = "Fact"
@@ -113,6 +114,7 @@ class Rule(Reasoned, Resource):
     handed = "RULES, in force on every environment"
     lent = False
     attention = True
+    finished_is_news = True
     icon = "list"
     names = {"complete": "strike"}
     scope = PROJECT

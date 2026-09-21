@@ -15,6 +15,7 @@ class Plan(Shape, Resource):
     current = Field(default=1)
     handed = "PLANS running"
     attention = True
+    finished_is_news = True
     icon = "flag"
     names = {"complete": "acknowledge", "place": "todos", "resume": "continue"}
     title_ = "Plan"

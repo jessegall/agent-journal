@@ -3,7 +3,7 @@ import {computed} from "vue";
 import Icon from "../kit/Icon.vue";
 import {api} from "../api/client.js";
 import {peek, route} from "../route.js";
-import {happened, unreadByUser} from "../domain/records.js";
+import {finishedUnread, happened, unreadByUser} from "../domain/records.js";
 import {age} from "../format/time.js";
 import {focusTurn} from "../platform/view.js";
 import {meta, types} from "../state/store.js";
@@ -20,7 +20,7 @@ const TINT = {
 const cards = computed(() =>
     types.value
         .filter((t) => t.attention)
-        .flatMap((t) => unreadByUser(t.name))
+        .flatMap((t) => [...unreadByUser(t.name), ...(t.finished_is_news ? finishedUnread(t.name) : [])])
         .sort((a, b) => b.created - a.created)
 );
 

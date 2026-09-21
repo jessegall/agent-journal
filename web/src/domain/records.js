@@ -15,6 +15,7 @@ export const GROUPS = {
 
 export const open = (type) => rows(type).filter((r) => !r.completed);
 export const unreadByUser = (type) => open(type).filter((r) => !r.seen.includes("user"));
+export const finishedUnread = (type) => rows(type).filter((r) => r.completed && !r.deleted && !r.seen.includes("user"));
 export const linkedTo = (ref) => types.value.flatMap((t) => rows(t.name).filter((r) => r.refs.includes(ref) && !r.deleted));
 
 export function byRef(ref) {

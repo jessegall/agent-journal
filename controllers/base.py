@@ -4,7 +4,7 @@ from dataclasses import asdict
 from functools import partial
 
 from engine.record import Record
-from resources.base import Refused, Resource, SECTION, check_abstract, check_title
+from resources.base import USER, Refused, Resource, SECTION, check_abstract, check_title
 from resources.shapes import Options, check, normalize_options, typed
 from engine.stored import write_text
 from controllers.files import Files
@@ -164,6 +164,8 @@ class Controller(Stored, Files, Links):
         r.completed = time.time()
         r.outcome = how
         r.data.update(self._shaped(data))
+        if self.resource.finished_is_news and self.actor != USER:
+            r.seen = [who for who in r.seen if who != USER]
         return self.save(r, "completed", how=how, **data)
 
     def reopen(self, n: int, why: str) -> Resource:
