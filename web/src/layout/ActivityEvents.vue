@@ -13,7 +13,7 @@ const announced = (e) =>
 const shown = computed(() =>
     [...store.events]
         .reverse()
-        .filter((e) => meta(e.type).notify.includes("user") || announced(e))
+        .filter((e) => e.action !== "stamped" && (meta(e.type).notify.includes("user") || announced(e)))
         .slice(0, 80)
 );
 const did = (e) => (e.action === "updated" && e.data && e.data.section ? "sectioned" : e.action);

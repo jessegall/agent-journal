@@ -17,6 +17,7 @@ from resources.types import PRIORITY, TYPES
 from engine.seat import Seat
 
 TICK = 1.0
+STAMPED = "stamped"
 SETTLE, STEP = 3.0, 0.1
 TYPING_HOLD = 10.0
 
@@ -180,7 +181,7 @@ class Engine(Seat):
                     actor.notified(e)
                     continue
                 mine = actor is self.agent and e.actor != USER and e.action not in TYPES[e.type].notify_actions
-                if e.actor == actor.name or actor.name not in TYPES[e.type].notify or self.private(e) or "seen" in e.data or mine:
+                if e.action == STAMPED or e.actor == actor.name or actor.name not in TYPES[e.type].notify or self.private(e) or "seen" in e.data or mine:
                     actor.notified(e)
                     continue
                 actor.notify(e)

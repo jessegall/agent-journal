@@ -6,7 +6,7 @@ from typing import ClassVar
 
 TITLE_MAX = 80
 ABSTRACT_MAX = 200
-ACTIONS = ("created", "updated", "deleted", "linked", "commented", "completed", "reopened")
+ACTIONS = ("created", "updated", "deleted", "linked", "commented", "completed", "reopened", "stamped")
 SMALL, WIDE, DOCUMENT = "small", "wide", "document"
 VIEWS = (SMALL, WIDE, DOCUMENT)
 USER, AGENT, SYSTEM, PLUGIN = "user", "agent", "system", "plugin"
