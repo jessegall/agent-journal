@@ -27,9 +27,8 @@ class SkillsDetails(FeatureDetails):
         ),
         Behaviour(
             name="stale",
-            title="Name a skill that changed since it was loaded",
-            abstract="Said every tenth tool use until the agent loads it again",
-            trigger=Trigger(every=10, unit=USES),
+            title="Hold tool calls when a skill changed since it was loaded",
+            abstract="Every tool call waits until the agent loads the changed skill again",
         ),
     ]
 

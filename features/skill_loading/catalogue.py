@@ -2,10 +2,10 @@ import re
 from pathlib import Path
 
 import features
-from controllers.types import Agents, Messages
+from controllers.types import Agents
 from engine.record import Record
 from providers import PROVIDERS
-from resources.base import SYSTEM, USER, names
+from resources.base import SYSTEM, names
 
 SKILL = names("name", "description", "path", "changed", "loaded", "stale", "always", "size")
 from skills import LIBRARY, skill_name
@@ -60,11 +60,6 @@ def skills(record: Record, n: int = 0) -> list[dict]:
         at = when.get(s[SKILL.name], 0)
         out.append({**s, SKILL.loaded: at, SKILL.stale: bool(at) and s[SKILL.changed] > at, SKILL.always: s[SKILL.name] in always})
     return out
-
-
-def load_now(record: Record, name: str) -> str:
-    Messages(record, actor=USER).create(f"Please load the {name} skill now", brief=f"Skill: {name} — load it before the next write.")
-    return "the agent is asked; it reads the message at once if idle, else at its next stop"
 
 
 def always(record: Record, name: str, on: bool) -> list[str]:

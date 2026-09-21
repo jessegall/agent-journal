@@ -1,7 +1,10 @@
+import time
 from pathlib import Path
 
+from controllers.types import Agents, Messages
 from engine.stored import read_json, write_json
 from features.skill_loading.catalogue import loaded_at
+from resources.base import SYSTEM, USER
 
 
 def required_file(record, session: str) -> Path:
@@ -28,3 +31,11 @@ def outstanding(record, row) -> list[str]:
     elif not left:
         f.unlink(missing_ok=True)
     return sorted(left)
+
+
+def load_now(record, name: str) -> str:
+    agent = Agents(record, actor=SYSTEM).primary()
+    if agent:
+        require(record, agent.title, {name: time.time()})
+    Messages(record, actor=USER).create(f"Please load the {name} skill now", brief=f"Skill: {name} — every tool call waits until it is loaded.")
+    return "the agent is asked, and its tool calls wait until the skill is loaded"

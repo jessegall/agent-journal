@@ -20,7 +20,8 @@ from surfaces.summary import summarize
 from surfaces.color import identity, set_color
 from surfaces.updates import newer, upstream
 from surfaces.control import force as force_session, options as control_options, permit, relaunch, request as control_session
-from features.skill_loading.catalogue import SKILL, always, catalogue, load_now, skills
+from features.skill_loading.catalogue import SKILL, always, catalogue, skills
+from features.skill_loading.required import load_now
 from controllers.base import LAST
 from controllers.types import Agents, CONTROLLERS, Environments, Features, Nudges
 from features.browser_control.controller import Asks
