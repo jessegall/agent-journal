@@ -1,7 +1,6 @@
 <script setup>
 import {chatOnly, framed} from "../platform/view.js";
 import {computed, ref} from "vue";
-import {api} from "../api/client.js";
 import {modelFamily, pendingChoice, providerName} from "../agents.js";
 import Icon from "../kit/Icon.vue";
 import Spinner from "../kit/Spinner.vue";
@@ -9,7 +8,6 @@ import CrewList from "./CrewList.vue";
 import AgentAppoint from "./AgentAppoint.vue";
 import AgentControls from "./AgentControls.vue";
 import AgentUsage from "./AgentUsage.vue";
-import ChoiceList from "../kit/ChoiceList.vue";
 import "./drop.css";
 import SwitchCase from "../kit/SwitchCase.vue";
 import {go, peek, route} from "../route.js";
@@ -60,21 +58,6 @@ function toggle(key, e) {
     anchor.value = {left: Math.max(0, Math.min(box.left - wrap.left, wrap.width - 288)), top: box.bottom - wrap.top + 6};
 }
 const CONTROLS = ["model", "effort", "context"];
-const DETAIL = {
-    replies: "Replies only",
-    info: "Replies and info",
-    corrections: "Replies, info and corrections",
-    discoveries: "Everything, discoveries too",
-};
-const SHORT = {replies: "replies", info: "info", corrections: "corrections", discoveries: "all"};
-const tagging = computed(() => (store.settings && store.settings.tags) || {});
-const detail = computed(() => tagging.value.verbosity || "info");
-const details = computed(() => Object.entries(DETAIL).map(([value, label]) => ({value, label, current: value === detail.value})));
-async function chooseDetail(level) {
-    const {names, places} = tagging.value;
-    store.settings = await api.saveSettings({tags: {names, places, verbosity: level}});
-    open.value = "";
-}
 const pending = (key) => pendingChoice(data.value, key);
 const appointments = (e) => toggle("appoint", e);
 const modelControls = (e, key) => toggle(key, e);
@@ -173,16 +156,6 @@ useOutside(bar, () => (open.value = ""));
                 </template>
                 <button
                     type="button"
-                    :class="['agent-fact', 'agent-count', {open: open === 'detail'}]"
-                    :title="`What the agent's tagged messages show in the chat: ${DETAIL[detail].toLowerCase()}`"
-                    :aria-expanded="open === 'detail'"
-                    @click="toggle('detail', $event)"
-                >
-                    <Icon name="bubble" />
-                    {{ SHORT[detail] }}
-                </button>
-                <button
-                    type="button"
                     :class="['agent-fact', 'agent-count', 'agent-skill', {none: !skillCount.n, open: open === skillCount.key}]"
                     :title="skillCount.title"
                     :aria-expanded="open === skillCount.key"
@@ -264,11 +237,6 @@ useOutside(bar, () => (open.value = ""));
                     </template>
                     <template #model>
                         <AgentControls :control="open" :agent="agent" @done="open = ''" />
-                    </template>
-                    <template #detail>
-                        <p class="bar-current">What reaches the chat</p>
-                        <p class="bar-none">The agent's tagged messages shown here besides its replies</p>
-                        <ChoiceList :choices="details" @pick="chooseDetail" />
                     </template>
                     <template #usage>
                         <AgentUsage :usage="usage" />

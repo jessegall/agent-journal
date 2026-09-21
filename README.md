@@ -8,7 +8,7 @@ to-dos, messages, facts, rules, reminders, plans, reports, docs, and the history
 them. Every new session receives the part it needs, while the full record stays readable in
 plain files and in the browser.
 
-The current package is 2.35.0. Claude and Codex use the same record, engine, viewer, and command
+The current package is 2.36.0. Claude and Codex use the same record, engine, viewer, and command
 line.
 
 ## Install
@@ -108,18 +108,9 @@ agent never changes branches or environments on its own.
 
 ## Message tags
 
-Every agent reply begins with one searchable tag:
+Everything the agent writes reaches the chat as a plain message.
 
-    [!discovery]    a cause, constraint, result, or measurement it found
-    [!correction]   something it had wrong and has now corrected
-    [!blocked]      something external prevents progress
-    [!info]         useful state that is not a work result
-    [!reply]        a direct answer
-
-The tag stays in the transcript, so important turns remain findable without turning every line
-into a permanent record resource.
-
-A tag can also run the command it stands for, with the turn as its text: `[!reply:12]` replies to
+A tag runs the command it stands for, with the turn as its text: `[!reply:12]` replies to
 message 12, `[!log:7]` logs work 7, `[!end:7]` ends it, and `[!todo="the title"]` files a to-do with
 the turn as its brief. Which tag runs which command is the `tags.runs` setting.
 
