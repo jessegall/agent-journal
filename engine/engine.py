@@ -47,6 +47,7 @@ class Engine:
         self.born = time.time()
         self.branched_at = 0.0
         self.branch_name = ""
+        self.branch_stamp = None
         self.crewed_at = 0.0
         self.crewed_size = -1
         self.relayed = None
@@ -243,6 +244,13 @@ class Engine:
         if time.time() - self.branched_at < 10:
             return self.branch_name
         self.branched_at = time.time()
+        try:
+            stamp = (cwd, (Path(cwd) / ".git" / "HEAD").stat().st_mtime_ns)
+        except OSError:
+            stamp = (cwd, 0)
+        if stamp == self.branch_stamp:
+            return self.branch_name
+        self.branch_stamp = stamp
         try:
             self.branch_name = subprocess.run(["git", "-C", cwd, "rev-parse", "--abbrev-ref", "HEAD"], capture_output=True, text=True, timeout=2).stdout.strip()
             remote = subprocess.run(["git", "-C", cwd, "remote", "get-url", "origin"], capture_output=True, text=True, timeout=2).stdout.strip()
