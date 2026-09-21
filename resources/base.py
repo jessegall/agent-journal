@@ -1,7 +1,6 @@
 import json
 import re
 import time
-from copy import deepcopy
 from dataclasses import dataclass, field, asdict, replace
 from pathlib import Path
 from types import SimpleNamespace
@@ -20,6 +19,7 @@ WHOM = "whom"
 KEYWORDS = "keywords"
 ENVIRONMENT, PROJECT = "environment", "project"
 SCOPES = (ENVIRONMENT, PROJECT)
+LAZY, EAGER, MEMORY = "lazy", "eager", "memory"
 ACTORS = (USER, AGENT, SYSTEM, PLUGIN)
 
 
@@ -46,6 +46,14 @@ class Field:
 
 
 SECTION = names("title", "body")
+
+
+def copied(value):
+    if isinstance(value, dict):
+        return {k: copied(v) for k, v in value.items()}
+    if isinstance(value, list):
+        return [copied(v) for v in value]
+    return value
 
 
 def shown(r) -> dict:
@@ -97,6 +105,7 @@ class Resource:
     answered: ClassVar[str] = "comment"      # the word that answers a row instead of changing it
     editors: ClassVar[dict] = {}              # who may change the words of a row written by whom: {USER: (USER,)}; unnamed authors are open to all
     told: ClassVar[bool] = False              # the row is stamped with the moment the agent was told of it
+    loading: ClassVar[str] = MEMORY           # lazy: indexed on first use; eager: indexed at boot; memory: indexed at boot, every row held
     files = Field(default=dict)               # what is attached: name → what became of it
     pictures = Field(default=dict)            # an attached image's width and height, known before it loads
     agent = Field()                           # the subagent that wrote it, and its dispatcher
@@ -120,7 +129,7 @@ class Resource:
         return f"{self.type}:{self.n}"
 
     def fork(self) -> "Resource":
-        return replace(self, sections=[dict(s) for s in self.sections], refs=list(self.refs), seen=list(self.seen), data=deepcopy(self.data))
+        return replace(self, sections=[dict(s) for s in self.sections], refs=list(self.refs), seen=list(self.seen), data=copied(self.data))
 
     def dump(self) -> str:
         head = {k: v for k, v in asdict(self).items() if k not in ("sections", "brief")}

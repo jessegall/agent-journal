@@ -6,7 +6,7 @@ from functools import partial
 from pathlib import Path
 
 from engine.record import Record
-from resources.base import Refused, Resource, SECTION, check_abstract, check_title, titled
+from resources.base import LAZY, MEMORY, Refused, Resource, SECTION, check_abstract, check_title, titled
 from resources.pictures import dimensions
 from resources.shapes import Options, check, normalize_options, typed
 from engine.stored import read_json, write_json, write_text
@@ -15,6 +15,7 @@ INDEX = "index.json"
 WORDS = ("title", "abstract", "brief", "sections")
 LAST = 25
 SUMMARIES: dict[str, tuple] = {}
+HELD: dict[str, tuple] = {}
 SAID_TWICE = ("comment", "message")
 TWICE_WITHIN = 10.0
 COMMANDS: dict[str, dict] = {}
@@ -79,9 +80,24 @@ class Controller:
 
     def load(self, n: int) -> Resource:
         p = self.path(n)
-        if not p.is_file():
+        try:
+            found = p.stat()
+        except OSError:
             raise Refused(f"no {self.type} {n}")
-        return self.resource.load(p.read_text())
+        if self.resource.loading != MEMORY:
+            return self.resource.load(p.read_text())
+        stamp = (found.st_mtime_ns, found.st_size)
+        held = HELD.get(str(p))
+        if not held or held[0] != stamp:
+            held = HELD[str(p)] = (stamp, self.resource.load(p.read_text()))
+        return held[1].fork()
+
+    def _warm(self) -> None:
+        if self.resource.loading == LAZY:
+            return
+        for row in self.summaries():
+            if self.resource.loading == MEMORY:
+                self.load(row["n"])
 
     def _note_force(self, r: Resource) -> None:
         if not self.forced:
