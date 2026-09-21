@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.16.1 — journal claude starts again
+
+2.16.0 moved seating a session into the environments controller, but the terminal still imported the old function, so `journal claude` stopped at launch with an ImportError. The terminal seats through Environments now, and a new check imports every from-import in the package, so a moved name cannot break a launch that no test starts. The restart notice says in its title what was updated and what to do, instead of "A restart is owed".
+
+What to do about it: `journal upgrade`, then `journal claude`.
+
 ## 2.16.0 — The engine speaks, the funnel holds, and the checks run
 
 Everything the journal says to an agent now goes through one place. The engine runs inside the server and speaks to each session through one send, at most one message every five seconds, with everything waiting folded into counts: `3 new messages 314, 315, 316`. A private nudge is spoken to the session it is meant for, and the hook only reports and refuses. Every line a feature can say is declared by that feature under its own name, with its placeholders; a feature says only its own lines, a line given the wrong values is refused, and Settings lists them all. An agent's transcript panel shows the journal's own lines at the moment they were said.
