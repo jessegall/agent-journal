@@ -8,7 +8,7 @@ from features import trigger
 from engine.stored import read_json, write_json
 from features.base import Behaviour, Feature, event, formats, interceptor, Line
 from resources.base import AGENT, SYSTEM
-from engine.transcript import IDLE, last_said, turns
+from engine.transcript import last_said, turns
 
 TAGS = ("discovery", "correction", "blocked", "info", "reply")
 RECENT_TURNS, RECENT_SECONDS = 6, 1800.0
@@ -50,8 +50,6 @@ class Tags(Feature):
     behaviours = {"naming": Behaviour("Name a message that opens without a tag",
                                       "Said at the end of the turn, every turn, until one is used",
                                       trigger={"on": trigger.IDLE}),
-                  "running": Behaviour("Run the command a tag stands for",
-                                       "A tag carrying a number runs its command with the turn as the text, once the turn is written"),
                   "replying": Behaviour("Remind the agent to reply by tag",
                                         "When the agent runs journal message reply, it is told the reply tag does the same")}
     NAMES = "names"
@@ -97,12 +95,12 @@ class Tags(Feature):
         return False
 
     @event("agent.updated")
+    @event("agent.said")
     def expand(self, event, record) -> None:
         agent = self.agent(event, record)
-        if not agent or not agent.transcript or not self.on(record, "running"):
+        if not agent or not agent.transcript:
             return
-        written = turns(record, agent)[-RECENT_TURNS:]
-        for turn in written if agent.status == IDLE else written[:-1]:
+        for turn in turns(record, agent)[-RECENT_TURNS:]:
             if time.time() - turn.at < RECENT_SECONDS and CARRIED.search(turn.text) and not self.already(record, agent, turn):
                 self.carried(record, agent, turn)
 

@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.16.12 — A reply tag runs the moment it is written, and a handled message closes
+
+Running a tag is no longer a setting and no longer waits for the agent to stop: the engine, which already ticks once a second for each session, sees a new message in the transcript and says so on the bus as agent.said, and the tags feature runs the message's tags at once. A message closes once it has been handled: a row filed from it, a part processed, a reply or a reaction closes it when the agent's turn ends, and a message the agent wrote closes once the user has read it — including when the user reads several at once, which only closed the first before.
+
+What to do about it: `journal upgrade`.
+
 ## 2.16.11 — A reply tag is never lost
 
 A turn's tags ran only at the moment the turn ended, through a trigger that fires once as the agent goes idle; when that moment was missed, the reply was lost for good. Every update now looks at the agent's last few turns and runs any tag it has not run yet — the last turn once the agent is idle, earlier ones at once — so a tagged turn missed at the end is caught at the next thing that happens. Marking a turn as run is guarded, so two updates at once cannot post it twice.

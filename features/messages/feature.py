@@ -4,8 +4,8 @@ from controllers.types import Agents, CONTROLLERS, Messages
 from features import trigger
 from features.base import Behaviour, Feature, event, formats, Line
 from resources.base import AGENT, SECTION, SYSTEM, USER
-from features.messages.answering import in_hand, theirs, unanswered
-from engine.transcript import last_said
+from features.messages.answering import in_hand, read_and_open, theirs, unanswered
+from engine.transcript import IDLE, last_said
 
 LINKED = ("message", "comment", "reaction", "nudge", "notification", "agent")
 RUN_ON, SENTENCES = 400, 3
@@ -80,31 +80,26 @@ class MessagesFeature(Feature):
         blocks = (b.strip() for b in (message.brief or message.title).split("\n\n"))
         return [b for b in blocks if b and not b.startswith(">")]
 
-    def covered(self, message) -> bool:
-        parts = [s[SECTION.title] for s in message.sections]
-        paragraphs = self.paragraphs(message)
-        return bool(paragraphs) and all(any(p in block or block in p for p in parts) for block in paragraphs)
-
-    @event("message.updated")
-    def processed(self, event, record) -> None:
-        if not self.on(record, "closing") or not event.data.get("section"):
+    @event("agent.updated")
+    def handled(self, event, record) -> None:
+        agent = self.agent(event, record)
+        if not agent or agent.status != IDLE or not self.on(record, "closing"):
             return
         messages = Messages(record, actor=SYSTEM)
-        message = messages.load(event.n)
-        if message.completed or not self.covered(message):
-            return
-        became = ", ".join(s[SECTION.body] for s in message.sections)
-        messages.complete(message.n, how=f"every part became a record: {became}")
+        for message in read_and_open(record):
+            became = [*message.refs, *(s[SECTION.body] for s in message.sections)]
+            if became:
+                messages.complete(message.n, how=f"handled: {', '.join(dict.fromkeys(became))}")
 
     @event("message.updated")
     def seen(self, event, record) -> None:
         if not self.on(record, "closing"):
             return
         messages = Messages(record, actor=SYSTEM)
-        message = messages.load(event.n)
-        if message.completed or theirs(message) or USER not in message.seen:
-            return
-        messages.complete(message.n, how="read by the user")
+        for n in event.data.get("numbers") or [event.n]:
+            message = messages.load(int(n))
+            if not message.completed and not theirs(message) and USER in message.seen:
+                messages.complete(message.n, how="read by the user")
 
     @event("comment.created")
     @event("reaction.created")
