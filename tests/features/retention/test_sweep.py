@@ -1,16 +1,20 @@
-import sys
 import time
-from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
-import features  # noqa: E402
-from controllers.types import Notifications, Reports, Todos  # noqa: E402
-from resources.base import AGENT, USER  # noqa: E402
-from tests.features.kit import report  # noqa: E402
-from tests.kit import check, done, fresh  # noqa: E402
+import pytest
 
-features.unload()
-features.load()
+import features
+from controllers.types import Notifications, Reports, Todos
+from resources.base import AGENT, USER
+from tests.features.kit import report
+from tests.conftest import fresh
+
+
+@pytest.fixture(autouse=True)
+def loaded_features():
+    features.unload()
+    features.load()
+    yield
+    features.unload()
 
 
 def age(c, n, **fields):
@@ -20,38 +24,44 @@ def age(c, n, **fields):
     c.path(n).write_text(r.dump())
 
 
-record = fresh()
-reports = Reports(record, actor=AGENT)
-todos = Todos(record, actor=USER)
-fresh_report = reports.create("checked today")
-old_report = reports.create("checked a month ago")
-age(reports, old_report.n, created=time.time() - 30 * 86400)
-open_row = todos.create("still open")
-done_row = todos.create("done long ago")
-todos.complete(done_row.n, "done")
-age(todos, done_row.n, completed=time.time() - 10 * 86400)
-report(record, "idle", "Stop")
-check("a report past its keep days is archived, saying so", (bool(reports.load(old_report.n).completed), reports.load(old_report.n).outcome), (True, "aged out after 14 days"))
-check("a fresh report stays", reports.load(fresh_report.n).completed, 0.0)
-check("a to-do closed past its keep days is archived, an open one never", ([t.n for t in todos.all()], [e.data["why"] for e in record.events() if e.type == "todo" and e.action == "deleted"]), ([open_row.n], ["archived 7 days after it was closed"]))
-# NOTIFICATIONS the user has seen go for good after their keep days; unseen ones stay
-record = fresh()
-notes = Notifications(record, actor=AGENT)
-seen_old = notes.create("told long ago")
-unseen_old = notes.create("never looked at")
-seen_new = notes.create("told today")
-for n in (seen_old.n, seen_new.n):
-    Notifications(record, actor=USER).read(n)
-age(notes, seen_old.n, created=time.time() - 5 * 86400)
-age(notes, unseen_old.n, created=time.time() - 5 * 86400)
-report(record, "idle", "Stop")
-check("a seen notification past 3 days is removed; unseen and recent ones stay", sorted(r.n for r in notes.all(deleted=True)), [unseen_old.n, seen_new.n])
+def test_reports_and_todos_past_their_keep_days_are_archived_open_ones_never():
+    record = fresh()
+    reports = Reports(record, actor=AGENT)
+    todos = Todos(record, actor=USER)
+    fresh_report = reports.create("checked today")
+    old_report = reports.create("checked a month ago")
+    age(reports, old_report.n, created=time.time() - 30 * 86400)
+    open_row = todos.create("still open")
+    done_row = todos.create("done long ago")
+    todos.complete(done_row.n, "done")
+    age(todos, done_row.n, completed=time.time() - 10 * 86400)
+    report(record, "idle", "Stop")
+    assert (bool(reports.load(old_report.n).completed), reports.load(old_report.n).outcome) == (True, "aged out after 14 days"), \
+        "a report past its keep days is archived, saying so"
+    assert reports.load(fresh_report.n).completed == 0.0, "a fresh report stays"
+    assert ([t.n for t in todos.all()], [e.data["why"] for e in record.events() if e.type == "todo" and e.action == "deleted"]) == \
+        ([open_row.n], ["archived 7 days after it was closed"]), "a to-do closed past its keep days is archived, an open one never"
 
-kept = fresh()
-kept.set_setting("keep", {"report": 0})
-r = Reports(kept, actor=AGENT).create("kept forever")
-age(Reports(kept), r.n, created=time.time() - 300 * 86400)
-report(kept, "idle", "Stop")
-check("keep 0 leaves reports listed", Reports(kept).load(r.n).completed, 0.0)
 
-done()
+def test_seen_notifications_past_their_keep_days_go_unseen_ones_stay():
+    record = fresh()
+    notes = Notifications(record, actor=AGENT)
+    seen_old = notes.create("told long ago")
+    unseen_old = notes.create("never looked at")
+    seen_new = notes.create("told today")
+    for n in (seen_old.n, seen_new.n):
+        Notifications(record, actor=USER).read(n)
+    age(notes, seen_old.n, created=time.time() - 5 * 86400)
+    age(notes, unseen_old.n, created=time.time() - 5 * 86400)
+    report(record, "idle", "Stop")
+    assert sorted(r.n for r in notes.all(deleted=True)) == [unseen_old.n, seen_new.n], \
+        "a seen notification past 3 days is removed; unseen and recent ones stay"
+
+
+def test_keep_zero_leaves_reports_listed():
+    kept = fresh()
+    kept.set_setting("keep", {"report": 0})
+    r = Reports(kept, actor=AGENT).create("kept forever")
+    age(Reports(kept), r.n, created=time.time() - 300 * 86400)
+    report(kept, "idle", "Stop")
+    assert Reports(kept).load(r.n).completed == 0.0, "keep 0 leaves reports listed"
