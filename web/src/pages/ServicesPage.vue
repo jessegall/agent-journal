@@ -1,5 +1,5 @@
 <script setup>
-import {computed, onMounted, onUnmounted, ref} from "vue";
+import {computed, ref} from "vue";
 import {api} from "../api/client.js";
 import Btn from "../kit/Btn.vue";
 import Icon from "../kit/Icon.vue";
@@ -8,12 +8,10 @@ import {span} from "../format/time.js";
 import {usePoll} from "../poll.js";
 import {useNow} from "../composables/now.js";
 import {RUNNING} from "../domain/services.js";
+import {useServiceAction, useServiceLog} from "../composables/service.js";
 
 const EVERY = 2000;
 const rows = ref([]);
-const error = ref("");
-const reading = ref("");
-const log = ref("");
 const now = useNow();
 
 const running = computed(() => rows.value.filter((r) => RUNNING.includes(r.state)).length);
@@ -22,32 +20,10 @@ const look = usePoll(
     "services",
     () => api.services(),
     EVERY,
-    (got) => {
-        rows.value = got;
-        error.value = "";
-    }
+    (got) => (rows.value = got)
 );
-const readLog = usePoll(
-    "service-log",
-    () => (reading.value ? api.serviceLog(reading.value) : Promise.resolve(null)),
-    EVERY,
-    (got) => got && (log.value = got.log)
-);
-
-async function runServiceAction(id, want) {
-    try {
-        await api.setService(id, want);
-        await look();
-    } catch (e) {
-        error.value = e.message;
-    }
-}
-
-function read(id) {
-    reading.value = reading.value === id ? "" : id;
-    log.value = "";
-    readLog();
-}
+const {error, set: runServiceAction} = useServiceAction(() => look());
+const {reading, log, read} = useServiceLog();
 </script>
 
 <template>

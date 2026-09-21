@@ -1,5 +1,5 @@
 <script setup>
-import {computed, onMounted, onUnmounted, ref, watch} from "vue";
+import {computed, ref, watch} from "vue";
 import {api} from "../api/client.js";
 import Btn from "../kit/Btn.vue";
 import Icon from "../kit/Icon.vue";
@@ -8,12 +8,12 @@ import {store} from "../state/store.js";
 import {polled} from "../sync/polled.js";
 import {usePoll} from "../poll.js";
 import {RUNNING} from "../domain/services.js";
+import {useServiceAction} from "../composables/service.js";
 
 const refreshPages = usePoll(...polled.pages);
 
 const pages = computed(() => store.pages || []);
 const log = ref("");
-const error = ref("");
 
 const page = computed(() => pages.value.find((p) => `${p.plugin}.${p.name}` === String(route.value.n)) || null);
 const running = computed(() => !!page.value && RUNNING.includes(page.value.state));
@@ -22,16 +22,8 @@ const src = computed(() => {
     return api.pluginUrl(page.value, route.value.at || page.value.path);
 });
 
-async function runPluginAction(want) {
-    if (!page.value) return;
-    try {
-        await api.setService(page.value.service, want);
-        error.value = "";
-    } catch (e) {
-        error.value = e.message;
-    }
-    refreshPages();
-}
+const {error, set} = useServiceAction(() => refreshPages());
+const runPluginAction = (want) => page.value && set(page.value.service, want);
 
 async function read() {
     if (!page.value) return;
