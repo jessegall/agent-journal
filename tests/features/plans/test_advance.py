@@ -3,7 +3,8 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 import features  # noqa: E402
-from controllers.types import Docs, Plans, Todos  # noqa: E402
+from controllers.types import Docs, Todos  # noqa: E402
+from features.plans.controller import Plans  # noqa: E402
 from features.work.next import next  # noqa: E402
 from resources.base import AGENT, SYSTEM, USER  # noqa: E402
 from tests.kit import check, done, fresh, refused  # noqa: E402

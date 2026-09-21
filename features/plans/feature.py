@@ -1,9 +1,10 @@
-from controllers.types import ACTIVE, DONE, Plans, Todos, WAITING
+from controllers.types import Todos
+from features.plans.controller import ACTIVE, DONE, Plans, WAITING
 from support.features import switched
 from features.base import Feature, event
 from support.plans import current_phase, running
 from resources.base import SYSTEM
-from resources.types import PHASE
+from features.plans.resource import PHASE
 
 
 class PlansFeature(Feature):

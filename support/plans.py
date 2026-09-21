@@ -1,7 +1,7 @@
-from controllers.types import ACTIVE, Plans, WAITING
+from features.plans.controller import ACTIVE, Plans, WAITING
 from resources.base import SYSTEM
 from resources.shapes import LEVELS
-from resources.types import PHASE
+from features.plans.resource import PHASE
 
 
 def running(record) -> list:

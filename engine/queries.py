@@ -1,6 +1,6 @@
-from controllers.types import ACTIVE, CONTROLLERS, WAITING
+from controllers.types import CONTROLLERS
 from resources.base import SYSTEM, WHOM
-from resources.types import PHASE, PRIORITY, Plan, TYPES
+from resources.types import PRIORITY, TYPES
 
 
 def standing(record, type_: str) -> list:
@@ -27,13 +27,13 @@ def status(record) -> str:
 
 
 def handed(record, type_: str) -> list:
-    return [r for r in standing(record, type_) if r.data.get(Plan.status, ACTIVE) in (ACTIVE, WAITING) and not r.data.get(WHOM)]
+    return [r for r in standing(record, type_) if r.data.get("status", "active") in ("active", "waiting") and not r.data.get(WHOM)]
 
 
 def describe(r) -> str:
-    if isinstance(r, Plan):
+    if r.type == "plan":
         i = r.current
-        phase = r.phases[i - 1][PHASE.title] if 0 < i <= len(r.phases) else ""
+        phase = r.phases[i - 1]["title"] if 0 < i <= len(r.phases) else ""
         return f"{r.title} is {r.status} — phase {i}, {phase}"
     return f"{r.title}  ({r.abstract})" if r.abstract else r.title
 
