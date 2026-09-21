@@ -27,7 +27,9 @@ const kind = computed(() => meta(props.resource.type));
 const files = computed(() => Object.entries(props.resource.data.files || {}));
 const ranked = computed(() => !!kind.value.fields.priority && !props.resource.completed);
 const traced = computed(() => !!kind.value.fields.changed);
-const keywords = computed(() => (kind.value.fields.keywords && Array.isArray(props.resource.data.keywords) ? props.resource.data.keywords : []));
+const keywords = computed(() =>
+    kind.value.fields.keywords && Array.isArray(props.resource.data.keywords) ? props.resource.data.keywords : []
+);
 const waits = computed(() => (props.resource.completed ? [] : waitsOn(props.resource)));
 const editing = ref(false);
 const draft = reactive({title: "", abstract: "", brief: "", error: ""});

@@ -29,7 +29,11 @@ onUnmounted(() => clearInterval(clock));
 </script>
 
 <template>
-    <p class="crew-none">{{ running }} running, {{ total }} {{ started }} in this session<template v-if="dropped">, {{ dropped }} older than {{ minutes }} minutes not shown</template>.</p>
+    <p class="crew-none">
+        {{ running }} running, {{ total }} {{ started }} in this session
+        <template v-if="dropped">, {{ dropped }} older than {{ minutes }} minutes not shown</template>
+        .
+    </p>
     <template v-for="row in listed" :key="row.id || row.cell || `${row.task}-${row.model}`">
         <button
             type="button"

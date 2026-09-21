@@ -3,7 +3,7 @@ import ExtensionSection from "./ExtensionSection.vue";
 
 import {computed, onMounted, onUnmounted, ref, watch} from "vue";
 import {route} from "./route.js";
-import {away, boot, listen, reload, store} from "./store.js";
+import {away, boot, listen, polled, reload, store} from "./store.js";
 import Sidebar from "./layout/Sidebar.vue";
 import TopBar from "./layout/TopBar.vue";
 import StatusBar from "./layout/StatusBar.vue";
@@ -30,6 +30,9 @@ import ProjectFlash from "./layout/ProjectFlash.vue";
 import UpgradeBand from "./layout/UpgradeBand.vue";
 import ThreadSkeleton from "./chat/ThreadSkeleton.vue";
 import IdentityBand from "./layout/IdentityBand.vue";
+import {usePoll} from "./poll.js";
+
+usePoll(...polled.events);
 
 const page = computed(() =>
     !route.value.page

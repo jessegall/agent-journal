@@ -1,7 +1,10 @@
 <script setup>
 import {computed, onUnmounted, ref, watch} from "vue";
-import {store} from "../store.js";
+import {polled, store} from "../store.js";
 import {TICK, line, shown} from "./bar.js";
+import {usePoll} from "../poll.js";
+
+usePoll(...polled.bar);
 
 const COUNT_UP = 360;
 const state = ref({at: 0, since: 0});

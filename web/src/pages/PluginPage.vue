@@ -4,7 +4,10 @@ import {api} from "../api.js";
 import Btn from "../kit/Btn.vue";
 import Icon from "../kit/Icon.vue";
 import {route} from "../route.js";
-import {store} from "../store.js";
+import {polled, store} from "../store.js";
+import {usePoll} from "../poll.js";
+
+usePoll(...polled.pages);
 
 const EVERY = 3000;
 const RUNNING = ["ready", "starting"];

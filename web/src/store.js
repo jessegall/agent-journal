@@ -275,50 +275,26 @@ export function listen() {
     startOutbox(env);
     store.stream = new EventSource(`/api/${env}/stream`);
     store.stream.onmessage = heard;
-    poll();
 }
 
 const RECENT = 100;
-const TICK = 500;
-let ticking = 0;
-let ticks = 0;
-let round = 0;
 
-async function tick() {
-    if (document.hidden) return;
-    ticks += 1;
-    const env = route.value.env;
-    store.bar = await http.api("GET", `/${env}/bar`);
-    if (ticks % 2) return;
-    store.agents = (await http.api("GET", `/${env}/agent?completed=1`)).rows;
-    if (ticks % 10) return;
-    store.pages = await http.api("GET", "/pages");
-    const last = store.events.length ? store.events[store.events.length - 1].id : 0;
-    const fresh = await http.api("GET", `/${env}/events?since=${last}&last=0`);
-    if (fresh.length) {
-        store.events = [...store.events, ...fresh].slice(-RECENT);
-        await refresh([...new Set(fresh.map((e) => e.type))].filter((type) => type !== "agent"));
-    }
-    if (ticks % 60 === 0) store.spec = await http.manifest();
-}
-
-function poll() {
-    clearTimeout(ticking);
-    ticks = 0;
-    round += 1;
-    const mine = round;
-    const again = () => {
-        if (mine !== round) return;
-        ticking = setTimeout(
-            () =>
-                tick()
-                    .catch(() => {})
-                    .then(again),
-            TICK
-        );
-    };
-    again();
-}
+export const polled = {
+    bar: ["bar", () => `/${route.value.env}/bar`, 500, (got) => (store.bar = got)],
+    agents: ["agents", () => `/${route.value.env}/agent?completed=1`, 1000, (got) => (store.agents = got.rows)],
+    pages: ["pages", "/pages", 5000, (got) => (store.pages = got)],
+    manifest: ["manifest", "/manifest", 30000, (got) => (store.spec = got)],
+    events: [
+        "events",
+        () => `/${route.value.env}/events?since=${store.events.length ? store.events[store.events.length - 1].id : 0}&last=0`,
+        5000,
+        (fresh) => {
+            if (!fresh.length) return;
+            store.events = [...store.events, ...fresh].slice(-RECENT);
+            refresh([...new Set(fresh.map((e) => e.type))].filter((type) => type !== "agent"));
+        },
+    ],
+};
 
 export async function boot() {
     [store.spec, store.identity] = await Promise.all([http.manifest(), http.identity()]);

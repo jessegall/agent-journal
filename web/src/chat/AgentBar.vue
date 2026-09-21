@@ -7,7 +7,10 @@ import Spinner from "../kit/Spinner.vue";
 import CrewList from "./CrewList.vue";
 import SwitchCase from "../kit/SwitchCase.vue";
 import {go, peek, route} from "../route.js";
-import {agent, detach, span, store} from "../store.js";
+import {agent, detach, polled, span, store} from "../store.js";
+import {usePoll} from "../poll.js";
+
+usePoll(...polled.agents);
 
 const props = defineProps({standalone: Boolean});
 const open = ref("");
