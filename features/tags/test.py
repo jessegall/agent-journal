@@ -64,3 +64,15 @@ def test_replying_by_command_is_answered_with_the_tag_that_does_it():
         "the reply command is answered with the tag"
     handle(PROVIDERS["claude"](), record.root, record.env, {**hook, "tool_input": {"command": 'journal message reply 13 "see" --file a.txt'}})
     assert not [n for n in Nudges(record).all() if "13 with the reply tag" in n.title], "a reply carrying a file is what the command is for"
+
+
+def test_the_last_message_is_read_only_once_claude_has_written_it(tmp_path):
+    from providers import PROVIDERS
+    transcript = tmp_path / "s.jsonl"
+    rows = [{"type": "user", "message": {"content": [{"type": "tool_result", "content": "ok"}]}},
+            {"type": "assistant", "message": {"content": [{"type": "thinking", "thinking": ""}]}}]
+    transcript.write_text("\n".join(json.dumps(r) for r in rows) + "\n")
+    assert PROVIDERS["claude"]().settling(transcript) is True, "only the thinking is written: the message is still coming"
+    rows.append({"type": "assistant", "message": {"content": [{"type": "text", "text": "[!reply:3] done"}]}})
+    transcript.write_text("\n".join(json.dumps(r) for r in rows) + "\n")
+    assert PROVIDERS["claude"]().settling(transcript) is False, "the message is written: it can be read"

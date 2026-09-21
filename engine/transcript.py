@@ -1,3 +1,4 @@
+import time
 from pathlib import Path
 from dataclasses import dataclass, field
 from datetime import datetime
@@ -5,6 +6,8 @@ from datetime import datetime
 HUMAN, AGENT, TOOL = "human", "agent", "tool"
 INJECTED, TASK, PEER = "injected", "task", "peer"
 SUMMARY, SUPERSEDED = "summary", "superseded"
+IDLE = "idle"
+SETTLE, SETTLE_STEP = 1.5, 0.05
 
 
 @dataclass
@@ -70,12 +73,19 @@ def user(turns: list[Turn]) -> list[Turn]:
 TURNS: dict[str, tuple] = {}
 
 
+def settled(provider, path: Path, agent) -> None:
+    until = time.time() + SETTLE
+    while agent.status == IDLE and provider.settling(path) and time.time() < until:
+        time.sleep(SETTLE_STEP)
+
+
 def turns(record, agent) -> list:
     from providers import PROVIDERS
     provider = PROVIDERS.get(agent.provider)
     if not provider or not agent.transcript:
         return []
     try:
+        settled(provider(), Path(agent.transcript), agent)
         size = Path(agent.transcript).stat().st_size
     except OSError:
         return []
