@@ -19,6 +19,7 @@ from engine import typist  # noqa: E402
 from engine import runtime  # noqa: E402
 from engine.stop import asked  # noqa: E402
 from engine.terminal import RELAUNCH, RELOAD, STOP, watched  # noqa: E402
+from engine.stored import write_json  # noqa: E402
 
 ESCAPES = re.compile(rb"\x1b(?:\[[\x30-\x3f]*[\x20-\x2f]*[\x40-\x7e]|\][^\x07\x1b]*(?:\x07|\x1b\\)|O[\x40-\x7e]|[@-_])")
 RELOAD_EVERY = 5.0
@@ -71,6 +72,7 @@ def run(root: Path, cwd: Path, env: str, agent: str, fd: int, session: str, life
     relaunching = runtime.relaunch_file(root, session)
     printed.parent.mkdir(parents=True, exist_ok=True)
     out = printed.open("ab")
+    screen = (root / "runtime" / f"screen-{session}").open("ab")
     ear = typist.listen(root, session)
     answered = False
     early = b""
@@ -80,15 +82,25 @@ def run(root: Path, cwd: Path, env: str, agent: str, fd: int, session: str, life
     shape = [rows, cols]
     result = 0
 
+    def show(data: bytes) -> None:
+        os.write(stdout, data)
+        screen.write(data)
+        screen.flush()
+
+    def sized() -> None:
+        write_json(root / "runtime" / f"screen-{session}.json", {"rows": shape[0], "cols": shape[1], "at": screen.tell()})
+
     def frame() -> None:
         shape[0], shape[1] = resize(fd)
         rows_below.rows = shape[0]
         where.resized(shape[0], shape[1])
-        os.write(stdout, b"\x1b[2J" + band.region(shape[0]) + top.draw(shape[1], force=True, cursor=where))
+        sized()
+        show(b"\x1b[2J" + band.region(shape[0]) + top.draw(shape[1], force=True, cursor=where))
 
     where = band.Cursor(rows, cols)
     signal.signal(signal.SIGWINCH, lambda *_: frame())
-    os.write(stdout, band.region(rows) + top.draw(cols, force=True, cursor=where))
+    sized()
+    show(band.region(rows) + top.draw(cols, force=True, cursor=where))
     began = time.time()
     last_check = 0.0
     last_viewer = time.time()
@@ -113,13 +125,13 @@ def run(root: Path, cwd: Path, env: str, agent: str, fd: int, session: str, life
                     break
                 last_out = time.time()
                 shown = rows_below.feed(data)
-                os.write(stdout, shown)
+                show(shown)
                 where.feed(shown)
                 early = (early + data)[-EARLY:] if not answered else early
                 if any(mark in data for mark in REDRAWS):
-                    os.write(stdout, band.region(shape[0]) + top.draw(shape[1], force=True, cursor=where))
+                    show(band.region(shape[0]) + top.draw(shape[1], force=True, cursor=where))
                 elif data.rstrip().endswith(FRAME_END):
-                    os.write(stdout, top.draw(shape[1], cursor=where))
+                    show(top.draw(shape[1], cursor=where))
                 out.write(data[-4096:])
                 out.flush()
             if not answered and time.time() - started < STARTUP:
@@ -130,7 +142,7 @@ def run(root: Path, cwd: Path, env: str, agent: str, fd: int, session: str, life
                 answered, early = True, b""
             if time.time() - last_band >= 1.0 and time.time() - last_out >= BETWEEN_FRAMES and where.sure:
                 last_band = time.time()
-                os.write(stdout, top.draw(shape[1], cursor=where))
+                show(top.draw(shape[1], cursor=where))
             if stdin in ready:
                 data = os.read(stdin, 65536)
                 if not data:
