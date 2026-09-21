@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.82.1 — The command tags skill loads at every start
+
+Message 2081, to-do 734. Codex was not using the reply tags because the command tags skill fell out of the default set in 2.78.6. It is back in it: with nothing chosen on the Skills page, every start loads journal, messages, to-dos, questions, memory, docs, reports, transcripts and command tags, so every agent knows `[!reply:n]` from its first turn.
+
+What to do about it: `journal upgrade`.
+
 ## 2.82.0 — A skill the agent loads shows in the chat
 
 Message 1683, to-do 707. Every skill the agent loads now appears in the chat where it happened, as its own line: a faint green box reading Loaded skill and the skill's name, the way Claude Code marks a skill with a green dot. It works for Claude's Skill tool and for Codex reading a SKILL.md. The agent keeps its last fifty loads, and the line is a behaviour of Skill loading that Settings can switch off.
