@@ -111,6 +111,9 @@ def test_every_listing_is_one_page_of_open_rows_inside_the_budget():
     assert whole <= BUDGET * 2, f"the whole dashboard answers inside {BUDGET * 2}ms, took {whole:.0f}"
     named = dispatch("GET", f"/api/{record.env}/todo", record.root, {"n": "1,2,3", "completed": "1"}, {}).body
     assert [r["n"] for r in named["rows"]] == [1, 2, 3], "a listing asked for rows by number returns those rows, however old"
+    CONTROLLERS["todo"](record, actor=USER).delete(2, why="gone")
+    named = dispatch("GET", f"/api/{record.env}/todo", record.root, {"n": "2", "completed": "1"}, {}).body
+    assert [r["n"] for r in named["rows"]] == [2], "a row asked for by number is returned even when deleted"
 
 
 def test_a_row_is_changed_only_by_those_its_resource_names_for_its_author():

@@ -18,7 +18,7 @@ const props = defineProps({type: String});
 const kind = computed(() => meta(props.type));
 const filter = ref("open");
 const adding = ref(false);
-const all = computed(() => rows(props.type));
+const all = computed(() => rows(props.type).filter((r) => !r.deleted));
 const SHOWS = {open: () => open(props.type), closed: () => all.value.filter((r) => r.completed), every: () => all.value};
 const COUNTS = {
     open: () => counted(props.type, "open"),
