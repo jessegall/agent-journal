@@ -102,10 +102,12 @@ def run(root: Path, cwd: Path, env: str, agent: str, fd: int, session: str, life
     def frame() -> None:
         shape[0], shape[1] = resize(fd)
         rows_below.rows = shape[0]
-        os.write(stdout, b"\x1b[2J" + band.region(shape[0]) + top.draw(shape[1], force=True))
+        where.resized(shape[0], shape[1])
+        os.write(stdout, b"\x1b[2J" + band.region(shape[0]) + top.draw(shape[1], force=True, cursor=where))
 
+    where = band.Cursor(rows, cols)
     signal.signal(signal.SIGWINCH, lambda *_: frame())
-    os.write(stdout, band.region(rows) + top.draw(cols, force=True))
+    os.write(stdout, band.region(rows) + top.draw(cols, force=True, cursor=where))
     began = time.time()
     last_check = 0.0
     last_viewer = time.time()
@@ -123,12 +125,14 @@ def run(root: Path, cwd: Path, env: str, agent: str, fd: int, session: str, life
                     break
                 if not data:
                     break
-                os.write(stdout, rows_below.feed(data))
+                shown = rows_below.feed(data)
+                os.write(stdout, shown)
+                where.feed(shown)
                 early = (early + data)[-EARLY:] if not answered else early
                 if any(mark in data for mark in REDRAWS):
-                    os.write(stdout, band.region(shape[0]) + top.draw(shape[1], force=True))
+                    os.write(stdout, band.region(shape[0]) + top.draw(shape[1], force=True, cursor=where))
                 elif data.rstrip().endswith(FRAME_END):
-                    os.write(stdout, top.draw(shape[1]))
+                    os.write(stdout, top.draw(shape[1], cursor=where))
                 out.write(data[-4096:])
                 out.flush()
             if not answered and time.time() - started < STARTUP:
@@ -139,7 +143,7 @@ def run(root: Path, cwd: Path, env: str, agent: str, fd: int, session: str, life
                 answered, early = True, b""
             if time.time() - last_band >= 1.0:
                 last_band = time.time()
-                os.write(stdout, top.draw(shape[1]))
+                os.write(stdout, top.draw(shape[1], cursor=where))
             if stdin in ready:
                 data = os.read(stdin, 65536)
                 if not data:

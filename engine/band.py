@@ -38,6 +38,70 @@ def unshifted(data: bytes) -> bytes:
     return OLD_CLICK.sub(lambda m: b"\x1b[M" + m.group(1)[:2] + bytes([max(33, m.group(1)[2] - ROWS)]), data)
 
 
+MOVE = re.compile(rb"\x1b\[(\d*)(?:;(\d*))?([HfdABCDG])")
+SHOW = re.compile(rb"\x1b\[\?25([hl])")
+ESCAPE = re.compile(rb"\x1b(?:\[[\d;?]*[ -/]*[@-~]|\][^\x07\x1b]*(?:\x07|\x1b\\)|[()][0-9A-B]|[@-Z\\-_])")
+
+
+class Cursor:
+    def __init__(self, rows: int, cols: int):
+        self.rows, self.cols = rows, cols
+        self.row, self.col = ROWS + 1, 1
+        self.shown = True
+        self.sure = True
+
+    def resized(self, rows: int, cols: int) -> None:
+        self.rows, self.cols = rows, cols
+
+    def placed(self, m: re.Match) -> None:
+        kind, first, second = m.group(3), m.group(1), m.group(2)
+        one = int(first) if first else (0 if kind in b"ABCD" else 1)
+        if kind in (b"H", b"f"):
+            self.row, self.col = one, int(second) if second else 1
+        elif kind == b"d":
+            self.row = one
+        elif kind == b"G":
+            self.col = one
+        elif kind == b"A":
+            self.row -= max(1, one)
+        elif kind == b"B":
+            self.row += max(1, one)
+        elif kind == b"C":
+            self.col += max(1, one)
+        elif kind == b"D":
+            self.col -= max(1, one)
+        self.row = min(max(self.row, 1), self.rows)
+        self.col = min(max(self.col, 1), self.cols)
+
+    def wrote(self, plain: bytes) -> None:
+        for byte in plain:
+            if byte == 0x0a:
+                self.row += 1
+            elif byte == 0x0d:
+                self.col = 1
+            elif byte == 0x08:
+                self.col = max(1, self.col - 1)
+            elif byte >= 0x20:
+                self.col += 1
+            if self.col > self.cols:
+                self.row, self.col = self.row + 1, 1
+            if self.row > self.rows:                 # the screen scrolled: the tracker cannot know by how much
+                self.row, self.sure = self.rows, False
+
+    def feed(self, data: bytes) -> None:
+        for m in SHOW.finditer(data):
+            self.shown = m.group(1) == b"h"
+        for m in MOVE.finditer(data):
+            self.placed(m)
+            self.sure = True
+        self.wrote(ESCAPE.sub(b"", data))
+
+    def at(self) -> bytes:
+        if not self.sure:
+            return b""
+        return b"\x1b[%d;%dH" % (self.row, self.col) + (b"\x1b[?25h" if self.shown else b"")
+
+
 class Translator:
     def __init__(self, rows: int):
         self.rows = rows
@@ -141,9 +205,10 @@ class Band:
         left = max(0, (cols - plain) // 2) if left < 0 else min(left, cols - plain)
         return " " * left + "".join(out) + " " * (cols - plain - left)
 
-    def draw(self, cols: int, force: bool = False) -> bytes:
+    def draw(self, cols: int, force: bool = False, cursor: "Cursor | None" = None) -> bytes:
         body = "".join(f"{ESC}[{n + 1};1H{STYLE}{line}{RESET}" for n, line in enumerate(self.lines(cols)))
-        drawn = f"{ESC}7{body}{ESC}8".encode()
+        back = cursor.at() if cursor else b""
+        drawn = (f"{ESC}[?25l" if back else f"{ESC}7").encode() + body.encode() + (back or f"{ESC}8".encode())
         if drawn == self.shown and not force:
             return b""
         self.shown = drawn
