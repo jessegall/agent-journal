@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.17.5 — The tagging switch is the reminder
+
+The tagging feature no longer has a separate "name a message that opens without a tag" behaviour. Its own switch turns the reminder on or off, and when on, every message without a tag is answered with a message from the journal.
+
+What to do about it: `journal upgrade`.
+
 ## 2.17.4 — A missing tag is answered with a message
 
 The moment the engine sees a message from the agent that opens without a tag, the server sends the agent a journal message — "your last message has no tag", quoting what it wrote — instead of a line on the channel. It lands in the agent's inbox and in the user's chat, marked as coming from the journal, and waits to be read and answered like any other message. Features can now say a declared line as a message as well as a whisper.

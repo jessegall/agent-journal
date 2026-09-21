@@ -47,11 +47,9 @@ class Tags(Feature):
              "refused": Line("the {{tag}} tag on {{on}} did not run", "{{said}}"),
              "by tag": Line("reply to message {{n}} with the reply tag", "open your turn with [!reply:{{n}}] and the turn itself becomes the reply, so journal message reply is never needed")}
     title_ = "Tagging"
-    abstract_ = "A message opens with one tag, and a tag carrying a number runs the command it stands for"
+    abstract_ = "A message opens with one tag: one without is answered at once with a message from the journal, and a tag carrying a number runs the command it stands for"
     help_ = "The tags are settings. tags.names lists them and tags.runs maps a tag to the command it stands for, so [!reply:12] runs journal message reply 12 with the turn as its text, and [!todo=\"the title\"] files a to-do with that title and the turn as its brief. A tag runs once, keyed to the turn it came from; two tags in one turn run in the order they appear; and a refusal comes back as a nudge on the next turn rather than at the moment of acting."
-    behaviours = {"naming": Behaviour("Name a message that opens without a tag",
-                                      "Said the moment any message is seen without one"),
-                  "replying": Behaviour("Remind the agent to reply by tag",
+    behaviours = {"replying": Behaviour("Remind the agent to reply by tag",
                                         "When the agent runs journal message reply, it is told the reply tag does the same")}
     NAMES = "names"
     RUNS = "runs"
@@ -76,7 +74,7 @@ class Tags(Feature):
     @event("agent.said")
     def check(self, event, record) -> None:
         agent = self.agent(event, record)
-        if not agent or not self.on(record, "naming"):
+        if not agent:
             return
         for turn in self.written(record, agent):
             if not self.reader(record).match(turn.text) and not self.already(record, agent, turn, "untagged"):
