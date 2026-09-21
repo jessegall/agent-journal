@@ -13,7 +13,6 @@ from resources.types import AgentRow
 
 ASKS = frozenset({"AskUserQuestion"})
 WINDOW, LONG_WINDOW, LONG_MARK = 200_000, 1_000_000, "[1m]"
-TAIL = 1_000_000
 STATUS_SCRIPT = "claude-status.sh"
 STATUS_HOME = (".journal", "claude-status")
 PLAN_WINDOWS = {"five_hour": ("5h", 300), "seven_day": ("7d", 10080)}
@@ -156,7 +155,7 @@ class Claude(Provider):
         path = hook.transcript
         if not path or not path.is_file():
             return hook.model
-        for _, row in reversed(self.entries(path)):
+        for row in reversed(self.recent(path)):
             model = (row.get("message") or {}).get("model")
             if model:
                 return model
@@ -166,7 +165,7 @@ class Claude(Provider):
         path = hook.transcript
         if not path or not path.is_file():
             return None
-        for _, row in reversed(self.entries(path)):
+        for row in reversed(self.recent(path)):
             usage = (row.get("message") or {}).get("usage")
             if usage:
                 used = sum(int(usage.get(k) or 0) for k in ("input_tokens", "cache_read_input_tokens", "cache_creation_input_tokens"))

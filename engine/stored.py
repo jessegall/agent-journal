@@ -21,3 +21,18 @@ def write_text(path: Path, text: str) -> None:
 
 def write_json(path: Path, data, indent: int | None = None) -> None:
     write_text(path, json.dumps(data, indent=indent))
+
+
+def tail(path, size: int) -> list[str]:
+    try:
+        with Path(path).open("rb") as source:
+            source.seek(0, 2)
+            end = source.tell()
+            start = max(0, end - size)
+            source.seek(start)
+            raw = source.read()
+    except (OSError, TypeError):
+        return []
+    if start:
+        raw = raw.split(b"\n", 1)[-1]
+    return raw.decode(errors="replace").splitlines()

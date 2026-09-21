@@ -8,6 +8,7 @@ from engine.hooks import EVENTS
 from providers.base import Provider
 from providers.payload import Hook
 from resources.types import AgentRow
+from engine.stored import tail
 
 TOOLS = {"exec": "Bash", "exec_command": "Bash", "shell": "Bash", "shell_command": "Bash", "apply_patch": "Edit"}
 SKILL_PATH = re.compile(r"\.(?:codex|agents)/skills/(journal(?:-[\w-]+)?)/SKILL\.md")
@@ -216,18 +217,7 @@ class Codex(Provider):
                 yield payload
 
     def tail(self, path: Path | None) -> list[str]:
-        try:
-            with Path(path).open("rb") as source:
-                source.seek(0, 2)
-                size = source.tell()
-                start = max(0, size - TAIL_BYTES)
-                source.seek(start)
-                raw = source.read()
-        except (OSError, TypeError):
-            return []
-        if start:
-            raw = raw.split(b"\n", 1)[-1]
-        return raw.decode(errors="replace").splitlines()
+        return tail(path, TAIL_BYTES)
 
     def value(self, row: dict, snake: str, camel: str):
         return row.get(snake) if snake in row else row.get(camel)
