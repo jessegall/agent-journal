@@ -7,7 +7,7 @@ from controllers.types import Messages
 from features import FEATURES
 from features.format import formatted
 from features.tags.feature import visible
-from tests.features.kit import idle, nudges
+from tests.kit import idle, nudges
 from tests.conftest import fresh
 
 
@@ -58,7 +58,7 @@ def test_an_untagged_last_message_is_told_once_per_idle_stretch(tmp_path):
         "display text preserves an inline tag-like phrase"
     assert visible("> [!reply] done\n> and a second line\n\nExactly.") == "> done\n> and a second line\n\nExactly.", \
         "display text keeps a quote marker and drops the tag behind it"
-    assert [fn.__name__ for fn in FEATURES["tags"].formatters()] == ["without_tags"], \
+    assert [fn.__name__ for fn, _ in FEATURES["tags"].formatters()] == ["without_tags"], \
         "the tags feature is the one that strips them on the way out"
     assert (formatted("[!reply] done, pushed", record), Messages(record).load(said_to_user.n).brief) == \
         ("done, pushed", "[!reply] done, pushed"), "text sent to the viewer has no tag, while the record keeps it"

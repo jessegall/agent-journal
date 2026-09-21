@@ -4,7 +4,7 @@ import features
 from controllers.types import Agents
 from engine import viewer
 from resources.base import SYSTEM
-from tests.features.kit import report
+from tests.kit import report
 from tests.conftest import fresh
 
 

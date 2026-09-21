@@ -7,7 +7,7 @@ from controllers.types import Questions
 from features.questions.feature import offers_choices
 from engine.hooks import gate_file
 from resources.base import AGENT
-from tests.features.kit import idle, nudges
+from tests.kit import idle, nudges
 from tests.conftest import fresh
 
 

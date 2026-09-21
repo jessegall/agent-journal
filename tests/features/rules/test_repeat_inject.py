@@ -3,7 +3,7 @@ import pytest
 import features
 from controllers.types import Nudges, Rules
 from resources.base import USER
-from tests.features.kit import nudges, report
+from tests.kit import nudges, report
 from tests.conftest import fresh
 
 

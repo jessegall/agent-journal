@@ -4,7 +4,7 @@ import features
 from controllers.types import Nudges, Reminders
 from engine.queries import start_block
 from resources.base import AGENT, USER
-from tests.features.kit import report
+from tests.kit import report
 from tests.conftest import fresh
 
 

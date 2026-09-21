@@ -9,7 +9,7 @@ from engine.record import Record
 from features.work.tracker import changes, internal, journals_own, tree_file
 from features.work import tracker
 from resources.base import AGENT, SYSTEM
-from tests.features.kit import report
+from tests.kit import report
 from tests.conftest import fresh
 
 
