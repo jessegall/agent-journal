@@ -113,6 +113,9 @@ class Provider(ABC):
                 found.append((i, row))
         return found
 
+    def settling(self, path: Path) -> bool:
+        return False
+
     def transcript(self, path: Path) -> list:
         try:
             size = Path(path).stat().st_size

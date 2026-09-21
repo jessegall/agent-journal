@@ -10,7 +10,7 @@ from providers.payload import EVENTS
 from providers.base import Provider
 from providers.payload import Hook
 from resources.types import AgentRow
-from engine.stored import read_json, write_text
+from engine.stored import read_json, tail, write_text
 from engine import runtime
 from engine.drivers import ANSI, CHOICE, Driver
 
@@ -22,6 +22,8 @@ PLAN_WINDOWS = {"five_hour": ("5h", 300), "seven_day": ("7d", 10080)}
 NOTIFIED = re.compile(r"<tool-use-id>([^<]+)</tool-use-id>.*?<status>([^<]+)</status>", re.S)
 DISPATCHES = ("Agent", "Task")
 QUIET_SUBAGENT = 600
+SETTLE_BYTES = 65536
+BOOKKEEPING = frozenset({"attachment", "queue-operation", "file-history-snapshot"})
 
 
 class Claude(Provider):
@@ -289,6 +291,18 @@ class Claude(Provider):
     def subagent_transcript(self, path: Path, session: str) -> Path | None:
         found = Path(path).with_suffix("").joinpath("subagents", f"agent-{session}.jsonl")
         return found if found.is_file() else None
+
+    def settling(self, path: Path) -> bool:
+        for line in reversed(tail(path, SETTLE_BYTES)):
+            try:
+                row = json.loads(line)
+            except ValueError:
+                continue
+            if row.get("type") not in BOOKKEEPING:
+                parts = (row.get("message") or {}).get("content")
+                thinking = isinstance(parts, list) and parts and all(isinstance(p, dict) and p.get("type") == "thinking" for p in parts)
+                return row.get("type") == "user" or bool(thinking)
+        return False
 
     def is_subagent(self, hook) -> bool:
         where = Path(getattr(hook, "transcript", "") or "").parts + Path(getattr(hook, "cwd", "") or "").parts

@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.16.5 — A turn's tags are read from the turn itself
+
+Claude writes its final message to the transcript after the Stop hook has returned, so at the end of a turn the journal read the message before it: a turn opened with `[!reply:12]` was told it had no tag, and its reply never ran. Reading the turns now waits, briefly and only at the end of a turn, until the provider says its transcript has settled — for Claude, until the last row is no longer a tool result or a thought still waiting for its words.
+
+What to do about it: `journal upgrade`.
+
 ## 2.16.4 — A check's progress bar counts real steps
 
 A running check counts what it has done against what it has to do: an explicit `12/40` in its output, or one mark per finished test against the count pytest printed or the count of the check's last run; a printed percentage comes next, and only a check that gives none of these is estimated from its last run's time. The card and the check's page show "39 of 82 done", with the time taken and the time left, updating every second: a stamp now moves the row's updated time so the server's cache sees it, and the event stream now carries quiet events, which it never did. A reply that carries a file is no longer answered with the reply tag, and a check's runs are told to the user, not typed to the agent; a failure still is.
