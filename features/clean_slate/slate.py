@@ -1,5 +1,6 @@
 import json
 import shutil
+import subprocess
 from pathlib import Path
 
 from engine.record import Record
@@ -18,11 +19,24 @@ def state(record: Record) -> dict:
     return record.setting(KEY) or {}
 
 
+def homes(project: Path, agent: str) -> list[Path]:
+    return list(dict.fromkeys(home.resolve() for home in PROVIDERS[agent]().skill_homes(project) if home.is_dir()))
+
+
 def others(project: Path, agent: str) -> tuple[list[Path], list[Path]]:
-    provider = PROVIDERS[agent]()
-    skills = [d for home in dict.fromkeys(provider.skill_homes(project)) if home.is_dir() for d in sorted(home.iterdir()) if not d.name.startswith("journal")]
-    hooks = [f for f in provider.hook_files(project) if kept(read_json(f, {})) != read_json(f, {})]
+    skills = [d for home in homes(project, agent) for d in sorted(home.iterdir()) if not d.name.startswith("journal")]
+    hooks = [f for f in PROVIDERS[agent]().hook_files(project) if kept(read_json(f, {})) != read_json(f, {})]
     return skills, hooks
+
+
+def git(folder: Path, *args: str) -> str:
+    done = subprocess.run(["git", "-C", str(folder), *args], capture_output=True, text=True, timeout=30)
+    return done.stdout if done.returncode == 0 else ""
+
+
+def hide(folder: Path, files: list[str], hidden: bool) -> None:
+    if files:
+        git(folder, "update-index", "--skip-worktree" if hidden else "--no-skip-worktree", "--", *files)
 
 
 def kept(settings) -> dict:
@@ -38,15 +52,22 @@ def set_aside(record: Record, project: Path, agent: str) -> str:
     folder = place(record)
     folder.mkdir(parents=True, exist_ok=True)
     moved = []
-    for i, skill in enumerate(skills):
-        to = folder / f"skill-{i}-{skill.name}"
-        shutil.move(str(skill), str(to))
-        moved.append({"from": str(skill), "to": str(to)})
-    for i, f in enumerate(hooks):
-        to = folder / f"hooks-{i}-{f.name}"
-        shutil.copy2(f, to)
-        f.write_text(json.dumps(kept(read_json(f, {})), indent=2) + "\n")
-        moved.append({"from": str(f), "to": str(to), "copy": True})
+    try:
+        for i, skill in enumerate(skills):
+            to = folder / f"skill-{i}-{skill.name}"
+            tracked = [line for line in git(skill.parent, "ls-files", "--", skill.name).splitlines() if line]
+            shutil.move(str(skill), str(to))
+            moved.append({"from": str(skill), "to": str(to), "tracked": tracked})
+            hide(skill.parent, tracked, True)
+        for i, f in enumerate(hooks):
+            to = folder / f"hooks-{i}-{f.name}"
+            shutil.copy2(f, to)
+            moved.append({"from": str(f), "to": str(to), "copy": True})
+            f.write_text(json.dumps(kept(read_json(f, {})), indent=2) + "\n")
+    except OSError as error:
+        record.set_setting(KEY, {**state(record), "moved": moved})
+        put_back(record)
+        return f"nothing set aside, everything is where it was: {error}"
     record.set_setting(KEY, {**state(record), "moved": moved, "last": True})
     return f"set aside {len(skills)} other skills and the other hooks in {len(hooks)} " + ("file" if len(hooks) == 1 else "files") + ", until the journal stops"
 
@@ -63,6 +84,7 @@ def put_back(record: Record) -> int:
             kept_at.unlink()
         elif not (home.exists() or home.is_symlink()):
             shutil.move(str(kept_at), str(home))
+            hide(home.parent, m.get("tracked") or [], False)
     if moved:
         record.set_setting(KEY, {**state(record), "moved": []})
     return len(moved)

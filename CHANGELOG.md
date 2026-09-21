@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.82.5 — Clean slate is safe with linked skill folders, git, and failures
+
+Message 2111, to-do 742. In a project where `.agents/skills` and `.codex/skills` both link to one `skills/` folder, every skill was listed twice, the second move failed, and the launch crashed with the skills already moved and nothing recorded to put them back. Now each skill folder is resolved first, so a linked folder counts once. A skill git tracks is hidden from git while it is set aside, so the project never shows it as deleted and a commit made meanwhile cannot delete it. A failure part way puts back everything already moved and says so, and the launch carries on. The test now builds exactly that layout: two linked homes over tracked skills, and a move that fails.
+
+What to do about it: `journal upgrade`.
+
 ## 2.82.4 — The engine checks for a newer journal every five minutes
 
 Messages 2094 and 2096, to-do 738. Auto-update used to run on the agent's own events every half hour, so an idle session never checked. The engine now keeps a clock: once a minute it emits an event for its session, whether the agent is busy or not, and the update check runs on it every five minutes. Any feature can use the same clock.
