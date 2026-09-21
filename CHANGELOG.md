@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.77.0 — Make anything from a template
+
+Design 2, to-do 634. Any resource can be made from a template with `--set template=<n>` when it is created. It starts with the template's parts and links the template, so the viewer can show which template it follows. For a plan, each part becomes a phase: the part's text is the phase's complete-when line, and a part titled with (checkpoint) at the end becomes a checkpoint. A template is refused for a type its `applies_to` leaves out, and an unknown template number is refused too. The feature's test covers a plan with a checkpoint phase, a doc with parts, and both refusals.
+
+What to do about it: `journal upgrade`.
+
 ## 2.76.0 — Templates, a resource of their own
 
 Design 2, to-do 633. A new project-wide resource, the template, owned by a templates feature. Its brief holds the instructions the agent reads before working on anything made from a template. Its parts are the skeleton a new resource starts with. `applies_to` lists the types it is for, such as plan or todo, and an empty list means any type. An unknown type is refused and the known ones are listed. `journal template create "<name>" --brief "<instructions>" --set applies_to=plan` writes one, and the usual words (show, section, update, retire) work on it. Applying a template when something is created, the agent reading its instructions first, and its page in the viewer come in the next to-dos.
