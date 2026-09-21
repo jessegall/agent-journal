@@ -23,10 +23,11 @@ def plan(p, todos: dict) -> dict:
 
 def environment(record: Record) -> dict:
     agent = Agents(record, actor=SYSTEM).primary()
-    works = [w for w in Works(record, actor=SYSTEM)._every() if not w.deleted]
-    current = next((w for w in works if not w.completed), None)
-    last = works[-1] if works else None
-    todos = {t.n: bool(t.completed) for t in Todos(record, actor=SYSTEM)._every()}
+    shelf = Works(record, actor=SYSTEM)
+    works = [row for row in shelf.summaries() if not row["deleted"]]
+    current = next((shelf.load(row["n"]) for row in works if not row["completed"]), None)
+    last = shelf.load(works[-1]["n"]) if works else None
+    todos = {row["n"]: bool(row["completed"]) for row in Todos(record, actor=SYSTEM).summaries() if not row["deleted"]}
     work = lambda w: {"n": w.n, "title": w.title, "todo": w.todo} if w else None
     return {
         "name": record.env,
@@ -37,7 +38,7 @@ def environment(record: Record) -> dict:
         "plans": [plan(p, todos) for p in Plans(record, actor=SYSTEM)._standing() if p.status in SHOWN],
         "auto": switched(record, "work.auto"),
         "counts": {
-            "messages": len(Messages(record, actor=SYSTEM).unread(USER)),
+            "messages": sum(USER not in row["seen"] and not row["completed"] and not row["deleted"] for row in Messages(record, actor=SYSTEM).summaries()),
             "questions": len(Questions(record, actor=SYSTEM)._standing()),
             "todos": len([n for n, done in todos.items() if not done]),
             "suggestions": len(Suggestions(record, actor=SYSTEM)._standing()),

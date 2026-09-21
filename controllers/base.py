@@ -66,14 +66,14 @@ class Controller:
         known = {int(n): row for n, row in (read_json(folder / INDEX) or {}).items()}
         rows = {}
         for n, stamp in stamps.items():
-            if known.get(n, {}).get("stamp") == stamp and "files" in known[n]:
+            if known.get(n, {}).get("stamp") == stamp and all(k in known[n] for k in ("files", *self.resource.indexed)):
                 rows[n] = known[n]
                 continue
             try:
                 r = self.load(n)
             except (Refused, OSError):
                 continue
-            rows[n] = {"n": n, "title": r.title, "deleted": r.deleted, "completed": r.completed, "seen": r.seen, "refs": r.refs, "updated": r.updated, "files": len(r.files), "stamp": stamp}
+            rows[n] = {"n": n, "title": r.title, "deleted": r.deleted, "completed": r.completed, "seen": r.seen, "refs": r.refs, "updated": r.updated, "files": len(r.files), **{k: r.data.get(k) for k in self.resource.indexed}, "stamp": stamp}
         if rows != known:
             write_json(folder / INDEX, rows)
         return [rows[n] for n in sorted(rows)]
