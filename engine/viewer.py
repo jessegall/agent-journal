@@ -77,12 +77,17 @@ def candidates(root: Path) -> list[str]:
     return list(dict.fromkeys(url for url in found if url))
 
 
-def answers(url: str, root: Path, timeout: float = 0.05) -> bool:
+def identity(url: str, timeout: float = 0.05) -> dict | None:
     try:
         with urlopen(f"{url}api/identity", timeout=timeout) as response:
-            return Path(str(json.loads(response.read()).get("root") or "")).resolve() == root.resolve()
+            return json.loads(response.read())
     except (OSError, ValueError):
-        return False
+        return None
+
+
+def answers(url: str, root: Path, timeout: float = 0.05) -> bool:
+    said = identity(url, timeout) or {}
+    return Path(str(said.get("root") or "")).resolve() == root.resolve()
 
 
 def running(root: Path) -> str:

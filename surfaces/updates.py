@@ -5,6 +5,7 @@ from engine.hooks import default_env
 from engine.record import Record
 from resources.base import SYSTEM
 from engine.stored import write_text
+from engine.version import version as package_version
 
 PACKAGE = Path(__file__).resolve().parents[1]
 KIND = "update"
@@ -19,7 +20,7 @@ def newer(version: str, than: str) -> bool:
 
 
 def announce(root: Path, version: str = "") -> str:
-    version = version or (PACKAGE / "VERSION").read_text().strip()
+    version = version or package_version()
     seen = Path(root) / "runtime" / "version"
     before = seen.read_text().strip() if seen.is_file() else ""
     if before == version:

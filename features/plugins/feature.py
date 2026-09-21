@@ -14,8 +14,9 @@ from features.plugins import services
 from features.plugins.run import call
 from features.plugins.source import alone, checked, data, environment, folder, home, log, ports_for, prepared, preview, said_version, staged, token
 from resources.base import Refused, SYSTEM
+from engine.version import version
 
-VERSION = (Path(__file__).resolve().parents[2] / "VERSION").read_text().strip() if (Path(__file__).resolve().parents[2] / "VERSION").is_file() else ""
+VERSION = version()
 
 
 class Plugins(Feature):
