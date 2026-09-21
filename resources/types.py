@@ -1,8 +1,10 @@
-from resources.base import AGENT, COMPLETED, DOCUMENT, OPENED, PROJECT, USER, Resource
+from resources.base import AGENT, COMPLETED, DOCUMENT, OPENED, PROJECT, SYSTEM, USER, Resource
 from resources.shapes import FLAG, TEXT, Field, Options, Ranked, Reasoned, Shape, Traced, names
 
 
 class Message(Shape, Resource):
+    answered = "reply"
+    editors = {USER: (USER, SYSTEM), AGENT: (AGENT, SYSTEM)}
     type = "message"
     shown = {"created": "Message", "completed": "Message processed"}
     icon = "mail"
@@ -162,6 +164,7 @@ class Suggestion(Options, Resource):
 
 
 class Comment(Shape, Resource):
+    editors = {USER: (USER, SYSTEM), AGENT: (AGENT, SYSTEM)}
     type = "comment"
     shown = {"created": "Comment", "completed": "Comment done"}
     mirror = True
