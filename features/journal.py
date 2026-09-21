@@ -1,7 +1,9 @@
 from dataclasses import dataclass, field
+from functools import cached_property
 
 from controllers.types import CONTROLLERS, Notices, Notifications, Nudges
 from engine.drivers import CHANNEL, TERMINAL
+from features.parts import AgentHooks, Client, Events
 from resources.base import SYSTEM, titled
 
 
@@ -19,6 +21,18 @@ class Message:
 class Journal:
     def __init__(self, feature):
         self.feature = feature
+
+    @cached_property
+    def events(self) -> Events:
+        return Events(self.feature)
+
+    @cached_property
+    def client(self) -> Client:
+        return Client(self.feature)
+
+    @cached_property
+    def agent(self) -> AgentHooks:
+        return AgentHooks(self.feature)
 
     def say(self, record, agent, line: str, private: bool = False, actor: str = SYSTEM, delivery: str = CHANNEL, **values):
         if not self.feature.mine(agent):

@@ -27,7 +27,7 @@ def load(root: Path | None = None) -> list[str]:
     for name, cls in REGISTRY.items():
         if name not in FEATURES:
             FEATURES[name] = cls()
-            FEATURES[name].register()
+            FEATURES[name].wire()
     if not SWITCHED:
         SWITCHED.extend(bus.on(kind, rebooted) for kind in CHANGE_SWITCHES)
     if root:

@@ -4,6 +4,14 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.35.0 — A feature registers its parts; Tags is the first
+
+Doc 18 section 5a, messages 1338, 1341 and 1342. A feature can now be written as a description and a list of parts. Its details.py holds a FeatureDetails class (name, title, abstract, help, lines, behaviours). Its register(journal) hands each part over: journal.events.handler(...) for a Handler, whose event comes from the type of its event parameter; journal.client.formatter(...) for a TextFormatter; journal.agent.interceptor(...) for a ToolInterceptor. Every part receives a Context: the record, the feature's settings, and the agent it concerns, which can say, whisper and type. Typed events live in engine/events.py; AgentMessageCreated is the first, read from agent.said.
+
+Tags is rebuilt this way: RemindToTag, RunTagCommands and CopyToChat handle what the agent says, StripTags takes the tags out of text a person reads, and NotifyTagNotUsed tells the agent the reply tag does what journal message reply does. Every other feature still uses @event, @formats and @interceptor, which keep working.
+
+What to do about it: `journal upgrade`.
+
 ## 2.34.0 — A status bar line plays once, not again on a refresh
 
 The viewer played the whole queue of status bar lines from the start on every page load, so a refresh replayed everything the agent had just run. The viewer now tells the server each line it starts, and the server leaves every line already played out of the queue it hands back; only a line still running stays.

@@ -104,7 +104,17 @@ textformatter = formats
 interceptor = gate
 
 
+class FeatureDetails:
+    name: ClassVar[str] = ""
+    title: ClassVar[str] = ""
+    abstract: ClassVar[str] = ""
+    help: ClassVar[str] = ""
+    lines: ClassVar[dict[str, Line]] = {}
+    behaviours: ClassVar[dict[str, Behaviour]] = {}
+
+
 class Feature(ABC):
+    details: ClassVar[type[FeatureDetails] | None] = None
     name: ClassVar[str] = ""
     title_: ClassVar[str] = ""
     abstract_: ClassVar[str] = ""
@@ -120,6 +130,9 @@ class Feature(ABC):
 
     def __init_subclass__(cls, **kw):
         super().__init_subclass__(**kw)
+        if cls.details:
+            d = cls.details
+            cls.name, cls.title_, cls.abstract_, cls.help_, cls.lines, cls.behaviours = d.name, d.title, d.abstract, d.help, d.lines, d.behaviours
         if cls.name:
             REGISTRY[cls.name] = cls
 
@@ -151,7 +164,11 @@ class Feature(ABC):
             return fn(controller, *args, **kwargs)
         return run
 
-    def register(self) -> None:
+    def register(self, journal: Journal) -> None:
+        pass
+
+    def wire(self) -> None:
+        self.register(self.journal)
         for name in self.declares:
             MARKS[name] = self.name
         for fn, (target, *_) in self.marked("handles"):
@@ -269,7 +286,7 @@ class Feature(ABC):
 
     def describe(self) -> dict:
         return {"name": self.name, "title": self.title_, "abstract": self.abstract_, "help": self.help_, "default": self.default, "fixed": self.fixed,
-                "listens": sorted({p for p, _ in self.listeners()}), "trigger": dict(self.trigger), "declares": list(self.declares),
+                "listens": sorted({*(p for p, _ in self.listeners()), *self.journal.events.names}), "trigger": dict(self.trigger), "declares": list(self.declares),
                 "behaviours": {key: b.describe() for key, b in self.behaviours.items()},
                 "lines": {key: line.describe() for key, line in self.lines.items()}}
 
