@@ -9,6 +9,7 @@ Listener = Callable[[Event, object], None]
 ANY = "*"
 
 _listeners: dict[str, list[tuple[str, Listener]]] = defaultdict(list)
+_watchers: list[Listener] = []
 _held = threading.local()
 
 
@@ -25,11 +26,22 @@ def on(pattern: str, listener: Listener, enabled: Callable = always) -> Callable
     return off
 
 
+def watch(watcher: Listener) -> Callable[[], None]:
+    _watchers.append(watcher)
+    return lambda: _watchers.remove(watcher)
+
+
+def shown(event: Event, record=None) -> None:
+    for watcher in list(_watchers):
+        watcher(event, record)
+
+
 def emit(event: Event, record=None) -> None:
     queue = getattr(_held, "queue", None)
     if queue is not None:
         queue.append((event, record))
         return
+    shown(event, record)
     for pattern in (ANY, event.type, event.action, f"{event.type}.{event.action}"):
         for enabled, listener in list(_listeners.get(pattern, ())):
             if record is None or enabled(record):
@@ -56,3 +68,4 @@ def listening() -> bool:
 
 def clear() -> None:
     _listeners.clear()
+    _watchers.clear()

@@ -18,19 +18,19 @@ def git(args: list[str], cwd, timeout: float = 5, stdin: str | None = None) -> s
     return run(["git", *args], cwd, timeout, stdin)
 
 
-def streamed(args: list[str], cwd, timeout: float, heard) -> tuple[int | None, str]:
+def streamed(args: list[str], cwd, timeout: float, on_output) -> tuple[int | None, str]:
     try:
-        child = subprocess.Popen(args, cwd=cwd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, errors="replace", bufsize=1)
+        child = subprocess.Popen(args, cwd=cwd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     except OSError as error:
         return None, str(error)
     timer = threading.Timer(timeout, child.kill)
     timer.start()
-    said = []
+    output = bytearray()
     try:
-        for line in iter(child.stdout.readline, ""):
-            said.append(line)
-            heard("".join(said))
+        while chunk := child.stdout.read1(65536):
+            output.extend(chunk)
+            on_output(output.decode(errors="replace"))
         child.wait()
     finally:
         timer.cancel()
-    return (None if child.returncode < 0 else child.returncode), "".join(said)
+    return (None if child.returncode < 0 else child.returncode), output.decode(errors="replace")

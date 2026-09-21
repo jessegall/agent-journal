@@ -531,7 +531,7 @@ def get_search(req: Request) -> Reply:
 def get_stream(req: Request) -> Reply:
     env = req.params["env"]
     queue: Queue = Queue()
-    off = bus.on(bus.ANY, lambda e, r: queue.put(e) if r is not None and r.env == env else None)
+    off = bus.watch(lambda e, r: queue.put(e) if r is not None and r.env == env else None)
 
     def chunks() -> Iterator[bytes]:
         try:

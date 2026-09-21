@@ -40,3 +40,12 @@ def test_only_the_checks_that_are_due_come_up_on_the_timer():
     assert [c.n for c in checks._due(10_000)] == [hourly.n]
     checks.run(hourly.n, wait=True)
     assert checks._due(checks.load(hourly.n).last["at"] + 60) == [], "it waits its minutes after a run"
+
+
+def test_a_running_check_counts_its_steps_against_what_it_knows_of_the_total():
+    from features.checks.controller import progress
+    assert progress("building 12/40 files") == {"done": 12, "total": 40, "percent": 30.0}, "an explicit count"
+    assert progress("collected 10 items\n\n.....F.") == {"done": 7, "total": 10, "percent": 70.0}, "one mark per test against the collected count"
+    assert progress("bringing up nodes...\n\n" + "." * 30, 60) == {"done": 30, "total": 60, "percent": 50.0}, "the last run's count when none is printed"
+    assert progress("downloading 45%") == {"percent": 45}, "a printed percentage"
+    assert progress("working") == {"percent": None}, "nothing to count: the viewer estimates from time"

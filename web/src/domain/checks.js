@@ -16,6 +16,8 @@ export function checkState(check, now) {
             percent: reported ?? estimated,
             measured: reported !== null,
             remaining: expected ? Math.max(0, expected - elapsed) : null,
+            done: running.done ?? null,
+            total: running.total ?? null,
             said: running.said || "",
             runs,
             last,

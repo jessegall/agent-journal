@@ -115,7 +115,7 @@ class Tags(Feature):
 
     @interceptor
     def replied(self, provider, record, hook, session) -> str:
-        found = REPLIED.search(hook.tool.command) if self.on(record, "replying") else None
+        found = REPLIED.search(hook.tool.command) if self.on(record, "replying") and "--file" not in hook.tool.command else None
         if found:
             self.say(record, Agents(record, actor=SYSTEM).by_session(session), "by tag", private=True, n=found.group(1))
         return ""

@@ -13,11 +13,13 @@ defineProps({state: Object});
             <span class="percent">{{ state.percent === null ? "Running" : `${Math.round(state.percent)}%` }}</span>
             <span class="note">
                 {{
-                    state.measured
-                        ? "as the command reports it"
-                        : state.percent === null
-                          ? "no earlier run to go by"
-                          : "going by the last run"
+                    state.total
+                        ? `${state.done} of ${state.total} done`
+                        : state.measured
+                          ? "as the command reports it"
+                          : state.percent === null
+                            ? "no earlier run to go by"
+                            : "going by the last run"
                 }}
             </span>
             <span class="grow" />

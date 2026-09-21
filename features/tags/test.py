@@ -62,3 +62,5 @@ def test_replying_by_command_is_answered_with_the_tag_that_does_it():
     handle(PROVIDERS["claude"](), record.root, record.env, {**hook, "tool_input": {"command": 'journal message reply 12 "on it"'}})
     assert [n.brief.split(" and ")[0] for n in Nudges(record).all() if "reply tag" in n.title] == ["open your turn with [!reply:12]"], \
         "the reply command is answered with the tag"
+    handle(PROVIDERS["claude"](), record.root, record.env, {**hook, "tool_input": {"command": 'journal message reply 13 "see" --file a.txt'}})
+    assert not [n for n in Nudges(record).all() if "13 with the reply tag" in n.title], "a reply carrying a file is what the command is for"
