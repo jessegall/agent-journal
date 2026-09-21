@@ -7,6 +7,7 @@ from abc import ABC, abstractmethod
 from pathlib import Path
 
 from controllers.types import Agents
+from engine import typist
 from resources.base import Refused, SYSTEM
 
 ENTER_AFTER = 0.3
@@ -46,7 +47,7 @@ class Driver(ABC):
         return [*cls.AUTO_ARGS, *args] if automatic and flags.isdisjoint(cls.APPROVAL_FLAGS) else args
 
     def alive(self) -> bool:
-        return self.fd >= 0
+        return self.fd >= 0 or typist.reachable(typist.path(self.record.root, self.session))
 
     @classmethod
     def confirm(cls, printed: bytes) -> bytes:
@@ -102,6 +103,8 @@ class Driver(ABC):
         return not self.unsent(line)
 
     def wrote(self, raw: bytes) -> bool:
+        if self.fd < 0:
+            return typist.send(self.record.root, self.session, raw)
         try:
             while raw:
                 raw = raw[os.write(self.fd, raw):]

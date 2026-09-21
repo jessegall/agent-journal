@@ -36,7 +36,9 @@ function unedit() {
     editing.value = null;
 }
 const busy = computed(() => !!agent.value && ["working", "compacting"].includes(agent.value.data.status));
-const waiting = computed(() => (busy.value && mine.value.some((m) => !m.data.delivered) ? "Waiting for the agent to finish what it is doing" : ""));
+const waiting = computed(() =>
+    busy.value && mine.value.some((m) => !m.data.delivered) ? "Waiting for the agent to finish what it is doing" : ""
+);
 const away = ref(false);
 const missed = ref(0);
 const settledOnce = ref(false);
@@ -61,20 +63,21 @@ async function markSeen(numbers) {
 watch([unseen, ready], ([numbers]) => markSeen(numbers), {immediate: true});
 const rendering = ref(false);
 const topMark = ref(null);
-const AHEAD = "1600px 0px 0px 0px";
+const AHEAD = "200px 0px 0px 0px";
+const scrolledUp = ref(false);
+const NEAR_TOP = 200;
 let prepending = false;
 let topWatcher = null;
 
 async function older() {
     const s = scroller.value;
-    if (!ready.value || !settledOnce.value || prepending || !s) return;
+    if (!ready.value || !settledOnce.value || !scrolledUp.value || prepending || !s) return;
     prepending = true;
     const fromBottom = s.scrollHeight - s.scrollTop;
     try {
-        while (await earlier("message", "comment")) {
+        if (await earlier("message", "comment")) {
             await nextTick();
             s.scrollTop = s.scrollHeight - fromBottom;
-            if (s.scrollTop > s.clientHeight * 2) break;
         }
     } finally {
         prepending = false;
@@ -189,6 +192,8 @@ onUnmounted(() => {
 function watchScroll() {
     const s = scroller.value;
     away.value = s.scrollHeight - s.scrollTop - s.clientHeight > 40;
+    if (settledOnce.value && away.value) scrolledUp.value = true;
+    if (scrolledUp.value && s.scrollTop < NEAR_TOP) older();
 }
 
 function stillReading() {
