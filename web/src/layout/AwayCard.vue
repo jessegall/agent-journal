@@ -2,7 +2,7 @@
 import {computed, onUnmounted} from "vue";
 import Icon from "../kit/Icon.vue";
 import {go, route} from "../route.js";
-import {byRef} from "../domain/records.js";
+import {byRef, toldToUser} from "../domain/records.js";
 import {age, span} from "../format/time.js";
 import {away} from "../platform/visibility.js";
 import {counted, meta, store, types, word} from "../state/store.js";
@@ -10,13 +10,7 @@ import {counted, meta, store, types, word} from "../state/store.js";
 const lines = computed(() =>
     [...store.events]
         .reverse()
-        .filter(
-            (e) =>
-                e.actor === "agent" &&
-                e.at * 1000 >= away.since &&
-                meta(e.type).notify.includes("user") &&
-                ["created", "completed"].includes(e.action)
-        )
+        .filter((e) => e.actor === "agent" && e.at * 1000 >= away.since && toldToUser(e) && ["created", "completed"].includes(e.action))
         .slice(0, 6)
         .map((e) => ({
             key: e.id,
