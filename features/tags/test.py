@@ -92,3 +92,22 @@ def test_the_final_message_the_stop_hook_carries_runs_its_tags_before_the_transc
     handle(PROVIDERS["claude"](), record.root, record.env, stop)
     handle(PROVIDERS["claude"](), record.root, record.env, stop)
     assert [c.title for c in Comments(record, actor=SYSTEM).linked_to(message.ref)] == ["done"], "posted once, from the hook's own text"
+
+
+def test_the_chosen_level_copies_tagged_messages_into_the_chat(tmp_path):
+    transcript = tmp_path / "s.jsonl"
+    now = datetime.now(timezone.utc).isoformat()
+    rows = [{"type": "assistant", "timestamp": now, "message": {"content": [{"type": "text", "text": "[!info] the build is green"}]}}]
+    transcript.write_text("\n".join(json.dumps(r) for r in rows) + "\n")
+    record = fresh()
+    chat = lambda: [(m.brief, m.data.get("tag")) for m in Messages(record, actor="system").all() if m.seen[:1] == ["agent"]]
+    report(record, "working", "PostToolUse", provider="claude", transcript=str(transcript))
+    assert chat() == [], "replies only: an info message stays in the terminal"
+    rows.append({"type": "assistant", "timestamp": now, "message": {"content": [{"type": "text", "text": "[!reply] answered in the thread"}]}})
+    transcript.write_text("\n".join(json.dumps(r) for r in rows) + "\n")
+    report(record, "working", "PostToolUse", provider="claude", transcript=str(transcript))
+    assert chat() == [("answered in the thread", "reply")], "a reply without a number reaches the chat at every level"
+    record.set_setting("tags", {"verbosity": "info", "since": 0})
+    report(record, "working", "PostToolUse", provider="claude", transcript=str(transcript))
+    report(record, "working", "PostToolUse", provider="claude", transcript=str(transcript))
+    assert chat() == [("answered in the thread", "reply"), ("the build is green", "info")], "with info shown: copied into the chat once, its tag kept as data"

@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.17.2 — The chat shows as much of the agent as you choose
+
+A chat-detail control in the agent bar — a bubble with its level — sets which of the agent's tagged messages in its terminal also appear in the chat: replies only; replies and info (blocked too); replies, info and corrections; or everything, discoveries too. A message is copied the moment the engine sees it written, once, with its tag kept as data, and only messages written after the level was chosen count. A reply without a message number now reaches the chat at every level; a numbered reply still answers its message. The stray screenshots in the project are gone, and a Playwright folder is ignored wherever it appears.
+
+What to do about it: `journal upgrade`.
+
 ## 2.17.1 — The dashboard counts in one pass
 
 Measured on its own, the dashboard answers in about 11ms warm and 26ms right after a write; the slower times reported under load are time shared with other requests and the engine threads. Its counts walked every row of every type three times — six thousand rows a request here — and now take one pass.
