@@ -4,11 +4,11 @@ A project journal and live viewer for Claude Code and Codex.
 
 Long agent sessions lose decisions when context is compacted, a terminal closes, or another
 session takes over. Agent Journal keeps the durable state beside your project: current work,
-to-dos, messages, rules, pins, reminders, plans, reports, docs, and the history connecting
+to-dos, messages, facts, rules, reminders, plans, reports, docs, and the history connecting
 them. Every new session receives the part it needs, while the full record stays readable in
 plain files and in the browser.
 
-The current package is 2.3.1. Claude and Codex use the same record, engine, viewer, and command
+The current package is 2.16.0. Claude and Codex use the same record, engine, viewer, and command
 line.
 
 ## Install
@@ -59,8 +59,8 @@ shows what changed while the agent worked. A notice can stay pinned above the ch
 or unsent composer text can become one.
 
 Environment pages contain the work that belongs to one line of effort: to-dos, work, plans,
-reports, pins, reminders, and settings. Project pages contain rules, docs, tools, connections,
-coding styles, and Skills. The Skills page shows every Claude and Codex skill, whether it is loaded or stale,
+reports, facts, reminders, and settings. Project pages contain rules, docs, tools, connections,
+checks, plugins, services, and Skills. The Skills page shows every Claude and Codex skill, whether it is loaded or stale,
 and lets you ask the agent to load it now or at every start. Search covers the record; Files
 collects attachments. The viewer creates, assigns, and removes environments without deleting
 their record; the CLI also renames and moves them.
@@ -82,9 +82,9 @@ These are engine-backed mechanisms, not prompt suggestions:
 - A file write with no declared work is refused. Start a row with `journal todo start <n>`, or
   declare standalone work with `journal work start "..."`.
 - Putting work off in prose without filing a to-do is named back to the agent.
-- At 50, 70, 90, and 95 percent of the context window, writes wait for a decision: create a pin,
+- At 50, 70, 90, and 95 percent of the context window, writes wait for a decision: create a fact,
   create a project-wide rule, or run `journal nothing "<why>"`.
-- Pins and rules are repeated as context fills. A selected rule can also be injected into the
+- Facts and rules are repeated as context fills. A selected rule can also be injected into the
   same managed block in both `AGENTS.md` and `CLAUDE.md` from its viewer control.
 - Standing reminders return when the agent comes to rest after work.
 - Auto mode is off by default. When enabled in Settings, the next ready to-do is offered whenever
@@ -94,7 +94,15 @@ These are engine-backed mechanisms, not prompt suggestions:
 - Hooks only report status or refuse an unscoped write. Work selection, reminders, retention,
   context decisions, messages, and every other behavior belong to switchable engine features.
 
-An environment is one line of work with its own messages, to-dos, pins, plans, and settings. A
+- A permission prompt in the agent's terminal shows in the chat, naming the call, with Allow and
+  Deny. Settings can restart the agent in the same conversation without permission prompts.
+- A command that fails leaves nothing half done: the files it wrote are put back and its events
+  are never told.
+
+Every line a feature can say to the agent is declared by that feature under its own name, and
+Settings lists them all. A feature can say only its own lines.
+
+An environment is one line of work with its own messages, to-dos, facts, plans, and settings. A
 rule and a doc are project-wide. The viewer can bind an idle session to another environment; an
 agent never changes branches or environments on its own.
 
@@ -111,6 +119,23 @@ Every agent reply begins with one searchable tag:
 The tag stays in the transcript, so important turns remain findable without turning every line
 into a permanent record resource.
 
+A tag can also run the command it stands for, with the turn as its text: `[!reply:12]` replies to
+message 12, `[!log:7]` logs work 7, `[!end:7]` ends it, and `[!todo="the title"]` files a to-do with
+the turn as its brief. Which tag runs which command is the `tags.runs` setting.
+
+## Checks, suggestions, and plugins
+
+A check is a script that passes or fails, run by hand, by its button, or every so many minutes:
+`journal check create "the suite passes" --set command="pytest -q" --set every=30`. A failure is
+filed and told to the agent; the next pass clears it.
+
+A suggestion is a change the agent proposes unasked. You accept, adjust, or decline it in the
+viewer; nothing waits on it, and a decline is a ruling it does not propose again.
+
+A plugin is a repository installed from a GitHub URL or a local path, pinned to a commit. It hears
+the journal's events, can answer them, and can run services of its own; `journal services` lists
+them.
+
 ## Chrome extension
 
 Settings serves a version-matched extension zip. Download it, unpack it, and load the folder from
@@ -125,7 +150,7 @@ while you explicitly leave it at the wheel.
 
 Every record command is a noun and a word:
 
-    journal todo add "write the release notes" --brief "What belongs in them and where to start"
+    journal todo create "write the release notes" --brief "What belongs in them and where to start"
     journal todo start 12
     journal work log 18 "Old rows converted; the links are next because they cite row numbers"
     journal work end 18 --how "The migration landed"
