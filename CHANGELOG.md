@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.84.1 — Project records live in .journal/project, and an upgrade never removes them
+
+To-do 748. 2.84.0 moved the project's records into `.journal/resources`, which is also the name of one of the journal's own Python packages: the installer's clean-up of the old layout then took the folder for leftover package files and deleted the records in it. The folder is now `.journal/project`, which nothing in the package uses, and a migration gathers records from the root or from `resources/` into it. The boot test now writes a project record, upgrades, and checks the record is still there.
+
+What to do about it: `journal upgrade` at once. A journal that installed 2.84.0 lost its project records (docs, rules, templates, checks, tools); restore them from a backup of `.journal`.
+
 ## 2.84.0 — Project records live in .journal/resources
 
 Message 2142, to-do 748. An environment's records sit under `.journal/environments/<name>/<type>`, but the project's own records (docs, rules, templates, checks, tools, designs, plugins, connections and the environments list) lay loose at the root of `.journal`, among `src`, `runtime` and the rest. They now live in `.journal/resources/<type>`. A migration moves them on upgrade, merging into any folder already there, and the journal lists exactly what it listed before.

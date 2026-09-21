@@ -11,7 +11,7 @@ from engine import bus
 from resources.base import ACTIONS, ACTORS, PROJECT, Event
 from engine.stored import held_back, read_json, write_json, write_text
 
-RESOURCES = "resources"
+RESOURCES = "project"
 
 
 SETTINGS: dict[str, tuple] = {}
