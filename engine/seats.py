@@ -24,6 +24,7 @@ def live(root: Path) -> list[tuple[dict, dict]]:
             "status": seat.get("state") or report.get("status") or "",
             "environment": sessions.environment(session) or seat.get("env") or "",
             "at": at,
+            "terminal": seat.get("terminal") or "",
         }
         found[session] = (seat, agent)
     return sorted(found.values(), key=lambda pair: (-pair[1]["at"], pair[1]["session"]))
@@ -34,5 +35,5 @@ def seats(root: Path) -> list[dict]:
     for path in (Path(root) / "runtime").glob("seat-*.json"):
         seat = read_json(path)
         if seat is not None:
-            found.append(seat)
+            found.append({**seat, "terminal": path.stem.removeprefix("seat-")})
     return found

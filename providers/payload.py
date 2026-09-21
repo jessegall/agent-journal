@@ -3,7 +3,8 @@ from pathlib import Path
 
 STATUS = {"SessionStart": "idle", "Stop": "idle", "UserPromptSubmit": "working", "PreToolUse": "working",
           "PostToolUse": "working", "PreCompact": "compacting", "SubagentStart": "",
-          "SubagentStop": "", "SessionEnd": "stopped"}
+          "SubagentStop": "", "SessionEnd": "stopped", "PermissionRequest": ""}
+PERMISSION = "PermissionRequest"
 EVENTS = tuple(STATUS)
 
 

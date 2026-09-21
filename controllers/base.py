@@ -71,7 +71,7 @@ class Controller(Stored, Files, Links):
     def _finished(self, r: Resource) -> bool:
         return bool(r.completed)
 
-    def _handled(self, action: str, **args):
+    def _handled(self, action: str, /, **args):
         for fn in HANDLERS.get(f"{self.type}.{action}", []) + HANDLERS.get(action, []):
             taken = fn(self, **args)
             if taken is not None:

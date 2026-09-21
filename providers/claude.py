@@ -299,6 +299,8 @@ class ClaudeDriver(Driver):
     name = "claude"
     AUTO_ARGS = ("--permission-mode", "auto")
     APPROVAL_FLAGS = frozenset({"--permission-mode", "--dangerously-skip-permissions"})
+    SKIP_ARGS = ("--dangerously-skip-permissions",)
+    RESUMING = {"--resume": 1, "-r": 1, "--continue": 0, "-c": 0}
     TAKES_OURS = ("--settings", json.dumps({"crossSessionInbound": "accept"}))
     CHANNEL = ("--dangerously-load-development-channels", "server:journal")
     LISTENING = 15.0

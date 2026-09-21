@@ -31,7 +31,11 @@ const spoken = computed(() =>
         .map((f) => ({name: f.name, title: f.title, lines: Object.entries(f.lines || {}).map(([key, line]) => ({key, ...line}))}))
         .filter((f) => f.lines.length)
 );
-const pieces = (text) => String(text || "").split(/(\{\{\w+\}\})/).filter(Boolean).map((piece) => ({piece, slot: /^\{\{\w+\}\}$/.test(piece)}));
+const pieces = (text) =>
+    String(text || "")
+        .split(/(\{\{\w+\}\})/)
+        .filter(Boolean)
+        .map((piece) => ({piece, slot: /^\{\{\w+\}\}$/.test(piece)}));
 const on = (name, fallback = false) => {
     const set = store.settings && store.settings.features;
     return set && name in set ? !!set[name] : fallback;
@@ -80,6 +84,18 @@ const delivers = (how) => {
 
 async function setDelivery(how, value) {
     await api.saveSettings({delivery: {...((store.settings && store.settings.delivery) || {}), [how]: value}});
+}
+const permissions = computed(() => (store.settings && store.settings.permissions) || {});
+const relaunching = ref(false);
+
+async function skipPrompts(skip) {
+    relaunching.value = true;
+    try {
+        await api.relaunchAgent(permissions.value.session, skip);
+        store.settings = await api.settings();
+    } finally {
+        relaunching.value = false;
+    }
 }
 const tagNames = computed(() => ((store.settings && store.settings.tags) || {}).names || []);
 
@@ -215,7 +231,10 @@ async function sweep(e) {
             <header class="group-head" role="button" tabindex="0" @click="fold('lines')">
                 <span class="fold" />
                 <h2>What the features say</h2>
-                <p class="lead">Every line a feature can say to the agent. A feature can only say its own lines, and the parts in braces are filled in when it is said.</p>
+                <p class="lead">
+                    Every line a feature can say to the agent. A feature can only say its own lines, and the parts in braces are filled in
+                    when it is said.
+                </p>
             </header>
             <template v-for="f in spoken" :key="f.name">
                 <div class="row">
@@ -259,6 +278,30 @@ async function sweep(e) {
                         @change="saveAnswerHold"
                     />
                     <span class="unit">seconds</span>
+                </span>
+            </div>
+        </section>
+        <section v-if="permissions.possible" class="group" :class="{shut: !open('permissions')}">
+            <header class="group-head" role="button" tabindex="0" @click="fold('permissions')">
+                <span class="fold" />
+                <h2>Permissions</h2>
+                <p class="lead">Whether the agent stops to ask before it runs a tool.</p>
+            </header>
+            <div class="row">
+                <span class="text">
+                    <span class="title">Skip permission prompts</span>
+                    <span class="help">
+                        The agent is running {{ permissions.running ? "without" : "with" }} permission prompts. Changing this restarts the
+                        agent in the same conversation.
+                    </span>
+                </span>
+                <span class="control">
+                    <template v-if="relaunching">
+                        <span class="note">Restarting</span>
+                    </template>
+                    <template v-else>
+                        <Switch :on="!!permissions.skip" @change="skipPrompts" />
+                    </template>
                 </span>
             </div>
         </section>

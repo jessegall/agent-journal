@@ -4,7 +4,7 @@ import shutil
 from pathlib import Path
 
 from engine.transcript import AGENT, HUMAN, INJECTED, TOOL, timestamp
-from providers.payload import EVENTS
+from providers.payload import EVENTS, PERMISSION
 from providers.base import Provider
 from providers.payload import Hook
 from resources.types import AgentRow
@@ -141,7 +141,7 @@ class Codex(Provider):
 
     def wiring(self, command: str) -> dict:
         return {"hooks": {event: [{"matcher": "", "hooks": [{"type": "command", "command": command, "timeout": 60}]}]
-                          for event in EVENTS}}
+                          for event in EVENTS if event != PERMISSION}}
 
     def dispatch(self, tool) -> dict:
         if not tool.name.endswith("spawn_agent"):

@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 from pathlib import Path
 
 from engine.transcript import Turn
-from providers.payload import Hook
+from providers.payload import Hook, PERMISSION
 from resources.base import Refused
 from engine.stored import read_json, tail, write_text
 
@@ -166,7 +166,10 @@ class Provider(ABC):
                 "provider": self.name, "uses": int(row.uses or 0) + (hook.event == "PreToolUse"), "transcript": str(hook.transcript or row.transcript or ""),
                 "inbox": self.inbox(hook) or row.inbox or "", "model": self.model(hook) or row.model or "",
                 "effort": self.effort(Path(hook.cwd or root.parent), hook.transcript), "started": row.started or time.time(),
-                "context": row.context or 0 if context is None else context}
+                "context": row.context or 0 if context is None else context, "asking": self.asking(hook)}
+
+    def asking(self, hook) -> dict:
+        return {"tool": hook.tool.name, "said": hook.tool.said[:300], "at": time.time()} if hook.event == PERMISSION else {}
 
     def read_ahead(self, path: Path) -> None:
         self.transcript(path)

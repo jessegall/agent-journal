@@ -29,6 +29,9 @@ class Driver(ABC):
     FROM = "The journal, for the user:"
     AUTO_ARGS = ()
     APPROVAL_FLAGS = frozenset()
+    SKIP_ARGS = ()
+    RESUMING: dict[str, int] = {}
+    ALLOW, DENY = b"1", b"\x1b"
     QUIET = 3.0
     PROMPT = re.compile(r"[›>$❯]\s*$")
 
@@ -51,6 +54,28 @@ class Driver(ABC):
     def launch_args(cls, args: list[str], automatic: bool = False) -> list[str]:
         flags = {arg.split("=", 1)[0] for arg in args}
         return [*cls.AUTO_ARGS, *args] if automatic and flags.isdisjoint(cls.APPROVAL_FLAGS) else args
+
+    @classmethod
+    def skipping(cls, args: list[str], skip: bool) -> list[str]:
+        kept = [arg for arg in args if arg not in cls.SKIP_ARGS]
+        return [*cls.SKIP_ARGS, *kept] if skip else kept
+
+    @classmethod
+    def resumed(cls, args: list[str], conversation: str) -> list[str]:
+        if not cls.RESUMING or not conversation:
+            return args
+        kept, dropping = [], 0
+        for arg in args:
+            if dropping:
+                dropping -= 1
+            elif arg in cls.RESUMING:
+                dropping = cls.RESUMING[arg]
+            else:
+                kept.append(arg)
+        return [*kept, next(iter(cls.RESUMING)), conversation]
+
+    def permit(self, allow: bool) -> None:
+        self._wrote(self.ALLOW if allow else self.DENY)
 
     def alive(self) -> bool:
         return self.fd >= 0 or typist.reachable(typist.path(self.record.root, self.session))

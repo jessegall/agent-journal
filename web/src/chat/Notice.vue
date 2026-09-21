@@ -17,6 +17,17 @@ async function force() {
     }
 }
 
+const answering = ref(false);
+
+async function permit(allow) {
+    answering.value = true;
+    try {
+        await api.permitAgent(props.notice.data.session, allow);
+    } catch (e) {
+        answering.value = false;
+    }
+}
+
 async function close() {
     await api.act("notice", props.notice.n, "close");
 }
@@ -29,7 +40,11 @@ async function close() {
         <template v-if="notice.data.link">
             <a class="chat-notice-go" :href="notice.data.link" target="_blank" rel="noopener">{{ notice.data.label || "open" }}</a>
         </template>
-        <template v-if="notice.data.action && notice.data.session">
+        <template v-if="notice.data.action === 'permission' && notice.data.session">
+            <button type="button" class="chat-notice-go" :disabled="answering" @click="permit(true)">Allow</button>
+            <button type="button" class="chat-notice-go" :disabled="answering" @click="permit(false)">Deny</button>
+        </template>
+        <template v-else-if="notice.data.action && notice.data.session">
             <button type="button" :class="['chat-notice-go', {forcing}]" :disabled="forcing" @click="force">
                 {{ forcing ? "Forcing" : "Force now" }}
             </button>

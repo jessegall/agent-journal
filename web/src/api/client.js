@@ -230,6 +230,14 @@ export class ApiClient {
         return this.post(this.here(`/agent/${encoded(session)}/force`));
     }
 
+    permitAgent(session, allow) {
+        return this.post(this.here(`/agent/${encoded(session)}/permit`), {allow});
+    }
+
+    relaunchAgent(session, skip) {
+        return this.post(this.here(`/agent/${encoded(session)}/relaunch`), {skip});
+    }
+
     transcript(agent, session, fields) {
         return this.get(this.here(`/agent/${agent}${session ? `/subagent/${session}` : ""}/transcript${query(fields)}`));
     }

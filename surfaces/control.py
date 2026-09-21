@@ -1,9 +1,11 @@
 from pathlib import Path
 
 from controllers.types import Agents, Notices, Notifications
-from engine.inputs import FORCE, queue
+from engine.inputs import FORCE, PERMIT, queue
 from engine.record import Record
 from engine.seats import live
+from engine import runtime
+from engine.stored import write_json
 from providers import PROVIDERS
 from resources.base import SYSTEM, Refused
 
@@ -56,6 +58,21 @@ def force(root: Path, env: str, session: str) -> dict:
     found = online(root, env, session)
     queued = queue(Path(root), session, "", "Force through", provider=found["provider"], action=FORCE)
     return {k: v for k, v in queued.items() if k != "line"} | {"queued": True}
+
+
+def permit(root: Path, env: str, session: str, allow: bool) -> dict:
+    found = online(root, env, session)
+    answer = "allow" if allow else "deny"
+    queued = queue(Path(root), session, "", answer.capitalize(), provider=found["provider"], action=PERMIT, value=answer)
+    return {k: v for k, v in queued.items() if k != "line"} | {"queued": True}
+
+
+def relaunch(root: Path, env: str, session: str, skip: bool) -> dict:
+    found = online(root, env, session)
+    record = Record(Path(root), env)
+    record.set_setting("permissions", {**record.setting("permissions", {}), "skip": skip})
+    write_json(runtime.relaunch_file(Path(root), found["terminal"]), {"resume": session})
+    return {"relaunching": True, "skip": skip}
 
 
 def request(root: Path, env: str, session: str, action: str, value: str) -> dict:
