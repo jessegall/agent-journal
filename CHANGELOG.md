@@ -4,6 +4,19 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.71.0 — Moving a card on the Kanban board
+
+Plan 10, phase 2, to-dos 669 to 671. `journal todo shift <n> <lane> [--why] [--how]` moves a card through the journal's own actions, so every event and check stays as it is:
+- **To do → Held** blocks the row, and asks why.
+- **Held → To do** unblocks it.
+- **To do or Held → Done** closes it.
+- **Done → To do** reopens it, and asks why.
+- **To do → Doing** starts it through the one-work gate. That is the drop on Doing, as decided for question 61.
+
+Every other move is refused in words that name the command that would do it. A card with open work is left to its agent (`journal work end` or `journal work park`). A card with an open question moves when you answer it. Only `journal question ask` puts a card in Needs you. A row that waits on another row, or is held by its plan, says so. A shift into the lane a card is already in changes nothing. Each card on the board carries the lanes it may move to, worked out by the same rules, so the viewer never repeats them. The feature's test covers the lanes and their order, every move and refusal, and the feature switch.
+
+What to do about it: `journal upgrade`.
+
 ## 2.70.0 — The Kanban board, read from the record
 
 Plan 10, phase 1, to-dos 665 to 668. A new feature, kanban, shows the to-dos of an environment as cards in five lanes. The lanes are worked out from each to-do's state and never stored:
