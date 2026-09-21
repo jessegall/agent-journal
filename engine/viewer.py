@@ -14,6 +14,7 @@ from urllib.request import urlopen
 from features.tabfocus.focus import existing_tab
 from engine.stored import read_json, write_json, write_text
 from engine.sessions import alive
+from engine.version import version
 
 PORTS = range(8420, 8440)
 HEARTBEAT = 2.0
@@ -91,7 +92,7 @@ def identity(url: str, timeout: float = 0.05) -> dict | None:
 
 def answers(url: str, root: Path, timeout: float = 0.05) -> bool:
     said = identity(url, timeout) or {}
-    return Path(str(said.get("root") or "")).resolve() == root.resolve()
+    return Path(str(said.get("root") or "")).resolve() == root.resolve() and said.get("version") == version()
 
 
 def running(root: Path) -> str:
