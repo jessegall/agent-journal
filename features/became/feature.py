@@ -1,6 +1,6 @@
 import time
 
-from controllers.types import CONTROLLERS, Docs, Reports
+from controllers.types import Agents, CONTROLLERS, Docs, Reports
 from features.base import Feature, event
 from resources.base import AGENT, SYSTEM
 
@@ -31,7 +31,9 @@ class Became(Feature):
         uncited = [r for r in self.lately(record) if r.ref != made.ref and r.ref not in made.refs]
         if not uncited:
             return
-        agent = self.agent(event, record)
+        agent = Agents(record, actor=SYSTEM).primary()
+        if not agent:
+            return
         names = ", ".join(r.ref for r in uncited[-3:])
         self.nudge(record, agent, f"{event.type} {event.n} cites nothing it was built on",
                    f"you read {names} just now: journal {event.type} link {event.n} \"<ref>\" for whichever it came from", private=True)

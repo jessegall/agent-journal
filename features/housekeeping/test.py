@@ -5,7 +5,7 @@ import pytest
 
 import features
 from features import FEATURES
-from tests.features.kit import idle
+from tests.kit import idle
 from tests.conftest import fresh
 
 

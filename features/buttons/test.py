@@ -21,8 +21,8 @@ def test_a_button_names_a_type_and_action_and_what_would_not_run_is_dropped():
 
     start = {"label": "Okay, start", "type": "plan", "n": 3, "action": "activate"}
     assert shaped(record, [start]) == [start], "a button on a row is kept as it was written"
-    assert shaped(record, [{"label": "New to-do", "type": "todo", "action": "add", "body": {"title": "one"}}]) == \
-        [{"label": "New to-do", "type": "todo", "action": "add", "body": {"title": "one"}}], "a type-level button needs no row"
+    assert shaped(record, [{"label": "New to-do", "type": "todo", "action": "create", "body": {"title": "one"}}]) == \
+        [{"label": "New to-do", "type": "todo", "action": "create", "body": {"title": "one"}}], "a type-level button needs no row"
     assert shaped(record, [{"label": "Done", "type": "todo", "n": 1, "action": "done"}]) == \
         [{"label": "Done", "type": "todo", "action": "done", "n": 1}], "a word the type renames is an action too"
 

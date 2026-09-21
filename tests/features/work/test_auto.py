@@ -5,7 +5,7 @@ from controllers.types import Questions, Todos, Works
 from features.work.auto import QUIET_FOR, launch_args, still_there
 from features.work.next import next, ready
 from resources.base import AGENT, USER
-from tests.features.kit import idle, nudges
+from tests.kit import idle, nudges
 from tests.conftest import fresh, refused
 
 

@@ -6,7 +6,7 @@ from features.plans.controller import Plans  # noqa: E402
 from controllers.types import Agents, Messages, Questions, Todos, Works
 from surfaces.summary import environment, summarize
 from resources.base import AGENT, SYSTEM, USER
-from tests.features.kit import idle, report
+from tests.kit import idle, report
 from tests.conftest import fresh
 
 

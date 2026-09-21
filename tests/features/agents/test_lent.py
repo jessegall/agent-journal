@@ -11,7 +11,7 @@ from engine.record import Record
 from engine.sessions import Sessions
 from features.work.next import ready
 from resources.base import AGENT, SYSTEM, USER
-from tests.features.kit import report
+from tests.kit import report
 from tests.conftest import refused
 
 HERE = Path(__file__).resolve().parents[3]

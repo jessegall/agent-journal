@@ -4,7 +4,7 @@ import features
 from features.plans.controller import Plans  # noqa: E402
 from controllers.types import Docs, Reports
 from resources.base import AGENT
-from tests.features.kit import nudges, report
+from tests.kit import nudges, report
 from tests.conftest import fresh
 
 

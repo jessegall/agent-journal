@@ -6,7 +6,7 @@ import features
 from controllers.types import Todos
 from engine.record import Record
 from resources.base import SYSTEM, USER
-from tests.features.kit import report
+from tests.kit import report
 
 
 @pytest.fixture(autouse=True)

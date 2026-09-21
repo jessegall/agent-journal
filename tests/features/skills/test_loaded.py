@@ -1,7 +1,7 @@
 import pytest
 
 import features
-from tests.features.kit import nudges, report
+from tests.kit import nudges, report
 from tests.conftest import fresh
 
 

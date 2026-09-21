@@ -5,7 +5,7 @@ import pytest
 import features
 from controllers.types import Nudges, Todos
 from resources.base import AGENT
-from tests.features.kit import idle, nudges
+from tests.kit import idle, nudges
 from tests.conftest import fresh
 
 

@@ -5,7 +5,7 @@ from controllers.types import Environments, Works
 from engine.sessions import Sessions, allowed
 from features.base import held
 from resources.base import AGENT
-from tests.features.kit import report
+from tests.kit import report
 from tests.conftest import fresh
 
 

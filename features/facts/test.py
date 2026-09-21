@@ -3,7 +3,7 @@ import pytest
 import features
 from controllers.types import Nudges, Facts, Reminders
 from resources.base import AGENT, USER
-from tests.features.kit import nudges, report
+from tests.kit import nudges, report
 from tests.conftest import fresh
 
 
@@ -22,13 +22,13 @@ def test_standing_pins_are_repeated_at_the_first_tenth_and_superseding_or_promot
     pins.create("tests run bounded")
     report(record, "working", "PostToolUse", context=10)
     assert (nudges(record), Nudges(record).load(1).brief) == \
-        (["2 pins standing, read them"], "1. the hook payload carries the parent's session id; 2. tests run bounded"), \
+        (["2 facts standing, read them"], "1. the hook payload carries the parent's session id; 2. tests run bounded"), \
         "said at the first tenth"
     report(record, "working", "PostToolUse", context=14)
     assert len(nudges(record)) == 1, "not again inside the same tenth"
 
     newer = pins.create("the hook payload carries the parent session id; only agent_id tells it apart", supersedes=1)
-    assert (pins.load(1).outcome, newer.refs) == ("superseded by pin 3", ["fact:1"]), \
+    assert (pins.load(1).outcome, newer.refs) == ("superseded by fact 3", ["fact:1"]), \
         "superseded: the old is struck, saying by which, and the new links it"
     rule = pins.promote(2)
     assert (rule.type, rule.title, pins.load(2).outcome) == ("rule", "tests run bounded", "promoted to rule 1"), \

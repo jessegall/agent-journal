@@ -5,7 +5,7 @@ from features.plans.controller import Plans  # noqa: E402
 from controllers.types import Agents, Docs, Todos
 from engine.record import Record
 from features.work.next import next, ready
-from tests.features.kit import idle
+from tests.kit import idle
 from resources.base import AGENT, SYSTEM, USER
 from tests.conftest import fresh, refused
 

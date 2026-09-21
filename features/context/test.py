@@ -4,7 +4,7 @@ import features
 from controllers.types import Agents, Facts, Rules, Works
 from features.base import held
 from resources.base import AGENT, SYSTEM
-from tests.features.kit import nudges as all_nudges, report
+from tests.kit import nudges as all_nudges, report
 from tests.conftest import fresh
 
 
@@ -31,12 +31,12 @@ def test_a_context_mark_holds_writes_until_the_agent_pins_rules_or_says_nothing(
     assert (gate(), nudges(record)) == ("", []), "under the first mark: no hold, nothing said"
     report(record, "working", "PostToolUse", context=52)
     assert (gate(), nudges(record)) == \
-        ('context 52% full — decide before any other write — journal pin, journal rule, or journal nothing "<why>"', ["context 52% full, decide"]), \
+        ('context 52% full — decide before any other write — journal fact, journal rule, or journal nothing "<why>"', ["context 52% full, decide"]), \
         "50 crossed: a hold on writes and a nudge to decide"
     report(record, "working", "PostToolUse", context=60)
     assert (bool(gate()), len(nudges(record))) == (True, 1), "between marks: the hold stands, nothing new said"
     Facts(record, actor=AGENT).create("what a later reader needs")
-    assert gate() == "", "a pin decides it: released"
+    assert gate() == "", "a fact decides it: released"
     report(record, "working", "PostToolUse", context=71)
     assert len(nudges(record)) == 2, "70 crossed: asked again"
     Rules(record, actor=AGENT).create("what binds everywhere")

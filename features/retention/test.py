@@ -5,7 +5,7 @@ import pytest
 import features
 from controllers.types import Notifications, Reports, Todos
 from resources.base import AGENT, USER
-from tests.features.kit import report
+from tests.kit import report
 from tests.conftest import fresh
 
 

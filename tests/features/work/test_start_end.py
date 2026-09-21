@@ -6,7 +6,7 @@ from controllers.types import Todos, Works
 from resources.base import AGENT, SYSTEM, USER
 from features import FEATURES
 from features.base import held
-from tests.features.kit import idle, nudges, report
+from tests.kit import idle, nudges, report
 from tests.conftest import fresh, refused
 
 

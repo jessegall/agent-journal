@@ -3,11 +3,12 @@ import time
 import pytest
 
 import features
+from features import FEATURES
 from controllers.types import Facts, Questions, Reminders, Rules, Todos
 from features.cleanup.audit import evidence
 from features.context.reread import owed as read_owed, standing
 from resources.base import AGENT, USER
-from tests.features.kit import nudges, report
+from tests.kit import nudges, report
 from tests.conftest import fresh
 
 
@@ -62,9 +63,9 @@ def test_evidence_finds_dead_paths_and_verbs_and_a_struck_claim_has_none():
 
     assert read_owed(record) is False, "a young record owes no reading pass yet"
     assert read_owed(record, days=0) is True, "a week after its first event, never read: owed"
-    got = read(record)
-    assert sorted(r.ref for r in got) == ["fact:1", "fact:3", "rule:1", "rule:2", "rule:3"], \
-        "read returns every standing rule and pin in full"
+    assert sorted(r.ref for r in standing(record)) == ["fact:1", "fact:3", "rule:1", "rule:2", "rule:3"], \
+        "the reading pass is every standing rule and fact, in full"
+    FEATURES["context"].reread(Rules(record, actor=AGENT))
     assert read_owed(record) is False, "read: no longer owed"
 
     report(record, "idle", "Stop")
