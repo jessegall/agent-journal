@@ -2,7 +2,7 @@ import io
 
 from engine.events import AgentMessageSending
 from features.parts import Context, Handler
-from features.command_tags.reading import CARRIED, named, reader, replies, runs, stripped
+from features.command_tags.reading import CARRIED, named, reader, replies, runs, stripped, tag_spelling
 from resources.base import AGENT
 
 
@@ -26,7 +26,7 @@ class RunTagCommands(Handler):
             code = run(["--root", str(context.record.root), "--env", context.record.env, "--session", context.agent.session, "--as", AGENT,
                         *self.argv(commands[name], n, argument, text), *self.settings(extras)], out=out, err=err)
             if code:
-                context.agent.whisper("refused", tag=name, on=n or argument, said=(err.getvalue() or out.getvalue()).strip())
+                context.agent.whisper("refused", tag=name, on=n or argument, said=tag_spelling((err.getvalue() or out.getvalue()).strip()))
 
     def settings(self, extras: str) -> list[str]:
         return [word for key, value in named(extras).items() for word in ("--set", f"{key}={value}")]

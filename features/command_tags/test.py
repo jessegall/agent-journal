@@ -130,7 +130,7 @@ def test_a_reply_shown_on_screen_is_posted_even_when_the_transcript_never_gets_i
 def test_a_tag_passes_its_named_arguments_to_the_command_in_any_order(tmp_path):
     from engine.hooks import handle
     from providers import PROVIDERS
-    from controllers.types import Facts
+    from controllers.types import Facts, Rules
     record = fresh()
     engine = watching(record, tmp_path / "none.jsonl")
     said = '[!fact="the port is 8423", keywords=("port", "8423")]\nthe server says so'
@@ -138,3 +138,8 @@ def test_a_tag_passes_its_named_arguments_to_the_command_in_any_order(tmp_path):
     engine.announce_written()
     fact = Facts(record, actor="system").all()[-1]
     assert (fact.title, fact.brief, fact.data["keywords"]) == ("the port is 8423", "the server says so", ["port", "8423"]), "keywords ride on the tag"
+    for said in ('[!rule="stay on main"]\nthe user said so', '[!rule="stay on main", keywords=("git switch")]\nthe user said so'):
+        handle(PROVIDERS["claude"](), record.root, record.env, {"hook_event_name": "Stop", "session_id": "claude-1", "last_assistant_message": said})
+        engine.announce_written()
+    assert [n for n in Nudges(record).all() if 'keywords="' in n.brief and "--set" not in n.brief], "a refusal is said in the tag's own spelling"
+    assert Rules(record, actor="system").all()[-1].data["keywords"] == ["git switch"], "a rule is filed by its tag"

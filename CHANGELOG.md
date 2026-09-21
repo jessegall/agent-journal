@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.60.0 — A rule tag, and refusals in tag spelling
+
+Messages 1654 and 1655, to-do 632. `[!rule="the ruling", keywords=("git", "branch")]` files a rule, the same way the fact tag files a fact. When a tag's command is refused, the agent is still told on its next turn, and the error now uses tag spelling. A missing keyword reads `keywords="<word>,<word>"`, with a reminder to add it to the tag, instead of the command line's `--set keywords=...`.
+
+What to do about it: `journal upgrade`.
+
 ## 2.59.3 — One revision, no revision bar
 
 Message 1657, to-do 639. While a design has only one revision, its strip no longer shows the arrows, a single tick and "Revision 1 of 1". It keeps the status line and Keep this revision.
