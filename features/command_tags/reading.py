@@ -2,7 +2,8 @@ import re
 
 REPLY = "reply"
 RUNS = {REPLY: "message reply {n} {text}", "log": "work log {text} --n {n}", "end": "work end {n} --how {text}",
-        "todo": "todo create {name} --brief {text}", "fact": "fact create {name} --brief {text}"}
+        "todo": "todo create {name} --brief {text}", "fact": "fact create {name} --brief {text}",
+        "rule": "rule create {name} --brief {text}"}
 RETIRED = ("discovery", "correction", "blocked", "info")
 VALUE = r'(?:"[^"]*"|\([^)]*\)|[^,\]\s]+)'
 EXTRA = r'\s*,\s*[a-z_]+=' + VALUE
@@ -10,6 +11,7 @@ ARGUMENT = r'(?::[0-9]+|="[^"]*")?(?:' + EXTRA + r')*'
 REPLIED = re.compile(r"\bjournal\s+message\s+reply\s+(\d+)")
 CARRIED = re.compile(r'^[ \t]*(?:>\s?)?(?:\*\*)?\[!([a-z]+)(?::([0-9]+)|="([^"]*)")((?:' + EXTRA + r')*)\]', re.M)
 NAMED = re.compile(r'([a-z_]+)=(' + VALUE + r')')
+SETTING = re.compile(r"--set ([a-z_]+)=")
 
 
 def pattern(names) -> re.Pattern:
@@ -44,3 +46,7 @@ def replies(text: str) -> bool:
 def named(extras: str) -> dict[str, str]:
     return {key: ",".join(re.findall(r'"([^"]*)"', value)) if value.startswith("(") else value.strip('"')
             for key, value in NAMED.findall(extras)}
+
+
+def tag_spelling(text: str) -> str:
+    return SETTING.sub(r"\1=", text)
