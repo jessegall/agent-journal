@@ -1,57 +1,50 @@
-import sys
-from pathlib import Path
+from controllers.types import Plans, Todos
+from features.auto.next import ready
+from migrations import m0005_todo_waits
+from resources.base import AGENT, USER
+from tests.conftest import fresh, refused
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from controllers.types import Plans, Todos  # noqa: E402
-from features.auto.next import ready  # noqa: E402
-from migrations import m0005_todo_waits  # noqa: E402
-from resources.base import AGENT, USER  # noqa: E402
-from tests.kit import check, done, fresh, refused  # noqa: E402
 
-record = fresh()
-todos = Todos(record, actor=AGENT)
-first, second, third = (todos.create(t) for t in ("first", "second", "third"))
+def test_a_todo_waits_on_another_a_plan_and_the_checks_around_it():
+    record = fresh()
+    todos = Todos(record, actor=AGENT)
+    first, second, third = (todos.create(t) for t in ("first", "second", "third"))
 
-# A TO-DO WAITS ON ANOTHER: it stays out of the next pick and says so
-todos.after(second.n, str(first.n))
-check("the waiting to-do names what it waits on", todos.load(second.n).after, [first.ref])
-check("it stays out of the next pick while the other is open", [t.n for t in ready(record)], [first.n, third.n])
-check("the list marks it", todos.mark(todos.load(second.n)), f"  [waits on todo {first.n}]")
-todos.complete(first.n, "done")
-check("once the other is done it is picked again", [t.n for t in ready(record)], [second.n, third.n])
+    todos.after(second.n, str(first.n))
+    assert todos.load(second.n).after == [first.ref], "the waiting to-do names what it waits on"
+    assert [t.n for t in ready(record)] == [first.n, third.n], "it stays out of the next pick while the other is open"
+    assert todos.mark(todos.load(second.n)) == f"  [waits on todo {first.n}]", "the list marks it"
+    todos.complete(first.n, "done")
+    assert [t.n for t in ready(record)] == [second.n, third.n], "once the other is done it is picked again"
 
-# OR ON A PLAN: it waits until the plan is done or abandoned
-plan = Plans(record, actor=AGENT).create("The plan")
-todos.after(third.n, f"plan:{plan.n}")
-check("a to-do can wait on a plan", (todos.waits(todos.load(third.n)), [t.n for t in ready(record)]), ([plan.ref], [second.n]))
-Plans(record, actor=AGENT).abandon(plan.n, "not needed")
-check("an ended plan releases it", todos.waits(todos.load(third.n)), [])
+    plan = Plans(record, actor=AGENT).create("The plan")
+    todos.after(third.n, f"plan:{plan.n}")
+    assert (todos.waits(todos.load(third.n)), [t.n for t in ready(record)]) == ([plan.ref], [second.n]), "a to-do can wait on a plan"
+    Plans(record, actor=AGENT).abandon(plan.n, "not needed")
+    assert todos.waits(todos.load(third.n)) == [], "an ended plan releases it"
 
-# WAITS ARE CHECKED: no self, no cycle, no missing target, and --off takes one back
-check("a to-do cannot wait on itself", refused(lambda: todos.after(second.n, str(second.n))), f"todo {second.n} waiting on todo:{second.n} would wait on itself")
-fourth = todos.create("fourth")
-todos.after(fourth.n, str(third.n))
-check("nor on something that waits on it", refused(lambda: todos.after(third.n, str(fourth.n))), f"todo {third.n} waiting on todo:{fourth.n} would wait on itself")
-check("a missing target is refused", refused(lambda: todos.after(fourth.n, "99")), "no todo 99")
-check("only to-dos and plans are waited on", refused(lambda: todos.after(fourth.n, "doc:1")), "a to-do waits on another to-do or a plan: a number, todo:<n> or plan:<n>")
-todos.after(fourth.n, str(third.n), off=True)
-check("--off takes a wait back", todos.load(fourth.n).after, [])
+    assert refused(lambda: todos.after(second.n, str(second.n))) == f"todo {second.n} waiting on todo:{second.n} would wait on itself", \
+        "a to-do cannot wait on itself"
+    fourth = todos.create("fourth")
+    todos.after(fourth.n, str(third.n))
+    assert refused(lambda: todos.after(third.n, str(fourth.n))) == f"todo {third.n} waiting on todo:{fourth.n} would wait on itself", \
+        "nor on something that waits on it"
+    assert refused(lambda: todos.after(fourth.n, "99")) == "no todo 99", "a missing target is refused"
+    assert refused(lambda: todos.after(fourth.n, "doc:1")) == "a to-do waits on another to-do or a plan: a number, todo:<n> or plan:<n>", \
+        "only to-dos and plans are waited on"
+    todos.after(fourth.n, str(third.n), off=True)
+    assert todos.load(fourth.n).after == [], "--off takes a wait back"
 
-# A BLOCK WITH A REASON is marked too
-todos.block(fourth.n, "needs the API key")
-check("a blocked to-do shows why", todos.mark(todos.load(fourth.n)), "  [blocked: needs the API key]")
+    todos.block(fourth.n, "needs the API key")
+    assert todos.mark(todos.load(fourth.n)) == "  [blocked: needs the API key]", "a blocked to-do shows why"
 
-# THE MIGRATION moves old to-do links into waits
-old = fresh("old")
-legacy = Todos(old, actor=USER)
-a, b = legacy.create("a"), legacy.create("b")
-legacy.link(b.n, a.ref)
-m0005_todo_waits.run(old.root)
-moved = legacy.load(b.n)
-check("an old link to a to-do becomes a wait", (moved.after, a.ref in moved.refs), ([a.ref], False))
+    old = fresh("old")
+    legacy = Todos(old, actor=USER)
+    a, b = legacy.create("a"), legacy.create("b")
+    legacy.link(b.n, a.ref)
+    m0005_todo_waits.run(old.root)
+    moved = legacy.load(b.n)
+    assert (moved.after, a.ref in moved.refs) == ([a.ref], False), "an old link to a to-do becomes a wait"
 
-# A ROW OF ANOTHER TYPE, listed through a to-do, is left unmarked
-note = todos.comment(second.n, "a note")
-check("a comment listed under a to-do is not marked", todos.mark(note), "")
-
-done()
+    note = todos.comment(second.n, "a note")
+    assert todos.mark(note) == "", "a comment listed under a to-do is not marked"
