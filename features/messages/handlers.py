@@ -1,9 +1,140 @@
-from engine.events import AgentMessageSent
+from dataclasses import dataclass
+from typing import ClassVar
+
+from engine.events import AgentMessageSent, AgentUpdated, ResourceCreated, ResourceEvent
+from engine.transcript import IDLE, last_said
+from features import trigger
+from features.messages.answering import in_hand, read_and_open, theirs, unanswered
 from features.parts import Context, Handler
-from resources.base import AGENT, titled
+from resources.base import AGENT, SECTION, USER, titled
+
+LINKED = ("message", "comment", "reaction", "nudge", "notification", "agent")
+ANSWERS = {"comment": "answered", "reaction": "acknowledged"}
+RUN_ON, SENTENCES = 400, 3
+
+
+@dataclass(frozen=True)
+class MessageCreated(ResourceEvent):
+    on: ClassVar[str] = "message.created"
+
+
+@dataclass(frozen=True)
+class MessagesUpdated(ResourceEvent):
+    on: ClassVar[str] = "message.updated"
+    numbers: tuple = ()
+
+    @classmethod
+    def read(cls, event) -> "MessagesUpdated":
+        return cls(n=event.n, action=event.action, type=event.type, actor=event.actor, numbers=tuple(event.data.get("numbers") or [event.n]))
+
+
+def counted(context: Context, behaviour: str) -> int:
+    key, row = context.feature.keyed(behaviour), context.agent.row
+    count = int(trigger.last(context.record, row.title, key).get("count") or 0) + 1
+    trigger.write(context.record, row, key, count=count)
+    return count
+
+
+def patient(context: Context, behaviour: str) -> int:
+    return int(context.settings[f"{behaviour}.patience"])
 
 
 class SaveAgentMessage(Handler):
     def handle(self, context: Context, event: AgentMessageSent) -> None:
         if context.agent and event.text.strip() and context.once("shown", event.text):
             context.journal.acting(AGENT).messages.create(titled(event.text), brief=event.text)
+
+
+class ResetCountsOnArrival(Handler):
+    def handle(self, context: Context, event: MessageCreated) -> None:
+        every = context.feature.behaviours["unread"].trigger["every"]
+        for row in context.feature.live(context.record):
+            trigger.write(context.record, row, context.feature.keyed("unread"), uses=int(row.uses or 0) - every)
+            trigger.write(context.record, row, context.feature.keyed("answering"), uses=int(row.uses or 0), count=0)
+
+
+class NameUnread(Handler):
+    def handle(self, context: Context, event: AgentUpdated) -> None:
+        if not context.agent:
+            return
+        if not any(AGENT not in row["seen"] and not row["completed"] and not row["deleted"] for row in context.journal.messages.summaries()):
+            context.release("unread")
+            trigger.write(context.record, context.agent.row, context.feature.keyed("unread"), count=0)
+            return
+        if not context.due("unread"):
+            return
+        context.agent.whisper("inbox")
+        if counted(context, "unread") > patient(context, "unread"):
+            context.hold("inbox held", "unread")
+
+
+class NameUnanswered(Handler):
+    def handle(self, context: Context, event: AgentUpdated) -> None:
+        if not context.agent:
+            return
+        held = unanswered(context.journal)
+        if not held:
+            trigger.write(context.record, context.agent.row, context.feature.keyed("answering"), count=0)
+            return
+        if context.due("answering") and counted(context, "answering") <= patient(context, "answering"):
+            context.agent.whisper("answer", messages=", ".join(f"message {m.n}" for m in held[-3:]))
+
+
+class CloseHandled(Handler):
+    behaviour = "closing"
+
+    def handle(self, context: Context, event: AgentUpdated) -> None:
+        if not context.agent or context.agent.row.status != IDLE:
+            return
+        for message in read_and_open(context.journal):
+            became = [*message.refs, *(s[SECTION.body] for s in message.sections)]
+            if became:
+                context.journal.messages.complete(message.n, how=f"handled: {', '.join(dict.fromkeys(became))}")
+
+
+class CloseSeenByUser(Handler):
+    behaviour = "closing"
+
+    def handle(self, context: Context, event: MessagesUpdated) -> None:
+        messages = context.journal.messages
+        for n in event.numbers:
+            message = messages.load(int(n))
+            if not message.completed and not theirs(message) and USER in message.seen:
+                messages.complete(message.n, how="read by the user")
+
+
+class CloseAnswered(Handler):
+    behaviour = "closing"
+
+    def handle(self, context: Context, event: ResourceCreated) -> None:
+        if event.type not in ANSWERS or event.actor != AGENT:
+            return
+        messages = context.journal.messages
+        for ref in context.journal.of(event.type).load(event.n).refs:
+            kind, _, n = ref.partition(":")
+            if kind != "message" or not n.isdigit():
+                continue
+            message = messages.load(int(n))
+            if not message.completed and theirs(message):
+                messages.complete(message.n, how=f"{ANSWERS[event.type]} by the agent")
+
+
+class LinkToMessageInHand(Handler):
+    behaviour = "linking"
+
+    def handle(self, context: Context, event: ResourceCreated) -> None:
+        if event.actor != AGENT or event.type in LINKED:
+            return
+        message = in_hand(context.journal)
+        ref = f"{event.type}:{event.n}"
+        if message and ref not in message.refs:
+            context.journal.messages.link(message.n, ref)
+
+
+class NameRunTogether(Handler):
+    behaviour = "paragraphs"
+
+    def handle(self, context: Context, event: AgentUpdated) -> None:
+        said = last_said(context.record, context.agent.row).strip()
+        if len(said) >= RUN_ON and "\n\n" not in said and said.count(". ") >= SENTENCES:
+            context.agent.whisper("paragraphs")

@@ -1,0 +1,50 @@
+from dataclasses import dataclass
+from typing import ClassVar
+
+from engine.events import AgentUpdated, AnyEvent, ResourceEvent
+from features.plans.controller import BUILDING, PHASES, WAITING
+from features.plans.progress import catch_up
+from features.plans.resource import PHASE
+from features.work.auto import automatic
+from features.parts import Context, Handler
+from resources.base import AGENT
+
+WRITTEN = ("created", "updated", "linked")
+ADVANCES = {("todo", "completed"), ("plan", "updated"), ("agent", "updated")}
+
+
+@dataclass(frozen=True)
+class PlanChanged(ResourceEvent):
+    on: ClassVar[str] = "plan"
+
+
+class GuideBuilding(Handler):
+    def handle(self, context: Context, event: PlanChanged) -> None:
+        if event.action not in WRITTEN or event.actor != AGENT:
+            return
+        plan = context.journal.plans.load(event.n)
+        agent = context.journal.agents.primary()
+        if plan.status != BUILDING or not agent:
+            return
+        stage = plan.stage or PHASES
+        filled = bool(plan.phases) and all(p[PHASE.todos] for p in plan.phases)
+        line = "ready" if stage != PHASES and filled else stage
+        speaking = context.speaking_to(agent)
+        if speaking.once("planned", f"{plan.n}:{line}"):
+            speaking.agent.say(line, n=plan.n)
+
+
+class PassCheckpointsInAuto(Handler):
+    def handle(self, context: Context, event: AgentUpdated) -> None:
+        if not automatic(context.record):
+            return
+        plans = context.journal.plans
+        for plan in plans._every():
+            if plan.status == WAITING:
+                plans.resume(plan.n)
+
+
+class AdvancePlans(Handler):
+    def handle(self, context: Context, event: AnyEvent) -> None:
+        if (event.type, event.action) in ADVANCES:
+            catch_up(context.record)
