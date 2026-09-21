@@ -1,6 +1,6 @@
 <script setup>
 import {computed, onMounted, ref, watch} from "vue";
-import {api} from "../api.js";
+import {api} from "../api/client.js";
 import {route} from "../route.js";
 import {clock} from "../store.js";
 
@@ -10,7 +10,7 @@ const error = ref("");
 async function load() {
     error.value = "";
     try {
-        commit.value = await api("GET", `/${route.value.env}/commit/${route.value.n}`);
+        commit.value = await api.commit(route.value.n);
     } catch (e) {
         error.value = e.message;
     }

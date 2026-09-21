@@ -1,6 +1,6 @@
 <script setup>
 import {computed, nextTick, onMounted, onUnmounted, ref, watch} from "vue";
-import {act, api, command} from "../api.js";
+import {api} from "../api/client.js";
 import Btn from "../kit/Btn.vue";
 import Dialog from "../kit/Dialog.vue";
 import Icon from "../kit/Icon.vue";
@@ -44,7 +44,7 @@ function servicesOf(p) {
 
 async function look() {
     try {
-        services.value = await api("GET", "/services");
+        services.value = await api.services();
     } catch (e) {
         services.value = [];
     }
@@ -67,7 +67,7 @@ async function preview() {
     busy.value = "preview";
     shown.value = "";
     try {
-        shown.value = await command(route.value.env, "plugin", "preview", {source: source.value});
+        shown.value = await api.command("plugin", "preview", {source: source.value});
     } catch (e) {
         shown.value = e.message;
     }
@@ -77,7 +77,7 @@ async function preview() {
 async function install() {
     busy.value = "install";
     try {
-        await command(route.value.env, "plugin", "install", {source: source.value, yes: true});
+        await api.command("plugin", "install", {source: source.value, yes: true});
         source.value = "";
         shown.value = "";
         await load("plugin");
@@ -92,7 +92,7 @@ async function plugin(p, action, body = {}) {
     reading.value = p.data.manifest.name;
     await readLog();
     try {
-        await act(route.value.env, "plugin", p.n, action, body);
+        await api.act("plugin", p.n, action, body);
         await load("plugin");
     } catch (e) {
         shown.value = e.message;
@@ -104,7 +104,7 @@ async function plugin(p, action, body = {}) {
 async function readLog() {
     if (!reading.value) return;
     try {
-        logged.value = (await api("GET", `/plugins/${reading.value}/log?lines=200`)).log;
+        logged.value = (await api.pluginLog(reading.value)).log;
     } catch (e) {
         logged.value = e.message;
     }

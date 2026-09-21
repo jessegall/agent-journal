@@ -1,6 +1,6 @@
 <script setup>
 import {computed, onMounted, onUnmounted, ref} from "vue";
-import {api} from "../api.js";
+import {api} from "../api/client.js";
 import Btn from "../kit/Btn.vue";
 import Icon from "../kit/Icon.vue";
 import {route} from "../route.js";
@@ -19,9 +19,9 @@ const running = computed(() => rows.value.filter((r) => RUNNING.includes(r.state
 
 async function look() {
     try {
-        rows.value = await api("GET", "/services");
+        rows.value = await api.services();
         error.value = "";
-        if (reading.value) log.value = (await api("GET", `/services/${reading.value}/log?lines=200`)).log;
+        if (reading.value) log.value = (await api.serviceLog(reading.value)).log;
     } catch (e) {
         error.value = e.message;
     }
@@ -30,7 +30,7 @@ async function look() {
 
 async function runServiceAction(id, want) {
     try {
-        await api("POST", `/services/${id}`, {want});
+        await api.setService(id, want);
         await look();
     } catch (e) {
         error.value = e.message;

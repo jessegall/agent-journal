@@ -1,6 +1,6 @@
 <script setup>
 import {computed, onUnmounted, ref, watch} from "vue";
-import {agentControls, appoint, controlAgent, onlineAgents} from "../api.js";
+import {api} from "../api/client.js";
 import {modelFamily, providerName} from "../agents.js";
 import Icon from "../kit/Icon.vue";
 import Spinner from "../kit/Spinner.vue";
@@ -59,7 +59,7 @@ async function appointments(e) {
     if (open.value !== "appoint") return;
     error.value = "";
     try {
-        available.value = await onlineAgents();
+        available.value = await api.onlineAgents();
     } catch (e) {
         error.value = e.message;
     }
@@ -78,7 +78,7 @@ async function modelControls(e, key) {
     error.value = "";
     controls.value = {groups: [], note: "Loading controls…"};
     try {
-        controls.value = await agentControls(data.value.provider, data.value.model);
+        controls.value = await api.agentControls(data.value.provider, data.value.model);
     } catch (e) {
         error.value = e.message;
     }
@@ -87,7 +87,7 @@ async function control(action, value) {
     controlling.value = `${action}:${value}`;
     error.value = "";
     try {
-        await controlAgent(route.value.env, agent.value.title, action, value);
+        await api.controlAgent(agent.value.title, action, value);
         open.value = "";
     } catch (e) {
         error.value = e.message;
@@ -108,7 +108,7 @@ async function choose(candidate) {
     assigning.value = candidate.session;
     error.value = "";
     try {
-        await appoint(route.value.env, candidate.session);
+        await api.appoint(candidate.session);
         open.value = "";
     } catch (e) {
         error.value = e.message;

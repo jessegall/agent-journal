@@ -2,19 +2,7 @@ import {highlight} from "./highlight.js";
 import {register} from "./index.js";
 
 const FENCE = /^(```|~~~)\s*(\w+)?\s*$/;
-const SIGNALS = [
-    /^\s*(return|def|class|import|from|const|let|var|function|if|for|while|export|async|await|try|except|elif|else|public|private|static|fn|use|foreach|echo|SELECT|INSERT|UPDATE|DELETE)\b/,
-    /[;{}]\s*$/,
-    /=>|->|==|!=|<=|>=|\+=|-=|\|\||&&|::|\*\*/,
-    /\w\(.*\)/,
-    /\[\*|\(\*|\.\.\./,
-    /^\s{4,}\S/,
-    /^\$ \S/,
-    /\w\.\w+\(/,
-    /^\s*[\w.]+\s*=\s*\S/,
-];
 const INDENTED = /^\s{4,}\S/;
-const PROSE = /^[A-Z][a-z]+ [a-z]+ [a-z]+ [a-z]+/;
 const LANGS = [
     ["py", /\b(def |elif |None\b|self\b|lambda |print\(|import \w+$)|:\s*$/m],
     ["php", /<\?php|\$\w+->|\bforeach\b|\becho\b/],
@@ -31,12 +19,6 @@ function unescape(text) {
         .replace(/&lt;/g, "<")
         .replace(/&gt;/g, ">")
         .replace(/&amp;/g, "&");
-}
-
-function coded(line) {
-    const plain = unescape(line);
-    if (!plain.trim() || PROSE.test(plain.trim())) return 0;
-    return SIGNALS.filter((s) => s.test(plain)).length;
 }
 
 function guess(lines) {
@@ -78,15 +60,6 @@ function lift(text) {
                 i = stop;
                 continue;
             }
-        }
-        let end = i;
-        while (end < lines.length && coded(lines[end]) >= (end === i ? 2 : 1)) end += 1;
-        const run = end - i;
-        if (run >= 1 && (run >= 2 || coded(lines[i]) >= 3)) {
-            flush();
-            out.push(block(lines.slice(i, end), ""));
-            i = end;
-            continue;
         }
         held.push(lines[i]);
         i += 1;

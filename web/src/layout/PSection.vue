@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {act, saveSettings} from "../api.js";
+import {api} from "../api/client.js";
 import Icon from "../kit/Icon.vue";
 import {go, peek, route} from "../route.js";
 import {rows} from "../store.js";

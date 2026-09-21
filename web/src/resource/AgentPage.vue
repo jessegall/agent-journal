@@ -1,6 +1,6 @@
 <script setup>
 import {computed, nextTick, onMounted, onUnmounted, ref, watch} from "vue";
-import {api} from "../api.js";
+import {api} from "../api/client.js";
 import Btn from "../kit/Btn.vue";
 import CommentToggle from "./CommentToggle.vue";
 import {modelFamily, providerName} from "../agents.js";
@@ -59,10 +59,7 @@ const subagents = computed(() => (data.value.subagent_rows || []).filter((r) => 
 const session = computed(() => route.value.sub);
 const picked = computed(() => subagents.value.find((r) => r.session === session.value));
 
-function transcriptPath() {
-    const base = `/${route.value.env}/agent/${props.resource.n}`;
-    return session.value ? `${base}/subagent/${session.value}/transcript` : `${base}/transcript`;
-}
+const transcriptKey = () => `${route.value.env}:${props.resource.n}:${session.value || ""}`;
 
 const earliest = computed(() => (turns.value.length ? turns.value[0].line : 0));
 const atStart = computed(() => turns.value.length > 0 && earliest.value <= first.value);
@@ -91,9 +88,9 @@ async function fetchTurns() {
     fetching = true;
     try {
         const since = turns.value.length ? turns.value[turns.value.length - 1].line : 0;
-        const path = transcriptPath();
-        const got = await api("GET", `${path}?since=${since}&last=200`);
-        if (path !== transcriptPath()) return;
+        const path = transcriptKey();
+        const got = await api.transcript(props.resource.n, session.value, {since, last: 200});
+        if (path !== transcriptKey()) return;
         error.value = "";
         total.value = got.total;
         first.value = got.first;
@@ -116,9 +113,9 @@ async function earlier() {
     const box = scroller.value;
     const fromBottom = box ? box.scrollHeight - box.scrollTop : 0;
     try {
-        const path = transcriptPath();
-        const got = await api("GET", `${path}?before=${earliest.value}&last=200`);
-        if (path !== transcriptPath()) return;
+        const path = transcriptKey();
+        const got = await api.transcript(props.resource.n, session.value, {before: earliest.value, last: 200});
+        if (path !== transcriptKey()) return;
         error.value = "";
         foldTools(got.turns);
         turns.value = [...got.turns, ...turns.value];

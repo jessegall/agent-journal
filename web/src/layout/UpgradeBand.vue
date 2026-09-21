@@ -1,6 +1,6 @@
 <script setup>
 import {computed, onMounted, ref} from "vue";
-import {api} from "../api.js";
+import {api} from "../api/client.js";
 import Btn from "../kit/Btn.vue";
 import {polled, remembered, store} from "../store.js";
 import {usePoll} from "../poll.js";
@@ -20,7 +20,7 @@ const stale = computed(() => {
 
 onMounted(async () => {
     try {
-        upstream.value = await api("GET", "/upstream");
+        upstream.value = await api.upstream();
     } catch (e) {}
 });
 
@@ -38,7 +38,7 @@ function dismiss() {
 async function upgrade() {
     running.value = true;
     try {
-        lines.value = (await api("POST", "/upgrade")).lines;
+        lines.value = (await api.upgrade()).lines;
     } catch (e) {
         lines.value = [e.message];
     } finally {

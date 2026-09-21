@@ -1,6 +1,6 @@
 <script setup>
 import {computed, onUnmounted, ref} from "vue";
-import {act} from "../api.js";
+import {api} from "../api/client.js";
 import PriorityIcon from "../kit/PriorityIcon.vue";
 import {route} from "../route.js";
 import {} from "../store.js";
@@ -25,7 +25,7 @@ onUnmounted(() => window.removeEventListener("click", away));
 async function pick(level) {
     open.value = false;
     if (level.n === current.value) return;
-    await act(route.value.env, props.resource.type, props.resource.n, "priority", {value: level.value});
+    await api.act(props.resource.type, props.resource.n, "priority", {value: level.value});
 }
 </script>
 

@@ -1,6 +1,6 @@
 <script setup>
 import {computed, ref} from "vue";
-import {act} from "../api.js";
+import {api} from "../api/client.js";
 import Btn from "../kit/Btn.vue";
 import Switch from "../kit/Switch.vue";
 import {route} from "../route.js";
@@ -12,7 +12,7 @@ const injected = computed(() => Boolean(props.resource.data.injected));
 async function toggle(on) {
     error.value = "";
     try {
-        await act(route.value.env, "rule", props.resource.n, on ? "inject" : "uninject");
+        await api.act("rule", props.resource.n, on ? "inject" : "uninject");
     } catch (e) {
         error.value = e.message;
     }
@@ -21,7 +21,7 @@ async function toggle(on) {
 async function pin() {
     error.value = "";
     try {
-        await act(route.value.env, "rule", props.resource.n, "pin");
+        await api.act("rule", props.resource.n, "pin");
     } catch (e) {
         error.value = e.message;
     }

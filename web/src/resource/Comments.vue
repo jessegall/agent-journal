@@ -1,6 +1,6 @@
 <script setup>
 import {computed, nextTick, reactive, ref, watch} from "vue";
-import {act} from "../api.js";
+import {api} from "../api/client.js";
 import Btn from "../kit/Btn.vue";
 import {route} from "../route.js";
 import {age, quoted, rows, withQuote} from "../store.js";
@@ -47,7 +47,7 @@ function edit(c) {
 async function save() {
     editing.error = "";
     try {
-        await act(route.value.env, "comment", editing.n, "update", {brief: editing.text.trim()});
+        await api.act("comment", editing.n, "update", {brief: editing.text.trim()});
         editing.n = 0;
     } catch (e) {
         editing.error = e.message;
@@ -55,11 +55,11 @@ async function save() {
 }
 
 async function remove(c) {
-    await act(route.value.env, "comment", c.n, "delete", {why: "deleted from the viewer"});
+    await api.act("comment", c.n, "delete", {why: "deleted from the viewer"});
 }
 
 async function send(text) {
-    const written = await act(route.value.env, props.resource.type, props.resource.n, "comment", {text: withQuote(props.quote, text)});
+    const written = await api.act(props.resource.type, props.resource.n, "comment", {text: withQuote(props.quote, text)});
     emit("sent");
     await nextTick();
     const row = document.querySelector(`[data-comment="${written.n}"]`);

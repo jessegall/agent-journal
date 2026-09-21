@@ -1,6 +1,6 @@
 <script setup>
 import {computed, onMounted, ref} from "vue";
-import {api} from "../api.js";
+import {api} from "../api/client.js";
 import Icon from "../kit/Icon.vue";
 import {peek, route} from "../route.js";
 import FileTags from "../resource/FileTags.vue";
@@ -9,7 +9,7 @@ import {age, meta, openPictures} from "../store.js";
 const files = ref([]);
 const loaded = ref(false);
 onMounted(async () => {
-    files.value = await api("GET", `/${route.value.env}/files`);
+    files.value = await api.files();
     loaded.value = true;
 });
 const images = computed(() => files.value.filter((f) => f.image));

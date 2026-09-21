@@ -1,7 +1,7 @@
 <script setup>
 import {computed} from "vue";
 import Icon from "../kit/Icon.vue";
-import {fileUrl} from "../api.js";
+import {api} from "../api/client.js";
 import {route} from "../route.js";
 import {openPictures} from "../store.js";
 
@@ -9,7 +9,7 @@ const props = defineProps({resource: Object});
 const emit = defineEmits(["grew"]);
 const picture = (name) => /\.(png|jpe?g|gif|webp)$/i.test(name);
 const video = (name) => /\.(mp4|m4v|mov|webm|ogv)$/i.test(name);
-const url = (name) => (props.resource.data.previews || {})[name] || fileUrl(route.value.env, props.resource.type, props.resource.n, name);
+const url = (name) => (props.resource.data.previews || {})[name] || api.fileUrl(props.resource.type, props.resource.n, name);
 const files = computed(() => props.resource.data.files || {});
 const sized = (name) => {
     const [w, h] = (props.resource.data.pictures || {})[name] || [];

@@ -1,6 +1,6 @@
 <script setup>
 import {nextTick, onMounted, ref, watch} from "vue";
-import {search as find} from "../api.js";
+import {api} from "../api/client.js";
 import Icon from "../kit/Icon.vue";
 import {go, peek, route} from "../route.js";
 import ResourceCard from "../resource/ResourceCard.vue";
@@ -13,7 +13,7 @@ onMounted(() => nextTick(() => input.value?.focus()));
 
 async function run() {
     go(route.value.env, "search", 0, q.value);
-    hits.value = q.value.trim() ? await find(route.value.env, q.value.trim()) : [];
+    hits.value = q.value.trim() ? await api.search(q.value.trim()) : [];
 }
 
 watch(

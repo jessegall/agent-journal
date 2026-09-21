@@ -1,6 +1,6 @@
 <script setup>
 import {computed, reactive, ref} from "vue";
-import {act, fileUrl} from "../api.js";
+import {api} from "../api/client.js";
 import Btn from "../kit/Btn.vue";
 import CommentToggle from "./CommentToggle.vue";
 import Icon from "../kit/Icon.vue";
@@ -42,7 +42,7 @@ function edit() {
 async function save() {
     draft.error = "";
     try {
-        await act(route.value.env, props.resource.type, props.resource.n, "update", {
+        await api.act(props.resource.type, props.resource.n, "update", {
             title: draft.title.trim(),
             abstract: draft.abstract.trim(),
             brief: draft.brief,
@@ -172,7 +172,7 @@ async function save() {
             <section class="block">
                 <h3>Files</h3>
                 <template v-for="[name, what] in files" :key="name">
-                    <a class="file" :href="fileUrl(route.env, resource.type, resource.n, name)" target="_blank">
+                    <a class="file" :href="api.fileUrl(resource.type, resource.n, name)" target="_blank">
                         <Icon name="clip" :size="13" />
                         {{ name }}
                         <template v-if="what">

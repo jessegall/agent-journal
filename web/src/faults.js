@@ -1,23 +1,26 @@
-import {api} from "./api.js";
+import {api} from "./api/client.js";
 import {route} from "./route.js";
 
 const BUDGET = 50;
 const PAGE = 25;
 const QUIET = 60000;
-const REPORTED = "/console";
 const told = new Map();
 const flying = new Map();
+let reporting = false;
 
 export function report(kind, words, where, stack = "") {
     const key = `${kind}|${where || words}`;
     if (!words || !route.value.env || Date.now() - (told.get(key) || 0) < QUIET) return;
     told.set(key, Date.now());
-    api("POST", `/${route.value.env}${REPORTED}`, {
+    reporting = true;
+    api.report({
         kind,
         said: String(words),
         where: String(where || location.pathname),
         stack: String(stack || ""),
-    }).catch(() => {});
+    })
+        .catch(() => {})
+        .finally(() => (reporting = false));
 }
 
 function endpoint(input, init) {
@@ -29,7 +32,7 @@ function watchFetch() {
     const was = window.fetch.bind(window);
     window.fetch = async (input, init) => {
         const where = endpoint(input, init);
-        if (where.endsWith(REPORTED)) return was(input, init);
+        if (reporting) return was(input, init);
         if (flying.get(where)) report("overlap", `two requests to ${where} were in flight at once`, where);
         const asked = new URL(typeof input === "string" ? input : input.url, location.origin).searchParams.get("last");
         if (asked !== null && (Number(asked) === 0 || Number(asked) > PAGE))
@@ -41,7 +44,7 @@ function watchFetch() {
         } finally {
             flying.set(where, flying.get(where) - 1);
             const took = Math.round(performance.now() - began);
-            if (took > BUDGET && !where.endsWith("/stream")) report("slow", `${where} took ${took}ms`, where);
+            if (took > BUDGET) report("slow", `${where} took ${took}ms`, where);
         }
     };
 }

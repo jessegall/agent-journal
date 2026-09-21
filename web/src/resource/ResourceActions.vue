@@ -1,6 +1,6 @@
 <script setup>
 import {computed, ref} from "vue";
-import {act} from "../api.js";
+import {api} from "../api/client.js";
 import Btn from "../kit/Btn.vue";
 import {route} from "../route.js";
 import {meta, word} from "../store.js";
@@ -17,8 +17,7 @@ const offered = computed(() =>
 async function run(method) {
     error.value = "";
     try {
-        await act(
-            route.value.env,
+        await api.act(
             props.resource.type,
             props.resource.n,
             word(props.resource.type, method),

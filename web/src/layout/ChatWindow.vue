@@ -1,6 +1,6 @@
 <script setup>
 import {computed, onMounted, onUnmounted, reactive, ref} from "vue";
-import {api} from "../api.js";
+import {api} from "../api/client.js";
 import Icon from "../kit/Icon.vue";
 import AgentBar from "../chat/AgentBar.vue";
 import Thread from "../chat/Thread.vue";
@@ -106,7 +106,7 @@ function pick(name) {
 }
 
 async function loadJournals() {
-    journals.value = await api("GET", "/journals");
+    journals.value = await api.journals();
 }
 
 function pickJournal(journal) {

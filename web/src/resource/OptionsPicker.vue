@@ -1,6 +1,6 @@
 <script setup>
 import {computed, onUnmounted, ref} from "vue";
-import {act} from "../api.js";
+import {api} from "../api/client.js";
 import Btn from "../kit/Btn.vue";
 import {route} from "../route.js";
 import {store, word} from "../store.js";
@@ -28,8 +28,8 @@ async function submit(text) {
     if (!choice) return;
     clearTimeout(holdTimer);
     holdingPick.value = -1;
-    if (props.resource.completed) await act(route.value.env, props.resource.type, props.resource.n, "set", {key: "outcome", value: choice});
-    else await act(route.value.env, props.resource.type, props.resource.n, word(props.resource.type, "complete"), {how: choice});
+    if (props.resource.completed) await api.act(props.resource.type, props.resource.n, "set", {key: "outcome", value: choice});
+    else await api.act(props.resource.type, props.resource.n, word(props.resource.type, "complete"), {how: choice});
     changing.value = false;
 }
 
