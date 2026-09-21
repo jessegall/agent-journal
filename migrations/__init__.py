@@ -22,6 +22,8 @@ def applied(root: Path) -> dict:
 
 
 def run(root: Path) -> list[str]:
+    import features
+    features.load()
     root = Path(root)
     done = applied(root)
     ran = []

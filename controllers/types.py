@@ -344,6 +344,21 @@ class Tools(Controller):
         return {"code": done.returncode, "out": done.stdout, "err": done.stderr}
 
 
+class Features(Controller):
+    resource = types.FeatureRow
+
+    def named(self, name: str):
+        return next((r for r in self.all() if r.title == name), None)
+
+    def switch(self, name: str, on: bool):
+        row = self.named(name)
+        return self.update(row.n, enabled=bool(on)) if row else self.create(name, enabled=bool(on))
+
+    def on(self, name: str, default: bool = True) -> bool:
+        row = self.named(name)
+        return bool(row.enabled) if row else default
+
+
 class Connections(Controller):
     resource = types.Connection
 
@@ -504,4 +519,4 @@ def register(*classes) -> None:
 
 
 CONTROLLERS = {c.resource.type: c for c in (Messages, Todos, Works, Docs, Reports, Pins, Rules, Reminders, Suggestions,
-                                            Questions, Comments, Agents, Notifications, Notices, Reactions, Tools, Connections, Plugins, Environments, Asks, Nudges)}
+                                            Questions, Comments, Agents, Notifications, Notices, Reactions, Tools, Features, Connections, Plugins, Environments, Asks, Nudges)}
