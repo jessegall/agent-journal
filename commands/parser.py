@@ -10,6 +10,7 @@ from providers import DRIVERS
 from engine.transcript import conversation, user
 from resources.base import AGENT
 from engine.version import version
+from features.housekeeping.tidy import tidy
 from commands.queries import decided, halt, help_text, say, search_text, serve_forever, services, settings_text, speed, supervise, switched, transcript, upgrade_here, verify
 
 
@@ -109,7 +110,7 @@ def built(only: str) -> argparse.ArgumentParser:
     add_query(cmds, "stop", "stop this journal: its viewer, its engine and every service a plugin runs", lambda ctx: halt(ctx))
     add_query(cmds, "speed", "median milliseconds for lists, commands, a hook call and the viewer API, and the runtime folder's size", lambda ctx: speed(ctx),
               ("--runs", {"type": int, "default": 5}), ("--url", {"default": ""}), ("--out", {"default": ""}))
-    add_query(cmds, "tidy", "run the housekeeping now: trim captures and logs, drop quiet sessions' files", lambda ctx: str(features.FEATURES["housekeeping"].tidy(ctx["record"])))
+    add_query(cmds, "tidy", "run the housekeeping now: trim captures and logs, drop quiet sessions' files", lambda ctx: str(tidy(ctx["record"].root, features.FEATURES["housekeeping"].values(ctx["record"]).days)))
     add_query(cmds, "services", "the services plugins run: list them, start, stop or restart one, read its log, or keep them up in this terminal with up",
               lambda ctx: services(ctx), ("what", {"nargs": "?", "default": "list"}), ("which", {"nargs": "?", "default": ""}), ("--lines", {"type": int, "default": 40}))
     return top

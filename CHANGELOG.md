@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.48.0 — The small features are details and registered parts
+
+Plan 9, to-do 603. Permissions, Suggestions, Updates, Housekeeping, the law, Browser, Buttons, Worktrees, Commits, TabFocus, Retention and Questions are each a details.py, a feature.py that only registers its parts, and the parts themselves (handlers.py, interceptors.py), with their helpers in modules of their own (tidy.py, shaping.py, choices.py, links.py). A part's context now also carries the provider and the hook it came from, and can hold and release the agent's writes. details.py can mark a feature fixed or off by default.
+
+What to do about it: `journal upgrade`.
+
 ## 2.47.0 — Facts, rules and reminders share parts, not a base class
 
 Plan 9, to-do 602. The Recital base class is gone. Facts, Rules and Reminders are each a details.py and a feature.py that registers two shared parts from features/recital.py, WhisperOnKeyword and RepeatStanding, given the resources they read ("facts", "rules", "reminders"). Rules adds InjectRules, which keeps the managed block in AGENTS.md and CLAUDE.md, on a RuleChanged event built from the new generic ResourceEvent. details.py can now carry a feature's old names (aliases) and whether it runs for subagents.

@@ -1,6 +1,6 @@
 
 from controllers.types import Messages
-from features.buttons.feature import MOST, shaped
+from features.buttons.shaping import MOST, shaped
 from resources.base import AGENT
 from tests.conftest import fresh
 

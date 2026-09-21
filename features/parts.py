@@ -39,10 +39,12 @@ class Context:
     feature: object
     record: object
     agent: Speaker | None = None
+    provider: object = None
+    hook: object = None
 
     @classmethod
-    def of(cls, feature, record, row=None) -> "Context":
-        return cls(feature, record, Speaker(feature, record, row) if row else None)
+    def of(cls, feature, record, row=None, provider=None, hook=None) -> "Context":
+        return cls(feature, record, Speaker(feature, record, row) if row else None, provider, hook)
 
     @property
     def journal(self) -> "BoundJournal":
@@ -54,6 +56,12 @@ class Context:
 
     def on(self, behaviour: str = "") -> bool:
         return self.feature.on(self.record, behaviour)
+
+    def hold(self, line: str, behaviour: str = "", **values) -> None:
+        self.feature.hold(self.record, line, behaviour, self.agent.row if self.agent else None, **values)
+
+    def release(self, behaviour: str = "") -> None:
+        self.feature.release(self.record, behaviour, self.agent.row if self.agent else None)
 
     def once(self, kind: str, key: str) -> bool:
         return not self.feature.already(self.record, self.agent.session, kind, key)
@@ -143,7 +151,7 @@ class AgentHooks:
             row = Agents(record, actor=SYSTEM).by_session(session)
             if not feature.enabled(record) or not wanted(interceptor, feature, record, row):
                 return ""
-            return interceptor.intercept(Context.of(feature, record, row), hook.tool) or ""
+            return interceptor.intercept(Context.of(feature, record, row, provider, hook), hook.tool) or ""
         policy.feature = feature
         POLICIES.append(policy)
 

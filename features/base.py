@@ -117,6 +117,8 @@ class FeatureDetails:
     trigger: ClassVar[dict] = {}
     aliases: ClassVar[tuple] = ()
     runs_for_subagents: ClassVar[bool] = False
+    fixed: ClassVar[bool] = False
+    default: ClassVar[bool] = True
 
     @classmethod
     def values(cls, record) -> Settings:
@@ -145,7 +147,7 @@ class Feature(ABC):
             d = cls.details
             cls.name, cls.lines, cls.behaviours, cls.settings, cls.trigger = d.name, {line.name: line for line in d.lines}, {b.name: b for b in d.behaviours}, d.settings, d.trigger
             cls.title_, cls.abstract_, cls.help_ = paragraphs(d.title), paragraphs(d.abstract), paragraphs(d.help)
-            cls.aliases, cls.runs_for_subagents = d.aliases, d.runs_for_subagents
+            cls.aliases, cls.runs_for_subagents, cls.fixed, cls.default = d.aliases, d.runs_for_subagents, d.fixed, d.default
         if cls.name:
             REGISTRY[cls.name] = cls
 

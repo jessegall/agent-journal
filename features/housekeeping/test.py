@@ -3,6 +3,7 @@ import time
 
 
 from features import FEATURES
+from features.housekeeping.tidy import tidy
 from tests.kit import idle
 from tests.conftest import fresh
 
@@ -30,7 +31,7 @@ def test_captures_are_cut_to_their_tail_and_files_of_quiet_sessions_are_removed(
     kept.write_text("main")
     os.utime(kept, (week_ago, week_ago))
 
-    said = house.tidy(record)
+    said = tidy(record.root, house.values(record).days)
 
     assert (big.stat().st_size, big.read_bytes().endswith(b"THE END")) == (64 * 1024, True), \
         "a large capture is cut to its last 64 KB, ending as it did"
@@ -56,7 +57,7 @@ def test_the_days_to_keep_is_a_setting():
     two_days = time.time() - 2 * 86400
     os.utime(old, (two_days, two_days))
     record.set_setting("housekeeping", {"days": 1})
-    house.tidy(record)
+    tidy(record.root, house.values(record).days)
     assert old.exists() is False, "housekeeping.days shortens the wait"
 
 
