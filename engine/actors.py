@@ -21,8 +21,8 @@ def counted(events: list[Event]) -> list[str]:
     groups: dict[tuple, dict] = {}
     for e in events:
         groups.setdefault((e.type, e.action), {})[e.n] = True
-    return [f"{len(ns)} new {t}{'s' if len(ns) != 1 else ''} {' '.join(map(str, ns))}" if a == "created"
-            else f"{t}{'s' if len(ns) != 1 else ''} {' '.join(map(str, ns))} {a}"
+    return [f"{len(ns)} new {t}{'s' if len(ns) != 1 else ''} {', '.join(map(str, ns))}" if a == "created"
+            else f"{t}{'s' if len(ns) != 1 else ''} {', '.join(map(str, ns))} {a}"
             for (t, a), ns in groups.items()]
 
 
@@ -87,9 +87,8 @@ class Agent(Actor):
         return event.action in TYPES[event.type].urgent_actions
 
     def lines(self) -> list[str]:
-        apart = [render([e], self.record) for e in self.pending if self.urgent(e)]
-        together = [e for e in self.pending if not self.urgent(e)]
-        return [line for line in apart + ([render(together, self.record)] if together else []) if line]
+        said = render(self.pending, self.record)
+        return [said] if said else []
 
     def flush(self) -> str:
         batch = {**BATCH, **self.record.batch}
