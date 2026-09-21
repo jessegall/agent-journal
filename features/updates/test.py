@@ -27,3 +27,14 @@ def test_the_installed_command_runs_quietly_before_any_server_has_started(tmp_pa
     shim.write_text(launcher(sys.executable, script, tmp_path / ".journal"))
     ran = subprocess.run(["sh", str(shim), "todo", "all"], capture_output=True, text=True, timeout=20)
     assert (ran.stdout.strip(), ran.stderr) == ("ran", ""), "no heartbeat file yet: it falls through to the package without an error"
+
+
+def test_the_journals_hook_py_runs_the_current_hook_for_an_older_command_that_passes_nothing(tmp_path):
+    import subprocess
+    import sys
+    from install import HOOK
+    (tmp_path / "src").mkdir()
+    (tmp_path / "src" / "hook.sh").write_text('echo "$1 $2"\n')
+    (tmp_path / "hook.py").write_text(HOOK)
+    ran = subprocess.run([sys.executable, str(tmp_path / "hook.py")], capture_output=True, text=True, timeout=20)
+    assert ran.stdout.strip() == f"claude {tmp_path.resolve()}", "no provider given: Claude, on the journal hook.py sits in"
