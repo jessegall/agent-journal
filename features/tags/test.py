@@ -70,7 +70,8 @@ def test_the_last_message_is_read_only_once_claude_has_written_it(tmp_path):
     from providers import PROVIDERS
     transcript = tmp_path / "s.jsonl"
     rows = [{"type": "user", "message": {"content": [{"type": "tool_result", "content": "ok"}]}},
-            {"type": "assistant", "message": {"content": [{"type": "thinking", "thinking": ""}]}}]
+            {"type": "assistant", "message": {"content": [{"type": "thinking", "thinking": ""}]}},
+            {"type": "permission-mode", "permissionMode": "auto"}]
     transcript.write_text("\n".join(json.dumps(r) for r in rows) + "\n")
     assert PROVIDERS["claude"]().settling(transcript) is True, "only the thinking is written: the message is still coming"
     rows.append({"type": "assistant", "message": {"content": [{"type": "text", "text": "[!reply:3] done"}]}})

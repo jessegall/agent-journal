@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.16.6 — The end of a turn waits past Claude's bookkeeping rows
+
+2.16.5 waited for Claude's final message unless the transcript's last row looked finished, but Claude also writes rows that carry no message — its title, its mode, its permission mode — and one of those counted as finished, so the tags were still read from the message before. Only rows that carry a message are looked at now.
+
+What to do about it: `journal upgrade`.
+
 ## 2.16.5 — A turn's tags are read from the turn itself
 
 Claude writes its final message to the transcript after the Stop hook has returned, so at the end of a turn the journal read the message before it: a turn opened with `[!reply:12]` was told it had no tag, and its reply never ran. Reading the turns now waits, briefly and only at the end of a turn, until the provider says its transcript has settled — for Claude, until the last row is no longer a tool result or a thought still waiting for its words.
