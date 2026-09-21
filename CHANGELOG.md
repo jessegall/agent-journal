@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.65.0 — Any doc can become version-tracked
+
+Message 1528, to-do 619. A doc is not revision-tracked by default. A plain doc now has a Track revisions button beside Edit. It asks "Keep every later edit of this doc as a revision?" and then turns the doc into a design: the doc itself is revision 1, it stays open for edits, and every kept revision after it is saved as the next one. The panel opens the new design with its revision strip. The agent does the same with `journal design from_doc <doc>`. A doc that is already a revision of a design is refused.
+
+What to do about it: `journal upgrade`.
+
 ## 2.64.1 — A changed skill and the Load button hold tool calls at once
 
 Messages 1769 and 1772, to-do 658. A changed skill was already required through the same funnel as a command's skill, but the check ran only every tenth tool use, so a few calls got through first. It now runs on every tool use. The Skills page's Load button only left a message. Now it also marks the skill required for the agent's session, so every tool call waits until the skill is loaded, the same refusal a command's skill gets. The message still wakes an idle agent.

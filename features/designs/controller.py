@@ -19,6 +19,21 @@ class Designs(Controller):
         design = super().create(title, abstract, brief, revisions=[], **data)
         return self._revised(design, "written")
 
+    def from_doc(self, doc: int):
+        docs = Docs(self.record, actor=self.actor)
+        page = docs.load(int(doc))
+        if page.data.get(PART_OF):
+            raise Refused(f"doc {page.n} is already revision {page.data.get(REVISION)} of {page.data[PART_OF]}")
+        design = Controller.create(self, page.title, page.abstract, page.brief, revisions=[page.n])
+        design.sections = [dict(s) for s in page.sections]
+        with self.record.locked():
+            page.data = {**page.data, PART_OF: design.ref, REVISION: 1, CHANGE: f"tracked from doc {page.n}"}
+            page.refs = [*page.refs, design.ref] if design.ref not in page.refs else page.refs
+            write_text(docs.path(page.n), page.dump())
+            self.record.emit(docs.type, page.n, STAMPED, self.actor, quiet=True, fields=[REVISION])
+        design.open_until = time.time() + self._keep_after()
+        return self.save(design, "updated", revision=1, change=f"tracked from doc {page.n}")
+
     def section(self, n: int, title: str, body: str):
         r = self.load(n)
         known = any(s[SECTION.title] == title for s in r.sections)
