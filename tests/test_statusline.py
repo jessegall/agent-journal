@@ -1,13 +1,9 @@
 import json
 import subprocess
-import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from tests.kit import check, done
-
-root = Path(__file__).resolve().parents[1]
-script = '''
+ROOT = Path(__file__).resolve().parents[1]
+SCRIPT = '''
 import {lineOf, queued, said, stateOf, wordOf} from "./web/src/layout/statusline.js";
 const work = (n, todo, completed) => ({n, title: "the thing", completed, data: {todo}});
 const agent = (status, running) => ({data: {status, running}});
@@ -31,14 +27,20 @@ console.log(JSON.stringify({
     states: [stateOf(agent("working"), [work(1, 0, 0)]), stateOf(agent("working"), []), stateOf(agent("idle"), [])],
 }));
 '''
-got = json.loads(subprocess.run(["node", "--input-type=module", "-e", script], cwd=root, text=True, capture_output=True, check=True).stdout)
-check("working names the row, without 'on'", got["working"], "to-do 12 · the thing")
-check("busy with nothing declared says what the journal says it is doing, in the journal's words", got["busyDoing"], "reading gist.js")
-check("every state the viewer words for itself has at least ten wordings", all(n >= 10 for n in got["variety"]), True)
-check("busy with nothing running is a bearings phrase, never the last work", got["busyDone"] in ("finding its bearings", "looking around", "thinking", "getting oriented", "working out what is next", "taking stock", "considering", "mulling it over", "reading the room", "gathering its thoughts"), True)
-check("idle says one of its ten wordings, never the last work", ("the thing" in got["idleLast"], "the thing" in got["idleFresh"]), (False, False))
-check("under auto an idle moment reads as Waiting for the next row, not Idle", got["autoIdle"], ["Waiting", "Idle", "Working", True])
-check("waiting only while auto has a ready row: not with auto off, an empty list, a blocked row; a row waiting on another still counts the other", got["queue"], [True, False, False, False, True, False])
-check("no agent, no line", got["stopped"], "no agent is on this environment")
-check("states: declared work is working, undeclared is busy, idle is idle", got["states"], ["working", "busy", "idle"])
-done()
+
+
+def test_statusline_wording_for_working_idle_and_stopped_agents():
+    got = json.loads(subprocess.run(["node", "--input-type=module", "-e", SCRIPT], cwd=ROOT, text=True, capture_output=True, check=True, timeout=60).stdout)
+    assert got["working"] == "to-do 12 · the thing", "working names the row, without 'on'"
+    assert got["busyDoing"] == "reading gist.js", "busy with nothing declared says what the journal says it is doing, in the journal's words"
+    assert all(n >= 10 for n in got["variety"]) is True, "every state the viewer words for itself has at least ten wordings"
+    assert got["busyDone"] in ("finding its bearings", "looking around", "thinking", "getting oriented", "working out what is next",
+                               "taking stock", "considering", "mulling it over", "reading the room", "gathering its thoughts"), \
+        "busy with nothing running is a bearings phrase, never the last work"
+    assert ("the thing" in got["idleLast"], "the thing" in got["idleFresh"]) == (False, False), \
+        "idle says one of its ten wordings, never the last work"
+    assert got["autoIdle"] == ["Waiting", "Idle", "Working", True], "under auto an idle moment reads as Waiting for the next row, not Idle"
+    assert got["queue"] == [True, False, False, False, True, False], \
+        "waiting only while auto has a ready row: not with auto off, an empty list, a blocked row; a row waiting on another still counts the other"
+    assert got["stopped"] == "no agent is on this environment", "no agent, no line"
+    assert got["states"] == ["working", "busy", "idle"], "states: declared work is working, undeclared is busy, idle is idle"
