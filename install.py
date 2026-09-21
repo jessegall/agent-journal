@@ -14,11 +14,11 @@ from providers import PROVIDERS  # noqa: E402
 from skills import LIBRARY, LINKED, publish  # noqa: E402
 
 PACKAGE = Path(__file__).resolve().parent
-PACKAGE_DIRS = ("commands", "controllers", "engine", "extension", "features", "migrations", "providers", "resources", "skills", "support", "surfaces")
+PACKAGE_DIRS = ("commands", "controllers", "engine", "extension", "features", "migrations", "providers", "resources", "skills", "surfaces")
 PACKAGE_FILES = ("VERSION", "channel.py", "claude-status.sh", "hook.sh", "install.py", "journal.py", "serve.py", "skills.py")
 PACKAGE_TREES = (*PACKAGE_DIRS, "web/dist")
 LEFT_BEHIND = (".DS_Store", "test.py")
-RETIRED = ("hook.py",)
+RETIRED = ("hook.py", "support")
 REPOSITORY = "https://github.com/jessegall/agent-journal"
 SRC = "src"
 
@@ -48,7 +48,11 @@ def refresh(source: Path, target: Path) -> tuple[int, int]:
         (target / rel).unlink()
     for name in RETIRED:
         for place in (target, target.parent):
-            (place / name).unlink(missing_ok=True)
+            gone = place / name
+            if gone.is_dir():
+                shutil.rmtree(gone)
+            else:
+                gone.unlink(missing_ok=True)
     for rel in sorted(changed):
         destination = target / rel
         destination.parent.mkdir(parents=True, exist_ok=True)

@@ -5,7 +5,7 @@ from features.suggestions.controller import Suggestions
 from features.plans.controller import Plans
 from engine.manifest import manifest
 from engine.record import Record
-from support.features import switched
+from features.work.auto import automatic
 from resources.base import SYSTEM, USER
 
 SHOWN = ("building", "ready", "active", "waiting", "done")
@@ -37,7 +37,7 @@ def environment(record: Record) -> dict:
         "work": work(current),
         "last": work(last),
         "plans": [plan(p, todos) for p in Plans(record, actor=SYSTEM)._standing() if p.status in SHOWN],
-        "auto": switched(record, "work.auto"),
+        "auto": automatic(record),
         "counts": {
             "messages": sum(USER not in row["seen"] and not row["completed"] and not row["deleted"] for row in Messages(record, actor=SYSTEM).summaries()),
             "questions": len(Questions(record, actor=SYSTEM)._standing()),

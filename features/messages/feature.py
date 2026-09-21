@@ -4,8 +4,8 @@ from controllers.types import Agents, CONTROLLERS, Messages
 from features import trigger
 from features.base import Behaviour, Feature, event, formats
 from resources.base import AGENT, SECTION, SYSTEM, USER
-from support.messages import in_hand, theirs, unanswered
-from support.transcript import last_said
+from features.messages.answering import in_hand, theirs, unanswered
+from engine.transcript import last_said
 
 LINKED = ("message", "comment", "reaction", "nudge", "notification", "agent")
 RUN_ON, SENTENCES = 400, 3
