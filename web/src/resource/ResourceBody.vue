@@ -16,6 +16,8 @@ import Trace from "./Trace.vue";
 import Comments from "./Comments.vue";
 import Links from "./Links.vue";
 import Asked from "./Asked.vue";
+import CheckResult from "./CheckResult.vue";
+import Buttons from "./Buttons.vue";
 import RuleControls from "./RuleControls.vue";
 import Markdown from "./Markdown.vue";
 
@@ -127,6 +129,12 @@ async function save() {
         </template>
         <template v-if="resource.type === 'rule' && !resource.completed">
             <RuleControls :resource="resource" />
+        </template>
+        <template v-if="resource.type === 'check'">
+            <CheckResult :resource="resource" />
+        </template>
+        <template v-if="Array.isArray(resource.data.buttons) && resource.data.buttons.length">
+            <Buttons :resource="resource" />
         </template>
         <template v-if="kind.fields.options">
             <OptionsPicker :resource="resource" />
