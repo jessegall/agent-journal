@@ -1,7 +1,6 @@
-import json
 import re
 from pathlib import Path
-from engine.stored import write_json
+from engine.stored import read_json, write_json
 
 
 PALETTE = ("#e5484d", "#f76b15", "#ffc53d", "#30a46c", "#12a594", "#0090ff", "#3e63dd", "#8e4ec6", "#d6409f", "#a18072")
@@ -20,10 +19,7 @@ def file(root: Path) -> Path:
 
 
 def settings(root: Path) -> dict:
-    try:
-        return json.loads(file(root).read_text())
-    except (OSError, ValueError):
-        return {}
+    return read_json(file(root), {})
 
 
 def custom(root: Path) -> str:

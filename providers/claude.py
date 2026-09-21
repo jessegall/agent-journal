@@ -10,7 +10,7 @@ from engine.hooks import EVENTS
 from providers.base import Provider
 from providers.payload import Hook
 from resources.types import AgentRow
-from engine.stored import write_text
+from engine.stored import read_json, write_text
 
 ASKS = frozenset({"AskUserQuestion"})
 WINDOW, LONG_WINDOW, LONG_MARK = 200_000, 1_000_000, "[1m]"
@@ -71,21 +71,16 @@ class Claude(Provider):
     def setting(self, project: Path, key: str) -> str:
         found = ""
         for settings in (Path.home() / ".claude" / "settings.json", project / ".claude" / "settings.json", project / ".claude" / "settings.local.json"):
-            try:
-                found = json.loads(settings.read_text()).get(key) or found
-            except (OSError, ValueError, AttributeError):
-                continue
+            said = read_json(settings, {})
+            found = (said.get(key) if isinstance(said, dict) else "") or found
         return found
 
     def effort(self, project: Path, transcript: Path | None = None) -> str:
         return self.reported(transcript, "effort").get("level", "") or self.setting(project, "effortLevel")
 
     def reported(self, transcript: Path | None, key: str) -> dict:
-        try:
-            said = json.loads(Path.home().joinpath(*STATUS_HOME, f"{Path(transcript).stem}.json").read_text())
-        except (OSError, ValueError, TypeError):
-            return {}
-        found = said.get(key)
+        said = read_json(Path.home().joinpath(*STATUS_HOME, f"{Path(transcript).stem}.json"), {}) if transcript else {}
+        found = said.get(key) if isinstance(said, dict) else None
         return found if isinstance(found, dict) else {}
 
     def window(self, hook: Hook, used: int) -> int:
@@ -94,10 +89,7 @@ class Claude(Provider):
 
     def channel(self, project: Path, command: str) -> None:
         f = project / ".mcp.json"
-        try:
-            known = json.loads(f.read_text())
-        except (OSError, ValueError):
-            known = {}
+        known = read_json(f, {})
         servers = known.get("mcpServers") or {}
         said = command.split()
         servers["journal"] = {"command": "python3", "args": [str(Path(said[1]).with_name("channel.py")), said[3]]}

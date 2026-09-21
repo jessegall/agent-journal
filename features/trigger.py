@@ -1,10 +1,9 @@
-import json
 import time
 from pathlib import Path
 
 from resources.base import names
 from resources.types import AgentRow
-from engine.stored import write_json
+from engine.stored import read_json, write_json
 
 PERCENT, USES, MINUTES, IDLE, WORKED, START = "percent", "uses", "minutes", "idle", "worked", "start"
 UNITS = (PERCENT, USES, MINUTES, IDLE, WORKED, START)
@@ -23,10 +22,7 @@ def _file(record, session: str, name: str):
 def last(record, session: str, name: str) -> dict:
     f = str(_file(record, session, name))
     if f not in HELD:
-        try:
-            HELD[f] = json.loads(Path(f).read_text())
-        except (OSError, ValueError):
-            HELD[f] = {}
+        HELD[f] = read_json(f, {})
     return dict(HELD[f])
 
 

@@ -1,4 +1,3 @@
-import json
 from abc import ABC
 from functools import wraps
 from typing import ClassVar
@@ -16,10 +15,7 @@ REGISTRY: dict[str, type] = {}
 
 
 def held(record, session: str) -> str:
-    try:
-        holds = json.loads(gate_file(record.root, record.env, session).read_text())
-    except (OSError, ValueError):
-        return ""
+    holds = read_json(gate_file(record.root, record.env, session), {})
     return "; ".join(why for why in holds.values() if why)
 
 
