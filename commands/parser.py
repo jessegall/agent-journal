@@ -60,7 +60,8 @@ def parser(only: str = "") -> argparse.ArgumentParser:
 def built(only: str) -> argparse.ArgumentParser:
     top = argparse.ArgumentParser(prog="journal", description="the journal, every type a noun and every method its word")
     top.add_argument("--root", default=os.environ.get("JOURNAL_ROOT", ".journal"))
-    top.add_argument("--env", dest="bound", default=os.environ.get("JOURNAL_ENV", ""))
+    top.add_argument("--env", dest="bound", default="")
+    top.add_argument("--default-env", dest="fallback", default=os.environ.get("JOURNAL_ENV", ""), help=argparse.SUPPRESS)
     top.add_argument("--as", dest="as_actor", default=os.environ.get("JOURNAL_ACTOR", AGENT))
     top.add_argument("--session", default=os.environ.get("JOURNAL_SESSION", ""))
     top.add_argument("--agent", default=os.environ.get("JOURNAL_AGENT", ""))
