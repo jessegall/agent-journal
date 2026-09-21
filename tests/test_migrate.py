@@ -5,7 +5,8 @@ import tempfile
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from controllers.types import Docs, Environments, Messages, Notifications, Pins, Plans, Questions, Reminders, Reports, Rules, Todos, Works  # noqa: E402
+from controllers.types import Docs, Environments, Messages, Notifications, Pins, Questions, Reminders, Reports, Rules, Todos, Works  # noqa: E402
+from features.plans.controller import Plans  # noqa: E402
 from engine.record import Record  # noqa: E402
 from migrations import applied, names, run as migrate  # noqa: E402
 from migrations.m0001_the_old_record import Migration  # noqa: E402

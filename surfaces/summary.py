@@ -1,6 +1,7 @@
 from pathlib import Path
 
-from controllers.types import Agents, Environments, Messages, Plans, Questions, Suggestions, Todos, Works
+from controllers.types import Agents, Environments, Messages, Questions, Suggestions, Todos, Works
+from features.plans.controller import Plans
 from engine.manifest import manifest
 from engine.record import Record
 from support.features import switched

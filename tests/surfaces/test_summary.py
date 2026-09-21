@@ -4,7 +4,8 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 import features  # noqa: E402
 from commands.http import dispatch  # noqa: E402
-from controllers.types import Agents, Messages, Plans, Questions, Todos, Works  # noqa: E402
+from controllers.types import Agents, Messages, Questions, Todos, Works  # noqa: E402
+from features.plans.controller import Plans  # noqa: E402
 from engine.record import Record  # noqa: E402
 from surfaces.summary import environment, summarize  # noqa: E402
 from resources.base import AGENT, SYSTEM, USER  # noqa: E402

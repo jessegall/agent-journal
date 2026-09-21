@@ -54,25 +54,6 @@ class Work(Traced, Resource):
     nav = False
 
 
-class Plan(Shape, Resource):
-    type = "plan"
-    notify_actions = ("updated",)
-    shown = {"completed": "Plan acknowledged"}
-    says = {"complete": "acknowledging"}
-    status = Field()
-    stage = Field()
-    phases = Field(default=list)
-    current = Field(default=1)
-    handed = "PLANS running"
-    attention = True
-    icon = "flag"
-    names = {"complete": "acknowledge", "place": "todos", "resume": "continue"}
-    title_ = "Plan"
-    abstract_ = "Ordered phases of to-dos with a goal, approved by the user before it runs"
-    help_ = "A plan is drafted by the agent, approved and continued by the user, and worked phase by phase. While it is being written the agent says which stage it is at with journal plan stage <n> phases|todos, so the viewer knows whether the phases or the rows under them are still to come. journal plan build takes a plan that is ready back to being written, for when there is more to add."
-    view = DOCUMENT
-
-
 class Doc(Shape, Resource):
     type = "doc"
     shown = {"completed": "Doc settled"}
@@ -356,9 +337,12 @@ class Nudge(Shape, Resource):
     spoken = True
 
 
-PHASE = names("title", "when", "checkpoint", "brief", "todos")
 RUNNING = names("what", "tool", "at", "done", "changed", "files", "made", "effect", "result", "before")
 COMMAND = names("what", "tool", "at", "effect", "subject", "done", "result", "files", "made", "changed")
 
-TYPES = {c.type: c for c in (Message, Todo, Work, Plan, Doc, Report, Pin, Rule, Reminder, Question, Suggestion, Comment, AgentRow, Notification, Notice, Reaction, Tool, Connection, Plugin, Environment, Ask, Nudge)}
+def register(*classes) -> None:
+    TYPES.update({c.type: c for c in classes})
+
+
+TYPES = {c.type: c for c in (Message, Todo, Work, Doc, Report, Pin, Rule, Reminder, Question, Suggestion, Comment, AgentRow, Notification, Notice, Reaction, Tool, Connection, Plugin, Environment, Ask, Nudge)}
 PRIORITY = ("message", "question", "suggestion", "comment", "plan", "todo", "report", "doc", "pin", "rule", "reminder", "notice", "reaction", "tool", "connection", "plugin", "environment", "work", "agent", "notification", "browser", "nudge")

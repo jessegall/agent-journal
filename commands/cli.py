@@ -378,6 +378,7 @@ def lifted(argv: list[str]) -> tuple[list[str], str]:
 
 def run(argv: list[str], out=None, err=None) -> int:
     out, err = out or sys.stdout, err or sys.stderr
+    features.load()
     forced = "--force" in argv
     argv, why = lifted(argv)
     if forced and not why:

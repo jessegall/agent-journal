@@ -5,7 +5,8 @@ import tempfile
 from pathlib import Path
 
 from commands.cli import captured
-from controllers.types import Agents, Asks, Environments, Plans, Todos
+from controllers.types import Agents, Asks, Environments, Todos
+from features.plans.controller import Plans  # noqa: E402
 from engine.record import Record
 from engine.sessions import Sessions
 from resources.base import SYSTEM
