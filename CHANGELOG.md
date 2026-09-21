@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.80.2 — Two plan templates ship with the journal
+
+To-do 705, from design 7. Every project now has two plan templates. Blank plan carries the usual steps of building a plan with the user. Functional design, then technical implementation is Redmar's case (message 1457): its first phase writes a functional doc and ends at a checkpoint where you approve it, and only its second phase files and builds the technical to-dos. Both appear under Start from when a plan is created. They are added once, by a migration, and a template you edit or retire is never added again.
+
+What to do about it: `journal upgrade`.
+
 ## 2.80.1 — A New dialog offers the templates that fit
 
 To-do 704, from design 7. Every New dialog now ends with Start from: Blank, or any template whose applies_to includes that type (or names no type). Picking one creates the resource from it, with its parts and a link to it, the same as `--set template=<n>`. The inspector of anything made from a template shows Made from template n at the top, and clicking it opens the template.
