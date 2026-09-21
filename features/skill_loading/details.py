@@ -1,6 +1,6 @@
 from features.base import Behaviour, FeatureDetails, Line
 from features.settings import Setting
-from features.trigger import USES
+from features.trigger import Trigger, USES
 
 
 class SkillsDetails(FeatureDetails):
@@ -17,7 +17,7 @@ class SkillsDetails(FeatureDetails):
         feature waits before its one reminder.
     """
 
-    trigger = {"every": 25, "unit": USES}
+    trigger = Trigger(every=25, unit=USES)
 
     behaviours = [
         Behaviour(
@@ -29,7 +29,7 @@ class SkillsDetails(FeatureDetails):
             name="stale",
             title="Name a skill that changed since it was loaded",
             abstract="Said every tenth tool use until the agent loads it again",
-            trigger={"every": 10, "unit": USES},
+            trigger=Trigger(every=10, unit=USES),
         ),
     ]
 

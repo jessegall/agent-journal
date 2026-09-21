@@ -1,4 +1,4 @@
-from features.trigger import IDLE
+from features.trigger import IDLE, Trigger
 from features.base import FeatureDetails, Line
 
 
@@ -16,7 +16,7 @@ class DeferralDetails(FeatureDetails):
         before the reply or next implementation.
     """
 
-    trigger = {"on": IDLE}
+    trigger = Trigger(on=IDLE)
 
     lines = [
         Line(

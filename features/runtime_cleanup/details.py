@@ -1,4 +1,4 @@
-from features.trigger import MINUTES
+from features.trigger import MINUTES, Trigger
 from features.base import FeatureDetails
 from features.settings import Setting
 
@@ -23,7 +23,7 @@ class HousekeepingDetails(FeatureDetails):
 
     fixed = True
 
-    trigger = {"every": 60, "unit": MINUTES}
+    trigger = Trigger(every=60, unit=MINUTES)
 
     settings = [
         Setting(

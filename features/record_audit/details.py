@@ -1,5 +1,5 @@
 from features.base import FeatureDetails, Line
-from features.trigger import MINUTES
+from features.trigger import MINUTES, Trigger
 
 
 class CleanupDetails(FeatureDetails):
@@ -16,7 +16,7 @@ class CleanupDetails(FeatureDetails):
 
     help = "Each finding names the row, what is wrong with it, and the command that retires it."
 
-    trigger = {"every": 1440, "unit": MINUTES}
+    trigger = Trigger(every=1440, unit=MINUTES)
 
     lines = [
         Line(

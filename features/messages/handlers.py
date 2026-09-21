@@ -47,7 +47,7 @@ class SaveAgentMessage(Handler):
 
 class ResetCountsOnArrival(Handler):
     def handle(self, context: Context, event: MessageCreated) -> None:
-        every = context.feature.behaviours["unread"].trigger["every"]
+        every = context.feature.behaviours["unread"].trigger.every
         for row in context.feature.live(context.record):
             trigger.write(context.record, row, context.feature.keyed("unread"), uses=int(row.uses or 0) - every)
             trigger.write(context.record, row, context.feature.keyed("answering"), uses=int(row.uses or 0), count=0)

@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.56.0 — A trigger is an object, not a dictionary
+
+Message 1550, to-do 622. A feature's or behaviour's cadence is declared like its lines and behaviours: Trigger(every=10, unit=USES), Trigger(at=(50, 70, 90, 95), unit=PERCENT), Trigger(on=IDLE). A cadence the user sets in the viewer is still saved as before and read back into a Trigger, and the viewer and the skills see the same shape they always did.
+
+What to do about it: `journal upgrade`.
+
 ## 2.55.0 — Every tool call waits until a required skill is loaded
 
 Messages 1464, 1512 and 1596. When the journal says a skill is needed, a journal command whose skill is not loaded, a skill that changed since it was loaded, or the journal skill in a fresh window, the agent's tool calls are refused until it loads it, and the refusal names the Skill to load. Loading a skill is never refused, by any interceptor. So no agent is ever stuck, an interceptor can cap its refusals in a row with a setting: after skill_loading.most_refusals (5) refusals the call goes through.

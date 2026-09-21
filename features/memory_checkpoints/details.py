@@ -1,4 +1,4 @@
-from features.trigger import MINUTES, PERCENT
+from features.trigger import MINUTES, PERCENT, Trigger
 from features.base import Behaviour, FeatureDetails, Line
 
 
@@ -22,14 +22,14 @@ class ContextDetails(FeatureDetails):
         done; it is owed again a week later.
     """
 
-    trigger = {"at": [50, 70, 90, 95], "unit": PERCENT}
+    trigger = Trigger(at=(50, 70, 90, 95), unit=PERCENT)
 
     behaviours = [
         Behaviour(
             name="rereading",
             title="Read every rule and fact again each week",
             abstract="Named once a day while the reading is owed",
-            trigger={"every": 1440, "unit": MINUTES},
+            trigger=Trigger(every=1440, unit=MINUTES),
         ),
     ]
 

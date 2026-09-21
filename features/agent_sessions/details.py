@@ -1,6 +1,6 @@
 from features.base import Behaviour, FeatureDetails, Line
 from features.settings import Setting
-from features.trigger import MINUTES
+from features.trigger import MINUTES, Trigger
 
 
 class AgentsDetails(FeatureDetails):
@@ -35,7 +35,7 @@ class AgentsDetails(FeatureDetails):
             name="liveness",
             title="Mark a silent session stopped",
             abstract="Checked every hour",
-            trigger={"every": 60, "unit": MINUTES},
+            trigger=Trigger(every=60, unit=MINUTES),
         ),
         Behaviour(
             name="subagents",
