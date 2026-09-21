@@ -2,8 +2,10 @@ import json
 from datetime import datetime, timezone
 
 
-from controllers.types import Messages, Nudges
-from tests.kit import nudges
+from controllers.types import Comments, Messages, Nudges
+from engine.hooks import displayed
+from engine.sessions import Sessions
+from tests.kit import nudges, report
 from tests.conftest import fresh
 
 
@@ -71,7 +73,6 @@ def test_the_last_message_is_read_only_once_claude_has_written_it(tmp_path):
 
 
 def test_a_tagged_message_runs_the_moment_the_engine_sees_it_written(tmp_path):
-    from controllers.types import Comments
     from resources.base import SYSTEM
     record = fresh()
     transcript = tmp_path / "s.jsonl"
@@ -95,7 +96,6 @@ def test_a_tagged_message_runs_the_moment_the_engine_sees_it_written(tmp_path):
 
 
 def test_the_final_message_the_stop_hook_carries_runs_its_tags_before_the_transcript_has_it(tmp_path):
-    from controllers.types import Comments
     from engine.hooks import handle
     from providers import PROVIDERS
     from resources.base import SYSTEM
@@ -134,3 +134,15 @@ def test_the_chosen_level_copies_tagged_messages_into_the_chat(tmp_path):
     record.set_setting("tags", {"verbosity": "info"})
     said("[!info] the build is still green")
     assert chat()[-2:] == [("answered in the thread", "reply"), ("the build is still green", "info")], "with info shown: copied into the chat once, its tag kept as data"
+
+
+def test_a_reply_shown_on_screen_is_posted_even_when_the_transcript_never_gets_it():
+    record = fresh()
+    report(record, "working", "PreToolUse")
+    Sessions(record.root).bind("claude-1", record.env, provider="claude")
+    message = Messages(record, actor="user").create("still there?")
+    base = {"session_id": "claude-1", "hook_event_name": "MessageDisplay", "message_id": "m1"}
+    displayed(record.root, {**base, "index": 0, "final": False, "delta": f"[!reply:{message.n}] shown in two "})
+    displayed(record.root, {**base, "index": 1, "final": True, "delta": "pieces"})
+    displayed(record.root, {**base, "message_id": "m2", "index": 0, "final": True, "delta": f"[!reply:{message.n}] shown in two pieces"})
+    assert [c.title for c in Comments(record, actor="system").linked_to(message.ref)] == ["shown in two pieces"], "joined, posted once"
