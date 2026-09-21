@@ -28,6 +28,14 @@ SERVICES_EVERY = 1.0
 TYPED_EVERY = 1.0
 
 
+def typed(fd: int, keys: bytes) -> None:
+    text = keys.rstrip(b"\r")
+    if text:
+        os.write(fd, text)
+        time.sleep(ENTER_AFTER)
+    if len(text) < len(keys):
+        os.write(fd, keys[len(text):])
+
 def typing(data: bytes) -> bool:
     return any(byte >= 0x20 for byte in ESCAPES.sub(b"", data))
 
@@ -51,7 +59,8 @@ def resize(fd: int) -> tuple[int, int]:
 
 REDRAWS = (b"\x1b[2J", b"\x1b[?1049h", b"\x1b[?1049l", b"\x1b[r")
 RESET = b"\x1bc"
-STARTUP, EARLY = 10.0, 16384
+STARTUP, EARLY = 30.0, 16384
+ENTER_AFTER = 0.3
 FRAME_END = b"\x1b[?25h"
 
 
@@ -80,6 +89,7 @@ def run(root: Path, cwd: Path, env: str, agent: str, fd: int, session: str, life
     inbox = typist.listen(root, session)
     answered = False
     early = b""
+    queued, due = b"", 0.0
     started = time.time()
     stamps = watched(root)
     stdin, stdout = sys.stdin.fileno(), sys.stdout.fileno()
@@ -142,10 +152,13 @@ def run(root: Path, cwd: Path, env: str, agent: str, fd: int, session: str, life
                     show(drawn(shape[1], cursor=where))
                 out.write(data)
                 out.flush()
+            if queued and time.time() >= due:
+                typed(fd, queued)
+                queued = b""
             if not answered and time.time() - started < STARTUP:
                 if (keys := DRIVERS[agent].confirm(early)):
                     answered = True
-                    os.write(fd, keys)
+                    queued, due = keys, time.time() + DRIVERS[agent].CONFIRM_AFTER
             elif not answered and early:
                 answered, early = True, b""
             if time.time() - last_band >= 1.0 and time.time() - last_out >= BETWEEN_FRAMES and where.sure:
