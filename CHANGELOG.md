@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.60.1 — A one-line revision strip
+
+Message 1663, to-do 640. While a design has one revision, its strip is a single line: "Open for edits, kept by itself in N min" on the left and Keep this revision on the right. The change list, who wrote it and when are left out, since the document itself shows its content.
+
+What to do about it: `journal upgrade`.
+
 ## 2.60.0 — A rule tag, and refusals in tag spelling
 
 Messages 1654 and 1655, to-do 632. `[!rule="the ruling", keywords=("git", "branch")]` files a rule, the same way the fact tag files a fact. When a tag's command is refused, the agent is still told on its next turn, and the error now uses tag spelling. A missing keyword reads `keywords="<word>,<word>"`, with a reminder to add it to the tag, instead of the command line's `--set keywords=...`.

@@ -73,9 +73,10 @@ const topChanged = computed(() =>
         : {}
 );
 
+const status = computed(() => (latest.value && open.value ? `Open for edits, kept by itself in ${minutesLeft.value} min` : ""));
 const note = computed(() =>
     [
-        latest.value && open.value ? `Open for edits, kept by itself in ${minutesLeft.value} min` : "",
+        status.value,
         meta.value ? meta.value.data.change : "",
         meta.value ? meta.value.seen.join(", ") : "",
         meta.value ? age(meta.value.updated || meta.value.created) || "just now" : "",
@@ -162,6 +163,9 @@ const cutPart = (title) => run("cut", {title});
                     </Btn>
                     <span class="count">Revision {{ at + 1 }} of {{ numbers.length }}</span>
                 </template>
+                <template v-else>
+                    <span class="count">{{ status || "Kept" }}</span>
+                </template>
                 <span class="grow" />
                 <template v-if="latest && open">
                     <Btn small title="Keep this revision as it is; the next edit starts a new one" @click="run('keep', {})">
@@ -177,7 +181,9 @@ const cutPart = (title) => run("cut", {title});
                     <Btn small @click="go(numbers.length - 1)">Latest</Btn>
                 </template>
             </div>
-            <p class="where">{{ note }}</p>
+            <template v-if="numbers.length > 1">
+                <p class="where">{{ note }}</p>
+            </template>
         </nav>
 
         <template v-if="!shown">
