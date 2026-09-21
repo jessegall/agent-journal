@@ -1,6 +1,5 @@
 from dataclasses import dataclass, field
 from datetime import datetime
-from pathlib import Path
 
 HUMAN, AGENT, TOOL = "human", "agent", "tool"
 INJECTED, TASK, PEER = "injected", "task", "peer"

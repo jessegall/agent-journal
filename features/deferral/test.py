@@ -1,7 +1,6 @@
 import json
 
 
-import features
 from controllers.types import Nudges, Todos
 from resources.base import AGENT
 from tests.kit import idle, nudges

@@ -1,17 +1,8 @@
-import features
-import json
-import subprocess
 
 from features.statusline.group import grouped, ran
 from features.statusline.queue import queue as messages
-from features.statusline.queue import CLOCK_AFTER, DRAINING, FLIP_EVERY, HOLD, LINGERS, MOST
+from features.statusline.queue import HOLD
 from features.statusline.feature import bar
-from features.statusline.dissect import base
-from features.statusline.shell import parsed
-from features.statusline.spoken import spoken
-from pathlib import Path
-from providers.claude import Claude
-from providers.codex import Codex
 
 
 NOW = 1_000_000.0

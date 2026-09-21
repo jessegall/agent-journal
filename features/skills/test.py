@@ -1,4 +1,3 @@
-import features
 
 from controllers.types import Messages
 from engine.queries import start_block

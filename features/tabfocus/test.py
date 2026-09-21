@@ -1,4 +1,3 @@
-import features
 
 from types import SimpleNamespace
 from features.tabfocus.focus import SCRIPT, existing_tab

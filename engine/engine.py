@@ -13,12 +13,11 @@ from engine.inputs import FORCE, take
 from surfaces.control import CARRY_ON, delivered
 from features.start.feature import WAIT_FOR_REPORT, hello
 from engine.record import Record
-from engine.terminal import pid_of
 from engine.watch import STEADY_AFTER, broke, steady
 from engine.sessions import Sessions
 from providers import PROVIDERS
 from resources.base import AGENT, SYSTEM, USER
-from resources.types import PRIORITY, RUNNING, TYPES
+from resources.types import PRIORITY, TYPES
 from engine.stored import write_json
 
 TICK = 1.0
@@ -76,7 +75,7 @@ class Engine:
         return self.why
 
     def relay(self) -> None:
-        name = f"engine-{self.agent.driver.session}"
+        f"engine-{self.agent.driver.session}"
         if self.relayed is None:
             self.relayed = self.record.last_event()
         for e in self.record.events(self.relayed):

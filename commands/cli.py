@@ -2,7 +2,6 @@ import argparse
 import inspect
 from contextlib import nullcontext
 import io
-import json
 import os
 import sys
 import time
@@ -257,7 +256,7 @@ def supervise(ctx, agent: str) -> str:
 
 
 def services(ctx) -> str:
-    from engine.services import DOWN, UP, log_file, spec_file, specs, states, status, want
+    from engine.services import DOWN, UP, log_file, specs, states, want
     root = ctx["record"].root
     what, which = ctx["what"], ctx["which"]
     if what == "up":

@@ -1,4 +1,3 @@
-import features
 
 from controllers.types import Facts, Rules
 from engine.hooks import handle, whispered

@@ -1,4 +1,3 @@
-import json
 import re
 import time
 from pathlib import Path
@@ -8,7 +7,6 @@ from engine.actors import COMPACTING, IDLE, STOPPED, WORKING
 from engine.record import Record
 from engine.sessions import Sessions, agent_pid
 from resources.base import AGENT, SYSTEM
-from resources.types import AgentRow
 
 STATUS = {"SessionStart": IDLE, "Stop": IDLE, "UserPromptSubmit": WORKING, "PreToolUse": WORKING,
           "PostToolUse": WORKING, "PreCompact": COMPACTING, "SubagentStart": "",

@@ -1,4 +1,4 @@
-from resources.base import DOCUMENT, PROJECT, Resource
+from resources.base import DOCUMENT, Resource
 from resources.shapes import Field, Shape, names
 
 PHASE = names("title", "when", "checkpoint", "brief", "todos")
