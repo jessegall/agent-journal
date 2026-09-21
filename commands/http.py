@@ -188,7 +188,7 @@ def post_settings(req: Request) -> Reply:
     for key, value in req.body.items():
         if key == Record.features and isinstance(value, dict):
             moved, rows = renamed(), Features(record, actor=USER)
-            asked = {moved.get(name, name): on for name, on in value.items()}
+            asked = {**{moved[name]: on for name, on in value.items() if name in moved}, **{name: on for name, on in value.items() if name not in moved}}
             for name, on in asked.items():
                 if "." not in name:
                     rows.switch(name, on)

@@ -80,7 +80,7 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
                         <UList :f="feature" @marks="marks" @every="every" @unit="unit" />
                     </section>
                 </template>
-                <template v-if="feature.parts.length">
+                <template v-if="feature.parts.length && (feature.fixed || on(feature.name, feature.default))">
                     <section class="block">
                         <h3>What it does</h3>
                         <template v-for="part in feature.parts" :key="part.name">

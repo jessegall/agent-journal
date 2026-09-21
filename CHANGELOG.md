@@ -4,6 +4,16 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.32.0 — Switches stick, a feature's switches show only while it is on, and an opened notification stays
+
+A switch sent under its current name and an older one in the same save — which is how the viewer's Settings sends them — could be turned back by the older name: switching faults.budget (Report anything slower than its budget) off did not stick. The current name now wins.
+
+A feature's own switches in Settings show only while the feature itself is on, so budget reporting shows where the faults feature is on — by default only in development.
+
+A notification opened from Home's rail used to vanish at once, because opening it read it. It now stays in the rail, read, until it is clicked away with its X.
+
+What to do about it: `journal upgrade`.
+
 ## 2.31.0 — The color band names the project and environment, and a live agent is never shown as stopped
 
 The color band at the top of the viewer now reads "project · environment", centered in the project's color, and shows only while agents are live in more than one environment or more than one journal is running — when it helps tell them apart. Switching environments flashes the project and environment name, as opening or returning to a journal already did.

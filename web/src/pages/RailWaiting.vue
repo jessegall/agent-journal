@@ -4,6 +4,7 @@ import Icon from "../kit/Icon.vue";
 import {api} from "../api/client.js";
 import {peek, route} from "../route.js";
 import {finishedUnread, happened, unreadByUser} from "../domain/records.js";
+import {rows} from "../sync/rows.js";
 import {age} from "../format/time.js";
 import {focusTurn} from "../platform/view.js";
 import {meta, types} from "../state/store.js";
@@ -20,15 +21,22 @@ const TINT = {
 const cards = computed(() =>
     types.value
         .filter((t) => t.attention)
-        .flatMap((t) => [...unreadByUser(t.name), ...(t.finished_is_news ? finishedUnread(t.name) : [])])
+        .flatMap((t) => [
+            ...unreadByUser(t.name),
+            ...(t.finished_is_news ? finishedUnread(t.name) : []),
+            ...rows(t.name).filter((r) => r.data.kept && !r.deleted),
+        ])
+        .filter((r, i, all) => all.findIndex((other) => other.ref === r.ref) === i)
         .sort((a, b) => b.created - a.created)
 );
 
-function open(r) {
+async function open(r) {
+    if (!r.data.kept) await api.act(r.type, r.n, "set", {key: "kept", value: "true"});
     if (!focusTurn(r.ref)) peek(r.type, r.n);
 }
 
 async function dismiss(r) {
+    await api.act(r.type, r.n, "set", {key: "kept", value: "false"});
     await api.act(r.type, r.n, "read");
 }
 </script>
@@ -46,7 +54,7 @@ async function dismiss(r) {
                 <div v-for="r in cards" :key="r.ref" :class="['needs-card', r.type]" @click="open(r)">
                     <div class="needs-card-top">
                         <span class="needs-card-kind">{{ happened(r) }}</span>
-                        <template v-if="meta(r.type).clears !== 'completed' || r.completed">
+                        <template v-if="meta(r.type).clears !== 'completed' || r.completed || r.data.kept">
                             <button type="button" class="needs-dismiss" title="Seen — take it off the list" @click.stop="dismiss(r)">
                                 <Icon name="close" />
                             </button>

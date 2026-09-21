@@ -70,3 +70,12 @@ def test_what_the_viewer_throws_is_filed_under_the_same_switch():
     turned(record, True)
     assert FEATURES["faults"].heard(record.root, record.env, "agents.some is not a function", "Sidebar.vue", "at r") is True
     assert told(record) == ["the viewer threw agents.some is not a function"], told(record)
+
+
+def test_a_switch_sent_under_its_old_name_too_keeps_the_new_names_value():
+    from commands.dispatch import dispatch
+    record = fresh()
+    settings = dispatch("GET", f"/api/{record.env}/settings", record.root, {}, {}).body
+    features = {**settings["features"], "faults.budget": False}
+    saved = dispatch("POST", f"/api/{record.env}/settings", record.root, {}, {"features": features}).body
+    assert saved["features"]["faults.budget"] is False, "the old name 'budget' in the same list must not turn it back on"
