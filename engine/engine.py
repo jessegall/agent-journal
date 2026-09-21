@@ -1,43 +1,30 @@
-import fcntl
 import sys
 import time
 import traceback
-from pathlib import Path
 
 from controllers.types import CONTROLLERS, Agents
 import features
-from engine import bus, typist
-from engine.actors import Actor, Agent, BUSY, COMPACTING, IDLE, STOPPED, System, User, WORKING
+from engine import bus
+from engine.actors import Actor, Agent, BUSY, IDLE, STOPPED, System, User, WORKING
 from engine.inputs import FORCE, take
 from surfaces.control import CARRY_ON, delivered
 from features.start.feature import WAIT_FOR_REPORT, hello
 from engine.record import Record
 from engine.watch import STEADY_AFTER, broke, steady
 from engine.sessions import Sessions
-from providers import PROVIDERS
 from resources.base import AGENT, SYSTEM, USER
 from resources.types import PRIORITY, TYPES
-from engine.stored import write_json
-from engine.proc import git
+from engine.seat import Seat
 
 TICK = 1.0
 SETTLE, STEP = 3.0, 0.1
 TYPING_HOLD = 10.0
-WEB_HOSTS = ("github.com", "gitlab.com", "bitbucket.org")
-
-
-def web_remote(url: str) -> str:
-    if url.startswith("git@") or (url.startswith("ssh://") and "@" in url):
-        url = f"https://{url.removeprefix('ssh://').split('@', 1)[-1].replace(':', '/', 1)}"
-    url = url.removesuffix(".git").rstrip("/")
-    host = url.split("://", 1)[-1].split("/", 1)[0]
-    return url if url.startswith("https://") and host in WEB_HOSTS else ""
 
 SILENT_AFTER = 120.0
 PROBE_WAIT = 5.0
 
 
-class Engine:
+class Engine(Seat):
     def __init__(self, record: Record, driver):
         self.record = record
         self.agent = Agent(record, driver)
@@ -237,53 +224,6 @@ class Engine:
                 return f"{len(unread)} unread {type_}"
         return ""
 
-    def branch(self) -> str:
-        last = self.agent.driver.last_report()
-        cwd = (last and last.cwd) or str(self.record.root.parent)
-        if time.time() - self.branched_at < 10:
-            return self.branch_name
-        self.branched_at = time.time()
-        try:
-            stamp = (cwd, (Path(cwd) / ".git" / "HEAD").stat().st_mtime_ns)
-        except OSError:
-            stamp = (cwd, 0)
-        if stamp == self.branch_stamp:
-            return self.branch_name
-        self.branch_stamp = stamp
-        self.branch_name = git(["rev-parse", "--abbrev-ref", "HEAD"], cwd, timeout=2).strip()
-        remote = git(["remote", "get-url", "origin"], cwd, timeout=2).strip()
-        url = f"{web}/tree/{self.branch_name}" if self.branch_name and (web := web_remote(remote)) else ""
-        if last and last.title and self.branch_name and (last.branch, last.branch_url) != (self.branch_name, url):
-            self.agent.mark(last.status or "", last.event or "", branch=self.branch_name, branch_url=url, at=last.at)
-        return self.branch_name
-
-    def crew(self) -> None:
-        last = self.agent.driver.last_report()
-        path = last and last.title and last.transcript
-        if not path or time.time() - self.crewed_at < 10:
-            return
-        self.crewed_at = time.time()
-        try:
-            size = Path(path).stat().st_size
-        except OSError:
-            return
-        if size == self.crewed_size:
-            return
-        self.crewed_size = size
-        facts = PROVIDERS[last.provider]().crew(Path(path)) if last.provider in PROVIDERS else {}
-        if facts and any(last.data.get(k) != v for k, v in facts.items()):
-            compacting = facts.get("compacting")
-            status = COMPACTING if compacting else WORKING if compacting is False and last.status == COMPACTING else last.status or ""
-            self.agent.mark(status, last.event or "", at=last.at, **facts)
-
-    def seat(self) -> None:
-        self.branch()
-        self.crew()
-        last = self.agent.driver.last_report()
-        write_json(self.record.root / "runtime" / f"seat-{self.agent.driver.session}.json", {"at": time.time(), "agent": self.agent.driver.name, "state": self.agent.state(), "env": self.record.env,
-                                 "why": self.why, "printed": self.agent.driver.last_printed(),
-                                 "report": {"title": last.title, **last.data} if last else {}})
-
     def step(self) -> None:
         try:
             self.tick()
@@ -302,44 +242,3 @@ class Engine:
         while self.running:
             self.step()
             time.sleep(TICK)
-
-
-class Engines:
-    def __init__(self, root: Path):
-        self.root = Path(root)
-        self.held: dict[str, Engine] = {}
-
-    def seated(self, session: str) -> Engine | None:
-        from providers import DRIVERS
-        sessions = Sessions(self.root)
-        provider, env = sessions.read(session).get("provider", ""), sessions.environment(session)
-        if provider not in DRIVERS or not env:
-            return None
-        record = Record(self.root, env)
-        engine = Engine(record, DRIVERS[provider](record, session))
-        engine.start()
-        return engine
-
-    def tick(self) -> None:
-        live = typist.live(self.root)
-        self.held = {session: engine for session, engine in self.held.items() if session in live}
-        for session in live:
-            engine = self.held.get(session) or self.seated(session)
-            if engine:
-                self.held[session] = engine
-                engine.step()
-
-    def run(self, stopping) -> None:
-        with (self.root / "runtime" / "engines.lock").open("a") as held:
-            while not stopping.is_set() and not self.owned(held):
-                stopping.wait(TICK)
-            while not stopping.is_set():
-                self.tick()
-                stopping.wait(TICK)
-
-    def owned(self, held) -> bool:
-        try:
-            fcntl.flock(held, fcntl.LOCK_EX | fcntl.LOCK_NB)
-            return True
-        except OSError:
-            return False
