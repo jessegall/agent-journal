@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.16.13 — Plain names for the written-message step
+
+The engine's step that announces a newly written message is named announce_written, and the line it remembers last_written_line.
+
+What to do about it: `journal upgrade`.
+
 ## 2.16.12 — A reply tag runs the moment it is written, and a handled message closes
 
 Running a tag is no longer a setting and no longer waits for the agent to stop: the engine, which already ticks once a second for each session, sees a new message in the transcript and says so on the bus as agent.said, and the tags feature runs the message's tags at once. A message closes once it has been handled: a row filed from it, a part processed, a reply or a reaction closes it when the agent's turn ends, and a message the agent wrote closes once the user has read it — including when the user reads several at once, which only closed the first before.

@@ -97,9 +97,9 @@ def test_a_tagged_message_runs_the_moment_the_engine_sees_it_written(tmp_path):
     message = Messages(record, actor="user").create("are you there?")
     engine = Engine(record, DRIVERS["claude"](record, "claude-99"))
     engine.agent.driver.last_report = lambda: SimpleNamespace(title="claude-1")
-    engine.heard()
+    engine.announce_written()
     rows.append({"type": "assistant", "timestamp": now, "message": {"content": [{"type": "text", "text": f"[!reply:{message.n}] yes, here"}]}})
     transcript.write_text("\n".join(json.dumps(r) for r in rows) + "\n")
-    engine.heard()
+    engine.announce_written()
     assert [c.title for c in Comments(record, actor=SYSTEM).linked_to(message.ref)] == ["yes, here"], \
         "written mid-turn, no hook fired: the reply is posted as soon as the engine sees it"

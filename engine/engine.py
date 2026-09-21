@@ -48,7 +48,7 @@ class Engine(Seat):
         self.carry_on = False
         self.why = ""
         self.clean = 0
-        self.said_line = None
+        self.last_written_line = None
 
     def start(self) -> None:
         features.load(self.record.root)
@@ -60,7 +60,7 @@ class Engine(Seat):
     def tick(self) -> str:
         self.agent.driver.pump()
         self.relay()
-        self.heard()
+        self.announce_written()
         self.why = (self.follow() or self.permitted() or self.probe() or self.forced() or self.typing() or self.control() or self.begin()
                     or self.deliver() or self.nudge() or self.check_in())
         self.seat()
@@ -76,16 +76,16 @@ class Engine(Seat):
             if not e.heard:
                 bus.emit(e, self.record)
 
-    def heard(self) -> None:
+    def announce_written(self) -> None:
         last = self.agent.driver.last_report()
         if not last or not last.title:
             return
         row = Agents(self.record, actor=SYSTEM).by_session(last.title)
         written = turns(self.record, row)
         line = written[-1].line if written else None
-        if line == self.said_line:
+        if line == self.last_written_line:
             return
-        first, self.said_line = self.said_line is None, line
+        first, self.last_written_line = self.last_written_line is None, line
         if not first:
             bus.emit(Event(id=0, at=time.time(), type="agent", n=row.n, action="said", actor=AGENT, data={"line": line}), self.record)
 
