@@ -520,7 +520,7 @@ def listing(controller, record, query: dict) -> dict:
     completed = query.get("completed") in ("1", "true")
     before = int(query.get("before") or 0)
     since = float(query.get("since") or 0)
-    rows = [row for row in controller.summaries() if (since or not row["deleted"]) and (completed or not row["completed"])
+    rows = [row for row in controller.summaries() if (since or only or not row["deleted"]) and (completed or not row["completed"])
             and (not before or row["n"] < before) and row["updated"] > since and (not only or row["n"] in only)]
     kept = rows[-last:] if last else rows
     if completed and last:

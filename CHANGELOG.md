@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.24.4 — A deleted row still opens
+
+A link to a deleted row — a to-do deleted after a message cited it, say — opened nothing: fetching a row by number left deleted rows out. A row asked for by number is returned even when deleted, and the inspector shows it; the lists still leave deleted rows out.
+
+What to do about it: `journal upgrade`.
+
 ## 2.24.3 — The plan bar counts every closed to-do
 
 The plan bar counted a plan's closed to-dos among the rows the page had loaded, which are the latest 25; a plan's older rows were never there, so its bar stood at 0 however many were done. The plan bar now fetches its plan's rows by number, and they stay current as they close.
