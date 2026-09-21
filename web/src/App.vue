@@ -3,7 +3,12 @@ import ExtensionSection from "./ExtensionSection.vue";
 
 import {computed, onMounted, onUnmounted, ref, watch} from "vue";
 import {route} from "./route.js";
-import {away, boot, listen, polled, reload, store} from "./store.js";
+import {away} from "./platform/visibility.js";
+import {store} from "./state/store.js";
+import {boot} from "./sync/boot.js";
+import {polled} from "./sync/polled.js";
+import {reload} from "./sync/rows.js";
+import {listen} from "./sync/stream.js";
 import Sidebar from "./layout/Sidebar.vue";
 import TopBar from "./layout/TopBar.vue";
 import StatusBar from "./layout/StatusBar.vue";

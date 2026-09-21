@@ -1,7 +1,7 @@
 <script setup>
 import {computed, onMounted, onUnmounted} from "vue";
 import Icon from "./Icon.vue";
-import {lightbox} from "../store.js";
+import {lightbox} from "../platform/view.js";
 
 const shown = computed(() => lightbox.pictures[lightbox.at] || null);
 const close = () => (lightbox.at = -1);

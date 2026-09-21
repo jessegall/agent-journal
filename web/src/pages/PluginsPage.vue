@@ -7,7 +7,9 @@ import Icon from "../kit/Icon.vue";
 import Spinner from "../kit/Spinner.vue";
 import Switch from "../kit/Switch.vue";
 import {route} from "../route.js";
-import {load, polled, rows, store} from "../store.js";
+import {store} from "../state/store.js";
+import {polled} from "../sync/polled.js";
+import {load, rows} from "../sync/rows.js";
 import {usePoll} from "../poll.js";
 
 usePoll(...polled.pages);

@@ -2,7 +2,8 @@
 import {computed, onMounted, onUnmounted, reactive, ref, watch} from "vue";
 import {api} from "../api/client.js";
 import JournalBar from "../layout/JournalBar.vue";
-import {remembered, store} from "../store.js";
+import {remembered} from "../composables/remembered.js";
+import {store} from "../state/store.js";
 
 const LINGER = 60000;
 const journals = ref([]);

@@ -1,6 +1,7 @@
 <script setup>
 import {computed, onUnmounted, ref, watch} from "vue";
-import {polled, store} from "../store.js";
+import {store} from "../state/store.js";
+import {polled} from "../sync/polled.js";
 import {TICK, line, shown} from "./bar.js";
 import {usePoll} from "../poll.js";
 

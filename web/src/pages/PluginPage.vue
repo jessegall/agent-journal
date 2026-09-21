@@ -4,7 +4,8 @@ import {api} from "../api/client.js";
 import Btn from "../kit/Btn.vue";
 import Icon from "../kit/Icon.vue";
 import {route} from "../route.js";
-import {polled, store} from "../store.js";
+import {store} from "../state/store.js";
+import {polled} from "../sync/polled.js";
 import {usePoll} from "../poll.js";
 
 usePoll(...polled.pages);

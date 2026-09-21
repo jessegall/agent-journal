@@ -1,6 +1,6 @@
 import {computed} from "vue";
 import {route} from "./route.js";
-import {store} from "./store.js";
+import {store} from "./state/store.js";
 
 export const project = computed(() => (store.identity && store.identity.project) || route.value.env);
 export const tint = computed(() => (store.identity && store.identity.color) || "#2a2c33");

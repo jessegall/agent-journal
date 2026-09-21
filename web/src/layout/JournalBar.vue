@@ -5,7 +5,7 @@ import {computed, ref} from "vue";
 import {api} from "../api/client.js";
 import Icon from "../kit/Icon.vue";
 import Switch from "../kit/Switch.vue";
-import {age} from "../store.js";
+import {age} from "../format/time.js";
 import {lineOf, planButton, stateOf, wordOf} from "./statusline.js";
 
 const props = defineProps({journal: {type: Object, required: true}, open: Boolean});

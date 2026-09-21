@@ -2,7 +2,8 @@
 import {computed, ref, watch} from "vue";
 import SwitchCase from "../kit/SwitchCase.vue";
 import {go, route, unpeek} from "../route.js";
-import {meta, rows} from "../store.js";
+import {meta} from "../state/store.js";
+import {rows} from "../sync/rows.js";
 import ResourceBody from "./ResourceBody.vue";
 import DocumentPage from "./DocumentPage.vue";
 import PlanPage from "./PlanPage.vue";

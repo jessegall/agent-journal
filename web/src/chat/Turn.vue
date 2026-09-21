@@ -6,7 +6,11 @@ import Buttons from "../resource/Buttons.vue";
 import OptionsPicker from "../resource/OptionsPicker.vue";
 import Attachments from "./Attachments.vue";
 import {peek, route} from "../route.js";
-import {clock, focusTurn, laidOut, meta, quoted, rows, store, types} from "../store.js";
+import {quoted} from "../format/quote.js";
+import {clock} from "../format/time.js";
+import {focusTurn, laidOut} from "../platform/view.js";
+import {meta, store, types} from "../state/store.js";
+import {rows} from "../sync/rows.js";
 import {render} from "../text/index.js";
 import "../text/all.js";
 

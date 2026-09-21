@@ -1,6 +1,6 @@
 <script setup>
 import {computed, provide, ref, watch} from "vue";
-import {rows} from "../store.js";
+import {rows} from "../sync/rows.js";
 import ResourceBody from "./ResourceBody.vue";
 import Comments from "./Comments.vue";
 import Links from "./Links.vue";

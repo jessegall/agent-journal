@@ -4,7 +4,7 @@ import Dot from "../kit/Dot.vue";
 import Icon from "../kit/Icon.vue";
 import PriorityIcon from "../kit/PriorityIcon.vue";
 import {peek, route} from "../route.js";
-import {GROUPS, groupOf, open, planOf} from "../store.js";
+import {groupOf, GROUPS, open, planOf} from "../domain/records.js";
 
 const groups = computed(() => {
     const buckets = {};

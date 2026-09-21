@@ -2,7 +2,7 @@
 import Btn from "../kit/Btn.vue";
 import Icon from "../kit/Icon.vue";
 import Switch from "../kit/Switch.vue";
-import {age} from "../store.js";
+import {age} from "../format/time.js";
 
 defineProps({
     skill: {type: Object, required: true},

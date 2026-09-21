@@ -1,6 +1,7 @@
 <script setup>
 import {computed, onUnmounted, ref} from "vue";
-import {span, store} from "../store.js";
+import {span} from "../format/time.js";
+import {store} from "../state/store.js";
 
 const props = defineProps({
     rows: {type: Array, default: () => []},

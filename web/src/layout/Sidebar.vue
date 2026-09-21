@@ -4,7 +4,9 @@ import {api} from "../api/client.js";
 import Icon from "../kit/Icon.vue";
 import {negative, project, tint} from "../identity.js";
 import {route} from "../route.js";
-import {counted, load, navTypes, polled, rows, store} from "../store.js";
+import {counted, navTypes, store} from "../state/store.js";
+import {polled} from "../sync/polled.js";
+import {load, rows} from "../sync/rows.js";
 import {usePoll} from "../poll.js";
 
 usePoll(...polled.agents);

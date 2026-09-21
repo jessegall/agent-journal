@@ -2,7 +2,10 @@
 import {computed, onUnmounted} from "vue";
 import Icon from "../kit/Icon.vue";
 import {go, route} from "../route.js";
-import {age, away, byRef, counted, meta, span, store, types, word} from "../store.js";
+import {byRef} from "../domain/records.js";
+import {age, span} from "../format/time.js";
+import {away} from "../platform/visibility.js";
+import {counted, meta, store, types, word} from "../state/store.js";
 
 const lines = computed(() =>
     [...store.events]

@@ -2,7 +2,9 @@
 import {computed} from "vue";
 import Icon from "../kit/Icon.vue";
 import {peek} from "../route.js";
-import {age, byRef, linkedTo, meta} from "../store.js";
+import {byRef, linkedTo} from "../domain/records.js";
+import {age} from "../format/time.js";
+import {meta} from "../state/store.js";
 
 const props = defineProps({resource: Object, except: {type: Array, default: () => []}});
 const skip = (type) => meta(type).mirror || (meta(type).fields.options && meta(type).attention);

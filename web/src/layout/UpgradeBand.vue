@@ -2,7 +2,9 @@
 import {computed, onMounted, ref} from "vue";
 import {api} from "../api/client.js";
 import Btn from "../kit/Btn.vue";
-import {polled, remembered, store} from "../store.js";
+import {remembered} from "../composables/remembered.js";
+import {store} from "../state/store.js";
+import {polled} from "../sync/polled.js";
 import {usePoll} from "../poll.js";
 
 usePoll(...polled.manifest);

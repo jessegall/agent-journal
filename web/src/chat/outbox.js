@@ -1,4 +1,5 @@
 import {api} from "../api/client.js";
+import {tellExtension} from "../platform/extension.js";
 
 const KEY = "journal.outbox.v1";
 const BRIDGE_WAIT = 500;
@@ -49,7 +50,7 @@ function bridgeCall(kind, value) {
             clearTimeout(timeout);
             resolve(result);
         });
-        window.postMessage({source: "journal-page", kind, request: id, value}, window.location.origin);
+        tellExtension(kind, {request: id, value});
     });
 }
 

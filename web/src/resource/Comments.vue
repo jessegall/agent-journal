@@ -3,7 +3,9 @@ import {computed, nextTick, reactive, ref, watch} from "vue";
 import {api} from "../api/client.js";
 import Btn from "../kit/Btn.vue";
 import {route} from "../route.js";
-import {age, quoted, rows, withQuote} from "../store.js";
+import {quoted, withQuote} from "../format/quote.js";
+import {age} from "../format/time.js";
+import {rows} from "../sync/rows.js";
 import Compose from "../chat/Compose.vue";
 import Markdown from "./Markdown.vue";
 

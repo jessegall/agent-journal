@@ -3,7 +3,6 @@ import {computed, onUnmounted, ref} from "vue";
 import {api} from "../api/client.js";
 import PriorityIcon from "../kit/PriorityIcon.vue";
 import {route} from "../route.js";
-import {} from "../store.js";
 
 const LEVELS = [
     {value: "low", n: 50},
