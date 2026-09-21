@@ -35,20 +35,20 @@ def worked(group: list[dict]) -> list[dict]:
     return found[-MOST:]
 
 
-def shared(said: list[list[str]]) -> int:
-    for i in range(min(len(w) for w in said)):
-        if len({w[i] for w in said}) > 1:
+def shared(rows: list[list[str]]) -> int:
+    for i in range(min(len(w) for w in rows)):
+        if len({w[i] for w in rows}) > 1:
             return i
-    return min(len(w) for w in said)
+    return min(len(w) for w in rows)
 
 
 def columns(found: list[dict]) -> list[dict]:
-    said = [[name["value"]] if name["whole"] else words(name["value"]) for name in found]
-    if not all(name.get("columnar") for name in found) or len({len(w) for w in said}) > 1:
-        same = shared(said)
-        said = [[*w[:same], " ".join(w[same:])] for w in said]
+    rows = [[name["value"]] if name["whole"] else words(name["value"]) for name in found]
+    if not all(name.get("columnar") for name in found) or len({len(w) for w in rows}) > 1:
+        same = shared(rows)
+        rows = [[*w[:same], " ".join(w[same:])] for w in rows]
     parts = []
-    for column in zip(*said):
+    for column in zip(*rows):
         if len(set(column)) > 1:
             parts.append({"value": list(column), "duration": FLIP_EVERY, "color": MUTED})
         elif column[0]:
@@ -68,9 +68,9 @@ def counted(group: list[dict], found: list[dict]) -> list[dict]:
         counts = list(accumulate(name.get(key, 0) for name in found))
         if not counts[-1]:
             continue
-        said = counts if len(counts) > 1 else counts[0]
-        parts.append({"value": said, "prefix": sign, "increments": True, "color": color,
-                      **({"duration": FLIP_EVERY} if isinstance(said, list) else {})})
+        value = counts if len(counts) > 1 else counts[0]
+        parts.append({"value": value, "prefix": sign, "increments": True, "color": color,
+                      **({"duration": FLIP_EVERY} if isinstance(value, list) else {})})
     return parts
 
 
@@ -94,19 +94,19 @@ def message(group: list[dict], closed: bool, now: float, behind: int = 0) -> dic
     kind = group[0]["kind"]
     found = worked(group)
     noun = NOUNS.get(kind)
-    said = [verb_for(group, kind), *(columns(found) if found else [{"value": noun, "color": MUTED}] if noun else [])]
+    parts = [verb_for(group, kind), *(columns(found) if found else [{"value": noun, "color": MUTED}] if noun else [])]
     last = group[-1]
     over = closed or bool(last["done"])
     ran = max(0.0, (last["done"] if over else now) - last["at"])
     return {
         "id": group[0]["at"],
-        "key": key_of(said),
-        "parts": [*said, *counted(group, found), *(outcome(last["result"]) if last["done"] and last["result"] else [])],
+        "key": key_of(parts),
+        "parts": [*parts, *counted(group, found), *(outcome(last["result"]) if last["done"] and last["result"] else [])],
         "at": group[0]["at"],
         "done": over,
         "for": int(ran),
         "clock": ran >= CLOCK_AFTER and not over,
-        "hold": DRAINING if behind >= DRAIN else max(HOLD if kind in HELD else 0.0, walked(said)),
+        "hold": DRAINING if behind >= DRAIN else max(HOLD if kind in HELD else 0.0, walked(parts)),
         "lingers": LINGERS,
     }
 
@@ -116,5 +116,5 @@ def known(group: list[dict]) -> bool:
 
 
 def queue(groups: list[list[dict]], now: float = 0.0) -> list[dict]:
-    said = [group for group in groups if known(group)]
-    return [message(group, i < len(said) - 1, now, len(said) - 1 - i) for i, group in enumerate(said)]
+    known_groups = [group for group in groups if known(group)]
+    return [message(group, i < len(known_groups) - 1, now, len(known_groups) - 1 - i) for i, group in enumerate(known_groups)]

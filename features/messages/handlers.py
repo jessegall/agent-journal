@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from typing import ClassVar
 
 from engine.events import AgentMessageSent, AgentUpdated, ResourceCreated, ResourceEvent
-from engine.transcript import IDLE, last_said
+from engine.transcript import IDLE, last_text
 from features import trigger
 from features.messages.answering import in_hand, read_and_open, theirs, unanswered
 from features.parts import Context, Handler
@@ -87,9 +87,9 @@ class CloseHandled(Handler):
         if not context.agent or context.agent.row.status != IDLE:
             return
         for message in read_and_open(context.journal):
-            became = [*message.refs, *(s[SECTION.body] for s in message.sections)]
-            if became:
-                context.journal.messages.complete(message.n, how=f"handled: {', '.join(dict.fromkeys(became))}")
+            results = [*message.refs, *(s[SECTION.body] for s in message.sections)]
+            if results:
+                context.journal.messages.complete(message.n, how=f"handled: {', '.join(dict.fromkeys(results))}")
 
 
 class CloseSeenByUser(Handler):
@@ -135,6 +135,6 @@ class NameRunTogether(Handler):
     behaviour = "paragraphs"
 
     def handle(self, context: Context, event: AgentUpdated) -> None:
-        said = last_said(context.record, context.agent.row).strip()
-        if len(said) >= RUN_ON and "\n\n" not in said and said.count(". ") >= SENTENCES:
+        last = last_text(context.record, context.agent.row).strip()
+        if len(last) >= RUN_ON and "\n\n" not in last and last.count(". ") >= SENTENCES:
             context.agent.whisper("paragraphs")

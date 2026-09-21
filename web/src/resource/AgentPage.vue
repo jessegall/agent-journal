@@ -66,7 +66,7 @@ const {turns, total, first, folded, error, loading, paging, atStart, toggle, ear
     scroller
 );
 watch(session, () => (tab.value = "transcript"));
-const heard = computed(() => withWhispers(turns.value, rows("nudge"), props.resource.title));
+const entries = computed(() => withWhispers(turns.value, rows("nudge"), props.resource.title));
 useSighted(topMark, earlier, {root: scroller, margin: "400px 0px"});
 </script>
 
@@ -216,7 +216,7 @@ useSighted(topMark, earlier, {root: scroller, margin: "400px 0px"});
                 <template v-else-if="!turns.length && !error">
                     <p class="none">Nothing printed yet, or no transcript on this row.</p>
                 </template>
-                <template v-for="t in heard" :key="t.line">
+                <template v-for="t in entries" :key="t.line">
                     <div :class="['turn', t.kind, {folded: folded.has(t.line)}]">
                         <div class="meta">
                             <button
@@ -238,7 +238,7 @@ useSighted(topMark, earlier, {root: scroller, margin: "400px 0px"});
                         </div>
                         <template v-if="t.text && !folded.has(t.line)">
                             <template v-if="t.kind === 'agent' || t.kind === 'human'">
-                                <div class="said" v-html="render(t.text, {types: [], env: route.env})" />
+                                <div class="turn-text" v-html="render(t.text, {types: [], env: route.env})" />
                             </template>
                             <template v-else>
                                 <pre class="raw">{{ t.text }}</pre>
@@ -490,7 +490,7 @@ useSighted(topMark, earlier, {root: scroller, margin: "400px 0px"});
     opacity: 0.62;
 }
 
-.turn.superseded .said {
+.turn.superseded .turn-text {
     text-decoration: line-through;
 }
 
@@ -541,7 +541,7 @@ useSighted(topMark, earlier, {root: scroller, margin: "400px 0px"});
     color: var(--text-3);
 }
 
-.said {
+.turn-text {
     margin-top: 4px;
     line-height: 1.5;
     color: var(--text);
@@ -564,13 +564,13 @@ useSighted(topMark, earlier, {root: scroller, margin: "400px 0px"});
     color: var(--text-4);
 }
 
-.said :deep(p) {
+.turn-text :deep(p) {
     margin: 0;
     white-space: pre-wrap;
     overflow-wrap: anywhere;
 }
 
-.said :deep(p + p) {
+.turn-text :deep(p + p) {
     margin-top: 0.5em;
 }
 

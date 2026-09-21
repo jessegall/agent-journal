@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.63.1 — Code names say what they hold
+
+Message 1698, to-do 644, rule 34. Every name that read like a story is renamed for what it holds or does, across the Python, the viewer and the tests. A few: `chat.said` is `chat.send`, `bus.shown` is `bus.tell_watchers`, `Actor.heard` is `Actor.delivered_until`, `typist.heard` is `typist.receive`, `ToolUse.said` is `ToolUse.text`, `Hook.said` is `Hook.last_message`, and `resources.base.shown` is `as_dict`. The renames went token by token, so no visible text changed. `scripts/checks/prose_names.py` reports these words wherever they are used as names. What it still reports is stored data (an event's `heard`, the agent row's `said`, `told` in trigger and fault state), which needs a migration, to-do 653. The law keywords for L1 and L2 now match only the dispatch tools, since `dispatch` fired on file names, and a picture read no longer counts as the largest tool result.
+
+What to do about it: `journal upgrade`.
+
 ## 2.63.0 — L3, laws with keywords, and the largest tool result
 
 Messages 1676 to 1691, to-do 643. A third law ships with the journal, in the start block of every session: **L3 — Read narrowly: grep for the line, sed a range, head the file; never print a whole file or long output you do not need.** Every law now carries keywords declared beside it. When a command or an edit touches one, the law is whispered with its reason, like a fact or a rule. After a tool call whose result is over 20,000 characters (`journal_laws.result_floor`) and larger than any earlier result in the session, the agent is told its size and that the next read can be narrower. This brings back the check from the orchestrator (eb2bb1e). It only speaks on a new largest result, so a session hears it once or twice.

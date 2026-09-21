@@ -25,7 +25,7 @@ watch(
     (value) => (every.value = Number(value || 0))
 );
 watch(
-    () => state.value.said,
+    () => state.value.output,
     async () => {
         await nextTick();
         if (output.value) output.value.scrollTop = output.value.scrollHeight;
@@ -87,10 +87,10 @@ async function save(key, value) {
             <span class="unit">minutes</span>
         </label>
     </section>
-    <template v-if="state.said">
+    <template v-if="state.output">
         <section class="block">
             <h3>{{ state.verdict === "running" ? "Output so far" : "What it said last" }}</h3>
-            <pre ref="output" :class="['said', state.verdict]">{{ state.said }}</pre>
+            <pre ref="output" :class="['output', state.verdict]">{{ state.output }}</pre>
         </section>
     </template>
     <template v-if="state.runs.length">
@@ -263,7 +263,7 @@ async function save(key, value) {
     outline: none;
 }
 
-.said {
+.output {
     margin: 0;
     padding: 10px 12px;
     max-height: 320px;
@@ -276,11 +276,11 @@ async function save(key, value) {
     white-space: pre-wrap;
 }
 
-.said.failed {
+.output.failed {
     border-color: color-mix(in srgb, var(--danger) 35%, var(--border-2));
 }
 
-.said.running {
+.output.running {
     border-color: color-mix(in srgb, var(--progress) 35%, var(--border-2));
 }
 

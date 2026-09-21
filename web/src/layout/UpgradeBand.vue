@@ -14,7 +14,7 @@ const upstream = ref(null);
 const dismissed = ref(remembered("journal.upgrade.dismissed", ""));
 const lines = ref([]);
 const running = ref(false);
-const shown = computed(() => upstream.value && upstream.value.newer && dismissed.value !== upstream.value.latest);
+const visible = computed(() => upstream.value && upstream.value.newer && dismissed.value !== upstream.value.latest);
 const mine = (document.querySelector("script[type=module]") || {}).src || "";
 const stale = computed(() => {
     const serving = store.spec && store.spec.build;
@@ -64,7 +64,7 @@ async function upgrade() {
             <span class="drain" :style="{animationDuration: `${RELOAD_AFTER}s`}" />
         </div>
     </template>
-    <template v-if="shown">
+    <template v-if="visible">
         <div class="band">
             <span class="text">
                 Agent journal {{ upstream.latest }} is out — this is {{ upstream.installed }}.

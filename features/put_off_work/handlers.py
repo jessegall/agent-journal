@@ -1,7 +1,7 @@
 import re
 
 from engine.events import AgentUpdated
-from engine.transcript import last_said
+from engine.transcript import last_text
 from features.parts import WHOLE_FEATURE, Context, Handler
 from resources.base import AGENT
 
@@ -14,7 +14,7 @@ class NameDeferredWork(Handler):
     behaviour = WHOLE_FEATURE
 
     def handle(self, context: Context, event: AgentUpdated) -> None:
-        found = DEFERS.search(last_said(context.record, context.agent.row) or "")
+        found = DEFERS.search(last_text(context.record, context.agent.row) or "")
         if found and not self.parked_since(context, float(context.agent.row.at or 0) - SINCE):
             context.agent.say("deferred", words=found.group(0))
 

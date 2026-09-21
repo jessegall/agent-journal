@@ -24,7 +24,7 @@ def played(root, env: str, at: float) -> None:
     write_json(played_file(root, env), {"at": at})
 
 
-def shown(root, env: str) -> dict:
+def current(root, env: str) -> dict:
     last = read_json(played_file(root, env), {}).get("at", 0.0)
     held = read_json(bar_file(root, env), EMPTY)
     return {**held, "queue": [one for one in held["queue"] if one["at"] > last or (one["at"] == last and not ended(one))]}

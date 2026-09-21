@@ -33,7 +33,7 @@ class TagsDetails(FeatureDetails):
         Line(
             name="refused",
             title="the {{tag}} tag on {{on}} did not run",
-            brief="{{said}} - add what is missing to the tag itself",
+            brief="{{error}} - add what is missing to the tag itself",
         ),
         Line(
             name="by tag",

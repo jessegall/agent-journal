@@ -89,7 +89,7 @@ def sweep() -> None:
 
 def group(path: Path) -> str:
     try:
-        said = path.resolve().relative_to(REPO).as_posix()
+        text = path.resolve().relative_to(REPO).as_posix()
     except ValueError:
         return ""
-    return SERIAL.get(said, "")
+    return SERIAL.get(text, "")

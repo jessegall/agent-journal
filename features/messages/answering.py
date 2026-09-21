@@ -8,8 +8,8 @@ def theirs(message) -> bool:
 def answered(journal, message) -> bool:
     if message.refs or message.sections:
         return True
-    said = journal.comments.linked_to(message.ref) + journal.reactions.linked_to(message.ref)
-    return any(r.seen[:1] == [AGENT] for r in said)
+    answers = journal.comments.linked_to(message.ref) + journal.reactions.linked_to(message.ref)
+    return any(r.seen[:1] == [AGENT] for r in answers)
 
 
 def read_and_open(journal) -> list:

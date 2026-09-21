@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from typing import ClassVar
 
 from engine.events import AgentUpdated, ResourceEvent
-from engine.transcript import last_said
+from engine.transcript import last_text
 from features.parts import Context, Handler
 from features.ask_questions.choices import offers_choices
 
@@ -18,7 +18,7 @@ class AskInsteadOfProse(Handler):
     behaviour = ASKING
 
     def handle(self, context: Context, event: AgentUpdated) -> None:
-        if offers_choices(last_said(context.record, context.agent.row)):
+        if offers_choices(last_text(context.record, context.agent.row)):
             context.agent.say("prose")
             context.hold("prose held", ASKING)
 

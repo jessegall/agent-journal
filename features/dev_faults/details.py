@@ -43,6 +43,6 @@ class FaultsDetails(FeatureDetails):
         Line(
             name="fault",
             title="{{title}}",
-            brief="{{said}}",
+            brief="{{summary}}",
         ),
     ]

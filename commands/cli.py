@@ -83,17 +83,17 @@ def noun_of(argv: list[str]) -> str:
 def captured(argv: list[str], root: Path) -> tuple[str, int | None]:
     if not argv or noun_of(argv) not in served():
         return f"{first_word(argv) or 'the journal'} is not a command the server runs", None
-    said, wrong = io.StringIO(), io.StringIO()
+    out, err = io.StringIO(), io.StringIO()
     try:
-        code = run(["--root", str(root), *argv], out=said, err=wrong)
+        code = run(["--root", str(root), *argv], out=out, err=err)
     except SystemExit as e:
         code = int(e.code or 0)
     except Exception as e:
         return f"! {type(e).__name__}: {e}", 1
-    spoke = said.getvalue() or wrong.getvalue()
-    if code and not spoke.strip():
-        return f"! {' '.join(argv)} was refused and said nothing", code
-    return spoke, code
+    output = out.getvalue() or err.getvalue()
+    if code and not output.strip():
+        return f"! {' '.join(argv)} was refused and printed nothing", code
+    return output, code
 
 
 def lifted(argv: list[str]) -> tuple[list[str], str]:

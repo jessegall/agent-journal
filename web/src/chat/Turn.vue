@@ -103,7 +103,7 @@ function worded(ref, word) {
     return ref.type && meta(ref.type) ? `${meta(ref.type).title.toLowerCase()} ${ref.n}` : word;
 }
 
-const became = computed(() => {
+const results = computed(() => {
     const declared = props.turn.sections
         .flatMap((s) => s.body.split(/,\s*/).map((word) => ({part: s.title, word: worded(refOf(word), word), ref: refOf(word)})))
         .filter((b) => b.ref.type);
@@ -174,12 +174,12 @@ async function drop() {
                         Comment on {{ commentParent.label }}
                     </button>
                 </template>
-                <template v-if="became.length || turn.type === 'question'">
-                    <div :class="['thread-became', {live: !turn.completed}]">
+                <template v-if="results.length || turn.type === 'question'">
+                    <div :class="['thread-results', {live: !turn.completed}]">
                         <template v-if="turn.type === 'question'">
                             <p class="thread-ask-label">Question</p>
                         </template>
-                        <template v-for="(b, i) in became" :key="i">
+                        <template v-for="(b, i) in results" :key="i">
                             <button type="button" class="thread-pill" :title="b.part" @click.stop="peek(b.type, b.n)">
                                 {{ b.word }}
                             </button>
@@ -402,7 +402,7 @@ async function drop() {
     border-color: color-mix(in srgb, var(--blocking) 40%, transparent);
 }
 
-.thread-became {
+.thread-results {
     display: flex;
     align-items: center;
     flex-wrap: wrap;
@@ -415,7 +415,7 @@ async function drop() {
     color: var(--text-3);
 }
 
-.thread-became.live {
+.thread-results.live {
     color: var(--accent-text);
 }
 

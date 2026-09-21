@@ -23,8 +23,8 @@ class Transport {
             body: body === undefined || raw ? body : JSON.stringify(body),
         }).finally(() => this.watcher("answered", method, url));
         if (!res.ok) {
-            const said = await res.json().catch(() => ({}));
-            throw new Error(said.error || `${res.status} ${res.statusText}`);
+            const body = await res.json().catch(() => ({}));
+            throw new Error(body.error || `${res.status} ${res.statusText}`);
         }
         return res.json();
     }

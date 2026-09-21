@@ -96,10 +96,10 @@ def turns(record, agent) -> list:
 
 
 def last_turn(record, agent):
-    said = turns(record, agent)
-    return said[-1] if said else None
+    written = turns(record, agent)
+    return written[-1] if written else None
 
 
-def last_said(record, agent) -> str:
-    said = last_turn(record, agent)
-    return said.text if said else ""
+def last_text(record, agent) -> str:
+    written = last_turn(record, agent)
+    return written.text if written else ""

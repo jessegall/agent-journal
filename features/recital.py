@@ -36,7 +36,7 @@ class WhisperOnKeyword(ToolInterceptor):
         self.resources = resources
 
     def intercept(self, context: Context, call) -> str:
-        text = call.said.lower()
+        text = call.text.lower()
         if not text or not context.agent or not context.on(WHISPER):
             return ""
         rows = getattr(context.journal, self.resources)

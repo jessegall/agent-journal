@@ -8,25 +8,25 @@ from resources.base import AGENT
 
 class RunTagCommands(Handler):
     def handle(self, context: Context, event: AgentMessageSending) -> None:
-        said = event.text
-        if context.agent and CARRIED.search(said) and context.once("tagged", said):
-            self.run(context, said)
-        if replies(said):
+        message = event.text
+        if context.agent and CARRIED.search(message) and context.once("tagged", message):
+            self.run(context, message)
+        if replies(message):
             event.stop()
         else:
-            event.change(stripped(said, context.settings).strip())
+            event.change(stripped(message, context.settings).strip())
 
-    def run(self, context: Context, said: str) -> None:
+    def run(self, context: Context, message: str) -> None:
         from commands.cli import run
-        commands, text = runs(context.settings), CARRIED.sub("", reader(context.settings).sub("", said)).strip()
-        for name, n, argument, extras in CARRIED.findall(said):
+        commands, text = runs(context.settings), CARRIED.sub("", reader(context.settings).sub("", message)).strip()
+        for name, n, argument, extras in CARRIED.findall(message):
             if name not in commands:
                 continue
             out, err = io.StringIO(), io.StringIO()
             code = run(["--root", str(context.record.root), "--env", context.record.env, "--session", context.agent.session, "--as", AGENT,
                         *self.argv(commands[name], n, argument, text), *self.settings(extras)], out=out, err=err)
             if code:
-                context.agent.whisper("refused", tag=name, on=n or argument, said=tag_spelling((err.getvalue() or out.getvalue()).strip()))
+                context.agent.whisper("refused", tag=name, on=n or argument, error=tag_spelling((err.getvalue() or out.getvalue()).strip()))
 
     def settings(self, extras: str) -> list[str]:
         return [word for key, value in named(extras).items() for word in ("--set", f"{key}={value}")]

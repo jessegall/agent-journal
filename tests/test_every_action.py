@@ -23,16 +23,16 @@ COUNTED = ("n", "m", "p", "waits", "doc", "plan", "on", "days", "last", "back", 
 
 
 def given(controller, parameter: inspect.Parameter, row):
-    said = str(parameter.annotation)
-    if said.startswith("list"):
-        return [row.n] if "int" in said else ["a word"]
+    text = str(parameter.annotation)
+    if text.startswith("list"):
+        return [row.n] if "int" in text else ["a word"]
     if parameter.name in COUNTED:
         return row.n if parameter.name in ("n", "m", "waits", "doc", "plan") else 1
     if parameter.name in SAID:
         return SAID[parameter.name]
-    if said.endswith("int"):
+    if text.endswith("int"):
         return 1
-    if said.endswith("bool"):
+    if text.endswith("bool"):
         return False
     return "a word"
 

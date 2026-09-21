@@ -66,7 +66,7 @@ export const toldToUser = (e) => !!meta(e.type) && meta(e.type).notified.include
 export function happened(r) {
     const kind = meta(r.type);
     const action = r.completed ? "completed" : "created";
-    const said = (kind.event_labels || {})[action];
-    if (said) return said;
+    const label = (kind.event_labels || {})[action];
+    if (label) return label;
     return r.completed ? `${kind.title} ${word(r.type, "complete")}` : `${kind.title} created`;
 }

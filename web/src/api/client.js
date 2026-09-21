@@ -4,10 +4,10 @@ import {transport} from "./transport.js";
 const encoded = (value) => encodeURIComponent(value);
 
 function query(fields) {
-    const said = new URLSearchParams(
+    const query = new URLSearchParams(
         Object.entries(fields).filter(([, value]) => value !== undefined && value !== null && value !== false)
     );
-    return said.toString() ? `?${said}` : "";
+    return query.toString() ? `?${query}` : "";
 }
 
 export class ApiClient {

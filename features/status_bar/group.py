@@ -6,9 +6,9 @@ def ran(commands: list[dict] | None) -> list[dict]:
     return [dissect(one) for one in commands or [] if (one.get(COMMAND.what) or "").strip()]
 
 
-def grouped(said: list[dict]) -> list[list[dict]]:
+def grouped(commands: list[dict]) -> list[list[dict]]:
     runs: list[list[dict]] = []
-    for one in said:
+    for one in commands:
         if runs and runs[-1][0]["kind"] == one["kind"]:
             runs[-1].append(one)
             continue

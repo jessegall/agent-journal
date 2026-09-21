@@ -110,8 +110,8 @@ def piece_parts(piece: str, translate=None) -> dict:
         w = w[1:]
     verb = w[0].split("/")[-1]
     if translate and JOURNAL_VERB.match(verb):
-        said = translate(journal_words(w[1:]))
-        return {"own": True, "root": said, "args": []} if said else {}
+        words = translate(journal_words(w[1:]))
+        return {"own": True, "root": words, "args": []} if words else {}
     root = [verb]
     while verb in SUBVERBS and len(w) > len(root) and not w[len(root)].startswith("-") and (len(root) == 1 or root[-1] == "run"):
         root.append(w[len(root)])

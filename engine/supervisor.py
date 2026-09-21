@@ -77,7 +77,7 @@ def run(root: Path, cwd: Path, env: str, agent: str, fd: int, session: str, life
     printed.parent.mkdir(parents=True, exist_ok=True)
     out = printed.open("ab")
     screen = (root / "runtime" / f"screen-{session}").open("ab")
-    ear = typist.listen(root, session)
+    inbox = typist.listen(root, session)
     answered = False
     early = b""
     started = time.time()
@@ -117,9 +117,9 @@ def run(root: Path, cwd: Path, env: str, agent: str, fd: int, session: str, life
     BETWEEN_FRAMES = 0.12
     try:
         while True:
-            ready, _, _ = select.select([fd, stdin, ear], [], [], 0.5)
-            if ear in ready:
-                for raw in typist.heard(ear):
+            ready, _, _ = select.select([fd, stdin, inbox], [], [], 0.5)
+            if inbox in ready:
+                for raw in typist.receive(inbox):
                     os.write(fd, raw)
             if fd in ready:
                 try:
@@ -129,9 +129,9 @@ def run(root: Path, cwd: Path, env: str, agent: str, fd: int, session: str, life
                 if not data:
                     break
                 last_out = time.time()
-                shown = shifted(data)
-                show(shown)
-                where.feed(shown)
+                visible = shifted(data)
+                show(visible)
+                where.feed(visible)
                 early = (early + data)[-EARLY:] if not answered else early
                 if RESET in data:
                     rows_below.margins = None
@@ -182,7 +182,7 @@ def run(root: Path, cwd: Path, env: str, agent: str, fd: int, session: str, life
                     break
     finally:
         signal.signal(signal.SIGWINCH, signal.SIG_DFL)
-        typist.close(ear, root, session)
+        typist.close(inbox, root, session)
         out.close()
     return result
 

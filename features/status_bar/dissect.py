@@ -52,31 +52,31 @@ def git_of(piece: dict) -> str:
 
 
 def kind_of(one: dict) -> str:
-    said = one.get(COMMAND.effect) or ""
-    if said in TOUCHED and not one.get(COMMAND.files) and not by_hand(one) and one.get(COMMAND.done):
-        said = ""
-    elif said or by_hand(one):
-        return said
+    label = one.get(COMMAND.effect) or ""
+    if label in TOUCHED and not one.get(COMMAND.files) and not by_hand(one) and one.get(COMMAND.done):
+        label = ""
+    elif label or by_hand(one):
+        return label
     piece = piece_of(one)
     if piece.get("own"):
         return JOURNAL
-    return GIT if git_of(piece) else said
+    return GIT if git_of(piece) else label
 
 
 def base(path: str) -> str:
-    said = path.rstrip("/") or path
-    return HERE if said in (".", "./") else said.rsplit("/", 1)[-1]
+    label = path.rstrip("/") or path
+    return HERE if label in (".", "./") else label.rsplit("/", 1)[-1]
 
 
-def capped(said: str) -> str:
-    return said if len(said) <= NAME_CAP else f"{said[:NAME_CAP - 1].rstrip()}…"
+def capped(label: str) -> str:
+    return label if len(label) <= NAME_CAP else f"{label[:NAME_CAP - 1].rstrip()}…"
 
 
 def whole(value: str) -> dict:
     return {"value": capped(value), "whole": True, "columnar": False}
 
 
-def said_name(value: str, columnar: bool = False) -> dict:
+def name_part(value: str, columnar: bool = False) -> dict:
     return {"value": capped(value), "whole": False, "columnar": columnar}
 
 
@@ -88,27 +88,27 @@ def names_of(one: dict, kind: str) -> list[dict]:
     if by_hand(one) or kind in TOUCHED:
         if one.get(COMMAND.files):
             return [whole(base(path)) for path in one[COMMAND.files]]
-        return [said_name(one[COMMAND.subject])] if one.get(COMMAND.subject) else []
+        return [name_part(one[COMMAND.subject])] if one.get(COMMAND.subject) else []
     piece = piece_of(one, kind)
     if not piece:
         return []
     if piece["own"]:
-        return [said_name(piece["root"], columnar=True)]
+        return [name_part(piece["root"], columnar=True)]
     if kind == GIT:
-        said = git_of(piece)
+        label = git_of(piece)
         named = " ".join(base(x) for x in piece["args"] if "/" in x or FILE.match(x))
-        return [said_name(f"tracking {named}" if said == GIT_WORDS["add"] and named else said, columnar=True)]
+        return [name_part(f"tracking {named}" if label == GIT_WORDS["add"] and named else label, columnar=True)]
     if kind in NAMED:
         found = a_path(piece["args"])
         return [whole(base(found))] if found else []
     if kind in GIVEN:
-        return [said_name(" ".join(base(x) if x.strip(".") == "" else x for x in piece["args"]))] if piece["args"] else []
+        return [name_part(" ".join(base(x) if x.strip(".") == "" else x for x in piece["args"]))] if piece["args"] else []
     if piece["root"] in RUNNERS:
         found = a_path(piece["args"])
-        said = base(found) if found else SCRIPT if piece.get("script") else ""
-        return [said_name(f"{piece['root']} {said}".strip())]
+        label = base(found) if found else SCRIPT if piece.get("script") else ""
+        return [name_part(f"{piece['root']} {label}".strip())]
     given = piece["args"][0] if piece["args"] else ""
-    return [said_name(f"{piece['root']} {given}" if " " not in piece["root"] and WORD.match(given) else piece["root"])]
+    return [name_part(f"{piece['root']} {given}" if " " not in piece["root"] and WORD.match(given) else piece["root"])]
 
 
 def whole_cloth(one: dict, kind: str) -> str:
@@ -120,10 +120,10 @@ def whole_cloth(one: dict, kind: str) -> str:
 def looked(kind: str, names: list[dict]) -> str:
     if kind != "reads" or not names:
         return kind
-    shown = [name["value"].lower() for name in names]
-    if all(said.endswith(PICTURES) for said in shown):
+    labels = [name["value"].lower() for name in names]
+    if all(label.endswith(PICTURES) for label in labels):
         return "views"
-    return "watches" if all(said.endswith(MOVIES) for said in shown) else kind
+    return "watches" if all(label.endswith(MOVIES) for label in labels) else kind
 
 
 def dissect(one: dict) -> dict:

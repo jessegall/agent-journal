@@ -99,8 +99,8 @@ class CountEdits(Handler):
         row, name = context.agent.row, context.feature.name
         edits = int(trigger.last(context.record, row.title, name).get(EDITS) or 0) + 1
         trigger.write(context.record, row, name, **{EDITS: edits})
-        said = context.settings.said_after
-        if said and edits % said == 0:
+        every = context.settings.said_after
+        if every and edits % every == 0:
             context.agent.whisper("in hand", n=work[0].n, title=work[0].title)
         if edits >= context.settings.log_after:
             context.hold("log held", edits=edits, n=work[0].n)

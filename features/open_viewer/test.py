@@ -37,41 +37,41 @@ def test_other_systems_and_a_missing_tab_leave_opening_to_the_normal_path():
 
 
 def test_a_session_starting_shows_the_viewer_once_a_subagent_never_does():
-    shown = []
+    visible = []
     up = {"url": "http://127.0.0.1:8422/"}
     viewer.running = lambda root: up["url"]
-    viewer.show = lambda url: shown.append(url)
+    viewer.show = lambda url: visible.append(url)
 
     record = fresh()
     Agents(record, actor=SYSTEM).create("claude-1")
     report(record, "working", "UserPromptSubmit")
-    assert shown == [], "no session start yet: the tab is left alone"
+    assert visible == [], "no session start yet: the tab is left alone"
 
     report(record, "idle", "SessionStart")
-    assert shown == ["http://127.0.0.1:8422/"], "the session started: its viewer is shown"
+    assert visible == ["http://127.0.0.1:8422/"], "the session started: its viewer is shown"
     report(record, "idle", "SessionStart")
     report(record, "working", "PreToolUse")
-    assert len(shown) == 1, "a second start of the same session, a compaction or a clear, shows nothing more"
+    assert len(visible) == 1, "a second start of the same session, a compaction or a clear, shows nothing more"
 
     report(record, "idle", "SessionStart", session="claude-2")
-    assert len(shown) == 2, "a new session shows the viewer again"
+    assert len(visible) == 2, "a new session shows the viewer again"
 
     up["url"] = ""
     report(record, "idle", "SessionStart", session="claude-3")
     up["url"] = "http://127.0.0.1:8424/"
     report(record, "idle", "SessionStart", session="claude-3")
-    assert shown[2:] == ["http://127.0.0.1:8424/"], "no viewer: nothing; once one runs, the next start shows it"
+    assert visible[2:] == ["http://127.0.0.1:8424/"], "no viewer: nothing; once one runs, the next start shows it"
 
     Agents(record, actor=SYSTEM).create("child-1", parent="claude-1")
     report(record, "idle", "SessionStart", session="child-1")
-    assert len(shown) == 3, "a subagent starting shows nothing"
+    assert len(visible) == 3, "a subagent starting shows nothing"
 
 
 def test_a_server_of_another_version_is_not_taken_for_this_journals(tmp_path, monkeypatch):
     from engine import viewer
     from engine.version import version
-    said = {"root": str(tmp_path), "version": ""}
-    monkeypatch.setattr(viewer, "identity", lambda url, timeout=0.05: said)
+    text = {"root": str(tmp_path), "version": ""}
+    monkeypatch.setattr(viewer, "identity", lambda url, timeout=0.05: text)
     assert viewer.answers("http://127.0.0.1:8423/", tmp_path) is False, "a server left from an older install is replaced, not reused"
-    said["version"] = version()
+    text["version"] = version()
     assert viewer.answers("http://127.0.0.1:8423/", tmp_path) is True

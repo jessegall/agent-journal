@@ -239,16 +239,16 @@ RESTARTS = {"engine/terminal.py": "The journal's terminal was updated - quit and
 
 
 def owed(root: Path, changed: set) -> list[str]:
-    said = [why for name, why in RESTARTS.items() if Path(name) in changed]
-    if said:
+    reasons = [why for name, why in RESTARTS.items() if Path(name) in changed]
+    if reasons:
         from controllers.types import Notices
         from engine import runtime
         from engine.record import Record
         from resources.base import SYSTEM
         notices = Notices(Record(root, runtime.env(root)), actor=SYSTEM)
-        for why in said:
+        for why in reasons:
             notices.create(why, tone="warn")
-    return said
+    return reasons
 
 
 def finish(project: Path, root: Path) -> list[str]:

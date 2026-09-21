@@ -10,8 +10,8 @@ def test_a_newer_version_is_told_to_the_agent_once_when_it_does_not_install_itse
     monkeypatch.setattr(updates, "upstream", lambda root: "99.0.0")
     report(record, "working", "PreToolUse")
     report(record, "idle", "Stop")
-    told = [n for n in nudges(record) if n.startswith("journal 99.0.0 is out")]
-    assert len(told) == 1, "told once, with the version it would install"
+    notified = [n for n in nudges(record) if n.startswith("journal 99.0.0 is out")]
+    assert len(notified) == 1, "told once, with the version it would install"
     monkeypatch.setattr(updates, "upstream", lambda root: "0.0.1")
     report(record, "working", "PreToolUse")
     assert len([n for n in nudges(record) if "is out" in n]) == 1, "an older published version says nothing"
@@ -68,5 +68,5 @@ def test_a_new_version_is_announced_to_the_user_without_breaking_the_server():
     assert announce(record.root, "1.0.1") == "1.0.1"
     from engine.hooks import default_env
     from engine.record import Record
-    told = [n for n in Notifications(Record(record.root, default_env(record.root)))._every() if n.title == "Journal updated to 1.0.1"]
-    assert (len(told), "user" in told[0].seen) == (1, True), "announced once, already seen"
+    notified = [n for n in Notifications(Record(record.root, default_env(record.root)))._every() if n.title == "Journal updated to 1.0.1"]
+    assert (len(notified), "user" in notified[0].seen) == (1, True), "announced once, already seen"

@@ -30,14 +30,14 @@ def test_choices_offered_in_prose_hold_writes_until_a_question_is_asked_properly
     transcript = record.root / "runtime" / "t.jsonl"
     transcript.parent.mkdir(parents=True, exist_ok=True)
 
-    def said(text):
+    def text(text):
         transcript.write_text(json.dumps({"type": "assistant", "message": {"role": "assistant", "content": [{"type": "text", "text": text}]}}) + "\n")
 
     def holds():
         f = gate_file(record.root, record.env, "claude-1")
         return json.loads(f.read_text()) if f.is_file() else {}
 
-    said("[!reply] Which do you want?\n1. the blue one\n2. the red one")
+    text("[!reply] Which do you want?\n1. the blue one\n2. the red one")
     idle(record, provider="claude", transcript=str(transcript))
     assert ([n for n in nudges(record) if "choices in prose" in n], bool(holds().get("ask_questions.asking"))) == \
         (["your last message offers choices in prose"], True), "choices in prose: the agent is told once, and its writes are held"

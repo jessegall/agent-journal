@@ -5,12 +5,12 @@ import {seconds} from "../domain/checks.js";
 
 const props = defineProps({runs: {type: Array, default: () => []}, tall: {type: Boolean, default: false}});
 const longest = computed(() => Math.max(1, ...props.runs.map((r) => Number(r.took || 0))));
-const shown = computed(() => [...props.runs].reverse());
+const newestFirst = computed(() => [...props.runs].reverse());
 </script>
 
 <template>
     <div :class="['runs', {tall}]">
-        <template v-for="(run, i) in shown" :key="i">
+        <template v-for="(run, i) in newestFirst" :key="i">
             <span
                 :class="['run', run.ok ? 'ok' : 'bad']"
                 :style="{height: `${Math.max(18, (Number(run.took || 0) / longest) * 100)}%`}"

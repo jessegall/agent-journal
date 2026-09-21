@@ -15,7 +15,7 @@ import {usePoll} from "../poll.js";
 usePoll(...polled.pages);
 
 const source = ref("");
-const shown = ref("");
+const previewText = ref("");
 const busy = ref("");
 const plugins = computed(() =>
     rows("plugin")
@@ -56,11 +56,11 @@ watch(busy, () => look());
 
 async function preview() {
     busy.value = "preview";
-    shown.value = "";
+    previewText.value = "";
     try {
-        shown.value = await api.command("plugin", "preview", {source: source.value});
+        previewText.value = await api.command("plugin", "preview", {source: source.value});
     } catch (e) {
-        shown.value = e.message;
+        previewText.value = e.message;
     }
     busy.value = "";
 }
@@ -70,9 +70,9 @@ async function install() {
     try {
         await api.command("plugin", "install", {source: source.value, yes: true});
         source.value = "";
-        shown.value = "";
+        previewText.value = "";
     } catch (e) {
-        shown.value = e.message;
+        previewText.value = e.message;
     }
     busy.value = "";
 }
@@ -84,7 +84,7 @@ async function plugin(p, action, body = {}) {
     try {
         await api.act("plugin", p.n, action, body);
     } catch (e) {
-        shown.value = e.message;
+        previewText.value = e.message;
     }
     busy.value = "";
     await readLog();
@@ -129,11 +129,11 @@ function toggleLog(p) {
                 />
                 <Btn :disabled="!source || busy === 'preview'" @click="preview">{{ busy === "preview" ? "Reading…" : "Preview" }}</Btn>
             </div>
-            <template v-if="shown">
-                <pre class="preview">{{ shown }}</pre>
+            <template v-if="previewText">
+                <pre class="preview">{{ previewText }}</pre>
                 <div class="add">
                     <span class="lead">Installing runs these commands on your machine.</span>
-                    <Btn @click="shown = ''">Cancel</Btn>
+                    <Btn @click="previewText = ''">Cancel</Btn>
                     <Btn kind="primary" :disabled="busy === 'install'" @click="install">
                         {{ busy === "install" ? "Installing…" : "Install" }}
                     </Btn>

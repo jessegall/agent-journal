@@ -24,7 +24,7 @@ class PermissionsDetails(FeatureDetails):
     lines = [
         Line(
             name="waiting",
-            title="Waiting for permission - {{tool}} {{said}}",
-            brief="{{said}}",
+            title="Waiting for permission - {{tool}} {{call}}",
+            brief="{{call}}",
         ),
     ]

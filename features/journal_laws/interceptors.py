@@ -12,7 +12,7 @@ class WhisperLawOnKeyword(ToolInterceptor):
     behaviour = WHISPER
 
     def intercept(self, context: Context, call) -> str:
-        text = call.said.lower()
+        text = call.text.lower()
         if not text or not context.agent:
             return ""
         for law in LAWS:

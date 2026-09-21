@@ -47,13 +47,13 @@ def one(record, journal, plugin: str, session: str, key: str, value) -> None:
     if key in ("whisper", "say"):
         nudged(record, journal, plugin, session, str(value), key == "whisper")
     elif key == "notify":
-        told = value if isinstance(value, dict) else {"title": str(value)}
-        journal.notify(record, "plugin", actor=PLUGIN, title=check_title(str(told.get("title") or "")), abstract=check_abstract(str(told.get("abstract") or "")),
-                       brief=str(told.get("brief") or ""), about=told.get("about") or None, plugin=plugin)
+        notification = value if isinstance(value, dict) else {"title": str(value)}
+        journal.notify(record, "plugin", actor=PLUGIN, title=check_title(str(notification.get("title") or "")), abstract=check_abstract(str(notification.get("abstract") or "")),
+                       brief=str(notification.get("brief") or ""), about=notification.get("about") or None, plugin=plugin)
     elif key == "notice":
-        shown = value if isinstance(value, dict) else {"title": str(value)}
-        journal.notice(record, "plugin", actor=PLUGIN, title=check_title(str(shown.get("title") or "")), brief=str(shown.get("brief") or ""),
-                       tone=shown.get("tone") or "", link=shown.get("link") or "", plugin=plugin)
+        fields = value if isinstance(value, dict) else {"title": str(value)}
+        journal.notice(record, "plugin", actor=PLUGIN, title=check_title(str(fields.get("title") or "")), brief=str(fields.get("brief") or ""),
+                       tone=fields.get("tone") or "", link=fields.get("link") or "", plugin=plugin)
     elif key == "todo":
         asked = value if isinstance(value, dict) else {"title": str(value)}
         Todos(record, actor=PLUGIN).create(check_title(str(asked.get("title") or "")), brief=str(asked.get("brief") or ""), plugin=plugin)

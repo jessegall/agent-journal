@@ -106,7 +106,7 @@ def test_ready_rows_are_ordered_by_priority_then_by_number_skipping_what_is_not_
 def test_a_mistyped_command_through_the_server_says_what_is_wrong():
     from commands.cli import captured
     record = fresh()
-    said, code = captured(["work", "list"], record.root)
-    assert (code, "invalid choice: 'list'" in said) == (2, True), said
-    said, code = captured(["work", "log"], record.root)
-    assert (code, "arguments are required: text" in said) == (2, True), said
+    text, code = captured(["work", "list"], record.root)
+    assert (code, "invalid choice: 'list'" in text) == (2, True), text
+    text, code = captured(["work", "log"], record.root)
+    assert (code, "arguments are required: text" in text) == (2, True), text

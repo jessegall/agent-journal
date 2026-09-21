@@ -35,8 +35,8 @@ export function lineOf(agent, works, auto = false, doing = "") {
     if (state === "compacting") return "compacting its context — it carries on after";
     const current = currentWork(works);
     if (current) return named(current);
-    if (state === "idle") return said(auto ? "auto" : "idle", agent.data.at);
-    return doing || said("bearings", agent.data.at);
+    if (state === "idle") return phrase(auto ? "auto" : "idle", agent.data.at);
+    return doing || phrase("bearings", agent.data.at);
 }
 
 const SAID = {
@@ -78,7 +78,7 @@ const SAID = {
     ],
 };
 
-export function said(kind, seed) {
+export function phrase(kind, seed) {
     const words = SAID[kind] || SAID.bearings;
     return words[Math.floor(Number(seed) || 0) % words.length];
 }

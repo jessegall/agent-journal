@@ -7,7 +7,7 @@ from resources.base import AGENT
 SENDING, SENT = "message.sending", "message.sent"
 
 
-def said(record, row, text: str) -> None:
+def send(record, row, text: str) -> None:
     data = {"text": text, "stopped": False}
     bus.run(Event(id=0, at=time.time(), type="agent", n=row.n, action=SENDING, actor=AGENT, data=data), record)
     if data["stopped"] or not str(data["text"]).strip():

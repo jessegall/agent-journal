@@ -29,8 +29,8 @@ def grouped(events: list[Event]) -> dict[tuple, dict]:
 
 def render(events: list[Event], record: Record) -> tuple[str, dict]:
     rows = [CONTROLLERS[e.type](record, actor=AGENT).read(e.n) for e in events if TYPES[e.type].typed_as_title]
-    said = [spoken(r) for r in sorted(rows, key=lambda r: not r.data.get("lead"))]
-    return "; ".join(dict.fromkeys(said)), grouped([e for e in events if not TYPES[e.type].typed_as_title])
+    line = [spoken(r) for r in sorted(rows, key=lambda r: not r.data.get("lead"))]
+    return "; ".join(dict.fromkeys(line)), grouped([e for e in events if not TYPES[e.type].typed_as_title])
 
 
 class Actor(ABC):
@@ -45,7 +45,7 @@ class Actor(ABC):
     def cursor(self) -> int:
         return self.record.cursor(self.name)
 
-    def heard(self) -> int:
+    def delivered_until(self) -> int:
         return self.cursor()
 
     def notified(self, event: Event) -> None:
@@ -80,7 +80,7 @@ class Agent(Actor):
     def notify(self, event: Event) -> None:
         self.pending.append(event)
 
-    def heard(self) -> int:
+    def delivered_until(self) -> int:
         return self.pending[-1].id if self.pending else self.cursor()
 
     def typed(self, event: Event) -> bool:
@@ -90,16 +90,16 @@ class Agent(Actor):
         if not self.pending:
             return ""
         typed = [e for e in self.pending if self.typed(e)]
-        said, groups = render([e for e in self.pending if e not in typed], self.record)
-        landed = self.driver.send(said, groups=groups)
+        line, groups = render([e for e in self.pending if e not in typed], self.record)
+        landed = self.driver.send(line, groups=groups)
         if typed:
             landed = self.driver.type_in(render(typed, self.record)[0]) and landed
         for e in self.pending:
-            if landed and TYPES[e.type].stamped_when_told:
+            if landed and TYPES[e.type].stamped_when_notified:
                 CONTROLLERS[e.type](self.record, actor=SYSTEM).stamp(e.n, delivered=time.time())
             self.notified(e)
         self.pending = []
-        return "; ".join([said, *counted(groups)] if said else counted(groups))
+        return "; ".join([line, *counted(groups)] if line else counted(groups))
 
     def state(self) -> str:
         if not self.driver.alive():

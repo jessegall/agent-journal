@@ -58,9 +58,9 @@ def wanted(root: Path, sid: str) -> str:
 
 
 def want(root: Path, sid: str, state: str, nonce: float = 0.0) -> dict:
-    said = {"want": state if state in (UP, DOWN) else UP, "nonce": nonce or 0.0}
-    write_json(want_file(root, sid), said)
-    return said
+    wanted = {"want": state if state in (UP, DOWN) else UP, "nonce": nonce or 0.0}
+    write_json(want_file(root, sid), wanted)
+    return wanted
 
 
 def free(port: int) -> bool:
@@ -173,46 +173,46 @@ class Manager:
     def retire(self, declared: set[str]) -> list[str]:
         gone_now = [sid for sid in states(self.root) if sid not in declared]
         for sid in gone_now:
-            said = status(self.root, sid)
-            self.stop(sid, said)
-            if int(said.get("pgid") or 0) and not gone(int(said["pgid"])):
-                teardown(int(said["pgid"]), 1.0)
+            current = status(self.root, sid)
+            self.stop(sid, current)
+            if int(current.get("pgid") or 0) and not gone(int(current["pgid"])):
+                teardown(int(current["pgid"]), 1.0)
             for place in (status_file, spec_file, want_file, lock_file, log_file):
                 place(self.root, sid).unlink(missing_ok=True)
         return gone_now
 
     def one(self, spec: dict) -> bool:
         sid = spec["id"]
-        said = status(self.root, sid)
+        current = status(self.root, sid)
         asked = read_json(want_file(self.root, sid), {})
         now = self.clock()
         if str(asked.get("want") or UP) == DOWN:
-            self.stop(sid, said)
+            self.stop(sid, current)
             return False
         if float(asked.get("nonce") or 0) > self.marks.get(sid, 0.0):
             self.marks[sid] = float(asked.get("nonce") or 0)
-            self.stop(sid, said)
+            self.stop(sid, current)
             self.crashes.pop(sid, None)
             self.waiting.pop(sid, None)
-            said = {}
-        if self.living(said.get("keeper", 0)) and said.get("state") not in RESTING:
+            current = {}
+        if self.living(current.get("keeper", 0)) and current.get("state") not in RESTING:
             return False
         if spec["blocked"]:
-            write_json(Path(spec["status"]), {**said, "state": BLOCKED, "why": spec["blocked"], "at": now})
+            write_json(Path(spec["status"]), {**current, "state": BLOCKED, "why": spec["blocked"], "at": now})
             return False
-        if said.get("state") == "exited" and self.seen.get(sid) != said.get("at"):
-            self.seen[sid] = said.get("at")
+        if current.get("state") == "exited" and self.seen.get(sid) != current.get("at"):
+            self.seen[sid] = current.get("at")
             self.crashed(sid, now)
         if len(self.crashes.get(sid, [])) >= CRASHES:
-            write_json(Path(spec["status"]), {**said, "state": FAILED, "why": f"it stopped {CRASHES} times within {WITHIN:g} seconds", "at": now})
+            write_json(Path(spec["status"]), {**current, "state": FAILED, "why": f"it stopped {CRASHES} times within {WITHIN:g} seconds", "at": now})
             return False
         if self.waiting.get(sid, 0) > now:
             return False
-        if spec["restart"] == "never" and said.get("state") in ("exited", "stopped"):
+        if spec["restart"] == "never" and current.get("state") in ("exited", "stopped"):
             return False
         write_json(spec_file(self.root, sid), {**spec, "owner": os.getpid()})
         keeper = self.start(spec, self.lifeline)
-        write_json(Path(spec["status"]), {**said, "state": "starting", "keeper": keeper, "owner": os.getpid(), "port": spec["port"], "url": spec["url"], "at": now})
+        write_json(Path(spec["status"]), {**current, "state": "starting", "keeper": keeper, "owner": os.getpid(), "port": spec["port"], "url": spec["url"], "at": now})
         return True
 
     def crashed(self, sid: str, now: float) -> None:
@@ -220,31 +220,31 @@ class Manager:
         self.crashes[sid] = seen
         self.waiting[sid] = now + BACKOFF[min(len(seen), len(BACKOFF)) - 1]
 
-    def stop(self, sid: str, said: dict) -> None:
-        if self.living(said.get("keeper", 0)):
+    def stop(self, sid: str, current: dict) -> None:
+        if self.living(current.get("keeper", 0)):
             try:
-                os.kill(int(said["keeper"]), signal.SIGTERM)
+                os.kill(int(current["keeper"]), signal.SIGTERM)
             except (ProcessLookupError, PermissionError):
                 pass
 
     def sweep(self) -> list[int]:
         killed = []
-        for sid, said in states(self.root).items():
-            group = int(said.get("pgid") or 0)
-            if not group or gone(group) or self.living(said.get("keeper", 0)):
+        for sid, current in states(self.root).items():
+            group = int(current.get("pgid") or 0)
+            if not group or gone(group) or self.living(current.get("keeper", 0)):
                 continue
             teardown(group, 1.0)
             killed.append(group)
-            write_json(status_file(self.root, sid), {**said, "state": "stopped", "why": "its keeper is gone", "at": self.clock()})
+            write_json(status_file(self.root, sid), {**current, "state": "stopped", "why": "its keeper is gone", "at": self.clock()})
         return killed
 
 
 def listed(root: Path) -> list[dict]:
     known = {spec["id"]: spec for spec in specs(root)}
-    said = states(root)
+    current = states(root)
     out = []
-    for sid in sorted({*known, *said}):
-        spec, state = known.get(sid, {}), said.get(sid, {})
+    for sid in sorted({*known, *current}):
+        spec, state = known.get(sid, {}), current.get(sid, {})
         out.append({"id": sid, "plugin": spec.get("plugin") or sid.split(".")[0], "service": spec.get("service") or sid.split(".", 1)[-1],
                     "state": state.get("state") or "not running", "why": state.get("why") or "", "url": spec.get("url") or state.get("url") or "",
                     "port": spec.get("port") or state.get("port") or 0, "since": state.get("started") or 0, "declared": sid in known})

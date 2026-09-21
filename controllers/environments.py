@@ -90,9 +90,9 @@ class Environments(Controller):
         chosen = [(rows, row["n"]) for rows in self._sweepable(record) for row in rows.summaries()
                   if rows.type in SWEPT or row["completed"] or row["deleted"]]
         counted = Counter(rows.type for rows, _ in chosen)
-        said = ", ".join(plural(count, kind) for kind, count in sorted(counted.items())) or "nothing"
+        summary = ", ".join(plural(count, kind) for kind, count in sorted(counted.items())) or "nothing"
         if not yes:
-            return f"a sweep of {env.title!r} packs {said} into the attic and keeps its facts, rules, reminders, docs and open rows; --yes sweeps"
+            return f"a sweep of {env.title!r} packs {summary} into the attic and keeps its facts, rules, reminders, docs and open rows; --yes sweeps"
         if not chosen:
             return f"environment {env.title!r} has nothing to sweep"
         stamp = int(time.time())
@@ -105,7 +105,7 @@ class Environments(Controller):
             if files.is_dir():
                 shutil.move(str(files), kept / files.name)
         attic.pack(stage, f"{env.title}-swept-{stamp}")
-        return f"swept {said} from {env.title!r} into attic/{env.title}-swept-{stamp}{attic.SUFFIX}"
+        return f"swept {summary} from {env.title!r} into attic/{env.title}-swept-{stamp}{attic.SUFFIX}"
 
     def _sweepable(self, record) -> list:
         return [controller(record, actor=SYSTEM) for controller in CONTROLLERS.values()

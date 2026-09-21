@@ -9,7 +9,7 @@ export const PAGE = 25;
 export const RECENT = 100;
 export const paging = reactive({size: {}, more: {}});
 
-const shown = new Set();
+const watchedTypes = new Set();
 const seen = ref(0);
 const loaded = new Set();
 const changed = new Set();
@@ -21,8 +21,8 @@ let draining = null;
 
 export function rows(type) {
     seen.value;
-    if (!shown.has(type)) {
-        shown.add(type);
+    if (!watchedTypes.has(type)) {
+        watchedTypes.add(type);
         if (store.booted && (!loaded.has(type) || changed.has(type))) queueMicrotask(() => refresh([type], false));
     }
     return store.rows[type] || [];
@@ -37,8 +37,8 @@ function trimmed(type) {
 }
 
 function forget() {
-    shown.forEach(trimmed);
-    shown.clear();
+    watchedTypes.forEach(trimmed);
+    watchedTypes.clear();
     asked.clear();
     seen.value += 1;
 }
@@ -75,7 +75,7 @@ watch(
     (booted) =>
         booted &&
         refresh(
-            [...shown].filter((type) => !loaded.has(type)),
+            [...watchedTypes].filter((type) => !loaded.has(type)),
             false
         )
 );
@@ -153,7 +153,7 @@ async function drain() {
         await new Promise((settle) => setTimeout(settle, 30));
         while (owed.size || owedWhole) {
             const whole = owedWhole;
-            const types = [...(whole ? Object.keys(store.rows) : owed)].filter((type) => shown.has(type));
+            const types = [...(whole ? Object.keys(store.rows) : owed)].filter((type) => watchedTypes.has(type));
             owed.clear();
             owedWhole = false;
             await fetched(types, whole);

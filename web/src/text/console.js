@@ -13,7 +13,7 @@ function card(entries) {
                 `<div class="console-entry"><div class="console-head">${e.head}</div>${e.frames.map((f) => `<div class="console-frame">${f}</div>`).join("")}</div>`
         )
         .join("");
-    const shown =
+    const body =
         entries.length > 1
             ? `<details class="console-more"><summary><span class="console-more-collapsed">Show all ${entries.length} errors</span><span class="console-more-expanded">Show fewer errors</span></summary>${rows}</details>`
             : rows;
@@ -24,7 +24,7 @@ function card(entries) {
                   .map((f) => `<div class="console-frame">${f}</div>`)
                   .join("")}</div>`
             : "";
-    return `<div class="console-card"><span class="console-label">console</span>${entries.length > 1 ? first + shown : rows}</div>`;
+    return `<div class="console-card"><span class="console-label">console</span>${entries.length > 1 ? first + body : rows}</div>`;
 }
 
 function browser(text) {

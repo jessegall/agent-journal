@@ -73,7 +73,7 @@ def copied(value):
     return value
 
 
-def shown(r) -> dict:
+def as_dict(r) -> dict:
     return {**asdict(r), "type": r.type, "ref": r.ref}
 
 
@@ -124,7 +124,7 @@ class Resource:
     addressed_to_agent: ClassVar[bool] = False
     answer_command: ClassVar[str] = "comment"      # the word that answers a row instead of changing it
     editors: ClassVar[dict] = {}              # who may change the words of a row written by whom: {USER: (USER,)}; unnamed authors are open to all
-    stamped_when_told: ClassVar[bool] = False              # the row is stamped with the moment the agent was told of it
+    stamped_when_notified: ClassVar[bool] = False              # the row is stamped with the moment the agent was told of it
     deduplicates: ClassVar[bool] = False
     indexed: ClassVar[tuple] = ()
     loading: ClassVar[str] = MEMORY

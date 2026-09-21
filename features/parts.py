@@ -34,9 +34,9 @@ class Speaker:
     def type(self, line: str, **values):
         return self.feature.journal.type(self.record, self.row, line, **values)
 
-    def command(self, said: str) -> dict:
+    def command(self, line: str) -> dict:
         from surfaces.control import request
-        action, _, value = said.partition(" ")
+        action, _, value = line.partition(" ")
         return request(self.record.root, self.record.env, self.session, action, value.strip())
 
 

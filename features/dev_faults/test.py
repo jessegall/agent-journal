@@ -12,7 +12,7 @@ def turned(record, on: bool):
     Features(record, actor=SYSTEM).switch("dev_faults", on)
 
 
-def told(record):
+def notified(record):
     return [r.title for r in Notifications(record, actor=SYSTEM)._every()]
 
 
@@ -22,11 +22,11 @@ def test_a_slow_request_is_reported_only_when_the_budget_is_on():
     turned(record, False)
     with FEATURES["dev_faults"].reports.watched(record.root, record.env, "request", "GET /api/main/message"):
         time.sleep(0.08)
-    assert told(record) == [], "switched off, nothing is filed"
+    assert notified(record) == [], "switched off, nothing is filed"
     turned(record, True)
     with FEATURES["dev_faults"].reports.watched(record.root, record.env, "request", "GET /api/main/message"):
         time.sleep(0.08)
-    assert told(record) == ["request GET /api/main/message is slower than its budget"], told(record)
+    assert notified(record) == ["request GET /api/main/message is slower than its budget"], notified(record)
 
 
 def test_a_fast_request_is_never_reported():
@@ -35,7 +35,7 @@ def test_a_fast_request_is_never_reported():
     turned(record, True)
     with FEATURES["dev_faults"].reports.watched(record.root, record.env, "request", "GET /api/main/fact"):
         pass
-    assert told(record) == []
+    assert notified(record) == []
 
 
 def test_going_over_again_counts_but_tells_the_agent_once():
@@ -57,7 +57,7 @@ def test_the_budget_is_tunable_per_environment():
     record.budget = {"request": 0}
     with FEATURES["dev_faults"].reports.watched(record.root, record.env, "request", "GET /api/main/message"):
         time.sleep(0.08)
-    assert told(record) == [], "a budget of 0 drops that budget"
+    assert notified(record) == [], "a budget of 0 drops that budget"
     assert Faults().reports.milliseconds(record, "command") == 50
 
 
@@ -65,11 +65,11 @@ def test_what_the_viewer_throws_is_filed_under_the_same_switch():
     features.load()
     record = fresh()
     turned(record, False)
-    assert FEATURES["dev_faults"].reports.heard(record.root, record.env, "agents.some is not a function", "Sidebar.vue", "at r") is False, \
+    assert FEATURES["dev_faults"].reports.report_console(record.root, record.env, "agents.some is not a function", "Sidebar.vue", "at r") is False, \
         "switched off, nothing is filed"
     turned(record, True)
-    assert FEATURES["dev_faults"].reports.heard(record.root, record.env, "agents.some is not a function", "Sidebar.vue", "at r") is True
-    assert told(record) == ["the viewer threw agents.some is not a function"], told(record)
+    assert FEATURES["dev_faults"].reports.report_console(record.root, record.env, "agents.some is not a function", "Sidebar.vue", "at r") is True
+    assert notified(record) == ["the viewer threw agents.some is not a function"], notified(record)
 
 
 def test_a_switch_sent_under_its_old_name_too_keeps_the_new_names_value():

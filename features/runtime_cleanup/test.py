@@ -31,7 +31,7 @@ def test_captures_are_cut_to_their_tail_and_files_of_quiet_sessions_are_removed(
     kept.write_text("main")
     os.utime(kept, (week_ago, week_ago))
 
-    said = tidy(record.root, house.values(record).days)
+    text = tidy(record.root, house.values(record).days)
 
     assert (big.stat().st_size, big.read_bytes().endswith(b"THE END")) == (64 * 1024, True), \
         "a large capture is cut to its last 64 KB, ending as it did"
@@ -41,7 +41,7 @@ def test_captures_are_cut_to_their_tail_and_files_of_quiet_sessions_are_removed(
     assert [f.exists() for f in stale.values()] == [False] * 5, "every per-session file quiet past the days is removed"
     assert fresh_session.exists() is True, "a session touched recently stays"
     assert kept.read_text() == "main", "files that are not per-session stay, however old"
-    assert said == {"removed": 5, "trimmed": 2}, "it says what it did"
+    assert text == {"removed": 5, "trimmed": 2}, "it says what it did"
 
     with big.open("ab") as out:
         out.write(b"+more")

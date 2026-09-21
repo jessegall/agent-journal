@@ -39,13 +39,13 @@ def fresh_lines(f: Path, at: int) -> tuple[list[str], int]:
 
 
 def contents(lines: list[str]) -> list[str]:
-    said = []
+    texts = []
     for line in lines:
         try:
-            said.append(str(json.loads(line).get("content") or ""))
+            texts.append(str(json.loads(line).get("content") or ""))
         except ValueError:
             continue
-    return [s for s in said if s]
+    return [s for s in texts if s]
 
 
 def push(root: Path) -> None:
@@ -55,9 +55,9 @@ def push(root: Path) -> None:
         time.sleep(WAIT)
         alive(root).touch()
         lines, at = fresh_lines(f, at)
-        said = contents(lines)
-        if said:
-            say({"jsonrpc": "2.0", "method": "notifications/claude/channel", "params": {"content": "; ".join(said), "meta": {"from": "journal"}}})
+        texts = contents(lines)
+        if texts:
+            say({"jsonrpc": "2.0", "method": "notifications/claude/channel", "params": {"content": "; ".join(texts), "meta": {"from": "journal"}}})
 
 
 def answer(asked: dict) -> dict | None:

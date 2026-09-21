@@ -30,9 +30,9 @@ def run(root: Path) -> str:
             if not f.is_file() or f.suffix not in TEXT or f.parent.name == "runtime":
                 continue
             text = f.read_text()
-            said = moved(text)
-            if said != text:
-                write_text(f, said)
+            rewritten = moved(text)
+            if rewritten != text:
+                write_text(f, rewritten)
                 touched += 1
     for f in sorted((root / "runtime").glob("gate-*.json")):
         try:

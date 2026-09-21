@@ -74,16 +74,16 @@ class Claude(Provider):
     def setting(self, project: Path, key: str) -> str:
         found = ""
         for settings in (Path.home() / ".claude" / "settings.json", project / ".claude" / "settings.json", project / ".claude" / "settings.local.json"):
-            said = read_json(settings, {})
-            found = (said.get(key) if isinstance(said, dict) else "") or found
+            saved = read_json(settings, {})
+            found = (saved.get(key) if isinstance(saved, dict) else "") or found
         return found
 
     def effort(self, project: Path, transcript: Path | None = None) -> str:
         return self.reported(transcript, "effort").get("level", "") or self.setting(project, "effortLevel")
 
     def reported(self, transcript: Path | None, key: str) -> dict:
-        said = read_json(Path.home().joinpath(*STATUS_HOME, f"{Path(transcript).stem}.json"), {}) if transcript else {}
-        found = said.get(key) if isinstance(said, dict) else None
+        status = read_json(Path.home().joinpath(*STATUS_HOME, f"{Path(transcript).stem}.json"), {}) if transcript else {}
+        found = status.get(key) if isinstance(status, dict) else None
         return found if isinstance(found, dict) else {}
 
     def window(self, hook: Hook, used: int) -> int:
@@ -94,8 +94,8 @@ class Claude(Provider):
         f = project / ".mcp.json"
         known = read_json(f, {})
         servers = known.get("mcpServers") or {}
-        said = command.split()
-        servers["journal"] = {"command": "python3", "args": [str(Path(said[1]).with_name("channel.py")), said[3]]}
+        words = command.split()
+        servers["journal"] = {"command": "python3", "args": [str(Path(words[1]).with_name("channel.py")), words[3]]}
         write_text(f, json.dumps({**known, "mcpServers": servers}, indent=2) + "\n")
 
     def wire(self, project: Path, command: str) -> Path:
