@@ -116,7 +116,7 @@ def run(root: Path, cwd: Path, env: str, agent: str, fd: int, session: str, life
     services = Manager(root, lifeline)
     last_band = 0.0
     last_out = 0.0
-    BETWEEN_FRAMES = 0.25
+    BETWEEN_FRAMES = 0.12
     try:
         while True:
             ready, _, _ = select.select([fd, stdin], [], [], 0.5)

@@ -15,8 +15,13 @@ ESC = "\x1b"
 STYLE = f"{ESC}[48;2;23;24;27m{ESC}[38;2;169;172;179m"
 URL = f"{ESC}[48;2;52;55;105m{ESC}[38;2;238;239;246m"
 RESET = f"{ESC}[0m"
+BELL = "\x07"
 BRAND = "JOURNAL"
 GRADIENT = ((36, 38, 78), (94, 99, 222), (36, 38, 78))
+
+
+def linked(url: str, line: str) -> str:
+    return f"{ESC}]8;;{url}{BELL}{line}{ESC}]8;;{BELL}" if url.startswith("http") else line
 
 
 def region(rows: int) -> bytes:
@@ -183,7 +188,8 @@ class Band:
         seat = self.seat()
         env = seat.get("env") or self.env
         rule = f"{ESC}[38;2;47;49;54m{'─' * cols}"
-        return [self.banner(cols, env, self.agent(seat)), self.fit(f"{URL}{self.viewer()}{STYLE}", cols), self.fit(rule, cols)]
+        where = self.viewer()
+        return [self.banner(cols, env, self.agent(seat)), linked(where, self.fit(f"{URL}{where}{STYLE}", cols)), self.fit(rule, cols)]
 
     def shade(self, x: int, cols: int) -> tuple[int, int, int]:
         t = x / max(1, cols - 1) * (len(GRADIENT) - 1)
