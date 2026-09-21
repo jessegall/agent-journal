@@ -234,13 +234,13 @@ def supervise(ctx, agent: str) -> str:
     env = asked_for(record, ctx["args"] or [])
     here = Record(record.root, env)
     put_back(here)
-    if asked_slate(here, project, agent):
-        print(f"journal: {set_aside(here, project, agent)}")
-    else:
-        remember(here, False)
-    url = start(record.root, project)
-    print(f"journal: viewer {url}" if url else "journal: the viewer did not start; see .journal/runtime/viewer.log")
     try:
+        if asked_slate(here, project, agent):
+            print(f"journal: {set_aside(here, project, agent)}")
+        else:
+            remember(here, False)
+        url = start(record.root, project)
+        print(f"journal: viewer {url}" if url else "journal: the viewer did not start; see .journal/runtime/viewer.log")
         return str(run_supervisor(record.root, project, env, agent, ctx["args"] or []))
     finally:
         put_back(here)

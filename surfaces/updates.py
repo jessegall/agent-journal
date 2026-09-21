@@ -63,6 +63,7 @@ def fetched(cache: Path) -> None:
             with urlopen(UPSTREAM, timeout=3) as r:
                 latest = r.read().decode().strip()
         except OSError:
+            cache.parent.mkdir(parents=True, exist_ok=True)
             cache.touch(exist_ok=True)
             return
         cache.parent.mkdir(parents=True, exist_ok=True)

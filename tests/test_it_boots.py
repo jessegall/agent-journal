@@ -82,5 +82,6 @@ def test_the_journal_starts_on_a_record_with_a_damaged_row():
     journal = [sys.executable, str(HERE / "journal.py"), "--root", str(root)]
     subprocess.run([*journal, "todo", "create", "a row"], cwd=place, capture_output=True, timeout=WAIT)
     (root / "environments" / "main" / "todo" / "002.md").write_text("")
+    (root / "environments" / "main" / "todo" / "003.md").write_text('---\n{"n": 3, "title": "odd", "unknown_field": 1}\n---\nbody\n')
     ran = subprocess.run([*journal, "status"], cwd=place, capture_output=True, text=True, timeout=WAIT)
     assert (ran.returncode, "Traceback" in ran.stderr) == (0, False), f"a damaged row stopped the journal:\n{ran.stderr}"

@@ -64,7 +64,7 @@ def set_aside(record: Record, project: Path, agent: str) -> str:
             shutil.copy2(f, to)
             moved.append({"from": str(f), "to": str(to), "copy": True})
             f.write_text(json.dumps(kept(read_json(f, {})), indent=2) + "\n")
-    except OSError as error:
+    except Exception as error:
         record.set_setting(KEY, {**state(record), "moved": moved})
         put_back(record)
         return f"nothing set aside, everything is where it was: {error}"
