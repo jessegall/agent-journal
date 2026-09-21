@@ -136,6 +136,7 @@ class Todos(Controller):
         return seen
 
     def waits(self, row) -> list[str]:
+        from features.plans.controller import ENDED
         open_ = []
         for ref in row.after or []:
             kind, _, num = ref.partition(":")
@@ -350,7 +351,7 @@ class Features(Controller):
     def named(self, name: str):
         return next((r for r in self.all() if r.title == name), None)
 
-    def switch(self, name: str, on: bool):
+    def switch(self, name: str, on: bool = True):
         row = self.named(name)
         return self.update(row.n, enabled=bool(on)) if row else self.create(name, enabled=bool(on))
 
