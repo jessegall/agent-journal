@@ -2,7 +2,7 @@ import inspect
 import time
 
 import features
-from commands.cli import actions
+from commands.parser import actions
 from controllers.types import CONTROLLERS
 from resources.base import Refused, SYSTEM, USER
 from resources.types import TYPES
@@ -62,7 +62,7 @@ def test_every_action_of_every_resource_runs_or_refuses_in_words():
 
 def test_every_action_is_reachable_as_a_command():
     features.load()
-    from commands.cli import parser
+    from commands.parser import parser
     built = parser()._subparsers._group_actions[0].choices
     missing = [f"{type_} {controller.resource.names.get(name, name)}"
                for type_, controller in CONTROLLERS.items()
