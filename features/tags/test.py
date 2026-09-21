@@ -124,10 +124,13 @@ def test_the_chosen_level_copies_tagged_messages_into_the_chat(tmp_path):
         engine.announce_written()
         engine.announce_written()
 
+    said("[!info] on by default")
+    assert chat() == [("on by default", "info")], "by default an info message reaches the chat"
+    record.set_setting("tags", {"verbosity": "replies"})
     said("[!info] the build is green")
-    assert chat() == [], "replies only: an info message stays in the terminal"
+    assert chat() == [("on by default", "info")], "replies only: an info message stays in the terminal"
     said("[!reply] answered in the thread")
-    assert chat() == [("answered in the thread", "reply")], "a reply without a number reaches the chat at every level"
+    assert chat()[-1] == ("answered in the thread", "reply"), "a reply without a number reaches the chat at every level"
     record.set_setting("tags", {"verbosity": "info"})
     said("[!info] the build is still green")
-    assert chat() == [("answered in the thread", "reply"), ("the build is still green", "info")], "with info shown: copied into the chat once, its tag kept as data"
+    assert chat()[-2:] == [("answered in the thread", "reply"), ("the build is still green", "info")], "with info shown: copied into the chat once, its tag kept as data"

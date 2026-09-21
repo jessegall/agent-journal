@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.23.0 — Info messages reach the chat by default
+
+A journal whose chat detail level was never chosen copied only replies into the chat, so an agent's `[!info]` messages stayed in the terminal. The default level is now info: replies, info and blocked messages reach the chat unless the level is set otherwise in the agent bar.
+
+What to do about it: `journal upgrade`.
+
 ## 2.22.0 — A journal line reaches the agent at once
 
 A line for the agent went out only after five quiet seconds unless it was a new row, and then waited for the next engine tick. Now it is sent the moment it is handed over, when nothing went out in the last five seconds; only a line that arrives inside those five seconds is queued, and the queue goes out as one line when the window ends. The quiet wait, its per-type exceptions and the `batch` setting are gone.

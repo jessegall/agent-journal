@@ -68,7 +68,7 @@ const DETAIL = {
 };
 const SHORT = {replies: "replies", info: "info", corrections: "corrections", discoveries: "all"};
 const tagging = computed(() => (store.settings && store.settings.tags) || {});
-const detail = computed(() => tagging.value.verbosity || "replies");
+const detail = computed(() => tagging.value.verbosity || "info");
 const details = computed(() => Object.entries(DETAIL).map(([value, label]) => ({value, label, current: value === detail.value})));
 async function chooseDetail(level) {
     const {names, places} = tagging.value;
