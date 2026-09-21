@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.57.0 — Facts and rules need keywords
+
+Message 1347, to-do 589. A fact or a rule is created only with keywords, the words that whisper it back when a command touches them: `journal fact create "<claim>" --set keywords="<word>,<word>"`. A create without them is refused and says how to pass them. A resource field can now be marked required, and the controller refuses any create that leaves one empty.
+
+What to do about it: `journal upgrade`. Facts and rules already in the record are left as they are.
+
 ## 2.56.2 — Half-shown messages no longer pile up
 
 To-do 587. Claude Code shows a long message in pieces, and the journal holds the pieces until the last one arrives. Sometimes the last piece never comes, and the first pieces were then kept in runtime/displayed-<session>.json forever. Messages are shown one at a time, so when any message's last piece arrives, everything still held for that session is now cleared. The full text still reaches the chat from the transcript. Text Claude Code never records or shows, such as some mid-turn text before a tool call, cannot reach the chat by either route.

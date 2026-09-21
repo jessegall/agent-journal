@@ -65,12 +65,14 @@ def normalize_options(value):
 
 class Shape:
     fields: ClassVar[dict] = {}
+    required: ClassVar[list[str]] = []
     labels: ClassVar[dict] = {}
 
     def __init_subclass__(cls, **kw):
         super().__init_subclass__(**kw)
         declare(cls)
         cls.fields = {k: v.spec for base in reversed(cls.__mro__) for k, v in vars(base).items() if isinstance(v, Field) and v.spec}
+        cls.required = [k for base in reversed(cls.__mro__) for k, v in vars(base).items() if isinstance(v, Field) and v.required]
         cls.labels = {k: v for base in reversed(cls.__mro__) for k, v in vars(base).get("labels", {}).items()}
 
 
@@ -86,7 +88,7 @@ class Options(Shape):
 
 class Reasoned(Shape):
     data_fields: ClassVar[list[Field]] = [
-        Field(LIST, list, name="keywords"),
+        Field(LIST, list, name="keywords", required=True),
     ]
     labels = {"brief": "Reasoning", "outcome": "Why struck"}
 

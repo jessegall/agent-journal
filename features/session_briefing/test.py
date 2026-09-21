@@ -14,8 +14,8 @@ from resources.base import AGENT
 def test_the_start_block_names_the_environment_rules_pins_work_docs_and_todos():
     record = fresh()
     f = record.root / "runtime" / f"start-{record.env}.md"
-    Rules(record, actor=USER).create("name the model on every dispatch")
-    Facts(record, actor=AGENT).create("v2 imports nothing old")
+    Rules(record, actor=USER).create("name the model on every dispatch", keywords="word")
+    Facts(record, actor=AGENT).create("v2 imports nothing old", keywords="word")
     Works(record, actor=AGENT).create("the header")
     Docs(record, actor=AGENT).create("The engine", abstract="the loop from A to Z")
     Todos(record, actor=USER).create("later")

@@ -25,11 +25,11 @@ def test_a_context_mark_holds_writes_until_the_agent_pins_rules_or_says_nothing(
         "50 crossed: a hold on writes and a nudge to decide"
     report(record, "working", "PostToolUse", context=60)
     assert (bool(gate()), len(nudges(record))) == (True, 1), "between marks: the hold stands, nothing new said"
-    Facts(record, actor=AGENT).create("what a later reader needs")
+    Facts(record, actor=AGENT).create("what a later reader needs", keywords="word")
     assert gate() == "", "a fact decides it: released"
     report(record, "working", "PostToolUse", context=71)
     assert len(nudges(record)) == 2, "70 crossed: asked again"
-    Rules(record, actor=AGENT).create("what binds everywhere")
+    Rules(record, actor=AGENT).create("what binds everywhere", keywords="word")
     assert gate() == "", "a rule decides it"
     report(record, "working", "PostToolUse", context=91)
     assert bool(gate()) is True, "90 crossed"

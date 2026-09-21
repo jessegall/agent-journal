@@ -15,6 +15,10 @@ SAID = {"title": "a row worth keeping", "text": "a line of words", "body": "the 
         "env": "main", "kind": "note", "ref": "todo:1", "tags": "one two", "abstract": "one line",
         "brief": "why, and where to start", "outcome": "done", "message": "a log line", "actor": USER,
         "to": "agent-1", "by": 1, "how_": "it landed", "action": "create", "type": "todo", "session": "s-1"}
+def needed(type_: str) -> dict:
+    return {name: "a word" for name in TYPES[type_].required}
+
+
 COUNTED = ("n", "m", "p", "waits", "doc", "plan", "on", "days", "last", "back", "page")
 
 
@@ -47,7 +51,7 @@ def test_every_action_of_every_resource_runs_or_refuses_in_words():
     for type_ in TYPES:
         record = fresh(type_[:2])
         controller = CONTROLLERS[type_](record, actor=SYSTEM)
-        row = controller.create(f"a {type_} to work on", abstract="one line", brief="why it is here")
+        row = controller.create(f"a {type_} to work on", abstract="one line", brief="why it is here", **needed(type_))
         for name in actions(CONTROLLERS[type_]):
             if name in WORLD:
                 continue
@@ -90,7 +94,7 @@ def test_every_listing_is_one_page_of_open_rows_inside_the_budget():
         controller = CONTROLLERS[type_](record, actor=SYSTEM)
         for i in range(MANY if type_ in ("message", "comment") else PAGE + 5):
             try:
-                row = controller.create(f"{type_} {i}")
+                row = controller.create(f"{type_} {i}", **needed(type_))
                 if i % 3 == 0:
                     controller.complete(row.n, "done")
             except Refused:
@@ -125,7 +129,7 @@ def test_a_row_is_changed_only_by_those_its_resource_names_for_its_author():
     changed = []
     for type_ in guarded:
         record = fresh(type_[:2])
-        row = CONTROLLERS[type_](record, actor=USER).create(f"the user's {type_}", brief="their words")
+        row = CONTROLLERS[type_](record, actor=USER).create(f"the user's {type_}", brief="their words", **needed(type_))
         agent = CONTROLLERS[type_](record, actor=AGENT)
         for change in (lambda: agent.update(row.n, brief="rewritten"), lambda: agent.delete(row.n, why="gone")):
             try:

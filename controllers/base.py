@@ -99,6 +99,9 @@ class Controller(Stored, Files, Links):
         taken = self._handled("create", title=title, abstract=abstract, brief=brief, **data)
         if taken is not None:
             return taken
+        for name in self.resource.required:
+            if not data.get(name):
+                self._refuse(f"a {self.type} needs {name}: --set {name}=\"<word>,<word>\"")
         with self.record.locked():
             n = (self.numbers() or [0])[-1] + 1
             about, supersedes = data.pop("about", None), data.pop("supersedes", 0)

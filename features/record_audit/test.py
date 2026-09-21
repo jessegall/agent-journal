@@ -16,12 +16,12 @@ def test_evidence_finds_dead_paths_and_verbs_and_a_struck_claim_has_none():
     (project / "v2" / "serve.py").write_text("")
     pins = Facts(record, actor=AGENT)
     rules = Rules(record, actor=USER)
-    pins.create("the server is v2/serve.py")
-    pins.create("the launcher was launch.py", brief="see old/launch.py for the relay")
-    rules.create("close a row with `journal todo done`", brief="never with `journal frobnicate 4`")
-    rules.create("journal disable must only run when the user asks")
-    rules.create("A journal capability that fits in a few words is a feature")
-    pins.create("the package is at the root", brief="the journal is copied into each project")
+    pins.create("the server is v2/serve.py", keywords="word")
+    pins.create("the launcher was launch.py", keywords="word", brief="see old/launch.py for the relay")
+    rules.create("close a row with `journal todo done`", keywords="word", brief="never with `journal frobnicate 4`")
+    rules.create("journal disable must only run when the user asks", keywords="word")
+    rules.create("A journal capability that fits in a few words is a feature", keywords="word")
+    pins.create("the package is at the root", keywords="word", brief="the journal is copied into each project")
     Reminders(record, actor=USER).create("run tests/old.py first")
     assert [e["ref"] for e in evidence(record) if e["ref"] == "fact:1"] == [], \
         "nothing wrong with a claim whose file exists and whose verbs are known"

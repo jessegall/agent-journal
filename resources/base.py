@@ -29,8 +29,8 @@ def names(*columns: str) -> SimpleNamespace:
 
 
 class Field:
-    def __init__(self, spec=None, default=None, name: str = ""):
-        self.spec, self.default, self.name = spec, default, name
+    def __init__(self, spec=None, default=None, name: str = "", required: bool = False):
+        self.spec, self.default, self.name, self.required = spec, default, name, required
 
     def __set_name__(self, owner, name: str) -> None:
         self.name = name
