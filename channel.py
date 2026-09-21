@@ -19,12 +19,16 @@ def say(message: dict) -> None:
     sys.stdout.flush()
 
 
-def fresh_lines(f: Path, at: int | None) -> tuple[list[str], int | None]:
+def start(f: Path) -> int:
+    return f.stat().st_size if f.exists() else 0
+
+
+def fresh_lines(f: Path, at: int) -> tuple[list[str], int]:
     try:
         size = f.stat().st_size
     except OSError:
         return [], at
-    if at is None or size < at:
+    if size < at:
         return [], size
     if size == at:
         return [], at
@@ -46,7 +50,7 @@ def contents(lines: list[str]) -> list[str]:
 
 def push(root: Path) -> None:
     f = queue(root)
-    at = None
+    at = start(f)
     while True:
         time.sleep(WAIT)
         alive(root).touch()
