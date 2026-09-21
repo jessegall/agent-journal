@@ -22,12 +22,20 @@ const emit = defineEmits(["close"]);
 const data = computed(() => props.resource.data);
 const family = computed(() => modelFamily(data.value.model));
 const name = computed(() => providerName(data.value.provider));
+const subagents = computed(() => (data.value.subagent_rows || []).filter((r) => r.session));
+const session = computed(() => route.value.sub);
+const picked = computed(() => subagents.value.find((r) => r.session === session.value));
 const works = computed(() =>
     rows("work")
-        .filter((w) => w.data.session === props.resource.title || (!w.data.session && !w.completed))
+        .filter((w) =>
+            picked.value
+                ? w.data.agent === picked.value.session
+                : !w.data.agent && (w.data.session === props.resource.title || (!w.data.session && !w.completed))
+        )
         .slice(-5)
         .reverse()
 );
+const skills = computed(() => (picked.value ? picked.value.skills : data.value.skills) || []);
 const state = computed(() => {
     const reported = data.value.status;
     return ["stopped", "idle", "compacting"].includes(reported) ? reported : works.value.some((w) => !w.completed) ? "working" : "busy";
@@ -51,9 +59,6 @@ const WHO = {
     superseded: "You, edited",
     whisper: "Journal said",
 };
-const subagents = computed(() => (data.value.subagent_rows || []).filter((r) => r.session));
-const session = computed(() => route.value.sub);
-const picked = computed(() => subagents.value.find((r) => r.session === session.value));
 
 const {turns, total, first, folded, error, loading, paging, atStart, toggle, earlier, retry} = useTranscript(
     () => props.resource.n,
@@ -77,40 +82,64 @@ useSighted(topMark, earlier, {root: scroller, margin: "400px 0px"});
             <CommentToggle />
             <Btn kind="icon" @click="emit('close')"><Icon name="x" /></Btn>
         </header>
-        <h2 class="title">{{ family ? `${name} · ${family}` : name }}</h2>
-        <p class="session">session {{ resource.title }}</p>
-        <div class="facts">
-            <template v-if="data.branch">
+        <template v-if="picked">
+            <h2 class="title">{{ picked.task }}</h2>
+            <p class="session">subagent {{ picked.session }} of session {{ resource.title }}</p>
+            <div class="facts">
                 <span class="fact">
-                    <Icon name="branch" />
-                    {{ data.branch }}
+                    <Icon name="agents" />
+                    {{ picked.type || "general" }} · {{ picked.model || "inherited model" }}
                 </span>
-            </template>
-            <span class="fact">
-                <Icon name="reminders" />
-                {{ data.started ? `up ${span(Date.now() / 1000 - data.started)}` : "just started" }}
-            </span>
-            <span class="fact">
-                <Icon name="activity" />
-                context {{ Math.round(Number(data.context || 0)) }}%
-            </span>
-            <span class="fact">
-                <Icon name="terminal" />
-                {{ data.shells || 0 }} shells
-            </span>
-            <span class="fact">
-                <Icon name="agents" />
-                {{ data.subagents || 0 }} subagents
-            </span>
-            <span class="fact">
-                <Icon name="book" />
-                {{ (data.skills || []).length }} skills
-            </span>
-        </div>
-        <template v-if="(data.skills || []).length">
+                <span class="fact">
+                    <Icon name="reminders" />
+                    {{
+                        picked.running
+                            ? `up ${span(Date.now() / 1000 - picked.at)}`
+                            : `${picked.status || "finished"} after ${span(picked.ended - picked.at)}`
+                    }}
+                </span>
+                <span class="fact">
+                    <Icon name="book" />
+                    {{ skills.length }} skills
+                </span>
+            </div>
+        </template>
+        <template v-else>
+            <h2 class="title">{{ family ? `${name} · ${family}` : name }}</h2>
+            <p class="session">session {{ resource.title }}</p>
+            <div class="facts">
+                <template v-if="data.branch">
+                    <span class="fact">
+                        <Icon name="branch" />
+                        {{ data.branch }}
+                    </span>
+                </template>
+                <span class="fact">
+                    <Icon name="reminders" />
+                    {{ data.started ? `up ${span(Date.now() / 1000 - data.started)}` : "just started" }}
+                </span>
+                <span class="fact">
+                    <Icon name="activity" />
+                    context {{ Math.round(Number(data.context || 0)) }}%
+                </span>
+                <span class="fact">
+                    <Icon name="terminal" />
+                    {{ data.shells || 0 }} shells
+                </span>
+                <span class="fact">
+                    <Icon name="agents" />
+                    {{ data.subagents || 0 }} subagents
+                </span>
+                <span class="fact">
+                    <Icon name="book" />
+                    {{ (data.skills || []).length }} skills
+                </span>
+            </div>
+        </template>
+        <template v-if="skills.length">
             <p class="skills">
                 <span class="skills-label">Skills in this window</span>
-                {{ data.skills.join(", ") }}
+                {{ skills.join(", ") }}
                 <button type="button" class="every" @click="go(route.env, 'skills')">every skill</button>
             </p>
         </template>
@@ -137,7 +166,7 @@ useSighted(topMark, earlier, {root: scroller, margin: "400px 0px"});
                     <Trace :resource="w" />
                 </template>
                 <template v-if="!works.length">
-                    <p class="none">No work on this agent yet.</p>
+                    <p class="none">{{ picked ? "No work filed by this subagent." : "No work on this agent yet." }}</p>
                 </template>
             </section>
         </template>
@@ -162,16 +191,6 @@ useSighted(topMark, earlier, {root: scroller, margin: "400px 0px"});
                         </button>
                     </template>
                 </div>
-            </template>
-            <template v-if="picked">
-                <p class="session-note">
-                    Subagent {{ picked.type || "" }} · {{ picked.model || "inherited model" }} ·
-                    {{
-                        picked.running
-                            ? `running ${span(Date.now() / 1000 - picked.at)}`
-                            : `${picked.status || "finished"} after ${span(picked.ended - picked.at)}`
-                    }}
-                </p>
             </template>
             <div ref="scroller" class="transcript">
                 <div ref="topMark" class="edge">
@@ -401,12 +420,6 @@ useSighted(topMark, earlier, {root: scroller, margin: "400px 0px"});
 .session-pick .dot {
     width: 6px;
     height: 6px;
-}
-
-.session-note {
-    margin: 0 0 8px;
-    font-size: 12px;
-    color: var(--text-3);
 }
 
 .dot {
