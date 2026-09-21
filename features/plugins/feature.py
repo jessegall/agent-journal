@@ -15,6 +15,7 @@ from features.plugins.run import call
 from features.plugins.source import alone, checked, data, environment, folder, home, log, ports_for, prepared, preview, said_version, staged, token
 from resources.base import Refused, SYSTEM
 from engine.version import version
+from features.statusline import commands
 
 VERSION = version()
 
@@ -52,7 +53,7 @@ class Plugins(Feature):
 
     @gate
     def guard(self, provider, record, hook, session) -> str:
-        writes = provider.writes(hook)
+        writes = commands.writes(hook)
         left = self.ALTOGETHER
         for row in Rows(record, actor=SYSTEM)._every():
             asking = (row.manifest or {}).get("refuse")

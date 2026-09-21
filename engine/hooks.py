@@ -7,11 +7,13 @@ from engine.record import Record
 from engine.sessions import Sessions, agent_pid
 from resources.base import AGENT, SYSTEM
 from engine import runtime
+from providers.payload import EVENTS
+from features.statusline import commands
 
 STATUS = {"SessionStart": IDLE, "Stop": IDLE, "UserPromptSubmit": WORKING, "PreToolUse": WORKING,
           "PostToolUse": WORKING, "PreCompact": COMPACTING, "SubagentStart": "",
           "SubagentStop": "", "SessionEnd": STOPPED}
-EVENTS = tuple(STATUS)
+assert tuple(STATUS) == EVENTS
 POLICIES: list = []
 
 
@@ -72,7 +74,8 @@ def handle(provider, root: Path, env: str, hook) -> dict:
         return provider.response(blocked=next((reason for policy in POLICIES if serving(policy, provider, hook)
                                                and (reason := policy(provider, record, hook, row.title))), "")) if hook.event == "PreToolUse" else {}
     agents.saw(row.n, {"hook": hook.event, "tool": hook.tool.name, "file": hook.tool.file_path, "session": hook.session},
-               status=STATUS[hook.event] or row.status or IDLE, **provider.facts(row, hook, root))
+               status=STATUS[hook.event] or row.status or IDLE, **provider.facts(row, hook, root), **commands.shell(row, hook),
+               wrote=hook.event == "PostToolUse" and commands.writes(hook))
     if hook.event == "PreToolUse":
         why = next((reason for policy in POLICIES if serving(policy, provider, hook) and (reason := policy(provider, record, hook, row.title))), "")
         return provider.response(blocked=f"{why}{alongside(hook)}" if why else "")

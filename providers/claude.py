@@ -6,7 +6,7 @@ from datetime import datetime
 from pathlib import Path
 
 from engine.transcript import AGENT, HUMAN, INJECTED, PEER, SUMMARY, SUPERSEDED, TASK, TOOL, Turn, timestamp
-from engine.hooks import EVENTS
+from providers.payload import EVENTS
 from providers.base import Provider
 from providers.payload import Hook
 from resources.types import AgentRow

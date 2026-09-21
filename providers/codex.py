@@ -4,7 +4,7 @@ import shutil
 from pathlib import Path
 
 from engine.transcript import AGENT, HUMAN, INJECTED, TOOL, timestamp
-from engine.hooks import EVENTS
+from providers.payload import EVENTS
 from providers.base import Provider
 from providers.payload import Hook
 from resources.types import AgentRow

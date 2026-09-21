@@ -8,6 +8,7 @@ from features.work.auto import refusal
 from features.work.next import next
 from resources.base import Refused, SYSTEM
 from resources.types import Work
+from features.statusline import commands
 
 
 class WorkFeature(Feature):
@@ -64,7 +65,7 @@ class WorkFeature(Feature):
 
     @gate
     def held(self, provider, record, hook, session) -> str:
-        return held(record, session) if provider.writes(hook) else ""
+        return held(record, session) if commands.writes(hook) else ""
 
     @event("work.created")
     def opened(self, event, record) -> None:

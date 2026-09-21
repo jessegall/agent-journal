@@ -1,6 +1,8 @@
 from dataclasses import dataclass, field
 from pathlib import Path
 
+EVENTS = ("SessionStart", "Stop", "UserPromptSubmit", "PreToolUse", "PostToolUse", "PreCompact", "SubagentStart", "SubagentStop", "SessionEnd")
+
 
 @dataclass(frozen=True)
 class ToolUse:
