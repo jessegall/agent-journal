@@ -117,7 +117,14 @@ export function rows(type) {
 }
 
 const ENDED = ["done", "abandoned"];
-export const GROUPS = {started: "In progress", blocked: "Blocked", planned: "Planned", waiting: "Waiting on others", asked: "Waiting on you", open: "Open"};
+export const GROUPS = {
+    started: "In progress",
+    blocked: "Blocked",
+    planned: "Planned",
+    waiting: "Waiting on others",
+    asked: "Waiting on you",
+    open: "Open",
+};
 const UNSTARTED = ["building", "ready"];
 
 export function waitsOn(r) {
@@ -219,23 +226,38 @@ const RECENT = 100;
 const TICK = 500;
 let ticking = 0;
 let ticks = 0;
+let round = 0;
+
+async function tick() {
+    ticks += 1;
+    const env = route.value.env;
+    store.bar = await http.poll(`/${env}/bar`);
+    if (ticks % 2) return;
+    store.agents = await http.poll(`/${env}/agent`);
+    if (ticks % 10) return;
+    store.pages = await http.poll("/pages");
+    const last = store.events.length ? store.events[store.events.length - 1].id : 0;
+    const fresh = await http.poll(`/${env}/events?since=${last}&last=0`);
+    if (fresh.length) await reload();
+    if (ticks % 60 === 0) await rebuilt();
+}
 
 function poll() {
-    clearInterval(ticking);
+    clearTimeout(ticking);
     ticks = 0;
-    ticking = setInterval(async () => {
-        ticks += 1;
-        const env = route.value.env;
-        store.bar = await http.api("GET", `/${env}/bar`);
-        if (ticks % 2) return;
-        store.agents = await http.all(env, "agent");
-        if (ticks % 10) return;
-        store.pages = await http.api("GET", "/pages");
-        const last = store.events.length ? store.events[store.events.length - 1].id : 0;
-        const fresh = await http.events(env, last);
-        if (fresh.length) await reload();
-        if (ticks % 60 === 0) await rebuilt();
-    }, TICK);
+    round += 1;
+    const mine = round;
+    const again = () => {
+        if (mine !== round) return;
+        ticking = setTimeout(
+            () =>
+                tick()
+                    .catch(() => {})
+                    .then(again),
+            TICK
+        );
+    };
+    again();
 }
 
 async function rebuilt() {
@@ -259,7 +281,17 @@ export async function boot() {
 }
 
 export const state = (r) =>
-    r.data.struck ? "struck" : r.completed ? "done" : r.data.blocked ? "blocked" : planned(r) ? "planned" : r.data.status === "started" ? "started" : "open";
+    r.data.struck
+        ? "struck"
+        : r.completed
+          ? "done"
+          : r.data.blocked
+            ? "blocked"
+            : planned(r)
+              ? "planned"
+              : r.data.status === "started"
+                ? "started"
+                : "open";
 export const open = (type) => rows(type).filter((r) => !r.completed);
 export const unreadByUser = (type) => open(type).filter((r) => !r.seen.includes("user"));
 export const agent = computed(

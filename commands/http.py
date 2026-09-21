@@ -55,9 +55,12 @@ class Request:
     params: dict
     query: dict
     body: dict
+    kept: Record | None = None
 
     def record(self) -> Record:
-        return Record(self.root, self.params["env"])
+        if self.kept is None:
+            self.kept = Record(self.root, self.params["env"], memo=True)
+        return self.kept
 
     def controller(self):
         type_ = self.params["type"]

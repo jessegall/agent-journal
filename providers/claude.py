@@ -53,6 +53,14 @@ class Claude(Provider):
                     {"value": "max", "label": "Maximum", "command": "/effort max"},
                 ],
             },
+            {
+                "key": "context",
+                "label": "Context window",
+                "choices": [
+                    {"value": "compact", "label": "Compact context", "command": "/compact"},
+                    {"value": "clear", "label": "Clear context", "command": "/clear"},
+                ],
+            },
         ],
         "note": "Changes apply immediately to this Claude Code session.",
     }

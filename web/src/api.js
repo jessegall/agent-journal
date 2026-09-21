@@ -16,6 +16,18 @@ export async function api(method, path, body, base = "") {
     return got;
 }
 
+const flying = new Map();
+
+export function poll(path, base = "") {
+    const key = `${base}${path}`;
+    if (!flying.has(key))
+        flying.set(
+            key,
+            api("GET", path, undefined, base).finally(() => flying.delete(key))
+        );
+    return flying.get(key);
+}
+
 export const manifest = () => api("GET", "/manifest");
 export const identity = () => api("GET", "/identity");
 export const saveIdentity = (body) => api("POST", "/identity", body);

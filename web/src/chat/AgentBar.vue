@@ -19,6 +19,7 @@ const skills = computed(() => (data.value && data.value.skills) || []);
 const usage = computed(() => (data.value && data.value.usage && data.value.usage.windows) || []);
 const used = (window) => Math.max(0, Math.min(100, Number(window.used ?? 100 - window.remaining)));
 const usageLabel = computed(() => (usage.value.length ? `${Math.round(used(usage.value[0]))}%` : "usage"));
+const filled = computed(() => Math.round(Number((data.value && data.value.context) || 0)));
 const live = (rows) => (rows || []).filter((r) => r.running).length;
 const counts = computed(() => [
     {
@@ -158,11 +159,24 @@ onUnmounted(() => window.removeEventListener("click", away));
                         {{ usageLabel }}
                     </button>
                 </template>
-                <span class="agent-fact agent-context" :title="`context ${Math.round(Number(data.context || 0))}% full`">
+                <button
+                    type="button"
+                    :class="['agent-fact', 'agent-count', 'agent-context', {open: open === 'context', waiting: pending('context')}]"
+                    :title="
+                        pending('context')
+                            ? `${pending('context')} — waiting for the agent`
+                            : `context ${filled}% full — clear or compact it`
+                    "
+                    :aria-expanded="open === 'context'"
+                    @click="modelControls($event, 'context')"
+                >
                     <Icon name="gauge" />
-                    <span class="agent-context-bar"><span :style="{width: `${Math.round(Number(data.context || 0))}%`}" /></span>
-                    {{ Math.round(Number(data.context || 0)) }}%
-                </span>
+                    <span class="agent-context-bar"><span :style="{width: `${filled}%`}" /></span>
+                    {{ filled }}%
+                    <template v-if="pending('context')">
+                        <Spinner />
+                    </template>
+                </button>
                 <template v-if="family">
                     <button
                         type="button"
@@ -340,6 +354,39 @@ onUnmounted(() => window.removeEventListener("click", away));
                         </template>
                         <template v-if="!usage.length && !error">
                             <p class="bar-none">No current plan window has been reported here.</p>
+                        </template>
+                    </template>
+                    <template #context>
+                        <template v-if="error">
+                            <p class="bar-error">{{ error }}</p>
+                        </template>
+                        <p class="bar-current">Context window</p>
+                        <div class="bar-usage">
+                            <span>Used</span>
+                            <strong>{{ filled }}%</strong>
+                            <span class="bar-usage-track"><span :style="{width: `${filled}%`}" /></span>
+                        </div>
+                        <template v-if="pending('context')">
+                            <div class="bar-waiting">
+                                <span>{{ pending("context") }} is waiting for the agent to finish its turn.</span>
+                            </div>
+                        </template>
+                        <template v-for="group in chosen" :key="group.key">
+                            <div class="bar-choices">
+                                <template v-for="choice in group.choices" :key="choice.value">
+                                    <button
+                                        type="button"
+                                        class="bar-control-choice"
+                                        :disabled="Boolean(controlling)"
+                                        @click="control(group.key, choice.value)"
+                                    >
+                                        <template v-if="waiting(group.key, choice.value)">
+                                            <Spinner />
+                                        </template>
+                                        {{ choice.label }}
+                                    </button>
+                                </template>
+                            </div>
                         </template>
                     </template>
                     <template #shells>

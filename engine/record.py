@@ -51,10 +51,13 @@ class Record:
         self._held = 0
         self._threads = threading.RLock()
         self.memo = {} if memo else None
+        self._made: set[Path] = set()
 
     def folder(self, type: str, scope: str = "") -> Path:
         f = (self.root if scope == PROJECT else self.home) / type
-        f.mkdir(exist_ok=True)
+        if f not in self._made:
+            f.mkdir(exist_ok=True)
+            self._made.add(f)
         return f
 
     @contextmanager
