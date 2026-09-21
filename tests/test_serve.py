@@ -40,7 +40,7 @@ def test_the_server_answers_every_route_the_viewer_uses(tmp_path):
             "a type says what its list can be narrowed to, and what each tab is called"
         assert (sorted(name for name, t in m["types"].items() if t["clears"] == "completed"), m["types"]["message"]["clears"], m["types"]["report"]["clears"]) == \
             (["question", "suggestion"], "opened", "cleared"), "a type says what takes it off the user's list"
-        assert (m["types"]["work"]["shown"]["created"], m["types"]["fact"]["shown"]["completed"]) == ("Work started", "Pin struck"), \
+        assert (m["types"]["work"]["shown"]["created"], m["types"]["fact"]["shown"]["completed"]) == ("Work started", "Fact struck"), \
             "a type says how its events read in the viewer"
         code, files = call("GET", "/api/main/files")
         assert (code, isinstance(files, list)) == (200, True), \
