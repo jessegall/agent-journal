@@ -47,8 +47,10 @@ const page = computed(() =>
           ? route.value.page
           : "index"
 );
-const opened = computed(
-    () => route.value.open || (route.value.n && page.value === "index" ? {type: route.value.page, n: route.value.n} : {type: "", n: 0})
+const opened = computed(() =>
+    route.value.stack.length
+        ? route.value.stack
+        : [route.value.n && page.value === "index" ? {type: route.value.page, n: route.value.n} : {type: "", n: 0}]
 );
 
 const quick = ref(false);
@@ -145,7 +147,9 @@ const chatFloats = computed(() => store.detached && !store.extension.holding && 
                 <Transition name="column">
                     <Activity v-if="store.activity && !store.wide" />
                 </Transition>
-                <Reader :type="opened.type" :n="opened.n" />
+                <template v-for="(open, i) in opened" :key="`${i}:${open.type}:${open.n}`">
+                    <Reader :type="open.type" :n="open.n" :depth="opened.length - 1 - i" :over="i > 0" />
+                </template>
                 <Lightbox />
                 <Transition name="quick">
                     <QuickMenu v-if="quick" ref="quickMenu" @close="quick = false" />
