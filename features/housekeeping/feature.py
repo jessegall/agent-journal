@@ -25,7 +25,7 @@ class Housekeeping(Feature):
         runtime = record.root / "runtime"
         if not runtime.is_dir():
             return {"removed": 0, "trimmed": 0}
-        quiet = time.time() - record.setting(self.name, {}).get(self.DAYS, self.days) * 86400
+        quiet = time.time() - self.setting(record, self.DAYS, self.days) * 86400
         removed = [f for pattern in self.sessions for f in runtime.glob(pattern) if f.is_file() and f.stat().st_mtime < quiet]
         for f in removed:
             f.unlink(missing_ok=True)

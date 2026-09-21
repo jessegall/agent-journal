@@ -175,7 +175,10 @@ class Feature(ABC):
     def on(self, record, key: str = "") -> bool:
         if not self.enabled(record):
             return False
-        return record.features.get(self.keyed(key), self.behaviours[key].default) if key else True
+        return self.chosen(record, key) if key else True
+
+    def chosen(self, record, key: str) -> bool:
+        return bool(record.features.get(self.keyed(key), self.behaviours[key].default))
 
     def cadence(self, record, key: str = "") -> dict:
         return self.behaviours[key].trigger if key else self.trigger
@@ -189,6 +192,9 @@ class Feature(ABC):
 
     def mine(self, agent) -> bool:
         return self.runs_for_subagents or not agent.subagent
+
+    def setting(self, record, key: str, default=None):
+        return record.setting(self.name, {}).get(key, default)
 
     def live(self, record) -> list:
         return [agent for agent in Agents(record, actor=SYSTEM)._standing() if self.mine(agent)]

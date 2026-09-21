@@ -124,11 +124,11 @@ class WorkFeature(Feature):
             return
         edits = int(trigger.last(record, agent.title, self.name).get(self.EDITS) or 0) + 1
         trigger.write(record, agent, self.name, edits=edits)
-        said = record.setting(self.name, {}).get(self.SAID_AFTER, self.said_after)
+        said = self.setting(record, self.SAID_AFTER, self.said_after)
         if said and edits % said == 0:
             self.nudge(record, agent, f"work {work[0].n} in hand — {work[0].title}",
                        brief="if this is not what you are doing, end it or park it and start the work you are in", private=True)
-        if edits >= record.setting(self.name, {}).get(self.LOG_AFTER, self.log_after):
+        if edits >= self.setting(record, self.LOG_AFTER, self.log_after):
             self.hold(record, f'{edits} edits since work {work[0].n} was last logged: journal work log "<what was decided or done, and why>" before any other write')
 
     @event("work.updated")

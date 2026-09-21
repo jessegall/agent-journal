@@ -48,7 +48,7 @@ class Tags(Feature):
     PLACES = "places"
 
     def names(self, record) -> list[str]:
-        return [str(name).strip().lstrip("[!").rstrip("]") for name in record.setting(self.name, {}).get(self.NAMES, TAGS) if str(name).strip()] or list(TAGS)
+        return [str(name).strip().lstrip("[!").rstrip("]") for name in self.setting(record, self.NAMES, TAGS) if str(name).strip()] or list(TAGS)
 
     def reader(self, record) -> re.Pattern:
         return pattern(self.names(record))
@@ -68,7 +68,7 @@ class Tags(Feature):
         return (self.reader(record) if record else ANY).sub(lambda found: found.group(1) or "", str(text or ""))
 
     def runs(self, record) -> dict:
-        return {**RUNS, **record.setting(self.name, {}).get(self.RUNS, {})}
+        return {**RUNS, **self.setting(record, self.RUNS, {})}
 
     def argv(self, template: str, n: str, text: str) -> list[str]:
         return [text if word == "{text}" else n if word == "{n}" else word for word in template.split()]
@@ -103,7 +103,7 @@ class Tags(Feature):
                 self.nudge(record, agent, f"the {name} tag on {n} did not run", (wrong.getvalue() or said.getvalue()).strip(), private=True)
 
     def places(self, record) -> dict:
-        return {**PLACES, **record.setting(self.name, {}).get(self.PLACES, {})}
+        return {**PLACES, **self.setting(record, self.PLACES, {})}
 
     def place(self, text: str, record) -> str:
         found = LEADING.match(str(text or ""))
