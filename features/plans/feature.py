@@ -1,12 +1,12 @@
 from controllers.types import Agents, Todos
 from features.plans.controller import ACTIVE, BUILDING, DONE, PHASES, Plans, WAITING
 from features.work.auto import automatic
-from features.base import Feature, Line, event, handles
+from features.base import Feature, Line, event
 from features.plans.progress import current_phase, held, running
 from resources.base import AGENT, SYSTEM
 from features.plans.resource import PHASE
 from features.journal import Journal
-from features.plans.interceptors import RefusePlanMode
+from features.plans.interceptors import HoldWhilePlanned, RefusePlanMode
 
 
 class PlansFeature(Feature):
@@ -28,6 +28,7 @@ class PlansFeature(Feature):
 
     def register(self, journal: Journal) -> None:
         journal.agent.interceptor(RefusePlanMode())
+        journal.commands.intercept("todo.start", HoldWhilePlanned())
 
     @event("plan.created")
     @event("plan.updated")
@@ -42,13 +43,6 @@ class PlansFeature(Feature):
         line = "ready" if stage != PHASES and filled else stage
         if not self.already(record, agent.title, "planned", f"{plan.n}:{line}"):
             self.journal.say(record, agent, line, n=plan.n)
-
-    @handles("todo.start")
-    def held_back(self, controller, n: int) -> None:
-        row = controller.load(n)
-        if held(controller.record, row):
-            controller._refuse(f"todo {n} is not in the active plan's current phase: finish the plan, raise it to critical, or --force \"<why>\"")
-            controller.save(row, "updated", forced=True)
 
     def phase_complete(self, record, phase: dict) -> bool:
         todos = Todos(record, actor=SYSTEM)

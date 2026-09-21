@@ -1,12 +1,14 @@
+import inspect
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, ClassVar, get_type_hints
 
+from controllers.base import COMMANDS, HANDLERS
 from controllers.types import Agents
 from engine import bus
 from engine.events import AgentEvent
 from engine.hooks import POLICIES
 from features.format import FORMATTERS
-from resources.base import SYSTEM
+from resources.base import SYSTEM, Refused
 
 if TYPE_CHECKING:
     from features.journal import BoundJournal
@@ -87,6 +89,18 @@ class ToolInterceptor:
         raise NotImplementedError
 
 
+class Command:
+    name: ClassVar[str] = ""
+
+    def run(self, context: Context, controller, *args, **kwargs):
+        raise NotImplementedError
+
+
+class ActionInterceptor:
+    def intercept(self, context: Context, controller, **args):
+        raise NotImplementedError
+
+
 class Events:
     def __init__(self, feature):
         self.feature = feature
@@ -129,3 +143,25 @@ class AgentHooks:
             return interceptor.intercept(Context.of(feature, record, row), hook.tool) or ""
         policy.feature = feature
         POLICIES.append(policy)
+
+
+class Commands:
+    def __init__(self, feature):
+        self.feature = feature
+
+    def add(self, type_: str, command: Command) -> None:
+        feature = self.feature
+
+        def call(controller, *args, **kwargs):
+            if not feature.enabled(controller.record):
+                raise Refused(f"the {feature.name} feature is off")
+            return command.run(Context.of(feature, controller.record), controller, *args, **kwargs)
+        given = list(inspect.signature(command.run).parameters.values())[2:]
+        call.__signature__ = inspect.Signature([inspect.Parameter("controller", inspect.Parameter.POSITIONAL_OR_KEYWORD), *given])
+        call.__name__ = command.name
+        COMMANDS.setdefault(type_, {})[command.name] = call
+
+    def intercept(self, action: str, interceptor: ActionInterceptor) -> None:
+        feature = self.feature
+        HANDLERS.setdefault(action, []).append(
+            lambda controller, **args: interceptor.intercept(Context.of(feature, controller.record), controller, **args) if feature.enabled(controller.record) else None)
