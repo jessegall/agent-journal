@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.82.4 — The engine checks for a newer journal every five minutes
+
+Messages 2094 and 2096, to-do 738. Auto-update used to run on the agent's own events every half hour, so an idle session never checked. The engine now keeps a clock: once a minute it emits an event for its session, whether the agent is busy or not, and the update check runs on it every five minutes. Any feature can use the same clock.
+
+What to do about it: `journal upgrade`.
+
 ## 2.82.3 — The launch works in a terminal left in raw mode
 
 Message 2099, to-do 740. A session that ended without putting the terminal back left it in raw mode, and the next `journal codex` or `journal claude` could not be answered: Enter sent a carriage return the question never read as the end of a line, and each line started where the last one ended. The launch now resets the terminal to normal mode before it draws anything, and the header's box no longer fills the last column, which made every row wrap into a blank line.

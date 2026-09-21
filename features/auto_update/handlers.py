@@ -1,7 +1,7 @@
 import threading
 from pathlib import Path
 
-from engine.events import AgentUpdated
+from engine.events import ClockTicked
 from engine.stored import read_json, write_json
 from engine.version import version
 from features.dev_faults.developing import developing
@@ -14,7 +14,7 @@ INSTALLING = threading.Lock()
 class InstallNewerVersion(Handler):
     behaviour = WHOLE_FEATURE
 
-    def handle(self, context: Context, event: AgentUpdated) -> None:
+    def handle(self, context: Context, event: ClockTicked) -> None:
         installed, latest = version(), upstream(context.record.root)
         if not newer(latest, installed):
             return

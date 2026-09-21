@@ -1,19 +1,20 @@
 import features.auto_update.handlers as updates
 from tests.conftest import fresh
+from engine.engine import emit_clock
 from tests.kit import nudges, report
 
 
-def test_a_newer_version_is_told_to_the_agent_once_when_it_does_not_install_itself(monkeypatch):
+def test_the_engine_clock_tells_the_agent_of_a_newer_version_once_when_it_does_not_install_itself(monkeypatch):
     record = fresh()
     record.set_setting("features", {**record.setting("features", {}), "auto_update.install": False})
     record.set_setting("triggers", {"updates": {"every": 0, "unit": "minutes"}})
     monkeypatch.setattr(updates, "upstream", lambda root: "99.0.0")
-    report(record, "working", "PreToolUse")
     report(record, "idle", "Stop")
+    emit_clock(record, "claude-1")
     notified = [n for n in nudges(record) if n.startswith("journal 99.0.0 is out")]
     assert len(notified) == 1, "told once, with the version it would install"
     monkeypatch.setattr(updates, "upstream", lambda root: "0.0.1")
-    report(record, "working", "PreToolUse")
+    emit_clock(record, "claude-1")
     assert len([n for n in nudges(record) if "is out" in n]) == 1, "an older published version says nothing"
 
 
