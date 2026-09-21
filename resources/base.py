@@ -103,7 +103,7 @@ class Resource:
     answered: ClassVar[str] = "comment"      # the word that answers a row instead of changing it
     editors: ClassVar[dict] = {}              # who may change the words of a row written by whom: {USER: (USER,)}; unnamed authors are open to all
     told: ClassVar[bool] = False              # the row is stamped with the moment the agent was told of it
-    said_twice: ClassVar[bool] = False       # the same words from the same actor within seconds return the first row instead of a second
+    deduplicates: ClassVar[bool] = False       # the same words from the same actor within seconds return the first row instead of a second
     indexed: ClassVar[tuple] = ()             # data fields kept in the in-memory index, for lookups that load no row
     loading: ClassVar[str] = MEMORY           # lazy: indexed on first use; eager: indexed at boot; memory: indexed at boot, every row held
     files = Field(default=dict)               # what is attached: name → what became of it

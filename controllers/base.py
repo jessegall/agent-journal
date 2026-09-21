@@ -156,7 +156,7 @@ class Controller:
         return {k: check(k, fields[k], normalize_options(v) if k == Options.options else v) if k in fields else v for k, v in data.items()}
 
     def _twin(self, title: str, brief: str, about) -> Resource | None:
-        if not self.resource.said_twice:
+        if not self.resource.deduplicates:
             return None
         since = time.time() - TWICE_WITHIN
         lately = [row["n"] for row in self.summaries() if not row["deleted"] and row["updated"] >= since]
