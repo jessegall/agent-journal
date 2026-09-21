@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.65.1 — The notifications dropdown opens over the chat
+
+Message 1784, to-do 662. The top bar's wrapper cropped everything to its own 48 pixels so it could collapse in wide mode, which cut the notifications dropdown off right under the bar, where the chat and the status bar showed through. The bar now crops only while it is collapsed, so the dropdown opens whole over the chat.
+
+What to do about it: `journal upgrade`.
+
 ## 2.65.0 — Any doc can become version-tracked
 
 Message 1528, to-do 619. A doc is not revision-tracked by default. A plain doc now has a Track revisions button beside Edit. It asks "Keep every later edit of this doc as a revision?" and then turns the doc into a design: the doc itself is revision 1, it stays open for edits, and every kept revision after it is saved as the next one. The panel opens the new design with its revision strip. The agent does the same with `journal design from_doc <doc>`. A doc that is already a revision of a design is refused.
