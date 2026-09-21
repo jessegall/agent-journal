@@ -43,13 +43,13 @@ def test_the_generator_makes_one_command_per_type_per_action_all_the_same_shape(
     base_actions = actions(Controller)
     assert base_actions == \
         ["all", "attach", "comment", "comments", "complete", "create", "delete", "detach", "files", "find", "folder", "force_delete",
-         "index", "link", "linked_to", "move", "paths", "react", "read", "read_all", "restore", "search", "section", "set", "show",
-         "tag", "unlink", "unread", "update"], "the base controller's actions are the CRUD set"
+         "index", "link", "linked_to", "move", "paths", "react", "read", "read_all", "reopen", "restore", "search", "section", "set",
+         "show", "stamp", "tag", "unlink", "unread", "update"], "the base controller's actions are the CRUD set"
     subs = top._subparsers._group_actions[0].choices
     assert sorted(t for t in subs if t in TYPES) == sorted(TYPES), "every type is a command, beside the queries"
     assert sorted(t for t in subs if t not in TYPES) == \
-        ["carry", "claude", "codex", "conversation", "disable", "enable", "help", "nothing", "open", "search", "serve", "settings",
-         "speed", "start", "status", "tidy", "upgrade", "user", "verify", "version"], "the queries stand beside them"
+        ["carry", "claude", "codex", "conversation", "disable", "enable", "help", "nothing", "open", "search", "serve", "services",
+         "settings", "speed", "start", "status", "stop", "tidy", "upgrade", "user", "verify", "version"], "the queries stand beside them"
     for type_ in TYPES:
         acts = subs[type_]._subparsers._group_actions[0].choices
         names = TYPES[type_].names
