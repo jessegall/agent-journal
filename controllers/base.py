@@ -19,6 +19,7 @@ HELD: dict[str, tuple] = {}
 TWICE_WITHIN = 10.0
 COMMANDS: dict[str, dict] = {}
 HANDLERS: dict[str, list] = {}
+CONTROLLERS: dict[str, type] = {}
 FACES = ("👍", "❤️", "🎉", "😄", "👀", "🙏", "👎", "💔", "😠")
 
 
@@ -455,3 +456,7 @@ class Controller:
 
     def linked_to(self, ref: str) -> list[Resource]:
         return [self.load(row["n"]) for row in self.summaries() if ref in row["refs"] and not row["deleted"]]
+
+
+def register(*classes) -> None:
+    CONTROLLERS.update({c.resource.type: c for c in classes})
