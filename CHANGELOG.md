@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.78.5 — A damaged record file no longer stops the journal
+
+One empty or half-written row file made every journal command crash with `ValueError: not enough values to unpack`, so the journal could not start at all. A row file that cannot be read is now skipped in every listing, and opening it by number says it is damaged and where it is. The boot test now starts the journal on a record with a damaged row, and makes each agent's stand-in wait for the first message the journal types, which would have caught the Codex crash fixed in 2.78.4.
+
+What to do about it: `journal upgrade`.
+
 ## 2.78.4 — Codex starts again, and loads its always-on skills first
 
 Messages 1969 and 1975, to-do 697. 2.78.3 crashed every Codex session on its first message: the supervisor's function that types it had the same name as a file it keeps, so the call hit the file and raised `TypeError: 'PosixPath' object is not callable`. The function is now `press`. Codex also now loads the skills switched to every start before it works: at each session start, and again after a compaction, every tool call is held until each always-on skill is loaded, and the refusal says how that agent loads one: `Skill: <name>` for Claude, `read .agents/skills/<name>/SKILL.md` for Codex.

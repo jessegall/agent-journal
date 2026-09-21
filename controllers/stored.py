@@ -67,12 +67,18 @@ class Stored:
         except OSError:
             raise Refused(f"no {self.type} {n}")
         if self.resource.loading != MEMORY:
-            return self.resource.load(p.read_text())
+            return self._parsed(p, n)
         stamp = (found.st_mtime_ns, found.st_size)
         held = HELD.get(str(p))
         if not held or held[0] != stamp:
-            held = HELD[str(p)] = (stamp, self.resource.load(p.read_text()))
+            held = HELD[str(p)] = (stamp, self._parsed(p, n))
         return held[1]
+
+    def _parsed(self, p: Path, n: int) -> Resource:
+        try:
+            return self.resource.load(p.read_text())
+        except ValueError:
+            raise Refused(f"{self.type} {n} is damaged: {p}")
 
     def _warm(self) -> None:
         if self.resource.loading == LAZY:
@@ -84,7 +90,7 @@ class Stored:
     def _every(self, deleted: bool = False) -> list[Resource]:
         memo = self.record.memo
         if memo is None or (self.type, deleted) not in memo:
-            rows = [self.load(n) for n in self.numbers()]
+            rows = [self.load(row["n"]) for row in self.summaries()]
             rows = newest_parts([r for r in rows if deleted or not r.deleted], lambda r: r.data.get(PART_OF))
             if memo is None:
                 return rows
