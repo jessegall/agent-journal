@@ -294,6 +294,11 @@ class Provider(ABC):
     def is_subagent(self, hook) -> bool:
         return False
 
+    def read_ahead(self, path: Path) -> None:
+        self.transcript(path)
+        self.loaded_skills(path)
+        self.recent(path)
+
     def loaded_skills(self, path: Path) -> dict[str, float]:
         return dict(self.folded(path, self.skill_loads, dict))
 
