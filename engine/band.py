@@ -7,6 +7,7 @@ from pathlib import Path
 
 from controllers.types import Agents
 from engine.record import Record
+from engine.version import version
 from engine.viewer import marked, running
 from resources.base import SYSTEM
 
@@ -229,15 +230,16 @@ class Band:
         return f"{ESC}[{1 if bold else 22}m{ESC}[38;2;245;246;250m" + "".join(cells) + RESET
 
     def banner(self, cols: int, env: str, agent: dict) -> str:
-        left = max(0, (cols - len(BRAND)) // 2)
+        brand = f"{BRAND} {version()}".strip()
+        left = max(0, (cols - len(brand)) // 2)
         clock = datetime.now().strftime("%H:%M:%S")
         left_text = f"{self.project} · {env}"
         right_text = f"context {round(float(agent.get('context') or 0))}% · {clock}"
         text = list(" " * cols)
         text[2:min(cols, 2 + len(left_text))] = left_text[:max(0, cols - 2)]
-        text[left:min(cols, left + len(BRAND))] = BRAND[:max(0, cols - left)]
+        text[left:min(cols, left + len(brand))] = brand[:max(0, cols - left)]
         right = max(2, cols - len(right_text) - 2)
-        if right > left + len(BRAND):
+        if right > left + len(brand):
             text[right:min(cols, right + len(right_text))] = right_text[:max(0, cols - right)]
         return self.painted(text, cols, bold=True)
 

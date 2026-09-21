@@ -92,3 +92,11 @@ def test_the_band_tracks_the_cursor_through_keyboard_codes_and_scroll_regions():
     assert (cursor.row, cursor.col) == (5 + ROWS, 3), "a private-parameter code prints nothing, so the column stays put"
     cursor.feed(Translator(40).feed(b"\x1b[H\x1b[2;30r"))
     assert (cursor.row, cursor.col) == (ROWS + 1, 1), "setting a region homes the cursor to the top of the agent's screen, below the band"
+
+
+def test_the_header_names_the_installed_version(tmp_path):
+    import re
+    from engine.band import Band
+    from engine.version import version
+    shown = re.sub(r"\x1b\[[0-9;]*m", "", Band(tmp_path, "main", "claude-1", "project").banner(120, "main", {}))
+    assert f"JOURNAL {version()}" in shown, shown
