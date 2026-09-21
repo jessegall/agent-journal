@@ -190,10 +190,11 @@ class Feature(ABC):
     def mine(self, agent) -> bool:
         return self.runs_for_subagents or not agent.subagent
 
+    def live(self, record) -> list:
+        return [agent for agent in Agents(record, actor=SYSTEM)._standing() if self.mine(agent)]
+
     def hold(self, record, why: str, key: str = "") -> None:
-        for agent in Agents(record, actor=SYSTEM)._every():
-            if not self.mine(agent):
-                continue
+        for agent in self.live(record):
             f = gate_file(record.root, record.env, agent.title)
             held = read_json(f, {})
             if held.get(self.keyed(key), "") != why:
