@@ -31,6 +31,25 @@ class Behaviour:
         return {"title": self.title, "abstract": self.abstract, "default": self.default, "trigger": dict(self.trigger)}
 
 
+SWITCHES: dict[str, dict] = {}
+
+
+def booted(record) -> dict[str, bool]:
+    SWITCHES[str(record.home)] = {row.title: bool(row.enabled) for row in Features(record, actor=SYSTEM)._every() if not row.deleted}
+    return SWITCHES[str(record.home)]
+
+
+def switches(record) -> dict[str, bool]:
+    return SWITCHES.get(str(record.home)) or booted(record)
+
+
+def rebooted(event=None, record=None) -> None:
+    if record is None:
+        SWITCHES.clear()
+    else:
+        booted(record)
+
+
 MARKS: dict[str, str] = {}
 
 
@@ -126,14 +145,8 @@ class Feature(ABC):
     def on_for(cls, record) -> bool:
         if cls.fixed:
             return True
-        memo, key = getattr(record, "memo", None), ("on", cls.name)
-        if memo is not None and key in memo:
-            return memo[key]
-        row = Features(record, actor=SYSTEM).named(cls.name)
-        on = bool(row.enabled) if row else record.features.get(cls.name, cls.default_for(record.root))
-        if memo is not None:
-            memo[key] = on
-        return on
+        found = switches(record)
+        return found[cls.name] if cls.name in found else record.features.get(cls.name, cls.default_for(record.root))
 
     def enabled(self, record) -> bool:
         return self.on_for(record)

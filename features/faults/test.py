@@ -38,7 +38,7 @@ def test_a_fast_request_is_never_reported():
     assert told(record) == []
 
 
-def test_going_over_twice_updates_the_one_row():
+def test_going_over_twice_within_a_minute_writes_one_row_once():
     features.load()
     record = fresh()
     turned(record, True)
@@ -46,7 +46,7 @@ def test_going_over_twice_updates_the_one_row():
         with FEATURES["faults"].watched(record.root, record.env, "command", "message all"):
             time.sleep(0.08)
     rows = Notifications(record, actor=SYSTEM)._every()
-    assert len(rows) == 1 and rows[0].data["times"] == 2, [(r.title, r.data) for r in rows]
+    assert len(rows) == 1 and rows[0].data["times"] == 1, "a second overrun within the minute is not written again"
 
 
 def test_the_budget_is_tunable_per_environment():

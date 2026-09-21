@@ -5,6 +5,8 @@ from engine import bus
 
 HERE = Path(__file__).parent
 FEATURES: dict[str, object] = {}
+SWITCHED: list = []
+CHANGE_SWITCHES = ("feature", "plugin")
 
 
 def names() -> list[str]:
@@ -21,10 +23,13 @@ def load(root: Path | None = None) -> list[str]:
             for alias in cls.aliases:
                 old, key = alias if isinstance(alias, tuple) else (alias, "")
                 rename(root, old, f"{name}.{key}" if key else name)
+    from features.base import rebooted
     for name, cls in REGISTRY.items():
         if name not in FEATURES:
             FEATURES[name] = cls()
             FEATURES[name].register()
+    if not SWITCHED:
+        SWITCHED.extend(bus.on(kind, rebooted) for kind in CHANGE_SWITCHES)
     if root:
         seat(root)
     return sorted(FEATURES)
@@ -33,9 +38,11 @@ def load(root: Path | None = None) -> list[str]:
 def seat(root: Path) -> None:
     from controllers.types import Features
     from engine.record import Record
+    from features.base import booted
     from resources.base import SYSTEM
     for home in sorted(p for p in (Path(root) / "environments").glob("*") if p.is_dir()):
-        rows = Features(Record(root, home.name), actor=SYSTEM)
+        record = Record(root, home.name)
+        rows = Features(record, actor=SYSTEM)
         known = {r.title: r for r in rows._every()}
         for name, feature in FEATURES.items():
             if name not in known:
@@ -45,10 +52,12 @@ def seat(root: Path) -> None:
                 rows.update(row.n, enabled=False, missing=True)
             elif name in FEATURES and row.missing:
                 rows.update(row.n, missing=False)
+        booted(record)
 
 
 def unload() -> None:
     from controllers.base import COMMANDS, HANDLERS
+    from features.base import rebooted
     from engine.hooks import POLICIES
     from features.format import FORMATTERS
     COMMANDS.clear()
@@ -57,7 +66,15 @@ def unload() -> None:
     bus.clear()
     POLICIES.clear()
     FEATURES.clear()
+    SWITCHED.clear()
+    rebooted()
 
 
 def describe() -> dict:
     return {name: f.describe() for name, f in FEATURES.items()}
+
+
+def passed(event, record) -> None:
+    from features.base import rebooted
+    if event.type in CHANGE_SWITCHES:
+        rebooted(event, record)
