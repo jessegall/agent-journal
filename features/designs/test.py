@@ -32,3 +32,16 @@ def test_edits_change_the_open_revision_and_a_kept_one_never_changes():
     assert [(d.data["revision"], d.data["part_of"]) for d in docs.all()] == [(3, design.ref)], "the design is listed among the docs once, as its latest revision"
     assert docs.search("two") == [], "an earlier revision is read through its design, never found on its own"
     assert [r.title for r in mine.search("events")] == ["How handlers and events are written"], "the design itself is found"
+
+
+def test_a_doc_is_turned_into_a_design_whose_first_revision_it_is():
+    record = fresh()
+    docs = Docs(record, actor=AGENT)
+    doc = docs.create("How the engine runs")
+    docs.section(doc.n, "Loop", "one tick a second")
+    designs = Designs(record, actor=AGENT)
+    design = designs.from_doc(doc.n)
+    assert (design.revisions, docs.load(doc.n).data["part_of"], [s["title"] for s in design.sections]) == ([doc.n], design.ref, ["Loop"]), \
+        "the doc is revision 1 and the design starts from its parts"
+    assert designs.section(design.n, "Loop", "one tick every second").revisions == [doc.n], "the open revision is edited in place"
+    assert refused(lambda: designs.from_doc(doc.n)).startswith(f"doc {doc.n} is already revision 1"), "a tracked doc cannot be tracked twice"
