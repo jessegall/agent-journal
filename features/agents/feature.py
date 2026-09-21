@@ -87,9 +87,11 @@ class AgentsFeature(Feature):
     def lapsed(self, event, record) -> None:
         if not self.on(record, "subagents"):
             return
+        rows = {a.title: a for a in self.rows(record)._standing() if a.status == SUBAGENT}
+        if not rows:
+            return
         limit = record.agents.get(self.LAPSE, LAPSE_MINUTES) * 60
         todos = Todos(record, actor=SYSTEM)
-        rows = {a.title: a for a in self.rows(record)._every() if a.status == SUBAGENT}
         for t in todos._standing():
             who = t.assigned
             if not who or who not in rows or time.time() - float(rows[who].active or 0) < limit:

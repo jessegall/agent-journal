@@ -50,7 +50,7 @@ class MessagesFeature(Feature):
     @event("agent.updated")
     def remind(self, event, record) -> None:
         agent = self.agent(event, record)
-        if not Messages(record, actor=SYSTEM).unread(AGENT):
+        if not any(AGENT not in row["seen"] and not row["completed"] and not row["deleted"] for row in Messages(record, actor=SYSTEM).summaries()):
             self.release(record, "unread")
             trigger.write(record, agent, self.keyed("unread"), count=0)
             return
