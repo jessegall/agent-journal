@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.78.3 — Agents handle the journal quietly
+
+Messages 1960 and 1962, to-do 696. Agents filled the chat with the journal's own mechanics: "I received the journal notification", "the journal server returned no payload", "I'll send the required journal reply". The first message every session is handed, at its start and again after a compaction, now says right under its opening line: handle the journal quietly, talk only about the user's work, never mention the journal's notifications, nudges, hooks, skills or replies, and never announce reading, replying, loading or logging, just do it.
+
+What to do about it: `journal upgrade`. Sessions pick it up at their next start or compaction.
+
 ## 2.78.2 — The Templates page
 
 Design 2, to-do 636. Templates have their page under Project in the sidebar, with Open and Retired tabs and a New template button. A template opens in the same panel every row uses: its instructions, its parts, Edit, and now a Made for line naming the types it is for, or "any kind of row" when it is for all.

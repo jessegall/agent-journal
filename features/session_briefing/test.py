@@ -1,6 +1,6 @@
 
 from controllers.types import Docs, Facts, Rules, Todos, Works
-from engine.queries import carry, start_block, status
+from engine.queries import QUIET, carry, start_block, status
 from engine.hooks import handle
 from providers import PROVIDERS
 from resources.base import AGENT, USER
@@ -22,7 +22,7 @@ def test_the_start_block_names_the_environment_rules_pins_work_docs_and_todos():
     block = f.read_text()
     assert block == start_block(record), "every write rewrites the start block"
     assert [line for line in block.splitlines() if line and not line.startswith("  ")] == \
-        ["THE JOURNAL IS IN FORCE HERE — this session is bound to environment `t`.", "LAWS THE JOURNAL SHIPS, always in force:",
+        ["THE JOURNAL IS IN FORCE HERE — this session is bound to environment `t`.", QUIET, "LAWS THE JOURNAL SHIPS, always in force:",
          "STILL OPEN, from this or an earlier session (1):", "RULES, in force on every environment (1):", "FACTS about this environment (1):",
          "DOCS catalogued — read one before you re-investigate what it settles (1):", "1 TO-DOS waiting — delayed work, not an instruction to start any of it."], \
         "it says the environment, the rules, the pins, the open work, the docs and the count of to-dos"
