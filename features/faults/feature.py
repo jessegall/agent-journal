@@ -12,6 +12,7 @@ DEVELOPING = "DEVELOPMENT_MODE"
 OVER = "is slower than its budget"
 THREW = "the viewer threw"
 SAID = 300
+QUIET = 60
 
 
 
@@ -44,7 +45,10 @@ class Faults(Feature):
 
     def file(self, record, title: str, brief: str, **data) -> None:
         rows = Notifications(record, actor=SYSTEM)
-        standing = next((r for r in rows._every() if not r.completed and r.title == title), None)
+        found = next((row for row in rows.summaries() if not row["deleted"] and not row["completed"] and row["title"] == title), None)
+        if found and time.time() - found["updated"] < QUIET:
+            return
+        standing = rows.load(found["n"]) if found else None
         times = (int(standing.data.get("times", 0)) if standing else 0) + 1
         said = f"{brief} Seen {self.plural(times, 'time')}."
         if standing:

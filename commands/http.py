@@ -630,16 +630,37 @@ def get_stream(req: Request) -> Reply:
     return Reply(200, kind="text/event-stream", chunks=chunks())
 
 
-@route("GET", "/api/{env}/{type}")
-def get_all(req: Request) -> Reply:
-    controller = req.controller()
-    last = int(req.query["last"]) if "last" in req.query else LAST
-    completed = req.query.get("completed") in ("1", "true")
-    before = int(req.query.get("before") or 0)
+def listing(controller, record, query: dict) -> dict:
+    last = int(query["last"]) if "last" in query else LAST
+    completed = query.get("completed") in ("1", "true")
+    before = int(query.get("before") or 0)
     rows = [row for row in controller.summaries() if not row["deleted"] and (completed or not row["completed"])
             and (not before or row["n"] < before)]
     kept = rows[-last:] if last else rows
-    return Reply(200, {"rows": [shaped(controller.load(row["n"]), req.record()) for row in kept], "more": len(rows) > len(kept)})
+    return {"rows": [shaped(controller.load(row["n"]), record) for row in kept], "more": len(rows) > len(kept)}
+
+
+def counted(record) -> dict:
+    out = {}
+    for type_, controller in CONTROLLERS.items():
+        standing = [row for row in controller(record, actor=USER).summaries() if not row["deleted"] and not row["completed"]]
+        out[type_] = {"open": len(standing), "unread": sum(USER not in (row.get("seen") or []) for row in standing)}
+    return out
+
+
+@route("GET", "/api/{env}/dashboard")
+def get_dashboard(req: Request) -> Reply:
+    record = req.record()
+    wanted = [t for t in (req.query.get("types") or "").split(",") if t in CONTROLLERS]
+    lists = {t: listing(CONTROLLERS[t](record, actor=USER), record, req.query) for t in wanted}
+    whole = "events" in req.query
+    return Reply(200, {"rows": lists, "counts": counted(record), **({"events": [asdict(e) for e in record.events(0, int(req.query["events"] or 0))],
+                                           "settings": settings(record)} if whole else {})})
+
+
+@route("GET", "/api/{env}/{type}")
+def get_all(req: Request) -> Reply:
+    return Reply(200, listing(req.controller(), req.record(), req.query))
 
 
 @route("POST", "/api/{env}/{type}")
