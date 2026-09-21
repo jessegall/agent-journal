@@ -8,6 +8,7 @@ from engine.package import modules
 
 FEATURES: dict[str, object] = {}
 SWITCHED: list = []
+RENAMED: set[str] = set()
 CHANGE_SWITCHES = ("feature", "plugin")
 
 
@@ -21,7 +22,8 @@ def load(root: Path | None = None) -> list[str]:
     from features.renames import rename
     for name in names():
         importlib.import_module(f"features.{name}.feature")
-    if root:
+    if root and str(root) not in RENAMED:
+        RENAMED.add(str(root))
         for name, cls in REGISTRY.items():
             for alias in cls.aliases:
                 old, key = alias if isinstance(alias, tuple) else (alias, "")
