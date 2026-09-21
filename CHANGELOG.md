@@ -4,6 +4,14 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.24.0 — Plans are built step by step, and a plan shows all its rows
+
+An agent writing a plan was not told how one is built, and left plans half made. The plans feature now names the next step while a plan is being built: add its phases, then `journal plan stage <n> todos`, then put each phase's rows under it, then `journal plan ready <n>`. The plans skill and the journal skill spell out the same order.
+
+A plan whose to-dos were not among the latest 25 open rows showed placeholders, or 0/0, in place of its phases' rows. A listing can now be asked for rows by number (`?n=1,2,3`), and the plan page fetches the rows it is missing. Reported and first written by the transportklok session.
+
+What to do about it: `journal upgrade`.
+
 ## 2.23.8 — The faults feature says a fault with one line
 
 The faults feature had two lines, `slow` and `fault`, with the same words: one for what it tells the agent, one for what it files for the user. They are one line, `fault`, now.
