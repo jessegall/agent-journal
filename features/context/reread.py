@@ -1,11 +1,11 @@
 import time
 
-from controllers.types import Pins, Rules
+from controllers.types import Facts, Rules
 from resources.base import SYSTEM
 
 
 def standing(record) -> list:
-    return [r for controller in (Rules, Pins) for r in controller(record, actor=SYSTEM).all() if not r.completed]
+    return [r for controller in (Rules, Facts) for r in controller(record, actor=SYSTEM).all() if not r.completed]
 
 
 def owed(record, days: int = 7) -> bool:

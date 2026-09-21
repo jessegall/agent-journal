@@ -85,18 +85,18 @@ class Report(Shape, Resource):
     view = DOCUMENT
 
 
-class Pin(Reasoned, Resource):
-    type = "pin"
-    shown = {"completed": "Pin struck"}
+class Fact(Reasoned, Resource):
+    type = "fact"
+    shown = {"completed": "Fact struck"}
     says = {"complete": "striking"}
-    handed = "PINS on this environment"
+    handed = "FACTS about this environment"
     lent = False
     attention = True
     icon = "pin"
     names = {"complete": "strike"}
-    title_ = "Pin"
-    abstract_ = "A fact a later session would get wrong without"
-    help_ = "A pin is handed to every session on its environment; it is struck when it stops being true."
+    title_ = "Fact"
+    abstract_ = "Something true about this environment that a later session would get wrong without"
+    help_ = "A fact is handed to every session on its environment; it is struck when it stops being true."
 
 
 class Rule(Reasoned, Resource):
@@ -356,5 +356,5 @@ def register(*classes) -> None:
     TYPES.update({c.type: c for c in classes})
 
 
-TYPES = {c.type: c for c in (Message, Todo, Work, Doc, Report, Pin, Rule, Reminder, Question, Suggestion, Comment, AgentRow, Notification, Notice, Reaction, Tool, Connection, Plugin, Environment, Ask, Nudge, FeatureRow)}
-PRIORITY = ("message", "question", "suggestion", "comment", "plan", "todo", "report", "doc", "pin", "rule", "reminder", "notice", "reaction", "tool", "connection", "plugin", "environment", "work", "agent", "notification", "browser", "nudge", "feature")
+TYPES = {c.type: c for c in (Message, Todo, Work, Doc, Report, Fact, Rule, Reminder, Question, Suggestion, Comment, AgentRow, Notification, Notice, Reaction, Tool, Connection, Plugin, Environment, Ask, Nudge, FeatureRow)}
+PRIORITY = ("message", "question", "suggestion", "comment", "plan", "todo", "report", "doc", "fact", "rule", "reminder", "notice", "reaction", "tool", "connection", "plugin", "environment", "work", "agent", "notification", "browser", "nudge", "feature")

@@ -4,7 +4,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 import features  # noqa: E402
-from controllers.types import Pins, Questions, Reminders, Rules, Todos  # noqa: E402
+from controllers.types import Facts, Questions, Reminders, Rules, Todos  # noqa: E402
 from features.cleanup.audit import evidence  # noqa: E402
 from features.context.reread import owed as read_owed, standing  # noqa: E402
 from resources.base import AGENT, USER  # noqa: E402
@@ -18,7 +18,7 @@ record = fresh()
 project = record.root.parent
 (project / "v2").mkdir()
 (project / "v2" / "serve.py").write_text("")
-pins = Pins(record, actor=AGENT)
+pins = Facts(record, actor=AGENT)
 rules = Rules(record, actor=USER)
 pins.create("the server is v2/serve.py")
 pins.create("the launcher was launch.py", brief="see old/launch.py for the relay")
@@ -27,14 +27,14 @@ rules.create("journal disable must only run when the user asks")
 rules.create("A journal capability that fits in a few words is a feature")
 pins.create("the package is at the root", brief="the journal is copied into each project")
 Reminders(record, actor=USER).create("run tests/old.py first")
-check("nothing wrong with a claim whose file exists and whose verbs are known", [e["ref"] for e in evidence(record) if e["ref"] == "pin:1"], [])
+check("nothing wrong with a claim whose file exists and whose verbs are known", [e["ref"] for e in evidence(record) if e["ref"] == "fact:1"], [])
 found = evidence(record)
-check("a claim naming a file that is gone", [(e["ref"], e["evidence"]) for e in found if e["ref"] == "pin:2"], [("pin:2", "names launch.py, which is gone"), ("pin:2", "names old/launch.py, which is gone")])
+check("a claim naming a file that is gone", [(e["ref"], e["evidence"]) for e in found if e["ref"] == "fact:2"], [("fact:2", "names launch.py, which is gone"), ("fact:2", "names old/launch.py, which is gone")])
 check("a claim naming a verb the CLI lacks, with the command that retires it", [(e["evidence"], e["retire"]) for e in found if e["ref"] == "rule:1"], [("names journal frobnicate, which the CLI does not answer to", 'journal rule 1 strike "<why>"')])
-check("top-level commands and ordinary journal prose are not evidence", [e["ref"] for e in found if e["ref"] in ("rule:2", "rule:3", "pin:3")], [])
+check("top-level commands and ordinary journal prose are not evidence", [e["ref"] for e in found if e["ref"] in ("rule:2", "rule:3", "fact:3")], [])
 check("a reminder naming a missing file", [e["evidence"] for e in found if e["ref"] == "reminder:1"], ["names tests/old.py, which is gone"])
 pins.complete(2, "struck")
-check("a struck claim has no evidence", [e for e in evidence(record) if e["ref"] == "pin:2"], [])
+check("a struck claim has no evidence", [e for e in evidence(record) if e["ref"] == "fact:2"], [])
 
 # A ROW WAITING ON THE USER too long
 todos = Todos(record, actor=USER)
@@ -50,9 +50,9 @@ check("eight days waiting: evidence", [e["evidence"] for e in evidence(record) i
 # THE READING PASS is owed until done, and records when it ran
 check("a young record owes no reading pass yet", read_owed(record), False)
 check("a week after its first event, never read: owed", read_owed(record, days=0), True)
-check("the pass covers every standing rule and pin", sorted(r.ref for r in standing(record)), ["pin:1", "pin:3", "rule:1", "rule:2", "rule:3"])
+check("the pass covers every standing rule and pin", sorted(r.ref for r in standing(record)), ["fact:1", "fact:3", "rule:1", "rule:2", "rule:3"])
 said = features.FEATURES["context"].reread(Rules(record))
-check("rule reread prints each of them in full", [said.count(f"{kind} {n}  ") for kind, n in (("pin", 1), ("pin", 3), ("rule", 1), ("rule", 2), ("rule", 3))], [1, 1, 1, 1, 1])
+check("rule reread prints each of them in full", [said.count(f"{kind} {n}  ") for kind, n in (("fact", 1), ("fact", 3), ("rule", 1), ("rule", 2), ("rule", 3))], [1, 1, 1, 1, 1])
 check("read: no longer owed", read_owed(record), False)
 
 # SAID ONCE A DAY

@@ -3,7 +3,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 import features  # noqa: E402
-from controllers.types import Nudges, Pins, Rules  # noqa: E402
+from controllers.types import Nudges, Facts, Rules  # noqa: E402
 from engine.hooks import handle, whispered  # noqa: E402
 from providers import PROVIDERS  # noqa: E402
 from resources.base import USER  # noqa: E402
@@ -25,7 +25,7 @@ def said(session="claude-1"):
 
 
 rule = Rules(record, actor=USER).create("Never change the git branch", brief="A branch change belongs to the user", keywords=["git checkout", "git switch"])
-pin = Pins(record, actor=USER).create("The viewer is built from web/", brief="web/dist is what the server serves", keywords=["npm run build"])
+pin = Facts(record, actor=USER).create("The viewer is built from web/", brief="web/dist is what the server serves", keywords=["npm run build"])
 
 # A COMMAND THAT TOUCHES A RULE is whispered the rule, and the command still runs
 check("a command with none of the words says nothing", (use("Bash", {"command": "ls -la"}), said()), ({}, ""))

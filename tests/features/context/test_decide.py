@@ -3,7 +3,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 import features  # noqa: E402
-from controllers.types import Agents, Pins, Rules, Works  # noqa: E402
+from controllers.types import Agents, Facts, Rules, Works  # noqa: E402
 from features.base import held  # noqa: E402
 from resources.base import AGENT, SYSTEM  # noqa: E402
 from tests.features.kit import nudges as all_nudges, report  # noqa: E402
@@ -22,7 +22,7 @@ report(record, "working", "PostToolUse", context=52)
 check("50 crossed: a hold on writes and a nudge to decide", (gate(), nudges(record)), ('context 52% full — decide before any other write — journal pin, journal rule, or journal nothing "<why>"', ["context 52% full, decide"]))
 report(record, "working", "PostToolUse", context=60)
 check("between marks: the hold stands, nothing new said", (bool(gate()), len(nudges(record))), (True, 1))
-Pins(record, actor=AGENT).create("what a later reader needs")
+Facts(record, actor=AGENT).create("what a later reader needs")
 check("a pin decides it: released", gate(), "")
 report(record, "working", "PostToolUse", context=71)
 check("70 crossed: asked again", len(nudges(record)), 2)

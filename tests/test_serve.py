@@ -43,7 +43,7 @@ check("a type says what its list can be narrowed to, and what each tab is called
 check("a type says what takes it off the user's list",
       (sorted(name for name, t in m["types"].items() if t["clears"] == "completed"), m["types"]["message"]["clears"], m["types"]["report"]["clears"]),
       (["question", "suggestion"], "opened", "cleared"))
-check("a type says how its events read in the viewer", (m["types"]["work"]["shown"]["created"], m["types"]["pin"]["shown"]["completed"]),
+check("a type says how its events read in the viewer", (m["types"]["work"]["shown"]["created"], m["types"]["fact"]["shown"]["completed"]),
       ("Work started", "Pin struck"))
 code, files = call("GET", "/api/main/files")
 check("the files route lists every attachment on the environment, newest first, with where it hangs", (code, isinstance(files, list)), (200, True))

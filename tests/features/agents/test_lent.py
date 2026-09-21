@@ -45,7 +45,7 @@ runner = agents.by_session("runner-1")
 check("the agent row exists from the first write, stamped active, as a subagent", (runner.data.get("status"), runner.data.get("active", 0) > 0), ("subagent", True))
 
 # THE REFUSED VERBS: a rule binds every environment; a pin is inherited
-code, out = cli("pin", "create", "a fact from a subagent", agent="runner-1")
+code, out = cli("fact", "create", "a fact from a subagent", agent="runner-1")
 check("a pin is not a subagent's to write", (code, out), (1, "! a subagent never writes a pin: report it, and the main conversation files it"))
 code, out = cli("rule", "create", "a ruling from a subagent", agent="runner-1")
 check("nor a rule", code, 1)

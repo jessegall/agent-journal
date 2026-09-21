@@ -3,7 +3,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 import features  # noqa: E402
-from controllers.types import Docs, Pins, Rules, Todos, Works  # noqa: E402
+from controllers.types import Docs, Facts, Rules, Todos, Works  # noqa: E402
 from engine.queries import carry, start_block, status  # noqa: E402
 from engine.hooks import handle  # noqa: E402
 from providers import PROVIDERS  # noqa: E402
@@ -16,7 +16,7 @@ features.load()
 record = fresh()
 f = record.root / "runtime" / f"start-{record.env}.md"
 Rules(record, actor=USER).create("name the model on every dispatch")
-Pins(record, actor=AGENT).create("v2 imports nothing old")
+Facts(record, actor=AGENT).create("v2 imports nothing old")
 Works(record, actor=AGENT).create("the header")
 Docs(record, actor=AGENT).create("The engine", abstract="the loop from A to Z")
 Todos(record, actor=USER).create("later")
