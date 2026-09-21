@@ -37,8 +37,11 @@ def read(folder: Path, version: str = "") -> dict:
     name = str(given.get("name") or "")
     if not NAME.fullmatch(name):
         raise Refused(f"plugin.json: name must be 2-32 lowercase letters, digits or dashes, got {name!r}")
-    if name in REGISTRY:
-        raise Refused(f"plugin.json: name {name!r} is a built-in feature")
+    taken = {**{n: n for n in REGISTRY},
+             **{old if isinstance(old, str) else old[0]: n for n, cls in REGISTRY.items() for old in cls.aliases}}
+    if name in taken:
+        raise Refused(f"plugin.json: name {name!r} is a built-in feature"
+                      + (f", which {taken[name]} used to be called" if taken[name] != name else ""))
     wanted = str(given.get("journal") or "")
     if wanted and version and newer(wanted, version):
         raise Refused(f"{name} needs journal {wanted} or newer; this is {version} — run journal upgrade")
