@@ -1,6 +1,7 @@
 import argparse
 import contextlib
 import inspect
+from contextlib import nullcontext
 import io
 import json
 import os
@@ -12,7 +13,6 @@ from pathlib import Path
 from controllers.base import COMMANDS
 from controllers.types import Agents, CONTROLLERS
 import features
-from features.faults.feature import watched
 import migrations
 from engine import queries
 from engine.drivers import DRIVERS
@@ -410,7 +410,8 @@ def run(argv: list[str], out=None, err=None) -> int:
             if why:
                 raise Refused(why)
         controller = CONTROLLERS[command](ctx["record"], actor=ctx["actor"], session=ctx["session"], agent=ctx["agent"], force=ctx["force"])
-        with watched(ctx["record"].root, ctx["record"].env, "command", f"{command} {method}"):
+        faults = features.FEATURES.get("faults")
+        with faults.watched(ctx["record"].root, ctx["record"].env, "command", f"{command} {method}") if faults else nullcontext():
             got = invoke(controller.action(method), args, extra)
     except Refused as e:
         print(f"! {e}", file=err)

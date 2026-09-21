@@ -77,10 +77,10 @@ class Migration:
                            completed=when(fields.get("done")), outcome=fields.get("how", ""), blocked=fields.get("blocked", ""),
                            priority=int(fields["priority"]) if fields.get("priority", "").isdigit() else None,
                            refs=[f"todo:{n}" for n in re.findall(r"\d+", fields.get("after", ""))])
-        if self.fresh(record, "pin"):
+        if self.fresh(record, "fact"):
             for i, p in enumerate(load_json(home / "pins.json", "pins"), 1):
                 body = (home / "pins" / p["body"]).read_text().strip() if p.get("body") and (home / "pins" / p["body"]).is_file() else ""
-                self.write(record, "pin", i, p["fact"], brief=body, actor=AGENT, created=when(p.get("at")), completed=when(p.get("struck_at")) or (time.time() if p.get("struck") else 0.0), outcome=p.get("struck") or "")
+                self.write(record, "fact", i, p["fact"], brief=body, actor=AGENT, created=when(p.get("at")), completed=when(p.get("struck_at")) or (time.time() if p.get("struck") else 0.0), outcome=p.get("struck") or "")
         if self.fresh(record, "reminder"):
             for i, r in enumerate(load_json(home / "reminders.json", "reminders"), 1):
                 self.write(record, "reminder", i, r["text"], created=when(r.get("at")), completed=when(r.get("done")), until=r.get("until", ""))

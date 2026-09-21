@@ -39,7 +39,7 @@ def seat(root: Path) -> None:
         known = {r.title: r for r in rows._every()}
         for name, feature in FEATURES.items():
             if name not in known:
-                rows.create(name, enabled=feature.default)
+                rows.create(name, enabled=feature.default_for(root))
         for name, row in known.items():
             if name not in FEATURES and not row.missing:
                 rows.update(row.n, enabled=False, missing=True)

@@ -2,7 +2,8 @@ import time
 
 import features
 from controllers.types import Features, Notifications
-from features.faults.feature import Faults, threw, watched
+from features import FEATURES
+from features.faults.feature import Faults
 from resources.base import SYSTEM
 from tests.conftest import fresh
 
@@ -18,11 +19,12 @@ def told(record):
 def test_a_slow_request_is_reported_only_when_the_budget_is_on():
     features.load()
     record = fresh()
-    with watched(record.root, record.env, "request", "GET /api/main/message"):
+    turned(record, False)
+    with FEATURES["faults"].watched(record.root, record.env, "request", "GET /api/main/message"):
         time.sleep(0.08)
-    assert told(record) == [], "off by default, so nothing should be filed"
+    assert told(record) == [], "switched off, nothing is filed"
     turned(record, True)
-    with watched(record.root, record.env, "request", "GET /api/main/message"):
+    with FEATURES["faults"].watched(record.root, record.env, "request", "GET /api/main/message"):
         time.sleep(0.08)
     assert told(record) == ["request GET /api/main/message is slower than its budget"], told(record)
 
@@ -31,7 +33,7 @@ def test_a_fast_request_is_never_reported():
     features.load()
     record = fresh()
     turned(record, True)
-    with watched(record.root, record.env, "request", "GET /api/main/fact"):
+    with FEATURES["faults"].watched(record.root, record.env, "request", "GET /api/main/fact"):
         pass
     assert told(record) == []
 
@@ -41,7 +43,7 @@ def test_going_over_twice_updates_the_one_row():
     record = fresh()
     turned(record, True)
     for _ in range(2):
-        with watched(record.root, record.env, "command", "message all"):
+        with FEATURES["faults"].watched(record.root, record.env, "command", "message all"):
             time.sleep(0.08)
     rows = Notifications(record, actor=SYSTEM)._every()
     assert len(rows) == 1 and rows[0].data["times"] == 2, [(r.title, r.data) for r in rows]
@@ -52,7 +54,7 @@ def test_the_budget_is_tunable_per_environment():
     record = fresh()
     turned(record, True)
     record.budget = {"request": 0}
-    with watched(record.root, record.env, "request", "GET /api/main/message"):
+    with FEATURES["faults"].watched(record.root, record.env, "request", "GET /api/main/message"):
         time.sleep(0.08)
     assert told(record) == [], "a budget of 0 drops that budget"
     assert Faults().milliseconds(record, "command") == 50
@@ -61,8 +63,9 @@ def test_the_budget_is_tunable_per_environment():
 def test_what_the_viewer_throws_is_filed_under_the_same_switch():
     features.load()
     record = fresh()
-    assert threw(record.root, record.env, "agents.some is not a function", "Sidebar.vue", "at r") is False, \
-        "off by default, so nothing is filed"
+    turned(record, False)
+    assert FEATURES["faults"].heard(record.root, record.env, "agents.some is not a function", "Sidebar.vue", "at r") is False, \
+        "switched off, nothing is filed"
     turned(record, True)
-    assert threw(record.root, record.env, "agents.some is not a function", "Sidebar.vue", "at r") is True
+    assert FEATURES["faults"].heard(record.root, record.env, "agents.some is not a function", "Sidebar.vue", "at r") is True
     assert told(record) == ["the viewer threw agents.some is not a function"], told(record)
