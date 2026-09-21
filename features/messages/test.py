@@ -88,9 +88,8 @@ def test_unread_messages_are_nudged_with_growing_urgency_until_the_inbox_is_read
 
     assert all(n.data.get("private") for n in Nudges(record).all() if "inbox" in n.title) is True, \
         "the inbox nudge is private"
+    assert all(n.data.get("session") == "claude-1" for n in Nudges(record).all() if "inbox" in n.title) is True, \
+        "the inbox nudge is meant for its own session, and the engine speaks it"
     provider = PROVIDERS["claude"]()
-    whisper = handle(provider, record.root, record.env, {"hook_event_name": "PostToolUse", "session_id": "claude-1", "tool_name": "Read"})
-    assert ("there are new messages in your inbox" in whisper["hookSpecificOutput"]["additionalContext"], whisper["hookSpecificOutput"]["hookEventName"]) == \
-        (True, "PostToolUse"), "PostToolUse carries the unread private nudges as context and marks them read"
     assert handle(provider, record.root, record.env, {"hook_event_name": "PostToolUse", "session_id": "claude-1", "tool_name": "Read"}) == {}, \
-        "handed once"
+        "the hook only reports; it hands nothing back"

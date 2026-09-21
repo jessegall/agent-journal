@@ -13,8 +13,12 @@ def test_a_command_that_touches_a_rules_keyword_is_whispered_the_rule_once_per_s
     def use(tool, given, session="claude-1"):
         return handle(claude, record.root, record.env, {"hook_event_name": "PreToolUse", "session_id": session, "tool_name": tool, "tool_input": given})
 
+    heard = set()
+
     def said(session="claude-1"):
-        return Nudges(record, actor=AGENT)._whispered(session)
+        fresh_nudges = [n for n in Nudges(record, actor=AGENT)._every() if n.data.get("session") == session and n.n not in heard]
+        heard.update(n.n for n in fresh_nudges)
+        return "\n".join(f"{n.title} — {n.brief}" for n in fresh_nudges)
 
     rule = Rules(record, actor=USER).create("Never change the git branch", brief="A branch change belongs to the user", keywords=["git checkout", "git switch"])
     pin = Facts(record, actor=USER).create("The viewer is built from web/", brief="web/dist is what the server serves", keywords=["npm run build"])

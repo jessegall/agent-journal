@@ -73,8 +73,11 @@ class Engine(Seat):
             if not e.heard:
                 bus.emit(e, self.record)
 
-    def private(self, e) -> bool:
-        return TYPES[e.type].spoken and bool(CONTROLLERS[e.type](self.record, actor=AGENT).load(e.n).private)
+    def elsewhere(self, e) -> bool:
+        if not TYPES[e.type].spoken:
+            return False
+        meant = CONTROLLERS[e.type](self.record, actor=AGENT).load(e.n).data.get("session")
+        return bool(meant) and meant != self.agent.driver.session
 
     def follow(self) -> str:
         last = self.agent.driver.last_report()
@@ -182,7 +185,7 @@ class Engine(Seat):
                     actor.notified(e)
                     continue
                 mine = actor is self.agent and e.actor != USER and e.action not in TYPES[e.type].notify_actions
-                if e.action == STAMPED or e.actor == actor.name or actor.name not in TYPES[e.type].notify or self.private(e) or "seen" in e.data or mine:
+                if e.action == STAMPED or e.actor == actor.name or actor.name not in TYPES[e.type].notify or self.elsewhere(e) or "seen" in e.data or mine:
                     actor.notified(e)
                     continue
                 actor.notify(e)

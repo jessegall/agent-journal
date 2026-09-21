@@ -1,11 +1,11 @@
 import re
 from pathlib import Path
 
-from controllers.types import Agents, Environments, Nudges
+from controllers.types import Agents, Environments
 from engine.actors import IDLE
 from engine.record import Record
 from engine.sessions import Sessions, agent_pid
-from resources.base import AGENT, SYSTEM
+from resources.base import SYSTEM
 from engine import runtime
 from providers.payload import STATUS
 from features.statusline import commands
@@ -77,6 +77,4 @@ def handle(provider, root: Path, env: str, hook) -> dict:
         return provider.response(blocked=f"{why}{alongside(hook)}" if why else "")
     if hook.event == "SessionStart":
         return provider.response(hook.event, start(root, env, provider.compacted(hook)))
-    if hook.event in ("PostToolUse", "UserPromptSubmit"):
-        return provider.response(hook.event, Nudges(record, actor=AGENT)._whispered(row.title))
     return {}
