@@ -1,4 +1,5 @@
 import json
+from datetime import datetime, timezone
 
 
 from controllers.types import Messages, Nudges
@@ -77,3 +78,28 @@ def test_the_last_message_is_read_only_once_claude_has_written_it(tmp_path):
     rows.append({"type": "assistant", "message": {"content": [{"type": "text", "text": "[!reply:3] done"}]}})
     transcript.write_text("\n".join(json.dumps(r) for r in rows) + "\n")
     assert PROVIDERS["claude"]().settling(transcript) is False, "the message is written: it can be read"
+
+
+def test_a_tagged_message_runs_the_moment_the_engine_sees_it_written(tmp_path):
+    from types import SimpleNamespace
+    from controllers.types import Agents, Comments
+    from engine.engine import Engine
+    from providers import DRIVERS
+    from resources.base import SYSTEM
+    record = fresh()
+    transcript = tmp_path / "s.jsonl"
+    now = datetime.now(timezone.utc).isoformat()
+    rows = [{"type": "user", "timestamp": now, "message": {"content": "go"}},
+            {"type": "assistant", "timestamp": now, "message": {"content": [{"type": "text", "text": "[!info] working"}]}}]
+    transcript.write_text("\n".join(json.dumps(r) for r in rows) + "\n")
+    agents = Agents(record, actor=SYSTEM)
+    agents.update(agents.by_session("claude-1").n, provider="claude", transcript=str(transcript), status="working")
+    message = Messages(record, actor="user").create("are you there?")
+    engine = Engine(record, DRIVERS["claude"](record, "claude-99"))
+    engine.agent.driver.last_report = lambda: SimpleNamespace(title="claude-1")
+    engine.heard()
+    rows.append({"type": "assistant", "timestamp": now, "message": {"content": [{"type": "text", "text": f"[!reply:{message.n}] yes, here"}]}})
+    transcript.write_text("\n".join(json.dumps(r) for r in rows) + "\n")
+    engine.heard()
+    assert [c.title for c in Comments(record, actor=SYSTEM).linked_to(message.ref)] == ["yes, here"], \
+        "written mid-turn, no hook fired: the reply is posted as soon as the engine sees it"

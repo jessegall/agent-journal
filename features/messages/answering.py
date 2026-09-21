@@ -7,6 +7,8 @@ def theirs(message) -> bool:
 
 
 def answered(record, message) -> bool:
+    if message.refs or message.sections:
+        return True
     said = Comments(record, actor=SYSTEM).linked_to(message.ref) + Reactions(record, actor=SYSTEM).linked_to(message.ref)
     return any(r.seen[:1] == [AGENT] for r in said)
 
