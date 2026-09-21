@@ -10,6 +10,7 @@ from engine.transcript import Turn
 from providers.payload import Hook
 from resources.base import Refused
 from resources.types import AgentRow, COMMAND, RUNNING
+from engine.stored import tail
 
 WRITES = ("Edit", "Write", "MultiEdit", "NotebookEdit")
 READS = ("Read", "NotebookRead")
@@ -43,6 +44,16 @@ TALLY_FAILED = re.compile(r"\b(?:Failures|Errors): (\d+)")
 BROKE = re.compile(r"^(?:npm ERR!|ERROR in |error TS\d+|Build failed|Compilation failed|.*failed to compile)", re.M | re.I)
 QUOTED = re.compile(r'"(?:[^"\\]|\\.)*"' + r"|'[^']*'")
 JOURNAL_CALL = re.compile(r"(^|[;&|(]\s*|\$\()\S*journal(?:\.py)?\s(?:\"(?:[^\"\\]|\\.)*\"|'[^']*'|\d*>&\d|[^;&|)\n])*")
+
+RECENT: dict[str, tuple] = {}
+RECENT_BYTES = 1_000_000
+
+
+def parsed(line: str):
+    try:
+        return json.loads(line)
+    except ValueError:
+        return None
 
 
 def stamped(commands: list, running: dict, doing: str = "", at: float = 0.0) -> list:
@@ -207,6 +218,18 @@ class Provider(ABC):
 
     def effort(self, project: Path, transcript: Path | None = None) -> str:
         return ""
+
+    def recent(self, path: Path | None) -> list[dict]:
+        try:
+            size = Path(path).stat().st_size
+        except (OSError, TypeError):
+            return []
+        held = RECENT.get(str(path))
+        if held and held[0] == size:
+            return held[1]
+        rows = [row for row in (parsed(line) for line in tail(path, RECENT_BYTES)) if isinstance(row, dict)]
+        RECENT[str(path)] = (size, rows)
+        return rows
 
     def entries(self, path: Path | None) -> list[tuple[int, dict]]:
         try:
