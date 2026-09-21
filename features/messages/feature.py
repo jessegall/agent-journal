@@ -43,7 +43,7 @@ class MessagesFeature(Feature):
 
     @event("message.created")
     def arrived(self, event, record) -> None:
-        for agent in Agents(record, actor=SYSTEM)._every():
+        for agent in Agents(record, actor=SYSTEM)._standing():
             trigger.write(record, agent, self.keyed("unread"), uses=int(agent.uses or 0) - self.behaviours["unread"].trigger["every"])
             trigger.write(record, agent, self.keyed("answering"), uses=int(agent.uses or 0), count=0)
 
