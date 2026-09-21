@@ -15,7 +15,7 @@ import migrations  # noqa: E402
 from commands.http import dispatch  # noqa: E402
 from engine.stop import asked  # noqa: E402
 from engine.viewer import heartbeat, remember  # noqa: E402
-from engine.engine import Engines  # noqa: E402
+from engine.engines import Engines  # noqa: E402
 from controllers.types import warm  # noqa: E402
 
 LOOPBACK = re.compile(r"^http://(127\.0\.0\.1|localhost)(:\d+)?$")
