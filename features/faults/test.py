@@ -2,13 +2,13 @@ import time
 
 import features
 from controllers.types import Features, Notifications
-from features.budget.feature import Budget, watched
+from features.faults.feature import Faults, threw, watched
 from resources.base import SYSTEM
 from tests.conftest import fresh
 
 
 def turned(record, on: bool):
-    Features(record, actor=SYSTEM).switch("budget", on)
+    Features(record, actor=SYSTEM).switch("faults", on)
 
 
 def told(record):
@@ -55,4 +55,14 @@ def test_the_budget_is_tunable_per_environment():
     with watched(record.root, record.env, "request", "GET /api/main/message"):
         time.sleep(0.08)
     assert told(record) == [], "a budget of 0 drops that budget"
-    assert Budget().milliseconds(record, "command") == 50
+    assert Faults().milliseconds(record, "command") == 50
+
+
+def test_what_the_viewer_throws_is_filed_under_the_same_switch():
+    features.load()
+    record = fresh()
+    assert threw(record.root, record.env, "agents.some is not a function", "Sidebar.vue", "at r") is False, \
+        "off by default, so nothing is filed"
+    turned(record, True)
+    assert threw(record.root, record.env, "agents.some is not a function", "Sidebar.vue", "at r") is True
+    assert told(record) == ["the viewer threw agents.some is not a function"], told(record)

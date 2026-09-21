@@ -12,7 +12,7 @@ from pathlib import Path
 from controllers.base import COMMANDS
 from controllers.types import Agents, CONTROLLERS
 import features
-from features.budget.feature import watched
+from features.faults.feature import watched
 import migrations
 from engine import queries
 from engine.drivers import DRIVERS
