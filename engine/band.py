@@ -1,5 +1,6 @@
 import json
 import re
+import unicodedata
 import time
 from datetime import datetime
 from pathlib import Path
@@ -43,6 +44,12 @@ SHOW = re.compile(rb"\x1b\[\?25([hl])")
 ESCAPE = re.compile(rb"\x1b(?:\[[\d;?]*[ -/]*[@-~]|\][^\x07\x1b]*(?:\x07|\x1b\\)|[()][0-9A-B]|[@-Z\\-_])")
 
 
+def wide(ch: str) -> int:
+    if unicodedata.combining(ch):
+        return 0
+    return 2 if unicodedata.east_asian_width(ch) in ("W", "F") else 1
+
+
 class Cursor:
     def __init__(self, rows: int, cols: int):
         self.rows, self.cols = rows, cols
@@ -74,15 +81,15 @@ class Cursor:
         self.col = min(max(self.col, 1), self.cols)
 
     def wrote(self, plain: bytes) -> None:
-        for byte in plain:
-            if byte == 0x0a:
+        for ch in plain.decode("utf-8", "ignore"):
+            if ch == "\n":
                 self.row += 1
-            elif byte == 0x0d:
+            elif ch == "\r":
                 self.col = 1
-            elif byte == 0x08:
+            elif ch == "\b":
                 self.col = max(1, self.col - 1)
-            elif byte >= 0x20:
-                self.col += 1
+            elif ch >= " ":
+                self.col += wide(ch)
             if self.col > self.cols:
                 self.row, self.col = self.row + 1, 1
             if self.row > self.rows:                 # the screen scrolled: the tracker cannot know by how much
