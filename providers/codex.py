@@ -141,6 +141,9 @@ class Codex(Provider):
     def config(self, project: Path) -> Path:
         return project / ".codex" / "hooks.json"
 
+    def hook_files(self, project: Path) -> list[Path]:
+        return [Path.home() / ".codex" / "hooks.json", self.config(project)]
+
     def wiring(self, command: str) -> dict:
         return {"hooks": {event: [{"matcher": "", "hooks": [{"type": "command", "command": command, "timeout": 60}]}]
                           for event in EVENTS if event != PERMISSION}}

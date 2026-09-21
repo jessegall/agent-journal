@@ -235,6 +235,13 @@ class Provider(ABC):
     def settings(self, project: Path) -> dict:
         return read_json(self.config(project), {})
 
+    def skill_homes(self, project: Path) -> list[Path]:
+        homes = (self.skill_home, *self.retired_skill_homes) if self.skill_home else ()
+        return [place / home for home in homes for place in (project, Path.home())]
+
+    def hook_files(self, project: Path) -> list[Path]:
+        return [self.config(project)]
+
     def hooks(self, project: Path) -> dict:
         return self.settings(project).get("hooks", {})
 
