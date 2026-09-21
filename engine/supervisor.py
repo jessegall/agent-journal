@@ -21,7 +21,7 @@ from engine.stop import asked  # noqa: E402
 from engine.terminal import RELAUNCH, RELOAD, STOP, watched  # noqa: E402
 from engine.stored import write_json  # noqa: E402
 
-ESCAPES = re.compile(rb"\x1b(?:\[[\x30-\x3f]*[\x20-\x2f]*[\x40-\x7e]|\][^\x07\x1b]*(?:\x07|\x1b\\)|O[\x40-\x7e]|[@-_])")
+ESCAPES = re.compile(rb"\x1b(?:\[[\x30-\x3f]*[\x20-\x2f]*[\x40-\x7e]|\][^\x07\x1b]*(?:\x07|\x1b\\)|[P_^X][^\x1b]*\x1b\\|O[\x40-\x7e]|[@-_])")
 RELOAD_EVERY = 5.0
 VIEWER_EVERY = 10.0
 SERVICES_EVERY = 1.0
