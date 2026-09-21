@@ -73,7 +73,8 @@ def test_a_new_session_is_greeted_in_its_terminal_even_before_its_engine_starts(
     engine = Engine(record, DRIVERS["claude"](record, "claude-99"))
     engine.agent.driver.last_report = lambda: SimpleNamespace(title="claude-1", at=time.time())
     typed = []
-    engine.agent.driver.send = lambda text="", terminal=False, **rest: typed.append((text, terminal)) or True
+    engine.agent.driver.send = lambda text="", **rest: typed.append((text, False)) or True
+    engine.agent.driver.type_in = lambda text: typed.append((text, True)) or True
     engine.deliver()
     assert [t for t in typed if t[0]] == [(f"the journal is ready on {record.env} — say hello in the chat, so the journal's messages reach you", True)], \
         "the greeting is typed into the terminal at once, never marked read as history"
@@ -105,7 +106,7 @@ def test_a_line_goes_out_at_once_and_only_one_inside_the_window_waits():
     record = fresh()
     driver = DRIVERS["claude"](record, "claude-99")
     sent = []
-    driver._deliver = lambda line: sent.append(line) or True
+    driver.deliver = lambda line: sent.append(line) or True
     driver.send("first")
     driver.send("second")
     assert (sent, driver.held) == (["first"], ["second"]), "nothing queued: sent at once; inside the five seconds: queued"
@@ -125,4 +126,4 @@ def test_enter_is_pressed_again_until_the_agent_takes_the_line(monkeypatch):
     written = []
     driver._wrote = lambda raw: written.append(raw) or True
     driver._report = lambda: SimpleNamespace(at=time.time()) if written.count(b"\r") >= 2 else None
-    assert (driver._type_in("hello"), written.count(b"\r")) == (True, 2), "the first Enter was swallowed: pressed again, then the hook says it was taken"
+    assert (driver.type_in("hello"), written.count(b"\r")) == (True, 2), "the first Enter was swallowed: pressed again, then the hook says it was taken"

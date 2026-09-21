@@ -1,20 +1,18 @@
 from dataclasses import dataclass, field
 
-from controllers.types import Notices, Notifications, Nudges
+from controllers.types import CONTROLLERS, Notices, Notifications, Nudges
+from engine.drivers import CHANNEL, TERMINAL
 from resources.base import SYSTEM, USER, titled
-
-KINDS = {"nudge": Nudges, "notification": Notifications, "notice": Notices}
-CHANNEL, TERMINAL = "channel", "terminal"
 
 
 @dataclass
 class Message:
-    kind: str
+    kind: type
     title: str
+    abstract: str = ""
     brief: str = ""
     feature: str = ""
     actor: str = SYSTEM
-    seen: bool = False
     data: dict = field(default_factory=dict)
 
 
@@ -26,7 +24,7 @@ class Journal:
         if not self.feature.mine(agent):
             return None
         lead = self.feature.lines[line].lead
-        return self.send(record, self.message("nudge", line, values, actor, session=agent.title, private=private, lead=lead, delivery=delivery))
+        return self.send(record, self.message(Nudges, line, values, actor, session=agent.title, private=private, lead=lead, delivery=delivery))
 
     def type(self, record, agent, line: str, **values):
         return self.say(record, agent, line, private=True, delivery=TERMINAL, **values)
@@ -35,27 +33,25 @@ class Journal:
         return self.say(record, agent, line, private=True, actor=actor, **values)
 
     def notify(self, record, line: str, actor: str = SYSTEM, **values):
-        return self.send(record, self.message("notification", line, values, actor))
+        return self.send(record, self.message(Notifications, line, values, actor))
 
     def log(self, record, line: str, **values):
-        message = self.message("notification", line, values)
-        message.seen = True
-        return self.send(record, message)
+        made = self.send(record, self.message(Notifications, line, values))
+        return Notifications(record, actor=USER).read(made.n)
 
     def notice(self, record, line: str, actor: str = SYSTEM, **values):
-        return self.send(record, self.message("notice", line, values, actor))
+        return self.send(record, self.message(Notices, line, values, actor))
 
     def clear(self, record, row, how: str) -> None:
-        KINDS[row.type](record, actor=SYSTEM).complete(row.n, how=how)
+        CONTROLLERS[row.type](record, actor=SYSTEM).complete(row.n, how=how)
 
-    def message(self, kind: str, line: str, values: dict, actor: str = SYSTEM, **data) -> Message:
+    def message(self, kind: type, line: str, values: dict, actor: str = SYSTEM, **data) -> Message:
         filled = set(self.feature.lines[line].placeholders()) if line in self.feature.lines else set()
         title, brief = self.feature.line(line, {key: value for key, value in values.items() if key in filled})
         kept = {key: value for key, value in values.items() if key not in filled}
-        return Message(kind, title, brief, self.feature.name, actor, data={**kept, **data})
+        abstract = str(kept.pop("abstract", "") or "")
+        return Message(kind, title, abstract, brief, self.feature.name, actor, data={**kept, **data})
 
     def send(self, record, message: Message):
-        rows = KINDS[message.kind](record, actor=message.actor)
-        abstract = str(message.data.pop("abstract", "") or "")
-        made = rows.create(titled(message.title), abstract=abstract, brief=message.brief, feature=message.feature, **message.data)
-        return KINDS[message.kind](record, actor=USER).read(made.n) if message.seen else made
+        return message.kind(record, actor=message.actor).create(titled(message.title), abstract=message.abstract, brief=message.brief,
+                                                                feature=message.feature, **message.data)

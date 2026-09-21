@@ -20,6 +20,12 @@ ANSI = re.compile(rb"\x1b\[[0-?]*[ -/]*[@-~]|\x1b\][^\x07\x1b]*(?:\x07|\x1b\\)|\
 
 BETWEEN, FLOOD = 5.0, 20
 REPORT_FOR = 0.5
+CHANNEL, TERMINAL = "channel", "terminal"
+
+
+def joined(text: str) -> str:
+    return " ".join(part.strip() for part in text.splitlines() if part.strip())
+
 
 class Driver(ABC):
     STOP = b"\x1b"
@@ -83,12 +89,8 @@ class Driver(ABC):
     def confirm(cls, printed: bytes) -> bytes:
         return b""
 
-    def send(self, text: str = "", exact: bool = False, groups: dict | None = None, terminal: bool = False) -> bool:
-        line = " ".join(part.strip() for part in text.splitlines() if part.strip())
-        if terminal:
-            return self._type_in(line)
-        if exact:
-            return self._deliver(line)
+    def send(self, text: str = "", groups: dict | None = None) -> bool:
+        line = joined(text)
         if line:
             self.held.append(line)
         for key, numbers in (groups or {}).items():
@@ -102,11 +104,12 @@ class Driver(ABC):
         said = (f"the journal held back {len(self.held)} lines at once and dropped them - that many is a fault, not news" if len(self.held) > FLOOD
                 else "; ".join(dict.fromkeys(self.held + counted(self.groups))))
         self.held, self.groups, self.sent_at = [], {}, time.time()
-        self._deliver(said)
+        self.deliver(said)
         return said
 
-    def _deliver(self, line: str) -> bool:
-        return self._post(line) or self._type_in(line)
+    def deliver(self, text: str) -> bool:
+        line = joined(text)
+        return self._post(line) or self.type_in(line)
 
     def _posts(self) -> bool:
         return bool(self.record.delivery.get("socket", True))
@@ -139,7 +142,8 @@ class Driver(ABC):
         except OSError:
             return False
 
-    def _type_in(self, line: str) -> bool:
+    def type_in(self, text: str) -> bool:
+        line = joined(text)
         started = time.time()
         self.clear_input()
         time.sleep(ENTER_AFTER)

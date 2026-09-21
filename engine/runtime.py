@@ -25,6 +25,10 @@ def channel_alive(root: Path) -> Path:
     return folder(root) / "channel.on"
 
 
+def announced_file(root: Path, session: str) -> Path:
+    return folder(root) / f"announced-{session}.json"
+
+
 def relaunch_file(root: Path, session: str) -> Path:
     return folder(root) / f"relaunch-{session}.json"
 

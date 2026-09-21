@@ -32,7 +32,7 @@ register(Messages, Todos, Works, Docs, Reports, Facts, Rules, Reminders, Questio
 WARM_PAUSE = 0.02
 
 
-def warmed(record: Record, pause: float = 0.0) -> None:
+def warm_record(record: Record, pause: float = 0.0) -> None:
     for controller in CONTROLLERS.values():
         try:
             controller(record, actor=SYSTEM)._warm()
@@ -45,7 +45,7 @@ def warm(root: Path) -> None:
     from providers import PROVIDERS
     for home in sorted((Path(root) / "environments").glob("*/")):
         record = Record(Path(root), home.name)
-        warmed(record, WARM_PAUSE)
+        warm_record(record, WARM_PAUSE)
         for agent in Agents(record, actor=SYSTEM)._standing():
             if agent.status != "stopped" and agent.transcript and agent.provider in PROVIDERS:
                 PROVIDERS[agent.provider]().read_ahead(Path(agent.transcript))

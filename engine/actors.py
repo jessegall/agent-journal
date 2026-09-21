@@ -6,7 +6,7 @@ from engine.record import Record
 from resources.base import AGENT, SYSTEM, USER, Event
 from resources.types import AgentRow, TYPES
 from engine.wording import counted
-from features.journal import TERMINAL
+from engine.drivers import TERMINAL
 
 STOPPED, IDLE, BUSY, WORKING, COMPACTING = "stopped", "idle", "busy", "working", "compacting"
 STATES = (STOPPED, IDLE, BUSY, WORKING, COMPACTING)
@@ -14,6 +14,10 @@ STATES = (STOPPED, IDLE, BUSY, WORKING, COMPACTING)
 
 def spoken(r) -> str:
     return f"{r.title} — {r.brief}" if r.brief else r.title
+
+
+def spoken_data(record: Record, event: Event) -> dict:
+    return CONTROLLERS[event.type](record, actor=SYSTEM).load(event.n).data if TYPES[event.type].spoken else {}
 
 
 def grouped(events: list[Event]) -> dict[tuple, dict]:
@@ -80,7 +84,7 @@ class Agent(Actor):
         return self.pending[-1].id if self.pending else self.cursor()
 
     def typed(self, event: Event) -> bool:
-        return TYPES[event.type].spoken and CONTROLLERS[event.type](self.record, actor=SYSTEM).load(event.n).data.get("delivery") == TERMINAL
+        return spoken_data(self.record, event).get("delivery") == TERMINAL
 
     def flush(self) -> str:
         if not self.pending:
@@ -89,7 +93,7 @@ class Agent(Actor):
         said, groups = render([e for e in self.pending if e not in typed], self.record)
         landed = self.driver.send(said, groups=groups)
         if typed:
-            landed = self.driver.send(render(typed, self.record)[0], terminal=True) and landed
+            landed = self.driver.type_in(render(typed, self.record)[0]) and landed
         for e in self.pending:
             if landed and TYPES[e.type].told:
                 CONTROLLERS[e.type](self.record, actor=SYSTEM).stamp(e.n, delivered=time.time())
