@@ -2,7 +2,7 @@ from controllers.types import Agents, Todos
 from features.plans.controller import ACTIVE, BUILDING, DONE, PHASES, Plans, WAITING
 from features.work.auto import automatic
 from features.base import Feature, Line, event
-from features.plans.progress import current_phase, held, running
+from features.plans.progress import current_phase, running
 from resources.base import AGENT, SYSTEM
 from features.plans.resource import PHASE
 from features.journal import Journal

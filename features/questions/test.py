@@ -2,7 +2,7 @@ import features
 import json
 
 from controllers.types import Questions
-from features.questions.feature import offers_choices
+from features.questions.choices import offers_choices
 from engine.hooks import gate_file
 from resources.base import AGENT
 from tests.kit import idle, nudges
@@ -48,11 +48,11 @@ def test_choices_offered_in_prose_hold_writes_until_a_question_is_asked_properly
 def test_a_picked_answer_is_held_for_a_configurable_duration():
     record = fresh("main")
     questions = features.FEATURES["questions"]
-    assert questions.held_for(record) == 3, "a picked answer is held for three seconds by default"
+    assert questions.values(record).hold == 3, "a picked answer is held for three seconds by default"
     assert (questions.describe()["fixed"], questions.enabled(record)) == (True, True), "the feature cannot be switched off"
 
     record.set_setting("questions", {"hold": 8})
-    assert questions.held_for(record) == 8, "a setting says how long instead"
+    assert questions.values(record).hold == 8, "a setting says how long instead"
 
     got = dispatch("GET", "/api/main/settings", record.root, {}, {})
     assert (got.code, got.body["questions"]["hold"]) == (200, 8), "the viewer is handed the hold with the rest of the settings"

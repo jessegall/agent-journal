@@ -41,6 +41,9 @@ class BoundJournal:
     def log(self, line: str, **values):
         return self.journal.log(self.record, line, **values)
 
+    def clear(self, row, how: str) -> None:
+        self.journal.clear(self.record, row, how)
+
 
 class Journal:
     def __init__(self, feature):

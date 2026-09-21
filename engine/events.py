@@ -27,6 +27,16 @@ class AgentEvent(TypedEvent):
 
 
 @dataclass(frozen=True)
+class AgentChanged(AgentEvent):
+    on: ClassVar[str] = "agent"
+    action: str = ""
+
+    @classmethod
+    def read(cls, event) -> "AgentChanged":
+        return cls(agent=event.n, action=event.action)
+
+
+@dataclass(frozen=True)
 class AgentMessageSending(AgentEvent):
     on: ClassVar[str] = "agent.message.sending"
     data: dict = field(default_factory=dict)

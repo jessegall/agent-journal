@@ -1,4 +1,4 @@
-import features.updates.feature as updates
+import features.updates.handlers as updates
 from tests.conftest import fresh
 from tests.kit import nudges, report
 
