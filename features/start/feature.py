@@ -2,6 +2,7 @@ from engine.hooks import start_file
 from engine.queries import start_block
 from features.base import Feature, event
 from resources.types import TYPES
+from engine.stored import write_text
 
 
 HELLO = "journal: started on {env} — say what waits"
@@ -37,4 +38,4 @@ class Start(Feature):
         for compacted in (False, True):
             f = start_file(record.root, record.env, compacted)
             f.parent.mkdir(parents=True, exist_ok=True)
-            f.write_text(COMPACTED + block if compacted else block)
+            write_text(f, COMPACTED + block if compacted else block)

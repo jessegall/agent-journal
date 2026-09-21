@@ -4,6 +4,7 @@ from controllers.types import Notifications
 from engine.hooks import default_env
 from engine.record import Record
 from resources.base import SYSTEM
+from engine.stored import write_text
 
 PACKAGE = Path(__file__).resolve().parents[1]
 KIND = "update"
@@ -24,7 +25,7 @@ def announce(root: Path, version: str = "") -> str:
     if before == version:
         return ""
     seen.parent.mkdir(parents=True, exist_ok=True)
-    seen.write_text(version)
+    write_text(seen, version)
     if not before:
         return ""
     record = Record(Path(root), default_env(Path(root)))

@@ -10,7 +10,7 @@ from engine.transcript import Turn
 from providers.payload import Hook
 from resources.base import Refused
 from resources.types import AgentRow, COMMAND, RUNNING
-from engine.stored import tail
+from engine.stored import tail, write_text
 
 WRITES = ("Edit", "Write", "MultiEdit", "NotebookEdit")
 READS = ("Read", "NotebookRead")
@@ -328,7 +328,7 @@ class Provider(ABC):
     def save(self, project: Path, settings: dict) -> Path:
         f = self.config(project)
         f.parent.mkdir(parents=True, exist_ok=True)
-        f.write_text(json.dumps(settings, indent=2) + "\n")
+        write_text(f, json.dumps(settings, indent=2) + "\n")
         return f
 
     def wire(self, project: Path, command: str) -> Path:

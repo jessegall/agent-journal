@@ -1,5 +1,6 @@
 import time
 from pathlib import Path
+from engine.stored import write_text
 
 WAIT = 15.0
 EVERY = 0.2
@@ -23,7 +24,7 @@ def asked(root: Path, since: float = 0.0) -> bool:
 def ask(root: Path) -> None:
     where = flag(root)
     where.parent.mkdir(parents=True, exist_ok=True)
-    where.write_text(f"{time.time()}\n")
+    write_text(where, f"{time.time()}\n")
 
 
 def clear(root: Path) -> None:

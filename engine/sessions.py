@@ -4,7 +4,7 @@ import time
 from pathlib import Path
 
 from resources.types import TYPES
-from engine.stored import read_json, write_json
+from engine.stored import read_json, write_json, write_text
 
 
 RECENT = 600.0
@@ -80,7 +80,7 @@ class Sessions:
                 self.write(session, environment=new)
         f = self.root / "runtime" / "env"
         if f.is_file() and f.read_text().strip() == old:
-            f.write_text(new)
+            write_text(f, new)
 
     def environment(self, session: str) -> str:
         return self.read(session).get("environment", "")

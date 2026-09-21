@@ -3,6 +3,7 @@ from pathlib import Path
 from controllers.types import Todos
 from engine.record import Record
 from resources.base import SYSTEM
+from engine.stored import write_text
 
 
 def run(root: Path) -> list[str]:
@@ -15,6 +16,6 @@ def run(root: Path) -> list[str]:
                 continue
             row.refs = [ref for ref in row.refs if ref not in waits]
             row.data["after"] = list(dict.fromkeys([*(row.after or []), *waits]))
-            todos.path(row.n).write_text(row.dump())
+            write_text(todos.path(row.n), row.dump())
             moved.append(row.ref)
     return moved

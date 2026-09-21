@@ -10,6 +10,7 @@ from pathlib import Path
 
 from engine.sessions import ACTIVE_ENV
 from install import code
+from engine.stored import write_text
 
 RELOAD = 75
 STOP = 76
@@ -88,7 +89,7 @@ def run(root: Path, cwd: Path, env: str, agent: str, args: list[str]) -> int:
     session = session_of(agent, pid)
     runtime = root / "runtime"
     runtime.mkdir(parents=True, exist_ok=True)
-    (runtime / "env").write_text(env)
+    write_text((runtime / "env"), env)
     seat(root, env, session, pid, agent)
     print(f"journal: environment {env}")
     stdin, stdout = sys.stdin.fileno(), sys.stdout.fileno()

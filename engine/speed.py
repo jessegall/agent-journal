@@ -15,6 +15,7 @@ from engine.drivers import Driver
 from engine.engine import Engine
 from engine.record import Record
 from serve import serve
+from engine.stored import write_text
 
 HERE = Path(__file__).resolve().parents[1]
 
@@ -119,6 +120,6 @@ def measure(live: Path, env: str, runs: int = 5, url: str = "", out: str = "") -
     shutil.rmtree(scratch.parent, ignore_errors=True)
     rows["runtime/ MB"] = sum(f.stat().st_size for f in (live / "runtime").rglob("*") if f.is_file()) / 1e6
     if out:
-        Path(out).write_text(json.dumps({"at": time.time(), "viewer": base, "runs": runs, "median_ms": rows}, indent=2))
+        write_text(Path(out), json.dumps({"at": time.time(), "viewer": base, "runs": runs, "median_ms": rows}, indent=2))
     width = max(len(k) for k in rows)
     return "\n".join(f"{name:<{width}}  {value:9.1f}" for name, value in rows.items())

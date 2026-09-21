@@ -11,7 +11,7 @@ from engine.sessions import Sessions
 from resources import types
 from resources.base import AGENT, SECTION, SYSTEM, Refused, check_title, names, titled
 from resources.shapes import LEVELS
-from engine.stored import read_json
+from engine.stored import read_json, write_text
 
 UPLOAD = names("name", "data")
 
@@ -420,7 +420,7 @@ class Environments(Controller):
         if project:
             f = self.record.root / "runtime" / "env"
             f.parent.mkdir(parents=True, exist_ok=True)
-            f.write_text(env.title)
+            write_text(f, env.title)
         return self.update(n, holder=who)
 
     def complete(self, n: int, how: str = "", yes: bool = False, **data):
