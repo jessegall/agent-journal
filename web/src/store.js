@@ -16,6 +16,7 @@ export const store = reactive({
     spec: null,
     identity: null,
     rows: {},
+    counts: {},
     events: [],
     settings: null,
     agents: [],
@@ -112,9 +113,21 @@ export const meta = (type) => store.spec.types[type];
 export const word = (type, method) => meta(type).names[method] || method;
 export const label = (type, field, fallback) => meta(type).labels[field] || fallback;
 
+const shown = new Set();
+
 export function rows(type) {
+    if (!shown.has(type)) {
+        shown.add(type);
+        if (store.booted) queueMicrotask(() => refresh([type]));
+    }
     return store.rows[type] || [];
 }
+
+export function forget() {
+    shown.clear();
+}
+
+watch(() => `${route.value.env}/${route.value.page}/${route.value.open ? route.value.open.type : ""}`, forget);
 
 const ENDED = ["done", "abandoned"];
 export const GROUPS = {
@@ -188,29 +201,72 @@ export async function trim(type) {
     return load(type);
 }
 
-http.onWrite(() => reload());
-onOutboxChange(() => reload());
+http.onWrite((path) => refresh([path.split("/")[2]]));
+onOutboxChange(() => refresh(["message"]));
+
+function took(type, got) {
+    store.rows[type] = got.rows;
+    paging.size[type] = paging.size[type] || PAGE;
+    paging.more[type] = got.more;
+}
+
+async function fetched(types, whole = false) {
+    const plain = types.filter((type) => (paging.size[type] || PAGE) === PAGE);
+    const sized = types.filter((type) => !plain.includes(type));
+    const [got] = await Promise.all([
+        plain.length || whole ? http.dashboard(route.value.env, plain, {last: PAGE, events: whole ? RECENT : null}) : null,
+        ...sized.map(load),
+    ]);
+    if (!got) return;
+    store.counts = got.counts;
+    Object.entries(got.rows).forEach(([type, listed]) => took(type, listed));
+    if (whole) {
+        store.events = got.events;
+        store.settings = got.settings;
+        if (got.rows.agent) store.agents = got.rows.agent.rows;
+    }
+}
 
 let reloadTask = null;
-let reloadAgain = false;
+const owed = new Set();
+let owedWhole = false;
 
-export async function reload() {
-    if (reloadTask) {
-        reloadAgain = true;
-        return reloadTask;
-    }
+async function drain() {
+    if (reloadTask) return reloadTask;
     reloadTask = (async () => {
-        do {
-            reloadAgain = false;
-            const env = route.value.env;
-            const [events, settings, agents] = await Promise.all([http.events(env, 0, RECENT), http.settings(env), http.all(env, "agent")]);
-            store.events = events;
-            store.settings = settings;
-            store.agents = agents;
-            await Promise.all(Object.keys(store.rows).map(load));
-        } while (reloadAgain);
+        await new Promise((settle) => setTimeout(settle, 30));
+        while (owed.size || owedWhole) {
+            const whole = owedWhole;
+            const types = [...(whole ? Object.keys(store.rows) : owed)].filter((type) => shown.has(type) || type === "agent");
+            owed.clear();
+            owedWhole = false;
+            await fetched(types, whole);
+        }
     })().finally(() => (reloadTask = null));
     return reloadTask;
+}
+
+export function refresh(types) {
+    types.filter(Boolean).forEach((type) => owed.add(type));
+    if (owed.has("settings")) owedWhole = true;
+    return drain();
+}
+
+export function reload() {
+    owedWhole = true;
+    return drain();
+}
+
+function heard(message) {
+    let event = null;
+    try {
+        event = JSON.parse(message.data);
+    } catch (e) {
+        return;
+    }
+    store.events = [...store.events, event].slice(-RECENT);
+    if (event.type === "agent") return;
+    refresh([event.type]);
 }
 
 export function listen() {
@@ -218,7 +274,7 @@ export function listen() {
     const env = route.value.env;
     startOutbox(env);
     store.stream = new EventSource(`/api/${env}/stream`);
-    store.stream.onmessage = () => reload();
+    store.stream.onmessage = heard;
     poll();
 }
 
@@ -229,6 +285,7 @@ let ticks = 0;
 let round = 0;
 
 async function tick() {
+    if (document.hidden) return;
     ticks += 1;
     const env = route.value.env;
     store.bar = await http.poll(`/${env}/bar`);
@@ -238,7 +295,10 @@ async function tick() {
     store.pages = await http.poll("/pages");
     const last = store.events.length ? store.events[store.events.length - 1].id : 0;
     const fresh = await http.poll(`/${env}/events?since=${last}&last=0`);
-    if (fresh.length) await reload();
+    if (fresh.length) {
+        store.events = [...store.events, ...fresh].slice(-RECENT);
+        await refresh([...new Set(fresh.map((e) => e.type))].filter((type) => type !== "agent"));
+    }
     if (ticks % 60 === 0) store.spec = await http.manifest();
 }
 
@@ -266,7 +326,7 @@ export async function boot() {
         go(store.spec.environment);
         return boot();
     }
-    await Promise.all(types.value.filter((t) => t.name !== "nudge").map((t) => load(t.name)));
+    types.value.filter((t) => t.name !== "nudge").forEach((t) => (store.rows[t.name] = store.rows[t.name] || []));
     store.pages = await http.api("GET", "/pages");
     await reload();
     store.booted = true;
@@ -286,6 +346,7 @@ export const state = (r) =>
                 ? "started"
                 : "open";
 export const open = (type) => rows(type).filter((r) => !r.completed);
+export const counted = (type, key = "open") => (store.counts && store.counts[type] && store.counts[type][key]) || 0;
 export const unreadByUser = (type) => open(type).filter((r) => !r.seen.includes("user"));
 export const agent = computed(
     () => [...store.agents].filter((a) => !a.data.parent).sort((a, b) => (b.data.at || 0) - (a.data.at || 0))[0] || null

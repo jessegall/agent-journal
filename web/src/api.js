@@ -12,7 +12,7 @@ export async function api(method, path, body, base = "") {
     });
     const got = await res.json();
     if (!res.ok) throw new Error(got.error || res.statusText);
-    if (method !== "GET" && !base) await settle();
+    if (method !== "GET" && !base) await settle(path);
     return got;
 }
 
@@ -44,6 +44,12 @@ export function list(env, type, {last, completed = false, before = 0, base = ""}
     if (completed) query.set("completed", "1");
     if (before) query.set("before", before);
     return api("GET", `/${env}/${type}${query.toString() ? `?${query}` : ""}`, undefined, base);
+}
+export function dashboard(env, types, {last, events = null} = {}) {
+    const query = new URLSearchParams({types: types.join(","), completed: "1"});
+    if (last !== undefined) query.set("last", last);
+    if (events !== null) query.set("events", events);
+    return api("GET", `/${env}/dashboard?${query}`);
 }
 export const all = (env, type, base = "") => list(env, type, {completed: true, base}).then((got) => got.rows);
 export const show = (env, type, n) => api("GET", `/${env}/${type}/${n}`);

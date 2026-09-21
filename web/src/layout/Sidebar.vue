@@ -4,7 +4,7 @@ import {create} from "../api.js";
 import Icon from "../kit/Icon.vue";
 import {negative, project, tint} from "../identity.js";
 import {route} from "../route.js";
-import {load, navTypes, open, rows, store, unreadByUser} from "../store.js";
+import {counted, load, navTypes, rows, store} from "../store.js";
 
 const envs = computed(() => rows("environment").filter((e) => !e.completed));
 const pages = computed(() => store.pages || []);
@@ -13,7 +13,7 @@ const folded = reactive({});
 const fold = (key) => {
     folded[key] = !folded[key];
 };
-const count = (t) => (t.attention ? unreadByUser(t.name).length : open(t.name).length);
+const count = (t) => counted(t.name, t.attention ? "unread" : "open");
 const live = (name) => store.agents.some((a) => a.data.status && a.data.status !== "stopped" && a.data.env === name);
 
 async function makeEnv() {
@@ -72,7 +72,7 @@ async function makeEnv() {
                     <a :class="['item', {on: route.page === t.name}]" :href="`#/${route.env}/${t.name}`">
                         <Icon :name="t.icon" />
                         {{ t.title }}s
-                        <span class="count">{{ open(t.name).length || "" }}</span>
+                        <span class="count">{{ counted(t.name) || "" }}</span>
                     </a>
                 </template>
                 <a :class="['item', {on: route.page === 'skills'}]" :href="`#/${route.env}/skills`">

@@ -2,7 +2,7 @@
 import {computed, onUnmounted} from "vue";
 import Icon from "../kit/Icon.vue";
 import {go, route} from "../route.js";
-import {age, away, byRef, meta, span, store, types, unreadByUser, word} from "../store.js";
+import {age, away, byRef, counted, meta, span, store, types, word} from "../store.js";
 
 const lines = computed(() =>
     [...store.events]
@@ -21,7 +21,7 @@ const lines = computed(() =>
             age: age(e.at),
         }))
 );
-const waiting = computed(() => types.value.filter((t) => t.attention).flatMap((t) => unreadByUser(t.name)).length);
+const waiting = computed(() => types.value.filter((t) => t.attention).reduce((sum, t) => sum + counted(t.name, "unread"), 0));
 const forText = computed(() => (away.since ? `${span((away.back - away.since) / 1000)} away` : "last 24 hours"));
 
 function toInbox() {
