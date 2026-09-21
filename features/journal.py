@@ -2,7 +2,7 @@ from dataclasses import dataclass, field
 
 from controllers.types import CONTROLLERS, Notices, Notifications, Nudges
 from engine.drivers import CHANNEL, TERMINAL
-from resources.base import SYSTEM, USER, titled
+from resources.base import SYSTEM, titled
 
 
 @dataclass
@@ -36,8 +36,9 @@ class Journal:
         return self.send(record, self.message(Notifications, line, values, actor))
 
     def log(self, record, line: str, **values):
-        made = self.send(record, self.message(Notifications, line, values))
-        return Notifications(record, actor=USER).read(made.n)
+        message = self.message(Notifications, line, values)
+        return Notifications(record, actor=message.actor)._logged(titled(message.title), brief=message.brief, abstract=message.abstract,
+                                                                  feature=message.feature, **message.data)
 
     def notice(self, record, line: str, actor: str = SYSTEM, **values):
         return self.send(record, self.message(Notices, line, values, actor))

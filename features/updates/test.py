@@ -58,3 +58,15 @@ def test_an_install_over_version_1_leaves_only_its_own_hooks(tmp_path):
     assert commands("settings.json") == ["echo not the journal"], "the shared file keeps only what is not the journal's"
     assert [c.split("/")[-1] for c in commands("settings.local.json")] == [".journal"], "the journal's hook is wired per person, where every worktree reads it"
     assert not (tmp_path / ".git" / "hooks" / "post-commit").exists(), "version 1's git hook calls a command that is gone"
+
+
+def test_a_new_version_is_announced_to_the_user_without_breaking_the_server():
+    from controllers.types import Notifications
+    from surfaces.updates import announce
+    record = fresh()
+    announce(record.root, "1.0.0")
+    assert announce(record.root, "1.0.1") == "1.0.1"
+    from engine.hooks import default_env
+    from engine.record import Record
+    told = [n for n in Notifications(Record(record.root, default_env(record.root)))._every() if n.title == "Journal updated to 1.0.1"]
+    assert (len(told), "user" in told[0].seen) == (1, True), "announced once, already seen"

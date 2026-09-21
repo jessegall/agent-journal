@@ -222,7 +222,7 @@ def post_run(req: Request) -> Reply:
     from commands.cli import captured
     raw = req.body.get("_raw") or b""
     args = [a for a in raw.decode().split("\0") if a]
-    for flag, given in (("--as", req.query.get("actor")), ("--default-env", req.query.get("env"))):
+    for flag, given in (("--as", req.query.get("actor")), ("--default-env", req.query.get("env")), ("--cwd", req.query.get("cwd"))):
         if given and flag not in args:
             args = [flag, given, *args]
     said, code = captured(args, req.root)

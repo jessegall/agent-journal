@@ -24,7 +24,8 @@ class Engines:
 
     def tick(self) -> None:
         live = typist.live(self.root)
-        self.held = {session: engine for session, engine in self.held.items() if session in live}
+        sessions = Sessions(self.root)
+        self.held = {session: engine for session, engine in self.held.items() if session in live and engine.record.env == sessions.environment(session)}
         for session in live:
             engine = self.held.get(session) or self.seated(session)
             if engine:

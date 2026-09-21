@@ -77,6 +77,7 @@ def built(only: str) -> argparse.ArgumentParser:
     top.add_argument("--default-env", dest="fallback", default=os.environ.get("JOURNAL_ENV", ""), help=argparse.SUPPRESS)
     top.add_argument("--as", dest="as_actor", default=os.environ.get("JOURNAL_ACTOR", AGENT))
     top.add_argument("--session", default=os.environ.get("JOURNAL_SESSION", ""))
+    top.add_argument("--cwd", default="", help=argparse.SUPPRESS)
     top.add_argument("--agent", default=os.environ.get("JOURNAL_AGENT", ""))
     cmds = top.add_subparsers(dest="command", required=True)
     features.load()
