@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.54.2 — Closing to-dos from commits keeps its place across the rename
+
+The feature that closes to-dos from commit trailers kept its place in the git log under a fixed name, commits, while the rename moved the saved place to close_from_commits. It now reads its place under its own feature name, so a rename carries it along.
+
+What to do about it: `journal upgrade`.
+
 ## 2.54.1 — journal stop works again
 
 journal stop lists what is still open before it stops, and since 2.50.0 it read the unanswered messages from the record instead of through the journal, so it failed and left the server running. It reads them through the journal again. The laws' skill is journal-laws, not journal-journal-laws.
