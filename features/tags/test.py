@@ -22,7 +22,7 @@ def test_every_message_without_a_tag_is_named_once(tmp_path):
         return told()
 
     def told():
-        return [m.title for m in Messages(record, actor="system").all() if m.data.get("told") == "tags"]
+        return [n for n in nudges(record) if "has no tag" in n]
 
     record = fresh()
     assert said("[!reply] done, pushed") == [], "a tagged message: nothing said"
@@ -32,7 +32,7 @@ def test_every_message_without_a_tag_is_named_once(tmp_path):
     assert len(said("[!reply][!invented] two leading tags")) == 3, "a registered prefix does not hide an invented tag"
     assert len(said("status [!reply] is ordinary text")) == 4, "an inline tag-like phrase is rejected"
     report(record, "working", "PostToolUse", provider="claude", transcript=str(transcript))
-    assert len(told()) == 4, "each message is named once, as a message from the journal"
+    assert len(told()) == 4, "each message is named once, in the terminal"
 
 def test_replying_by_command_is_answered_with_the_tag_that_does_it():
     from engine.hooks import handle
