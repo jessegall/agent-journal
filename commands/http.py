@@ -531,9 +531,15 @@ def listing(controller, record, query: dict) -> dict:
 def counted(record, types) -> dict:
     out = {}
     for type_, controller in ((t, CONTROLLERS[t]) for t in types):
-        kept = [row for row in controller(record, actor=USER).summaries() if not row["deleted"]]
-        standing = [row for row in kept if not row["completed"]]
-        out[type_] = {"all": len(kept), "open": len(standing), "unread": sum(USER not in (row.get("seen") or []) for row in standing)}
+        tally = {"all": 0, "open": 0, "unread": 0}
+        for row in controller(record, actor=USER).summaries():
+            if row["deleted"]:
+                continue
+            tally["all"] += 1
+            if not row["completed"]:
+                tally["open"] += 1
+                tally["unread"] += USER not in (row.get("seen") or [])
+        out[type_] = tally
     return out
 
 

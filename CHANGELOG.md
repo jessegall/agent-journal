@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.17.1 — The dashboard counts in one pass
+
+Measured on its own, the dashboard answers in about 11ms warm and 26ms right after a write; the slower times reported under load are time shared with other requests and the engine threads. Its counts walked every row of every type three times — six thousand rows a request here — and now take one pass.
+
+What to do about it: `journal upgrade`.
+
 ## 2.17.0 — Everything since 2.16.0, as one minor release
 
 The 2.16 patches, together: the journal launches again and the suite boots it end to end; one server per journal; private whispers reach their session; a reply tag runs the moment its message is written — from the engine's once-a-second watch of the transcript, and from the Stop hook's own text — and every message without a tag is named at once; a message closes once it is handled; checks are a page of cards with live progress counted in real steps; notifications are only what the user acts on, including a struck fact or rule and a finished plan; sending a message no longer makes the chat jump; dropdowns mark what is chosen; Settings opens each feature in a panel of its own; a removed plugin takes its services; and the journal updates itself.
