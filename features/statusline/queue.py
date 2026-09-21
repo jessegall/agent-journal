@@ -1,3 +1,4 @@
+from itertools import accumulate
 from features.statusline.dissect import MADE, TOUCHED
 from features.statusline.shell import words
 
@@ -64,10 +65,10 @@ def counted(group: list[dict], found: list[dict]) -> list[dict]:
         return []
     parts = []
     for (sign, key), color in zip(COUNTS, (GREEN, RED)):
-        counts = [name.get(key, 0) for name in found]
+        counts = list(accumulate(name.get(key, 0) for name in found))
         if not counts[-1]:
             continue
-        said = counts[0] if len(set(counts)) == 1 else counts
+        said = counts if len(counts) > 1 else counts[0]
         parts.append({"value": said, "prefix": sign, "increments": True, "color": color,
                       **({"duration": FLIP_EVERY} if isinstance(said, list) else {})})
     return parts
