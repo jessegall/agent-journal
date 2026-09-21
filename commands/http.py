@@ -117,7 +117,7 @@ def post_appoint(req: Request) -> Reply:
 
 @route("GET", "/api/agent-controls/{provider}")
 def get_agent_controls(req: Request) -> Reply:
-    return Reply(200, control_options(req.params["provider"], str(req.query.get("model") or "")))
+    return Reply(200, control_options(req.params["provider"], str(req.query.get("model") or ""), str(req.query.get("effort") or "")))
 
 
 @route("POST", "/api/{env}/agent/{session}/permit")

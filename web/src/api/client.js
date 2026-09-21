@@ -112,8 +112,8 @@ export class ApiClient {
         return this.get("/agents");
     }
 
-    agentControls(provider, model = "") {
-        return this.get(`/agent-controls/${encoded(provider)}${query({model: model || undefined})}`);
+    agentControls(provider, model = "", effort = "") {
+        return this.get(`/agent-controls/${encoded(provider)}${query({model: model || undefined, effort: effort || undefined})}`);
     }
 
     agentHooks(provider) {

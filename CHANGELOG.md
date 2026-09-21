@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.16.9 — A dropdown marks what is chosen
+
+The model and effort dropdowns in the chat bar mark the value the agent is running with. The server says which choice is current, since only the provider knows that "opus" is claude-opus-5[1m], and one component, kit/ChoiceList, draws any list of choices with the current one marked, so the next dropdown gets it for free.
+
+What to do about it: `journal upgrade`.
+
 ## 2.16.8 — Sending a message no longer makes the chat jump
 
 Recorded frame by frame with Playwright: when the server confirmed a sent message, the waiting copy left and the confirmed one entered under a new key, and a "Waiting for the agent" note appeared under the composer for a moment, pushing the thread up 25 pixels. The thread now keeps the key it gave the waiting copy, the waiting copy stays until the confirmed message replaces it, and the note floats above the composer and fades instead of taking room.
