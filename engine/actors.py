@@ -6,6 +6,7 @@ from engine.record import Record
 from resources.base import AGENT, SYSTEM, USER, Event
 from resources.types import AgentRow, TYPES
 from engine.wording import counted
+from features.journal import TERMINAL
 
 STOPPED, IDLE, BUSY, WORKING, COMPACTING = "stopped", "idle", "busy", "working", "compacting"
 STATES = (STOPPED, IDLE, BUSY, WORKING, COMPACTING)
@@ -81,6 +82,9 @@ class Agent(Actor):
     def heard(self) -> int:
         return self.pending[-1].id if self.pending else self.cursor()
 
+    def typed(self, event: Event) -> bool:
+        return TYPES[event.type].spoken and CONTROLLERS[event.type](self.record, actor=SYSTEM).load(event.n).data.get("delivery") == TERMINAL
+
     def urgent(self, event: Event) -> bool:
         return event.action in TYPES[event.type].urgent_actions
 
@@ -89,8 +93,11 @@ class Agent(Actor):
         pressing = any(self.urgent(e) for e in self.pending)
         if not self.pending or (not pressing and time.time() - self.pending_at < batch["quiet"] and len(self.pending) < batch["size"]):
             return ""
-        said, groups = render(self.pending, self.record)
+        typed = [e for e in self.pending if self.typed(e)]
+        said, groups = render([e for e in self.pending if e not in typed], self.record)
         landed = self.driver.send(said, groups=groups)
+        if typed:
+            landed = self.driver.send(render(typed, self.record)[0], terminal=True) and landed
         for e in self.pending:
             if landed and TYPES[e.type].told:
                 CONTROLLERS[e.type](self.record, actor=SYSTEM).stamp(e.n, delivered=time.time())

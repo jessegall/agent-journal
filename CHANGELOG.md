@@ -4,6 +4,14 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.20.0 — A message says how it is delivered, and a new session is greeted in its terminal
+
+A message the journal sends the agent now carries its delivery: `channel` (the default — the channel where the provider has one, typed otherwise) or `terminal`, which is always typed into the agent's own prompt and never handed to a channel or inbox, whatever the provider. A feature asks for it with `journal.say(..., delivery="terminal")` or `journal.type(...)`.
+
+The first time a session starts, the journal types "the journal is ready on <environment> — say hello in the chat, so the journal's messages reach you" into its terminal. The old opening line only ran when no hook had reported, which the SessionStart hook always had, so a fresh session heard nothing; it is gone.
+
+What to do about it: `journal upgrade`.
+
 ## 2.19.0 — Every feature speaks through its journal, and a said message carries its text
 
 Every feature now holds `self.journal`, one messenger with `say` (a line in the agent's terminal), `whisper` (the same, private to one session), `notify` (the user's rail), `log` (a notification already seen), `notice` (a line pinned over the chat) and `clear`. Each builds one `Message` — kind, filled line, feature, actor, data — and hands it to a single `send()` that stores it and so puts it on the bus. No feature creates nudges, notifications or notices by hand any more: checks, faults, permissions and plugins (the host, the services watcher and plugin answers) all declare their lines and go through it, and each row records which feature said it.

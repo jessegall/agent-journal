@@ -8,7 +8,6 @@ from engine import bus
 from engine.actors import Actor, Agent, BUSY, IDLE, STOPPED, System, User, WORKING
 from engine.inputs import FORCE, PERMIT, take
 from surfaces.control import CARRY_ON, delivered
-from features.start.feature import WAIT_FOR_REPORT, hello
 from engine.record import Record
 from engine.watch import STEADY_AFTER, broke, steady
 from engine.sessions import Sessions
@@ -43,7 +42,6 @@ class Engine(Seat):
         self.typed_at = 0.0
         self.checked_at = time.time()
         self.probed_at = 0.0
-        self.greeted = False
         self.controlled_at = 0.0
         self.carry_on = False
         self.why = ""
@@ -62,7 +60,7 @@ class Engine(Seat):
         self.agent.driver.pump()
         self.relay()
         self.announce_written()
-        self.why = (self.follow() or self.permitted() or self.probe() or self.forced() or self.typing() or self.control() or self.begin()
+        self.why = (self.follow() or self.permitted() or self.probe() or self.forced() or self.typing() or self.control()
                     or self.deliver() or self.nudge() or self.check_in())
         self.seat()
         return self.why
@@ -185,17 +183,6 @@ class Engine(Seat):
         if queued.get("action") in row.pending:
             self.agent.mark(row.status or "", row.event or "", pending={k: v for k, v in row.pending.items() if k != queued["action"]})
         return f"controlled: {queued['label']}"
-
-    def begin(self) -> str:
-        driver = self.agent.driver
-        if self.greeted or driver.last_report() is not None:
-            return ""
-        if time.time() - self.born < WAIT_FOR_REPORT or not driver.at_prompt():
-            return ""
-        self.greeted = True
-        driver.send(hello(self.record.env))
-        self.typed_at = time.time()
-        return "typed the opening line"
 
     def deliver(self) -> str:
         if self.agent.driver.last_report() is None:

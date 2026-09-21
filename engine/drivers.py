@@ -84,8 +84,10 @@ class Driver(ABC):
     def confirm(cls, printed: bytes) -> bytes:
         return b""
 
-    def send(self, text: str = "", exact: bool = False, groups: dict | None = None) -> bool:
+    def send(self, text: str = "", exact: bool = False, groups: dict | None = None, terminal: bool = False) -> bool:
         line = " ".join(part.strip() for part in text.splitlines() if part.strip())
+        if terminal:
+            return self._type_in(line)
         if exact:
             return self._deliver(line)
         if line:

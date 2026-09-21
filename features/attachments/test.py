@@ -104,7 +104,7 @@ def test_an_uploaded_image_is_nudged_for_tags_and_the_cli_tag_command_files_and_
     later_messages.save(later_row, "updated")
     later_agent = Agents(later, actor=SYSTEM).create("new session", status="working")
     Agents(later, actor=SYSTEM).update(later_agent.n, event="SessionStart")
-    assert len(Nudges(later, actor=SYSTEM).all()) == 2, "a starting agent hears about media attached while none was live"
+    assert len([n for n in Nudges(later, actor=SYSTEM).all() if n.data.get("feature") == "attachments"]) == 2, "a starting agent hears about media attached while none was live"
 
     real = folder / "shot.png"
     real.write_bytes(b"\x89PNG\r\n\x1a\n" + struct.pack(">I", 13) + b"IHDR" + struct.pack(">II", 1390, 486) + b"\x08\x06\x00\x00\x00" + b"\0" * 4)
