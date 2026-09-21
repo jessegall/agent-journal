@@ -93,13 +93,16 @@ def handle(provider, root: Path, env: str, raw: dict) -> dict:
     record = Record(root, env, memo=True)
     agents = Agents(record, actor=SYSTEM)
     row = agents.by_session(hook.session)
+    if provider.is_subagent(hook):
+        return provider.response(blocked=next((reason for policy in POLICIES if serving(policy, provider, hook)
+                                               and (reason := policy(provider, record, hook, row.title))), "")) if hook.event == "PreToolUse" else {}
     uses = int(row.uses or 0) + (hook.event == "PreToolUse")
     context = provider.context(hook)
     agents.saw(row.n, {"hook": hook.event, "tool": hook.tool.name, "file": hook.tool.file_path, "session": hook.session},
                status=STATUS[hook.event] or row.status or IDLE, event=hook.event, tool=hook.tool.name, **provider.shell(row, hook),
                **provider.session(hook.transcript), file=hook.tool.file_path,
                wrote=hook.event == "PostToolUse" and provider.writes(hook), cwd=hook.cwd or row.cwd or "", at=time.time(),
-               subagent=provider.is_subagent(hook.transcript), provider=provider.name, uses=uses, transcript=str(hook.transcript or row.transcript or ""), inbox=provider.inbox(hook) or row.inbox or "",
+               provider=provider.name, uses=uses, transcript=str(hook.transcript or row.transcript or ""), inbox=provider.inbox(hook) or row.inbox or "",
                model=provider.model(hook) or row.model or "", effort=provider.effort(Path(hook.cwd or root.parent), hook.transcript), started=row.started or time.time(),
                context=row.context or 0 if context is None else context)
     if hook.event == "PreToolUse":

@@ -245,7 +245,7 @@ class Provider(ABC):
     def subagent_transcript(self, path: Path, session: str) -> Path | None:
         return None
 
-    def is_subagent(self, path) -> bool:
+    def is_subagent(self, hook) -> bool:
         return False
 
     def loaded_skills(self, path: Path) -> dict[str, float]:
