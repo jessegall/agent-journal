@@ -19,6 +19,7 @@ const skills = computed(() => (data.value && data.value.skills) || []);
 const usage = computed(() => (data.value && data.value.usage && data.value.usage.windows) || []);
 const used = (window) => Math.max(0, Math.min(100, Number(window.used ?? 100 - window.remaining)));
 const usageLabel = computed(() => (usage.value.length ? `${Math.round(used(usage.value[0]))}%` : "usage"));
+const live = (rows) => (rows || []).filter((r) => r.running).length;
 const counts = computed(() => [
     {
         key: "skills",
@@ -27,8 +28,8 @@ const counts = computed(() => [
         title: skills.value.length ? `${skills.value.length} skill(s) loaded in this window` : "No journal skill is loaded in this window",
         rows: skills.value,
     },
-    {key: "shells", icon: "terminal", n: (data.value && data.value.shells) || 0, title: "background shells started this session", rows: []},
-    {key: "subagents", icon: "agents", n: (data.value && data.value.subagents) || 0, title: "subagents dispatched this session", rows: []},
+    {key: "shells", icon: "terminal", n: live(data.value && data.value.shell_rows), title: "background shells running now", rows: []},
+    {key: "subagents", icon: "agents", n: live(data.value && data.value.subagent_rows), title: "subagents running now", rows: []},
 ]);
 const skillCount = computed(() => counts.value[0]);
 const activityCounts = computed(() => counts.value.slice(1));
