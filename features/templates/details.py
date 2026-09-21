@@ -1,4 +1,5 @@
-from features.base import FeatureDetails
+from features.base import FeatureDetails, Line
+from features.templates.instructions import INSTRUCTIONS
 
 
 class TemplatesDetails(FeatureDetails):
@@ -22,3 +23,11 @@ class TemplatesDetails(FeatureDetails):
         part's text the phase's complete-when line, and a title ending in (checkpoint) marks a
         checkpoint. A template is refused for a type its applies_to leaves out.
     """
+
+    lines = [
+        Line(
+            name=INSTRUCTIONS,
+            title="template {{n}}, {{title}}: read before working on this",
+            brief="{{brief}}",
+        ),
+    ]

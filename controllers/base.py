@@ -231,7 +231,9 @@ class Controller(Stored, Files, Links):
         return moved
 
     def show(self, n: int) -> Resource:
-        return self.read(n)
+        row = self.read(n)
+        self._handled("show", row=row)
+        return row
 
     def read(self, n: int) -> Resource:
         return self.read_all([n])[0]

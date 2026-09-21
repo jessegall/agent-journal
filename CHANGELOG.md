@@ -4,6 +4,17 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.78.0 — A template's instructions come first for the agent
+
+Design 2, to-do 635. When something is made from a template, the agent reads the template's instructions before working on it:
+- `journal <type> show <n>` prints them above the row, for a row made from a template or a to-do under a plan made from one.
+- Starting work on such a row sends them to the agent privately.
+- A session that starts with that work still open, such as after a compaction, hears them again.
+
+The instructions are never copied into the row, so your words and the template's stay apart. A show hook in the core lets a feature put a preface above a row in the CLI, while the viewer's JSON is unchanged.
+
+What to do about it: `journal upgrade`.
+
 ## 2.77.2 — Codex starts without stopping on its trust questions
 
 Messages 1933 and 1941, to-do 693. When the journal started Codex, Codex first asked whether to trust the project and whether to trust the journal's new or changed hooks. Until someone answered, the first message never reached the agent and the viewer did not open. The journal now starts Codex with `--dangerously-bypass-hook-trust`, the flag Codex offers for automation that vets its own hooks (the journal wrote those hooks), and with `-c projects."<folder>".trust_level="trusted"` for the folder it opens in. Neither question appears. Nothing is written to `~/.codex/config.toml`: the trust holds only for that launch.
