@@ -20,12 +20,19 @@ class Controller:
     resource = Resource
     actor = "user"
 
-    def __init__(self, record: Record, actor: str | None = None, session: str = "", agent: str = ""):
+    def __init__(self, record: Record, actor: str | None = None, session: str = "", agent: str = "", force: str = ""):
         self.record = record
         self.session = session
         self.agent = agent
+        self.force = force
+        self.forced: list[str] = []
         if actor:
             self.actor = actor
+
+    def refuse(self, why: str) -> None:
+        if not self.force:
+            raise Refused(why)
+        self.forced.append(why)
 
     @property
     def type(self) -> str:
@@ -61,7 +68,15 @@ class Controller:
             raise Refused(f"no {self.type} {n}")
         return self.resource.load(p.read_text())
 
+    def note_force(self, r: Resource) -> None:
+        if not self.forced:
+            return
+        r.data["forced"] = [*(r.data.get("forced") or []),
+                            {"why": self.force, "past": list(self.forced), "who": self.actor, "at": time.time()}]
+        self.forced = []
+
     def save(self, r: Resource, action: str, **event) -> Resource:
+        self.note_force(r)
         if self.actor not in r.seen:
             r.seen.append(self.actor)                # whoever acts on it has seen it
         r.updated = time.time()
@@ -125,7 +140,7 @@ class Controller:
     def complete(self, n: int, how: str = "", **data) -> Resource:
         r = self.load(n)
         if r.completed:
-            raise Refused(f"{self.type} {n} is already {self.named('complete')}")
+            self.refuse(f"{self.type} {n} is already {self.named('complete')}")
         r.completed = time.time()
         r.outcome = how
         r.data.update(self._shaped(data))
@@ -134,9 +149,9 @@ class Controller:
     def reopen(self, n: int, why: str) -> Resource:
         r = self.load(n)
         if r.deleted:
-            raise Refused(f"{self.type} {n} is archived; restore it before reopening it")
+            self.refuse(f"{self.type} {n} is archived; restore it before reopening it")
         if not r.completed:
-            raise Refused(f"{self.type} {n} is not {self.named('complete')}")
+            self.refuse(f"{self.type} {n} is not {self.named('complete')}")
         r.completed = 0.0
         r.outcome = ""
         return self.save(r, "reopened", why=why)
@@ -149,7 +164,7 @@ class Controller:
             if alias == name:
                 return getattr(self, method)
         if name in self.resource.names:
-            raise Refused(f"a {self.type} calls that {self.resource.names[name]}")
+            self.refuse(f"a {self.type} calls that {self.resource.names[name]}")
         return self.action(name)
 
     def action(self, name: str):

@@ -73,7 +73,7 @@ class Messages(Controller):
     def edit(self, n: int, text: str):
         r = self.load(n)
         if AGENT in r.seen and self.actor != AGENT:
-            raise Refused(f"message {n} has been read: leave a new one")
+            self.refuse(f"message {n} has been read: leave a new one")
         return self.update(n, brief=text)
 
     def declare(self, n: int, kind: str):
@@ -192,15 +192,15 @@ class Works(Controller):
     def create(self, title: str, abstract: str = "", brief: str = "", **data):
         busy = self.active()
         if busy:
-            raise Refused(f'work {busy.n} is open: end it with journal work end --how "<what landed>", '
+            self.refuse(f'work {busy.n} is open: end it with journal work end --how "<what landed>", '
                           f'or set it aside with journal work park "<why>", before starting another')
         if data.get(types.Work.todo):
             row = Todos(self.record, actor=self.actor).load(int(data[types.Work.todo]))
             if row.completed:
-                raise Refused(f"todo {row.n} is already done")
+                self.refuse(f"todo {row.n} is already done")
             held = row.assigned or ""
             if held and held != self.agent:
-                raise Refused(f"todo {row.n} is assigned to {held}; nobody else may take it")
+                self.refuse(f"todo {row.n} is assigned to {held}; nobody else may take it")
         return super().create(title, abstract, brief, **data)
 
 
@@ -255,7 +255,7 @@ class Plans(Controller):
                 phase[PHASE.todos] = [x for x in phase[PHASE.todos] if x != t]
                 continue
             if elsewhere and elsewhere != int(p) and not move:
-                raise Refused(f"todo {t} already sits in phase {elsewhere} of plan {n}; --move takes it out of there")
+                self.refuse(f"todo {t} already sits in phase {elsewhere} of plan {n}; --move takes it out of there")
             for ph in r.phases:
                 ph[PHASE.todos] = [x for x in ph[PHASE.todos] if x != t]
             phase[PHASE.todos].append(t)
@@ -271,14 +271,14 @@ class Plans(Controller):
         r = self.load(n)
         for i, ph in enumerate(r.phases, 1):
             if not ph[PHASE.todos]:
-                raise Refused(f"plan {n} cannot be ready: phase {i} has no to-dos")
+                self.refuse(f"plan {n} cannot be ready: phase {i} has no to-dos")
         return self._status(r, READY, BUILDING, DRAFT)
 
     def activate(self, n: int):
         self._user_only("activate")
         r = self.load(n)
         if any(x.status in (ACTIVE, WAITING) for x in self.all() if x.n != n):
-            raise Refused("one plan is active at a time on an environment")
+            self.refuse("one plan is active at a time on an environment")
         return self._status(r, ACTIVE, DRAFT, READY)
 
     def resume(self, n: int):
@@ -304,7 +304,7 @@ class Plans(Controller):
 
     def _user_only(self, word: str) -> None:
         if self.actor == AGENT:
-            raise Refused(f"only the user can {word} a plan: they do it in the viewer")
+            self.refuse(f"only the user can {word} a plan: they do it in the viewer")
 
 
 class Docs(Controller):
@@ -383,11 +383,11 @@ class Suggestions(Controller):
     def create(self, title: str, abstract: str = "", brief: str = "", **data):
         waiting = [s for s in self.all() if not s.completed]
         if len(waiting) >= OPEN_SUGGESTIONS:
-            raise Refused(f"{OPEN_SUGGESTIONS} suggestions already wait on the user: {', '.join(str(s.n) for s in waiting)}")
+            self.refuse(f"{OPEN_SUGGESTIONS} suggestions already wait on the user: {', '.join(str(s.n) for s in waiting)}")
         declined = [s for s in self.all() if s.decision == DECLINE.lower() and s.title.lower() == title.lower()]
         if declined and not data.pop("despite", None):
             s = declined[-1]
-            raise Refused(f"suggestion {s.n} was declined{': ' + s.outcome if s.outcome else ''}; --set despite=true --set because=\"<what changed>\" to propose it again")
+            self.refuse(f"suggestion {s.n} was declined{': ' + s.outcome if s.outcome else ''}; --set despite=true --set because=\"<what changed>\" to propose it again")
         options = [{"title": ACCEPT, "description": "a to-do is filed from it", "code": ""},
                    {"title": ADJUST, "description": "say what to do differently below; a to-do is filed from your words", "code": ""},
                    {"title": DECLINE, "description": "it is not proposed again", "code": ""}]
@@ -465,7 +465,7 @@ class Environments(Controller):
     def vacant(self, title: str, mine: str = "") -> None:
         holder = Sessions(self.record.root).holder(title)
         if holder and holder != mine:
-            raise Refused(f"environment {title!r} is held by session {holder}; it leaves first")
+            self.refuse(f"environment {title!r} is held by session {holder}; it leaves first")
 
     def create(self, title: str, abstract: str = "", brief: str = "", **data):
         name = self.unused(check_title(title), ": switch to it")
@@ -488,7 +488,7 @@ class Environments(Controller):
         env = self.load(n)
         holder = self.sessions().holder(env.title)
         if holder and holder != who:
-            raise Refused(f"environment {env.title!r} is taken by session {holder}: claim it with a reason, or work another")
+            self.refuse(f"environment {env.title!r} is taken by session {holder}: claim it with a reason, or work another")
         before = self.sessions().environment(who)
         self.sessions().bind(who, env.title)
         if before and before != env.title:
@@ -506,7 +506,7 @@ class Environments(Controller):
         self.vacant(env.title)
         kept = ", ".join(f"{v} open {k}s" for k, v in held.items() if v)
         if kept and not yes:
-            raise Refused(f"environment {env.title!r} holds {kept}; --yes removes it anyway (its record goes to the attic)")
+            self.refuse(f"environment {env.title!r} holds {kept}; --yes removes it anyway (its record goes to the attic)")
         if record.home.is_dir():
             attic.pack(record.home, f"{env.title}-{int(time.time())}")
         self.force_delete(n)

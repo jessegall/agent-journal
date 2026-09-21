@@ -312,7 +312,8 @@ def context(args: dict) -> dict:
     session = args.pop("session")
     env = args.pop("bound") or (sessions.environment(session) if session else "") or ((root / "runtime" / "env").read_text().strip() if (root / "runtime" / "env").is_file() else "main")
     session = session or sessions.holder(env)
-    return {"record": Record(root, env, memo=True), "session": session, "actor": args.pop("as_actor"), "agent": args.pop("agent"), "sessions": sessions}
+    return {"record": Record(root, env, memo=True), "session": session, "actor": args.pop("as_actor"), "agent": args.pop("agent"),
+            "force": "", "sessions": sessions}
 
 
 READS = {"all", "show", "find", "search", "files", "folder", "comments", "linked_to", "unread", "read"}
@@ -329,7 +330,7 @@ def invoke(fn, args: dict, extra: dict):
     return fn(*positional, **args, **extra)
 
 
-TAKES = {"--root", "--env", "--as", "--session", "--agent"}
+TAKES = {"--root", "--env", "--as", "--session", "--agent", "--force"}
 
 
 def first_word(argv: list[str]) -> str:
@@ -367,8 +368,21 @@ def captured(argv: list[str], root: Path) -> tuple[str, int | None]:
     return spoke, code
 
 
+def lifted(argv: list[str]) -> tuple[list[str], str]:
+    if "--force" not in argv:
+        return argv, ""
+    at = argv.index("--force")
+    why = argv[at + 1] if at + 1 < len(argv) and not argv[at + 1].startswith("--") else ""
+    return argv[:at] + argv[at + 2 if why else at + 1:], why
+
+
 def run(argv: list[str], out=None, err=None) -> int:
     out, err = out or sys.stdout, err or sys.stderr
+    forced = "--force" in argv
+    argv, why = lifted(argv)
+    if forced and not why:
+        print("! --force takes the reason it is forced: --force \"<why>\"", file=err)
+        return 1
     if not first_word(argv) and not {"-h", "--help"} & set(argv):
         argv = [*argv, "help"]
     noun = "" if {"-h", "--help"} & set(argv[:1]) else noun_of(argv)
@@ -378,6 +392,7 @@ def run(argv: list[str], out=None, err=None) -> int:
     if passed and command not in DRIVERS:
         parser(noun).error(f"unrecognized arguments: {' '.join(passed)}")
     ctx = context(args)
+    ctx["force"] = why
     if command in DRIVERS:
         args["args"] = passed
     try:
@@ -392,7 +407,7 @@ def run(argv: list[str], out=None, err=None) -> int:
             why = allowed(ctx["sessions"], ctx["session"], ctx["record"].env, ctx["agent"], command)
             if why:
                 raise Refused(why)
-        controller = CONTROLLERS[command](ctx["record"], actor=ctx["actor"], session=ctx["session"], agent=ctx["agent"])
+        controller = CONTROLLERS[command](ctx["record"], actor=ctx["actor"], session=ctx["session"], agent=ctx["agent"], force=ctx["force"])
         got = invoke(controller.action(method), args, extra)
     except Refused as e:
         print(f"! {e}", file=err)
