@@ -63,18 +63,18 @@ class Checks(Controller):
     def _ran(self, n: int):
         check = self.load(n)
         began, last_steps = time.time(), int((check.last or {}).get("steps") or 0)
-        self.stamp(n, running={"at": began, "said": "", "percent": None})
+        self.stamp(n, running={"at": began, "output": "", "percent": None})
         stamped_at = [began]
 
         def on_output(output: str) -> None:
             if time.time() - stamped_at[0] >= STAMP_EVERY:
                 stamped_at[0] = time.time()
-                self.stamp(n, running={"at": began, "said": tail(output), **progress(output, last_steps)})
+                self.stamp(n, running={"at": began, "output": tail(output), **progress(output, last_steps)})
 
         code, output = streamed(["/bin/sh", "-c", check.command], self.record.root.parent, TIMEOUT, on_output)
         check = self.load(n)
         check.last = {"ok": code == 0, "code": -1 if code is None else code, "at": began, "took": round(time.time() - began, 2),
-                      "steps": steps(output), "said": tail(output) or ("" if code is not None else "the command did not finish")}
+                      "steps": steps(output), "output": tail(output) or ("" if code is not None else "the command did not finish")}
         check.runs = [{k: check.last[k] for k in ("ok", "code", "at", "took")}, *(check.runs or [])][:KEPT_RUNS]
         check.running = {}
         return self.save(check, "updated", ran=True)

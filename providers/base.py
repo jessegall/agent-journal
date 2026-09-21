@@ -174,7 +174,7 @@ class Provider(ABC):
                 "inbox": self.inbox(hook) or row.inbox or "", "model": self.model(hook) or row.model or "",
                 "effort": self.effort(Path(hook.cwd or root.parent), hook.transcript), "started": row.started or time.time(),
                 "context": row.context or 0 if context is None else context, "asking": self.asking(hook),
-                "said": hook.last_message or row.said or ""}
+                "last_message": hook.last_message or row.last_message or ""}
 
     def asking(self, hook) -> dict:
         return {"tool": hook.tool.name, "call": hook.tool.text[:300], "at": time.time()} if hook.event == PERMISSION else {}

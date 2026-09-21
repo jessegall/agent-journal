@@ -87,7 +87,7 @@ class Event:
     actor: str    # one of ACTORS
     data: dict = field(default_factory=dict)
     pid: int = 0
-    heard: bool = False
+    handled: bool = False
 
     def __init_subclass__(cls, **kw):
         super().__init_subclass__(**kw)

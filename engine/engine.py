@@ -75,7 +75,7 @@ class Engine(Seat):
         for e in self.record.events(self.relayed):
             self.relayed = e.id
             features.passed(e, self.record)
-            if not e.heard:
+            if not e.handled:
                 bus.emit(e, self.record)
 
     def announce_written(self) -> None:
@@ -86,13 +86,13 @@ class Engine(Seat):
         written = turns(self.record, row)
         f = runtime.announced_file(self.record.root, row.title)
         announced = read_json(f, None)
-        now = {"line": written[-1].line if written else -1, "said": row.said or ""}
+        now = {"line": written[-1].line if written else -1, "last_message": row.last_message or ""}
         if announced == now:
             return
         write_json(f, now)
         if announced is None:
             return
-        stopped = [row.said] if row.said and row.event == "Stop" and row.said != announced["said"] else []
+        stopped = [row.last_message] if row.last_message and row.event == "Stop" and row.last_message != announced.get("last_message") else []
         for text in [*after(written, announced["line"]), *stopped]:
             chat.send(self.record, row, text)
 

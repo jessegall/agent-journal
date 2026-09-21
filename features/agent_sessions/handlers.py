@@ -61,9 +61,9 @@ class HandBackReport(Handler):
         todos = context.journal.todos
         todo = todos.load(event.n)
         reported = todo.reported or {}
-        if not reported or reported.get("told"):
+        if not reported or reported.get("notified"):
             return
-        todos.update(todo.n, reported={**reported, "told": True})
+        todos.update(todo.n, reported={**reported, "notified": True})
         if reported.get("dispatcher"):
             dispatcher = context.journal.agents.by_session(reported["dispatcher"])
             context.speaking_to(dispatcher).agent.say("reported", who=reported.get("agent"), n=todo.n, how=reported.get("how", ""))

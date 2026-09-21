@@ -13,7 +13,7 @@ from tests.kit import idle, nudges
 
 def test_edits_without_a_log_entry_hold_the_writes_until_the_work_is_logged():
     record = fresh()
-    record.set_setting("work_tracking", {"log_after": 3, "said_after": 2})
+    record.set_setting("work_tracking", {"log_after": 3, "name_work_every": 2})
     works = Works(record, actor=AGENT)
     works.create("editing")
     report(record, "working", "PostToolUse", wrote=True)

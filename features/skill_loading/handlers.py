@@ -22,15 +22,15 @@ class RemindUnloaded(Handler):
         row, name = context.agent.row, context.feature.name
         state = trigger.last(context.record, row.title, name)
         if row.event in WINDOWS and state.get(AgentRow.event) != row.event:
-            trigger.write(context.record, row, name, told=False, uses=row.uses or 0, context=row.context or 0, since=time.time())
+            trigger.write(context.record, row, name, notified=False, uses=row.uses or 0, context=row.context or 0, since=time.time())
             state = trigger.last(context.record, row.title, name)
-        if "told" not in state and state.get(AgentRow.at):
-            trigger.write(context.record, row, name, told=True)
+        if "notified" not in state and state.get(AgentRow.at):
+            trigger.write(context.record, row, name, notified=True)
             state = trigger.last(context.record, row.title, name)
-        if state.get("told") or not context.due() or any(journal_skill(s) for s in row.skills):
+        if state.get("notified") or not context.due() or any(journal_skill(s) for s in row.skills):
             return
         context.agent.whisper("unloaded")
-        trigger.write(context.record, row, name, told=True)
+        trigger.write(context.record, row, name, notified=True)
 
 
 class HoldUntilReloaded(Handler):
