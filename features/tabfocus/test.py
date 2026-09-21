@@ -65,3 +65,13 @@ def test_a_session_starting_shows_the_viewer_once_a_subagent_never_does():
     Agents(record, actor=SYSTEM).create("child-1", parent="claude-1")
     report(record, "idle", "SessionStart", session="child-1")
     assert len(shown) == 3, "a subagent starting shows nothing"
+
+
+def test_a_server_of_another_version_is_not_taken_for_this_journals(tmp_path, monkeypatch):
+    from engine import viewer
+    from engine.version import version
+    said = {"root": str(tmp_path), "version": ""}
+    monkeypatch.setattr(viewer, "identity", lambda url, timeout=0.05: said)
+    assert viewer.answers("http://127.0.0.1:8423/", tmp_path) is False, "a server left from an older install is replaced, not reused"
+    said["version"] = version()
+    assert viewer.answers("http://127.0.0.1:8423/", tmp_path) is True

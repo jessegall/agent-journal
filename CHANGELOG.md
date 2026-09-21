@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.24.7 — A server left from an older install is replaced, not reused
+
+A journal looking for its viewer took any server that answered for its folder as its own. A server started before the 2.0 layout — still running weeks later, with its web build long since removed — was reused, and the viewer answered "no web build". A server now counts only when it reports the installed version too; an older one is left alone and a current one starts beside it.
+
+What to do about it: `journal upgrade`. A server that old is not stopped by this; stop it once (its port is in `.journal/runtime/viewer.json`) and the journal starts a current one.
+
 ## 2.24.6 — The inspector says when a row was deleted
 
 A deleted row opened by its link showed Edit, done and delete as if it were live. The inspector now says it was deleted and offers none of them.
