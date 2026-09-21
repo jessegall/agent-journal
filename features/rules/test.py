@@ -1,12 +1,9 @@
-
-from controllers.types import Facts, Rules
-from engine.hooks import handle, whispered
+from controllers.types import Facts, Nudges, Rules
+from engine.hooks import handle
 from providers import PROVIDERS
-from resources.base import USER
+from resources.base import AGENT, USER
 from tests.conftest import fresh, refused
-from controllers.types import Nudges, Rules
 from tests.kit import nudges, report
-from tests.conftest import fresh
 
 
 def test_a_command_that_touches_a_rules_keyword_is_whispered_the_rule_once_per_session():
@@ -17,7 +14,7 @@ def test_a_command_that_touches_a_rules_keyword_is_whispered_the_rule_once_per_s
         return handle(claude, record.root, record.env, {"hook_event_name": "PreToolUse", "session_id": session, "tool_name": tool, "tool_input": given})
 
     def said(session="claude-1"):
-        return whispered(record, session)
+        return Nudges(record, actor=AGENT)._whispered(session)
 
     rule = Rules(record, actor=USER).create("Never change the git branch", brief="A branch change belongs to the user", keywords=["git checkout", "git switch"])
     pin = Facts(record, actor=USER).create("The viewer is built from web/", brief="web/dist is what the server serves", keywords=["npm run build"])

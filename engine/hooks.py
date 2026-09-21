@@ -46,14 +46,6 @@ def alongside(hook) -> str:
     return f" — and these were on the same line, so they did not run either: {'; '.join(ran)}" if ran else ""
 
 
-def whispered(record: Record, session: str) -> str:
-    nudges = Nudges(record, actor=AGENT)
-    mine = [n for n in nudges.unread() if n.private and n.session == session]
-    for n in mine:
-        nudges.read(n.n)
-    return "\n".join(dict.fromkeys(f"{n.title}{' — ' + n.brief if n.brief else ''}" for n in mine))
-
-
 def start(root: Path, env: str, compacted: bool) -> str:
     path = start_file(root, env, compacted)
     return path.read_text() if path.is_file() else ""
@@ -110,5 +102,5 @@ def handle(provider, root: Path, env: str, hook) -> dict:
     if hook.event == "SessionStart":
         return provider.response(hook.event, start(root, env, provider.compacted(hook)))
     if hook.event in ("PostToolUse", "UserPromptSubmit"):
-        return provider.response(hook.event, whispered(record, row.title))
+        return provider.response(hook.event, Nudges(record, actor=AGENT)._whispered(row.title))
     return {}

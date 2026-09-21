@@ -35,7 +35,7 @@ from providers import PROVIDERS
 from features.format import formatted
 from resources.base import shown as given, AGENT, OPENED, USER, Refused, titled
 from resources.types import Ask
-from engine.stored import write_json, write_text, last_lines
+from engine.stored import write_text, last_lines
 from engine.proc import git, ran
 
 WEB = Path(__file__).resolve().parents[1] / "web" / "dist"
@@ -459,8 +459,7 @@ def post_forget(req: Request) -> Reply:
 
 @route("POST", "/api/{env}/browser/driver")
 def post_driver(req: Request) -> Reply:
-    from controllers.types import driver_file
-    write_json(driver_file(req.root, req.params["env"]), {"on": bool(req.body.get("on")), "url": req.body.get("url", ""), "title": req.body.get("title", ""), "at": time.time()})
+    Asks(req.record(), actor=USER)._drive(req.body.get("on"), req.body.get("url", ""), req.body.get("title", ""))
     return Reply(200, {"ok": True})
 
 
