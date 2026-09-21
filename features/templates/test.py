@@ -50,3 +50,14 @@ def test_the_templates_instructions_come_before_the_work_for_the_agent():
     Plans(record, actor=USER).activate(plan.n)
     Works(record, actor=AGENT).create("digest research", todo=row.n)
     assert [n.title for n in Nudges(record).all() if n.title.startswith(f"template {flow.n}")], "starting its work tells the agent the instructions"
+
+
+def test_the_journal_ships_a_blank_and_a_functional_first_plan_template():
+    from features.templates.shipped import ship
+    features.load()
+    record = fresh()
+    assert (ship(record), ship(record)) == (["Blank plan", "Functional design, then technical implementation"], []), "shipped once, never twice"
+    functional = next(r for r in Templates(record, actor=USER).summaries() if r["title"].startswith("Functional"))
+    plan = Plans(record, actor=AGENT).create("Standup digest", goal="a digest", template=functional["n"])
+    assert [(p["title"], p["checkpoint"]) for p in Plans(record, actor=AGENT).load(plan.n).phases] == \
+        [("Functional design", True), ("Technical implementation", False)], "the functional design is approved at a checkpoint before any build"
