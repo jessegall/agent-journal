@@ -271,6 +271,14 @@ class Claude(Provider):
                     ended.setdefault(str(block.get("tool_use_id") or ""), ("returned", at))
         return ended
 
+    def loaded(self, uses: list[dict]) -> list[str]:
+        return sorted({str(u["input"].get("skill") or "") for u in uses if u["name"] == "Skill"} - {""})
+
+    def skills(self, session: Path | None) -> list[str]:
+        if session is None or not session.is_file():
+            return []
+        return self.loaded([use for _, row in self.entries(session) for use in self.tool_uses(row)])
+
     def crew(self, path: Path) -> dict:
         rows = [row for _, row in self.entries(path)]
         uses = [use for row in rows for use in self.tool_uses(row)]
@@ -291,15 +299,14 @@ class Claude(Provider):
             subagents.append({"id": use["id"], "task": str(given.get("description") or "subagent"), "type": str(given.get("subagent_type") or ""),
                               "model": str(given.get("model") or ""), "running": running, "at": use["at"], "ended": 0.0 if running else done,
                               "status": "" if running else status,
-                              "session": session.stem.removeprefix("agent-") if session else ""})
+                              "session": session.stem.removeprefix("agent-") if session else "", "skills": self.skills(session)})
         shells = []
         for use in (u for u in uses if u["name"] == "Bash" and u["input"].get("run_in_background")):
             status, done = ended.get(use["id"], ("", 0.0))
             finished = status not in ("", "returned")
             shells.append({"id": use["id"], "command": str(use["input"].get("command") or "")[:160], "task": str(use["input"].get("description") or ""),
                            "running": not finished, "at": use["at"], "ended": done if finished else 0.0, "status": status if finished else ""})
-        skills = sorted({str(u["input"].get("skill") or "") for u in uses if u["name"] == "Skill"} - {""})
-        return {AgentRow.skills: skills, AgentRow.shells: len(shells), AgentRow.subagents: len(subagents),
+        return {AgentRow.skills: self.loaded(uses), AgentRow.shells: len(shells), AgentRow.subagents: len(subagents),
                 AgentRow.shell_rows: shells, AgentRow.subagent_rows: subagents}
 
     def subagent_transcript(self, path: Path, session: str) -> Path | None:

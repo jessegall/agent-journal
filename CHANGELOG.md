@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.62.0 — A subagent's panel is the subagent's own
+
+Message 1495, to-do 617. Choosing a subagent in the agent panel used to show its transcript under the main agent's facts, skills and work. Now the whole panel is the subagent's: its task as the title, its type and model, how long it ran or has been running, the skills it loaded itself (read from its own transcript), and the work it filed under its own id. This session goes back to the main agent.
+
+What to do about it: `journal upgrade`.
+
 ## 2.61.2 — Long chat messages fold
 
 Message 1487, to-do 616. A chat message whose text runs taller than about twenty lines is folded to sixteen, fading out at the bottom, with a Show more button under it that becomes Show less once opened.
