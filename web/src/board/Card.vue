@@ -4,12 +4,15 @@ import Icon from "../kit/Icon.vue";
 import PriorityIcon from "../kit/PriorityIcon.vue";
 import {useCardDrag} from "../composables/cardDrag.js";
 import {peek} from "../route.js";
+import {store} from "../state/store.js";
 import CardMenu from "./CardMenu.vue";
 
 const props = defineProps({card: Object});
 const board = inject("board");
 const drag = useCardDrag();
 const menu = ref(false);
+const titleOf = (name) => (store.board.agents.find((agent) => agent.name === name) || {title: name}).title;
+const people = () => [...new Set([props.card.assigned, props.card.worker && props.card.worker.agent].filter(Boolean))];
 
 function begin(event) {
     event.dataTransfer.effectAllowed = "move";
@@ -37,6 +40,20 @@ function begin(event) {
         <template v-if="card.reason">
             <span class="reason">{{ card.reason }}</span>
         </template>
+        <span class="chips">
+            <template v-for="name in people()" :key="name">
+                <span class="chip agent">{{ titleOf(name) }}</span>
+            </template>
+            <template v-if="card.worker && card.worker.parked">
+                <span class="chip">parked</span>
+            </template>
+            <template v-if="card.reported">
+                <span class="chip">Reported</span>
+            </template>
+            <template v-if="card.question">
+                <span class="chip question" title="A question waits on you" @click.stop="peek('question', card.question)">!</span>
+            </template>
+        </span>
         <template v-if="card.plan">
             <span class="chip" @click.stop="peek('plan', card.plan.n)">Plan {{ card.plan.n }} · phase {{ card.plan.phase }}</span>
         </template>
@@ -121,6 +138,26 @@ function begin(event) {
     border-radius: 99px;
     color: var(--text-2);
     font-size: 11px;
+}
+
+.chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+}
+
+.chips:empty {
+    display: none;
+}
+
+.chip.agent {
+    color: var(--accent-text);
+}
+
+.chip.question {
+    border-color: var(--danger);
+    color: var(--danger);
+    font-weight: 700;
 }
 
 .chip:hover {

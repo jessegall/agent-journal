@@ -140,7 +140,7 @@ dd {
 
 dt {
     margin-top: 8px;
-    font-family: var(--mono);
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
     font-size: 12px;
 }
 
@@ -159,7 +159,7 @@ pre {
 }
 
 code {
-    font-family: var(--mono);
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
     font-size: 11.5px;
 }
 </style>
