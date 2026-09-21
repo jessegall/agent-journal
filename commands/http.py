@@ -153,6 +153,7 @@ def settings(record: Record) -> dict:
     return {Record.features: switches(record),
             Record.triggers: record.triggers, Record.keep: record.keep, Record.delivery: record.delivery,
             Record.tags: {"names": features.FEATURES["tags"].names(record), "places": features.FEATURES["tags"].places(record)},
+            Record.agents: {"recent": record.agents.get("recent", 60), "lapse": record.agents.get("lapse", 20)},
             Record.questions: {"hold": features.FEATURES["questions"].held_for(record)}}
 
 

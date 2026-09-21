@@ -1,6 +1,6 @@
 <script setup>
 import {computed, onUnmounted, ref} from "vue";
-import {span} from "../store.js";
+import {span, store} from "../store.js";
 
 const props = defineProps({
     rows: {type: Array, default: () => []},
@@ -10,8 +10,8 @@ const props = defineProps({
 const emit = defineEmits(["open"]);
 const now = ref(Date.now() / 1000);
 const clock = setInterval(() => (now.value = Date.now() / 1000), 1000);
-const RECENT = 3600;
-const recent = computed(() => props.rows.filter((r) => r.running || now.value - (r.ended || r.at || 0) <= RECENT));
+const minutes = computed(() => Number(((store.settings && store.settings.agents) || {}).recent ?? 60));
+const recent = computed(() => props.rows.filter((r) => r.running || now.value - (r.ended || r.at || 0) <= minutes.value * 60));
 const listed = computed(() => [...recent.value.filter((r) => r.running), ...recent.value.filter((r) => !r.running).reverse()]);
 const dropped = computed(() => props.rows.length - recent.value.length);
 const running = computed(() => props.rows.filter((r) => r.running).length);
@@ -29,7 +29,7 @@ onUnmounted(() => clearInterval(clock));
 </script>
 
 <template>
-    <p class="crew-none">{{ running }} running, {{ total }} {{ started }} in this session<template v-if="dropped">, {{ dropped }} older than an hour not shown</template>.</p>
+    <p class="crew-none">{{ running }} running, {{ total }} {{ started }} in this session<template v-if="dropped">, {{ dropped }} older than {{ minutes }} minutes not shown</template>.</p>
     <template v-for="row in listed" :key="row.id || row.cell || `${row.task}-${row.model}`">
         <button
             type="button"
