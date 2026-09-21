@@ -146,8 +146,16 @@ def install(project: Path, root: Path | None = None) -> list[str]:
     return done
 
 
+def old_git_hook(project: Path) -> list[str]:
+    hook = project / ".git" / "hooks" / "post-commit"
+    if hook.is_file() and "agent-journal:" in hook.read_text(errors="replace"):
+        hook.unlink()
+        return ["the version 1 post-commit git hook removed"]
+    return []
+
+
 def configure(project: Path, root: Path) -> list[str]:
-    done = []
+    done = old_git_hook(project)
     present = []
     for name, cls in PROVIDERS.items():
         provider = cls()

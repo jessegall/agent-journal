@@ -40,3 +40,21 @@ def test_the_journals_hook_py_runs_the_current_hook_for_an_older_command_that_pa
     assert ran.stdout.strip() == f"claude {tmp_path.resolve()}", "no provider given: Claude, on the journal hook.py sits in"
     from install import ENTRYPOINTS
     assert all(text.startswith("#!/usr/bin/env python3") for text in ENTRYPOINTS.values()), "an entry made executable runs with Python, never the shell"
+
+
+def test_an_install_over_version_1_leaves_only_its_own_hooks(tmp_path):
+    import json
+    from install import configure
+    (tmp_path / ".claude").mkdir()
+    (tmp_path / ".git" / "hooks").mkdir(parents=True)
+    walk = 'd="${CLAUDE_PROJECT_DIR:-$PWD}"; if [ -x "$d/.journal/hook.py" ]; then exec "$d/.journal/hook.py"; fi'
+    direct = f"python3 {tmp_path}/.journal/hook.py claude"
+    mine = {"type": "command", "command": "echo not the journal"}
+    (tmp_path / ".claude" / "settings.json").write_text(json.dumps({"hooks": {"Stop": [{"hooks": [{"type": "command", "command": walk}]},
+                                                                                  {"hooks": [{"type": "command", "command": direct}]}, {"hooks": [mine]}]}}))
+    (tmp_path / ".git" / "hooks" / "post-commit").write_text('#!/bin/sh\n# agent-journal: a commit that names a to-do closes it.\n"$top/.journal/journal.py" todos from-commit HEAD\n')
+    configure(tmp_path, tmp_path / ".journal")
+    commands = lambda name: [h["command"] for block in json.loads((tmp_path / ".claude" / name).read_text())["hooks"]["Stop"] for h in block["hooks"]]
+    assert commands("settings.json") == ["echo not the journal"], "the shared file keeps only what is not the journal's"
+    assert [c.split("/")[-1] for c in commands("settings.local.json")] == [".journal"], "the journal's hook is wired per person, where every worktree reads it"
+    assert not (tmp_path / ".git" / "hooks" / "post-commit").exists(), "version 1's git hook calls a command that is gone"

@@ -7,7 +7,7 @@ from pathlib import Path
 
 from engine.transcript import AGENT, HUMAN, INJECTED, PEER, SUMMARY, SUPERSEDED, TASK, TOOL, Turn, timestamp
 from providers.payload import EVENTS
-from providers.base import Provider
+from providers.base import Provider, journal_hook
 from providers.payload import Hook
 from resources.types import AgentRow
 from engine.stored import read_json, tail, write_text
@@ -100,6 +100,7 @@ class Claude(Provider):
         write_text(f, json.dumps({**known, "mcpServers": servers}, indent=2) + "\n")
 
     def wire(self, project: Path, command: str) -> Path:
+        self.shared(project)
         wired = super().wire(project, command)
         self.channel(project, command)
         settings = self.settings(project)
@@ -134,7 +135,21 @@ class Claude(Provider):
         return (project / ".claude").is_dir() or shutil.which("claude") is not None
 
     def config(self, project: Path) -> Path:
-        return project / ".claude" / "settings.json"
+        return project / ".claude" / "settings.local.json"
+
+    def shared(self, project: Path) -> None:
+        f = project / ".claude" / "settings.json"
+        had = read_json(f, None)
+        if not isinstance(had, dict):
+            return
+        kept = {event: [b for b in blocks if not journal_hook(json.dumps(b))] for event, blocks in (had.get("hooks") or {}).items()}
+        cleaned = {**had, "hooks": {event: blocks for event, blocks in kept.items() if blocks}}
+        if STATUS_SCRIPT in json.dumps(cleaned.get("statusLine") or ""):
+            cleaned.pop("statusLine")
+        if not cleaned["hooks"]:
+            cleaned.pop("hooks")
+        if cleaned != had:
+            write_text(f, json.dumps(cleaned, indent=2) + "\n")
 
     def wiring(self, command: str) -> dict:
         return {"hooks": {event: [{"hooks": [{"type": "command", "command": command}]}] for event in EVENTS}}

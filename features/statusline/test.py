@@ -106,3 +106,8 @@ def test_a_terminal_answering_a_query_is_not_the_user_typing():
     from engine.supervisor import typing
     assert (typing(b"\x1bP>|iTerm2 3.5\x1b\\"), typing(b"\x1b]11;rgb:1616/1818/1d1d\x07"), typing(b"a")) == (False, False, True), \
         "a version or colour reply comes in on the keyboard but holds nothing"
+
+
+def test_with_the_header_off_nothing_is_drawn_or_wiped():
+    from engine import band
+    assert (band.SHOWN, band.release()) == (False, b""), "the terminal is the agent's alone: an exit clears none of its rows"
