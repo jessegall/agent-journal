@@ -3,12 +3,13 @@ import re
 from features import trigger
 from features.parts import Context, ToolInterceptor
 from features.skill_loading.catalogue import loaded_at
+from features.skill_loading.required import outstanding, require
 from skills import LIBRARY
 
 NOUN = re.compile(r"(?:^|[\s;&|(])journal(?:\s+--\S+)*\s+([a-z]+)\b")
 
 
-class NameSkillForCommand(ToolInterceptor):
+class RequireCommandSkill(ToolInterceptor):
     def intercept(self, context: Context, call) -> str:
         found = NOUN.search(call.command) if call.command else None
         library = context.record.root.parent / LIBRARY
@@ -18,6 +19,19 @@ class NameSkillForCommand(ToolInterceptor):
         row = context.agent.row
         since = float(trigger.last(context.record, row.title, context.feature.name).get("since") or 0)
         at = float(loaded_at(row).get(skill) or 0)
-        if not (at and at >= since) and context.once("needed", f"{since}:{skill}"):
-            context.agent.whisper("needed", skill=skill, noun=found.group(1))
+        if not at or at < since:
+            require(context.record, row.title, {skill: since})
         return ""
+
+
+class RefuseUntilLoaded(ToolInterceptor):
+    limit = "most_refusals"
+
+    def intercept(self, context: Context, call) -> str:
+        if not context.agent:
+            return ""
+        missing = outstanding(context.record, context.agent.row)
+        if not missing:
+            return ""
+        title, brief = context.feature.line("required", {"skills": ", ".join(missing), "loads": ", ".join(f"Skill: {name}" for name in missing)})
+        return f"{title} - {brief}"

@@ -86,17 +86,30 @@ def test_skill_homes_that_are_one_folder_keep_real_skill_files(tmp_path):
         "a self-pointing link is replaced by the real folder, and linking onto the same folder is skipped"
 
 
-def test_a_command_whose_feature_skill_is_not_loaded_names_the_skill_once():
-    from features import FEATURES
-    from providers.payload import Hook
-    from controllers.types import Agents
-    from features.parts import Context
-    from features.skill_loading.interceptors import NameSkillForCommand
+def test_every_tool_call_waits_until_a_required_skill_is_loaded(tmp_path):
+    import json
+    from datetime import datetime, timezone
+    from engine.hooks import handle
+    from providers import PROVIDERS
     record = fresh()
+    record.set_setting("features", {"work_tracking": False})
     (record.root.parent / ".agents" / "skills" / "journal-plans").mkdir(parents=True, exist_ok=True)
     (record.root.parent / ".agents" / "skills" / "journal-plans" / "SKILL.md").write_text("---\nname: journal-plans\n---\n")
-    report(record, "working", "PreToolUse")
-    ran = Hook.read({"hook_event_name": "PreToolUse", "tool_name": "Bash", "tool_input": {"command": "journal plan phase 1 build --when done"}})
-    for _ in range(2):
-        NameSkillForCommand().intercept(Context.of(FEATURES["skill_loading"], record, Agents(record, actor="system").by_session("claude-1"), hook=ran), ran.tool)
-    assert [n for n in nudges(record) if "journal-plans" in n] == ["load the journal-plans skill"], "named once in a window"
+    transcript = tmp_path / "s.jsonl"
+    transcript.write_text(json.dumps({"type": "user", "message": {"content": "go"}}) + "\n")
+    report(record, "working", "PreToolUse", provider="claude", transcript=str(transcript))
+
+    def call(tool, **given):
+        said = handle(PROVIDERS["claude"](), record.root, record.env, {"hook_event_name": "PreToolUse", "session_id": "claude-1", "tool_name": tool, "tool_input": given})
+        return str((said or {}).get("reason") or "")
+
+    assert "load journal-plans before anything else" in call("Bash", command="journal plan phase 1 build --when done"), \
+        "a command whose skill is not loaded does not run"
+    assert "Skill: journal-plans" in call("Read", file_path="x.py"), "and every other tool call waits too"
+    assert call("Skill", skill="journal-plans") == "", "loading a skill is never refused"
+    record.set_setting("skill_loading", {"most_refusals": 3})
+    assert [bool(call("Read", file_path="x.py")) for _ in range(3)] == [True, False, False], "after the limit in a row the call goes through, so nothing is stuck"
+    now = datetime.now(timezone.utc).isoformat()
+    loaded = {"type": "assistant", "timestamp": now, "message": {"content": [{"type": "tool_use", "name": "Skill", "input": {"skill": "journal-plans"}}]}}
+    transcript.write_text(transcript.read_text() + json.dumps(loaded) + "\n")
+    assert call("Bash", command="journal plan phase 1 build --when done") == "", "once it is loaded, work goes on"
