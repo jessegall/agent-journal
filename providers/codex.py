@@ -9,6 +9,7 @@ from providers.base import Provider
 from providers.payload import Hook
 from resources.types import AgentRow
 from engine.stored import tail
+from engine.drivers import Driver
 
 TOOLS = {"exec": "Bash", "exec_command": "Bash", "shell": "Bash", "shell_command": "Bash", "apply_patch": "Edit"}
 SKILL_PATH = re.compile(r"\.(?:codex|agents)/skills/(journal(?:-[\w-]+)?)/SKILL\.md")
@@ -308,3 +309,12 @@ class Codex(Provider):
             if loop:
                 found.update(word for word in loop.group(1).split() if word == "journal" or word.startswith("journal-"))
         return uses + [{"name": "Skill", "input": {"skill": skill}, "at": at} for skill in sorted(found)]
+
+
+class CodexDriver(Driver):
+    name = "codex"
+    AUTO_ARGS = ("--approve-for-me",)
+    APPROVAL_FLAGS = frozenset({"-a", "--ask-for-approval", "--approve-for-me", "--full-auto", "--dangerously-bypass-approvals-and-sandbox"})
+
+    def command(self, args: list[str]) -> list[str]:
+        return ["codex", *args]

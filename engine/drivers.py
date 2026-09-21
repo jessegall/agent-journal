@@ -8,7 +8,6 @@ from abc import ABC, abstractmethod
 from controllers.types import Agents
 from engine import typist
 from resources.base import Refused, SYSTEM
-from engine import runtime
 from engine.wording import counted
 
 ENTER_AFTER = 0.3
@@ -185,46 +184,3 @@ class Driver(ABC):
             return ANSI.sub(b"", self.printed.read_bytes()[-400:]).decode(errors="replace")
         except OSError:
             return ""
-
-
-class Claude(Driver):
-    name = "claude"
-    AUTO_ARGS = ("--permission-mode", "auto")
-    APPROVAL_FLAGS = frozenset({"--permission-mode", "--dangerously-skip-permissions"})
-    TAKES_OURS = ("--settings", json.dumps({"crossSessionInbound": "accept"}))
-    CHANNEL = ("--dangerously-load-development-channels", "server:journal")
-    LISTENING = 15.0
-
-    def command(self, args: list[str]) -> list[str]:
-        return ["claude", *(() if self.TAKES_OURS[0] in args else self.TAKES_OURS), *self.CHANNEL, *args]
-
-    @classmethod
-    def confirm(cls, printed: bytes) -> bytes:
-        plain = b"".join(ANSI.sub(b"", printed).split())
-        return b"\r" if cls.CHANNEL[0].encode() in plain and CHOICE.search(plain) else b""
-
-    def _post(self, line: str) -> bool:
-        return self._handed(line) or super()._post(line)
-
-    def _handed(self, line: str) -> bool:
-        root = self.record.root
-        try:
-            if not self.record.delivery.get("channel", True) or time.time() - runtime.channel_alive(root).stat().st_mtime > self.LISTENING:
-                return False
-            with runtime.channel_queue(root).open("a") as queue:
-                queue.write(json.dumps({"content": line, "meta": {"from": "journal"}}) + "\n")
-            return True
-        except OSError:
-            return False
-
-
-class Codex(Driver):
-    name = "codex"
-    AUTO_ARGS = ("--approve-for-me",)
-    APPROVAL_FLAGS = frozenset({"-a", "--ask-for-approval", "--approve-for-me", "--full-auto", "--dangerously-bypass-approvals-and-sandbox"})
-
-    def command(self, args: list[str]) -> list[str]:
-        return ["codex", *args]
-
-
-DRIVERS = {d.name: d for d in (Claude, Codex)}

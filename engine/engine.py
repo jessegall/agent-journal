@@ -310,7 +310,7 @@ class Engines:
         self.held: dict[str, Engine] = {}
 
     def seated(self, session: str) -> Engine | None:
-        from engine.drivers import DRIVERS
+        from providers import DRIVERS
         sessions = Sessions(self.root)
         provider, env = sessions.read(session).get("provider", ""), sessions.environment(session)
         if provider not in DRIVERS or not env:

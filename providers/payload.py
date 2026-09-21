@@ -1,7 +1,10 @@
 from dataclasses import dataclass, field
 from pathlib import Path
 
-EVENTS = ("SessionStart", "Stop", "UserPromptSubmit", "PreToolUse", "PostToolUse", "PreCompact", "SubagentStart", "SubagentStop", "SessionEnd")
+STATUS = {"SessionStart": "idle", "Stop": "idle", "UserPromptSubmit": "working", "PreToolUse": "working",
+          "PostToolUse": "working", "PreCompact": "compacting", "SubagentStart": "",
+          "SubagentStop": "", "SessionEnd": "stopped"}
+EVENTS = tuple(STATUS)
 
 
 @dataclass(frozen=True)
