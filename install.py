@@ -3,6 +3,7 @@ import shutil
 import stat
 import subprocess
 import sys
+import hashlib
 import marshal
 import tempfile
 import time
@@ -26,9 +27,10 @@ RETIRED = ("hook.py", "support")
 REPOSITORY = "https://github.com/jessegall/agent-journal"
 SRC = "src"
 ARCHIVE = "journal.pyz"
+KEPT_BUILDS = 3
 STUBS = {"journal.py": "journal", "channel.py": "channel", "serve.py": "serve", "engine/supervisor.py": "engine.supervisor", "engine/keeper.py": "engine.keeper"}
 STUB = ("import runpy\nimport sys\nfrom pathlib import Path\n\n"
-        "sys.path.insert(0, str(Path(__file__).resolve().parents[{up}] / \"{archive}\"))\nrunpy.run_module(\"{module}\", run_name=\"__main__\", alter_sys=True)\n")
+        "sys.path.insert(0, str((Path(__file__).resolve().parents[{up}] / \"{archive}\").resolve()))\nrunpy.run_module(\"{module}\", run_name=\"__main__\", alter_sys=True)\n")
 PACKED_DIRS = ("commands", "controllers", "engine", "features", "migrations", "providers", "resources", "surfaces")
 
 
@@ -71,7 +73,7 @@ def refresh(source: Path, target: Path) -> tuple[set, set]:
 
 
 FORWARD = ('#!/usr/bin/env python3\nimport runpy\nimport sys\nfrom pathlib import Path\n\nhere = Path(__file__).resolve().parent\n'
-           f'packed = here / "{ARCHIVE}"\nsys.argv[0] = str(packed if packed.is_file() else here / "src" / "__main__.py")\n'
+           f'packed = (here / "{ARCHIVE}").resolve()\nsys.argv[0] = str(packed if packed.is_file() else here / "src" / "__main__.py")\n'
            'runpy.run_path(sys.argv[0], run_name="__main__")\n')
 HOOK = ('#!/usr/bin/env python3\nimport os\nimport sys\nfrom pathlib import Path\n\nroot = Path(__file__).resolve().parent\n'
         'os.execvp("sh", ["sh", str(root / "src" / "hook.sh"), *(sys.argv[1:2] or ["claude"]), str(root)])\n')
@@ -235,10 +237,11 @@ def upgrade(project: Path, root: Path | None = None) -> list[str]:
         done.append("package pulled" if pulled.returncode == 0 else f"package not pulled: {pulled.stderr.strip()}")
     running = {name: previous(root, name) for name in RESTARTS}
     changed, gone = refresh(source, code(root))
+    restarted = {name for name, was in running.items() if was is not None and was != (source / name).read_bytes()}
     if temporary:
         shutil.rmtree(temporary, ignore_errors=True)
     done.append(f"package refreshed: {len(changed)} changed, {len(gone)} retired")
-    done += owed(root, {name for name, was in running.items() if was is not None and was != (source / name).read_bytes()})
+    done += owed(root, restarted)
     if reloaded:
         finished = subprocess.run([sys.executable, str(code(root) / "install.py"), "finish", str(project)], capture_output=True, text=True, timeout=120)
         return done + (finished.stdout.strip().splitlines() if finished.returncode == 0 else [f"package refreshed but configuration failed: {finished.stderr.strip()}"])
@@ -307,20 +310,31 @@ def pack(root: Path) -> str:
     files = python_files(src)
     if not (src / "__main__.py").is_file():
         return f"the Python is already in {ARCHIVE}"
-    built = root / f"{ARCHIVE}.new"
-    stamp = int(time.time()) // 2 * 2
-    moment = time.localtime(stamp)[:6]
-    with zipfile.ZipFile(built, "w", zipfile.ZIP_DEFLATED) as archive:
-        for f in files:
-            name = f.relative_to(src).as_posix()
-            source = f.read_bytes()
-            archive.writestr(zipfile.ZipInfo(name, moment), source)
-            archive.writestr(zipfile.ZipInfo(name[:-3] + ".pyc", moment), compiled(source, str(root / ARCHIVE / name), stamp))
-    started = subprocess.run([sys.executable, str(built), "--root", str(root), "version"], cwd=root.parent, capture_output=True, text=True, timeout=120)
-    if started.returncode != 0:
-        built.unlink(missing_ok=True)
-        return f"{ARCHIVE} not built, the journal still runs from {SRC}/: {started.stderr.strip()[-300:]}"
-    built.replace(root / ARCHIVE)
+    digest = hashlib.sha256(b"".join(f.relative_to(src).as_posix().encode() + f.read_bytes() for f in files)).hexdigest()[:10]
+    version = (src / "VERSION").read_text().strip() if (src / "VERSION").is_file() else "0"
+    target = root / f"journal-{version}-{digest}.pyz"
+    if not target.is_file():
+        built = target.with_suffix(".new")
+        stamp = int(time.time()) // 2 * 2
+        moment = time.localtime(stamp)[:6]
+        with zipfile.ZipFile(built, "w", zipfile.ZIP_DEFLATED) as archive:
+            for f in files:
+                name = f.relative_to(src).as_posix()
+                source = f.read_bytes()
+                archive.writestr(zipfile.ZipInfo(name, moment), source)
+                archive.writestr(zipfile.ZipInfo(name[:-3] + ".pyc", moment), compiled(source, str(target / name), stamp))
+        started = subprocess.run([sys.executable, str(built), "--root", str(root), "version"], cwd=root.parent, capture_output=True, text=True, timeout=120)
+        if started.returncode != 0:
+            built.unlink(missing_ok=True)
+            return f"{ARCHIVE} not built, the journal still runs from {SRC}/: {started.stderr.strip()[-300:]}"
+        built.replace(target)
+    pointer = root / f"{ARCHIVE}.link"
+    pointer.unlink(missing_ok=True)
+    pointer.symlink_to(target.name)
+    pointer.replace(root / ARCHIVE)
+    for old in sorted(root.glob("journal-*.pyz"), key=lambda f: f.stat().st_mtime, reverse=True)[KEPT_BUILDS:]:
+        if old != target:
+            old.unlink(missing_ok=True)
     for f in files:
         f.unlink()
     for name in PACKED_DIRS:

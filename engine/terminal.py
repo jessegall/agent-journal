@@ -22,7 +22,7 @@ CHECK_EVERY = 0.5
 
 def watched(root: Path) -> tuple:
     files = sorted(code(root).rglob("*.py"))
-    return tuple((str(f), f.stat().st_mtime_ns) for f in files if f.is_file())
+    return (str((root / "journal.pyz").resolve()), *((str(f), f.stat().st_mtime_ns) for f in files if f.is_file()))
 
 
 def agent_environment(base: dict | None = None, env: str = "") -> dict:
