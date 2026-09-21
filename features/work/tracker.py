@@ -5,7 +5,7 @@ from pathlib import Path
 from controllers.types import Agents, Works
 from engine.stored import read_json, write_json
 from providers import PROVIDERS
-from providers.base import WRITES
+from features.statusline.commands import WRITES
 from resources.base import SYSTEM, names
 from resources.shapes import CHANGE, COMMIT
 from resources.types import COMMAND, RUNNING

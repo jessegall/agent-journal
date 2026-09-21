@@ -2,7 +2,7 @@ import json
 import re
 from pathlib import Path
 
-from engine.hooks import EVENTS
+from providers.payload import EVENTS
 from features.base import REGISTRY
 from surfaces.updates import newer
 from resources.base import ACTIONS, Refused
