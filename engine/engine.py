@@ -136,6 +136,9 @@ class Engine(Seat):
             return "silent for two minutes: probing with Ctrl-C"
         return ""
 
+    def addressed(self, e) -> bool:
+        return TYPES[e.type].spoken and CONTROLLERS[e.type](self.record, actor=SYSTEM).load(e.n).data.get("session") in self.names()
+
     def names(self) -> set[str]:
         last = self.agent.driver.last_report()
         return {self.agent.driver.session, *([last.title] if last and last.title else [])}
@@ -194,7 +197,7 @@ class Engine(Seat):
         for actor in self.actors:
             fresh = actor.cursor() == 0
             for e in self.record.events(actor.heard()):
-                if fresh and e.at < self.born:
+                if fresh and e.at < self.born and not self.addressed(e):
                     if actor is self.agent and TYPES[e.type].spoken:
                         CONTROLLERS[e.type](self.record, actor=AGENT).read(e.n)
                     actor.notified(e)
