@@ -44,9 +44,9 @@ class AgentsFeature(Feature):
         sessions = Sessions(record.root)
         gone = sessions.read(agent.title).get("evicted")
         if gone and not sessions.environment(agent.title):
-            self.hold(record, f"environment {gone['environment']!r} was claimed by session {gone['by']} ({gone['why']}): switch to another, or claim it back", "eviction")
+            self.hold(record, f"environment {gone['environment']!r} was claimed by session {gone['by']} ({gone['why']}): switch to another, or claim it back", "eviction", agent)
         else:
-            self.release(record, "eviction")
+            self.release(record, "eviction", agent)
 
     @event("agent.updated")
     def sweep(self, event, record) -> None:

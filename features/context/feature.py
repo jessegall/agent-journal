@@ -20,10 +20,10 @@ class Context(Feature):
     def ask(self, event, record) -> None:
         agent = self.agent(event, record)
         if agent.decided:
-            return self.release(record)
+            return self.release(record, agent=agent)
         if self.due(record, agent):
             pct = agent.context
-            self.hold(record, f"context {pct}% full — decide before any other write — journal fact, journal rule, or journal nothing \"<why>\"")
+            self.hold(record, f"context {pct}% full — decide before any other write — journal fact, journal rule, or journal nothing \"<why>\"", agent=agent)
             self.nudge(record, agent, f"context {pct}% full, decide", "a fact is what a later reader would get wrong without, a rule binds every environment, or nothing \"<why>\"")
 
     @event("fact.created")

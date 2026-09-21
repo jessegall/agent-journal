@@ -43,7 +43,7 @@ class Questions(Feature):
             return
         self.nudge(record, agent, "your last message offers choices in prose",
                    "ask through journal question ask \"<one line>\" --set options='[{\"title\": …, \"description\": …}]' --set pick=<n>, so the viewer renders it; your writes wait until you do")
-        self.hold(record, "your last message offered the user choices in prose: ask them through journal question ask --set options=… before any other write", "asking")
+        self.hold(record, "your last message offered the user choices in prose: ask them through journal question ask --set options=… before any other write", "asking", agent)
 
     @event("question.created")
     def asked(self, event, record) -> None:

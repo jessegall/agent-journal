@@ -50,9 +50,9 @@ class Skills(Feature):
             return
         loaded = provider().loaded_skills(Path(agent.transcript))
         if any(name == "journal" and float(at or 0) >= since for name, at in loaded.items()):
-            self.release(record, "reload")
+            self.release(record, "reload", agent)
         else:
-            self.hold(record, "a fresh window has no journal skill: load it first - Skill: journal", "reload")
+            self.hold(record, "a fresh window has no journal skill: load it first - Skill: journal", "reload", agent)
 
     @event("agent.updated")
     def stale(self, event, record) -> None:
