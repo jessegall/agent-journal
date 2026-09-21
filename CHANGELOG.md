@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.74.1 — The Kanban board is shipped
+
+Plan 10, to-do 682, the last one. The kanban skill now also says that dropping a card on Doing starts it through the same gate as `journal todo start`, and that the Board page shows the lanes, lets cards be dragged or moved from their menu, and follows the record as it changes. Every check passes. Plan 10's six phases are done: lanes read from the record (2.70.0), moving a card by command (2.71.0), the Board page (2.72.0), dragging and the card menu (2.73.0), and agents, filters and live updates (2.74.0).
+
+What to do about it: `journal upgrade`.
+
 ## 2.74.0 — Agents, filters and live updates on the board
 
 Plan 10, phase 5, to-dos 679 to 681.

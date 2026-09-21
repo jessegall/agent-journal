@@ -17,7 +17,11 @@ class KanbanDetails(FeatureDetails):
 
         journal todo board [--plan n] [--agent id] prints the board. journal todo shift <n>
         <lane> [--why] [--how] moves a card through the same actions the rest of the journal
-        uses: blocking, unblocking, closing and reopening a to-do.
+        uses: blocking, unblocking, closing and reopening a to-do, and starting it when it is
+        dropped on Doing, through the same gate as journal todo start.
+
+        The Board page in the viewer shows the lanes side by side. Cards are dragged between
+        them, or moved from their menu, and the board follows the record as it changes.
     """
 
     settings = [
