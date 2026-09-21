@@ -94,7 +94,7 @@ class Engine(Seat):
             return
         stopped = [row.said] if row.said and row.event == "Stop" and row.said != announced["said"] else []
         for text in [*after(written, announced["line"]), *stopped]:
-            chat.said(self.record, row, text)
+            chat.send(self.record, row, text)
 
     def elsewhere(self, e) -> bool:
         meant = spoken_data(self.record, e).get("session")
@@ -184,7 +184,7 @@ class Engine(Seat):
         count = 0
         for actor in self.actors:
             fresh = actor.cursor() == 0
-            for e in self.record.events(actor.heard()):
+            for e in self.record.events(actor.delivered_until()):
                 if fresh and e.at < self.born and not self.addressed(e):
                     if actor is self.agent and TYPES[e.type].typed_as_title:
                         CONTROLLERS[e.type](self.record, actor=AGENT).read(e.n)

@@ -32,11 +32,11 @@ class InstallNewerVersion(Handler):
         if not INSTALLING.acquire(blocking=False):
             return
         try:
-            said = upgrade(Path(context.record.root).parent, Path(context.record.root))
+            lines = upgrade(Path(context.record.root).parent, Path(context.record.root))
         except Exception as error:
-            said = [f"package not refreshed: {error}"]
+            lines = [f"package not refreshed: {error}"]
         finally:
             INSTALLING.release()
-        failed = next((line for line in said if "not refreshed" in line or "failed" in line), "")
+        failed = next((line for line in lines if "not refreshed" in line or "failed" in line), "")
         if failed:
             context.agent.say("failed", latest=latest, why=failed)

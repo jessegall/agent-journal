@@ -60,13 +60,13 @@ class HandBackReport(Handler):
     def handle(self, context: Context, event: TodoUpdated) -> None:
         todos = context.journal.todos
         todo = todos.load(event.n)
-        said = todo.reported or {}
-        if not said or said.get("told"):
+        reported = todo.reported or {}
+        if not reported or reported.get("told"):
             return
-        todos.update(todo.n, reported={**said, "told": True})
-        if said.get("dispatcher"):
-            dispatcher = context.journal.agents.by_session(said["dispatcher"])
-            context.speaking_to(dispatcher).agent.say("reported", who=said.get("agent"), n=todo.n, how=said.get("how", ""))
+        todos.update(todo.n, reported={**reported, "told": True})
+        if reported.get("dispatcher"):
+            dispatcher = context.journal.agents.by_session(reported["dispatcher"])
+            context.speaking_to(dispatcher).agent.say("reported", who=reported.get("agent"), n=todo.n, how=reported.get("how", ""))
 
 
 class ClearLapsedAssignments(Handler):

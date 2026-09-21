@@ -57,7 +57,7 @@ def switches(record: Record) -> dict:
 def settings(record: Record) -> dict:
     return {Record.features: switches(record),
             Record.triggers: record.triggers, Record.keep: record.keep, Record.delivery: record.delivery,
-            **{name: shown for name, f in features.FEATURES.items() if (shown := f.settings_view(record)) is not None}}
+            **{name: view for name, f in features.FEATURES.items() if (view := f.settings_view(record)) is not None}}
 
 
 @route("POST", "/api/hook/{provider}")
@@ -74,10 +74,10 @@ def post_hook(req: Request) -> Reply:
 @route("POST", "/api/{env}/console")
 def post_console(req: Request) -> Reply:
     faults = features.FEATURES.get("dev_faults")
-    said = str(req.body.get("said") or "")[:200]
+    message = str(req.body.get("message") or "")[:200]
     where, stack, kind = str(req.body.get("where") or "")[:200], str(req.body.get("stack") or "")[:2000], str(req.body.get("kind") or "threw")
-    heard = (lambda: faults.reports.heard(req.root, req.params["env"], said, where, stack, kind)) if faults and said else None
-    return Reply(200, {"queued": bool(heard)}, after=heard)
+    report = (lambda: faults.reports.report_console(req.root, req.params["env"], message, where, stack, kind)) if faults and message else None
+    return Reply(200, {"queued": bool(report)}, after=report)
 
 
 @route("GET", "/api/manifest")
@@ -228,10 +228,10 @@ def post_run(req: Request) -> Reply:
     for flag, given in (("--as", req.query.get("actor")), ("--default-env", req.query.get("env")), ("--cwd", req.query.get("cwd"))):
         if given and flag not in args:
             args = [flag, given, *args]
-    said, code = captured(args, req.root)
+    output, code = captured(args, req.root)
     if code is None:
-        return Reply(409, said, kind=PLAIN)
-    return Reply(404 if code is None else (200 if not code else 400), said, kind=PLAIN)
+        return Reply(409, output, kind=PLAIN)
+    return Reply(404 if code is None else (200 if not code else 400), output, kind=PLAIN)
 
 
 @route("GET", "/api/{env}/changes")
@@ -242,8 +242,8 @@ def get_changes(req: Request) -> Reply:
 
 @route("GET", "/api/{env}/bar")
 def get_bar(req: Request) -> Reply:
-    from features.status_bar.bar import shown
-    return Reply(200, shown(req.root, req.params["env"]))
+    from features.status_bar.bar import current
+    return Reply(200, current(req.root, req.params["env"]))
 
 
 @route("POST", "/api/{env}/bar")
@@ -323,7 +323,7 @@ def get_skill(req: Request) -> Reply:
 
 @route("POST", "/api/{env}/skills/{name}/load")
 def post_skill_load(req: Request) -> Reply:
-    return Reply(200, {"said": load_now(req.record(), req.params["name"])})
+    return Reply(200, {"notice": load_now(req.record(), req.params["name"])})
 
 
 @route("POST", "/api/{env}/skills/{name}/always")
@@ -332,7 +332,7 @@ def post_skill_always(req: Request) -> Reply:
     return Reply(200, {"skills": always(record, req.params["name"], bool(req.body.get("on")))})
 
 
-def shown_types() -> list[str]:
+def listed_types() -> list[str]:
     return [t for t, c in CONTROLLERS.items() if tuple(c.resource.notified) != (AGENT,)]
 
 
@@ -340,7 +340,7 @@ def shown_types() -> list[str]:
 def get_files(req: Request) -> Reply:
     record = req.record()
     out = []
-    for type_ in shown_types():
+    for type_ in listed_types():
         c = CONTROLLERS[type_](record, actor=USER)
         for r in c._attached():
             for name in r.files:
@@ -413,10 +413,10 @@ def get_pages(req: Request) -> Reply:
         plugin = str(row.manifest.get("name") or "")
         for page in row.manifest.get("pages") or []:
             sid = f"{plugin}.{page['service']}"
-            spec, said = where.get(sid, {}), status(req.root, sid)
+            spec, state = where.get(sid, {}), status(req.root, sid)
             out.append({"plugin": plugin, "name": page["name"], "title": page["title"], "icon": page.get("icon") or "plug",
-                        "service": sid, "state": said.get("state") or "not running", "path": page.get("path") or "/",
-                        "url": (spec.get("url") or said.get("url") or "") + (page.get("path") or "/"), "status": page.get("status") or ""})
+                        "service": sid, "state": state.get("state") or "not running", "path": page.get("path") or "/",
+                        "url": (spec.get("url") or state.get("url") or "") + (page.get("path") or "/"), "status": page.get("status") or ""})
     return Reply(200, out)
 
 
@@ -448,8 +448,8 @@ def post_service(req: Request) -> Reply:
     asked = str(req.body.get("want") or "").lower()
     if asked not in (UP, DOWN, "restart"):
         raise Missing("a service is asked to be up, down or restart")
-    said = want(req.root, req.params["id"], DOWN if asked == DOWN else UP, nonce=time.time() if asked == "restart" else 0.0)
-    return Reply(200, {"id": req.params["id"], **said})
+    wanted = want(req.root, req.params["id"], DOWN if asked == DOWN else UP, nonce=time.time() if asked == "restart" else 0.0)
+    return Reply(200, {"id": req.params["id"], **wanted})
 
 
 @route("GET", "/api/{env}/commit/{sha}")
@@ -496,7 +496,7 @@ def get_search(req: Request) -> Reply:
     record = req.record()
     want = term.lower()
     out = []
-    for type_ in shown_types():
+    for type_ in listed_types():
         for r in CONTROLLERS[type_](record, actor=USER).search(term):
             matches = [{"name": name, "tags": tags, "url": f"/api/{record.env}/{type_}/{r.n}/files/{quote(name)}"}
                        for name, tags in r.files.items() if want in name.lower() or want in str(tags).lower()]

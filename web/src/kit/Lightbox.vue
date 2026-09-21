@@ -3,7 +3,7 @@ import {computed, onMounted, onUnmounted} from "vue";
 import Icon from "./Icon.vue";
 import {lightbox} from "../platform/view.js";
 
-const shown = computed(() => lightbox.pictures[lightbox.at] || null);
+const picture = computed(() => lightbox.pictures[lightbox.at] || null);
 const close = () => (lightbox.at = -1);
 const step = (by) => (lightbox.at = (lightbox.at + by + lightbox.pictures.length) % lightbox.pictures.length);
 
@@ -19,19 +19,19 @@ onUnmounted(() => window.removeEventListener("keydown", keys));
 </script>
 
 <template>
-    <template v-if="shown">
+    <template v-if="picture">
         <div class="lightbox" @click.self="close">
             <template v-if="lightbox.pictures.length > 1">
                 <button type="button" class="lightbox-step prev" title="Previous" @click="step(-1)"><Icon name="arrow" /></button>
                 <button type="button" class="lightbox-step next" title="Next" @click="step(1)"><Icon name="arrow" /></button>
             </template>
-            <img class="lightbox-image" :src="shown.url" :alt="shown.name" />
+            <img class="lightbox-image" :src="picture.url" :alt="picture.name" />
             <div class="lightbox-foot">
-                <span class="lightbox-name">{{ shown.name }}</span>
+                <span class="lightbox-name">{{ picture.name }}</span>
                 <template v-if="lightbox.pictures.length > 1">
                     <span class="lightbox-count">{{ lightbox.at + 1 }} of {{ lightbox.pictures.length }}</span>
                 </template>
-                <a class="lightbox-open" :href="shown.url" target="_blank">Open the file</a>
+                <a class="lightbox-open" :href="picture.url" target="_blank">Open the file</a>
                 <button type="button" class="lightbox-x" title="Close" @click="close"><Icon name="close" /></button>
             </div>
         </div>

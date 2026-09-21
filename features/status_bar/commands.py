@@ -139,9 +139,9 @@ def effects(command: str) -> list[str]:
     if not whole.strip():
         return []
     bare = QUOTED.sub("''", whole)
-    said = without_scripts(bare)
+    bare_words = without_scripts(bare)
     return [name for name, pattern in EFFECTS
-            if pattern.search(whole if name == "writes" else said) or (name == "writes" and WRITING_COMMANDS.search(bare))]
+            if pattern.search(whole if name == "writes" else bare_words) or (name == "writes" and WRITING_COMMANDS.search(bare))]
 
 
 def without_journal(command: str) -> str:

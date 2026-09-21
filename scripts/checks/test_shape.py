@@ -11,17 +11,17 @@ def kept(feature: Path) -> list[Path]:
 
 
 def problems() -> list[str]:
-    said = []
+    text = []
     for feature in sorted(p for p in (HERE / "features").iterdir() if (p / "feature.py").is_file()):
         tests = kept(feature)
         if len(tests) > 1:
-            said.append(f"features/{feature.name} keeps {len(tests)} test files; a feature is allowed one, named test.py")
+            text.append(f"features/{feature.name} keeps {len(tests)} test files; a feature is allowed one, named test.py")
         if tests and len(tests[0].read_text().splitlines()) > LINES:
-            said.append(f"features/{feature.name}/{tests[0].name} is over {LINES} lines; what needs more belongs in the generated runs")
+            text.append(f"features/{feature.name}/{tests[0].name} is over {LINES} lines; what needs more belongs in the generated runs")
     for stray in sorted((HERE / "tests").rglob("test*.py")):
         if stray.name not in GENERATED:
-            said.append(f"{stray.relative_to(HERE)} is a test outside the features; tests/ holds only the generated runs")
-    return said
+            text.append(f"{stray.relative_to(HERE)} is a test outside the features; tests/ holds only the generated runs")
+    return text
 
 
 if __name__ == "__main__":

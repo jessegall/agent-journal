@@ -26,16 +26,16 @@ class FaultReports:
         standing = rows._titled(title, standing=True)
         times = (int(standing.data.get("times", 0)) if standing else 0) + 1
         told = float(standing.data.get("told", 0)) if standing else 0.0
-        said = f"{brief} Seen {self.feature.plural(times, 'time')}."
+        summary = f"{brief} Seen {self.feature.plural(times, 'time')}."
         telling = times == 1 or times % EVERY == 0 or time.time() - told >= AGAIN
         told = time.time() if telling else told
         if standing:
-            rows.update(standing.n, brief=said, times=times, told=told, **data)
+            rows.update(standing.n, brief=summary, times=times, told=told, **data)
         else:
-            self.feature.journal.log(record, "fault", title=title, said=said, times=times, told=told, **data)
+            self.feature.journal.log(record, "fault", title=title, summary=summary, times=times, told=told, **data)
         agent = Agents(record, actor=SYSTEM).primary() if telling else None
         if agent:
-            self.feature.journal.say(record, agent, "fault", title=title, said=said)
+            self.feature.journal.say(record, agent, "fault", title=title, summary=summary)
 
     def slow(self, record, kind: str, name: str, took: float, working: float | None = None) -> None:
         if working is not None and working <= self.milliseconds(record, kind):
@@ -44,10 +44,10 @@ class FaultReports:
                   f"{took:.0f}ms last{'' if working is None else f' ({working:.0f}ms of it working)'}, against a budget of {self.milliseconds(record, kind)}ms.",
                   kind=kind, target=name, worst=took)
 
-    def threw(self, record, said: str, where: str, stack: str, kind: str = "threw") -> None:
+    def threw(self, record, message: str, where: str, stack: str, kind: str = "threw") -> None:
         title = {"slow": f"the viewer's {where} {OVER}", "overlap": f"the viewer sent {where} twice at once",
-                 "page": f"the viewer asked {where} for more than a page", "refetch": f"the viewer refetched {where} with nothing changed"}.get(kind, f"{THREW} {said}")
-        self.file(record, title[:80], f"{said}\n\n{where}\n\n{stack}"[:SAID], kind=kind, target=where, stack=stack)
+                 "page": f"the viewer asked {where} for more than a page", "refetch": f"the viewer refetched {where} with nothing changed"}.get(kind, f"{THREW} {message}")
+        self.file(record, title[:80], f"{message}\n\n{where}\n\n{stack}"[:SAID], kind=kind, target=where, stack=stack)
 
     @contextmanager
     def watched(self, root, env: str, kind: str, name: str):
@@ -67,9 +67,9 @@ class FaultReports:
         except (OSError, ValueError, KeyError):
             return
 
-    def heard(self, root, env: str, said: str, where: str, stack: str, kind: str = "threw") -> bool:
+    def report_console(self, root, env: str, message: str, where: str, stack: str, kind: str = "threw") -> bool:
         record = Record(Path(root), env)
         if not self.feature.on(record, "budget" if kind in ("slow", "overlap", "page", "refetch") else "console"):
             return False
-        self.threw(record, said, where, stack, kind)
+        self.threw(record, message, where, stack, kind)
         return True

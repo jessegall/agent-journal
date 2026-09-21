@@ -54,21 +54,21 @@ watchEffect(() => {
 });
 
 const latest = computed(() => at.value === numbers.value.length - 1);
-const shown = computed(() => (latest.value ? props.resource : revisions[numbers.value[at.value]]) || null);
+const revision = computed(() => (latest.value ? props.resource : revisions[numbers.value[at.value]]) || null);
 const meta = computed(() => revisions[numbers.value[at.value]] || null);
 const previous = computed(() => (at.value > 0 ? revisions[numbers.value[at.value - 1]] || null : null));
 const comparing = computed(() => changes.value && at.value > 0 && !!previous.value);
 const parts = computed(() =>
     comparing.value
-        ? sectionChanges(previous.value.sections, shown.value.sections)
-        : (shown.value?.sections || []).map((s) => ({...s, kind: "same", lines: []}))
+        ? sectionChanges(previous.value.sections, revision.value.sections)
+        : (revision.value?.sections || []).map((s) => ({...s, kind: "same", lines: []}))
 );
 const topChanged = computed(() =>
     comparing.value
         ? {
-              title: previous.value.title !== shown.value.title,
-              abstract: previous.value.abstract !== shown.value.abstract,
-              brief: previous.value.brief !== shown.value.brief,
+              title: previous.value.title !== revision.value.title,
+              abstract: previous.value.abstract !== revision.value.abstract,
+              brief: previous.value.brief !== revision.value.brief,
           }
         : {}
 );
@@ -88,7 +88,7 @@ const note = computed(() =>
 const WINDOW = 8;
 const ticks = computed(() => {
     const from = Math.max(0, Math.min(at.value - WINDOW + 2, numbers.value.length - WINDOW));
-    return {from, shown: Array.from({length: Math.min(WINDOW, numbers.value.length)}, (_, k) => from + k)};
+    return {from, revision: Array.from({length: Math.min(WINDOW, numbers.value.length)}, (_, k) => from + k)};
 });
 
 function go(i) {
@@ -149,7 +149,7 @@ const cutPart = (title) => run("cut", {title});
                     <template v-if="ticks.from > 0">
                         <span class="earlier">+{{ ticks.from }}</span>
                     </template>
-                    <template v-for="i in ticks.shown" :key="numbers[i]">
+                    <template v-for="i in ticks.revision" :key="numbers[i]">
                         <button
                             type="button"
                             :class="['tick', {current: i === at, open: open && i === numbers.length - 1}]"
@@ -186,7 +186,7 @@ const cutPart = (title) => run("cut", {title});
             </template>
         </nav>
 
-        <template v-if="!shown">
+        <template v-if="!revision">
             <div class="skeleton">
                 <span class="blank wide" />
                 <span class="blank" />
@@ -205,12 +205,12 @@ const cutPart = (title) => run("cut", {title});
             </form>
         </template>
         <template v-else>
-            <h2 :class="['title', {changed: topChanged.title}]">{{ shown.title }}</h2>
-            <template v-if="shown.abstract">
-                <Markdown :class="['abstract', {changed: topChanged.abstract}]" :text="shown.abstract" />
+            <h2 :class="['title', {changed: topChanged.title}]">{{ revision.title }}</h2>
+            <template v-if="revision.abstract">
+                <Markdown :class="['abstract', {changed: topChanged.abstract}]" :text="revision.abstract" />
             </template>
-            <template v-if="shown.brief">
-                <Markdown :class="['brief', {changed: topChanged.brief}]" :text="shown.brief" />
+            <template v-if="revision.brief">
+                <Markdown :class="['brief', {changed: topChanged.brief}]" :text="revision.brief" />
             </template>
             <template v-if="latest">
                 <div class="actions">
@@ -228,7 +228,7 @@ const cutPart = (title) => run("cut", {title});
 
         <span class="error">{{ error }}</span>
 
-        <template v-if="shown">
+        <template v-if="revision">
             <template v-for="part in parts" :key="part.title">
                 <section :class="['part', part.kind]">
                     <template v-if="editing === `part:${part.title}`">

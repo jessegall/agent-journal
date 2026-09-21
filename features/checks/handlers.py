@@ -48,7 +48,7 @@ class ReportCheckResult(Handler):
                 if not stale.completed:
                     context.journal.clear(stale, "the check passes again")
             return
-        context.journal.notify("failing", title=title, said=(check.last or {}).get("said") or "it said nothing", about=check.ref)
+        context.journal.notify("failing", title=title, output=(check.last or {}).get("said") or "it said nothing", about=check.ref)
         agent = context.journal.agents.primary()
         if agent:
             context.speaking_to(agent).agent.say("failed", title=title, n=check.n)

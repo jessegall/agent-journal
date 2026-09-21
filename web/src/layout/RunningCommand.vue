@@ -2,7 +2,7 @@
 import {computed, onUnmounted, ref, watch} from "vue";
 import {store} from "../state/store.js";
 import {polled} from "../sync/polled.js";
-import {TICK, line, shown} from "./bar.js";
+import {TICK, line, visibleQueue} from "./bar.js";
 import {usePoll} from "../poll.js";
 import {api} from "../api/client.js";
 
@@ -18,7 +18,7 @@ const frames = {};
 function step() {
     const queue = (store.bar && store.bar.queue) || [];
     const now = Date.now() / 1000;
-    const got = shown(queue, state.value, now);
+    const got = visibleQueue(queue, state.value, now);
     if (got.message && got.at !== state.value.at) api.played(got.at).catch(() => {});
     state.value = {at: got.at, since: got.since};
     message.value = got.message;

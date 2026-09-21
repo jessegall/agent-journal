@@ -67,8 +67,8 @@ async function remove(e) {
 const sweeping = ref({});
 
 async function sweep(e) {
-    const said = await api.act("environment", e.n, "sweep", sweeping.value[e.n] ? {yes: true} : {});
-    sweeping.value = {...sweeping.value, [e.n]: sweeping.value[e.n] ? "" : said};
+    const reply = await api.act("environment", e.n, "sweep", sweeping.value[e.n] ? {yes: true} : {});
+    sweeping.value = {...sweeping.value, [e.n]: sweeping.value[e.n] ? "" : reply};
 }
 </script>
 

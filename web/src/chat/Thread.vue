@@ -118,11 +118,11 @@ const thread = computed(() => {
 });
 const turns = computed(() => thread.value.turns);
 watch(turns, (list) => {
-    const shown = new Set(list.map((t) => t.ref));
-    const replaced = pending.value.filter((p) => !shown.has(p.ref));
+    const listed = new Set(list.map((t) => t.ref));
+    const replaced = pending.value.filter((p) => !listed.has(p.ref));
     if (!replaced.length) return;
     replaced.forEach((p) => Object.values(p.data.previews).forEach(URL.revokeObjectURL));
-    pending.value = pending.value.filter((p) => shown.has(p.ref));
+    pending.value = pending.value.filter((p) => listed.has(p.ref));
 });
 
 function toBottom() {

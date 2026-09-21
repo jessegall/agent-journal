@@ -38,21 +38,21 @@ class Messages(Controller):
     def archive(self, n: int, why: str):
         return self.delete(n, why)
 
-    def process(self, n: int, part: str, became: str):
+    def process(self, n: int, part: str, result: str):
         r = self.load(n)
         if part not in r.title and part not in r.brief:
             raise Refused(f"that part is not in message {n}; quote the words it is about")
-        for kind, _, num in (w.strip().replace(" ", ":").partition(":") for w in became.split(",")):
+        for kind, _, num in (w.strip().replace(" ", ":").partition(":") for w in result.split(",")):
             if kind in CONTROLLERS and num.isdigit():
                 self.link(n, f"{kind}:{int(num)}")
-        return self.section(n, part, became)
+        return self.section(n, part, result)
 
     def reply(self, n: int, text: str, file: str = ""):
         lines = (self.load(n).brief or self.load(n).title).strip().split("\n")
         while lines and (lines[0].startswith(">") or not lines[0].strip()):
             lines.pop(0)
-        said = "\n".join(lines).strip()
-        made = self.comment(n, f"> {said.replace(chr(10), chr(10) + '> ')}\n\n{text}" if said and not text.startswith(">") else text)
+        quoted = "\n".join(lines).strip()
+        made = self.comment(n, f"> {quoted.replace(chr(10), chr(10) + '> ')}\n\n{text}" if quoted and not text.startswith(">") else text)
         if file:
             Comments(self.record, actor=self.actor).attach(made.n, file)
         return made

@@ -32,7 +32,7 @@ def watch(watcher: Listener) -> Callable[[], None]:
     return lambda: _watchers.remove(watcher)
 
 
-def shown(event: Event, record=None) -> None:
+def tell_watchers(event: Event, record=None) -> None:
     for watcher in list(_watchers):
         watcher(event, record)
 
@@ -50,7 +50,7 @@ def cause() -> str:
 
 
 def run(event: Event, record=None) -> None:
-    shown(event, record)
+    tell_watchers(event, record)
     before = cause()
     _cause.actor = event.data.get("cause") or event.actor
     try:

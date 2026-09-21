@@ -28,6 +28,6 @@ class ChecksDetails(FeatureDetails):
         Line(
             name="failing",
             title="{{title}}",
-            brief="{{said}}",
+            brief="{{output}}",
         ),
     ]

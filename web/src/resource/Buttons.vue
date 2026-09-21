@@ -46,7 +46,7 @@ async function press(button, i) {
             </div>
         </template>
         <template v-if="pressed.length">
-            <p class="said">You pressed {{ pressed.join(", ") }}.</p>
+            <p class="pressed">You pressed {{ pressed.join(", ") }}.</p>
         </template>
         <template v-if="error">
             <p class="error">{{ error }}</p>
@@ -62,7 +62,7 @@ async function press(button, i) {
     margin-top: 10px;
 }
 
-.said {
+.pressed {
     margin: 8px 0 0;
     color: var(--text-3);
     font-size: 11.5px;

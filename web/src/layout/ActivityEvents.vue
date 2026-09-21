@@ -10,7 +10,7 @@ const settled = ref(false);
 onMounted(() => setTimeout(() => (settled.value = true), 400));
 const announced = (e) =>
     e.type === "notification" && e.action === "created" && (byRef(`notification:${e.n}`) || {data: {}}).data.kind === "update";
-const shown = computed(() =>
+const visible = computed(() =>
     [...store.events]
         .reverse()
         .filter((e) => e.action !== "stamped" && (toldToUser(e) || announced(e)))
@@ -31,7 +31,7 @@ const who = (e) => e.actor[0].toUpperCase() + e.actor.slice(1);
 <template>
     <TransitionGroup tag="div" class="activity-list" :name="settled ? 'act' : ''">
         <a
-            v-for="e in shown"
+            v-for="e in visible"
             :key="e.id"
             :class="['activity-row', 'activity-link', {'activity-update': announced(e)}]"
             href="#"

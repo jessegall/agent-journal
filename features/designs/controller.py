@@ -68,8 +68,8 @@ class Designs(Controller):
     def _keep_after(self) -> float:
         return float(DesignsDetails.values(self.record).keep_after_minutes) * 60
 
-    def _noted(self, said: str, change: str) -> str:
-        return "; ".join(dict.fromkeys([*(said.split("; ") if said else []), change]))
+    def _noted(self, text: str, change: str) -> str:
+        return "; ".join(dict.fromkeys([*(text.split("; ") if text else []), change]))
 
     def _revised(self, r, change: str, **event):
         docs = Docs(self.record, actor=self.actor)

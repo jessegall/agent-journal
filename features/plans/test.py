@@ -137,13 +137,13 @@ def test_an_agent_building_a_plan_is_told_each_next_step():
     plans.phase(n, "build", when="it builds")
     plans.stage(n, "todos")
     plans.place(n, 1, [Todos(record, actor="agent").create("write it").n])
-    told = [t for t in nudges(record) if f"plan {n}" in t]
-    assert told == [f"plan {n} is building - add its phases", f"plan {n} is at its to-dos", f"every phase of plan {n} has its to-dos"], told
+    notified = [t for t in nudges(record) if f"plan {n}" in t]
+    assert notified == [f"plan {n} is building - add its phases", f"plan {n} is at its to-dos", f"every phase of plan {n} has its to-dos"], notified
 
 
 def test_claude_plan_mode_is_refused_for_a_journal_plan():
     from engine.hooks import handle
     from providers import PROVIDERS
     record = fresh()
-    said = handle(PROVIDERS["claude"](), record.root, record.env, {"hook_event_name": "PreToolUse", "session_id": "claude-1", "tool_name": "EnterPlanMode", "tool_input": {}})
-    assert "journal plan create" in str(said), said
+    text = handle(PROVIDERS["claude"](), record.root, record.env, {"hook_event_name": "PreToolUse", "session_id": "claude-1", "tool_name": "EnterPlanMode", "tool_input": {}})
+    assert "journal plan create" in str(text), text

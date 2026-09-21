@@ -95,7 +95,7 @@ class Record:
             if self.memo is not None:
                 self.memo.clear()
             if quiet:
-                bus.shown(e, self)
+                bus.tell_watchers(e, self)
             else:
                 bus.emit(e, self)
             return e

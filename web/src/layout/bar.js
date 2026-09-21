@@ -2,7 +2,7 @@ import {stopwatch} from "../format/time.js";
 export const TICK = 250;
 export const MINUTE = 60;
 
-export function shown(queue, state, now) {
+export function visibleQueue(queue, state, now) {
     const held = queue.find((one) => one.at === state.at) || null;
     const later = queue.filter((one) => one.at > state.at);
     if (!held) {

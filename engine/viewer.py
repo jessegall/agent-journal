@@ -91,8 +91,8 @@ def identity(url: str, timeout: float = 0.05) -> dict | None:
 
 
 def answers(url: str, root: Path, timeout: float = 0.05) -> bool:
-    said = identity(url, timeout) or {}
-    return Path(str(said.get("root") or "")).resolve() == root.resolve() and said.get("version") == version()
+    reply = identity(url, timeout) or {}
+    return Path(str(reply.get("root") or "")).resolve() == root.resolve() and reply.get("version") == version()
 
 
 def running(root: Path) -> str:

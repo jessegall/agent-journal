@@ -90,7 +90,7 @@ def run(command, cwd: Path, env: dict, seconds: int) -> tuple[int, str]:
     return done.returncode, f"{done.stdout}{done.stderr}"
 
 
-def said(command) -> str:
+def command_text(command) -> str:
     return command if isinstance(command, str) else " ".join(command)
 
 
@@ -98,7 +98,7 @@ def checked(manifest: dict, where: Path, env: dict) -> None:
     for tool, wanted in (manifest.get("requires") or {}).items():
         code, out = run(wanted["check"], where, env, CHECK_SECONDS)
         if code:
-            raise Refused(f"{manifest['name']} needs {tool}: {wanted.get('hint') or said(wanted['check'])}")
+            raise Refused(f"{manifest['name']} needs {tool}: {wanted.get('hint') or command_text(wanted['check'])}")
 
 
 def prepared(manifest: dict, where: Path, env: dict, record_log: Path) -> None:
@@ -107,10 +107,10 @@ def prepared(manifest: dict, where: Path, env: dict, record_log: Path) -> None:
         command = fill(step["run"], {k: v for k, v in env.items()})
         code, out = run(command, where / (step["cwd"] or ""), env, SETUP_SECONDS)
         with record_log.open("a") as f:
-            f.write(f"$ {said(command)}\n{out}\n")
+            f.write(f"$ {command_text(command)}\n{out}\n")
         if code:
             tail = "\n".join(out.strip().splitlines()[-SHOWN_LINES:])
-            raise Refused(f"setup step {step['name']!r} failed ({code}): {said(command)}\n{tail}\nthe whole output is in {record_log}")
+            raise Refused(f"setup step {step['name']!r} failed ({code}): {command_text(command)}\n{tail}\nthe whole output is in {record_log}")
 
 
 def preview(manifest: dict, source: str, commit: str) -> str:
@@ -118,15 +118,15 @@ def preview(manifest: dict, source: str, commit: str) -> str:
     lines = [f"{manifest.get('title') or name} {manifest.get('version') or ''}".strip(), f"from {source}" + (f" at {commit[:12]}" if commit else ""),
              manifest.get("description") or "", "", "It runs as you, with your files and your network. These are its commands:"]
     for tool, wanted in (manifest.get("requires") or {}).items():
-        lines.append(f"  needs {tool}: {said(wanted['check'])}")
+        lines.append(f"  needs {tool}: {command_text(wanted['check'])}")
     for step in manifest.get("setup") or []:
-        lines.append(f"  setup {step['name']}: {said(step['run'])}")
+        lines.append(f"  setup {step['name']}: {command_text(step['run'])}")
     for service, spec in (manifest.get("services") or {}).items():
-        lines.append(f"  service {service}: {said(spec['run'])}")
+        lines.append(f"  service {service}: {command_text(spec['run'])}")
     for pattern, handler in (manifest.get("on") or {}).items():
-        lines.append(f"  on {pattern}: {handler.get('post') or said(handler.get('run'))}")
+        lines.append(f"  on {pattern}: {handler.get('post') or command_text(handler.get('run'))}")
     if manifest.get("refuse"):
-        lines.append(f"  may refuse a write: {said(manifest['refuse'])}")
+        lines.append(f"  may refuse a write: {command_text(manifest['refuse'])}")
     for page in manifest.get("pages") or []:
         lines.append(f"  page {page['title']}: {page['service']}{page['path']}")
     for key, setting in (manifest.get("settings") or {}).items():

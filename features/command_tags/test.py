@@ -33,17 +33,17 @@ def test_every_message_reaches_the_chat_and_nothing_asks_for_a_tag(tmp_path):
     asked = Messages(record, actor="user").create("are you there?")
     chat = lambda: [m.brief for m in Messages(record, actor="system").all() if m.seen[:1] == ["agent"]]
 
-    def said(text):
+    def text(text):
         rows.append({"type": "assistant", "timestamp": now, "message": {"content": [{"type": "text", "text": text}]}})
         transcript.write_text("\n".join(json.dumps(r) for r in rows) + "\n")
         engine.announce_written()
         engine.announce_written()
 
-    said("Checking the build next.")
+    text("Checking the build next.")
     assert chat() == ["Checking the build next."], "a message without a tag is a plain message in the chat"
-    said("[!info] an old habit")
+    text("[!info] an old habit")
     assert chat()[-1] == "an old habit", "a retired label tag is taken off and the message shown"
-    said(f"[!reply:{asked.n}] yes, here")
+    text(f"[!reply:{asked.n}] yes, here")
     assert chat()[-1] == "an old habit", "a reply is shown as the reply, not copied into the chat"
     assert [c.title for c in Comments(record, actor="system").linked_to(asked.ref)] == ["yes, here"], "the reply is posted"
     assert not [n for n in nudges(record) if "has no tag" in n], "nothing asks for a tag"
@@ -133,13 +133,13 @@ def test_a_tag_passes_its_named_arguments_to_the_command_in_any_order(tmp_path):
     from controllers.types import Facts, Rules
     record = fresh()
     engine = watching(record, tmp_path / "none.jsonl")
-    said = '[!fact="the port is 8423", keywords=("port", "8423")]\nthe server says so'
-    handle(PROVIDERS["claude"](), record.root, record.env, {"hook_event_name": "Stop", "session_id": "claude-1", "last_assistant_message": said})
+    text = '[!fact="the port is 8423", keywords=("port", "8423")]\nthe server says so'
+    handle(PROVIDERS["claude"](), record.root, record.env, {"hook_event_name": "Stop", "session_id": "claude-1", "last_assistant_message": text})
     engine.announce_written()
     fact = Facts(record, actor="system").all()[-1]
     assert (fact.title, fact.brief, fact.data["keywords"]) == ("the port is 8423", "the server says so", ["port", "8423"]), "keywords ride on the tag"
-    for said in ('[!rule="stay on main"]\nthe user said so', '[!rule="stay on main", keywords=("git switch")]\nthe user said so'):
-        handle(PROVIDERS["claude"](), record.root, record.env, {"hook_event_name": "Stop", "session_id": "claude-1", "last_assistant_message": said})
+    for text in ('[!rule="stay on main"]\nthe user said so', '[!rule="stay on main", keywords=("git switch")]\nthe user said so'):
+        handle(PROVIDERS["claude"](), record.root, record.env, {"hook_event_name": "Stop", "session_id": "claude-1", "last_assistant_message": text})
         engine.announce_written()
     assert [n for n in Nudges(record).all() if 'keywords="' in n.brief and "--set" not in n.brief], "a refusal is said in the tag's own spelling"
     assert Rules(record, actor="system").all()[-1].data["keywords"] == ["git switch"], "a rule is filed by its tag"

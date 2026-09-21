@@ -13,33 +13,33 @@ def test_a_command_that_touches_a_rules_keyword_is_whispered_the_rule_once_per_s
     def use(tool, given, session="claude-1"):
         return handle(claude, record.root, record.env, {"hook_event_name": "PreToolUse", "session_id": session, "tool_name": tool, "tool_input": given})
 
-    heard = set()
+    received = set()
 
-    def said(session="claude-1"):
-        fresh_nudges = [n for n in Nudges(record, actor=AGENT)._every() if n.data.get("session") == session and n.n not in heard]
-        heard.update(n.n for n in fresh_nudges)
+    def text(session="claude-1"):
+        fresh_nudges = [n for n in Nudges(record, actor=AGENT)._every() if n.data.get("session") == session and n.n not in received]
+        received.update(n.n for n in fresh_nudges)
         return "\n".join(f"{n.title} — {n.brief}" for n in fresh_nudges)
 
     rule = Rules(record, actor=USER).create("Never change the git branch", brief="A branch change belongs to the user", keywords=["git checkout", "git switch"])
     pin = Facts(record, actor=USER).create("The viewer is built from web/", brief="web/dist is what the server serves", keywords=["npm run build"])
 
-    assert (use("Bash", {"command": "ls -la"}), said()) == ({}, ""), "a command with none of the words says nothing"
+    assert (use("Bash", {"command": "ls -la"}), text()) == ({}, ""), "a command with none of the words says nothing"
     assert use("Bash", {"command": "git checkout -b spike"}).get("hookSpecificOutput", {}).get("permissionDecision") is None, \
         "a command carrying a rule's word is not refused"
-    assert said() == f"rule {rule.n} — Never change the git branch — A branch change belongs to the user", \
+    assert text() == f"rule {rule.n} — Never change the git branch — A branch change belongs to the user", \
         "and the rule is whispered, naming it and its reasoning"
 
     use("Bash", {"command": "git checkout main"})
-    assert said() == "", "the same rule is not said twice to the same session"
+    assert text() == "", "the same rule is not said twice to the same session"
     use("Bash", {"command": "git checkout main"}, session="claude-2")
-    assert said("claude-2").startswith(f"rule {rule.n} —") is True, "another session hears it once of its own"
+    assert text("claude-2").startswith(f"rule {rule.n} —") is True, "another session hears it once of its own"
 
     use("Write", {"file_path": "notes.md", "content": "then npm run build"})
-    assert said().startswith(f"fact {pin.n} —") is True, "a fact whose word is in what is being written is whispered"
+    assert text().startswith(f"fact {pin.n} —") is True, "a fact whose word is in what is being written is whispered"
 
     Rules(record, actor=USER).create("Write clean code", keywords="word")
     use("Bash", {"command": "write clean code"})
-    assert said() == "", "a row with no keywords is never whispered"
+    assert text() == "", "a row with no keywords is never whispered"
 
     assert ("keywords" in type(rule).fields) is True, "keywords are a field of the type, not loose data"
     Rules(record, actor=USER).set(rule.n, "keywords", '["git checkout", "git rebase"]')

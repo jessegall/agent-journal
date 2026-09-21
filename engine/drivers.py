@@ -101,11 +101,11 @@ class Driver(ABC):
     def pump(self) -> str:
         if not (self.held or self.groups) or time.time() - self.sent_at < BETWEEN:
             return ""
-        said = (f"the journal held back {len(self.held)} lines at once and dropped them - that many is a fault, not news" if len(self.held) > FLOOD
+        line = (f"the journal held back {len(self.held)} lines at once and dropped them - that many is a fault, not news" if len(self.held) > FLOOD
                 else "; ".join(dict.fromkeys(self.held + counted(self.groups))))
         self.held, self.groups, self.sent_at = [], {}, time.time()
-        self.deliver(said)
-        return said
+        self.deliver(line)
+        return line
 
     def deliver(self, text: str) -> bool:
         line = joined(text)
@@ -132,12 +132,12 @@ class Driver(ABC):
         path = self._inbox()
         if not path:
             return False
-        said = json.dumps({"type": "user", "message": {"role": "user", "content": self._posted(line)}}) + "\n"
+        payload = json.dumps({"type": "user", "message": {"role": "user", "content": self._posted(line)}}) + "\n"
         try:
             with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as post:
                 post.settimeout(POST_WAIT)
                 post.connect(path)
-                post.sendall(said.encode())
+                post.sendall(payload.encode())
             return True
         except OSError:
             return False

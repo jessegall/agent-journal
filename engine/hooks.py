@@ -59,7 +59,7 @@ def displayed(root: Path, raw: dict) -> None:
     record = Record(root, Sessions(root).environment(session) or runtime.env(root))
     row = Agents(record, actor=SYSTEM)._titled(session)
     if row and text.strip():
-        chat.said(record, row, text)
+        chat.send(record, row, text)
 
 
 def default_env(root: Path, prefer: str = "") -> str:

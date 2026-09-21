@@ -46,18 +46,18 @@ def over(record, title: str, how: str) -> None:
             notices.complete(n.n, how)
 
 
-def told(root: Path, env: str, said: str) -> bool:
-    return once(Record(Path(root), env), TITLE, said or "It left nothing in its log.")
+def notice_stopped(root: Path, env: str, log: str) -> bool:
+    return once(Record(Path(root), env), TITLE, log or "It left nothing in its log.")
 
 
-def fault_of(said: str) -> str:
-    lines = [line for line in str(said or "").strip().splitlines() if line.strip()]
+def fault_of(trouble: str) -> str:
+    lines = [line for line in str(trouble or "").strip().splitlines() if line.strip()]
     return lines[-1].strip() if lines else ""
 
 
-def broke(record, said: str, driver=None) -> None:
-    fault = fault_of(said)
-    if once(record, FAULT, said, fault) and driver and driver.alive():
+def broke(record, trouble: str, driver=None) -> None:
+    fault = fault_of(trouble)
+    if once(record, FAULT, trouble, fault) and driver and driver.alive():
         driver.send(f"{SAYS} {fault}")
 
 

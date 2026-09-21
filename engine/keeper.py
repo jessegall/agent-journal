@@ -62,8 +62,8 @@ def teardown(group: int, grace: float) -> None:
             time.sleep(0.05)
 
 
-def state(spec: dict, said: str, child=None, **more) -> None:
-    write_json(Path(spec["status"]), {**read_json(Path(spec["status"]), {}), "state": said, "at": time.time(),
+def state(spec: dict, name: str, child=None, **more) -> None:
+    write_json(Path(spec["status"]), {**read_json(Path(spec["status"]), {}), "state": name, "at": time.time(),
                                       "keeper": os.getpid(), "pgid": child.pid if child else 0, "owner": spec.get("owner", 0),
                                       "port": spec.get("port", 0), "url": spec.get("url", ""), **more})
 
@@ -107,9 +107,9 @@ def main(argv: list[str]) -> int:
                                  cwd=spec.get("cwd") or None, env={**os.environ, **(spec.get("env") or {})},
                                  stdin=subprocess.DEVNULL, stdout=log, stderr=subprocess.STDOUT, start_new_session=True)
         state(spec, STARTING, child, started=time.time())
-        said = watch(spec, child, lifeline, stopping)
+        ended = watch(spec, child, lifeline, stopping)
         teardown(child.pid, float(spec.get("grace") or GRACE))
-        state(spec, said, child, last_exit=child.returncode if child.returncode is not None else 0)
+        state(spec, ended, child, last_exit=child.returncode if child.returncode is not None else 0)
     held.close()
     return 0
 

@@ -100,8 +100,8 @@ def test_every_tool_call_waits_until_a_required_skill_is_loaded(tmp_path):
     report(record, "working", "PreToolUse", provider="claude", transcript=str(transcript))
 
     def call(tool, **given):
-        said = handle(PROVIDERS["claude"](), record.root, record.env, {"hook_event_name": "PreToolUse", "session_id": "claude-1", "tool_name": tool, "tool_input": given})
-        return str((said or {}).get("reason") or "")
+        text = handle(PROVIDERS["claude"](), record.root, record.env, {"hook_event_name": "PreToolUse", "session_id": "claude-1", "tool_name": tool, "tool_input": given})
+        return str((text or {}).get("reason") or "")
 
     assert "load journal-plans before anything else" in call("Bash", command="journal plan phase 1 build --when done"), \
         "a command whose skill is not loaded does not run"

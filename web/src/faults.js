@@ -8,17 +8,17 @@ const PAGE = 25;
 const QUIET = 60000;
 const SETTLE = 1000;
 const KEPT = 200;
-const told = new Map();
+const reported = new Map();
 const flying = new Map();
 const CONSOLE = "/console";
 
 export function report(kind, words, where, stack = "") {
     const key = `${kind}|${where || words}`;
-    if (!words || !route.value.env || Date.now() - (told.get(key) || 0) < QUIET) return;
-    told.set(key, Date.now());
+    if (!words || !route.value.env || Date.now() - (reported.get(key) || 0) < QUIET) return;
+    reported.set(key, Date.now());
     api.report({
         kind,
-        said: String(words),
+        message: String(words),
         where: String(where || location.pathname),
         stack: String(stack || ""),
     }).catch(() => {});

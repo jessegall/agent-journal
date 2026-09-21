@@ -109,5 +109,4 @@ async function pick(level) {
 .prio-row.on {
     color: var(--accent-text);
 }
-
 </style>

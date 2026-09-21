@@ -1,7 +1,7 @@
 from pathlib import Path
 
 from controllers.types import Agents, CONTROLLERS
-from resources.base import Refused, SYSTEM, shown
+from resources.base import Refused, SYSTEM, as_dict
 
 VERSION = 1
 HOOK = "hook"
@@ -16,7 +16,7 @@ def resource(record, event) -> dict | None:
     if not controller:
         return None
     try:
-        return shown(controller(record, actor=SYSTEM).load(event.n))
+        return as_dict(controller(record, actor=SYSTEM).load(event.n))
     except Refused:
         return None
 

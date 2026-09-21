@@ -16,7 +16,7 @@ class Message(Shape, Resource):
         Field(TEXT, name="idempotency"),
         Field(name="delivered"),
     ]
-    stamped_when_told = True
+    stamped_when_notified = True
     cleared_by = OPENED
     command_names = {"complete": "processed"}
     details: ClassVar[ResourceDetails] = ResourceDetails(

@@ -36,10 +36,10 @@ onUnmounted(() => {
     window.removeEventListener("wheel", moved);
     window.removeEventListener("touchmove", moved);
 });
-const shown = computed(() => [...(SHOWS[filter.value] || SHOWS.open)()].sort((a, b) => b.created - a.created));
+const listed = computed(() => [...(SHOWS[filter.value] || SHOWS.open)()].sort((a, b) => b.created - a.created));
 const groups = computed(() => {
     const buckets = {};
-    for (const r of shown.value) (buckets[groupOf(r)] ||= []).push(r);
+    for (const r of listed.value) (buckets[groupOf(r)] ||= []).push(r);
     return Object.keys(GROUPS)
         .filter((k) => buckets[k])
         .map((k) => ({
@@ -86,7 +86,7 @@ async function select(n) {
         <template v-if="adding">
             <NewResource :type="type" @made="select" @close="adding = false" />
         </template>
-        <template v-if="!shown.length">
+        <template v-if="!listed.length">
             <p class="empty">
                 No {{ kind.title.toLowerCase() }}s
                 {{
@@ -101,14 +101,14 @@ async function select(n) {
         <SwitchCase :value="kind.view">
             <template #document>
                 <div class="cards">
-                    <template v-for="r in shown" :key="r.n">
+                    <template v-for="r in listed" :key="r.n">
                         <ResourceCard :resource="r" @click="go(route.env, type, r.n)" />
                     </template>
                 </div>
             </template>
             <template #check>
                 <div class="cards">
-                    <template v-for="r in shown" :key="r.n">
+                    <template v-for="r in listed" :key="r.n">
                         <CheckCard :resource="r" @click="go(route.env, type, r.n)" />
                     </template>
                 </div>

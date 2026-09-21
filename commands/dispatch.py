@@ -12,7 +12,7 @@ from controllers.types import CONTROLLERS
 from engine import bus
 from engine.record import Record
 from features.format import formatted
-from resources.base import shown as given, USER, Refused
+from resources.base import as_dict, USER, Refused
 
 
 WEB = Path(__file__).resolve().parents[1] / "web" / "dist"
@@ -48,10 +48,10 @@ def shaped(r, record=None, surface: str = "") -> dict:
 
 
 def shaping(r, record=None, surface: str = "") -> dict:
-    row = given(r)
-    said = {key: formatted(row.get(key), record, surface) for key in SAID if row.get(key)}
+    row = as_dict(r)
+    fields = {key: formatted(row.get(key), record, surface) for key in SAID if row.get(key)}
     parts = [{**s, "body": formatted(s.get("body"), record, surface)} for s in row.get("sections") or []]
-    return {**row, **said, **({"sections": parts} if parts else {})}
+    return {**row, **fields, **({"sections": parts} if parts else {})}
 
 
 @dataclass
@@ -147,9 +147,9 @@ def dispatch(method: str, path: str, root: Path, query: dict, body: dict) -> Rep
     r, params = found
     began = (time.perf_counter(), time.thread_time())
     try:
-        with bus.held() as heard:
+        with bus.held() as queued:
             reply = r.handler(Request(root, params, query, body))
-        return timed(later(reply, lambda: bus.release(heard)), root, params.get("env") or "main", method, path, began)
+        return timed(later(reply, lambda: bus.release(queued)), root, params.get("env") or "main", method, path, began)
     except Missing as e:
         return Reply(404, {"error": str(e)})
     except Refused as e:

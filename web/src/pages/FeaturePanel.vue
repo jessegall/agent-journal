@@ -173,7 +173,7 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
                         <h3>What it can say to the agent</h3>
                         <template v-for="line in feature.lines" :key="line.key">
                             <div class="line">
-                                <span class="said">
+                                <span class="line-title">
                                     <span v-for="(p, i) in pieces(line.title)" :key="i" :class="{slot: p.slot}">{{ p.piece }}</span>
                                 </span>
                                 <template v-if="line.brief">
@@ -369,7 +369,7 @@ h3 {
     border-top: 0;
 }
 
-.said {
+.line-title {
     font-size: 12.5px;
 }
 

@@ -72,7 +72,7 @@ class Cursor:
         self.rows, self.cols = rows, cols
         self.row, self.col = ROWS + 1, 1
         self.saved = (ROWS + 1, 1)
-        self.shown = True
+        self.visible = True
         self.sure = True
         self.top, self.bottom = ROWS + 1, rows
         self.holding = False
@@ -139,8 +139,8 @@ class Cursor:
         elif seq == b"\x1b8":
             self.row, self.col = self.saved
             self.sure, self.holding = True, False
-        elif (shown := SHOW.fullmatch(seq)):
-            self.shown = shown.group(1) == b"h"
+        elif (toggled := SHOW.fullmatch(seq)):
+            self.visible = toggled.group(1) == b"h"
         elif (move := MOVE.fullmatch(seq)):
             self.placed(move)
             self.sure = True
@@ -151,7 +151,7 @@ class Cursor:
     def at(self) -> bytes:
         if not self.sure:
             return b""
-        return b"\x1b[%d;%dH" % (self.row, self.col) + (b"\x1b[?25h" if self.shown else b"")
+        return b"\x1b[%d;%dH" % (self.row, self.col) + (b"\x1b[?25h" if self.visible else b"")
 
 
 class Translator:
@@ -186,7 +186,7 @@ class Translator:
 class Band:
     def __init__(self, root: Path, env: str, session: str, project: str):
         self.root, self.env, self.session, self.project = root, env, session, project
-        self.shown = b""
+        self.last_drawn = b""
         self.url = ""
         self.url_at = 0.0
         self.asked_at = 0.0
@@ -275,7 +275,7 @@ class Band:
         body = "".join(f"{ESC}[{n + 1};1H{STYLE}{line}{RESET}" for n, line in enumerate(self.lines(cols)))
         back = cursor.at() if cursor and cursor.holding else b""
         drawn = (f"{ESC}[?25l" if back else f"{ESC}7").encode() + first + body.encode() + (back or f"{ESC}8".encode())
-        if drawn == self.shown and not force:
+        if drawn == self.last_drawn and not force:
             return b""
-        self.shown = drawn
+        self.last_drawn = drawn
         return drawn

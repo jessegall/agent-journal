@@ -17,23 +17,23 @@ def listen(root: Path, session: str) -> socket.socket:
     where = path(root, session)
     where.parent.mkdir(parents=True, exist_ok=True)
     where.unlink(missing_ok=True)
-    ear = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
-    ear.bind(str(where))
-    ear.setblocking(False)
-    return ear
+    inbox = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
+    inbox.bind(str(where))
+    inbox.setblocking(False)
+    return inbox
 
 
-def heard(ear: socket.socket) -> list[bytes]:
-    said = []
+def receive(inbox: socket.socket) -> list[bytes]:
+    packets = []
     while True:
         try:
-            said.append(ear.recv(LONGEST))
+            packets.append(inbox.recv(LONGEST))
         except (BlockingIOError, InterruptedError):
-            return said
+            return packets
 
 
-def close(ear: socket.socket, root: Path, session: str) -> None:
-    ear.close()
+def close(inbox: socket.socket, root: Path, session: str) -> None:
+    inbox.close()
     path(root, session).unlink(missing_ok=True)
 
 

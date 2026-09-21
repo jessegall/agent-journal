@@ -56,5 +56,5 @@ def test_a_command_run_inside_a_worktree_works_the_worktrees_environment(tmp_pat
     worktree.mkdir()
     (worktree / ".git").write_text(f"gitdir: {main / '.git' / 'worktrees' / 'feature-y'}\n")
     (record.root / "environments" / "feature-y").mkdir(parents=True)
-    said, code = captured(["--cwd", str(worktree), "todo", "create", "from the worktree"], record.root)
-    assert (code, (record.root / "environments" / "feature-y" / "todo").is_dir()) == (0, True), said
+    text, code = captured(["--cwd", str(worktree), "todo", "create", "from the worktree"], record.root)
+    assert (code, (record.root / "environments" / "feature-y" / "todo").is_dir()) == (0, True), text

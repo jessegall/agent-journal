@@ -44,10 +44,10 @@ class ToolUse:
 
     @property
     def result_size(self) -> int:
-        return len(json.dumps(self.response)) if self.response else 0
+        return len(json.dumps(self.response)) if self.response and self.response.get("type") != "image" else 0
 
     @property
-    def said(self) -> str:
+    def text(self) -> str:
         return " ".join(part for part in (self.command, self.file_path, self.pattern, self.url, self.skill, self.subagent_type, self.task_name, self.written) if part)
 
     @property
@@ -99,7 +99,7 @@ class Hook:
     model: str = ""
     source: str = ""
     inbox: str = ""
-    said: str = ""
+    last_message: str = ""
     tool: ToolUse = field(default_factory=ToolUse)
 
     @classmethod
@@ -108,7 +108,7 @@ class Hook:
         return cls(event=str(raw.get("hook_event_name") or ""), session=Path(transcript or str(raw.get("session_id") or "")).stem,
                    transcript=Path(transcript) if transcript else None, cwd=str(raw.get("cwd") or ""), model=str(raw.get("model") or ""),
                    source=str(raw.get("source") or ""), inbox=str(raw.get("inbox") or ""),
-                   said=str(raw.get("last_assistant_message") or ""), tool=ToolUse.read(raw))
+                   last_message=str(raw.get("last_assistant_message") or ""), tool=ToolUse.read(raw))
 
     @property
     def command(self) -> str:

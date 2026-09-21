@@ -3,7 +3,7 @@ import time
 from features.status_bar.group import grouped, ran
 from features.status_bar.queue import queue as messages
 from features.status_bar.queue import HOLD
-from features.status_bar.bar import bar, bar_file, played, shown
+from features.status_bar.bar import bar, bar_file, played, current
 from engine.stored import write_json
 
 
@@ -22,7 +22,7 @@ def queue(commands, now=NOW):
     return messages(grouped(ran(list(commands))), now)
 
 
-def said(commands, now=NOW):
+def text(commands, now=NOW):
     return [[p["value"] for p in one["parts"]] for one in queue(list(commands), now)]
 
 
@@ -48,32 +48,32 @@ WORK = [{"name": "work", "title": "Work", "names": {}}]
 
 
 def test_one_message_per_run_of_consecutive_commands_of_the_same_kind():
-    assert said([edit("a.vue"), edit("b.py"), edit("c.md")]) == [["editing", ["a.vue", "b.py", "c.md"]]], \
+    assert text([edit("a.vue"), edit("b.py"), edit("c.md")]) == [["editing", ["a.vue", "b.py", "c.md"]]], \
         "a run of the same kind is one message, naming everything it worked on in order"
-    assert said([edit("a.vue"), shell("git commit -m x"), edit("c.md")]) == \
+    assert text([edit("a.vue"), shell("git commit -m x"), edit("c.md")]) == \
         [["editing", "a.vue"], ["git", "committing", "changes"], ["editing", "c.md"]], \
         "a command of another kind closes the message and opens the next"
-    assert said([edit("one.py"), edit("two.py"), shell("journal todo add x", NOW + 1), shell("git commit -m x", NOW + 2), edit("three.py", NOW + 3)]) == \
+    assert text([edit("one.py"), edit("two.py"), shell("journal todo add x", NOW + 1), shell("git commit -m x", NOW + 2), edit("three.py", NOW + 3)]) == \
         [["editing", ["one.py", "two.py"]], ["journalling", "adding", "todo"], ["git", "committing", "changes"], ["editing", "three.py"]], \
         "the user's case: two writes, a journal command, a commit, a write"
     assert queue([], NOW) == [], "nothing that has not run is in the queue: an empty ring is an empty queue"
-    assert said([shell("")]) == [], "a command with nothing to say is left out"
+    assert text([shell("")]) == [], "a command with nothing to say is left out"
 
 
 def test_the_verb_is_the_root_and_the_only_unmuted_part():
     assert coloured([used("mcp__x__y", "playwright · browser evaluate")])[0][:2] == [("using", "gray"), ("playwright", "muted")], \
         "the verb is gray and everything else muted"
-    assert said([shell("git add -A"), shell("git commit -m x", NOW + 1, effect="writes", done=NOW + 2), shell("git push", NOW + 3)]) == \
+    assert text([shell("git add -A"), shell("git commit -m x", NOW + 1, effect="writes", done=NOW + 2), shell("git push", NOW + 3)]) == \
         [["git", ["tracking", "committing", "pushing"], ["files", "changes", "changes"]]], \
         "a run of git commands is one message, rooted under git"
-    assert [said([{"what": f"reading {f}", "tool": "Read", "at": NOW, "effect": "reads", "files": [f]}])[0][0] for f in ("a.png", "b.mp4")] == \
+    assert [text([{"what": f"reading {f}", "tool": "Read", "at": NOW, "effect": "reads", "files": [f]}])[0][0] for f in ("a.png", "b.mp4")] == \
         ["viewing", "watching"], "a picture and a film have their own words"
-    assert (said([shell("x", effect="writes", files=["a.py"], made=["a.py"])])[0][0],
+    assert (text([shell("x", effect="writes", files=["a.py"], made=["a.py"])])[0][0],
             queue([shell("x", effect="writes", files=["a.py"], made=["a.py"])], NOW)[0]["hold"]) == ("creating", HOLD), \
         "creating has its own word and holds its line like editing"
-    assert [said([shell("x", effect=e, files=["a.py"])])[0][0] for e in ("writes", "reads", "deletes", "tests", "installs", "builds", "")] == \
+    assert [text([shell("x", effect=e, files=["a.py"])])[0][0] for e in ("writes", "reads", "deletes", "tests", "installs", "builds", "")] == \
         ["editing", "reading", "deleting", "testing", "installing", "building", "running"], "every kind has its own verb"
-    assert said([shell("journal question answer 10"), shell("journal todo add 12", NOW + 1), shell("journal work log 12 x", NOW + 2)]) == \
+    assert text([shell("journal question answer 10"), shell("journal todo add 12", NOW + 1), shell("journal work log 12 x", NOW + 2)]) == \
         [["journalling", ["answering", "adding", "logging"], ["question", "todo", "work"], ["10", "12", "12"]]], \
         "a run of journal commands is one message whose every column rolls on its own"
     assert coloured([shell("journal message read 601")])[0][:2] == [("journalling", "gray"), ("reading", "muted")], \
@@ -100,8 +100,8 @@ def test_the_header_names_the_installed_version(tmp_path):
     import re
     from engine.band import Band
     from engine.version import version
-    shown = re.sub(r"\x1b\[[0-9;]*m", "", Band(tmp_path, "main", "claude-1", "project").banner(120, "main", {}))
-    assert f"JOURNAL {version()}" in shown, shown
+    current = re.sub(r"\x1b\[[0-9;]*m", "", Band(tmp_path, "main", "claude-1", "project").banner(120, "main", {}))
+    assert f"JOURNAL {version()}" in current, current
 
 
 def test_a_terminal_answering_a_query_is_not_the_user_typing():
@@ -119,11 +119,11 @@ def test_a_played_line_is_not_played_again(tmp_path):
     lately = time.time()
     write_json(bar_file(tmp_path, "main"), {"queue": [{"at": 1.0, "done": True}, {"at": 2.0, "done": True}, {"at": lately, "done": False}]})
     played(tmp_path, "main", 2.0)
-    assert [one["at"] for one in shown(tmp_path, "main")["queue"]] == [lately]
+    assert [one["at"] for one in current(tmp_path, "main")["queue"]] == [lately]
     played(tmp_path, "main", lately)
-    assert [one["at"] for one in shown(tmp_path, "main")["queue"]] == [lately], "the line still running stays"
+    assert [one["at"] for one in current(tmp_path, "main")["queue"]] == [lately], "the line still running stays"
     write_json(bar_file(tmp_path, "main"), {"queue": [{"at": lately, "done": True, "for": 0, "lingers": 10.0}]})
-    assert [one["at"] for one in shown(tmp_path, "main")["queue"]] == [lately], "a finished line lingers before it goes"
+    assert [one["at"] for one in current(tmp_path, "main")["queue"]] == [lately], "a finished line lingers before it goes"
     played(tmp_path, "main", 2.0)
     write_json(bar_file(tmp_path, "main"), {"queue": [{"at": 2.0, "done": True, "for": 0, "lingers": 10.0}]})
-    assert shown(tmp_path, "main")["queue"] == [], "once it has lingered, a played line is not played again"
+    assert current(tmp_path, "main")["queue"] == [], "once it has lingered, a played line is not played again"

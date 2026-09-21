@@ -90,14 +90,14 @@ class Controller(Stored, Files, Links):
             return None
         since = time.time() - TWICE_WITHIN
         lately = [row["n"] for row in self.summaries() if not row["deleted"] and row["updated"] >= since]
-        said = (self.load(n) for n in reversed(lately[-20:]))
-        return next((r for r in said if r.created >= since and r.title == title and r.brief == brief
+        recent = (self.load(n) for n in reversed(lately[-20:]))
+        return next((r for r in recent if r.created >= since and r.title == title and r.brief == brief
                      and r.seen[:1] == [self.actor] and (not about or about in r.refs)), None)
 
     def create(self, title: str, abstract: str = "", brief: str = "", **data) -> Resource:
-        said = self._twin(title, brief, data.get("about"))
-        if said is not None:
-            return said
+        twin = self._twin(title, brief, data.get("about"))
+        if twin is not None:
+            return twin
         taken = self._handled("create", title=title, abstract=abstract, brief=brief, **data)
         if taken is not None:
             return taken

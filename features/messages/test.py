@@ -19,17 +19,17 @@ def test_a_read_message_is_named_back_until_the_agent_answers_it():
         f = gate_file(record.root, record.env, "claude-1")
         return json.loads(f.read_text()) if f.is_file() else {}
 
-    def said():
+    def text():
         return [n for n in nudges(record) if "before you write" in n]
 
-    assert said() == [], "before the next tool use nothing is said"
+    assert text() == [], "before the next tool use nothing is said"
     report(record, "working", "PreToolUse")
-    assert said() == ["answer message 1 before you write anything"], \
+    assert text() == ["answer message 1 before you write anything"], \
         "the first tool use after reading names the message and says to answer it"
     assert holds().get("status", "") == "", "nothing is refused over it: it tells, it does not hold"
     for i in range(5):
         report(record, "working", "PreToolUse")
-    assert len(said()) == 3, "said three times in all and then it lets the agent be"
+    assert len(text()) == 3, "said three times in all and then it lets the agent be"
     Messages(record, actor=AGENT).reply(m.n, "halfway: the build is green, wiring the last route")
     report(record, "working", "PreToolUse")
     assert holds().get("status", "") == "", "a reply settles it and lifts the hold"
@@ -103,5 +103,5 @@ def test_a_private_nudge_reaches_the_session_it_names_whichever_name_it_uses():
     since = record.last_event()
     Nudges(record).create("for this session", session="claude-1", private=True)
     Nudges(record).create("for another", session="claude-2", private=True)
-    heard = {e.data.get("title") or e.n: engine.elsewhere(e) for e in record.events(since)}
-    assert list(heard.values()) == [False, True], "the terminal is claude-99 but the session is claude-1: its own nudge is spoken"
+    received = {e.data.get("title") or e.n: engine.elsewhere(e) for e in record.events(since)}
+    assert list(received.values()) == [False, True], "the terminal is claude-99 but the session is claude-1: its own nudge is spoken"

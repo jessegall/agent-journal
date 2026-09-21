@@ -87,7 +87,7 @@ async function open(s) {
 async function loadNow(s) {
     busy.value = s.name;
     const got = await api.loadSkill(s.name);
-    notice.value = got.said;
+    notice.value = got.notice;
     busy.value = "";
 }
 
@@ -104,7 +104,7 @@ async function always(s, on) {
         <div class="bar">
             <span class="count">{{ rows.length }} skills · {{ loadedCount }} loaded in the agent's window</span>
             <template v-if="notice">
-                <span class="said">{{ notice }}</span>
+                <span class="notice">{{ notice }}</span>
             </template>
         </div>
         <template v-if="loaded && !rows.length">
@@ -195,7 +195,7 @@ async function always(s, on) {
     color: var(--text-2);
 }
 
-.said {
+.notice {
     margin-left: auto;
     font-size: 12px;
     color: var(--accent-text);

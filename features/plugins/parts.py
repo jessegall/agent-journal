@@ -25,10 +25,10 @@ class PluginRemoved(ResourceEvent):
 
 class PluginChatRules(TextFormatter):
     def format(self, context: Context, text: str) -> str:
-        said = text
+        result = text
         for find, becomes in self.rules(context) if context.record else []:
-            said = re.sub(find, becomes, said)
-        return said
+            result = re.sub(find, becomes, result)
+        return result
 
     def rules(self, context: Context) -> list:
         memo = getattr(context.record, "memo", None)

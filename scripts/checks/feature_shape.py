@@ -15,26 +15,26 @@ def classes(path: Path) -> list[ast.ClassDef]:
 
 
 def problems() -> list[str]:
-    said = []
+    found = []
     for folder in sorted(p for p in (HERE / "features").iterdir() if (p / "feature.py").is_file()):
         name = folder.name
         if not (folder / "details.py").is_file():
-            said.append(f"features/{name} has no details.py")
+            found.append(f"features/{name} has no details.py")
         for feature in classes(folder / "feature.py"):
             allowed = FEATURE_METHODS | SERVICES.get(name, set())
             extra = [f.name for f in feature.body if isinstance(f, ast.FunctionDef) and f.name not in allowed]
             if extra:
-                said.append(f"features/{name}/feature.py holds logic in {', '.join(extra)}; it belongs in a part")
+                found.append(f"features/{name}/feature.py holds logic in {', '.join(extra)}; it belongs in a part")
         for path in sorted(folder.glob("*.py")):
             source = path.read_text()
             for node in ast.walk(ast.parse(source)):
                 if isinstance(node, ast.ImportFrom) and node.module == "features.base" and {a.name for a in node.names} & OLD_MARKERS:
-                    said.append(f"{path.relative_to(HERE)} imports an old marker from features.base")
+                    found.append(f"{path.relative_to(HERE)} imports an old marker from features.base")
             for part in classes(path):
                 lines = part.end_lineno - part.lineno + 1
                 if any(getattr(base, "id", "") in PARTS for base in part.bases) and lines > PART_LINES:
-                    said.append(f"{path.relative_to(HERE)}: {part.name} is {lines} lines; split it, a part stays under {PART_LINES}")
-    return said
+                    found.append(f"{path.relative_to(HERE)}: {part.name} is {lines} lines; split it, a part stays under {PART_LINES}")
+    return found
 
 
 if __name__ == "__main__":

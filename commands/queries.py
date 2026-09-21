@@ -129,8 +129,8 @@ def halt(ctx) -> str:
     ask(root)
     went = gone(root)
     clear(root)
-    said = "the journal is stopped: its viewer, its engine and every service it ran" if went else "the viewer is still answering; see .journal/runtime/viewer.log"
-    return "\n".join([said, *left])
+    summary = "the journal is stopped: its viewer, its engine and every service it ran" if went else "the viewer is still answering; see .journal/runtime/viewer.log"
+    return "\n".join([summary, *left])
 
 
 def still_open(record) -> list[str]:
