@@ -22,7 +22,9 @@ check("every feature folder is loaded", loaded, features.names())
 check("loading again loads nothing twice", features.load(), loaded)
 check("every loaded feature has a test folder", [n for n in loaded if not (Path(__file__).parent / "features" / n).is_dir()], [])
 check("every listener is gated by its feature's enabled", all(callable(g) for entries in bus._listeners.values() for g, _ in entries), True)
-check("auto mode is a feature off by default; the rest are on", ([n for n, f in features.FEATURES.items() if not f.default]), ["auto"])
+check("every feature is on by default; what is off by default is a behaviour", [n for n, f in features.FEATURES.items() if not f.default], [])
+check("working the list is the behaviour that is off until the user says so",
+      features.FEATURES["work"].behaviours["auto"].default, False)
 from features.base import Feature, REGISTRY  # noqa: E402
 check("the registry holds one class per feature, each a Feature", (sorted(REGISTRY), all(issubclass(c, Feature) for c in REGISTRY.values())), (loaded, True))
 check("a feature describes itself for a menu: name, words, what it listens to, its trigger", sorted(features.describe()["work"]), ["abstract", "behaviours", "declares", "default", "fixed", "help", "listens", "name", "title", "trigger"])
@@ -31,7 +33,9 @@ r = fresh()
 work = features.FEATURES["work"]
 check("enabled by default", work.enabled(r), True)
 work.disable(r)
-check("disable is a setting on the environment", (work.enabled(r), r.setting("features")), (False, {"work": False}))
+from controllers.types import Features  # noqa: E402
+from resources.base import SYSTEM  # noqa: E402
+check("disable is written on the feature's own row", (work.enabled(r), Features(r, actor=SYSTEM).named("work").enabled), (False, False))
 work.enable(r)
 check("enable again", work.enabled(r), True)
 from engine.manifest import manifest  # noqa: E402
@@ -39,7 +43,7 @@ check("the manifest carries every feature", sorted(manifest()["features"]), load
 
 # THE SWITCH: a feature is off per environment through settings; another environment keeps it
 record = fresh()
-record.set_setting("features", {"work": False})
+features.FEATURES["work"].disable(record)
 todo = Todos(record, actor=USER).create("a row")
 work = Works(record, actor=AGENT).create("work", todo=todo.n)
 check("a feature switched off in one environment does nothing there", Works(record).load(work.n).refs, [])

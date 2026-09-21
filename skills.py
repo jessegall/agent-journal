@@ -63,7 +63,8 @@ def feature_skill(f) -> str:
     said = subject(d["name"])
     return (f"---\nname: journal-{d['name']}\ndescription: {d['abstract']}\n---\n\n# {d['title']}\n\n{d['abstract']}.\n\n{d['help']}\n\n{said + chr(10) + chr(10) if said else ''}"
             f"{f'It listens to: ' + ', '.join(d['listens']) + f'. It speaks {when}. ' if d['listens'] else ''}"
-            f"{'On' if d['default'] else 'Off'} by default; the viewer's Settings switches it per environment, and `triggers.{d['name']}` in the environment's settings tunes it.\n")
+            f"{'On' if d['default'] else 'Off'} by default. Settings switches it per environment and sets how often it speaks; "
+            f"{'each of its behaviours — ' + ', '.join(d['behaviours']) + ' — carries its own switch and cadence beside it' if d['behaviours'] else 'it has one switch'}.\n")
 
 
 def render() -> dict[str, str]:
