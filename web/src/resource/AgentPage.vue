@@ -7,12 +7,13 @@ import {modelFamily, providerName} from "../agents.js";
 import Icon from "../kit/Icon.vue";
 import {go, route, showSession} from "../route.js";
 import {span} from "../format/time.js";
-import {rows} from "../sync/rows.js";
+import {PAGE, rows} from "../sync/rows.js";
 import {render} from "../text/index.js";
 import "../text/all.js";
 import Trace from "./Trace.vue";
 import AgentHooks from "./AgentHooks.vue";
 import {usePoll} from "../poll.js";
+import {stamp} from "../format/time.js";
 
 const props = defineProps({resource: Object});
 const emit = defineEmits(["close"]);
@@ -66,12 +67,6 @@ const transcriptKey = () => `${route.value.env}:${props.resource.n}:${session.va
 const earliest = computed(() => (turns.value.length ? turns.value[0].line : 0));
 const atStart = computed(() => turns.value.length > 0 && earliest.value <= first.value);
 
-function when(epoch) {
-    return epoch
-        ? new Date(epoch * 1000).toLocaleString([], {month: "short", day: "numeric", hour: "2-digit", minute: "2-digit", second: "2-digit"})
-        : "";
-}
-
 function toggle(line) {
     const next = new Set(folded.value);
     if (next.has(line)) next.delete(line);
@@ -91,7 +86,7 @@ async function fetchTurns() {
     try {
         const since = turns.value.length ? turns.value[turns.value.length - 1].line : 0;
         const path = transcriptKey();
-        const got = await api.transcript(props.resource.n, session.value, {since, last: 200});
+        const got = await api.transcript(props.resource.n, session.value, {since, last: PAGE});
         if (path !== transcriptKey()) return;
         error.value = "";
         total.value = got.total;
@@ -116,7 +111,7 @@ async function earlier() {
     const fromBottom = box ? box.scrollHeight - box.scrollTop : 0;
     try {
         const path = transcriptKey();
-        const got = await api.transcript(props.resource.n, session.value, {before: earliest.value, last: 200});
+        const got = await api.transcript(props.resource.n, session.value, {before: earliest.value, last: PAGE});
         if (path !== transcriptKey()) return;
         error.value = "";
         foldTools(got.turns);
@@ -300,7 +295,7 @@ onUnmounted(() => watcher && watcher.disconnect());
                                     <span class="fold-mark">{{ folded.has(t.line) ? "show" : "hide" }}</span>
                                 </template>
                             </button>
-                            <span class="when">{{ when(t.at) }}</span>
+                            <span class="when">{{ stamp(t.at) }}</span>
                             <span class="line">#{{ t.line }}</span>
                             <template v-if="t.tools.length">
                                 <span class="tools">used {{ t.tools.join(", ") }}</span>

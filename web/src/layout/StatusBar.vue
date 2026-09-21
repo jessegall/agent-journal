@@ -13,6 +13,7 @@ import {rows} from "../sync/rows.js";
 import {currentWork, doneOf, lineOf, phaseOf, planButton, queued, rowsOf, shownPlans, stateOf, wordOf} from "./statusline.js";
 import {usePoll} from "../poll.js";
 import {useNow} from "../composables/now.js";
+import {runPlan, setAuto} from "../actions/work.js";
 
 usePoll(...polled.bar);
 usePoll(...polled.agents);
@@ -50,14 +51,10 @@ const aside = computed(() => {
 const error = ref("");
 const done = (p) => doneOf(p, rows("todo"));
 
-async function setAuto(on) {
-    await api.saveSettings({features: {"work.auto": on}});
-}
-
 async function runBar(p) {
     error.value = "";
     try {
-        await api.act("plan", p.n, planButton(p)[0]);
+        await runPlan(p);
     } catch (e) {
         error.value = e.message;
     }

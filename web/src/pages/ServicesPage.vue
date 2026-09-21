@@ -7,9 +7,9 @@ import {route} from "../route.js";
 import {span} from "../format/time.js";
 import {usePoll} from "../poll.js";
 import {useNow} from "../composables/now.js";
+import {RUNNING} from "../domain/services.js";
 
 const EVERY = 2000;
-const RUNNING = ["ready", "starting"];
 const rows = ref([]);
 const error = ref("");
 const reading = ref("");

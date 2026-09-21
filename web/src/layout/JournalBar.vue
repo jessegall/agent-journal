@@ -7,6 +7,7 @@ import Icon from "../kit/Icon.vue";
 import Switch from "../kit/Switch.vue";
 import {age} from "../format/time.js";
 import {lineOf, planButton, stateOf, wordOf} from "./statusline.js";
+import {runPlan, setAuto} from "../actions/work.js";
 
 const props = defineProps({journal: {type: Object, required: true}, open: Boolean});
 const emit = defineEmits(["toggle", "changed", "forget"]);
@@ -22,8 +23,8 @@ async function manage(fn) {
     }
 }
 
-const setAuto = (e, on) => manage(() => server.value.in(e.name).saveSettings({features: {"work.auto": on}}));
-const runPlan = (e, p) => manage(() => server.value.in(e.name).act("plan", p.n, planButton({data: p})[0]));
+const switchAuto = (e, on) => manage(() => setAuto(on, server.value.in(e.name)));
+const runStep = (e, p) => manage(() => runPlan({data: p, n: p.n}, server.value.in(e.name)));
 const wordFor = (p) => (planButton({data: p}) || [])[1];
 const pageUrl = (e, page = "") => server.value.page(e.name, page);
 
@@ -168,7 +169,7 @@ const counts = (c) => [
                                         ? 'The agent works through the to-do list without asking'
                                         : 'The agent asks before picking up the next to-do'
                                 "
-                                @change="(on) => setAuto(e, on)"
+                                @change="(on) => switchAuto(e, on)"
                             />
                             <span class="jbar-agent">
                                 <template v-if="e.agent && e.agent.status !== 'stopped'">
@@ -195,7 +196,7 @@ const counts = (c) => [
                                     </span>
                                 </template>
                                 <template v-if="wordFor(p)">
-                                    <button type="button" :class="['jbar-act', {ack: p.status === 'done'}]" @click="runPlan(e, p)">
+                                    <button type="button" :class="['jbar-act', {ack: p.status === 'done'}]" @click="runStep(e, p)">
                                         {{ wordFor(p) }}
                                         <Icon name="arrow" />
                                     </button>
