@@ -7,7 +7,7 @@ PHASE = names("title", "when", "checkpoint", "brief", "todos")
 class Plan(Shape, Resource):
     type = "plan"
     notify_actions = ("updated",)
-    shown = {"completed": "Plan acknowledged"}
+    shown = {"created": "Plan drafted", "completed": "Plan acknowledged"}
     says = {"complete": "acknowledging"}
     status = Field()
     stage = Field()

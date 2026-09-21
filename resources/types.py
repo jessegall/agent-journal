@@ -61,7 +61,7 @@ class Work(Traced, Resource):
 class Doc(Shape, Resource):
     loading = LAZY
     type = "doc"
-    shown = {"completed": "Doc settled"}
+    shown = {"created": "Doc written", "completed": "Doc settled"}
     says = {"complete": "settling"}
     status = Field()
     handed = "DOCS catalogued — read one before you re-investigate what it settles"
@@ -79,7 +79,7 @@ class Doc(Shape, Resource):
 class Report(Shape, Resource):
     loading = LAZY
     type = "report"
-    shown = {"completed": "Report archived"}
+    shown = {"created": "Report written", "completed": "Report archived"}
     says = {"complete": "archiving"}
     attention = True
     icon = "report"
@@ -93,7 +93,7 @@ class Report(Shape, Resource):
 
 class Fact(Reasoned, Resource):
     type = "fact"
-    shown = {"completed": "Fact struck"}
+    shown = {"created": "Fact noted", "completed": "Fact struck"}
     says = {"complete": "striking"}
     handed = "FACTS about this environment"
     lent = False
@@ -107,7 +107,7 @@ class Fact(Reasoned, Resource):
 
 class Rule(Reasoned, Resource):
     type = "rule"
-    shown = {"completed": "Rule struck"}
+    shown = {"created": "Rule made", "completed": "Rule struck"}
     says = {"complete": "striking"}
     injected = Field(FLAG)
     handed = "RULES, in force on every environment"
@@ -123,7 +123,7 @@ class Rule(Reasoned, Resource):
 
 class Reminder(Shape, Resource):
     type = "reminder"
-    shown = {"completed": "Reminder retired"}
+    shown = {"created": "Reminder set", "completed": "Reminder retired"}
     says = {"complete": "retiring"}
     handed = "REMINDERS, said again at every stop"
     whom = Field()

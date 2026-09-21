@@ -1,4 +1,4 @@
-import {meta, types} from "../state/store.js";
+import {meta, types, word} from "../state/store.js";
 import {rows} from "../sync/rows.js";
 
 const ENDED = ["done", "abandoned"];
@@ -61,3 +61,11 @@ export const state = (r) =>
                 : "open";
 
 export const toldToUser = (e) => !!meta(e.type) && meta(e.type).notify.includes("user");
+
+export function happened(r) {
+    const kind = meta(r.type);
+    const action = r.completed ? "completed" : "created";
+    const said = (kind.shown || {})[action];
+    if (said) return said;
+    return r.completed ? `${kind.title} ${word(r.type, "complete")}` : `${kind.title} created`;
+}

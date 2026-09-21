@@ -3,7 +3,7 @@ import {computed} from "vue";
 import Icon from "../kit/Icon.vue";
 import {api} from "../api/client.js";
 import {peek, route} from "../route.js";
-import {unreadByUser} from "../domain/records.js";
+import {happened, unreadByUser} from "../domain/records.js";
 import {age} from "../format/time.js";
 import {focusTurn} from "../platform/view.js";
 import {meta, types} from "../state/store.js";
@@ -45,7 +45,7 @@ async function dismiss(r) {
             <TransitionGroup name="qrow" tag="div" class="needs-slot">
                 <div v-for="r in cards" :key="r.ref" :class="['needs-card', r.type]" @click="open(r)">
                     <div class="needs-card-top">
-                        <span class="needs-card-kind">{{ meta(r.type).title }}</span>
+                        <span class="needs-card-kind">{{ happened(r) }}</span>
                         <template v-if="meta(r.type).clears !== 'completed' || r.completed">
                             <button type="button" class="needs-dismiss" title="Seen — take it off the list" @click.stop="dismiss(r)">
                                 <Icon name="close" />
