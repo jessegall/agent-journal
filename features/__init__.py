@@ -9,7 +9,8 @@ from engine.package import modules
 FEATURES: dict[str, object] = {}
 SWITCHED: list = []
 RENAMED: set[str] = set()
-CHANGE_SWITCHES = ("feature", "plugin")
+SEATED: dict[str, int] = {}
+CHANGE_SWITCHES = ("feature", "plugin", "environment")
 
 
 @cache
@@ -35,8 +36,10 @@ def load(root: Path | None = None) -> list[str]:
             FEATURES[name].wire()
     if not SWITCHED:
         SWITCHED.extend(bus.on(kind, rebooted) for kind in CHANGE_SWITCHES)
-    if root:
+    from features.base import generation
+    if root and SEATED.get(str(root)) != generation():
         seat(root)
+        SEATED[str(root)] = generation()
     return sorted(FEATURES)
 
 
@@ -72,6 +75,7 @@ def unload() -> None:
     POLICIES.clear()
     FEATURES.clear()
     SWITCHED.clear()
+    SEATED.clear()
     rebooted()
 
 

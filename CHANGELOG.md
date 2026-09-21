@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.84.6 — The journal sets itself up once, and commands answer in milliseconds
+
+Messages 2220 and 2224, to-do 758, rule 47. Every command the server ran set parts of the journal up again: it re-seated every feature row and retried every damaged record file it had failed to read before, costing 100 ms or more a command. Set-up now happens once, when the server starts, and again only when a feature is switched, a plugin changes or an environment is added. A record file that cannot be read is remembered in its folder's index by its time and size, and skipped until it changes. Warm, `journal todo all` and `message unread` take about 2 ms.
+
+What to do about it: `journal upgrade`.
+
 ## 2.84.5 — A journal command through the server takes a few milliseconds again
 
 To-do 758. Every journal command the server ran spent about 100 ms re-checking the runtime folder, some two thousand small files, for settings still carrying an old feature name, a clean-up that only ever needs doing once. It now runs once when the server starts. `journal todo all` through the server went from about 120 ms to under 10.
