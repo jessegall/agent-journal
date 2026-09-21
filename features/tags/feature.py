@@ -2,10 +2,11 @@ import io
 import re
 import time
 
+from controllers.types import Agents
 from features import trigger
 from engine.stored import read_json, write_json
-from features.base import Behaviour, Feature, event, formats, Line
-from resources.base import AGENT
+from features.base import Behaviour, Feature, event, formats, interceptor, Line
+from resources.base import AGENT, SYSTEM
 from engine.transcript import last_said, last_turn
 
 TAGS = ("discovery", "correction", "blocked", "info", "reply")
@@ -14,6 +15,7 @@ RUNS = {"reply": "message reply {n} {text}", "log": "work log {text} --n {n}", "
 PLACES = {"info": "bar"}
 ARGUMENT = r'(?::[^\]\s]+|="[^"]*")?'
 LEADING = re.compile(r"^[ \t]*(?:>\s?)?(?:\*\*)?\[!([a-z]+)" + ARGUMENT + r"\]")
+REPLIED = re.compile(r"\bjournal\s+message\s+reply\s+(\d+)")
 CARRIED = re.compile(r'^[ \t]*(?:>\s?)?(?:\*\*)?\[!([a-z]+)(?::([0-9]+)|="([^"]*)")\]', re.M)
 
 
@@ -37,7 +39,8 @@ def visible(text: str) -> str:
 class Tags(Feature):
     name = "tags"
     lines = {"untagged": Line("your last message has no tag", "open every message with exactly one of {{tags}}"),
-             "refused": Line("the {{tag}} tag on {{on}} did not run", "{{said}}")}
+             "refused": Line("the {{tag}} tag on {{on}} did not run", "{{said}}"),
+             "by tag": Line("reply to message {{n}} with the reply tag", "open your turn with [!reply:{{n}}] and the turn itself becomes the reply, so journal message reply is never needed")}
     title_ = "Tagging"
     abstract_ = "A message opens with one tag, and a tag carrying a number runs the command it stands for"
     help_ = "The tags are settings. tags.names lists them and tags.runs maps a tag to the command it stands for, so [!reply:12] runs journal message reply 12 with the turn as its text, and [!todo=\"the title\"] files a to-do with that title and the turn as its brief. A tag runs once, keyed to the turn it came from; two tags in one turn run in the order they appear; and a refusal comes back as a nudge on the next turn rather than at the moment of acting."
@@ -46,7 +49,9 @@ class Tags(Feature):
                                       trigger={"on": trigger.IDLE}),
                   "running": Behaviour("Run the command a tag stands for",
                                        "A tag carrying a number runs its command with the turn as the text",
-                                       trigger={"on": trigger.IDLE})}
+                                       trigger={"on": trigger.IDLE}),
+                  "replying": Behaviour("Remind the agent to reply by tag",
+                                        "When the agent runs journal message reply, it is told the reply tag does the same")}
     NAMES = "names"
     RUNS = "runs"
     PLACES = "places"
@@ -107,6 +112,13 @@ class Tags(Feature):
                         *self.argv(runs[name], n, argument, text)], out=said, err=wrong)
             if code:
                 self.say(record, agent, "refused", private=True, tag=name, on=n or argument, said=(wrong.getvalue() or said.getvalue()).strip())
+
+    @interceptor
+    def replied(self, provider, record, hook, session) -> str:
+        found = REPLIED.search(hook.tool.command) if self.on(record, "replying") else None
+        if found:
+            self.say(record, Agents(record, actor=SYSTEM).by_session(session), "by tag", private=True, n=found.group(1))
+        return ""
 
     def places(self, record) -> dict:
         return {**PLACES, **self.setting(record, self.PLACES, {})}
