@@ -1,5 +1,6 @@
 import json
 from pathlib import Path
+from engine.stored import write_text
 
 WAS, NOW = "pin", "fact"
 TEXT = (".md", ".json", ".jsonl")
@@ -31,12 +32,12 @@ def run(root: Path) -> str:
             text = f.read_text()
             said = moved(text)
             if said != text:
-                f.write_text(said)
+                write_text(f, said)
                 touched += 1
     for f in sorted((root / "runtime").glob("gate-*.json")):
         try:
             holds = json.loads(f.read_text())
         except (OSError, ValueError):
             continue
-        f.write_text(json.dumps({(NOW if k == WAS else k): v for k, v in holds.items()}))
+        write_text(f, json.dumps({(NOW if k == WAS else k): v for k, v in holds.items()}))
     return f"{rows} pins became facts in {folders} environments, {touched} files repointed"

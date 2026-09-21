@@ -2,6 +2,7 @@ import importlib
 import json
 import time
 from pathlib import Path
+from engine.stored import write_text
 
 HERE = Path(__file__).parent
 
@@ -34,6 +35,6 @@ def run(root: Path) -> list[str]:
         result = module.run(root)
         done[name] = {"at": time.time(), "result": result}
         root.mkdir(parents=True, exist_ok=True)
-        ledger(root).write_text(json.dumps(done, indent=2))
+        write_text(ledger(root), json.dumps(done, indent=2))
         ran.append(name)
     return ran

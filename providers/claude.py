@@ -10,6 +10,7 @@ from engine.hooks import EVENTS
 from providers.base import Provider
 from providers.payload import Hook
 from resources.types import AgentRow
+from engine.stored import write_text
 
 ASKS = frozenset({"AskUserQuestion"})
 WINDOW, LONG_WINDOW, LONG_MARK = 200_000, 1_000_000, "[1m]"
@@ -100,7 +101,7 @@ class Claude(Provider):
         servers = known.get("mcpServers") or {}
         said = command.split()
         servers["journal"] = {"command": "python3", "args": [str(Path(said[1]).with_name("channel.py")), said[3]]}
-        f.write_text(json.dumps({**known, "mcpServers": servers}, indent=2) + "\n")
+        write_text(f, json.dumps({**known, "mcpServers": servers}, indent=2) + "\n")
 
     def wire(self, project: Path, command: str) -> Path:
         wired = super().wire(project, command)

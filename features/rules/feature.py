@@ -4,6 +4,7 @@ from pathlib import Path
 from controllers.types import Rules
 from features import trigger
 from features.base import Recital, event
+from engine.stored import write_text
 
 BLOCK = re.compile(r"\n?<!-- journal rules -->.*?<!-- /journal rules -->\n?", re.DOTALL)
 INSTRUCTION_FILES = ("AGENTS.md", "CLAUDE.md")
@@ -30,8 +31,8 @@ class RulesFeature(Recital):
         stripped = BLOCK.sub("\n", had).strip("\n")
         if not injected:
             if had != stripped:
-                target.write_text(stripped + "\n" if stripped else "")
+                write_text(target, stripped + "\n" if stripped else "")
             return
         lines = "\n".join(f"- {r.title}" for r in injected)
         block = f"<!-- journal rules -->\n# Rules\n\n{lines}\n<!-- /journal rules -->"
-        target.write_text(f"{stripped}\n\n{block}\n" if stripped else f"{block}\n")
+        write_text(target, f"{stripped}\n\n{block}\n" if stripped else f"{block}\n")

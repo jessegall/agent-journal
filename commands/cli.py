@@ -24,6 +24,7 @@ from providers import PROVIDERS
 from resources.base import AGENT, Refused, SYSTEM
 from resources.shapes import typed
 from resources.types import AgentRow
+from engine.stored import write_text
 
 VERSION_FILE = Path(__file__).resolve().parents[1] / "VERSION"
 VERSION = VERSION_FILE.read_text().strip() if VERSION_FILE.is_file() else "0"
@@ -184,7 +185,7 @@ def switched(ctx, on: bool) -> str:
         f.unlink(missing_ok=True)
         return "the journal is in force"
     f.parent.mkdir(parents=True, exist_ok=True)
-    f.write_text(str(time.time()))
+    write_text(f, str(time.time()))
     return "the journal is off: the hooks report nothing and hold nothing until journal enable"
 
 

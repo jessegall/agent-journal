@@ -9,7 +9,7 @@ from pathlib import Path
 
 from engine import bus
 from resources.base import ACTIONS, ACTORS, PROJECT, Event
-from engine.stored import read_json, write_json
+from engine.stored import read_json, write_json, write_text
 
 
 class Setting:
@@ -136,7 +136,7 @@ class Record:
     def set_cursor_text(self, name: str, text: str) -> None:
         f = self.home / "runtime" / f"cursor-{name}"
         f.parent.mkdir(parents=True, exist_ok=True)
-        f.write_text(text)
+        write_text(f, text)
 
     def cursor(self, name: str) -> int:
         try:

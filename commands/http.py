@@ -36,7 +36,7 @@ from providers import PROVIDERS
 from features.format import formatted
 from resources.base import shown as given, AGENT, OPENED, USER, Refused, titled
 from resources.types import Ask
-from engine.stored import write_json
+from engine.stored import write_json, write_text
 
 WEB = Path(__file__).resolve().parents[1] / "web" / "dist"
 SAID = ("title", "abstract", "brief", "outcome")
@@ -378,7 +378,7 @@ def fetched(cache: Path) -> None:
             cache.touch(exist_ok=True)
             return
         cache.parent.mkdir(parents=True, exist_ok=True)
-        cache.write_text(latest)
+        write_text(cache, latest)
 
 
 @route("GET", "/api/upstream")

@@ -2,6 +2,7 @@ import re
 from pathlib import Path
 
 from providers import PROVIDERS
+from engine.stored import write_text
 
 LAWS = (
     ("L1", "Every subagent dispatch names its model and chooses the least expensive model that reliably fits the work.",
@@ -38,7 +39,7 @@ def brief(project: Path) -> list[Path]:
         kept = BLOCK.sub("\n", had).strip()
         want = f"{kept}\n\n{managed}\n" if kept else f"# {title}\n\n{managed}\n"
         if want != had:
-            target.write_text(want)
+            write_text(target, want)
             written.append(target)
     return written
 
