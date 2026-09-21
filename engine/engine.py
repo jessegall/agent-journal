@@ -58,7 +58,7 @@ class Engine:
         self.why = ""
 
     def start(self) -> None:
-        features.load()
+        features.load(self.record.root)
         self.running = True
 
     def stop(self) -> None:
@@ -77,6 +77,7 @@ class Engine:
             self.relayed = self.record.last_event()
         for e in self.record.events(self.relayed):
             self.relayed = e.id
+            features.passed(e, self.record)
             if not e.heard:
                 bus.emit(e, self.record)
 
