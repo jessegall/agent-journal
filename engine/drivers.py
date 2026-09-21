@@ -94,6 +94,7 @@ class Driver(ABC):
             self.held.append(line)
         for key, numbers in (groups or {}).items():
             self.groups.setdefault(key, {}).update(dict.fromkeys(numbers))
+        self.pump()
         return True
 
     def pump(self) -> str:

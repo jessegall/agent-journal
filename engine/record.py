@@ -37,7 +37,6 @@ class Record:
     triggers = Setting(dict)
     keep = Setting(dict)
     budget = Setting(dict)
-    batch = Setting(dict)
     messages = Setting(dict)
     tags = Setting(dict)
     agents = Setting(dict)
@@ -45,7 +44,7 @@ class Record:
     questions = Setting(dict)
     delivery = Setting(dict)
     cleanup_read_at = Setting(0)
-    SETTINGS = ("features", "triggers", "keep", "budget", "batch", "messages", "tags", "agents", "skills", "questions", "delivery")
+    SETTINGS = ("features", "triggers", "keep", "budget", "messages", "tags", "agents", "skills", "questions", "delivery")
 
     def __init__(self, root: Path, env: str, memo: bool = False):
         self.root = Path(root)

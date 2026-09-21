@@ -10,7 +10,6 @@ from features.journal import TERMINAL
 
 STOPPED, IDLE, BUSY, WORKING, COMPACTING = "stopped", "idle", "busy", "working", "compacting"
 STATES = (STOPPED, IDLE, BUSY, WORKING, COMPACTING)
-BATCH = {"quiet": 5.0, "size": 10}
 
 
 def spoken(r) -> str:
@@ -73,11 +72,9 @@ class Agent(Actor):
         super().__init__(record)
         self.driver = driver
         self.pending: list[Event] = []
-        self.pending_at = 0.0
 
     def notify(self, event: Event) -> None:
         self.pending.append(event)
-        self.pending_at = time.time()
 
     def heard(self) -> int:
         return self.pending[-1].id if self.pending else self.cursor()
@@ -85,13 +82,8 @@ class Agent(Actor):
     def typed(self, event: Event) -> bool:
         return TYPES[event.type].spoken and CONTROLLERS[event.type](self.record, actor=SYSTEM).load(event.n).data.get("delivery") == TERMINAL
 
-    def urgent(self, event: Event) -> bool:
-        return event.action in TYPES[event.type].urgent_actions
-
     def flush(self) -> str:
-        batch = {**BATCH, **self.record.batch}
-        pressing = any(self.urgent(e) or self.typed(e) for e in self.pending)
-        if not self.pending or (not pressing and time.time() - self.pending_at < batch["quiet"] and len(self.pending) < batch["size"]):
+        if not self.pending:
             return ""
         typed = [e for e in self.pending if self.typed(e)]
         said, groups = render([e for e in self.pending if e not in typed], self.record)
