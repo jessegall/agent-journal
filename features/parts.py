@@ -59,8 +59,11 @@ class Context:
         return not self.feature.already(self.record, self.agent.session, kind, key)
 
 
+WHOLE_FEATURE = ""
+
+
 def wanted(part, feature, record, row) -> bool:
-    if not part.behaviour:
+    if part.behaviour is None:
         return True
     if not feature.cadence(record, part.behaviour):
         return feature.on(record, part.behaviour)
@@ -68,7 +71,7 @@ def wanted(part, feature, record, row) -> bool:
 
 
 class Handler:
-    behaviour: ClassVar[str] = ""
+    behaviour: ClassVar[str | None] = None
 
     def handle(self, context: Context, event) -> None:
         raise NotImplementedError
@@ -76,14 +79,14 @@ class Handler:
 
 class TextFormatter:
     surfaces: ClassVar[tuple] = ()
-    behaviour: ClassVar[str] = ""
+    behaviour: ClassVar[str | None] = None
 
     def format(self, context: Context, text: str) -> str:
         raise NotImplementedError
 
 
 class ToolInterceptor:
-    behaviour: ClassVar[str] = ""
+    behaviour: ClassVar[str | None] = None
 
     def intercept(self, context: Context, call) -> str:
         raise NotImplementedError
