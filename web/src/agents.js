@@ -9,3 +9,10 @@ export function modelFamily(model) {
     const found = String(model || "").match(FAMILY);
     return found ? found[0].toLowerCase() : "";
 }
+
+const WAITS_FOR = 600;
+
+export function pendingChoice(data, key) {
+    const choice = data && data.pending && data.pending[key];
+    return choice && Date.now() / 1000 - choice.at < WAITS_FOR ? choice.value : "";
+}

@@ -1,11 +1,15 @@
 <script setup>
 import {chatOnly, framed} from "../platform/view.js";
-import {computed, onUnmounted, ref, watch} from "vue";
+import {computed, ref} from "vue";
 import {api} from "../api/client.js";
-import {modelFamily, providerName} from "../agents.js";
+import {modelFamily, pendingChoice, providerName} from "../agents.js";
 import Icon from "../kit/Icon.vue";
 import Spinner from "../kit/Spinner.vue";
 import CrewList from "./CrewList.vue";
+import AgentAppoint from "./AgentAppoint.vue";
+import AgentControls from "./AgentControls.vue";
+import AgentUsage from "./AgentUsage.vue";
+import "./drop.css";
 import SwitchCase from "../kit/SwitchCase.vue";
 import {go, peek, route} from "../route.js";
 import {span} from "../format/time.js";
@@ -47,11 +51,6 @@ function openSession(row) {
     open.value = "";
     peek("agent", agent.value.n, 0, row.session);
 }
-const available = ref([]);
-const assigning = ref("");
-const controls = ref({groups: [], note: ""});
-const controlling = ref("");
-const error = ref("");
 const anchor = ref({left: 0, top: 0});
 function toggle(key, e) {
     open.value = open.value === key ? "" : key;
@@ -59,68 +58,11 @@ function toggle(key, e) {
     const wrap = bar.value.getBoundingClientRect();
     anchor.value = {left: Math.max(0, Math.min(box.left - wrap.left, wrap.width - 288)), top: box.bottom - wrap.top + 6};
 }
-async function appointments(e) {
-    toggle("appoint", e);
-    if (open.value !== "appoint") return;
-    error.value = "";
-    try {
-        available.value = await api.onlineAgents();
-    } catch (e) {
-        error.value = e.message;
-    }
-}
-const CONTROLS = ["model", "effort"];
-const WAITS_FOR = 600;
-const pending = (key) => {
-    const choice = data.value && data.value.pending && data.value.pending[key];
-    return choice && Date.now() / 1000 - choice.at < WAITS_FOR ? choice.value : "";
-};
-const chosen = computed(() => controls.value.groups.filter((group) => group.key === open.value));
-const current = computed(() => (open.value === "effort" ? `effort ${data.value.effort || "not reported"}` : data.value.model));
-async function modelControls(e, key) {
-    toggle(key, e);
-    if (open.value !== key) return;
-    error.value = "";
-    controls.value = {groups: [], note: "Loading controls…"};
-    try {
-        controls.value = await api.agentControls(data.value.provider, data.value.model);
-    } catch (e) {
-        error.value = e.message;
-    }
-}
-async function control(action, value) {
-    controlling.value = `${action}:${value}`;
-    error.value = "";
-    try {
-        await api.controlAgent(agent.value.title, action, value);
-        open.value = "";
-    } catch (e) {
-        error.value = e.message;
-    } finally {
-        controlling.value = "";
-    }
-}
-const waiting = (key, value) => controlling.value === `${key}:${value}` || pending(key) === value;
-function usageDetails(e) {
-    toggle("usage", e);
-    error.value = "";
-}
-function resetLabel(window) {
-    const seconds = window.resets - Date.now() / 1000;
-    return seconds > 0 ? `resets in ${span(seconds)}` : "reset due";
-}
-async function choose(candidate) {
-    assigning.value = candidate.session;
-    error.value = "";
-    try {
-        await api.appoint(candidate.session);
-        open.value = "";
-    } catch (e) {
-        error.value = e.message;
-    } finally {
-        assigning.value = "";
-    }
-}
+const CONTROLS = ["model", "effort", "context"];
+const pending = (key) => pendingChoice(data.value, key);
+const appointments = (e) => toggle("appoint", e);
+const modelControls = (e, key) => toggle(key, e);
+const usageDetails = (e) => toggle("usage", e);
 const bar = ref(null);
 function openSkills() {
     open.value = "";
@@ -277,26 +219,7 @@ useOutside(bar, () => (open.value = ""));
             <div v-if="open && (data || open === 'appoint')" class="bar-drop" :style="{left: `${anchor.left}px`, top: `${anchor.top}px`}">
                 <SwitchCase :value="CONTROLS.includes(open) ? 'model' : open">
                     <template #appoint>
-                        <template v-if="error">
-                            <p class="bar-error">{{ error }}</p>
-                        </template>
-                        <template v-else-if="!available.length">
-                            <p class="bar-none">No online agents are available.</p>
-                        </template>
-                        <template v-for="candidate in available" :key="candidate.session">
-                            <button
-                                type="button"
-                                class="bar-agent-choice"
-                                :disabled="assigning === candidate.session"
-                                @click="choose(candidate)"
-                            >
-                                <Icon name="agents" />
-                                <span>
-                                    {{ providerName(candidate.provider, "Agent") }}{{ candidate.model ? ` · ${candidate.model}` : "" }}
-                                </span>
-                                <small>{{ candidate.environment || "unassigned" }}</small>
-                            </button>
-                        </template>
+                        <AgentAppoint @done="open = ''" />
                     </template>
                     <template #skills>
                         <p class="bar-none">Loaded in this window, newest last. A compaction empties it.</p>
@@ -314,84 +237,10 @@ useOutside(bar, () => (open.value = ""));
                         </div>
                     </template>
                     <template #model>
-                        <template v-if="error">
-                            <p class="bar-error">{{ error }}</p>
-                        </template>
-                        <p class="bar-current">{{ current }}</p>
-                        <template v-if="pending(open)">
-                            <div class="bar-waiting">
-                                <span>{{ pending(open) }} is waiting for the agent to finish its turn.</span>
-                            </div>
-                        </template>
-                        <template v-for="group in chosen" :key="group.key">
-                            <p class="bar-label">{{ group.label }}</p>
-                            <div class="bar-choices">
-                                <template v-for="choice in group.choices" :key="choice.value">
-                                    <button
-                                        type="button"
-                                        class="bar-control-choice"
-                                        :disabled="Boolean(controlling)"
-                                        @click="control(group.key, choice.value)"
-                                    >
-                                        <template v-if="waiting(group.key, choice.value)">
-                                            <Spinner />
-                                        </template>
-                                        {{ choice.label }}
-                                    </button>
-                                </template>
-                            </div>
-                        </template>
-                        <p class="bar-none">{{ controls.note }}</p>
+                        <AgentControls :control="open" :agent="agent" @done="open = ''" />
                     </template>
                     <template #usage>
-                        <template v-if="error">
-                            <p class="bar-error">{{ error }}</p>
-                        </template>
-                        <p class="bar-current">Plan allowance used</p>
-                        <template v-for="window in usage" :key="window.key">
-                            <div class="bar-usage">
-                                <span>{{ window.label }}</span>
-                                <strong>{{ Math.round(used(window)) }}%</strong>
-                                <span class="bar-usage-track"><span :style="{width: `${used(window)}%`}" /></span>
-                                <small>{{ resetLabel(window) }}</small>
-                            </div>
-                        </template>
-                        <template v-if="!usage.length && !error">
-                            <p class="bar-none">No current plan window has been reported here.</p>
-                        </template>
-                    </template>
-                    <template #context>
-                        <template v-if="error">
-                            <p class="bar-error">{{ error }}</p>
-                        </template>
-                        <p class="bar-current">Context window</p>
-                        <div class="bar-usage">
-                            <span>Used</span>
-                            <strong>{{ filled }}%</strong>
-                            <span class="bar-usage-track"><span :style="{width: `${filled}%`}" /></span>
-                        </div>
-                        <template v-if="pending('context')">
-                            <div class="bar-waiting">
-                                <span>{{ pending("context") }} is waiting for the agent to finish its turn.</span>
-                            </div>
-                        </template>
-                        <template v-for="group in chosen" :key="group.key">
-                            <div class="bar-choices">
-                                <template v-for="choice in group.choices" :key="choice.value">
-                                    <button
-                                        type="button"
-                                        class="bar-control-choice"
-                                        :disabled="Boolean(controlling)"
-                                        @click="control(group.key, choice.value)"
-                                    >
-                                        <template v-if="waiting(group.key, choice.value)">
-                                            <Spinner />
-                                        </template>
-                                        {{ choice.label }}
-                                    </button>
-                                </template>
-                            </div>
-                        </template>
+                        <AgentUsage :usage="usage" />
                     </template>
                     <template #shells>
                         <CrewList :rows="data.shell_rows || []" :total="data.shells || 0" />
@@ -555,53 +404,6 @@ useOutside(bar, () => (open.value = ""));
     box-shadow: 0 14px 28px rgba(0, 0, 0, 0.35);
 }
 
-.bar-foot {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-    margin-top: 4px;
-    padding-top: 5px;
-    border-top: 1px solid var(--border);
-}
-
-.bar-act {
-    padding: 6px 8px;
-    border: 0;
-    border-radius: 6px;
-    background: none;
-    color: var(--accent-text);
-    font: inherit;
-    font-size: 12.5px;
-    text-align: left;
-    cursor: pointer;
-}
-
-.bar-act:hover {
-    background: var(--hover);
-}
-
-.bar-none {
-    margin: 0;
-    padding: 6px 8px;
-    color: var(--text-3);
-    font-size: 11.5px;
-    line-height: 1.4;
-}
-
-.bar-error {
-    margin: 0;
-    padding: 6px 8px;
-    color: var(--danger);
-    font-size: 11.5px;
-}
-
-.bar-current {
-    margin: 0;
-    padding: 7px 8px 5px;
-    color: var(--text);
-    font-size: 12px;
-}
-
 .agent-usage {
     font-variant-numeric: tabular-nums;
 }
@@ -621,131 +423,7 @@ useOutside(bar, () => (open.value = ""));
     background: var(--accent-text);
 }
 
-.bar-usage {
-    display: grid;
-    grid-template-columns: 1fr auto;
-    gap: 4px 8px;
-    padding: 6px 8px;
-    color: var(--text-2);
-    font-size: 11.5px;
-}
-
-.bar-usage strong {
-    color: var(--text);
-    font-weight: 600;
-    font-variant-numeric: tabular-nums;
-}
-
-.bar-usage-track {
-    grid-column: 1 / -1;
-    height: 4px;
-    overflow: hidden;
-    border-radius: 2px;
-    background: var(--line);
-}
-
-.bar-usage-track > span {
-    display: block;
-    height: 100%;
-    border-radius: inherit;
-    background: var(--accent-text);
-}
-
-.bar-usage small {
-    grid-column: 1 / -1;
-    color: var(--text-3);
-    font-size: 10.5px;
-}
-
-.bar-label {
-    margin: 0;
-    padding: 6px 8px 3px;
-    color: var(--text-3);
-    font-size: 10px;
-    font-weight: 650;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-}
-
-.bar-choices {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 4px;
-    padding: 2px 6px 5px;
-}
-
-.bar-control-choice {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    padding: 5px 8px;
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    background: none;
-    color: var(--text-2);
-    font: inherit;
-    font-size: 11.5px;
-    cursor: pointer;
-}
-
-.bar-control-choice:hover {
-    border-color: var(--border-2);
-    background: var(--hover);
-    color: var(--text);
-}
-
-.bar-agent-choice {
-    width: 100%;
-    display: grid;
-    grid-template-columns: 16px 1fr auto;
-    align-items: center;
-    gap: 7px;
-    padding: 7px 8px;
-    border: 0;
-    border-radius: 6px;
-    background: none;
-    color: var(--text-2);
-    font: inherit;
-    text-align: left;
-    cursor: pointer;
-}
-
-.bar-agent-choice:hover {
-    background: var(--hover);
-    color: var(--text);
-}
-
-.bar-agent-choice small {
-    color: var(--text-3);
-    font-size: 10.5px;
-}
-
-.bar-item {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 5px 8px;
-    border-radius: 6px;
-    color: var(--text-2);
-    font-size: 12px;
-}
-
-.bar-item .ico {
-    width: 13px;
-    height: 13px;
-}
-
-
 .agent-fact.waiting {
-    color: var(--progress);
-}
-
-.bar-waiting {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin: 4px 0 8px;
-    font-size: 12px;
     color: var(--progress);
 }
 </style>
