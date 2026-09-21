@@ -1,5 +1,4 @@
 import features
-import pytest
 import struct
 import subprocess
 import sys
@@ -15,14 +14,6 @@ from commands.cli import search_text
 from commands.http import dispatch
 from resources.base import SYSTEM, USER
 from tests.conftest import fresh, refused
-
-
-@pytest.fixture(autouse=True)
-def loaded_features():
-    features.unload()
-    features.load()
-    yield
-    features.unload()
 
 
 def test_clip_length_decides_the_sampling_spacing():

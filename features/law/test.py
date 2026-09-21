@@ -1,7 +1,6 @@
 from contextlib import chdir
 from pathlib import Path
 
-import pytest
 
 import features
 from engine.hooks import handle
@@ -9,14 +8,6 @@ from engine.queries import start_block
 from features.law.policy import BEGIN, brief
 from providers import PROVIDERS
 from tests.conftest import fresh
-
-
-@pytest.fixture(autouse=True)
-def loaded_features():
-    features.unload()
-    features.load()
-    yield
-    features.unload()
 
 
 def test_the_law_is_fixed_on_and_carried_by_every_start():

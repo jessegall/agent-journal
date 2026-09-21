@@ -1,4 +1,3 @@
-import pytest
 
 import features
 from controllers.types import Agents, Facts, Rules, Works
@@ -6,14 +5,6 @@ from features.base import held
 from resources.base import AGENT, SYSTEM
 from tests.kit import nudges as all_nudges, report
 from tests.conftest import fresh
-
-
-@pytest.fixture(autouse=True)
-def loaded_features():
-    features.unload()
-    features.load()
-    yield
-    features.unload()
 
 
 def nudges(record):

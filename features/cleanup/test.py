@@ -1,6 +1,5 @@
 import time
 
-import pytest
 
 import features
 from features import FEATURES
@@ -10,14 +9,6 @@ from features.context.reread import owed as read_owed, standing
 from resources.base import AGENT, USER
 from tests.kit import nudges, report
 from tests.conftest import fresh
-
-
-@pytest.fixture(autouse=True)
-def loaded_features():
-    features.unload()
-    features.load()
-    yield
-    features.unload()
 
 
 def test_evidence_finds_dead_paths_and_verbs_and_a_struck_claim_has_none():

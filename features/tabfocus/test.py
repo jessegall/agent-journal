@@ -1,5 +1,4 @@
 import features
-import pytest
 
 from types import SimpleNamespace
 from features.tabfocus.focus import SCRIPT, existing_tab
@@ -36,14 +35,6 @@ def test_other_systems_and_a_missing_tab_leave_opening_to_the_normal_path():
     assert (existing_tab(URL, "linux", run), calls) == (False, []), "other systems leave opening to the normal browser path"
     assert existing_tab(URL, "darwin", lambda *args, **options: SimpleNamespace(returncode=1)) is False, \
         "a missing macOS tab leaves opening to the normal browser path"
-
-
-@pytest.fixture(autouse=True)
-def loaded_features():
-    features.unload()
-    features.load()
-    yield
-    features.unload()
 
 
 def test_a_session_starting_shows_the_viewer_once_a_subagent_never_does():

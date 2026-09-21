@@ -1,5 +1,4 @@
 import features
-import pytest
 
 from controllers.types import Messages
 from engine.queries import start_block
@@ -7,14 +6,6 @@ from features.skills.catalogue import SKILL, always, catalogue, handed, load_now
 from resources.base import USER
 from tests.conftest import fresh
 from tests.kit import nudges, report
-
-
-@pytest.fixture(autouse=True)
-def loaded_features():
-    features.unload()
-    features.load()
-    yield
-    features.unload()
 
 
 def test_the_catalogue_reads_skills_from_the_library_and_agent_homes_and_tracks_what_is_loaded():

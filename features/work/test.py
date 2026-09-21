@@ -1,5 +1,4 @@
 import features
-import pytest
 
 from controllers.types import Todos, Works
 from resources.base import AGENT, SYSTEM, USER
@@ -11,14 +10,6 @@ from features.work.auto import QUIET_FOR, launch_args, still_there
 from features.work.next import next, ready
 from resources.base import AGENT, USER
 from tests.kit import idle, nudges
-
-
-@pytest.fixture(autouse=True)
-def loaded_features():
-    features.unload()
-    features.load()
-    yield
-    features.unload()
 
 
 def test_edits_without_a_log_entry_hold_the_writes_until_the_work_is_logged():
@@ -48,7 +39,7 @@ def test_on_idle_with_auto_enabled_and_nothing_open_the_next_row_is_offered():
     todos.create("second")
     idle(record)
     assert nudges(record) == [], "auto off: nothing offered"
-    features.FEATURES["auto"].enable(record)
+    record.features = {**record.features, "work.auto": True}
     idle(record)
     assert nudges(record) == ["todo 1 next"], "auto on: the next row is offered once per idle stretch"
     assert launch_args(record, "claude", ["--model", "sonnet"]) == ["--permission-mode", "auto", "--model", "sonnet"], \
@@ -61,7 +52,7 @@ def test_on_idle_with_auto_enabled_and_nothing_open_the_next_row_is_offered():
         "an explicit Codex approval choice wins"
     work = Works(record, actor=AGENT).create("on it", todo=1)
     idle(record)
-    assert nudges(record) == ["todo 1 next", "work 1 open, nothing logged"], \
+    assert nudges(record) == ["todo 1 next", "work 1 is still open, with nothing logged"], \
         "work open: nothing offered; the work feature speaks instead"
     Works(record, actor=AGENT).complete(work.n, "done", todo=True)
     idle(record)
@@ -70,13 +61,13 @@ def test_on_idle_with_auto_enabled_and_nothing_open_the_next_row_is_offered():
 
 def test_an_agent_gone_quiet_with_work_open_is_asked_whether_it_is_still_working():
     quiet_record = fresh()
-    quiet_record.features = {**quiet_record.features, "auto": True}
+    quiet_record.features = {**quiet_record.features, "work.auto": True}
     Works(quiet_record, actor=AGENT).create("something still open")
     assert "still working" in still_there(quiet_record, QUIET_FOR + 60, "busy"), \
         "quiet for long enough, with work open and auto on, earns the question"
     assert [still_there(quiet_record, QUIET_FOR + 60, "idle"), still_there(quiet_record, 5.0, "busy")] == ["", ""], \
         "not while it is answering, not while it is idle, and not before the time is up"
-    quiet_record.features = {**quiet_record.features, "auto": False}
+    quiet_record.features = {**quiet_record.features, "work.auto": False}
     assert still_there(quiet_record, QUIET_FOR + 60, "busy") == "", "and never with auto off"
 
 

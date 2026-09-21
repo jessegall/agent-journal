@@ -1,6 +1,5 @@
 import features
 import json
-import pytest
 
 from controllers.types import Questions
 from features.questions.feature import offers_choices
@@ -9,14 +8,6 @@ from resources.base import AGENT
 from tests.kit import idle, nudges
 from tests.conftest import fresh
 from commands.http import dispatch
-
-
-@pytest.fixture(autouse=True)
-def loaded_features():
-    features.unload()
-    features.load()
-    yield
-    features.unload()
 
 
 def test_offers_choices_recognizes_numbered_and_lettered_options_but_not_prose():

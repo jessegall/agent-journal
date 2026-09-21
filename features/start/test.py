@@ -1,5 +1,4 @@
 import features
-import pytest
 
 from controllers.types import Docs, Facts, Rules, Todos, Works
 from engine.queries import carry, start_block, status
@@ -11,14 +10,6 @@ from controllers.types import Works
 from features.start.feature import COMPACTED
 from engine.hooks import handle, start_file
 from resources.base import AGENT
-
-
-@pytest.fixture(autouse=True)
-def loaded_features():
-    features.unload()
-    features.load()
-    yield
-    features.unload()
 
 
 def test_the_start_block_names_the_environment_rules_pins_work_docs_and_todos():

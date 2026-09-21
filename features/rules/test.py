@@ -1,5 +1,4 @@
 import features
-import pytest
 
 from controllers.types import Facts, Rules
 from engine.hooks import handle, whispered
@@ -9,14 +8,6 @@ from tests.conftest import fresh, refused
 from controllers.types import Nudges, Rules
 from tests.kit import nudges, report
 from tests.conftest import fresh
-
-
-@pytest.fixture(autouse=True)
-def loaded_features():
-    features.unload()
-    features.load()
-    yield
-    features.unload()
 
 
 def test_a_command_that_touches_a_rules_keyword_is_whispered_the_rule_once_per_session():

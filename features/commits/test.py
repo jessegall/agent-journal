@@ -1,20 +1,11 @@
 import subprocess
 
-import pytest
 
 import features
 from controllers.types import Todos
 from engine.record import Record
 from resources.base import SYSTEM, USER
 from tests.kit import report
-
-
-@pytest.fixture(autouse=True)
-def loaded_features():
-    features.unload()
-    features.load()
-    yield
-    features.unload()
 
 
 def test_a_journal_trailer_at_column_0_closes_the_row_it_names(tmp_path):

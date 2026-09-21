@@ -1,6 +1,5 @@
 import json
 
-import pytest
 
 import features
 from controllers.types import Messages
@@ -9,14 +8,6 @@ from features.format import formatted
 from features.tags.feature import visible
 from tests.kit import idle, nudges
 from tests.conftest import fresh
-
-
-@pytest.fixture(autouse=True)
-def loaded_features():
-    features.unload()
-    features.load()
-    yield
-    features.unload()
 
 
 def test_an_untagged_last_message_is_told_once_per_idle_stretch(tmp_path):

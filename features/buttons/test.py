@@ -1,18 +1,9 @@
-import pytest
 
 import features
 from controllers.types import Messages
 from features.buttons.feature import MOST, shaped
 from resources.base import AGENT
 from tests.conftest import fresh
-
-
-@pytest.fixture(autouse=True)
-def loaded_features():
-    features.unload()
-    features.load()
-    yield
-    features.unload()
 
 
 def test_a_button_names_a_type_and_action_and_what_would_not_run_is_dropped():
