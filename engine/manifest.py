@@ -17,12 +17,18 @@ def tabs(kind) -> list[dict]:
     return [{"key": key, "title": titles[key], "shows": key} for key in kind.filters]
 
 
+def built() -> str:
+    assets = Path(__file__).resolve().parents[1] / "web" / "dist" / "assets"
+    return next((f.name for f in sorted(assets.glob("index-*.js"))), "") if assets.is_dir() else ""
+
+
 def manifest(root: Path | None = None) -> dict:
     env_file = root / "runtime" / "env" if root else None
     return {
         "project": root.resolve().parent.name if root else "",
         "environment": env_file.read_text().strip() if env_file and env_file.is_file() else "main",
         "version": next((f.read_text().strip() for f in ((Path(__file__).resolve().parents[1] / "VERSION"),) if f.is_file()), ""),
+        "build": built(),
         "actions": list(ACTIONS),
         "actors": list(ACTORS),
         "views": list(VIEWS),
