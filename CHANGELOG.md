@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.41.0 — The journal is the way into every resource
+
+Plan 9, to-do 592. A part no longer makes a controller itself: context.journal.messages.create(...) or context.journal.todos.done(12, how="...") reach a resource through the journal, bound to the record and, unless .acting(actor) says otherwise, the system actor. journal.<type> is named after the type's controller (messages, todos, works, asks), and notify, notice and log are bound the same way. Tags uses it.
+
+What to do about it: `journal upgrade`.
+
 ## 2.40.1 — The revision strip shows the revision you are on
 
 Message 1442. With many revisions the strip clipped its marks, so the open revision could be out of sight, and Show changes wrapped onto two lines. It now shows at most eight marks around the revision you are on, with a count of the earlier ones, and the note about the revision (open for how long, what changed, who, when) sits on its own line below.

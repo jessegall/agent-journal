@@ -1,6 +1,5 @@
 import io
 
-from controllers.types import Messages
 from engine.events import AgentMessageCreated
 from features.parts import Context, Handler
 from features.tags.reading import CARRIED, reader, replies, runs, stripped
@@ -32,4 +31,4 @@ class CopyToChat(Handler):
     def handle(self, context: Context, event: AgentMessageCreated) -> None:
         text = stripped(event.text, context.settings).strip()
         if context.agent and text and not replies(event.text) and context.once("shown", event.text):
-            Messages(context.record, actor=AGENT).create(titled(text), brief=text)
+            context.journal.acting(AGENT).messages.create(titled(text), brief=text)

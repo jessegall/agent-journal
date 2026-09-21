@@ -1,6 +1,7 @@
 from dataclasses import dataclass, field
 from functools import cached_property
 
+from controllers.base import Controller
 from controllers.types import CONTROLLERS, Notices, Notifications, Nudges
 from engine.drivers import CHANNEL, TERMINAL
 from features.parts import AgentHooks, Client, Events
@@ -18,9 +19,35 @@ class Message:
     data: dict = field(default_factory=dict)
 
 
+class BoundJournal:
+    def __init__(self, journal: "Journal", record, actor: str = SYSTEM):
+        self.journal, self.record, self.actor = journal, record, actor
+
+    def __getattr__(self, name: str) -> Controller:
+        found = {controller.__name__.lower(): controller for controller in CONTROLLERS.values()}.get(name)
+        if found is None:
+            raise AttributeError(f"the journal has no resource called {name}")
+        return found(self.record, actor=self.actor)
+
+    def acting(self, actor: str) -> "BoundJournal":
+        return BoundJournal(self.journal, self.record, actor)
+
+    def notify(self, line: str, **values):
+        return self.journal.notify(self.record, line, actor=self.actor, **values)
+
+    def notice(self, line: str, **values):
+        return self.journal.notice(self.record, line, actor=self.actor, **values)
+
+    def log(self, line: str, **values):
+        return self.journal.log(self.record, line, **values)
+
+
 class Journal:
     def __init__(self, feature):
         self.feature = feature
+
+    def at(self, record, actor: str = SYSTEM) -> BoundJournal:
+        return BoundJournal(self, record, actor)
 
     @cached_property
     def events(self) -> Events:

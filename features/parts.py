@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import get_type_hints
+from typing import TYPE_CHECKING, get_type_hints
 
 from controllers.types import Agents
 from engine import bus
@@ -7,6 +7,9 @@ from engine.events import AgentEvent
 from engine.hooks import POLICIES
 from features.format import FORMATTERS
 from resources.base import SYSTEM
+
+if TYPE_CHECKING:
+    from features.journal import BoundJournal
 
 
 class Speaker:
@@ -36,6 +39,10 @@ class Context:
     @classmethod
     def of(cls, feature, record, row=None) -> "Context":
         return cls(feature, record, Speaker(feature, record, row) if row else None)
+
+    @property
+    def journal(self) -> "BoundJournal":
+        return self.feature.journal.at(self.record)
 
     @property
     def settings(self) -> dict:
