@@ -217,6 +217,7 @@ class AgentRow(Shape, Resource):
     shell_rows = Field(default=list)
     subagent_rows = Field(default=list)
     parent = Field(default="")
+    subagent = Field(FLAG, False)
     compacting = Field(FLAG, False)
     running = Field(default=dict)
     commands = Field(default=list)
