@@ -131,10 +131,11 @@ def test_a_row_is_changed_only_by_those_its_resource_names_for_its_author():
         record = fresh(type_[:2])
         row = CONTROLLERS[type_](record, actor=USER).create(f"the user's {type_}", brief="their words", **needed(type_))
         agent = CONTROLLERS[type_](record, actor=AGENT)
+        agent.section(row.n, "their words", "todo:1")
         for change in (lambda: agent.update(row.n, brief="rewritten"), lambda: agent.delete(row.n, why="gone")):
             try:
                 change()
                 changed.append(type_)
             except Refused:
                 continue
-    assert (guarded, changed) != ([], []) and changed == [], "the agent answers what the user wrote; it never rewrites or deletes it"
+    assert (guarded, changed) != ([], []) and changed == [], "the agent answers what the user wrote and records what each part became; it never rewrites or deletes it"

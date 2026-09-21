@@ -12,7 +12,7 @@ from controllers.links import Links
 from controllers.marks import internal
 from controllers.stored import Stored
 
-WORDS = ("title", "abstract", "brief", "sections")
+WORDS = ("title", "abstract", "brief")
 LAST = 25
 TWICE_WITHIN = 10.0
 COMMANDS: dict[str, dict] = {}
@@ -55,7 +55,9 @@ class Controller(Stored, Files, Links):
         if allowed is None or self.actor in allowed or not self.path(r.n).is_file():
             return
         stored = self.load(r.n)
-        if action == "deleted" or any(getattr(stored, f) != getattr(r, f) for f in WORDS):
+        parts = [section[SECTION.title] for section in stored.sections]
+        rewritten = any(getattr(stored, f) != getattr(r, f) for f in WORDS) or [section[SECTION.title] for section in r.sections][:len(parts)] != parts
+        if action == "deleted" or rewritten:
             self._refuse(f"{self.type} {r.n} was written by the {stored.seen[0]}: answer it with journal {self.type} {self.resource.answer_command} {r.n} \"<text>\" instead of changing it")
 
     @internal
