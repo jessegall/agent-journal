@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.17.8 — One missing-tag reminder waits at a time
+
+While a missing-tag reminder is still waiting to reach the agent, another untagged message does not add a second; the next one is sent only after the first has been delivered.
+
+What to do about it: `journal upgrade`.
+
 ## 2.17.7 — The missing-tag reminder leads the line it arrives in
 
 The engine sends the agent everything waiting as one line, and a terminal shows only its start, so "your last message has no tag" arrived buried after a row of other lines. A feature's line can now lead: it is placed first in the line it is sent in, and the missing-tag reminder does.

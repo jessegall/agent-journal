@@ -4,7 +4,7 @@ import re
 import threading
 import time
 
-from controllers.types import Agents, Messages
+from controllers.types import Agents, Messages, Nudges
 from engine.stored import read_json, write_json
 from features.base import Behaviour, Feature, event, formats, interceptor, Line
 from resources.base import AGENT, SYSTEM, titled
@@ -77,8 +77,12 @@ class Tags(Feature):
         if not agent:
             return
         for turn in self.written(record, agent):
-            if not self.reader(record).match(turn.text) and not self.already(record, agent, turn, "untagged"):
+            if not self.reader(record).match(turn.text) and not self.already(record, agent, turn, "untagged") and not self.waiting(record, agent):
                 self.say(record, agent, "untagged", tags=" ".join(written(self.names(record))))
+
+    def waiting(self, record, agent) -> bool:
+        title = self.lines["untagged"].title
+        return any(n.title == title and n.data.get("session") == agent.title and AGENT not in n.seen for n in Nudges(record, actor=SYSTEM)._standing())
 
     @formats
     def without_tags(self, text, record):
