@@ -4,7 +4,7 @@ import shutil
 from pathlib import Path
 
 from engine.transcript import AGENT, HUMAN, INJECTED, TOOL, timestamp
-from providers.payload import EVENTS, PERMISSION
+from providers.payload import EVENTS, PERMISSION, SKILL_READ
 from providers.base import Provider
 from providers.payload import Hook
 from resources.types import AgentRow
@@ -12,7 +12,6 @@ from engine.stored import tail
 from engine.drivers import Driver
 
 TOOLS = {"exec": "Bash", "exec_command": "Bash", "shell": "Bash", "shell_command": "Bash", "apply_patch": "Edit"}
-SKILL_PATH = re.compile(r"\.(?:codex|agents)/skills/(journal(?:-[\w-]+)?)/SKILL\.md")
 SKILL_LOOP = re.compile(r"for\s+\w+\s+in\s+([^;]+);\s*do")
 TAIL_BYTES = 262144
 WINDOW_LABELS = {300: "5h", 1440: "1d", 10080: "7d"}
@@ -303,7 +302,7 @@ class Codex(Provider):
         text = str(raw)
         if "tools.exec_command" not in text:
             return uses
-        found = set(SKILL_PATH.findall(text))
+        found = set(SKILL_READ.findall(text))
         if "/skills/$s/SKILL.md" in text:
             loop = SKILL_LOOP.search(text)
             if loop:

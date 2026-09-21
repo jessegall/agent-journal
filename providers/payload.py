@@ -1,4 +1,5 @@
 import json
+import re
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -8,6 +9,9 @@ STATUS = {"SessionStart": "idle", "Stop": "idle", "UserPromptSubmit": "working",
 PERMISSION = "PermissionRequest"
 DISPLAYED = "MessageDisplay"
 EVENTS = tuple(STATUS)
+
+
+SKILL_READ = re.compile(r"(?:^|[\s'\"/=(])(?:\.(?:codex|agents|claude)/)?skills/(journal(?:-[\w-]+)?)/SKILL\.md")
 
 
 @dataclass(frozen=True)
@@ -43,7 +47,7 @@ class ToolUse:
 
     @property
     def loads_skill(self) -> bool:
-        return self.name == "Skill"
+        return self.name == "Skill" or bool(SKILL_READ.search(json.dumps(self.tool_input)))
 
     @property
     def plans(self) -> bool:

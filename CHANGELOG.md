@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.77.1 — Codex can load its skills again
+
+Messages 1939 and 1940, to-do 694. Codex has no Skill tool: it loads a skill by reading its SKILL.md, and it read `skills/journal-messages/SKILL.md` by a relative path. The journal only recognised paths starting with `.agents/` or `.codex/`, so the load was never seen. Every tool call then waited for a skill the agent had already read, and the session was locked out. One pattern now recognises a read of any journal skill's SKILL.md, relative or not. That read is never refused, the way a Claude Skill call never is, and it counts as loading the skill.
+
+What to do about it: `journal upgrade`, in every project where Codex runs.
+
 ## 2.77.0 — Make anything from a template
 
 Design 2, to-do 634. Any resource can be made from a template with `--set template=<n>` when it is created. It starts with the template's parts and links the template, so the viewer can show which template it follows. For a plan, each part becomes a phase: the part's text is the phase's complete-when line, and a part titled with (checkpoint) at the end becomes a checkpoint. A template is refused for a type its `applies_to` leaves out, and an unknown template number is refused too. The feature's test covers a plan with a checkpoint phase, a doc with parts, and both refusals.
