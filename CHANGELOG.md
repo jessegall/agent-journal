@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.23.8 — The faults feature says a fault with one line
+
+The faults feature had two lines, `slow` and `fault`, with the same words: one for what it tells the agent, one for what it files for the user. They are one line, `fault`, now.
+
+What to do about it: nothing — `journal upgrade` when convenient.
+
 ## 2.23.7 — Features, plugins and skills, tidied after review
 
 A review of the features, the plugin host and the installer found the same things written several ways; nothing changes for the user.
