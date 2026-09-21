@@ -2,7 +2,7 @@
 import {computed, onMounted, ref, watch} from "vue";
 import {api} from "../api/client.js";
 import Btn from "../kit/Btn.vue";
-import {remembered} from "../composables/remembered.js";
+import {remember, remembered} from "../composables/remembered.js";
 import {store} from "../state/store.js";
 import {polled} from "../sync/polled.js";
 import {usePoll} from "../poll.js";
@@ -41,9 +41,7 @@ function reload() {
 
 function dismiss() {
     dismissed.value = upstream.value.latest;
-    try {
-        localStorage.setItem("journal.upgrade.dismissed", JSON.stringify(dismissed.value));
-    } catch (e) {}
+    remember("journal.upgrade.dismissed", dismissed.value);
 }
 
 async function upgrade() {

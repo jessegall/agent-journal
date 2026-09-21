@@ -1,4 +1,5 @@
 <script setup>
+import {chatOnly, framed} from "../platform/view.js";
 import {computed, onUnmounted, ref, watch} from "vue";
 import {api} from "../api/client.js";
 import {modelFamily, providerName} from "../agents.js";
@@ -18,7 +19,7 @@ usePoll(...polled.agents);
 
 const props = defineProps({standalone: Boolean});
 const open = ref("");
-const alone = computed(() => props.standalone || window.parent !== window || new URLSearchParams(location.search).has("chat"));
+const alone = computed(() => props.standalone || framed || chatOnly);
 const data = computed(() => (agent.value && agent.value.data.status !== "stopped" ? agent.value.data : null));
 const family = computed(() => modelFamily(data.value && data.value.model));
 const name = computed(() => providerName(data.value && data.value.provider));

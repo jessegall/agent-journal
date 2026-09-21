@@ -2,7 +2,7 @@
 import {computed, onMounted, onUnmounted, reactive, ref, watch} from "vue";
 import {api} from "../api/client.js";
 import JournalBar from "../layout/JournalBar.vue";
-import {remembered} from "../composables/remembered.js";
+import {remember, remembered} from "../composables/remembered.js";
 import {store} from "../state/store.js";
 import {usePoll} from "../poll.js";
 
@@ -16,9 +16,7 @@ const SCAN_EVERY = 2000;
 let scanning = false;
 
 function pollHub() {
-    try {
-        localStorage.setItem("journal.hub", JSON.stringify([...opened]));
-    } catch (e) {}
+    remember("journal.hub", [...opened]);
 }
 
 function toggle(j) {

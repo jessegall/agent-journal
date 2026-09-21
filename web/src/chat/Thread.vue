@@ -5,7 +5,7 @@ import {sendMessage} from "./outbox.js";
 import Icon from "../kit/Icon.vue";
 import {route} from "../route.js";
 import {quoted, withQuote} from "../format/quote.js";
-import {laidOut} from "../platform/view.js";
+import {chatOnly, laidOut} from "../platform/view.js";
 import {agent, meta, store} from "../state/store.js";
 import {polled} from "../sync/polled.js";
 import {earlier, rows} from "../sync/rows.js";
@@ -21,7 +21,6 @@ const IDLE = 10000;
 const scroller = ref(null);
 const quote = ref({text: "", ref: ""});
 const editing = ref(null);
-const chatOnly = new URLSearchParams(location.search).has("chat");
 const pageTools = chatOnly
     ? [
           {icon: "crosshair", title: "Point at an element on the page", go: () => point("point")},

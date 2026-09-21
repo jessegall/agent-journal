@@ -4,6 +4,9 @@ import {store} from "../state/store.js";
 const FOCUS_FOR = 1800;
 const SETTLE = 120;
 
+export const framed = window.parent !== window;
+export const chatOnly = new URLSearchParams(location.search).has("chat");
+
 export const laidOut = ref(0);
 let resizing = 0;
 window.addEventListener("resize", () => {
