@@ -24,6 +24,9 @@ def machine() -> Path:
     return Path(os.environ.get("AGENT_JOURNAL_HOME") or Path.home() / ".journal") / "journals.json"
 
 
+RESTARTING = 15.0
+
+
 def marker(root: Path) -> Path:
     return root / "runtime" / "viewer.json"
 
@@ -141,8 +144,28 @@ def restart(root: Path, project: Path) -> str:
     return start(root, project)
 
 
+def alive(pid: int) -> bool:
+    try:
+        os.kill(int(pid), 0)
+        return True
+    except (OSError, ValueError, TypeError):
+        return False
+
+
+def elsewhere(root: Path) -> str:
+    was = last(root)
+    if not was.get("pid") or int(was["pid"]) == os.getpid() or not alive(was["pid"]):
+        return ""
+    until = time.time() + RESTARTING
+    while time.time() < until:
+        if answers(str(was.get("url") or ""), root, timeout=0.2):
+            return str(was["url"])
+        time.sleep(0.2)
+    return ""
+
+
 def start(root: Path, project: Path) -> str:
-    already = running(root)
+    already = running(root) or elsewhere(root)
     if already:
         return already
     port = available(last(root).get("port", 0))
