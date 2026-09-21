@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.23.3 — An old skills folder that is the library is never emptied
+
+The installer clears journal skills out of `.codex/skills`, where Codex used to read them. In a project where `.codex/skills` is a link to the same folder as `.agents/skills`, that removed every journal skill it had just written, and the agent was held at its next start for want of the journal skill. A retired folder that resolves to the skill library is left alone now.
+
+What to do about it: `journal upgrade` — it writes the skills back.
+
 ## 2.23.2 — A line typed into the terminal is always submitted
 
 The engine cleared the input and typed the line in one burst, so Claude took it for a paste, stripped the control keys and waited with "review and press Enter to send" — the first Enter was swallowed. Whether the line had gone was judged from the last few hundred bytes of screen output, which Claude only partly redraws, so the leftover line went unnoticed. The engine now pauses after clearing, and knows a line was taken when the agent's next hook arrives; until then it presses Enter again, up to three times.

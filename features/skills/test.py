@@ -76,7 +76,7 @@ def test_no_journal_skill_loaded_in_a_window_is_told_once_privately_per_window()
 def test_skill_homes_that_are_one_folder_keep_real_skill_files(tmp_path):
     from skills import publish
     (tmp_path / "skills").mkdir()
-    for home in (".claude", ".agents"):
+    for home in (".claude", ".agents", ".codex"):
         (tmp_path / home).mkdir()
         (tmp_path / home / "skills").symlink_to("../skills")
     (tmp_path / "skills" / "journal").symlink_to("../../.agents/skills/journal")
