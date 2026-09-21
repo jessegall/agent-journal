@@ -2,7 +2,7 @@ import importlib
 import json
 import time
 from pathlib import Path
-from engine.stored import write_text
+from engine.stored import read_json, write_text
 
 HERE = Path(__file__).parent
 
@@ -16,10 +16,7 @@ def ledger(root: Path) -> Path:
 
 
 def applied(root: Path) -> dict:
-    try:
-        return json.loads(ledger(root).read_text())
-    except (OSError, ValueError):
-        return {}
+    return read_json(ledger(root), {})
 
 
 def run(root: Path) -> list[str]:

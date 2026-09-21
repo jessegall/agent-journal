@@ -1,4 +1,3 @@
-import json
 from pathlib import Path
 
 from engine.stored import read_json, write_json
@@ -36,9 +35,8 @@ def in_settings(home: Path, was: str, now: str) -> bool:
 def in_gates(runtime: Path, was: str, now: str) -> int:
     changed = 0
     for f in sorted(runtime.glob("gate-*.json")):
-        try:
-            holds = json.loads(f.read_text())
-        except (OSError, ValueError):
+        holds = read_json(f)
+        if holds is None:
             continue
         after = moved(holds, was, now)
         if after != holds:

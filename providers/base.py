@@ -10,7 +10,7 @@ from engine.transcript import Turn
 from providers.payload import Hook
 from resources.base import Refused
 from resources.types import AgentRow, COMMAND, RUNNING
-from engine.stored import tail, write_text
+from engine.stored import read_json, tail, write_text
 
 WRITES = ("Edit", "Write", "MultiEdit", "NotebookEdit")
 READS = ("Read", "NotebookRead")
@@ -308,10 +308,7 @@ class Provider(ABC):
     def present(self, project: Path) -> bool: ...
 
     def settings(self, project: Path) -> dict:
-        try:
-            return json.loads(self.config(project).read_text())
-        except (OSError, ValueError):
-            return {}
+        return read_json(self.config(project), {})
 
     def hooks(self, project: Path) -> dict:
         return self.settings(project).get("hooks", {})
