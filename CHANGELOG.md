@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.56.2 — Half-shown messages no longer pile up
+
+To-do 587. Claude Code shows a long message in pieces, and the journal holds the pieces until the last one arrives. Sometimes the last piece never comes, and the first pieces were then kept in runtime/displayed-<session>.json forever. Messages are shown one at a time, so when any message's last piece arrives, everything still held for that session is now cleared. The full text still reaches the chat from the transcript. Text Claude Code never records or shows, such as some mid-turn text before a tool call, cannot reach the chat by either route.
+
+What to do about it: `journal upgrade`.
+
 ## 2.56.1 — Choosing the agent's effort works
 
 Message 1597. An effort chosen in the agent bar was treated as done at once, but the line waits for the agent to finish its turn like any other, and after ten minutes of work it was dropped without a word. Effort now waits the way a model change does: the bar says it is waiting for the agent, the line is typed when the turn ends, it is never dropped for being old, and a newer choice replaces an older one. A feature can send the same kind of command itself with context.agent.command("effort medium"), which goes through the provider's own control, so each provider says it in its own syntax (message 1599).

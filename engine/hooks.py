@@ -54,8 +54,7 @@ def displayed(root: Path, raw: dict) -> None:
         if not raw.get("final"):
             write_json(f, {**held, message: parts})
             return
-        held.pop(message, None)
-        write_json(f, held)
+        f.unlink(missing_ok=True)
     text = "".join(parts[i] for i in sorted(parts, key=int))
     record = Record(root, Sessions(root).environment(session) or runtime.env(root))
     row = Agents(record, actor=SYSTEM)._titled(session)
