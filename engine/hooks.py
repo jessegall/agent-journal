@@ -78,7 +78,7 @@ def answer(provider, root: Path, raw: dict, pid: int, prefer: str = "") -> dict:
 
 def seated(root: Path, env: str, session: str) -> None:
     envs = Environments(Record(root, env), actor=SYSTEM)
-    row = next((e for e in envs._every() if e.title == env), None) or envs.create(env)
+    row = envs._titled(env) or envs.create(env)
     envs.update(row.n, holder=session)
 
 

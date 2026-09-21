@@ -34,8 +34,7 @@ class StatusLine(Feature):
 
     @event("agent.updated")
     def written(self, event, record) -> None:
-        rows = [row for row in Agents(record, actor=SYSTEM)._standing() if not row.parent]
-        newest = max(rows, key=lambda row: float(row.at or 0), default=None)
+        newest = Agents(record, actor=SYSTEM).primary()
         write_json(bar_file(record.root, record.env), bar(newest, time.time()) if newest else EMPTY)
 
     @event("agent.updated")

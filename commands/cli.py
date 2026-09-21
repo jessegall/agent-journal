@@ -25,6 +25,7 @@ from resources.shapes import typed
 from resources.types import AgentRow
 from engine.stored import write_text
 from engine import runtime
+from engine.stored import last_lines
 
 VERSION_FILE = Path(__file__).resolve().parents[1] / "VERSION"
 VERSION = VERSION_FILE.read_text().strip() if VERSION_FILE.is_file() else "0"
@@ -299,10 +300,7 @@ def services_up(root: Path) -> str:
 
 
 def tail(path: Path, lines: int) -> str:
-    try:
-        return "\n".join(path.read_text(errors="replace").splitlines()[-lines:])
-    except OSError:
-        return f"nothing is logged in {path}"
+    return last_lines(path, lines) if path.is_file() else f"nothing is logged in {path}"
 
 
 def serve_forever(ctx) -> str:

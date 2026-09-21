@@ -35,7 +35,7 @@ from providers import PROVIDERS
 from features.format import formatted
 from resources.base import shown as given, AGENT, OPENED, USER, Refused, titled
 from resources.types import Ask
-from engine.stored import write_json, write_text
+from engine.stored import write_json, write_text, last_lines
 from engine.proc import git, ran
 
 WEB = Path(__file__).resolve().parents[1] / "web" / "dist"
@@ -608,14 +608,6 @@ def get_services(req: Request) -> Reply:
     return Reply(200, out)
 
 
-def tailed(path: Path, lines: int) -> str:
-    try:
-        text = path.read_text(errors="replace")
-    except OSError:
-        return ""
-    return "\n".join(text.splitlines()[-lines:])
-
-
 def asked_lines(req: Request) -> int:
     return int(req.query.get("lines") or 200)
 
@@ -623,13 +615,13 @@ def asked_lines(req: Request) -> int:
 @route("GET", "/api/services/{id}/log")
 def get_service_log(req: Request) -> Reply:
     from engine.services import log_file
-    return Reply(200, {"id": req.params["id"], "log": tailed(log_file(req.root, req.params["id"]), asked_lines(req))})
+    return Reply(200, {"id": req.params["id"], "log": last_lines(log_file(req.root, req.params["id"]), asked_lines(req))})
 
 
 @route("GET", "/api/plugins/{name}/log")
 def get_plugin_log(req: Request) -> Reply:
     from features.plugins.source import log
-    return Reply(200, {"name": req.params["name"], "log": tailed(log(req.root, req.params["name"]), asked_lines(req))})
+    return Reply(200, {"name": req.params["name"], "log": last_lines(log(req.root, req.params["name"]), asked_lines(req))})
 
 
 @route("POST", "/api/services/{id}")

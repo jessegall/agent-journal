@@ -45,8 +45,7 @@ class Faults(Feature):
 
     def file(self, record, title: str, brief: str, **data) -> None:
         rows = Notifications(record, actor=SYSTEM)
-        found = next((row for row in rows.summaries() if not row["deleted"] and not row["completed"] and row["title"] == title), None)
-        standing = rows.load(found["n"]) if found else None
+        standing = rows._titled(title, standing=True)
         times = (int(standing.data.get("times", 0)) if standing else 0) + 1
         told = float(standing.data.get("told", 0)) if standing else 0.0
         said = f"{brief} Seen {self.plural(times, 'time')}."
