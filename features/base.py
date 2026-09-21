@@ -199,7 +199,9 @@ class Feature(ABC):
             if not self.mine(agent):
                 continue
             f = gate_file(record.root, record.env, agent.title)
-            write_json(f, {**read_json(f, {}), self.keyed(key): why})
+            held = read_json(f, {})
+            if held.get(self.keyed(key), "") != why:
+                write_json(f, {**held, self.keyed(key): why})
 
     def release(self, record, key: str = "") -> None:
         self.hold(record, "", key)

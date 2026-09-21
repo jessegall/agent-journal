@@ -5,7 +5,6 @@ import re
 import subprocess
 import tempfile
 import time
-from contextlib import nullcontext
 from email import policy
 from email.parser import BytesParser
 from dataclasses import asdict, dataclass, field
@@ -143,15 +142,28 @@ def resolve(method: str, path: str) -> tuple[Route, dict] | None:
     return None
 
 
+def timed(reply: Reply, root: Path, env: str, method: str, path: str, began: float) -> Reply:
+    faults = features.FEATURES.get("faults")
+    if not faults:
+        return reply
+    took, earlier = (time.perf_counter() - began) * 1000, reply.after
+
+    def after() -> None:
+        if earlier:
+            earlier()
+        faults.spent(root, env, "hook" if "/hook/" in path else "request", f"{method} {path}", took)
+    reply.after = after
+    return reply
+
+
 def dispatch(method: str, path: str, root: Path, query: dict, body: dict) -> Reply:
     found = resolve(method, path)
     if not found:
         return static(path) if method == "GET" else Reply(404, {"error": "no such route"})
     r, params = found
+    began = time.perf_counter()
     try:
-        faults = features.FEATURES.get("faults")
-        with faults.watched(root, params.get("env") or "main", "hook" if "hook" in path else "request", f"{method} {path}") if faults else nullcontext():
-            return r.handler(Request(root, params, query, body))
+        return timed(r.handler(Request(root, params, query, body)), root, params.get("env") or "main", method, path, began)
     except Missing as e:
         return Reply(404, {"error": str(e)})
     except Refused as e:
@@ -214,9 +226,9 @@ def post_hook(req: Request) -> Reply:
 def post_console(req: Request) -> Reply:
     faults = features.FEATURES.get("faults")
     said = str(req.body.get("said") or "")[:200]
-    filed = faults.heard(req.root, req.params["env"], said, str(req.body.get("where") or "")[:200], str(req.body.get("stack") or "")[:2000],
-                         str(req.body.get("kind") or "threw")) if faults and said else False
-    return Reply(200, {"filed": filed})
+    where, stack, kind = str(req.body.get("where") or "")[:200], str(req.body.get("stack") or "")[:2000], str(req.body.get("kind") or "threw")
+    heard = (lambda: faults.heard(req.root, req.params["env"], said, where, stack, kind)) if faults and said else None
+    return Reply(200, {"queued": bool(heard)}, after=heard)
 
 
 @route("GET", "/api/manifest")

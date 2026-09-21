@@ -16,9 +16,11 @@ class Transport {
             headers: body === undefined || raw ? {} : {"Content-Type": "application/json"},
             body: body === undefined || raw ? body : JSON.stringify(body),
         });
-        const got = await res.json().catch(() => ({}));
-        if (!res.ok) throw new Error(got.error || `${res.status} ${res.statusText}`);
-        return got;
+        if (!res.ok) {
+            const said = await res.json().catch(() => ({}));
+            throw new Error(said.error || `${res.status} ${res.statusText}`);
+        }
+        return res.json();
     }
 
     request(method, url, body) {
