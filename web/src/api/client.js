@@ -124,10 +124,10 @@ export class ApiClient {
         return this.post(`/agent-hooks/${provider}`, {hooks});
     }
 
-    list(type, {last, completed = false, before = 0, since = 0, only = []} = {}) {
+    list(type, {last, completed = false, before = 0, since = 0, only = [], by = ""} = {}) {
         return this.get(
             this.here(
-                `/${type}${query({last, completed: completed ? "1" : undefined, before: before || undefined, since: since || undefined, n: only.join(",") || undefined})}`
+                `/${type}${query({last, completed: completed ? "1" : undefined, before: before || undefined, since: since || undefined, n: only.join(",") || undefined, by: by || undefined})}`
             )
         );
     }
@@ -215,7 +215,7 @@ export class ApiClient {
     }
 
     agents(last) {
-        return this.list("agent", {completed: true, last}).then((got) => got.rows);
+        return this.list("agent", {completed: true, last, by: "updated"}).then((got) => got.rows);
     }
 
     appoint(session) {

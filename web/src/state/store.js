@@ -9,6 +9,8 @@ export const store = reactive({
     events: [],
     settings: null,
     agents: [],
+    online: [],
+    journals: [],
     pages: [],
     bar: null,
     stream: null,

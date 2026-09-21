@@ -2,6 +2,7 @@
 import {onUnmounted, ref, watch} from "vue";
 import {negative, project, tint} from "../identity.js";
 import {flash} from "../platform/visibility.js";
+import {route} from "../route.js";
 
 const SHOWN_FOR = 1100;
 const showing = ref(false);
@@ -16,6 +17,12 @@ watch(
     },
     {immediate: true}
 );
+watch(
+    () => route.value.env,
+    (now, before) => {
+        if (before && now !== before) flash.at = Date.now();
+    }
+);
 onUnmounted(() => clearTimeout(timer));
 </script>
 
@@ -23,7 +30,7 @@ onUnmounted(() => clearTimeout(timer));
     <Transition name="flash">
         <div v-if="showing" class="project-flash" :style="{'--tint': tint}" aria-hidden="true">
             <span class="badge" :style="{background: tint, color: negative}">{{ project.charAt(0).toUpperCase() }}</span>
-            <span class="name">{{ project }}</span>
+            <span class="name">{{ project }} · {{ route.env }}</span>
         </div>
     </Transition>
 </template>

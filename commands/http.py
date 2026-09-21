@@ -522,6 +522,8 @@ def listing(controller, record, query: dict) -> dict:
     since = float(query.get("since") or 0)
     rows = [row for row in controller.summaries() if (since or only or not row["deleted"]) and (completed or not row["completed"])
             and (not before or row["n"] < before) and row["updated"] > since and (not only or row["n"] in only)]
+    if query.get("by") == "updated":
+        rows.sort(key=lambda row: row["updated"])
     kept = rows[-last:] if last else rows
     if completed and last:
         standing = [row for row in rows if not row["completed"]][-last:]

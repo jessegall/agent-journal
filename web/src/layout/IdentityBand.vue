@@ -1,17 +1,27 @@
 <script setup>
-import {computed} from "vue";
-import {store} from "../state/store.js";
+import {ink, many, project, tint} from "../identity.js";
+import {usePoll} from "../poll.js";
+import {route} from "../route.js";
+import {polled} from "../sync/polled.js";
 
-const title = computed(() => `${store.identity.project} project color`);
+usePoll(...polled.online);
+usePoll(...polled.journals);
 </script>
 
 <template>
-    <div class="identity-band" :style="{background: store.identity.color}" :title="title" />
+    <template v-if="many">
+        <div class="identity-band" :style="{background: tint, color: ink}">{{ project }} · {{ route.env }}</div>
+    </template>
 </template>
 
 <style scoped>
 .identity-band {
-    height: 7px;
     flex: none;
+    padding: 3px 12px;
+    font-size: 11.5px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    line-height: 16px;
+    text-align: center;
 }
 </style>
