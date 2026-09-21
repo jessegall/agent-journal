@@ -1,44 +1,43 @@
-import sys
-from pathlib import Path
+import pytest
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
-import features  # noqa: E402
-from controllers.types import Notices  # noqa: E402
-from engine.services import status_file  # noqa: E402
-from engine.stored import write_json  # noqa: E402
-from features import FEATURES  # noqa: E402
-from features.plugins import services  # noqa: E402
-from tests.kit import check, done, fresh  # noqa: E402
+import features
+from controllers.types import Notices
+from engine.services import status_file
+from engine.stored import write_json
+from features import FEATURES
+from features.plugins import services
+from tests.conftest import fresh
 
-features.unload()
-features.load()
 
-record = fresh("main")
-root = record.root
-enabled = FEATURES["plugins"].enabled
+@pytest.fixture(autouse=True)
+def loaded_features():
+    features.unload()
+    features.load()
+    yield
+    features.unload()
 
-# A SERVICE THAT GIVES UP is said once, with its log
-write_json(status_file(root, "works.web"), {"state": "failed", "why": "it stopped 5 times within 60 seconds"})
-check("the first look says it", services.told(root, enabled), ["works.web"])
-told = Notices(record).all()[0]
-check("the notice names the service, why, and where its log is", (told.title, "5 times" in told.brief, "service-works.web.log" in told.brief, told.data["tone"]),
-      ("Service works.web is not running", True, True, "warn"))
-check("it is not said twice", (services.told(root, enabled), len(Notices(record).all())), ([], 1))
 
-# A PORT THAT IS TAKEN is said the same way
-write_json(status_file(root, "works.queue"), {"state": "blocked", "why": "port 8000 is in use"})
-check("a blocked service is said too", services.told(root, enabled), ["works.queue"])
+def test_a_service_that_gives_up_is_said_once_with_its_log_and_closes_when_it_returns():
+    record = fresh("main")
+    root = record.root
+    enabled = FEATURES["plugins"].enabled
 
-# ONCE IT RUNS AGAIN the notice closes itself
-write_json(status_file(root, "works.web"), {"state": "ready"})
-services.told(root, enabled)
-check("the notice for a service that came back is closed", (bool(Notices(record).load(told.n).completed), Notices(record).load(told.n).outcome),
-      (True, "it is running again"))
-check("and the one still blocked stays open", len([n for n in Notices(record).all() if not n.completed]), 1)
+    write_json(status_file(root, "works.web"), {"state": "failed", "why": "it stopped 5 times within 60 seconds"})
+    assert services.told(root, enabled) == ["works.web"], "the first look says it"
+    told = Notices(record).all()[0]
+    assert (told.title, "5 times" in told.brief, "service-works.web.log" in told.brief, told.data["tone"]) == \
+        ("Service works.web is not running", True, True, "warn"), "the notice names the service, why, and where its log is"
+    assert (services.told(root, enabled), len(Notices(record).all())) == ([], 1), "it is not said twice"
 
-# IT CANNOT BE SWITCHED OFF: a service nobody watches is worse than one that says so
-record.set_setting("features", {"services": False})
-write_json(status_file(root, "works.third"), {"state": "failed", "why": "no"})
-check("services are watched even with the feature switched off in settings", services.told(root, enabled), ["works.third"])
+    write_json(status_file(root, "works.queue"), {"state": "blocked", "why": "port 8000 is in use"})
+    assert services.told(root, enabled) == ["works.queue"], "a blocked service is said too"
 
-done()
+    write_json(status_file(root, "works.web"), {"state": "ready"})
+    services.told(root, enabled)
+    assert (bool(Notices(record).load(told.n).completed), Notices(record).load(told.n).outcome) == (True, "it is running again"), \
+        "the notice for a service that came back is closed"
+    assert len([n for n in Notices(record).all() if not n.completed]) == 1, "and the one still blocked stays open"
+
+    record.set_setting("features", {"services": False})
+    write_json(status_file(root, "works.third"), {"state": "failed", "why": "no"})
+    assert services.told(root, enabled) == ["works.third"], "services are watched even with the feature switched off in settings"

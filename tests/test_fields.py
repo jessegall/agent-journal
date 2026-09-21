@@ -1,7 +1,8 @@
 from engine.record import Record
 from resources.shapes import LIST, TEXT, Field
 from resources.shapes import check as checked
-from resources.types import AgentRow, Plan, Todo, Tool
+from features.plans.resource import Plan  # noqa: E402
+from resources.types import AgentRow, Todo, Tool
 from tests.conftest import fresh
 
 
