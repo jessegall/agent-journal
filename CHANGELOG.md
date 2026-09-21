@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.83.0 — Every launch runs the newest journal
+
+Message 2130, to-do 743. `journal claude` and `journal codex` now ask GitHub for the newest published version before anything else. When it is newer than the one installed, it is installed first, with its skills, and the launch starts again on it, so a launch never runs code that has already been fixed. It gives GitHub three seconds; offline or already current, the launch goes straight on. It follows the Auto-update feature's install switch, and the repository being developed never installs itself.
+
+What to do about it: `journal upgrade` once; after that every launch keeps itself current.
+
 ## 2.82.6 — Clean slate leaves Codex's own skills alone
 
 Message 2124. A clean slate also moved `~/.codex/skills/.system`, the folder that holds Codex's built-in skills. Hidden folders in a skill home are now left where they are. Checked on a real project with two linked skill homes: 38 skills set aside and put back, with git showing no change at any point.

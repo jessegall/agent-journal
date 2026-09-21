@@ -222,8 +222,12 @@ def supervise(ctx, agent: str) -> str:
     from engine.terminal import run as run_supervisor
     from engine.viewer import start
     from features.clean_slate.slate import put_back, remember, set_aside
+    from features.auto_update.launch import latest_first
     record = ctx["record"]
     project = Path.cwd()
+    held = latest_first(record)
+    if held:
+        print(f"journal: carrying on with {package_version()}: {held}")
     if sys.stdin.isatty():
         subprocess.run(["stty", "sane"], stdin=sys.stdin, check=False)
         print(banner(agent, project))

@@ -71,3 +71,19 @@ def test_a_new_version_is_announced_to_the_user_without_breaking_the_server():
     from engine.record import Record
     notified = [n for n in Notifications(Record(record.root, default_env(record.root)))._every() if n.title == "Journal updated to 1.0.1"]
     assert (len(notified), "user" in notified[0].seen) == (1, True), "announced once, already seen"
+
+
+def test_a_launch_installs_a_newer_version_first_and_starts_again_on_it(monkeypatch):
+    import features
+    import features.auto_update.launch as launch
+    features.load()
+    record = fresh()
+    ran = []
+    monkeypatch.setattr(launch, "fetched", lambda cache: cache.parent.mkdir(parents=True, exist_ok=True) or cache.write_text("99.0.0"))
+    monkeypatch.setattr("install.upgrade", lambda project, root: ran.append("upgrade") or ["package refreshed"])
+    monkeypatch.setattr(launch.os, "execv", lambda python, argv: ran.append("started again"))
+    launch.latest_first(record)
+    assert ran == ["upgrade", "started again"], "a newer published version is installed, then the launch starts again on it"
+    ran.clear()
+    monkeypatch.setattr(launch, "fetched", lambda cache: cache.write_text("0.0.1"))
+    assert (launch.latest_first(record), ran) == ("", []), "already current: the launch goes straight on"
