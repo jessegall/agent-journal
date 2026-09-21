@@ -10,7 +10,7 @@ from engine.record import Record
 from engine.viewer import marked, running
 from resources.base import SYSTEM
 
-ROWS = 3
+ROWS = 2
 ESC = "\x1b"
 STYLE = f"{ESC}[48;2;23;24;27m{ESC}[38;2;169;172;179m"
 URL = f"{ESC}[48;2;52;55;105m{ESC}[38;2;238;239;246m"
@@ -183,8 +183,7 @@ class Band:
     def lines(self, cols: int) -> list[str]:
         seat = self.seat()
         env = seat.get("env") or self.env
-        rule = f"{ESC}[38;2;47;49;54m{'─' * cols}"
-        return [self.banner(cols, env, self.agent(seat)), self.address(cols), self.fit(rule, cols)]
+        return [self.banner(cols, env, self.agent(seat)), self.address(cols)]
 
     def shade(self, x: int, cols: int) -> tuple[int, int, int]:
         t = x / max(1, cols - 1) * (len(GRADIENT) - 1)
@@ -217,7 +216,7 @@ class Band:
         text = list(" " * cols)
         at = max(2, (cols - len(where)) // 2)
         text[at:min(cols, at + len(where))] = where[:max(0, cols - at)]
-        return self.painted(text, cols)
+        return self.painted(text, cols, bold=True)
 
     def fit(self, line: str, cols: int, left: int = -1) -> str:
         plain = 0
