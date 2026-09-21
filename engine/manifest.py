@@ -37,7 +37,7 @@ def manifest(root: Path | None = None) -> dict:
         "priority": priority(),
         "fields": [f.name for f in fields(Resource)],
         "methods": actions(Controller),
-        "types": {name: {"title": c.title_, "abstract": c.abstract_, "help": c.help_, "view": c.view, "in_sidebar": c.in_sidebar, "scope": c.scope, "icon": c.icon, "needs_attention": c.needs_attention, "lists_completed_unread": c.lists_completed_unread, "cleared_by": c.cleared_by, "filters": tabs(c), "nested": c.nested, "closed_first": c.closed_first, "notified": list(c.notified), "typed_as_title": c.typed_as_title, "start_as_count": c.start_as_count, "fields": c.fields, "labels": c.labels,
+        "types": {name: {"title": c.details.title, "abstract": c.details.abstract, "help": c.details.help, "view": c.view, "in_sidebar": c.in_sidebar, "scope": c.scope, "icon": c.icon, "needs_attention": c.needs_attention, "lists_completed_unread": c.lists_completed_unread, "cleared_by": c.cleared_by, "filters": tabs(c), "nested": c.nested, "closed_first": c.closed_first, "notified": list(c.notified), "typed_as_title": c.typed_as_title, "start_as_count": c.start_as_count, "fields": c.fields, "labels": c.labels,
                          "command_names": dict(c.command_names), "event_labels": dict(c.event_labels), "methods": actions(CONTROLLERS[name])}
                   for name, c in TYPES.items()},
         "features": features.describe(),

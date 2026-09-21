@@ -14,7 +14,7 @@ from engine.hooks import POLICIES, gate_file
 from features.format import FORMATTERS
 from features.journal import Journal
 from features.settings import Setting, Settings
-from features.text import paragraphs
+from engine.text import paragraphs
 from resources.base import Refused, SYSTEM
 from engine.stored import read_json, write_json
 from engine.wording import plural
@@ -128,9 +128,9 @@ class FeatureDetails:
 class Feature(ABC):
     details: ClassVar[type[FeatureDetails] | None] = None
     name: ClassVar[str] = ""
-    title_: ClassVar[str] = ""
-    abstract_: ClassVar[str] = ""
-    help_: ClassVar[str] = ""
+    title: ClassVar[str] = ""
+    abstract: ClassVar[str] = ""
+    help: ClassVar[str] = ""
     trigger: ClassVar[dict] = {}
     behaviours: ClassVar[dict] = {}
     lines: ClassVar[dict[str, Line]] = {}
@@ -146,7 +146,7 @@ class Feature(ABC):
         if cls.details:
             d = cls.details
             cls.name, cls.lines, cls.behaviours, cls.settings, cls.trigger = d.name, {line.name: line for line in d.lines}, {b.name: b for b in d.behaviours}, d.settings, d.trigger
-            cls.title_, cls.abstract_, cls.help_ = paragraphs(d.title), paragraphs(d.abstract), paragraphs(d.help)
+            cls.title, cls.abstract, cls.help = paragraphs(d.title), paragraphs(d.abstract), paragraphs(d.help)
             cls.aliases, cls.runs_for_subagents, cls.fixed, cls.default = d.aliases, d.runs_for_subagents, d.fixed, d.default
         if cls.name:
             REGISTRY[cls.name] = cls
@@ -303,7 +303,7 @@ class Feature(ABC):
         return plural(n, word)
 
     def describe(self) -> dict:
-        return {"name": self.name, "title": self.title_, "abstract": self.abstract_, "help": self.help_, "default": self.default, "fixed": self.fixed,
+        return {"name": self.name, "title": self.title, "abstract": self.abstract, "help": self.help, "default": self.default, "fixed": self.fixed,
                 "listens": sorted({*(p for p, _ in self.listeners()), *self.journal.events.names}), "trigger": dict(self.trigger), "declares": list(self.declares),
                 "behaviours": {key: b.describe() for key, b in self.behaviours.items()},
                 "lines": {key: line.describe() for key, line in self.lines.items()},

@@ -33,8 +33,8 @@ def reference() -> str:
     out = ["## Reference: every noun and its words", ""]
     for type_, controller in CONTROLLERS.items():
         r = controller.resource
-        out.append(f"### {type_} — {r.abstract_}")
-        out.append(f"{r.help_}  Scope: {r.scope}. Seen by: {', '.join(r.notified) or 'nobody'}.")
+        out.append(f"### {type_} — {r.details.abstract}")
+        out.append(f"{r.details.help}  Scope: {r.scope}. Seen by: {', '.join(r.notified) or 'nobody'}.")
         for name in sorted({*actions(controller), *COMMANDS.get(type_, {})}):
             word = r.command_names.get(name, name)
             out.append(f"    journal {type_} {word} {signature(controller, name)}".rstrip())

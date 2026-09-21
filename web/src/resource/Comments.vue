@@ -150,6 +150,7 @@ h3 {
     gap: 2px;
     padding: 8px 12px;
     margin-bottom: 6px;
+    border: 1px solid transparent;
     border-radius: 8px;
     background: var(--raised);
 }
@@ -159,8 +160,7 @@ h3 {
 }
 
 .comment.focused {
-    outline: 1px solid var(--accent);
-    outline-offset: 2px;
+    border-color: var(--accent);
 }
 
 .who {

@@ -22,7 +22,7 @@ def lines(rows: list, how=lambda r: r.title) -> str:
 def status(record) -> str:
     out = [f"JOURNAL  environment {record.env}", ""]
     for type_, n in counts(record).items():
-        out.append(f"  {TYPES[type_].title_.lower():<14}{n:>4}")
+        out.append(f"  {TYPES[type_].details.title.lower():<14}{n:>4}")
     return "\n".join(out)
 
 
@@ -55,5 +55,5 @@ def carry(record) -> str:
     out = [start_block(record)]
     for type_ in priority():
         for r in standing(record, type_) if TYPES[type_].start_heading else []:
-            out.append(f"{TYPES[type_].title_.upper()} {r.n}  {r.title}\n{r.brief}".rstrip())
+            out.append(f"{TYPES[type_].details.title.upper()} {r.n}  {r.title}\n{r.brief}".rstrip())
     return "\n\n".join(out) + "\n"
