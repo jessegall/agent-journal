@@ -91,33 +91,6 @@
     text-transform: uppercase;
 }
 
-.bar-choices {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 4px;
-    padding: 2px 6px 5px;
-}
-
-.bar-control-choice {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    padding: 5px 8px;
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    background: none;
-    color: var(--text-2);
-    font: inherit;
-    font-size: 11.5px;
-    cursor: pointer;
-}
-
-.bar-control-choice:hover {
-    border-color: var(--border-2);
-    background: var(--hover);
-    color: var(--text);
-}
-
 .bar-agent-choice {
     width: 100%;
     display: grid;

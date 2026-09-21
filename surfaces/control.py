@@ -1,3 +1,4 @@
+import re
 from pathlib import Path
 
 from controllers.types import Agents, Notices, Notifications
@@ -15,12 +16,19 @@ def configured(provider: str, current_model: str = "") -> tuple[type, dict]:
     return cls, cls.control_options(current_model) if cls else {"groups": [], "note": "This CLI does not expose model controls."}
 
 
-def options(provider: str, current_model: str = "") -> dict:
+def current(group: str, value: str, model: str, effort: str) -> bool:
+    if group == "model":
+        return value == model or value in re.split(r"[-\[\]]", model)
+    return group == "effort" and value == effort
+
+
+def options(provider: str, current_model: str = "", current_effort: str = "") -> dict:
     _, controls = configured(provider, current_model)
     return {
         "provider": provider,
         "groups": [
-            {**group, "choices": [{k: v for k, v in choice.items() if k not in ("command", "commands")} for choice in group["choices"]]}
+            {**group, "choices": [{**{k: v for k, v in choice.items() if k not in ("command", "commands")},
+                                   "current": current(group["key"], choice["value"], current_model, current_effort)} for choice in group["choices"]]}
             for group in controls["groups"]
         ],
         "note": controls["note"],

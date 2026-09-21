@@ -1,7 +1,7 @@
 <script setup>
 import {computed, onMounted, ref} from "vue";
 import {api} from "../api/client.js";
-import Spinner from "../kit/Spinner.vue";
+import ChoiceList from "../kit/ChoiceList.vue";
 import {pendingChoice} from "../agents.js";
 
 const props = defineProps({control: String, agent: Object});
@@ -19,7 +19,7 @@ const waiting = (key, value) => controlling.value === `${key}:${value}` || pendi
 
 onMounted(async () => {
     try {
-        controls.value = await api.agentControls(data.value.provider, data.value.model);
+        controls.value = await api.agentControls(data.value.provider, data.value.model, data.value.effort);
     } catch (e) {
         error.value = e.message;
     }
@@ -63,16 +63,12 @@ async function control(action, value) {
         <template v-if="control !== 'context'">
             <p class="bar-label">{{ group.label }}</p>
         </template>
-        <div class="bar-choices">
-            <template v-for="choice in group.choices" :key="choice.value">
-                <button type="button" class="bar-control-choice" :disabled="Boolean(controlling)" @click="control(group.key, choice.value)">
-                    <template v-if="waiting(group.key, choice.value)">
-                        <Spinner />
-                    </template>
-                    {{ choice.label }}
-                </button>
-            </template>
-        </div>
+        <ChoiceList
+            :choices="group.choices"
+            :busy="(value) => waiting(group.key, value)"
+            :disabled="Boolean(controlling)"
+            @pick="(value) => control(group.key, value)"
+        />
     </template>
     <template v-if="control !== 'context'">
         <p class="bar-none">{{ controls.note }}</p>
