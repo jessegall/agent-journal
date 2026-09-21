@@ -115,6 +115,8 @@ def run(root: Path, cwd: Path, env: str, agent: str, fd: int, session: str, life
     watching = None
     services = Manager(root, lifeline)
     last_band = 0.0
+    last_out = 0.0
+    BETWEEN_FRAMES = 0.25
     try:
         while True:
             ready, _, _ = select.select([fd, stdin], [], [], 0.5)
@@ -125,6 +127,7 @@ def run(root: Path, cwd: Path, env: str, agent: str, fd: int, session: str, life
                     break
                 if not data:
                     break
+                last_out = time.time()
                 shown = rows_below.feed(data)
                 os.write(stdout, shown)
                 where.feed(shown)
@@ -141,7 +144,7 @@ def run(root: Path, cwd: Path, env: str, agent: str, fd: int, session: str, life
                     os.write(fd, keys)
             elif not answered and early:
                 answered, early = True, b""
-            if time.time() - last_band >= 1.0:
+            if time.time() - last_band >= 1.0 and time.time() - last_out >= BETWEEN_FRAMES and where.sure:
                 last_band = time.time()
                 os.write(stdout, top.draw(shape[1], cursor=where))
             if stdin in ready:

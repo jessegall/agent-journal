@@ -41,7 +41,7 @@ def unshifted(data: bytes) -> bytes:
 
 MOVE = re.compile(rb"\x1b\[(\d*)(?:;(\d*))?([HfdABCDG])")
 SHOW = re.compile(rb"\x1b\[\?25([hl])")
-ESCAPE = re.compile(rb"\x1b(?:\[[\d;?]*[ -/]*[@-~]|\][^\x07\x1b]*(?:\x07|\x1b\\)|[()][0-9A-B]|[@-Z\\-_])")
+ESCAPE = re.compile(rb"\x1b(?:\[[\d;?]*[ -/]*[@-~]|\][^\x07\x1b]*(?:\x07|\x1b\\)|[()][0-9A-B]|[78=>cDEHM]|[@-Z\\-_])")
 
 
 def wide(ch: str) -> int:
@@ -54,11 +54,13 @@ class Cursor:
     def __init__(self, rows: int, cols: int):
         self.rows, self.cols = rows, cols
         self.row, self.col = ROWS + 1, 1
+        self.saved = (ROWS + 1, 1)
         self.shown = True
         self.sure = True
 
     def resized(self, rows: int, cols: int) -> None:
         self.rows, self.cols = rows, cols
+        self.sure = False
 
     def placed(self, m: re.Match) -> None:
         kind, first, second = m.group(3), m.group(1), m.group(2)
@@ -96,12 +98,24 @@ class Cursor:
                 self.row, self.sure = self.rows, False
 
     def feed(self, data: bytes) -> None:
-        for m in SHOW.finditer(data):
-            self.shown = m.group(1) == b"h"
-        for m in MOVE.finditer(data):
-            self.placed(m)
+        at = 0
+        for m in ESCAPE.finditer(data):
+            self.wrote(data[at:m.start()])
+            self.escaped(m.group(0))
+            at = m.end()
+        self.wrote(data[at:])
+
+    def escaped(self, seq: bytes) -> None:
+        if seq == b"\x1b7":
+            self.saved = (self.row, self.col)
+        elif seq == b"\x1b8":
+            self.row, self.col = self.saved
             self.sure = True
-        self.wrote(ESCAPE.sub(b"", data))
+        elif (shown := SHOW.fullmatch(seq)):
+            self.shown = shown.group(1) == b"h"
+        elif (move := MOVE.fullmatch(seq)):
+            self.placed(move)
+            self.sure = True
 
     def at(self) -> bytes:
         if not self.sure:
