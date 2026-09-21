@@ -10,12 +10,19 @@ from engine.inputs import FORCE, PERMIT, take
 from surfaces.control import CARRY_ON, delivered
 from engine.record import Record
 from engine.watch import STEADY_AFTER, broke, steady
-from resources.base import AGENT, SYSTEM, USER
+from resources.base import AGENT, SYSTEM, USER, Event
 from resources.types import TYPES, priority
 from engine.seat import Seat
 from engine.wording import plural
 from engine.transcript import turns
 from engine.stored import read_json, write_json
+
+CLOCK_EVERY = 60.0
+
+
+def emit_clock(record: Record, session: str) -> None:
+    row = Agents(record, actor=SYSTEM).by_session(session)
+    bus.emit(Event(0, time.time(), "agent", row.n, "ticked", SYSTEM), record)
 
 TICK = 1.0
 STAMPED = "stamped"
@@ -46,6 +53,7 @@ class Engine(Seat):
         self.relayed = None
         self.typed_at = 0.0
         self.checked_at = time.time()
+        self.ticked_at = 0.0
         self.probed_at = 0.0
         self.controlled_at = 0.0
         self.carry_on = False
@@ -66,6 +74,7 @@ class Engine(Seat):
         self.why = (self.permitted() or self.probe() or self.forced() or self.typing() or self.control()
                     or self.deliver() or self.nudge() or self.check_in())
         self.seat()
+        self.clock()
         return self.why
 
     def relay(self) -> None:
@@ -215,6 +224,12 @@ class Engine(Seat):
         self.agent.driver.send(line)
         self.typed_at = time.time()
         return f"typed: {line[:60]}"
+
+    def clock(self) -> None:
+        if time.time() - self.ticked_at < CLOCK_EVERY:
+            return
+        self.ticked_at = time.time()
+        emit_clock(self.record, self.agent.driver.session)
 
     def check_in(self) -> str:
         from features.work_tracking.auto import ASK_AGAIN, still_there

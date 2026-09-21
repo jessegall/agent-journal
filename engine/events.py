@@ -43,6 +43,15 @@ class AgentEvent(TypedEvent):
 
 
 @dataclass(frozen=True)
+class ClockTicked(AgentEvent):
+    on: ClassVar[str] = "agent.ticked"
+
+    @classmethod
+    def read(cls, event) -> "ClockTicked":
+        return cls(agent=event.n)
+
+
+@dataclass(frozen=True)
 class AgentChanged(AgentEvent):
     on: ClassVar[str] = "agent"
     action: str = ""

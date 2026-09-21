@@ -12,7 +12,7 @@ class UpdatesDetails(FeatureDetails):
     abstract = "A newer journal is installed by itself, or the agent is told to install it"
 
     help = """
-        Every half hour of an agent's time the feature compares the version published on GitHub
+        Every five minutes the engine compares the version published on GitHub
         with the one installed.
 
         With install on, a newer version is installed in the background, once per version, and
@@ -20,7 +20,7 @@ class UpdatesDetails(FeatureDetails):
         run journal upgrade. A journal being developed never installs itself.
     """
 
-    trigger = Trigger(every=30, unit=MINUTES)
+    trigger = Trigger(every=5, unit=MINUTES)
 
     behaviours = [
         Behaviour(
