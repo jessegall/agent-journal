@@ -11,9 +11,11 @@ from pathlib import Path
 from engine.sessions import ACTIVE_ENV
 from install import code
 from engine import runtime
+from engine.stored import read_json
 
 RELOAD = 75
 STOP = 76
+RELAUNCH = 77
 CHECK_EVERY = 0.5
 
 
@@ -71,24 +73,30 @@ def stop(pid: int) -> int:
     return child(pid, block=True)[1]
 
 
-def seat(root: Path, env: str, session: str, pid: int, agent: str) -> None:
+def seat(root: Path, env: str, session: str, pid: int, agent: str, command: list[str]) -> None:
     from engine.hooks import seated
     from engine.sessions import Sessions
     Sessions(root).bind(session, env, pid=pid, provider=agent)
+    Sessions(root).write(session, args=command)
     seated(root, env, session)
 
 
-def run(root: Path, cwd: Path, env: str, agent: str, args: list[str]) -> int:
+def launch(root: Path, cwd: Path, env: str, agent: str, args: list[str], conversation: str = "") -> tuple[int, int, str]:
     from providers import DRIVERS
     from engine.record import Record
     from features.work.auto import launch_args
 
     driver = DRIVERS[agent]
-    command = driver.command(driver, launch_args(Record(root, env), agent, args))
+    command = driver.command(driver, driver.resumed(launch_args(Record(root, env), agent, args), conversation))
     pid, fd = spawn_agent(command, cwd, env)
     session = session_of(agent, pid)
+    seat(root, env, session, pid, agent, command)
+    return pid, fd, session
+
+
+def run(root: Path, cwd: Path, env: str, agent: str, args: list[str]) -> int:
+    pid, fd, session = launch(root, cwd, env, agent, args)
     runtime.set_env(root, env)
-    seat(root, env, session, pid, agent)
     print(f"journal: environment {env}")
     stdin, stdout = sys.stdin.fileno(), sys.stdout.fileno()
     saved = None
@@ -111,6 +119,14 @@ def run(root: Path, cwd: Path, env: str, agent: str, args: list[str]) -> int:
                 break
             status = None
             if code == RELOAD:
+                continue
+            if code == RELAUNCH:
+                asked = runtime.relaunch_file(root, session)
+                conversation = str((read_json(asked, {}) or {}).get("resume") or "")
+                asked.unlink(missing_ok=True)
+                stop(pid)
+                os.close(fd)
+                pid, fd, session = launch(root, cwd, env, agent, args, conversation)
                 continue
             if code == STOP:
                 status = stop(pid)

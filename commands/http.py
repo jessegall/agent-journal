@@ -21,7 +21,7 @@ from surfaces.package import archive as extension_archive, info as extension_inf
 from surfaces.summary import summarize
 from surfaces.color import identity, set_color
 from surfaces.updates import newer
-from surfaces.control import force as force_session, options as control_options, request as control_session
+from surfaces.control import force as force_session, options as control_options, permit, relaunch, request as control_session
 from features.skills.catalogue import SKILL, always, catalogue, load_now, skills
 from controllers.base import LAST
 from controllers.types import Agents, CONTROLLERS, Environments, Features, Nudges
@@ -118,6 +118,16 @@ def post_appoint(req: Request) -> Reply:
 @route("GET", "/api/agent-controls/{provider}")
 def get_agent_controls(req: Request) -> Reply:
     return Reply(200, control_options(req.params["provider"], str(req.query.get("model") or "")))
+
+
+@route("POST", "/api/{env}/agent/{session}/permit")
+def post_agent_permit(req: Request) -> Reply:
+    return Reply(200, permit(req.root, req.params["env"], req.params["session"], bool(req.body.get("allow"))))
+
+
+@route("POST", "/api/{env}/agent/{session}/relaunch")
+def post_agent_relaunch(req: Request) -> Reply:
+    return Reply(200, relaunch(req.root, req.params["env"], req.params["session"], bool(req.body.get("skip"))))
 
 
 @route("POST", "/api/{env}/agent/{session}/force")

@@ -89,6 +89,16 @@
           }
         ]
       }
+    ],
+    "PermissionRequest": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "sh /Users/jessegall/projects/agent-journal/.journal/src/hook.sh claude /Users/jessegall/projects/agent-journal/.journal"
+          }
+        ]
+      }
     ]
   },
   "statusLine": {

@@ -7,7 +7,7 @@ from engine.record import Record
 from engine.sessions import Sessions, agent_pid
 from resources.base import SYSTEM
 from engine import runtime
-from providers.payload import STATUS
+from providers.payload import PERMISSION, STATUS
 from features.statusline import commands
 
 POLICIES: list = []
@@ -67,6 +67,8 @@ def handle(provider, root: Path, env: str, hook) -> dict:
     agents = Agents(record, actor=SYSTEM)
     row = agents.by_session(hook.session)
     if provider.is_subagent(hook):
+        if hook.event == PERMISSION or row.asking:
+            agents.update(row.n, asking=provider.asking(hook))
         return provider.response(blocked=next((reason for policy in POLICIES if serving(policy, provider, hook)
                                                and (reason := policy(provider, record, hook, row.title))), "")) if hook.event == "PreToolUse" else {}
     agents.saw(row.n, {"hook": hook.event, "tool": hook.tool.name, "file": hook.tool.file_path, "session": hook.session},

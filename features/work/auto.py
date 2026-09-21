@@ -31,4 +31,6 @@ def still_there(record, quiet: float, state: str) -> str:
 
 def launch_args(record, provider: str, args: list[str]) -> list[str]:
     driver = DRIVERS.get(provider)
-    return driver.launch_args(args, automatic(record)) if driver else args
+    if not driver:
+        return args
+    return driver.launch_args(driver.skipping(args, bool(record.setting("permissions", {}).get("skip"))), automatic(record))

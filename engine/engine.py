@@ -6,7 +6,7 @@ from controllers.types import CONTROLLERS, Agents
 import features
 from engine import bus
 from engine.actors import Actor, Agent, BUSY, IDLE, STOPPED, System, User, WORKING
-from engine.inputs import FORCE, take
+from engine.inputs import FORCE, PERMIT, take
 from surfaces.control import CARRY_ON, delivered
 from features.start.feature import WAIT_FOR_REPORT, hello
 from engine.record import Record
@@ -58,7 +58,7 @@ class Engine(Seat):
     def tick(self) -> str:
         self.agent.driver.pump()
         self.relay()
-        self.why = (self.follow() or self.probe() or self.forced() or self.typing() or self.control() or self.begin()
+        self.why = (self.follow() or self.permitted() or self.probe() or self.forced() or self.typing() or self.control() or self.begin()
                     or self.deliver() or self.nudge() or self.check_in())
         self.seat()
         return self.why
@@ -129,6 +129,13 @@ class Engine(Seat):
             driver.clear_input()
             driver.typed.unlink(missing_ok=True)
         return ""
+
+    def permitted(self) -> str:
+        queued = take(self.record.root, self.names(), PERMIT)
+        if not queued:
+            return ""
+        self.agent.driver.permit(queued.get("value") == "allow")
+        return f"permission: {queued.get('value')}"
 
     def forced(self) -> str:
         if self.agent.state() == IDLE or not take(self.record.root, self.names(), FORCE):

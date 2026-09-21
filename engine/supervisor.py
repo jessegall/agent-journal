@@ -16,8 +16,9 @@ from providers import DRIVERS  # noqa: E402
 from engine import viewer  # noqa: E402
 from engine.services import Manager  # noqa: E402
 from engine import typist  # noqa: E402
+from engine import runtime  # noqa: E402
 from engine.stop import asked  # noqa: E402
-from engine.terminal import RELOAD, STOP, watched  # noqa: E402
+from engine.terminal import RELAUNCH, RELOAD, STOP, watched  # noqa: E402
 
 ESCAPES = re.compile(rb"\x1b(?:\[[\x30-\x3f]*[\x20-\x2f]*[\x40-\x7e]|\][^\x07\x1b]*(?:\x07|\x1b\\)|O[\x40-\x7e]|[@-_])")
 RELOAD_EVERY = 5.0
@@ -67,6 +68,7 @@ def run(root: Path, cwd: Path, env: str, agent: str, fd: int, session: str, life
     printed = root / "runtime" / f"printed-{session}"
     typed = root / "runtime" / f"typed-{session}"
     typed_at = 0.0
+    relaunching = runtime.relaunch_file(root, session)
     printed.parent.mkdir(parents=True, exist_ok=True)
     out = printed.open("ab")
     ear = typist.listen(root, session)
@@ -142,6 +144,9 @@ def run(root: Path, cwd: Path, env: str, agent: str, fd: int, session: str, life
                     typed_at = time.time()
             if asked(root, began):
                 result = STOP
+                break
+            if relaunching.is_file():
+                result = RELAUNCH
                 break
             now = time.time()
             if now - last_services >= SERVICES_EVERY:

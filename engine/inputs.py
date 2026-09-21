@@ -5,6 +5,8 @@ from engine.stored import read_json, write_json
 
 STALE = 600.0
 FORCE = "force"
+PERMIT = "permit"
+KEYS = (FORCE, PERMIT)
 
 
 def queue(root: Path, session: str, line: str, label: str, **data) -> dict:
@@ -26,8 +28,12 @@ def take(root: Path, sessions: set[str], action: str = "") -> dict:
         if time.time() - float(queued.get("at") or 0) > STALE:
             path.unlink(missing_ok=True)
             continue
-        if queued.get("session") not in sessions or (queued.get("action") == FORCE) != (action == FORCE):
+        if queued.get("session") not in sessions or pressed(queued.get("action")) != pressed(action):
             continue
         path.unlink(missing_ok=True)
         return queued
     return {}
+
+
+def pressed(action) -> str:
+    return action if action in KEYS else ""

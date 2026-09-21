@@ -25,6 +25,10 @@ def channel_alive(root: Path) -> Path:
     return folder(root) / "channel.on"
 
 
+def relaunch_file(root: Path, session: str) -> Path:
+    return folder(root) / f"relaunch-{session}.json"
+
+
 def env(root: Path) -> str:
     try:
         return env_file(root).read_text().strip() or DEFAULT_ENV
