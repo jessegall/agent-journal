@@ -19,7 +19,10 @@ def test_every_message_without_a_tag_is_named_once(tmp_path):
         rows.append({"type": "assistant", "timestamp": now, "message": {"content": [{"type": "text", "text": text}]}})
         transcript.write_text("\n".join(json.dumps(r) for r in rows) + "\n")
         report(record, "working", "PostToolUse", provider="claude", transcript=str(transcript))
-        return [n for n in nudges(record) if "tag" in n]
+        return told()
+
+    def told():
+        return [m.title for m in Messages(record, actor="system").all() if m.data.get("told") == "tags"]
 
     record = fresh()
     assert said("[!reply] done, pushed") == [], "a tagged message: nothing said"
@@ -29,7 +32,7 @@ def test_every_message_without_a_tag_is_named_once(tmp_path):
     assert len(said("[!reply][!invented] two leading tags")) == 3, "a registered prefix does not hide an invented tag"
     assert len(said("status [!reply] is ordinary text")) == 4, "an inline tag-like phrase is rejected"
     report(record, "working", "PostToolUse", provider="claude", transcript=str(transcript))
-    assert len([n for n in nudges(record) if "tag" in n]) == 4, "each message is named once"
+    assert len(told()) == 4, "each message is named once, as a message from the journal"
 
 def test_replying_by_command_is_answered_with_the_tag_that_does_it():
     from engine.hooks import handle

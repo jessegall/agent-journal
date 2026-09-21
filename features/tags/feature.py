@@ -43,7 +43,7 @@ def visible(text: str) -> str:
 
 class Tags(Feature):
     name = "tags"
-    lines = {"untagged": Line("your last message has no tag", "open every message with exactly one of {{tags}}"),
+    lines = {"untagged": Line("your last message has no tag", 'you wrote "{{said}}" - open every message with exactly one of {{tags}}'),
              "refused": Line("the {{tag}} tag on {{on}} did not run", "{{said}}"),
              "by tag": Line("reply to message {{n}} with the reply tag", "open your turn with [!reply:{{n}}] and the turn itself becomes the reply, so journal message reply is never needed")}
     title_ = "Tagging"
@@ -80,7 +80,7 @@ class Tags(Feature):
             return
         for turn in self.written(record, agent):
             if not self.reader(record).match(turn.text) and not self.already(record, agent, turn, "untagged"):
-                self.say(record, agent, "untagged", tags=" ".join(written(self.names(record))))
+                self.tell(record, "untagged", said=turn.text.strip()[:160], tags=" ".join(written(self.names(record))))
 
     @formats
     def without_tags(self, text, record):
