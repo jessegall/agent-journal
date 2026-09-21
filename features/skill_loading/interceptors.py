@@ -33,5 +33,5 @@ class RefuseUntilLoaded(ToolInterceptor):
         missing = outstanding(context.record, context.agent.row)
         if not missing:
             return ""
-        title, brief = context.feature.line("required", {"skills": ", ".join(missing), "loads": ", ".join(f"Skill: {name}" for name in missing)})
+        title, brief = context.feature.line("required", {"skills": ", ".join(missing), "loads": ", ".join(context.provider.skill_load(name) for name in missing)})
         return f"{title} - {brief}"

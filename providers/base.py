@@ -75,6 +75,9 @@ class Provider(ABC):
     def dispatch(self, tool) -> dict:
         return {}
 
+    def skill_load(self, name: str) -> str:
+        return f"Skill: {name}"
+
     def question(self, tool) -> bool:
         return tool.name in self.question_tools
 

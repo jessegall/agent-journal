@@ -1,9 +1,9 @@
 import time
 
-from engine.events import AgentUpdated
+from engine.events import AgentUpdated, SessionStarted
 from features import trigger
 from features.parts import Context, Handler
-from features.skill_loading.catalogue import SKILL, skills
+from features.skill_loading.catalogue import SKILL, chosen, skills
 from features.skill_loading.required import require
 from providers import PROVIDERS
 from resources.types import AgentRow
@@ -52,3 +52,12 @@ class NameStaleSkills(Handler):
         changed = {s[SKILL.name]: s[SKILL.changed] for s in skills(context.record, context.agent.row.n) if s[SKILL.stale]}
         if changed:
             require(context.record, context.agent.session, changed)
+
+
+class RequireAlwaysSkills(Handler):
+    behaviour = "always"
+
+    def handle(self, context: Context, event: SessionStarted) -> None:
+        if context.agent:
+            now = time.time()
+            require(context.record, context.agent.session, {name: now for name in chosen(context.record)})

@@ -1,3 +1,4 @@
+import features
 
 from controllers.types import Messages
 from engine.queries import start_block
@@ -118,3 +119,21 @@ def test_every_tool_call_waits_until_a_required_skill_is_loaded(tmp_path):
     loaded = {"type": "assistant", "timestamp": now, "message": {"content": [{"type": "tool_use", "name": "Skill", "input": {"skill": "journal-plans"}}]}}
     transcript.write_text(transcript.read_text() + json.dumps(loaded) + "\n")
     assert call("Bash", command="journal plan phase 1 build --when done") == "", "once it is loaded, work goes on"
+
+
+def test_a_session_start_holds_every_tool_call_until_the_always_on_skills_are_loaded():
+    from engine.hooks import handle
+    from providers import PROVIDERS
+    features.load()
+    record = fresh()
+    folder = record.root.parent / ".agents" / "skills" / "journal-work-tracking"
+    folder.mkdir(parents=True)
+    (folder / "SKILL.md").write_text('---\nname: journal-work-tracking\ndescription: "Auto mode"\n---\n\n# Auto\n')
+    record.skills = ["journal-work-tracking"]
+    codex, hook = PROVIDERS["codex"](), {"session_id": "codex-1"}
+    handle(codex, record.root, record.env, {**hook, "hook_event_name": "SessionStart"})
+    refused = handle(codex, record.root, record.env, {**hook, "hook_event_name": "PreToolUse", "tool_name": "exec", "tool_input": {"input": "ls"}})
+    assert "read .agents/skills/journal-work-tracking/SKILL.md" in str(refused), "Codex is told to read the skill's SKILL.md"
+    read = {"input": "sed -n '1,200p' .agents/skills/journal-work-tracking/SKILL.md"}
+    assert handle(codex, record.root, record.env, {**hook, "hook_event_name": "PreToolUse", "tool_name": "exec", "tool_input": read}) in ({}, None), \
+        "reading it is never refused"
