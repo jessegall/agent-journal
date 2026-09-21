@@ -2,6 +2,7 @@ import time
 from dataclasses import asdict, dataclass, field
 
 from features.kanban.lanes import DONE, LANES, Lane, Sources, lane_of, reason_of
+from features.kanban.shifts import targets
 from features.plans.controller import ACTIVE
 
 
@@ -61,14 +62,18 @@ def card_of(sources: Sources, todo) -> Card:
     return Card(todo.n, todo.title, int(todo.priority or 100), lane_of(sources, todo), reason_of(sources, todo),
                 {"n": placement.n, "title": placement.title, "phase": placement.phase} if placement else None,
                 str(todo.assigned or ""), worker_of(work) if work else None, sources.questions.get(todo.n, 0),
-                bool(todo.reported) and not todo.completed, [], float(todo.updated or 0), float(todo.completed or 0))
+                bool(todo.reported) and not todo.completed, targets(sources, todo), float(todo.updated or 0), float(todo.completed or 0))
+
+
+def sources_of(journal) -> Sources:
+    works = {int(w.todo): w for w in journal.works._standing() if w.todo}
+    questions = {int(ref.split(":")[1]): q.n for q in journal.questions._standing() for ref in q.refs if ref.startswith("todo:")}
+    return Sources(journal.todos, works, questions, journal.plans._every())
 
 
 def build(journal, done_days: float, plan: int = 0, agent: str = "") -> Board:
-    works = {int(w.todo): w for w in journal.works._standing() if w.todo}
-    questions = {int(ref.split(":")[1]): q.n for q in journal.questions._standing() for ref in q.refs if ref.startswith("todo:")}
-    plans = journal.plans._every()
-    sources = Sources(journal.todos, works, questions, plans)
+    sources = sources_of(journal)
+    works, plans = sources.works, sources.plans
     since = time.time() - float(done_days) * 86400
     rows = [t for t in journal.todos._every() if not t.completed or (not t.struck and float(t.completed) >= since)]
     if plan:
