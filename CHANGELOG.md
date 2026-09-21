@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.18.2 — The agent's raw terminal output is kept whole
+
+The supervisor kept only the last 4 KB of each burst of the agent's output in its capture, so a large redraw was mostly missing and a replay against the terminal recording could not line up. Every burst is kept whole now; housekeeping still trims the capture to its tail once an hour.
+
+What to do about it: `journal upgrade`.
+
 ## 2.18.1 — The header puts Claude's cursor back exactly
 
 Replaying a recording of the terminal showed where the drawing drifted: the header put the cursor back where a tracker said Claude had left it, and the tracker did not know Claude's scroll region, so after a line feed on the region's last row it ran a row or more low; Claude's next erase then landed on the wrong line and old text stayed. The header now draws between the terminal's own cursor save and restore, which is exact, and falls back to the tracker only while Claude holds a save of its own; the tracker also knows the scroll region now. Re-sending the scroll region happens inside that save, and it re-sends Claude's own region instead of overwriting it with the header's.

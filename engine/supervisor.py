@@ -136,7 +136,7 @@ def run(root: Path, cwd: Path, env: str, agent: str, fd: int, session: str, life
                     show(top.draw(shape[1], force=True, cursor=where, first=rows_below.region()))
                 elif data.rstrip().endswith(FRAME_END):
                     show(top.draw(shape[1], cursor=where))
-                out.write(data[-4096:])
+                out.write(data)
                 out.flush()
             if not answered and time.time() - started < STARTUP:
                 if (keys := DRIVERS[agent].confirm(early)):
