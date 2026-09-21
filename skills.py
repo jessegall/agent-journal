@@ -83,7 +83,8 @@ def write(folder: Path) -> list[Path]:
     for path, text in render().items():
         f = folder / path
         f.parent.mkdir(parents=True, exist_ok=True)
-        f.write_text(text)
+        if not f.is_file() or f.read_text() != text:
+            f.write_text(text)
         written.append(f)
     return written
 
