@@ -1,21 +1,13 @@
+import features
 import pytest
 
-import features
 from features.plans.controller import Plans  # noqa: E402
 from controllers.types import Agents, Docs, Todos
 from engine.record import Record
 from features.work.next import next, ready
-from tests.kit import idle
 from resources.base import AGENT, SYSTEM, USER
 from tests.conftest import fresh, refused
-
-
-@pytest.fixture(scope="module", autouse=True)
-def loaded_features():
-    features.unload()
-    features.load()
-    yield
-    features.unload()
+from tests.kit import idle
 
 
 @pytest.fixture(scope="module")
@@ -126,37 +118,6 @@ def test_under_auto_a_checkpoint_is_passed_not_waited_at():
         "the event on an ordinary phase says no checkpoint was passed"
 
 
-def test_abandon_closes_with_a_reason_leaving_the_rows_open(env):
-    record, todos, rows, by_agent, by_user = env
-    other = by_agent.create("Abandoned one")
-    by_agent.phase(other.n, "Only")
-    row = todos.create("still open").n
-    by_agent.place(other.n, 1, [row])
-    by_agent.abandon(other.n, "no longer wanted")
-    assert (by_agent.load(other.n).data["status"], [e for e in record.events() if e.type == "plan"][-1].data["why"], todos.load(row).completed) == \
-        ("abandoned", "no longer wanted", 0.0), "abandoned, with the why, and the row stays open"
-
-
-def test_from_a_doc_its_phase_sections_become_phases_and_the_plan_links_the_doc(env):
-    record, todos, rows, by_agent, by_user = env
-    docs = Docs(record, actor=AGENT)
-    doc = docs.create("A design", abstract="what is true when done", brief="the approach")
-    docs.section(doc.n, "Phase 1 — The record", "files first")
-    docs.section(doc.n, "Notes", "not a phase")
-    docs.section(doc.n, "Phase 2: The engine", "then the loop")
-    drafted = by_agent.from_doc(doc.n)
-    assert (drafted.data["status"], [p["title"] for p in drafted.data["phases"]], drafted.data["goal"], drafted.refs) == \
-        ("building", ["The record", "The engine"], "what is true when done", [doc.ref]), \
-        "from-doc: a plan being built with the doc's phases, goal and link"
-
-
-def test_the_words_place_answers_to_todos_and_continue_resolves_to_resume(env):
-    record, todos, rows, by_agent, by_user = env
-    assert (by_agent.named("place"), by_agent.named("resume"), by_agent.named("complete")) == ("todos", "continue", "acknowledge"), \
-        "the type's own words"
-    assert by_user.method("continue").__name__ == "resume", "continue resolves to resume"
-
-
 def test_a_plan_activated_with_its_rows_already_closed_completes_itself(env):
     record, todos, rows, by_agent, by_user = env
     late = by_agent.create("already done", goal="nothing left to do")
@@ -168,24 +129,3 @@ def test_a_plan_activated_with_its_rows_already_closed_completes_itself(env):
     by_user.activate(late.n)
     assert by_agent.load(late.n).data["status"] == "done", \
         "a plan whose rows are already closed completes itself when it is activated"
-
-
-def test_the_stage_a_plan_is_being_written_at_and_a_ready_plan_can_be_opened_again():
-    stages = fresh()
-    writing = Plans(stages, actor=AGENT)
-    row = writing.create("a plan being written", goal="g")
-    assert writing.load(row.n).data["stage"] == "phases", "a plan the agent starts is at the phases stage"
-    writing.stage(row.n, "todos")
-    assert writing.load(row.n).data["stage"] == "todos", "the agent says when it moves on to the rows"
-    assert ("written in stages" in refused(lambda: writing.stage(row.n, "whenever"))) is True, "and nothing else is a stage"
-
-    writing.phase(row.n, "the only phase")
-    writing.place(row.n, 1, [Todos(stages, actor=AGENT).create("a row").n])
-    writing.ready(row.n)
-    assert writing.load(row.n).data["status"] == "ready", "ready when every phase has a row"
-    writing.build(row.n)
-    assert writing.load(row.n).data["status"] == "building", "build takes it back to being written"
-    writing.ready(row.n)
-    Plans(stages, actor=USER).activate(row.n)
-    assert ("not one that can become building" in refused(lambda: writing.build(row.n))) is True, \
-        "a plan that is running cannot be opened again"

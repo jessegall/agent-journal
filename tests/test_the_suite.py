@@ -17,3 +17,11 @@ def test_a_feature_keeps_one_test_file_beside_itself_and_it_stays_small():
     too_long = {name: len(kept(name)[0].read_text().splitlines()) for name in features.names()
                 if kept(name) and len(kept(name)[0].read_text().splitlines()) > LINES}
     assert too_long == {}, f"a feature's test file stays under {LINES} lines; what needs more than that belongs in the generated run"
+
+
+ALLOWED = {"test_every_action.py", "test_the_gate.py", "test_the_suite.py"}
+
+
+def test_outside_the_features_only_the_generated_runs_are_tests():
+    found = sorted(p.relative_to(HERE).as_posix() for p in (HERE / "tests").rglob("test*.py") if p.name not in ALLOWED)
+    assert found == [], "a test lives beside its feature as features/<name>/test.py, or it is one of the generated runs"
