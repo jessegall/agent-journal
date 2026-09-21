@@ -13,7 +13,7 @@ from engine.sessions import Sessions, allowed
 from resources.base import Refused
 from resources.shapes import typed
 from engine import runtime
-from commands.parser import parser
+from commands.parser import Misused, parser
 from engine.stored import undoable
 
 
@@ -111,11 +111,15 @@ def run(argv: list[str], out=None, err=None) -> int:
     if not first_word(argv) and not {"-h", "--help"} & set(argv):
         argv = [*argv, "help"]
     noun = "" if {"-h", "--help"} & set(argv[:1]) else noun_of(argv)
-    parsed, passed = parser(noun).parse_known_args(argv)
-    args = vars(parsed)
-    command = args.pop("command")
-    if passed and command not in DRIVERS:
-        parser(noun).error(f"unrecognized arguments: {' '.join(passed)}")
+    try:
+        parsed, passed = parser(noun).parse_known_args(argv)
+        args = vars(parsed)
+        command = args.pop("command")
+        if passed and command not in DRIVERS:
+            parser(noun).error(f"unrecognized arguments: {' '.join(passed)}")
+    except Misused as e:
+        print(e, file=err)
+        return 2
     ctx = context(args)
     ctx["force"] = why
     if command in DRIVERS:

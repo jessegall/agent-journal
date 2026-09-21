@@ -50,6 +50,15 @@ def add_query(cmds, name: str, help_: str, fn, *flags) -> None:
     for flag, kw in flags:
         q.add_argument(flag, **kw)
 
+class Misused(Exception):
+    pass
+
+
+class Parser(argparse.ArgumentParser):
+    def error(self, message: str):
+        raise Misused(f"{self.format_usage()}{self.prog}: error: {message}")
+
+
 PARSERS: dict[tuple, argparse.ArgumentParser] = {}
 
 DEFAULTS = ("JOURNAL_ROOT", "JOURNAL_ENV", "JOURNAL_ACTOR", "JOURNAL_SESSION", "JOURNAL_AGENT")
@@ -62,7 +71,7 @@ def parser(only: str = "") -> argparse.ArgumentParser:
     return PARSERS[key]
 
 def built(only: str) -> argparse.ArgumentParser:
-    top = argparse.ArgumentParser(prog="journal", description="the journal, every type a noun and every method its word")
+    top = Parser(prog="journal", description="the journal, every type a noun and every method its word")
     top.add_argument("--root", default=os.environ.get("JOURNAL_ROOT", ".journal"))
     top.add_argument("--env", dest="bound", default="")
     top.add_argument("--default-env", dest="fallback", default=os.environ.get("JOURNAL_ENV", ""), help=argparse.SUPPRESS)

@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.23.5 — A mistyped command says what is wrong
+
+A command the journal could not parse — a word that does not exist, like `journal work list`, or a missing argument — was answered through the server with "was refused and said nothing": the parser wrote its explanation to the server's own error stream, which the command never saw. An agent that mistyped a command was left guessing. The usage and the error now come back with the command, exactly as when the journal runs without its server.
+
+What to do about it: `journal upgrade`.
+
 ## 2.23.4 — The plugin page's Log and Run setup again buttons work
 
 Two buttons on the Plugins page handed over the listed plugin rather than its row, and the page read the plugin's name from a manifest the listed plugin does not carry: Log and Run setup again threw instead of acting. Each listed plugin now carries its name, and every button and panel on the page takes the same listed plugin.
