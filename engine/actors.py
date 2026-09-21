@@ -90,7 +90,7 @@ class Agent(Actor):
 
     def flush(self) -> str:
         batch = {**BATCH, **self.record.batch}
-        pressing = any(self.urgent(e) for e in self.pending)
+        pressing = any(self.urgent(e) or self.typed(e) for e in self.pending)
         if not self.pending or (not pressing and time.time() - self.pending_at < batch["quiet"] and len(self.pending) < batch["size"]):
             return ""
         typed = [e for e in self.pending if self.typed(e)]

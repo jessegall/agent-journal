@@ -4,6 +4,14 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.21.3 — The channel passes on its first line, and the greeting is typed at once
+
+The channel server started reading its queue from wherever the file ended when it first saw it, and a queue that did not exist yet was taken to begin at its first line's end: the first line ever sent through a new session's channel — in a fresh project, the missing-tag reminder — was skipped. A queue that appears after the channel starts is read from its start.
+
+A message meant for the terminal waited out the five-second batching quiet like any other; it is typed at once now, so a new session's greeting comes as soon as its engine sees the session. Two SessionStart reports arriving together no longer greet twice.
+
+What to do about it: `journal upgrade`, then start a new session — the channel server runs inside the agent and takes the fix on its next start.
+
 ## 2.21.2 — An idle session hears the journal right after a restart
 
 A session's engine found its agent only through a hook that arrived after the engine started. Every server restart — each upgrade — starts fresh engines, so an agent sitting idle was deaf until it next ran a tool: no channel lines, no auto-mode nudges, no chat copies of its tagged messages. The Claude driver now knows its agent at once, by the process id its inbox socket carries.

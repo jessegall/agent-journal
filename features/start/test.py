@@ -71,8 +71,11 @@ def test_a_new_session_is_greeted_in_its_terminal_even_before_its_engine_starts(
     time.sleep(0.01)
     engine = Engine(record, DRIVERS["claude"](record, "claude-99"))
     engine.agent.driver.last_report = lambda: SimpleNamespace(title="claude-1", at=time.time())
+    typed = []
+    engine.agent.driver.send = lambda text="", terminal=False, **rest: typed.append((text, terminal)) or True
     engine.deliver()
-    assert [engine.agent.typed(e) for e in engine.agent.pending] == [True], "the greeting waits to be typed, never marked read as history"
+    assert [t for t in typed if t[0]] == [(f"the journal is ready on {record.env} — say hello in the chat, so the journal's messages reach you", True)], \
+        "the greeting is typed into the terminal at once, never marked read as history"
 
 
 def test_a_restarted_engine_knows_its_session_before_the_agent_acts_again():
@@ -85,3 +88,12 @@ def test_a_restarted_engine_knows_its_session_before_the_agent_acts_again():
     agents.update(agents.by_session("claude-1").n, provider="claude", event="Stop", inbox="/tmp/cc-socks/777.sock", at=time.time() - 600)
     Sessions(record.root).bind("claude-777", record.env, pid=777, provider="claude")
     assert DRIVERS["claude"](record, "claude-777")._report().title == "claude-1", "found by its process, not by a hook after the restart"
+
+
+def test_the_channel_passes_on_the_first_line_of_a_queue_it_saw_created(tmp_path):
+    import json
+    from channel import contents, fresh_lines, start
+    f = tmp_path / "channel.jsonl"
+    at = start(f)
+    f.write_text(json.dumps({"content": "your last message has no tag"}) + "\n")
+    assert contents(fresh_lines(f, at)[0]) == ["your last message has no tag"], "the first line written after the channel started is sent"

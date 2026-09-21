@@ -1,3 +1,5 @@
+import threading
+
 from engine.hooks import start_file
 from engine.queries import start_block
 from controllers.types import Nudges
@@ -8,6 +10,7 @@ from engine.stored import write_text
 
 
 SHAPING = ("feature", "plugin", "environment")
+GREETING = threading.Lock()
 
 
 COMPACTED = """THIS WINDOW WAS JUST COMPACTED. The summary kept what was done and dropped what was decided. Before touching anything:
@@ -30,8 +33,11 @@ class Start(Feature):
     @event("agent.updated")
     def greet(self, event, record) -> None:
         agent = self.agent(event, record)
-        if agent and agent.event == "SessionStart" and not self.greeted(record, agent):
-            self.journal.type(record, agent, "ready", env=record.env)
+        if not agent or agent.event != "SessionStart":
+            return
+        with GREETING:
+            if not self.greeted(record, agent):
+                self.journal.type(record, agent, "ready", env=record.env)
 
     def greeted(self, record, agent) -> bool:
         return any(n.data.get("feature") == self.name and n.data.get("session") == agent.title for n in Nudges(record, actor=SYSTEM)._every())
