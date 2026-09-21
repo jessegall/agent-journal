@@ -1,5 +1,6 @@
 import json
 import time
+from pathlib import Path
 
 from resources.base import names
 from resources.types import AgentRow
@@ -7,6 +8,7 @@ from engine.stored import write_json
 
 PERCENT, USES, MINUTES, IDLE, WORKED, START = "percent", "uses", "minutes", "idle", "worked", "start"
 UNITS = (PERCENT, USES, MINUTES, IDLE, WORKED, START)
+HELD: dict[str, dict] = {}
 TRIGGER = names("unit", "on", "every", "at")
 
 
@@ -19,10 +21,13 @@ def _file(record, session: str, name: str):
 
 
 def last(record, session: str, name: str) -> dict:
-    try:
-        return json.loads(_file(record, session, name).read_text())
-    except (OSError, ValueError):
-        return {}
+    f = str(_file(record, session, name))
+    if f not in HELD:
+        try:
+            HELD[f] = json.loads(Path(f).read_text())
+        except (OSError, ValueError):
+            HELD[f] = {}
+    return dict(HELD[f])
 
 
 def due(record, agent, name: str, default: dict) -> bool:
@@ -51,7 +56,11 @@ def due(record, agent, name: str, default: dict) -> bool:
 
 
 def write(record, agent, name: str, **fields) -> None:
-    write_json(_file(record, agent.title, name), {**last(record, agent.title, name), **fields})
+    was = last(record, agent.title, name)
+    now = {**was, **fields}
+    if now != was:
+        HELD[str(_file(record, agent.title, name))] = now
+        write_json(_file(record, agent.title, name), now)
 
 
 def observe(record, agent, name: str, was: dict) -> None:
