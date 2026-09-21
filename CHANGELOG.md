@@ -4,6 +4,16 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.74.0 — Agents, filters and live updates on the board
+
+Plan 10, phase 5, to-dos 679 to 681.
+- **Agents strip:** a strip above the lanes shows the environment's agents. The main session is Main agent. A subagent shows while it is active, holds work, or has a to-do assigned. Each agent shows its status and the to-do it works. Clicking an agent narrows the board to its cards, and clicking again clears it. A small button opens the agent's panel.
+- **Card chips:** a card shows who it is assigned to and who works it, a parked chip, a Reported chip for a subagent's report, and a red ! when a question waits on it.
+- **Filters:** the bar has All to-dos and one button per open plan, a text filter by title or #number, and a Show done switch. The choice is remembered across reloads.
+- **Live updates:** the board refreshes within half a second of a to-do, work, question, plan or agent change, besides its five-second poll.
+
+What to do about it: `journal upgrade`.
+
 ## 2.73.0 — Drag cards on the board
 
 Plan 10, phase 4, to-dos 676 to 678. Cards on the Board page are dragged from lane to lane. While a card is dragged, the lanes it may go to light up as it passes and the others dim, using the same rules the server applies. Dropping into Held asks why. Dropping into Done asks how it landed, which is optional. Dropping a done card back into To do asks why it is reopened, and lifts any old block, since a card dropped in To do is free. A card shows it is moving until the server answers. A refused move says why in the board's bar for five seconds. Every card also has a menu with Move to (the same moves without dragging), Assign to (the agents on the board) and Open.

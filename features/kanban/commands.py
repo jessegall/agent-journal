@@ -1,6 +1,6 @@
 from dataclasses import asdict
 
-from features.kanban.board import build, card_of, sources_of
+from features.kanban.board import build, card_of, main_agent, sources_of
 from features.kanban.shifts import shift
 from features.parts import Command, Context
 
@@ -17,4 +17,4 @@ class ShiftCard(Command):
 
     def run(self, context: Context, todos, n: int, lane: str, why: str = "", how: str = ""):
         shift(sources_of(context.journal), todos, todos.load(int(n)), lane, why, how)
-        return asdict(card_of(sources_of(context.journal), todos.load(int(n))))
+        return asdict(card_of(sources_of(context.journal), todos.load(int(n)), main_agent(context.journal)))
