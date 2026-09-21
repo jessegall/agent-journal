@@ -4,6 +4,7 @@ import {store} from "../state/store.js";
 import {polled} from "../sync/polled.js";
 import {TICK, line, shown} from "./bar.js";
 import {usePoll} from "../poll.js";
+import {api} from "../api/client.js";
 
 usePoll(...polled.bar);
 
@@ -18,6 +19,7 @@ function step() {
     const queue = (store.bar && store.bar.queue) || [];
     const now = Date.now() / 1000;
     const got = shown(queue, state.value, now);
+    if (got.message && got.at !== state.value.at) api.played(got.at).catch(() => {});
     state.value = {at: got.at, since: got.since};
     message.value = got.message;
     elapsed.value = got.message ? Math.max(0, now - got.since) : 0;

@@ -2,7 +2,8 @@
 from features.statusline.group import grouped, ran
 from features.statusline.queue import queue as messages
 from features.statusline.queue import HOLD
-from features.statusline.feature import bar
+from features.statusline.feature import bar, bar_file, played, shown
+from engine.stored import write_json
 
 
 NOW = 1_000_000.0
@@ -111,3 +112,11 @@ def test_a_terminal_answering_a_query_is_not_the_user_typing():
 def test_with_the_header_off_nothing_is_drawn_or_wiped():
     from engine import band
     assert (band.SHOWN, band.release()) == (False, b""), "the terminal is the agent's alone: an exit clears none of its rows"
+
+
+def test_a_played_line_is_not_played_again(tmp_path):
+    write_json(bar_file(tmp_path, "main"), {"queue": [{"at": 1.0, "done": True}, {"at": 2.0, "done": True}, {"at": 3.0, "done": False}]})
+    played(tmp_path, "main", 2.0)
+    assert [one["at"] for one in shown(tmp_path, "main")["queue"]] == [3.0]
+    played(tmp_path, "main", 3.0)
+    assert [one["at"] for one in shown(tmp_path, "main")["queue"]] == [3.0]
