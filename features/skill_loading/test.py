@@ -1,7 +1,8 @@
 
 from controllers.types import Messages
 from engine.queries import start_block
-from features.skill_loading.catalogue import SKILL, always, catalogue, handed, load_now, skills
+from features.skill_loading.catalogue import SKILL, always, catalogue, handed, skills
+from features.skill_loading.required import load_now
 from resources.base import USER
 from tests.conftest import fresh
 from tests.kit import nudges, report
@@ -33,9 +34,13 @@ def test_the_catalogue_reads_skills_from_the_library_and_agent_homes_and_tracks_
     assert (record.skills, handed(record)) == ([], ""), "always off takes it out, and the choice is now the setting"
     always(record, "journal-work-tracking", True)
     assert record.skills == ["journal-work-tracking"], "always on puts it back"
+    from controllers.types import Agents
+    from features.skill_loading.required import outstanding
+    report(record, "working", "PreToolUse", skills=[])
     load_now(record, "journal-work-tracking")
     assert [m.title for m in Messages(record, actor=USER).unread("agent")] == ["Please load the journal-work-tracking skill now"], \
         "load now leaves the agent a message asking for the skill"
+    assert outstanding(record, Agents(record, actor="system").primary()) == ["journal-work-tracking"], "and every tool call waits until it is loaded"
 
 
 def test_no_journal_skill_loaded_in_a_window_is_told_once_privately_per_window():

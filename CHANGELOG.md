@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.64.1 — A changed skill and the Load button hold tool calls at once
+
+Messages 1769 and 1772, to-do 658. A changed skill was already required through the same funnel as a command's skill, but the check ran only every tenth tool use, so a few calls got through first. It now runs on every tool use. The Skills page's Load button only left a message. Now it also marks the skill required for the agent's session, so every tool call waits until the skill is loaded, the same refusal a command's skill gets. The message still wakes an idle agent.
+
+What to do about it: `journal upgrade`.
+
 ## 2.64.0 — AskUserQuestion is asked in the journal
 
 Messages 1499 and 1505, to-do 618, question 56. When the agent calls a question tool, such as Claude Code's AskUserQuestion or Codex's request_user_input, it never opens in the terminal, where it would leave the session waiting. Each question in the call is filed as a journal question, with its options and each option's description. The call is refused with those question numbers, so the agent carries on and hears your answer as an event. You answer in the viewer, as with any journal question. Auto mode's separate refusal of question tools is gone, since this replaces it.
