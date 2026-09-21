@@ -83,17 +83,18 @@ class Record:
                     self._held = 0
                     fcntl.flock(fh, fcntl.LOCK_UN)
 
-    def emit(self, type: str, n: int, action: str, actor: str, **data) -> Event:
+    def emit(self, type: str, n: int, action: str, actor: str, quiet: bool = False, **data) -> Event:
         if action not in ACTIONS or actor not in ACTORS:
             raise ValueError(f"not an event: {action} by {actor}")
         log = self.home / "events.jsonl"
         with self.locked():
-            e = Event(id=self.last_event() + 1, at=time.time(), type=type, n=n, action=action, actor=actor, data=data, pid=os.getpid(), heard=bus.listening())
+            e = Event(id=self.last_event() + 1, at=time.time(), type=type, n=n, action=action, actor=actor, data=data, pid=os.getpid(), heard=quiet or bus.listening())
             with log.open("a") as fh:
                 fh.write(json.dumps(asdict(e)) + "\n")
         if self.memo is not None:
             self.memo.clear()
-        bus.emit(e, self)
+        if not quiet:
+            bus.emit(e, self)
         return e
 
     def events(self, since: int = 0, last: int = 0) -> list[Event]:

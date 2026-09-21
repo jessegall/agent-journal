@@ -129,6 +129,7 @@ class Controller(Stored, Files, Links):
         r = self.load(n)
         r.data.update(self._shaped(data))
         write_text(self.path(r.n), r.dump())
+        self.record.emit(self.type, r.n, "stamped", self.actor, quiet=True, fields=sorted(data))
         return r
 
     def set(self, n: int, key: str, value: str) -> Resource:
@@ -214,10 +215,9 @@ class Controller(Stored, Files, Links):
         with there.record.locked():
             m = (there.numbers() or [0])[-1] + 1
             moved = self.resource(**{**asdict(r), "n": m})
-            write_text(there.path(m), moved.dump())
             if any(self.folder(n).iterdir()):
                 shutil.copytree(self.folder(n), there.folder(m), dirs_exist_ok=True)
-            there.record.emit(self.type, m, "created", self.actor, moved_from=f"{self.record.env}/{n}")
+            there.save(moved, "created", moved_from=f"{self.record.env}/{n}")
         self.delete(n, why=f"moved to {env} as {self.type} {m}")
         return moved
 
