@@ -260,9 +260,7 @@ function poll() {
     again();
 }
 
-    if (fresh.length) await reload();
-    if (ticks % 60 === 0) store.spec = await http.manifest();
-}export async function boot() {
+export async function boot() {
     [store.spec, store.identity] = await Promise.all([http.manifest(), http.identity()]);
     if (!route.value.env) {
         go(store.spec.environment);
