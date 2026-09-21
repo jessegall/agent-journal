@@ -497,44 +497,6 @@ h2 {
     min-width: 96px;
 }
 
-.cadence {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 6px;
-    margin-top: 6px;
-}
-
-.cadence .days {
-    height: 24px;
-}
-
-.marks {
-    width: 96px;
-}
-
-.units {
-    display: inline-flex;
-    gap: 2px;
-    margin-left: 4px;
-}
-
-.unit-pick {
-    padding: 2px 7px;
-    border: 1px solid var(--border-2);
-    border-radius: 6px;
-    background: none;
-    color: var(--text-3);
-    font-size: 11px;
-    cursor: pointer;
-}
-
-.unit-pick.on {
-    border-color: color-mix(in srgb, var(--accent) 55%, transparent);
-    background: color-mix(in srgb, var(--accent) 18%, transparent);
-    color: var(--text);
-}
-
 .days,
 .names {
     height: 30px;
