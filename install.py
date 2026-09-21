@@ -18,6 +18,7 @@ PACKAGE_DIRS = ("commands", "controllers", "engine", "extension", "features", "m
 PACKAGE_FILES = ("VERSION", "channel.py", "claude-status.sh", "hook.sh", "install.py", "journal.py", "serve.py", "skills.py")
 PACKAGE_TREES = (*PACKAGE_DIRS, "web/dist")
 LEFT_BEHIND = (".DS_Store", "test.py")
+RETIRED = ("hook.py",)
 REPOSITORY = "https://github.com/jessegall/agent-journal"
 SRC = "src"
 
@@ -45,6 +46,9 @@ def refresh(source: Path, target: Path) -> tuple[int, int]:
     changed = {rel for rel in wanted if not (target / rel).is_file() or (source / rel).read_bytes() != (target / rel).read_bytes()}
     for rel in sorted(gone):
         (target / rel).unlink()
+    for name in RETIRED:
+        for place in (target, target.parent):
+            (place / name).unlink(missing_ok=True)
     for rel in sorted(changed):
         destination = target / rel
         destination.parent.mkdir(parents=True, exist_ok=True)
