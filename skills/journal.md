@@ -25,7 +25,7 @@ Everything you write reaches the user's chat as a plain message; there is no tag
 
 ## Fact, rule, reminder, or nothing
 
-Would a later reader be WRONG without it? **a fact.** Will you stop DOING it though you know? **a reminder.** One thing to do later? **a to-do.** Binds every environment? **a rule.** Facts and rules carry their reasoning in the brief, and either can carry keywords that whisper it back when you are about to touch what it is about. At each mark of the context window writes are held until you decide: `journal fact create "<claim>"`, `journal rule create "<ruling>"`, or `journal nothing "<why>"`.
+Would a later reader be WRONG without it? **a fact.** Will you stop DOING it though you know? **a reminder.** One thing to do later? **a to-do.** Binds every environment? **a rule.** Facts and rules carry their reasoning in the brief, and each must carry keywords that whisper it back when you are about to touch what it is about. At each mark of the context window writes are held until you decide: `journal fact create "<claim>" --set keywords="<word>,<word>"`, `journal rule create "<ruling>" --set keywords="<word>,<word>"`, or `journal nothing "<why>"`.
 
 ## Messages, questions, comments
 

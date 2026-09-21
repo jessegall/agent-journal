@@ -37,7 +37,7 @@ def test_a_command_that_touches_a_rules_keyword_is_whispered_the_rule_once_per_s
     use("Write", {"file_path": "notes.md", "content": "then npm run build"})
     assert said().startswith(f"fact {pin.n} —") is True, "a fact whose word is in what is being written is whispered"
 
-    Rules(record, actor=USER).create("Write clean code")
+    Rules(record, actor=USER).create("Write clean code", keywords="word")
     use("Bash", {"command": "write clean code"})
     assert said() == "", "a row with no keywords is never whispered"
 
@@ -55,8 +55,8 @@ def test_a_command_that_touches_a_rules_keyword_is_whispered_the_rule_once_per_s
 def test_standing_rules_are_repeated_at_every_tenth_and_a_struck_rule_drops_out():
     record = fresh()
     rules = Rules(record, actor=USER)
-    rules.create("name the model on every dispatch")
-    rules.create("a title never explains with a colon")
+    rules.create("name the model on every dispatch", keywords="word")
+    rules.create("a title never explains with a colon", keywords="word")
     for pct in (4, 9, 10, 15, 19.5, 20, 33):
         report(record, "working", "PostToolUse", context=pct)
     assert nudges(record) == ["2 rules in force, read them"] * 3, "said at 10, 20 and 33: the standing rules by number"
@@ -70,7 +70,7 @@ def test_standing_rules_are_repeated_at_every_tenth_and_a_struck_rule_drops_out(
 def test_inject_writes_and_uninject_restores_both_instruction_files_and_pin_notices_the_rule():
     record = fresh()
     rules = Rules(record, actor=USER)
-    rules.create("name the model on every dispatch")
+    rules.create("name the model on every dispatch", keywords="word")
 
     claude_md = record.root.parent / "CLAUDE.md"
     agents_md = record.root.parent / "AGENTS.md"
@@ -94,7 +94,7 @@ def test_inject_writes_and_uninject_restores_both_instruction_files_and_pin_noti
     assert rules.pin(1).n == notice.n, "pin keeps one standing notice per rule"
 
     empty = fresh()
-    Rules(empty, actor=USER).inject(Rules(empty, actor=USER).create("only rule").n)
+    Rules(empty, actor=USER).inject(Rules(empty, actor=USER).create("only rule", keywords="word").n)
     assert [(empty.root.parent / name).read_text() for name in ("AGENTS.md", "CLAUDE.md")] == \
         ["<!-- journal rules -->\n# Rules\n\n- only rule\n<!-- /journal rules -->\n"] * 2, \
         "no instruction files yet: both get the block"

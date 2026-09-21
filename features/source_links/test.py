@@ -19,7 +19,7 @@ def test_what_is_filed_while_a_message_is_in_hand_is_linked_to_it_until_it_close
 
     Messages(record, actor=AGENT).read(m.n)
     todo = todos.create("the widget work")
-    pin = Facts(record, actor=AGENT).create("the port is 8422")
+    pin = Facts(record, actor=AGENT).create("the port is 8422", keywords="word")
     assert messages.load(m.n).refs == [todo.ref, pin.ref], \
         "a to-do and a pin filed while the message is in hand are linked to it, by the feature"
     assert (loose.n in [int(r.split(":")[1]) for r in messages.load(m.n).refs if r.startswith("todo:")]) is False, \
