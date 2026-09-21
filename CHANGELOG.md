@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.79.1 — Codex runs its commands without asking when prompts are skipped
+
+Message 1999, to-do 730. Codex stopped on "Would you like to run the following command?" for every command, because the Skip permission prompts switch had no Codex flag behind it. With the switch on, `journal codex` now starts Codex with `--dangerously-bypass-approvals-and-sandbox`, the same way Claude gets `--dangerously-skip-permissions`.
+
+What to do about it: `journal upgrade`, turn on Skip permission prompts in Settings, and start Codex again.
+
 ## 2.79.0 — A clean slate at launch, on a full-screen start
 
 Messages 1990 and 1993, to-dos 698 and 699. `journal claude` and `journal codex` now clear the terminal and open with a header saying what is about to start and where. After the environment, a second question offers a clean slate: every skill that is not a journal skill is moved out of the agent's skill folders, in the project and in your home folder, and each hook file is copied before the hooks that are not the journal's are taken out. Everything is kept under `.journal/runtime/set-aside` and put back when the agent exits, when `journal stop` runs, or at the next launch if the last one ended without putting it back. Enter repeats the last answer. The question is the new Clean slate feature, switchable in Settings.

@@ -319,6 +319,7 @@ class Codex(Provider):
 class CodexDriver(Driver):
     name = "codex"
     AUTO_ARGS = ("--approve-for-me",)
+    SKIP_ARGS = ("--dangerously-bypass-approvals-and-sandbox",)
     APPROVAL_FLAGS = frozenset({"-a", "--ask-for-approval", "--approve-for-me", "--full-auto", "--dangerously-bypass-approvals-and-sandbox"})
 
     TRUSTS_HOOKS = "--dangerously-bypass-hook-trust"
