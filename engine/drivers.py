@@ -12,9 +12,8 @@ from engine.wording import counted
 
 ENTER_AFTER = 0.3
 POST_WAIT = 5.0
-RECHECK, RESUBMITS, SAMPLE = 0.6, 2, 24
+RECHECK, RESUBMITS = 1.0, 3
 DRAFT_LINES = 8
-INPUT = re.compile("[❯›]")
 CHOICE = re.compile(rb"1\..+?2\.", re.S)
 ANSI = re.compile(rb"\x1b\[[0-?]*[ -/]*[@-~]|\x1b\][^\x07\x1b]*(?:\x07|\x1b\\)|\x1b[@-Z\\-_]|[\x00-\x08\x0b-\x1f\x7f]")
 
@@ -141,7 +140,9 @@ class Driver(ABC):
             return False
 
     def _type_in(self, line: str) -> bool:
+        started = time.time()
         self.clear_input()
+        time.sleep(ENTER_AFTER)
         if not self._wrote(line.encode()):
             return False
         time.sleep(ENTER_AFTER)
@@ -149,10 +150,14 @@ class Driver(ABC):
             return False
         for _ in range(RESUBMITS):
             time.sleep(RECHECK)
-            if not self._unsent(line):
+            if self._submitted(started):
                 return True
             self._wrote(b"\r")
-        return not self._unsent(line)
+        return self._submitted(started)
+
+    def _submitted(self, since: float) -> bool:
+        row = self._report()
+        return bool(row) and float(row.at or 0) >= since
 
     def _wrote(self, raw: bytes) -> bool:
         if self.fd < 0:
@@ -164,10 +169,6 @@ class Driver(ABC):
         except OSError:
             self.fd = -1
             return False
-
-    def _unsent(self, line: str) -> bool:
-        box = INPUT.split(self.last_printed())
-        return len(box) > 1 and bool(line) and line[:SAMPLE] in box[-1]
 
     def stop_turn(self) -> None:
         self._wrote(self.STOP)

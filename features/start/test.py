@@ -112,3 +112,17 @@ def test_a_line_goes_out_at_once_and_only_one_inside_the_window_waits():
     driver.sent_at -= 5
     driver.pump()
     assert sent == ["first", "second"], "the queue goes out when the window ends"
+
+
+def test_enter_is_pressed_again_until_the_agent_takes_the_line(monkeypatch):
+    import time
+    from types import SimpleNamespace
+    import engine.drivers as drivers
+    from providers import DRIVERS
+    monkeypatch.setattr(drivers, "ENTER_AFTER", 0)
+    monkeypatch.setattr(drivers, "RECHECK", 0)
+    driver = DRIVERS["claude"](fresh(), "claude-99")
+    written = []
+    driver._wrote = lambda raw: written.append(raw) or True
+    driver._report = lambda: SimpleNamespace(at=time.time()) if written.count(b"\r") >= 2 else None
+    assert (driver._type_in("hello"), written.count(b"\r")) == (True, 2), "the first Enter was swallowed: pressed again, then the hook says it was taken"
