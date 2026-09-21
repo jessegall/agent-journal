@@ -85,6 +85,8 @@ class Record:
     def emit(self, type: str, n: int, action: str, actor: str, quiet: bool = False, **data) -> Event:
         if action not in ACTIONS or actor not in ACTORS:
             raise ValueError(f"not an event: {action} by {actor}")
+        if bus.cause() and "cause" not in data:
+            data = {**data, "cause": bus.cause()}
         def release() -> Event:
             with self.locked():
                 e = Event(id=self.last_event() + 1, at=time.time(), type=type, n=n, action=action, actor=actor, data=data, pid=os.getpid(), heard=quiet or bus.listening())

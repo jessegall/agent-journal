@@ -421,6 +421,7 @@ class Nudge(Shape, Resource):
     loading = LAZY
     type = "nudge"
     notify_actions = ("created",)
+    addressed_to_agent = True
     data_fields: ClassVar[list[Field]] = [
         Field(name="private"),
         Field(name="session"),

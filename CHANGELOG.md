@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.61.0 — The agent isn't told what its own acts set off
+
+Message 1481, to-do 614. The agent was already not told of its own edits, but it was told of what they set off. For example, "plan 9 updated" came after it closed a row, when the plans feature moved the phase on. Every event now carries its cause: the actor of the event whose listeners wrote it, passed down through the whole chain. The engine no longer announces an event to the agent when the agent caused it. Nudges are the exception, since features write them to speak to the agent.
+
+What to do about it: `journal upgrade`.
+
 ## 2.60.1 — A one-line revision strip
 
 Message 1663, to-do 640. While a design has one revision, its strip is a single line: "Open for edits, kept by itself in N min" on the left and Keep this revision on the right. The change list, who wrote it and when are left out, since the document itself shows its content.
