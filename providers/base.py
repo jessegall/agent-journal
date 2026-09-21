@@ -169,7 +169,8 @@ class Provider(ABC):
                 "provider": self.name, "uses": int(row.uses or 0) + (hook.event == "PreToolUse"), "transcript": str(hook.transcript or row.transcript or ""),
                 "inbox": self.inbox(hook) or row.inbox or "", "model": self.model(hook) or row.model or "",
                 "effort": self.effort(Path(hook.cwd or root.parent), hook.transcript), "started": row.started or time.time(),
-                "context": row.context or 0 if context is None else context, "asking": self.asking(hook)}
+                "context": row.context or 0 if context is None else context, "asking": self.asking(hook),
+                "said": hook.said or row.said or ""}
 
     def asking(self, hook) -> dict:
         return {"tool": hook.tool.name, "said": hook.tool.said[:300], "at": time.time()} if hook.event == PERMISSION else {}

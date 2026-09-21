@@ -1,3 +1,4 @@
+import hashlib
 import io
 import re
 import threading
@@ -8,7 +9,7 @@ from features import trigger
 from engine.stored import read_json, write_json
 from features.base import Behaviour, Feature, event, formats, interceptor, Line
 from resources.base import AGENT, SYSTEM
-from engine.transcript import last_said, turns
+from engine.transcript import Turn, last_said, turns
 
 TAGS = ("discovery", "correction", "blocked", "info", "reply")
 RECENT_TURNS, RECENT_SECONDS = 6, 1800.0
@@ -86,21 +87,22 @@ class Tags(Feature):
 
     def already(self, record, agent, turn) -> bool:
         f = record.root / "runtime" / f"tagged-{agent.title}.json"
-        key = f"{agent.transcript}:{turn.line}"
+        keys = (f"{agent.transcript}:{turn.line}", hashlib.sha1(turn.text.strip().encode()).hexdigest())
         with MARKING:
             done = read_json(f, {})
-            if key in done:
+            if any(key in done for key in keys):
                 return True
-            write_json(f, {**done, key: time.time()})
+            write_json(f, {**done, **{key: time.time() for key in keys}})
         return False
 
     @event("agent.updated")
     @event("agent.said")
     def expand(self, event, record) -> None:
         agent = self.agent(event, record)
-        if not agent or not agent.transcript:
+        if not agent:
             return
-        for turn in turns(record, agent)[-RECENT_TURNS:]:
+        spoken = [Turn(line=-1, who="agent", text=agent.said, at=time.time())] if agent.said and agent.event == "Stop" else []
+        for turn in [*(turns(record, agent)[-RECENT_TURNS:] if agent.transcript else []), *spoken]:
             if time.time() - turn.at < RECENT_SECONDS and CARRIED.search(turn.text) and not self.already(record, agent, turn):
                 self.carried(record, agent, turn)
 
