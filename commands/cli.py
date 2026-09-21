@@ -27,7 +27,8 @@ def context(args: dict) -> dict:
     features.load(root)
     sessions = Sessions(root)
     session = args.pop("session")
-    env = args.pop("bound") or (sessions.environment(session) if session else "") or runtime.env(root)
+    fallback = args.pop("fallback")
+    env = args.pop("bound") or (sessions.environment(session) if session else "") or fallback or runtime.env(root)
     session = session or sessions.holder(env)
     return {"record": Record(root, env, memo=True), "session": session, "actor": args.pop("as_actor"), "agent": args.pop("agent"),
             "force": "", "sessions": sessions}
@@ -52,7 +53,7 @@ def invoke(fn, args: dict, extra: dict):
     return fn(*positional, **args, **extra)
 
 
-TAKES = {"--root", "--env", "--as", "--session", "--agent", "--force"}
+TAKES = {"--root", "--env", "--default-env", "--as", "--session", "--agent", "--force"}
 
 
 def first_word(argv: list[str]) -> str:
