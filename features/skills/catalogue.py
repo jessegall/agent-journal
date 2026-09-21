@@ -71,7 +71,8 @@ def always(record: Record, name: str, on: bool) -> list[str]:
     from features import FEATURES
     record.skills = sorted(set(chosen(record)) - {name} | ({name} if on else set()))
     if "start" in FEATURES:
-        FEATURES["start"].rebuild(record)
+        from features.start.block import rebuild
+        rebuild(record)
     return record.skills
 
 

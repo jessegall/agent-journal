@@ -6,7 +6,7 @@ from providers import PROVIDERS
 from resources.base import AGENT, USER
 from tests.conftest import fresh
 from controllers.types import Works
-from features.start.feature import COMPACTED
+from features.start.block import COMPACTED
 from engine.hooks import handle, start_file
 from resources.base import AGENT
 

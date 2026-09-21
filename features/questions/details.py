@@ -1,4 +1,4 @@
-from features import trigger
+from features.trigger import IDLE
 from features.base import Behaviour, FeatureDetails, Line
 from features.settings import Setting
 
@@ -43,7 +43,7 @@ class QuestionsDetails(FeatureDetails):
             name="asking",
             title="Ask through a question, not in prose",
             abstract="Choices offered in a message hold the writes until they are asked as a question",
-            trigger={"on": trigger.IDLE},
+            trigger={"on": IDLE},
         ),
     ]
 

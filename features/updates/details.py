@@ -1,4 +1,4 @@
-from features import trigger
+from features.trigger import MINUTES
 from features.base import Behaviour, FeatureDetails, Line
 
 
@@ -18,7 +18,7 @@ class UpdatesDetails(FeatureDetails):
         run journal upgrade. A journal being developed never installs itself.
     """
 
-    trigger = {"every": 30, "unit": trigger.MINUTES}
+    trigger = {"every": 30, "unit": MINUTES}
 
     behaviours = [
         Behaviour(

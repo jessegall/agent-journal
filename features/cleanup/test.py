@@ -1,7 +1,6 @@
 import time
 
 
-from features import FEATURES
 from controllers.types import Facts, Questions, Reminders, Rules, Todos
 from features.cleanup.audit import evidence
 from features.context.reread import owed as read_owed, standing

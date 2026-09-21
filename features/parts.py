@@ -57,6 +57,12 @@ class Context:
     def on(self, behaviour: str = "") -> bool:
         return self.feature.on(self.record, behaviour)
 
+    def speaking_to(self, row) -> "Context":
+        return Context.of(self.feature, self.record, row, self.provider, self.hook)
+
+    def due(self, behaviour: str = "") -> bool:
+        return bool(self.agent) and self.feature.due(self.record, self.agent.row, behaviour)
+
     def hold(self, line: str, behaviour: str = "", **values) -> None:
         self.feature.hold(self.record, line, behaviour, self.agent.row if self.agent else None, **values)
 

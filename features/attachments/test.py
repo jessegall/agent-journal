@@ -5,7 +5,7 @@ import sys
 from pathlib import Path
 from types import SimpleNamespace
 from controllers.types import Messages
-from features.attachments import feature
+from features.attachments import handlers as feature
 from resources.base import USER
 from tests.conftest import fresh
 from controllers.types import Agents, Messages, Nudges

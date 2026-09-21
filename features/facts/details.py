@@ -1,4 +1,4 @@
-from features import trigger
+from features.trigger import PERCENT
 from features.base import FeatureDetails
 from features.recital import BEHAVIOURS, LINES
 
@@ -24,7 +24,7 @@ class FactsDetails(FeatureDetails):
 
     runs_for_subagents = True
 
-    trigger = {"every": 10, "unit": trigger.PERCENT}
+    trigger = {"every": 10, "unit": PERCENT}
 
     lines = LINES
 
