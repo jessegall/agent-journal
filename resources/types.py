@@ -322,6 +322,18 @@ class Ask(Shape, Resource):
     notify = ()
 
 
+class FeatureRow(Shape, Resource):
+    type = "feature"
+    icon = "dot"
+    nav = False
+    enabled = Field(FLAG, True)
+    missing = Field(FLAG, False)
+    title_ = "Feature"
+    abstract_ = "A capability the engine loads, with its switch"
+    help_ = "One row per feature the engine finds, carrying whether it is on. A row whose file is gone stays, switched off."
+    notify = ()
+
+
 class Nudge(Shape, Resource):
     type = "nudge"
     notify_actions = ("created",)
@@ -344,5 +356,5 @@ def register(*classes) -> None:
     TYPES.update({c.type: c for c in classes})
 
 
-TYPES = {c.type: c for c in (Message, Todo, Work, Doc, Report, Pin, Rule, Reminder, Question, Suggestion, Comment, AgentRow, Notification, Notice, Reaction, Tool, Connection, Plugin, Environment, Ask, Nudge)}
-PRIORITY = ("message", "question", "suggestion", "comment", "plan", "todo", "report", "doc", "pin", "rule", "reminder", "notice", "reaction", "tool", "connection", "plugin", "environment", "work", "agent", "notification", "browser", "nudge")
+TYPES = {c.type: c for c in (Message, Todo, Work, Doc, Report, Pin, Rule, Reminder, Question, Suggestion, Comment, AgentRow, Notification, Notice, Reaction, Tool, Connection, Plugin, Environment, Ask, Nudge, FeatureRow)}
+PRIORITY = ("message", "question", "suggestion", "comment", "plan", "todo", "report", "doc", "pin", "rule", "reminder", "notice", "reaction", "tool", "connection", "plugin", "environment", "work", "agent", "notification", "browser", "nudge", "feature")

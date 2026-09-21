@@ -22,7 +22,7 @@ from surfaces.color import identity, set_color
 from surfaces.updates import newer
 from surfaces.control import force as force_session, options as control_options, request as control_session
 from features.skills.catalogue import SKILL, always, catalogue, load_now, skills
-from controllers.types import Agents, Asks, CONTROLLERS, Environments
+from controllers.types import Agents, Asks, CONTROLLERS, Environments, Features
 from engine import bus, viewer
 from engine.manifest import manifest
 from engine.hooks import answer
@@ -267,6 +267,12 @@ def get_settings(req: Request) -> Reply:
 def post_settings(req: Request) -> Reply:
     record = req.record()
     for key, value in req.body.items():
+        if key == Record.features and isinstance(value, dict):
+            rows = Features(record, actor=USER)
+            for name, on in value.items():
+                rows.switch(name, on) if "." not in name else None
+            record.set_setting(key, {name: on for name, on in value.items() if "." in name})
+            continue
         record.set_setting(key, value)
     return Reply(200, settings(record))
 

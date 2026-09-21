@@ -4,7 +4,7 @@ from functools import wraps
 from typing import ClassVar
 
 from controllers.base import COMMANDS, HANDLERS
-from controllers.types import Agents, Nudges
+from controllers.types import Agents, Features, Nudges
 from engine import bus
 from features import trigger
 from engine.hooks import POLICIES, gate_file
@@ -120,16 +120,19 @@ class Feature(ABC):
 
     @classmethod
     def on_for(cls, record) -> bool:
-        return True if cls.fixed else record.features.get(cls.name, cls.default)
+        if cls.fixed:
+            return True
+        row = Features(record, actor=SYSTEM).named(cls.name)
+        return bool(row.enabled) if row else record.features.get(cls.name, cls.default)
 
     def enabled(self, record) -> bool:
         return self.on_for(record)
 
     def enable(self, record) -> None:
-        record.features = {**record.features, self.name: True}
+        Features(record, actor=SYSTEM).switch(self.name, True)
 
     def disable(self, record) -> None:
-        record.features = {**record.features, self.name: False}
+        Features(record, actor=SYSTEM).switch(self.name, False)
 
     def agent(self, event, record):
         return Agents(record, actor=SYSTEM).load(event.n)

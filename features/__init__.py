@@ -25,7 +25,26 @@ def load(root: Path | None = None) -> list[str]:
         if name not in FEATURES:
             FEATURES[name] = cls()
             FEATURES[name].register()
+    if root:
+        seat(root)
     return sorted(FEATURES)
+
+
+def seat(root: Path) -> None:
+    from controllers.types import Features
+    from engine.record import Record
+    from resources.base import SYSTEM
+    for home in sorted(p for p in (Path(root) / "environments").glob("*") if p.is_dir()):
+        rows = Features(Record(root, home.name), actor=SYSTEM)
+        known = {r.title: r for r in rows.all()}
+        for name, feature in FEATURES.items():
+            if name not in known:
+                rows.create(name, enabled=feature.default)
+        for name, row in known.items():
+            if name not in FEATURES and not row.missing:
+                rows.update(row.n, enabled=False, missing=True)
+            elif name in FEATURES and row.missing:
+                rows.update(row.n, missing=False)
 
 
 def unload() -> None:
