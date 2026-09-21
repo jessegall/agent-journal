@@ -5,7 +5,7 @@ from features.plans.resource import PHASE
 
 
 def running(record) -> list:
-    return [p for p in Plans(record, actor=SYSTEM).all() if p.status in (ACTIVE, WAITING)]
+    return [p for p in Plans(record, actor=SYSTEM)._every() if p.status in (ACTIVE, WAITING)]
 
 
 def current_phase(plan) -> dict | None:
@@ -15,7 +15,7 @@ def current_phase(plan) -> dict | None:
 
 
 def held(record, todo) -> bool:
-    plans = Plans(record, actor=SYSTEM).all()
+    plans = Plans(record, actor=SYSTEM)._every()
     for plan in plans:
         if todo.ref not in plan.refs:
             continue

@@ -23,7 +23,7 @@ class Attachments(Feature):
 
     def missing(self, record) -> list[tuple[str, object, str]]:
         return [(type_, row, name) for type_, controller in CONTROLLERS.items()
-                for row in controller(record, actor=SYSTEM).all() for name, tags in row.files.items()
+                for row in controller(record, actor=SYSTEM)._every() for name, tags in row.files.items()
                 if (not tags or str(tags).startswith("video; ")) and (mimetypes.guess_type(name)[0] or "").startswith(("image/", "video/"))]
 
     def tell(self, record, agent, type_: str, row, name: str) -> None:
@@ -39,7 +39,7 @@ class Attachments(Feature):
         row = CONTROLLERS[event.type](record, actor=SYSTEM).load(event.n)
         if name not in row.files or row.files.get(name):
             return
-        for agent in Agents(record, actor=SYSTEM).all():
+        for agent in Agents(record, actor=SYSTEM)._every():
             if agent.status and agent.status != "stopped":
                 self.tell(record, agent, event.type, row, name)
 

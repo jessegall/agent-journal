@@ -35,7 +35,8 @@ def test_cli():
     assert journal_("todo", "all")[1] == "   1  a row", "all lists it"
     assert journal_("todo", "complete", "1")[0] == 2, "done is refused with a wrong word"
     assert journal_("todo", "done", "1", "--how", "shipped")[0] == 0, "done with a how"
-    assert journal_("todo", "all")[1] == "   1  a row  [done]", "a completed row is marked in list output"
+    assert journal_("todo", "all")[1] == "", "a completed row is gone from the list"
+    assert journal_("todo", "all", "--completed")[1] == "   1  a row  [done]", "asked for, it comes back marked"
     assert journal_("todo", "start", "1") == (1, "! todo 1 is already done"), "starting a completed row is refused"
     assert journal_("work", "all")[1] == "", "the refused start creates no work"
 

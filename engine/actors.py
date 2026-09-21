@@ -126,7 +126,7 @@ class Agent(Actor):
         return self.active()
 
     def active(self) -> str:
-        return WORKING if any(not row.completed for row in Works(self.record, actor=SYSTEM).all()) else BUSY
+        return WORKING if any(not row.completed for row in Works(self.record, actor=SYSTEM)._every()) else BUSY
 
     def mark(self, status: str, event: str, **more) -> None:
         agents = Agents(self.record, actor=SYSTEM)

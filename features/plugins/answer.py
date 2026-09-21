@@ -23,7 +23,7 @@ def held(root: Path, env: str, session: str, plugin: str, why: str) -> None:
 
 def nudged(record, plugin: str, session: str, text: str, private: bool) -> None:
     rows = Agents(record, actor=SYSTEM)
-    row = next((r for r in rows.all() if r.title == session), None) if session else rows.primary()
+    row = next((r for r in rows._every() if r.title == session), None) if session else rows.primary()
     if not row:
         return
     Nudges(record, actor=PLUGIN).create(titled(text), brief=text, session=row.title, private=private, plugin=plugin)

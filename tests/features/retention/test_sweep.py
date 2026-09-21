@@ -51,11 +51,11 @@ def test_seen_notifications_past_their_keep_days_go_unseen_ones_stay():
     seen_new = notes.create("told today")
     for n in (seen_old.n, seen_new.n):
         Notifications(record, actor=USER).read(n)
-    age(notes, seen_old.n, created=time.time() - 5 * 86400)
-    age(notes, unseen_old.n, created=time.time() - 5 * 86400)
+    age(notes, seen_old.n, created=time.time() - 2 * 86400)
+    age(notes, unseen_old.n, created=time.time() - 2 * 86400)
     report(record, "idle", "Stop")
-    assert sorted(r.n for r in notes.all(deleted=True)) == [unseen_old.n, seen_new.n], \
-        "a seen notification past 3 days is removed; unseen and recent ones stay"
+    assert sorted(r.n for r in notes.all(deleted=True, completed=True)) == [unseen_old.n, seen_new.n], \
+        "a seen notification past a day is removed entirely; unseen and recent ones stay"
 
 
 def test_keep_zero_leaves_reports_listed():

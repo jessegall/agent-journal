@@ -31,7 +31,7 @@ def appoint(root: Path, env: str, session: str) -> dict:
     sessions.write(session, environment=env, before=before if before != env else sessions.read(session).get("before", ""), since=time.time())
     if before in names and before != env:
         previous = Agents(Record(root, before), actor=SYSTEM)
-        row = next((agent for agent in previous.all() if agent.title == session), None)
+        row = next((agent for agent in previous._every() if agent.title == session), None)
         if row:
             previous.update(row.n, status=STOPPED, at=time.time())
     report = seat.get("report") or {}

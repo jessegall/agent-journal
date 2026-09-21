@@ -32,16 +32,16 @@ def test_what_it_left_behind_is_read_from_its_log_and_told_once(tmp_path):
     watch.log_file(root).parent.mkdir(parents=True, exist_ok=True)
     watch.log_file(root).write_text("Traceback (most recent call last):\nImportError: cannot import name 'MOST_STEPS'\n")
     assert "ImportError" in watch.why(root), "its last words are read back"
-    assert (watch.told(root, "main", watch.why(root)), [n.title for n in notices.all()]) == (True, [watch.TITLE]), \
+    assert (watch.told(root, "main", watch.why(root)), [n.title for n in notices.all(completed=True)]) == (True, [watch.TITLE]), \
         "the user is told once, with what it said"
-    assert (watch.told(root, "main", watch.why(root)), len(notices.all())) == (False, 1), \
+    assert (watch.told(root, "main", watch.why(root)), len(notices.all(completed=True))) == (False, 1), \
         "and not told again while it is still broken"
     assert "ImportError" in notices.load(1).brief, "the notice carries the error and asks for a fix"
 
     watch.cleared(root, "main")
     assert (bool(notices.load(1).completed), notices.load(1).outcome) == (True, "the engine is running again"), \
         "the notice is closed with why"
-    assert (watch.told(root, "main", "gone again"), len(notices.all())) == (True, 2), "a fresh break tells the user again"
+    assert (watch.told(root, "main", "gone again"), len(notices.all(completed=True))) == (True, 2), "a fresh break tells the user again"
 
 
 def test_an_error_mid_flight_never_stops_the_engine_and_the_agent_hears_it(tmp_path):
@@ -51,15 +51,15 @@ def test_an_error_mid_flight_never_stops_the_engine_and_the_agent_hears_it(tmp_p
     spoke = Driver()
 
     watch.broke(record, "Traceback\nTypeError: bad", spoke)
-    told = [n for n in notices.all() if n.title == watch.FAULT]
+    told = [n for n in notices.all(completed=True) if n.title == watch.FAULT]
     assert (len(told), "TypeError" in told[0].brief, "TypeError" in spoke.said[0]) == (1, True, True), \
         "an error while it runs raises its own notice and is typed to the agent"
     watch.broke(record, "Traceback\nTypeError: bad", spoke)
-    assert (len([n for n in notices.all() if n.title == watch.FAULT]), len(spoke.said)) == (1, 1), \
+    assert (len([n for n in notices.all(completed=True) if n.title == watch.FAULT]), len(spoke.said)) == (1, 1), \
         "the same trouble is not said twice"
     watch.broke(record, "Traceback\nValueError: something else", spoke)
-    assert (len([n for n in notices.all() if n.title == watch.FAULT]), len(spoke.said), "ValueError" in spoke.said[-1]) == (2, 2, True), \
+    assert (len([n for n in notices.all(completed=True) if n.title == watch.FAULT]), len(spoke.said), "ValueError" in spoke.said[-1]) == (2, 2, True), \
         "a different error is its own notice, and is said too"
     watch.steady(record)
-    assert ([n.outcome for n in notices.all() if n.title == watch.FAULT], watch.broke(record, "Traceback\nTypeError: bad", spoke) or len(spoke.said)) == \
+    assert ([n.outcome for n in notices.all(completed=True) if n.title == watch.FAULT], watch.broke(record, "Traceback\nTypeError: bad", spoke) or len(spoke.said)) == \
         ([watch.STEADY, watch.STEADY], 3), "a stretch of clean ticks closes every fault it left behind"

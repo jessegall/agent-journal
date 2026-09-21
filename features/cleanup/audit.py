@@ -43,7 +43,7 @@ def evidence(record) -> list[dict]:
     for claims in CLAIMS:
         controller = claims(record, actor=SYSTEM)
         type_, close = controller.type, controller.named("complete")
-        for r in controller.all():
+        for r in controller._every():
             if r.completed:
                 continue
             text = f"{r.title}\n{r.brief}"
@@ -53,10 +53,10 @@ def evidence(record) -> list[dict]:
             for what in unknown_verbs(text, words):
                 found.append({"ref": r.ref, "title": r.title, "evidence": f"names {what}, which the CLI does not answer to", "retire": retire})
     questions = Questions(record, actor=SYSTEM)
-    for t in Todos(record, actor=SYSTEM).all():
+    for t in Todos(record, actor=SYSTEM)._every():
         if t.completed:
             continue
-        waiting = [q for q in questions.all() if not q.completed and t.ref in q.refs]
+        waiting = [q for q in questions._every() if not q.completed and t.ref in q.refs]
         if waiting and time.time() - min(q.created for q in waiting) > WAITING_DAYS * 86400:
             found.append({"ref": t.ref, "title": t.title, "evidence": f"waiting on the user for over {WAITING_DAYS} days (question {waiting[0].n})", "retire": f"journal todo {t.n} done \"<why>\""})
     return found

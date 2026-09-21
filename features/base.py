@@ -142,7 +142,7 @@ class Feature(ABC):
         return agent if self.due(record, agent) else None
 
     def standing(self, record, controller: type) -> list:
-        return [r for r in controller(record, actor=SYSTEM).all() if not r.completed]
+        return [r for r in controller(record, actor=SYSTEM)._every() if not r.completed]
 
     def keyed(self, key: str = "") -> str:
         return f"{self.name}.{key}" if key else self.name
@@ -166,7 +166,7 @@ class Feature(ABC):
         return self.runs_for_subagents or not agent.subagent
 
     def hold(self, record, why: str, key: str = "") -> None:
-        for agent in Agents(record, actor=SYSTEM).all():
+        for agent in Agents(record, actor=SYSTEM)._every():
             if not self.mine(agent):
                 continue
             f = gate_file(record.root, record.env, agent.title)

@@ -31,7 +31,7 @@ class Plugins(Feature):
     @formats
     def plugin_rules(self, text: str, record) -> str:
         said = text
-        for row in Rows(record, actor=SYSTEM).all() if record else []:
+        for row in Rows(record, actor=SYSTEM)._every() if record else []:
             if row.completed or not row.enabled:
                 continue
             for rule in (row.manifest or {}).get("chat") or []:
@@ -46,7 +46,7 @@ class Plugins(Feature):
     def guard(self, provider, record, hook, session) -> str:
         writes = provider.writes(hook)
         left = self.ALTOGETHER
-        for row in Rows(record, actor=SYSTEM).all():
+        for row in Rows(record, actor=SYSTEM)._every():
             asking = (row.manifest or {}).get("refuse")
             if not row.enabled or row.completed or not asking or left <= 0:
                 continue
@@ -77,7 +77,7 @@ class Plugins(Feature):
         where, manifest, commit, linked = staged(root, source, ref, VERSION)
         name, kept, held = manifest["name"], False, None
         try:
-            taken = next((r for r in plugins.all() if r.manifest and r.manifest.get("name") == name and not r.completed), None)
+            taken = next((r for r in plugins._every() if r.manifest and r.manifest.get("name") == name and not r.completed), None)
             if taken:
                 raise Refused(f"a plugin named {name} is installed from {taken.source}: remove it first")
             if not yes:
@@ -154,7 +154,7 @@ class Plugins(Feature):
     def removed(self, event, record) -> None:
         rows = Rows(record, actor=SYSTEM)
         name = self.called(rows.load(event.n))
-        still = any(r.n != event.n and not r.completed and self.called(r) == name for r in rows.all())
+        still = any(r.n != event.n and not r.completed and self.called(r) == name for r in rows._every())
         if name and not still:
             self.clear(folder(record.root, name))
 

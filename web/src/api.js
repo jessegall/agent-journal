@@ -38,8 +38,14 @@ export const agentControls = (provider, model = "") =>
 export const controlAgent = (env, session, action, value) =>
     api("POST", `/${env}/agent/${encodeURIComponent(session)}/control`, {action, value});
 export const forceAgent = (env, session) => api("POST", `/${env}/agent/${encodeURIComponent(session)}/force`);
-export const all = (env, type, base = "") => api("GET", `/${env}/${type}`, undefined, base);
-export const recent = (env, type, last) => api("GET", `/${env}/${type}?last=${last}`);
+export function list(env, type, {last, completed = false, before = 0, base = ""} = {}) {
+    const query = new URLSearchParams();
+    if (last !== undefined) query.set("last", last);
+    if (completed) query.set("completed", "1");
+    if (before) query.set("before", before);
+    return api("GET", `/${env}/${type}${query.toString() ? `?${query}` : ""}`, undefined, base);
+}
+export const all = (env, type, base = "") => list(env, type, {completed: true, base}).then((got) => got.rows);
 export const show = (env, type, n) => api("GET", `/${env}/${type}/${n}`);
 export const create = (env, type, body, base = "") => api("POST", `/${env}/${type}`, body, base);
 export async function upload(env, type, n, file, base = "") {

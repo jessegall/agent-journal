@@ -22,6 +22,7 @@ from surfaces.color import identity, set_color
 from surfaces.updates import newer
 from surfaces.control import force as force_session, options as control_options, request as control_session
 from features.skills.catalogue import SKILL, always, catalogue, load_now, skills
+from controllers.base import LAST
 from controllers.types import Agents, Asks, CONTROLLERS, Environments, Features
 from engine import bus, viewer
 from engine.manifest import manifest
@@ -33,6 +34,7 @@ from features.format import formatted
 from resources.base import shown as given, OPENED, USER, Refused, titled
 from resources.types import Ask
 from engine.stored import write_json
+from features.budget.feature import watched
 
 WEB = Path(__file__).resolve().parents[1] / "web" / "dist"
 SAID = ("title", "abstract", "brief", "outcome")
@@ -122,7 +124,8 @@ def dispatch(method: str, path: str, root: Path, query: dict, body: dict) -> Rep
         return static(path) if method == "GET" else Reply(404, {"error": "no such route"})
     r, params = found
     try:
-        return r.handler(Request(root, params, query, body))
+        with watched(root, params.get("env") or "main", "hook" if "hook" in path else "request", f"{method} {path}"):
+            return r.handler(Request(root, params, query, body))
     except Missing as e:
         return Reply(404, {"error": str(e)})
     except Refused as e:
@@ -189,7 +192,7 @@ def get_manifest(req: Request) -> Reply:
 @route("GET", "/api/identity")
 def get_identity(req: Request) -> Reply:
     m = manifest(req.root)
-    names = [e.title for e in Environments(Record(req.root, m["environment"]), actor=USER).all()]
+    names = [e.title for e in Environments(Record(req.root, m["environment"]), actor=USER)._every()]
     return Reply(200, {**identity(req.root), "root": str(req.root), "version": m["version"], "environments": names})
 
 
@@ -345,7 +348,7 @@ def get_changes(req: Request) -> Reply:
 @route("GET", "/api/{env}/bar")
 def get_bar(req: Request) -> Reply:
     from features.statusline.feature import bar
-    rows = [r for r in Agents(req.record(), actor=USER).all() if not r.parent]
+    rows = [r for r in Agents(req.record(), actor=USER)._every() if not r.parent]
     newest = max(rows, key=lambda r: float(r.at or 0)) if rows else None
     return Reply(200, bar(newest, time.time()) if newest else {"queue": []})
 
@@ -432,7 +435,7 @@ def get_files(req: Request) -> Reply:
     out = []
     for type_ in CONTROLLERS:
         c = CONTROLLERS[type_](record, actor=USER)
-        for r in c.all():
+        for r in c._every():
             for name in r.files:
                 f = c.folder(r.n) / name
                 if f.is_file():
@@ -621,12 +624,12 @@ def get_stream(req: Request) -> Reply:
 @route("GET", "/api/{env}/{type}")
 def get_all(req: Request) -> Reply:
     controller = req.controller()
-    last = int(req.query.get("last") or 0)
-    if not last:
-        return Reply(200, [shaped(r, req.record()) for r in controller.all()])
-    rows = [row for row in controller.summaries() if not row["deleted"]]
-    older = [row for row in rows[:-last] if not row["completed"]][-last:]
-    kept = older + rows[-last:]
+    last = int(req.query["last"]) if "last" in req.query else LAST
+    completed = req.query.get("completed") in ("1", "true")
+    before = int(req.query.get("before") or 0)
+    rows = [row for row in controller.summaries() if not row["deleted"] and (completed or not row["completed"])
+            and (not before or row["n"] < before)]
+    kept = rows[-last:] if last else rows
     return Reply(200, {"rows": [shaped(controller.load(row["n"]), req.record()) for row in kept], "more": len(rows) > len(kept)})
 
 

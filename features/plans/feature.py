@@ -22,7 +22,7 @@ class PlansFeature(Feature):
         if not switched(record, "work.auto"):
             return
         plans = Plans(record, actor=SYSTEM)
-        for plan in plans.all():
+        for plan in plans._every():
             if plan.status == WAITING:
                 plans.resume(plan.n)
 

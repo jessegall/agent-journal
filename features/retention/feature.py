@@ -12,7 +12,7 @@ class Retention(Feature):
     abstract_ = "Reports age out, finished to-dos are archived and notifications the user has seen are removed, after their keep days, once an hour"
     help_ = "keep.report, keep.todo and keep.notification are days per environment; 0 keeps everything listed."
     trigger = {"every": 60, "unit": trigger.MINUTES}
-    keep = {"report": 14, "todo": 7, "notification": 3}
+    keep = {"report": 14, "todo": 7, "notification": 1}
     forgotten = ("notification",)
 
     @event("agent.updated")
@@ -26,7 +26,7 @@ class Retention(Feature):
                 continue
             c = CONTROLLERS[type_](record, actor=SYSTEM)
             cutoff = time.time() - days * 86400
-            for r in c.all(deleted=type_ in self.forgotten):
+            for r in c._every(deleted=type_ in self.forgotten):
                 getattr(self, f"expire_{type_}")(c, r, cutoff, days)
 
     def expire_report(self, c, r, cutoff: float, days: int) -> None:

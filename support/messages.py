@@ -12,7 +12,7 @@ def answered(record, message) -> bool:
 
 
 def read_and_open(record) -> list:
-    return [m for m in Messages(record, actor=SYSTEM).all() if AGENT in m.seen and not m.completed and theirs(m)]
+    return [m for m in Messages(record, actor=SYSTEM)._every() if AGENT in m.seen and not m.completed and theirs(m)]
 
 
 def in_hand(record):

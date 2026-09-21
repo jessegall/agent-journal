@@ -36,7 +36,7 @@ def seat(root: Path) -> None:
     from resources.base import SYSTEM
     for home in sorted(p for p in (Path(root) / "environments").glob("*") if p.is_dir()):
         rows = Features(Record(root, home.name), actor=SYSTEM)
-        known = {r.title: r for r in rows.all()}
+        known = {r.title: r for r in rows._every()}
         for name, feature in FEATURES.items():
             if name not in known:
                 rows.create(name, enabled=feature.default)

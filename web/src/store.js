@@ -152,17 +152,12 @@ export function groupOf(r) {
     return rows("question").some((q) => !q.completed && q.refs.includes(r.ref)) ? "asked" : "open";
 }
 
-const PAGE = 100;
-const PAGED = new Set(["message", "comment", "notification", "todo", "work"]);
+const PAGE = 25;
 export const paging = reactive({size: {}, more: {}});
 
 export async function load(type) {
-    if (!PAGED.has(type) || paging.size[type] === Infinity) {
-        store.rows[type] = await http.all(route.value.env, type);
-        return store.rows[type];
-    }
     const size = paging.size[type] || PAGE;
-    const got = await http.recent(route.value.env, type, size);
+    const got = await http.list(route.value.env, type, {last: size === Infinity ? 0 : size, completed: true});
     store.rows[type] = got.rows;
     paging.size[type] = size;
     paging.more[type] = got.more;
@@ -171,19 +166,24 @@ export async function load(type) {
 
 export async function earlier(...types) {
     const growing = types.filter((type) => paging.more[type]);
-    growing.forEach((type) => (paging.size[type] = (paging.size[type] || PAGE) + PAGE));
-    await Promise.all(growing.map(load));
+    await Promise.all(
+        growing.map(async (type) => {
+            const held = store.rows[type] || [];
+            const got = await http.list(route.value.env, type, {last: PAGE, completed: true, before: held.length ? held[0].n : 0});
+            store.rows[type] = [...got.rows, ...held];
+            paging.size[type] = store.rows[type].length;
+            paging.more[type] = got.more;
+        })
+    );
     return growing.length > 0;
 }
 
 export async function whole(type) {
-    if (!PAGED.has(type)) return rows(type);
     paging.size[type] = Infinity;
     return load(type);
 }
 
 export async function trim(type) {
-    if (!PAGED.has(type)) return rows(type);
     paging.size[type] = PAGE;
     return load(type);
 }

@@ -18,7 +18,7 @@ class Became(Feature):
 
     def lately(self, record) -> list:
         since = time.time() - record.setting(self.name, {}).get(self.WITHIN, self.within) * 60
-        return [r for kind in SOURCES for r in kind(record, actor=SYSTEM).all()
+        return [r for kind in SOURCES for r in kind(record, actor=SYSTEM)._every()
                 if AGENT in r.seen and not r.deleted and r.updated >= since]
 
     @event("plan.created")
