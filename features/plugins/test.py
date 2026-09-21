@@ -1,4 +1,3 @@
-import features
 import json
 import subprocess
 import time
@@ -9,13 +8,12 @@ from features.plugins.source import folder, home
 from providers import PROVIDERS
 from resources.base import SYSTEM
 from tests.conftest import fresh
-from controllers.types import Agents, Notices, Nudges, Plugins, Todos
-from features.plugins.host import Host, PATIENCE
-from features.plugins.source import folder, home, log
-from resources.base import AGENT, PLUGIN, SYSTEM
-from controllers.types import Notifications, Plugins
+from controllers.types import Plugins
+from features.plugins.source import folder, home
+from resources.base import AGENT, SYSTEM
+from controllers.types import Plugins
 from features.plugins.manifest import MANIFEST
-from features.plugins.source import alone, data, folder, home
+from features.plugins.source import alone, folder, home
 from resources.base import AGENT
 from tests.conftest import fresh, refused
 

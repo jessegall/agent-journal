@@ -2,7 +2,6 @@ import os
 import time
 
 
-import features
 from features import FEATURES
 from tests.kit import idle
 from tests.conftest import fresh

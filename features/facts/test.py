@@ -1,5 +1,4 @@
 
-import features
 from controllers.types import Nudges, Facts, Reminders
 from resources.base import AGENT, USER
 from tests.kit import nudges, report

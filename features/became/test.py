@@ -1,4 +1,3 @@
-import features
 
 from controllers.types import Messages, Facts, Todos
 from resources.base import AGENT, USER

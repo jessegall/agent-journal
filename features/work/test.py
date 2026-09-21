@@ -1,7 +1,6 @@
-import features
 
 from controllers.types import Todos, Works
-from resources.base import AGENT, SYSTEM, USER
+from resources.base import AGENT, USER
 from features.base import held
 from tests.kit import idle, nudges, report
 from tests.conftest import fresh, refused

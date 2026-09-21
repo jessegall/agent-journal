@@ -1,7 +1,6 @@
 import time
 
 
-import features
 from controllers.types import Notifications, Reports, Todos
 from resources.base import AGENT, USER
 from tests.kit import report

@@ -1,7 +1,7 @@
 import controllers.types as types_module
 import resources.types as resources_module
 from controllers.base import Controller
-from controllers.types import Docs, Todos
+from controllers.types import Docs
 from features.plans.resource import PHASE, Plan
 from resources.base import AGENT, SECTION, Refused, check_title
 

@@ -1,7 +1,6 @@
 import time
 
 
-import features
 from features import FEATURES
 from controllers.types import Facts, Questions, Reminders, Rules, Todos
 from features.cleanup.audit import evidence

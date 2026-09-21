@@ -1,7 +1,6 @@
 import json
 
 
-import features
 from controllers.types import Messages
 from features import FEATURES
 from features.format import formatted

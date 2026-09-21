@@ -1,8 +1,7 @@
-import features
 import pytest
 
 from features.plans.controller import Plans  # noqa: E402
-from controllers.types import Agents, Docs, Todos
+from controllers.types import Agents, Todos
 from engine.record import Record
 from features.work.next import next, ready
 from resources.base import AGENT, SYSTEM, USER

@@ -1,4 +1,3 @@
-import features
 import struct
 import subprocess
 import sys

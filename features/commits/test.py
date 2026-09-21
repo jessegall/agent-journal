@@ -1,7 +1,6 @@
 import subprocess
 
 
-import features
 from controllers.types import Todos
 from engine.record import Record
 from resources.base import SYSTEM, USER

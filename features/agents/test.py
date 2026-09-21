@@ -1,4 +1,3 @@
-import features
 import pytest
 import subprocess
 import sys
@@ -15,7 +14,7 @@ from controllers.types import Agents, Nudges, Todos, Works
 from engine.record import Record
 from engine.sessions import Sessions
 from features.work.next import ready
-from resources.base import AGENT, SYSTEM, USER
+from resources.base import AGENT, SYSTEM
 from tests.conftest import refused
 
 
