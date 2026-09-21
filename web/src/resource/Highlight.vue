@@ -20,7 +20,8 @@ function picked(e) {
 }
 
 function quote() {
-    emit("quote", mark.text);
+    const selection = window.getSelection();
+    emit("quote", mark.text, selection && selection.rangeCount ? selection.getRangeAt(0).cloneRange() : null);
     mark.text = "";
     window.getSelection().removeAllRanges();
 }
