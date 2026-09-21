@@ -132,6 +132,8 @@ def publish(project: Path, agents: tuple[str, ...]) -> tuple[list[Path], list[Pa
     names = sorted({f.parent.name for f in written})
     pruned(project, names)
     for home in RETIRED:
+        if (project / home).resolve() == (project / LIBRARY).resolve():
+            continue
         for stale in (project / home).glob("journal*"):
             if stale.is_dir() and not stale.is_symlink():
                 shutil.rmtree(stale)
