@@ -2,10 +2,10 @@ from features.base import FeatureDetails, Line
 from features.settings import Setting
 
 
-class BecameDetails(FeatureDetails):
-    name = "became"
+class TrackingDetails(FeatureDetails):
+    name = "tracking"
 
-    title = "Where a plan came from"
+    title = "Resource tracking"
 
     abstract = "A plan, doc or report that cites nothing it was built on is named back to the agent"
 
@@ -13,6 +13,8 @@ class BecameDetails(FeatureDetails):
         A plan, doc or report created soon after the agent read a report or doc, and citing none
         of them, earns a private nudge naming the link to make.
     """
+
+    aliases = ("became",)
 
     settings = [
         Setting(
