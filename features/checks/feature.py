@@ -2,13 +2,14 @@ import threading
 import time
 
 from controllers.types import Agents, Notifications
-from features.base import Feature, event
+from features.base import Feature, event, Line
 from features.checks.controller import Checks
 from resources.base import SYSTEM
 
 
 class ChecksFeature(Feature):
     name = "checks"
+    lines = {"failed": Line("{{title}}", "journal check show {{n}} says why; fix it, then journal check run {{n}}")}
     title_ = "Checks"
     abstract_ = "Scripts that say pass or fail about the project, run on demand or on their own timer; a failure is filed and told to the agent"
     help_ = "A check is a row of its own: journal check create \"<what it guards>\" --set command=\"<command>\" --set every=<minutes>. It runs as its own process from the project root, never inside the server; exit 0 passes. A failing run files a notification and tells the agent; the next pass clears it."
@@ -46,4 +47,4 @@ class ChecksFeature(Feature):
         notices.create(title, brief=(check.last or {}).get("said") or "it said nothing", about=check.ref)
         agent = Agents(record, actor=SYSTEM).primary()
         if agent:
-            self.nudge(record, agent, title, f"journal check show {check.n} says why; fix it, then journal check run {check.n}")
+            self.say(record, agent, "failed", title=title, n=check.n)

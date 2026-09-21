@@ -1,7 +1,7 @@
 import re
 
 from features import trigger
-from features.base import Feature, event
+from features.base import Feature, event, Line
 from engine.transcript import last_said
 from resources.base import AGENT
 
@@ -13,6 +13,7 @@ RECENT = 200
 
 class Deferral(Feature):
     name = "deferral"
+    lines = {"deferred": Line("work deferred in words, not parked", '"{{words}}" is the title of a to-do: journal todo create "<title>" --brief, then say so')}
     title_ = "Catching work put off"
     abstract_ = "Work put off in words, with no to-do parked, is named back to the agent once"
     help_ = "A sentence like 'I'll do that after this' is the title of a to-do; file it immediately before the reply or next implementation."
@@ -29,4 +30,4 @@ class Deferral(Feature):
         said = last_said(record, agent)
         found = DEFERS.search(said or "")
         if found and not self.parked_since(record, float(agent.at or 0) - 600):
-            self.nudge(record, agent, "work deferred in words, not parked", f"\"{found.group(0)}\" is the title of a to-do: journal todo create \"<title>\" --brief, then say so")
+            self.say(record, agent, "deferred", words=found.group(0))

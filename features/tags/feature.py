@@ -4,7 +4,7 @@ import time
 
 from features import trigger
 from engine.stored import read_json, write_json
-from features.base import Behaviour, Feature, event, formats
+from features.base import Behaviour, Feature, event, formats, Line
 from resources.base import AGENT
 from engine.transcript import last_said, last_turn
 
@@ -36,6 +36,8 @@ def visible(text: str) -> str:
 
 class Tags(Feature):
     name = "tags"
+    lines = {"untagged": Line("your last message has no tag", "open every message with exactly one of {{tags}}"),
+             "refused": Line("the {{tag}} tag on {{on}} did not run", "{{said}}")}
     title_ = "Tagging"
     abstract_ = "A message opens with one tag, and a tag carrying a number runs the command it stands for"
     help_ = "The tags are settings. tags.names lists them and tags.runs maps a tag to the command it stands for, so [!reply:12] runs journal message reply 12 with the turn as its text, and [!todo=\"the title\"] files a to-do with that title and the turn as its brief. A tag runs once, keyed to the turn it came from; two tags in one turn run in the order they appear; and a refusal comes back as a nudge on the next turn rather than at the moment of acting."
@@ -65,8 +67,7 @@ class Tags(Feature):
             return
         said = last_said(record, agent)
         if said and not self.reader(record).match(said):
-            self.nudge(record, agent, "your last message has no tag",
-                       f"open every message with exactly one of {' '.join(written(self.names(record)))}")
+            self.say(record, agent, "untagged", tags=" ".join(written(self.names(record))))
 
     @formats
     def without_tags(self, text, record):
@@ -105,7 +106,7 @@ class Tags(Feature):
             code = run(["--root", str(record.root), "--env", record.env, "--session", agent.title, "--as", AGENT,
                         *self.argv(runs[name], n, argument, text)], out=said, err=wrong)
             if code:
-                self.nudge(record, agent, f"the {name} tag on {n or argument} did not run", (wrong.getvalue() or said.getvalue()).strip(), private=True)
+                self.say(record, agent, "refused", private=True, tag=name, on=n or argument, said=(wrong.getvalue() or said.getvalue()).strip())
 
     def places(self, record) -> dict:
         return {**PLACES, **self.setting(record, self.PLACES, {})}

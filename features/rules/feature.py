@@ -3,7 +3,7 @@ from pathlib import Path
 
 from controllers.types import Rules
 from features import trigger
-from features.base import Recital, event
+from features.base import Recital, event, Line
 from engine.stored import write_text
 
 BLOCK = re.compile(r"\n?<!-- journal rules -->.*?<!-- /journal rules -->\n?", re.DOTALL)
@@ -14,7 +14,7 @@ class RulesFeature(Recital):
     name = "rules"
     runs_for_subagents = True
     controller = Rules
-    said = "in force, read them"
+    lines = {**Recital.lines, "standing": Line("{{count}} in force, read them", "{{rows}}")}
     title_ = "Rules"
     abstract_ = "The rules said again at every tenth of the context, and the injected ones kept in AGENTS.md and CLAUDE.md"
     help_ = "A rule binds every environment; one control injects the same managed block into both instruction files. A fact or rule can carry keywords, a list of words set with --set keywords. When a command the agent is about to run, or text it is about to write, carries one of them, the row is whispered to that session once, with its reasoning; the call itself is never refused."

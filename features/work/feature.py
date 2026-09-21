@@ -2,7 +2,7 @@ import time
 
 from controllers.types import Agents, Todos, Works
 from features import trigger
-from features.base import Behaviour, Feature, command, event, held, gate
+from features.base import Behaviour, Feature, command, event, held, gate, Line
 from features.work import tracker
 from features.work.auto import refusal
 from features.work.next import next
@@ -13,6 +13,12 @@ from features.statusline import commands
 
 class WorkFeature(Feature):
     name = "work"
+    lines = {"open": Line("work {{n}} is still open", 'end it or park it before you stop: journal work end {{n}} --how "<what landed>", or journal work park {{n}} "<why it waits>"'),
+             "unlogged": Line("work {{n}} is still open, with nothing logged", 'journal work log {{n}} "<what was decided or done, and why>" — then journal work end {{n}} --how "<what landed>", or journal work park {{n}} "<why it waits>"'),
+             "in hand": Line("work {{n}} in hand — {{title}}", "if this is not what you are doing, end it or park it and start the work you are in"),
+             "log held": Line('{{edits}} edits since work {{n}} was last logged: journal work log "<what was decided or done, and why>" before any other write'),
+             "undeclared held": Line('nothing is open, so this write would not be filed: journal work start "<the work>" first'),
+             "next": Line("todo {{n}} next")}
     title_ = "Working"
     abstract_ = "A write is refused until work is open; work started for a to-do is linked to it, its log is kept, twenty edits without an entry hold the writes, and parked work is set aside until the next log entry"
     help_ = ('One piece of work is in hand at a time: starting another is refused until this one is ended or parked. Take a row with journal todo start <n>, or start work of its own with journal work start "<title>"; log each decision and turn with journal work log "<message>" (work.log_after, 20 edits without an entry holds the writes); end it with journal work end <n> --how "<what landed>", and --set todo=<n> closes the row with it. journal work park "<why>" sets it aside with no clock — it stays open, stops being nudged and stops holding writes, and journal work resume <n> picks it up again. Park when you are stuck or when something else has to happen first; never to wait for an answer you could carry on without, because under auto the list stops.'
@@ -61,7 +67,7 @@ class WorkFeature(Feature):
         if self.working(record):
             self.release(record)
         else:
-            self.hold(record, 'nothing is open, so this write would not be filed: journal work start "<the work>" first')
+            self.hold(record, "undeclared held")
 
     @gate
     def held(self, provider, record, hook, session) -> str:
@@ -110,12 +116,7 @@ class WorkFeature(Feature):
         if not agent:
             return
         for w in self.working(record)[:1]:
-            close = f'journal work end {w.n} --how "<what landed>", or journal work park {w.n} "<why it waits>"'
-            if w.sections:
-                self.nudge(record, agent, f"work {w.n} is still open", brief=f"end it or park it before you stop: {close}")
-            else:
-                self.nudge(record, agent, f"work {w.n} is still open, with nothing logged",
-                           brief=f'journal work log {w.n} "<what was decided or done, and why>" — then {close}')
+            self.say(record, agent, "open" if w.sections else "unlogged", n=w.n)
 
     @event("agent.updated")
     def edited(self, event, record) -> None:
@@ -127,10 +128,9 @@ class WorkFeature(Feature):
         trigger.write(record, agent, self.name, edits=edits)
         said = self.setting(record, self.SAID_AFTER, self.said_after)
         if said and edits % said == 0:
-            self.nudge(record, agent, f"work {work[0].n} in hand — {work[0].title}",
-                       brief="if this is not what you are doing, end it or park it and start the work you are in", private=True)
+            self.say(record, agent, "in hand", private=True, n=work[0].n, title=work[0].title)
         if edits >= self.setting(record, self.LOG_AFTER, self.log_after):
-            self.hold(record, f'{edits} edits since work {work[0].n} was last logged: journal work log "<what was decided or done, and why>" before any other write')
+            self.hold(record, "log held", edits=edits, n=work[0].n)
 
     @event("work.updated")
     def logged(self, event, record) -> None:
@@ -153,4 +153,4 @@ class WorkFeature(Feature):
             return
         row = next(record)
         if row:
-            self.nudge(record, agent, f"todo {row.n} next")
+            self.say(record, agent, "next", n=row.n)

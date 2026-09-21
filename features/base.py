@@ -1,3 +1,4 @@
+import re
 from abc import ABC
 from functools import wraps
 from typing import ClassVar
@@ -8,7 +9,7 @@ from engine import bus
 from features import trigger
 from engine.hooks import POLICIES, gate_file
 from features.format import FORMATTERS
-from resources.base import KEYWORDS, Refused, SYSTEM, WHOM
+from resources.base import KEYWORDS, Refused, SYSTEM, WHOM, titled
 from engine.stored import read_json, write_json
 from engine.wording import plural
 
@@ -26,6 +27,27 @@ class Behaviour:
 
     def describe(self) -> dict:
         return {"title": self.title, "abstract": self.abstract, "default": self.default, "trigger": dict(self.trigger)}
+
+
+PLACEHOLDER = re.compile(r"\{\{(\w+)\}\}")
+
+
+class Line:
+    def __init__(self, title: str, brief: str = ""):
+        self.title, self.brief = title, brief
+
+    def placeholders(self) -> list[str]:
+        return list(dict.fromkeys(PLACEHOLDER.findall(self.title + self.brief)))
+
+    def filled(self, values: dict) -> tuple[str, str]:
+        wanted = set(self.placeholders())
+        if wanted != set(values):
+            raise Refused(f"the line {self.title!r} takes {sorted(wanted)}, given {sorted(values)}")
+        fill = lambda text: PLACEHOLDER.sub(lambda found: str(values[found.group(1)]), text)
+        return fill(self.title), fill(self.brief)
+
+    def describe(self) -> dict:
+        return {"title": self.title, "brief": self.brief, "placeholders": self.placeholders()}
 
 
 SWITCHES: dict[str, dict] = {}
@@ -85,6 +107,7 @@ class Feature(ABC):
     help_: ClassVar[str] = ""
     trigger: ClassVar[dict] = {}
     behaviours: ClassVar[dict] = {}
+    lines: ClassVar[dict[str, Line]] = {}
     aliases: ClassVar[tuple] = ()      # names this feature used to have; a pair says the old feature is now one of its behaviours
     declares: ClassVar[tuple] = ()
     runs_for_subagents: ClassVar[bool] = False
@@ -203,7 +226,15 @@ class Feature(ABC):
     def live(self, record) -> list:
         return [agent for agent in Agents(record, actor=SYSTEM)._standing() if self.mine(agent)]
 
-    def hold(self, record, why: str, key: str = "", agent=None) -> None:
+    def line(self, name: str, values: dict) -> tuple[str, str]:
+        if name not in self.lines:
+            raise Refused(f"the {self.name} feature has no line named {name!r}")
+        return self.lines[name].filled(values)
+
+    def hold(self, record, line: str, key: str = "", agent=None, **values) -> None:
+        self._gate(record, self.line(line, values)[0], key, agent)
+
+    def _gate(self, record, why: str, key: str, agent) -> None:
         for agent in [agent] if agent else self.live(record):
             f = gate_file(record.root, record.env, agent.title)
             held = read_json(f, {})
@@ -211,11 +242,12 @@ class Feature(ABC):
                 write_json(f, {**held, self.keyed(key): why})
 
     def release(self, record, key: str = "", agent=None) -> None:
-        self.hold(record, "", key, agent)
+        self._gate(record, "", key, agent)
 
-    def nudge(self, record, agent, title: str, brief: str = "", private: bool = False) -> None:
+    def say(self, record, agent, line: str, private: bool = False, **values) -> None:
+        title, brief = self.line(line, values)
         if self.mine(agent):
-            Nudges(record, actor=SYSTEM).create(title, brief=brief, session=agent.title, private=private)
+            Nudges(record, actor=SYSTEM).create(titled(title), brief=brief, session=agent.title, private=private)
 
     def plural(self, n: int, word: str) -> str:
         return plural(n, word)
@@ -223,12 +255,14 @@ class Feature(ABC):
     def describe(self) -> dict:
         return {"name": self.name, "title": self.title_, "abstract": self.abstract_, "help": self.help_, "default": self.default, "fixed": self.fixed,
                 "listens": sorted({p for p, _ in self.listeners()}), "trigger": dict(self.trigger), "declares": list(self.declares),
-                "behaviours": {key: b.describe() for key, b in self.behaviours.items()}}
+                "behaviours": {key: b.describe() for key, b in self.behaviours.items()},
+                "lines": {key: line.describe() for key, line in self.lines.items()}}
 
 
 class Recital(Feature):
     controller: ClassVar[type]
-    said = "standing, read them"
+    lines = {"whisper": Line("{{type}} {{n}} — {{title}}", "{{brief}}"),
+             "standing": Line("{{count}} standing, read them", "{{rows}}")}
     behaviours = {"whisper": Behaviour("Whisper a row when one of its keywords appears",
                                        "Said again once this many of the agent's tool uses have passed since it last spoke",
                                        trigger={"every": 50, "unit": trigger.USES})}
@@ -242,7 +276,7 @@ class Recital(Feature):
         for row in self.standing(record, self.controller):
             words = [w for w in row.data.get(KEYWORDS) or [] if w and str(w).lower() in said]
             if words and self.quiet_enough(record, session, row.ref, agent):
-                self.nudge(record, agent, f"{self.controller.resource.type} {row.n} — {row.title}", row.brief, private=True)
+                self.say(record, agent, "whisper", private=True, type=self.controller.resource.type, n=row.n, title=row.title, brief=row.brief)
         return ""
 
     def quiet_enough(self, record, session: str, ref: str, agent) -> bool:
@@ -259,4 +293,4 @@ class Recital(Feature):
         agent = self.agent_due(event, record)
         rows = [r for r in self.standing(record, self.controller) if r.data.get(WHOM, agent.title) == agent.title] if agent else []
         if rows:
-            self.nudge(record, agent, f"{self.plural(len(rows), self.controller.resource.type)} {self.said}", "; ".join(f"{r.n}. {r.title}" for r in rows))
+            self.say(record, agent, "standing", count=self.plural(len(rows), self.controller.resource.type), rows="; ".join(f"{r.n}. {r.title}" for r in rows))

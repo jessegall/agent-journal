@@ -3,7 +3,7 @@ import time
 from controllers.types import Agents, CONTROLLERS, Todos
 from engine.sessions import Sessions
 from features import trigger
-from features.base import Behaviour, Feature, event
+from features.base import Behaviour, Feature, event, Line
 from resources.base import SYSTEM
 
 SUBAGENT = "subagent"
@@ -14,6 +14,9 @@ LAPSE_MINUTES = 20
 
 class AgentsFeature(Feature):
     name = "agents"
+    lines = {"reported": Line("agent {{who}} reports todo {{n}} done", "{{how}} — journal todo done {{n}} is yours"),
+             "lapsed": Line("agent {{who}} went silent — todo {{n}} is back on the list", "no write from it for {{minutes}} minutes"),
+             "evicted": Line("environment {{environment}} was claimed by session {{by}} ({{why}}): switch to another, or claim it back")}
     LAPSE = "lapse"
     QUIET = "quiet"
     quiet = 60
@@ -44,7 +47,7 @@ class AgentsFeature(Feature):
         sessions = Sessions(record.root)
         gone = sessions.read(agent.title).get("evicted")
         if gone and not sessions.environment(agent.title):
-            self.hold(record, f"environment {gone['environment']!r} was claimed by session {gone['by']} ({gone['why']}): switch to another, or claim it back", "eviction", agent)
+            self.hold(record, "evicted", "eviction", agent, environment=repr(gone["environment"]), by=gone["by"], why=gone["why"])
         else:
             self.release(record, "eviction", agent)
 
@@ -84,7 +87,7 @@ class AgentsFeature(Feature):
         todos.update(todo.n, reported={**said, "told": True})
         if said.get("dispatcher"):
             dispatcher = self.rows(record).by_session(said["dispatcher"])
-            self.nudge(record, dispatcher, f"agent {said.get('agent')} reports todo {todo.n} done", f"{said.get('how', '')} — journal todo done {todo.n} is yours")
+            self.say(record, dispatcher, "reported", who=said.get("agent"), n=todo.n, how=said.get("how", ""))
 
     @event("agent.updated")
     def lapsed(self, event, record) -> None:
@@ -101,4 +104,4 @@ class AgentsFeature(Feature):
                 continue
             todos.update(t.n, assigned="", lapsed=who)
             agent = self.agent(event, record)
-            self.nudge(record, agent, f"agent {who} went silent — todo {t.n} is back on the list", f"no write from it for {limit // 60} minutes")
+            self.say(record, agent, "lapsed", who=who, n=t.n, minutes=limit // 60)
