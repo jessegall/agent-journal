@@ -1,4 +1,7 @@
+import threading
+import time
 from pathlib import Path
+from urllib.request import urlopen
 
 from controllers.types import Notifications
 from engine.hooks import default_env
@@ -33,3 +36,34 @@ def announce(root: Path, version: str = "") -> str:
     Notifications(record, actor=SYSTEM)._logged(f"Journal updated to {version}", brief=f"The journal went from {before} to {version}.",
                                                kind=KIND, version=version)
     return version
+
+
+UPSTREAM = "https://raw.githubusercontent.com/jessegall/agent-journal/main/VERSION"
+
+
+UPSTREAM_FOR = 900
+FETCHING = threading.Lock()
+
+
+def upstream(root: Path) -> str:
+    cache = root / "runtime" / "upstream.cache"
+    try:
+        stale = time.time() - cache.stat().st_mtime >= UPSTREAM_FOR
+        held = cache.read_text().strip()
+    except OSError:
+        stale, held = True, ""
+    if stale and not FETCHING.locked():
+        threading.Thread(target=fetched, args=(cache,), daemon=True).start()
+    return held
+
+
+def fetched(cache: Path) -> None:
+    with FETCHING:
+        try:
+            with urlopen(UPSTREAM, timeout=3) as r:
+                latest = r.read().decode().strip()
+        except OSError:
+            cache.touch(exist_ok=True)
+            return
+        cache.parent.mkdir(parents=True, exist_ok=True)
+        write_text(cache, latest)
