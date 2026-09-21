@@ -3,6 +3,7 @@ import {transport} from "./api/transport.js";
 import {route} from "./route.js";
 
 const BUDGET = 50;
+const REPORTED_AFTER = BUDGET * 4;
 const PAGE = 25;
 const QUIET = 60000;
 const SETTLE = 1000;
@@ -44,7 +45,7 @@ function timed(href, where) {
     if (performance.getEntriesByType("resource").length > KEPT) performance.clearResourceTimings();
     if (!entry || !entry.responseStart) return;
     const took = Math.round(entry.responseStart - entry.requestStart);
-    if (took > BUDGET) report("slow", `${where} took ${took}ms`, where);
+    if (took > REPORTED_AFTER) report("slow", `${where} took ${took}ms`, where);
 }
 
 export function watchConsole() {

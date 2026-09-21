@@ -61,6 +61,8 @@ class Faults(Feature):
             self.say(record, agent, "slow", title=title, said=said)
 
     def slow(self, record, kind: str, name: str, took: float, working: float | None = None) -> None:
+        if working is not None and working <= self.milliseconds(record, kind):
+            return
         self.file(record, f"{kind} {name} {OVER}"[:80],
                   f"{took:.0f}ms last{'' if working is None else f' ({working:.0f}ms of it working)'}, against a budget of {self.milliseconds(record, kind)}ms.",
                   kind=kind, target=name, worst=took)

@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.18.0 — Only real slowness is reported, and the terminal is recorded
+
+A request is reported as over budget only when the server's own work passes the budget; time spent waiting behind other requests no longer counts, which removes most of what reached the agent. The viewer, which cannot see the server's working time, reports a request only past four times the budget. The supervisor now writes everything it shows in the user's terminal through one place and keeps a rolling recording of it (runtime/screen-<session>, its size beside it), so a garbled terminal can be replayed exactly; housekeeping keeps its last megabyte.
+
+What to do about it: `journal upgrade`, then restart the agent's terminal once so the supervisor starts recording.
+
 ## 2.17.8 — One missing-tag reminder waits at a time
 
 While a missing-tag reminder is still waiting to reach the agent, another untagged message does not add a second; the next one is sent only after the first has been delivered.
