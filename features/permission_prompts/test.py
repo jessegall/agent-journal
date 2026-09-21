@@ -27,3 +27,4 @@ def test_the_skip_switch_restarts_in_the_same_conversation_with_the_flag():
     assert claude.resumed(claude.skipping(["-c", "--model", "opus"], True), "abc") == \
         ["--dangerously-skip-permissions", "--model", "opus", "--resume", "abc"], "skip on, resumed in place of continue"
     assert claude.skipping(["--dangerously-skip-permissions", "x"], False) == ["x"], "skip off drops the flag"
+    assert DRIVERS["codex"].skipping(["x"], True) == ["--dangerously-bypass-approvals-and-sandbox", "x"], "Codex runs its commands without asking"
