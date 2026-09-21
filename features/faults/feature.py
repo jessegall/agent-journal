@@ -64,7 +64,8 @@ class Faults(Feature):
                   kind=kind, target=name, worst=took)
 
     def threw(self, record, said: str, where: str, stack: str, kind: str = "threw") -> None:
-        title = {"slow": f"the viewer's {where} {OVER}", "overlap": f"the viewer sent {where} twice at once"}.get(kind, f"{THREW} {said}")
+        title = {"slow": f"the viewer's {where} {OVER}", "overlap": f"the viewer sent {where} twice at once",
+                 "page": f"the viewer asked {where} for more than a page", "refetch": f"the viewer refetched {where} with nothing changed"}.get(kind, f"{THREW} {said}")
         self.file(record, title[:80], f"{said}\n\n{where}\n\n{stack}"[:SAID], kind=kind, target=where, stack=stack)
 
     @contextmanager
@@ -87,7 +88,7 @@ class Faults(Feature):
 
     def heard(self, root, env: str, said: str, where: str, stack: str, kind: str = "threw") -> bool:
         record = Record(Path(root), env)
-        if not self.on(record, "budget" if kind == "slow" else "console"):
+        if not self.on(record, "budget" if kind in ("slow", "overlap", "page", "refetch") else "console"):
             return False
         self.threw(record, said, where, stack, kind)
         return True

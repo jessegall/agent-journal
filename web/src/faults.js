@@ -2,12 +2,13 @@ import {api} from "./api.js";
 import {route} from "./route.js";
 
 const BUDGET = 50;
+const PAGE = 25;
 const QUIET = 60000;
 const REPORTED = "/console";
 const told = new Map();
 const flying = new Map();
 
-function report(kind, words, where, stack = "") {
+export function report(kind, words, where, stack = "") {
     const key = `${kind}|${where || words}`;
     if (!words || !route.value.env || Date.now() - (told.get(key) || 0) < QUIET) return;
     told.set(key, Date.now());
@@ -30,6 +31,9 @@ function watchFetch() {
         const where = endpoint(input, init);
         if (where.endsWith(REPORTED)) return was(input, init);
         if (flying.get(where)) report("overlap", `two requests to ${where} were in flight at once`, where);
+        const asked = new URL(typeof input === "string" ? input : input.url, location.origin).searchParams.get("last");
+        if (asked !== null && (Number(asked) === 0 || Number(asked) > PAGE))
+            report("page", `${where} asked for ${asked === "0" ? "every row" : `${asked} rows`}`, where);
         flying.set(where, (flying.get(where) || 0) + 1);
         const began = performance.now();
         try {
