@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.34.0 — A status bar line plays once, not again on a refresh
+
+The viewer played the whole queue of status bar lines from the start on every page load, so a refresh replayed everything the agent had just run. The viewer now tells the server each line it starts, and the server leaves every line already played out of the queue it hands back; only a line still running stays.
+
+What to do about it: `journal upgrade`.
+
 ## 2.33.1 — A quoted comment is no longer shown as filed from the message
 
 A message that quotes one of the agent's replies links to that reply, and the chat counted every linked row as something filed from the message, so a reply showed as "Filed comment N from your message." Comments are left out of that note now, like messages already were.
