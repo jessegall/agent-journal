@@ -1,3 +1,4 @@
+import time
 
 from features.statusline.group import grouped, ran
 from features.statusline.queue import queue as messages
@@ -115,8 +116,14 @@ def test_with_the_header_off_nothing_is_drawn_or_wiped():
 
 
 def test_a_played_line_is_not_played_again(tmp_path):
-    write_json(bar_file(tmp_path, "main"), {"queue": [{"at": 1.0, "done": True}, {"at": 2.0, "done": True}, {"at": 3.0, "done": False}]})
+    lately = time.time()
+    write_json(bar_file(tmp_path, "main"), {"queue": [{"at": 1.0, "done": True}, {"at": 2.0, "done": True}, {"at": lately, "done": False}]})
     played(tmp_path, "main", 2.0)
-    assert [one["at"] for one in shown(tmp_path, "main")["queue"]] == [3.0]
-    played(tmp_path, "main", 3.0)
-    assert [one["at"] for one in shown(tmp_path, "main")["queue"]] == [3.0]
+    assert [one["at"] for one in shown(tmp_path, "main")["queue"]] == [lately]
+    played(tmp_path, "main", lately)
+    assert [one["at"] for one in shown(tmp_path, "main")["queue"]] == [lately], "the line still running stays"
+    write_json(bar_file(tmp_path, "main"), {"queue": [{"at": lately, "done": True, "for": 0, "lingers": 10.0}]})
+    assert [one["at"] for one in shown(tmp_path, "main")["queue"]] == [lately], "a finished line lingers before it goes"
+    played(tmp_path, "main", 2.0)
+    write_json(bar_file(tmp_path, "main"), {"queue": [{"at": 2.0, "done": True, "for": 0, "lingers": 10.0}]})
+    assert shown(tmp_path, "main")["queue"] == [], "once it has lingered, a played line is not played again"

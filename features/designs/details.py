@@ -12,13 +12,15 @@ class DesignsDetails(FeatureDetails):
     """
 
     help = """
-        journal design create "<name>" starts one. Every edit after it (design section,
-        design cut, design update) copies the latest revision and changes the copy, so nothing
-        is lost.
+        journal design create "<name>" starts one. Its latest revision stays open while it is
+        worked on: design section, design cut, design update and every edit in the viewer
+        change it in place.
+
+        A revision is kept when the user presses Keep this revision, when journal design keep
+        runs, or by itself after designs.keep_after_minutes (30) without an edit. The next edit
+        opens a new revision copied from the kept one, so nothing kept is ever changed.
 
         The viewer shows the design as it stands, a row of its revisions to scroll back
-        through, and what each revision changed.
-
-        The revisions are documents underneath, kept out of the doc list and search: they are
-        read through their design.
+        through, and what each revision changed. The revisions are documents underneath: the
+        Documents page lists a design once, as its latest revision.
     """

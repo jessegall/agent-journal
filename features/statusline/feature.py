@@ -31,7 +31,11 @@ def played(root, env: str, at: float) -> None:
 def shown(root, env: str) -> dict:
     last = read_json(played_file(root, env), {}).get("at", 0.0)
     held = read_json(bar_file(root, env), EMPTY)
-    return {**held, "queue": [one for one in held["queue"] if one["at"] > last or (one["at"] == last and not one["done"])]}
+    return {**held, "queue": [one for one in held["queue"] if one["at"] > last or (one["at"] == last and not ended(one))]}
+
+
+def ended(one: dict) -> bool:
+    return bool(one["done"]) and time.time() >= one["at"] + one.get("for", 0) + one.get("lingers", 0)
 
 
 class StatusLine(Feature):

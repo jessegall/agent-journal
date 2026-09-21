@@ -6,6 +6,7 @@ import CommentToggle from "./CommentToggle.vue";
 import Icon from "../kit/Icon.vue";
 import {age} from "../format/time.js";
 import {sectionChanges} from "../domain/diff.js";
+import {useNow} from "../composables/now.js";
 import Markdown from "./Markdown.vue";
 
 const props = defineProps({resource: Object});
@@ -34,6 +35,18 @@ async function fetchRevision(n) {
         error.value = e.message;
     }
 }
+
+const now = useNow(15000);
+const open = computed(() => Number(props.resource.data.open_until || 0) > now.value);
+const minutesLeft = computed(() => Math.max(1, Math.ceil((Number(props.resource.data.open_until || 0) - now.value) / 60)));
+
+watch(
+    () => props.resource.updated,
+    () => {
+        const n = numbers.value[numbers.value.length - 1];
+        if (n && revisions[n]) delete revisions[n];
+    }
+);
 
 watchEffect(() => {
     fetchRevision(numbers.value[at.value]);
@@ -117,8 +130,8 @@ const cutPart = (title) => run("cut", {title});
                 <template v-for="(n, i) in numbers" :key="n">
                     <button
                         type="button"
-                        :class="['tick', {current: i === at}]"
-                        :title="`Revision ${i + 1}`"
+                        :class="['tick', {current: i === at, open: open && i === numbers.length - 1}]"
+                        :title="open && i === numbers.length - 1 ? `Revision ${i + 1}, open for edits` : `Revision ${i + 1}`"
                         :aria-current="i === at ? 'true' : undefined"
                         @click="go(i)"
                     />
@@ -132,6 +145,12 @@ const cutPart = (title) => run("cut", {title});
                 <template v-if="meta">· {{ meta.data.change }} · {{ meta.seen[0] }} · {{ age(meta.created) || "just now" }}</template>
             </span>
             <span class="grow" />
+            <template v-if="latest && open">
+                <span class="open-note">Open · kept by itself in {{ minutesLeft }} min</span>
+                <Btn small title="Keep this revision as it is; the next edit starts a new one" @click="run('keep', {})">
+                    Keep this revision
+                </Btn>
+            </template>
             <template v-if="at > 0">
                 <button type="button" :class="['switch', {on: changes}]" :aria-pressed="changes" @click="changes = !changes">
                     Show changes
@@ -299,6 +318,21 @@ const cutPart = (title) => run("cut", {title});
 
 .tick.current {
     background: var(--accent);
+}
+
+.tick.open {
+    background: transparent;
+    box-shadow: inset 0 0 0 1.5px var(--text-3);
+}
+
+.tick.open.current {
+    box-shadow: inset 0 0 0 1.5px var(--accent);
+}
+
+.open-note {
+    flex: none;
+    color: var(--text-3);
+    white-space: nowrap;
 }
 
 .where {
