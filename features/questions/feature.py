@@ -43,7 +43,7 @@ class Questions(Feature):
         agent = self.agent(event, record)
         if not agent or not self.due(record, agent, "asking") or not offers_choices(last_said(record, agent)):
             return
-        self.say(record, agent, "prose")
+        self.journal.say(record, agent, "prose")
         self.hold(record, "prose held", "asking", agent)
 
     @event("question.created")

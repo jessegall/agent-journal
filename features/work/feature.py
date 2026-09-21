@@ -116,7 +116,7 @@ class WorkFeature(Feature):
         if not agent:
             return
         for w in self.working(record)[:1]:
-            self.say(record, agent, "open" if w.sections else "unlogged", n=w.n)
+            self.journal.say(record, agent, "open" if w.sections else "unlogged", n=w.n)
 
     @event("agent.updated")
     def edited(self, event, record) -> None:
@@ -128,7 +128,7 @@ class WorkFeature(Feature):
         trigger.write(record, agent, self.name, edits=edits)
         said = self.setting(record, self.SAID_AFTER, self.said_after)
         if said and edits % said == 0:
-            self.say(record, agent, "in hand", private=True, n=work[0].n, title=work[0].title)
+            self.journal.whisper(record, agent, "in hand", n=work[0].n, title=work[0].title)
         if edits >= self.setting(record, self.LOG_AFTER, self.log_after):
             self.hold(record, "log held", edits=edits, n=work[0].n)
 
@@ -153,4 +153,4 @@ class WorkFeature(Feature):
             return
         row = next(record)
         if row:
-            self.say(record, agent, "next", n=row.n)
+            self.journal.say(record, agent, "next", n=row.n)

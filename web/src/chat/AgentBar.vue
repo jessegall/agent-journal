@@ -72,7 +72,7 @@ const detail = computed(() => tagging.value.verbosity || "replies");
 const details = computed(() => Object.entries(DETAIL).map(([value, label]) => ({value, label, current: value === detail.value})));
 async function chooseDetail(level) {
     const {names, places} = tagging.value;
-    store.settings = await api.saveSettings({tags: {names, places, verbosity: level, since: Date.now() / 1000}});
+    store.settings = await api.saveSettings({tags: {names, places, verbosity: level}});
     open.value = "";
 }
 const pending = (key) => pendingChoice(data.value, key);

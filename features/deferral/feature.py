@@ -30,4 +30,4 @@ class Deferral(Feature):
         said = last_said(record, agent)
         found = DEFERS.search(said or "")
         if found and not self.parked_since(record, float(agent.at or 0) - 600):
-            self.say(record, agent, "deferred", words=found.group(0))
+            self.journal.say(record, agent, "deferred", words=found.group(0))

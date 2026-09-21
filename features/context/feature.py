@@ -27,7 +27,7 @@ class Context(Feature):
         if self.due(record, agent):
             pct = agent.context
             self.hold(record, "decide held", agent=agent, percent=pct)
-            self.say(record, agent, "decide", percent=pct)
+            self.journal.say(record, agent, "decide", percent=pct)
 
     @event("fact.created")
     @event("rule.created")
@@ -38,7 +38,7 @@ class Context(Feature):
     def reread_owed(self, event, record) -> None:
         agent = self.agent(event, record)
         if agent and self.due(record, agent, "rereading") and owed(record):
-            self.say(record, agent, "reread")
+            self.journal.say(record, agent, "reread")
 
     @command("rule")
     def reread(self, rules: Rules) -> str:

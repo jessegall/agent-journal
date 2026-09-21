@@ -39,7 +39,7 @@ class Skills(Feature):
         loaded = agent.skills
         if any(s == "journal" or s.startswith("journal-") for s in loaded):
             return
-        self.say(record, agent, "unloaded", private=True)
+        self.journal.whisper(record, agent, "unloaded")
         trigger.write(record, agent, self.name, told=True)
 
     @event("agent.updated")
@@ -64,5 +64,5 @@ class Skills(Feature):
             return
         changed = [s[SKILL.name] for s in skills(record, agent.n) if s[SKILL.stale]]
         if changed:
-            self.say(record, agent, "stale", private=True, count=self.plural(len(changed), "skill"), them="it" if len(changed) == 1 else "them",
+            self.journal.whisper(record, agent, "stale", count=self.plural(len(changed), "skill"), them="it" if len(changed) == 1 else "them",
                      skills=", ".join(f"Skill: {name}" for name in changed))

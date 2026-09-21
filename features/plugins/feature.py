@@ -4,9 +4,9 @@ import threading
 import time
 from pathlib import Path
 
-from controllers.types import Notifications, Plugins as Rows
+from controllers.types import Plugins as Rows
 from engine.services import UP, want
-from features.base import Feature, formats, command, event, gate
+from features.base import Feature, Line, formats, command, event, gate
 from features.plugins.host import watch
 from features.plugins.manifest import fill, read
 from features.plugins.payload import refusal
@@ -26,6 +26,10 @@ class Plugins(Feature):
     abstract_ = "A repository installed into the journal hears the bus, answers it, and may run services of its own"
     help_ = "The servers a plugin declares are kept up while the session runs and die with it; one that gives up is said once over the chat, and journal services list|start|stop|restart|log <plugin>.<service> inspects them. Install one with journal plugin install <url>: its .journal-plugin/plugin.json says what it listens to, what it runs and which pages it shows. A plugin runs as you; install shows every command before it runs any. It writes back by calling the journal itself, or by appending journal commands to the file at $JOURNAL_QUEUE, one per line, which the host drains a few at a time."
     fixed = True
+    lines = {"plugin": Line("{{title}}", "{{brief}}"),
+             "installed": Line("Plugin {{name}} installed", "From {{source}}{{commit}}."),
+             "failing": Line("Plugin {{name}} is failing", "{{why}}\nIts log is {{log}}."),
+             "stopped": Line("Service {{name}} is not running", "{{why}}\nIts log is {{log}}.")}
     EACH = 1.5
     LONGEST_EACH = 3.0
     ALTOGETHER = 5.0
@@ -48,8 +52,8 @@ class Plugins(Feature):
         return said
 
     def host(self, root: Path) -> None:
-        threading.Thread(target=watch, args=(Path(root),), daemon=True).start()
-        services.watch(Path(root), self.enabled)
+        threading.Thread(target=watch, args=(Path(root), self.journal), daemon=True).start()
+        services.watch(Path(root), self.enabled, self.journal)
 
     @gate
     def guard(self, provider, record, hook, session) -> str:
@@ -105,7 +109,7 @@ class Plugins(Feature):
                 held.close()
             if not kept:
                 self.drop(where, linked)
-        Notifications(plugins.record, actor=SYSTEM)._logged(f"Plugin {name} installed", brief=f"From {source}" + (f" at {commit[:12]}" if commit else "") + ".", about=made.ref)
+        self.journal.log(plugins.record, "installed", name=name, source=source, commit=f" at {commit[:12]}" if commit else "", about=made.ref)
         return made
 
     @command("plugin")

@@ -61,7 +61,7 @@ class MessagesFeature(Feature):
             return
         if not self.due(record, agent, "unread"):
             return
-        self.say(record, agent, "inbox", private=True)
+        self.journal.whisper(record, agent, "inbox")
         if self.counted(record, agent, "unread") > self.patient(record, "unread"):
             self.hold(record, "inbox held", "unread")
 
@@ -75,7 +75,7 @@ class MessagesFeature(Feature):
         if not self.due(record, agent, "answering") or self.counted(record, agent, "answering") > self.patient(record, "answering"):
             return
         names = ", ".join(f"message {m.n}" for m in held[-3:])
-        self.say(record, agent, "answer", private=True, messages=names)
+        self.journal.whisper(record, agent, "answer", messages=names)
 
     def paragraphs(self, message) -> list[str]:
         blocks = (b.strip() for b in (message.brief or message.title).split("\n\n"))
@@ -150,4 +150,4 @@ class MessagesFeature(Feature):
         said = last_said(record, agent).strip()
         if len(said) < RUN_ON or "\n\n" in said or said.count(". ") < SENTENCES:
             return
-        self.say(record, agent, "paragraphs", private=True)
+        self.journal.whisper(record, agent, "paragraphs")

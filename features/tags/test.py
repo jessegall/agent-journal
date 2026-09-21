@@ -3,42 +3,47 @@ from datetime import datetime, timezone
 
 
 from controllers.types import Messages, Nudges
-from features import FEATURES
-from features.format import formatted
-from features.tags.feature import visible
-from tests.kit import idle, nudges, report
+from tests.kit import nudges
 from tests.conftest import fresh
+
+
+def watching(record, transcript):
+    from types import SimpleNamespace
+    from controllers.types import Agents
+    from engine.engine import Engine
+    from providers import DRIVERS
+    agents = Agents(record, actor="system")
+    agents.update(agents.by_session("claude-1").n, provider="claude", transcript=str(transcript), status="working")
+    engine = Engine(record, DRIVERS["claude"](record, "claude-99"))
+    engine.agent.driver.last_report = lambda: SimpleNamespace(title="claude-1")
+    engine.announce_written()
+    return engine
 
 
 def test_every_message_without_a_tag_is_named_once(tmp_path):
     transcript = tmp_path / "s.jsonl"
     now = datetime.now(timezone.utc).isoformat()
     rows = [{"type": "user", "timestamp": now, "message": {"content": "go"}}]
+    transcript.write_text(json.dumps(rows[0]) + "\n")
 
-    def said(text):
-        rows.append({"type": "assistant", "timestamp": now, "message": {"content": [{"type": "text", "text": text}]}})
+    def said(*texts):
+        rows.extend({"type": "assistant", "timestamp": now, "message": {"content": [{"type": "text", "text": text}]}} for text in texts)
         transcript.write_text("\n".join(json.dumps(r) for r in rows) + "\n")
-        report(record, "working", "PostToolUse", provider="claude", transcript=str(transcript))
+        engine.announce_written()
+        told = [n for n in nudges(record) if "has no tag" in n]
         Nudges(record, actor="agent").read_all([n.n for n in Nudges(record).all()])
-        return told()
-
-    def told():
-        return [n for n in nudges(record) if "has no tag" in n]
+        return told
 
     record = fresh()
+    engine = watching(record, transcript)
     assert said("[!reply] done, pushed") == [], "a tagged message: nothing said"
-    assert said("Checking the build next.") == ["your last message has no tag"], "an untagged message mid-turn: named at once"
+    assert said("Checking the build next.") == ["your last message has no tag"], "an untagged message: named at once"
     assert len(said("**[!info]** a build is running")) == 1, "a bold tag counts"
     assert len(said("[!invented] a made-up tag")) == 2, "an invented leading tag is rejected"
     assert len(said("[!reply][!invented] two leading tags")) == 3, "a registered prefix does not hide an invented tag"
     assert len(said("status [!reply] is ordinary text")) == 4, "an inline tag-like phrase is rejected"
-    report(record, "working", "PostToolUse", provider="claude", transcript=str(transcript))
-    assert len(told()) == 4, "each message is named once, in the terminal"
-    rows.append({"type": "assistant", "timestamp": now, "message": {"content": [{"type": "text", "text": "no tag here"}]}})
-    rows.append({"type": "assistant", "timestamp": now, "message": {"content": [{"type": "text", "text": "nor here"}]}})
-    transcript.write_text("\n".join(json.dumps(r) for r in rows) + "\n")
-    report(record, "working", "PostToolUse", provider="claude", transcript=str(transcript))
-    assert len(told()) == 5, "one reminder waits at a time: a second is not added before the first is delivered"
+    assert len(said()) == 4, "each message is named once, in the terminal"
+    assert len(said("no tag here", "nor here")) == 5, "one reminder waits at a time: a second is not added before the first is delivered"
 
 def test_replying_by_command_is_answered_with_the_tag_that_does_it():
     from engine.hooks import handle
@@ -66,10 +71,7 @@ def test_the_last_message_is_read_only_once_claude_has_written_it(tmp_path):
 
 
 def test_a_tagged_message_runs_the_moment_the_engine_sees_it_written(tmp_path):
-    from types import SimpleNamespace
-    from controllers.types import Agents, Comments
-    from engine.engine import Engine
-    from providers import DRIVERS
+    from controllers.types import Comments
     from resources.base import SYSTEM
     record = fresh()
     transcript = tmp_path / "s.jsonl"
@@ -77,12 +79,8 @@ def test_a_tagged_message_runs_the_moment_the_engine_sees_it_written(tmp_path):
     rows = [{"type": "user", "timestamp": now, "message": {"content": "go"}},
             {"type": "assistant", "timestamp": now, "message": {"content": [{"type": "text", "text": "[!info] working"}]}}]
     transcript.write_text("\n".join(json.dumps(r) for r in rows) + "\n")
-    agents = Agents(record, actor=SYSTEM)
-    agents.update(agents.by_session("claude-1").n, provider="claude", transcript=str(transcript), status="working")
     message = Messages(record, actor="user").create("are you there?")
-    engine = Engine(record, DRIVERS["claude"](record, "claude-99"))
-    engine.agent.driver.last_report = lambda: SimpleNamespace(title="claude-1")
-    engine.announce_written()
+    engine = watching(record, transcript)
     rows.append({"type": "assistant", "timestamp": now, "message": {"content": [{"type": "text", "text": f"[!reply:{message.n}] yes, here"}]}})
     transcript.write_text("\n".join(json.dumps(r) for r in rows) + "\n")
     engine.announce_written()
@@ -90,33 +88,40 @@ def test_a_tagged_message_runs_the_moment_the_engine_sees_it_written(tmp_path):
         "written mid-turn, no hook fired: the reply is posted as soon as the engine sees it"
 
 
-def test_the_final_message_the_stop_hook_carries_runs_its_tags_before_the_transcript_has_it():
+def test_the_final_message_the_stop_hook_carries_runs_its_tags_before_the_transcript_has_it(tmp_path):
     from controllers.types import Comments
     from engine.hooks import handle
     from providers import PROVIDERS
     from resources.base import SYSTEM
     record = fresh()
+    engine = watching(record, tmp_path / "none.jsonl")
     message = Messages(record, actor="user").create("done yet?")
     stop = {"hook_event_name": "Stop", "session_id": "claude-1", "last_assistant_message": f"[!reply:{message.n}] done"}
-    handle(PROVIDERS["claude"](), record.root, record.env, stop)
-    handle(PROVIDERS["claude"](), record.root, record.env, stop)
+    for _ in range(2):
+        handle(PROVIDERS["claude"](), record.root, record.env, stop)
+        engine.announce_written()
     assert [c.title for c in Comments(record, actor=SYSTEM).linked_to(message.ref)] == ["done"], "posted once, from the hook's own text"
 
 
 def test_the_chosen_level_copies_tagged_messages_into_the_chat(tmp_path):
     transcript = tmp_path / "s.jsonl"
     now = datetime.now(timezone.utc).isoformat()
-    rows = [{"type": "assistant", "timestamp": now, "message": {"content": [{"type": "text", "text": "[!info] the build is green"}]}}]
-    transcript.write_text("\n".join(json.dumps(r) for r in rows) + "\n")
+    rows = [{"type": "user", "timestamp": now, "message": {"content": "go"}}]
+    transcript.write_text(json.dumps(rows[0]) + "\n")
     record = fresh()
+    engine = watching(record, transcript)
     chat = lambda: [(m.brief, m.data.get("tag")) for m in Messages(record, actor="system").all() if m.seen[:1] == ["agent"]]
-    report(record, "working", "PostToolUse", provider="claude", transcript=str(transcript))
+
+    def said(text):
+        rows.append({"type": "assistant", "timestamp": now, "message": {"content": [{"type": "text", "text": text}]}})
+        transcript.write_text("\n".join(json.dumps(r) for r in rows) + "\n")
+        engine.announce_written()
+        engine.announce_written()
+
+    said("[!info] the build is green")
     assert chat() == [], "replies only: an info message stays in the terminal"
-    rows.append({"type": "assistant", "timestamp": now, "message": {"content": [{"type": "text", "text": "[!reply] answered in the thread"}]}})
-    transcript.write_text("\n".join(json.dumps(r) for r in rows) + "\n")
-    report(record, "working", "PostToolUse", provider="claude", transcript=str(transcript))
+    said("[!reply] answered in the thread")
     assert chat() == [("answered in the thread", "reply")], "a reply without a number reaches the chat at every level"
-    record.set_setting("tags", {"verbosity": "info", "since": 0})
-    report(record, "working", "PostToolUse", provider="claude", transcript=str(transcript))
-    report(record, "working", "PostToolUse", provider="claude", transcript=str(transcript))
-    assert chat() == [("answered in the thread", "reply"), ("the build is green", "info")], "with info shown: copied into the chat once, its tag kept as data"
+    record.set_setting("tags", {"verbosity": "info"})
+    said("[!info] the build is still green")
+    assert chat() == [("answered in the thread", "reply"), ("the build is still green", "info")], "with info shown: copied into the chat once, its tag kept as data"

@@ -8,10 +8,8 @@ from controllers.types import Agents, Messages, Nudges
 from engine.stored import read_json, write_json
 from features.base import Behaviour, Feature, event, formats, interceptor, Line
 from resources.base import AGENT, SYSTEM, titled
-from engine.transcript import Turn, last_said, turns
 
 TAGS = ("discovery", "correction", "blocked", "info", "reply")
-RECENT_TURNS, RECENT_SECONDS = 6, 1800.0
 MARKING = threading.Lock()
 RUNS = {"reply": "message reply {n} {text}", "log": "work log {text} --n {n}", "end": "work end {n} --how {text}",
         "todo": "todo create {name} --brief {text}", "fact": "fact create {name} --brief {text}"}
@@ -55,7 +53,6 @@ class Tags(Feature):
     RUNS = "runs"
     PLACES = "places"
     VERBOSITY = "verbosity"
-    SINCE = "since"
 
     def settings_view(self, record) -> dict:
         return {"names": self.names(record), "places": self.places(record), "verbosity": self.verbosity(record), "levels": list(SHOWN)}
@@ -70,15 +67,11 @@ class Tags(Feature):
     def reader(self, record) -> re.Pattern:
         return pattern(self.names(record))
 
-    @event("agent.updated")
     @event("agent.said")
     def check(self, event, record) -> None:
-        agent = self.agent(event, record)
-        if not agent:
-            return
-        for turn in self.written(record, agent):
-            if not self.reader(record).match(turn.text) and not self.already(record, agent, turn, "untagged") and not self.waiting(record, agent):
-                self.say(record, agent, "untagged", tags=" ".join(written(self.names(record))))
+        agent, text = self.agent(event, record), str(event.data.get("text") or "")
+        if agent and not self.reader(record).match(text) and not self.already(record, agent, text, "untagged") and not self.waiting(record, agent):
+            self.journal.say(record, agent, "untagged", tags=" ".join(written(self.names(record))))
 
     def waiting(self, record, agent) -> bool:
         title = self.lines["untagged"].title
@@ -94,58 +87,49 @@ class Tags(Feature):
     def argv(self, template: str, n: str, name: str, text: str) -> list[str]:
         return [{"{text}": text, "{n}": n, "{name}": name}.get(word, word) for word in template.split()]
 
-    def already(self, record, agent, turn, kind: str = "tagged") -> bool:
+    def already(self, record, agent, text: str, kind: str = "tagged") -> bool:
         f = record.root / "runtime" / f"{kind}-{agent.title}.json"
-        keys = (*([f"{agent.transcript}:{turn.line}"] if turn.line >= 0 else []), hashlib.sha1(turn.text.strip().encode()).hexdigest())
+        key = hashlib.sha1(text.strip().encode()).hexdigest()
         with MARKING:
             done = read_json(f, {})
-            if any(key in done for key in keys):
+            if key in done:
                 return True
-            write_json(f, {**done, **{key: time.time() for key in keys}})
+            write_json(f, {**done, key: time.time()})
         return False
 
-    @event("agent.updated")
     @event("agent.said")
     def expand(self, event, record) -> None:
-        agent = self.agent(event, record)
-        if not agent:
+        agent, text = self.agent(event, record), str(event.data.get("text") or "")
+        if not agent or not text.strip():
             return
-        shown, since = SHOWN[self.verbosity(record)], float(self.setting(record, self.SINCE, 0) or 0)
-        for turn in self.written(record, agent):
-            if CARRIED.search(turn.text) and not self.already(record, agent, turn):
-                self.carried(record, agent, turn)
-            leading = LEADING.match(turn.text)
-            carried = CARRIED.match(turn.text)
-            if leading and not carried and leading.group(1) in shown and turn.at >= since and not self.already(record, agent, turn, "shown"):
-                self.show(record, leading.group(1), turn)
+        if CARRIED.search(text) and not self.already(record, agent, text):
+            self.carried(record, agent, text)
+        leading = LEADING.match(text)
+        if leading and not CARRIED.match(text) and leading.group(1) in SHOWN[self.verbosity(record)] and not self.already(record, agent, text, "shown"):
+            self.show(record, leading.group(1), text)
 
-    def show(self, record, tag: str, turn) -> None:
-        text = LEADING.sub("", turn.text, count=1).strip()
+    def show(self, record, tag: str, said: str) -> None:
+        text = LEADING.sub("", said, count=1).strip()
         if text:
             Messages(record, actor=AGENT).create(titled(text), brief=text, tag=tag)
 
-    def written(self, record, agent) -> list:
-        spoken = [Turn(line=-1, who="agent", text=agent.said, at=time.time())] if agent.said and agent.event == "Stop" else []
-        recent = [t for t in (turns(record, agent)[-RECENT_TURNS:] if agent.transcript else []) if time.time() - t.at < RECENT_SECONDS]
-        return [*recent, *spoken]
-
-    def carried(self, record, agent, turn) -> None:
+    def carried(self, record, agent, said: str) -> None:
         from commands.cli import run
-        runs, text = self.runs(record), CARRIED.sub("", self.reader(record).sub("", turn.text)).strip()
-        for name, n, argument in CARRIED.findall(turn.text):
+        runs, text = self.runs(record), CARRIED.sub("", self.reader(record).sub("", said)).strip()
+        for name, n, argument in CARRIED.findall(said):
             if name not in runs:
                 continue
             said, wrong = io.StringIO(), io.StringIO()
             code = run(["--root", str(record.root), "--env", record.env, "--session", agent.title, "--as", AGENT,
                         *self.argv(runs[name], n, argument, text)], out=said, err=wrong)
             if code:
-                self.say(record, agent, "refused", private=True, tag=name, on=n or argument, said=(wrong.getvalue() or said.getvalue()).strip())
+                self.journal.whisper(record, agent, "refused", tag=name, on=n or argument, said=(wrong.getvalue() or said.getvalue()).strip())
 
     @interceptor
     def replied(self, provider, record, hook, session) -> str:
         found = REPLIED.search(hook.tool.command) if self.on(record, "replying") and "--file" not in hook.tool.command else None
         if found:
-            self.say(record, Agents(record, actor=SYSTEM).by_session(session), "by tag", private=True, n=found.group(1))
+            self.journal.whisper(record, Agents(record, actor=SYSTEM).by_session(session), "by tag", n=found.group(1))
         return ""
 
     def places(self, record) -> dict:

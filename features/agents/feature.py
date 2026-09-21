@@ -87,7 +87,7 @@ class AgentsFeature(Feature):
         todos.update(todo.n, reported={**said, "told": True})
         if said.get("dispatcher"):
             dispatcher = self.rows(record).by_session(said["dispatcher"])
-            self.say(record, dispatcher, "reported", who=said.get("agent"), n=todo.n, how=said.get("how", ""))
+            self.journal.say(record, dispatcher, "reported", who=said.get("agent"), n=todo.n, how=said.get("how", ""))
 
     @event("agent.updated")
     def lapsed(self, event, record) -> None:
@@ -104,4 +104,4 @@ class AgentsFeature(Feature):
                 continue
             todos.update(t.n, assigned="", lapsed=who)
             agent = self.agent(event, record)
-            self.say(record, agent, "lapsed", who=who, n=t.n, minutes=limit // 60)
+            self.journal.say(record, agent, "lapsed", who=who, n=t.n, minutes=limit // 60)

@@ -4,6 +4,14 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.19.0 — Every feature speaks through its journal, and a said message carries its text
+
+Every feature now holds `self.journal`, one messenger with `say` (a line in the agent's terminal), `whisper` (the same, private to one session), `notify` (the user's rail), `log` (a notification already seen), `notice` (a line pinned over the chat) and `clear`. Each builds one `Message` — kind, filled line, feature, actor, data — and hands it to a single `send()` that stores it and so puts it on the bus. No feature creates nudges, notifications or notices by hand any more: checks, faults, permissions and plugins (the host, the services watcher and plugin answers) all declare their lines and go through it, and each row records which feature said it.
+
+The `agent.said` event carries the text the agent said, one event per message: the engine emits it for every new turn in the transcript and for the final message the Stop hook reports. The tags feature listens to that event alone, keyed once per text, so reply tags, the missing-tag reminder and the chat copy all run from the words themselves. The chat-detail level applies to messages said after it is chosen.
+
+What to do about it: `journal upgrade`.
+
 ## 2.18.2 — The agent's raw terminal output is kept whole
 
 The supervisor kept only the last 4 KB of each burst of the agent's output in its capture, so a large redraw was mostly missing and a replay against the terminal recording could not line up. Every burst is kept whole now; housekeeping still trims the capture to its tail once an hour.

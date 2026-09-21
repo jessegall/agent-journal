@@ -28,7 +28,7 @@ class Attachments(Feature):
                 if (not tags or str(tags).startswith("video; ")) and (mimetypes.guess_type(name)[0] or "").startswith(("image/", "video/"))]
 
     def tell(self, record, agent, type_: str, row, name: str) -> None:
-        self.say(record, agent, "untagged", type=type_, n=row.n, name=name, quoted=json.dumps(name))
+        self.journal.say(record, agent, "untagged", type=type_, n=row.n, name=name, quoted=json.dumps(name))
 
     @event("updated")
     def tag_media(self, event, record) -> None:

@@ -18,5 +18,5 @@ class Cleanup(Feature):
             return
         found = evidence(record)
         if found:
-            self.say(record, agent, "evidence", count=self.plural(len(found), "thing"),
+            self.journal.say(record, agent, "evidence", count=self.plural(len(found), "thing"),
                      found="; ".join(f"{f['ref']} {f['evidence']} — {f['retire']}" for f in found))

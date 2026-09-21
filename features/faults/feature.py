@@ -27,7 +27,8 @@ def developing(project: Path) -> bool:
 
 class Faults(Feature):
     name = "faults"
-    lines = {"slow": Line("{{title}}", "{{said}}")}
+    lines = {"slow": Line("{{title}}", "{{said}}"),
+             "fault": Line("{{title}}", "{{said}}")}
     title_ = "Faults while developing"
     abstract_ = "While developing, what would otherwise pass in silence is reported: anything local that runs past its budget, and any error the viewer throws"
     help_ = "Starts on only while developing: DEVELOPMENT_MODE=true in the project's .env or the environment; everywhere else it starts off, and either way it can be switched. budget: everything here runs on one machine against files, so anything over the budget is a bug — faults.budget.request, .hook and .command are milliseconds per environment, 50 by default, and 0 drops that budget. console: the viewer posts what it throws and it is filed the same way. One notification per target, carrying the worst time or the last words and how many times it happened."
@@ -55,10 +56,10 @@ class Faults(Feature):
         if standing:
             rows.update(standing.n, brief=said, times=times, told=told, **data)
         else:
-            rows._logged(title, brief=said, times=times, told=told, **data)
+            self.journal.log(record, "fault", title=title, said=said, times=times, told=told, **data)
         agent = Agents(record, actor=SYSTEM).primary() if telling else None
         if agent:
-            self.say(record, agent, "slow", title=title, said=said)
+            self.journal.say(record, agent, "slow", title=title, said=said)
 
     def slow(self, record, kind: str, name: str, took: float, working: float | None = None) -> None:
         if working is not None and working <= self.milliseconds(record, kind):
