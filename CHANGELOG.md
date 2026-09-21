@@ -4,6 +4,18 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.63.2 — The stored keys say what they hold too
+
+To-dos 653 and 644, rule 34. The names that were stored data are renamed, and migration m0008 moves the stored values:
+- An event's `heard` is `handled`, in every line of events.jsonl, rewritten under the record's lock.
+- The agent row's `said` is `last_message`.
+- A check result's `said` is `output`.
+- The work-tracking setting `said_after` is `name_work_every`.
+
+Runtime state and fault rows now use `notified` and `notified_at`. Old runtime entries are simply read as not yet notified. `scripts/checks/prose_names.py` now finds nothing, and it is registered as a check that runs every hour.
+
+What to do about it: `journal upgrade`. It runs m0008 once.
+
 ## 2.63.1 — Code names say what they hold
 
 Message 1698, to-do 644, rule 34. Every name that read like a story is renamed for what it holds or does, across the Python, the viewer and the tests. A few: `chat.said` is `chat.send`, `bus.shown` is `bus.tell_watchers`, `Actor.heard` is `Actor.delivered_until`, `typist.heard` is `typist.receive`, `ToolUse.said` is `ToolUse.text`, `Hook.said` is `Hook.last_message`, and `resources.base.shown` is `as_dict`. The renames went token by token, so no visible text changed. `scripts/checks/prose_names.py` reports these words wherever they are used as names. What it still reports is stored data (an event's `heard`, the agent row's `said`, `told` in trigger and fault state), which needs a migration, to-do 653. The law keywords for L1 and L2 now match only the dispatch tools, since `dispatch` fired on file names, and a picture read no longer counts as the largest tool result.

@@ -25,14 +25,14 @@ class FaultReports:
         rows = Notifications(record, actor=SYSTEM)
         standing = rows._titled(title, standing=True)
         times = (int(standing.data.get("times", 0)) if standing else 0) + 1
-        told = float(standing.data.get("told", 0)) if standing else 0.0
+        notified_at = float(standing.data.get("notified_at", 0)) if standing else 0.0
         summary = f"{brief} Seen {self.feature.plural(times, 'time')}."
-        telling = times == 1 or times % EVERY == 0 or time.time() - told >= AGAIN
-        told = time.time() if telling else told
+        telling = times == 1 or times % EVERY == 0 or time.time() - notified_at >= AGAIN
+        notified_at = time.time() if telling else notified_at
         if standing:
-            rows.update(standing.n, brief=summary, times=times, told=told, **data)
+            rows.update(standing.n, brief=summary, times=times, notified_at=notified_at, **data)
         else:
-            self.feature.journal.log(record, "fault", title=title, summary=summary, times=times, told=told, **data)
+            self.feature.journal.log(record, "fault", title=title, summary=summary, times=times, notified_at=notified_at, **data)
         agent = Agents(record, actor=SYSTEM).primary() if telling else None
         if agent:
             self.feature.journal.say(record, agent, "fault", title=title, summary=summary)

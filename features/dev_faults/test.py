@@ -47,7 +47,7 @@ def test_going_over_again_counts_but_tells_the_agent_once():
             time.sleep(0.08)
     rows = Notifications(record, actor=SYSTEM)._every()
     assert len(rows) == 1 and rows[0].data["times"] == 2, "one row per target, counting every overrun"
-    assert rows[0].data["told"] > 0
+    assert rows[0].data["notified_at"] > 0
 
 
 def test_the_budget_is_tunable_per_environment():

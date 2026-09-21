@@ -18,7 +18,7 @@ export function checkState(check, now) {
             remaining: expected ? Math.max(0, expected - elapsed) : null,
             done: running.done ?? null,
             total: running.total ?? null,
-            output: running.said || "",
+            output: running.output || "",
             runs,
             last,
         };
@@ -28,7 +28,7 @@ export function checkState(check, now) {
         elapsed: 0,
         percent: null,
         remaining: null,
-        output: last.said || "",
+        output: last.output || "",
         runs,
         last,
     };

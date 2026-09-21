@@ -89,7 +89,7 @@ class Record:
             data = {**data, "cause": bus.cause()}
         def release() -> Event:
             with self.locked():
-                e = Event(id=self.last_event() + 1, at=time.time(), type=type, n=n, action=action, actor=actor, data=data, pid=os.getpid(), heard=quiet or bus.listening())
+                e = Event(id=self.last_event() + 1, at=time.time(), type=type, n=n, action=action, actor=actor, data=data, pid=os.getpid(), handled=quiet or bus.listening())
                 with (self.home / "events.jsonl").open("a") as fh:
                     fh.write(json.dumps(asdict(e)) + "\n")
             if self.memo is not None:

@@ -55,7 +55,7 @@ class WorkDetails(FeatureDetails):
             unit="edits",
         ),
         Setting(
-            name="said_after",
+            name="name_work_every",
             default=10,
             title="Name the work in hand every",
             unit="edits",
