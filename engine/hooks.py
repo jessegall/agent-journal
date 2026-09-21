@@ -7,6 +7,7 @@ from engine.actors import COMPACTING, IDLE, STOPPED, WORKING
 from engine.record import Record
 from engine.sessions import Sessions, agent_pid
 from resources.base import AGENT, SYSTEM
+from engine import runtime
 
 STATUS = {"SessionStart": IDLE, "Stop": IDLE, "UserPromptSubmit": WORKING, "PreToolUse": WORKING,
           "PostToolUse": WORKING, "PreCompact": COMPACTING, "SubagentStart": "",
@@ -59,8 +60,7 @@ def start(root: Path, env: str, compacted: bool) -> str:
 
 
 def default_env(root: Path, prefer: str = "") -> str:
-    f = root / "runtime" / "env"
-    return prefer or (f.read_text().strip() if f.is_file() else "main")
+    return prefer or runtime.env(root)
 
 
 def answer(provider, root: Path, raw: dict, pid: int, prefer: str = "") -> dict:
@@ -85,7 +85,7 @@ def seated(root: Path, env: str, session: str) -> None:
 def handle(provider, root: Path, env: str, raw: dict) -> dict:
     from providers.payload import Hook
     hook = Hook.read(raw)
-    if hook.event not in STATUS or (root / "runtime" / "off").is_file():
+    if hook.event not in STATUS or runtime.off(root):
         return {}
     log_command(root, hook)
     record = Record(root, env, memo=True)

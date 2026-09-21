@@ -7,6 +7,7 @@ from controllers.base import Controller
 from controllers.types import CONTROLLERS
 from resources.base import ACTIONS, ACTORS, CLOSED, EVERY, OPEN, SCOPES, VIEWS, Resource
 from resources.types import PRIORITY, TYPES
+from engine import runtime
 
 
 SHOWN = {OPEN: "Open", EVERY: "All"}
@@ -23,10 +24,9 @@ def built() -> str:
 
 
 def manifest(root: Path | None = None) -> dict:
-    env_file = root / "runtime" / "env" if root else None
     return {
         "project": root.resolve().parent.name if root else "",
-        "environment": env_file.read_text().strip() if env_file and env_file.is_file() else "main",
+        "environment": runtime.env(root) if root else runtime.DEFAULT_ENV,
         "version": next((f.read_text().strip() for f in ((Path(__file__).resolve().parents[1] / "VERSION"),) if f.is_file()), ""),
         "build": built(),
         "actions": list(ACTIONS),

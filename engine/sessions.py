@@ -3,8 +3,9 @@ import time
 from pathlib import Path
 
 from resources.types import TYPES
-from engine.stored import read_json, write_json, write_text
+from engine.stored import read_json, write_json
 from engine.proc import run
+from engine import runtime
 
 
 RECENT = 600.0
@@ -78,9 +79,8 @@ class Sessions:
         for session, s in self.all().items():
             if s.get("environment") == old:
                 self.write(session, environment=new)
-        f = self.root / "runtime" / "env"
-        if f.is_file() and f.read_text().strip() == old:
-            write_text(f, new)
+        if runtime.env_file(self.root).is_file() and runtime.env(self.root) == old:
+            runtime.set_env(self.root, new)
 
     def environment(self, session: str) -> str:
         return self.read(session).get("environment", "")

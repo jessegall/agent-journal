@@ -4,17 +4,14 @@ import threading
 import time
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from engine import runtime  # noqa: E402
+
 PROTOCOL = "2025-06-18"
 NAME = "journal"
 WAIT = 0.3
 
-
-def queue(root: Path) -> Path:
-    return root / "runtime" / "channel.jsonl"
-
-
-def alive(root: Path) -> Path:
-    return root / "runtime" / "channel.on"
+queue, alive = runtime.channel_queue, runtime.channel_alive
 
 
 def say(message: dict) -> None:
