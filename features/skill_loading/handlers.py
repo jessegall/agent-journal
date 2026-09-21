@@ -1,6 +1,6 @@
 import time
 
-from engine.events import AgentUpdated, SessionStarted
+from engine.events import AgentUpdated, SessionStarted, ToolFinished
 from features import trigger
 from features.parts import Context, Handler
 from features.skill_loading.catalogue import SKILL, chosen, skills
@@ -9,6 +9,7 @@ from providers import PROVIDERS
 from resources.types import AgentRow
 
 WINDOWS = ("SessionStart", "PreCompact")
+KEPT_LOADS = 50
 
 
 def journal_skill(name: str) -> bool:
@@ -61,3 +62,12 @@ class RequireAlwaysSkills(Handler):
         if context.agent:
             now = time.time()
             require(context.record, context.agent.session, {name: now for name in chosen(context.record)})
+
+
+class ShowLoadsInChat(Handler):
+    behaviour = "chat"
+
+    def handle(self, context: Context, event: ToolFinished) -> None:
+        if context.agent and event.skill:
+            loads = [*(context.agent.row.data.get(AgentRow.skill_loads) or []), {"skill": event.skill, "at": time.time()}]
+            context.journal.agents.update(context.agent.row.n, **{AgentRow.skill_loads: loads[-KEPT_LOADS:]})

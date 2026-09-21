@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.82.0 — A skill the agent loads shows in the chat
+
+Message 1683, to-do 707. Every skill the agent loads now appears in the chat where it happened, as its own line: a faint green box reading Loaded skill and the skill's name, the way Claude Code marks a skill with a green dot. It works for Claude's Skill tool and for Codex reading a SKILL.md. The agent keeps its last fifty loads, and the line is a behaviour of Skill loading that Settings can switch off.
+
+What to do about it: `journal upgrade`, then reload the viewer.
+
 ## 2.81.1 — What the agent's own acts set off is not announced back to it
 
 To-do 706, following 614. The agent's hook reports were written by the system, so whatever they set off counted as the system's doing and was announced to the agent: a row closed by the agent's own commit trailer, and the plan that moved on after it. A hook report now carries the agent as its cause, so what follows from it is known to be the agent's own act and is not told back to it. A nudge meant for the agent still reaches it, and a change you make to the agent row from the viewer is still yours.

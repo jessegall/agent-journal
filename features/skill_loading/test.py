@@ -137,3 +137,7 @@ def test_a_session_start_holds_every_tool_call_until_the_always_on_skills_are_lo
     read = {"input": "sed -n '1,200p' .agents/skills/journal-work-tracking/SKILL.md"}
     assert handle(codex, record.root, record.env, {**hook, "hook_event_name": "PreToolUse", "tool_name": "exec", "tool_input": read}) in ({}, None), \
         "reading it is never refused"
+    handle(codex, record.root, record.env, {**hook, "hook_event_name": "PostToolUse", "tool_name": "exec", "tool_input": read})
+    from controllers.types import Agents
+    assert [load["skill"] for load in Agents(record, actor="system").by_session("codex-1").data["skill_loads"]] == ["journal-work-tracking"], \
+        "the load is kept on the agent, for the chat to show"

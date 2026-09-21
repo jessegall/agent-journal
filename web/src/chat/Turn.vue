@@ -150,7 +150,16 @@ async function drop() {
 </script>
 
 <template>
-    <template v-if="turn.type === 'receipt'">
+    <template v-if="turn.type === 'skill'">
+        <div class="thread-turn skill" :data-ref="turn.ref">
+            <span class="thread-skill">
+                <span class="thread-skill-dot" />
+                Loaded skill
+                <strong>{{ turn.title }}</strong>
+            </span>
+        </div>
+    </template>
+    <template v-else-if="turn.type === 'receipt'">
         <div class="thread-turn receipt" :data-ref="turn.ref">
             <div class="thread-receipt" @click="follow" v-html="html" />
         </div>
@@ -313,6 +322,30 @@ async function drop() {
 
 .thread-turn.receipt {
     max-width: 100%;
+}
+
+.thread-skill {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 4px 10px;
+    border: 1px solid color-mix(in srgb, var(--created) 28%, transparent);
+    border-radius: 7px;
+    background: color-mix(in srgb, var(--created) 8%, transparent);
+    color: color-mix(in srgb, var(--created) 75%, var(--text-3));
+    font-size: 12px;
+}
+
+.thread-skill strong {
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    font-weight: 500;
+}
+
+.thread-skill-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--created);
 }
 
 .thread-receipt {

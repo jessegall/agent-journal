@@ -91,12 +91,13 @@ class AgentUpdated(AgentEvent):
     file: str = ""
     session: str = ""
     size: int = 0
+    skill: str = ""
 
     @classmethod
     def read(cls, event) -> "AgentUpdated":
         return cls(agent=event.n, hook=str(event.data.get("hook") or ""), tool=str(event.data.get("tool") or ""),
                    file=str(event.data.get("file") or ""), session=str(event.data.get("session") or ""),
-                   size=int(event.data.get("size") or 0))
+                   size=int(event.data.get("size") or 0), skill=str(event.data.get("skill") or ""))
 
     def wanted(self) -> bool:
         return not self.hook_name or self.hook == self.hook_name

@@ -33,6 +33,25 @@ const receipt = (m) => {
     };
 };
 
+const loads = (agents) =>
+    agents
+        .filter((a) => !a.data.parent)
+        .flatMap((a) =>
+            (a.data.skill_loads || []).map((load) => ({
+                ref: `skill:${a.n}:${load.at}`,
+                type: "skill",
+                n: a.n,
+                who: "agent",
+                created: load.at,
+                seen: ["agent"],
+                refs: [],
+                data: {},
+                sections: [],
+                title: load.skill,
+                brief: "",
+            }))
+        );
+
 const promisedFor = (p, m) => m.brief === p.brief && m.created >= p.created - PROMISED_WITHIN;
 
 const delivered = (p, m) => Object.keys(m.data.files || {}).length >= Object.keys(p.data.files).length;
@@ -46,6 +65,7 @@ export function threadTurns(rows, pending) {
         ...live.filter((m) => m.seen[0] === "user" && m.completed && filed(m).length && !acknowledged(m, rows)).map(receipt),
         ...rows.comment.filter((c) => !c.deleted && hasParent(c)).map((c) => ({...c, who: c.seen[0]})),
         ...rows.question.filter((q) => !q.deleted).map((q) => ({...q, who: "agent"})),
+        ...loads(rows.agent || []),
         ...pending.filter((p) => !live.some((m) => promisedFor(p, m) && delivered(p, m))),
     ].sort((a, b) => a.created - b.created);
     return {turns, keys};
