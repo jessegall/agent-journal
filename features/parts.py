@@ -76,10 +76,10 @@ class Context:
 WHOLE_FEATURE = ""
 
 
-def wanted(part, feature, record, row) -> bool:
+def wanted(part, feature, record, row, timed: bool = True) -> bool:
     if part.behaviour is None:
         return True
-    if not feature.cadence(record, part.behaviour):
+    if not timed or not feature.cadence(record, part.behaviour):
         return feature.on(record, part.behaviour)
     return bool(row) and feature.due(record, row, part.behaviour)
 
@@ -142,7 +142,7 @@ class Client:
     def formatter(self, formatter: TextFormatter) -> None:
         feature = self.feature
         FORMATTERS.append((lambda text, record: formatter.format(Context.of(feature, record), text)
-                           if not record or (feature.enabled(record) and wanted(formatter, feature, record, None)) else text,
+                           if not record or (feature.enabled(record) and wanted(formatter, feature, record, None, timed=False)) else text,
                            formatter.surfaces))
 
 
@@ -155,7 +155,7 @@ class AgentHooks:
 
         def policy(provider, record, hook, session) -> str:
             row = Agents(record, actor=SYSTEM).by_session(session)
-            if not feature.enabled(record) or not wanted(interceptor, feature, record, row):
+            if not feature.enabled(record) or not wanted(interceptor, feature, record, row, timed=False):
                 return ""
             return interceptor.intercept(Context.of(feature, record, row, provider, hook), hook.tool) or ""
         policy.feature = feature

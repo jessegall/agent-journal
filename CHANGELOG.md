@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.50.0 — Messages, plans and work are details and registered parts
+
+Plan 9, to-do 605. The three largest behaviour features are each a details.py and a feature.py that registers its parts. Messaging's patience counts are declared settings, and its command formatting is a TextFormatter. A plan's stepping lives in progress.py and runs on any event that can move it. Work's log, park and resume are Command classes, its write gate and auto-mode question refusal are interceptors, and its edit thresholds are settings. An interceptor or formatter now checks its behaviour's switch only, never its cadence. The became feature is now Resource tracking (feature name tracking).
+
+What to do about it: `journal upgrade`.
+
 ## 2.49.0 — The middle features are details and registered parts
 
 Plan 9, to-do 604. Context, Became, Cleanup, Start, Attachments, Skills, Checks, Faults and Agents are each a details.py and a feature.py that registers its parts. Faults keeps its timing and error reports as a FaultReports service the core reaches through the feature. Agents declares its quiet, lapse and recent minutes as settings, so the viewer shows them. New generic events: AnyEvent, ResourceCreated and AgentChanged. The names journal.<type> answers to are set when a type registers, at load, never looked up per call.
