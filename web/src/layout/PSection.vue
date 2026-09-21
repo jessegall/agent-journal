@@ -1,11 +1,17 @@
 <script setup lang="ts">
+import {watchEffect} from "vue";
 import {api} from "../api/client.js";
 import Icon from "../kit/Icon.vue";
 import {go, peek, route} from "../route.js";
-import {rows} from "../sync/rows.js";
+import {holding, rows} from "../sync/rows.js";
 import {currentWork, doneOf, lineOf, phaseOf, planButton, queued, rowsOf, shownPlans, stateOf, wordOf} from "./statusline.js";
 
-defineProps<{plans: unknown; error: string; data: unknown; p: unknown}>();
+const props = defineProps<{plans: unknown; error: string; data: unknown; p: unknown}>();
+watchEffect(() => {
+    const known = new Set(rows("todo").map((t) => t.n));
+    const missing = rowsOf(props.p).filter((n) => !known.has(n));
+    if (missing.length) holding("todo", missing);
+});
 defineEmits<{runBar: [unknown]}>();
 </script>
 
