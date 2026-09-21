@@ -1,11 +1,16 @@
+import hashlib
 import socket
 from pathlib import Path
 
 LONGEST = 65536
 
 
+def folder(root: Path) -> Path:
+    return Path("/tmp") / f"journal-{hashlib.sha1(str(Path(root).resolve()).encode()).hexdigest()[:16]}"
+
+
 def path(root: Path, session: str) -> Path:
-    return Path(root) / "runtime" / f"typist-{session}.sock"
+    return folder(root) / f"typist-{session}.sock"
 
 
 def listen(root: Path, session: str) -> socket.socket:
@@ -45,8 +50,7 @@ def send(root: Path, session: str, raw: bytes) -> bool:
 
 
 def live(root: Path) -> list[str]:
-    folder = Path(root) / "runtime"
-    return sorted(p.name.removeprefix("typist-").removesuffix(".sock") for p in folder.glob("typist-*.sock") if reachable(p))
+    return sorted(p.name.removeprefix("typist-").removesuffix(".sock") for p in folder(root).glob("typist-*.sock") if reachable(p))
 
 
 def reachable(where: Path) -> bool:

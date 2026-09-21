@@ -3,7 +3,7 @@ from pathlib import Path
 
 HERE = Path(__file__).resolve().parents[2]
 LINES = 150
-GENERATED = {"test_every_action.py", "test_the_gate.py"}
+GENERATED = {"test_every_action.py", "test_the_gate.py", "test_it_boots.py"}
 
 
 def kept(feature: Path) -> list[Path]:
