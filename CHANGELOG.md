@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.16.11 — A reply tag is never lost
+
+A turn's tags ran only at the moment the turn ended, through a trigger that fires once as the agent goes idle; when that moment was missed, the reply was lost for good. Every update now looks at the agent's last few turns and runs any tag it has not run yet — the last turn once the agent is idle, earlier ones at once — so a tagged turn missed at the end is caught at the next thing that happens. Marking a turn as run is guarded, so two updates at once cannot post it twice.
+
+What to do about it: `journal upgrade`.
+
 ## 2.16.10 — Notifications are what the user acts on
 
 The notifications rail holds what waits on the user: a question to answer, a suggestion to decide, a plan drafted or waiting at a checkpoint, a report, a doc, a rule or fact made, a reminder, a failing check, and whatever a plugin raises. What the user never acts on — the journal updating itself, a request slower than its budget, a plugin installed, a model or effort change typed into the agent — is still recorded and still in the activity, but filed as already seen, so it no longer fills the rail. The 87 such rows already there were cleared.
