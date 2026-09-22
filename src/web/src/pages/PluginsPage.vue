@@ -90,8 +90,27 @@ async function preview() {
     busy.value = "";
 }
 
+const LOG_EVERY = 1000;
+const LOG_LINES = 5000;
+const live = ref("");
+let following = false;
+
+async function logLines(name) {
+    return (await api.pluginLog(name, LOG_LINES).catch(() => ({log: ""}))).log.split("\n");
+}
+
+async function follow(name, skipped) {
+    live.value = (await logLines(name)).slice(skipped).join("\n");
+    if (following) setTimeout(() => follow(name, skipped), LOG_EVERY);
+}
+
 async function install() {
     busy.value = "install";
+    live.value = "";
+    const name = shown.value.name;
+    const skipped = (await logLines(name)).length;
+    following = true;
+    follow(name, skipped);
     try {
         const upgrading = shown.value.upgrading;
         const said = upgrading
@@ -106,6 +125,8 @@ async function install() {
     } catch (e) {
         outcome.value = {ok: false, text: e.message};
     }
+    following = false;
+    await follow(name, skipped);
     busy.value = "";
 }
 
@@ -231,7 +252,11 @@ async function askAgent() {
                     <p :class="['shown-result', {failed: !outcome.ok}]">
                         {{ outcome.ok ? `${shown.title} is installed.` : "It did not install. Nothing of it was kept." }}
                     </p>
-                    <Console :text="outcome.text" />
+                    <Console :text="live || outcome.text" />
+                </template>
+                <template v-else-if="busy === 'install'">
+                    <p class="shown-result">{{ shown.upgrading ? "Upgrading" : "Installing" }}…</p>
+                    <Console :text="live || 'Starting…'" />
                 </template>
                 <template v-else>
                     <p class="shown-from">

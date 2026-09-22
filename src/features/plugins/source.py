@@ -8,6 +8,8 @@ import subprocess
 import time
 from pathlib import Path
 
+from engine.proc import streamed
+
 from engine.hooks import default_env
 from engine.viewer import running
 from features.plugins.manifest import fill, read
@@ -136,10 +138,18 @@ def prepared(manifest: dict, where: Path, env: dict, record_log: Path) -> None:
     record_log.parent.mkdir(parents=True, exist_ok=True)
     for step in manifest.get("setup") or []:
         command = fill(step["run"], {k: v for k, v in env.items()})
-        code, out = run(command, where / (step["cwd"] or ""), env, SETUP_SECONDS)
         with record_log.open("a") as f:
-            f.write(f"$ {command_text(command)}\n{out}\n")
-        if code:
+            f.write(f"$ {command_text(command)}\n")
+        written = [0]
+
+        def append(output: str) -> None:
+            with record_log.open("a") as f:
+                f.write(output[written[0]:])
+            written[0] = len(output)
+        code, out = streamed(command if not isinstance(command, str) else ["/bin/sh", "-c", command], where / (step["cwd"] or ""),
+                             SETUP_SECONDS, append, env)
+        append(f"{out}\n")
+        if code != 0:
             tail = "\n".join(out.strip().splitlines()[-SHOWN_LINES:])
             raise Refused(f"setup step {step['name']!r} failed ({code}): {command_text(command)}\n{tail}\nthe whole output is in {record_log}")
 
