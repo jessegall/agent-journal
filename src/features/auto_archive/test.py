@@ -33,7 +33,10 @@ def test_reports_and_todos_past_their_keep_days_are_archived_open_ones_never():
         ([open_row.n], ["archived 7 days after it was closed"]), "a to-do closed past its keep days is archived, an open one never"
 
 
-def test_seen_notifications_past_their_keep_days_go_unseen_ones_stay():
+def test_a_type_that_declares_how_many_rows_it_keeps_is_pruned_to_that_count(monkeypatch):
+    from resources.types import Notification, Nudge
+    monkeypatch.setattr(Notification, "kept", 1)
+    monkeypatch.setattr(Nudge, "kept", 1)
     record = fresh()
     notes = Notifications(record, actor=AGENT)
     seen_old = notes.create("told long ago")
@@ -42,14 +45,13 @@ def test_seen_notifications_past_their_keep_days_go_unseen_ones_stay():
     for n in (seen_old.n, seen_new.n):
         Notifications(record, actor=USER).read(n)
     age(notes, seen_old.n, created=time.time() - 2 * 86400)
-    age(notes, unseen_old.n, created=time.time() - 2 * 86400)
     nudges = Nudges(record, actor=SYSTEM)
-    old_line, new_line = nudges.create("said two hours ago"), nudges.create("said just now")
-    age(nudges, old_line.n, created=time.time() - 2 * 3600)
+    old_line, new_line = nudges.create("said a while ago"), nudges.create("said just now")
+    age(nudges, old_line.n, created=time.time() - 60)
     tick(record)
     assert sorted(r.n for r in notes.all(deleted=True, completed=True)) == [unseen_old.n, seen_new.n], \
-        "a seen notification past a day is removed entirely; unseen and recent ones stay"
-    assert [r.n for r in nudges.all(deleted=True, completed=True)] == [new_line.n], "a nudge past an hour is removed; it was said already"
+        "past the count, the oldest seen notification goes; an unseen one is never pruned"
+    assert [r.n for r in nudges.all(deleted=True, completed=True)] == [new_line.n], "past the count, the oldest nudge goes"
 
 
 def test_keep_zero_leaves_reports_listed():

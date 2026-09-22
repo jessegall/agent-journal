@@ -14,6 +14,6 @@ class RetentionDetails(FeatureDetails):
         removed, after their keep days, once an hour
     """
 
-    help = "keep.report, keep.todo, keep.notification and keep.nudge are days per environment (a nudge is kept an hour, 1/24); 0 keeps everything listed."
+    help = "keep.report and keep.todo are days per environment; 0 keeps everything listed. A type that declares how many rows it keeps (nudges 100, seen notifications 100, closed notices 100, answered browser asks 50) is pruned to that count, oldest first."
 
     trigger = Trigger(every=60, unit=MINUTES)

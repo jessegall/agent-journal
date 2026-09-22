@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.93.0 — A resource type declares how many rows it keeps
+
+A resource definition can declare how many of its rows are kept and which of them may go: nudges keep 100, notifications the user has seen 100, closed notices 100, answered browser asks 50. Once an hour the oldest past that count are removed. This replaces the hour and the day auto-archive gave nudges and notifications; keep.report and keep.todo stay as they were.
+
 ## 2.92.0 — Activity rows fold and open
 
 Every row in the activity panel folds to its heading and opens on a click. A row that came with a notification or a plugin's event, such as a journal update or Sin found, opens by default; routine rows (a message processed, work updated) stay one line. The row's number opens the thing it is about.
