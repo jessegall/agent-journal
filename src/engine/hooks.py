@@ -43,6 +43,8 @@ def start(root: Path, env: str, compacted: bool) -> str:
 
 
 SHOWING = threading.Lock()
+DONE = "_done"
+KEPT_DONE = 50
 REPLAYING = threading.Lock()
 
 
@@ -69,16 +71,30 @@ def shown(root: Path, raw: dict) -> None:
     f = runtime.session_file(root, session, "displayed.json")
     with SHOWING:
         held = read_json(f, {})
+        if message in held.get(DONE, []):
+            return
         parts = {**held.get(message, {}), str(int(raw.get("index") or 0)): str(raw.get("delta") or "")}
         rest = {key: value for key, value in held.items() if key != message}
         if not raw.get("final"):
             write_json(f, {**rest, message: parts})
             return
-        if rest:
-            write_json(f, rest)
-        else:
-            f.unlink(missing_ok=True)
-    text = "".join(parts[i] for i in sorted(parts, key=int))
+        write_json(f, {**rest, DONE: [*rest.get(DONE, []), message][-KEPT_DONE:]})
+    send_to_chat(root, session, "".join(parts[i] for i in sorted(parts, key=int)))
+
+
+def stopped(root: Path, session: str, text: str) -> None:
+    f = runtime.session_file(root, session, "displayed.json")
+    with SHOWING:
+        held = read_json(f, {})
+        cut = [message for message, parts in held.items() if message != DONE
+               and "".join(parts[i] for i in sorted(parts, key=int)).strip() and text.strip().startswith("".join(parts[i] for i in sorted(parts, key=int)).strip())]
+        if not cut:
+            return
+        write_json(f, {**{key: value for key, value in held.items() if key not in cut}, DONE: [*held.get(DONE, []), *cut][-KEPT_DONE:]})
+    send_to_chat(root, session, text)
+
+
+def send_to_chat(root: Path, session: str, text: str) -> None:
     record = Record(root, Sessions(root).environment(session) or runtime.env(root))
     row = Agents(record, actor=SYSTEM)._titled(session)
     if row and text.strip():
@@ -129,4 +145,6 @@ def handle(provider, root: Path, env: str, hook) -> dict:
         return provider.response(blocked=f"{why}{alongside(hook)}" if why else "")
     if hook.event == "SessionStart":
         return provider.response(hook.event, start(root, env, provider.compacted(hook)))
+    if hook.event == "Stop" and hook.last_message:
+        stopped(root, hook.session, hook.last_message)
     return {}

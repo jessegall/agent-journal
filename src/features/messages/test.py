@@ -132,6 +132,11 @@ def test_messages_shown_at_once_arrive_whole_and_claude_is_read_from_its_display
     transcript.write_text(transcript.read_text() + json.dumps({"type": "assistant", "timestamp": now, "message": {"content": [{"type": "text", "text": "only in the transcript"}]}}) + "\n")
     engine.tick()
     assert "only in the transcript" not in chat(), "Claude's messages come from its display hook alone"
+    displayed(record.root, {"session_id": "claude-1", "hook_event_name": "MessageDisplay", "message_id": "c", "index": 0, "final": False, "delta": "The summary "})
+    handle(PROVIDERS["claude"](), record.root, record.env, {"hook_event_name": "Stop", "session_id": "claude-1", "last_assistant_message": "The summary of the turn"})
+    assert chat().count("The summary of the turn") == 1, "a message whose last pieces never came is sent whole when the turn stops"
+    displayed(record.root, {"session_id": "claude-1", "hook_event_name": "MessageDisplay", "message_id": "c", "index": 1, "final": True, "delta": "of the turn"})
+    assert chat().count("The summary of the turn") == 1 and "of the turn" not in chat(), "a piece arriving after that does not send it again"
 
 
 def test_a_row_named_by_a_bare_number_is_named_back_with_its_type():
