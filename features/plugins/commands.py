@@ -139,3 +139,12 @@ class Purge(Command):
         kept = data(plugins.record.root, name)
         shutil.rmtree(kept, ignore_errors=True)
         return f"everything {name} kept in {kept} is gone"
+
+
+class ClearLog(Command):
+    name = "clear_log"
+
+    def run(self, context: Context, plugins, n: int):
+        name = called(plugins.load(n))
+        log(plugins.record.root, name).unlink(missing_ok=True)
+        return f"{name}'s log is empty"

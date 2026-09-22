@@ -1,3 +1,4 @@
+import json
 import re
 import time
 from dataclasses import dataclass
@@ -10,7 +11,7 @@ from features.plugins.lifecycle import called, clear
 from features.plugins.manifest import fill
 from features.plugins.payload import refusal
 from features.plugins.run import call
-from features.plugins.source import CHOSEN, environment, folder
+from features.plugins.source import CHOSEN, environment, folder, logged
 from features.status_bar import commands
 
 EACH = 1.5
@@ -59,6 +60,8 @@ class AskPluginsToRefuse(ToolInterceptor):
             started = time.monotonic()
             ok, reply = call(fill(asking, env), where, env, refusal(record, hook, name, where, writes), seconds)
             left -= time.monotonic() - started
+            if ok and reply:
+                logged(record.root, name, f"refuse? {hook.tool.name} {json.dumps(reply, ensure_ascii=False)}")
             if ok and isinstance(reply, dict) and str(reply.get("refuse") or "").strip():
                 return f"{name}: {str(reply['refuse']).strip()}"
         return ""

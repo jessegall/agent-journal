@@ -5,8 +5,9 @@ import time
 from controllers.types import Plugins
 from engine.hooks import handle
 from engine.services import Manager, status_file
+from features.plugins.commands import ClearLog
 from features.plugins.manifest import MANIFEST
-from features.plugins.source import alone, folder, home
+from features.plugins.source import alone, folder, home, log
 from providers import PROVIDERS
 from resources.base import AGENT, SYSTEM
 from tests.conftest import fresh, refused
@@ -66,6 +67,10 @@ def test_a_plugin_may_refuse_a_write_and_its_words_reach_the_agent():
     assert writing(record) == {"decision": "block", "reason": "guardian: src/Generated is generated; edit the stub instead"}, \
         "the plugin's reason is given to the agent, under its name"
     assert reading(record) == {}, "a read is not asked about unless the plugin says it reads too"
+    guardian = Plugins(record, actor=SYSTEM)._titled("guardian")
+    assert "src/Generated is generated" in log(record.root, "guardian").read_text(), "every answer the plugin gives is written to its log"
+    ClearLog().run(None, Plugins(record, actor=SYSTEM), guardian.n)
+    assert not log(record.root, "guardian").exists(), "and the log can be emptied"
 
 
 def test_a_guard_that_fails_or_hangs_never_stops_the_agent():

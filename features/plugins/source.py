@@ -5,6 +5,7 @@ import re
 import secrets
 import shutil
 import subprocess
+import time
 from pathlib import Path
 
 from engine.hooks import default_env
@@ -37,6 +38,13 @@ def data(root: Path, name: str) -> Path:
 
 def log(root: Path, name: str) -> Path:
     return Path(root) / "runtime" / LOGS / f"{name}.log"
+
+
+def logged(root, name: str, line) -> None:
+    where = log(root, name)
+    where.parent.mkdir(parents=True, exist_ok=True)
+    with where.open("a") as f:
+        f.write(f"{time.strftime('%H:%M:%S')} {line}\n")
 
 
 def address(source: str) -> str:

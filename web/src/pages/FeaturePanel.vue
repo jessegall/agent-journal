@@ -160,7 +160,9 @@ async function skipPrompts(skip) {
                 <template v-for="line in feature.lines" :key="line.key">
                     <div class="line">
                         <span class="line-title">
-                            <span v-for="(p, i) in pieces(line.title)" :key="i" :class="{slot: p.slot}">{{ p.piece }}</span>
+                            <template v-for="(p, i) in pieces(line.title)" :key="i">
+                                <span :class="{slot: p.slot}">{{ p.piece }}</span>
+                            </template>
                         </span>
                         <template v-if="line.brief">
                             <span class="note">

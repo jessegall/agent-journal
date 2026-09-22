@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.85.79 — Every plugin answer is written to its log, and the log can be cleared
+
+- Each answer a plugin gives, to a hook moment or to a refusal it was asked about, is written to its log with the time; journal plugin clear_log and the log dialog's Clear button empty it.
+
 ## 2.85.78 — One foldable group, with its chevron on the right
 
 - A foldable group is one kit component, FoldGroup: a label, a count and a chevron flush right. The sidebar's groups and the plugin settings' groups both use it.
