@@ -7,6 +7,7 @@ import Icon from "../kit/Icon.vue";
 const props = defineProps({provider: String});
 const path = ref("");
 const hooks = ref({});
+const elsewhere = ref([]);
 const saved = ref("{}");
 const error = ref("");
 const saving = ref(false);
@@ -22,6 +23,7 @@ async function fetchHooks() {
     try {
         const got = await api.agentHooks(props.provider);
         path.value = got.path;
+        elsewhere.value = got.elsewhere || [];
         showHooks(got.hooks);
         error.value = "";
     } catch (reason) {
@@ -43,7 +45,7 @@ async function save() {
 
 function remove(event, block, line) {
     const blocks = hooks.value[event];
-    blocks[block].hooks.splice(at, 1);
+    blocks[block].hooks.splice(line, 1);
     if (!blocks[block].hooks.length) blocks.splice(block, 1);
 }
 
@@ -89,6 +91,27 @@ onMounted(fetchHooks);
             <Btn kind="primary" small :disabled="!changed || saving" @click="save">Save</Btn>
             <Btn small :disabled="!changed || saving" @click="fetchHooks">Discard</Btn>
         </div>
+        <template v-for="file in elsewhere" :key="file.path">
+            <section class="elsewhere">
+                <p class="where">
+                    Also registered, read only, in
+                    <code>{{ file.path }}</code>
+                </p>
+                <template v-for="(blocks, event) in file.hooks" :key="event">
+                    <h4>{{ event }}</h4>
+                    <template v-for="(block, b) in blocks" :key="b">
+                        <template v-for="(hook, h) in block.hooks" :key="`${b}-${h}`">
+                            <div class="hook">
+                                <template v-if="block.matcher">
+                                    <span class="matcher">{{ block.matcher }}</span>
+                                </template>
+                                <code class="command fixed">{{ hook.command }}</code>
+                            </div>
+                        </template>
+                    </template>
+                </template>
+            </section>
+        </template>
     </div>
 </template>
 
@@ -110,7 +133,8 @@ onMounted(fetchHooks);
     color: var(--text-2);
 }
 
-.event h4 {
+.event h4,
+.elsewhere h4 {
     display: flex;
     align-items: baseline;
     gap: 8px;
@@ -157,6 +181,14 @@ onMounted(fetchHooks);
     color: var(--text);
     font-family: ui-monospace, "SF Mono", Menlo, monospace;
     font-size: 11.5px;
+}
+
+.command.fixed {
+    border-color: transparent;
+    background: var(--raised);
+    color: var(--text-2);
+    white-space: pre-wrap;
+    word-break: break-all;
 }
 
 .command:focus {
