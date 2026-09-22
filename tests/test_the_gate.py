@@ -81,3 +81,8 @@ def test_a_hook_that_crashes_is_told_to_the_agent_for_every_provider(monkeypatch
     assert any("no answer from the server 2 times (codes 000, 500)" in line for line in lines), \
         "hooks the server never answered are told once it answers again"
     assert not (runtime.folder(record.root) / "hook-failures.log").exists(), "and are told only once"
+    monkeypatch.setattr(runtime, "STARTED", [1790000100.0])
+    (runtime.folder(record.root) / "hook-failures.log").write_text("1790000095 000 claude\n")
+    dispatch("POST", "/api/hook/claude", record.root, {"root": str(record.root), "env": record.env}, body)
+    assert len([n for n in Nudges(record, actor=SYSTEM)._every() if "no answer from the server" in n.brief]) == 1, \
+        "a hook missed while the server was restarting is not an error"
