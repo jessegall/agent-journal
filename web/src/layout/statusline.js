@@ -9,9 +9,19 @@ export function parkedWork(works) {
     return works.filter((w) => !w.completed && w.data.parked);
 }
 
+const running = (rows) => (rows || []).filter((r) => r.running).length;
+const counted = (n, one) => `${n === 1 ? "a" : n} ${one}${n === 1 ? "" : "s"}`;
+
+export function waitsFor(agent) {
+    const subagents = running(agent && agent.data.subagent_rows);
+    const shells = running(agent && agent.data.shell_rows);
+    const parts = [subagents && counted(subagents, "subagent"), shells && counted(shells, "background shell")].filter(Boolean);
+    return parts.length ? `for ${parts.join(" and ")}` : "";
+}
+
 export function stateOf(agent, works) {
     const reported = agent ? agent.data.status : "stopped";
-    return REPORTED.includes(reported) ? reported : currentWork(works) ? "working" : "busy";
+    return REPORTED.includes(reported) ? reported : waitsFor(agent) ? "waiting" : currentWork(works) ? "working" : "busy";
 }
 
 export function named(w) {
@@ -33,6 +43,7 @@ export function lineOf(agent, works, auto = false, doing = "") {
     const state = stateOf(agent, works);
     if (state === "stopped") return "no agent is on this environment";
     if (state === "compacting") return "compacting its context — it carries on after";
+    if (state === "waiting") return waitsFor(agent);
     const current = currentWork(works);
     if (current) return named(current);
     if (state === "idle") return phrase(auto ? "auto" : "idle", agent.data.at);
