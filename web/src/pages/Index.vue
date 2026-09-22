@@ -123,12 +123,16 @@ async function select(n) {
 
 <style scoped>
 .bar {
+    position: sticky;
+    top: 0;
+    z-index: 2;
     display: flex;
     align-items: center;
     gap: 12px;
     height: 44px;
     padding: 0 14px 0 22px;
     border-bottom: 1px solid var(--border);
+    background: var(--bg);
     color: var(--text-2);
 }
 
@@ -205,5 +209,8 @@ async function select(n) {
     grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
     gap: 12px;
     padding: 18px 22px;
+}
+.index {
+    --sticky-top: 44px;
 }
 </style>

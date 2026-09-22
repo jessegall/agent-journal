@@ -97,9 +97,13 @@ onMounted(() => setTimeout(() => (settled.value = true), 400));
     transition: transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 .ghead {
+    position: sticky;
+    top: var(--sticky-top, 0);
+    z-index: 1;
     display: flex;
     gap: 8px;
     padding: 10px 22px;
+    background: var(--bg);
     color: var(--text-2);
     font-size: 13px;
 }
