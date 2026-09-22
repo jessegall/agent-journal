@@ -1,13 +1,21 @@
 <script setup>
-defineProps({kind: {type: String, default: "ghost"}, small: Boolean});
+import Spinner from "./Spinner.vue";
+
+defineProps({kind: {type: String, default: "ghost"}, small: Boolean, busy: Boolean});
 </script>
 
 <template>
-    <button type="button" :class="['btn', kind, {small}]"><slot /></button>
+    <button type="button" :class="['btn', kind, {small, busy}]" :aria-busy="busy">
+        <span :class="['btn-label', {hidden: busy}]"><slot /></span>
+        <template v-if="busy">
+            <Spinner class="btn-spinner" />
+        </template>
+    </button>
 </template>
 
 <style scoped>
 .btn {
+    position: relative;
     display: inline-flex;
     align-items: center;
     gap: 6px;
@@ -20,6 +28,22 @@ defineProps({kind: {type: String, default: "ghost"}, small: Boolean});
     font-size: 12.5px;
     cursor: pointer;
     white-space: nowrap;
+}
+
+.btn-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.btn-label.hidden {
+    visibility: hidden;
+}
+
+.btn-spinner {
+    position: absolute;
+    inset: 0;
+    margin: auto;
 }
 
 .btn :deep(.ico) {

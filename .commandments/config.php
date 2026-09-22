@@ -28,10 +28,8 @@ return function (Config $config): void {
 
     $config->disable(
         // \JesseGall\CodeCommandments\Sins\Backend\SwallowCatch::class,
-        \JesseGall\CodeCommandments\Language::Php,
     );
 
     $config->exclude(
-        'web/dist',
     );
 };
