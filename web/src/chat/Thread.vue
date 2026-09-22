@@ -31,10 +31,18 @@ const pageTools = chatOnly
           {icon: "camera", title: "Send a picture of an element on the page", go: () => point("shot")},
       ]
     : [];
-const composeTools = [
+const dumpsInProgress = computed(() => rows("dump").filter((d) => !d.deleted && (!d.completed || !d.data?.confirmed)).length);
+const composeTools = computed(() => [
     ...pageTools,
-    {icon: "inbox", title: "New dump: drop text and files for the agent to file", go: () => (store.dumping = true)},
-];
+    {
+        icon: "inbox",
+        title: dumpsInProgress.value
+            ? `Dumps: ${dumpsInProgress.value} still filing or waiting for you`
+            : "New dump: drop text and files for the agent to file",
+        badge: dumpsInProgress.value,
+        go: () => (store.dumping = true),
+    },
+]);
 
 function point(kind) {
     tellExtension(kind);

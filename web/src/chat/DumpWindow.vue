@@ -204,6 +204,25 @@ async function stop() {
     stopping.value = false;
 }
 
+const switching = ref(false);
+const others = computed(() =>
+    rows("dump")
+        .filter((d) => !d.deleted && (!d.completed || !d.data?.confirmed || d.n === dump.value?.n))
+        .sort((a, b) => b.n - a.n)
+);
+
+function stageOf(d) {
+    if (d.completed) return d.data?.stopped ? "Stopped" : "Filed";
+    if (inHand.value?.n !== d.n) return "Queued";
+    return d.data?.question?.text ? "Needs you" : "Filing";
+}
+
+function pick(n) {
+    chosen.value = n;
+    composing.value = false;
+    switching.value = false;
+}
+
 function fresh() {
     composing.value = true;
 }
@@ -218,7 +237,32 @@ function follow(ref) {
     <section class="dump">
         <header class="dump-bar">
             <Icon name="inbox" :size="14" />
-            <span class="dump-title">{{ dump ? `Dump ${dump.n} · ${dump.title}` : "New dump" }}</span>
+            <span class="dump-switch">
+                <template v-if="others.length > 1 || (!dump && others.length)">
+                    <button
+                        type="button"
+                        class="dump-title dump-title-button"
+                        :title="'Switch to another dump'"
+                        @click="switching = !switching"
+                    >
+                        {{ dump ? `Dump ${dump.n} · ${dump.title}` : "New dump" }}
+                        <Icon name="down" :size="12" />
+                    </button>
+                </template>
+                <template v-else>
+                    <span class="dump-title">{{ dump ? `Dump ${dump.n} · ${dump.title}` : "New dump" }}</span>
+                </template>
+                <template v-if="switching">
+                    <ul class="dump-menu">
+                        <li v-for="d in others" :key="d.n">
+                            <button type="button" :class="{current: d.n === dump?.n}" @click="pick(d.n)">
+                                <span class="dump-menu-title">Dump {{ d.n }} · {{ d.title }}</span>
+                                <span :class="['dump-stage', stageOf(d).toLowerCase().replace(' ', '-')]">{{ stageOf(d) }}</span>
+                            </button>
+                        </li>
+                    </ul>
+                </template>
+            </span>
             <template v-if="stage">
                 <span :class="['dump-stage', stage.toLowerCase().replace(' ', '-')]">{{ stage }}</span>
             </template>
@@ -483,6 +527,71 @@ function follow(ref) {
     border-bottom: 1px solid var(--border);
     color: var(--text-2);
     font-size: 13px;
+}
+
+.dump-switch {
+    position: relative;
+    display: flex;
+    min-width: 0;
+}
+
+.dump-title-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    min-width: 0;
+    padding: 0;
+    border: none;
+    background: none;
+    font: inherit;
+    cursor: pointer;
+}
+
+.dump-title-button:hover {
+    color: var(--accent-text);
+}
+
+.dump-menu {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    z-index: 5;
+    min-width: 280px;
+    margin: 0;
+    padding: 4px;
+    border: 1px solid var(--border-2);
+    border-radius: 8px;
+    background: var(--raised);
+    box-shadow: 0 8px 24px rgb(0 0 0 / 35%);
+    list-style: none;
+}
+
+.dump-menu button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    padding: 6px 8px;
+    border: none;
+    border-radius: 6px;
+    background: none;
+    color: var(--text);
+    font: inherit;
+    font-size: 13px;
+    text-align: left;
+    cursor: pointer;
+}
+
+.dump-menu button:hover,
+.dump-menu button.current {
+    background: var(--hover);
+}
+
+.dump-menu-title {
+    flex: 1;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
 }
 
 .dump-title {
