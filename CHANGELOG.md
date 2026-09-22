@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.85.73 — A wait is no longer ended by the call that declared it
+
+- journal work await counted as activity and cleared its own wait at once; only a call started after the wait was declared ends it now.
+
 ## 2.85.72 — The clock looks at long commands every 5 seconds
 
 - The engine's clock ticks every 5 seconds, so a command is moved close to its 30 seconds rather than up to 10 seconds late.
