@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.84.53 — `journal nothing` from the agent's shell lifts its own hold
+
+At a context mark, `journal nothing "<why>"` run without a session used to land on a made-up agent row, so the hold stayed. It now falls back to the environment's own agent, and says so plainly when no agent is running.
+
 ## 2.84.52 — The revision strip passes the one-client check
 
 A helper in the revision strip was named like an endpoint call; renamed, so `journal check sweep` passes again.

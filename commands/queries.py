@@ -299,6 +299,8 @@ def serve_forever(ctx) -> str:
 
 def decided(ctx) -> str:
     agents = Agents(ctx["record"], actor=SYSTEM)
-    row = agents.by_session(ctx["session"] or "cli")
+    row = agents.by_session(ctx["session"]) if ctx["session"] else agents.primary()
+    if row is None:
+        raise Refused("no agent session is running on this environment to note it on")
     agents.update(row.n, **{**row.data, AgentRow.decided: ctx["why"]})
     return f"noted: {ctx['why']}"
