@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.84.136 — A linked row shows once in a resource's links
+
+- Two rows that link each other showed each other twice in their Resources list, once for each direction. Each row now shows once.
+
 ## 2.84.135 — While you were away shows the notifications you missed, or nothing
 
 - Coming back to the tab opens the card only when notifications arrived while you were away that you have not seen; it lists just those, and each opens its notification. The agent activity list and the highlights line are gone.
