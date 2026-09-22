@@ -1,8 +1,9 @@
+import re
 import sys
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parents[2]
-LINES = 150
+TESTS = 10
 GENERATED = {"test_every_action.py", "test_the_gate.py", "test_it_boots.py"}
 
 
@@ -16,8 +17,9 @@ def problems() -> list[str]:
         tests = kept(feature)
         if len(tests) > 1:
             text.append(f"features/{feature.name} keeps {len(tests)} test files; a feature is allowed one, named test.py")
-        if tests and len(tests[0].read_text().splitlines()) > LINES:
-            text.append(f"features/{feature.name}/{tests[0].name} is over {LINES} lines; what needs more belongs in the generated runs")
+        count = len(re.findall(r"^def test_", tests[0].read_text(), re.M)) if tests else 0
+        if count > TESTS:
+            text.append(f"features/{feature.name}/{tests[0].name} has {count} tests, over {TESTS}; what needs more belongs in the generated runs")
     for stray in sorted((HERE / "tests").rglob("test*.py")):
         if stray.name not in GENERATED:
             text.append(f"{stray.relative_to(HERE)} is a test outside the features; tests/ holds only the generated runs")
