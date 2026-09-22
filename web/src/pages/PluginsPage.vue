@@ -225,7 +225,7 @@ async function askAgent() {
             </template>
         </header>
         <template v-if="shown">
-            <Dialog :title="shown.title" follow @close="closeShown">
+            <Dialog :title="shown.title" @close="closeShown">
                 <template v-if="outcome">
                     <p :class="['shown-result', {failed: !outcome.ok}]">
                         {{ outcome.ok ? `${shown.title} is installed.` : "It did not install. Nothing of it was kept." }}

@@ -3,14 +3,14 @@ import shutil
 import subprocess
 import time
 
-from controllers.types import Plugins
+from controllers.types import CONTROLLERS, Plugins
 from engine.hooks import handle
 from engine.services import Manager, status_file
 from features.plugins.commands import ClearLog
 from features.plugins.manifest import MANIFEST
 from features.plugins.source import alone, folder, home, log
 from providers import PROVIDERS
-from resources.base import AGENT, SYSTEM
+from resources.base import AGENT, SYSTEM, USER
 from tests.conftest import fresh, refused
 
 
@@ -168,3 +168,24 @@ def test_a_plugins_skills_are_published_marked_as_its_own_and_taken_back():
     assert not (project / LIBRARY / "teacher-two").exists(), "an upgrade that drops a skill takes it back"
     assert withdrawn(record.root, "teacher") == ["teacher-one"], "removing the plugin takes back exactly its own skills"
     assert (project / LIBRARY / "teacher-mine").is_dir(), "a skill it did not publish is left alone"
+
+
+def test_a_row_a_plugin_creates_is_its_own_locked_and_goes_with_it():
+    from commands.cli import run
+    record = alone()
+    plugin = installed(record, "checker", "exit 0")
+    assert run(["--root", str(record.root), "--plugin", "checker", "check", "create", "The code keeps its shape", "--set", "command=sh check.sh"]) == 0
+    check = next(r for r in CONTROLLERS["check"](record, actor=USER).all())
+    assert (check.data.get("plugin"), check.data.get("locked")) == ("checker", True), "a row a plugin creates is stamped as its own and locked"
+    assert "belongs to the checker plugin" in refused(lambda: CONTROLLERS["check"](record, actor=USER).delete(check.n, "tidy")), "nobody else removes it"
+    Plugins(record, actor=USER).complete(plugin.n, "removed")
+    assert [r.n for r in CONTROLLERS["check"](record, actor=USER).all(deleted=True, completed=True)] == [], "removing the plugin removes what it created"
+
+
+def test_the_installed_step_fills_the_settings_before_the_install_returns(tmp_path):
+    record = fresh("scanner")
+    rows = Plugins(record, actor=AGENT)
+    manifest = {**WORKS, "name": "scanner", "settings": {"folders": {"type": "list", "default": ""}},
+                "installed": "sh scan.sh"}
+    made = rows.action("install")(repository(tmp_path, manifest, {"scan.sh": "echo '{\"settings\": {\"folders\": \"src\"}}'\n"}), yes=True)
+    assert (rows.load(made.n).settings or {}).get("chosen") == {"folders": "src"}, "what the plugin found is chosen by the time the install is done"

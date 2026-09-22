@@ -1,13 +1,27 @@
+import json
 import shutil
 
 from engine.version import version
 from features.parts import Command, Context
+from features.plugins.answer import apply
 from features.plugins.lifecycle import called, difference, drop, place, restarted
-from features.plugins.manifest import read
-from features.plugins.source import CHOSEN, alone, checked, data, environment, folder, log, ports_for, prepared, preview, said_version, staged, token
+from features.plugins.manifest import fill, read
+from features.plugins.run import SECONDS, call
+from features.plugins.source import CHOSEN, alone, checked, data, environment, folder, log, logged, ports_for, prepared, preview, said_version, staged, token
 from resources.base import Refused
 
 VERSION = version()
+
+
+def welcomed(journal, plugins, manifest: dict, env: dict) -> None:
+    step = manifest.get("installed")
+    if not step:
+        return
+    root, name = plugins.record.root, manifest["name"]
+    ok, reply = call(fill(step, env), folder(root, name), env, {"event": "plugin.installed"}, SECONDS)
+    logged(root, name, f"installed {json.dumps(reply, ensure_ascii=False) if ok else reply}")
+    if ok and isinstance(reply, dict):
+        apply(plugins.record, journal, name, "", reply)
 
 
 class Preview(Command):
@@ -44,6 +58,7 @@ class Install(Command):
             data(root, name).mkdir(parents=True, exist_ok=True)
             prepared(manifest, where, env, log(root, name))
             made = place(plugins, where, linked, manifest, source, ref, commit, secret, ports=ports)
+            welcomed(context.journal, plugins, manifest, env)
             kept = True
         finally:
             if held:
@@ -81,6 +96,7 @@ class Upgrade(Command):
             checked(manifest, where, env)
             prepared(manifest, where, env, log(root, manifest["name"]))
             place(plugins, where, linked, manifest, row.source, ref, commit, row.token, row=row, ports=ports)
+            welcomed(context.journal, plugins, manifest, env)
             restarted(root, manifest)
             kept = True
         finally:

@@ -2,7 +2,7 @@ import os
 import time
 import zipfile
 from pathlib import Path
-from resources.base import LAZY, MEMORY, PART_OF, Refused, Resource
+from resources.base import LAZY, MEMORY, OWNER, PART_OF, Refused, Resource
 from engine.stored import read_json, write_json, write_text
 from controllers.marks import internal
 
@@ -102,7 +102,7 @@ class Stored:
 
     def _row(self, r: Resource, stamp: str) -> dict:
         return {"n": r.n, "title": r.title, "deleted": r.deleted, "completed": r.completed, "seen": r.seen, "refs": r.refs, "updated": r.updated,
-                "files": len(r.files), PART_OF: r.data.get(PART_OF, ""), DRAFT_OF: r.data.get(DRAFT_OF, ""),
+                "files": len(r.files), PART_OF: r.data.get(PART_OF, ""), DRAFT_OF: r.data.get(DRAFT_OF, ""), OWNER: r.data.get(OWNER, ""),
                 **{k: r.data.get(k) for k in self.resource.indexed}, "stamp": stamp}
 
     def _packed(self) -> dict[int, dict]:
@@ -133,7 +133,7 @@ class Stored:
         known = INDEXED.get(str(folder)) or {int(n): row for n, row in (read_json(folder / INDEX) or {}).items()}
         rows = {}
         for n, stamp in stamps.items():
-            if known.get(n, {}).get("stamp") == stamp and (known[n].get(DAMAGED) or all(k in known[n] for k in ("files", PART_OF, DRAFT_OF, *self.resource.indexed))):
+            if known.get(n, {}).get("stamp") == stamp and (known[n].get(DAMAGED) or all(k in known[n] for k in ("files", PART_OF, DRAFT_OF, OWNER, *self.resource.indexed))):
                 rows[n] = known[n]
                 continue
             try:
