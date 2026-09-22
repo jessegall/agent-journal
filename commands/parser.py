@@ -1,4 +1,5 @@
 import argparse
+import contextvars
 from functools import cache
 import inspect
 import os
@@ -63,9 +64,15 @@ class Misused(Exception):
     pass
 
 
+PRINTED: contextvars.ContextVar = contextvars.ContextVar("printed", default=None)
+
+
 class Parser(argparse.ArgumentParser):
     def error(self, message: str):
         raise Misused(f"{self.format_usage()}{self.prog}: error: {message}")
+
+    def _print_message(self, message: str, file=None) -> None:
+        super()._print_message(message, PRINTED.get() or file)
 
 
 PARSERS: dict[tuple, argparse.ArgumentParser] = {}

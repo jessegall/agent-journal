@@ -15,7 +15,7 @@ class Dumps(Controller):
     resource = Dump
 
     def create(self, title: str, abstract: str = "", brief: str = "", **data):
-        dump = super().create(title, abstract, brief, **data)
+        dump = super().create(title, abstract, brief, queued_at=time.time(), **data)
         self._collect(dump, [dump.ref])
         return self.load(dump.n)
 
@@ -162,8 +162,12 @@ class Dumps(Controller):
         answers = [*(r.data.get("answers") or []), {"question": asked.get(ENTRY.text, ""), "answer": text.strip(), ENTRY.at: time.time()}]
         return self.update(r.n, question={}, answers=answers)
 
+    def reopen(self, n: int, why: str):
+        super().reopen(n, why)
+        return self.update(int(n), queued_at=time.time(), stopped=False, confirmed=0)
+
     def _in_hand(self):
-        return min(self._standing(), key=lambda r: r.n, default=None)
+        return min(self._standing(), key=lambda r: (r.data.get("queued_at") or r.created, r.n), default=None)
 
     def items(self, n: int) -> list[str]:
         r = self.load(int(n))

@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.84.118 — journal <noun> --help prints again, and a reopened dump waits its turn
+
+- Help for any command printed nothing once commands ran through the server: argparse wrote it to the server's own output. The parser now writes to the command's output, so journal dump --help and the rest show their words again.
+- Dumps queue by when they joined the queue, not by number: a dump reopened with Add more goes behind the one being filed instead of jumping ahead of it.
+- The line the agent gets when a dump arrives starts by telling it to load the journal-dumps skill.
+
 ## 2.84.117 — The dump window only says what is really happening
 
 - Before the agent touches a dump it says Waiting for the agent to pick this up; after that it shows only the agent's own log lines, with how long ago the last one came. Three minutes without an update turns it into a warning that the agent may be busy elsewhere, with a way back to the chat. The borrowed agent activity and the rotating phrases are gone.

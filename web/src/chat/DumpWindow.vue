@@ -16,10 +16,11 @@ const more = reactive({open: false, text: "", files: [], sending: false, error: 
 const chosen = ref(0);
 const composing = ref(false);
 
+const joined = (d) => d.data?.queued_at || d.created;
 const open = computed(() =>
     rows("dump")
         .filter((d) => !d.deleted && !d.completed)
-        .sort((a, b) => b.n - a.n)
+        .sort((a, b) => joined(b) - joined(a) || b.n - a.n)
 );
 const inHand = computed(() => open.value[open.value.length - 1] || null);
 const unconfirmed = computed(() =>
