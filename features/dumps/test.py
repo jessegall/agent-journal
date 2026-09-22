@@ -60,8 +60,12 @@ def test_what_a_dump_makes_stays_inside_it_until_the_user_confirms_it():
     assert ([c.n for c in collections.all()], [d.n for d in docs.all()], [t.n for t in Todos(record, actor=USER).all()]) == ([], [earlier.n], []), \
         "until confirmed, what it made is listed nowhere; a row it only extended stays listed"
     assert refused(lambda: agent.confirm(dump.n)) == "only the user confirms a dump: they do it in the dump window", "the agent cannot confirm"
-    CONTROLLERS["dump"](record, actor=USER).leave(dump.n, task.ref)
-    CONTROLLERS["dump"](record, actor=USER).confirm(dump.n)
+    user = CONTROLLERS["dump"](record, actor=USER)
+    user.leave(dump.n, doc.ref)
+    user.leave(dump.n, task.ref)
+    user.keep(dump.n, doc.ref)
+    assert user.load(dump.n).data["left_out"] == {task.ref: "book the room"}, "a row left out can be put back until the dump is confirmed"
+    user.confirm(dump.n)
     assert ([c.n for c in collections.all()], sorted(d.n for d in docs.all()), bool(Todos(record, actor=USER).load(task.n).deleted)) == \
         ([made.n], [earlier.n, doc.n], True), "confirmed, it all appears at once, less what the user left out"
 
@@ -133,3 +137,16 @@ def test_a_finished_dump_offers_next_steps_and_you_decide_hands_it_to_the_agent(
         (f"the user chose Book it today for dump {dump.n}", True), "a choice adds what it made to the journal and tells the agent"
     user.choose(dump.n, -1)
     assert nudges(record)[-1] == f"the user left dump {dump.n} to you - finish it", "You decide hands the rest to the agent"
+
+
+def test_pasted_text_splits_into_parts_and_a_question_carries_guesses():
+    record = fresh()
+    dump = CONTROLLERS["dump"](record, actor=USER).create("Standup", brief="summary, transcript and a link")
+    agent = CONTROLLERS["dump"](record, actor=AGENT)
+    agent.split(dump.n, "Summary, Transcript, Link")
+    assert agent.items(dump.n) == ["Summary: not read yet", "Transcript: not read yet", "Link: not read yet"], "each part is an item of its own"
+    agent.ask(dump.n, "Which doc is the link for?", guesses="The standup | Neither")
+    agent.log(dump.n, "Writing the rollout plan", making="plan, Autoscaler rollout")
+    written = agent.load(dump.n)
+    assert (written.data["question"]["guesses"], written.data["log"][-1]["making"]) == (["The standup", "Neither"], "plan, Autoscaler rollout"), \
+        "a question carries the agent's guesses and a log line names what it is about to make"

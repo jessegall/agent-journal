@@ -63,7 +63,16 @@ class Dumps(Controller):
         dump = self.load(int(n))
         if not dump.completed:
             self._refuse(f"dump {dump.n} is still being filed")
+        left = dump.data.get("left_out") or {}
+        for ref in left:
+            try:
+                controller, m, _ = self._drafted(dump, ref)
+                controller.delete(m, why=f"left out of dump {dump.n}")
+            except (KeyError, ValueError, Refused):
+                continue
         for ref in self._made(dump):
+            if ref in left:
+                continue
             controller, m = self._controller(ref)
             try:
                 if controller.load(m).data.get(DRAFT_OF) == dump.ref:
@@ -71,6 +80,13 @@ class Dumps(Controller):
             except Refused:
                 continue
         return self.update(dump.n, confirmed=time.time())
+
+    def _drafted(self, dump, ref: str):
+        controller, m = self._controller(ref)
+        row = controller.load(m)
+        if row.data.get(DRAFT_OF) != dump.ref:
+            self._refuse(f"{ref} is not waiting in dump {dump.n}")
+        return controller, m, row
 
     def offer(self, n: int, options: str):
         r = self.load(int(n))
@@ -108,10 +124,24 @@ class Dumps(Controller):
 
     def leave(self, n: int, ref: str):
         dump = self.load(int(n))
-        controller, m = self._controller(ref)
-        if controller.load(m).data.get(DRAFT_OF) != dump.ref:
-            self._refuse(f"{ref} is not waiting in dump {dump.n}")
-        return controller.delete(m, why=f"left out of dump {dump.n}")
+        _, _, row = self._drafted(dump, ref)
+        return self.update(dump.n, left_out={**(dump.data.get("left_out") or {}), ref: row.title})
+
+    def keep(self, n: int, ref: str):
+        dump = self.load(int(n))
+        left = dict(dump.data.get("left_out") or {})
+        if left.pop(ref, None) is None:
+            self._refuse(f"{ref} was not left out of dump {dump.n}")
+        return self.update(dump.n, left_out=left)
+
+    def split(self, n: int, parts: str):
+        r = self.load(int(n))
+        if not r.brief.strip():
+            self._refuse(f"dump {r.n} has no pasted text to split")
+        found = list(dict.fromkeys(part.strip()[:LABEL] for part in parts.split(",") if part.strip()))
+        if not found or set(found) & set(r.files):
+            self._refuse("name the parts of the pasted text, comma separated, none named like a dropped file")
+        return self.update(r.n, parts=found)
 
     def name(self, n: int, title: str):
         found = self._collection(self.load(int(n)))
@@ -120,7 +150,7 @@ class Dumps(Controller):
         return self._collections().update(found, title=title.strip())
 
     def _names(self, r) -> list[str]:
-        return ([TEXT] if r.brief.strip() else []) + sorted(r.files)
+        return ((r.data.get("parts") or [TEXT]) if r.brief.strip() else []) + sorted(r.files)
 
     def _item(self, r, item: str) -> dict:
         if item not in self._names(r):
@@ -168,7 +198,7 @@ class Dumps(Controller):
             raise Refused("say why it could not be filed")
         return self._write(n, item, **{ITEM.failed: why.strip()})
 
-    def log(self, n: int, status: str, on: str = ""):
+    def log(self, n: int, status: str, on: str = "", making: str = ""):
         r = self.load(int(n))
         if not status.strip():
             raise Refused("say what you are doing")
@@ -176,16 +206,17 @@ class Dumps(Controller):
             raise Refused(f"dump {r.n} is closed")
         if on.strip():
             self._hold(r, [on.strip()])
-        entries = [*(r.data.get("log") or []), {ENTRY.at: time.time(), ENTRY.text: status.strip(), ENTRY.on: on.strip()}]
+        entries = [*(r.data.get("log") or []), {ENTRY.at: time.time(), ENTRY.text: status.strip(), ENTRY.on: on.strip(), ENTRY.making: making.strip()}]
         return self.update(r.n, log=entries[-LOG_KEPT:])
 
-    def ask(self, n: int, question: str):
+    def ask(self, n: int, question: str, guesses: str = ""):
         r = self.load(int(n))
         if not question.strip():
             raise Refused("say what you need to know")
         if r.completed:
             raise Refused(f"dump {r.n} is closed")
-        return self.update(r.n, question={ENTRY.at: time.time(), ENTRY.text: question.strip()})
+        found = [g.strip()[:LABEL] for g in guesses.split("|") if g.strip()][:OFFERED]
+        return self.update(r.n, question={ENTRY.at: time.time(), ENTRY.text: question.strip(), "guesses": found})
 
     def answer(self, n: int, text: str):
         if self.actor == AGENT:

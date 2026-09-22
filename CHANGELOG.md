@@ -4,6 +4,14 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.84.138
+
+- The dump page is rebuilt from the design. A live band at the top owns the state: violet while filing, amber when it needs you or goes quiet, green when done, red when stopped. The last few things the agent said trail under it.
+- What the dump made shows as compact rows that open in place: nothing opens outside the page. A row appears as a skeleton ("Processing · plan, Autoscaler rollout") the moment the agent starts on it.
+- Leave out strikes a row through with Put back until the next step is chosen. Next steps stack, with You decide last.
+- The agent can split pasted text into parts (journal dump split), guess answers to its question as chips (dump ask --guesses), and name what it is about to make (dump log --making).
+- Stop and Add more sit in a quiet footer. When it is done, the page lists what went into the journal.
+
 ## 2.84.137 — A template can ask for its fields when it is used
 
 - journal template field <n> "<label>" --kind text|number|choice [--options "a, b"] [--default x] declares a field. Picking the template when making something asks for each field: an input for text and numbers, buttons for a choice. The answers fill {{field}} in the template's instructions and parts, and a field left empty takes its default.
