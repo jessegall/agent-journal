@@ -138,4 +138,6 @@ def test_a_row_named_by_a_bare_number_is_named_back_with_its_type():
     chat.send(record, Agents(record, actor="system").by_session("claude-1"), f"My reply to {asked.n} went through; parking {filed.n}, 2 revisions left, released 2.84.63")
     lines = [n for n in nudges(record) if "without saying what they are" in n]
     assert f"names {asked.n}, {filed.n} " in lines[-1], "any bare reference is named back, whatever word comes before it"
+    from features.messages.handlers import bare
+    assert bare(f"Two steps:\n{asked.n}. first\n{filed.n}) second") == [], "the numbers of a numbered list are not row numbers"
     assert formatted("a journal question with options; journal question ask", record, VIEWER) == "a journal question with options; `journal question ask`", "only a real command is code"
