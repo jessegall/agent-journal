@@ -1,11 +1,11 @@
-from features.parts import Context, ToolInterceptor
+from features.parts import AgentContext, ToolInterceptor
 from resources.base import AGENT, titled
 
 FILED = "filed"
 
 
 class AskInTheJournal(ToolInterceptor):
-    def intercept(self, context: Context, call) -> str:
+    def intercept(self, context: AgentContext, call) -> str:
         if not context.provider.question(call):
             return ""
         questions = context.journal.acting(AGENT).questions

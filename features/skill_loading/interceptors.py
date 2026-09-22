@@ -1,7 +1,7 @@
 import re
 
 from features import trigger
-from features.parts import Context, ToolInterceptor
+from features.parts import AgentContext, ToolInterceptor
 from features.skill_loading.catalogue import loaded_at
 from features.skill_loading.required import outstanding, require
 from skills import LIBRARY
@@ -10,11 +10,11 @@ NOUN = re.compile(r"(?:^|[\s;&|(])journal(?:\s+--\S+)*\s+([a-z]+)\b")
 
 
 class RequireCommandSkill(ToolInterceptor):
-    def intercept(self, context: Context, call) -> str:
+    def intercept(self, context: AgentContext, call) -> str:
         found = NOUN.search(call.command) if call.command else None
         library = context.record.root.parent / LIBRARY
         skill = next((f"journal-{name}" for name in (found.group(1), f"{found.group(1)}s") if (library / f"journal-{name}" / "SKILL.md").is_file()), "") if found else ""
-        if not skill or not context.agent:
+        if not skill:
             return ""
         row = context.agent.row
         since = float(trigger.last(context.record, row.title, context.feature.name).get("since") or 0)
@@ -27,9 +27,7 @@ class RequireCommandSkill(ToolInterceptor):
 class RefuseUntilLoaded(ToolInterceptor):
     limit = "most_refusals"
 
-    def intercept(self, context: Context, call) -> str:
-        if not context.agent:
-            return ""
+    def intercept(self, context: AgentContext, call) -> str:
         missing = outstanding(context.record, context.agent.row)
         if not missing:
             return ""

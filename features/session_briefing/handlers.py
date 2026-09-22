@@ -1,5 +1,5 @@
 from engine.events import AnyEvent, SessionStarted
-from features.parts import Context, Handler
+from features.parts import AgentContext, Context, Handler
 from features.session_briefing.block import rebuild
 from resources.types import TYPES
 
@@ -7,8 +7,8 @@ SHAPING = ("feature", "plugin", "environment")
 
 
 class GreetOnce(Handler):
-    def handle(self, context: Context, event: SessionStarted) -> None:
-        if context.agent and context.once("greeted", "ready"):
+    def handle(self, context: AgentContext, event: SessionStarted) -> None:
+        if context.once("greeted", "ready"):
             context.agent.type("ready", env=context.record.env)
 
 

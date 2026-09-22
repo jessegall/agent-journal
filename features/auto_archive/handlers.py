@@ -1,7 +1,7 @@
 import time
 
 from engine.events import AgentUpdated
-from features.parts import WHOLE_FEATURE, Context, Handler
+from features.parts import WHOLE_FEATURE, AgentContext, Handler
 from controllers.base import CONTROLLERS
 from resources.base import ENVIRONMENT, SYSTEM, USER
 
@@ -15,7 +15,7 @@ DAY = 86400
 class ExpireOldRows(Handler):
     behaviour = WHOLE_FEATURE
 
-    def handle(self, context: Context, event: AgentUpdated) -> None:
+    def handle(self, context: AgentContext, event: AgentUpdated) -> None:
         for type_, default in KEEP.items():
             days = context.record.keep.get(type_, default)
             if not days:

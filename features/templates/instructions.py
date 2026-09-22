@@ -1,5 +1,5 @@
 from engine.events import ResourceCreated, SessionStarted
-from features.parts import ActionInterceptor, Context, Handler
+from features.parts import ActionInterceptor, AgentContext, Context, Handler
 from resources.base import Refused
 
 INSTRUCTIONS = "instructions"
@@ -36,7 +36,7 @@ class TellOnStart(Handler):
 
 
 class TellAgainOnSessionStart(Handler):
-    def handle(self, context: Context, event: SessionStarted) -> None:
+    def handle(self, context: AgentContext, event: SessionStarted) -> None:
         work = context.journal.works.active()
         if work and context.agent:
             tell(context, work)

@@ -1,16 +1,16 @@
 from engine import viewer
 from engine.events import AgentChanged
 from features import trigger
-from features.parts import Context, Handler
+from features.parts import AgentContext, Handler
 
 SHOWN = "shown"
 WRITTEN = ("created", "updated")
 
 
 class ShowViewerTab(Handler):
-    def handle(self, context: Context, event: AgentChanged) -> None:
-        row = context.agent.row if context.agent else None
-        if event.action not in WRITTEN or not row or row.event != "SessionStart" or row.parent:
+    def handle(self, context: AgentContext, event: AgentChanged) -> None:
+        row = context.agent.row
+        if event.action not in WRITTEN or row.event != "SessionStart" or row.parent:
             return
         if trigger.last(context.record, row.title, context.feature.name).get(SHOWN):
             return

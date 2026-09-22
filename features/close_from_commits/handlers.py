@@ -3,7 +3,7 @@ from pathlib import Path
 
 from engine.events import AgentUpdated
 from engine.proc import git
-from features.parts import Context, Handler
+from features.parts import AgentContext, Context, Handler
 from resources.base import Refused
 
 TRAILER = re.compile(r"^Journal: todos done (\d+(?:, *\d+)*)(?: (.*))?$", re.MULTILINE)
@@ -13,7 +13,7 @@ class CloseRowsFromCommits(Handler):
     def __init__(self):
         self.seen: dict[str, int] = {}
 
-    def handle(self, context: Context, event: AgentUpdated) -> None:
+    def handle(self, context: AgentContext, event: AgentUpdated) -> None:
         project = context.record.root.parent
         if not self.moved(project):
             return

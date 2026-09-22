@@ -1,5 +1,5 @@
 import inspect
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, ClassVar, get_type_hints
 
 from controllers.base import COMMANDS, HANDLERS
@@ -63,8 +63,8 @@ class Context:
     def on(self, behaviour: str = "") -> bool:
         return self.feature.on(self.record, behaviour)
 
-    def speaking_to(self, row) -> "Context":
-        return Context.of(self.feature, self.record, row, self.provider, self.hook)
+    def speaking_to(self, row) -> "AgentContext":
+        return AgentContext.of(self.feature, self.record, row, self.provider, self.hook)
 
     def due(self, behaviour: str = "") -> bool:
         return bool(self.agent) and self.feature.due(self.record, self.agent.row, behaviour)
@@ -77,6 +77,15 @@ class Context:
 
     def once(self, kind: str, key: str) -> bool:
         return not self.feature.already(self.record, self.agent.session, kind, key)
+
+
+@dataclass
+class AgentContext(Context):
+    agent: Speaker = field()
+
+    @classmethod
+    def of(cls, feature, record, row, provider=None, hook=None) -> "AgentContext":
+        return cls(feature, record, Speaker(feature, record, row), provider, hook)
 
 
 WHOLE_FEATURE = ""
@@ -109,7 +118,7 @@ class ToolInterceptor:
     behaviour: ClassVar[str | None] = None
     limit: ClassVar[str] = ""
 
-    def intercept(self, context: Context, call) -> str:
+    def intercept(self, context: "AgentContext", call) -> str:
         raise NotImplementedError
 
 
@@ -137,9 +146,11 @@ class Events:
             typed = kind.read(event)
             if not typed.wanted():
                 return
-            row = Agents(record, actor=SYSTEM).load(typed.agent) if isinstance(typed, AgentEvent) and typed.agent else None
+            if isinstance(typed, AgentEvent) and not typed.agent:
+                return
+            row = Agents(record, actor=SYSTEM).load(typed.agent) if isinstance(typed, AgentEvent) else None
             if wanted(handler, feature, record, row):
-                handler.handle(Context.of(feature, record, row), typed)
+                handler.handle(AgentContext.of(feature, record, row) if row else Context.of(feature, record), typed)
         self.names.append(kind.event_name or kind.on)
         bus.on(kind.on, run, enabled=feature.enabled)
 
@@ -176,7 +187,7 @@ class AgentHooks:
             row = Agents(record, actor=SYSTEM).by_session(session)
             if not feature.enabled(record) or not wanted(interceptor, feature, record, row, timed=False):
                 return ""
-            context = Context.of(feature, record, row, provider, hook)
+            context = AgentContext.of(feature, record, row, provider, hook)
             refused = interceptor.intercept(context, hook.tool) or ""
             return limited(context, interceptor, session, refused) if interceptor.limit else refused
         policy.feature = feature
