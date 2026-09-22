@@ -58,9 +58,12 @@ function back() {
     nextTick(() => input.value && input.value.focus());
 }
 
+const folder = ref("");
+const parent = computed(() => folder.value.split("/").slice(0, -1).join("/"));
 const matchingFiles = computed(() => {
     const needle = fileQuery.value.trim().toLowerCase();
-    return files.value.filter((file) => !needle || file.path.toLowerCase().includes(needle));
+    const up = folder.value && !needle ? [{path: parent.value, name: "..", folder: true}] : [];
+    return [...up, ...files.value.filter((file) => !needle || file.name.toLowerCase().includes(needle))];
 });
 const selectedFile = computed(() => matchingFiles.value[fileIndex.value] || null);
 
@@ -70,15 +73,16 @@ function size(bytes) {
     return `${(bytes / 1048576).toFixed(1)} MB`;
 }
 
-async function browseFiles() {
+async function browseFiles(into = "") {
     screen.value = "files";
+    folder.value = typeof into === "string" ? into : "";
     fileQuery.value = "";
     fileIndex.value = 0;
     filesError.value = "";
     filesLoading.value = true;
     nextTick(() => fileInput.value && fileInput.value.focus());
     try {
-        files.value = await api.projectFiles();
+        files.value = await api.projectFiles(folder.value);
     } catch (e) {
         files.value = [];
         filesError.value = e.message;
@@ -90,6 +94,7 @@ async function browseFiles() {
 
 function openFile(file) {
     if (!file) return;
+    if (file.folder) return browseFiles(file.path);
     emit("close");
     go(route.value.env, "file", 0, file.path);
 }
@@ -229,9 +234,10 @@ function onFileKey(e) {
     } else if (e.key === "ArrowUp") {
         e.preventDefault();
         fileIndex.value = Math.max(fileIndex.value - 1, 0);
-    } else if (e.key === "ArrowLeft" && !fileQuery.value) {
+    } else if ((e.key === "ArrowLeft" || e.key === "Backspace") && !fileQuery.value) {
         e.preventDefault();
-        back();
+        if (folder.value) browseFiles(parent.value);
+        else if (e.key === "ArrowLeft") back();
     } else if (e.key === "Enter") {
         e.preventDefault();
         e.stopPropagation();
@@ -289,7 +295,7 @@ function onFileKey(e) {
                             ref="fileInput"
                             class="quick-input"
                             :value="fileQuery"
-                            placeholder="Open project file…"
+                            :placeholder="folder ? `Open a file in ${folder}/…` : 'Open project file…'"
                             aria-label="Open project file"
                             @input="onFileInput"
                             @keydown="onFileKey"
@@ -298,13 +304,13 @@ function onFileKey(e) {
                     </div>
                     <div class="quick-files">
                         <template v-if="filesLoading">
-                            <div class="quick-file-empty">Loading project files…</div>
+                            <div class="quick-file-empty">Loading {{ folder || "the project" }}…</div>
                         </template>
                         <template v-else-if="filesError">
                             <div class="quick-file-empty">{{ filesError }}</div>
                         </template>
                         <template v-else-if="!matchingFiles.length">
-                            <div class="quick-file-empty">No project files match.</div>
+                            <div class="quick-file-empty">Nothing here matches.</div>
                         </template>
                         <template v-else>
                             <template v-for="(file, n) in matchingFiles" :key="file.path">
@@ -314,9 +320,11 @@ function onFileKey(e) {
                                     @click="openFile(file)"
                                     @mouseenter="fileIndex = n"
                                 >
-                                    <Icon name="file" />
-                                    <span class="quick-file-path">{{ file.path }}</span>
-                                    <span class="quick-file-size">{{ size(file.size) }}</span>
+                                    <Icon :name="file.folder ? 'folder' : 'file'" />
+                                    <span class="quick-file-path">{{ file.name }}</span>
+                                    <template v-if="!file.folder">
+                                        <span class="quick-file-size">{{ size(file.size) }}</span>
+                                    </template>
                                 </button>
                             </template>
                         </template>
@@ -324,7 +332,8 @@ function onFileKey(e) {
                     <div class="quick-foot">
                         <span>↑↓ move</span>
                         <span>↵ open</span>
-                        <span class="quick-foot-note">{{ matchingFiles.length }} {{ matchingFiles.length === 1 ? "file" : "files" }}</span>
+                        <span>⌫ up</span>
+                        <span class="quick-foot-note">/{{ folder }}</span>
                     </div>
                 </template>
                 <template #default>

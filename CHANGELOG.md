@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.85.34 — Open project file browses one folder at a time
+
+- The quick menu's Open project file lists one folder at a time, folders first, instead of every file in the project. Picking a folder opens it, and .., Backspace or the left arrow go up. The folder you are in shows in the search box and the footer.
+
 ## 2.85.33 — The launcher moves to a new build without a restart
 
 - When an upgrade installs a new build, the launcher that holds the agent's terminal restarts itself on the new build and hands the running agent over. The agent keeps working, and nobody has to quit and run journal claude again.

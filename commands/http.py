@@ -365,6 +365,7 @@ def get_files(req: Request) -> Reply:
 
 WALKED: dict[str, tuple] = {}
 WALK_FOR = 5.0
+UNLISTED = ("__pycache__", "node_modules")
 
 
 def project_paths(project: Path) -> list[Path]:
@@ -379,7 +380,7 @@ def project_paths(project: Path) -> list[Path]:
 def walked(project: Path) -> list[Path]:
     found = []
     for folder, dirs, names in os.walk(project):
-        dirs[:] = [name for name in dirs if not name.startswith(".") and name != "__pycache__" and name != "node_modules"]
+        dirs[:] = [name for name in dirs if not name.startswith(".") and name not in UNLISTED]
         found.extend(path for path in (Path(folder) / name for name in names) if path.is_file())
     return found
 
@@ -387,8 +388,17 @@ def walked(project: Path) -> list[Path]:
 @route("GET", "/api/{env}/project-files")
 def get_project_files(req: Request) -> Reply:
     project = req.root.parent.resolve()
-    out = [{"path": str(path.relative_to(project)), "size": path.stat().st_size, "kind": mimetypes.guess_type(path.name)[0] or ""} for path in project_paths(project)]
-    return Reply(200, sorted(out, key=lambda x: x["path"].lower()))
+    folder = (project / req.query.get("folder", "")).resolve()
+    if not folder.is_dir() or (folder != project and project not in folder.parents):
+        raise Missing(f"no folder {req.query.get('folder', '')} in the project")
+    out = []
+    for entry in os.scandir(folder):
+        if entry.name.startswith(".") or entry.name in UNLISTED:
+            continue
+        inside = entry.is_dir()
+        out.append({"path": str(Path(entry.path).relative_to(project)), "name": entry.name, "folder": inside,
+                    **({} if inside else {"size": entry.stat().st_size, "kind": mimetypes.guess_type(entry.name)[0] or ""})})
+    return Reply(200, sorted(out, key=lambda x: (not x["folder"], x["name"].lower())))
 
 
 def transcript_of(req: Request, session: str = "") -> Reply:
