@@ -7,6 +7,7 @@ STALE = 600.0
 FORCE = "force"
 PERMIT = "permit"
 BACKGROUND = "background"
+SHELL = "shell"
 KEYS = (FORCE, PERMIT, BACKGROUND)
 
 

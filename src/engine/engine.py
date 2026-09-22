@@ -4,7 +4,7 @@ from controllers.types import CONTROLLERS, Agents
 import features
 from engine import bus, chat, runtime
 from engine.actors import Actor, Agent, BUSY, IDLE, STOPPED, System, User, WORKING, spoken_data
-from engine.inputs import BACKGROUND, FORCE, PERMIT, take
+from engine.inputs import BACKGROUND, FORCE, PERMIT, SHELL, take
 from surfaces.control import CARRY_ON, delivered
 from engine.record import Record
 from engine.watch import STEADY_AFTER, steady, threw
@@ -70,7 +70,7 @@ class Engine(Seat):
         self.relay()
         if not self.agent.driver.DISPLAY_HOOK:
             self.announce_written()
-        self.why = (self.permitted() or self.backgrounded() or self.probe() or self.forced() or self.typing() or self.control()
+        self.why = (self.permitted() or self.backgrounded() or self.probe() or self.forced() or self.typing() or self.shelled() or self.control()
                     or self.deliver() or self.nudge())
         self.seat()
         self.clock()
@@ -154,6 +154,14 @@ class Engine(Seat):
             return ""
         self.agent.driver.permit(queued.get("value") == "allow")
         return f"permission: {queued.get('value')}"
+
+    def shelled(self) -> str:
+        if self.agent.state() != IDLE:
+            return ""
+        queued = take(self.record.root, self.names(), SHELL)
+        if not queued:
+            return ""
+        return f"ran in the terminal: {queued['value']}" if self.agent.driver.run_shell(queued["value"]) else ""
 
     def backgrounded(self) -> str:
         if not take(self.record.root, self.names(), BACKGROUND):

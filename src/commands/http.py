@@ -20,7 +20,7 @@ from surfaces.package import archive as extension_archive, info as extension_inf
 from surfaces.summary import summarize
 from surfaces.color import identity, set_color
 from surfaces.updates import newer, upstream
-from surfaces.control import force as force_session, options as control_options, permit, relaunch, request as control_session
+from surfaces.control import force as force_session, options as control_options, permit, relaunch, request as control_session, shell
 from features.skill_loading.catalogue import SKILL, always, catalogue, set_keywords, skills
 from features.skill_loading.required import load_now
 from controllers.base import LAST, networked
@@ -149,6 +149,11 @@ def get_agent_controls(req: Request) -> Reply:
 @route("POST", "/api/{env}/agent/{session}/permit")
 def post_agent_permit(req: Request) -> Reply:
     return Reply(200, permit(req.root, req.params["env"], req.params["session"], bool(req.body.get("allow"))))
+
+
+@route("POST", "/api/{env}/agent/{session}/shell")
+def post_agent_shell(req: Request) -> Reply:
+    return Reply(200, shell(req.root, req.params["env"], req.params["session"], str(req.body.get("command") or "")))
 
 
 @route("POST", "/api/{env}/agent/{session}/relaunch")

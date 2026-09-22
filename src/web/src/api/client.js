@@ -266,6 +266,10 @@ export class ApiClient {
         return this.post(this.here(`/agent/${encoded(session)}/permit`), {allow});
     }
 
+    runShell(session, command) {
+        return this.post(this.here(`/agent/${encoded(session)}/shell`), {command});
+    }
+
     relaunchAgent(session, skip) {
         return this.post(this.here(`/agent/${encoded(session)}/relaunch`), {skip});
     }
