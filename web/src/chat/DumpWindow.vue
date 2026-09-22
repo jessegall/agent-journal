@@ -330,7 +330,7 @@ function follow(ref) {
                         </template>
                         <template v-if="dump.completed">
                             <Btn kind="primary" small :disabled="suggesting && !confirmed" @click="finish">
-                                {{ confirmed ? "Done" : "Confirm" }}
+                                {{ confirmed || !made.length ? "Done" : `Add ${made.length} to the journal` }}
                             </Btn>
                         </template>
                     </div>
@@ -394,10 +394,7 @@ function follow(ref) {
                 </div>
 
                 <template v-if="made.length">
-                    <h3 class="dump-heading">What it made</h3>
-                    <template v-if="!confirmed">
-                        <p class="dump-note">Only you can see these until you confirm the dump.</p>
-                    </template>
+                    <h3 class="dump-heading">{{ working ? "Made so far" : "Made" }}</h3>
                     <TransitionGroup name="dump-pop" tag="div" class="dump-cards">
                         <div v-for="m in made" :key="m.ref" :class="['dump-card', {writing: m.writing}]">
                             <template v-if="m.row">
@@ -912,12 +909,6 @@ function follow(ref) {
     top: 15px;
     right: 16px;
     color: var(--accent-text);
-    font-size: 12px;
-}
-
-.dump-note {
-    margin: -6px 0 0;
-    color: var(--text-3);
     font-size: 12px;
 }
 

@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.84.120 — A dump's cards are headed Made so far, and Confirm says what it does
+
+- The cards' heading is Made so far while the agent works and Made once it is done; the Only you can see these sentence is gone. The Confirm button reads Add 3 to the journal.
+
 ## 2.84.119 — The engine skips events whose row is already gone
 
 - The hourly sweep removes old nudges; the engine then read the rows behind their deleted events and hit an error for each. A row that is gone now counts as having nothing to say.
