@@ -43,7 +43,7 @@ def test_captures_are_cut_to_their_tail_and_quiet_sessions_are_removed_whole():
     assert (log.stat().st_size, log.read_bytes().endswith(b"last line\n")) == (1024 * 1024, True), "a log keeps its last megabyte"
     assert (gone.exists(), small.exists()) == (False, True), "a session's folder quiet past the days goes whole, a live one stays"
     assert kept.read_text() == "main", "files that are not per-session stay, however old"
-    assert text == {"removed": 1, "trimmed": 2}, "it says what it did"
+    assert text == {"removed": 1, "trimmed": 2, "events": 0}, "it says what it did"
 
     with big.open("ab") as out:
         out.write(b"+more")
@@ -69,3 +69,18 @@ def test_it_runs_on_its_own_on_the_engines_clock():
     capture.write_bytes(b"y" * 200_000)
     tick(record)
     assert capture.stat().st_size == 64 * 1024, "the first tick sweeps"
+
+
+def test_the_event_log_keeps_the_last_hundred_and_whatever_a_live_reader_has_not_reached():
+    record = fresh()
+    for i in range(150):
+        record.emit("todo", i, "created", "system", quiet=True)
+    first = record.events(last=150)[0].id
+    record.set_cursor("slow", first + 19)
+    record.set_cursor("gone", first + 4)
+    two_days_ago = time.time() - 2 * 86400
+    os.utime(record.home / "runtime" / "cursor-gone", (two_days_ago, two_days_ago))
+    tidy(record.root, 2)
+    kept = [e.id for e in record.events()]
+    assert (kept[0], len(kept)) == (first + 20, 130), "the last 100 stay, and everything after a live reader's place; a reader gone for days holds nothing"
+    assert record.emit("todo", 1, "updated", "system", quiet=True).id == first + 150, "ids keep counting up"
