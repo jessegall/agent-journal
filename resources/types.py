@@ -80,7 +80,8 @@ class Doc(Shape, Resource):
     data_fields: ClassVar[list[Field]] = [
         Field(name="status"),
     ]
-    start_heading = "DOCS catalogued — read one before you re-investigate what it settles"
+    start_heading = "docs in the project; none is listed here, so look one up when a question needs it: journal doc search <term>, journal doc all"
+    start_as_count = True
     subagent_writable = False
     needs_attention = True
     icon = "file"

@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.84.97 — The start block no longer lists the docs
+
+An old design or a stale doc in the start list could put the agent on the wrong track. The start block now only says how many docs the project has and how to find one when a question needs it: journal doc search <term>, journal doc all.
+
 ## 2.84.96 — The socket setting is gone
 
 The journal no longer posts lines into Claude's cross-session socket, so Settings > Delivery drops Use the socket. Lines reach the agent through the channel, or are typed into its terminal when the channel is off.
