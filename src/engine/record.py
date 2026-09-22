@@ -142,6 +142,22 @@ class Record:
         got = self.events(last=1)
         return got[-1].id if got else 0
 
+    def trim_events(self, keep: int, readers_since: float) -> int:
+        log = self.home / "events.jsonl"
+        if not log.is_file():
+            return 0
+        with self.locked():
+            lines = log.read_text().splitlines(keepends=True)
+            if len(lines) <= keep:
+                return 0
+            ids = [json.loads(line).get("id", 0) for line in lines]
+            unread = min((self.cursor(f.name.removeprefix("cursor-")) for f in (self.home / "runtime").glob("cursor-*")
+                          if f.stat().st_mtime >= readers_since and self.cursor_text(f.name.removeprefix("cursor-")).isdigit()), default=ids[-1])
+            floor = min(ids[-keep], unread + 1)
+            kept = [line for line, n in zip(lines, ids) if n >= floor]
+            write_text(log, "".join(kept))
+            return len(lines) - len(kept)
+
     def cursor_text(self, name: str) -> str:
         f = self.home / "runtime" / f"cursor-{name}"
         try:

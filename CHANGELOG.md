@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.94.0 — The event log keeps the last hundred
+
+Once an hour events.jsonl is cut to its last 100 events, keeping any later event a reader has not reached yet: the engine's delivery to the agent and the user, and every plugin's place in the log. A reader that has not moved for a day holds nothing back. Event numbers keep counting up.
+
 ## 2.93.4 — One menu panel
 
 The dropdown's list and the board card's menu are one kit MenuPanel of kit MenuItems, so every floating menu has the same panel, rows and hover.
