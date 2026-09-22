@@ -53,9 +53,14 @@ class NameStaleSkills(Handler):
     behaviour = "stale"
 
     def handle(self, context: AgentContext, event: AgentReported) -> None:
+        always = set(chosen(context.record))
         changed = {s[SKILL.name]: s[SKILL.changed] for s in skills(context.record, context.agent.row.n) if s[SKILL.stale]}
-        if changed:
-            require(context.record, context.agent.session, changed)
+        held = {name: at for name, at in changed.items() if name in always}
+        if held:
+            require(context.record, context.agent.session, held)
+        rest = sorted(set(changed) - always)
+        if rest:
+            context.agent.whisper("stale", skills=", ".join(rest))
 
 
 class RequireAlwaysSkills(Handler):

@@ -42,8 +42,8 @@ class SkillsDetails(FeatureDetails):
         ),
         Behaviour(
             name="stale",
-            title="Hold tool calls when a skill changed since it was loaded",
-            abstract="Every tool call waits until the agent loads the changed skill again",
+            title="Hold tool calls when an every-start skill changed since it was loaded",
+            abstract="The every-start skills are loaded again before the next call; the rest are only named once",
         ),
     ]
 
@@ -62,6 +62,11 @@ class SkillsDetails(FeatureDetails):
             name="unloaded",
             title="no journal skill is loaded in this window",
             brief="load the journal skill (Skill: journal) before the next write; a compaction emptied it",
+        ),
+        Line(
+            name="stale",
+            title="{{skills}} changed since you loaded them",
+            brief="load one again when you next need it; only the every-start skills are held for",
         ),
         Line(
             name="required",

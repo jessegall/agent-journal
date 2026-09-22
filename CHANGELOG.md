@@ -4,6 +4,11 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.85.40 — A changed skill no longer holds every tool call
+
+- Only the every-start skills are loaded again before the next call when they change. The rest are named once, and loaded when they are next needed. An upgrade that rewrites every skill used to demand all of them at once.
+- The project badge shows for two seconds instead of three.
+
 ## 2.85.39 — A skill loads itself when one of its keywords comes up
 
 - Every skill can carry keywords: the journal's own skills get them from their feature, any SKILL.md can name its own in its frontmatter, and the Skills page sets them per skill.
