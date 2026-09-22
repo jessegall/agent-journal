@@ -31,6 +31,11 @@ class PromptFiling(Handler):
                 return
         elif getattr(dumps._in_hand(), "n", 0) != dump.n:
             return
+        answers = dump.data.get("answers") or []
+        speaking = context.speaking_to(agent) if agent else None
+        if speaking and answers and speaking.once("dump answer", f"{dump.n}:{len(answers)}"):
+            speaking.agent.say("answered", n=dump.n, answer=answers[-1]["answer"], question=answers[-1]["question"])
+            return
         items = dump.data.get("items") or {}
         waiting = [name for name in dumps._names(dump) if not (items.get(name) or {}).get(ITEM.insight)]
         if agent and waiting and not dump.completed:

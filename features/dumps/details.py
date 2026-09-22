@@ -13,7 +13,8 @@ class DumpsDetails(FeatureDetails):
         every item becomes and files it, recording journal dump note <n> <item> "<what it is>",
         then journal dump filed <n> <item> "<what it did>" "<ref, ref>" or journal dump failed
         <n> <item> "<why>". journal dump name <n> "<name>" names its collection for what the
-        items are about, and journal dump log <n> "<status>" tells the user what the agent is doing.
+        items are about, and journal dump log <n> "<status>" tells the user what the agent is doing;
+        journal dump ask <n> "<question>" asks the user in the dump window, and they answer there.
         One dump is worked at a time; the next waits until it closes. journal dump items <n> lists where every item stands, and the dump
         closes by itself once every item is filed or failed.
     """
@@ -34,8 +35,14 @@ class DumpsDetails(FeatureDetails):
                 what you are doing at each step with journal dump log {{n}} "<status>": the dump
                 window shows it live. Create a row as soon as you start on it and log with
                 --on <type:n>, so its card appears while you write it. Ask only when you
-                truly cannot tell what an item is for.
+                truly cannot tell what an item is for, and ask in the dump window with journal
+                dump ask {{n}} "<question>", never in the chat: the user is looking at the dump.
             """,
+        ),
+        Line(
+            name="answered",
+            title="the user answered your question on dump {{n}} - {{answer}}",
+            brief="carry on filing with that answer. The question was: {{question}}",
         ),
         Line(
             name="filed",
