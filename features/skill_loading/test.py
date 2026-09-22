@@ -117,7 +117,8 @@ def test_every_tool_call_waits_until_a_required_skill_is_loaded(tmp_path):
     assert "Skill: journal-plans" in call("Read", file_path="x.py"), "and every other tool call waits too"
     assert call("Skill", skill="journal-plans") == "", "loading a skill is never refused"
     record.set_setting("skill_loading", {"most_refusals": 3})
-    assert [bool(call("Read", file_path="x.py")) for _ in range(3)] == [True, False, False], "after the limit in a row the call goes through, so nothing is stuck"
+    assert [bool(call("Read", file_path="x.py")) for _ in range(52)] == [True, *[False] * 50, True], \
+        "after the limit in a row the gate steps aside for fifty tool uses, then refuses again"
     now = datetime.now(timezone.utc).isoformat()
     loaded = {"type": "assistant", "timestamp": now, "message": {"content": [{"type": "tool_use", "name": "Skill", "input": {"skill": "journal-plans"}}]}}
     transcript.write_text(transcript.read_text() + json.dumps(loaded) + "\n")
@@ -134,7 +135,11 @@ def test_a_session_start_holds_every_tool_call_until_the_always_on_skills_are_lo
     (folder / "SKILL.md").write_text('---\nname: journal-work-tracking\ndescription: "Auto mode"\n---\n\n# Auto\n')
     record.skills = ["journal-work-tracking"]
     codex, hook = PROVIDERS["codex"](), {"session_id": "codex-1"}
+    from features.skill_loading.required import require, required
+    require(record, "codex-1", {"journal-obsolete": 1.0})
     handle(codex, record.root, record.env, {**hook, "hook_event_name": "SessionStart"})
+    assert list(required(record, "codex-1").get("required")) == ["journal-work-tracking"], \
+        "a new window owes exactly the every-start skills; one switched off is no longer owed"
     refused = handle(codex, record.root, record.env, {**hook, "hook_event_name": "PreToolUse", "tool_name": "exec", "tool_input": {"input": "ls"}})
     assert "read .agents/skills/journal-work-tracking/SKILL.md" in str(refused), "Codex is told to read the skill's SKILL.md"
     read = {"input": "sed -n '1,200p' .agents/skills/journal-work-tracking/SKILL.md"}

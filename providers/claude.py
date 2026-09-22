@@ -307,6 +307,10 @@ class Claude(Provider):
             return []
         return self.loaded([use for _, row in self.entries(session) for use in self.tool_uses(row)])
 
+    def window(self, rows: list[dict]) -> list[dict]:
+        starts = [i for i, row in enumerate(rows) if row.get("isCompactSummary")]
+        return rows[starts[-1]:] if starts else rows
+
     def crew(self, path: Path) -> dict:
         rows = [row for _, row in self.entries(path)]
         uses = [use for row in rows for use in self.tool_uses(row)]
@@ -346,7 +350,7 @@ class Claude(Provider):
                              "task": str(given.get("description") or "monitor"), "running": not finished, "at": use["at"],
                              "ended": (done if notified else deadline) if finished else 0.0,
                              "status": (status if notified else "expired") if finished else ""})
-        return {AgentRow.skills: self.loaded(uses), AgentRow.shells: len(shells), AgentRow.subagents: len(subagents),
+        return {AgentRow.skills: self.loaded([use for row in self.window(rows) for use in self.tool_uses(row)]), AgentRow.shells: len(shells), AgentRow.subagents: len(subagents),
                 AgentRow.monitors: len(monitors), AgentRow.shell_rows: shells, AgentRow.subagent_rows: subagents,
                 AgentRow.monitor_rows: monitors}
 

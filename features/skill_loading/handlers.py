@@ -8,7 +8,7 @@ from features import trigger
 from features.parts import AgentContext, Context, Handler
 from features.skill_loading.catalogue import SKILL, chosen, skills
 from features.skill_loading.interceptors import require_named
-from features.skill_loading.required import require
+from features.skill_loading.required import require, require_only
 from providers import PROVIDERS
 from resources.base import SYSTEM, USER
 from resources.types import AgentRow
@@ -68,7 +68,7 @@ class RequireAlwaysSkills(Handler):
 
     def handle(self, context: AgentContext, event: SessionStarted) -> None:
         now = time.time()
-        require(context.record, context.agent.session, {name: now for name in chosen(context.record)})
+        require_only(context.record, context.agent.session, {name: now for name in chosen(context.record)})
 
 
 @dataclass(frozen=True)
