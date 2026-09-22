@@ -70,6 +70,11 @@ class AgentsDetails(FeatureDetails):
 
     lines = [
         Line(
+            name="stop",
+            title="the user asked to stop {{what}}",
+            brief="{{how}}; then carry on with the work",
+        ),
+        Line(
             name="reported",
             title="agent {{who}} reports todo {{n}} done",
             brief="{{how}} — journal todo done {{n}} is yours",
