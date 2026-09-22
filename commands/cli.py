@@ -12,7 +12,7 @@ import migrations
 from providers import DRIVERS
 from engine.record import Record
 from engine.sessions import Sessions, allowed
-from resources.base import Refused
+from resources.base import OWNER, Refused
 from resources.shapes import typed
 from engine import runtime
 from commands.parser import PRINTED, Misused, parser
@@ -37,7 +37,7 @@ def context(args: dict) -> dict:
     env = args.pop("bound") or (sessions.environment(session) if session else "") or worked or fallback or runtime.env(root)
     session = session or sessions.holder(env)
     return {"record": Record(root, env, memo=True), "session": session, "actor": args.pop("as_actor"), "agent": args.pop("agent"),
-            "force": "", "sessions": sessions}
+            "plugin": args.pop("plugin"), "force": "", "sessions": sessions}
 
 
 READS = {"all", "show", "find", "search", "files", "folder", "comments", "linked_to", "unread", "read", "board"}
@@ -60,7 +60,7 @@ def invoke(fn, args: dict, extra: dict):
         return fn(*positional, **args, **extra)
 
 
-TAKES = {"--root", "--env", "--default-env", "--as", "--session", "--agent", "--force", "--cwd"}
+TAKES = {"--root", "--env", "--default-env", "--as", "--session", "--agent", "--force", "--cwd", "--plugin"}
 
 
 def first_word(argv: list[str]) -> str:
@@ -138,6 +138,8 @@ def run(argv: list[str], out=None, err=None) -> int:
         method = args.pop("method")
         args.pop("action", None)
         extra = {k: typed(v) for k, v in (kv.split("=", 1) for kv in args.pop("set", []))}
+        if ctx["plugin"] and method == "create":
+            extra = {OWNER: ctx["plugin"], "locked": True, **extra}
         if ctx["agent"] and method not in READS:
             why = allowed(ctx["sessions"], ctx["session"], ctx["record"].env, ctx["agent"], command)
             if why:

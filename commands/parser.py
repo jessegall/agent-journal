@@ -95,6 +95,7 @@ def built(only: str) -> argparse.ArgumentParser:
     top.add_argument("--session", default=os.environ.get("JOURNAL_SESSION", ""))
     top.add_argument("--cwd", default="", help=argparse.SUPPRESS)
     top.add_argument("--agent", default=os.environ.get("JOURNAL_AGENT", ""))
+    top.add_argument("--plugin", default=os.environ.get("JOURNAL_PLUGIN", ""), help=argparse.SUPPRESS)
     cmds = top.add_subparsers(dest="command", required=True)
     features.load()
     for type_, controller in CONTROLLERS.items():

@@ -19,6 +19,7 @@ WHOM = "whom"
 KEYWORDS = "keywords"
 KEYWORDS_IN = "keywords_in"
 PART_OF = "part_of"
+OWNER = "plugin"
 ENVIRONMENT, PROJECT = "environment", "project"
 SCOPES = (ENVIRONMENT, PROJECT)
 LAZY, EAGER, MEMORY = "lazy", "eager", "memory"

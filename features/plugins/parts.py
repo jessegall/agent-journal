@@ -4,9 +4,10 @@ import time
 from dataclasses import dataclass
 from typing import ClassVar
 
+from controllers.types import CONTROLLERS, Plugins
 from engine.events import ResourceEvent
 from engine.services import DOWN, want
-from features.parts import Context, Handler, TextFormatter, ToolInterceptor
+from features.parts import ActionInterceptor, Context, Handler, TextFormatter, ToolInterceptor
 from features.plugins.lifecycle import called, clear
 from features.plugins.manifest import fill
 from features.plugins.payload import refusal
@@ -14,6 +15,7 @@ from features.plugins.run import call
 from features.plugins.skills import withdrawn
 from features.plugins.source import CHOSEN, environment, folder, logged
 from features.status_bar import commands
+from resources.base import OWNER, PLUGIN, SYSTEM
 
 EACH = 1.5
 LONGEST_EACH = 3.0
@@ -68,6 +70,14 @@ class AskPluginsToRefuse(ToolInterceptor):
         return ""
 
 
+def forgotten(record, name: str) -> None:
+    for controller in CONTROLLERS.values():
+        rows = controller(record, actor=SYSTEM)
+        for row in rows.summaries():
+            if row.get(OWNER) == name and controller.resource.type != "plugin":
+                rows.force_delete(row["n"])
+
+
 class ClearRemovedPlugin(Handler):
     def handle(self, context: Context, event: PluginRemoved) -> None:
         rows = context.journal.plugins
@@ -78,4 +88,20 @@ class ClearRemovedPlugin(Handler):
             for service in (row.manifest or {}).get("services") or {}:
                 want(context.record.root, f"{name}.{service}", DOWN)
             withdrawn(context.record.root, name)
+            forgotten(context.record, name)
             clear(folder(context.record.root, name))
+
+
+def installed(record, name: str) -> bool:
+    return any(called(r) == name for r in Plugins(record, actor=SYSTEM)._standing())
+
+
+class KeepPluginRows(ActionInterceptor):
+    def intercept(self, context: Context, controller, n: int = 0, **_) -> None:
+        if not n or controller.actor in (SYSTEM, PLUGIN):
+            return None
+        row = controller.load(n)
+        name = str(row.data.get(OWNER) or "")
+        if name and row.data.get("locked") is True and installed(controller.record, name):
+            controller._refuse(f"{controller.type} {n} belongs to the {name} plugin: it goes when the plugin is removed")
+        return None

@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.85.88 — Rows a plugin creates are its own, and its installed step fills the settings
+
+- A row a plugin's commands create is stamped with the plugin and locked: nobody else deletes or closes it while the plugin is installed, and removing the plugin removes it. The index carries the owner, so removal finds them at once.
+- A manifest's installed command runs right after install and upgrade, its answer applied before the call returns, so the settings panel opens filled.
+- Only the log dialog follows its last line; the install dialog reads from the top.
+
 ## 2.85.87 — Scan, with a spinner, and a new plugin opens its settings
 
 - The button beside the plugin field is Scan and spins while it reads the repository; kit Btn has a busy state that keeps its width, used by Scan, Run and Upgrade.
