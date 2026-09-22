@@ -10,6 +10,7 @@ import {peek, route} from "../route.js";
 import {state} from "../domain/records.js";
 import {holding, rows} from "../sync/rows.js";
 import Markdown from "./Markdown.vue";
+import Folded from "../kit/Folded.vue";
 
 const props = defineProps({resource: Object});
 const emit = defineEmits(["close"]);
@@ -85,7 +86,11 @@ async function run(action, body = {}) {
             <span class="error">{{ error }}</span>
         </div>
         <template v-if="resource.brief">
-            <Markdown class="brief" :text="resource.brief" />
+            <div class="brief">
+                <Folded :at="220" :keep="160">
+                    <Markdown :text="resource.brief" />
+                </Folded>
+            </div>
         </template>
         <ol class="phases">
             <template v-for="p in phases" :key="p.i">
