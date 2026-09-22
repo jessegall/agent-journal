@@ -24,7 +24,8 @@ def homes(project: Path, agent: str) -> list[Path]:
 
 
 def others(project: Path, agent: str) -> tuple[list[Path], list[Path]]:
-    skills = [d for home in homes(project, agent) for d in sorted(home.iterdir()) if not d.name.startswith(("journal", "."))]
+    managed = PROVIDERS[agent].managed_skill_folders
+    skills = [d for home in homes(project, agent) for d in sorted(home.iterdir()) if not d.name.startswith(("journal", ".")) and d.name not in managed]
     hooks = [f for f in PROVIDERS[agent]().hook_files(project) if kept(read_json(f, {})) != read_json(f, {})]
     return skills, hooks
 

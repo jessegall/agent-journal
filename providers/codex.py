@@ -22,6 +22,7 @@ class Codex(Provider):
     question_tools = frozenset({"request_user_input"})
     briefing_file = "AGENTS.md"
     skill_home = ".agents/skills"
+    managed_skill_folders = (".system",)
 
     def skill_load(self, name: str) -> str:
         return f"read {self.skill_home}/{name}/SKILL.md"
