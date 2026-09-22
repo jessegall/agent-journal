@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from typing import ClassVar
 
 from engine.events import AgentReported, AnyEvent, ResourceEvent
-from features.plans.controller import APPROVED, BUILDING, PHASES, WAITING
+from features.plans.controller import APPROVED, BUILDING, DEPTHS, PHASES, WAITING
 from features.plans.progress import catch_up
 from features.plans.resource import PHASE
 from features.work_tracking.auto import automatic
@@ -23,7 +23,7 @@ class StartBuilding(Handler):
         agent = context.journal.agents.primary()
         if event.action == "created" and event.actor == USER and agent:
             plan = context.journal.plans.load(event.n)
-            context.speaking_to(agent).agent.say("started", n=plan.n, title=plan.title)
+            context.speaking_to(agent).agent.say("started", n=plan.n, title=plan.title, depth=DEPTHS[plan.depth])
 
 
 class StartApproved(Handler):

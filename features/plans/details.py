@@ -10,7 +10,10 @@ class PlansDetails(FeatureDetails):
 
     help = """
         A plan is built in order. journal plan create "<name>" --set goal="<what is true when
-        done>" starts it building, at its phases stage. Add every phase with journal plan phase
+        done>" --set depth=normal|thorough starts it building, at its phases stage. When the user
+        asks for a plan in the chat, settle how thorough it must be first: take it from what they
+        said, judge it yourself when the work makes it plain, and ask with a question when you
+        cannot tell. A thorough plan is researched and has a to-do for every small thing. Add every phase with journal plan phase
         <n> "<title>" --when "<complete when>" (--checkpoint where the user should look before
         it goes on).
 
@@ -28,7 +31,7 @@ class PlansDetails(FeatureDetails):
             title="the user started plan {{n}}, {{title}} - build it with them",
             brief="""
                 journal plan show {{n}} for what they want, and a template's instructions come
-                first; ask what you cannot settle, then add its phases and rows
+                first; ask what you cannot settle, then add its phases and rows. {{depth}}
             """,
         ),
         Line(
