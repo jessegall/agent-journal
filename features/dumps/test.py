@@ -83,7 +83,7 @@ def test_one_dump_is_worked_at_a_time_its_log_is_kept_and_filing_asks_for_the_ne
     assert [e["text"] for e in agent.load(dump.n).data["log"]] == ["reading the note"], "the log keeps what the agent said it is doing"
     assert refused(lambda: agent.log(dump.n, " ")) == "say what you are doing", "a log entry needs words"
     agent.failed(dump.n, "text", "nothing in it to keep")
-    assert f"dump {dump.n} is filed (0 filed, 1 failed) - suggest the next step" in nudges(record), "closing the dump asks for the next step"
+    assert f"dump {dump.n} is filed (0 filed, 1 failed) - offer the user what to do next" in nudges(record), "closing the dump asks for the next steps"
     assert nudges(record)[-1] == f"dump {later.n}, Another, has 1 item to file - journal dump items {later.n}", "and hands over the next one"
     CONTROLLERS["dump"](record, actor=USER).reopen(dump.n, "more to add")
     assert agent._in_hand().n == later.n, "a reopened dump joins the back of the queue, behind the one being filed"
@@ -116,3 +116,20 @@ def test_an_idle_agent_is_told_to_carry_on_filing_even_with_auto_off():
     tick(record)
     assert [n for n in nudges(record) if "carry on" in n] == [f"dump {dump.n} still has 1 item to file - carry on filing it"], \
         "an agent resting with a dump unfinished is told once to carry on, auto mode or not"
+
+
+def test_a_finished_dump_offers_next_steps_and_you_decide_hands_it_to_the_agent():
+    from tests.kit import nudges, report
+    record = fresh()
+    report(record, "working", "PreToolUse")
+    dump = CONTROLLERS["dump"](record, actor=USER).create("Plan notes", brief="notes")
+    agent, user = CONTROLLERS["dump"](record, actor=AGENT), CONTROLLERS["dump"](record, actor=USER)
+    agent.filed(dump.n, "text", "a to-do", f"{Todos(record, actor=AGENT).create('book the room').ref}")
+    assert "not a command" in refused(lambda: agent.offer(dump.n, '[{"label": "Fly", "type": "todo", "action": "fly"}]')), "an unknown action is refused"
+    agent.offer(dump.n, '[{"label": "Book it today"}, {"label": "Leave it"}]')
+    assert refused(lambda: agent.choose(dump.n, 0)) == "only the user chooses what a dump does next", "the agent cannot choose"
+    user.choose(dump.n, 0)
+    assert (nudges(record)[-1], bool(agent.load(dump.n).data["confirmed"])) == \
+        (f"the user chose Book it today for dump {dump.n}", True), "a choice adds what it made to the journal and tells the agent"
+    user.choose(dump.n, -1)
+    assert nudges(record)[-1] == f"the user left dump {dump.n} to you - finish it", "You decide hands the rest to the agent"

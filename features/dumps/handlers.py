@@ -23,17 +23,23 @@ class PromptFiling(Handler):
     def handle(self, context: Context, event: DumpWritten) -> None:
         dumps, agent = context.journal.dumps, context.journal.agents.primary()
         dump = dumps.load(event.n)
+        speaking = context.speaking_to(agent) if agent else None
+        chosen = dump.data.get("chosen") or {}
+        if speaking and chosen and speaking.once("dump choice", f"{dump.n}:{chosen.get('at')}"):
+            if int(chosen.get("pick", -1)) < 0:
+                speaking.agent.say("decide", n=dump.n)
+            else:
+                speaking.agent.say("chose", n=dump.n, label=chosen["label"])
+            return
         if event.action == FILED:
-            if agent and not dump.data.get("stopped"):
-                collection = next((ref.split(":")[1] for ref in dump.refs if ref.startswith("collection:")), "")
-                context.speaking_to(agent).agent.say("filed", n=dump.n, outcome=dump.outcome, collection=collection)
+            if speaking and not dump.data.get("stopped"):
+                speaking.agent.say("filed", n=dump.n, outcome=dump.outcome)
             dump = dumps._in_hand()
             if not dump:
                 return
         elif getattr(dumps._in_hand(), "n", 0) != dump.n:
             return
         answers = dump.data.get("answers") or []
-        speaking = context.speaking_to(agent) if agent else None
         if speaking and answers and speaking.once("dump answer", f"{dump.n}:{len(answers)}"):
             speaking.agent.say("answered", n=dump.n, answer=answers[-1]["answer"], question=answers[-1]["question"])
             return
