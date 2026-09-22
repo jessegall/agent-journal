@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.85.29 — An upgrade keeps the build a live session runs from
+
+- A running session registers the build it was started from, and an upgrade never removes a build a live session still holds. Before, an upgrade during a Codex session removed its build, and the launcher crashed when Codex exited.
+- The launcher loads everything it needs when it starts, not on the way out.
+- Ctrl+C in the environment picker exits without a traceback.
+
 ## 2.85.28 — Editing a message keeps its quote
 
 - Editing a message that quotes another keeps the quote. Before, the edit saved only the new words, and the quote block turned into a bare message link.

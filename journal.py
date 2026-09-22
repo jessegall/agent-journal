@@ -5,4 +5,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from commands.cli import run  # noqa: E402
 
 if __name__ == "__main__":
-    sys.exit(run(sys.argv[1:]))
+    try:
+        sys.exit(run(sys.argv[1:]))
+    except KeyboardInterrupt:
+        sys.exit(130)

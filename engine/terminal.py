@@ -8,12 +8,13 @@ import time
 import tty
 from pathlib import Path
 
-from engine.sessions import ACTIVE_ENV
+from engine.band import release
+from engine.sessions import ACTIVE_ENV, hold_build
 from install import code
 from engine import runtime
 from engine.heal import heal
 from engine.stored import read_json
-from engine.package import entry
+from engine.package import CODE, entry
 
 RELOAD = 75
 STOP = 76
@@ -100,6 +101,7 @@ def launch(root: Path, cwd: Path, env: str, agent: str, args: list[str], convers
 
 
 def run(root: Path, cwd: Path, env: str, agent: str, args: list[str]) -> int:
+    hold_build(root, CODE)
     pid, fd, session = launch(root, cwd, env, agent, args)
     runtime.set_env(root, env)
     print(f"journal: environment {env}")
@@ -155,7 +157,6 @@ def run(root: Path, cwd: Path, env: str, agent: str, args: list[str]) -> int:
             coordinator.wait()
         if status is None:
             status = stop(pid)
-        from engine.band import release
         os.write(stdout, release())
         if saved is not None:
             termios.tcsetattr(stdin, termios.TCSADRAIN, saved)
