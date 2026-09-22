@@ -311,7 +311,7 @@ watch(
         <Transition name="dump">
             <DumpWindow v-if="store.dumping" />
         </Transition>
-        <Transition name="dump">
+        <Transition name="terminal">
             <TerminalWindow v-if="store.terminal && !store.dumping" />
         </Transition>
         <template v-if="!store.dumping && !store.terminal">
@@ -406,6 +406,24 @@ watch(
 </template>
 
 <style scoped>
+.terminal-enter-active,
+.terminal-leave-active {
+    transition:
+        transform 0.22s cubic-bezier(0.2, 0.8, 0.2, 1),
+        opacity 0.18s ease;
+}
+
+.terminal-leave-active {
+    position: absolute;
+    inset: 0;
+}
+
+.terminal-enter-from,
+.terminal-leave-to {
+    opacity: 0;
+    transform: translateY(14px);
+}
+
 .turn-enter-active {
     transition:
         opacity 0.26s ease-out,
