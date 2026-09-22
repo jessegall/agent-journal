@@ -107,8 +107,8 @@ onUnmounted(() => clearTimeout(timer));
 
 .flash-leave-active {
     transition:
-        opacity 200ms ease,
-        transform 200ms ease;
+        opacity 150ms ease,
+        transform 150ms ease;
 }
 
 .flash-enter-from {
