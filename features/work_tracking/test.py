@@ -166,10 +166,13 @@ def test_a_declared_wait_is_asked_about_and_cleared_when_the_work_moves():
     works = Works(record, actor=AGENT)
     build = works.create("the release")
     works.action("await")("the CI run on main")
-    works.update(build.n, awaiting_since=works.load(build.n).awaiting_since - 120)
+    works.update(build.n, awaiting_since=works.load(build.n).awaiting_since - 60)
     tick(record)
-    assert nudges(record)[-1] == "you said you are waiting for the CI run on main, 2 min ago - is that still true?", \
-        "a wait that stands is asked about"
+    assert not [n for n in nudges(record) if n.startswith("check the CI run")], "a minute in, the wait is left alone"
+    works.update(build.n, awaiting_since=works.load(build.n).awaiting_since - 300)
+    tick(record)
+    assert nudges(record)[-1] == "check the CI run on main now - you have waited 6 min", \
+        "five minutes in, the agent is sent to look at the thing it waits on"
     works.action("log")("CI passed")
     assert works.load(build.n).awaiting == "the CI run on main", "a log entry leaves the wait standing"
     report(record, "working", "PostToolUse", tool="Bash")

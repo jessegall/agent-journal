@@ -4,6 +4,11 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.85.59 — A plugin's journal is always this project's, and a wait is checked after five minutes
+
+- Every command a plugin runs finds this project's journal first on its PATH. A setup step runs from the staging folder, outside the project, so a bare journal command could reach an old journal installed elsewhere and fail — code-commandments' judge check did.
+- A declared wait is left alone for five minutes, then the agent is told to check the thing it waits on — the shell, the process, the run — and carry on or wait again, instead of being asked whether it is still waiting.
+
 ## 2.85.58 — Removing a plugin takes all of it
 
 - Removing a plugin stops its services before its folder is taken away; its hooks and refusals stop with it.
