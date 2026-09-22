@@ -173,14 +173,10 @@ def asked_for(record: Record, args: list[str], ask=input, answering=None) -> str
             holder = sessions.holder(names[picked])
             if not holder:
                 return names[picked]
-            try:
-                taken = ask(f"    An agent is working {names[picked]}. Take it over? It is told and moves off. [y/N] ").strip().lower()
-            except EOFError:
-                return record.env
-            if taken in ("y", "yes"):
+            notes = [f"An agent is working {names[picked]}. Taking it over tells that agent and moves it off."]
+            if choose(f"Take over {names[picked]}", notes, ["Yes, take it over", "No, pick another"], 1, ask) == 0:
                 sessions.evict(holder, "a new session", names[picked], "taken over at start")
                 return names[picked]
-            continue
         try:
             return Environments(record, actor=SYSTEM).create(ask("    Name: ").strip()).title
         except EOFError:

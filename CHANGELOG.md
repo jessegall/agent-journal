@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.84.102 — Taking over a busy environment is asked like every other start question
+
+- The takeover question uses the same numbered choices, with No marked for Enter.
+
 ## 2.84.101 — Enter at the start question always picks a choice it accepts
 
 - The environment question marked a busy environment as the Enter choice and then refused it, so Enter asked again for ever. Enter now takes the first free choice.
