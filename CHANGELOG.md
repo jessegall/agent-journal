@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.84.150
+
+- The Blank plan template is retired: it held no skeleton, only how a plan is built. That is now Building a plan, a system sequence that starts whenever a plan is created and hands the agent its steps: name the goal, add the phases, file the rows, hand it over. No template is the blank choice when a plan is made.
+
 ## 2.84.149
 
 - The agent bar's counters have room between them, each list opens under a heading (Background shells, Subagents, Monitors), and each icon's tooltip says what it counts.
