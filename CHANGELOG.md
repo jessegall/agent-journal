@@ -4,9 +4,15 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.85.72 — The clock looks at long commands every 5 seconds
+
+- The engine's clock ticks every 5 seconds, so a command is moved close to its 30 seconds rather than up to 10 seconds late.
+- When a command is moved, the agent is also told to start commands it expects to run long in the background itself.
+- With no text beside it, the working-dots bubble wraps the dots alone.
+
 ## 2.85.71
 
-- A foreground command running 30 seconds is moved to the background; the setting is in seconds now, and the engine's clock reaches the session the hooks report on, ticking every 10 seconds.
+- A foreground command running 30 seconds is moved to the background; the setting is in seconds now, and the engine's clock reaches the session the hooks report on, ticking every 5 seconds.
 - A plugin's commands read every chosen setting as JSON from JOURNAL_SETTINGS.
 
 ## 2.85.70 — A plugin's settings open in a side panel, typed by its manifest
