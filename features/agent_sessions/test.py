@@ -3,7 +3,7 @@ import subprocess
 import sys
 import time
 
-from controllers.types import Environments, Works
+from controllers.types import Agents, Environments, Works
 from engine.sessions import Sessions, allowed
 from features.base import held
 from resources.base import AGENT
@@ -156,3 +156,12 @@ def test_stop_in_the_viewer_tells_the_agent_to_stop_that_task_in_its_providers_w
     agents.stop_task(agent.n, "b7wu1410l", what="Poll production")
     told = [n for n in Nudges(record).all() if n.title == "the user asked to stop Poll production"]
     assert [n.brief for n in told] == ["run TaskStop with task_id b7wu1410l now; then carry on with the work"], "once, in Claude's words"
+
+
+def test_a_compaction_is_recorded_once_on_the_agent():
+    record = fresh()
+    report(record, "working", "PreToolUse")
+    report(record, "compacting", "PreCompact")
+    report(record, "compacting", "PreCompact")
+    agent = Agents(record, actor="system").by_session("claude-1")
+    assert len(agent.data.get("compactions") or []) == 1, "one compaction, one mark for the chat"

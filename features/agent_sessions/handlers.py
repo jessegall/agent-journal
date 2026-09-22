@@ -12,6 +12,10 @@ STOPPED = "stopped"
 STOP = "stop"
 MINUTE = 60
 
+COMPACTING = "compacting"
+KEPT_COMPACTIONS = 50
+ONE_COMPACTION = 120
+
 
 @dataclass(frozen=True)
 class TodoUpdated(ResourceEvent):
@@ -29,6 +33,15 @@ class HoldEvicted(Handler):
             context.hold("evicted", "eviction", environment=repr(gone["environment"]), by=gone["by"], why=gone["why"])
         else:
             context.release("eviction")
+
+
+class RecordCompactions(Handler):
+    def handle(self, context: AgentContext, event: AgentReported) -> None:
+        row = context.agent.row
+        kept = row.data.get("compactions") or []
+        if row.status != COMPACTING or (kept and time.time() - float(kept[-1]["at"]) < ONE_COMPACTION):
+            return
+        context.journal.agents.update(row.n, compactions=[*kept, {"at": time.time()}][-KEPT_COMPACTIONS:])
 
 
 class AskToStop(Handler):

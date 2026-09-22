@@ -162,6 +162,15 @@ async function drop() {
             </button>
         </div>
     </template>
+    <template v-else-if="turn.type === 'compacted'">
+        <div class="thread-turn compacted" :data-ref="turn.ref">
+            <span class="thread-compacted">
+                <Icon name="activity" :size="12" />
+                The agent compacted its context
+                <span class="thread-compacted-when">{{ clock(turn.created) }}</span>
+            </span>
+        </div>
+    </template>
     <template v-else-if="turn.type === 'made'">
         <div class="thread-turn made" :data-ref="turn.ref">
             <button type="button" class="thread-made" @click="peek(turn.made.type, turn.made.n)">
@@ -366,6 +375,26 @@ async function drop() {
 .thread-skill strong {
     font-family: ui-monospace, "SF Mono", Menlo, monospace;
     font-weight: 500;
+}
+
+.thread-turn.compacted {
+    align-items: center;
+}
+
+.thread-compacted {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 4px 12px;
+    border: 1px dashed color-mix(in srgb, #d8a94a 45%, transparent);
+    border-radius: 99px;
+    background: color-mix(in srgb, #d8a94a 8%, transparent);
+    color: color-mix(in srgb, #d8a94a 80%, var(--text-3));
+    font-size: 12px;
+}
+
+.thread-compacted-when {
+    color: var(--text-3);
 }
 
 .thread-made {
