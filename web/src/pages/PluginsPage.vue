@@ -23,6 +23,8 @@ const repository = ref("");
 const wish = ref("");
 const asked = ref(false);
 const previewText = ref("");
+const shown = ref(null);
+const KINDS = {needs: "Needs", setup: "On install", service: "Runs", on: "Listens", refuse: "May refuse", page: "Page", setting: "Setting"};
 const busy = ref("");
 const plugins = computed(() =>
     rows("plugin")
@@ -64,8 +66,9 @@ watch(busy, () => look());
 async function preview() {
     busy.value = "preview";
     previewText.value = "";
+    shown.value = null;
     try {
-        previewText.value = await api.command("plugin", "preview", {source: source.value});
+        shown.value = await api.previewPlugin(source.value);
     } catch (e) {
         previewText.value = e.message;
     }
@@ -163,15 +166,35 @@ async function askAgent() {
             </div>
             <template v-if="previewText">
                 <pre class="preview">{{ previewText }}</pre>
-                <div class="add">
-                    <span class="lead">Installing runs these commands on your machine.</span>
-                    <Btn @click="previewText = ''">Cancel</Btn>
-                    <Btn kind="primary" :disabled="busy === 'install'" @click="install">
-                        {{ busy === "install" ? "Installing…" : "Install" }}
-                    </Btn>
-                </div>
             </template>
         </header>
+        <template v-if="shown">
+            <Dialog :title="shown.title" @close="shown = null">
+                <p class="shown-from">
+                    from {{ shown.source }}
+                    <template v-if="shown.commit">at {{ shown.commit.slice(0, 12) }}</template>
+                </p>
+                <template v-if="shown.description">
+                    <p class="shown-what">{{ shown.description }}</p>
+                </template>
+                <p class="shown-lead">It runs as you, with your files and your network. This is everything it does:</p>
+                <div class="shown-rows">
+                    <template v-for="(row, i) in shown.rows" :key="i">
+                        <div class="shown-row">
+                            <span :class="['shown-kind', row.kind]">{{ KINDS[row.kind] || row.kind }}</span>
+                            <span class="shown-label">{{ row.label }}</span>
+                            <code class="shown-command">{{ row.command }}</code>
+                        </div>
+                    </template>
+                </div>
+                <template #foot>
+                    <Btn @click="shown = null">Cancel</Btn>
+                    <Btn kind="primary" :disabled="busy === 'install'" @click="install">
+                        {{ busy === "install" ? "Running…" : "Run" }}
+                    </Btn>
+                </template>
+            </Dialog>
+        </template>
         <div class="cards">
             <template v-for="p in plugins" :key="p.n">
                 <article class="card">
@@ -319,6 +342,60 @@ h2 {
     background: var(--bg);
     color: inherit;
     font: inherit;
+}
+
+.shown-from,
+.shown-what,
+.shown-lead {
+    margin: 0 0 8px;
+    color: var(--text-3);
+    font-size: 12.5px;
+}
+
+.shown-what {
+    color: var(--text-2);
+}
+
+.shown-rows {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    max-height: 420px;
+    overflow-y: auto;
+}
+
+.shown-row {
+    display: grid;
+    grid-template-columns: 92px 1fr;
+    gap: 4px 10px;
+    padding: 8px 10px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--raised);
+    font-size: 12.5px;
+}
+
+.shown-kind {
+    color: var(--text-3);
+    font-size: 11px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.shown-kind.refuse {
+    color: #d8a94a;
+}
+
+.shown-label {
+    color: var(--text);
+}
+
+.shown-command {
+    grid-column: 2;
+    color: var(--text-2);
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: 11.5px;
+    word-break: break-all;
 }
 
 .preview {

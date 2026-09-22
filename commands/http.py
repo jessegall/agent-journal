@@ -464,6 +464,19 @@ def get_service_log(req: Request) -> Reply:
     return Reply(200, {"id": req.params["id"], "log": last_lines(log_file(req.root, req.params["id"]), asked_lines(req))})
 
 
+@route("POST", "/api/{env}/plugins/preview")
+def post_plugins_preview(req: Request) -> Reply:
+    from features.plugins.commands import VERSION
+    from features.plugins.lifecycle import drop
+    from features.plugins.source import previewed, staged
+    source = str(req.body.get("source") or "")
+    where, manifest, commit, linked = staged(req.root, source, str(req.body.get("ref") or ""), VERSION)
+    try:
+        return Reply(200, previewed(manifest, source, commit))
+    finally:
+        drop(where, linked)
+
+
 @route("GET", "/api/plugins/{name}/log")
 def get_plugin_log(req: Request) -> Reply:
     from features.plugins.source import log
