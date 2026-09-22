@@ -28,7 +28,7 @@ class Dumps(Controller):
             return self.complete(r.n, how=f"{len(settled) - failed} filed" + (f", {failed} failed" if failed else ""))
         return written
 
-    def read(self, n: int, item: str, insight: str):
+    def note(self, n: int, item: str, insight: str):
         return self._write(n, item, **{ITEM.insight: insight.strip()})
 
     def filed(self, n: int, item: str, how: str, refs: str = ""):
@@ -54,7 +54,7 @@ def standing(item: dict) -> str:
         return f"failed - {item[ITEM.failed]}"
     if item.get(ITEM.outcome):
         return f"filed - {item[ITEM.outcome]}"
-    return f"read - {item[ITEM.insight]}" if item.get(ITEM.insight) else "not read yet"
+    return f"noted - {item[ITEM.insight]}" if item.get(ITEM.insight) else "not read yet"
 
 
 resources_module.register(Dump)

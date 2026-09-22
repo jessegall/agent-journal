@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.84.83 — journal dump show works again
+
+2.84.82 gave the dump a read command, which replaced the read every type has for marking a row seen, so `journal dump show` failed. Recording what the agent saw in an item is now `journal dump note <n> <item> "<what it is>"`.
+
 ## 2.84.82 — Dumps
 
 A dump holds text you paste and files you drop; each is an item. The agent reads every item and decides what it becomes, recording it with `journal dump read <n> <item> "<what it is>"` and then `journal dump filed <n> <item> "<what it did>" "<refs>"` or `journal dump failed <n> <item> "<why>"`; `journal dump items <n>` lists where each stands. The dump closes by itself once every item is settled, saying how many were filed and how many failed. Its group, the agent being told when one arrives, and its page follow.
