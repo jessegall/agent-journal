@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.84.77 — Groups
+
+A group is a row of its own that holds any resources that belong together. `journal group create "<name>"` makes one, `journal group add <n> <ref> ...` puts rows of any type in it (`todo:785`, `doc:41`, `message:2706`), `journal group remove <n> <ref>` takes one out and `journal group members <n>` lists them. A row can sit in several groups. Groups open as pages of cards in the next release.
+
 ## 2.84.76 — An ended plan no longer holds its rows
 
 A to-do moved from an abandoned plan to a new one was still held by the old plan, both when starting it and on the board. Only a running plan holds a row, and only when the row sits in one of its phases.
