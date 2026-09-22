@@ -6,7 +6,7 @@ BLANK = {
     "applies_to": ["plan"],
     "brief": "Build the plan with the user, in order. Name the goal as what is true when it is done. Add every phase with the line "
              "that says when it is complete, and mark a checkpoint where the user should look before it goes on. Then file the "
-             "rows and put each under its phase, and mark the plan ready. Only the user activates it.",
+             "rows and put each under its phase, and mark the plan ready. Only the user approves it; the agent then starts it.",
     "parts": [],
 }
 FUNCTIONAL = {

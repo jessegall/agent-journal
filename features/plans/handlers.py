@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from typing import ClassVar
 
 from engine.events import AgentReported, AnyEvent, ResourceEvent
-from features.plans.controller import BUILDING, PHASES, WAITING
+from features.plans.controller import APPROVED, BUILDING, PHASES, WAITING
 from features.plans.progress import catch_up
 from features.plans.resource import PHASE
 from features.work_tracking.auto import automatic
@@ -24,6 +24,17 @@ class StartBuilding(Handler):
         if event.action == "created" and event.actor == USER and agent:
             plan = context.journal.plans.load(event.n)
             context.speaking_to(agent).agent.say("started", n=plan.n, title=plan.title)
+
+
+class StartApproved(Handler):
+    def handle(self, context: Context, event: PlanChanged) -> None:
+        agent = context.journal.agents.primary()
+        if event.action != "updated" or event.actor != USER or not agent:
+            return
+        plan = context.journal.plans.load(event.n)
+        speaking = context.speaking_to(agent)
+        if plan.status == APPROVED and speaking.once("approved", str(plan.n)):
+            speaking.agent.say("approved", n=plan.n, title=plan.title)
 
 
 class GuideBuilding(Handler):

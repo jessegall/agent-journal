@@ -2,7 +2,7 @@ import {meta, types, word} from "../state/store.js";
 import {rows} from "../sync/rows.js";
 
 const ENDED = ["done", "abandoned"];
-const UNSTARTED = ["building", "ready"];
+const UNSTARTED = ["building", "ready", "approved"];
 
 export const GROUPS = {
     started: "In progress",

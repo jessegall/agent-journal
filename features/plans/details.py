@@ -18,7 +18,7 @@ class PlansDetails(FeatureDetails):
         journal plan todos <n> <phase> <rows...>. When every phase has rows, journal plan ready
         <n> hands it to the user.
 
-        Only the user activates a plan and continues it past a checkpoint; with the auto
+        Only the user approves a plan, and then the agent starts it with journal plan start <n>; only the user continues it past a checkpoint; with the auto
         feature on, checkpoints are passed without waiting.
     """
 
@@ -50,7 +50,12 @@ class PlansDetails(FeatureDetails):
         Line(
             name="ready",
             title="every phase of plan {{n}} has its to-dos",
-            brief="journal plan ready {{n}} hands it to the user, who activates it",
+            brief="journal plan ready {{n}} hands it to the user, who approves it",
+        ),
+        Line(
+            name="approved",
+            title="the user approved plan {{n}}, {{title}} - start it",
+            brief="journal plan start {{n}} makes it active; then work its first phase's rows in order",
         ),
         Line(
             name="plan mode",

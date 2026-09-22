@@ -59,7 +59,9 @@ def test_a_row_outside_an_active_plan_stays_in_to_do_and_the_hold_is_one_line():
     plans.stage(plan.n, "todos")
     plans.place(plan.n, 1, [inside])
     plans.ready(plan.n)
-    Plans(record, actor=USER).activate(plan.n)
+    plans = Plans(record, actor=USER)
+    plans.approve(plan.n)
+    plans.start(plan.n)
     assert (lane(record, inside), lane(record, outside)) == ("todo", "todo"), "the plan's global hold moves no card"
     assert board(record)["plan_hold"].startswith(f"Plan {plan.n} is active"), "it is said once above the lanes"
 
@@ -127,6 +129,8 @@ def test_an_ended_plan_holds_none_of_its_rows():
         plans.place(plan.n, 1, [row.n])
         plans.ready(plan.n)
     plans.abandon(plan.n - 1, why="rewritten")
-    Plans(record, actor=USER).activate(plan.n)
+    plans = Plans(record, actor=USER)
+    plans.approve(plan.n)
+    plans.start(plan.n)
     assert (held(record, Todos(record, actor=USER).load(row.n)), lane(record, row.n)) == (False, "todo"), \
         "only the running plan's phase counts; the abandoned one still linking the row holds nothing"

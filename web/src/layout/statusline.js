@@ -108,7 +108,7 @@ export function capital(word) {
     return word[0].toUpperCase() + word.slice(1);
 }
 
-export const SHOWN = ["building", "ready", "active", "waiting", "done"];
+export const SHOWN = ["building", "ready", "approved", "active", "waiting", "done"];
 
 export function shownPlans(plans) {
     return plans.filter((p) => SHOWN.includes(p.data.status) && !p.completed);
@@ -128,5 +128,5 @@ export function doneOf(p, todos) {
 }
 
 export function planButton(p) {
-    return {ready: ["activate", "Start"], waiting: ["continue", "Continue"], done: ["acknowledge", "Acknowledge"]}[p.data.status] || null;
+    return {ready: ["approve", "Approve"], waiting: ["continue", "Continue"], done: ["finish", "Finish"]}[p.data.status] || null;
 }

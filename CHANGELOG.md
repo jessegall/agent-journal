@@ -4,6 +4,11 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.84.109 — The user approves a plan and the agent starts it
+
+- A plan gets a new status, approved. The user approves a ready plan (the plan page's button is now Approve); the agent is told at once and starts it with journal plan start <n>. Only an approved plan can be started.
+- acknowledge is renamed finish: the user finishes a plan that is done.
+
 ## 2.84.108 — A setting turns the While you were away card off
 
 - Settings has a Viewer section with a switch for the While you were away card; off, coming back to the tab opens nothing. The quick menu can still show it on demand.

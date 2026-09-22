@@ -36,10 +36,10 @@ const stage = computed(() => props.resource.data.stage || (phases.value.length ?
 const button = computed(
     () =>
         ({
-            draft: ["activate", "Start"],
-            ready: ["activate", "Start"],
+            draft: ["approve", "Approve"],
+            ready: ["approve", "Approve"],
             waiting: ["continue", "Continue"],
-            done: ["acknowledge", "Acknowledge"],
+            done: ["finish", "Finish"],
         })[status.value] || null
 );
 
@@ -170,6 +170,9 @@ async function run(action, body = {}) {
 }
 .status.waiting {
     color: var(--blocking);
+}
+.status.approved {
+    color: var(--created);
 }
 .phase.skeleton {
     opacity: 0.4;

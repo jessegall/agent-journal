@@ -12,7 +12,7 @@ class ButtonsDetails(FeatureDetails):
 
     help = """
         journal message create "Ready when you are" --set buttons='[{"label": "Okay, start",
-        "type": "plan", "n": 3, "action": "activate"}]'. A button runs that one command and
+        "type": "plan", "n": 3, "action": "approve"}]'. A button runs that one command and
         nothing else; a button naming a type or an action that does not exist is dropped when
         the message is written.
 

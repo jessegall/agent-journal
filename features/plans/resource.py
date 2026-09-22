@@ -10,9 +10,9 @@ class Plan(Shape, Resource):
     listed_open = True
     type = "plan"
     notify_actions = ("updated",)
-    event_labels = {"created": "Plan started", "completed": "Plan acknowledged"}
+    event_labels = {"created": "Plan started", "completed": "Plan finished"}
     labels = {"abstract": "One line: what is true when it is done", "brief": "What you want, in your own words; the agent builds the plan with you from here"}
-    status_labels = {"complete": "acknowledging"}
+    status_labels = {"complete": "finishing"}
     data_fields: ClassVar[list[Field]] = [
         Field(name="status"),
         Field(name="stage"),
@@ -23,7 +23,7 @@ class Plan(Shape, Resource):
     needs_attention = True
     lists_completed_unread = True
     icon = "flag"
-    command_names = {"complete": "acknowledge", "place": "todos", "resume": "continue"}
+    command_names = {"complete": "finish", "place": "todos", "resume": "continue"}
     details: ClassVar[ResourceDetails] = ResourceDetails(
         title="Plan",
         abstract="Ordered phases of to-dos with a goal, approved by the user before it runs",
