@@ -11,6 +11,11 @@ def report(record, status, event, session="claude-1", **more):
     agents.saw(row.n, {"hook": event, "session": session, "cause": AGENT}, **{**row.data, "uses": uses, **more, "status": status, "event": event, "at": time.time()})
 
 
+def tick(record, session="claude-1"):
+    from engine.engine import emit_clock
+    emit_clock(record, session)
+
+
 def idle(record, **more):
     report(record, "working", "PreToolUse", **more)
     report(record, "idle", "Stop", **more)
