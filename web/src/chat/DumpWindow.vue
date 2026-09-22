@@ -49,7 +49,6 @@ const items = computed(() =>
         : []
 );
 const settled = computed(() => items.value.filter((i) => i.state === "filed" || i.state === "failed").length);
-const failures = computed(() => items.value.filter((i) => i.state === "failed"));
 const working = computed(() => Boolean(dump.value && !dump.value.completed));
 const queued = computed(() => Boolean(working.value && inHand.value && inHand.value.n !== dump.value.n));
 const log = computed(() => dump.value?.data?.log || []);
@@ -97,8 +96,8 @@ async function fetchDrafts() {
     }
 }
 watch([madeRefs, now], fetchDrafts, {immediate: true});
-const label = (name) => (name === "text" ? "the pasted text" : name.startsWith("added-") ? "a note you added" : name);
-const dropped = computed(() => items.value.map((i) => label(i.name)));
+const label = (name) => (name === "text" ? "Pasted text" : name.startsWith("added-") ? "Added note" : name);
+const ITEM_STATES = {waiting: "waiting", noted: "reading", filed: "filed", failed: "not filed"};
 const collection = computed(() => (dump.value?.refs || []).find((ref) => ref.startsWith("collection:")) || "");
 const nextStep = computed(() =>
     dump.value ? rows("suggestion").find((s) => !s.deleted && !s.completed && s.refs.includes(dump.value.ref)) : null
@@ -267,10 +266,30 @@ function follow(ref) {
 
         <template v-else>
             <div class="dump-body">
-                <p class="dump-dropped">
-                    <span class="dump-label">You dropped</span>
-                    <span v-for="(name, i) in dropped" :key="i" class="dump-chip">{{ name }}</span>
-                </p>
+                <div class="dump-dropped">
+                    <h3 class="dump-heading">You dropped</h3>
+                    <ul class="dump-inputs">
+                        <li v-for="item in items" :key="item.name" :class="['dump-input', item.state]">
+                            <span class="dump-dot" />
+                            <span class="dump-input-text">
+                                <span class="dump-input-head">
+                                    <span class="dump-input-name">{{ label(item.name) }}</span>
+                                    <span class="dump-input-state">{{ ITEM_STATES[item.state] }}</span>
+                                </span>
+                                <template v-if="item.failed || item.outcome || item.insight">
+                                    <span class="dump-input-line">{{ item.failed || item.outcome || item.insight }}</span>
+                                </template>
+                                <template v-if="(item.refs || []).length">
+                                    <span class="dump-input-refs">
+                                        <a v-for="ref in item.refs" :key="ref" href="#" class="dump-link" @click.prevent="follow(ref)">
+                                            {{ ref.replace(":", " ") }}
+                                        </a>
+                                    </span>
+                                </template>
+                            </span>
+                        </li>
+                    </ul>
+                </div>
 
                 <div :class="['dump-live', stage.toLowerCase().replace(' ', '-')]">
                     <div class="dump-live-line">
@@ -391,15 +410,6 @@ function follow(ref) {
                             </template>
                         </div>
                     </TransitionGroup>
-                </template>
-
-                <template v-if="failures.length">
-                    <ul class="dump-failures">
-                        <li v-for="f in failures" :key="f.name">
-                            <Icon name="x" :size="12" />
-                            Not filed: {{ label(f.name) }}. {{ f.failed }}
-                        </li>
-                    </ul>
                 </template>
 
                 <div class="dump-more">
@@ -536,8 +546,7 @@ function follow(ref) {
     list-style: none;
 }
 
-.dump-files li,
-.dump-chip {
+.dump-files li {
     display: inline-flex;
     align-items: center;
     gap: 5px;
@@ -583,15 +592,6 @@ function follow(ref) {
     overflow-y: auto;
 }
 
-.dump-dropped {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 6px;
-    margin: 0;
-}
-
-.dump-label,
 .dump-heading {
     margin: 0;
     color: var(--text-3);
@@ -709,6 +709,90 @@ function follow(ref) {
 .dump-stop-yes {
     border-color: var(--danger);
     color: var(--danger);
+}
+
+.dump-inputs {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin: 6px 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.dump-input {
+    display: flex;
+    gap: 9px;
+    font-size: 13px;
+}
+
+.dump-dot {
+    flex: none;
+    width: 6px;
+    height: 6px;
+    margin-top: 6px;
+    border-radius: 50%;
+    background: var(--text-3);
+}
+
+.dump-input.noted .dump-dot {
+    background: var(--accent);
+    animation: dump-pulse 1.4s ease-in-out infinite;
+}
+
+.dump-input.filed .dump-dot {
+    background: var(--created);
+}
+
+.dump-input.failed .dump-dot {
+    background: var(--danger);
+}
+
+.dump-input-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.dump-input-head {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+}
+
+.dump-input-name {
+    overflow: hidden;
+    color: var(--text);
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.dump-input-state {
+    flex: none;
+    color: var(--text-3);
+    font-size: 11.5px;
+}
+
+.dump-input.failed .dump-input-state {
+    color: var(--danger);
+}
+
+.dump-input-line {
+    color: var(--text-2);
+    font-size: 12.5px;
+}
+
+.dump-input-refs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+@keyframes dump-pulse {
+    50% {
+        opacity: 0.35;
+    }
 }
 
 .dump-trail {
@@ -839,23 +923,6 @@ function follow(ref) {
     background: var(--raised);
     color: var(--text-2);
     cursor: pointer;
-}
-
-.dump-failures {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    margin: 0;
-    padding: 0;
-    color: var(--blocking);
-    font-size: 12.5px;
-    list-style: none;
-}
-
-.dump-failures li {
-    display: flex;
-    align-items: center;
-    gap: 6px;
 }
 
 .dump-more {

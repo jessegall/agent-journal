@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.84.116 — Each dropped item shows what it is and what it became
+
+- You dropped is a list of the items, not chips: each has a state dot (waiting, reading, filed, not filed), the agent's note on what it is or what it did with it, and links to the rows it made. Failures sit in the same list.
+
 ## 2.84.115 — A dump says when it is still finding a next step, and Stop says what it leaves out
 
 - Once every item is filed, the dump window says Filed. Working out a next step… until the agent's suggestion arrives; Confirm waits for it, or for a minute, after which it says no next step was suggested.
