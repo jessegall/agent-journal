@@ -31,7 +31,6 @@ class Claude(Provider):
     question_tools = frozenset({"AskUserQuestion"})
     briefing_file = "CLAUDE.md"
     skill_home = ".claude/skills"
-    managed_skill_folders = ("synced",)
     link_skills = True
     controls = {
         "groups": [

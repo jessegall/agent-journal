@@ -212,17 +212,13 @@ def asked_slate(record: Record, project: Path, agent: str, ask=input, answering=
     from features import FEATURES
     from features.clean_slate.slate import others, state
     answering = sys.stdin.isatty() if answering is None else answering
-    skills, hooks = others(project, agent)
-    if not answering or not FEATURES["clean_slate"].enabled(record) or not (skills or hooks):
+    hooks = others(project, agent)
+    if not answering or not FEATURES["clean_slate"].enabled(record) or not hooks:
         return False
     last = state(record).get("last", True)
-    notes = []
-    if skills:
-        notes += [f"{plural(len(skills), 'other skill')}:", *(f"  {s.name}" for s in skills[:3]), *([f"  and {len(skills) - 3} more"] if len(skills) > 3 else [])]
-    if hooks:
-        notes += [f"Other hooks in {plural(len(hooks), 'file')}"]
-    notes += ["", "They are put back when the agent exits or the journal stops."]
-    return choose("Start with a clean slate", notes, ["Yes, set them aside", "No, keep them"], 0 if last else 1, ask) == 0
+    notes = [f"Hooks that are not the journal's, in {plural(len(hooks), 'file')}:", *(f"  {f.name}" for f in hooks),
+             "", "Your skills stay where they are. The hooks are put back when the agent exits or the journal stops."]
+    return choose("Set aside the other hooks", notes, ["Yes, set them aside", "No, keep them"], 0 if last else 1, ask) == 0
 
 
 def supervise(ctx, agent: str) -> str:

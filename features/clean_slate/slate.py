@@ -20,15 +20,8 @@ def state(record: Record) -> dict:
     return record.setting(KEY) or {}
 
 
-def homes(project: Path, agent: str) -> list[Path]:
-    return list(dict.fromkeys(home.resolve() for home in PROVIDERS[agent]().skill_homes(project) if home.is_dir()))
-
-
-def others(project: Path, agent: str) -> tuple[list[Path], list[Path]]:
-    managed = PROVIDERS[agent].managed_skill_folders
-    skills = [d for home in homes(project, agent) for d in sorted(home.iterdir()) if not d.name.startswith(("journal", ".")) and d.name not in managed]
-    hooks = [f for f in PROVIDERS[agent]().hook_files(project) if kept(read_json(f, {})) != read_json(f, {})]
-    return skills, hooks
+def others(project: Path, agent: str) -> list[Path]:
+    return [f for f in PROVIDERS[agent]().hook_files(project) if kept(read_json(f, {})) != read_json(f, {})]
 
 
 def git(folder: Path, *args: str) -> str:
@@ -50,17 +43,11 @@ def kept(settings) -> dict:
 
 def set_aside(record: Record, project: Path, agent: str) -> str:
     put_back(record)
-    skills, hooks = others(project, agent)
+    hooks = others(project, agent)
     folder = place(record)
     folder.mkdir(parents=True, exist_ok=True)
     moved = []
     try:
-        for i, skill in enumerate(skills):
-            to = folder / f"skill-{i}-{skill.name}"
-            tracked = [line for line in git(skill.parent, "ls-files", "--", skill.name).splitlines() if line]
-            shutil.move(str(skill), str(to))
-            moved.append({"from": str(skill), "to": str(to), "tracked": tracked})
-            hide(skill.parent, tracked, True)
         for i, f in enumerate(hooks):
             to = folder / f"hooks-{i}-{f.name}"
             shutil.copy2(f, to)
@@ -71,8 +58,7 @@ def set_aside(record: Record, project: Path, agent: str) -> str:
         put_back(record)
         return f"nothing set aside, everything is where it was: {error}"
     record.set_setting(KEY, {**state(record), "moved": moved, "last": True})
-    parts = [plural(len(skills), "other skill")] * bool(skills) + [f"the other hooks in {plural(len(hooks), 'file')}"] * bool(hooks)
-    return f"set aside {' and '.join(parts)} until the journal stops"
+    return f"set aside the other hooks in {plural(len(hooks), 'file')} until the journal stops"
 
 
 def put_back(record: Record) -> int:
