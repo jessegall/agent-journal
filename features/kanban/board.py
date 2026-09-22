@@ -82,7 +82,7 @@ def build(journal, done_days: float, plan: int = 0, agent: str = "") -> Board:
     sources = sources_of(journal)
     works, plans = sources.works, sources.plans
     since = time.time() - float(done_days) * 86400
-    rows = [t for t in journal.todos._every() if not t.completed or (not t.struck and float(t.completed) >= since)]
+    rows = [t for t in journal.todos._standing(closed_since=since) if not t.completed or not t.struck]
     if plan:
         placed = next((p for p in plans if p.n == int(plan)), None)
         rows = [t for t in rows if placed and t.ref in placed.refs]
