@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.84.89 — Tests stay small
+
+The work-tracking test had grown past its 150 lines; a test that did not reproduce the stall fixed in 2.84.88 is gone, and the one that does stays.
+
 ## 2.84.88 — Auto mode never stalls on a lost idle report
 
 Under auto, the next row was offered only on the report that ends the agent's turn. When that report was lost, for instance while the server restarted after an upgrade, nothing was offered and the agent sat idle with work waiting. The engine's clock now offers the next ready row to an idle agent too, once per idle stretch, including the row of a plan phase that just opened.
