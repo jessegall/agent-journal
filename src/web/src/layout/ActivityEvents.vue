@@ -92,12 +92,10 @@ const who = (e) => (raised(e) ? e.data.plugin : written(e) ? logged(e).data.plug
                         {{ heading(item.event) }}
                         <a class="activity-n" href="#" @click.prevent.stop="peek(item.event.type, item.event.n)">{{ item.event.n }}</a>
                     </span>
-                    <template v-if="expanded(item.event)">
-                        <template v-if="title(item.event)">
-                            <TextDisplay inline class="activity-title" :text="title(item.event)" />
-                        </template>
-                        <span class="activity-age">{{ who(item.event) }} · {{ age(item.event.at) || "just now" }}</span>
+                    <template v-if="expanded(item.event) && title(item.event)">
+                        <TextDisplay inline class="activity-title" :text="title(item.event)" />
                     </template>
+                    <span class="activity-age">{{ who(item.event) }} · {{ age(item.event.at) || "just now" }}</span>
                 </div>
             </template>
         </template>

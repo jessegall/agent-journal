@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.95.1 — A folded activity row keeps its time
+
+A folded row in the activity panel still shows who it was and when, under its heading; only the description waits for a click.
+
 ## 2.95.0 — The terminal view runs a command in the agent's terminal
 
 Under the chat's terminal view there is a command line: what the user types there is typed into the agent's terminal as a shell command (with Claude's ! in front), which Claude Code runs and shows. It waits until the agent is idle. A provider without such a command, Codex for now, refuses it and says so.
