@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.84.124 — An upgrade keeps only the running build and the one before it
+
+- Every upgrade wrote a new journal-<version>-<hash>.pyz and kept everything under a week old, so a busy project gathered hundreds of megabytes (this one had 153 builds, 323MB). An upgrade now keeps the build it runs and the one before it, for going back if the new one fails, and removes the rest. Every machine is cleaned the next time it updates.
+
 ## 2.84.123 — A finished dump asks what next, and You decide lets the agent finish it
 
 - When everything is filed the agent offers two to four next steps on the dump itself (journal dump offer), not a suggestion elsewhere. The window shows The agent finished. What next? with a button for each and You decide. A step that is a journal action, like approving a plan, runs as you when pressed.
