@@ -118,6 +118,9 @@ def test_a_chosen_setting_reaches_the_plugins_commands():
     typed = installed(record, "typed", "exit 0", settings={"on": {"type": "flag", "default": "true"}, "level": {"type": "options", "options": ["low", "high"]}})
     assert "true or false" in refused(lambda: Configure().run(None, plugins, typed.n, "on", "yes")), "a switch takes true or false"
     assert "one of low, high" in refused(lambda: Configure().run(None, plugins, typed.n, "level", "mid")), "options take one of theirs"
+    from features.plugins.answer import apply
+    apply(record, None, "typed", "", {"settings": {"level": "high", "made-up": "x"}})
+    assert (plugins.load(typed.n).settings or {}).get(CHOSEN) == {"level": "high"}, "a plugin may fill in a setting it worked out, and only its own"
     from features.plugins.manifest import typed as checked
     shown = checked({"php": {"type": "flag"}, "vue": {"type": "flag"}, "sin": {"type": "flag", "when": {"php": True}},
                      "either": {"type": "flag", "when": [{"php": True}, {"vue": True}]}})
