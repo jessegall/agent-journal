@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.85.47 — The board reads the fifty newest closed rows, not every one
+
+- The kanban board opened every to-do closed within its done days — hundreds of files on an old record — and formatted each one. It now keeps the fifty most recently closed, and answers in about 14ms instead of 35 to 50.
+
 ## 2.85.46 — The journal stays quiet while the agent waits
 
 - While the work in hand says it is waiting for something, the lines that only repeat what the agent already knows — standing facts and rules, reminders, a changed skill — are held back. What the user writes still reaches it. An agent that had declared a wait was being woken every second or two and answering each time.
