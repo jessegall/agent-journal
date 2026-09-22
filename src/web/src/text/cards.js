@@ -1,6 +1,6 @@
 import {escape, register} from "./index.js";
 import {rows} from "../sync/rows.js";
-import {words} from "./markers.js";
+import {words} from "./words.js";
 
 const MARKED = /^\[\[chip ([a-z]+):(\d+)\|([^\]]*)\]\][.:]?$/m;
 const PLAIN = /^([A-Za-z][\w-]*) #?(\d+)[.:]?$/m;

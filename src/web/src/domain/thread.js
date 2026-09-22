@@ -1,5 +1,5 @@
 import {meta} from "../state/store.js";
-import {words} from "../text/markers.js";
+import {words} from "../text/words.js";
 
 const PROMISED_WITHIN = 5;
 

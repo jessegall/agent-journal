@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.94.3 — A pasted stack trace shows as a console card again
+
+A browser stack trace pasted into a message showed part of itself as a code block of raw icon markup: the file links the server adds had landed inside the stack's frames, so the viewer no longer knew it for a stack. The viewer now reads a stack or a code block by its plain words, so the paste shows as one console card with every frame. The chat no longer throws when its scroll area is missing for a moment while the server restarts.
+
 ## 2.94.2 — One console
 
 The chat's terminal view, a plugin's log, the install and upgrade output, the plugin scan and the services log all print into one kit Console, which keeps its newest line in view.
