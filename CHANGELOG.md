@@ -4,6 +4,11 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.84.101 — Enter at the start question always picks a choice it accepts
+
+- The environment question marked a busy environment as the Enter choice and then refused it, so Enter asked again for ever. Enter now takes the first free choice.
+- Picking a busy environment on purpose asks whether to take it over; yes moves the agent there off.
+
 ## 2.84.100 — The dump window transitions out when it closes
 
 - Back to chat fades the dump window out over the chat instead of cutting to it.

@@ -163,15 +163,23 @@ def asked_for(record: Record, args: list[str], ask=input, answering=None) -> str
         return record.env
     sessions = Sessions(record.root)
     choices = [name + ("   (an agent is working here)" if sessions.holder(name) else "") for name in names] + ["A new environment"]
-    default = names.index(record.env) if record.env in names else len(names)
+    free = [i for i, name in enumerate(names) if not sessions.holder(name)]
+    default = names.index(record.env) if record.env in names and names.index(record.env) in free else (free or [len(names)])[0]
     while True:
         picked = choose("Which environment", [], choices, default, ask)
         if picked is None:
             return record.env
         if picked < len(names):
-            if not sessions.holder(names[picked]):
+            holder = sessions.holder(names[picked])
+            if not holder:
                 return names[picked]
-            print(f"    An agent is working {names[picked]}; pick another.")
+            try:
+                taken = ask(f"    An agent is working {names[picked]}. Take it over? It is told and moves off. [y/N] ").strip().lower()
+            except EOFError:
+                return record.env
+            if taken in ("y", "yes"):
+                sessions.evict(holder, "a new session", names[picked], "taken over at start")
+                return names[picked]
             continue
         try:
             return Environments(record, actor=SYSTEM).create(ask("    Name: ").strip()).title
