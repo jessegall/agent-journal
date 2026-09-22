@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.84.32 — Links to rows are made on the server; the viewer only draws them
+
+The new Row links feature marks every row named in a brief, a section or an outcome, like to-do 648 or message 1712, when the text is sent to the viewer, and the viewer draws each mark as a chip that opens the row. The viewer's own reference finder is gone. The command line and downloads get the plain words, titles and abstracts stay plain, and text the viewer sends back is always saved as plain words. The row-links feature can be switched off in Settings.
+
 ## 2.84.31 — Listing nudges and messages is fast again
 
 Since 2.84.12 every listing carried every open row, which is right for to-dos but meant thousands of open nudges were loaded on each refresh (100 ms and more). Only types whose open rows are a working list (to-dos, questions, plans and suggestions) now carry all of them; the others list their newest rows as before. A nudge listing went from about 100 ms to 3 ms.

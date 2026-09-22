@@ -3,6 +3,7 @@ import time
 from dataclasses import asdict
 from functools import partial
 
+from engine.markers import plain
 from engine.record import Record
 from resources.base import USER, Refused, Resource, SECTION, check_abstract, check_title
 from resources.shapes import Options, check, normalize_options, typed
@@ -63,6 +64,7 @@ class Controller(Stored, Files, Links):
     @internal
     def save(self, r: Resource, action: str, **event) -> Resource:
         self._guarded(r, action)
+        self._unmarked(r)
         self._note_force(r)
         if self.actor not in r.seen:
             r.seen.append(self.actor)
@@ -70,6 +72,10 @@ class Controller(Stored, Files, Links):
         write_text(self.path(r.n), r.dump())
         self.record.emit(self.type, r.n, action, self.actor, **event)
         return r
+
+    def _unmarked(self, r: Resource) -> None:
+        r.title, r.abstract, r.brief, r.outcome = plain(r.title), plain(r.abstract), plain(r.brief), plain(r.outcome)
+        r.sections = [{**s, SECTION.body: plain(s.get(SECTION.body) or "")} for s in r.sections]
 
     def _finished(self, r: Resource) -> bool:
         return bool(r.completed)

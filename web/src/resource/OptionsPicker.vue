@@ -4,6 +4,7 @@ import {api} from "../api/client.js";
 import Btn from "../kit/Btn.vue";
 import {route} from "../route.js";
 import {store, word} from "../state/store.js";
+import {words} from "../text/markers.js";
 
 const HOLD_SECONDS = 3;
 const props = defineProps({resource: Object});
@@ -87,7 +88,7 @@ onUnmounted(save);
             <template v-if="ownWords">
                 <div class="option chosen">
                     <span class="label">Your own words</span>
-                    <span class="desc">{{ resource.outcome }}</span>
+                    <span class="desc">{{ words(resource.outcome) }}</span>
                 </div>
             </template>
             <div class="after">

@@ -37,6 +37,7 @@ from resources.types import Ask
 from engine.stored import write_text, last_lines
 from engine.proc import git, ran
 from commands.dispatch import JSON, Missing, PLAIN, Reply, Request, represented, route, shaped
+from features.format import VIEWER
 from commands.dispatch import dispatch  # noqa: F401
 
 
@@ -305,7 +306,7 @@ def post_pending(req: Request) -> Reply:
 @route("POST", "/api/{env}/browser/{n}/result")
 def post_result(req: Request) -> Reply:
     got = Asks(req.record(), actor=USER).answer(int(req.params["n"]), req.body.get("text", ""), ok=bool(req.body.get("ok", True)), files=req.body.get("files") or [])
-    return Reply(200, shaped(got, req.record()))
+    return Reply(200, shaped(got, req.record(), VIEWER))
 
 
 @route("GET", "/api/{env}/skills")
@@ -515,7 +516,7 @@ def get_search(req: Request) -> Reply:
         for r in CONTROLLERS[type_](record, actor=USER).search(term):
             matches = [{"name": name, "tags": tags, "url": f"/api/{record.env}/{type_}/{r.n}/files/{quote(name)}"}
                        for name, tags in r.files.items() if want in name.lower() or want in str(tags).lower()]
-            out.append({**shaped(r, req.record()), "matches": matches})
+            out.append({**shaped(r, req.record(), VIEWER), "matches": matches})
     return Reply(200, out)
 
 
@@ -553,7 +554,7 @@ def listing(controller, record, query: dict) -> dict:
     if completed and last:
         standing = [row for row in rows if not row["completed"]][None if controller.resource.listed_open else -last:]
         kept = sorted({row["n"]: row for row in (*standing, *kept)}.values(), key=lambda row: row["n"])
-    return {"rows": [shaped(controller.load(row["n"]), record) for row in kept], "more": len(rows) > len(kept)}
+    return {"rows": [shaped(controller.load(row["n"]), record, VIEWER) for row in kept], "more": len(rows) > len(kept)}
 
 
 def counted(record, types) -> dict:
@@ -589,7 +590,7 @@ def get_all(req: Request) -> Reply:
 @route("POST", "/api/{env}/{type}")
 def post_create(req: Request) -> Reply:
     controller = req.controller()
-    return Reply(201, shaped(controller.create(**{**req.body, "title": req.body.get("title") or titled(req.body.get("brief", ""))}), req.record()))
+    return Reply(201, shaped(controller.create(**{**req.body, "title": req.body.get("title") or titled(req.body.get("brief", ""))}), req.record(), VIEWER))
 
 
 @route("GET", "/api/{env}/{type}/{n}")
@@ -597,7 +598,7 @@ def get_one(req: Request) -> Reply:
     try:
         controller = req.controller()
         n = int(req.params["n"])
-        return Reply(200, shaped(controller.show(n) if controller.resource.cleared_by == OPENED else controller.load(n), req.record()))
+        return Reply(200, shaped(controller.show(n) if controller.resource.cleared_by == OPENED else controller.load(n), req.record(), VIEWER))
     except Refused as e:
         raise Missing(str(e))
 

@@ -6,6 +6,7 @@ import {state, waitsOn} from "../domain/records.js";
 import {age} from "../format/time.js";
 import {meta} from "../state/store.js";
 import {computed} from "vue";
+import {words} from "../text/markers.js";
 
 const props = defineProps({resource: Object, selected: Boolean});
 
@@ -35,7 +36,7 @@ const held = computed(() => {
             <span class="title">{{ resource.title }}</span>
             <template v-if="resource.abstract || resource.brief">
                 <span class="abstract">
-                    {{ resource.abstract || resource.brief.split("\n")[0] }}
+                    {{ resource.abstract || words(resource.brief).split("\n")[0] }}
                 </span>
             </template>
         </span>

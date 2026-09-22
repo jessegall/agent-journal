@@ -10,6 +10,7 @@ import features
 from features.base import generation
 from controllers.types import CONTROLLERS
 from engine import bus
+from engine.markers import plain
 from engine.record import Record
 from features.format import formatted
 from resources.base import as_dict, USER, Refused
@@ -19,6 +20,7 @@ from engine.package import data
 WEB = data("web", "dist")
 
 SAID = ("title", "abstract", "brief", "outcome")
+PLAIN_FIELDS = ("title", "abstract")
 
 JSON = "application/json"
 
@@ -51,6 +53,7 @@ def shaped(r, record=None, surface: str = "") -> dict:
 def shaping(r, record=None, surface: str = "") -> dict:
     row = as_dict(r)
     fields = {key: formatted(row.get(key), record, surface) for key in SAID if row.get(key)}
+    fields = {**fields, **{key: plain(fields[key]) for key in PLAIN_FIELDS if key in fields}}
     parts = [{**s, "body": formatted(s.get("body"), record, surface)} for s in row.get("sections") or []]
     return {**row, **fields, **({"sections": parts} if parts else {})}
 
