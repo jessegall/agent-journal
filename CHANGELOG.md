@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.84.15 — The boot tests leave no process and no folder behind
+
+A launch in the boot tests and the boot guard now always cleans up, even when it fails: the stand-in agent is told to quit, the launcher is stopped, and anything still running from the test's folder is killed. The test also fails when `journal stop` leaves a process running. The tests use pytest's temporary folders, which pytest prunes, instead of making their own.
+
 ## 2.84.14 — The journal goes back to the last good build when a new one cannot start
 
 When a newly installed build's supervisor dies as it starts, or its server exits with an error three times in a row, the process that holds the terminal points `.journal/journal.pyz` back at the newest earlier build and says so in the terminal. The bad build is remembered in `.journal/runtime/broken.json`, and neither the launch nor the background update installs that version again; the next release is installed as usual. A supervisor that dies later is restarted at once instead of waiting for new code.
