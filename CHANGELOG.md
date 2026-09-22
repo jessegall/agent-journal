@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.84.34 — Markdown tables render as tables in the chat
+
+A table written straight after a sentence, as the agent usually writes one, used to be swallowed into that paragraph and shown as raw pipes. A paragraph now ends where a table begins, and tables in chat bubbles have their own compact style that scrolls sideways when a table is wider than the bubble.
+
 ## 2.84.33 — The viewer never reloads over a message you are writing
 
 When a newer viewer build arrives, the 60-second reload countdown now pauses while the chat's message box has text in it, and says so. It carries on once the box is empty or the message is sent, so a reload never throws away what you were typing.
