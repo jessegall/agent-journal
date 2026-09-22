@@ -90,3 +90,14 @@ def test_an_answered_question_leaves_the_notifications_panel():
     Questions(record, actor=USER).set(asked.n, "kept", "true")
     Questions(record, actor=USER).complete(asked.n, how="this one")
     assert Questions(record, actor=USER).load(asked.n).data.get("kept") is False, "the answer takes it off the panel it was kept on"
+
+
+def test_a_question_keeps_who_answered_and_the_agent_must_say_why():
+    from tests.conftest import refused
+    record = fresh()
+    ours = Questions(record, actor=AGENT).create("Which one?", options=[{"title": "blue", "description": "", "code": ""}])
+    assert "say why" in refused(lambda: Questions(record, actor=AGENT).complete(ours.n, how="blue")), "the agent may not answer silently"
+    answered = Questions(record, actor=AGENT).complete(ours.n, how="blue", reason="the user said blue earlier")
+    assert (answered.data["answered_by"], answered.data["reason"]) == (AGENT, "the user said blue earlier")
+    theirs = Questions(record, actor=AGENT).create("Ship it?")
+    assert Questions(record, actor=USER).complete(theirs.n, how="yes").data["answered_by"] == USER, "the user needs no reason"
