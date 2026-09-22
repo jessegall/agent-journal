@@ -34,6 +34,7 @@ class RulesDetails(FeatureDetails):
             name="standing",
             title="{{count}} in force, read them",
             brief="{{rows}}",
+            while_waiting=False,
         ),
     ]
 

@@ -3,7 +3,6 @@ import {reload} from "../sync/rows.js";
 import {missed} from "../domain/records.js";
 import {store} from "../state/store.js";
 
-const FLASH_AFTER = 1000;
 const AWAY_AFTER = 60000;
 
 export const away = reactive({open: false, since: 0, back: 0, left: 0, hidden: false});
@@ -20,7 +19,6 @@ async function back() {
     if (document.visibilityState !== "visible" || !away.left) return;
     const since = away.left;
     away.left = 0;
-    if (Date.now() - since >= FLASH_AFTER) flash.at = Date.now();
     if (Date.now() - since < AWAY_AFTER || store.settings?.viewer?.away === false) return;
     await reload();
     if (!missed(since).length) return;
