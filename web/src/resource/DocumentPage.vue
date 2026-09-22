@@ -6,10 +6,13 @@ import Comments from "./Comments.vue";
 import Links from "./Links.vue";
 import Highlight from "./Highlight.vue";
 
-const props = defineProps({resource: Object, focus: {type: Number, default: 0}});
+const props = defineProps({resource: Object, focus: {type: Number, default: 0}, shown: {type: Array, default: () => []}});
 const emit = defineEmits(["close"]);
 const quote = ref("");
-const shownAlready = computed(() => ((props.resource.data || {}).phases || []).flatMap((ph) => (ph.todos || []).map((n) => `todo:${n}`)));
+const shownAlready = computed(() => [
+    ...props.shown,
+    ...((props.resource.data || {}).phases || []).flatMap((ph) => (ph.todos || []).map((n) => `todo:${n}`)),
+]);
 const count = computed(() => rows("comment").filter((c) => c.refs.includes(props.resource.ref) && !c.deleted).length);
 const talking = ref(props.focus > 0);
 const shifted = ref(talking.value);
@@ -45,7 +48,7 @@ provide("talk", {talking, count, toggle: () => (talking.value = !talking.value),
         <div class="document-body" @transitionend.self="shiftedDone">
             <Highlight @quote="quote = $event">
                 <slot>
-                    <ResourceBody :resource="resource" :comments="false" @close="emit('close')" />
+                    <ResourceBody :resource="resource" :comments="false" :links="false" @close="emit('close')" />
                 </slot>
                 <div class="document-links">
                     <Links :resource="resource" :except="shownAlready" />

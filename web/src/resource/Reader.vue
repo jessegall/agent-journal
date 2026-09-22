@@ -83,7 +83,7 @@ watch(
                             </DocumentPage>
                         </template>
                         <template #group>
-                            <DocumentPage :resource="resource" :focus="focusComment" @close="close">
+                            <DocumentPage :resource="resource" :focus="focusComment" :shown="resource.refs" @close="close">
                                 <GroupPage :resource="resource" @close="close" />
                             </DocumentPage>
                         </template>

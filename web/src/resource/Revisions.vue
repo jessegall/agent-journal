@@ -14,7 +14,7 @@ const revisions = useRevisions(() => props.resource);
 
 <template>
     <template v-if="revisions.latest && !revisions.comparing">
-        <ResourceBody :resource="resource" :comments="false" @close="emit('close')">
+        <ResourceBody :resource="resource" :comments="false" :links="false" @close="emit('close')">
             <template #head>
                 <RevisionStrip :revisions="revisions" />
             </template>

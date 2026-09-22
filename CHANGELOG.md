@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.84.80 — A group opens as a page of cards
+
+Groups sit in the sidebar under Environment. A group's page shows its name and a card for every member: its type and number, title, first line, and a thumbnail when it carries a picture; clicking a card opens it. Every resource's actions have Add to group, which picks an open group or makes a new one from the name you type, and a member's own page lists the groups it is in. A document page no longer lists its links twice.
+
 ## 2.84.79 — journal claude --dangerously-skip-permissions works again
 
 With the Run without permission prompts switch off (the default), the launcher removed `--dangerously-skip-permissions` from what you typed. A flag you type at launch now passes through and turns that switch on for the environment, so later launches carry it by themselves; switching it off in Settings still takes it away. The same holds for Codex's `--dangerously-bypass-approvals-and-sandbox`.
