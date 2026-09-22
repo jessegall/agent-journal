@@ -1,5 +1,6 @@
 <script setup>
-import {computed} from "vue";
+import {computed, reactive} from "vue";
+import Icon from "../kit/Icon.vue";
 import ChoiceList from "../kit/ChoiceList.vue";
 import SidePanel from "../kit/SidePanel.vue";
 import Switch from "../kit/Switch.vue";
@@ -8,14 +9,25 @@ const props = defineProps({plugin: {type: Object, required: true}});
 const emit = defineEmits(["close", "change"]);
 const UNGROUPED = "";
 
+const values = computed(() => Object.fromEntries(props.plugin.settings.map((s) => [s.key, s.value])));
+const shown = computed(() =>
+    props.plugin.settings.filter(
+        (s) => !s.when.length || s.when.some((choice) => choice.every(([other, value]) => values.value[other] === value))
+    )
+);
+const toggled = reactive({});
+
 const groups = computed(() => {
     const out = new Map();
-    for (const s of props.plugin.settings) {
+    for (const s of shown.value) {
         const group = s.group || UNGROUPED;
         if (!out.has(group)) out.set(group, []);
         out.get(group).push(s);
     }
-    return [...out].map(([name, settings]) => ({name, settings}));
+    return [...out].map(([name, settings]) => {
+        const folded = toggled[name] ?? settings.every((s) => s.detail);
+        return {name, settings, folded};
+    });
 });
 
 const choices = (s) => s.options.map((option) => ({value: String(option), label: String(option), current: s.value === String(option)}));
@@ -26,9 +38,13 @@ const choices = (s) => s.options.map((option) => ({value: String(option), label:
         <template v-for="group in groups" :key="group.name">
             <section class="group">
                 <template v-if="group.name">
-                    <h4 class="group-name">{{ group.name }}</h4>
+                    <button type="button" class="group-name" :aria-expanded="!group.folded" @click="toggled[group.name] = !group.folded">
+                        <Icon name="chevron" :size="11" :class="['group-chevron', {open: !group.folded}]" />
+                        <span>{{ group.name }}</span>
+                        <span class="group-count">{{ group.settings.length }}</span>
+                    </button>
                 </template>
-                <template v-for="s in group.settings" :key="s.key">
+                <template v-for="s in group.folded ? [] : group.settings" :key="s.key">
                     <div :class="['setting', s.type]">
                         <div class="setting-names">
                             <span class="setting-title">{{ s.title }}</span>
@@ -72,16 +88,43 @@ const choices = (s) => s.options.map((option) => ({value: String(option), label:
     display: flex;
     flex-direction: column;
     gap: 2px;
-    margin-bottom: 18px;
+    margin-bottom: 8px;
 }
 
 .group-name {
+    display: flex;
+    align-items: center;
+    gap: 6px;
     margin: 0 0 6px;
+    padding: 4px 0;
+    border: 0;
+    background: none;
     color: var(--text-3);
+    font: inherit;
     font-size: 11px;
     font-weight: 600;
     letter-spacing: 0.05em;
+    text-align: left;
     text-transform: uppercase;
+    cursor: pointer;
+}
+
+.group-name:hover {
+    color: var(--text);
+}
+
+.group-chevron {
+    transform: rotate(-90deg);
+    transition: transform 0.15s ease;
+}
+
+.group-chevron.open {
+    transform: none;
+}
+
+.group-count {
+    color: var(--text-4);
+    font-weight: 500;
 }
 
 .setting {

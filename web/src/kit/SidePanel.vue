@@ -1,33 +1,32 @@
 <script setup>
-import {onMounted, onUnmounted} from "vue";
 import Icon from "./Icon.vue";
+import {closing} from "./closing.js";
 
 defineProps({title: String, abstract: String});
 const emit = defineEmits(["close"]);
-
-const closeOnEscape = (event) => event.key === "Escape" && emit("close");
-onMounted(() => window.addEventListener("keydown", closeOnEscape));
-onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
+const {shown, close, closed} = closing(emit);
 </script>
 
 <template>
-    <div class="veil" @click.self="emit('close')">
-        <aside class="panel" role="dialog" :aria-label="title">
-            <header class="head">
-                <div class="names">
-                    <h2>{{ title }}</h2>
-                    <template v-if="abstract">
-                        <p class="abstract">{{ abstract }}</p>
-                    </template>
+    <Transition name="side" appear @after-leave="closed">
+        <div v-if="shown" class="veil" @click.self="close">
+            <aside class="panel" role="dialog" :aria-label="title">
+                <header class="head">
+                    <div class="names">
+                        <h2>{{ title }}</h2>
+                        <template v-if="abstract">
+                            <p class="abstract">{{ abstract }}</p>
+                        </template>
+                    </div>
+                    <slot name="actions" />
+                    <button type="button" class="close" title="Close" @click="close"><Icon name="close" /></button>
+                </header>
+                <div class="body">
+                    <slot />
                 </div>
-                <slot name="actions" />
-                <button type="button" class="close" title="Close" @click="emit('close')"><Icon name="close" /></button>
-            </header>
-            <div class="body">
-                <slot />
-            </div>
-        </aside>
-    </div>
+            </aside>
+        </div>
+    </Transition>
 </template>
 
 <style scoped>
@@ -36,7 +35,6 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
     inset: 0;
     z-index: 40;
     background: color-mix(in srgb, #000 35%, transparent);
-    animation: fade 0.16s ease;
 }
 
 .panel {
@@ -50,20 +48,25 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
     border-left: 1px solid var(--border);
     background: var(--bg);
     box-shadow: -16px 0 40px color-mix(in srgb, #000 30%, transparent);
-    animation: slide 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
-@keyframes fade {
-    from {
-        opacity: 0;
-    }
+.side-enter-active,
+.side-leave-active,
+.side-enter-active .panel,
+.side-leave-active .panel {
+    transition:
+        opacity 0.2s ease,
+        transform 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
-@keyframes slide {
-    from {
-        transform: translateX(24px);
-        opacity: 0;
-    }
+.side-enter-from,
+.side-leave-to {
+    opacity: 0;
+}
+
+.side-enter-from .panel,
+.side-leave-to .panel {
+    transform: translateX(100%);
 }
 
 .head {

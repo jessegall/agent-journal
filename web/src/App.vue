@@ -185,9 +185,9 @@ const chatFloats = computed(() => store.detached && !store.extension.holding && 
                 <template v-if="away.open">
                     <AwayCard />
                 </template>
-                <Transition name="skill-slide">
-                    <SkillPanel v-if="store.skill" />
-                </Transition>
+                <template v-if="store.skill">
+                    <SkillPanel />
+                </template>
                 <ProjectFlash />
                 <template v-if="chatFloats">
                     <ExtensionSection :extension="store.extension" />
@@ -313,15 +313,5 @@ const chatFloats = computed(() => store.detached && !store.extension.holding && 
 .quick-enter-from :deep(.quick-menu),
 .quick-leave-to :deep(.quick-menu) {
     transform: translate(-50%, -8px) scale(0.98);
-}
-
-.skill-slide-enter-active,
-.skill-slide-leave-active {
-    transition: transform 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
-}
-
-.skill-slide-enter-from,
-.skill-slide-leave-to {
-    transform: translateX(100%);
 }
 </style>

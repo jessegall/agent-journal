@@ -17,7 +17,7 @@ PATTERNS = {"*", *TYPES, *ACTIONS, *(f"{t}.{a}" for t in TYPES for a in ACTIONS)
 STEP = ("name", "run", "cwd")
 SERVICE = ("run", "cwd", "env", "port", "ready", "restart", "grace", "show")
 PAGE = ("name", "title", "icon", "service", "path", "status")
-SETTING = ("title", "default", "help", "env", "type", "options", "group")
+SETTING = ("title", "default", "help", "env", "type", "options", "group", "when", "detail")
 KINDS = ("text", "textarea", "number", "flag", "options")
 RESTARTS = ("always", "on-failure", "never")
 
@@ -99,6 +99,11 @@ def typed(settings: dict) -> dict:
             raise Refused(f"plugin.json: settings.{key} has type {kind!r}; a setting is one of {', '.join(KINDS)}")
         if kind == "options" and not (isinstance(setting.get("options"), list) and setting["options"]):
             raise Refused(f"plugin.json: settings.{key} is options, so it needs a list of options")
+        when = setting.get("when") or []
+        choices = when if isinstance(when, list) else [when]
+        if not all(isinstance(c, dict) and all(other in settings for other in c) for c in choices):
+            raise Refused(f"plugin.json: settings.{key}.when names settings and the value each must have, as in {{\"language_php\": true}}, or a list of those where any one is enough")
+        setting["when"] = choices
     return settings
 
 

@@ -1,5 +1,5 @@
 <script setup>
-import {computed, nextTick, onMounted, onUnmounted, ref, watch} from "vue";
+import {computed, onMounted, onUnmounted, ref, watch} from "vue";
 import {api} from "../api/client.js";
 import Btn from "../kit/Btn.vue";
 import Dialog from "../kit/Dialog.vue";
@@ -50,6 +50,8 @@ const plugins = computed(() =>
                 type: s.type || "text",
                 options: s.options || [],
                 group: s.group || "",
+                when: [s.when || []].flat().map((choice) => Object.entries(choice).map(([other, value]) => [other, String(value)])),
+                detail: !!s.detail,
                 value: String(((p.data.settings || {}).chosen || {})[key] ?? s.default ?? ""),
             })),
         }))
@@ -57,7 +59,6 @@ const plugins = computed(() =>
 const services = ref([]);
 const reading = ref("");
 const logged = ref("");
-const tail = ref(null);
 const EVERY = 3000;
 const WHILE_BUSY = 1000;
 const pagesOf = (p) => (store.pages || []).filter((page) => page.plugin === p.name);
@@ -141,7 +142,7 @@ async function remove(everything) {
 }
 
 async function configure(p, key, value) {
-    await plugin(p, "configure", {key, value});
+    await api.act("plugin", p.n, "configure", {key, value});
 }
 
 async function readLog() {
@@ -151,8 +152,6 @@ async function readLog() {
     } catch (e) {
         logged.value = e.message;
     }
-    await nextTick();
-    if (tail.value) tail.value.scrollTop = tail.value.scrollHeight;
 }
 
 function readingOf(p) {
@@ -213,7 +212,7 @@ async function askAgent() {
             </template>
         </header>
         <template v-if="shown">
-            <Dialog :title="shown.title" @close="closeShown">
+            <Dialog :title="shown.title" follow @close="closeShown">
                 <template v-if="outcome">
                     <p :class="['shown-result', {failed: !outcome.ok}]">
                         {{ outcome.ok ? `${shown.title} is installed.` : "It did not install. Nothing of it was kept." }}
@@ -351,8 +350,8 @@ async function askAgent() {
             </template>
         </div>
         <template v-if="reading">
-            <Dialog :title="`${reading} log`" @close="reading = ''">
-                <pre ref="tail" class="log">{{ logged || (busy ? "Starting…" : "Nothing is logged yet.") }}</pre>
+            <Dialog :title="`${reading} log`" follow @close="reading = ''">
+                <pre class="log">{{ logged || (busy ? "Starting…" : "Nothing is logged yet.") }}</pre>
             </Dialog>
         </template>
         <template v-if="guide">

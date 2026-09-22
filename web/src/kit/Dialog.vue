@@ -1,35 +1,44 @@
 <script setup>
-import {onMounted, onUnmounted} from "vue";
+import {onUnmounted, ref, watch} from "vue";
 import Icon from "./Icon.vue";
+import {closing} from "./closing.js";
 
-defineProps({title: {type: String, default: ""}});
+const props = defineProps({title: {type: String, default: ""}, follow: {type: Boolean, default: false}});
 const emit = defineEmits(["close"]);
+const {shown, close, closed} = closing(emit);
+const body = ref(null);
+const toBottom = () => body.value && (body.value.scrollTop = body.value.scrollHeight);
+const watcher = new MutationObserver(toBottom);
 
-function keys(e) {
-    if (e.key === "Escape") emit("close");
-}
-
-onMounted(() => window.addEventListener("keydown", keys));
-onUnmounted(() => window.removeEventListener("keydown", keys));
+watch(body, (el) => {
+    watcher.disconnect();
+    if (el && props.follow) {
+        watcher.observe(el, {childList: true, subtree: true, characterData: true});
+        toBottom();
+    }
+});
+onUnmounted(() => watcher.disconnect());
 </script>
 
 <template>
-    <div class="dialog" @click.self="emit('close')">
-        <section class="dialog-panel">
-            <header class="dialog-head">
-                <h3>{{ title }}</h3>
-                <button type="button" class="dialog-close" title="Close" @click="emit('close')"><Icon name="x" /></button>
-            </header>
-            <div class="dialog-body">
-                <slot />
-            </div>
-            <template v-if="$slots.foot">
-                <footer class="dialog-foot">
-                    <slot name="foot" />
-                </footer>
-            </template>
-        </section>
-    </div>
+    <Transition name="dialog" appear @after-leave="closed">
+        <div v-if="shown" class="dialog" @click.self="close">
+            <section class="dialog-panel">
+                <header class="dialog-head">
+                    <h3>{{ title }}</h3>
+                    <button type="button" class="dialog-close" title="Close" @click="close"><Icon name="x" /></button>
+                </header>
+                <div ref="body" class="dialog-body">
+                    <slot />
+                </div>
+                <template v-if="$slots.foot">
+                    <footer class="dialog-foot">
+                        <slot name="foot" />
+                    </footer>
+                </template>
+            </section>
+        </div>
+    </Transition>
 </template>
 
 <style scoped>
@@ -53,6 +62,25 @@ onUnmounted(() => window.removeEventListener("keydown", keys));
     border-radius: 12px;
     background: var(--raised);
     overflow: hidden;
+}
+
+.dialog-enter-active,
+.dialog-leave-active,
+.dialog-enter-active .dialog-panel,
+.dialog-leave-active .dialog-panel {
+    transition:
+        opacity 0.18s ease,
+        transform 0.18s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.dialog-enter-from,
+.dialog-leave-to {
+    opacity: 0;
+}
+
+.dialog-enter-from .dialog-panel,
+.dialog-leave-to .dialog-panel {
+    transform: translateY(8px) scale(0.98);
 }
 
 .dialog-head {
