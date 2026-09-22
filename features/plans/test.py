@@ -76,9 +76,9 @@ def test_writing_a_plan_lays_out_phases_and_advances_through_them_to_done(env):
         "the user continued: the last phase is current"
     for n in (4, 5):
         todos.complete(n, "done")
-    assert by_agent.load(plan.n).data["status"] == "done", "the last phase complete: the plan is done"
-    by_user.complete(plan.n, "seen")
-    assert bool(by_agent.load(plan.n).completed) is True, "finish is the user's complete"
+    finished = by_agent.load(plan.n)
+    assert (finished.data["status"], bool(finished.completed), "user" in finished.seen) == ("done", True, False), \
+        "the last phase complete: the plan finishes itself and waits, unread, for the user to see it"
 
 
 def test_under_auto_a_checkpoint_is_passed_not_waited_at():

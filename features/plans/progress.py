@@ -40,7 +40,10 @@ def step(record, plan) -> bool:
     waits = bool(phase[PHASE.checkpoint]) and not automatic(record)
     plan.status = DONE if last else WAITING if waits else ACTIVE
     plan.current = i if last or waits else i + 1
-    Plans(record, actor=SYSTEM).save(plan, "updated", phase=i, complete=True, status=plan.status, passed=bool(phase[PHASE.checkpoint]) and not waits)
+    plans = Plans(record, actor=SYSTEM)
+    plans.save(plan, "updated", phase=i, complete=True, status=plan.status, passed=bool(phase[PHASE.checkpoint]) and not waits)
+    if last:
+        plans.complete(plan.n, how="every row in every phase is done")
     return not (last or waits)
 
 
