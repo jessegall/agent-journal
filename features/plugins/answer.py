@@ -7,7 +7,7 @@ from features.plugins.lifecycle import called
 from features.plugins.source import CHOSEN
 from resources.base import PLUGIN, Refused, SYSTEM, check_abstract, check_title
 
-KEYS = ("whisper", "say", "notify", "notice", "todo", "hold", "settings")
+KEYS = ("whisper", "say", "notify", "notice", "todo", "hold", "settings", "activity")
 MOST = 20
 HELD = "plugin"
 
@@ -69,6 +69,9 @@ def one(record, journal, plugin: str, session: str, key: str, value) -> None:
         fields = value if isinstance(value, dict) else {"title": str(value)}
         journal.notice(record, "plugin", actor=PLUGIN, title=check_title(str(fields.get("title") or "")), brief=str(fields.get("brief") or ""),
                        tone=fields.get("tone") or "", link=fields.get("link") or "", plugin=plugin)
+    elif key == "activity":
+        entry = value if isinstance(value, dict) else {"title": str(value)}
+        journal.log(record, "plugin", title=check_title(str(entry.get("title") or plugin)), brief=str(entry.get("brief") or ""), plugin=plugin)
     elif key == "settings" and isinstance(value, dict):
         settled(record, plugin, value)
     elif key == "todo":

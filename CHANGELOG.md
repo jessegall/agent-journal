@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.85.89 — A plugin writes to the activity panel
+
+- A plugin's answer may carry activity ({title, brief}): a line in the activity panel under the plugin's name. code-commandments writes Sin found with the sin and file:line, and Sin repented when an edit clears a file.
+
 ## 2.85.88 — Rows a plugin creates are its own, and its installed step fills the settings
 
 - A row a plugin's commands create is stamped with the plugin and locked: nobody else deletes or closes it while the plugin is installed, and removing the plugin removes it. The index carries the owner, so removal finds them at once.
