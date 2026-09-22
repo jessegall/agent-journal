@@ -14,11 +14,13 @@ LINES = [
         name=WHISPER,
         title="{{type}} {{n}} — {{title}}",
         brief="{{brief}}",
+        while_waiting=False,
     ),
     Line(
         name="standing",
         title="{{count}} standing, read them",
         brief="{{rows}}",
+        while_waiting=False,
     ),
 ]
 

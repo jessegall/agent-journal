@@ -67,6 +67,7 @@ class SkillsDetails(FeatureDetails):
             name="stale",
             title="{{skills}} changed since you loaded them",
             brief="load one again when you next need it; only the every-start skills are held for",
+            while_waiting=False,
         ),
         Line(
             name="required",

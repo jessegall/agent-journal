@@ -4,6 +4,11 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.85.46 — The journal stays quiet while the agent waits
+
+- While the work in hand says it is waiting for something, the lines that only repeat what the agent already knows — standing facts and rules, reminders, a changed skill — are held back. What the user writes still reaches it. An agent that had declared a wait was being woken every second or two and answering each time.
+- The project badge fades a second and a half after the tab is focused again, counted from that moment.
+
 ## 2.85.45 — The project badge is already there while the tab is away
 
 - The project and environment badge appears the moment the tab loses focus and stays while it is in the background, so it is visible when looking through windows. It fades a second and a half after the tab is focused again.

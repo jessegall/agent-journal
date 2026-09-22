@@ -175,6 +175,13 @@ def test_a_declared_wait_is_asked_about_and_cleared_when_the_work_moves():
     report(record, "working", "PostToolUse", tool="Bash")
     assert works.load(build.n).awaiting == "", "working again clears it"
     assert [n for n in nudges(record) if "your wait for the CI run on main is over" in n], "and the agent is told why"
+    from controllers.types import Facts
+    Facts(record, actor=AGENT).create("the port is 8423", keywords=["port"])
+    works.action("await")("the CI run again")
+    before = len(nudges(record))
+    tick(record)
+    report(record, "idle", "Stop")
+    assert [n for n in nudges(record)[before:] if "standing, read them" in n] == [], "the repeating lines stay quiet while a wait stands"
     works.action("await")("the deploy")
     works.action("park")("the release goes out tomorrow")
     assert works.load(build.n).awaiting == "", "parking clears the wait"

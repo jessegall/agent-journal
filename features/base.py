@@ -34,8 +34,9 @@ PLACEHOLDER = re.compile(r"\{\{(\w+)\}\}")
 
 
 class Line:
-    def __init__(self, title: str, brief: str = "", lead: bool = False, name: str = ""):
+    def __init__(self, title: str, brief: str = "", lead: bool = False, name: str = "", while_waiting: bool = True):
         self.name, self.title, self.brief, self.lead = name, paragraphs(title), paragraphs(brief), lead
+        self.while_waiting = while_waiting   # whether it is still said while the agent waits for something
 
     def placeholders(self) -> list[str]:
         return list(dict.fromkeys(PLACEHOLDER.findall(self.title + self.brief)))

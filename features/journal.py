@@ -19,6 +19,11 @@ class Message:
     data: dict = field(default_factory=dict)
 
 
+def waiting(record, agent) -> bool:
+    from controllers.types import Works
+    return any(w.awaiting for w in Works(record, actor=SYSTEM)._standing() if str(w.data.get("agent") or "") in ("", agent.title))
+
+
 class BoundJournal:
     def __init__(self, journal: "Journal", record, actor: str = SYSTEM):
         self.journal, self.record, self.actor = journal, record, actor
@@ -72,7 +77,7 @@ class Journal:
         return AgentHooks(self.feature)
 
     def say(self, record, agent, line: str, private: bool = False, actor: str = SYSTEM, delivery: str = CHANNEL, **values):
-        if not self.feature.mine(agent):
+        if not self.feature.mine(agent) or (not self.feature.lines[line].while_waiting and waiting(record, agent)):
             return None
         lead = self.feature.lines[line].lead
         return self.send(record, self.message(Nudges, line, values, actor, session=agent.title, private=private, lead=lead, delivery=delivery))
