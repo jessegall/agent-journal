@@ -2,6 +2,7 @@
 import Icon from "../kit/Icon.vue";
 import {age} from "../format/time.js";
 import {meta} from "../state/store.js";
+import {words} from "../text/markers.js";
 defineProps({resource: Object});
 </script>
 
@@ -13,7 +14,7 @@ defineProps({resource: Object});
             <span class="age">{{ age(resource.updated || resource.created) }}</span>
         </span>
         <span class="title">{{ resource.title }}</span>
-        <span class="abstract">{{ resource.abstract || resource.brief.slice(0, 160) }}</span>
+        <span class="abstract">{{ resource.abstract || words(resource.brief).slice(0, 160) }}</span>
         <template v-if="resource.sections.length">
             <span class="parts">{{ resource.sections.length }} part{{ resource.sections.length > 1 ? "s" : "" }}</span>
         </template>

@@ -1,4 +1,5 @@
 import {meta} from "../state/store.js";
+import {words} from "../text/markers.js";
 
 const PROMISED_WITHIN = 5;
 
@@ -52,7 +53,7 @@ const loads = (agents) =>
             }))
         );
 
-const promisedFor = (p, m) => m.brief === p.brief && m.created >= p.created - PROMISED_WITHIN;
+const promisedFor = (p, m) => words(m.brief) === p.brief && m.created >= p.created - PROMISED_WITHIN;
 
 const delivered = (p, m) => Object.keys(m.data.files || {}).length >= Object.keys(p.data.files).length;
 
