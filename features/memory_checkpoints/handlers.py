@@ -10,7 +10,7 @@ class DecideAtMarks(Handler):
         if context.agent.row.decided:
             context.release()
         elif context.due():
-            percent = context.agent.row.context
+            percent = int(context.agent.row.context or 0)
             context.hold("decide held", percent=percent)
             context.agent.say("decide", percent=percent)
 
