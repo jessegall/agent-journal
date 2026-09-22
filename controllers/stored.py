@@ -20,6 +20,8 @@ SUMMARIES: dict[str, tuple] = {}
 HELD: dict[str, tuple] = {}
 PACKS: dict[str, tuple] = {}
 INDEXED: dict[str, dict] = {}
+WRITTEN: dict[str, float] = {}
+FLUSH_ROWS, FLUSH_SECONDS = 50, 30.0
 OPEN: dict[str, tuple] = {}
 
 
@@ -142,9 +144,12 @@ class Stored:
                 rows[n] = {"n": n, DAMAGED: True, "stamp": stamp}
                 continue
             rows[n] = self._row(r, stamp)
-        wrote = rows != known
+        changed = sum(1 for n, row in rows.items() if known.get(n) is not row) + len(known.keys() - rows.keys())
+        due = changed >= FLUSH_ROWS or time.time() - WRITTEN.get(str(folder), 0.0) >= FLUSH_SECONDS or not (folder / INDEX).is_file()
+        wrote = bool(changed) and due
         if wrote:
             write_json(folder / INDEX, rows)
+            WRITTEN[str(folder)] = time.time()
         INDEXED[str(folder)] = rows
         return [rows[n] for n in sorted(rows) if not rows[n].get(DAMAGED)], wrote
 

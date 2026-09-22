@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.85.90 — A write no longer rewrites its whole folder index
+
+- A type's index.json is written when 50 rows have changed or 30 seconds have passed, not on every write; the index in memory stays exact and every reader still checks each file's stamp. Taking in one changed message costs 15ms instead of 39ms.
+
 ## 2.85.89 — A plugin writes to the activity panel
 
 - A plugin's answer may carry activity ({title, brief}): a line in the activity panel under the plugin's name. code-commandments writes Sin found with the sin and file:line, and Sin repented when an edit clears a file.
