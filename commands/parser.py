@@ -44,6 +44,8 @@ def add_method(acts, controller: type, name: str) -> None:
             a.add_argument(flag, type=truthy, default=None)
         elif p.annotation is list:
             a.add_argument(flag, nargs="+", type=int)
+        elif p.annotation == list[str]:
+            a.add_argument(flag, nargs="+")
         else:
             a.add_argument(flag, type=int if p.annotation is int else str, **({} if required else {"default": p.default}))
 
