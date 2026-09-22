@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.84.75 — A quantity word before a number marks a count
+
+"Under 100", "more than 300", "about 20" and the like are counts, and the bare-number check leaves them alone.
+
 ## 2.84.74 — Stopping a service stops every process it forked
 
 A plugin service runs in a process group of its own and is stopped as a group, so workers it forked (like the php -S workers that outlived the workflows service) go with it. A test now holds this.
