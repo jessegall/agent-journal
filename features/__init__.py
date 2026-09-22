@@ -57,7 +57,7 @@ def seat(root: Path) -> None:
                 rows.create(name, enabled=feature.default_for(root))
         for name, row in known.items():
             if name not in FEATURES and not row.missing:
-                rows.update(row.n, enabled=False, missing=True)
+                rows.update(row.n, missing=True)
             elif name in FEATURES and row.missing:
                 rows.update(row.n, missing=False)
         booted(record)

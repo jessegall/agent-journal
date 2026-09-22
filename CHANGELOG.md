@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.84.55 — A revision's changes read like the doc, and revisions stay on
+
+Show changes on a doc renders each changed line the way the doc renders it: bullets, links and row chips instead of raw markdown and `[[chip …]]` markers. It now works on the latest revision too, and starts off so the doc opens editable.
+
+A feature that an older server did not know was switched off during an upgrade and stayed off. A missing feature is now only marked missing, keeping its switch; the upgrade switches `revisions` back on where that happened.
+
 ## 2.84.54 — The first hook after a restart is fast
 
 The checks that look at what the agent last wrote read only the end of the transcript. Before, the first Stop after the server restarted parsed the whole session transcript, 55,000 lines and 600ms in a long session. It now takes under 50ms; the full transcript is still read for the conversation pages.
