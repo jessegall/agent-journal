@@ -19,13 +19,13 @@ class Transport {
 
     async send(method, url, body) {
         const raw = body instanceof FormData;
-        this.watcher("sent", method, url);
+        this.watcher("sent", method, url, body);
         const res = await fetch(url, {
             method,
             headers: body === undefined || raw ? {} : {"Content-Type": "application/json"},
             body: body === undefined || raw ? body : JSON.stringify(body),
             signal: AbortSignal.timeout(raw ? UPLOAD_WAIT_MS : WAIT_MS),
-        }).finally(() => this.watcher("answered", method, url));
+        }).finally(() => this.watcher("answered", method, url, body));
         if (!res.ok) {
             const body = await res.json().catch(() => ({}));
             throw new Error(body.error || `${res.status} ${res.statusText}`);

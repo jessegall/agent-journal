@@ -5,6 +5,7 @@ import {age} from "../format/time.js";
 import {useNow} from "./now.js";
 
 const WINDOW = 8;
+const FETCHING = new Map();
 
 export function useRevisions(resource) {
     const numbers = computed(() => Array.from({length: Number(resource().data.revisions || 0)}, (_, i) => i + 1));
@@ -22,17 +23,18 @@ export function useRevisions(resource) {
         {immediate: true}
     );
 
-    const loading = new Set();
-
     async function load(k) {
-        if (!k || pages[k] || loading.has(k)) return;
-        loading.add(k);
+        if (!k || pages[k]) return;
+        const key = `${resource().type}:${resource().n}:${k}`;
+        if (!FETCHING.has(key))
+            FETCHING.set(
+                key,
+                api.revision(resource().n, k).finally(() => FETCHING.delete(key))
+            );
         try {
-            pages[k] = await api.revision(resource().n, k);
+            pages[k] = await FETCHING.get(key);
         } catch (e) {
             error.value = e.message;
-        } finally {
-            loading.delete(k);
         }
     }
 

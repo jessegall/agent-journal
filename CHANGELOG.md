@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.95.2 — Two revisions fetched at once are not one request sent twice
+
+A doc page asks for the revision shown and the one before it at the same time, to show what changed. The viewer's fault watcher took them for one request sent twice, because it compared only the method and path; it now compares the request's body too. Two copies of the revision strip open at once share one request per revision.
+
 ## 2.95.1 — A folded activity row keeps its time
 
 A folded row in the activity panel still shows who it was and when, under its heading; only the description waits for a click.
