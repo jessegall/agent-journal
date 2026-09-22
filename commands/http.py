@@ -154,7 +154,8 @@ def provider_of(req: Request):
 @route("GET", "/api/agent-hooks/{provider}")
 def get_agent_hooks(req: Request) -> Reply:
     provider = provider_of(req)
-    return Reply(200, {"path": str(provider.config(req.root.parent).relative_to(req.root.parent)), "hooks": provider.hooks(req.root.parent)})
+    return Reply(200, {"path": str(provider.config(req.root.parent).relative_to(req.root.parent)), "hooks": provider.hooks(req.root.parent),
+                       "elsewhere": provider.hooks_elsewhere(req.root.parent)})
 
 
 @route("POST", "/api/agent-hooks/{provider}")

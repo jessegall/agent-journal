@@ -274,6 +274,17 @@ class Provider(ABC):
     def hooks(self, project: Path) -> dict:
         return self.settings(project).get("hooks", {})
 
+    def hooks_elsewhere(self, project: Path) -> list[dict]:
+        found = []
+        for f in self.hook_files(project):
+            if f == self.config(project):
+                continue
+            hooks = (read_json(f, {}) or {}).get("hooks") or {}
+            if hooks:
+                shown = f"~/{f.relative_to(Path.home())}" if f.is_relative_to(Path.home()) and not f.is_relative_to(project) else str(f.relative_to(project))
+                found.append({"path": shown, "hooks": hooks})
+        return found
+
     def set_hooks(self, project: Path, hooks: dict) -> dict:
         for event, blocks in hooks.items():
             if not isinstance(blocks, list) or not all(isinstance(b, dict) and isinstance(b.get("hooks"), list) and all(isinstance(h, dict) and str(h.get("command", "")).strip() for h in b["hooks"]) for b in blocks):
