@@ -4,6 +4,11 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.85.27 — Codex subagents of a named type are dispatched
+
+- A Codex dispatch that names a specific agent type, such as risk_reviewer, passes law L2 without a task name. Before, every such dispatch was refused as generic and Codex was stuck retrying.
+- A dispatch with no model is still refused on every provider.
+
 ## 2.85.26 — The dashboard and the board read only what they show
 
 - The dashboard counts only the types the viewer shows, not nudges, reactions or agents, so a busy nudge folder no longer slows every refresh.

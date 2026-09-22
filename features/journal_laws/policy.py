@@ -65,7 +65,7 @@ def refusal(provider, tool) -> str:
     dispatch = provider.dispatch(tool)
     if not dispatch:
         return ""
-    if dispatch.get("kind") in GENERIC:
+    if dispatch.get("kind") in GENERIC and dispatch.get("task", "") in GENERIC:
         return "Journal law L2 refuses generic subagents. Choose a specific agent type or give the dispatch a concrete task name and bounded assignment."
     if dispatch.get("model_supported") and not dispatch.get("model"):
         return "Journal law L1 requires an explicit model on every subagent dispatch. Choose the least expensive model that reliably fits the work."
