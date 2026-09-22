@@ -10,6 +10,7 @@ import CheckRuns from "./CheckRuns.vue";
 const props = defineProps({resource: Object});
 const now = useNow();
 const state = computed(() => checkState(props.resource, now.value));
+const last = computed(() => state.value.last);
 const command = ref(props.resource.data.command || "");
 const every = ref(Number(props.resource.data.every || 0));
 const asked = ref(false);
@@ -55,9 +56,9 @@ async function save(key, value) {
                 <span class="verdict">{{ VERDICTS[state.verdict] }}</span>
                 <span class="since">
                     <template v-if="state.verdict === 'running'">started {{ seconds(state.elapsed) }} ago</template>
-                    <template v-else-if="state.last.at">
-                        {{ state.last.ok ? "passed" : `failed with exit ${state.last.code}` }} {{ age(state.last.at) }} in
-                        {{ seconds(state.last.took) }}
+                    <template v-else-if="last.at">
+                        {{ last.ok ? "passed" : `failed with exit ${last.code}` }} {{ age(last.at) }} in
+                        {{ seconds(last.took) }}
                     </template>
                     <template v-else>press Run to see where it stands</template>
                 </span>

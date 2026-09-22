@@ -76,10 +76,12 @@ async function submit() {
             </template>
             <template v-if="files.length">
                 <div class="files">
-                    <span v-for="(file, i) in files" :key="file.name + i" class="file">
-                        {{ file.name }}
-                        <button type="button" class="file-x" title="Leave this file out" @click="files.splice(i, 1)">×</button>
-                    </span>
+                    <template v-for="(file, i) in files" :key="file.name + i">
+                      <span class="file">
+                          {{ file.name }}
+                          <button type="button" class="file-x" title="Leave this file out" @click="files.splice(i, 1)">×</button>
+                      </span>
+                    </template>
                 </div>
             </template>
             <div class="extras">
@@ -91,32 +93,38 @@ async function submit() {
                     <input type="file" multiple hidden @change="files = [...files, ...$event.target.files]" />
                 </label>
             </div>
-            <div v-if="type === 'plan'" class="template">
-                <span class="label">How thorough</span>
-                <ChoiceList :choices="depths" @pick="depth = $event" />
-            </div>
-            <div v-if="templates.length" class="template">
-                <span class="label">Start from</span>
-                <ChoiceList :choices="choices" @pick="template = $event" />
-            </div>
+            <template v-if="type === 'plan'">
+              <div class="template">
+                  <span class="label">How thorough</span>
+                  <ChoiceList :choices="depths" @pick="depth = $event" />
+              </div>
+            </template>
+            <template v-if="templates.length">
+              <div class="template">
+                  <span class="label">Start from</span>
+                  <ChoiceList :choices="choices" @pick="template = $event" />
+              </div>
+            </template>
             <template v-if="fields.length">
                 <div class="fields">
-                    <label v-for="f in fields" :key="f.name" class="field">
-                        <span class="label">{{ f.label }}</span>
-                        <template v-if="f.kind === 'choice'">
-                            <ChoiceList
-                                :choices="f.options.map((o) => ({value: o, label: o, current: values[f.name] === o}))"
-                                @pick="values[f.name] = $event"
-                            />
-                        </template>
-                        <template v-else>
-                            <input
-                                v-model="values[f.name]"
-                                :type="f.kind === 'number' ? 'number' : 'text'"
-                                :placeholder="f.default || ''"
-                            />
-                        </template>
-                    </label>
+                    <template v-for="f in fields" :key="f.name">
+                      <label class="field">
+                          <span class="label">{{ f.label }}</span>
+                          <template v-if="f.kind === 'choice'">
+                              <ChoiceList
+                                  :choices="f.options.map((o) => ({value: o, label: o, current: values[f.name] === o}))"
+                                  @pick="values[f.name] = $event"
+                              />
+                          </template>
+                          <template v-else>
+                              <input
+                                  v-model="values[f.name]"
+                                  :type="f.kind === 'number' ? 'number' : 'text'"
+                                  :placeholder="f.default || ''"
+                              />
+                          </template>
+                      </label>
+                    </template>
                 </div>
             </template>
             <div class="foot">

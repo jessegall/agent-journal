@@ -3,10 +3,12 @@ import TextDisplay from "../kit/TextDisplay.vue";
 import {computed, nextTick, onMounted, ref, watch} from "vue";
 import {api} from "../api/client.js";
 import Icon from "../kit/Icon.vue";
+import SwitchCase from "../kit/SwitchCase.vue";
 import Folded from "../kit/Folded.vue";
 import Buttons from "../resource/Buttons.vue";
 import OptionsPicker from "../resource/OptionsPicker.vue";
 import Attachments from "./Attachments.vue";
+import MadeCard from "./MadeCard.vue";
 import {peek, route} from "../route.js";
 import {quoted} from "../format/quote.js";
 import {clock} from "../format/time.js";
@@ -154,185 +156,181 @@ async function drop() {
 </script>
 
 <template>
-    <template v-if="turn.type === 'skill'">
-        <div class="thread-turn skill" :data-ref="turn.ref">
-            <button type="button" class="thread-skill" :title="`Read the ${turn.title} skill`" @click="store.skill = turn.title">
-                <Icon name="book" :size="12" />
-                Loaded skill
-                <strong>{{ turn.title }}</strong>
-            </button>
-        </div>
-    </template>
-    <template v-else-if="turn.type === 'compacted'">
-        <div class="thread-turn compacted" :data-ref="turn.ref">
-            <span class="thread-compacted">
-                <Icon name="activity" :size="12" />
-                The agent compacted its context
-                <span class="thread-compacted-when">{{ clock(turn.created) }}</span>
-            </span>
-        </div>
-    </template>
-    <template v-else-if="turn.type === 'made'">
-        <div class="thread-turn made" :data-ref="turn.ref">
-            <button type="button" class="thread-made" @click="peek(turn.made.type, turn.made.n)">
-                <span class="thread-made-kind">{{ meta(turn.made.type).title }} created</span>
-                <span class="thread-made-title">{{ turn.made.title }}</span>
-                <template v-if="turn.made.abstract">
-                    <TextDisplay inline class="thread-made-line" :text="turn.made.abstract" />
+    <SwitchCase :value="turn.type">
+        <template #skill>
+            <div class="thread-turn skill" :data-ref="turn.ref">
+                <button type="button" class="thread-skill" :title="`Read the ${turn.title} skill`" @click="store.skill = turn.title">
+                    <Icon name="book" :size="12" />
+                    Loaded skill
+                    <strong>{{ turn.title }}</strong>
+                </button>
+            </div>
+        </template>
+        <template #compacted>
+            <div class="thread-turn compacted" :data-ref="turn.ref">
+                <span class="thread-compacted">
+                    <Icon name="activity" :size="12" />
+                    The agent compacted its context
+                    <span class="thread-compacted-when">{{ clock(turn.created) }}</span>
+                </span>
+            </div>
+        </template>
+        <template #made>
+            <div class="thread-turn made" :data-ref="turn.ref">
+                <MadeCard :made="turn.made" />
+            </div>
+        </template>
+        <template #receipt>
+            <div class="thread-turn receipt" :data-ref="turn.ref">
+                <div class="thread-receipt" @click="follow" v-html="html" />
+            </div>
+        </template>
+        <template #default>
+            <div
+                :class="[
+                    'thread-turn',
+                    {mine, ask: turn.type === 'question', lit: store.focus === turn.ref, 'comment-origin': resourceComment},
+                ]"
+                :data-ref="turn.ref"
+                @mouseleave="picking = false"
+            >
+                <template v-if="turn.who === 'system'">
+                    <span class="thread-from">journal</span>
                 </template>
-            </button>
-        </div>
-    </template>
-    <template v-else-if="turn.type === 'receipt'">
-        <div class="thread-turn receipt" :data-ref="turn.ref">
-            <div class="thread-receipt" @click="follow" v-html="html" />
-        </div>
-    </template>
-    <template v-else>
-        <div
-            :class="[
-                'thread-turn',
-                {mine, ask: turn.type === 'question', lit: store.focus === turn.ref, 'comment-origin': resourceComment},
-            ]"
-            :data-ref="turn.ref"
-            @mouseleave="picking = false"
-        >
-            <template v-if="turn.who === 'system'">
-                <span class="thread-from">journal</span>
-            </template>
-            <div ref="bubble" class="thread-bubble md" @click="resourceComment && openComment()">
-                <template v-if="resourceComment">
-                    <button type="button" class="thread-comment-context" @click.stop="openComment">
-                        <Icon name="bubble" :size="12" />
-                        Comment on {{ commentParent.label }}
-                    </button>
-                </template>
-                <template v-if="results.length || turn.type === 'question'">
-                    <div :class="['thread-results', {live: !turn.completed}]">
-                        <template v-if="turn.type === 'question'">
-                            <p class="thread-ask-label">Question</p>
+                <div ref="bubble" class="thread-bubble md" @click="resourceComment && openComment()">
+                    <template v-if="resourceComment">
+                        <button type="button" class="thread-comment-context" @click.stop="openComment">
+                            <Icon name="bubble" :size="12" />
+                            Comment on {{ commentParent.label }}
+                        </button>
+                    </template>
+                    <template v-if="results.length || turn.type === 'question'">
+                        <div :class="['thread-results', {live: !turn.completed}]">
+                            <template v-if="turn.type === 'question'">
+                                <p class="thread-ask-label">Question</p>
+                            </template>
+                            <template v-for="(b, i) in results" :key="i">
+                                <button type="button" class="thread-pill" :title="b.part" @click.stop="peek(b.type, b.n)">
+                                    {{ b.word }}
+                                </button>
+                            </template>
+                        </div>
+                    </template>
+                    <template v-if="words.quote">
+                        <div
+                            class="thread-quote"
+                            title="Go to what this answers"
+                            @click.stop="resourceComment ? openComment() : toQuoted()"
+                            v-html="quoteHtml"
+                        />
+                    </template>
+                    <template v-if="turn.type === 'question' && turn.title && turn.title !== words.text">
+                        <p class="thread-ask">{{ turn.title }}</p>
+                    </template>
+                    <Folded :at="FOLD_AT">
+                        <div ref="text" class="thread-text" @click="follow" v-html="html" />
+                    </Folded>
+                    <template v-if="turn.type === 'question'">
+                        <template v-if="turn.abstract">
+                            <TextDisplay class="thread-context" :text="turn.abstract" />
                         </template>
-                        <template v-for="(b, i) in results" :key="i">
-                            <button type="button" class="thread-pill" :title="b.part" @click.stop="peek(b.type, b.n)">
-                                {{ b.word }}
+                        <OptionsPicker :resource="turn" />
+                    </template>
+                    <template v-if="turn.type === 'message'">
+                        <Buttons :resource="turn" />
+                    </template>
+                    <template v-if="files.length">
+                        <Attachments :resource="turn" @grew="emit('grew')" />
+                    </template>
+                </div>
+                <div :class="['thread-tools', {picking}]">
+                    <template v-if="picking">
+                        <div class="thread-face-row">
+                            <template v-for="f in FACES" :key="f">
+                                <button type="button" class="thread-face-pick" :title="`React ${f}`" @click.stop="react(f)">{{ f }}</button>
+                            </template>
+                        </div>
+                        <button type="button" class="thread-tool" title="Never mind" @click.stop="picking = false">
+                            <Icon name="close" />
+                        </button>
+                    </template>
+                    <template v-else>
+                        <button type="button" class="thread-tool" title="React to this" @click.stop="picking = true">React</button>
+                        <button
+                            type="button"
+                            class="thread-tool"
+                            title="Reply to this, quoting it"
+                            @click.stop="emit('reply', {text: words.text, ref: turn.ref})"
+                        >
+                            Reply
+                        </button>
+                        <button
+                            type="button"
+                            class="thread-tool"
+                            title="Pin this over the chat"
+                            @click.stop="emit('pin', {text: words.text, ref: turn.ref})"
+                        >
+                            Pin
+                        </button>
+                        <button type="button" class="thread-tool" title="Copy the text of this" @click.stop="copy">
+                            {{ copied ? "Copied" : "Copy" }}
+                        </button>
+                        <template v-if="mine && !turn.completed">
+                            <button
+                                type="button"
+                                class="thread-tool"
+                                title="Delete it — it comes off the list and stays in the record"
+                                @click.stop="drop"
+                            >
+                                Delete
+                            </button>
+                        </template>
+                    </template>
+                </div>
+                <template v-if="faces.length">
+                    <div class="thread-faces">
+                        <template v-for="f in faces" :key="f.face">
+                            <button type="button" :class="['thread-face', {mine: f.mine}]" :title="f.title" @click.stop="react(f.face)">
+                                {{ f.face }}
+                                <template v-if="f.n > 1">
+                                    <span class="thread-face-n">{{ f.n }}</span>
+                                </template>
                             </button>
                         </template>
                     </div>
                 </template>
-                <template v-if="words.quote">
-                    <div
-                        class="thread-quote"
-                        title="Go to what this answers"
-                        @click.stop="resourceComment ? openComment() : toQuoted()"
-                        v-html="quoteHtml"
-                    />
-                </template>
-                <template v-if="turn.type === 'question' && turn.title && turn.title !== words.text">
-                    <p class="thread-ask">{{ turn.title }}</p>
-                </template>
-                <Folded :at="FOLD_AT">
-                    <div ref="text" class="thread-text" @click="follow" v-html="html" />
-                </Folded>
-                <template v-if="turn.type === 'question'">
-                    <template v-if="turn.abstract">
-                        <TextDisplay class="thread-context" :text="turn.abstract" />
+                <div class="thread-meta">
+                    <template v-if="turn.pending">
+                        <span>sending</span>
                     </template>
-                    <OptionsPicker :resource="turn" />
-                </template>
-                <template v-if="turn.type === 'message'">
-                    <Buttons :resource="turn" />
-                </template>
-                <template v-if="files.length">
-                    <Attachments :resource="turn" @grew="emit('grew')" />
-                </template>
-            </div>
-            <div :class="['thread-tools', {picking}]">
-                <template v-if="picking">
-                    <div class="thread-face-row">
-                        <template v-for="f in FACES" :key="f">
-                            <button type="button" class="thread-face-pick" :title="`React ${f}`" @click.stop="react(f)">{{ f }}</button>
-                        </template>
-                    </div>
-                    <button type="button" class="thread-tool" title="Never mind" @click.stop="picking = false">
-                        <Icon name="close" />
-                    </button>
-                </template>
-                <template v-else>
-                    <button type="button" class="thread-tool" title="React to this" @click.stop="picking = true">React</button>
-                    <button
-                        type="button"
-                        class="thread-tool"
-                        title="Reply to this, quoting it"
-                        @click.stop="emit('reply', {text: words.text, ref: turn.ref})"
-                    >
-                        Reply
-                    </button>
-                    <button
-                        type="button"
-                        class="thread-tool"
-                        title="Pin this over the chat"
-                        @click.stop="emit('pin', {text: words.text, ref: turn.ref})"
-                    >
-                        Pin
-                    </button>
-                    <button type="button" class="thread-tool" title="Copy the text of this" @click.stop="copy">
-                        {{ copied ? "Copied" : "Copy" }}
-                    </button>
-                    <template v-if="mine && !turn.completed">
-                        <button
-                            type="button"
-                            class="thread-tool"
-                            title="Delete it — it comes off the list and stays in the record"
-                            @click.stop="drop"
-                        >
-                            Delete
-                        </button>
+                    <template v-else-if="mine || turn.type === 'question'">
+                        <span class="thread-ref">{{ turn.type }} {{ turn.n }}</span>
+                        <span class="thread-meta-dot" />
                     </template>
-                </template>
-            </div>
-            <template v-if="faces.length">
-                <div class="thread-faces">
-                    <template v-for="f in faces" :key="f.face">
-                        <button type="button" :class="['thread-face', {mine: f.mine}]" :title="f.title" @click.stop="react(f.face)">
-                            {{ f.face }}
-                            <template v-if="f.n > 1">
-                                <span class="thread-face-n">{{ f.n }}</span>
-                            </template>
-                        </button>
+                    <template v-if="!turn.pending">
+                        <span>{{ clock(turn.created) }}</span>
+                    </template>
+                    <template v-if="mine && !turn.pending">
+                        <span :class="['thread-ticks', state]" :title="SAID[state]">
+                            <svg
+                                viewBox="0 0 19 12"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="1.6"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                            >
+                                <path d="M1.5 6.6 4.4 9.5 10 2.8" />
+                                <template v-if="state !== 'sent'">
+                                    <path d="M8 6.6 10.9 9.5 16.5 2.8" />
+                                </template>
+                            </svg>
+                        </span>
                     </template>
                 </div>
-            </template>
-            <div class="thread-meta">
-                <template v-if="turn.pending">
-                    <span>sending</span>
-                </template>
-                <template v-else-if="mine || turn.type === 'question'">
-                    <span class="thread-ref">{{ turn.type }} {{ turn.n }}</span>
-                    <span class="thread-meta-dot" />
-                </template>
-                <template v-if="!turn.pending">
-                    <span>{{ clock(turn.created) }}</span>
-                </template>
-                <template v-if="mine && !turn.pending">
-                    <span :class="['thread-ticks', state]" :title="SAID[state]">
-                        <svg
-                            viewBox="0 0 19 12"
-                            fill="none"
-                            stroke="currentColor"
-                            stroke-width="1.6"
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                        >
-                            <path d="M1.5 6.6 4.4 9.5 10 2.8" />
-                            <template v-if="state !== 'sent'">
-                                <path d="M8 6.6 10.9 9.5 16.5 2.8" />
-                            </template>
-                        </svg>
-                    </span>
-                </template>
             </div>
-        </div>
-    </template>
+        </template>
+    </SwitchCase>
 </template>
 
 <style scoped>
@@ -396,41 +394,6 @@ async function drop() {
 
 .thread-compacted-when {
     color: var(--text-3);
-}
-
-.thread-made {
-    display: flex;
-    flex-direction: column;
-    gap: 3px;
-    max-width: 420px;
-    padding: 10px 12px;
-    border: 1px solid var(--border-2);
-    border-radius: 9px;
-    background: var(--raised);
-    color: var(--text);
-    font: inherit;
-    text-align: left;
-    cursor: pointer;
-}
-
-.thread-made:hover {
-    border-color: var(--accent);
-}
-
-.thread-made-kind {
-    color: var(--created);
-    font-size: 11px;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-}
-
-.thread-made-title {
-    font-weight: 500;
-}
-
-.thread-made-line {
-    color: var(--text-2);
-    font-size: 12.5px;
 }
 
 .thread-receipt {

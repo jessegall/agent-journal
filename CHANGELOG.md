@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.86.7 — The viewer has no sins left
+
+- Check for sins passes: control flow sits on template tags, the chat's turn kinds dispatch through SwitchCase, and templates no longer reach three levels into data. The chat's created card is MadeCard and a dump's created row is DumpMadeRow.
+
 ## 2.86.6 — A failing check says what failed
 
 - A failing check's notification carries its own result line (check 22 failed - 31 sins across 2 skills.), or its own words when it sets failure, as in Code Commandments found {summary}.

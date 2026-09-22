@@ -1,4 +1,5 @@
 <script setup>
+import {computed} from "vue";
 import Btn from "../kit/Btn.vue";
 import Icon from "../kit/Icon.vue";
 import CommentToggle from "./CommentToggle.vue";
@@ -10,6 +11,8 @@ import {useRevisions} from "../composables/revisions.js";
 const props = defineProps({resource: Object});
 const emit = defineEmits(["close"]);
 const revisions = useRevisions(() => props.resource);
+const page = computed(() => revisions.page);
+const changed = computed(() => revisions.topChanged);
 </script>
 
 <template>
@@ -40,12 +43,12 @@ const revisions = useRevisions(() => props.resource);
                 </div>
             </template>
             <template v-else>
-                <h2 :class="['title', {changed: revisions.topChanged.title}]">{{ revisions.page.title }}</h2>
-                <template v-if="revisions.page.abstract">
-                    <TextDisplay :class="['abstract', {changed: revisions.topChanged.abstract}]" :text="revisions.page.abstract" />
+                <h2 :class="['title', {changed: changed.title}]">{{ page.title }}</h2>
+                <template v-if="page.abstract">
+                    <TextDisplay :class="['abstract', {changed: changed.abstract}]" :text="page.abstract" />
                 </template>
-                <template v-if="revisions.page.brief">
-                    <TextDisplay :class="['brief', {changed: revisions.topChanged.brief}]" :text="revisions.page.brief" />
+                <template v-if="page.brief">
+                    <TextDisplay :class="['brief', {changed: changed.brief}]" :text="page.brief" />
                 </template>
                 <template v-for="part in revisions.parts" :key="part.title">
                     <section :class="['part', part.kind]">

@@ -99,7 +99,9 @@ async function run(method) {
                 @keydown.esc="collecting = false"
             />
             <datalist id="open-collections">
-                <option v-for="c in collections" :key="c" :value="c" />
+                <template v-for="c in collections" :key="c">
+                  <option :value="c" />
+                </template>
             </datalist>
             <Btn small @click="addToCollection">Add to collection</Btn>
             <Btn small @click="collecting = false">Cancel</Btn>
