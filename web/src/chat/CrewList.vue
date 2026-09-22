@@ -8,6 +8,7 @@ const props = defineProps({
     rows: {type: Array, default: () => []},
     total: {type: Number, default: 0},
     started: {type: String, default: "started"},
+    heading: {type: String, default: ""},
 });
 const emit = defineEmits(["open"]);
 const now = useNow();
@@ -33,6 +34,9 @@ function detail(row) {
 </script>
 
 <template>
+    <template v-if="heading">
+        <h4 class="crew-heading">{{ heading }}</h4>
+    </template>
     <p class="crew-none">{{ summary }}</p>
     <template v-for="row in listed" :key="row.id || row.cell || `${row.task}-${row.model}`">
         <button
@@ -53,6 +57,14 @@ function detail(row) {
 </template>
 
 <style scoped>
+.crew-heading {
+    margin: 0;
+    padding: 6px 8px 0;
+    color: var(--text);
+    font-size: 12px;
+    font-weight: 600;
+}
+
 .crew-none {
     margin: 0;
     padding: 6px 8px;
@@ -125,6 +137,14 @@ function detail(row) {
     font-size: 10.5px;
     line-height: 1.5;
     font-variant-numeric: tabular-nums;
+}
+
+.crew-heading {
+    margin: 0;
+    padding: 6px 8px 0;
+    color: var(--text);
+    font-size: 12px;
+    font-weight: 600;
 }
 
 .crew-none {

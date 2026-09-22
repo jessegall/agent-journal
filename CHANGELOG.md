@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.84.149
+
+- The agent bar's counters have room between them, each list opens under a heading (Background shells, Subagents, Monitors), and each icon's tooltip says what it counts.
+
 ## 2.84.148
 
 - Sequences: steps the agent follows in order, one at a time. A sequence's parts are its steps; running it hands the agent the first, and marking a step done hands the next. A sequence can start by itself when something happens, such as a dump being created, and runs about that row; deleting the row ends the run.
