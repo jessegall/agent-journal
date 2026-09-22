@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.92.0 — Activity rows fold and open
+
+Every row in the activity panel folds to its heading and opens on a click. A row that came with a notification or a plugin's event, such as a journal update or Sin found, opens by default; routine rows (a message processed, work updated) stay one line. The row's number opens the thing it is about.
+
 ## 2.91.1 — A line waits with the engine, not in the send queue
 
 While the agent's last line went out less than five seconds ago, the next ones wait with the engine instead of in the send queue, so a line about a message the agent answers in that moment is dropped rather than sent late.
