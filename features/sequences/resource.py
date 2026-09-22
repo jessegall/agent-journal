@@ -13,6 +13,7 @@ class Sequence(Shape, Resource):
         Field(default=dict, name="runs"),
     ]
     indexed = ("starts_on",)
+    progress = ("runs", "abandoned")
     labels = {"brief": "What it is for"}
     icon = "list"
     command_names = {"complete": "retire"}

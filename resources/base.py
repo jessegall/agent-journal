@@ -130,6 +130,7 @@ class Resource:
     stamped_when_notified: ClassVar[bool] = False              # the row is stamped with the moment the agent was told of it
     deduplicates: ClassVar[bool] = False
     indexed: ClassVar[tuple] = ()
+    progress: ClassVar[tuple] = ()   # data a system row may still change as it runs
     loading: ClassVar[str] = MEMORY
     data_fields: ClassVar[list[Field]] = [
         Field(default=dict, name="files"),

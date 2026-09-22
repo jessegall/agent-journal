@@ -38,7 +38,10 @@ class Collections(Controller):
         kind, _, number = ref.partition(":")
         if kind not in CONTROLLERS or not number.isdigit():
             raise Refused(f"{ref!r} is not a row: write it as type:number, like todo:785")
-        return CONTROLLERS[kind](self.record, actor=SYSTEM).load(int(number))
+        row = CONTROLLERS[kind](self.record, actor=SYSTEM).load(int(number))
+        if row.data.get("system"):
+            raise Refused(f"{ref} ships with the journal and cannot be put in a collection")
+        return row
 
 
 resources_module.register(Collection)

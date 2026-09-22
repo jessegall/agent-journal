@@ -2,13 +2,10 @@ import time
 
 import controllers.types as types_module
 import resources.types as resources_module
-from controllers.base import WORDS, Controller
-from controllers.marks import internal
+from controllers.base import Controller
 from features.sequences.resource import Sequence
-from resources.base import SYSTEM
 
 BY_HAND = "by hand"
-PROGRESS = ("runs", "abandoned")
 
 
 class Sequences(Controller):
@@ -45,29 +42,6 @@ class Sequences(Controller):
         runs = {k: v for k, v in r.runs.items() if k != key}
         left = {"about": key, "step": r.runs[key]["step"], "why": why.strip(), "at": time.time()}
         return self.update(r.n, runs=runs, abandoned=[*(r.data.get("abandoned") or []), left])
-
-    def delete(self, n: int, why: str = ""):
-        self._kept(n)
-        return super().delete(n, why)
-
-    def complete(self, n: int, how: str = "", **data):
-        self._kept(n)
-        return super().complete(n, how, **data)
-
-    @internal
-    def save(self, r, action: str, **event):
-        stored = self.load(r.n) if self._exists(r.n) else None
-        if stored and stored.system and self.actor != SYSTEM and self._rewritten(stored, r):
-            self._refuse(f"sequence {r.n} ships with the journal and cannot be changed")
-        return super().save(r, action, **event)
-
-    def _rewritten(self, stored, r) -> bool:
-        kept = lambda row: {k: v for k, v in row.data.items() if k not in PROGRESS}
-        return any(getattr(stored, f) != getattr(r, f) for f in WORDS) or stored.sections != r.sections or kept(stored) != kept(r)
-
-    def _kept(self, n: int) -> None:
-        if self.load(int(n)).system:
-            self._refuse(f"sequence {n} ships with the journal and cannot be removed")
 
     def _key(self, about: str) -> str:
         return f"{self.record.env}|{about.strip() or BY_HAND}"

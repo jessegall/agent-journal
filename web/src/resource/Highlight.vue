@@ -2,6 +2,7 @@
 import {onUnmounted, reactive, ref} from "vue";
 import Icon from "../kit/Icon.vue";
 
+const props = defineProps({off: Boolean});
 const emit = defineEmits(["quote"]);
 const mark = reactive({text: "", x: 0, y: 0});
 const area = ref(null);
@@ -16,6 +17,7 @@ function place() {
 }
 
 function picked(e) {
+    if (props.off) return;
     const selection = window.getSelection();
     const text = selection ? selection.toString().trim() : "";
     if (!text || !selection.rangeCount || !e.currentTarget.contains(selection.anchorNode)) {
