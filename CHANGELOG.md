@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.84.51 — A design is a document with revisions
+
+Designs are no longer a type of their own. Every doc keeps its revisions: an edit changes the open revision in place, and Keep this revision, `journal doc keep <n>` or 30 quiet minutes keep it, so the next edit starts a new one. `journal doc revisions <n>`, `doc revision <n> <k>` and `doc cut <n> "<part>"` join the doc's words. The viewer shows a revision strip on every doc with revisions; an earlier revision opens read-only with what changed. The upgrade turns each design into a doc, points its revisions and every link at it, and packs the old design folder into `.journal/attic/design.tar.gz`.
+
+Hooks are fast again: one status-bar pattern scanned a long command from every position, up to 700ms a hook. It now reads it once.
+
 ## 2.84.50 — List pages keep their tabs and group headers in view
 
 On the list pages (to-dos, messages and the rest), the tabs stay at the top while the list scrolls, and each group's header stays just below them until the next group takes its place.

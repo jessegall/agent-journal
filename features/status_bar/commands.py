@@ -18,7 +18,7 @@ START = r"(?:^|[;&|(]\s*|\b(?:do|then)\s+)"
 READING = r"(?:^|[;&]\s*|\b(?:do|then)\s+)"
 EFFECTS = (
     ("tests", re.compile(START + r"(?:\S*[Pp]ython[\d.]*\s+(?:-m\s+)?\S*tests?/\S*|pytest|npm (?:run )?test|npx (?:vitest|jest)|vitest|jest|go test|cargo test|phpunit|php artisan test|dotnet test|mvn\b[^;&|]*\btest|\S*gradlew?\b[^;&|]*\btest|(?:bundle exec )?rspec|mix test)\b")),
-    ("tests", re.compile(r"(?=.*\b(?:test_|tests?\b))(?=.*\b(?:[Pp]ython[\d.]*|node|npx|perl)\s+[\"']?\$\w)", re.S)),
+    ("tests", re.compile(r"\A(?=.*\b(?:test_|tests?\b))(?=.*\b(?:[Pp]ython[\d.]*|node|npx|perl)\s+[\"']?\$\w)", re.S)),
     ("installs", re.compile(START + r"(?:npm (?:ci|install|i)|yarn(?: (?:install|add))?|pnpm (?:install|add)|bun (?:install|add)|(?:\S*[Pp]ython[\d.]*\s+-m\s+)?pip[\d.]*\s+install|uv (?:pip )?(?:install|sync|add)|poetry (?:install|add)|composer (?:install|update|require)|bundle install|go mod (?:download|tidy)|cargo (?:fetch|install)|gem install|brew (?:install|bundle))\b")),
     ("builds", re.compile(START + r"(?:npm run build|yarn build|pnpm (?:run )?build|npx (?:vite|tsc|webpack|esbuild|rollup)|vite build|tsc|webpack|make|cargo build|go build|dotnet build|docker build|mvn\b[^;&|]*\b(?:package|compile)|\S*gradlew?\b[^;&|]*\bbuild)\b")),
     ("deletes", re.compile(START + r"(?:rm|rmdir|unlink|git rm)\s")),

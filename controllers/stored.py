@@ -13,9 +13,8 @@ PACKED = "packed"
 ARCHIVE = "zip"
 
 
-def newest_parts(rows: list, part_of) -> list:
-    newest = {part_of(row): row for row in rows if part_of(row)}
-    return [row for row in rows if not part_of(row) or newest[part_of(row)] is row]
+def wholes(rows: list, part_of) -> list:
+    return [row for row in rows if not part_of(row)]
 SUMMARIES: dict[str, tuple] = {}
 HELD: dict[str, tuple] = {}
 PACKS: dict[str, tuple] = {}
@@ -64,7 +63,7 @@ class Stored:
         loose = self._indexed(folder)
         seen = {row["n"] for row in loose}
         packed = [row for n, row in self._packed().items() if n not in seen]
-        rows = newest_parts(sorted(loose + packed, key=lambda row: row["n"]), lambda row: row.get(PART_OF))
+        rows = wholes(sorted(loose + packed, key=lambda row: row["n"]), lambda row: row.get(PART_OF))
         SUMMARIES[str(folder)] = (moved, rows)
         return rows
 
@@ -197,7 +196,7 @@ class Stored:
         memo = self.record.memo
         if memo is None or (self.type, deleted) not in memo:
             rows = [self.load(row["n"]) for row in self.summaries()]
-            rows = newest_parts([r for r in rows if deleted or not r.deleted], lambda r: r.data.get(PART_OF))
+            rows = wholes([r for r in rows if deleted or not r.deleted], lambda r: r.data.get(PART_OF))
             if memo is None:
                 return rows
             memo[self.type, deleted] = rows
