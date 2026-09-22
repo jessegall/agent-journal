@@ -4,6 +4,13 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.84.107 — The dump window is a live view of what the agent is making
+
+- No more item cards: the window shows what you dropped, a status panel with what the agent is doing now, the steps before it and how much is filed, and the rows it made as Documents-page cards that pop in as they are filed.
+- journal dump log <n> "<status>" --on <type:n> names the row the agent is writing; its card appears at once and shimmers until it is filed.
+- Add more to this dump: more text or files become new items on the same dump, reopening it if it was filed, and the agent is told.
+- Mark done closes an open dump; Done goes back to the chat once it is filed.
+
 ## 2.84.106 — The agent logs its progress on a dump, and dumps are filed one at a time
 
 - journal dump log <n> "<status>" writes what the agent is doing to the dump; the dump window shows the newest as its live line and the few before it as a trail.

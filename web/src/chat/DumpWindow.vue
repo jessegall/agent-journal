@@ -1,17 +1,18 @@
 <script setup>
-import {computed, reactive, ref} from "vue";
+import {computed, reactive, ref, watch} from "vue";
 import {api} from "../api/client.js";
 import {store} from "../state/store.js";
 import {rows} from "../sync/rows.js";
 import {peek} from "../route.js";
 import Icon from "../kit/Icon.vue";
 import Btn from "../kit/Btn.vue";
-import Markdown from "../resource/Markdown.vue";
 import Spinner from "../kit/Spinner.vue";
+import ResourceCard from "../resource/ResourceCard.vue";
 import {phrase} from "../layout/statusline.js";
 import {useNow} from "../composables/now.js";
 
 const draft = reactive({text: "", files: [], sending: false, error: "", over: false});
+const more = reactive({open: false, text: "", files: [], sending: false, error: ""});
 const chosen = ref(0);
 const composing = ref(false);
 
@@ -20,9 +21,11 @@ const open = computed(() =>
         .filter((d) => !d.deleted && !d.completed)
         .sort((a, b) => b.n - a.n)
 );
-const dump = computed(() =>
-    composing.value ? null : rows("dump").find((d) => d.n === chosen.value) || open.value[open.value.length - 1] || null
-);
+const inHand = computed(() => open.value[open.value.length - 1] || null);
+const dump = computed(() => (composing.value ? null : rows("dump").find((d) => d.n === chosen.value) || inHand.value));
+watch(dump, (d) => {
+    if (d && !chosen.value) chosen.value = d.n;
+});
 
 const names = (d) => [...(d.brief?.trim() ? ["text"] : []), ...Object.keys(d.data?.files || {}).sort()];
 const items = computed(() =>
@@ -34,35 +37,51 @@ const items = computed(() =>
           })
         : []
 );
-const left = computed(() => items.value.filter((i) => i.state === "waiting" || i.state === "noted").length);
-const now = useNow(3000);
+const settled = computed(() => items.value.filter((i) => i.state === "filed" || i.state === "failed").length);
+const failures = computed(() => items.value.filter((i) => i.state === "failed"));
 const working = computed(() => Boolean(dump.value && !dump.value.completed));
+const queued = computed(() => Boolean(working.value && inHand.value && inHand.value.n !== dump.value.n));
+const log = computed(() => dump.value?.data?.log || []);
+const latest = computed(() => log.value[log.value.length - 1] || null);
+const trail = computed(() => log.value.slice(-4, -1).reverse());
+const progress = computed(() => (items.value.length ? settled.value / items.value.length : 0));
+
+const now = useNow(3000);
 const activity = computed(() => {
     const queue = store.bar?.queue || [];
     const last = queue[queue.length - 1];
     return last && !last.done ? last.key : "";
 });
-const log = computed(() => dump.value?.data?.log || []);
-const trail = computed(() => log.value.slice(-4, -1).reverse());
-const inHand = computed(() => open.value[open.value.length - 1] || null);
-const queued = computed(() => Boolean(working.value && inHand.value && inHand.value.n !== dump.value.n));
 const status = computed(() => {
     if (queued.value) return `Waiting in line. The agent finishes dump ${inHand.value.n} first.`;
-    return log.value[log.value.length - 1]?.text || activity.value || phrase("filing", now.value / 3);
+    return latest.value?.text || activity.value || phrase("filing", now.value / 3);
 });
-const progress = computed(() => (items.value.length ? (items.value.length - left.value) / items.value.length : 0));
+
+const filedRefs = computed(() => [...new Set(items.value.flatMap((i) => i.refs || []))]);
+const writing = computed(() => (working.value && latest.value?.on && !filedRefs.value.includes(latest.value.on) ? latest.value.on : ""));
+const made = computed(() =>
+    [...filedRefs.value, ...(writing.value ? [writing.value] : [])]
+        .filter((ref) => !ref.startsWith("collection:"))
+        .map((ref) => {
+            const [type, n] = ref.split(":");
+            return {ref, type, n: Number(n), row: rows(type).find((r) => r.n === Number(n)), writing: ref === writing.value};
+        })
+);
+const label = (name) => (name === "text" ? "the pasted text" : name.startsWith("added-") ? "a note you added" : name);
+const dropped = computed(() => items.value.map((i) => label(i.name)));
 const collection = computed(() => (dump.value?.refs || []).find((ref) => ref.startsWith("collection:")) || "");
 const nextStep = computed(() =>
     dump.value ? rows("suggestion").find((s) => !s.deleted && !s.completed && s.refs.includes(dump.value.ref)) : null
 );
+const stage = computed(() => (!dump.value ? "" : dump.value.completed ? "Filed" : queued.value ? "Queued" : "Filing"));
 
-function added(list) {
-    draft.files = [...draft.files, ...Array.from(list || [])];
+function added(into, list) {
+    into.files = [...into.files, ...Array.from(list || [])];
 }
 
-function dropped(e) {
+function dropFiles(e) {
     draft.over = false;
-    added(e.dataTransfer?.files);
+    added(draft, e.dataTransfer?.files);
 }
 
 async function send() {
@@ -83,6 +102,29 @@ async function send() {
     }
 }
 
+async function addMore() {
+    const text = more.text.trim();
+    if (!text && !more.files.length) return;
+    more.sending = true;
+    more.error = "";
+    try {
+        const n = dump.value.n;
+        if (dump.value.completed) await api.act("dump", n, "reopen", {why: "more was added"});
+        const files = [...(text ? [new File([text], `added-${Date.now()}.md`, {type: "text/markdown"})] : []), ...more.files];
+        for (const file of files) await api.upload("dump", n, file);
+        Object.assign(more, {text: "", files: [], open: false});
+    } catch (e) {
+        more.error = e.message;
+    } finally {
+        more.sending = false;
+    }
+}
+
+async function finish() {
+    if (working.value) await api.act("dump", dump.value.n, "close", {how: "closed by the user"});
+    store.dumping = false;
+}
+
 function fresh() {
     composing.value = true;
 }
@@ -98,6 +140,9 @@ function follow(ref) {
         <header class="dump-bar">
             <Icon name="inbox" :size="14" />
             <span class="dump-title">{{ dump ? `Dump ${dump.n} · ${dump.title}` : "New dump" }}</span>
+            <template v-if="stage">
+                <span :class="['dump-stage', stage.toLowerCase()]">{{ stage }}</span>
+            </template>
             <span class="grow" />
             <template v-if="dump">
                 <Btn small @click="fresh">New dump</Btn>
@@ -110,7 +155,7 @@ function follow(ref) {
                 :class="['dump-drop', {over: draft.over}]"
                 @dragover.prevent="draft.over = true"
                 @dragleave="draft.over = false"
-                @drop.prevent="dropped"
+                @drop.prevent="dropFiles"
             >
                 <textarea
                     v-model="draft.text"
@@ -129,7 +174,7 @@ function follow(ref) {
                     <label class="dump-pick">
                         <Icon name="paperclip" :size="13" />
                         Add files
-                        <input type="file" multiple hidden @change="added($event.target.files)" />
+                        <input type="file" multiple hidden @change="added(draft, $event.target.files)" />
                     </label>
                     <span class="grow" />
                     <template v-if="draft.error">
@@ -143,72 +188,132 @@ function follow(ref) {
         </template>
 
         <template v-else>
-            <div class="dump-items">
-                <template v-if="working">
-                    <div class="dump-live">
-                        <div :class="['dump-live-line', {queued}]">
-                            <template v-if="queued">
-                                <Icon name="clock" :size="13" />
-                            </template>
-                            <template v-else>
-                                <Spinner />
-                            </template>
-                            <Transition name="dump-line" mode="out-in">
-                                <span :key="status">{{ status }}</span>
-                            </Transition>
-                        </div>
-                        <template v-if="!queued && trail.length">
-                            <ul class="dump-trail">
-                                <li v-for="entry in trail" :key="entry.at">{{ entry.text }}</li>
-                            </ul>
+            <div class="dump-body">
+                <p class="dump-dropped">
+                    <span class="dump-label">You dropped</span>
+                    <span v-for="(name, i) in dropped" :key="i" class="dump-chip">{{ name }}</span>
+                </p>
+
+                <div :class="['dump-live', stage.toLowerCase()]">
+                    <div class="dump-live-line">
+                        <template v-if="dump.completed">
+                            <Icon name="check" :size="14" />
                         </template>
-                        <template v-if="!queued">
+                        <template v-else-if="queued">
+                            <Icon name="clock" :size="13" />
+                        </template>
+                        <template v-else>
+                            <Spinner />
+                        </template>
+                        <Transition name="dump-line" mode="out-in">
+                            <span :key="dump.completed ? 'filed' : status">
+                                {{ dump.completed ? `Finished · ${dump.outcome}` : status }}
+                            </span>
+                        </Transition>
+                        <span class="grow" />
+                        <Btn :kind="dump.completed ? 'primary' : undefined" small @click="finish">
+                            {{ dump.completed ? "Done" : "Mark done" }}
+                        </Btn>
+                    </div>
+                    <template v-if="working && !queued && trail.length">
+                        <ul class="dump-trail">
+                            <li v-for="entry in trail" :key="entry.at">{{ entry.text }}</li>
+                        </ul>
+                    </template>
+                    <template v-if="!queued">
+                        <div class="dump-progress">
                             <div class="dump-bar-track">
                                 <div class="dump-bar-fill" :style="{width: `${Math.max(progress, 0.04) * 100}%`}" />
                             </div>
-                        </template>
-                    </div>
-                </template>
-                <p class="dump-status">
-                    <template v-if="dump.completed">{{ dump.outcome }}</template>
-                    <template v-else>{{ items.length - left }} of {{ items.length }} filed</template>
-                    <template v-if="collection">
-                        ·
-                        <a href="#" class="dump-link" @click.prevent="follow(collection)">open its collection</a>
+                            <span class="dump-count">{{ settled }} of {{ items.length }} filed</span>
+                        </div>
                     </template>
-                </p>
-                <template v-for="item in items" :key="item.name">
-                    <article :class="['dump-item', item.state]">
-                        <header class="dump-item-head">
-                            <Icon :name="item.name === 'text' ? 'file' : 'paperclip'" :size="12" />
-                            <span class="dump-item-name">{{ item.name === "text" ? "The pasted text" : item.name }}</span>
-                            <span class="grow" />
-                            <span class="dump-state">{{ item.state }}</span>
-                        </header>
-                        <template v-if="item.insight">
-                            <Markdown class="dump-line" :text="item.insight" />
-                        </template>
-                        <template v-if="item.outcome">
-                            <Markdown class="dump-line outcome" :text="item.outcome" />
-                        </template>
-                        <template v-if="item.failed">
-                            <Markdown class="dump-line failed" :text="item.failed" />
-                        </template>
-                        <template v-if="(item.refs || []).length">
-                            <div class="dump-refs">
-                                <a v-for="ref in item.refs" :key="ref" href="#" class="dump-link" @click.prevent="follow(ref)">
-                                    {{ ref.replace(":", " ") }}
+                    <template v-if="dump.completed && (collection || nextStep)">
+                        <div class="dump-after">
+                            <template v-if="collection">
+                                <a href="#" class="dump-link" @click.prevent="follow(collection)">
+                                    <Icon name="folder" :size="12" />
+                                    Open its collection
                                 </a>
-                            </div>
+                            </template>
+                            <template v-if="nextStep">
+                                <a href="#" class="dump-link" @click.prevent="follow(nextStep.ref)">
+                                    <Icon name="arrow" :size="12" />
+                                    Next step: {{ nextStep.title }}
+                                </a>
+                            </template>
+                        </div>
+                    </template>
+                </div>
+
+                <template v-if="made.length">
+                    <h3 class="dump-heading">What it made</h3>
+                    <TransitionGroup name="dump-pop" tag="div" class="dump-cards">
+                        <div v-for="m in made" :key="m.ref" :class="['dump-card', {writing: m.writing}]">
+                            <template v-if="m.row">
+                                <ResourceCard :resource="m.row" @click="follow(m.ref)" />
+                            </template>
+                            <template v-else>
+                                <button type="button" class="dump-card-empty" @click="follow(m.ref)">{{ m.type }} {{ m.n }}</button>
+                            </template>
+                            <template v-if="m.writing">
+                                <span class="dump-writing">writing…</span>
+                            </template>
+                        </div>
+                    </TransitionGroup>
+                </template>
+
+                <template v-if="failures.length">
+                    <ul class="dump-failures">
+                        <li v-for="f in failures" :key="f.name">
+                            <Icon name="x" :size="12" />
+                            {{ label(f.name) }} was not filed: {{ f.failed }}
+                        </li>
+                    </ul>
+                </template>
+
+                <div class="dump-more">
+                    <template v-if="!more.open">
+                        <button type="button" class="dump-more-open" @click="more.open = true">
+                            <Icon name="plus" :size="12" />
+                            Add more to this dump
+                        </button>
+                    </template>
+                    <template v-else>
+                        <textarea v-model="more.text" placeholder="Something you forgot: more text, or drop files below." />
+                        <template v-if="more.files.length">
+                            <ul class="dump-files">
+                                <li v-for="(file, i) in more.files" :key="file.name + i">
+                                    <Icon name="paperclip" :size="12" />
+                                    {{ file.name }}
+                                    <button type="button" class="dump-x" title="Leave this file out" @click="more.files.splice(i, 1)">
+                                        ×
+                                    </button>
+                                </li>
+                            </ul>
                         </template>
-                    </article>
-                </template>
-                <template v-if="nextStep">
-                    <article class="dump-next">
-                        <span class="dump-state">next step</span>
-                        <a href="#" class="dump-link" @click.prevent="follow(nextStep.ref)">{{ nextStep.title }}</a>
-                    </article>
-                </template>
+                        <div class="dump-foot">
+                            <label class="dump-pick">
+                                <Icon name="paperclip" :size="13" />
+                                Add files
+                                <input type="file" multiple hidden @change="added(more, $event.target.files)" />
+                            </label>
+                            <span class="grow" />
+                            <template v-if="more.error">
+                                <span class="dump-error">{{ more.error }}</span>
+                            </template>
+                            <Btn small @click="more.open = false">Cancel</Btn>
+                            <Btn
+                                kind="primary"
+                                small
+                                :disabled="more.sending || (!more.text.trim() && !more.files.length)"
+                                @click="addMore"
+                            >
+                                {{ more.sending ? "Adding…" : "Add" }}
+                            </Btn>
+                        </div>
+                    </template>
+                </div>
             </div>
         </template>
     </section>
@@ -233,8 +338,30 @@ function follow(ref) {
 }
 
 .dump-title {
+    overflow: hidden;
     color: var(--text);
     font-weight: 500;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.dump-stage {
+    flex: none;
+    padding: 1px 7px;
+    border-radius: 999px;
+    background: var(--hover);
+    color: var(--text-2);
+    font-size: 11px;
+}
+
+.dump-stage.filing {
+    background: color-mix(in srgb, var(--accent) 18%, transparent);
+    color: var(--accent-text);
+}
+
+.dump-stage.filed {
+    background: color-mix(in srgb, var(--done, #3fb950) 18%, transparent);
+    color: var(--done, #3fb950);
 }
 
 .grow {
@@ -257,7 +384,8 @@ function follow(ref) {
     border-color: var(--accent);
 }
 
-.dump-drop textarea {
+.dump-drop textarea,
+.dump-more textarea {
     flex: 1;
     min-height: 200px;
     border: none;
@@ -270,6 +398,10 @@ function follow(ref) {
     outline: none;
 }
 
+.dump-more textarea {
+    min-height: 70px;
+}
+
 .dump-files {
     display: flex;
     flex-wrap: wrap;
@@ -279,7 +411,8 @@ function follow(ref) {
     list-style: none;
 }
 
-.dump-files li {
+.dump-files li,
+.dump-chip {
     display: inline-flex;
     align-items: center;
     gap: 5px;
@@ -317,35 +450,63 @@ function follow(ref) {
     font-size: 12px;
 }
 
-.dump-items {
+.dump-body {
     display: flex;
     flex-direction: column;
-    gap: 10px;
-    padding: 12px 0;
+    gap: 14px;
+    padding: 14px 0;
     overflow-y: auto;
+}
+
+.dump-dropped {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    margin: 0;
+}
+
+.dump-label,
+.dump-heading {
+    margin: 0;
+    color: var(--text-3);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
 }
 
 .dump-live {
     display: flex;
     flex-direction: column;
-    gap: 8px;
-    padding: 10px 12px;
+    gap: 10px;
+    padding: 12px 14px;
     border: 1px solid var(--border);
-    border-radius: 8px;
+    border-radius: 10px;
     background: var(--raised);
     color: var(--text-2);
     font-size: 13px;
+}
+
+.dump-live.filing {
+    border-color: color-mix(in srgb, var(--accent) 40%, var(--border));
 }
 
 .dump-live-line {
     display: flex;
     align-items: center;
     gap: 8px;
+    min-height: 26px;
     color: var(--accent-text);
+    font-size: 13.5px;
 }
 
-.dump-live-line.queued {
+.dump-live.queued .dump-live-line {
     color: var(--text-2);
+}
+
+.dump-live.filed .dump-live-line {
+    color: var(--text);
 }
 
 .dump-trail {
@@ -359,7 +520,14 @@ function follow(ref) {
     list-style: none;
 }
 
+.dump-progress {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
 .dump-bar-track {
+    flex: 1;
     height: 3px;
     overflow: hidden;
     border-radius: 2px;
@@ -373,6 +541,136 @@ function follow(ref) {
     transition: width 0.4s ease;
 }
 
+.dump-count {
+    flex: none;
+    color: var(--text-3);
+    font-size: 12px;
+}
+
+.dump-after {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+}
+
+.dump-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    color: var(--accent-text);
+    font-size: 12.5px;
+}
+
+.dump-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 12px;
+}
+
+.dump-card {
+    position: relative;
+    display: grid;
+}
+
+.dump-card.writing :deep(.card) {
+    border-color: color-mix(in srgb, var(--accent) 50%, var(--border));
+}
+
+.dump-card.writing::after {
+    position: absolute;
+    inset: 0;
+    border-radius: 10px;
+    background: linear-gradient(100deg, transparent 20%, color-mix(in srgb, var(--accent) 14%, transparent) 50%, transparent 80%);
+    background-size: 200% 100%;
+    animation: dump-shimmer 1.6s linear infinite;
+    content: "";
+    pointer-events: none;
+}
+
+.dump-writing {
+    position: absolute;
+    right: 12px;
+    bottom: 10px;
+    color: var(--accent-text);
+    font-size: 11px;
+}
+
+.dump-card-empty {
+    min-height: 130px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--raised);
+    color: var(--text-2);
+    cursor: pointer;
+}
+
+.dump-failures {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin: 0;
+    padding: 0;
+    color: var(--blocking);
+    font-size: 12.5px;
+    list-style: none;
+}
+
+.dump-failures li {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.dump-more {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.dump-more:has(textarea) {
+    padding: 10px 12px;
+    border: 1px dashed var(--border-2);
+    border-radius: 10px;
+}
+
+.dump-more-open {
+    display: inline-flex;
+    align-self: flex-start;
+    align-items: center;
+    gap: 5px;
+    padding: 0;
+    border: none;
+    background: none;
+    color: var(--text-2);
+    font-size: 12.5px;
+    cursor: pointer;
+}
+
+.dump-more-open:hover {
+    color: var(--text);
+}
+
+@keyframes dump-shimmer {
+    from {
+        background-position: 200% 0;
+    }
+
+    to {
+        background-position: -200% 0;
+    }
+}
+
+.dump-pop-enter-active {
+    transition:
+        opacity 0.3s ease,
+        transform 0.35s cubic-bezier(0.2, 1.4, 0.4, 1);
+}
+
+.dump-pop-enter-from {
+    opacity: 0;
+    transform: scale(0.92) translateY(6px);
+}
+
 .dump-line-enter-active,
 .dump-line-leave-active {
     transition: opacity 0.25s ease;
@@ -381,77 +679,6 @@ function follow(ref) {
 .dump-line-enter-from,
 .dump-line-leave-to {
     opacity: 0;
-}
-
-.dump-status {
-    margin: 0 0 4px;
-    color: var(--text-2);
-    font-size: 13px;
-}
-
-.dump-item {
-    padding: 10px 12px;
-    border: 1px solid var(--border);
-    border-left: 3px solid var(--border-2);
-    border-radius: 8px;
-    background: var(--raised);
-}
-
-.dump-item.noted {
-    border-left-color: var(--progress);
-}
-
-.dump-item.filed {
-    border-left-color: var(--accent);
-}
-
-.dump-item.failed {
-    border-left-color: var(--blocking);
-}
-
-.dump-item-head {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    color: var(--text);
-    font-size: 13px;
-}
-
-.dump-state {
-    color: var(--text-3);
-    font-size: 11px;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-}
-
-.dump-line {
-    margin-top: 6px;
-    font-size: 13px;
-}
-
-.dump-line.failed {
-    color: var(--blocking);
-}
-
-.dump-refs {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin-top: 6px;
-}
-
-.dump-link {
-    color: var(--accent-text);
-    font-size: 12.5px;
-}
-
-.dump-next {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 10px 12px;
-    border: 1px solid var(--accent);
-    border-radius: 8px;
 }
 
 .dump-enter-active,
