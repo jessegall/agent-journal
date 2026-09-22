@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.85.21
+
+- No skill description carries angle brackets, which the Skill Creator validator rejects: journal-close-from-commits is reworded, and the generator strips them from any description.
+
 ## 2.85.20
 
 - A listing of open rows picks the last few from the index before loading any, so journal nudge all reads 25 rows instead of thousands (800ms down to 50ms). Types that order their own list, such as to-dos, keep the full path.

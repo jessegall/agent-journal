@@ -1,4 +1,5 @@
 import inspect
+import re
 import os
 import shutil
 from pathlib import Path
@@ -69,13 +70,17 @@ def subject(name: str) -> str:
     return "\n".join(line for line in body.splitlines() if not line.startswith("# ")).strip()
 
 
+def plain_description(text: str) -> str:
+    return re.sub(r"\s*[<>]\s*", " ", text).strip()
+
+
 def feature_skill(f) -> str:
     d = f.describe()
     trigger = d["trigger"]
     when = (f"on {trigger['on']}" if trigger.get("on") else f"at {', '.join(map(str, trigger['at']))} percent of the context" if trigger.get("at")
             else f"every {trigger['every']} {trigger['unit']}" if trigger else "on the events it listens to")
     subject_text = subject(d["name"])
-    return (f"---\nname: {skill_name(d['name'])}\ndescription: {d['abstract']}\n---\n\n# {d['title']}\n\n{d['abstract']}.\n\n{d['help']}\n\n{subject_text + chr(10) + chr(10) if subject_text else ''}"
+    return (f"---\nname: {skill_name(d['name'])}\ndescription: {plain_description(d['abstract'])}\n---\n\n# {d['title']}\n\n{d['abstract']}.\n\n{d['help']}\n\n{subject_text + chr(10) + chr(10) if subject_text else ''}"
             f"{f'It listens to: ' + ', '.join(d['listens']) + f'. It speaks {when}. ' if d['listens'] else ''}"
             f"{'On' if d['default'] else 'Off'} by default. Settings switches it per environment and sets how often it speaks; "
             f"{'each of its behaviours — ' + ', '.join(d['behaviours']) + ' — carries its own switch and cadence beside it' if d['behaviours'] else 'it has one switch'}.\n")
