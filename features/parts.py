@@ -128,6 +128,7 @@ class TextFormatter:
 class ToolInterceptor:
     behaviour: ClassVar[str | None] = None
     limit: ClassVar[str] = ""
+    steps_aside: ClassVar[str] = ""
 
     def intercept(self, context: "AgentContext", call) -> str:
         raise NotImplementedError
@@ -178,13 +179,10 @@ class Client:
                            formatter.surfaces))
 
 
-STEPS_ASIDE = 50
-
-
 def limited(context: "AgentContext", interceptor: ToolInterceptor, refused: str) -> str:
     key = f"refused.{type(interceptor).__name__}"
     limit = int(context.settings[interceptor.limit])
-    count = (int(context.state.get(key, 0)) % (limit + STEPS_ASIDE)) + 1 if refused else 0
+    count = (int(context.state.get(key, 0)) % (limit + int(context.settings[interceptor.steps_aside]))) + 1 if refused else 0
     context.state.set(key, count)
     return refused if count <= limit else ""
 

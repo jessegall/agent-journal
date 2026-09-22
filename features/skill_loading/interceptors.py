@@ -43,6 +43,7 @@ def require_named(record, row, text: str) -> None:
 
 class RefuseUntilLoaded(ToolInterceptor):
     limit = "most_refusals"
+    steps_aside = "steps_aside"
 
     def intercept(self, context: AgentContext, call) -> str:
         missing = outstanding(context.record, context.agent.row)

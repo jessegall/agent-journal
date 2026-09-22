@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.86.14 — The skill gate steps aside for ten tool uses, set in Settings
+
+After its refusal limit the skill gate lets the next ten tool uses through, then asks for the missing skill again. Both numbers are settings of skill loading.
+
 ## 2.86.13 — A compaction makes the agent load its every-start skills again
 
 A gate with a refusal limit no longer gives up for good: after its limit it steps aside for fifty tool uses, then refuses again. At every start or compaction the agent owes exactly the every-start skills, so one switched off is no longer held, and the skills an agent reports are the ones loaded since its last compaction.
