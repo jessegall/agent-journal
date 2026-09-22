@@ -48,7 +48,9 @@ const page = computed(() =>
                 route.value.page
             )
           ? route.value.page
-          : "index"
+          : store.spec && store.spec.types[route.value.page]
+            ? "index"
+            : "home"
 );
 const opened = computed(() =>
     route.value.stack.length
