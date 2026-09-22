@@ -350,13 +350,22 @@ function follow(ref) {
     border-radius: 8px;
 }
 
-.dump-enter-active {
+.dump-enter-active,
+.dump-leave-active {
     transition:
         opacity 0.2s ease,
         transform 0.24s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
-.dump-enter-from {
+.dump-leave-active {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    background: var(--bg);
+}
+
+.dump-enter-from,
+.dump-leave-to {
     opacity: 0;
     transform: translateY(8px);
 }
