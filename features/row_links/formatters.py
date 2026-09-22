@@ -12,12 +12,20 @@ KEPT = re.compile(r"`[^`]*`|" + MARKER.pattern)
 @cache
 def named() -> tuple[dict[str, str], re.Pattern]:
     names = {spelling: name for name, type_ in TYPES.items() for spelling in (name, type_.details.title.lower()) if spelling}
-    return names, re.compile(r"\b(" + "|".join(sorted(map(re.escape, names), key=len, reverse=True)) + r")s?\s+#?(\d+)\b", re.IGNORECASE)
+    return names, re.compile(r"\b(" + "|".join(sorted(map(re.escape, names), key=len, reverse=True)) + r")s?\s+#?(\d+)\b"
+                             r"((?:(?:\s*,\s*(?:and\s+)?|\s+and\s+)#?\d+\b)*)", re.IGNORECASE)
 
 
 def chipped(text: str) -> str:
     names, found = named()
-    return found.sub(lambda m: marked("chip", f"{names[m.group(1).lower()]}:{m.group(2)}", m.group(0)), text)
+
+    def chip(m) -> str:
+        name, more = names[m.group(1).lower()], re.findall(r"\d+", m.group(3))
+        if not more:
+            return marked("chip", f"{name}:{m.group(2)}", m.group(0))
+        return marked("chips", f"{name}:{','.join([m.group(2), *more])}", m.group(0))
+
+    return found.sub(chip, text)
 
 
 def outside(pattern: re.Pattern, text: str, change) -> str:

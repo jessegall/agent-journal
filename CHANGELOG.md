@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.85.3
+
+- Several numbers after one type name, such as messages 3485, 3494 and 3508, become one chip with each number its own link, instead of a chip for the first and plain numbers after it.
+
 ## 2.85.2
 
 - The sequence handlers name the row a run is about through one helper instead of two copies.
