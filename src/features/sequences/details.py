@@ -4,6 +4,7 @@ from features.sequences.handlers import STEP, UNFINISHED
 
 class SequencesDetails(FeatureDetails):
     name = "sequences"
+    when = "a sequence is run, stepped or written"
 
     title = "Sequences"
 

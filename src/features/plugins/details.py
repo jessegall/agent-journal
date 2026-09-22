@@ -3,6 +3,7 @@ from features.base import FeatureDetails, Line
 
 class PluginsDetails(FeatureDetails):
     name = "plugins"
+    when = "a plugin is installed, upgraded, configured or answers"
 
     title = "Plugins"
 

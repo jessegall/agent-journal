@@ -5,6 +5,7 @@ from features.recital import BEHAVIOURS, LINES
 
 class RemindersDetails(FeatureDetails):
     name = "reminders"
+    when = "you keep forgetting something, or leave an instruction for another agent"
 
     title = "Reminders"
 

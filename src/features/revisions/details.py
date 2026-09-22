@@ -4,6 +4,7 @@ from features.settings import Setting
 
 class RevisionsDetails(FeatureDetails):
     name = "revisions"
+    when = "a doc is edited, kept or read at an earlier revision"
 
     title = "Revisions"
 

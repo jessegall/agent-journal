@@ -10,8 +10,8 @@ class RetentionDetails(FeatureDetails):
     aliases = ("retention",)
 
     abstract = """
-        Reports age out, finished to-dos are archived and notifications the user has seen and nudges the agent was given are
-        removed, after their keep days, once an hour
+        Reports age out and finished to-dos are archived after their keep days, and machine rows past the count their type
+        keeps are removed, once an hour
     """
 
     help = "keep.report and keep.todo are days per environment; 0 keeps everything listed. A type that declares how many rows it keeps (nudges 100, seen notifications 100, closed notices 100, answered browser asks 50) is pruned to that count, oldest first."

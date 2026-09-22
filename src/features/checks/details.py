@@ -3,6 +3,7 @@ from features.base import FeatureDetails, Line
 
 class ChecksDetails(FeatureDetails):
     name = "checks"
+    when = "a check is created, run or fails"
 
     title = "Checks"
 

@@ -5,6 +5,7 @@ from features.recital import BEHAVIOURS, LINES, WHISPER
 
 class RulesDetails(FeatureDetails):
     name = "rules"
+    when = "the user makes a ruling that binds every environment"
 
     title = "Rules"
 

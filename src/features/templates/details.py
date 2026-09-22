@@ -4,6 +4,7 @@ from features.templates.instructions import INSTRUCTIONS
 
 class TemplatesDetails(FeatureDetails):
     name = "templates"
+    when = "something is to be made from a template, or a template is written"
 
     title = "Templates"
 

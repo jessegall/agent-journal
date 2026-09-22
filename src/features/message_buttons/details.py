@@ -3,6 +3,7 @@ from features.base import FeatureDetails
 
 class ButtonsDetails(FeatureDetails):
     name = "message_buttons"
+    when = "a message you write should offer the user buttons"
 
     title = "Buttons on messages"
 

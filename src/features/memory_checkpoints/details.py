@@ -4,6 +4,7 @@ from features.base import Behaviour, FeatureDetails, Line
 
 class ContextDetails(FeatureDetails):
     name = "memory_checkpoints"
+    when = "a context mark holds your writes until you record a fact, a rule or nothing"
 
     title = "Memory checkpoints"
 

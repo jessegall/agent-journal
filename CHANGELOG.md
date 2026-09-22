@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.94.6 — A feature skill says when to load it
+
+A feature's skill description now opens with when to load it ("Load it when the user has left a message, or before replying…") for the twenty features the agent works with directly; one that runs by itself says so. A feature declares it with a when sentence beside its abstract.
+
 ## 2.94.5 — "Once to-do 1024 is done" is not talk about the journal
 
 The chat etiquette no longer names back a row's state that follows once, when, until, after or before: it is a condition on future work, not a report on the record.

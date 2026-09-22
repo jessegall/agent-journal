@@ -5,6 +5,7 @@ from features.trigger import IDLE, Trigger, USES
 
 class MessagesDetails(FeatureDetails):
     name = "messages"
+    when = "the user has left a message, or before replying, reacting or filing what a message asks for"
 
     title = "Messaging"
 

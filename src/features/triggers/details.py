@@ -4,6 +4,7 @@ from features.triggers.resource import DOES
 
 class TriggersDetails(FeatureDetails):
     name = "triggers"
+    when = "the user wants words watched for, or a trigger fires"
 
     title = "Triggers"
 

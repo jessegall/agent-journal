@@ -5,6 +5,7 @@ from features.recital import BEHAVIOURS, LINES
 
 class FactsDetails(FeatureDetails):
     name = "facts"
+    when = "you learn something a later session would get wrong without, or at a context mark"
 
     title = "Facts"
 
