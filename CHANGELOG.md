@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.84.79 — journal claude --dangerously-skip-permissions works again
+
+With the Run without permission prompts switch off (the default), the launcher removed `--dangerously-skip-permissions` from what you typed. A flag you type at launch now passes through and turns that switch on for the environment, so later launches carry it by themselves; switching it off in Settings still takes it away. The same holds for Codex's `--dangerously-bypass-approvals-and-sandbox`.
+
 ## 2.84.78 — journal group add takes refs
 
 `journal group add <n> todo:806 doc:42` was refused because the command line read every list as numbers. A list of words is now read as words.
