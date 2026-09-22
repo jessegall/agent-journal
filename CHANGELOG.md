@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.84.29 — Long file names in a row's Files list stay on one line
+
+A file name like "Screenshot 2026-09-21 at 21.56.10.png" no longer wraps into a narrow column beside its description. The name takes one line, cut off with an ellipsis when it is too long and shown whole on hover, and the description sits underneath.
+
 ## 2.84.28 — [!internal] keeps a narrating message out of the chat
 
 A message the agent starts with `[!internal]` is not shown in the chat. It is meant only for narration of the next step, like "Checking the build next"; anything the user should read is written without it. Command tags in the same message still run.
