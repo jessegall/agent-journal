@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.96.1 — The supervisor does not reload in the middle of an upgrade
+
+An upgrade copies the package in, packs it and clears the loose copies; the supervisor could reload in between and fail to start its checks (a module it looked for was already gone), leaving the update check and the five-minute check-in off for the session. An upgrade now marks itself while it runs and the supervisor waits for it to finish; checks that did not start are tried again.
+
 ## 2.96.0 — Installing or upgrading a plugin shows its output as it runs
 
 Once Run is pressed, the install dialog switches to a console and prints the plugin's setup output line by line as it comes, refreshed every second, for an install and for an upgrade alike. Each setup step writes its command and then its output into the plugin's log while it runs, instead of all at once when it ends.

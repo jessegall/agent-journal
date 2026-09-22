@@ -246,6 +246,16 @@ def half_done(root: Path) -> bool:
 
 def upgrade(project: Path, root: Path | None = None) -> list[str]:
     root = root or project / ".journal"
+    mark = root / "runtime" / "upgrading"
+    mark.parent.mkdir(parents=True, exist_ok=True)
+    mark.touch()
+    try:
+        return upgrading(project, root)
+    finally:
+        mark.unlink(missing_ok=True)
+
+
+def upgrading(project: Path, root: Path) -> list[str]:
     done = [line for line in [keep_copy(root)] if line]
     source, temporary = PACKAGE, None
     reloaded = PACKAGE.resolve() in (root.resolve(), code(root).resolve(), (root / ARCHIVE).resolve()) and not os.environ.get("AGENT_JOURNAL_BOOTSTRAPPED")
