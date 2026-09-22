@@ -10,7 +10,7 @@ from features.plugins.lifecycle import called, clear
 from features.plugins.manifest import fill
 from features.plugins.payload import refusal
 from features.plugins.run import call
-from features.plugins.source import environment, folder
+from features.plugins.source import CHOSEN, environment, folder
 from features.status_bar import commands
 
 EACH = 1.5
@@ -54,7 +54,7 @@ class AskPluginsToRefuse(ToolInterceptor):
                 continue
             name = called(row)
             where = folder(record.root, name)
-            env = environment(record.root, name, row.manifest, row.token)
+            env = environment(record.root, name, row.manifest, row.token, chosen=(row.settings or {}).get(CHOSEN))
             seconds = min(float(row.manifest.get("refuse_seconds") or EACH), LONGEST_EACH, left)
             started = time.monotonic()
             ok, reply = call(fill(asking, env), where, env, refusal(record, hook, name, where, writes), seconds)

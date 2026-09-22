@@ -95,14 +95,14 @@ def plugins(root: Path) -> list:
 
 def specs(root: Path) -> list[dict]:
     from features.plugins.manifest import fill
-    from features.plugins.source import environment, folder
+    from features.plugins.source import CHOSEN, environment, folder
     out: list[dict] = []
     taken: set[int] = set()
     for row in plugins(root):
         name = str(row.manifest.get("name") or "")
         where = folder(root, name)
         kept = (row.settings or {}).get("ports") or {}
-        env = environment(root, name, row.manifest, row.token, kept)
+        env = environment(root, name, row.manifest, row.token, kept, (row.settings or {}).get(CHOSEN))
         ports = {f"ports.{service}": port for service, port in kept.items()}
         for service, given in (row.manifest.get("services") or {}).items():
             sid = f"{name}.{service}"
