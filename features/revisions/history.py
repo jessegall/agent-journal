@@ -16,7 +16,7 @@ def is_open(doc) -> bool:
 
 
 def path(docs, n: int, k: int) -> Path:
-    return docs.record.folder(docs.type, docs.resource.scope) / REVISIONS / f"{int(n):03d}" / f"{int(k):03d}.md"
+    return docs.path(int(n)).parent / REVISIONS / f"{int(k):03d}.md"
 
 
 def read(docs, n: int, k: int):

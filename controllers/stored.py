@@ -3,7 +3,7 @@ import time
 import zipfile
 from pathlib import Path
 from resources.base import LAZY, MEMORY, PART_OF, Refused, Resource
-from engine.stored import read_json, write_json
+from engine.stored import read_json, write_json, write_text
 from controllers.marks import internal
 
 DAMAGED = "damaged"
@@ -47,7 +47,19 @@ def opened(archive: Path) -> zipfile.ZipFile:
 class Stored:
     @internal
     def path(self, n: int) -> Path:
-        return self.record.folder(self.type, self.resource.scope) / f"{n:03d}.md"
+        folder = self._folder()
+        return folder / f"{n:03d}" / f"{self.type}.md" if self.resource.own_folder else folder / f"{n:03d}.md"
+
+    def _folder(self) -> Path:
+        return self.record.folder(self.type, self.resource.scope)
+
+    def _write_file(self, r: Resource) -> None:
+        p = self.path(r.n)
+        if self.resource.own_folder:
+            p.parent.mkdir(parents=True, exist_ok=True)
+        write_text(p, r.dump())
+        if self.resource.own_folder:
+            os.utime(self._folder())
 
     @internal
     def numbers(self) -> list[int]:
@@ -103,8 +115,21 @@ class Stored:
             held = PACKS[str(index)] = (stamp, {int(n): row for n, row in (read_json(index) or {}).items()})
         return held[1]
 
+    def _stamps(self, folder: Path) -> dict[int, str]:
+        if not self.resource.own_folder:
+            return {int(e.name[:-3]): f"{e.stat().st_mtime_ns}-{e.stat().st_size}" for e in os.scandir(folder) if e.name.endswith(".md") and e.name[:-3].isdigit()}
+        stamps = {}
+        for e in os.scandir(folder):
+            if e.is_dir() and e.name.isdigit():
+                try:
+                    found = os.stat(os.path.join(e.path, f"{self.type}.md"))
+                except OSError:
+                    continue
+                stamps[int(e.name)] = f"{found.st_mtime_ns}-{found.st_size}"
+        return stamps
+
     def _indexed(self, folder: Path) -> tuple[list[dict], bool]:
-        stamps = {int(e.name[:-3]): f"{e.stat().st_mtime_ns}-{e.stat().st_size}" for e in os.scandir(folder) if e.name.endswith(".md") and e.name[:-3].isdigit()}
+        stamps = self._stamps(folder)
         known = INDEXED.get(str(folder)) or {int(n): row for n, row in (read_json(folder / INDEX) or {}).items()}
         rows = {}
         for n, stamp in stamps.items():
@@ -141,7 +166,7 @@ class Stored:
             entry = self._packed().get(n)
             if not entry:
                 raise Refused(f"no {self.type} {n}")
-            archive = p.parent / PACKED / entry[ARCHIVE]
+            archive = self._folder() / PACKED / entry[ARCHIVE]
             stamp, where = (mtime(archive), 0), f"{archive}:{n}"
         if self.resource.loading != MEMORY:
             return self._parsed(n)
@@ -157,7 +182,7 @@ class Stored:
         entry = self._packed().get(n)
         if not entry:
             raise Refused(f"no {self.type} {n}")
-        archive = p.parent / PACKED / entry[ARCHIVE]
+        archive = self._folder() / PACKED / entry[ARCHIVE]
         try:
             return opened(archive).read(member(n)).decode()
         except (OSError, KeyError, zipfile.BadZipFile):
@@ -173,9 +198,11 @@ class Stored:
         return self.path(n).is_file() or n in self._packed()
 
     def _remove(self, n: int) -> None:
-        folder = self.path(n).parent
+        folder = self._folder()
         before = self._moved(folder) if folder.is_dir() else None
         self.path(n).unlink(missing_ok=True)
+        if self.resource.own_folder and folder.is_dir():
+            os.utime(folder)
         packed = self._packed()
         if n in packed:
             write_json(folder / PACKED / INDEX, {k: row for k, row in packed.items() if k != n})

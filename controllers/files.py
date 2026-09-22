@@ -3,6 +3,8 @@ from pathlib import Path
 from resources.base import Refused, Resource
 from resources.pictures import dimensions
 
+REVISIONS = "revisions"
+
 
 
 
@@ -34,7 +36,10 @@ class Files:
         return self.save(r, "updated", file=name, tags=tags.strip())
 
     def files(self, n: int) -> list[str]:
-        return sorted(p.name for p in self.folder(n).iterdir())
+        return sorted(p.name for p in self.folder(n).iterdir() if p.name not in self._kept_beside())
+
+    def _kept_beside(self) -> set[str]:
+        return {f"{self.type}.md", REVISIONS} if self.resource.own_folder else set()
 
     def paths(self, n: int) -> list[str]:
         return [str((self.folder(n) / name).resolve()) for name in self.files(n)]
@@ -54,7 +59,7 @@ class Files:
         r = self.load(n)
         known = r.files
         for f in self.folder(n).iterdir():
-            if f.is_file() and f.name not in known:
+            if f.is_file() and f.name not in known and f.name not in self._kept_beside():
                 known[f.name] = ""
         return self.save(r, "updated", indexed=sorted(known))
 
