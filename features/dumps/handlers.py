@@ -26,6 +26,10 @@ class PromptFiling(Handler):
             if agent:
                 collection = next((ref.split(":")[1] for ref in dump.refs if ref.startswith("collection:")), "")
                 context.speaking_to(agent).agent.say("filed", n=dump.n, outcome=dump.outcome, collection=collection)
+            dump = dumps._in_hand()
+            if not dump:
+                return
+        elif getattr(dumps._in_hand(), "n", 0) != dump.n:
             return
         items = dump.data.get("items") or {}
         waiting = [name for name in dumps._names(dump) if not (items.get(name) or {}).get(ITEM.insight)]

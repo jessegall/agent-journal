@@ -59,13 +59,20 @@ def test_a_dump_makes_its_own_collection_and_everything_it_files_joins_it():
     assert made[0].ref in agent.load(dump.n).refs, "the dump links its collection"
 
 
-def test_the_agent_is_asked_for_the_next_step_once_a_dump_is_filed():
+def test_one_dump_is_worked_at_a_time_its_log_is_kept_and_filing_asks_for_the_next_step():
     from tests.kit import nudges, report
     record = fresh()
     report(record, "working", "PreToolUse")
     dump = CONTROLLERS["dump"](record, actor=USER).create("One note", brief="a note")
-    CONTROLLERS["dump"](record, actor=AGENT).failed(dump.n, "text", "nothing in it to keep")
+    later = CONTROLLERS["dump"](record, actor=USER).create("Another", brief="more")
+    assert not [n for n in nudges(record) if n.startswith(f"dump {later.n},")], "a dump dropped while one is open waits"
+    agent = CONTROLLERS["dump"](record, actor=AGENT)
+    agent.log(dump.n, "reading the note")
+    assert [e["text"] for e in agent.load(dump.n).data["log"]] == ["reading the note"], "the log keeps what the agent said it is doing"
+    assert refused(lambda: agent.log(dump.n, " ")) == "say what you are doing", "a log entry needs words"
+    agent.failed(dump.n, "text", "nothing in it to keep")
     assert f"dump {dump.n} is filed (0 filed, 1 failed) - suggest the next step" in nudges(record), "closing the dump asks for the next step"
+    assert nudges(record)[-1] == f"dump {later.n}, Another, has 1 item to file - journal dump items {later.n}", "and hands over the next one"
 
 
 def test_a_message_declared_a_transcript_becomes_a_dump(tmp_path):
