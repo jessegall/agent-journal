@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.85.7
+
+- The journal skill's reference no longer repeats what a feature's own skill says: a type that belongs to a feature, such as dump, plan or sequence, gets one line and its commands, and names its skill. Core types keep their help, since no other skill carries it.
+
 ## 2.85.6
 
 - A doc the agent creates appears in the chat at that moment as a Document created card, with its title and summary, and opens on click. The notification stays as well.
