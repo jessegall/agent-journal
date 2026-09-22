@@ -40,6 +40,15 @@ class DumpsDetails(FeatureDetails):
             """,
         ),
         Line(
+            name="carry on",
+            title="dump {{n}} still has {{count}} to file - carry on filing it",
+            brief="""
+                Filing a dump is yours to finish without waiting for the user, whether or not auto
+                mode is on: journal dump items {{n}} shows what is left. Ask only what you truly
+                cannot tell, with journal dump ask.
+            """,
+        ),
+        Line(
             name="answered",
             title="the user answered your question on dump {{n}} - {{answer}}",
             brief="carry on filing with that answer. The question was: {{question}}",

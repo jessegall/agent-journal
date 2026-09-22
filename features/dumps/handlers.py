@@ -1,9 +1,10 @@
 from dataclasses import dataclass
 from typing import ClassVar
 
-from engine.events import ResourceEvent
+from engine.events import ClockTicked, ResourceEvent
+from engine.transcript import IDLE
 from features.dumps.resource import ITEM
-from features.parts import Context, Handler
+from features.parts import AgentContext, Context, Handler
 from resources.base import USER
 
 WRITTEN = ("created", "updated")
@@ -59,3 +60,19 @@ class TranscriptToDump(Handler):
             dumps.attach(dump.n, path)
         dumps.link(dump.n, message.ref)
         messages.link(message.n, dump.ref)
+
+
+class CarryOnFiling(Handler):
+    def handle(self, context: AgentContext, event: ClockTicked) -> None:
+        if context.agent.row.status != IDLE:
+            return
+        dumps = context.journal.dumps
+        dump = dumps._in_hand()
+        if not dump or (dump.data.get("question") or {}).get("text"):
+            return
+        items = dump.data.get("items") or {}
+        left = [name for name in dumps._names(dump) if not ((items.get(name) or {}).get(ITEM.outcome) or (items.get(name) or {}).get(ITEM.failed))]
+        stretch = f"{dump.n}:{context.agent.row.at}"
+        if left and context.state.get("carried") != stretch:
+            context.state.set("carried", stretch)
+            context.agent.say("carry on", n=dump.n, count=context.feature.plural(len(left), "item"))

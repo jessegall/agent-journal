@@ -105,3 +105,14 @@ def test_a_message_declared_a_transcript_becomes_a_dump(tmp_path):
     assert (len(made), made[0].brief, dumps.items(made[0].n)) == (1, standup.brief, ["text: not read yet", "audio-notes.txt: not read yet"]), \
         "its text and its files become the dump's items"
     assert made[0].ref in Messages(record, actor=USER).load(standup.n).refs, "the message links the dump"
+
+
+def test_an_idle_agent_is_told_to_carry_on_filing_even_with_auto_off():
+    from tests.kit import idle, nudges, tick
+    record = fresh()
+    dump = CONTROLLERS["dump"](record, actor=USER).create("Left half done", brief="notes")
+    idle(record)
+    tick(record)
+    tick(record)
+    assert [n for n in nudges(record) if "carry on" in n] == [f"dump {dump.n} still has 1 item to file - carry on filing it"], \
+        "an agent resting with a dump unfinished is told once to carry on, auto mode or not"

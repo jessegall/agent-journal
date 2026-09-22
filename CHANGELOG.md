@@ -4,6 +4,11 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.84.122 — The agent finishes a dump on its own, even with auto mode off
+
+- An agent that goes idle with a dump in hand and items left is told to carry on filing it, once per rest, whether auto mode is on or off. It asks only what it truly cannot tell.
+- A long dump title in the header shortens with an ellipsis and keeps the switcher's arrow in view.
+
 ## 2.84.121 — Switch between dumps from the header, and see on the dump button that one is running
 
 - With more than one dump going, the dump window's title opens a list of them with their stage (Filing, Queued, Needs you, Filed, Stopped) to switch between.
