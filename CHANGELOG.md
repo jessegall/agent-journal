@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.84.132 — A file pasted into the chat box is attached
+
+- Copying a file on the Mac and pasting it into the chat box attaches it, as if picked with the paperclip. The dump window's boxes take pasted files the same way.
+
 ## 2.84.131 — A to-do shows the docs it carries as cards
 
 - A doc linked to a to-do, or to any row but a doc or collection, shows on that row's page as a card under Documents, with its title, a line of what it is and its parts, instead of only as a link at the bottom. journal todo link <n> doc:<d> attaches one.
