@@ -2,6 +2,7 @@
 import {computed, nextTick, onMounted, ref, watch} from "vue";
 import {api} from "../api/client.js";
 import Icon from "../kit/Icon.vue";
+import Folded from "../kit/Folded.vue";
 import Buttons from "../resource/Buttons.vue";
 import OptionsPicker from "../resource/OptionsPicker.vue";
 import Attachments from "./Attachments.vue";
@@ -22,12 +23,6 @@ const bubble = ref(null);
 const LONG = 6;
 const FOLD_AT = 420;
 const text = ref(null);
-const tall = ref(false);
-const unfolded = ref(false);
-
-function measure() {
-    tall.value = !!text.value && text.value.scrollHeight > FOLD_AT;
-}
 
 function shaped() {
     const el = bubble.value;
@@ -53,7 +48,6 @@ function shaped() {
 onMounted(() =>
     nextTick(() => {
         shaped();
-        measure();
     })
 );
 const mine = computed(() => props.turn.who === "user");
@@ -130,7 +124,6 @@ const files = computed(() => Object.keys(props.turn.data.files || {}));
 watch([html, laidOut], () =>
     nextTick(() => {
         shaped();
-        measure();
     })
 );
 
@@ -204,12 +197,9 @@ async function drop() {
                 <template v-if="thinking">
                     <span class="thread-thinking">thinking</span>
                 </template>
-                <div ref="text" :class="['thread-text', {folded: tall && !unfolded, thinking}]" @click="follow" v-html="html" />
-                <template v-if="tall">
-                    <button type="button" class="thread-fold" @click.stop="unfolded = !unfolded">
-                        {{ unfolded ? "Show less" : "Show more" }}
-                    </button>
-                </template>
+                <Folded :at="FOLD_AT">
+                    <div ref="text" :class="['thread-text', {thinking}]" @click="follow" v-html="html" />
+                </Folded>
                 <template v-if="turn.type === 'question'">
                     <template v-if="turn.abstract">
                         <p class="thread-context">{{ turn.abstract }}</p>
@@ -484,27 +474,6 @@ button.thread-pill:hover {
     letter-spacing: 0.04em;
     text-transform: uppercase;
     color: var(--blocking);
-}
-
-.thread-text.folded {
-    max-height: 320px;
-    overflow: hidden;
-    mask-image: linear-gradient(to bottom, #000 75%, transparent);
-}
-
-.thread-fold {
-    margin-top: 4px;
-    padding: 0;
-    border: 0;
-    background: none;
-    color: var(--accent-text);
-    font: inherit;
-    font-size: 12px;
-    cursor: pointer;
-}
-
-.thread-fold:hover {
-    text-decoration: underline;
 }
 
 .thread-quote {
