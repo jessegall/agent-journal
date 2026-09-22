@@ -52,7 +52,6 @@ class Engine(Seat):
         self.crewed_size = -1
         self.relayed = None
         self.typed_at = 0.0
-        self.checked_at = time.time()
         self.ticked_at = 0.0
         self.probed_at = 0.0
         self.controlled_at = 0.0
@@ -72,7 +71,7 @@ class Engine(Seat):
         self.relay()
         self.announce_written()
         self.why = (self.permitted() or self.probe() or self.forced() or self.typing() or self.control()
-                    or self.deliver() or self.nudge() or self.check_in())
+                    or self.deliver() or self.nudge())
         self.seat()
         self.clock()
         return self.why
@@ -230,17 +229,6 @@ class Engine(Seat):
             return
         self.ticked_at = time.time()
         emit_clock(self.record, self.agent.driver.session)
-
-    def check_in(self) -> str:
-        from features.work_tracking.auto import ASK_AGAIN, still_there
-        if time.time() - self.checked_at < ASK_AGAIN:
-            return ""
-        line = still_there(self.record, self.agent.driver.quiet_for(), self.agent.state())
-        if not line:
-            return ""
-        self.checked_at = time.time()
-        self.agent.driver.send(line)
-        return "asked whether it is still working"
 
     def owed(self) -> str:
         waiting = []

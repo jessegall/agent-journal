@@ -11,12 +11,15 @@ from pathlib import Path
 from engine.sessions import ACTIVE_ENV
 from install import code
 from engine import runtime
+from engine.heal import heal
 from engine.stored import read_json
 from engine.package import entry
 
 RELOAD = 75
 STOP = 76
 RELAUNCH = 77
+HEAL = 78
+QUICK = 30.0
 CHECK_EVERY = 0.5
 
 
@@ -113,6 +116,7 @@ def run(root: Path, cwd: Path, env: str, agent: str, args: list[str]) -> int:
         alive, held = lifeline()
         while status is None:
             stamps = watched(root)
+            began = time.time()
             coordinator = spawn_supervisor(root, cwd, env, agent, fd, session, alive)
             code = coordinator.wait()
             coordinator = None
@@ -133,6 +137,12 @@ def run(root: Path, cwd: Path, env: str, agent: str, args: list[str]) -> int:
             if code == STOP:
                 status = stop(pid)
                 break
+            if code and (code == HEAL or time.time() - began < QUICK):
+                line = heal(root)
+                if line:
+                    os.write(stdout, f"\r\n{line}\r\n".encode())
+            elif code:
+                continue
             while watched(root) == stamps:
                 ended, status = child(pid)
                 if ended:

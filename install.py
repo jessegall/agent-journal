@@ -14,6 +14,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from commands.cli import served  # noqa: E402
+from engine.package import point  # noqa: E402
 from migrations import run as migrate  # noqa: E402
 from features.journal_laws.policy import brief  # noqa: E402
 from providers import PROVIDERS  # noqa: E402
@@ -352,10 +353,7 @@ def pack(root: Path) -> str:
             built.unlink(missing_ok=True)
             return f"{ARCHIVE} not built, the journal still runs from {SRC}/: {started.stderr.strip()[-300:]}"
         built.replace(target)
-    pointer = root / f"{ARCHIVE}.link"
-    pointer.unlink(missing_ok=True)
-    pointer.symlink_to(target.name)
-    pointer.replace(root / ARCHIVE)
+    point(root, target)
     for old in sorted(root.glob("journal-*.pyz"), key=lambda f: f.stat().st_mtime, reverse=True)[KEPT_BUILDS:]:
         if old != target and time.time() - old.stat().st_mtime > KEPT_BUILD_DAYS * 86400:
             old.unlink(missing_ok=True)

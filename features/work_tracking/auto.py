@@ -1,3 +1,5 @@
+import time
+
 from controllers.types import Works
 from providers import DRIVERS
 from resources.base import SYSTEM
@@ -20,6 +22,22 @@ def still_there(record, quiet: float, state: str) -> str:
         return ""
     waiting = [w for w in Works(record, actor=SYSTEM)._standing() if not w.parked]
     return STILL_THERE.format(minutes=int(quiet // 60)) if waiting else ""
+
+
+class CheckIn:
+    def __init__(self, agent):
+        self.agent = agent
+        self.asked_at = time.time()
+
+    def tick(self) -> str:
+        if time.time() - self.asked_at < ASK_AGAIN:
+            return ""
+        line = still_there(self.agent.record, self.agent.driver.quiet_for(), self.agent.state())
+        if not line:
+            return ""
+        self.asked_at = time.time()
+        self.agent.driver.send(line)
+        return "asked whether it is still working"
 
 
 def launch_args(record, provider: str, args: list[str]) -> list[str]:

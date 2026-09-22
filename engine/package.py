@@ -18,5 +18,12 @@ def entry(module: str) -> list[str]:
     return [sys.executable, str(CODE.joinpath(*module.split("."))) + ".py"]
 
 
+def point(root: Path, build: Path) -> None:
+    pointer = Path(root) / "journal.pyz.link"
+    pointer.unlink(missing_ok=True)
+    pointer.symlink_to(build.name)
+    pointer.replace(Path(root) / "journal.pyz")
+
+
 def modules(package: str) -> list[tuple[str, bool]]:
     return sorted((found.name, found.ispkg) for found in pkgutil.iter_modules(importlib.import_module(package).__path__))

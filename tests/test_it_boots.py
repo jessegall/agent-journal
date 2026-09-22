@@ -2,8 +2,12 @@ import os
 import subprocess
 import sys
 import tempfile
+import time
+import zipfile
 from pathlib import Path
 
+from engine.heal import broken
+from engine.package import point
 from install import STUBS
 from providers import DRIVERS
 from scripts.boot_guard import WAIT, launches
@@ -68,3 +72,44 @@ def test_the_journal_starts_on_a_record_with_a_damaged_row():
     (root / "environments" / "main" / "todo" / "003.md").write_text('---\n{"n": 3, "title": "odd", "unknown_field": 1}\n---\nbody\n')
     ran = subprocess.run([*journal, "status"], cwd=place, capture_output=True, text=True, timeout=WAIT)
     assert (ran.returncode, "Traceback" in ran.stderr) == (0, False), f"a damaged row stopped the journal:\n{ran.stderr}"
+
+
+def test_a_build_whose_supervisor_dies_on_start_goes_back_to_the_last_good_one():
+    place = Path(tempfile.mkdtemp(prefix="boot-"))
+    (place / "project").mkdir()
+    env = {**os.environ, "HOME": str(place / "home"), "AGENT_JOURNAL_BOOTSTRAPPED": "1"}
+    subprocess.run([sys.executable, str(HERE / "install.py"), "upgrade", str(place / "project")], env=env, capture_output=True, timeout=120)
+    root = place / "project" / ".journal"
+    good = (root / "journal.pyz").resolve()
+    bad = root / "journal-99.0.0-broken0000.pyz"
+    with zipfile.ZipFile(good) as source, zipfile.ZipFile(bad, "w") as target:
+        for item in source.infolist():
+            if not item.filename.startswith("engine/supervisor."):
+                target.writestr(item, source.read(item))
+        target.writestr("engine/supervisor.py", "raise SystemExit(1)\n")
+    point(root, bad)
+    launches(place, root / "journal.py", "codex")
+    assert ((root / "journal.pyz").resolve(), broken(root)) == (good, [bad.name]), "the journal went back to the build that works and remembers the broken one"
+
+
+def test_a_build_whose_server_dies_on_start_goes_back_to_the_last_good_one():
+    place = Path(tempfile.mkdtemp(prefix="boot-"))
+    (place / "project").mkdir()
+    env = {**os.environ, "HOME": str(place / "home"), "AGENT_JOURNAL_BOOTSTRAPPED": "1"}
+    subprocess.run([sys.executable, str(HERE / "install.py"), "upgrade", str(place / "project")], env=env, capture_output=True, timeout=120)
+    root = place / "project" / ".journal"
+    good = (root / "journal.pyz").resolve()
+    bad = root / "journal-99.0.0-broken0000.pyz"
+    with zipfile.ZipFile(good) as source, zipfile.ZipFile(bad, "w") as target:
+        for item in source.infolist():
+            if not item.filename.startswith("serve."):
+                target.writestr(item, source.read(item))
+        target.writestr("serve.py", source.read("serve.py").decode().replace("def run(", "def run(*_, **__):\n    raise SystemExit(3)\n\n\ndef unused(", 1))
+    point(root, bad)
+    def healed():
+        began = time.time()
+        while (root / "journal.pyz").resolve() != good and time.time() - began < WAIT:
+            time.sleep(0.2)
+
+    launches(place, root / "journal.py", "codex", during=healed)
+    assert ((root / "journal.pyz").resolve(), broken(root)) == (good, [bad.name]), "the journal went back to the build that works and remembers the broken one"
