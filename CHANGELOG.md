@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.84.140
+
+- A parked to-do or piece of work says why it is parked, in its row and in its inspector, as a blocked one already did.
+
 ## 2.84.139
 
 - A to-do's inspector lists every question asked about it: open ones first, answerable there, and answered ones with their answer, including questions answered long ago.
