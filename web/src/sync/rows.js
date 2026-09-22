@@ -179,7 +179,8 @@ export function reload() {
 
 export function heardEvents(events) {
     if (events.some((e) => !store.spec.types[e.type])) api.manifest().then((spec) => (store.spec = spec));
-    store.events = [...store.events, ...events].slice(-RECENT);
+    const byId = new Map([...store.events, ...events].map((e) => [e.id, e]));
+    store.events = [...byId.values()].sort((a, b) => a.id - b.id).slice(-RECENT);
     refresh([...new Set(events.map((e) => e.type))].filter((type) => type !== "agent"));
 }
 
