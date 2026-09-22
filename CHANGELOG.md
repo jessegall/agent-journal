@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.85.42 — No Comments button on a system row
+
+- A row the journal ships, such as a system sequence, no longer shows the Comments button: not in the side panel, nor on a plan or document page, nor in the revisions view.
+
 ## 2.85.41 — Triggers: words you watch for, and what the journal does
 
 - A trigger is a row of its own: the words it watches, where it looks (text, commands, both or everything), and what it does when one comes up — send a message, nudge the agent, instruct it, or refuse the tool call with the trigger's own reason.

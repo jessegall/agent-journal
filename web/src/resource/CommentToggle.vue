@@ -3,11 +3,13 @@ import {inject} from "vue";
 import Btn from "../kit/Btn.vue";
 import Icon from "../kit/Icon.vue";
 
+const props = defineProps({resource: {type: Object, default: null}});
 const talk = inject("talk", null);
+const system = () => Boolean(props.resource && props.resource.data && props.resource.data.system);
 </script>
 
 <template>
-    <template v-if="talk">
+    <template v-if="talk && !system()">
         <Btn small :class="['comment-toggle', {on: talk.talking.value}]" @click="talk.toggle()">
             <Icon name="bubble" :size="12" />
             Comments

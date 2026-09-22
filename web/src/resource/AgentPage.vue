@@ -79,7 +79,7 @@ useSighted(topMark, earlier, {root: scroller, margin: "400px 0px"});
             </span>
             <span :class="['state', state]">{{ state }}</span>
             <span class="grow" />
-            <CommentToggle />
+            <CommentToggle :resource="resource" />
             <Btn kind="icon" @click="emit('close')"><Icon name="x" /></Btn>
         </header>
         <template v-if="picked">

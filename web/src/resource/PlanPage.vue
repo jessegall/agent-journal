@@ -67,7 +67,7 @@ async function run(action, body = {}) {
             </span>
             <span class="grow" />
             <DownloadLink :resource="resource" />
-            <CommentToggle />
+            <CommentToggle :resource="resource" />
             <Btn kind="icon" @click="emit('close')"><Icon name="x" /></Btn>
         </header>
         <h2 class="title">{{ resource.title }}</h2>
