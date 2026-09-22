@@ -4,6 +4,11 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.84.103 — The dashboard and the hook do less on every call
+
+- The permission setting read every session's seat file on each dashboard request; it now reads only seats written in the last five seconds. Dashboard 8ms to 4ms.
+- Closing to-dos from commits ran git on every hook in a project without git history; it now runs only when a commit landed.
+
 ## 2.84.102 — Taking over a busy environment is asked like every other start question
 
 - The takeover question uses the same numbered choices, with No marked for Enter.
