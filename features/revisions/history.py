@@ -1,13 +1,27 @@
 import time
+from pathlib import Path
 
 from engine.stored import write_text
-from resources.base import PART_OF, SECTION
+from resources.base import SECTION
 
 REVISIONS, OPEN_UNTIL, REVISION, CHANGE = "revisions", "open_until", "revision", "change"
 
 
+def count(doc) -> int:
+    return int(doc.data.get(REVISIONS) or 0)
+
+
 def is_open(doc) -> bool:
-    return bool(doc.data.get(REVISIONS)) and time.time() < float(doc.data.get(OPEN_UNTIL) or 0)
+    return bool(count(doc)) and time.time() < float(doc.data.get(OPEN_UNTIL) or 0)
+
+
+def path(docs, n: int, k: int) -> Path:
+    return docs.record.folder(docs.type, docs.resource.scope) / REVISIONS / f"{int(n):03d}" / f"{int(k):03d}.md"
+
+
+def read(docs, n: int, k: int):
+    found = path(docs, n, k)
+    return docs.resource.load(found.read_text()) if found.is_file() else None
 
 
 def changed(before, after) -> str:
@@ -24,22 +38,21 @@ def noted(text: str, change: str) -> str:
 
 
 def revise(docs, head, keep_after: float) -> None:
-    numbers = list(head.data.get(REVISIONS) or [])
-    last = docs.load(numbers[-1]) if numbers else None
+    k = count(head)
+    last = read(docs, head.n, k) if k else None
     change = changed(last, head)
     if last is not None and not change:
         return
-    with docs.record.locked():
-        if last is not None and is_open(head):
-            page = last
-            page.title, page.abstract, page.brief, page.sections = head.title, head.abstract, head.brief, [dict(s) for s in head.sections]
-            page.data[CHANGE] = noted(page.data.get(CHANGE, ""), change)
-            page.updated = time.time()
-        else:
-            k = (docs.numbers() or [0])[-1] + 1
-            page = docs.resource(n=k, title=head.title, abstract=head.abstract, brief=head.brief, sections=[dict(s) for s in head.sections],
-                                 created=time.time(), updated=time.time(), seen=list(head.seen), refs=[head.ref],
-                                 data={PART_OF: head.ref, REVISION: len(numbers) + 1, CHANGE: change})
-            numbers.append(k)
-        write_text(docs.path(page.n), page.dump())
-    docs.stamp(head.n, **{REVISIONS: numbers, OPEN_UNTIL: time.time() + keep_after})
+    if last is not None and is_open(head):
+        page = last
+        page.title, page.abstract, page.brief, page.sections = head.title, head.abstract, head.brief, [dict(s) for s in head.sections]
+        page.data[CHANGE] = noted(page.data.get(CHANGE, ""), change)
+        page.updated = time.time()
+    else:
+        k += 1
+        page = docs.resource(n=head.n, title=head.title, abstract=head.abstract, brief=head.brief, sections=[dict(s) for s in head.sections],
+                             created=time.time(), updated=time.time(), seen=list(head.seen), data={REVISION: k, CHANGE: change})
+    target = path(docs, head.n, k)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    write_text(target, page.dump())
+    docs.stamp(head.n, **{REVISIONS: k, OPEN_UNTIL: time.time() + keep_after})

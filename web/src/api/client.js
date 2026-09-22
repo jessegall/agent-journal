@@ -152,6 +152,10 @@ export class ApiClient {
         return this.post(this.here(`/${type}/${n}/${action}`), body);
     }
 
+    revision(n, number) {
+        return this.act("doc", n, "revision", {number});
+    }
+
     command(type, action, body = {}) {
         return this.post(this.here(`/${type}/${action}`), body);
     }

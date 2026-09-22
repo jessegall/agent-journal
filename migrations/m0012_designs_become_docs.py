@@ -6,9 +6,6 @@ from engine.record import RESOURCES
 from resources.base import Resource
 from resources.types import TYPES
 
-REF = re.compile(r"\bdesign:(\d+)\b")
-
-
 def heads(designs: Path, docs: Path) -> dict[str, str]:
     moved, k = {}, max((int(p.stem) for p in docs.glob("*.md") if p.stem.isdigit()), default=0)
     for path in sorted(designs.glob("*.md")):
@@ -23,10 +20,12 @@ def heads(designs: Path, docs: Path) -> dict[str, str]:
 
 
 def rewrite(root: Path, moved: dict[str, str]) -> int:
-    changed = 0
+    if not moved:
+        return 0
+    refs, changed = re.compile(r"\b(?:" + "|".join(map(re.escape, moved)) + r")\b"), 0
     for path in [*(root / RESOURCES).rglob("*.md"), *(root / "environments").rglob("*.md")]:
         text = path.read_text()
-        now = REF.sub(lambda m: moved.get(m.group(0), m.group(0)), text)
+        now = refs.sub(lambda m: moved[m.group(0)], text)
         if now != text:
             path.write_text(now)
             changed += 1

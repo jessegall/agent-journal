@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.84.62 — A doc's revisions never take a doc number
+
+A kept revision used to be saved as a doc of its own, so every revision pushed the next doc's number up. Revisions now live with their doc under `doc/revisions/<doc>/<k>.md`, and a doc counts them. The upgrade moves the existing revision snapshots there and points any link to them at their doc. The priority dropdown on a to-do now opens from its button's right edge, so it stays on the page.
+
 ## 2.84.61 — A restart is not counted against the budget
 
 For the first 20 seconds after the server starts, slow requests and hooks, including those the viewer times, are not filed as faults: they met a server still loading. Warm, the same requests answer in a few milliseconds. Commands keep their budget at all times, and everything after the first 20 seconds is held to 50ms as before.
