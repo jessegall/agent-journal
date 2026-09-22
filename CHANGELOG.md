@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.84.37 — A new row makes its list refresh about twice as fast
+
+After a new row arrives, the list of its type is rebuilt. That rebuild re-read the whole index file of the type each time; the index is now kept in memory and read from disk only when the server starts. A refresh of the messages after a new message went from about 14 ms to 8 ms, of the nudges from 31 ms to 17 ms.
+
 ## 2.84.36 — Summaries no longer set off the prose-choice alarm
 
 The alarm that holds the agent's writes when it offers choices in prose fired on summaries with a list and a quoted question. It now counts only short list items as options, a question outside the list and next to it, and ignores quoted text and code, so a real choice ("Which do you prefer?" with two short options) is still caught.
