@@ -2,39 +2,38 @@ import os
 import time
 
 
+from engine import runtime
 from features import FEATURES
 from features.runtime_cleanup.tidy import tidy
-from tests.kit import idle
+from tests.kit import tick
 from tests.conftest import fresh
 
 
-def test_captures_are_cut_to_their_tail_and_files_of_quiet_sessions_are_removed():
+def aged(path, days: float):
+    then = time.time() - days * 86400
+    for f in path.iterdir() if path.is_dir() else [path]:
+        os.utime(f, (then, then))
+
+
+def test_captures_are_cut_to_their_tail_and_quiet_sessions_are_removed_whole():
     house = FEATURES["runtime_cleanup"]
     record = fresh()
-    runtime = record.root / "runtime"
-    runtime.mkdir(exist_ok=True)
-    week_ago = time.time() - 8 * 86400
-
-    big = runtime / "printed-codex-1"
+    big = runtime.session_file(record.root, "codex-1", "printed")
+    big.parent.mkdir(parents=True)
     big.write_bytes(b"old" * 100_000 + b"THE END")
-    small = runtime / "printed-claude-2"
+    small = runtime.session_file(record.root, "claude-2", "printed")
+    small.parent.mkdir(parents=True)
     small.write_bytes(b"short")
-    log = runtime / "commands.log"
+    log = runtime.folder(record.root) / "commands.log"
     log.write_bytes(b"x" * (2 * 1024 * 1024) + b"last line\n")
-    stale = {name: runtime / name for name in ("trigger-gone-work.json", "gate-main-gone.json", "seat-gone.json", "session-gone.json", "printed-gone")}
-    for f in stale.values():
-        f.write_text("{}")
-        os.utime(f, (week_ago, week_ago))
-    fresh_session = runtime / "session-here.json"
-    fresh_session.write_text("{}")
-    kept = runtime / "env"
+    gone = runtime.sessions(record.root) / "gone"
+    gone.mkdir()
+    for name in ("trigger-work.json", "gate-main.json", "seat.json", "session.json", "printed"):
+        (gone / name).write_text("{}")
+    aged(gone, 8)
+    kept = runtime.folder(record.root) / "env"
     kept.write_text("main")
-    os.utime(kept, (week_ago, week_ago))
-    ended, live = record.state("once", "gone"), record.state("once", "here")
-    ended.set("done", 1)
-    live.set("done", 1)
-    for f in ended.path.parent.iterdir():
-        os.utime(f, (week_ago, week_ago))
+    aged(kept, 8)
 
     text = tidy(record.root, house.values(record).days)
 
@@ -42,12 +41,9 @@ def test_captures_are_cut_to_their_tail_and_files_of_quiet_sessions_are_removed(
         "a large capture is cut to its last 64 KB, ending as it did"
     assert small.read_bytes() == b"short", "a small capture is left alone"
     assert (log.stat().st_size, log.read_bytes().endswith(b"last line\n")) == (1024 * 1024, True), "a log keeps its last megabyte"
-
-    assert [f.exists() for f in stale.values()] == [False] * 5, "every per-session file quiet past the days is removed"
-    assert fresh_session.exists() is True, "a session touched recently stays"
+    assert (gone.exists(), small.exists()) == (False, True), "a session's folder quiet past the days goes whole, a live one stays"
     assert kept.read_text() == "main", "files that are not per-session stay, however old"
-    assert (ended.path.parent.exists(), live.path.exists()) == (False, True), "a session's state folder quiet past the days goes, a live one stays"
-    assert text == {"removed": 6, "trimmed": 2}, "it says what it did"
+    assert text == {"removed": 1, "trimmed": 2}, "it says what it did"
 
     with big.open("ab") as out:
         out.write(b"+more")
@@ -57,20 +53,19 @@ def test_captures_are_cut_to_their_tail_and_files_of_quiet_sessions_are_removed(
 def test_the_days_to_keep_is_a_setting():
     house = FEATURES["runtime_cleanup"]
     record = fresh()
-    (record.root / "runtime").mkdir(exist_ok=True)
-    old = record.root / "runtime" / "seat-a.json"
+    old = runtime.session_file(record.root, "a", "seat.json")
+    old.parent.mkdir(parents=True)
     old.write_text("{}")
-    two_days = time.time() - 2 * 86400
-    os.utime(old, (two_days, two_days))
+    aged(old, 2)
     record.set_setting("runtime_cleanup", {"days": 1})
     tidy(record.root, house.values(record).days)
-    assert old.exists() is False, "housekeeping.days shortens the wait"
+    assert old.parent.exists() is False, "housekeeping.days shortens the wait"
 
 
-def test_it_runs_on_its_own_on_the_agents_activity_once_the_hour_has_passed():
+def test_it_runs_on_its_own_on_the_engines_clock():
     record = fresh()
-    (record.root / "runtime").mkdir(exist_ok=True)
-    capture = record.root / "runtime" / "printed-x"
+    capture = runtime.session_file(record.root, "x", "printed")
+    capture.parent.mkdir(parents=True)
     capture.write_bytes(b"y" * 200_000)
-    idle(record)
-    assert capture.stat().st_size == 64 * 1024, "the first activity sweeps"
+    tick(record)
+    assert capture.stat().st_size == 64 * 1024, "the first tick sweeps"

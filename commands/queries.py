@@ -89,8 +89,8 @@ def verify(ctx) -> str:
         settings = provider().config(root.parent)
         wired = settings.is_file() and "hook.sh" in settings.read_text()
         lines.append(f"{name}: hooks {'wired' if wired else 'NOT wired'} ({settings})")
-    live = [p for p in (root / "runtime").glob("seat-*.json") if time.time() - p.stat().st_mtime < 10]
-    lines.append(f"engine: {len(live)} running — {', '.join(p.stem.removeprefix('seat-')[:8] for p in live) or 'none'}")
+    live = [p for p in runtime.sessions(root).glob("*/seat.json") if time.time() - p.stat().st_mtime < 10]
+    lines.append(f"engine: {len(live)} running — {', '.join(p.parent.name[:8] for p in live) or 'none'}")
     row = Agents(ctx["record"], actor=ctx["actor"]).by_session(ctx["session"]) if ctx["session"] else None
     if row:
         lines.append(f"this session: {row.status or '?'} after {row.event or '?'}, {row.uses} tool uses")

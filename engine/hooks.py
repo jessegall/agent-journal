@@ -21,7 +21,7 @@ def start_file(root: Path, env: str, compacted: bool = False) -> Path:
 
 
 def gate_file(root: Path, env: str, session: str) -> Path:
-    return root / "runtime" / f"gate-{env}-{session}.json"
+    return runtime.session_file(root, session, f"gate-{env}.json")
 
 
 JOURNAL = re.compile(r"(?:\A|[|;&\n]|\$\()[ \t]*(journal[ \t]+[^|;&\n]+)")
@@ -66,7 +66,7 @@ def displayed(root: Path, raw: dict) -> None:
 
 def shown(root: Path, raw: dict) -> None:
     session, message = str(raw.get("session_id") or ""), str(raw.get("message_id") or "")
-    f = runtime.folder(root) / f"displayed-{session}.json"
+    f = runtime.session_file(root, session, "displayed.json")
     with SHOWING:
         held = read_json(f, {})
         parts = {**held.get(message, {}), str(int(raw.get("index") or 0)): str(raw.get("delta") or "")}

@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from resources.base import names
 from resources.types import AgentRow
 from engine.stored import read_json, write_json
+from engine import runtime
 
 PERCENT, USES, MINUTES, IDLE, WORKED, START = "percent", "uses", "minutes", "idle", "worked", "start"
 UNITS = (PERCENT, USES, MINUTES, IDLE, WORKED, START)
@@ -40,7 +41,7 @@ def spec(record, name: str, default: Trigger) -> Trigger:
 
 
 def _file(record, session: str, name: str):
-    return record.root / "runtime" / f"trigger-{session}-{name}.json"
+    return runtime.session_file(record.root, session, f"trigger-{name}.json")
 
 
 def last(record, session: str, name: str) -> dict:

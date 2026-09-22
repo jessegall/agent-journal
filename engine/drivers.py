@@ -10,6 +10,7 @@ from controllers.types import Agents
 from engine import typist
 from resources.base import Refused, SYSTEM
 from engine.wording import counted
+from engine import runtime
 
 ENTER_AFTER = 0.3
 MARK = "[journal]"
@@ -53,8 +54,8 @@ class Driver(ABC):
         self.groups: dict[tuple, dict] = {}
         self.sent_at = 0.0
         self.reported = (float("-inf"), None)
-        self.printed = record.root / "runtime" / f"printed-{session}"
-        self.typed = record.root / "runtime" / f"typed-{session}"
+        self.printed = runtime.session_file(record.root, session, "printed")
+        self.typed = runtime.session_file(record.root, session, "typed")
 
     @abstractmethod
     def command(self, args: list[str], cwd: Path | None = None) -> list[str]: ...
