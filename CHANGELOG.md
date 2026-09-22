@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.84.135 — While you were away shows the notifications you missed, or nothing
+
+- Coming back to the tab opens the card only when notifications arrived while you were away that you have not seen; it lists just those, and each opens its notification. The agent activity list and the highlights line are gone.
+
 ## 2.84.134 — A doc can be hidden: linkable, but not listed or found
 
 - journal doc hide <n> keeps a doc out of the Documents page, the sidebar count, journal doc all, search and the start block's doc count. Links, cards and journal doc show still open it. journal doc unhide <n> lists it again.

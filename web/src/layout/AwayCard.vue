@@ -1,25 +1,18 @@
 <script setup>
 import {computed, onUnmounted} from "vue";
 import Icon from "../kit/Icon.vue";
-import {go, route} from "../route.js";
-import {byRef, toldToUser} from "../domain/records.js";
+import {go, peek, route} from "../route.js";
+import {missed} from "../domain/records.js";
 import {age, span} from "../format/time.js";
 import {away} from "../platform/visibility.js";
-import {counted, meta, store, types, word} from "../state/store.js";
 
-const lines = computed(() =>
-    [...store.events]
-        .reverse()
-        .filter((e) => e.actor === "agent" && e.at * 1000 >= away.since && toldToUser(e) && ["created", "completed"].includes(e.action))
-        .slice(0, 6)
-        .map((e) => ({
-            key: e.id,
-            text: `${e.action === "completed" ? `${meta(e.type).title} ${word(e.type, "complete")}` : `New ${meta(e.type).title.toLowerCase()}`} ${e.n}${(byRef(`${e.type}:${e.n}`) || {}).title ? ` — ${byRef(`${e.type}:${e.n}`).title}` : ""}`,
-            age: age(e.at),
-        }))
-);
-const waiting = computed(() => types.value.filter((t) => t.needs_attention).reduce((sum, t) => sum + counted(t.name, "unread"), 0));
+const lines = computed(() => missed(away.since).map((n) => ({key: n.ref, n: n.n, text: n.title, age: age(n.created)})));
 const forText = computed(() => (away.since ? `${span((away.back - away.since) / 1000)} away` : "last 24 hours"));
+
+function open(n) {
+    away.open = false;
+    peek("notification", n);
+}
 
 function toInbox() {
     away.open = false;
@@ -36,23 +29,25 @@ onUnmounted(() => window.removeEventListener("keydown", onEscape));
     <div class="away-card" role="status">
         <div class="away-head">
             <span class="away-dot" />
-            <span class="away-title">While you were away</span>
+            <span class="away-title">
+                While you were away{{ lines.length ? `: ${lines.length} ${lines.length === 1 ? "notification" : "notifications"}` : "" }}
+            </span>
             <span class="away-for">{{ forText }}</span>
             <button type="button" class="away-close" title="Dismiss" @click="away.open = false"><Icon name="close" /></button>
         </div>
         <div class="away-lines">
             <template v-for="d in lines" :key="d.key">
-                <div class="away-line">
+                <button type="button" class="away-line" @click="open(d.n)">
                     <span>{{ d.text }}</span>
                     <span class="away-age">{{ d.age }}</span>
-                </div>
+                </button>
             </template>
             <template v-if="!lines.length">
-                <p class="away-line muted">Nothing new from the agent.</p>
+                <p class="away-line muted">No notifications you missed.</p>
             </template>
         </div>
         <div class="away-foot">
-            <span>{{ waiting ? `${waiting} highlight${waiting === 1 ? "" : "s"} to review` : "No highlights to review" }}</span>
+            <span />
             <button type="button" class="away-go" @click="toInbox">Open the chat</button>
         </div>
     </div>
@@ -162,9 +157,20 @@ onUnmounted(() => window.removeEventListener("keydown", onEscape));
     margin: 0;
     padding: 6px 7px;
     border-radius: 6px;
+    border: none;
+    background: none;
+    width: 100%;
+    font: inherit;
     font-size: 12px;
     line-height: 1.45;
     color: var(--text-2);
+    text-align: left;
+    cursor: pointer;
+}
+
+button.away-line:hover {
+    background: var(--hover);
+    color: var(--text);
 }
 
 .away-line > span:first-child {

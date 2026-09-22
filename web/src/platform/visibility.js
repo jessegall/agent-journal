@@ -1,5 +1,6 @@
 import {reactive} from "vue";
 import {reload} from "../sync/rows.js";
+import {missed} from "../domain/records.js";
 import {store} from "../state/store.js";
 
 const FLASH_AFTER = 1000;
@@ -19,6 +20,7 @@ async function back() {
     if (Date.now() - since >= FLASH_AFTER) flash.at = Date.now();
     if (Date.now() - since < AWAY_AFTER || store.settings?.viewer?.away === false) return;
     await reload();
+    if (!missed(since).length) return;
     Object.assign(away, {open: true, since, back: Date.now()});
 }
 
