@@ -6,7 +6,7 @@ import CommentToggle from "./CommentToggle.vue";
 import DownloadLink from "./DownloadLink.vue";
 import Icon from "../kit/Icon.vue";
 import {peek, route} from "../route.js";
-import {byRef, waitsOn} from "../domain/records.js";
+import {byRef, parkedFor, waitsOn} from "../domain/records.js";
 import {age} from "../format/time.js";
 import {label, meta, word} from "../state/store.js";
 import ResourceActions from "./ResourceActions.vue";
@@ -145,9 +145,10 @@ const docs = computed(() =>
                 </template>
             </div>
         </template>
-        <template v-if="!resource.completed && (resource.data.blocked || waits.length)">
+        <template v-if="!resource.completed && (resource.data.blocked || parkedFor(resource) || waits.length)">
             <p class="waits">
                 <template v-if="resource.data.blocked">Blocked: {{ resource.data.blocked }}</template>
+                <template v-if="parkedFor(resource)">Parked: {{ parkedFor(resource) }}</template>
                 <template v-if="waits.length">
                     Waits on
                     <template v-for="(ref, i) in waits" :key="ref">

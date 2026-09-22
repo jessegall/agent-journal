@@ -49,10 +49,13 @@ export function planned(r) {
     return !!plan && UNSTARTED.includes(plan.data.status);
 }
 
-export function parked(r) {
-    const work = r.data.status === "started" && r.data.work ? rows("work").find((w) => w.n === Number(r.data.work)) : null;
-    return !!work && !work.completed && !!work.data.parked;
+export function parkedFor(r) {
+    const work =
+        r.type === "work" ? r : r.data.status === "started" && r.data.work ? rows("work").find((w) => w.n === Number(r.data.work)) : null;
+    return work && !work.completed ? work.data.parked || "" : "";
 }
+
+export const parked = (r) => !!parkedFor(r);
 
 export function groupOf(r) {
     if (r.data.blocked) return "blocked";
