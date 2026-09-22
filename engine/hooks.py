@@ -43,18 +43,41 @@ def start(root: Path, env: str, compacted: bool) -> str:
 
 
 SHOWING = threading.Lock()
+REPLAYING = threading.Lock()
+
+
+def unsent(root: Path) -> Path:
+    return runtime.folder(root) / "unsent"
+
+
+def replay(root: Path) -> None:
+    with REPLAYING:
+        for f in sorted(unsent(root).glob("*.json"), key=lambda f: (f.stat().st_mtime_ns, f.name)):
+            raw = read_json(f, None)
+            f.unlink(missing_ok=True)
+            if isinstance(raw, dict):
+                shown(root, raw)
 
 
 def displayed(root: Path, raw: dict) -> None:
+    replay(root)
+    shown(root, raw)
+
+
+def shown(root: Path, raw: dict) -> None:
     session, message = str(raw.get("session_id") or ""), str(raw.get("message_id") or "")
     f = runtime.folder(root) / f"displayed-{session}.json"
     with SHOWING:
         held = read_json(f, {})
         parts = {**held.get(message, {}), str(int(raw.get("index") or 0)): str(raw.get("delta") or "")}
+        rest = {key: value for key, value in held.items() if key != message}
         if not raw.get("final"):
-            write_json(f, {**held, message: parts})
+            write_json(f, {**rest, message: parts})
             return
-        f.unlink(missing_ok=True)
+        if rest:
+            write_json(f, rest)
+        else:
+            f.unlink(missing_ok=True)
     text = "".join(parts[i] for i in sorted(parts, key=int))
     record = Record(root, Sessions(root).environment(session) or runtime.env(root))
     row = Agents(record, actor=SYSTEM)._titled(session)

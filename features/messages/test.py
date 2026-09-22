@@ -1,4 +1,5 @@
 import json
+from datetime import datetime, timezone
 
 from controllers.types import Agents, Messages, Nudges, Works
 from engine.hooks import gate_file, handle
@@ -105,3 +106,30 @@ def test_a_private_nudge_reaches_the_session_it_names_whichever_name_it_uses():
     Nudges(record).create("for another", session="claude-2", private=True)
     received = {e.data.get("title") or e.n: engine.elsewhere(e) for e in record.events(since)}
     assert list(received.values()) == [False, True], "the terminal is claude-99 but the session is claude-1: its own nudge is spoken"
+
+
+def test_messages_shown_at_once_arrive_whole_and_claude_is_read_from_its_display_hook_only(tmp_path):
+    from engine.engine import Engine
+    from engine.hooks import displayed
+    from engine.sessions import Sessions
+    from providers import DRIVERS
+    record = fresh()
+    report(record, "working", "PreToolUse")
+    Sessions(record.root).bind("claude-1", record.env, provider="claude")
+    first = {"session_id": "claude-1", "hook_event_name": "MessageDisplay", "message_id": "a"}
+    displayed(record.root, {**first, "index": 0, "final": False, "delta": "first "})
+    displayed(record.root, {**first, "message_id": "b", "index": 0, "final": True, "delta": "second"})
+    displayed(record.root, {**first, "index": 1, "final": True, "delta": "whole"})
+    chat = lambda: [m.brief for m in Messages(record, actor="system").all() if m.seen[:1] == ["agent"]]
+    assert chat() == ["second", "first whole"], "a message that finishes never drops the pieces of one still being shown"
+    transcript = tmp_path / "s.jsonl"
+    now = datetime.now(timezone.utc).isoformat()
+    transcript.write_text(json.dumps({"type": "user", "timestamp": now, "message": {"content": "go"}}) + "\n")
+    agents = Agents(record, actor="system")
+    agents.update(agents.by_session("claude-1").n, provider="claude", transcript=str(transcript))
+    engine = Engine(record, DRIVERS["claude"](record, "claude-1"))
+    engine.tick()
+    with transcript.open("a") as rows:
+        rows.write(json.dumps({"type": "assistant", "timestamp": now, "message": {"content": [{"type": "text", "text": "only in the transcript"}]}}) + "\n")
+    engine.tick()
+    assert "only in the transcript" not in chat(), "Claude's messages come from its display hook alone"

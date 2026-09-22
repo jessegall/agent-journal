@@ -52,7 +52,7 @@ class Controller(Stored, Files, Links):
 
     def _guarded(self, r: Resource, action: str) -> None:
         allowed = self.resource.editors.get((r.seen or [""])[0])
-        if allowed is None or self.actor in allowed or not self.path(r.n).is_file():
+        if allowed is None or self.actor in allowed or not self._exists(r.n):
             return
         stored = self.load(r.n)
         parts = [section[SECTION.title] for section in stored.sections]
@@ -214,7 +214,7 @@ class Controller(Stored, Files, Links):
 
     def force_delete(self, n: int) -> None:
         self.load(n)
-        self.path(n).unlink()
+        self._remove(n)
         self.record.emit(self.type, n, "deleted", self.actor, force=True)
 
     def move(self, n: int, env: str) -> Resource:

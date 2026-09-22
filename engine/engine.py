@@ -69,7 +69,8 @@ class Engine(Seat):
     def tick(self) -> str:
         self.agent.driver.pump()
         self.relay()
-        self.announce_written()
+        if not self.agent.driver.DISPLAY_HOOK:
+            self.announce_written()
         self.why = (self.permitted() or self.probe() or self.forced() or self.typing() or self.control()
                     or self.deliver() or self.nudge())
         self.seat()

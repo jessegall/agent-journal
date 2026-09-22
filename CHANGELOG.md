@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.84.21 — Every message Claude shows reaches the chat, even across a server restart
+
+Claude's messages now reach the chat only through its message-display hook, so each message arrives once, as shown. Codex, which has no such hook, is still read from its transcript. A message shown while the journal's server is down or restarting is kept by the hook in `.journal/runtime/unsent` and delivered as soon as the server is back. A message that finished while another was still being shown no longer drops the other one's text.
+
 ## 2.84.20 — A file in the Files tab opens its changes
 
 Rows in the right sidebar's Files tab now highlight on hover like Activity rows, and clicking one opens the file's changes since the last commit: a new file shows whole, a deleted one shows what was removed, and a link switches between the changes and the whole file. The commit page and the file page draw a diff the same way.

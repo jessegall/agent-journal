@@ -1,3 +1,4 @@
+import json
 import os
 import subprocess
 import sys
@@ -13,6 +14,13 @@ from scripts.boot_guard import WAIT, launches
 from scripts.checks.imports import imports, missing
 
 HERE = Path(__file__).resolve().parents[1]
+
+
+def installed(place: Path) -> Path:
+    (place / "project").mkdir()
+    env = {**os.environ, "HOME": str(place / "home"), "AGENT_JOURNAL_BOOTSTRAPPED": "1"}
+    subprocess.run([sys.executable, str(HERE / "install.py"), "upgrade", str(place / "project")], env=env, capture_output=True, timeout=120)
+    return place / "project" / ".journal"
 
 
 def test_every_import_in_the_package_resolves():
@@ -74,11 +82,7 @@ def test_the_journal_starts_on_a_record_with_a_damaged_row(tmp_path):
 
 
 def test_a_build_whose_supervisor_dies_on_start_goes_back_to_the_last_good_one(tmp_path):
-    place = tmp_path
-    (place / "project").mkdir()
-    env = {**os.environ, "HOME": str(place / "home"), "AGENT_JOURNAL_BOOTSTRAPPED": "1"}
-    subprocess.run([sys.executable, str(HERE / "install.py"), "upgrade", str(place / "project")], env=env, capture_output=True, timeout=120)
-    root = place / "project" / ".journal"
+    place, root = tmp_path, installed(tmp_path)
     good = (root / "journal.pyz").resolve()
     bad = root / "journal-99.0.0-broken0000.pyz"
     with zipfile.ZipFile(good) as source, zipfile.ZipFile(bad, "w") as target:
@@ -92,11 +96,7 @@ def test_a_build_whose_supervisor_dies_on_start_goes_back_to_the_last_good_one(t
 
 
 def test_a_build_whose_server_dies_on_start_goes_back_to_the_last_good_one(tmp_path):
-    place = tmp_path
-    (place / "project").mkdir()
-    env = {**os.environ, "HOME": str(place / "home"), "AGENT_JOURNAL_BOOTSTRAPPED": "1"}
-    subprocess.run([sys.executable, str(HERE / "install.py"), "upgrade", str(place / "project")], env=env, capture_output=True, timeout=120)
-    root = place / "project" / ".journal"
+    place, root = tmp_path, installed(tmp_path)
     good = (root / "journal.pyz").resolve()
     bad = root / "journal-99.0.0-broken0000.pyz"
     with zipfile.ZipFile(good) as source, zipfile.ZipFile(bad, "w") as target:
@@ -112,3 +112,38 @@ def test_a_build_whose_server_dies_on_start_goes_back_to_the_last_good_one(tmp_p
 
     launches(place, root / "journal.py", "codex", during=healed)
     assert ((root / "journal.pyz").resolve(), broken(root)) == (good, [bad.name]), "the journal went back to the build that works and remembers the broken one"
+
+
+def test_a_message_shown_while_the_server_is_down_reaches_the_chat_once_it_is_back(tmp_path):
+    root = installed(tmp_path)
+    env = {**os.environ, "HOME": str(tmp_path / "home"), "AGENT_JOURNAL_ACTIVE": "1", "JOURNAL_ENV": ""}
+    journal = [sys.executable, str(root / "journal.py"), "--root", str(root)]
+    hook = lambda body: subprocess.run(["sh", str(root / "src" / "hook.sh"), "claude", str(root)], input=json.dumps(body), text=True, env=env, capture_output=True, timeout=WAIT)
+    shown = {"hook_event_name": "MessageDisplay", "session_id": "s1", "message_id": "m1", "index": 0, "final": True, "delta": "said while the server was down"}
+
+    def serving():
+        server = subprocess.Popen([*journal, "serve", "--port", "0"], cwd=root.parent, env=env, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        began = time.time()
+        while time.time() - began < WAIT and not (root / "runtime" / "heartbeat").is_file():
+            time.sleep(0.1)
+        return server
+
+    server = serving()
+    try:
+        hook({"hook_event_name": "SessionStart", "session_id": "s1", "cwd": str(root.parent), "source": "startup"})
+    finally:
+        server.terminate()
+        server.wait(WAIT)
+    (root / "runtime" / "heartbeat").unlink(missing_ok=True)
+    hook(shown)
+    assert list((root / "runtime" / "unsent").glob("*.json")), "the display hook keeps what the server could not take"
+    server = serving()
+    try:
+        began, listed = time.time(), ""
+        while "said while the server was down" not in listed and time.time() - began < WAIT:
+            time.sleep(0.2)
+            listed = subprocess.run([*journal, "message", "all"], cwd=root.parent, env=env, capture_output=True, text=True, timeout=WAIT).stdout
+    finally:
+        server.terminate()
+        server.wait(WAIT)
+    assert "said while the server was down" in listed, "a message shown while the server was down reaches the chat once it is back"

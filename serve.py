@@ -17,7 +17,7 @@ from engine.stop import asked  # noqa: E402
 from engine.viewer import elsewhere, heartbeat, remember  # noqa: E402
 from engine.engines import Children  # noqa: E402
 from controllers.types import warm, warm_record  # noqa: E402
-from engine.hooks import default_env  # noqa: E402
+from engine.hooks import default_env, replay  # noqa: E402
 from engine.record import Record  # noqa: E402
 from engine.package import CODE, ZIPPED, entry
 
@@ -149,6 +149,7 @@ def run(root: Path, port: int = 8430) -> None:
     threading.Thread(target=watch_code, args=(CODE.with_name("journal.pyz") if ZIPPED else CODE, server, changed), daemon=True).start()
     threading.Thread(target=watch_stop, args=(root, server, halting, time.time() - LATE_STOP), daemon=True).start()
     warm_record(Record(root, default_env(root)))
+    threading.Thread(target=replay, args=(root,), daemon=True).start()
     threading.Thread(target=warm, args=(root,), daemon=True).start()
     engines = threading.Event()
     children = Children(root)

@@ -34,6 +34,7 @@ class Driver(ABC):
     CLEAR_LINE = b"\x05\x15"
     name = ""
     FROM = "The journal, for the user:"
+    DISPLAY_HOOK = False
     AUTO_ARGS = ()
     APPROVAL_FLAGS = frozenset()
     CONFIRM_AFTER = 0.0
