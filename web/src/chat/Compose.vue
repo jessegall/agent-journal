@@ -138,6 +138,9 @@ async function use(tool) {
                     <template v-else>
                         <button type="button" class="compose-attach" :title="action.title" :aria-label="action.title" @click="use(action)">
                             <Icon :name="action.icon" />
+                            <template v-if="action.badge">
+                                <span class="compose-badge">{{ action.badge }}</span>
+                            </template>
                         </button>
                     </template>
                 </template>
@@ -268,7 +271,24 @@ async function use(tool) {
     padding: 4px 8px 8px 10px;
 }
 
+.compose-badge {
+    position: absolute;
+    top: 1px;
+    right: 0;
+    min-width: 14px;
+    height: 14px;
+    padding: 0 3px;
+    border-radius: 7px;
+    background: var(--accent);
+    color: #fff;
+    font-size: 9.5px;
+    font-weight: 600;
+    line-height: 14px;
+    text-align: center;
+}
+
 .compose-attach {
+    position: relative;
     width: 32px;
     height: 32px;
     display: flex;

@@ -4,6 +4,11 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.84.121 — Switch between dumps from the header, and see on the dump button that one is running
+
+- With more than one dump going, the dump window's title opens a list of them with their stage (Filing, Queued, Needs you, Filed, Stopped) to switch between.
+- The dump button in the chat carries a count of dumps still filing or waiting for you to add them to the journal.
+
 ## 2.84.120 — A dump's cards are headed Made so far, and Confirm says what it does
 
 - The cards' heading is Made so far while the agent works and Made once it is done; the Only you can see these sentence is gone. The Confirm button reads Add 3 to the journal.
