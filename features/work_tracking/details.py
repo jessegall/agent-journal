@@ -25,8 +25,9 @@ class WorkDetails(FeatureDetails):
 
         journal work park "<why>" sets it aside with no clock — it stays open, stops being
         nudged and stops holding writes, and journal work resume <n> picks it up again. Park
-        when you are stuck or when something else has to happen first; never to wait for an
-        answer you could carry on without, because under auto the list stops.
+        when nothing stops the work but something else goes first by choice. What cannot go
+        ahead until something happens is blocked, not parked: journal todo after, todo ask or
+        todo block on its row. Never park to wait for an answer you could carry on without.
 
         journal work await "<what>" says the agent is waiting for something outside its hands,
         such as a long build or a run in Docker, in its own words, and the chat shows it. Say it
