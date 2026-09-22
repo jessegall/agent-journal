@@ -71,7 +71,7 @@ def one(record, journal, plugin: str, session: str, key: str, value) -> None:
                        tone=fields.get("tone") or "", link=fields.get("link") or "", plugin=plugin)
     elif key == "activity":
         entry = value if isinstance(value, dict) else {"title": str(value)}
-        journal.log(record, "plugin", title=check_title(str(entry.get("title") or plugin)), brief=str(entry.get("brief") or ""), plugin=plugin)
+        journal.log(record, "plugin", title=check_title(str(entry.get("title") or plugin)), brief=str(entry.get("brief") or ""), plugin=plugin, kind="activity", tone=str(entry.get("tone") or ""))
     elif key == "settings" and isinstance(value, dict):
         settled(record, plugin, value)
     elif key == "todo":

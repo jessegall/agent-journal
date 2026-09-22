@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.86.2 — A plugin's activity reaches the activity panel, in its colour
+
+- A plugin's activity entries show in the activity panel under the plugin's name, with their detail beneath; an entry may carry a tone (warn is amber, good is green). code-commandments marks Sin found amber and Sin repented green, and does not repeat a sin it already reported.
+- The sidebar's group headers stay at the top while their group scrolls, just below the project header.
+- The tone colours are tokens, shared by notices and the activity panel.
+
 ## 2.86.1 — journal nothing releases the checkpoint
 
 - journal nothing noted its decision on the launcher's seat row, which the hooks never report on, so the context checkpoint stayed held however often it was answered. It now lands on the session that reports, and says which checkpoint it released; the hold names the whole percent.

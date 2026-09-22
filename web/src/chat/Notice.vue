@@ -123,11 +123,11 @@ button.chat-notice-go {
 }
 
 .chat-notice.tone-good {
-    --tone: #63b37c;
+    --tone: var(--tone-good);
 }
 
 .chat-notice.tone-warn {
-    --tone: #d8a94a;
+    --tone: var(--tone-warn);
 }
 
 .chat-notice-go.forcing {
