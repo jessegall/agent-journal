@@ -62,13 +62,22 @@ function unedit() {
 const busy = computed(() => !!agent.value && ["working", "compacting"].includes(agent.value.data.status));
 const waiting = computed(() => waitsFor(rows("work")));
 const thought = computed(() => (agent.value && agent.value.data.thinking) || "");
-const activity = computed(() => {
-    if (agent.value && agent.value.data.status === "compacting") return "compacting";
+const running = computed(() => {
+    if (agent.value && agent.value.data.status === "compacting") return [];
     const queue = (store.bar && store.bar.queue) || [];
     const last = queue[queue.length - 1];
     const fresh = last && (!last.done || Date.now() / 1000 - last.at < last.lingers);
-    return (fresh && last.parts && last.parts[0] && last.parts[0].value) || "working";
+    return (fresh && last.parts) || [];
 });
+const activity = computed(() =>
+    agent.value && agent.value.data.status === "compacting" ? "compacting" : (running.value[0] && running.value[0].value) || "working"
+);
+const activityOn = computed(() =>
+    running.value
+        .slice(1)
+        .map((part) => part.value)
+        .join(" ")
+);
 const away = ref(false);
 const missed = ref(0);
 const settledOnce = ref(false);
@@ -438,6 +447,9 @@ watch(
                                 </div>
                                 <div class="thread-meta">
                                     <span>{{ activity }}</span>
+                                    <template v-if="activityOn">
+                                        <span class="thread-meta-on">{{ activityOn }}</span>
+                                    </template>
                                 </div>
                             </template>
                         </div>
@@ -551,6 +563,16 @@ watch(
     padding: 0 3px;
     font-size: 11px;
     color: var(--text-3);
+}
+
+.thread-meta-on {
+    overflow: hidden;
+    margin-left: 6px;
+    color: var(--text-4);
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: 10.5px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .thread-dots {
