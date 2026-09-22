@@ -56,16 +56,34 @@ class Stored:
     @internal
     def summaries(self) -> list[dict]:
         folder = self.record.folder(self.type, self.resource.scope)
-        moved = (folder.stat().st_mtime_ns, mtime(folder / PACKED / INDEX))
+        moved = self._moved(folder)
         held = SUMMARIES.get(str(folder))
         if held and held[0] == moved:
             return held[1]
-        loose = self._indexed(folder)
+        return self._summarised(folder, moved, self._indexed(folder))
+
+    def _moved(self, folder: Path) -> tuple:
+        return (folder.stat().st_mtime_ns, mtime(folder / PACKED / INDEX))
+
+    def _summarised(self, folder: Path, moved: tuple, loose: list[dict]) -> list[dict]:
         seen = {row["n"] for row in loose}
         packed = [row for n, row in self._packed().items() if n not in seen]
         rows = wholes(sorted(loose + packed, key=lambda row: row["n"]), lambda row: row.get(PART_OF))
         SUMMARIES[str(folder)] = (moved, rows)
         return rows
+
+    def _written(self, r: Resource, before: tuple) -> None:
+        folder = self.record.folder(self.type, self.resource.scope)
+        held, known = SUMMARIES.get(str(folder)), INDEXED.get(str(folder))
+        if not held or known is None or held[0] != before:
+            return
+        found = self.path(r.n).stat()
+        known[r.n] = self._row(r, f"{found.st_mtime_ns}-{found.st_size}")
+        self._summarised(folder, self._moved(folder), [known[n] for n in sorted(known) if not known[n].get(DAMAGED)])
+
+    def _row(self, r: Resource, stamp: str) -> dict:
+        return {"n": r.n, "title": r.title, "deleted": r.deleted, "completed": r.completed, "seen": r.seen, "refs": r.refs, "updated": r.updated,
+                "files": len(r.files), PART_OF: r.data.get(PART_OF, ""), **{k: r.data.get(k) for k in self.resource.indexed}, "stamp": stamp}
 
     def _packed(self) -> dict[int, dict]:
         index = self.record.folder(self.type, self.resource.scope) / PACKED / INDEX
@@ -90,7 +108,7 @@ class Stored:
             except (Refused, OSError):
                 rows[n] = {"n": n, DAMAGED: True, "stamp": stamp}
                 continue
-            rows[n] = {"n": n, "title": r.title, "deleted": r.deleted, "completed": r.completed, "seen": r.seen, "refs": r.refs, "updated": r.updated, "files": len(r.files), PART_OF: r.data.get(PART_OF, ""), **{k: r.data.get(k) for k in self.resource.indexed}, "stamp": stamp}
+            rows[n] = self._row(r, stamp)
         if rows != known:
             write_json(folder / INDEX, rows)
         INDEXED[str(folder)] = rows
