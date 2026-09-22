@@ -13,3 +13,4 @@ class Tags(Feature):
         journal.events.handler(RunTagCommands())
         journal.client.formatter(StripTags())
         journal.agent.append_to_line("message.created", answered)
+        journal.agent.append_to_line("messages.answer", answered)

@@ -59,6 +59,14 @@ def test_a_new_message_says_how_to_answer_it_in_the_same_line():
         "the tags feature adds to the messages line; no second line follows"
     assert counted({("message", "created"): {1: None, 2: None}})[0].endswith("answer each by opening a turn with [!reply:<n>]")
     assert counted({("todo", "created"): {3: None}}) == ["1 new todo 3"], "a line nobody appends to is left as it is"
+    from controllers.types import Agents
+    from resources.base import AGENT, USER
+    record = fresh()
+    Agents(record, actor=AGENT).by_session("claude-1")
+    Messages(record, actor=AGENT).read(Messages(record, actor=USER).create("how is it going?").n)
+    report(record, "working", "PreToolUse")
+    assert any(n.brief.startswith("answer by opening your turn with [!reply:1]") for n in Nudges(record).all() if "before you write" in n.title), \
+        "the line naming a read message still to answer says how to answer it, in its brief"
     from engine.wording import APPENDS, appended
     APPENDS.setdefault("work_tracking.open", []).append(lambda values: f"work {values['n']} can be ended from the board")
     try:

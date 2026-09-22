@@ -30,3 +30,21 @@ def test_the_engine_clock_reaches_the_session_the_hooks_report_on(monkeypatch):
     engine.agent.driver.last_report = lambda: SimpleNamespace(title="conversation-1")
     engine.clock()
     assert moved, "the launcher's seat is claude-99, the hooks report on conversation-1: the clock ticks for the one with the command"
+
+
+def test_a_background_command_the_hook_refused_is_not_counted_as_running(tmp_path):
+    import json
+    from providers.claude import Claude
+
+    def use(n):
+        return {"type": "assistant", "timestamp": "2026-09-23T00:00:00Z",
+                "message": {"content": [{"type": "tool_use", "id": f"t{n}", "name": "Bash", "input": {"command": f"sleep {n}", "run_in_background": True}}]}}
+
+    def result(n, error):
+        return {"type": "user", "timestamp": "2026-09-23T00:00:01Z",
+                "message": {"content": [{"type": "tool_result", "tool_use_id": f"t{n}", "is_error": error, "content": "hook error" if error else "started"}]}}
+
+    transcript = tmp_path / "s.jsonl"
+    transcript.write_text("\n".join(json.dumps(row) for row in (use(1), result(1, True), use(2), result(2, False))) + "\n")
+    shells = {row["command"]: row["running"] for row in Claude().crew(transcript)["shell_rows"]}
+    assert shells == {"sleep 1": False, "sleep 2": True}, "a refused call never started; one that started runs until it ends"

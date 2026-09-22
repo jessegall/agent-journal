@@ -82,7 +82,8 @@ class Journal:
             return None
         lead, yields = self.feature.lines[line].lead, not self.feature.lines[line].while_waiting
         message = self.message(Nudges, line, values, actor, session=agent.title, private=private, lead=lead, delivery=delivery, yields=yields)
-        return self.send(record, replace(message, title=appended(f"{self.feature.name}.{line}", values, message.title)))
+        added = appended(f"{self.feature.name}.{line}", values, "").removeprefix(" - ")
+        return self.send(record, replace(message, brief=". ".join(part for part in (added, message.brief) if part)))
 
     def type(self, record, agent, line: str, **values):
         return self.say(record, agent, line, private=True, delivery=TERMINAL, **values)

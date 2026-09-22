@@ -101,7 +101,7 @@ class MessagesDetails(FeatureDetails):
         Line(
             name="answer",
             title="answer {{messages}} before you write anything",
-            brief='journal message reply <n> "<what you make of it>", a reaction, or journal message processed <n>',
+            brief="a reply, a reaction, or journal message processed <n>",
         ),
         Line(
             name="paragraphs",

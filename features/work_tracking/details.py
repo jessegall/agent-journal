@@ -71,6 +71,12 @@ class WorkDetails(FeatureDetails):
             unit="minutes",
         ),
         Setting(
+            name="ask_blocked_every",
+            default=5,
+            title="Ask whether a blocked to-do is still blocked every",
+            unit="closed to-dos",
+        ),
+        Setting(
             name="name_work_every",
             default=10,
             title="Name the work in hand every",
@@ -83,6 +89,19 @@ class WorkDetails(FeatureDetails):
             name="parked",
             title="work {{n}}, {{title}}, is still parked{{more}} - can you continue it now?",
             brief="it was parked because: {{why}}. journal work resume {{n}} picks it up again.",
+        ),
+        Line(
+            name="unblocked",
+            title="todo {{n}}, {{title}}, is unblocked - todo {{closed}} closed",
+            brief="journal todo start {{n}} when it is next",
+        ),
+        Line(
+            name="still blocked",
+            title="todo {{n}}, {{title}}, is still blocked - is it still?",
+            brief="""
+                it is blocked because: {{why}}. If it is not any more, journal todo unblock {{n}}. If it
+                is, tell the user in the chat what it waits on, in their terms, and propose how to clear it.
+            """,
         ),
         Line(
             name="open",
