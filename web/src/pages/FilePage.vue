@@ -5,6 +5,7 @@ import {highlight, languageOf} from "../text/highlight.js";
 import Icon from "../kit/Icon.vue";
 import Btn from "../kit/Btn.vue";
 import Highlight from "../resource/Highlight.vue";
+import Diff from "../kit/Diff.vue";
 import {sendMessage} from "../chat/outbox.js";
 import {route} from "../route.js";
 
@@ -13,11 +14,21 @@ const error = ref("");
 const matches = computed(() => (file.value && file.value.matches) || []);
 const lines = computed(() => (file.value && !matches.value.length ? highlight(file.value.text, languageOf(file.value.path)) : []));
 
+const diff = ref("");
+const changes = computed(() => route.value.sub === "diff");
+const shown = (sub) => `#/${route.value.env}/file?q=${encodeURIComponent(route.value.q)}${sub ? `&sub=${sub}` : ""}`;
+
 async function load() {
     error.value = "";
     file.value = null;
+    diff.value = "";
     try {
-        file.value = await api.projectFile(route.value.q);
+        [file.value, diff.value] = await Promise.all([
+            api
+                .projectFile(route.value.q)
+                .catch((e) => (changes.value ? {path: route.value.q, kind: "", size: 0, lines: 0, gone: true} : Promise.reject(e))),
+            changes.value ? api.fileDiff(route.value.q).then((got) => got.diff) : "",
+        ]);
     } catch (e) {
         error.value = e.message;
     }
@@ -55,7 +66,7 @@ async function send() {
 }
 
 onMounted(load);
-watch(() => route.value.q, load);
+watch(() => [route.value.q, route.value.sub], load);
 </script>
 
 <template>
@@ -80,9 +91,18 @@ watch(() => route.value.q, load);
             <header class="head">
                 <Icon name="file" />
                 <code class="path">{{ file.path }}</code>
-                <span class="when">{{ file.lines ? `${file.lines} lines · ` : "" }}{{ file.size }} bytes</span>
+                <span class="when">{{ file.gone ? "deleted" : `${file.lines ? `${file.lines} lines · ` : ""}${file.size} bytes` }}</span>
+                <a class="mode" :href="shown(changes ? '' : 'diff')">{{ changes ? "Whole file" : "Changes" }}</a>
             </header>
-            <template v-if="file.kind.startsWith('image/')">
+            <template v-if="changes">
+                <template v-if="diff">
+                    <Diff :text="diff" />
+                </template>
+                <template v-else>
+                    <p class="empty">No changes since the last commit.</p>
+                </template>
+            </template>
+            <template v-else-if="file.kind.startsWith('image/')">
                 <p class="empty">An image; open it from Files if it is an attachment.</p>
             </template>
             <template v-else>
@@ -189,6 +209,17 @@ watch(() => route.value.q, load);
 .when {
     font-size: 12px;
     color: var(--text-3);
+}
+
+.mode {
+    margin-left: auto;
+    font-size: 12px;
+    color: var(--text-3);
+    text-decoration: none;
+}
+
+.mode:hover {
+    color: var(--accent-text);
 }
 
 .text {

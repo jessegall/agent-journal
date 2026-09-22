@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.84.20 — A file in the Files tab opens its changes
+
+Rows in the right sidebar's Files tab now highlight on hover like Activity rows, and clicking one opens the file's changes since the last commit: a new file shows whole, a deleted one shows what was removed, and a link switches between the changes and the whole file. The commit page and the file page draw a diff the same way.
+
 ## 2.84.19 — Tool calls from Claude Code's own helpers no longer mark the agent busy
 
 Claude Code runs helpers of its own after a turn, and their hooks carry the session's id, so the journal counted their tool calls as the agent's and showed it busy after it had finished. A hook that carries an `agent_id` comes from a subagent or such a helper, and never changes the agent's status.

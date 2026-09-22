@@ -218,6 +218,10 @@ export class ApiClient {
         return this.get(this.here(`/file${query({path})}`));
     }
 
+    fileDiff(path) {
+        return this.get(this.here(`/diff${query({path})}`));
+    }
+
     projectFiles() {
         return this.get(this.here("/project-files"));
     }

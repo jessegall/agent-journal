@@ -3,6 +3,7 @@ import {computed, onMounted, ref, watch} from "vue";
 import {api} from "../api/client.js";
 import {route} from "../route.js";
 import {clock} from "../format/time.js";
+import Diff from "../kit/Diff.vue";
 
 const commit = ref(null);
 const error = ref("");
@@ -40,22 +41,6 @@ function blocks(f) {
     const green = marks ? Math.round((filled * f.adds) / marks) : 0;
     return Array.from({length: BLOCKS}, (_, i) => (i < green ? "adds" : i < filled ? "dels" : "none"));
 }
-
-const hunks = computed(() =>
-    (commit.value ? commit.value.diff : "").split("\n").map((line) => ({
-        line,
-        kind:
-            line.startsWith("+") && !line.startsWith("+++")
-                ? "add"
-                : line.startsWith("-") && !line.startsWith("---")
-                  ? "del"
-                  : line.startsWith("@@")
-                    ? "hunk"
-                    : line.startsWith("diff ")
-                      ? "file"
-                      : "",
-    }))
-);
 </script>
 
 <template>
@@ -91,8 +76,7 @@ const hunks = computed(() =>
                     </div>
                 </template>
             </div>
-            <pre class="diff"><template v-for="(h, i) in hunks" :key="i"><span :class="['line', h.kind]">{{ h.line }}
-</span></template></pre>
+            <Diff :text="commit.diff" />
         </template>
     </section>
 </template>
@@ -196,39 +180,5 @@ const hunks = computed(() =>
 
 .block.dels {
     background: var(--danger-soft);
-}
-
-.diff {
-    margin: 14px 0 0;
-    padding: 12px 14px;
-    overflow-x: auto;
-    border: 1px solid var(--border);
-    border-radius: 9px;
-    background: var(--code-bg);
-    font-family: ui-monospace, "SF Mono", Menlo, monospace;
-    font-size: 11.5px;
-    line-height: 1.5;
-    color: var(--text-2);
-}
-
-.line.add {
-    color: #7fd9a0;
-    background: rgba(62, 207, 116, 0.08);
-}
-
-.line.del {
-    color: #e2a0a0;
-    background: rgba(217, 140, 140, 0.08);
-}
-
-.line.hunk {
-    color: var(--accent-text);
-}
-
-.line.file {
-    display: block;
-    margin-top: 8px;
-    color: var(--text);
-    font-weight: 600;
 }
 </style>

@@ -20,7 +20,12 @@ onMounted(() => setTimeout(() => (settled.value = true), 400));
 
 <template>
     <TransitionGroup tag="div" class="activity-list" :name="settled ? 'act' : ''">
-        <div v-for="change in changes" :key="`${change.at}-${change.path}`" class="activity-row">
+        <a
+            v-for="change in changes"
+            :key="`${change.at}-${change.path}`"
+            class="activity-row activity-link"
+            :href="`#/${route.env}/file?q=${encodeURIComponent(change.path)}&sub=diff`"
+        >
             <span class="activity-text">
                 {{ change.path.split("/").pop() }}
                 <span :class="['activity-kind', change.kind]">{{ change.kind }}</span>
@@ -35,7 +40,7 @@ onMounted(() => setTimeout(() => (settled.value = true), 400));
                 </template>
                 {{ age(change.at) || "just now" }}
             </span>
-        </div>
+        </a>
         <p v-if="!changes.length" key="none" class="activity-none">No file has changed yet.</p>
     </TransitionGroup>
 </template>
@@ -54,6 +59,20 @@ onMounted(() => setTimeout(() => (settled.value = true), 400));
     flex-direction: column;
     gap: 1px;
     padding: 5px 8px;
+}
+
+.activity-link {
+    color: inherit;
+    text-decoration: none;
+    border-radius: 7px;
+}
+
+.activity-link:hover {
+    background: var(--hover);
+}
+
+.activity-link:hover .activity-text {
+    color: var(--text);
 }
 
 .activity-text {
