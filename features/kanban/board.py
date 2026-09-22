@@ -1,6 +1,7 @@
 import time
 from dataclasses import asdict, dataclass, field
 
+from features.format import formatted
 from features.kanban.lanes import DONE, LANES, Lane, Sources, lane_of, reason_of
 from features.kanban.shifts import targets
 from features.plans.controller import ACTIVE
@@ -64,7 +65,8 @@ def worker_of(work, main: str) -> dict:
 def card_of(sources: Sources, todo, main: str = "") -> Card:
     placement = sources.placement(todo)
     work = sources.works.get(todo.n)
-    return Card(todo.n, todo.title, int(todo.priority or 100), lane_of(sources, todo), reason_of(sources, todo),
+    record = sources.todos.record
+    return Card(todo.n, formatted(todo.title, record), int(todo.priority or 100), lane_of(sources, todo), formatted(reason_of(sources, todo), record),
                 {"n": placement.n, "title": placement.title, "phase": placement.phase} if placement else None,
                 str(todo.assigned or ""), worker_of(work, main) if work else None, sources.questions.get(todo.n, 0),
                 bool(todo.reported) and not todo.completed, targets(sources, todo), float(todo.updated or 0), float(todo.completed or 0))

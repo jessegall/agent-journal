@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.84.48 — The board's cards pass the formatters
+
+A card's title and the reason it is held on the Kanban board now go through the same formatters as every other text a person reads, so a leftover tag no longer shows on a card.
+
 ## 2.84.47 — A document opens with its comment sidebar closed
 
 A document with comments no longer opens with the comment sidebar already out; it starts closed every time, and opens by itself only when you follow a link to one of its comments.
