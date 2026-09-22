@@ -11,6 +11,5 @@ class ThinkingDetails(FeatureDetails):
     help = """
         The agent's latest thinking, read from its session's transcript, stands in the chat's
         working bubble while it works, and each new thought replaces the last. A visible message
-        clears it. A thought that no visible message answered before the next turn starts is
-        kept in the chat, marked as thinking, so nothing the agent meant to say is lost.
+        or the next turn clears it. Thinking never becomes a message in the chat.
     """

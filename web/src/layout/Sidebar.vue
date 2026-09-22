@@ -168,11 +168,18 @@ async function makeEnv() {
     flex: none;
 }
 .side > .project {
+    position: sticky;
+    top: 0;
+    z-index: 2;
     height: 48px;
     margin-bottom: -8px;
     padding: 0 18px;
     border-bottom: 1px solid var(--border);
     border-radius: 0;
+    background: var(--side);
+}
+.side > .project:hover {
+    background: var(--hover);
 }
 .side > .group {
     padding-inline: 10px;

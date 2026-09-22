@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.84.45 — Thinking stays in the bubble; the project name stays in view
+
+Thinking never becomes a message in the chat any more: it only shows in the working bubble at the bottom, one thought at a time, and a real message or the next turn clears it. The thinking messages posted since 2.84.35 are archived. The sidebar's header with the project name now stays at the top while the sidebar scrolls.
+
 ## 2.84.44 — The working bubble shows what the agent is thinking
 
 While the agent works, the bubble at the bottom of the chat now shows "thinking" and its latest thought, in small muted italics, instead of the three dots; each new thought replaces the last, and a real message clears it. Only a thought that no visible message answered before the next turn starts stays in the chat, marked as thinking, so nothing the agent meant to say is lost. "Waiting for 2 subagents" still shows while subagents or shells run. This is now its own feature, Thinking, which can be switched off in Settings.
