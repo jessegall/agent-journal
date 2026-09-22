@@ -67,13 +67,13 @@ def test_the_agent_is_asked_for_the_next_step_once_a_dump_is_filed():
 def test_a_message_declared_a_transcript_becomes_a_dump(tmp_path):
     from controllers.types import Messages
     record = fresh()
-    said = Messages(record, actor=USER).create("Standup", brief="Alice: ship it. Bob: tests first.")
+    standup = Messages(record, actor=USER).create("Standup", brief="Alice: ship it. Bob: tests first.")
     notes = tmp_path / "audio-notes.txt"
     notes.write_text("notes")
-    Messages(record, actor=USER).attach(said.n, str(notes))
-    Messages(record, actor=AGENT).declare(said.n, "transcript")
+    Messages(record, actor=USER).attach(standup.n, str(notes))
+    Messages(record, actor=AGENT).declare(standup.n, "transcript")
     dumps = CONTROLLERS["dump"](record, actor=AGENT)
-    made = [d for d in dumps.all() if said.ref in d.refs]
-    assert (len(made), made[0].brief, dumps.items(made[0].n)) == (1, said.brief, ["text: not read yet", "audio-notes.txt: not read yet"]), \
+    made = [d for d in dumps.all() if standup.ref in d.refs]
+    assert (len(made), made[0].brief, dumps.items(made[0].n)) == (1, standup.brief, ["text: not read yet", "audio-notes.txt: not read yet"]), \
         "its text and its files become the dump's items"
-    assert made[0].ref in Messages(record, actor=USER).load(said.n).refs, "the message links the dump"
+    assert made[0].ref in Messages(record, actor=USER).load(standup.n).refs, "the message links the dump"
