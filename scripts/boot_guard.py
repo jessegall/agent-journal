@@ -1,4 +1,5 @@
 import os
+from concurrent.futures import ThreadPoolExecutor
 import shutil
 import socket
 import subprocess
@@ -20,7 +21,7 @@ WAIT = 20.0
 LIMIT = 5.0
 
 
-def launches(place: Path, entry: Path, name: str, during=None) -> None:
+def launches(place: Path, entry: Path, name: str, during=None, alone: bool = True) -> None:
     (place / "bin").mkdir(parents=True, exist_ok=True)
     (place / "project" / f".{name}").mkdir(parents=True, exist_ok=True)
     standin = place / "bin" / name
@@ -39,13 +40,15 @@ def launches(place: Path, entry: Path, name: str, during=None) -> None:
             during()
         (place / "bin" / f"{name}.quit").touch()
         text = launched.communicate(timeout=WAIT)[0].decode(errors="replace")
-        left = lingering(place)
+        left = lingering(place) if alone else []
     finally:
-        subprocess.run([*journal, "stop"], cwd=place / "project", env=env, capture_output=True, timeout=WAIT)
+        if alone:
+            subprocess.run([*journal, "stop"], cwd=place / "project", env=env, capture_output=True, timeout=WAIT)
         (place / "bin" / f"{name}.quit").touch()
         launched.kill()
         launched.wait(WAIT)
-        cleared(place)
+        if alone:
+            cleared(place)
         (place / "bin" / f"{name}.quit").unlink(missing_ok=True)
     assert "Traceback" not in text, f"journal {name} crashed:\n{text}"
     assert (place / "bin" / f"{name}.started").exists(), f"journal {name} never started the agent:\n{text}"
@@ -102,8 +105,11 @@ def guard() -> float:
         created = subprocess.run([*journal, "todo", "create", "a row"], cwd=place / "project", env=env, capture_output=True, text=True, timeout=WAIT)
         assert created.returncode == 0, f"journal todo create failed:\n{created.stdout}{created.stderr}"
         serves(journal, place / "project", env)
-        for name in DRIVERS:
-            launches(place, root / "journal.py", name)
+        with ThreadPoolExecutor() as pool:
+            for running in [pool.submit(launches, place, root / "journal.py", name, alone=False) for name in DRIVERS]:
+                running.result()
+        left = lingering(place)
+        assert not left, "the journal left processes running after its last session ended:\n" + "\n".join(left)
         return time.time() - began
     finally:
         cleared(place)
