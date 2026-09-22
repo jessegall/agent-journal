@@ -4,6 +4,11 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.85.33 — The launcher moves to a new build without a restart
+
+- When an upgrade installs a new build, the launcher that holds the agent's terminal restarts itself on the new build and hands the running agent over. The agent keeps working, and nobody has to quit and run journal claude again.
+- The notice asking to quit and start again after a launcher update is gone.
+
 ## 2.85.32 — The agent bar's buttons share one size and hover
 
 - The terminal and dock buttons are as tall as the counters beside them, so their hover has room around the icon. The dock button's hover is no longer cut off by an extra divider.

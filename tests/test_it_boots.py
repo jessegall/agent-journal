@@ -64,11 +64,18 @@ def test_every_agent_launches_from_an_installed_zip(tmp_path):
     (repository / "channel.py").write_text((repository / "channel.py").read_text() + f"\nRELEASE = {os.urandom(4000).hex()!r}\n")
     subprocess.run(["git", "-c", "user.name=t", "-c", "user.email=t@t", "commit", "-qam", "a new build"], cwd=repository, capture_output=True, timeout=WAIT)
 
+    moved = []
+
     def upgraded():
         subprocess.run([*journal, "upgrade"], cwd=place / "project", env={**env, "AGENT_JOURNAL_REPO": str(repository), "AGENT_JOURNAL_BOOTSTRAPPED": ""},
                        capture_output=True, timeout=180)
+        newest, began = (root / "journal.pyz").resolve().name, time.time()
+        while not moved and time.time() - began < WAIT:
+            moved.extend(marker for marker in (root / "runtime" / "builds").glob("*") if marker.read_text() == newest)
+            time.sleep(0.2)
 
     launches(place, root / "journal.py", "claude", during=upgraded)
+    assert moved, "the launcher carried its running agent over to the new build"
 
 
 def test_the_journal_starts_on_a_record_with_a_damaged_row(tmp_path):
