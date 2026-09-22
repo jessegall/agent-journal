@@ -12,7 +12,7 @@ class Tags(Feature):
     def register(self, journal: Journal) -> None:
         journal.events.handler(RunTagCommands())
         journal.client.formatter(StripTags())
-        journal.agent.amend("message.created", answered)
+        journal.agent.amend_line("message.created", answered)
 
     def settings_view(self, record) -> dict:
         settings = record.setting(self.name, {})

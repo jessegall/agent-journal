@@ -1,6 +1,7 @@
 <script setup>
 import {ref, watch} from "vue";
 import Icon from "./Icon.vue";
+import TextInput from "./TextInput.vue";
 
 const props = defineProps({value: {type: String, default: ""}, placeholder: {type: String, default: ""}});
 const emit = defineEmits(["change"]);
@@ -30,7 +31,13 @@ const remove = (i) => {
     <div class="line-list">
         <template v-for="(line, i) in lines" :key="i">
             <div class="line-row">
-                <input v-model="lines[i]" class="line-input" spellcheck="false" :placeholder="placeholder" @change="save" />
+                <TextInput
+                    :value="line"
+                    class="line-input"
+                    :placeholder="placeholder"
+                    @input="lines[i] = $event.target.value"
+                    @change="save"
+                />
                 <button type="button" class="line-remove" title="Remove" @click="remove(i)"><Icon name="x" :size="12" /></button>
             </div>
         </template>
@@ -56,19 +63,6 @@ const remove = (i) => {
 
 .line-input {
     flex: 1;
-    min-width: 0;
-    padding: 6px 9px;
-    border: 1px solid var(--border-2);
-    border-radius: 7px;
-    background: var(--bg);
-    color: var(--text);
-    font: inherit;
-    font-size: 12.5px;
-}
-
-.line-input:focus {
-    outline: none;
-    border-color: var(--accent);
 }
 
 .line-remove,
