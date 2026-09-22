@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.84.115 — A dump says when it is still finding a next step, and Stop says what it leaves out
+
+- Once every item is filed, the dump window says Filed. Working out a next step… until the agent's suggestion arrives; Confirm waits for it, or for a minute, after which it says no next step was suggested.
+- Mark done is gone. A quiet Stop filing (Remove from queue for a waiting dump) sits at the bottom of the status panel and asks first, naming how many items would be left out. journal dump stop closes the dump as Stopped, k filed, m left out, and the agent is not asked for a next step.
+- The server warms the viewer when it starts: it builds the command parser and serves one dashboard, so the first real dashboard after a reload answers in a few milliseconds instead of half a second.
+
 ## 2.84.114 — The agent asks about a dump in the dump window, and you answer there
 
 - journal dump ask <n> "<question>" puts the agent's question on the dump; the window shows a Needs you stage with the question and an answer box, and the answer goes straight to the agent. The agent is told to ask there, never in the chat the dump window hides.

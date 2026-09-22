@@ -23,7 +23,7 @@ class PromptFiling(Handler):
         dumps, agent = context.journal.dumps, context.journal.agents.primary()
         dump = dumps.load(event.n)
         if event.action == FILED:
-            if agent:
+            if agent and not dump.data.get("stopped"):
                 collection = next((ref.split(":")[1] for ref in dump.refs if ref.startswith("collection:")), "")
                 context.speaking_to(agent).agent.say("filed", n=dump.n, outcome=dump.outcome, collection=collection)
             dump = dumps._in_hand()

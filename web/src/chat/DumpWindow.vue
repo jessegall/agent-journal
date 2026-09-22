@@ -104,9 +104,32 @@ const nextStep = computed(() =>
     dump.value ? rows("suggestion").find((s) => !s.deleted && !s.completed && s.refs.includes(dump.value.ref)) : null
 );
 const asked = computed(() => (working.value && dump.value.data?.question?.text) || "");
+const SUGGESTING_FOR = 60;
+const stopped = computed(() => Boolean(dump.value?.data?.stopped));
+const suggesting = computed(() =>
+    Boolean(dump.value?.completed && !stopped.value && !nextStep.value && now.value - dump.value.completed < SUGGESTING_FOR)
+);
+const unsuggested = computed(() => Boolean(dump.value?.completed && !stopped.value && !nextStep.value && !suggesting.value));
+const finishedText = computed(() => {
+    if (stopped.value) return dump.value.outcome;
+    if (suggesting.value) return "Filed. Working out a next step…";
+    return `Finished · ${dump.value.outcome}${unsuggested.value ? " · no next step suggested" : ""}`;
+});
+const stopping = ref(false);
+const unfiled = computed(() => items.value.length - settled.value);
 const reply = reactive({text: "", sending: false});
 const stage = computed(() =>
-    !dump.value ? "" : dump.value.completed ? "Filed" : queued.value ? "Queued" : asked.value ? "Needs you" : "Filing"
+    !dump.value
+        ? ""
+        : dump.value.completed
+          ? dump.value.data?.stopped
+              ? "Stopped"
+              : "Filed"
+          : queued.value
+            ? "Queued"
+            : asked.value
+              ? "Needs you"
+              : "Filing"
 );
 
 async function answer() {
@@ -171,9 +194,13 @@ async function leaveOut(ref) {
 }
 
 async function finish() {
-    if (dump.value.completed && !confirmed.value) return api.act("dump", dump.value.n, "confirm");
-    if (working.value) await api.act("dump", dump.value.n, "close", {how: "closed by the user"});
+    if (!confirmed.value) return api.act("dump", dump.value.n, "confirm");
     store.dumping = false;
+}
+
+async function stop() {
+    await api.act("dump", dump.value.n, "stop");
+    stopping.value = false;
 }
 
 function fresh() {
@@ -247,7 +274,13 @@ function follow(ref) {
 
                 <div :class="['dump-live', stage.toLowerCase().replace(' ', '-')]">
                     <div class="dump-live-line">
-                        <template v-if="dump.completed">
+                        <template v-if="suggesting">
+                            <Spinner />
+                        </template>
+                        <template v-else-if="stopped">
+                            <Icon name="close" :size="14" />
+                        </template>
+                        <template v-else-if="dump.completed">
                             <Icon name="check" :size="14" />
                         </template>
                         <template v-else-if="queued">
@@ -260,14 +293,16 @@ function follow(ref) {
                             <Spinner />
                         </template>
                         <Transition name="dump-line" mode="out-in">
-                            <span :key="dump.completed ? 'filed' : status" class="dump-status-text">
-                                {{ dump.completed ? `Finished · ${dump.outcome}` : asked ? `The agent asks: ${asked}` : status }}
+                            <span :key="dump.completed ? finishedText : status" class="dump-status-text">
+                                {{ dump.completed ? finishedText : asked ? `The agent asks: ${asked}` : status }}
                             </span>
                         </Transition>
                         <span class="grow" />
-                        <Btn :kind="dump.completed ? 'primary' : undefined" small @click="finish">
-                            {{ dump.completed ? (confirmed ? "Done" : "Confirm") : "Mark done" }}
-                        </Btn>
+                        <template v-if="dump.completed">
+                            <Btn kind="primary" small :disabled="suggesting && !confirmed" @click="finish">
+                                {{ confirmed ? "Done" : "Confirm" }}
+                            </Btn>
+                        </template>
                     </div>
                     <template v-if="asked">
                         <div class="dump-answer">
@@ -288,6 +323,26 @@ function follow(ref) {
                                 <div class="dump-bar-fill" :style="{width: `${Math.max(progress, 0.04) * 100}%`}" />
                             </div>
                             <span class="dump-count">{{ settled }} of {{ items.length }} filed</span>
+                        </div>
+                    </template>
+                    <template v-if="working">
+                        <div class="dump-stop">
+                            <template v-if="!stopping">
+                                <button type="button" class="dump-stop-open" @click="stopping = true">
+                                    {{ queued ? "Remove from queue" : "Stop filing" }}
+                                </button>
+                            </template>
+                            <template v-else>
+                                <span>
+                                    {{
+                                        queued
+                                            ? "Take this dump out of the queue? Nothing in it gets filed."
+                                            : `Stop now? ${unfiled} ${unfiled === 1 ? "item" : "items"} not filed yet will be left out.`
+                                    }}
+                                </span>
+                                <Btn small @click="stopping = false">Keep filing</Btn>
+                                <Btn small class="dump-stop-yes" @click="stop">{{ queued ? "Remove" : "Stop" }}</Btn>
+                            </template>
                         </div>
                     </template>
                     <template v-if="dump.completed && (collection || nextStep)">
@@ -619,6 +674,41 @@ function follow(ref) {
     font-size: 13px;
     resize: vertical;
     outline: none;
+}
+
+.dump-live.filed .dump-live-line > :first-child.spinner {
+    color: var(--accent);
+}
+
+.dump-stop {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+    color: var(--text-2);
+    font-size: 12px;
+}
+
+.dump-stop span {
+    flex: 1;
+}
+
+.dump-stop-open {
+    padding: 0;
+    border: none;
+    background: none;
+    color: var(--text-3);
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.dump-stop-open:hover {
+    color: var(--text);
+}
+
+.dump-stop-yes {
+    border-color: var(--danger);
+    color: var(--danger);
 }
 
 .dump-trail {
