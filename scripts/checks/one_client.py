@@ -2,7 +2,7 @@ import re
 import sys
 from pathlib import Path
 
-HERE = Path(__file__).resolve().parents[2]
+HERE = Path(__file__).resolve().parents[2] / "src"
 SOURCE = HERE / "web" / "src"
 CLIENT = SOURCE / "api"
 ROUTER = SOURCE / "route.js"

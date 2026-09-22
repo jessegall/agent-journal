@@ -9,7 +9,7 @@ import time
 import urllib.request
 from pathlib import Path
 
-HERE = Path(__file__).resolve().parents[1]
+HERE = Path(__file__).resolve().parents[1] / "src"
 if str(HERE) not in sys.path:
     sys.path.insert(0, str(HERE))
 

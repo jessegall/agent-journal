@@ -2,7 +2,8 @@ import re
 import sys
 from pathlib import Path
 
-HERE = Path(__file__).resolve().parents[2]
+ROOT = Path(__file__).resolve().parents[2]
+HERE = ROOT / "src"
 TESTS = 10
 GENERATED = {"test_every_action.py", "test_the_gate.py", "test_it_boots.py"}
 
@@ -20,9 +21,9 @@ def problems() -> list[str]:
         count = len(re.findall(r"^def test_", tests[0].read_text(), re.M)) if tests else 0
         if count > TESTS:
             text.append(f"features/{feature.name}/{tests[0].name} has {count} tests, over {TESTS}; what needs more belongs in the generated runs")
-    for stray in sorted((HERE / "tests").rglob("test*.py")):
+    for stray in sorted((ROOT / "tests").rglob("test*.py")):
         if stray.name not in GENERATED:
-            text.append(f"{stray.relative_to(HERE)} is a test outside the features; tests/ holds only the generated runs")
+            text.append(f"{stray.relative_to(ROOT)} is a test outside the features; tests/ holds only the generated runs")
     return text
 
 

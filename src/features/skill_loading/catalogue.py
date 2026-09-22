@@ -36,7 +36,10 @@ def catalogue(root: Path) -> list[dict]:
     out = {}
     for home in HOMES:
         for f in sorted((root / home).glob("*/SKILL.md")):
-            out.setdefault(f.parent.name, described(f, root))
+            try:
+                out.setdefault(f.parent.name, described(f, root))
+            except FileNotFoundError:
+                continue
     return list(out.values())
 
 
