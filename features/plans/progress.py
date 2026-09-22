@@ -1,5 +1,5 @@
 from controllers.types import Todos
-from features.plans.controller import ACTIVE, DONE, Plans, WAITING
+from features.plans.controller import ACTIVE, DONE, ENDED, Plans, WAITING
 from features.work_tracking.auto import automatic
 from resources.base import SYSTEM
 from resources.shapes import LEVELS
@@ -19,7 +19,7 @@ def current_phase(plan) -> dict | None:
 def held(record, todo) -> bool:
     plans = Plans(record, actor=SYSTEM)._every()
     for plan in plans:
-        if todo.ref not in plan.refs:
+        if plan.status in ENDED or not any(todo.n in phase[PHASE.todos] for phase in plan.phases):
             continue
         phase = current_phase(plan)
         return plan.status != ACTIVE or phase is None or todo.n not in phase[PHASE.todos]

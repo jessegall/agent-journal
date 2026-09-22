@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 
-from features.plans.controller import ACTIVE
+from features.plans.controller import ACTIVE, ENDED
 from features.plans.progress import current_phase
 from features.plans.resource import PHASE
 
@@ -33,7 +33,7 @@ class Sources:
 
     def placement(self, todo) -> Placement | None:
         for plan in self.plans:
-            if todo.ref not in plan.refs:
+            if plan.status in ENDED or not any(todo.n in phase[PHASE.todos] for phase in plan.phases):
                 continue
             number = next((i for i, phase in enumerate(plan.phases, 1) if todo.n in phase[PHASE.todos]), 0)
             phase = current_phase(plan)
