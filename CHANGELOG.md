@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.84.78 — journal group add takes refs
+
+`journal group add <n> todo:806 doc:42` was refused because the command line read every list as numbers. A list of words is now read as words.
+
 ## 2.84.77 — Groups
 
 A group is a row of its own that holds any resources that belong together. `journal group create "<name>"` makes one, `journal group add <n> <ref> ...` puts rows of any type in it (`todo:785`, `doc:41`, `message:2706`), `journal group remove <n> <ref>` takes one out and `journal group members <n>` lists them. A row can sit in several groups. Groups open as pages of cards in the next release.

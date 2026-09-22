@@ -13,7 +13,7 @@ class Groups(Controller):
             raise Refused(f"a group called {title.strip()!r} is already open")
         return super().create(title, abstract, brief, **data)
 
-    def add(self, n: int, refs: list):
+    def add(self, n: int, refs: list[str]):
         group = self.load(int(n))
         for ref in refs:
             self._member(ref)
