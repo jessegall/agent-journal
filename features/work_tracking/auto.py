@@ -44,4 +44,8 @@ def launch_args(record, provider: str, args: list[str]) -> list[str]:
     driver = DRIVERS.get(provider)
     if not driver:
         return args
-    return driver.launch_args(driver.skipping(args, bool(record.setting("permission_prompts", {}).get("skip"))), automatic(record))
+    prompts = record.setting("permission_prompts", {})
+    if driver.SKIP_ARGS and set(driver.SKIP_ARGS) <= set(args) and not prompts.get("skip"):
+        prompts = {**prompts, "skip": True}
+        record.set_setting("permission_prompts", prompts)
+    return driver.launch_args(driver.skipping(args, bool(prompts.get("skip"))), automatic(record))
