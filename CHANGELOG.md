@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.85.31 — The start offers to carry on the environment's last session
+
+- When journal claude or journal codex starts with no continue or resume, and an earlier session of that agent worked the environment, the start asks whether to carry on from it. Yes resumes that exact conversation: claude --resume with its id, or codex resume with its id.
+
 ## 2.85.30 — journal codex continue carries on the last conversation
 
 - journal codex continue (or --continue) starts codex resume --last, and --resume with an id starts codex resume with that id. Before, the word went to Codex as it was, and Codex has no such flag.

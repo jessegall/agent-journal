@@ -68,6 +68,10 @@ class Driver(ABC):
         return [*cls.SKIP_ARGS, *kept] if skip else kept
 
     @classmethod
+    def resuming(cls, args: list[str]) -> bool:
+        return any(arg in cls.RESUMING for arg in args)
+
+    @classmethod
     def resumed(cls, args: list[str], conversation: str) -> list[str]:
         if not cls.RESUMING or not conversation:
             return args

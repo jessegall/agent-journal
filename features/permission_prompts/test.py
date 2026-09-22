@@ -68,6 +68,18 @@ def test_the_start_asks_about_permission_prompts_only_when_the_flag_is_not_typed
     assert record.setting("permission_prompts", {}).get("skip") is False, "No keeps the prompts, and is remembered"
 
 
+def test_the_start_offers_to_carry_on_the_environments_last_session():
+    from commands.queries import asked_resume
+    from engine.sessions import Sessions
+    record = fresh()
+    assert asked_resume(record, "codex", [], ask=lambda _: "1", answering=True) == [], "nothing to carry on, nothing asked"
+    Sessions(record.root).bind("old-thread", record.env, pid=999999, provider="codex")
+    Sessions(record.root).bind("claude-conversation", record.env, pid=999999, provider="claude")
+    assert asked_resume(record, "codex", [], ask=lambda _: "1", answering=True) == ["resume", "old-thread"], "yes resumes that environment's own session"
+    assert asked_resume(record, "claude", ["--model", "opus"], ask=lambda _: "2", answering=True) == ["--model", "opus"], "no starts a new one"
+    assert asked_resume(record, "claude", ["-c"], ask=lambda _: "1", answering=True) == ["-c"], "a typed continue is the answer already"
+
+
 def test_claude_is_kept_out_of_the_record_files_but_not_their_attachments(tmp_path):
     from providers import PROVIDERS
     from providers.claude import RECORD_FILES
