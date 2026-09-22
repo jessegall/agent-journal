@@ -10,6 +10,7 @@ class Collection(Shape, Resource):
     event_labels = {"created": "Collection made", "completed": "Collection closed"}
     status_labels = {"add": "collecting", "remove": "taking out of a collection"}
     icon = "folder"
+    listed_as_cards = True
     command_names = {"complete": "close"}
     labels = {"abstract": "What belongs in it"}
     details: ClassVar[ResourceDetails] = ResourceDetails(

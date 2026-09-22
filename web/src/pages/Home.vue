@@ -81,8 +81,8 @@ const tabs = computed(() => [
                                 :class="['rail-tab', {on: tab === key}]"
                                 @click="tab = key"
                             >
-                                <template v-if="tab === key">{{ label }}</template>
-                                <template v-else><Icon :name="icon" :size="13" /></template>
+                                <Icon :name="icon" :size="13" />
+                                <span class="rail-tab-label">{{ label }}</span>
                                 <span :class="['rail-tab-n', {hot: n && warm}]">{{ n }}</span>
                             </button>
                         </template>
@@ -251,6 +251,24 @@ const tabs = computed(() => [
 .rail-tab.on .rail-tab-n,
 .rail-tab-n.hot {
     color: var(--accent-text);
+}
+
+.rail-tab-label {
+    display: inline-block;
+    max-width: 0;
+    margin-right: -6px;
+    overflow: hidden;
+    opacity: 0;
+    transition:
+        max-width 0.22s ease,
+        margin-right 0.22s ease,
+        opacity 0.18s ease;
+}
+
+.rail-tab.on .rail-tab-label {
+    max-width: 110px;
+    margin-right: 0;
+    opacity: 1;
 }
 
 .rail-tab {

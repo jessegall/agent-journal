@@ -4,6 +4,11 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.85.10
+
+- The Collections page lists collections as cards, and each card shows an icon with a count for every kind of row it holds.
+- The rail's tabs keep their icons, and the active tab's name slides open beside its icon while the previous one folds away.
+
 ## 2.85.9
 
 - Questions and suggestions have their own tabs beside the chat and are no longer notifications. Each lists what is open and waiting on you; clicking a question jumps the chat straight to it, without a smooth scroll. The rail's tabs show the active one's name and the others as icons with their counts.
