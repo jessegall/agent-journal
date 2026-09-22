@@ -1,8 +1,8 @@
 
 from commands.queries import decided
-from controllers.types import Facts, Rules, Works
+from controllers.types import Agents, Facts, Rules, Works
 from features.base import held
-from resources.base import AGENT
+from resources.base import AGENT, SYSTEM
 from tests.kit import nudges as all_nudges, report
 from tests.conftest import fresh
 
@@ -34,8 +34,9 @@ def test_a_context_mark_holds_writes_until_the_agent_pins_rules_or_says_nothing(
     assert gate() == "", "a rule decides it"
     report(record, "working", "PostToolUse", context=91)
     assert bool(gate()) is True, "90 crossed"
-    decided({"record": record, "session": "", "why": "nothing here worth pinning"})
-    assert gate() == "", "journal nothing from the agent's own shell, with no session named, decides it too"
+    Agents(record, actor=SYSTEM).by_session("claude-99")
+    decided({"record": record, "session": "claude-99", "why": "nothing here worth pinning"})
+    assert gate() == "", "journal nothing from the agent's own shell decides it, even when the shell names the launcher's seat and not the session the hooks report on"
     record.set_setting("triggers", {"context": {"at": [96], "unit": "percent"}})
     report(record, "working", "PostToolUse", context=95)
     assert bool(gate()) is False, "the marks are a setting"

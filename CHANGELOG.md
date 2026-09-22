@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.86.1 — journal nothing releases the checkpoint
+
+- journal nothing noted its decision on the launcher's seat row, which the hooks never report on, so the context checkpoint stayed held however often it was answered. It now lands on the session that reports, and says which checkpoint it released; the hold names the whole percent.
+
 ## 2.86.0 — Features append to each other's lines, and plugins own what they bring
 
 A minor release: the new abilities of 2.85.73 to 2.85.94 gathered under one number.
