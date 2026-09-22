@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.84.56 — The server reads live transcripts first when it starts
+
+At boot the server warms its caches in the background. It now reads the running sessions' transcripts before the records, so the first hooks after an upgrade no longer parse a long transcript themselves (about half a second in a long session).
+
 ## 2.84.55 — A revision's changes read like the doc, and revisions stay on
 
 Show changes on a doc renders each changed line the way the doc renders it: bullets, links and row chips instead of raw markdown and `[[chip …]]` markers. It now works on the latest revision too, and starts off so the doc opens editable.

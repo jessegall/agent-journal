@@ -43,9 +43,10 @@ def warm_record(record: Record, pause: float = 0.0) -> None:
 
 def warm(root: Path) -> None:
     from providers import PROVIDERS
-    for home in sorted((Path(root) / "environments").glob("*/")):
-        record = Record(Path(root), home.name)
-        warm_record(record, WARM_PAUSE)
+    records = [Record(Path(root), home.name) for home in sorted((Path(root) / "environments").glob("*/"))]
+    for record in records:
         for agent in Agents(record, actor=SYSTEM)._standing():
             if agent.status != "stopped" and agent.transcript and agent.provider in PROVIDERS:
                 PROVIDERS[agent.provider]().read_ahead(Path(agent.transcript))
+    for record in records:
+        warm_record(record, WARM_PAUSE)
