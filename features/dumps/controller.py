@@ -130,6 +130,26 @@ class Dumps(Controller):
         entries = [*(r.data.get("log") or []), {ENTRY.at: time.time(), ENTRY.text: status.strip(), ENTRY.on: on.strip()}]
         return self.update(r.n, log=entries[-LOG_KEPT:])
 
+    def ask(self, n: int, question: str):
+        r = self.load(int(n))
+        if not question.strip():
+            raise Refused("say what you need to know")
+        if r.completed:
+            raise Refused(f"dump {r.n} is closed")
+        return self.update(r.n, question={ENTRY.at: time.time(), ENTRY.text: question.strip()})
+
+    def answer(self, n: int, text: str):
+        if self.actor == AGENT:
+            self._refuse("only the user answers a question on a dump")
+        r = self.load(int(n))
+        asked = r.data.get("question") or {}
+        if not asked:
+            self._refuse(f"dump {r.n} has no question waiting")
+        if not text.strip():
+            self._refuse("say the answer")
+        answers = [*(r.data.get("answers") or []), {"question": asked.get(ENTRY.text, ""), "answer": text.strip(), ENTRY.at: time.time()}]
+        return self.update(r.n, question={}, answers=answers)
+
     def _in_hand(self):
         return min(self._standing(), key=lambda r: r.n, default=None)
 

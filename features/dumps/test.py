@@ -75,6 +75,11 @@ def test_one_dump_is_worked_at_a_time_its_log_is_kept_and_filing_asks_for_the_ne
     assert not [n for n in nudges(record) if n.startswith(f"dump {later.n},")], "a dump dropped while one is open waits"
     agent = CONTROLLERS["dump"](record, actor=AGENT)
     agent.log(dump.n, "reading the note")
+    agent.ask(dump.n, "is this about the launch or the audit")
+    assert refused(lambda: agent.answer(dump.n, "the launch")) == "only the user answers a question on a dump", "the agent cannot answer itself"
+    CONTROLLERS["dump"](record, actor=USER).answer(dump.n, "the launch")
+    assert (nudges(record)[-1], agent.load(dump.n).data["question"]) == \
+        (f"the user answered your question on dump {dump.n} - the launch", {}), "the answer reaches the agent and the question clears"
     assert [e["text"] for e in agent.load(dump.n).data["log"]] == ["reading the note"], "the log keeps what the agent said it is doing"
     assert refused(lambda: agent.log(dump.n, " ")) == "say what you are doing", "a log entry needs words"
     agent.failed(dump.n, "text", "nothing in it to keep")

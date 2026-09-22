@@ -103,7 +103,22 @@ const collection = computed(() => (dump.value?.refs || []).find((ref) => ref.sta
 const nextStep = computed(() =>
     dump.value ? rows("suggestion").find((s) => !s.deleted && !s.completed && s.refs.includes(dump.value.ref)) : null
 );
-const stage = computed(() => (!dump.value ? "" : dump.value.completed ? "Filed" : queued.value ? "Queued" : "Filing"));
+const asked = computed(() => (working.value && dump.value.data?.question?.text) || "");
+const reply = reactive({text: "", sending: false});
+const stage = computed(() =>
+    !dump.value ? "" : dump.value.completed ? "Filed" : queued.value ? "Queued" : asked.value ? "Needs you" : "Filing"
+);
+
+async function answer() {
+    if (!reply.text.trim()) return;
+    reply.sending = true;
+    try {
+        await api.act("dump", dump.value.n, "answer", {text: reply.text.trim()});
+        reply.text = "";
+    } finally {
+        reply.sending = false;
+    }
+}
 
 function added(into, list) {
     into.files = [...into.files, ...Array.from(list || [])];
@@ -177,7 +192,7 @@ function follow(ref) {
             <Icon name="inbox" :size="14" />
             <span class="dump-title">{{ dump ? `Dump ${dump.n} · ${dump.title}` : "New dump" }}</span>
             <template v-if="stage">
-                <span :class="['dump-stage', stage.toLowerCase()]">{{ stage }}</span>
+                <span :class="['dump-stage', stage.toLowerCase().replace(' ', '-')]">{{ stage }}</span>
             </template>
             <span class="grow" />
             <template v-if="dump">
@@ -230,7 +245,7 @@ function follow(ref) {
                     <span v-for="(name, i) in dropped" :key="i" class="dump-chip">{{ name }}</span>
                 </p>
 
-                <div :class="['dump-live', stage.toLowerCase()]">
+                <div :class="['dump-live', stage.toLowerCase().replace(' ', '-')]">
                     <div class="dump-live-line">
                         <template v-if="dump.completed">
                             <Icon name="check" :size="14" />
@@ -238,12 +253,15 @@ function follow(ref) {
                         <template v-else-if="queued">
                             <Icon name="clock" :size="14" />
                         </template>
+                        <template v-else-if="asked">
+                            <Icon name="help" :size="14" />
+                        </template>
                         <template v-else>
                             <Spinner />
                         </template>
                         <Transition name="dump-line" mode="out-in">
                             <span :key="dump.completed ? 'filed' : status" class="dump-status-text">
-                                {{ dump.completed ? `Finished · ${dump.outcome}` : status }}
+                                {{ dump.completed ? `Finished · ${dump.outcome}` : asked ? `The agent asks: ${asked}` : status }}
                             </span>
                         </Transition>
                         <span class="grow" />
@@ -251,6 +269,14 @@ function follow(ref) {
                             {{ dump.completed ? (confirmed ? "Done" : "Confirm") : "Mark done" }}
                         </Btn>
                     </div>
+                    <template v-if="asked">
+                        <div class="dump-answer">
+                            <textarea v-model="reply.text" placeholder="Your answer" @keydown.enter.exact.prevent="answer" />
+                            <Btn kind="primary" small :disabled="reply.sending || !reply.text.trim()" @click="answer">
+                                {{ reply.sending ? "Sending…" : "Answer" }}
+                            </Btn>
+                        </div>
+                    </template>
                     <template v-if="working && !queued && trail.length">
                         <ul class="dump-trail">
                             <li v-for="entry in trail" :key="entry.at">{{ entry.text }}</li>
@@ -560,6 +586,39 @@ function follow(ref) {
 
 .dump-status-text::first-letter {
     text-transform: uppercase;
+}
+
+.dump-stage.needs-you {
+    background: color-mix(in srgb, var(--blocking) 16%, transparent);
+    color: var(--blocking);
+}
+
+.dump-live.needs-you {
+    border-color: color-mix(in srgb, var(--blocking) 45%, var(--border));
+}
+
+.dump-live.needs-you .dump-live-line > :first-child {
+    color: var(--blocking);
+}
+
+.dump-answer {
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+}
+
+.dump-answer textarea {
+    flex: 1;
+    min-height: 38px;
+    padding: 8px 10px;
+    border: 1px solid var(--border-2);
+    border-radius: 8px;
+    background: var(--bg);
+    color: var(--text);
+    font: inherit;
+    font-size: 13px;
+    resize: vertical;
+    outline: none;
 }
 
 .dump-trail {

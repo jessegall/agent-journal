@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.84.114 — The agent asks about a dump in the dump window, and you answer there
+
+- journal dump ask <n> "<question>" puts the agent's question on the dump; the window shows a Needs you stage with the question and an answer box, and the answer goes straight to the agent. The agent is told to ask there, never in the chat the dump window hides.
+
 ## 2.84.113 — Deleting a row keeps the index in step, and the chat returns to its newest line
 
 - A deleted row is taken out of the in-memory index the way a saved one is updated, so sweeping old nudges no longer makes every listing rescan the folder. A hook stays near 8ms during and after the sweep.
