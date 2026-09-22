@@ -23,7 +23,7 @@ from surfaces.updates import newer, upstream
 from surfaces.control import force as force_session, options as control_options, permit, relaunch, request as control_session
 from features.skill_loading.catalogue import SKILL, always, catalogue, set_keywords, skills
 from features.skill_loading.required import load_now
-from controllers.base import LAST
+from controllers.base import LAST, networked
 from controllers.types import Agents, CONTROLLERS, Environments, Features, Nudges
 from features.browser_control.controller import Asks
 from engine import bus, runtime, viewer
@@ -233,9 +233,10 @@ def post_run(req: Request) -> Reply:
         if given and flag not in args:
             args = [flag, given, *args]
     output, code = captured(args, req.root)
+    timed = not any(networked(a, b) for a, b in zip(args, args[1:]))
     if code is None:
-        return Reply(409, output, kind=PLAIN)
-    return Reply(404 if code is None else (200 if not code else 400), output, kind=PLAIN)
+        return Reply(409, output, kind=PLAIN, timed=timed)
+    return Reply(200 if not code else 400, output, kind=PLAIN, timed=timed)
 
 
 @route("GET", "/api/{env}/changes")
@@ -472,7 +473,7 @@ def post_plugins_preview(req: Request) -> Reply:
     source = str(req.body.get("source") or "")
     where, manifest, commit, linked = staged(req.root, source, str(req.body.get("ref") or ""), VERSION)
     try:
-        return Reply(200, previewed(manifest, source, commit))
+        return Reply(200, previewed(manifest, source, commit), timed=False)
     finally:
         drop(where, linked)
 
@@ -486,7 +487,7 @@ def post_plugin_upgrade_preview(req: Request) -> Reply:
     row = Plugins(req.record(), actor=USER).load(int(req.params["n"]))
     where, manifest, commit, linked = staged(req.root, row.source, row.revision, VERSION)
     try:
-        return Reply(200, {**previewed(manifest, row.source, commit), "current": commit == row.commit, "changes": changed(row.manifest or {}, manifest)})
+        return Reply(200, {**previewed(manifest, row.source, commit), "current": commit == row.commit, "changes": changed(row.manifest or {}, manifest)}, timed=False)
     finally:
         drop(where, linked)
 
@@ -711,10 +712,10 @@ def post_read_all(req: Request) -> Reply:
 
 @route("POST", "/api/{env}/{type}/{action}")
 def post_action_bare(req: Request) -> Reply:
-    return Reply(201, represented(req.controller().method(req.params["action"])(**req.body), req.record()))
+    return Reply(201, represented(req.controller().method(req.params["action"])(**req.body), req.record()), timed=not networked(req.params["type"], req.params["action"]))
 
 
 @route("POST", "/api/{env}/{type}/{n}/{action}")
 def post_action(req: Request) -> Reply:
     got = req.controller().method(req.params["action"])(int(req.params["n"]), **req.body)
-    return Reply(200, represented(got, req.record()))
+    return Reply(200, represented(got, req.record()), timed=not networked(req.params["type"], req.params["action"]))

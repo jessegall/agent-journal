@@ -1,10 +1,12 @@
 import cProfile
 import io
 import pstats
+import re
 import time
 from contextlib import contextmanager
 from pathlib import Path
 
+from controllers.base import networked
 from controllers.types import Agents, Notifications
 from engine import runtime
 from engine.record import Record
@@ -20,6 +22,15 @@ WARMED = ("request", "hook")
 PROFILING = "profile-requests"
 SLOW = "slow"
 
+
+ACTION = re.compile(r"/api/[^/]+/(\w+)(?:/\d+)?/(\w+)(?:\?|$)")
+PREVIEWS = ("/plugins/preview", "/upgrade-preview")
+
+
+def untimed(where: str) -> bool:
+    path = where.split(" ", 1)[-1]
+    found = ACTION.search(path)
+    return path.split("?")[0].endswith(PREVIEWS) or bool(found and networked(found.group(1), found.group(2)))
 
 class FaultReports:
     def __init__(self, feature):
@@ -87,7 +98,7 @@ class FaultReports:
             return
 
     def report_console(self, root, env: str, message: str, where: str, stack: str, kind: str = "threw") -> bool:
-        if kind == "slow" and runtime.warming():
+        if kind == "slow" and (runtime.warming() or untimed(where)):
             return True
         record = Record(Path(root), env)
         if not self.feature.on(record, "budget" if kind in ("slow", "overlap", "page", "refetch") else "console"):

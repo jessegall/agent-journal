@@ -85,6 +85,7 @@ class Reply:
     kind: str = JSON
     chunks: Iterator[bytes] | None = None
     after: Callable[[], None] | None = None
+    timed: bool = True
 
     def bytes(self) -> bytes:
         if isinstance(self.body, bytes):
@@ -137,7 +138,7 @@ def later(reply: Reply, then) -> Reply:
 
 def timed(reply: Reply, root: Path, env: str, method: str, path: str, began: tuple, profile=None) -> Reply:
     faults = features.FEATURES.get("dev_faults")
-    if not faults:
+    if not faults or not reply.timed:
         return reply
     took = (time.perf_counter() - began[0]) * 1000
     working = (time.thread_time() - began[1]) * 1000

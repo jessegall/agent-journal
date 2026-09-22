@@ -12,6 +12,7 @@ VERSION = version()
 
 class Preview(Command):
     name = "preview"
+    network = True
 
     def run(self, context: Context, plugins, source: str, ref: str = "") -> str:
         where, manifest, commit, linked = staged(plugins.record.root, source, ref, VERSION)
@@ -23,6 +24,7 @@ class Preview(Command):
 
 class Install(Command):
     name = "install"
+    network = True
 
     def run(self, context: Context, plugins, source: str, ref: str = "", yes: bool = False):
         root = plugins.record.root
@@ -54,6 +56,7 @@ class Install(Command):
 
 class Upgrade(Command):
     name = "upgrade"
+    network = True
 
     def run(self, context: Context, plugins, n: int, ref: str = "", yes: bool = False, again: bool = False):
         row = plugins.load(n)

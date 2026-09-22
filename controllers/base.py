@@ -16,6 +16,10 @@ WORDS = ("title", "abstract", "brief")
 LAST = 25
 TWICE_WITHIN = 10.0
 COMMANDS: dict[str, dict] = {}
+
+
+def networked(type_: str, name: str) -> bool:
+    return bool(getattr(COMMANDS.get(type_, {}).get(name), "network", False))
 HANDLERS: dict[str, list] = {}
 CONTROLLERS: dict[str, type] = {}
 NAMED: dict[str, type] = {}

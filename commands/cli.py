@@ -5,6 +5,7 @@ import os
 import sys
 from pathlib import Path
 
+from controllers.base import networked
 from controllers.types import CONTROLLERS
 import features
 import migrations
@@ -143,7 +144,7 @@ def run(argv: list[str], out=None, err=None) -> int:
                 raise Refused(why)
         controller = CONTROLLERS[command](ctx["record"], actor=ctx["actor"], session=ctx["session"], agent=ctx["agent"], force=ctx["force"])
         faults = features.FEATURES.get("dev_faults")
-        with faults.reports.watched(ctx["record"].root, ctx["record"].env, "command", f"{command} {method}") if faults else nullcontext():
+        with faults.reports.watched(ctx["record"].root, ctx["record"].env, "command", f"{command} {method}") if faults and not networked(command, method) else nullcontext():
             got = invoke(controller.action(method), args, extra)
     except Refused as e:
         print(f"! {e}", file=err)
