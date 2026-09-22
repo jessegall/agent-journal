@@ -75,6 +75,16 @@ const SAID = {
         "hands folded, listening",
         "at your service",
     ],
+    filing: [
+        "reading what you dropped",
+        "working out what each item is",
+        "sorting it into the record",
+        "writing it up",
+        "tagging the pictures",
+        "linking it together",
+        "still filing",
+        "putting it where it belongs",
+    ],
     bearings: [
         "finding its bearings",
         "looking around",
