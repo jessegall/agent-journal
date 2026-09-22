@@ -1,5 +1,6 @@
 import fcntl
 import os
+import signal
 import subprocess
 import sys
 import threading
@@ -9,9 +10,10 @@ from engine import typist
 from engine.record import Record
 from engine.sessions import Sessions
 from engine.engine import TICK, Engine
-from engine.package import CODE
+from engine.package import CODE, ZIPPED
 
 ENDING = 5.0
+CHILD = "from engine.engines import child"
 
 
 class Engines:
@@ -46,9 +48,9 @@ class Engines:
 
     def run(self, stopping) -> None:
         with (self.root / "runtime" / f"engines-{self.env}.lock").open("a") as held:
-            while not stopping.is_set() and not self.owned(held):
+            while not stopping.is_set() and current(self.root) and not self.owned(held):
                 stopping.wait(TICK)
-            while not stopping.is_set() and os.getppid() == self.parent:
+            while not stopping.is_set() and os.getppid() == self.parent and current(self.root):
                 self.tick()
                 stopping.wait(TICK)
 
@@ -60,6 +62,16 @@ class Engines:
             return False
 
 
+def current(root: Path) -> bool:
+    return not ZIPPED or (Path(root) / "journal.pyz").resolve() == CODE
+
+
+def leftovers(root: Path) -> list[int]:
+    listed = subprocess.run(["ps", "-eo", "pid=,command="], capture_output=True, text=True, timeout=5).stdout
+    return [int(line.split(None, 1)[0]) for line in listed.splitlines()
+            if CHILD in line and str(root) in line and repr(str(CODE)) not in line]
+
+
 def child(root: str, env: str) -> None:
     Engines(Path(root), env).run(threading.Event())
 
@@ -68,6 +80,11 @@ class Children:
     def __init__(self, root: Path):
         self.root = Path(root)
         self.running: dict[str, subprocess.Popen] = {}
+        for pid in leftovers(self.root):
+            try:
+                os.kill(pid, signal.SIGTERM)
+            except OSError:
+                continue
 
     def wanted(self) -> set[str]:
         sessions = Sessions(self.root)
@@ -85,7 +102,7 @@ class Children:
         log = self.root / "runtime" / f"engine-{env}.log"
         log.parent.mkdir(parents=True, exist_ok=True)
         with log.open("a") as output:
-            return subprocess.Popen([sys.executable, "-c", f"import sys; sys.path.insert(0, {str(CODE)!r}); from engine.engines import child; child(sys.argv[1], sys.argv[2])",
+            return subprocess.Popen([sys.executable, "-c", f"import sys; sys.path.insert(0, {str(CODE)!r}); {CHILD}; child(sys.argv[1], sys.argv[2])",
                                      str(self.root), env], cwd=self.root.parent, stdin=subprocess.DEVNULL, stdout=output, stderr=output)
 
     def end(self, env: str) -> None:
