@@ -4,6 +4,11 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.85.86 — The waiting bubble has the moving dots, and removing a plugin keeps its log shut
+
+- The Waiting bubble at the bottom of the chat shows the three moving dots after its text.
+- Removing or purging a plugin no longer opens its log; install, upgrade and running setup again still do.
+
 ## 2.85.85 — What reaches the network is not held against the time budget
 
 - A command may say it reaches the network (plugin preview, install and upgrade do); it, the request that runs it and the viewer's timing of it are left out of the 50ms budget. Everything local keeps it.
