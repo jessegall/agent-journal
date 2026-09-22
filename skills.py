@@ -35,14 +35,20 @@ def signature(controller: type, name: str) -> str:
 
 
 def reference() -> str:
-    out = ["## Reference: every noun and its words", ""]
+    named = {type_: {*actions(controller), *COMMANDS.get(type_, {})} for type_, controller in CONTROLLERS.items()}
+    shared = set.intersection(*named.values())
+    out = ["## Reference: every noun and its own words", "",
+           f"Every noun takes these words: {', '.join(sorted(shared))}. A noun that renames one says so below. "
+           "journal <noun> --help prints every word with its arguments.", ""]
     for type_, controller in CONTROLLERS.items():
         r = controller.resource
         out.append(f"### {type_} — {r.details.abstract}")
         out.append(f"{r.details.help}  Scope: {r.scope}. Seen by: {', '.join(r.notified) or 'nobody'}.")
-        for name in sorted({*actions(controller), *COMMANDS.get(type_, {})}):
-            word = r.command_names.get(name, name)
-            out.append(f"    journal {type_} {word} {signature(controller, name)}".rstrip())
+        renamed = [f"{name} is {word}" for name, word in sorted(r.command_names.items()) if name in shared and word != name]
+        if renamed:
+            out.append(f"Renamed: {', '.join(renamed)}.")
+        for name in sorted(named[type_] - shared):
+            out.append(f"    journal {type_} {r.command_names.get(name, name)} {signature(controller, name)}".rstrip())
         out.append("")
     return "\n".join(out)
 

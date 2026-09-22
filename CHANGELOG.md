@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.84.104 — A session starts with the journal skill alone, a third of its old size
+
+- Only the journal skill is named at start; the subject skills stay on the Skills page and load when their subject comes up.
+- The journal skill's reference lists the words every noun shares once, and each noun only its own: 59.5 KB to 20 KB, 1068 lines to 185.
+- Codex read the long skill in pieces, which showed every skill loaded two or four times in the chat.
+
 ## 2.84.103 — The dashboard and the hook do less on every call
 
 - The permission setting read every session's seat file on each dashboard request; it now reads only seats written in the last five seconds. Dashboard 8ms to 4ms.
