@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.84.125 — A message sent during a restart no longer shows twice
+
+- The chat matched its sending copy to the delivered message by comparing their text, which a quoted reply changes on the way. It now matches them by the key every sent message already carries, so the sending copy always gives way to the real one.
+
 ## 2.84.124 — An upgrade keeps only the running build and the one before it
 
 - Every upgrade wrote a new journal-<version>-<hash>.pyz and kept everything under a week old, so a busy project gathered hundreds of megabytes (this one had 153 builds, 323MB). An upgrade now keeps the build it runs and the one before it, for going back if the new one fails, and removes the rest. Every machine is cleaned the next time it updates.

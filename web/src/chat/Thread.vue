@@ -2,7 +2,7 @@
 import {keepingPlace, useSighted} from "../composables/scrollback.js";
 import {computed, nextTick, onMounted, onUnmounted, ref, watch} from "vue";
 import {api} from "../api/client.js";
-import {sendMessage} from "./outbox.js";
+import {sendMessage, token} from "./outbox.js";
 import Icon from "../kit/Icon.vue";
 import {route} from "../route.js";
 import {quoted, withQuote} from "../format/quote.js";
@@ -209,11 +209,12 @@ async function post(text, files) {
     const body = withQuote(quote.value.text, text);
     const about = quote.value.ref || undefined;
     quote.value = {text: "", ref: ""};
-    const placeholder = await promised(body, files);
+    const id = token();
+    const placeholder = await promised(body, files, id);
     await nextTick();
     toBottom();
     try {
-        await sendMessage(route.value.env, {brief: body, about}, files);
+        await sendMessage(route.value.env, {brief: body, about}, files, id);
     } catch (e) {
         pending.value = pending.value.filter((p) => p.ref !== placeholder.ref);
         Object.values(placeholder.data.previews).forEach(URL.revokeObjectURL);
@@ -238,7 +239,7 @@ function measured(url) {
 
 let promises = 0;
 
-async function promised(body, files) {
+async function promised(body, files, idempotency) {
     promises += 1;
     const previews = Object.fromEntries(files.map((f) => [f.name, URL.createObjectURL(f)]));
     const pictures = {};
@@ -256,7 +257,7 @@ async function promised(body, files) {
         refs: [],
         seen: ["user"],
         sections: [],
-        data: {files: Object.fromEntries(files.map((f) => [f.name, ""])), previews, pictures},
+        data: {files: Object.fromEntries(files.map((f) => [f.name, ""])), previews, pictures, idempotency},
         created: Date.now() / 1000,
         updated: 0,
         deleted: 0,
