@@ -1,4 +1,5 @@
 import json
+import os
 import sys
 import threading
 import time
@@ -6,6 +7,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from engine import runtime  # noqa: E402
+from engine.sessions import ACTIVE_ENV  # noqa: E402
 
 PROTOCOL = "2025-06-18"
 NAME = "journal"
@@ -60,8 +62,14 @@ def push(root: Path) -> None:
             say({"jsonrpc": "2.0", "method": "notifications/claude/channel", "params": {"content": "; ".join(texts), "meta": {"from": "journal"}}})
 
 
+def launched() -> bool:
+    return os.environ.get(ACTIVE_ENV) == "1"
+
+
 def answer(asked: dict) -> dict | None:
     method = asked.get("method")
+    if method == "initialize" and not launched():
+        return {"protocolVersion": PROTOCOL, "serverInfo": {"name": NAME, "version": "1"}, "capabilities": {}}
     if method == "initialize":
         return {"protocolVersion": PROTOCOL, "serverInfo": {"name": NAME, "version": "1"},
                 "capabilities": {"experimental": {"claude/channel": {}}},
@@ -74,7 +82,8 @@ def answer(asked: dict) -> dict | None:
 def main(argv: list[str]) -> int:
     root = Path(argv[0]) if argv else Path.cwd() / ".journal"
     queue(root).parent.mkdir(parents=True, exist_ok=True)
-    threading.Thread(target=push, args=(root,), daemon=True).start()
+    if launched():
+        threading.Thread(target=push, args=(root,), daemon=True).start()
     for line in sys.stdin:
         try:
             asked = json.loads(line)
