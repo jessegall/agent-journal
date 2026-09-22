@@ -20,16 +20,17 @@ usePoll(...polled.journals);
 .identity-band {
     flex: none;
     display: flex;
+    align-items: center;
     justify-content: center;
-    height: 22px;
+    height: 28px;
 }
 
 .identity-notch {
     display: inline-flex;
     align-items: center;
-    height: 100%;
-    padding: 0 16px;
-    border-radius: 0 0 10px 10px;
+    height: 20px;
+    padding: 0 14px;
+    border-radius: 999px;
     background: #0b0c0e;
     color: #fff;
     font-size: 11.5px;
