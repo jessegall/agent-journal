@@ -5,7 +5,6 @@ import {modelFamily, pendingChoice, providerName} from "../agents.js";
 import Icon from "../kit/Icon.vue";
 import Spinner from "../kit/Spinner.vue";
 import CrewList from "./CrewList.vue";
-import CommandLog from "./CommandLog.vue";
 import AgentAppoint from "./AgentAppoint.vue";
 import AgentControls from "./AgentControls.vue";
 import AgentUsage from "./AgentUsage.vue";
@@ -224,10 +223,10 @@ useOutside(bar, () => (open.value = ""));
                 <span class="agent-divider" />
                 <button
                     type="button"
-                    :class="['agent-fact', 'agent-count', {open: open === 'commands'}]"
+                    :class="['agent-fact', 'agent-count', {open: store.terminal}]"
                     title="What the agent ran lately, like a terminal"
-                    :aria-expanded="open === 'commands'"
-                    @click="toggle('commands', $event)"
+                    :aria-pressed="store.terminal"
+                    @click="((store.dumping = false), (store.terminal = !store.terminal))"
                 >
                     <Icon name="terminal" />
                 </button>
@@ -270,9 +269,6 @@ useOutside(bar, () => (open.value = ""));
                     </template>
                     <template #usage>
                         <AgentUsage :usage="usage" />
-                    </template>
-                    <template #commands>
-                        <CommandLog :commands="data.commands || []" />
                     </template>
                     <template #monitors>
                         <CrewList heading="Monitors" :rows="data.monitor_rows || []" :total="data.monitors || 0" />

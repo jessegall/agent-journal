@@ -13,6 +13,7 @@ import {waitsFor} from "../layout/statusline.js";
 import {polled} from "../sync/polled.js";
 import {earlier, rows} from "../sync/rows.js";
 import DumpWindow from "./DumpWindow.vue";
+import TerminalWindow from "./TerminalWindow.vue";
 import Compose from "./Compose.vue";
 import Turn from "./Turn.vue";
 import ThreadSkeleton from "./ThreadSkeleton.vue";
@@ -40,7 +41,7 @@ const composeTools = computed(() => [
             ? `Dumps: ${dumpsInProgress.value} still filing or waiting for you`
             : "New dump: drop text and files for the agent to file",
         badge: dumpsInProgress.value,
-        go: () => (store.dumping = true),
+        go: () => ((store.terminal = false), (store.dumping = true)),
     },
 ]);
 
@@ -154,9 +155,9 @@ function toBottom() {
 }
 
 watch(
-    () => store.dumping,
-    (dumping) => {
-        if (!dumping) nextTick(() => requestAnimationFrame(toBottom));
+    () => store.dumping || store.terminal,
+    (away) => {
+        if (!away) nextTick(() => requestAnimationFrame(toBottom));
     }
 );
 
@@ -310,7 +311,10 @@ watch(
         <Transition name="dump">
             <DumpWindow v-if="store.dumping" />
         </Transition>
-        <template v-if="!store.dumping">
+        <Transition name="dump">
+            <TerminalWindow v-if="store.terminal && !store.dumping" />
+        </Transition>
+        <template v-if="!store.dumping && !store.terminal">
             <div class="thread-write">
                 <Transition name="rise">
                     <button
