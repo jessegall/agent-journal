@@ -29,7 +29,7 @@ from features.browser_control.controller import Asks
 from engine import bus, runtime, viewer
 from engine.manifest import manifest
 from engine.version import version
-from engine.watch import broke
+from engine.watch import broke, log_file
 from engine.hooks import answer, displayed
 from providers.payload import DISPLAYED
 from engine.record import Record
@@ -65,15 +65,24 @@ def settings(record: Record) -> dict:
             **{name: view for name, f in features.FEATURES.items() if (view := f.settings_view(record)) is not None}}
 
 
+RESTART_GRACE = 15
+
+
 def unanswered(root: Path, env: str) -> None:
     f = runtime.folder(root) / "hook-failures.log"
     if not f.is_file():
         return
-    lines = f.read_text(errors="replace").splitlines()
+    started = runtime.STARTED[0]
+    lines = [line for line in f.read_text(errors="replace").splitlines()
+             if len(line.split()) > 2 and not started - RESTART_GRACE <= float(line.split()[0]) <= started]
     f.unlink(missing_ok=True)
-    codes = sorted({line.split()[1] for line in lines if len(line.split()) > 1})
-    broke(Record(root, env or runtime.env(root)), "\n".join([*lines[-5:], f"the hook got no answer from the server {len(lines)} times (codes {', '.join(codes)})"]),
-          where="the hook")
+    if not lines:
+        return
+    codes = sorted({line.split()[1] for line in lines})
+    trouble = "\n".join([*lines[-5:], f"the hook got no answer from the server {len(lines)} times (codes {', '.join(codes)})"])
+    with log_file(root).open("a") as log:
+        log.write(f"the hook\n{trouble}\n")
+    broke(Record(root, env or runtime.env(root)), trouble, where="the hook")
 
 
 @route("POST", "/api/hook/{provider}")

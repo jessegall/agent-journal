@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.87.2 — A blocked row is asked about once, and a restart is not a failed hook
+
+A to-do still blocked is asked about at most once in ten minutes, so closing many to-dos at once names it once. A hook that got no answer while the server was restarting is not reported, and a hook the server never answered now lands in engine.log as the report says.
+
 ## 2.87.1 — No error is swallowed
 
 An audit found eleven places where a failure passed without a word; each now goes through the same report as a crashed hook (the traceback in .journal/runtime/engine.log, a notice, and one line to the agent). The engine loops, the plugin host and its services watcher, the channel that carries lines to the agent, a check's runner, the auto-upgrade and the supervisor's checks keep running after an error and report it. A row that cannot be read raises a notice instead of vanishing from every list, a video whose frames fail says why, and a hook the server never answered is reported by the next one it does.

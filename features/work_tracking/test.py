@@ -178,7 +178,11 @@ def test_parked_and_blocked_rows_are_named_back_to_the_agent():
     blocked = f"todo {stuck.n}, the migration, is still blocked - is it still?"
     assert nudges(record).count(blocked) == 1, "a row blocked from outside is asked about every second closed to-do, not in between"
     todos.complete(todos.create("one more").n, how="done")
-    assert nudges(record).count(blocked) == 2, "and again two closed to-dos later"
+    assert nudges(record).count(blocked) == 1, "a row just asked about is not asked again within ten minutes, however many close"
+    record.state("work_tracking").set("asked", {})
+    todos.complete(todos.create("and one more").n, how="done")
+    todos.complete(todos.create("and the last").n, how="done")
+    assert nudges(record).count(blocked) == 2, "later, it is asked again"
 
 
 def test_a_declared_wait_is_asked_about_and_cleared_when_the_work_moves():

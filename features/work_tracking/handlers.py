@@ -11,6 +11,7 @@ from features.work_tracking.next import next
 from resources.types import Work
 
 EDITS = "edits"
+ASKED_AGAIN_AFTER = 600
 
 
 @dataclass(frozen=True)
@@ -117,8 +118,11 @@ class AskStillBlocked(Handler):
         agent = context.journal.agents.primary()
         if not agent or closed % int(context.settings["ask_blocked_every"]):
             return
-        for row in [r for r in context.journal.todos._standing() if r.blocked]:
-            context.speaking_to(agent).agent.say("still blocked", n=row.n, title=row.title, why=row.blocked)
+        asked, now = state.get("asked", {}), time.time()
+        for row in [r for r in context.journal.todos._standing() if r.blocked and now - float(asked.get(str(r.n), 0)) > ASKED_AGAIN_AFTER]:
+            context.speaking_to(agent).agent.say("still blocked", n=row.n, title=row.title, why=row.blocked.rstrip("."))
+            asked[str(row.n)] = now
+        state.set("asked", asked)
 
 
 class EndWorkWithTodo(Handler):
