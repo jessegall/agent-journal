@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.84.84 — Groups are called collections
+
+A group is now a collection, everywhere: `journal collection create|add|remove|members`, Collections in the sidebar, a collection's page of cards and Add to collection in every resource's actions. The upgrade moves existing groups and every link to them.
+
 ## 2.84.83 — journal dump show works again
 
 2.84.82 gave the dump a read command, which replaced the read every type has for marking a row seen, so `journal dump show` failed. Recording what the agent saw in an item is now `journal dump note <n> <item> "<what it is>"`.

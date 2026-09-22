@@ -10,17 +10,18 @@ const emit = defineEmits(["edit"]);
 const error = ref("");
 const prompt = ref("");
 const text = ref("");
-const grouping = ref(false);
-const groups = computed(() => open("group").map((g) => g.title));
+const collecting = ref(false);
+const collections = computed(() => open("collection").map((c) => c.title));
 
-async function addToGroup() {
+async function addToCollection() {
     const name = text.value.trim();
     if (!name) return;
     error.value = "";
     try {
-        const found = open("group").find((g) => g.title.toLowerCase() === name.toLowerCase()) || (await api.create("group", {title: name}));
-        await api.act("group", found.n, "add", {refs: [props.resource.ref]});
-        grouping.value = false;
+        const found =
+            open("collection").find((c) => c.title.toLowerCase() === name.toLowerCase()) || (await api.create("collection", {title: name}));
+        await api.act("collection", found.n, "add", {refs: [props.resource.ref]});
+        collecting.value = false;
         text.value = "";
     } catch (e) {
         error.value = e.message;
@@ -50,20 +51,20 @@ async function run(method) {
 
 <template>
     <div class="actions">
-        <template v-if="grouping">
+        <template v-if="collecting">
             <input
                 v-model="text"
-                list="open-groups"
-                placeholder="A group, or a new name"
+                list="open-collections"
+                placeholder="A collection, or a new name"
                 autofocus
-                @keydown.enter="addToGroup"
-                @keydown.esc="grouping = false"
+                @keydown.enter="addToCollection"
+                @keydown.esc="collecting = false"
             />
-            <datalist id="open-groups">
-                <option v-for="g in groups" :key="g" :value="g" />
+            <datalist id="open-collections">
+                <option v-for="c in collections" :key="c" :value="c" />
             </datalist>
-            <Btn small @click="addToGroup">Add to group</Btn>
-            <Btn small @click="grouping = false">Cancel</Btn>
+            <Btn small @click="addToCollection">Add to collection</Btn>
+            <Btn small @click="collecting = false">Cancel</Btn>
         </template>
         <template v-else-if="prompt">
             <input
@@ -80,8 +81,8 @@ async function run(method) {
             <template v-if="!resource.completed">
                 <Btn small @click="emit('edit')">Edit</Btn>
             </template>
-            <template v-if="resource.type !== 'group'">
-                <Btn small @click="grouping = true">Add to group</Btn>
+            <template v-if="resource.type !== 'collection'">
+                <Btn small @click="collecting = true">Add to collection</Btn>
             </template>
             <template v-for="m in offered" :key="m">
                 <Btn :kind="m === 'complete' ? 'ghost' : 'danger'" small @click="m === 'complete' ? (prompt = m) : run(m)">

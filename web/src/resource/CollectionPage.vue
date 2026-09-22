@@ -45,10 +45,10 @@ const picture = (r) => Object.keys(r.data?.pictures || {})[0] || "";
 
 <template>
     <ResourceBody :resource="resource" :comments="false" :links="false" @close="emit('close')">
-        <section class="cards" aria-label="In this group">
+        <section class="cards" aria-label="In this collection">
             <template v-if="!members.length">
                 <p class="empty">
-                    Nothing in this group yet. Add a row from its actions, or with journal group add {{ resource.n }} &lt;ref&gt;.
+                    Nothing in this collection yet. Add a row from its actions, or with journal collection add {{ resource.n }} &lt;ref&gt;.
                 </p>
             </template>
             <template v-for="r in members" :key="r.ref">
