@@ -7,6 +7,8 @@ class TriggersDetails(FeatureDetails):
 
     title = "Triggers"
 
+    speaks_while_waiting = True
+
     abstract = "Words the user watches for, and what the journal does when they come up"
 
     help = f"""

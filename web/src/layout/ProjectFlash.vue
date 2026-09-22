@@ -12,8 +12,12 @@ watch(
     [() => flash.at, () => away.hidden],
     () => {
         showing.value = true;
-        clearTimeout(timer);
-        if (!away.hidden) timer = setTimeout(() => (showing.value = false), SHOWN_FOR);
+        if (away.hidden) {
+            clearTimeout(timer);
+            timer = 0;
+            return;
+        }
+        if (!timer) timer = setTimeout(() => ((showing.value = false), (timer = 0)), SHOWN_FOR);
     },
     {immediate: true}
 );
@@ -103,8 +107,8 @@ onUnmounted(() => clearTimeout(timer));
 
 .flash-leave-active {
     transition:
-        opacity 320ms ease,
-        transform 320ms ease;
+        opacity 200ms ease,
+        transform 200ms ease;
 }
 
 .flash-enter-from {

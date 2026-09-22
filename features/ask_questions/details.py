@@ -9,6 +9,8 @@ class QuestionsDetails(FeatureDetails):
 
     title = "Questions, not prose choices"
 
+    speaks_while_waiting = True
+
     abstract = """
         A decision only the user can make is asked as a question, never offered in prose, and
         the answer they pick is held for a moment before it is saved

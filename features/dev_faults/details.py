@@ -6,6 +6,8 @@ class FaultsDetails(FeatureDetails):
 
     title = "Developer fault reports"
 
+    speaks_while_waiting = True
+
     abstract = """
         While developing, what would otherwise pass in silence is reported: anything local that
         runs past its budget, and any error the viewer throws

@@ -8,6 +8,8 @@ class PermissionsDetails(FeatureDetails):
 
     aliases = ("permissions",)
 
+    speaks_while_waiting = True
+
     abstract = """
         A permission the agent waits on is shown in the chat, with Allow and Deny; a switch runs
         the agent without permission prompts

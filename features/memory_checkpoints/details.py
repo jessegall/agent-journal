@@ -9,6 +9,8 @@ class ContextDetails(FeatureDetails):
 
     aliases = ("context",)
 
+    speaks_while_waiting = True
+
     abstract = """
         At each mark of the context window the agent decides — fact, rule or nothing — before
         any other write; and every week it reads every rule and fact again

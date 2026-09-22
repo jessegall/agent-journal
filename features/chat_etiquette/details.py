@@ -8,6 +8,8 @@ class ChatEtiquetteDetails(FeatureDetails):
 
     title = "Chat etiquette"
 
+    speaks_while_waiting = True
+
     abstract = "How the agent talks in the chat: about the work, never about the journal's own workings"
 
     help = """

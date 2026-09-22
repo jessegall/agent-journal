@@ -4,6 +4,11 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.85.48 — Only what is new reaches an agent that is waiting
+
+- Each feature says whether its lines may reach an agent that has declared a wait, and the answer is no unless it is stated. What still speaks is what carries something new: the user's messages, questions, dumps, a failing check, a permission prompt, a trigger, a plan's next step, a refusal that holds a tool call. The work reminders, standing facts and rules, reminders and a changed skill wait.
+- The project badge fades about 1.3 seconds after the tab is focused, counted once from that moment.
+
 ## 2.85.47 — The board reads the fifty newest closed rows, not every one
 
 - The kanban board opened every to-do closed within its done days — hundreds of files on an old record — and formatted each one. It now keeps the fifty most recently closed, and answers in about 14ms instead of 35 to 50.

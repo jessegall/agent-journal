@@ -34,9 +34,9 @@ PLACEHOLDER = re.compile(r"\{\{(\w+)\}\}")
 
 
 class Line:
-    def __init__(self, title: str, brief: str = "", lead: bool = False, name: str = "", while_waiting: bool = True):
+    def __init__(self, title: str, brief: str = "", lead: bool = False, name: str = "", while_waiting: bool | None = None):
         self.name, self.title, self.brief, self.lead = name, paragraphs(title), paragraphs(brief), lead
-        self.while_waiting = while_waiting   # whether it is still said while the agent waits for something
+        self.while_waiting = while_waiting   # whether it is still said while the agent waits; None takes the feature's answer
 
     def placeholders(self) -> list[str]:
         return list(dict.fromkeys(PLACEHOLDER.findall(self.title + self.brief)))
@@ -88,6 +88,7 @@ class FeatureDetails:
     trigger: ClassVar[Trigger] = NEVER
     aliases: ClassVar[tuple] = ()
     keywords: ClassVar[tuple] = ()     # words that make the agent load this feature's skill
+    speaks_while_waiting: ClassVar[bool] = False   # whether its lines still reach an agent that declared a wait
     runs_for_subagents: ClassVar[bool] = False
     fixed: ClassVar[bool] = False
     primary: ClassVar[bool] = False
@@ -110,6 +111,7 @@ class Feature(ABC):
     settings: ClassVar[list[Setting]] = []
     aliases: ClassVar[tuple] = ()      # names this feature used to have; a pair says the old feature is now one of its behaviours
     keywords: ClassVar[tuple] = ()     # words that make the agent load this feature's skill
+    speaks_while_waiting: ClassVar[bool] = False
     runs_for_subagents: ClassVar[bool] = False
     default: ClassVar[bool] = True
     fixed: ClassVar[bool] = False
@@ -122,6 +124,9 @@ class Feature(ABC):
             cls.title, cls.abstract, cls.help = paragraphs(d.title), paragraphs(d.abstract), paragraphs(d.help)
             cls.aliases, cls.runs_for_subagents, cls.fixed, cls.default = d.aliases, d.runs_for_subagents, d.fixed, d.default
             named = d.name.split("_") + [a for a in d.aliases if isinstance(a, str)]
+            cls.speaks_while_waiting = d.speaks_while_waiting
+            for line in cls.lines.values():
+                line.while_waiting = d.speaks_while_waiting if line.while_waiting is None else line.while_waiting
             cls.keywords = d.keywords or tuple(dict.fromkeys(w for word in named for w in (word, word[:-1] if word.endswith("s") else f"{word}s")))
         if cls.name:
             REGISTRY[cls.name] = cls

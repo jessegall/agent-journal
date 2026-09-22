@@ -7,6 +7,8 @@ class SequencesDetails(FeatureDetails):
 
     title = "Sequences"
 
+    speaks_while_waiting = True
+
     abstract = "Steps the agent follows in order, one at a time, started by hand or by a moment"
 
     help = """
