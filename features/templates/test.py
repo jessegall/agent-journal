@@ -54,15 +54,18 @@ def test_the_templates_instructions_come_before_the_work_for_the_agent():
     assert [n.title for n in Nudges(record).all() if n.title.startswith(f"template {flow.n}")], "starting its work tells the agent the instructions"
 
 
-def test_the_journal_ships_a_blank_and_a_functional_first_plan_template():
+def test_a_functional_design_is_a_doc_whose_approval_makes_the_plan():
     from features.templates.shipped import ship
     features.load()
     record = fresh()
-    assert (ship(record), ship(record)) == (["Blank plan", "Functional design, then technical implementation"], []), "shipped once, never twice"
-    functional = next(r for r in Templates(record, actor=USER).summaries() if r["title"].startswith("Functional"))
-    plan = Plans(record, actor=AGENT).create("Standup digest", goal="a digest", template=functional["n"])
-    assert [(p["title"], p["checkpoint"]) for p in Plans(record, actor=AGENT).load(plan.n).phases] == \
-        [("Functional design", True), ("Technical implementation", False)], "the functional design is approved at a checkpoint before any build"
+    assert (ship(record), ship(record)) == (["Blank plan", "Functional design"], []), "shipped once, never twice"
+    functional = next(r for r in Templates(record, actor=USER).summaries() if r["title"] == "Functional design")
+    design = Docs(record, actor=AGENT).create("Queue autoscaler", abstract="Scale workers from queue depth", template=functional["n"])
+    assert [s["title"] for s in Docs(record, actor=AGENT).load(design.n).sections][:3] == ["What it is for", "What the user sees and does", "Must have"], \
+        "a design starts from the parts anyone can read"
+    plan = Plans(record, actor=USER).from_doc(design.n)
+    assert ([s["title"] for s in plan.sections], design.ref in plan.refs, plan.brief.startswith(f"Built from the functional design, doc {design.n}")) == \
+        (["Must have"], True, True), "the plan carries the checklist its rows must cover, and points at the design"
 
 
 def test_a_template_asks_for_its_fields_and_fills_them_in():

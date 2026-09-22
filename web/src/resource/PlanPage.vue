@@ -10,6 +10,7 @@ import {peek, route} from "../route.js";
 import {state} from "../domain/records.js";
 import {holding, rows} from "../sync/rows.js";
 import Markdown from "./Markdown.vue";
+import Sections from "./Sections.vue";
 import Folded from "../kit/Folded.vue";
 
 const props = defineProps({resource: Object});
@@ -92,6 +93,7 @@ async function run(action, body = {}) {
                 </Folded>
             </div>
         </template>
+        <Sections :sections="resource.sections" />
         <ol class="phases">
             <template v-for="p in phases" :key="p.i">
                 <li :class="['phase', {current: p.i === current && (status === 'active' || status === 'waiting'), done: done(p)}]">

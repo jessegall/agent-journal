@@ -21,8 +21,14 @@ class Plans(Controller):
         return super().create(title, abstract, brief, status=BUILDING, stage=PHASES, phases=[], current=1, **data)
 
     def from_doc(self, doc: int):
+        from features.templates.shipped import MUST_HAVE
         source = Docs(self.record, actor=self.actor).load(int(doc))
-        plan = self.create(source.title, brief=source.brief, goal=source.abstract)
+        must = next((s[SECTION.body] for s in source.sections if s[SECTION.title].lower() == MUST_HAVE.lower()), "")
+        brief = (f"Built from the functional design, doc {source.n}. Every row names the must-have points it covers, and the plan is "
+                 f"done when every point is covered.") if must else source.brief
+        plan = self.create(source.title, brief=brief, goal=source.abstract or source.title)
+        if must:
+            self.section(plan.n, MUST_HAVE, must)
         for s in source.sections:
             if s[SECTION.title].lower().startswith("phase"):
                 self.phase(plan.n, s[SECTION.title].split(":", 1)[-1].split("—", 1)[-1].strip() or s[SECTION.title], brief=s[SECTION.body])
