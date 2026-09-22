@@ -88,9 +88,10 @@ def test_a_guard_that_fails_or_hangs_never_stops_the_agent():
 def test_a_failing_setup_step_installs_nothing_and_says_which_step_failed(tmp_path):
     broken = fresh("broken")
     rows = Plugins(broken, actor=AGENT)
-    why = refused(lambda: rows.action("install")(repository(tmp_path, {**WORKS, "name": "broken", "setup": [{"name": "build", "run": "exit 3"}]}), yes=True))
-    assert ("setup step 'build' failed (3): exit 3" in why, "the whole output is in" in why) == (True, True), \
+    why = refused(lambda: rows.action("install")(repository(tmp_path, {**WORKS, "name": "broken", "setup": [{"name": "build", "run": "echo building; exit 3"}]}), yes=True))
+    assert ("setup step 'build' failed (3): echo building; exit 3" in why, "the whole output is in" in why) == (True, True), \
         "the failing step, its code and its command are named"
+    assert "$ echo building; exit 3\nbuilding\n" in log(broken.root, "broken").read_text(), "the log holds each command and the output it printed, as it came"
     assert (rows.all(), [p.name for p in home(broken.root).iterdir()] if home(broken.root).exists() else []) == ([], []), \
         "and nothing is left behind"
 

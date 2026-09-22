@@ -18,9 +18,9 @@ def git(args: list[str], cwd, timeout: float = 5, stdin: str | None = None) -> s
     return run(["git", *args], cwd, timeout, stdin)
 
 
-def streamed(args: list[str], cwd, timeout: float, on_output) -> tuple[int | None, str]:
+def streamed(args: list[str], cwd, timeout: float, on_output, env: dict | None = None) -> tuple[int | None, str]:
     try:
-        child = subprocess.Popen(args, cwd=cwd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        child = subprocess.Popen(args, cwd=cwd, env=env, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     except OSError as error:
         return None, str(error)
     timer = threading.Timer(timeout, child.kill)

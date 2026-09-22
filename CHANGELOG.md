@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.96.0 — Installing or upgrading a plugin shows its output as it runs
+
+Once Run is pressed, the install dialog switches to a console and prints the plugin's setup output line by line as it comes, refreshed every second, for an install and for an upgrade alike. Each setup step writes its command and then its output into the plugin's log while it runs, instead of all at once when it ends.
+
 ## 2.95.2 — Two revisions fetched at once are not one request sent twice
 
 A doc page asks for the revision shown and the one before it at the same time, to show what changed. The viewer's fault watcher took them for one request sent twice, because it compared only the method and path; it now compares the request's body too. Two copies of the revision strip open at once share one request per revision.
