@@ -19,6 +19,7 @@ def newest_parts(rows: list, part_of) -> list:
 SUMMARIES: dict[str, tuple] = {}
 HELD: dict[str, tuple] = {}
 PACKS: dict[str, tuple] = {}
+INDEXED: dict[str, dict] = {}
 OPEN: dict[str, tuple] = {}
 
 
@@ -79,7 +80,7 @@ class Stored:
 
     def _indexed(self, folder: Path) -> list[dict]:
         stamps = {int(e.name[:-3]): f"{e.stat().st_mtime_ns}-{e.stat().st_size}" for e in os.scandir(folder) if e.name.endswith(".md") and e.name[:-3].isdigit()}
-        known = {int(n): row for n, row in (read_json(folder / INDEX) or {}).items()}
+        known = INDEXED.get(str(folder)) or {int(n): row for n, row in (read_json(folder / INDEX) or {}).items()}
         rows = {}
         for n, stamp in stamps.items():
             if known.get(n, {}).get("stamp") == stamp and (known[n].get(DAMAGED) or all(k in known[n] for k in ("files", PART_OF, *self.resource.indexed))):
@@ -93,6 +94,7 @@ class Stored:
             rows[n] = {"n": n, "title": r.title, "deleted": r.deleted, "completed": r.completed, "seen": r.seen, "refs": r.refs, "updated": r.updated, "files": len(r.files), PART_OF: r.data.get(PART_OF, ""), **{k: r.data.get(k) for k in self.resource.indexed}, "stamp": stamp}
         if rows != known:
             write_json(folder / INDEX, rows)
+        INDEXED[str(folder)] = rows
         return [rows[n] for n in sorted(rows) if not rows[n].get(DAMAGED)]
 
     def _titled(self, title: str, standing: bool = False) -> Resource | None:
