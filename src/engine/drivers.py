@@ -108,6 +108,9 @@ class Driver(ABC):
         self.pump()
         return True
 
+    def ready(self) -> bool:
+        return not (self.held or self.yielding or self.groups) and time.time() - self.sent_at >= BETWEEN
+
     def pump(self) -> str:
         if self.yielding and self.waiting():
             self.yielding = []

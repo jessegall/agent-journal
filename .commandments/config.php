@@ -23,7 +23,7 @@ use JesseGall\CodeCommandments\Config;
 
 return function (Config $config): void {
     $config->paths(
-        'src/web/src',
+        'src',
     );
 
     $config->disable(
@@ -33,7 +33,5 @@ return function (Config $config): void {
     );
 
     $config->exclude(
-        'src/web/dist',
-        'src/web/node_modules',
     );
 };
