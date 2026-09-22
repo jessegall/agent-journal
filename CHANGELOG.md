@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.84.82 — Dumps
+
+A dump holds text you paste and files you drop; each is an item. The agent reads every item and decides what it becomes, recording it with `journal dump read <n> <item> "<what it is>"` and then `journal dump filed <n> <item> "<what it did>" "<refs>"` or `journal dump failed <n> <item> "<why>"`; `journal dump items <n>` lists where each stands. The dump closes by itself once every item is settled, saying how many were filed and how many failed. Its group, the agent being told when one arrives, and its page follow.
+
 ## 2.84.81 — Permission prompts are skipped by default, and the start asks
 
 The agent now runs without permission prompts unless you say otherwise: starting `journal claude` or `journal codex` asks "Run without permission prompts", with Yes as the default and your last answer remembered. It is not asked when you typed the flag yourself. Settings can switch it later. Tests now hold that every flag typed at launch reaches Claude and Codex unchanged and in order, with the switch on or off.
