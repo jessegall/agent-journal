@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.84.36 — Summaries no longer set off the prose-choice alarm
+
+The alarm that holds the agent's writes when it offers choices in prose fired on summaries with a list and a quoted question. It now counts only short list items as options, a question outside the list and next to it, and ignores quoted text and code, so a real choice ("Which do you prefer?" with two short options) is still caught.
+
 ## 2.84.35 — A message that ended up in hidden thinking still reaches the chat
 
 Some of the agent's messages are kept by Claude Code as hidden thinking instead of shown text, so they never reached the chat (report 27). The journal now reads each new part of the session's transcript, finds thinking that no visible message follows, and posts it to the chat in a quieter style marked "thinking". It starts from where the transcript is when the session is first seen, so old history is not replayed. It is the "hidden" behaviour of the Messages feature and can be switched off in Settings.
