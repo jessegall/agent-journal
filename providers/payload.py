@@ -118,6 +118,7 @@ class Hook:
     source: str = ""
     inbox: str = ""
     last_message: str = ""
+    agent: str = ""
     tool: ToolUse = field(default_factory=ToolUse)
 
     @classmethod
@@ -126,7 +127,7 @@ class Hook:
         return cls(event=str(raw.get("hook_event_name") or ""), session=Path(transcript or str(raw.get("session_id") or "")).stem,
                    transcript=Path(transcript) if transcript else None, cwd=str(raw.get("cwd") or ""), model=str(raw.get("model") or ""),
                    source=str(raw.get("source") or ""), inbox=str(raw.get("inbox") or ""),
-                   last_message=str(raw.get("last_assistant_message") or ""), tool=ToolUse.read(raw))
+                   last_message=str(raw.get("last_assistant_message") or ""), agent=str(raw.get("agent_id") or ""), tool=ToolUse.read(raw))
 
     @property
     def command(self) -> str:

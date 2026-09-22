@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.84.19 — Tool calls from Claude Code's own helpers no longer mark the agent busy
+
+Claude Code runs helpers of its own after a turn, and their hooks carry the session's id, so the journal counted their tool calls as the agent's and showed it busy after it had finished. A hook that carries an `agent_id` comes from a subagent or such a helper, and never changes the agent's status.
+
 ## 2.84.18 — The journal stops when the last session in the project ends
 
 Quitting Claude or Codex now also stops the project's journal when no other session there is still running: the hooks set aside are put back, and the server, its engine and every service it ran stop. Closing the terminal window does the same. The next `journal claude` or `journal codex` starts it again.
