@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.84.110 — A write no longer makes the next listing rescan its whole folder
+
+- Every save renamed its row file into place, which changed the folder's time, so the next listing of that type rescanned every row in it: a new message cost the dashboard up to 270ms. A save now updates the index for its one row, unless something else wrote to the folder in between. The first dashboard after a write is back under 10ms.
+
 ## 2.84.109 — The user approves a plan and the agent starts it
 
 - A plan gets a new status, approved. The user approves a ready plan (the plan page's button is now Approve); the agent is told at once and starts it with journal plan start <n>. Only an approved plan can be started.

@@ -69,7 +69,10 @@ class Controller(Stored, Files, Links):
         if self.actor not in r.seen:
             r.seen.append(self.actor)
         r.updated = time.time()
+        folder = self.path(r.n).parent
+        before = self._moved(folder) if folder.is_dir() else None
         write_text(self.path(r.n), r.dump())
+        self._written(r, before)
         self.record.emit(self.type, r.n, action, self.actor, **event)
         return r
 
