@@ -3,6 +3,7 @@ import {computed, nextTick, onMounted, onUnmounted, ref, watch} from "vue";
 import {api} from "../api/client.js";
 import Btn from "../kit/Btn.vue";
 import Dialog from "../kit/Dialog.vue";
+import PluginSettings from "./PluginSettings.vue";
 import Icon from "../kit/Icon.vue";
 import Spinner from "../kit/Spinner.vue";
 import Switch from "../kit/Switch.vue";
@@ -26,6 +27,8 @@ const previewText = ref("");
 const shown = ref(null);
 const removing = ref(null);
 const outcome = ref(null);
+const configuring = ref(0);
+const configured = computed(() => plugins.value.find((p) => p.n === configuring.value));
 const KINDS = {needs: "Needs", setup: "On install", service: "Runs", on: "Listens", refuse: "May refuse", page: "Page", setting: "Setting"};
 const busy = ref("");
 const plugins = computed(() =>
@@ -44,6 +47,9 @@ const plugins = computed(() =>
                 key,
                 title: s.title || key,
                 help: s.help || "",
+                type: s.type || "text",
+                options: s.options || [],
+                group: s.group || "",
                 value: String(((p.data.settings || {}).chosen || {})[key] ?? s.default ?? ""),
             })),
         }))
@@ -273,6 +279,9 @@ async function askAgent() {
                 </template>
             </Dialog>
         </template>
+        <template v-if="configured">
+            <PluginSettings :plugin="configured" @close="configuring = 0" @change="(key, value) => configure(configured, key, value)" />
+        </template>
         <template v-if="removing">
             <Dialog :title="`Remove ${removing.title}`" @close="removing = null">
                 <p class="shown-lead">
@@ -319,24 +328,6 @@ async function askAgent() {
                             </template>
                         </div>
                     </template>
-                    <template v-if="p.settings.length">
-                        <div class="settings">
-                            <template v-for="s in p.settings" :key="s.key">
-                                <label class="setting">
-                                    <span class="setting-title">{{ s.title }}</span>
-                                    <template v-if="s.help">
-                                        <span class="setting-help">{{ s.help }}</span>
-                                    </template>
-                                    <input
-                                        class="setting-value"
-                                        :value="s.value"
-                                        spellcheck="false"
-                                        @change="configure(p, s.key, $event.target.value)"
-                                    />
-                                </label>
-                            </template>
-                        </div>
-                    </template>
                     <footer class="acts">
                         <Btn small :disabled="busy === `${p.n}`" @click="upgrade(p)">
                             <template v-if="busy === `${p.n}`">
@@ -347,6 +338,9 @@ async function askAgent() {
                         <Btn small :disabled="busy === `${p.n}`" @click="plugin(p, 'upgrade', {yes: true, again: true})">
                             Run setup again
                         </Btn>
+                        <template v-if="p.settings.length">
+                            <Btn small @click="configuring = p.n">Settings</Btn>
+                        </template>
                         <Btn small @click="toggleLog(p)">{{ readingOf(p) ? "Hide log" : "Log" }}</Btn>
                         <Btn kind="danger" small :disabled="busy === `${p.n}`" @click="removing = p">Remove</Btn>
                     </footer>
@@ -444,6 +438,44 @@ h2 {
     background: var(--bg);
     color: inherit;
     font: inherit;
+}
+
+.run {
+    position: relative;
+}
+
+.run .hidden {
+    visibility: hidden;
+}
+
+.run-spinner {
+    position: absolute;
+    inset: 0;
+    margin: auto;
+}
+
+.shown-result {
+    margin: 0 0 10px;
+    color: #63b37c;
+    font-size: 13px;
+}
+
+.shown-result.failed {
+    color: #e0795f;
+}
+
+.shown-output {
+    margin: 0;
+    overflow: auto;
+    padding: 12px 14px;
+    border: 1px solid #1d2026;
+    border-radius: 8px;
+    background: #0b0c0e;
+    color: #c9d1d9;
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: 11.5px;
+    line-height: 1.55;
+    white-space: pre-wrap;
 }
 
 .run {

@@ -100,6 +100,16 @@ class Disable(Command):
         return plugins.update(n, enabled=False)
 
 
+def allowed(key: str, setting: dict, value: str) -> None:
+    kind = setting.get("type") or "text"
+    if kind == "flag" and value not in ("true", "false"):
+        raise Refused(f"{key} is a switch: true or false")
+    if kind == "number" and not value.lstrip("-").replace(".", "", 1).isdigit():
+        raise Refused(f"{key} is a number, not {value!r}")
+    if kind == "options" and value not in [str(option) for option in setting.get("options") or []]:
+        raise Refused(f"{key} is one of {', '.join(map(str, setting['options']))}")
+
+
 class Configure(Command):
     name = "configure"
 
@@ -108,6 +118,7 @@ class Configure(Command):
         declared = (row.manifest or {}).get("settings") or {}
         if key not in declared:
             raise Refused(f"{called(row)} has no setting {key!r}; it has {', '.join(declared) or 'none'}")
+        allowed(key, declared[key], value)
         kept = dict(row.settings or {})
         kept[CHOSEN] = {**(kept.get(CHOSEN) or {}), key: value}
         updated = plugins.update(row.n, settings=kept)

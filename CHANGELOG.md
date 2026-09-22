@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.85.70 — A plugin's settings open in a side panel, typed by its manifest
+
+- A plugin's card has a Settings button that opens its settings in a side panel, grouped under headings.
+- A setting declares its type in the manifest and the panel draws it: text, multi-line text, number, a switch, or one of a list of options. A value that does not fit its type is refused.
+- The output at the end of an install or upgrade reads like a console: dark, monospaced, like the terminal view.
+
 ## 2.85.69 — Upgrading a plugin opens the same dialog as installing it
 
 - Upgrade shows what changes — commands it now also runs, and ones it no longer does — then everything it does, with Run and its spinner, and then the outcome. When it is already at the newest commit, it says so, and Run goes through its install steps again.

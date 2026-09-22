@@ -17,7 +17,8 @@ PATTERNS = {"*", *TYPES, *ACTIONS, *(f"{t}.{a}" for t in TYPES for a in ACTIONS)
 STEP = ("name", "run", "cwd")
 SERVICE = ("run", "cwd", "env", "port", "ready", "restart", "grace", "show")
 PAGE = ("name", "title", "icon", "service", "path", "status")
-SETTING = ("title", "default", "help", "env")
+SETTING = ("title", "default", "help", "env", "type", "options", "group")
+KINDS = ("text", "textarea", "number", "flag", "options")
 RESTARTS = ("always", "on-failure", "never")
 
 
@@ -53,7 +54,7 @@ def read(folder: Path, version: str = "") -> dict:
     checked["on"] = handlers(name, given.get("on") or {})
     checked["chat"] = chat(name, given.get("chat") or [])
     checked["pages"] = pages(name, given.get("pages") or [], checked["services"])
-    checked["settings"] = shaped(name, given.get("settings") or {}, "settings", SETTING, ())
+    checked["settings"] = typed(shaped(name, given.get("settings") or {}, "settings", SETTING, ()))
     if "refuse" in checked:
         checked["refuse"] = command(name, "refuse", checked["refuse"])
     checked["reads"] = bool(given.get("reads"))
@@ -89,6 +90,16 @@ def shaped(name: str, given, where: str, keys: tuple, needed: tuple) -> dict:
             if not value.get(field):
                 raise Refused(f"plugin.json: {where}.{key} needs {field}")
     return {key: dict(value) for key, value in given.items()}
+
+
+def typed(settings: dict) -> dict:
+    for key, setting in settings.items():
+        kind = setting.setdefault("type", "text")
+        if kind not in KINDS:
+            raise Refused(f"plugin.json: settings.{key} has type {kind!r}; a setting is one of {', '.join(KINDS)}")
+        if kind == "options" and not (isinstance(setting.get("options"), list) and setting["options"]):
+            raise Refused(f"plugin.json: settings.{key} is options, so it needs a list of options")
+    return settings
 
 
 def steps(name: str, given) -> list[dict]:
