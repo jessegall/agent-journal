@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.85.2
+
+- The sequence handlers name the row a run is about through one helper instead of two copies.
+
 ## 2.85.1
 
 - One sequence run is in the agent's hands at a time: a run that starts while another is going waits its turn and is handed its first step when the first ends. The running block marks the waiting ones.

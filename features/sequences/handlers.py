@@ -17,6 +17,11 @@ class SequenceMoved(ResourceEvent):
     on: ClassVar[str] = "sequence"
 
 
+def about_flag(key: str) -> str:
+    about = key.split("|", 1)[1]
+    return "" if about == BY_HAND else f" --about {about}"
+
+
 class StartOnMoment(Handler):
     def handle(self, context: Context, event: AnyEvent) -> None:
         if event.type == "sequence" or event.action not in MOMENTS:
@@ -48,10 +53,8 @@ class RemindUnfinished(Handler):
         if not found:
             return
         sequence, key, run = found
-        about = key.split("|", 1)[1]
         if context.once(UNFINISHED, f"{sequence.n}|{key}|{run['step']}|{run['at']}"):
-            context.agent.say(UNFINISHED, n=sequence.n, title=sequence.title, step=run["step"], count=len(sequence.sections),
-                              about="" if about == BY_HAND else f" --about {about}")
+            context.agent.say(UNFINISHED, n=sequence.n, title=sequence.title, step=run["step"], count=len(sequence.sections), about=about_flag(key))
 
 
 class HandStepToAgent(Handler):
@@ -61,9 +64,8 @@ class HandStepToAgent(Handler):
         if not found:
             return
         sequence, key, run = found
-        about = key.split("|", 1)[1]
         speaking = context.speaking_to(agent)
         if speaking.once(STEP, f"{sequence.n}|{key}|{run['step']}|{run['at']}"):
             part = sequence.sections[run["step"] - 1]
             speaking.agent.say(STEP, n=sequence.n, title=sequence.title, step=run["step"], count=len(sequence.sections),
-                               name=part[SECTION.title], body=part[SECTION.body], about="" if about == BY_HAND else f" --about {about}")
+                               name=part[SECTION.title], body=part[SECTION.body], about=about_flag(key))
