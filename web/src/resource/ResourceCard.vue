@@ -1,8 +1,8 @@
 <script setup>
+import Text from "../kit/Text.vue";
 import Icon from "../kit/Icon.vue";
 import {age} from "../format/time.js";
 import {meta} from "../state/store.js";
-import {words} from "../text/markers.js";
 import {computed} from "vue";
 
 const props = defineProps({resource: Object});
@@ -28,7 +28,7 @@ const holds = computed(() => {
             <span class="age">{{ age(resource.updated || resource.created) }}</span>
         </span>
         <span class="title">{{ resource.title }}</span>
-        <span class="abstract">{{ resource.abstract || words(resource.brief).slice(0, 160) }}</span>
+        <Text inline class="abstract" :text="resource.abstract || resource.brief" />
         <template v-if="holds.length">
             <span class="holds">
                 <span v-for="h in holds" :key="h.type" class="holds-kind" :title="`${h.n} ${h.title.toLowerCase()}${h.n > 1 ? 's' : ''}`">

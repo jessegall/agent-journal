@@ -1,5 +1,5 @@
 <script setup>
-import Markdown from "./Markdown.vue";
+import Text from "../kit/Text.vue";
 
 defineProps({sections: Array});
 </script>
@@ -8,7 +8,7 @@ defineProps({sections: Array});
     <template v-for="s in sections" :key="s.title">
         <section class="section">
             <h3>{{ s.title }}</h3>
-            <Markdown :text="s.body" />
+            <Text :text="s.body" />
         </section>
     </template>
 </template>

@@ -7,7 +7,7 @@ import {quoted, withQuote} from "../format/quote.js";
 import {age} from "../format/time.js";
 import {rows} from "../sync/rows.js";
 import Compose from "../chat/Compose.vue";
-import Markdown from "./Markdown.vue";
+import Text from "../kit/Text.vue";
 
 const props = defineProps({
     resource: Object,
@@ -100,12 +100,12 @@ async function send(text) {
                             <template v-if="c.quote">
                                 <span class="quoted">{{ c.quote }}</span>
                             </template>
-                            <Markdown :text="c.text" />
+                            <Text :text="c.text" />
                         </template>
                         <template v-if="c.completed">
                             <p class="done">
                                 <span class="done-label">Handled:</span>
-                                <Markdown class="done-text" :text="c.outcome" />
+                                <Text class="done-text" :text="c.outcome" />
                             </p>
                         </template>
                     </div>

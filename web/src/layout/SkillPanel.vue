@@ -3,7 +3,7 @@ import {ref, watch} from "vue";
 import {api} from "../api/client.js";
 import {store} from "../state/store.js";
 import SidePanel from "../kit/SidePanel.vue";
-import Markdown from "../resource/Markdown.vue";
+import Text from "../kit/Text.vue";
 
 const text = ref("");
 const failed = ref("");
@@ -34,7 +34,7 @@ watch(
             <p class="skill-panel-note">Loading the skill…</p>
         </template>
         <template v-else>
-            <Markdown :text="text" />
+            <Text :text="text" />
         </template>
     </SidePanel>
 </template>

@@ -1,4 +1,5 @@
 <script setup>
+import Text from "../kit/Text.vue";
 import {computed} from "vue";
 import Icon from "../kit/Icon.vue";
 import {api} from "../api/client.js";
@@ -70,7 +71,7 @@ async function dismiss(r) {
                     </div>
                     <p class="needs-card-title">{{ r.title }}</p>
                     <template v-if="r.abstract">
-                        <p class="needs-card-text">{{ r.abstract }}</p>
+                        <Text class="needs-card-text" :text="r.abstract" />
                     </template>
                     <p class="needs-card-foot">
                         <span class="needs-card-meta">{{ r.type }} {{ r.n }}</span>

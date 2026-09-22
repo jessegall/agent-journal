@@ -2,7 +2,7 @@
 import Btn from "../kit/Btn.vue";
 import Icon from "../kit/Icon.vue";
 import CommentToggle from "./CommentToggle.vue";
-import Markdown from "./Markdown.vue";
+import Text from "../kit/Text.vue";
 import ResourceBody from "./ResourceBody.vue";
 import RevisionStrip from "./RevisionStrip.vue";
 import {useRevisions} from "../composables/revisions.js";
@@ -42,10 +42,10 @@ const revisions = useRevisions(() => props.resource);
             <template v-else>
                 <h2 :class="['title', {changed: revisions.topChanged.title}]">{{ revisions.page.title }}</h2>
                 <template v-if="revisions.page.abstract">
-                    <Markdown :class="['abstract', {changed: revisions.topChanged.abstract}]" :text="revisions.page.abstract" />
+                    <Text :class="['abstract', {changed: revisions.topChanged.abstract}]" :text="revisions.page.abstract" />
                 </template>
                 <template v-if="revisions.page.brief">
-                    <Markdown :class="['brief', {changed: revisions.topChanged.brief}]" :text="revisions.page.brief" />
+                    <Text :class="['brief', {changed: revisions.topChanged.brief}]" :text="revisions.page.brief" />
                 </template>
                 <template v-for="part in revisions.parts" :key="part.title">
                     <section :class="['part', part.kind]">
@@ -58,12 +58,12 @@ const revisions = useRevisions(() => props.resource);
                         <template v-if="part.kind === 'changed'">
                             <div class="diff">
                                 <template v-for="(line, i) in part.lines" :key="i">
-                                    <Markdown :class="['line', line.kind]" :text="line.text || ' '" />
+                                    <Text :class="['line', line.kind]" :text="line.text || ' '" />
                                 </template>
                             </div>
                         </template>
                         <template v-else>
-                            <Markdown :text="part.body" />
+                            <Text :text="part.body" />
                         </template>
                     </section>
                 </template>

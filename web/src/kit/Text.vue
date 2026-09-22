@@ -5,8 +5,16 @@ import {peek, route} from "../route.js";
 import {types} from "../state/store.js";
 import "../text/all.js";
 
-const props = defineProps({text: {type: String, default: ""}});
-const html = computed(() => render(props.text, {types: types.value, env: route.value.env}));
+const props = defineProps({text: {type: String, default: ""}, inline: {type: Boolean, default: false}});
+const html = computed(() => {
+    const said = props.inline
+        ? String(props.text || "")
+              .split("\n")
+              .find((line) => line.trim()) || ""
+        : props.text;
+    const made = render(said, {types: types.value, env: route.value.env});
+    return props.inline ? made.replace(/^<p>|<\/p>\s*$/g, "") : made;
+});
 
 function follow(e) {
     const pill = e.target.closest("[data-peek]");
@@ -18,7 +26,12 @@ function follow(e) {
 </script>
 
 <template>
-    <div class="md" @click="follow" v-html="html" />
+    <template v-if="inline">
+        <span class="md inline" @click="follow" v-html="html" />
+    </template>
+    <template v-else>
+        <div class="md" @click="follow" v-html="html" />
+    </template>
 </template>
 
 <style scoped>
