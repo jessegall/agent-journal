@@ -1,4 +1,5 @@
 <script setup>
+import Console from "../kit/Console.vue";
 import {computed, onMounted, onUnmounted, ref, watch} from "vue";
 import {api} from "../api/client.js";
 import Btn from "../kit/Btn.vue";
@@ -221,7 +222,7 @@ async function askAgent() {
                 <Btn :busy="busy === 'preview'" :disabled="!source || busy === 'preview'" @click="preview">Scan</Btn>
             </div>
             <template v-if="previewText">
-                <pre class="preview">{{ previewText }}</pre>
+                <Console :text="previewText" />
             </template>
         </header>
         <template v-if="shown">
@@ -230,7 +231,7 @@ async function askAgent() {
                     <p :class="['shown-result', {failed: !outcome.ok}]">
                         {{ outcome.ok ? `${shown.title} is installed.` : "It did not install. Nothing of it was kept." }}
                     </p>
-                    <pre class="shown-output">{{ outcome.text }}</pre>
+                    <Console :text="outcome.text" />
                 </template>
                 <template v-else>
                     <p class="shown-from">
@@ -354,7 +355,7 @@ async function askAgent() {
         </div>
         <template v-if="reading">
             <Dialog :title="`${reading} log`" follow @close="reading = ''">
-                <pre class="log">{{ logged || (busy ? "Starting…" : "Nothing is logged yet.") }}</pre>
+                <Console :text="logged || (busy ? 'Starting…' : 'Nothing is logged yet.')" />
                 <template #foot>
                     <Btn small :disabled="!logged" @click="clearLog">Clear</Btn>
                 </template>
@@ -455,20 +456,6 @@ h2 {
     color: #e0795f;
 }
 
-.shown-output {
-    margin: 0;
-    overflow: auto;
-    padding: 12px 14px;
-    border: 1px solid #1d2026;
-    border-radius: 8px;
-    background: #0b0c0e;
-    color: #c9d1d9;
-    font-family: ui-monospace, "SF Mono", Menlo, monospace;
-    font-size: 11.5px;
-    line-height: 1.55;
-    white-space: pre-wrap;
-}
-
 .shown-result {
     margin: 0 0 10px;
     color: #63b37c;
@@ -477,20 +464,6 @@ h2 {
 
 .shown-result.failed {
     color: #e0795f;
-}
-
-.shown-output {
-    max-height: 360px;
-    margin: 0;
-    overflow: auto;
-    padding: 10px 12px;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    background: var(--code-bg);
-    color: var(--text-2);
-    font-family: ui-monospace, "SF Mono", Menlo, monospace;
-    font-size: 11.5px;
-    white-space: pre-wrap;
 }
 
 .settings {
@@ -597,19 +570,6 @@ h2 {
     word-break: break-all;
 }
 
-.preview {
-    margin: 0;
-    padding: 12px 14px;
-    max-height: 340px;
-    overflow: auto;
-    border: 1px solid var(--border-2);
-    border-radius: 10px;
-    background: var(--code-bg);
-    font-family: ui-monospace, "SF Mono", Menlo, monospace;
-    font-size: 12px;
-    white-space: pre-wrap;
-}
-
 .cards {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
@@ -706,15 +666,6 @@ h2 {
 .link {
     color: var(--accent-text);
     font-size: 12.5px;
-}
-
-.log {
-    margin: 0;
-    padding: 0;
-    background: none;
-    font-family: ui-monospace, "SF Mono", Menlo, monospace;
-    font-size: 11.5px;
-    white-space: pre-wrap;
 }
 
 .acts {

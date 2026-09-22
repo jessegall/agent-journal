@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.94.2 — One console
+
+The chat's terminal view, a plugin's log, the install and upgrade output, the plugin scan and the services log all print into one kit Console, which keeps its newest line in view.
+
 ## 2.94.1 — The chat etiquette catches talk about a row's state
 
 A turn that reports a row's state, such as "message 4636 is answered", "the replies went out", "still listed as waiting" or "closing both explicitly", is named back to the agent like the rest of the journal's workings.

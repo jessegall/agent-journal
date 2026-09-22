@@ -29,7 +29,7 @@ const commands = computed(() => (agent.value && agent.value.data.commands) || []
     min-height: 0;
 }
 
-.terminal-body :deep(.log) {
+.terminal-body :deep(.console) {
     flex: 1;
     min-height: 0;
     max-height: none;

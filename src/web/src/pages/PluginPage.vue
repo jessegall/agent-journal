@@ -1,4 +1,5 @@
 <script setup>
+import Console from "../kit/Console.vue";
 import {computed, ref, watch} from "vue";
 import {api} from "../api/client.js";
 import Btn from "../kit/Btn.vue";
@@ -61,7 +62,7 @@ watch(
                     </template>
                 </span>
                 <template v-if="log">
-                    <pre class="log">{{ log }}</pre>
+                    <Console :text="log" />
                 </template>
             </template>
         </section>
@@ -102,19 +103,5 @@ watch(
 .out {
     color: var(--accent-text);
     font-size: 12px;
-}
-
-.log {
-    margin: 0;
-    padding: 10px 12px;
-    width: 100%;
-    max-height: 320px;
-    overflow: auto;
-    border: 1px solid var(--border-2);
-    border-radius: 9px;
-    background: var(--code-bg);
-    font-family: ui-monospace, "SF Mono", Menlo, monospace;
-    font-size: 12px;
-    white-space: pre-wrap;
 }
 </style>
