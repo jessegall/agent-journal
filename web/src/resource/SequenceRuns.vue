@@ -6,12 +6,21 @@ import {rows} from "../sync/rows.js";
 const props = defineProps({resource: Object});
 const BY_HAND = "by hand";
 
+const runsOf = (s) =>
+    Object.entries(s.data.runs || {})
+        .map(([key, run]) => ({sequence: s, env: key.split("|")[0], about: key.split("|").slice(1).join("|"), step: run.step, at: run.at}))
+        .filter((r) => r.env === route.value.env);
+const inHand = computed(() =>
+    rows("sequence")
+        .filter((s) => !s.deleted && !s.completed)
+        .flatMap(runsOf)
+        .reduce((first, r) => (!first || r.at < first.at ? r : first), null)
+);
 const runs = computed(() =>
-    (props.resource.type === "sequence" ? [props.resource] : rows("sequence").filter((s) => !s.deleted)).flatMap((s) =>
-        Object.entries(s.data.runs || {})
-            .map(([key, step]) => ({sequence: s, env: key.split("|")[0], about: key.split("|").slice(1).join("|"), step}))
-            .filter((r) => r.env === route.value.env && (props.resource.type === "sequence" || r.about === props.resource.ref))
-    )
+    (props.resource.type === "sequence" ? [props.resource] : rows("sequence").filter((s) => !s.deleted))
+        .flatMap(runsOf)
+        .filter((r) => props.resource.type === "sequence" || r.about === props.resource.ref)
+        .map((r) => ({...r, waiting: !!inHand.value && inHand.value.at !== r.at}))
 );
 
 function open(ref) {
@@ -36,10 +45,14 @@ function open(ref) {
                         <button type="button" class="run-link" @click="open(r.sequence.ref)">{{ r.sequence.title }}</button>
                     </template>
                     <span class="grow" />
-                    <span class="run-count">step {{ r.step }} of {{ r.sequence.sections.length }}</span>
+                    <span class="run-count">{{ r.waiting ? "waiting its turn" : `step ${r.step} of ${r.sequence.sections.length}` }}</span>
                 </div>
                 <ol class="steps">
-                    <li v-for="(s, i) in r.sequence.sections" :key="s.title" :class="{done: i + 1 < r.step, current: i + 1 === r.step}">
+                    <li
+                        v-for="(s, i) in r.sequence.sections"
+                        :key="s.title"
+                        :class="{done: i + 1 < r.step, current: !r.waiting && i + 1 === r.step}"
+                    >
                         {{ s.title }}
                     </li>
                 </ol>
