@@ -16,15 +16,21 @@ def template_of(journal, row):
         return None
 
 
-def preface(template) -> str:
-    return f"TEMPLATE {template.n}, {template.title}, read before working on this:\n{template.brief.strip()}\n"
+def filled(template, values: dict, text: str) -> str:
+    for field in template.data.get("fields") or []:
+        text = text.replace("{{" + field["name"] + "}}", str(values.get(field["name"]) or field.get("default") or ""))
+    return text
+
+
+def preface(template, values: dict | None = None) -> str:
+    return f"TEMPLATE {template.n}, {template.title}, read before working on this:\n{filled(template, values or {}, template.brief.strip())}\n"
 
 
 class PrefaceShow(ActionInterceptor):
     def intercept(self, context: Context, controller, row=None, **args):
         template = template_of(context.journal, row) if row is not None else None
         if template and template.brief.strip():
-            row.preface = preface(template)
+            row.preface = preface(template, row.data.get("template_values"))
         return None
 
 

@@ -63,3 +63,19 @@ def test_the_journal_ships_a_blank_and_a_functional_first_plan_template():
     plan = Plans(record, actor=AGENT).create("Standup digest", goal="a digest", template=functional["n"])
     assert [(p["title"], p["checkpoint"]) for p in Plans(record, actor=AGENT).load(plan.n).phases] == \
         [("Functional design", True), ("Technical implementation", False)], "the functional design is approved at a checkpoint before any build"
+
+
+def test_a_template_asks_for_its_fields_and_fills_them_in():
+    from controllers.types import Todos
+    from features.templates.controller import Templates
+    record = fresh()
+    templates = Templates(record, actor=USER)
+    critique = templates.create("Critique", brief="Send {{agents}} agents, looking for {{focus}}.")
+    templates.section(critique.n, "Brief", "{{agents}} reviewers, {{focus}}")
+    templates.field(critique.n, "Agents", kind="number", default="2")
+    templates.field(critique.n, "Focus", kind="choice", options="mistakes, additions")
+    assert refused(lambda: templates.field(critique.n, "Tone", kind="choice")) == "a choice field needs --options \"one, two, three\"", \
+        "a choice field without options is refused"
+    row = Todos(record, actor=USER).create("Critique plan 3", template=critique.n, template_values={"focus": "mistakes"})
+    assert Todos(record, actor=USER).load(row.n).sections[0]["body"] == "2 reviewers, mistakes", \
+        "the parts are filled from the values given, a field left out takes its default"

@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.84.137 — A template can ask for its fields when it is used
+
+- journal template field <n> "<label>" --kind text|number|choice [--options "a, b"] [--default x] declares a field. Picking the template when making something asks for each field: an input for text and numbers, buttons for a choice. The answers fill {{field}} in the template's instructions and parts, and a field left empty takes its default.
+
 ## 2.84.136 — A linked row shows once in a resource's links
 
 - Two rows that link each other showed each other twice in their Resources list, once for each direction. Each row now shows once.

@@ -1,8 +1,13 @@
+import re
+
 import controllers.types as types_module
 import resources.types as resources_module
 from controllers.base import Controller
 from features.templates.resource import Template
 from resources.base import Refused
+
+
+KINDS = ("text", "number", "choice")
 
 
 class Templates(Controller):
@@ -15,6 +20,19 @@ class Templates(Controller):
     def update(self, n: int, title: str | None = None, abstract: str | None = None, brief: str | None = None, outcome: str | None = None, **data):
         self._known(data.get("applies_to"))
         return super().update(n, title, abstract, brief, outcome, **data)
+
+    def field(self, n: int, label: str, kind: str = "text", options: str = "", default: str = ""):
+        if kind not in KINDS:
+            self._refuse(f"a field is one of {', '.join(KINDS)}")
+        choices = [option.strip() for option in options.split(",") if option.strip()]
+        if kind == "choice" and not choices:
+            self._refuse("a choice field needs --options \"one, two, three\"")
+        name = re.sub(r"[^a-z0-9]+", "_", label.lower()).strip("_")
+        if not name:
+            self._refuse("a field needs a label with a letter or a number in it")
+        r = self.load(int(n))
+        made = {"name": name, "label": label.strip(), "kind": kind, "options": choices, "default": default}
+        return self.update(r.n, fields=[f for f in r.data.get("fields") or [] if f["name"] != name] + [made])
 
     def _known(self, given) -> None:
         names = [name.strip() for name in (given.split(",") if isinstance(given, str) else given or []) if name.strip()]
