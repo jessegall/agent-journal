@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.84.88 — Auto mode never stalls on a lost idle report
+
+Under auto, the next row was offered only on the report that ends the agent's turn. When that report was lost, for instance while the server restarted after an upgrade, nothing was offered and the agent sat idle with work waiting. The engine's clock now offers the next ready row to an idle agent too, once per idle stretch, including the row of a plan phase that just opened.
+
 ## 2.84.87 — A filed dump ends with a suggested next step
 
 When the last item of a dump is filed, the agent is asked to suggest the next step, linked to the dump and its collection: a plan to write, a decision to make, a follow-up to send. You accept, adjust or decline it like any suggestion.
