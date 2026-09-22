@@ -4,6 +4,11 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.84.123 — A finished dump asks what next, and You decide lets the agent finish it
+
+- When everything is filed the agent offers two to four next steps on the dump itself (journal dump offer), not a suggestion elsewhere. The window shows The agent finished. What next? with a button for each and You decide. A step that is a journal action, like approving a plan, runs as you when pressed.
+- Choosing adds what the dump made to the journal and tells the agent; You decide hands the rest to the agent to finish on its own.
+
 ## 2.84.122 — The agent finishes a dump on its own, even with auto mode off
 
 - An agent that goes idle with a dump in hand and items left is told to carry on filing it, once per rest, whether auto mode is on or off. It asks only what it truly cannot tell.

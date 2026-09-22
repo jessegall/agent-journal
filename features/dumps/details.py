@@ -55,11 +55,26 @@ class DumpsDetails(FeatureDetails):
         ),
         Line(
             name="filed",
-            title="dump {{n}} is filed ({{outcome}}) - suggest the next step",
+            title="dump {{n}} is filed ({{outcome}}) - offer the user what to do next",
             brief="""
-                File a suggestion for what you would do next with what was filed, and why, and link
-                it to dump:{{n}} and collection:{{collection}}. A plan to write, a decision to make or
-                a follow-up to send: the user accepts, adjusts or declines it.
+                Offer two to four next steps as buttons on the dump itself, never as a suggestion
+                elsewhere: journal dump offer {{n}} '[{"label": "Approve the design plan", "type":
+                "plan", "n": 3, "action": "approve"}, {"label": "Leave it for now"}]'. A step that is
+                a journal action carries its type, n and action and runs as the user when pressed.
+                The user also has You decide, which hands the rest to you.
+            """,
+        ),
+        Line(
+            name="chose",
+            title="the user chose {{label}} for dump {{n}}",
+            brief="what the dump made is now in the journal. Carry that step out, and log it on the dump.",
+        ),
+        Line(
+            name="decide",
+            title="the user left dump {{n}} to you - finish it",
+            brief="""
+                what the dump made is now in the journal. Take the next step you think best and file
+                anything still open yourself, logging each step on the dump. Nothing waits for the user.
             """,
         ),
     ]

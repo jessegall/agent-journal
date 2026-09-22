@@ -101,20 +101,21 @@ watch([madeRefs, now], fetchDrafts, {immediate: true});
 const label = (name) => (name === "text" ? "Pasted text" : name.startsWith("added-") ? "Added note" : name);
 const ITEM_STATES = {waiting: "waiting", noted: "reading", filed: "filed", failed: "not filed"};
 const collection = computed(() => (dump.value?.refs || []).find((ref) => ref.startsWith("collection:")) || "");
-const nextStep = computed(() =>
-    dump.value ? rows("suggestion").find((s) => !s.deleted && !s.completed && s.refs.includes(dump.value.ref)) : null
-);
 const asked = computed(() => (working.value && dump.value.data?.question?.text) || "");
-const SUGGESTING_FOR = 60;
+const OFFERING_FOR = 60;
 const stopped = computed(() => Boolean(dump.value?.data?.stopped));
-const suggesting = computed(() =>
-    Boolean(dump.value?.completed && !stopped.value && !nextStep.value && now.value - dump.value.completed < SUGGESTING_FOR)
+const options = computed(() => dump.value?.data?.options || []);
+const choice = computed(() => dump.value?.data?.chosen || {});
+const offering = computed(() =>
+    Boolean(dump.value?.completed && !stopped.value && !options.value.length && now.value - dump.value.completed < OFFERING_FOR)
 );
-const unsuggested = computed(() => Boolean(dump.value?.completed && !stopped.value && !nextStep.value && !suggesting.value));
+const choosing = computed(() => Boolean(dump.value?.completed && options.value.length && !choice.value.label));
 const finishedText = computed(() => {
     if (stopped.value) return dump.value.outcome;
-    if (suggesting.value) return "Filed. Working out a next step…";
-    return `Finished · ${dump.value.outcome}${unsuggested.value ? " · no next step suggested" : ""}`;
+    if (offering.value) return "Filed. Working out what could come next…";
+    if (choosing.value) return "The agent finished. What next?";
+    if (choice.value.label) return choice.value.pick < 0 ? "Left to the agent to finish" : `You chose: ${choice.value.label}`;
+    return `Finished · ${dump.value.outcome}`;
 });
 const stopping = ref(false);
 const unfiled = computed(() => items.value.length - settled.value);
@@ -192,6 +193,10 @@ async function addMore() {
 async function leaveOut(ref) {
     await api.act("dump", dump.value.n, "leave", {ref});
     delete drafts[ref];
+}
+
+async function choose(pick) {
+    await api.act("dump", dump.value.n, "choose", {pick});
 }
 
 async function finish() {
@@ -339,7 +344,7 @@ function follow(ref) {
 
                 <div :class="['dump-live', stage.toLowerCase().replace(' ', '-'), {quiet, unstarted: working && !started}]">
                     <div class="dump-live-line">
-                        <template v-if="suggesting">
+                        <template v-if="offering">
                             <Spinner />
                         </template>
                         <template v-else-if="stopped">
@@ -372,8 +377,8 @@ function follow(ref) {
                         <template v-if="quiet">
                             <button type="button" class="dump-stop-open" @click="store.dumping = false">Back to chat</button>
                         </template>
-                        <template v-if="dump.completed">
-                            <Btn kind="primary" small :disabled="suggesting && !confirmed" @click="finish">
+                        <template v-if="dump.completed && !choosing">
+                            <Btn kind="primary" small :disabled="offering && !confirmed" @click="finish">
                                 {{ confirmed || !made.length ? "Done" : `Add ${made.length} to the journal` }}
                             </Btn>
                         </template>
@@ -419,20 +424,18 @@ function follow(ref) {
                             </template>
                         </div>
                     </template>
-                    <template v-if="dump.completed && (collection || nextStep)">
+                    <template v-if="choosing">
+                        <div class="dump-options">
+                            <Btn v-for="(option, i) in options" :key="i" small @click="choose(i)">{{ option.label }}</Btn>
+                            <Btn kind="primary" small @click="choose(-1)">You decide</Btn>
+                        </div>
+                    </template>
+                    <template v-if="dump.completed && collection">
                         <div class="dump-after">
-                            <template v-if="collection">
-                                <a href="#" class="dump-link" @click.prevent="follow(collection)">
-                                    <Icon name="folder" :size="12" />
-                                    Open its collection
-                                </a>
-                            </template>
-                            <template v-if="nextStep">
-                                <a href="#" class="dump-link" @click.prevent="follow(nextStep.ref)">
-                                    <Icon name="arrow" :size="12" />
-                                    Next step: {{ nextStep.title }}
-                                </a>
-                            </template>
+                            <a href="#" class="dump-link" @click.prevent="follow(collection)">
+                                <Icon name="folder" :size="12" />
+                                Open its collection
+                            </a>
                         </div>
                     </template>
                 </div>
@@ -973,6 +976,12 @@ function follow(ref) {
     flex: none;
     color: var(--text-3);
     font-size: 12px;
+}
+
+.dump-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
 }
 
 .dump-after {

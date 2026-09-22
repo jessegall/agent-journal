@@ -2,6 +2,8 @@ import controllers.types as types_module
 import resources.types as resources_module
 from controllers.base import CONTROLLERS, Controller
 from controllers.stored import DRAFT_OF
+from features.message_buttons.shaping import LABEL, one
+import json
 import time
 
 from features.dumps.resource import ENTRY, ITEM, Dump
@@ -9,6 +11,7 @@ from resources.base import AGENT, Refused
 
 TEXT = "text"
 LOG_KEPT = 20
+OFFERED = 4
 
 
 class Dumps(Controller):
@@ -68,6 +71,40 @@ class Dumps(Controller):
             except Refused:
                 continue
         return self.update(dump.n, confirmed=time.time())
+
+    def offer(self, n: int, options: str):
+        r = self.load(int(n))
+        try:
+            given = json.loads(options)
+        except ValueError:
+            self._refuse("options is a JSON list of {label} or {label, type, n, action}")
+        steps = []
+        for option in given[:OFFERED] if isinstance(given, list) else []:
+            label = str((option or {}).get("label") or "").strip()[:LABEL] if isinstance(option, dict) else ""
+            if not label:
+                continue
+            action = one(self.record, option) if option.get("action") else {}
+            if option.get("action") and not action:
+                self._refuse(f"{label}: {option.get('type')} {option.get('action')} is not a command")
+            steps.append(action or {"label": label})
+        if not steps:
+            self._refuse("offer at least one next step with a label")
+        return self.update(r.n, options=steps, chosen={})
+
+    def choose(self, n: int, pick: int):
+        if self.actor == AGENT:
+            self._refuse("only the user chooses what a dump does next")
+        r = self.load(int(n))
+        options = r.data.get("options") or []
+        if not str(pick).lstrip("-").isdigit() or int(pick) >= len(options):
+            self._refuse(f"dump {r.n} has no option {pick}: pick is the number of an offered step, or -1 for You decide")
+        if r.completed and not r.data.get("confirmed"):
+            self.confirm(r.n)
+        step = options[int(pick)] if int(pick) >= 0 else {"label": "You decide"}
+        if step.get("action"):
+            controller = CONTROLLERS[step["type"]](self.record, actor=self.actor)
+            controller.action(step["action"])(*([step["n"]] if "n" in step else []), **(step.get("body") or {}))
+        return self.update(r.n, chosen={"label": step["label"], "pick": int(pick), ENTRY.at: time.time()})
 
     def leave(self, n: int, ref: str):
         dump = self.load(int(n))
