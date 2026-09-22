@@ -4,7 +4,7 @@ from resources.base import DOCUMENT, Resource, ResourceDetails
 from resources.shapes import Field, Shape, names
 
 ITEM = names("insight", "outcome", "refs", "failed")
-ENTRY = names("at", "text")
+ENTRY = names("at", "text", "on")
 
 
 class Dump(Shape, Resource):

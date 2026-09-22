@@ -32,7 +32,8 @@ class DumpsDetails(FeatureDetails):
                 or asks for a plan, start a plan with that goal. Record each item as you go with
                 journal dump note, then journal dump filed or journal dump failed, and tell the user
                 what you are doing at each step with journal dump log {{n}} "<status>": the dump
-                window shows it live. Ask only when you
+                window shows it live. Create a row as soon as you start on it and log with
+                --on <type:n>, so its card appears while you write it. Ask only when you
                 truly cannot tell what an item is for.
             """,
         ),
