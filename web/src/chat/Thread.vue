@@ -12,6 +12,7 @@ import {agent, store} from "../state/store.js";
 import {waitsFor} from "../layout/statusline.js";
 import {polled} from "../sync/polled.js";
 import {earlier, rows} from "../sync/rows.js";
+import DumpWindow from "./DumpWindow.vue";
 import Compose from "./Compose.vue";
 import Turn from "./Turn.vue";
 import ThreadSkeleton from "./ThreadSkeleton.vue";
@@ -30,7 +31,10 @@ const pageTools = chatOnly
           {icon: "camera", title: "Send a picture of an element on the page", go: () => point("shot")},
       ]
     : [];
-const composeTools = pageTools;
+const composeTools = [
+    ...pageTools,
+    {icon: "inbox", title: "New dump: drop text and files for the agent to file", go: () => (store.dumping = true)},
+];
 
 function point(kind) {
     tellExtension(kind);
@@ -280,92 +284,97 @@ watch(
 
 <template>
     <div class="thread">
-        <div class="thread-write">
-            <Transition name="rise">
-                <button
-                    v-if="away"
-                    type="button"
-                    class="thread-down"
-                    :title="missed ? `${missed} arrived while you were reading` : 'Back to the newest'"
-                    @click="toBottom"
-                >
-                    <Icon name="down" />
-                    {{ missed ? `${missed} new` : "Newest" }}
-                </button>
-            </Transition>
-            <template v-if="editing">
-                <div class="thread-answering">
-                    <span class="thread-answering-label">Editing</span>
-                    <span class="thread-answering-text">{{ editing.text }}</span>
-                    <button type="button" class="thread-answering-x" title="Leave it as it was" @click="unedit">×</button>
-                </div>
-            </template>
-            <Compose
-                :send="post"
-                :quote="quote.text"
-                quote-label="Replying to"
-                @unquote="quote = {text: '', ref: ''}"
-                :preset="editing ? editing.text : ''"
-                :up="editLast"
-                :down="unedit"
-                :tools="composeTools"
-            />
-        </div>
-        <template v-if="!ready">
-            <ThreadSkeleton />
+        <template v-if="store.dumping">
+            <DumpWindow />
         </template>
-        <div
-            ref="scroller"
-            :class="['thread-scroll', {focusing: store.focus, loading: !ready}]"
-            @scroll.passive="watchScroll"
-            @mouseenter="(reading.inside = true) && markActive()"
-            @mouseleave="reading.inside = false"
-            @mousemove="markActive"
-            @wheel.passive="markActive"
-        >
-            <template v-if="rendering">
-                <div ref="topMark" class="thread-top" />
-                <template v-if="!turns.length">
-                    <p class="thread-empty">Nothing has been said here yet.</p>
-                </template>
-                <TransitionGroup :name="settledOnce ? 'turn' : ''">
-                    <Turn
-                        v-for="t in turns"
-                        :key="keyOf(t)"
-                        :turn="t"
-                        @reply="quote = $event"
-                        @edit="editing = $event"
-                        @pin="pin($event.text, $event.ref)"
-                        @grew="settled"
-                    />
-                </TransitionGroup>
+        <template v-else>
+            <div class="thread-write">
                 <Transition name="rise">
-                    <div
-                        v-if="busy"
-                        class="thread-turn busy"
-                        :aria-label="waiting ? `The agent is waiting ${waiting}` : 'The agent is working'"
+                    <button
+                        v-if="away"
+                        type="button"
+                        class="thread-down"
+                        :title="missed ? `${missed} arrived while you were reading` : 'Back to the newest'"
+                        @click="toBottom"
                     >
-                        <template v-if="waiting">
-                            <div class="thread-bubble waiting">Waiting {{ waiting }}</div>
-                        </template>
-                        <template v-else-if="thought">
-                            <div class="thread-bubble thought">
-                                <span class="thought-label">thinking</span>
-                                <span class="thought-text">{{ thought }}</span>
-                            </div>
-                        </template>
-                        <template v-else>
-                            <div class="thread-bubble">
-                                <span class="thread-dot" />
-                                <span class="thread-dot" />
-                                <span class="thread-dot" />
-                            </div>
-                            <div class="thread-meta"><span>working</span></div>
-                        </template>
-                    </div>
+                        <Icon name="down" />
+                        {{ missed ? `${missed} new` : "Newest" }}
+                    </button>
                 </Transition>
+                <template v-if="editing">
+                    <div class="thread-answering">
+                        <span class="thread-answering-label">Editing</span>
+                        <span class="thread-answering-text">{{ editing.text }}</span>
+                        <button type="button" class="thread-answering-x" title="Leave it as it was" @click="unedit">×</button>
+                    </div>
+                </template>
+                <Compose
+                    :send="post"
+                    :quote="quote.text"
+                    quote-label="Replying to"
+                    @unquote="quote = {text: '', ref: ''}"
+                    :preset="editing ? editing.text : ''"
+                    :up="editLast"
+                    :down="unedit"
+                    :tools="composeTools"
+                />
+            </div>
+            <template v-if="!ready">
+                <ThreadSkeleton />
             </template>
-        </div>
+            <div
+                ref="scroller"
+                :class="['thread-scroll', {focusing: store.focus, loading: !ready}]"
+                @scroll.passive="watchScroll"
+                @mouseenter="(reading.inside = true) && markActive()"
+                @mouseleave="reading.inside = false"
+                @mousemove="markActive"
+                @wheel.passive="markActive"
+            >
+                <template v-if="rendering">
+                    <div ref="topMark" class="thread-top" />
+                    <template v-if="!turns.length">
+                        <p class="thread-empty">Nothing has been said here yet.</p>
+                    </template>
+                    <TransitionGroup :name="settledOnce ? 'turn' : ''">
+                        <Turn
+                            v-for="t in turns"
+                            :key="keyOf(t)"
+                            :turn="t"
+                            @reply="quote = $event"
+                            @edit="editing = $event"
+                            @pin="pin($event.text, $event.ref)"
+                            @grew="settled"
+                        />
+                    </TransitionGroup>
+                    <Transition name="rise">
+                        <div
+                            v-if="busy"
+                            class="thread-turn busy"
+                            :aria-label="waiting ? `The agent is waiting ${waiting}` : 'The agent is working'"
+                        >
+                            <template v-if="waiting">
+                                <div class="thread-bubble waiting">Waiting {{ waiting }}</div>
+                            </template>
+                            <template v-else-if="thought">
+                                <div class="thread-bubble thought">
+                                    <span class="thought-label">thinking</span>
+                                    <span class="thought-text">{{ thought }}</span>
+                                </div>
+                            </template>
+                            <template v-else>
+                                <div class="thread-bubble">
+                                    <span class="thread-dot" />
+                                    <span class="thread-dot" />
+                                    <span class="thread-dot" />
+                                </div>
+                                <div class="thread-meta"><span>working</span></div>
+                            </template>
+                        </div>
+                    </Transition>
+                </template>
+            </div>
+        </template>
     </div>
 </template>
 
