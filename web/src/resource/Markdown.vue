@@ -59,6 +59,10 @@ function follow(e) {
     font-size: 12px;
 }
 
+.md :deep(:not(pre) > code) {
+    white-space: nowrap;
+}
+
 .md :deep(pre) {
     margin: 0 0 10px;
     padding: 10px 12px;

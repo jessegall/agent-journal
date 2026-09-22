@@ -60,6 +60,7 @@ const state = computed(() => {
 });
 const words = computed(() => quoted(props.turn.brief || props.turn.title));
 const html = computed(() => render(words.value.text, {types: types.value, env: route.value.env}));
+const quoteHtml = computed(() => render(words.value.quote, {types: types.value, env: route.value.env}));
 const commentParent = computed(() => {
     if (props.turn.type !== "comment") return null;
     const parent = props.turn.refs.find((ref) => {
@@ -189,9 +190,12 @@ async function drop() {
                     </div>
                 </template>
                 <template v-if="words.quote">
-                    <p class="thread-quote" title="Go to what this answers" @click.stop="resourceComment ? openComment() : toQuoted()">
-                        {{ words.quote }}
-                    </p>
+                    <div
+                        class="thread-quote"
+                        title="Go to what this answers"
+                        @click.stop="resourceComment ? openComment() : toQuoted()"
+                        v-html="quoteHtml"
+                    />
                 </template>
                 <Folded :at="FOLD_AT">
                     <div ref="text" class="thread-text" @click="follow" v-html="html" />
@@ -489,6 +493,10 @@ button.thread-pill:hover {
     white-space: pre-wrap;
 }
 
+.thread-quote :deep(p) {
+    margin: 0;
+}
+
 .thread-quote:hover {
     color: var(--text-2);
 }
@@ -510,6 +518,10 @@ button.thread-pill:hover {
     background: rgba(255, 255, 255, 0.06);
     font-family: ui-monospace, "SF Mono", Menlo, monospace;
     font-size: 0.92em;
+}
+
+.thread-text :deep(:not(pre) > code) {
+    white-space: nowrap;
 }
 
 .thread-text :deep(pre.chat-code) {

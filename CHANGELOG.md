@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.84.63 — Quotes read like the message they came from
+
+The quote above a reply in the chat, and the Replying to box over the composer, render their text the way the message does: row chips and formatting instead of raw `[[chip …]]` markers. Inline code in the chat and in documents no longer breaks across lines.
+
 ## 2.84.62 — A doc's revisions never take a doc number
 
 A kept revision used to be saved as a doc of its own, so every revision pushed the next doc's number up. Revisions now live with their doc under `doc/revisions/<doc>/<k>.md`, and a doc counts them. The upgrade moves the existing revision snapshots there and points any link to them at their doc. The priority dropdown on a to-do now opens from its button's right edge, so it stays on the page.
