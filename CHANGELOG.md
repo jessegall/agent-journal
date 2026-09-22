@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.84.46 — The chat waits while you read
+
+When you have scrolled up and the mouse is over the chat, new messages no longer pull it down; scrolling with the wheel counts as reading. After 30 seconds with the mouse still, the chat takes you back to the newest message by itself. A message you send, or moving the mouse out of the chat, still takes you to the bottom at once.
+
 ## 2.84.45 — Thinking stays in the bubble; the project name stays in view
 
 Thinking never becomes a message in the chat any more: it only shows in the working bubble at the bottom, one thought at a time, and a real message or the next turn clears it. The thinking messages posted since 2.84.35 are archived. The sidebar's header with the project name now stays at the top while the sidebar scrolls.

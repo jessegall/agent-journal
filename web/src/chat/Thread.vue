@@ -20,7 +20,7 @@ import {tellExtension} from "../platform/extension.js";
 
 usePoll(...polled.agents);
 
-const IDLE = 10000;
+const IDLE = 30000;
 const scroller = ref(null);
 const quote = ref({text: "", ref: ""});
 const editing = ref(null);
@@ -153,6 +153,7 @@ useSighted(topMark, older, {root: scroller, margin: AHEAD});
 
 onUnmounted(() => {
     cancelAnimationFrame(frame);
+    clearTimeout(idleTimer);
 });
 
 function watchScroll() {
@@ -165,6 +166,13 @@ function watchScroll() {
 
 function stillReading() {
     return away.value && reading.value.inside && Date.now() - reading.value.moved < IDLE;
+}
+
+let idleTimer = 0;
+function markActive() {
+    reading.value.moved = Date.now();
+    clearTimeout(idleTimer);
+    idleTimer = setTimeout(() => away.value && reading.value.inside && toBottom(), IDLE);
 }
 
 async function post(text, files) {
@@ -304,9 +312,10 @@ watch(
             ref="scroller"
             :class="['thread-scroll', {focusing: store.focus, loading: !ready}]"
             @scroll.passive="watchScroll"
-            @mouseenter="reading.inside = true"
+            @mouseenter="(reading.inside = true) && markActive()"
             @mouseleave="reading.inside = false"
-            @mousemove="reading.moved = Date.now()"
+            @mousemove="markActive"
+            @wheel.passive="markActive"
         >
             <template v-if="rendering">
                 <div ref="topMark" class="thread-top" />
