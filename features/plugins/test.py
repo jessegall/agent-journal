@@ -1,4 +1,5 @@
 import json
+import shutil
 import subprocess
 import time
 
@@ -146,3 +147,24 @@ def test_stopping_a_service_stops_every_process_it_forked():
     teardown(service.pid, 1.0)
     assert (service.wait(timeout=5) is not None, gone(service.pid)) == (True, True), \
         "the service and the workers it forked go together, as one process group"
+
+
+def test_a_plugins_skills_are_published_marked_as_its_own_and_taken_back():
+    from features.plugins.skills import published, withdrawn
+    from skills import LIBRARY
+    record = alone()
+    project = record.root.parent
+    shipped = folder(record.root, "teacher") / "out"
+    for name in ("teacher-one", "teacher-two"):
+        (shipped / name).mkdir(parents=True, exist_ok=True)
+        (shipped / name / "SKILL.md").write_text(f"---\nname: {name}\n---\n\nbody\n")
+    (project / LIBRARY / "teacher-mine").mkdir(parents=True, exist_ok=True)
+    (project / LIBRARY / "teacher-mine" / "SKILL.md").write_text("---\nname: teacher-mine\n---\n")
+    published(record.root, "teacher", {"skills": "out"})
+    assert "plugin: teacher" in (project / LIBRARY / "teacher-one" / "SKILL.md").read_text(), "a published skill says which plugin it came from"
+    assert (project / ".claude" / "skills" / "teacher-one").is_symlink(), "and every agent reads it"
+    shutil.rmtree(shipped / "teacher-two")
+    published(record.root, "teacher", {"skills": "out"})
+    assert not (project / LIBRARY / "teacher-two").exists(), "an upgrade that drops a skill takes it back"
+    assert withdrawn(record.root, "teacher") == ["teacher-one"], "removing the plugin takes back exactly its own skills"
+    assert (project / LIBRARY / "teacher-mine").is_dir(), "a skill it did not publish is left alone"

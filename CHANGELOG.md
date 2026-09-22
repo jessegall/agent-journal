@@ -4,6 +4,11 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.85.84 — Only writing ends a wait; plugins publish skills
+
+- A declared wait ends only when the agent writes something (an edit, or a command that changes files). Reading, checking output and answering messages leave it standing.
+- A plugin's manifest may name a skills folder; its skills are published into the project marked plugin: <name>, linked for every agent, kept out of git status, refreshed on upgrade and taken back on removal.
+
 ## 2.85.83 — Every inspector is the one side panel
 
 - The resource inspector, documents, plans and agents open in kit SidePanel at its normal, wide or page width, with the same slide and the same blur fading in and out; stacked layers step back under the top one as before.

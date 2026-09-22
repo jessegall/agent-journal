@@ -3,6 +3,7 @@ import time
 from pathlib import Path
 
 from engine.services import UP, want
+from features.plugins.skills import published
 from features.plugins.source import folder, home, said_version
 
 
@@ -57,6 +58,7 @@ def place(plugins, where: Path, linked: bool, manifest: dict, source: str, ref: 
     else:
         where.rename(target)
     kept = {"source": source, "revision": ref, "commit": commit, "version": said_version(target, manifest), "linked": linked, "manifest": manifest}
+    published(plugins.record.root, name, manifest)
     if row:
         return plugins.update(row.n, abstract=manifest.get("description") or "", settings={**(row.settings or {}), "ports": ports or {}}, **kept)
     return plugins.create(manifest.get("title") or name, abstract=manifest.get("description") or "", enabled=True, settings={"ports": ports or {}}, token=secret, **kept)
