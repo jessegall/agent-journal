@@ -92,7 +92,7 @@ class WorkDetails(FeatureDetails):
         ),
         Line(
             name="unblocked",
-            title="todo {{n}}, {{title}}, is unblocked - todo {{closed}} closed",
+            title="todo {{n}}, {{title}}, is unblocked - {{closed}} closed",
             brief="journal todo start {{n}} when it is next",
         ),
         Line(

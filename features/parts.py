@@ -179,10 +179,21 @@ class Client:
                            formatter.surfaces))
 
 
+def refusals(interceptor: type) -> str:
+    return f"refused.{interceptor.__name__}"
+
+
 def limited(context: "AgentContext", interceptor: ToolInterceptor, refused: str) -> str:
-    key = f"refused.{type(interceptor).__name__}"
-    limit = int(context.settings[interceptor.limit])
-    count = (int(context.state.get(key, 0)) % (limit + int(context.settings[interceptor.steps_aside]))) + 1 if refused else 0
+    key = refusals(type(interceptor))
+    limit = max(0, int(context.settings[interceptor.limit]))
+    aside = max(0, int(context.settings[interceptor.steps_aside])) if interceptor.steps_aside else 0
+    count = int(context.state.get(key, 0))
+    if not refused:
+        count = 0
+    elif aside:
+        count = count % (limit + aside) + 1
+    else:
+        count += 1
     context.state.set(key, count)
     return refused if count <= limit else ""
 

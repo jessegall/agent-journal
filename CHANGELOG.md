@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.87.3 — Fixes from a review of today's changes
+
+Closing a to-do no longer rewrites the rows that wait on it, so reopening it makes them wait again; a row is named unblocked only when nothing it waits on is open and it is not blocked from outside, a finished plan unblocks too, and a struck row unblocks nothing. An error is reported once per place it happens, whatever its message says, and two at the same moment make one notice. A gate or check-in count set to 0 no longer crashes or locks anything, a compaction restarts the skill gate's refusals, and a skill counts as loaded only if it was loaded since the last compaction, everywhere. Parked work is named at most once in ten minutes, an interrupted subagent is not labelled refused, and an error after a reply is filed under the request's own environment. Three tests stopped checking wording another feature owns.
+
 ## 2.87.2 — A blocked row is asked about once, and a restart is not a failed hook
 
 A to-do still blocked is asked about at most once in ten minutes, so closing many to-dos at once names it once. A hook that got no answer while the server was restarting is not reported, and a hook the server never answered now lands in engine.log as the report says.
