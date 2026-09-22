@@ -21,11 +21,11 @@ export function openPictures(pictures, at) {
     lightbox.at = at;
 }
 
-export function focusTurn(ref) {
+export function focusTurn(ref, {instant = false} = {}) {
     const el = document.querySelector(`[data-ref="${ref}"]`);
     if (!el) return false;
     store.focus = ref;
-    el.scrollIntoView({behavior: "smooth", block: "center"});
+    el.scrollIntoView({behavior: instant ? "auto" : "smooth", block: "center"});
     setTimeout(() => (store.focus = store.focus === ref ? "" : store.focus), FOCUS_FOR);
     return true;
 }
