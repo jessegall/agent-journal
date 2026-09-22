@@ -8,6 +8,8 @@ class MessagesDetails(FeatureDetails):
 
     title = "Messaging"
 
+    speaks_while_waiting = True
+
     abstract = """
         What the user leaves for the agent is named until it is read, answered before the work
         starts, and closed once it is dealt with

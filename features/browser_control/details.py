@@ -8,6 +8,8 @@ class BrowserDetails(FeatureDetails):
 
     aliases = ("browser",)
 
+    speaks_while_waiting = True
+
     abstract = "The agent asks the tab the user is driving for a picture, its text or a click, and the extension answers"
 
     help = """

@@ -8,6 +8,8 @@ class TagsDetails(FeatureDetails):
 
     aliases = ("tags",)
 
+    speaks_while_waiting = True
+
     abstract = """
         Everything the agent writes reaches the chat, and a tag carrying a number or a name
         runs the command it stands for

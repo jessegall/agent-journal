@@ -7,6 +7,8 @@ class LongCommandsDetails(FeatureDetails):
 
     title = "Long commands"
 
+    speaks_while_waiting = True
+
     abstract = "A command that holds the agent's terminal too long is moved to the background, so the agent can carry on"
 
     help = """

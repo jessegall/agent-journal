@@ -10,6 +10,8 @@ class SkillsDetails(FeatureDetails):
 
     aliases = ("skills",)
 
+    speaks_while_waiting = True
+
     abstract = "An agent working on with no journal skill is told once per context window to load one"
 
     help = """

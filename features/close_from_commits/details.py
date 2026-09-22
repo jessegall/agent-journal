@@ -8,6 +8,8 @@ class CommitsDetails(FeatureDetails):
 
     aliases = ("commits",)
 
+    speaks_while_waiting = True
+
     abstract = "A commit whose message carries Journal: todos done and a to-do number closes that row"
 
     help = "The trailer starts at column 0; prose and indented examples close nothing."

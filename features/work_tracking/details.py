@@ -8,6 +8,8 @@ class WorkDetails(FeatureDetails):
 
     title = "Work tracking"
 
+    speaks_while_waiting = True
+
     abstract = """
         A write is refused until work is open; work started for a to-do is linked to it, its log
         is kept, twenty edits without an entry hold the writes, and parked work is set aside
@@ -84,6 +86,7 @@ class WorkDetails(FeatureDetails):
             name="open",
             title="work {{n}} is still open",
             brief='end it or park it before you stop: journal work end {{n}} --how "<what landed>", or journal work park {{n}} "<why it waits>"',
+            while_waiting=False,
         ),
         Line(
             name="unlogged",
@@ -92,6 +95,7 @@ class WorkDetails(FeatureDetails):
                 journal work log {{n}} "<what was decided or done, and why>" — then journal work
                 end {{n}} --how "<what landed>", or journal work park {{n}} "<why it waits>"
             """,
+            while_waiting=False,
         ),
         Line(
             name="in hand",

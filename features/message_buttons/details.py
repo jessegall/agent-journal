@@ -8,6 +8,8 @@ class ButtonsDetails(FeatureDetails):
 
     aliases = ("buttons",)
 
+    speaks_while_waiting = True
+
     abstract = "A message the agent writes can carry buttons, each running one journal command when the user presses it"
 
     help = """

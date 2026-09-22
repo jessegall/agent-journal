@@ -8,6 +8,8 @@ class PullRequestsDetails(FeatureDetails):
 
     title = "Pull requests"
 
+    speaks_while_waiting = True
+
     abstract = "A pull request the agent opens is pinned over the chat with its link until it is merged or closed"
 
     help = """
