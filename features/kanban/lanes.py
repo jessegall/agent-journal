@@ -47,15 +47,18 @@ def lane_of(sources: Sources, todo) -> str:
         return DONE
     if todo.n in sources.questions:
         return ASKED
-    if todo.n in sources.works:
+    if todo.n in sources.works and not sources.works[todo.n].parked:
         return DOING
     placement = sources.placement(todo)
-    if todo.blocked or sources.todos.waits(todo) or (placement and placement.holds):
+    if todo.n in sources.works or todo.blocked or sources.todos.waits(todo) or (placement and placement.holds):
         return HELD
     return TODO
 
 
 def reason_of(sources: Sources, todo) -> str:
+    work = sources.works.get(todo.n)
+    if work and work.parked:
+        return f"parked: {work.parked}"
     if todo.blocked:
         return f"blocked: {todo.blocked}"
     waits = sources.todos.waits(todo)

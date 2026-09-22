@@ -15,6 +15,9 @@ class Works(Controller):
 
     def _gate(self, todo: int = 0) -> None:
         busy = self.active()
+        if busy and busy.todo:
+            self._refuse(f'todo {busy.todo} is in hand as work {busy.n}: park it with journal work park "<why>", '
+                          f'or finish it with journal todo done {busy.todo} --how "<how>", before starting another')
         if busy:
             self._refuse(f'work {busy.n} is open: end it with journal work end --how "<what landed>", '
                           f'or set it aside with journal work park "<why>", before starting another')

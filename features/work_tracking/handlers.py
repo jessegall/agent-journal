@@ -27,6 +27,11 @@ class WorkCompleted(ResourceEvent):
 
 
 @dataclass(frozen=True)
+class TodoCompleted(ResourceEvent):
+    on: ClassVar[str] = "todo.completed"
+
+
+@dataclass(frozen=True)
 class WorkLogged(ResourceEvent):
     on: ClassVar[str] = "work.updated"
     section: str = ""
@@ -71,6 +76,14 @@ class CloseWork(Handler):
         todos = context.journal.todos
         if not todos.load(int(n)).completed:
             todos.complete(int(n), how=f"work {event.n} ended")
+
+
+class EndWorkWithTodo(Handler):
+    def handle(self, context: Context, event: TodoCompleted) -> None:
+        works = context.journal.works
+        for work in works._standing():
+            if int(work.todo or 0) == event.n:
+                works.complete(work.n, how=context.journal.todos.load(event.n).outcome or f"todo {event.n} done")
 
 
 class TrackFiles(Handler):

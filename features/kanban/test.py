@@ -106,3 +106,12 @@ def test_a_cards_words_pass_the_formatters_like_every_other_field():
     record = fresh()
     Todos(record, actor=USER).create("[!info] tagged title")
     assert [c["title"] for lane in board(record)["lanes"] for c in lane["cards"]] == ["tagged title"], "a leftover tag is taken off the card's title"
+
+
+def test_a_parked_to_do_is_held_not_doing():
+    record = fresh()
+    row = Todos(record, actor=AGENT).create("set aside")
+    Todos(record, actor=AGENT).start(row.n)
+    Works(record, actor=AGENT).action("park")("waiting on the build")
+    cards = {card["n"]: card for column in board(record)["lanes"] for card in column["cards"]}
+    assert (lane(record, row.n), cards[row.n]["reason"]) == ("held", "parked: waiting on the build"), "parked work leaves Doing and says why"

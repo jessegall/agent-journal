@@ -110,3 +110,16 @@ def test_a_mistyped_command_through_the_server_says_what_is_wrong():
     assert (code, "invalid choice: 'list'" in text) == (2, True), text
     text, code = captured(["work", "log"], record.root)
     assert (code, "arguments are required: text" in text) == (2, True), text
+
+
+def test_one_to_do_is_in_hand_until_it_is_parked_or_done():
+    record = fresh()
+    todos, works = Todos(record, actor=AGENT), Works(record, actor=AGENT)
+    first, second, third = (todos.create(title) for title in ("first", "second", "third"))
+    todos.start(first.n)
+    assert refused(lambda: todos.start(second.n)).startswith(f"todo {first.n} is in hand"), "a second to-do waits and the one in hand is named"
+    works.action("park")("the build is slow")
+    todos.start(second.n)
+    todos.complete(second.n, how="shipped")
+    assert works.active() is None, "a to-do that is done ends its work"
+    assert todos.start(third.n).todo == third.n, "so the next one starts"
