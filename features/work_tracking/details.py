@@ -32,7 +32,8 @@ class WorkDetails(FeatureDetails):
         such as a long build or a run in Docker, in its own words, and the chat shows it. Say it
         once instead of writing another line each time nothing has changed. Working again clears
         it, and the agent is told that it was cleared; parking clears it too. While it stands the
-        agent is asked every minute (work.ask_awaiting_every) whether the wait still holds.
+        agent is told every five minutes (work.ask_awaiting_every) to check the thing it waits
+        on and carry on or wait again.
 
         Auto mode is off by default: turning it on is the user's word to work the list and
         decide without blocking questions. The next ready row by priority is offered on idle
@@ -64,8 +65,8 @@ class WorkDetails(FeatureDetails):
         ),
         Setting(
             name="ask_awaiting_every",
-            default=1,
-            title="Ask the agent whether it is still waiting every",
+            default=5,
+            title="Have the agent check what it waits on every",
             unit="minutes",
         ),
         Setting(
@@ -121,11 +122,12 @@ class WorkDetails(FeatureDetails):
         ),
         Line(
             name="still awaiting",
-            title="you said you are waiting for {{what}}, {{minutes}} min ago - is that still true?",
+            title="check {{what}} now - you have waited {{minutes}} min",
             brief="""
-                if it is, say so with journal work await "<what you wait for>"; if not, carry on:
-                journal work log what came of it and take the next step. Never wait for something
-                you can do without, and park a to-do for anything that has to wait longer.
+                look at the thing itself: the background shell's output, the process, the run's
+                status. If it is still going, say journal work await "<what you wait for>" again and
+                wait. If it finished or failed, journal work log what came of it and take the next
+                step. Never wait for something you can do without.
             """,
         ),
     ]

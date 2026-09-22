@@ -71,10 +71,21 @@ def ports_for(root: Path, manifest: dict) -> dict:
     return given
 
 
+def own_journal(root: Path) -> Path:
+    bin_dir = Path(root) / "runtime" / "plugin-bin"
+    link = bin_dir / "journal"
+    if not link.is_symlink() or link.resolve() != (Path(root) / "journal").resolve():
+        bin_dir.mkdir(parents=True, exist_ok=True)
+        link.unlink(missing_ok=True)
+        link.symlink_to(Path(root).resolve() / "journal")
+    return bin_dir
+
+
 def environment(root: Path, name: str, manifest: dict, token: str, ports: dict | None = None) -> dict:
     where = values(root, name, token, ports)
     given = fill(manifest.get("env") or {}, where)
-    return {**os.environ, **{str(k): str(v) for k, v in given.items()},
+    path = f"{own_journal(root)}{os.pathsep}{os.environ.get('PATH', '')}"
+    return {**os.environ, "PATH": path, **{str(k): str(v) for k, v in given.items()},
             "JOURNAL_ROOT": where["root"], "JOURNAL_URL": where["journal.url"], "JOURNAL_TOKEN": token,
             "JOURNAL": str(Path(root) / "journal"), "JOURNAL_ENV": where["journal.env"], "JOURNAL_PLUGIN": name,
             "JOURNAL_PLUGIN_DIR": where["dir"], "JOURNAL_PLUGIN_DATA": where["data"], "JOURNAL_QUEUE": where["queue"]}
