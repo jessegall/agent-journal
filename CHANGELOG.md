@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.84.28 — [!internal] keeps a narrating message out of the chat
+
+A message the agent starts with `[!internal]` is not shown in the chat. It is meant only for narration of the next step, like "Checking the build next"; anything the user should read is written without it. Command tags in the same message still run.
+
 ## 2.84.27 — An unknown page opens Home instead of throwing
 
 A link to a page that is not a record type, like `#/main/home`, used to render a list for a type that does not exist and throw "Cannot read properties of undefined (reading 'filters')". It now opens Home.

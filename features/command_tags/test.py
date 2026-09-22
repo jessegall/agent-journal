@@ -43,6 +43,8 @@ def test_every_message_reaches_the_chat_and_nothing_asks_for_a_tag(tmp_path):
     assert chat() == ["Checking the build next."], "a message without a tag is a plain message in the chat"
     text("[!info] an old habit")
     assert chat()[-1] == "an old habit", "a retired label tag is taken off and the message shown"
+    text("[!internal] checking the build next")
+    assert chat()[-1] == "an old habit", "a message marked internal stays out of the chat"
     text(f"[!reply:{asked.n}] yes, here")
     assert chat()[-1] == "an old habit", "a reply is shown as the reply, not copied into the chat"
     assert [c.title for c in Comments(record, actor="system").linked_to(asked.ref)] == ["yes, here"], "the reply is posted"
