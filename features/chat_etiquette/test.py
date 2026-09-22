@@ -11,7 +11,7 @@ def test_chat_that_talks_about_the_journal_is_named_back_and_the_skill_is_always
     record = fresh()
     report(record, "working", "PreToolUse")
     agent = Agents(record, actor="system").by_session("claude-1")
-    chat.send(record, agent, "The build is green and the release is out.")
+    chat.send(record, agent, 'The build is green; it now catches lines like "your message is answered".')
     chat.send(record, agent, "Your message is answered. Now the terminal view.")
     assert [n for n in nudges(record) if "journal's workings" in n] == \
         ['your chat talked about the journal\'s workings - "Your message is answered"'], \
