@@ -230,6 +230,10 @@ export class ApiClient {
         return this.post(this.here("/plugins/preview"), {source});
     }
 
+    previewUpgrade(n) {
+        return this.post(this.here(`/plugins/${n}/upgrade-preview`), {});
+    }
+
     projectFiles(folder = "") {
         return this.get(this.here(`/project-files${query({folder})}`));
     }

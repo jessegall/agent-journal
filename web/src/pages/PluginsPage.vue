@@ -86,10 +86,25 @@ async function preview() {
 async function install() {
     busy.value = "install";
     try {
-        outcome.value = {ok: true, text: await api.command("plugin", "install", {source: source.value, yes: true})};
-        source.value = "";
+        const upgrading = shown.value.upgrading;
+        const said = upgrading
+            ? await api.act("plugin", upgrading, "upgrade", {yes: true, again: shown.value.current})
+            : await api.command("plugin", "install", {source: source.value, yes: true});
+        outcome.value = {ok: true, text: typeof said === "string" ? said : `${shown.value.title} is up to date.`};
+        if (!upgrading) source.value = "";
     } catch (e) {
         outcome.value = {ok: false, text: e.message};
+    }
+    busy.value = "";
+}
+
+async function upgrade(p) {
+    busy.value = `${p.n}`;
+    try {
+        shown.value = {...(await api.previewUpgrade(p.n)), upgrading: p.n};
+        outcome.value = null;
+    } catch (e) {
+        previewText.value = e.message;
     }
     busy.value = "";
 }
@@ -207,6 +222,27 @@ async function askAgent() {
                     <template v-if="shown.description">
                         <p class="shown-what">{{ shown.description }}</p>
                     </template>
+                    <template v-if="shown.upgrading">
+                        <p class="shown-lead">
+                            {{
+                                shown.current
+                                    ? "It is already at this commit. Run goes through its install steps again."
+                                    : shown.changes.length
+                                      ? "What it runs changes:"
+                                      : "It runs the same commands as the version you have."
+                            }}
+                        </p>
+                        <template v-if="shown.changes && shown.changes.length">
+                            <div class="shown-rows changes">
+                                <template v-for="(c, i) in shown.changes" :key="i">
+                                    <div class="shown-row">
+                                        <span :class="['shown-kind', c.kind]">{{ c.kind === "new" ? "Now also" : "No longer" }}</span>
+                                        <code class="shown-command">{{ c.line }}</code>
+                                    </div>
+                                </template>
+                            </div>
+                        </template>
+                    </template>
                     <p class="shown-lead">It runs as you, with your files and your network. This is everything it does:</p>
                     <div class="shown-rows">
                         <template v-for="(row, i) in shown.rows" :key="i">
@@ -302,7 +338,7 @@ async function askAgent() {
                         </div>
                     </template>
                     <footer class="acts">
-                        <Btn small :disabled="busy === `${p.n}`" @click="plugin(p, 'upgrade', {yes: true})">
+                        <Btn small :disabled="busy === `${p.n}`" @click="upgrade(p)">
                             <template v-if="busy === `${p.n}`">
                                 <Spinner />
                             </template>
@@ -504,8 +540,18 @@ h2 {
     display: flex;
     flex-direction: column;
     gap: 6px;
-    max-height: 420px;
-    overflow-y: auto;
+}
+
+.shown-rows.changes {
+    margin-bottom: 14px;
+}
+
+.shown-kind.new {
+    color: #63b37c;
+}
+
+.shown-kind.gone {
+    color: #e0795f;
 }
 
 .shown-row {
