@@ -77,6 +77,14 @@ class MessagesDetails(FeatureDetails):
 
     lines = [
         Line(
+            name="reaction",
+            title="your message was only {{face}}, so it was not posted - react instead",
+            brief="""
+                a face on its own is a reaction: journal message react <n> "{{face}}" puts it on the
+                message it answers. Write words when there is something to say.
+            """,
+        ),
+        Line(
             name="inbox",
             title="there are new messages in your inbox",
             brief="journal message unread, then journal message read <n> for each",

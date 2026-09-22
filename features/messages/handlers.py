@@ -4,6 +4,7 @@ from typing import ClassVar
 
 from engine.events import AgentMessageSent, AgentReported, ResourceCreated, ResourceEvent
 from engine.transcript import IDLE, last_text
+from controllers.messages import only_emoji
 from features import trigger
 from features.messages.answering import in_hand, read_and_open, theirs, unanswered
 from features.parts import AgentContext, Context, Handler
@@ -43,8 +44,12 @@ def patient(context: Context, behaviour: str) -> int:
 
 class SaveAgentMessage(Handler):
     def handle(self, context: AgentContext, event: AgentMessageSent) -> None:
-        if event.text.strip() and context.once("shown", event.text):
-            context.journal.acting(AGENT).messages.create(titled(event.text), brief=event.text)
+        if not event.text.strip() or not context.once("shown", event.text):
+            return
+        if only_emoji(event.text):
+            context.agent.whisper("reaction", face=event.text.strip())
+            return
+        context.journal.acting(AGENT).messages.create(titled(event.text), brief=event.text)
 
 
 class ResetCountsOnArrival(Handler):

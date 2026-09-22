@@ -8,7 +8,7 @@ from engine.sessions import Sessions
 from features.format import VIEWER, formatted
 from providers import DRIVERS, PROVIDERS
 from resources.base import AGENT, USER
-from tests.conftest import fresh
+from tests.conftest import fresh, refused
 from tests.kit import nudges, report
 
 
@@ -143,3 +143,8 @@ def test_a_row_named_by_a_bare_number_is_named_back_with_its_type():
     assert bare(f"down from 980 loose files to {asked.n}; it waited {filed.n} before") == [], "a small number with no handling verb before it is a count"
     assert bare("a number under 250 is a count, and so is more than 300") == [], "a quantity word before a number makes it a count"
     assert formatted("a journal question with options; journal question ask", record, VIEWER) == "a journal question with options; `journal question ask`", "only a real command is code"
+
+
+def test_a_reply_that_is_only_a_face_is_refused_and_points_at_react():
+    asked = Messages(record := fresh(), actor="user").create("ship it?")
+    assert "is a reaction: journal message react" in refused(lambda: Messages(record, actor="agent").reply(asked.n, "👍"))
