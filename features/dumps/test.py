@@ -46,17 +46,24 @@ def test_the_agent_is_told_when_a_dump_arrives_and_when_more_is_dropped_on_it(tm
     assert not [n for n in nudges(record) if "the agent's own" in n], "a dump the agent made is not announced to it"
 
 
-def test_a_dump_makes_its_own_collection_and_everything_it_files_joins_it():
+def test_what_a_dump_makes_stays_inside_it_until_the_user_confirms_it():
     record = fresh()
+    earlier = Docs(record, actor=AGENT).create("An older doc")
     dump = CONTROLLERS["dump"](record, actor=USER).create("Launch notes", brief="notes")
-    collections = CONTROLLERS["collection"](record, actor=USER)
-    made = [c for c in collections.all() if c.title == f"Dump {dump.n}, Launch notes"]
-    assert (len(made), collections.members(made[0].n)) == (1, [f"dump {dump.n}  Launch notes"]), "a new dump has its collection, with itself in it"
+    collections, docs = CONTROLLERS["collection"](record, actor=USER), Docs(record, actor=USER)
     agent = CONTROLLERS["dump"](record, actor=AGENT)
     doc, task = Docs(record, actor=AGENT).create("The launch"), Todos(record, actor=AGENT).create("book the room")
-    agent.filed(dump.n, "text", "a doc and a to-do", f"{doc.ref}, {task.ref}")
-    assert collections.members(made[0].n)[1:] == ["doc 1  The launch", "todo 1  book the room"], "what it files joins the same collection"
-    assert made[0].ref in agent.load(dump.n).refs, "the dump links its collection"
+    agent.filed(dump.n, "text", "a doc and a to-do, and the older doc extended", f"{doc.ref}, {task.ref}, {earlier.ref}")
+    made = collections.load(agent._collection(agent.load(dump.n)))
+    assert collections.members(made.n) == [f"dump {dump.n}  Launch notes", "doc 2  The launch", "todo 1  book the room", "doc 1  An older doc"], \
+        "the dump's collection holds everything it filed"
+    assert ([c.n for c in collections.all()], [d.n for d in docs.all()], [t.n for t in Todos(record, actor=USER).all()]) == ([], [earlier.n], []), \
+        "until confirmed, what it made is listed nowhere; a row it only extended stays listed"
+    assert refused(lambda: agent.confirm(dump.n)) == "only the user confirms a dump: they do it in the dump window", "the agent cannot confirm"
+    CONTROLLERS["dump"](record, actor=USER).leave(dump.n, task.ref)
+    CONTROLLERS["dump"](record, actor=USER).confirm(dump.n)
+    assert ([c.n for c in collections.all()], sorted(d.n for d in docs.all()), bool(Todos(record, actor=USER).load(task.n).deleted)) == \
+        ([made.n], [earlier.n, doc.n], True), "confirmed, it all appears at once, less what the user left out"
 
 
 def test_one_dump_is_worked_at_a_time_its_log_is_kept_and_filing_asks_for_the_next_step():

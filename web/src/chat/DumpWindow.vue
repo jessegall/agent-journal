@@ -22,10 +22,21 @@ const open = computed(() =>
         .sort((a, b) => b.n - a.n)
 );
 const inHand = computed(() => open.value[open.value.length - 1] || null);
-const dump = computed(() => (composing.value ? null : rows("dump").find((d) => d.n === chosen.value) || inHand.value));
-watch(dump, (d) => {
-    if (d && !chosen.value) chosen.value = d.n;
-});
+const unconfirmed = computed(() =>
+    rows("dump")
+        .filter((d) => !d.deleted && d.completed && !d.data?.confirmed)
+        .sort((a, b) => b.n - a.n)
+);
+const dump = computed(() =>
+    composing.value ? null : rows("dump").find((d) => d.n === chosen.value) || inHand.value || unconfirmed.value[0] || null
+);
+watch(
+    dump,
+    (d) => {
+        if (d && !chosen.value) chosen.value = d.n;
+    },
+    {immediate: true}
+);
 
 const names = (d) => [...(d.brief?.trim() ? ["text"] : []), ...Object.keys(d.data?.files || {}).sort()];
 const items = computed(() =>
@@ -53,20 +64,39 @@ const activity = computed(() => {
     return last && !last.done ? last.key : "";
 });
 const status = computed(() => {
-    if (queued.value) return `Waiting in line. The agent finishes dump ${inHand.value.n} first.`;
+    if (queued.value) return `Waiting for dump ${inHand.value.n} to finish first`;
     return latest.value?.text || activity.value || phrase("filing", now.value / 3);
 });
 
 const filedRefs = computed(() => [...new Set(items.value.flatMap((i) => i.refs || []))]);
 const writing = computed(() => (working.value && latest.value?.on && !filedRefs.value.includes(latest.value.on) ? latest.value.on : ""));
+const drafts = reactive({});
+const confirmed = computed(() => Boolean(dump.value?.data?.confirmed));
+const madeRefs = computed(() =>
+    [...filedRefs.value, ...(writing.value ? [writing.value] : [])].filter((ref) => !ref.startsWith("collection:"))
+);
 const made = computed(() =>
-    [...filedRefs.value, ...(writing.value ? [writing.value] : [])]
-        .filter((ref) => !ref.startsWith("collection:"))
+    madeRefs.value
         .map((ref) => {
             const [type, n] = ref.split(":");
-            return {ref, type, n: Number(n), row: rows(type).find((r) => r.n === Number(n)), writing: ref === writing.value};
+            const row = rows(type).find((r) => r.n === Number(n)) || drafts[ref];
+            return {ref, type, n: Number(n), row, writing: ref === writing.value};
         })
+        .filter((m) => !m.row?.deleted)
 );
+
+async function fetchDrafts() {
+    for (const ref of madeRefs.value) {
+        const [type, n] = ref.split(":");
+        if (rows(type).some((r) => r.n === Number(n))) continue;
+        try {
+            drafts[ref] = await api.show(type, Number(n));
+        } catch {
+            delete drafts[ref];
+        }
+    }
+}
+watch([madeRefs, now], fetchDrafts, {immediate: true});
 const label = (name) => (name === "text" ? "the pasted text" : name.startsWith("added-") ? "a note you added" : name);
 const dropped = computed(() => items.value.map((i) => label(i.name)));
 const collection = computed(() => (dump.value?.refs || []).find((ref) => ref.startsWith("collection:")) || "");
@@ -120,7 +150,13 @@ async function addMore() {
     }
 }
 
+async function leaveOut(ref) {
+    await api.act("dump", dump.value.n, "leave", {ref});
+    delete drafts[ref];
+}
+
 async function finish() {
+    if (dump.value.completed && !confirmed.value) return api.act("dump", dump.value.n, "confirm");
     if (working.value) await api.act("dump", dump.value.n, "close", {how: "closed by the user"});
     store.dumping = false;
 }
@@ -200,19 +236,19 @@ function follow(ref) {
                             <Icon name="check" :size="14" />
                         </template>
                         <template v-else-if="queued">
-                            <Icon name="clock" :size="13" />
+                            <Icon name="clock" :size="14" />
                         </template>
                         <template v-else>
                             <Spinner />
                         </template>
                         <Transition name="dump-line" mode="out-in">
-                            <span :key="dump.completed ? 'filed' : status">
+                            <span :key="dump.completed ? 'filed' : status" class="dump-status-text">
                                 {{ dump.completed ? `Finished · ${dump.outcome}` : status }}
                             </span>
                         </Transition>
                         <span class="grow" />
                         <Btn :kind="dump.completed ? 'primary' : undefined" small @click="finish">
-                            {{ dump.completed ? "Done" : "Mark done" }}
+                            {{ dump.completed ? (confirmed ? "Done" : "Confirm") : "Mark done" }}
                         </Btn>
                     </div>
                     <template v-if="working && !queued && trail.length">
@@ -248,6 +284,9 @@ function follow(ref) {
 
                 <template v-if="made.length">
                     <h3 class="dump-heading">What it made</h3>
+                    <template v-if="!confirmed">
+                        <p class="dump-note">Only you can see these until you confirm the dump.</p>
+                    </template>
                     <TransitionGroup name="dump-pop" tag="div" class="dump-cards">
                         <div v-for="m in made" :key="m.ref" :class="['dump-card', {writing: m.writing}]">
                             <template v-if="m.row">
@@ -259,6 +298,16 @@ function follow(ref) {
                             <template v-if="m.writing">
                                 <span class="dump-writing">writing…</span>
                             </template>
+                            <template v-else-if="!confirmed && m.row">
+                                <button
+                                    type="button"
+                                    class="dump-leave"
+                                    title="Delete this and keep it out of the record"
+                                    @click="leaveOut(m.ref)"
+                                >
+                                    Leave out
+                                </button>
+                            </template>
                         </div>
                     </TransitionGroup>
                 </template>
@@ -267,7 +316,7 @@ function follow(ref) {
                     <ul class="dump-failures">
                         <li v-for="f in failures" :key="f.name">
                             <Icon name="x" :size="12" />
-                            {{ label(f.name) }} was not filed: {{ f.failed }}
+                            Not filed: {{ label(f.name) }}. {{ f.failed }}
                         </li>
                     </ul>
                 </template>
@@ -354,14 +403,9 @@ function follow(ref) {
     font-size: 11px;
 }
 
-.dump-stage.filing {
-    background: color-mix(in srgb, var(--accent) 18%, transparent);
-    color: var(--accent-text);
-}
-
 .dump-stage.filed {
-    background: color-mix(in srgb, var(--done, #3fb950) 18%, transparent);
-    color: var(--done, #3fb950);
+    background: color-mix(in srgb, var(--created) 16%, transparent);
+    color: var(--created);
 }
 
 .grow {
@@ -488,25 +532,34 @@ function follow(ref) {
     font-size: 13px;
 }
 
-.dump-live.filing {
-    border-color: color-mix(in srgb, var(--accent) 40%, var(--border));
-}
-
 .dump-live-line {
     display: flex;
     align-items: center;
     gap: 8px;
     min-height: 26px;
-    color: var(--accent-text);
+    color: var(--text);
     font-size: 13.5px;
+    font-weight: 500;
+}
+
+.dump-live-line :deep(.spinner) {
+    color: var(--accent);
+}
+
+.dump-live.filed .dump-live-line > :first-child {
+    color: var(--created);
 }
 
 .dump-live.queued .dump-live-line {
     color: var(--text-2);
 }
 
-.dump-live.filed .dump-live-line {
-    color: var(--text);
+.dump-status-text {
+    display: inline-block;
+}
+
+.dump-status-text::first-letter {
+    text-transform: uppercase;
 }
 
 .dump-trail {
@@ -582,17 +635,52 @@ function follow(ref) {
     border-radius: 10px;
     background: linear-gradient(100deg, transparent 20%, color-mix(in srgb, var(--accent) 14%, transparent) 50%, transparent 80%);
     background-size: 200% 100%;
-    animation: dump-shimmer 1.6s linear infinite;
+    animation: dump-shimmer 1.8s ease-in-out infinite;
     content: "";
     pointer-events: none;
 }
 
+.dump-card.writing :deep(.age) {
+    visibility: hidden;
+}
+
 .dump-writing {
     position: absolute;
-    right: 12px;
-    bottom: 10px;
+    top: 15px;
+    right: 16px;
     color: var(--accent-text);
-    font-size: 11px;
+    font-size: 12px;
+}
+
+.dump-note {
+    margin: -6px 0 0;
+    color: var(--text-3);
+    font-size: 12px;
+}
+
+.dump-leave {
+    position: absolute;
+    right: 10px;
+    bottom: 8px;
+    padding: 2px 8px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--raised);
+    color: var(--text-2);
+    font-size: 11.5px;
+    opacity: 0;
+    cursor: pointer;
+    transition: opacity 0.15s ease;
+}
+
+.dump-card:hover .dump-leave,
+.dump-leave:focus-visible {
+    opacity: 1;
+}
+
+.dump-leave:hover {
+    border-color: var(--danger);
+    color: var(--danger);
 }
 
 .dump-card-empty {
@@ -652,23 +740,38 @@ function follow(ref) {
 
 @keyframes dump-shimmer {
     from {
-        background-position: 200% 0;
+        background-position: 130% 0;
     }
 
     to {
-        background-position: -200% 0;
+        background-position: -30% 0;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .dump-card.writing::after {
+        opacity: 0.5;
+        animation: none;
+    }
+
+    .dump-pop-enter-active {
+        transition: opacity 0.2s ease;
+    }
+
+    .dump-pop-enter-from {
+        transform: none;
     }
 }
 
 .dump-pop-enter-active {
     transition:
         opacity 0.3s ease,
-        transform 0.35s cubic-bezier(0.2, 1.4, 0.4, 1);
+        transform 0.35s cubic-bezier(0.2, 1.1, 0.4, 1);
 }
 
 .dump-pop-enter-from {
     opacity: 0;
-    transform: scale(0.92) translateY(6px);
+    transform: scale(0.96) translateY(6px);
 }
 
 .dump-line-enter-active,

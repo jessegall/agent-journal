@@ -5,10 +5,10 @@ from features.parts import WHOLE_FEATURE, AgentContext, Handler
 from controllers.base import CONTROLLERS
 from resources.base import ENVIRONMENT, SYSTEM, USER
 
-KEEP = {"report": 14, "todo": 7, "notification": 1}
+KEEP = {"report": 14, "todo": 7, "notification": 1, "nudge": 1}
 PACK_AFTER = 30
 UNPACKED = ("agent", "feature")
-FORGOTTEN = ("notification",)
+FORGOTTEN = ("notification", "nudge")
 DAY = 86400
 
 
@@ -42,4 +42,8 @@ class ExpireOldRows(Handler):
 
     def expire_notification(self, rows, r, cutoff: float, days: int) -> None:
         if USER in r.seen and r.created < cutoff:
+            rows.force_delete(r.n)
+
+    def expire_nudge(self, rows, r, cutoff: float, days: int) -> None:
+        if r.created < cutoff:
             rows.force_delete(r.n)

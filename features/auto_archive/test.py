@@ -1,7 +1,7 @@
 import time
 
 
-from controllers.types import Notifications, Reports, Todos
+from controllers.types import Notifications, Nudges, Reports, Todos
 from resources.base import AGENT, SYSTEM, USER, Refused
 from tests.kit import tick
 from tests.conftest import fresh
@@ -43,9 +43,13 @@ def test_seen_notifications_past_their_keep_days_go_unseen_ones_stay():
         Notifications(record, actor=USER).read(n)
     age(notes, seen_old.n, created=time.time() - 2 * 86400)
     age(notes, unseen_old.n, created=time.time() - 2 * 86400)
+    nudges = Nudges(record, actor=SYSTEM)
+    old_line, new_line = nudges.create("said yesterday"), nudges.create("said just now")
+    age(nudges, old_line.n, created=time.time() - 2 * 86400)
     tick(record)
     assert sorted(r.n for r in notes.all(deleted=True, completed=True)) == [unseen_old.n, seen_new.n], \
         "a seen notification past a day is removed entirely; unseen and recent ones stay"
+    assert [r.n for r in nudges.all(deleted=True, completed=True)] == [new_line.n], "a nudge past a day is removed; it was said already"
 
 
 def test_keep_zero_leaves_reports_listed():

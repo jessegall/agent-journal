@@ -39,7 +39,7 @@ EXT = ("py|js|mjs|cjs|ts|tsx|jsx|vue|md|json|css|scss|html|txt|log|yml|yaml|toml
        "java|go|rs|rb|sql|xml|env|gitignore|prettierrc")
 PATH = re.compile(rf"(^|[\s(])((?:/(?:[\w.-]+/)*[\w.-]*\.(?:{EXT}))|(?:\.{{1,2}}/)?(?:[\w.-]+/)*[\w.-]*\.(?:{EXT}))(?=[\s).,;:]|$)")
 SHA = re.compile(r"(^|[\s(])([0-9a-f]{7,40})(?=[\s).,;:]|$)")
-URL = re.compile(r"\bhttps?://[^\s<>\"'|\]]+[^\s<>\"'.,;:)|\]]")
+URL = re.compile(r"\bhttps?://[^\s<>\"'|\]*`]+[^\s<>\"'.,;:)|\]*`]")
 DOTFILE = re.compile(r"^\.(gitignore|env|prettierrc)$")
 CODE = re.compile(r"`[^`]*`")
 

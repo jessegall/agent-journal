@@ -7,6 +7,7 @@ from engine.stored import read_json, write_json
 from controllers.marks import internal
 
 DAMAGED = "damaged"
+DRAFT_OF = "draft_of"
 
 INDEX = "index.json"
 PACKED = "packed"
@@ -50,8 +51,10 @@ class Stored:
 
     @internal
     def numbers(self) -> list[int]:
-        loose = {int(p.stem) for p in self.record.folder(self.type, self.resource.scope).glob("*.md") if p.stem.isdigit()}
-        return sorted(loose | set(self._packed()))
+        folder = self.record.folder(self.type, self.resource.scope)
+        if folder.is_dir():
+            self.summaries()
+        return sorted(set(INDEXED.get(str(folder), {})) | set(self._packed()))
 
     @internal
     def summaries(self) -> list[dict]:
@@ -60,7 +63,8 @@ class Stored:
         held = SUMMARIES.get(str(folder))
         if held and held[0] == moved:
             return held[1]
-        return self._summarised(folder, moved, self._indexed(folder))
+        loose, wrote = self._indexed(folder)
+        return self._summarised(folder, self._moved(folder) if wrote else moved, loose)
 
     def _moved(self, folder: Path) -> tuple:
         return (folder.stat().st_mtime_ns, mtime(folder / PACKED / INDEX))
@@ -68,7 +72,7 @@ class Stored:
     def _summarised(self, folder: Path, moved: tuple, loose: list[dict]) -> list[dict]:
         seen = {row["n"] for row in loose}
         packed = [row for n, row in self._packed().items() if n not in seen]
-        rows = wholes(sorted(loose + packed, key=lambda row: row["n"]), lambda row: row.get(PART_OF))
+        rows = wholes(sorted(loose + packed, key=lambda row: row["n"]), lambda row: row.get(PART_OF) or row.get(DRAFT_OF))
         SUMMARIES[str(folder)] = (moved, rows)
         return rows
 
@@ -83,7 +87,8 @@ class Stored:
 
     def _row(self, r: Resource, stamp: str) -> dict:
         return {"n": r.n, "title": r.title, "deleted": r.deleted, "completed": r.completed, "seen": r.seen, "refs": r.refs, "updated": r.updated,
-                "files": len(r.files), PART_OF: r.data.get(PART_OF, ""), **{k: r.data.get(k) for k in self.resource.indexed}, "stamp": stamp}
+                "files": len(r.files), PART_OF: r.data.get(PART_OF, ""), DRAFT_OF: r.data.get(DRAFT_OF, ""),
+                **{k: r.data.get(k) for k in self.resource.indexed}, "stamp": stamp}
 
     def _packed(self) -> dict[int, dict]:
         index = self.record.folder(self.type, self.resource.scope) / PACKED / INDEX
@@ -95,12 +100,12 @@ class Stored:
             held = PACKS[str(index)] = (stamp, {int(n): row for n, row in (read_json(index) or {}).items()})
         return held[1]
 
-    def _indexed(self, folder: Path) -> list[dict]:
+    def _indexed(self, folder: Path) -> tuple[list[dict], bool]:
         stamps = {int(e.name[:-3]): f"{e.stat().st_mtime_ns}-{e.stat().st_size}" for e in os.scandir(folder) if e.name.endswith(".md") and e.name[:-3].isdigit()}
         known = INDEXED.get(str(folder)) or {int(n): row for n, row in (read_json(folder / INDEX) or {}).items()}
         rows = {}
         for n, stamp in stamps.items():
-            if known.get(n, {}).get("stamp") == stamp and (known[n].get(DAMAGED) or all(k in known[n] for k in ("files", PART_OF, *self.resource.indexed))):
+            if known.get(n, {}).get("stamp") == stamp and (known[n].get(DAMAGED) or all(k in known[n] for k in ("files", PART_OF, DRAFT_OF, *self.resource.indexed))):
                 rows[n] = known[n]
                 continue
             try:
@@ -109,10 +114,11 @@ class Stored:
                 rows[n] = {"n": n, DAMAGED: True, "stamp": stamp}
                 continue
             rows[n] = self._row(r, stamp)
-        if rows != known:
+        wrote = rows != known
+        if wrote:
             write_json(folder / INDEX, rows)
         INDEXED[str(folder)] = rows
-        return [rows[n] for n in sorted(rows) if not rows[n].get(DAMAGED)]
+        return [rows[n] for n in sorted(rows) if not rows[n].get(DAMAGED)], wrote
 
     def _titled(self, title: str, standing: bool = False) -> Resource | None:
         found = next((row["n"] for row in self.summaries() if row["title"] == title and not row["deleted"] and not (standing and row["completed"])), None)
@@ -171,7 +177,7 @@ class Stored:
 
     def _pack(self, before: float) -> int:
         folder = self.record.folder(self.type, self.resource.scope)
-        chosen = [row for row in self._indexed(folder) if (row["completed"] or row["deleted"]) and row["updated"] < before]
+        chosen = [row for row in self._indexed(folder)[0] if (row["completed"] or row["deleted"]) and row["updated"] < before]
         months: dict[str, list[dict]] = {}
         for row in chosen:
             months.setdefault(time.strftime("%Y-%m", time.localtime(row["updated"])), []).append(row)
