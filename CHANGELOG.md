@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.93.2 — The check's dot and buttons come from the kit
+
+The pulsing dot on a check is the kit Dot, which now draws a glowing dot of any size; a check's Run button and a notice's Allow, Deny and Force now buttons are kit buttons, showing the kit spinner while they work.
+
 ## 2.93.1 — One tab bar
 
 The list pages and the agent page draw their tabs with one kit component, TabBar, so every tab bar looks and behaves the same.

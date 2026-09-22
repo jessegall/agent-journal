@@ -1,4 +1,5 @@
 <script setup>
+import Btn from "../kit/Btn.vue";
 import CloseButton from "../kit/CloseButton.vue";
 import {ref} from "vue";
 import {api} from "../api/client.js";
@@ -41,13 +42,11 @@ async function close() {
             <a class="chat-notice-go" :href="notice.data.link" target="_blank" rel="noopener">{{ notice.data.label || "open" }}</a>
         </template>
         <template v-if="notice.data.action === 'permission' && notice.data.session">
-            <button type="button" class="chat-notice-go" :disabled="answering" @click="permit(true)">Allow</button>
-            <button type="button" class="chat-notice-go" :disabled="answering" @click="permit(false)">Deny</button>
+            <Btn small :disabled="answering" @click="permit(true)">Allow</Btn>
+            <Btn small :disabled="answering" @click="permit(false)">Deny</Btn>
         </template>
         <template v-else-if="notice.data.action && notice.data.session">
-            <button type="button" :class="['chat-notice-go', {forcing}]" :disabled="forcing" @click="force">
-                {{ forcing ? "Forcing" : "Force now" }}
-            </button>
+            <Btn small :busy="forcing" :disabled="forcing" @click="force">Force now</Btn>
         </template>
         <CloseButton title="Close this" @click="close" />
     </div>
@@ -82,12 +81,6 @@ async function close() {
     min-width: 0;
 }
 
-button.chat-notice-go {
-    font: inherit;
-    font-size: 11.5px;
-    cursor: pointer;
-}
-
 .chat-notice-go {
     flex: none;
     padding: 3px 9px;
@@ -114,29 +107,5 @@ button.chat-notice-go {
 
 .chat-notice.tone-warn {
     --tone: var(--tone-warn);
-}
-
-.chat-notice-go.forcing {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    opacity: 0.75;
-    cursor: default;
-}
-
-.chat-notice-go.forcing::after {
-    content: "";
-    width: 8px;
-    height: 8px;
-    border: 1.5px solid currentColor;
-    border-right-color: transparent;
-    border-radius: 50%;
-    animation: forcing 0.8s linear infinite;
-}
-
-@keyframes forcing {
-    to {
-        transform: rotate(360deg);
-    }
 }
 </style>

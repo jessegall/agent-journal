@@ -1,4 +1,6 @@
 <script setup>
+import Btn from "../kit/Btn.vue";
+import Dot from "../kit/Dot.vue";
 import {computed, ref} from "vue";
 import {api} from "../api/client.js";
 import {age} from "../format/time.js";
@@ -26,13 +28,19 @@ async function run() {
 <template>
     <div :class="['check', state.verdict]" role="button" tabindex="0">
         <div class="head">
-            <span class="dot" />
+            <Dot glow :size="8" :pulsing="state.verdict === 'running'" />
             <span class="verdict">{{ VERDICTS[state.verdict] }}</span>
             <span class="n">#{{ resource.n }}</span>
             <span class="grow" />
-            <button type="button" class="run" :disabled="asked || state.verdict === 'running'" @click.stop="run">
-                {{ state.verdict === "running" ? "Running" : "Run" }}
-            </button>
+            <Btn
+                kind="primary"
+                small
+                :busy="asked || state.verdict === 'running'"
+                :disabled="asked || state.verdict === 'running'"
+                @click.stop="run"
+            >
+                Run
+            </Btn>
         </div>
         <span class="title">{{ resource.title }}</span>
         <code class="command">{{ resource.data.command || "no command yet" }}</code>
@@ -95,24 +103,6 @@ async function run() {
     font-size: 12px;
 }
 
-.dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: var(--tone);
-    box-shadow: 0 0 0 3px color-mix(in srgb, var(--tone) 22%, transparent);
-}
-
-.running .dot {
-    animation: pulse 1.2s ease-in-out infinite;
-}
-
-@keyframes pulse {
-    50% {
-        box-shadow: 0 0 0 6px color-mix(in srgb, var(--tone) 10%, transparent);
-    }
-}
-
 .verdict {
     color: var(--tone);
     font-weight: 500;
@@ -124,26 +114,6 @@ async function run() {
 
 .grow {
     flex: 1;
-}
-
-.run {
-    padding: 3px 11px;
-    border: 1px solid color-mix(in srgb, var(--accent) 45%, transparent);
-    border-radius: 6px;
-    background: color-mix(in srgb, var(--accent) 16%, transparent);
-    color: var(--text);
-    font: inherit;
-    font-size: 11.5px;
-    cursor: pointer;
-}
-
-.run:hover:not(:disabled) {
-    background: color-mix(in srgb, var(--accent) 28%, transparent);
-}
-
-.run:disabled {
-    opacity: 0.55;
-    cursor: default;
 }
 
 .title {
