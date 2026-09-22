@@ -59,6 +59,8 @@ class Work(Traced, Resource):
         Field(name="todo"),
         Field(name="status"),
         Field(name="parked"),
+        Field(default="", name="awaiting"),
+        Field(default=0, name="awaiting_since"),
     ]
     start_heading = "STILL OPEN, from this or an earlier session"
     icon = "play"

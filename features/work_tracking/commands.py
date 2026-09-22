@@ -19,14 +19,24 @@ class LogWork(Command):
 
     def run(self, context: Context, works: Works, text: str, n: int = 0):
         row = in_hand(works, n)
-        return works.section(row.n, f"{len(row.sections) + 1} · {time.strftime('%Y-%m-%d %H:%M')}", text)
+        logged = works.section(row.n, f"{len(row.sections) + 1} · {time.strftime('%Y-%m-%d %H:%M')}", text)
+        return works.update(row.n, awaiting="") if row.awaiting else logged
 
 
 class ParkWork(Command):
     name = "park"
 
     def run(self, context: Context, works: Works, why: str, n: int = 0):
-        return works.update(in_hand(works, n).n, parked=why)
+        return works.update(in_hand(works, n).n, parked=why, awaiting="")
+
+
+class AwaitWork(Command):
+    name = "await"
+
+    def run(self, context: Context, works: Works, what: str, n: int = 0):
+        if not what.strip():
+            raise Refused("say what you are waiting for")
+        return works.update(in_hand(works, n).n, awaiting=what.strip(), awaiting_since=time.time())
 
 
 class ResumeWork(Command):

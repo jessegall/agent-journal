@@ -58,7 +58,7 @@ function unedit() {
     editing.value = null;
 }
 const busy = computed(() => !!agent.value && ["working", "compacting"].includes(agent.value.data.status));
-const waiting = computed(() => waitsFor(agent.value));
+const waiting = computed(() => waitsFor(rows("work")));
 const thought = computed(() => (agent.value && agent.value.data.thinking) || "");
 const away = ref(false);
 const missed = ref(0);
