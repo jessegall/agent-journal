@@ -1,20 +1,17 @@
-import json
 import os
 import re
-import socket
 import time
 from abc import ABC, abstractmethod
 from pathlib import Path
 
 from controllers.types import Agents
 from engine import typist
-from resources.base import Refused, SYSTEM
+from resources.base import SYSTEM
 from engine.wording import counted
 from engine import runtime
 
 ENTER_AFTER = 0.3
 MARK = "[journal]"
-POST_WAIT = 5.0
 RECHECK, RESUBMITS = 1.0, 3
 DRAFT_LINES = 8
 CHOICE = re.compile(rb"1\..+?2\.", re.S)
@@ -34,7 +31,6 @@ class Driver(ABC):
     STOP = b"\x1b"
     CLEAR_LINE = b"\x05\x15"
     name = ""
-    FROM = "The journal, for the user:"
     DISPLAY_HOOK = False
     AUTO_ARGS = ()
     APPROVAL_FLAGS = frozenset()
@@ -116,36 +112,8 @@ class Driver(ABC):
         line = joined(text)
         return self._post(line) or self.type_in(line)
 
-    def _posts(self) -> bool:
-        return bool(self.record.delivery.get("socket", True))
-
-    def _posted(self, line: str) -> str:
-        return f"{self.FROM}\n{line}" if self.FROM else line
-
-    def _inbox(self) -> str:
-        if not self._posts():
-            return ""
-        agents = Agents(self.record, actor=SYSTEM)
-        try:
-            mine = agents.by_session(self.session)
-        except Refused:
-            mine = None
-        live = agents.primary()
-        return str((mine and mine.inbox) or (live and live.inbox) or "")
-
     def _post(self, line: str) -> bool:
-        path = self._inbox()
-        if not path:
-            return False
-        payload = json.dumps({"type": "user", "message": {"role": "user", "content": self._posted(line)}}) + "\n"
-        try:
-            with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as post:
-                post.settimeout(POST_WAIT)
-                post.connect(path)
-                post.sendall(payload.encode())
-            return True
-        except OSError:
-            return False
+        return False
 
     def type_in(self, text: str) -> bool:
         line = f"{MARK} {joined(text)}"

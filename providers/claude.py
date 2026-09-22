@@ -394,7 +394,7 @@ class ClaudeDriver(Driver):
         return b"\r" if cls.CHANNEL[0].encode() in plain and CHOICE.search(plain) else b""
 
     def _post(self, line: str) -> bool:
-        return self._handed(line) or super()._post(line)
+        return self._handed(line)
 
     def owns(self, row) -> bool:
         pid = Sessions(self.record.root).read(self.session).get("pid")

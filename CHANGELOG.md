@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.84.96 — The socket setting is gone
+
+The journal no longer posts lines into Claude's cross-session socket, so Settings > Delivery drops Use the socket. Lines reach the agent through the channel, or are typed into its terminal when the channel is off.
+
 ## 2.84.95 — A hook report is its own event
 
 What the hooks report on every tool call was recorded as agent updated, the same as a real change to the agent. It is now agent.reported, and every feature that listens to the hooks listens to that; agent.updated means a real change to the agent row. The memory hold and lapsed assignments still hear both.

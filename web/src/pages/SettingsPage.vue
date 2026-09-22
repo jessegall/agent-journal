@@ -138,7 +138,7 @@ async function sweep(e) {
             <header class="group-head" role="button" tabindex="0" @click="fold('delivery')">
                 <span class="fold" />
                 <h2>Delivery</h2>
-                <p class="lead">How the engine gets a line to the agent. With both off it types into the terminal.</p>
+                <p class="lead">How the engine gets a line to the agent. With the channel off it types into the terminal.</p>
             </header>
             <div class="row">
                 <span class="text">
@@ -147,15 +147,6 @@ async function sweep(e) {
                 </span>
                 <span class="control">
                     <Switch :on="delivers('channel')" @change="(v) => setDelivery('channel', v)" />
-                </span>
-            </div>
-            <div class="row">
-                <span class="text">
-                    <span class="title">Use the socket</span>
-                    <span class="help">Delivered without typing, but the agent's own client says another session sent it</span>
-                </span>
-                <span class="control">
-                    <Switch :on="delivers('socket')" @change="(v) => setDelivery('socket', v)" />
                 </span>
             </div>
         </section>
