@@ -138,12 +138,16 @@ function settled() {
     if (!stillReading() && !away.value) toBottom();
 }
 
+let grew = null;
+let added = null;
+
 onMounted(() => {
-    const grew = new ResizeObserver(settled);
+    grew = new ResizeObserver(settled);
     for (const el of scroller.value.children) grew.observe(el);
-    new MutationObserver(() => {
-        for (const el of scroller.value.children) grew.observe(el);
-    }).observe(scroller.value, {childList: true});
+    added = new MutationObserver(() => {
+        for (const el of scroller.value?.children || []) grew.observe(el);
+    });
+    added.observe(scroller.value, {childList: true});
     frame = requestAnimationFrame(() => {
         frame = requestAnimationFrame(() => (rendering.value = true));
     });
@@ -152,6 +156,8 @@ onMounted(() => {
 useSighted(topMark, older, {root: scroller, margin: AHEAD});
 
 onUnmounted(() => {
+    grew?.disconnect();
+    added?.disconnect();
     cancelAnimationFrame(frame);
     clearTimeout(idleTimer);
 });
