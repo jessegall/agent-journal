@@ -166,7 +166,9 @@ async function skipPrompts(skip) {
                         </span>
                         <template v-if="line.brief">
                             <span class="note">
-                                <span v-for="(p, i) in pieces(line.brief)" :key="i" :class="{slot: p.slot}">{{ p.piece }}</span>
+                                <template v-for="(p, i) in pieces(line.brief)" :key="i">
+                                    <span :class="{slot: p.slot}">{{ p.piece }}</span>
+                                </template>
                             </span>
                         </template>
                     </div>

@@ -1,9 +1,11 @@
 <script setup>
 import {computed, reactive} from "vue";
 import FoldGroup from "../kit/FoldGroup.vue";
+import LineList from "../kit/LineList.vue";
 import ChoiceList from "../kit/ChoiceList.vue";
 import SidePanel from "../kit/SidePanel.vue";
 import Switch from "../kit/Switch.vue";
+import SwitchCase from "../kit/SwitchCase.vue";
 
 const props = defineProps({plugin: {type: Object, required: true}});
 const emit = defineEmits(["close", "change"]);
@@ -37,6 +39,7 @@ const choices = (s) => s.options.map((option) => ({value: String(option), label:
     <SidePanel :title="`${plugin.title} settings`" :abstract="plugin.what" @close="emit('close')">
         <template v-for="group in groups" :key="group.name">
             <FoldGroup
+                flush
                 class="group"
                 :label="group.name || 'Settings'"
                 :count="group.settings.length"
@@ -51,30 +54,35 @@ const choices = (s) => s.options.map((option) => ({value: String(option), label:
                                 <span class="setting-help">{{ s.help }}</span>
                             </template>
                         </div>
-                        <template v-if="s.type === 'flag'">
-                            <Switch :on="s.value === 'true'" :title="s.title" @change="(on) => emit('change', s.key, String(on))" />
-                        </template>
-                        <template v-else-if="s.type === 'options'">
-                            <ChoiceList :choices="choices(s)" @pick="(value) => emit('change', s.key, value)" />
-                        </template>
-                        <template v-else-if="s.type === 'textarea'">
-                            <textarea
-                                class="setting-value"
-                                rows="4"
-                                :value="s.value"
-                                spellcheck="false"
-                                @change="emit('change', s.key, $event.target.value)"
-                            />
-                        </template>
-                        <template v-else>
-                            <input
-                                class="setting-value"
-                                :type="s.type === 'number' ? 'number' : 'text'"
-                                :value="s.value"
-                                spellcheck="false"
-                                @change="emit('change', s.key, $event.target.value)"
-                            />
-                        </template>
+                        <SwitchCase :value="s.type">
+                            <template #flag>
+                                <Switch :on="s.value === 'true'" :title="s.title" @change="(on) => emit('change', s.key, String(on))" />
+                            </template>
+                            <template #options>
+                                <ChoiceList :choices="choices(s)" @pick="(value) => emit('change', s.key, value)" />
+                            </template>
+                            <template #list>
+                                <LineList :value="s.value" @change="(value) => emit('change', s.key, value)" />
+                            </template>
+                            <template #textarea>
+                                <textarea
+                                    class="setting-value"
+                                    rows="4"
+                                    :value="s.value"
+                                    spellcheck="false"
+                                    @change="emit('change', s.key, $event.target.value)"
+                                />
+                            </template>
+                            <template #default>
+                                <input
+                                    class="setting-value"
+                                    :type="s.type === 'number' ? 'number' : 'text'"
+                                    :value="s.value"
+                                    spellcheck="false"
+                                    @change="emit('change', s.key, $event.target.value)"
+                                />
+                            </template>
+                        </SwitchCase>
                     </div>
                 </template>
             </FoldGroup>
