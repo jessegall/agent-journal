@@ -76,60 +76,70 @@ const counts = (c) => [
 
 <template>
     <section :class="['jbar', {open, gone: journal.gone || !journal.running}]">
-        <button type="button" class="jbar-head" :aria-expanded="open" @click="emit('toggle')">
-            <span :class="['jbar-dot', {live}]" />
-            <span class="jbar-project">{{ journal.project }}</span>
-            <template v-if="!journal.running">
-                <span class="jbar-state">Stopped</span>
-                <span class="jbar-line">run journal claude in {{ journal.root.replace(/\/\.journal$/, "") }}</span>
-            </template>
-            <template v-else-if="!journal.summary">
-                <span class="jbar-line">this viewer is on {{ journal.version || "an older version" }} — the hub reads 2.3.0 and up</span>
-            </template>
-            <template v-else-if="reporting">
-                <span class="jbar-env">{{ reporting.name }}</span>
-                <span class="jbar-state">{{ wordOf(stateFor(reporting), reporting.auto && reporting.counts.todos > 0) }}</span>
-                <span class="jbar-line">{{ lineFor(reporting) }}</span>
-            </template>
-            <span class="jbar-counts">
-                <template v-for="[key, n, what] in counts(totals)" :key="key">
-                    <template v-if="n">
-                        <span :class="['jbar-count', key]" :title="`${n} ${what}`">
-                            <Icon :name="key === 'messages' ? 'mail' : key === 'questions' ? 'help' : 'todos'" :size="12" />
-                            {{ n }}
-                        </span>
-                    </template>
+        <div class="jbar-top">
+            <button type="button" class="jbar-head" :aria-expanded="open" @click="emit('toggle')">
+                <span :class="['jbar-dot', {live}]" />
+                <span class="jbar-project">{{ journal.project }}</span>
+                <template v-if="!journal.running">
+                    <span class="jbar-state">Stopped</span>
+                    <span class="jbar-line">run journal claude in {{ journal.root.replace(/\/\.journal$/, "") }}</span>
                 </template>
-            </span>
-            <span class="jbar-meta">
-                {{ journal.running ? (journal.current ? "this one" : `port ${journal.port}`) : `last seen ${age(journal.at)} ago`
-                }}{{ journal.version ? ` · ${journal.version}` : "" }}
-            </span>
-            <template v-if="journal.running">
-                <Icon name="down" :size="12" class="jbar-fold" />
-            </template>
-            <template v-else>
-                <span
-                    class="jbar-forget"
-                    role="button"
-                    title="Take this journal off the hub until its viewer runs again"
-                    @click.stop="emit('forget')"
-                >
-                    Forget
+                <template v-else-if="!journal.summary">
+                    <span class="jbar-line">
+                        this viewer is on {{ journal.version || "an older version" }} — the hub reads 2.3.0 and up
+                    </span>
+                </template>
+                <template v-else-if="reporting">
+                    <span class="jbar-env">{{ reporting.name }}</span>
+                    <span class="jbar-state">{{ wordOf(stateFor(reporting), reporting.auto && reporting.counts.todos > 0) }}</span>
+                    <span class="jbar-line">{{ lineFor(reporting) }}</span>
+                </template>
+                <span class="jbar-counts">
+                    <template v-for="[key, n, what] in counts(totals)" :key="key">
+                        <template v-if="n">
+                            <span :class="['jbar-count', key]" :title="`${n} ${what}`">
+                                <Icon :name="key === 'messages' ? 'mail' : key === 'questions' ? 'help' : 'todos'" :size="12" />
+                                {{ n }}
+                            </span>
+                        </template>
+                    </template>
+                </span>
+                <span class="jbar-meta">
+                    {{ journal.running ? (journal.current ? "this one" : `port ${journal.port}`) : `last seen ${age(journal.at)} ago`
+                    }}{{ journal.version ? ` · ${journal.version}` : "" }}
+                </span>
+                <template v-if="journal.running">
+                    <Icon name="down" :size="12" class="jbar-fold" />
+                </template>
+                <template v-else>
+                    <span
+                        class="jbar-forget"
+                        role="button"
+                        title="Take this journal off the hub until its viewer runs again"
+                        @click.stop="emit('forget')"
+                    >
+                        Forget
+                    </span>
+                </template>
+            </button>
+            <template v-if="journal.summary">
+                <span class="jbar-links">
+                    <a class="jbar-link" :href="`${base}/#/${journal.summary.start}`" title="Open this journal in this window">
+                        <Icon name="arrow" :size="13" />
+                    </a>
+                    <a
+                        class="jbar-link"
+                        :href="`${base}/#/${journal.summary.start}`"
+                        target="_blank"
+                        title="Open this journal in a new tab"
+                    >
+                        <Icon name="open" :size="13" />
+                    </a>
                 </span>
             </template>
-        </button>
+        </div>
         <template v-if="open && journal.summary">
             <div class="jbar-open">
-                <a
-                    class="jbar-go"
-                    :href="`${base}/#/${journal.summary.start}`"
-                    :target="journal.current ? '' : '_blank'"
-                    title="Open this journal's viewer"
-                >
-                    <Icon name="open" :size="12" />
-                    Open viewer
-                </a>
                 <a class="jbar-go" :href="`${base}/?chat`" target="_blank" title="Open this journal's chat in its own window">
                     <Icon name="bubble" :size="12" />
                     Open chat
@@ -223,8 +233,36 @@ const counts = (c) => [
     opacity: 0.55;
 }
 
+.jbar-top {
+    display: flex;
+    align-items: center;
+}
+
+.jbar-links {
+    flex: none;
+    display: inline-flex;
+    gap: 2px;
+    padding: 0 10px 0 4px;
+}
+
+.jbar-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    color: var(--text-3);
+}
+
+.jbar-link:hover {
+    background: #1b1c20;
+    color: var(--text);
+}
+
 .jbar-head {
-    width: 100%;
+    flex: 1;
+    min-width: 0;
     height: 52px;
     display: flex;
     align-items: center;
