@@ -222,6 +222,20 @@ def asked_slate(record: Record, project: Path, agent: str, ask=input, answering=
     return choose("Set aside the other hooks", notes, ["Yes, set them aside", "No, keep them"], 0 if last else 1, ask) == 0
 
 
+def asked_prompts(record: Record, agent: str, args: list[str], ask=input, answering=None) -> None:
+    from features.permission_prompts.feature import skipped
+    from providers import DRIVERS
+    answering = sys.stdin.isatty() if answering is None else answering
+    driver = DRIVERS.get(agent)
+    if not answering or not driver or not driver.SKIP_ARGS or set(driver.SKIP_ARGS) <= set(args):
+        return
+    notes = [f"{agent.capitalize()} then runs without stopping to ask before each tool call ({' '.join(driver.SKIP_ARGS)}),",
+             "so the journal can keep it working. Settings can change this later."]
+    picked = choose("Run without permission prompts", notes, ["Yes, skip them", "No, ask me each time"], 0 if skipped(record) else 1, ask)
+    if picked is not None:
+        record.set_setting("permission_prompts", {**record.setting("permission_prompts", {}), "skip": picked == 0})
+
+
 def supervise(ctx, agent: str) -> str:
     from engine.terminal import run as run_supervisor
     from engine.viewer import start
@@ -242,6 +256,7 @@ def supervise(ctx, agent: str) -> str:
     put_back(here)
     clear(record.root)
     try:
+        asked_prompts(here, agent, ctx["args"] or [])
         if asked_slate(here, project, agent):
             print(f"journal: {set_aside(here, project, agent)}")
         else:

@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.84.81 — Permission prompts are skipped by default, and the start asks
+
+The agent now runs without permission prompts unless you say otherwise: starting `journal claude` or `journal codex` asks "Run without permission prompts", with Yes as the default and your last answer remembered. It is not asked when you typed the flag yourself. Settings can switch it later. Tests now hold that every flag typed at launch reaches Claude and Codex unchanged and in order, with the switch on or off.
+
 ## 2.84.80 — A group opens as a page of cards
 
 Groups sit in the sidebar under Environment. A group's page shows its name and a card for every member: its type and number, title, first line, and a thumbnail when it carries a picture; clicking a card opens it. Every resource's actions have Add to group, which picks an open group or makes a new one from the name you type, and a member's own page lists the groups it is in. A document page no longer lists its links twice.

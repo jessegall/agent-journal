@@ -20,6 +20,10 @@ class Permissions(Feature):
         seat = next((found for _, found in live(record.root) if primary and found["session"] == primary.title), None)
         driver = DRIVERS.get(seat["provider"]) if seat else None
         args = Sessions(record.root).read(seat["terminal"]).get("args") or [] if seat else []
-        return {"skip": bool(record.setting(self.name, {}).get("skip")), "session": seat["session"] if seat else "",
+        return {"skip": skipped(record), "session": seat["session"] if seat else "",
                 "running": bool(driver and driver.SKIP_ARGS and set(driver.SKIP_ARGS) <= set(args)),
                 "possible": bool(driver and driver.SKIP_ARGS)}
+
+
+def skipped(record) -> bool:
+    return bool(record.setting("permission_prompts", {}).get("skip", True))

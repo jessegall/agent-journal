@@ -17,8 +17,9 @@ class PermissionsDetails(FeatureDetails):
         When the agent's terminal asks for permission, the chat shows which call it is for, and
         Allow or Deny answers the prompt in the terminal.
 
-        The Skip permission prompts switch in Settings restarts the agent in the same
-        conversation, with or without its skip flag.
+        The agent runs without permission prompts unless the Skip permission prompts switch in
+        Settings is turned off; flipping it restarts the agent in the same conversation, with or
+        without its skip flag.
     """
 
     lines = [
