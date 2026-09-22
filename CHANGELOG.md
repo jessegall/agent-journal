@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.85.25
+
+- Every doc lives in a folder of its own: project/doc/041/doc.md, with its attachments beside it and its kept revisions in project/doc/041/revisions/. A migration moves existing docs, under the new migration backup; tested on a copy of a real record, every doc, revision and attachment is kept word for word. The store writes, finds and lists a row the same way whether it lives loose or in its own folder.
+
 ## 2.85.24
 
 - Chat messages have a Copy action beside React, Reply and Pin; it copies the message's plain text and says Copied for a moment.

@@ -32,3 +32,31 @@ def test_edits_change_the_open_revision_and_a_kept_one_never_changes():
     assert mine.create("the next doc").n == doc.n + 1, "revisions never take a doc number"
     assert theirs.search("two") == [], "an earlier revision is read through its doc, never found on its own"
     assert "has revisions 1 to 3" in refused(lambda: mine.action("revision")(doc.n, 4)), "a revision out of range is refused"
+
+
+def test_moving_a_real_record_into_doc_folders_keeps_every_doc_file_and_revision(tmp_path):
+    import shutil
+    from pathlib import Path
+    from engine.record import Record
+    from migrations.m0024_docs_in_folders import run
+    real = Path(__file__).resolve().parents[2] / ".journal" / "project" / "doc"
+    if not real.is_dir() or not list(real.glob("[0-9]*.md")):
+        return
+    docs = tmp_path / "project" / "doc"
+    shutil.copytree(real, docs)
+    before = {p.stem: p.read_text() for p in docs.glob("[0-9]*.md")}
+    revisions = {(p.parent.name, p.name): p.read_text() for p in docs.glob("revisions/*/*.md")}
+    files = {p.relative_to(docs).as_posix() for p in docs.glob("[0-9]*/*") if p.is_file()}
+    run(tmp_path)
+    assert {n: (docs / n / "doc.md").read_text() for n in before} == before, "every doc is kept word for word in its folder"
+    assert {(n, k): (docs / n / "revisions" / k).read_text() for n, k in revisions} == revisions, "every revision moves under its doc"
+    assert files <= {p.relative_to(docs).as_posix() for p in docs.glob("[0-9]*/*") if p.is_file()}, "every attachment stays where it was"
+    (tmp_path / "environments" / "main").mkdir(parents=True)
+    def readable(text):
+        try:
+            return bool(Docs.resource.load(text).title)
+        except (ValueError, TypeError):
+            return False
+    docs_ = Docs(Record(tmp_path, "main"), actor=USER)
+    assert sorted(f"{n:03d}" for n in docs_.numbers() if readable(docs_._text(n))) == sorted(n for n, text in before.items() if readable(text)), \
+        "the store reads every moved doc back by its number, as readable as it was"

@@ -78,6 +78,7 @@ class Work(Traced, Resource):
 
 class Doc(Shape, Resource):
     loading = LAZY
+    own_folder = True
     type = "doc"
     event_labels = {"created": "Doc written", "completed": "Doc settled"}
     status_labels = {"complete": "settling"}

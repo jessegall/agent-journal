@@ -7,7 +7,6 @@ from engine.markers import plain
 from engine.record import Record
 from resources.base import SYSTEM, USER, Refused, Resource, SECTION, check_abstract, check_title
 from resources.shapes import Options, check, normalize_options, typed
-from engine.stored import write_text
 from controllers.files import Files
 from controllers.links import Links
 from controllers.marks import internal
@@ -82,9 +81,9 @@ class Controller(Stored, Files, Links):
         if self.actor not in r.seen:
             r.seen.append(self.actor)
         r.updated = time.time()
-        folder = self.path(r.n).parent
+        folder = self._folder()
         before = self._moved(folder) if folder.is_dir() else None
-        write_text(self.path(r.n), r.dump())
+        self._write_file(r)
         self._reindexed(r.n, before, r)
         self.record.emit(self.type, r.n, action, self.actor, **event)
         return r
@@ -157,7 +156,7 @@ class Controller(Stored, Files, Links):
         r = self.load(n)
         r.data.update(self._shaped(data))
         r.updated = time.time()
-        write_text(self.path(r.n), r.dump())
+        self._write_file(r)
         self.record.emit(self.type, r.n, "stamped", self.actor, quiet=True, fields=sorted(data))
         return r
 
@@ -272,7 +271,7 @@ class Controller(Stored, Files, Links):
                     continue
                 r.seen.append(self.actor)
                 r.updated = time.time()
-                write_text(self.path(r.n), r.dump())
+                self._write_file(r)
                 changed.append(r)
             if changed:
                 self.record.emit(self.type, changed[0].n, "updated", self.actor, numbers=[r.n for r in changed], seen=self.actor)
