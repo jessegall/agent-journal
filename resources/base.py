@@ -17,6 +17,7 @@ OPENED, COMPLETED, CLEARED = "opened", "completed", "cleared"
 CLEARINGS = (OPENED, COMPLETED, CLEARED)
 WHOM = "whom"
 KEYWORDS = "keywords"
+KEYWORDS_IN = "keywords_in"
 PART_OF = "part_of"
 ENVIRONMENT, PROJECT = "environment", "project"
 SCOPES = (ENVIRONMENT, PROJECT)

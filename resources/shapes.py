@@ -89,6 +89,7 @@ class Options(Shape):
 class Reasoned(Shape):
     data_fields: ClassVar[list[Field]] = [
         Field(LIST, list, name="keywords", required=True),
+        Field(TEXT, "both", name="keywords_in"),
     ]
     labels = {"brief": "Reasoning", "outcome": "Why struck"}
 
