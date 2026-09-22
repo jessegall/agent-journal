@@ -1,61 +1,48 @@
 import json
 
-from features.clean_slate.slate import others, put_back, set_aside
+from features.clean_slate.slate import KEY, others, put_back, set_aside, state
 from tests.conftest import fresh
 
 JOURNAL = "sh /p/.journal/src/hook.sh claude /p/.journal"
 
 
-def test_the_other_skills_and_hooks_are_set_aside_and_put_back(tmp_path, monkeypatch):
+def test_the_other_hooks_are_set_aside_and_put_back_and_skills_stay(tmp_path, monkeypatch):
     monkeypatch.setenv("HOME", str(tmp_path / "home"))
     record = fresh()
     project = record.root.parent
-    for home in (project, tmp_path / "home"):
-        for name in ("journal-todos", "graphify", ".system", "synced"):
-            (home / ".claude" / "skills" / name).mkdir(parents=True)
-            (home / ".claude" / "skills" / name / "SKILL.md").write_text(name)
+    (project / ".claude" / "skills" / "graphify").mkdir(parents=True)
     settings = project / ".claude" / "settings.local.json"
     hooks = {"Stop": [{"hooks": [{"type": "command", "command": "keep-going.sh"}]}, {"hooks": [{"type": "command", "command": JOURNAL}]}]}
     settings.write_text(json.dumps({"model": "opus", "hooks": hooks}))
     before = settings.read_text()
 
     set_aside(record, project, "claude")
-    assert sorted(p.name for home in (project, tmp_path / "home") for p in (home / ".claude" / "skills").iterdir()) == [".system", ".system", "journal-todos", "journal-todos", "synced", "synced"], \
-        "every skill that is not the journal's is moved out, in the project and at home, and a folder the agent's own tool manages, like Codex's .system or Claude's synced, is left alone"
     assert json.loads(settings.read_text()) == {"model": "opus", "hooks": {"Stop": [{"hooks": [{"type": "command", "command": JOURNAL}]}]}}, \
         "only the journal's hooks stay, the rest of the file is untouched"
-    assert others(project, "claude") == ([], []), "nothing else is left to set aside"
+    assert [p.name for p in (project / ".claude" / "skills").iterdir()] == ["graphify"], "skills are never moved"
+    assert others(project, "claude") == [], "nothing else is left to set aside"
 
     put_back(record)
-    assert (sorted(p.name for p in (project / ".claude" / "skills").iterdir()), settings.read_text()) == ([".system", "graphify", "journal-todos", "synced"], before), \
-        "putting back restores every skill and the hook file as it was"
+    assert settings.read_text() == before, "putting back restores the hook file as it was"
     assert put_back(record) == 0, "a second put back has nothing to do"
 
 
-def test_linked_homes_count_once_git_never_sees_a_deletion_and_a_failure_puts_everything_back(tmp_path, monkeypatch):
-    import subprocess
+def test_skills_an_earlier_version_set_aside_come_back_and_a_failure_puts_everything_back(tmp_path, monkeypatch):
     import features.clean_slate.slate as slate
     monkeypatch.setenv("HOME", str(tmp_path / "home"))
     record = fresh()
     project = record.root.parent
-    git = lambda *a: subprocess.run(["git", "-C", str(project), *a], capture_output=True, text=True, timeout=20).stdout
-    git("init", "-q")
-    for name in ("absence", "layout"):
-        (project / "skills" / name).mkdir(parents=True)
-        (project / "skills" / name / "SKILL.md").write_text(name)
-    git("add", "skills")
-    git("-c", "user.name=t", "-c", "user.email=t@t", "commit", "-q", "-m", "skills")
-    for home in (".agents", ".codex"):
-        (project / home).mkdir()
-        (project / home / "skills").symlink_to("../skills")
-    assert [s.name for s in others(project, "codex")[0]] == ["absence", "layout"], "two links to one folder list each skill once"
-    set_aside(record, project, "codex")
-    assert (sorted(p.name for p in (project / "skills").iterdir()), git("status", "--short", "--untracked-files=no")) == ([], ""), "both set aside, and git sees no deletion"
+    kept_at = slate.place(record) / "skill-0-graphify"
+    kept_at.mkdir(parents=True)
+    home = project / ".claude" / "skills" / "graphify"
+    record.set_setting(KEY, {**state(record), "moved": [{"from": str(home), "to": str(kept_at), "tracked": []}]})
     put_back(record)
-    assert (sorted(p.name for p in (project / "skills").iterdir()), git("status", "--short", "--untracked-files=no")) == (["absence", "layout"], ""), "both back, git clean"
-    real = slate.shutil.move
-    calls = []
-    monkeypatch.setattr(slate.shutil, "move", lambda a, b: calls.append(a) or ((_ for _ in ()).throw(OSError("disk full")) if len(calls) == 2 else real(a, b)))
-    assert set_aside(record, project, "codex").startswith("nothing set aside"), "a failure part way says so instead of crashing the launch"
-    monkeypatch.setattr(slate.shutil, "move", real)
-    assert sorted(p.name for p in (project / "skills").iterdir()) == ["absence", "layout"], "and what it had moved is back"
+    assert (home.is_dir(), kept_at.exists()) == (True, False), "a skill set aside before this version is put back"
+
+    settings = project / ".claude" / "settings.local.json"
+    settings.write_text(json.dumps({"hooks": {"Stop": [{"hooks": [{"type": "command", "command": "keep-going.sh"}]}]}}))
+    before = settings.read_text()
+    monkeypatch.setattr(slate, "others", lambda project, agent: [settings])
+    monkeypatch.setattr(slate, "kept", lambda settings: (_ for _ in ()).throw(OSError("disk full")))
+    assert set_aside(record, project, "claude").startswith("nothing set aside"), "a failure part way says so instead of crashing the launch"
+    assert settings.read_text() == before, "and the hook file is as it was"

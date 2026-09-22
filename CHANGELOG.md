@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.84.16 — The launch sets aside only other hooks, never skills
+
+The clean-slate step when `journal claude` or `journal codex` starts now offers to set aside only the hooks that are not the journal's, and names the files they are in. Skills stay where they are. Skills an earlier version set aside are still put back when the agent exits or the journal stops.
+
 ## 2.84.15 — The boot tests leave no process and no folder behind
 
 A launch in the boot tests and the boot guard now always cleans up, even when it fails: the stand-in agent is told to quit, the launcher is stopped, and anything still running from the test's folder is killed. The test also fails when `journal stop` leaves a process running. The tests use pytest's temporary folders, which pytest prunes, instead of making their own.

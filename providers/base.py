@@ -34,7 +34,6 @@ class Provider(ABC):
     skill_home = ""
     link_skills = False
     retired_skill_homes = ()
-    managed_skill_folders = ()
     controls = {"groups": [], "note": "This CLI does not expose model controls."}
 
     @classmethod
@@ -235,10 +234,6 @@ class Provider(ABC):
 
     def settings(self, project: Path) -> dict:
         return read_json(self.config(project), {})
-
-    def skill_homes(self, project: Path) -> list[Path]:
-        homes = (self.skill_home, *self.retired_skill_homes) if self.skill_home else ()
-        return [place / home for home in homes for place in (project, Path.home())]
 
     def hook_files(self, project: Path) -> list[Path]:
         return [self.config(project)]
