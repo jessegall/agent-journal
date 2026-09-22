@@ -26,9 +26,11 @@ class WorkDetails(FeatureDetails):
         when you are stuck or when something else has to happen first; never to wait for an
         answer you could carry on without, because under auto the list stops.
 
-        journal work await "<what>" says the agent is waiting for something, in its own words,
-        and the chat shows it; a log entry or parking clears it, and while it stands the agent
-        is asked every minute (work.ask_awaiting_every) whether the wait still holds.
+        journal work await "<what>" says the agent is waiting for something outside its hands,
+        such as a long build or a run in Docker, in its own words, and the chat shows it. Say it
+        once instead of writing another line each time nothing has changed. Working again clears
+        it, and the agent is told that it was cleared; parking clears it too. While it stands the
+        agent is asked every minute (work.ask_awaiting_every) whether the wait still holds.
 
         Auto mode is off by default: turning it on is the user's word to work the list and
         decide without blocking questions. The next ready row by priority is offered on idle
@@ -107,6 +109,11 @@ class WorkDetails(FeatureDetails):
         Line(
             name="next",
             title="todo {{n}} next",
+        ),
+        Line(
+            name="wait cleared",
+            title="your wait for {{what}} is over, because you are working again",
+            brief='say journal work await "<what you wait for>" again if you are still only waiting',
         ),
         Line(
             name="still awaiting",

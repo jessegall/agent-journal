@@ -106,6 +106,14 @@ class TrackFiles(Handler):
             tracker.record_files(row, context.record, work)
 
 
+class ClearWaitOnActivity(Handler):
+    def handle(self, context: AgentContext, event: ToolFinished) -> None:
+        for w in working(context)[:1]:
+            if w.awaiting:
+                context.journal.works.update(w.n, awaiting="")
+                context.agent.whisper("wait cleared", what=w.awaiting)
+
+
 class AskStillAwaiting(Handler):
     def handle(self, context: AgentContext, event: ClockTicked) -> None:
         every = context.settings.ask_awaiting_every
