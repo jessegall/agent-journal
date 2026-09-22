@@ -4,6 +4,14 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.84.8 — Proven: a session survives an upgrade under it
+
+A session that started before 2.84.3 still crashed when it ended, with `ZipImportError: bad local file header`, because an upgrade had overwritten the one `journal.pyz` it was reading. Builds have been versioned since 2.84.3; the start-up test now proves it holds: it starts a session, upgrades the journal under it to a different build, lets the agent quit on its own the way a real one does, and fails if anything crashes. With the old in-place overwrite put back, it fails with exactly that error.
+
+Clean slate also leaves alone the skill folders an agent's own tool manages: Claude Code's `synced` and Codex's `.system`. Claude Code had recreated `synced` while it was set aside.
+
+What to do about it: `journal upgrade`. A session started before 2.84.3 may still crash once when it ends; start it again.
+
 ## 2.84.7 — The hub opens the journal you pick
 
 Messages 2101 and 2166, to-do 739. The links in a journal's card on the hub (Open, its chat, each environment) were built from an address that was never set, so they read `undefined/#/main` and sent you to `/undefined/` on the journal you were already in. They now use that journal's own address.

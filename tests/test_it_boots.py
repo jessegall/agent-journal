@@ -10,7 +10,8 @@ from providers import DRIVERS
 from scripts.checks.imports import imports, missing
 
 HERE = Path(__file__).resolve().parents[1]
-STANDIN = "#!/bin/sh\ntouch \"$0.started\"\necho \"Ask Codex to do anything\"\nread line\necho \"$line\" > \"$0.typed\"\nsleep 30\n"
+STANDIN = ("#!/bin/sh\ntouch \"$0.started\"\necho \"Ask Codex to do anything\"\n(read line; echo \"$line\" > \"$0.typed\") &\n"
+           "while [ ! -f \"$0.quit\" ]; do sleep 0.1; done\n")
 WAIT = 20.0
 
 
@@ -18,7 +19,7 @@ def test_every_import_in_the_package_resolves():
     assert [f"{path.name}:{node.lineno}" for path, node in imports() for alias in node.names if missing(node.module, alias.name)] == []
 
 
-def launches(place: Path, entry: Path, name: str) -> None:
+def launches(place: Path, entry: Path, name: str, during=None) -> None:
     (place / "bin").mkdir(exist_ok=True)
     (place / "project" / f".{name}").mkdir(parents=True, exist_ok=True)
     standin = place / "bin" / name
@@ -32,9 +33,11 @@ def launches(place: Path, entry: Path, name: str) -> None:
     awaited = place / "bin" / (f"{name}.typed" if DRIVERS[name].confirm(b"Ask Codex to do anything") else f"{name}.started")
     while not awaited.exists() and launched.poll() is None and time.time() - began < WAIT:
         time.sleep(0.1)
-    launched.stdin.close()
-    text = launched.stdout.read().decode(errors="replace")
-    launched.wait(timeout=WAIT)
+    if during:
+        during()
+    (place / "bin" / f"{name}.quit").touch()
+    text = launched.communicate(timeout=WAIT)[0].decode(errors="replace")
+    (place / "bin" / f"{name}.quit").unlink()
     subprocess.run([*journal, "stop"], cwd=place / "project", env=env, capture_output=True, timeout=WAIT)
     assert "Traceback" not in text, f"journal {name} crashed:\n{text}"
     assert (place / "bin" / f"{name}.started").exists(), f"journal {name} never started the agent:\n{text}"
@@ -74,6 +77,14 @@ def test_every_agent_launches_from_an_installed_zip():
         f"an installed journal upgrades itself from a release, keeps its records, and runs from a versioned build:\n{itself.stdout}{itself.stderr}"
     for name in DRIVERS:
         launches(place, root / "journal.py", name)
+    (repository / "channel.py").write_text((repository / "channel.py").read_text() + f"\nRELEASE = {os.urandom(4000).hex()!r}\n")
+    subprocess.run(["git", "-c", "user.name=t", "-c", "user.email=t@t", "commit", "-qam", "a new build"], cwd=repository, capture_output=True, timeout=WAIT)
+
+    def upgraded():
+        subprocess.run([*journal, "upgrade"], cwd=place / "project", env={**env, "AGENT_JOURNAL_REPO": str(repository), "AGENT_JOURNAL_BOOTSTRAPPED": ""},
+                       capture_output=True, timeout=180)
+
+    launches(place, root / "journal.py", "claude", during=upgraded)
 
 
 def test_the_journal_starts_on_a_record_with_a_damaged_row():

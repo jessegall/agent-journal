@@ -34,6 +34,7 @@ class Provider(ABC):
     skill_home = ""
     link_skills = False
     retired_skill_homes = ()
+    managed_skill_folders = ()
     controls = {"groups": [], "note": "This CLI does not expose model controls."}
 
     @classmethod
