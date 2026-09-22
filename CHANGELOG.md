@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.85.94 — Deleting a resource closes its inspector for good
+
+- Deleting any resource from its inspector closes the inspector and leaves the row's address, so it no longer reopens.
+
 ## 2.85.93 — A trigger's panel shows and edits what it watches and does
 
 - A resource names the data fields its panel shows (shown_fields) and the values a field may take (choices); one DataFields component shows and edits them for any type. A trigger shows its words, where they count, what it does and what it sends.

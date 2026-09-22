@@ -141,7 +141,7 @@ const docs = computed(() =>
         </template>
         <template v-else-if="!editing">
             <div class="controls">
-                <ResourceActions :resource="resource" @edit="edit" />
+                <ResourceActions :resource="resource" @edit="edit" @close="emit('close')" />
                 <span class="controls-end">
                     <CommentToggle :resource="resource" />
                 </span>
