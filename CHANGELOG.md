@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.85.12
+
+- In every document viewer the Comments button sits at the right of the action row, beside Edit, Add to collection, Final and Delete, and is named Comments with its count. Those buttons each carry an icon, and their names start with a capital.
+
 ## 2.85.11
 
 - New plan, and every other New button, opens a dialog with room to write the title, the one line and a long brief, and to pick a template, instead of a strip that drops open over the list.
