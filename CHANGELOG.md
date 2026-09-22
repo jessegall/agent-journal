@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.84.76 — An ended plan no longer holds its rows
+
+A to-do moved from an abandoned plan to a new one was still held by the old plan, both when starting it and on the board. Only a running plan holds a row, and only when the row sits in one of its phases.
+
 ## 2.84.75 — A quantity word before a number marks a count
 
 "Under 100", "more than 300", "about 20" and the like are counts, and the bare-number check leaves them alone.

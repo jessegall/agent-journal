@@ -115,3 +115,18 @@ def test_a_parked_to_do_is_held_not_doing():
     Works(record, actor=AGENT).action("park")("waiting on the build")
     cards = {card["n"]: card for column in board(record)["lanes"] for card in column["cards"]}
     assert (lane(record, row.n), cards[row.n]["reason"]) == ("held", "parked: waiting on the build"), "parked work leaves Doing and says why"
+
+
+def test_an_ended_plan_holds_none_of_its_rows():
+    from features.plans.progress import held
+    record = fresh()
+    plans, row = Plans(record, actor=AGENT), Todos(record, actor=AGENT).create("moved between plans")
+    for title in ("the old plan", "the new plan"):
+        plan = plans.create(title, goal="a goal")
+        plans.phase(plan.n, "one", when="done")
+        plans.place(plan.n, 1, [row.n])
+        plans.ready(plan.n)
+    plans.abandon(plan.n - 1, why="rewritten")
+    Plans(record, actor=USER).activate(plan.n)
+    assert (held(record, Todos(record, actor=USER).load(row.n)), lane(record, row.n)) == (False, "todo"), \
+        "only the running plan's phase counts; the abandoned one still linking the row holds nothing"
