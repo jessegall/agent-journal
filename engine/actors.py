@@ -91,8 +91,9 @@ class Agent(Actor):
         if not self.pending:
             return ""
         typed = [e for e in self.pending if self.typed(e)]
-        line, groups = render([e for e in self.pending if e not in typed], self.record)
-        landed = self.driver.send(line, groups=groups)
+        yielding = [e for e in self.pending if e not in typed and spoken_data(self.record, e).get("yields")]
+        line, groups = render([e for e in self.pending if e not in typed and e not in yielding], self.record)
+        landed = self.driver.send(line, groups=groups, yielding=render(yielding, self.record)[0] if yielding else "")
         if typed:
             landed = self.driver.type_in(render(typed, self.record)[0]) and landed
         for e in self.pending:

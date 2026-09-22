@@ -199,3 +199,21 @@ def test_a_declared_wait_is_asked_about_and_cleared_when_the_work_moves():
     works.action("await")("the deploy")
     works.action("park")("the release goes out tomorrow")
     assert works.load(build.n).awaiting == "", "parking clears the wait"
+
+
+def test_a_line_queued_before_a_wait_is_dropped_once_the_wait_is_declared(monkeypatch):
+    from engine.engine import Engine
+    from providers import DRIVERS
+    record = fresh()
+    report(record, "working", "PreToolUse")
+    engine = Engine(record, DRIVERS["claude"](record, "claude-1"))
+    driver, delivered = engine.agent.driver, []
+    monkeypatch.setattr(driver, "deliver", delivered.append)
+    driver.sent_at = time.time()
+    driver.send("a message from the user", yielding="work 1 in hand")
+    works = Works(record, actor=AGENT)
+    works.create("the release")
+    works.action("await")("the CI run on main")
+    driver.sent_at = 0
+    driver.pump()
+    assert delivered == ["a message from the user"], "the wait began while the line was queued: it is dropped, the user's line is not"
