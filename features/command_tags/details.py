@@ -16,6 +16,10 @@ class TagsDetails(FeatureDetails):
     help = """
         A message without a tag is a plain message in the chat.
 
+        [!internal] at the start of a message keeps it out of the chat. Use it only for a
+        message that narrates what the agent does next, like "Checking the build next";
+        anything the user should read goes out without it.
+
         tags.runs maps a tag to the command it stands for, so [!reply:12] runs
         journal message reply 12 with the turn as its text, and [!todo="the title"] files a
         to-do with that title and the turn as its brief. [!fact="the claim"] and [!rule="the ruling"]

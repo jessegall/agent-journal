@@ -12,6 +12,7 @@ REPLIED = re.compile(r"\bjournal\s+message\s+reply\s+(\d+)")
 CARRIED = re.compile(r'^[ \t]*(?:>\s?)?(?:\*\*)?\[!([a-z]+)(?::([0-9]+)|="([^"]*)")((?:' + EXTRA + r')*)\]', re.M)
 NAMED = re.compile(r'([a-z_]+)=(' + VALUE + r')')
 SETTING = re.compile(r"--set ([a-z_]+)=")
+INTERNAL = re.compile(r"^[ \t]*(?:\*\*)?\[!internal\]", re.M)
 
 
 def pattern(names) -> re.Pattern:
@@ -37,6 +38,10 @@ def reader(settings: dict) -> re.Pattern:
 
 def stripped(text: str, settings: dict) -> str:
     return reader(settings).sub(lambda found: found.group(1) or "", str(text or ""))
+
+
+def internal(text: str) -> bool:
+    return bool(INTERNAL.search(text))
 
 
 def replies(text: str) -> bool:
