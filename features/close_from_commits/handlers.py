@@ -53,7 +53,7 @@ class CloseRowsFromCommits(Handler):
         try:
             stamp = (Path(project) / ".git" / "logs" / "HEAD").stat().st_mtime_ns
         except OSError:
-            return True
+            return False
         if self.seen.get(str(project)) == stamp:
             return False
         self.seen[str(project)] = stamp
