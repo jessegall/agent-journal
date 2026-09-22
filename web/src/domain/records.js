@@ -87,3 +87,9 @@ export function happened(r) {
     if (label) return label;
     return r.completed ? `${kind.title} ${word(r.type, "complete")}` : `${kind.title} created`;
 }
+
+export function missed(since) {
+    return rows("notification")
+        .filter((n) => !n.deleted && !n.completed && n.created * 1000 >= since && !n.seen.includes("user"))
+        .sort((a, b) => b.created - a.created);
+}
