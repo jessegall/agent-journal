@@ -22,7 +22,7 @@ export function useRevisions(resource) {
         {immediate: true}
     );
 
-    async function fetch(n) {
+    async function load(n) {
         if (!n || pages[n]) return;
         try {
             pages[n] = await api.show("doc", n);
@@ -36,8 +36,8 @@ export function useRevisions(resource) {
         () => delete pages[numbers.value[numbers.value.length - 1]]
     );
     watchEffect(() => {
-        fetch(numbers.value[at.value]);
-        fetch(numbers.value[at.value - 1]);
+        load(numbers.value[at.value]);
+        load(numbers.value[at.value - 1]);
     });
 
     const open = computed(() => Number(resource().data.open_until || 0) > now.value);
