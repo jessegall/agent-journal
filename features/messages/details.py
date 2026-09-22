@@ -57,7 +57,7 @@ class MessagesDetails(FeatureDetails):
         Behaviour(
             name="numbers",
             title="Name what a number in a message is",
-            abstract="A message that names a row by a bare number, like 'answered 1712' or '(644)', is named back so the type can be added and the chat links it",
+            abstract="A message that names a row by a bare number, like 'answered 1712', is named back so the type can be added and the chat links it; quoted text and code are left alone",
         ),
     ]
 

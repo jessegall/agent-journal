@@ -139,15 +139,15 @@ class NameRunTogether(Handler):
 
 
 VERBS = r"answered|replied to|closed|filed|started|parked|resumed|ended|finished|struck|reopened|processed"
-BARE = re.compile(rf"\b(?:{VERBS})\s+#?(\d+)\b|\((\d{{2,}})\)", re.IGNORECASE)
-CODE = re.compile(r"`[^`]*`")
+BARE = re.compile(rf"\b(?:{VERBS})\s+#?(\d+)\b", re.IGNORECASE)
+QUOTED = re.compile(r"`[^`]*`|\"[^\"]*\"|“[^”]*”")
 
 
 class NameBareNumbers(Handler):
     behaviour = "numbers"
 
     def handle(self, context: AgentContext, event: AgentMessageSent) -> None:
-        found = dict.fromkeys(int(a or b) for a, b in BARE.findall(CODE.sub("", event.text)))
+        found = dict.fromkeys(int(n) for n in BARE.findall(QUOTED.sub("", event.text)))
         if not found:
             return
         known = numbers(context)
