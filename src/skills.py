@@ -66,7 +66,7 @@ def subject(name: str) -> str:
     source = HERE / "skills" / f"{name}.md"
     if not source.is_file():
         return ""
-    body = source.read_text().split("---", 2)[-1].strip()
+    body = re.sub(r"\A---\n.*?\n---\n", "", source.read_text(), count=1, flags=re.S).strip()
     return "\n".join(line for line in body.splitlines() if not line.startswith("# ")).strip()
 
 
