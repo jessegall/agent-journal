@@ -6,6 +6,7 @@ import {computed, ref, watch} from "vue";
 import {api} from "../api/client.js";
 import Btn from "../kit/Btn.vue";
 import CommentToggle from "./CommentToggle.vue";
+import DropList from "../kit/DropList.vue";
 import {modelFamily, providerName} from "../agents.js";
 import Icon from "../kit/Icon.vue";
 import {go, route, showSession} from "../route.js";
@@ -20,6 +21,7 @@ import {stamp} from "../format/time.js";
 const props = defineProps({resource: Object});
 const emit = defineEmits(["close"]);
 const data = computed(() => props.resource.data);
+const resourceTitle = computed(() => props.resource.title);
 const family = computed(() => modelFamily(data.value.model));
 const name = computed(() => providerName(data.value.provider));
 const subagents = computed(() => (data.value.subagent_rows || []).filter((r) => r.session));
@@ -36,6 +38,17 @@ const works = computed(() =>
         .reverse()
 );
 const skills = computed(() => (picked.value ? picked.value.skills : data.value.skills) || []);
+const sessions = computed(() => [
+    {key: "", label: "This session", note: resourceTitle.value, running: data.value.status === "working"},
+    ...subagents.value.map((r) => ({
+        key: r.session,
+        label: r.task || r.session,
+        note: r.type || r.model || "",
+        running: Boolean(r.running),
+    })),
+]);
+const sessionLabel = computed(() => (sessions.value.find((s) => s.key === (session.value || "")) || sessions.value[0]).label);
+const skillItems = computed(() => skills.value.map((name) => ({key: name, label: name})));
 const state = computed(() => {
     const reported = data.value.status;
     return ["stopped", "idle", "compacting"].includes(reported) ? reported : works.value.some((w) => !w.completed) ? "working" : "busy";
@@ -136,13 +149,23 @@ useSighted(topMark, earlier, {root: scroller, margin: "400px 0px"});
                 </span>
             </div>
         </template>
-        <template v-if="skills.length">
-            <p class="skills">
-                <span class="skills-label">Skills in this window</span>
-                {{ skills.join(", ") }}
-                <button type="button" class="every" @click="go(route.env, 'skills')">every skill</button>
-            </p>
-        </template>
+        <div class="pickers">
+            <DropList
+                icon="agents"
+                :label="sessionLabel"
+                :items="sessions"
+                :picked="session || ''"
+                empty="No subagents yet"
+                @pick="(item) => showSession(item.key)"
+            />
+            <DropList
+                icon="book"
+                :label="`${skills.length} skills in this window`"
+                :items="skillItems"
+                empty="No skill loaded in this window"
+                @pick="() => go(route.env, 'skills')"
+            />
+        </div>
         <div class="tabs" role="tablist">
             <template v-for="[key, label] in TABS" :key="key">
                 <button type="button" role="tab" :aria-selected="tab === key" :class="['tab', {on: tab === key}]" @click="tab = key">
@@ -176,22 +199,6 @@ useSighted(topMark, earlier, {root: scroller, margin: "400px 0px"});
             </section>
         </template>
         <section v-show="tab === 'transcript'" class="block">
-            <template v-if="subagents.length">
-                <div class="sessions">
-                    <button type="button" :class="['session-pick', {on: !session}]" @click="showSession('')">This session</button>
-                    <template v-for="r in subagents" :key="r.session">
-                        <button
-                            type="button"
-                            :class="['session-pick', {on: session === r.session}]"
-                            :title="r.type ? `${r.type} · ${r.model}` : r.model"
-                            @click="showSession(r.session)"
-                        >
-                            <span :class="['dot', {open: r.running}]" />
-                            {{ r.task }}
-                        </button>
-                    </template>
-                </div>
-            </template>
             <div ref="scroller" class="transcript">
                 <div ref="topMark" class="edge">
                     {{
@@ -262,9 +269,16 @@ useSighted(topMark, earlier, {root: scroller, margin: "400px 0px"});
 }
 
 .top {
+    position: sticky;
+    z-index: 20;
+    top: 0;
     display: flex;
     align-items: center;
     gap: 10px;
+    margin: -16px -20px 0;
+    padding: 12px 20px;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg);
 }
 
 .kind {
@@ -332,20 +346,10 @@ useSighted(topMark, earlier, {root: scroller, margin: "400px 0px"});
     margin-top: 12px;
 }
 
-.skills {
-    margin: 0;
-    font-size: 12px;
-    line-height: 1.5;
-    color: var(--text-3);
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-}
-
-.skills-label {
-    margin-right: 6px;
-    color: var(--text-2);
+.pickers {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
 }
 
 .tabs {
@@ -384,37 +388,6 @@ useSighted(topMark, earlier, {root: scroller, margin: "400px 0px"});
     align-items: center;
     gap: 8px;
     padding: 4px 0;
-}
-
-.sessions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-    margin-bottom: 8px;
-}
-
-.session-pick {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 4px 10px;
-    border: 1px solid var(--border-2);
-    border-radius: 99px;
-    background: none;
-    color: var(--text-3);
-    font-size: 12px;
-    cursor: pointer;
-}
-
-.session-pick:hover {
-    color: var(--text-2);
-    border-color: var(--text-3);
-}
-
-.session-pick.on {
-    border-color: var(--accent);
-    background: color-mix(in srgb, var(--accent) 14%, transparent);
-    color: var(--text);
 }
 
 .session-pick .dot {

@@ -4,6 +4,11 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.85.56 — The agent inspector reads as one page
+
+- Its header stays put while the body scrolls.
+- The wall of session pills is one picker: this session and every subagent it dispatched, each with its type and whether it is running. The skills in the window are a picker too, in the same style.
+
 ## 2.85.55 — A notice looks like a notice, and a plugin can hear every moment
 
 - A notice over the chat has its own colour — a cyan edge and dot, or green and amber by tone — instead of the indigo the user's own messages wear.
