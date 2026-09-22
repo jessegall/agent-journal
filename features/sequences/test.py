@@ -21,9 +21,23 @@ def test_a_sequence_hands_its_steps_one_at_a_time_and_starts_on_its_moment():
     sequences.next(filing["n"], about=dump.ref)
     sequences.next(filing["n"], about=dump.ref)
     assert sequences.load(filing["n"]).runs == {}, "the last step ends it"
+    first = CONTROLLERS["dump"](record, actor=USER).create("Planning", brief="notes")
+    CONTROLLERS["dump"](record, actor=USER).create("Review", brief="notes")
+    assert steps()[-1] == f"sequence {filing['n']}, Filing a dump, step 1 of 3 - Read everything" and len(steps()) == 4, \
+        "a second run waits while the first is in hand"
+    for _ in range(3):
+        sequences.next(filing["n"], about=first.ref)
+    assert len(steps()) == 7 and steps()[-1].endswith("step 1 of 3 - Read everything"), "when the first ends, the one that waited is handed its first step"
+    report(record, "idle", "Stop")
+    assert [n for n in nudges(record) if "is still at step" in n] == [f"sequence {filing['n']}, Filing a dump, is still at step 1 of 3 - carry on with it"], \
+        "stopping with a run unfinished earns a reminder"
+    review = next(key for key in sequences.load(filing["n"]).runs).split("|", 1)[1]
+    sequences.abandon(filing["n"], about=review, why="the dump was a duplicate")
+    assert (sequences.load(filing["n"]).runs, sequences.load(filing["n"]).data["abandoned"][-1]["why"]) == ({}, "the dump was a duplicate"), \
+        "an abandoned run is dropped with its reason kept"
     other = CONTROLLERS["dump"](record, actor=USER).create("Retro", brief="notes")
     CONTROLLERS["dump"](record, actor=USER).delete(other.n, why="dropped by mistake")
-    assert sequences.load(filing["n"]).runs == {}, "a run ends with the row it was about"
+    assert all(not key.endswith(f"dump:{other.n}") for key in sequences.load(filing["n"]).runs), "a run ends with the row it was about"
     assert refused(lambda: CONTROLLERS["sequence"](record, actor=USER).delete(filing["n"], why="tidy")) == \
         f"sequence {filing['n']} ships with the journal and cannot be removed", "a system sequence stays"
     assert refused(lambda: CONTROLLERS["sequence"](record, actor=USER).update(filing["n"], title="Mine now")) == \

@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.85.1
+
+- One sequence run is in the agent's hands at a time: a run that starts while another is going waits its turn and is handed its first step when the first ends. The running block marks the waiting ones.
+- An agent that stops with a run unfinished is reminded of the step it is on, once per step.
+- A run can be abandoned with a reason, which the sequence keeps; the next waiting run is then handed over.
+
 ## 2.85.0
 
 - A new minor version, gathering the 2.84 line: the rebuilt dump page, sequences, the functional design doc that becomes a plan, declared waits, monitors and the terminal view in the agent bar, long commands moved to the background, and Codex subagents shown again.

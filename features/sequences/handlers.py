@@ -1,12 +1,14 @@
 from dataclasses import dataclass
 from typing import ClassVar
 
-from engine.events import AnyEvent, ResourceEvent
-from features.parts import Context, Handler
+from engine.events import AgentReported, AnyEvent, ResourceEvent
+from engine.transcript import IDLE
+from features.parts import AgentContext, Context, Handler
 from features.sequences.controller import BY_HAND
 from resources.base import SECTION
 
 STEP = "step"
+UNFINISHED = "unfinished"
 MOMENTS = ("created", "completed")
 
 
@@ -40,17 +42,28 @@ class EndWithItsRow(Handler):
                 sequences.update(sequence.n, runs={k: v for k, v in sequence.runs.items() if k != key})
 
 
+class RemindUnfinished(Handler):
+    def handle(self, context: AgentContext, event: AgentReported) -> None:
+        found = context.journal.sequences._in_hand() if context.agent.row.status == IDLE else None
+        if not found:
+            return
+        sequence, key, run = found
+        about = key.split("|", 1)[1]
+        if context.once(UNFINISHED, f"{sequence.n}|{key}|{run['step']}|{run['at']}"):
+            context.agent.say(UNFINISHED, n=sequence.n, title=sequence.title, step=run["step"], count=len(sequence.sections),
+                              about="" if about == BY_HAND else f" --about {about}")
+
+
 class HandStepToAgent(Handler):
     def handle(self, context: Context, event: SequenceMoved) -> None:
         agent = context.journal.agents.primary()
-        if event.action != "updated" or not agent:
+        found = context.journal.sequences._in_hand() if event.action == "updated" and agent else None
+        if not found:
             return
-        sequence = context.journal.sequences.load(event.n)
+        sequence, key, run = found
+        about = key.split("|", 1)[1]
         speaking = context.speaking_to(agent)
-        for key, step in sequence.runs.items():
-            env, about = key.split("|", 1)
-            if env != context.record.env or not speaking.once(STEP, f"{sequence.n}|{key}|{step}"):
-                continue
-            part = sequence.sections[step - 1]
-            speaking.agent.say(STEP, n=sequence.n, title=sequence.title, step=step, count=len(sequence.sections),
+        if speaking.once(STEP, f"{sequence.n}|{key}|{run['step']}|{run['at']}"):
+            part = sequence.sections[run["step"] - 1]
+            speaking.agent.say(STEP, n=sequence.n, title=sequence.title, step=run["step"], count=len(sequence.sections),
                                name=part[SECTION.title], body=part[SECTION.body], about="" if about == BY_HAND else f" --about {about}")
