@@ -2,6 +2,7 @@
 import {computed, onUnmounted, reactive, ref, watch} from "vue";
 import {store} from "../state/store.js";
 import Icon from "../kit/Icon.vue";
+import Markdown from "../resource/Markdown.vue";
 
 const props = defineProps({
     placeholder: {type: String, default: "Message the agent"},
@@ -98,7 +99,7 @@ async function use(tool) {
         <template v-if="quote">
             <div class="compose-quote">
                 <span class="compose-quote-label">{{ quoteLabel }}</span>
-                <div class="compose-quote-text">{{ quote }}</div>
+                <Markdown class="compose-quote-text" :text="quote" />
                 <button type="button" class="compose-quote-x" title="Not a reply after all" @click="emit('unquote')">×</button>
             </div>
         </template>
@@ -203,6 +204,10 @@ async function use(tool) {
     font-size: 12.5px;
     color: var(--text-2);
     white-space: pre-wrap;
+}
+
+.compose-quote-text :deep(p) {
+    margin: 0;
 }
 
 .compose-box {
