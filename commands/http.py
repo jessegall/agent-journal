@@ -489,6 +489,20 @@ def get_file_text(req: Request) -> Reply:
     return Reply(200, {"path": str(target.relative_to(project)), "size": target.stat().st_size, "kind": kind, "text": text, "lines": len(text.splitlines())})
 
 
+@route("GET", "/api/{env}/diff")
+def get_file_diff(req: Request) -> Reply:
+    project = req.root.parent.resolve()
+    asked = str(req.query.get("path") or "")
+    target = (project / asked).resolve()
+    if not asked or project not in target.parents:
+        raise Missing(f"no file {asked} in the project")
+    relative = str(target.relative_to(project))
+    diff = git(["diff", "--no-color", "HEAD", "--", relative], project, timeout=10)
+    if not diff and target.is_file() and not git(["ls-files", "--", relative], project):
+        diff = git(["diff", "--no-color", "--no-index", "--", "/dev/null", relative], project, timeout=10)
+    return Reply(200, {"path": relative, "diff": diff[:200000]})
+
+
 @route("GET", "/api/{env}/search")
 def get_search(req: Request) -> Reply:
     term = req.query.get("q", "")
