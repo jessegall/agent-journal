@@ -178,11 +178,15 @@ class Client:
                            formatter.surfaces))
 
 
+STEPS_ASIDE = 50
+
+
 def limited(context: "AgentContext", interceptor: ToolInterceptor, refused: str) -> str:
     key = f"refused.{type(interceptor).__name__}"
-    count = int(context.state.get(key, 0)) + 1 if refused else 0
+    limit = int(context.settings[interceptor.limit])
+    count = (int(context.state.get(key, 0)) % (limit + STEPS_ASIDE)) + 1 if refused else 0
     context.state.set(key, count)
-    return refused if count <= int(context.settings[interceptor.limit]) else ""
+    return refused if count <= limit else ""
 
 
 class AgentHooks:

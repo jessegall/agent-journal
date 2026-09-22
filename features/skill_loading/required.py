@@ -12,9 +12,13 @@ def required(record, session: str):
 def require(record, session: str, skills: dict[str, float]) -> None:
     state = required(record, session)
     held = state.get("required", {})
-    added = {name: at for name, at in skills.items() if name not in held}
+    added = {name: at for name, at in skills.items() if name not in held or float(held[name]) < at}
     if added:
         state.set("required", {**held, **added})
+
+
+def require_only(record, session: str, skills: dict[str, float]) -> None:
+    required(record, session).set("required", skills)
 
 
 def outstanding(record, row) -> list[str]:
