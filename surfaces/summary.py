@@ -7,6 +7,7 @@ from engine.manifest import manifest
 from engine.record import Record
 from features.work_tracking.auto import automatic
 from resources.base import SYSTEM, USER
+from surfaces.color import identity
 
 SHOWN = ("building", "ready", "active", "waiting", "done")
 
@@ -50,5 +51,5 @@ def environment(record: Record) -> dict:
 def summarize(root: Path) -> dict:
     m = manifest(root)
     names = dict.fromkeys([m["environment"], *(e.title for e in Environments(Record(root, m["environment"]), actor=SYSTEM)._standing())])
-    return {"project": m["project"], "root": str(root), "version": m["version"], "start": m["environment"],
+    return {"project": m["project"], "root": str(root), "version": m["version"], "start": m["environment"], "color": identity(root)["color"],
             "environments": [environment(Record(root, name)) for name in names]}

@@ -23,7 +23,7 @@ watch(writing, (is) => (store.drafting += is ? 1 : -1));
 onUnmounted(() => writing.value && (store.drafting -= 1));
 const area = ref(null);
 const attachment = {attachment: true, icon: "paperclip"};
-const actions = computed(() => [...props.tools, attachment]);
+const actions = computed(() => [attachment, ...props.tools]);
 
 watch(
     () => props.quote,

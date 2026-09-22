@@ -180,7 +180,7 @@ function follow(ref) {
     display: flex;
     align-items: center;
     gap: 8px;
-    padding: 10px 16px;
+    padding: 10px 4px;
     border-bottom: 1px solid var(--border);
     color: var(--text-2);
     font-size: 13px;
@@ -200,7 +200,7 @@ function follow(ref) {
     flex: 1;
     flex-direction: column;
     gap: 10px;
-    margin: 16px;
+    margin: 12px 0;
     padding: 12px;
     border: 1px dashed var(--border-2);
     border-radius: 12px;
@@ -275,7 +275,7 @@ function follow(ref) {
     display: flex;
     flex-direction: column;
     gap: 10px;
-    padding: 16px;
+    padding: 12px 0;
     overflow-y: auto;
 }
 
@@ -348,5 +348,16 @@ function follow(ref) {
     padding: 10px 12px;
     border: 1px solid var(--accent);
     border-radius: 8px;
+}
+
+.dump-enter-active {
+    transition:
+        opacity 0.2s ease,
+        transform 0.24s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.dump-enter-from {
+    opacity: 0;
+    transform: translateY(8px);
 }
 </style>

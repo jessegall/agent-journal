@@ -284,10 +284,10 @@ watch(
 
 <template>
     <div class="thread">
-        <template v-if="store.dumping">
-            <DumpWindow />
-        </template>
-        <template v-else>
+        <Transition name="dump">
+            <DumpWindow v-if="store.dumping" />
+        </Transition>
+        <template v-if="!store.dumping">
             <div class="thread-write">
                 <Transition name="rise">
                     <button

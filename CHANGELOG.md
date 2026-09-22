@@ -4,6 +4,11 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.84.99 — The hub shows each journal in its own colour
+
+- Each journal's dot on the hub takes that journal's colour, dimmed when it is not running.
+- The dump button sits right of the attach button; the dump window slides in and has less side padding.
+
 ## 2.84.98 — An upgrade replaces the engine, and old code never keeps running
 
 The server restarts itself in the same process on an upgrade, but the engine processes it had started kept running their old code for as long as the server lived: this project ran a 2.84.27 engine all day. That stale engine switched off features it did not know (row links, thinking, revisions) and did the engine's work with old code, including the offer of the next row under auto. An engine now stops as soon as the installed build is no longer its own, a starting server stops engines of its project left from any other build, and the upgrade switches back on the features stale code turned off.

@@ -78,7 +78,7 @@ const counts = (c) => [
     <section :class="['jbar', {open, gone: journal.gone || !journal.running}]">
         <div class="jbar-top">
             <button type="button" class="jbar-head" :aria-expanded="open" @click="emit('toggle')">
-                <span :class="['jbar-dot', {live}]" />
+                <span :class="['jbar-dot', {live}]" :style="journal.summary?.color ? {'--dot': journal.summary.color} : {}" />
                 <span class="jbar-project">{{ journal.project }}</span>
                 <template v-if="!journal.running">
                     <span class="jbar-state">Stopped</span>
@@ -285,11 +285,13 @@ const counts = (c) => [
     height: 8px;
     flex: none;
     border-radius: 50%;
-    background: var(--text-3);
+    background: var(--dot, var(--text-3));
+    opacity: 0.45;
 }
 
 .jbar-dot.live {
-    background: var(--accent);
+    background: var(--dot, var(--accent));
+    opacity: 1;
 }
 
 .jbar-project {
