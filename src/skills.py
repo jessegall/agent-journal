@@ -35,6 +35,9 @@ def signature(controller: type, name: str) -> str:
     return " ".join(words)
 
 
+NOUNS = "references/nouns.md"
+
+
 def reference() -> str:
     named = {type_: {*actions(controller), *COMMANDS.get(type_, {})} for type_, controller in CONTROLLERS.items()}
     shared = set.intersection(*named.values())
@@ -59,7 +62,9 @@ def reference() -> str:
 
 def core() -> str:
     text = (HERE / "skills" / "journal.md").read_text()
-    return f"---\nname: journal\ndescription: The journal, its commands and when each applies; load it before the first write\n---\n\n{text}\n{reference()}"
+    return (f"---\nname: journal\ndescription: The journal, its commands and when each applies; load it before the first write\n---\n\n{text}\n"
+            f"## Reference\n\nEvery noun and its own words are in {NOUNS}, beside this file: read it when you need a noun's exact words. "
+            "journal <noun> --help prints every word with its arguments.\n")
 
 
 def subject(name: str) -> str:
@@ -90,7 +95,7 @@ def feature_skill(f) -> str:
 
 def render() -> dict[str, str]:
     features.load()
-    out = {"journal/SKILL.md": core()}
+    out = {"journal/SKILL.md": core(), f"journal/{NOUNS}": reference()}
     for source in sorted((HERE / "skills").glob("*.md")):
         if source.name != "journal.md" and source.stem not in features.FEATURES:
             out[f"{skill_name(source.stem)}/SKILL.md"] = source.read_text()
@@ -154,7 +159,7 @@ def pruned(project: Path, names: list[str]) -> list[Path]:
 
 def publish(project: Path, agents: tuple[str, ...]) -> tuple[list[Path], list[Path]]:
     written = write(project / LIBRARY)
-    names = sorted({f.parent.name for f in written})
+    names = sorted({f.relative_to(project / LIBRARY).parts[0] for f in written})
     pruned(project, names)
     for home in RETIRED:
         if library(project, project / home):
