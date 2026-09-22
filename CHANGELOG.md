@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.84.92 — Plain names in the dump test
+
+A variable in the dump feature's test was named with a story word; it is named for what it holds.
+
 ## 2.84.91 — A transcript becomes a dump
 
 The transcript skill is gone: it had the agent plan from a pasted transcript, which the dump replaces, and the upgrade removes it from every project. A message declared a transcript now becomes a dump, with the message's text and files as its items and links both ways, and the agent files it like any other dump.
