@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.84.69 — An answered question leaves the notifications panel
+
+A question you had opened stayed on the Notifications panel after it was answered. Answering it now takes it off, and the upgrade clears answered questions that were still there.
+
 ## 2.84.68 — A plain claude is not in journal mode
 
 Only an agent started with `journal claude` or `journal codex` is in journal mode. The hooks already did nothing for any other session; now the status line prints nothing for it either, and the journal's channel server gives it no instructions and no notices, and no longer claims the channel is listening, so a plain `claude` in the same project stays plain.
