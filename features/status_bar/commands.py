@@ -17,6 +17,7 @@ CHANGING = ("writes", "deletes")
 START = r"(?:^|[;&|(]\s*|\b(?:do|then)\s+)"
 READING = r"(?:^|[;&]\s*|\b(?:do|then)\s+)"
 EFFECTS = (
+    ("pulls", re.compile(START + r"gh pr (?:create|merge|close)\b")),
     ("tests", re.compile(START + r"(?:\S*[Pp]ython[\d.]*\s+(?:-m\s+)?\S*tests?/\S*|pytest|npm (?:run )?test|npx (?:vitest|jest)|vitest|jest|go test|cargo test|phpunit|php artisan test|dotnet test|mvn\b[^;&|]*\btest|\S*gradlew?\b[^;&|]*\btest|(?:bundle exec )?rspec|mix test)\b")),
     ("tests", re.compile(r"\A(?=.*\b(?:test_|tests?\b))(?=.*\b(?:[Pp]ython[\d.]*|node|npx|perl)\s+[\"']?\$\w)", re.S)),
     ("installs", re.compile(START + r"(?:npm (?:ci|install|i)|yarn(?: (?:install|add))?|pnpm (?:install|add)|bun (?:install|add)|(?:\S*[Pp]ython[\d.]*\s+-m\s+)?pip[\d.]*\s+install|uv (?:pip )?(?:install|sync|add)|poetry (?:install|add)|composer (?:install|update|require)|bundle install|go mod (?:download|tidy)|cargo (?:fetch|install)|gem install|brew (?:install|bundle))\b")),
@@ -28,6 +29,8 @@ EFFECTS = (
     ("reads", re.compile(READING + r"(?:cat|head|tail|less|grep|rg|sed -n|wc|ls|find|tree|stat|file|diff|git (?:log|show|diff|status))\b")),
 )
 PASSED = re.compile(r"\b(\d+) passed\b")
+PULL = re.compile(r"gh pr (create|merge|close)\b(?:\s+(?!-)(\S+))?")
+PULL_URL = re.compile(r"https://github\.com/[^/\s]+/[^/\s]+/pull/(\d+)")
 FAILED = re.compile(r"\b(\d+) failed\b")
 FAILING = re.compile(r"\bfiles failing: (\d+)")
 PHPUNIT_OK = re.compile(r"^OK \((\d+) tests?", re.M)
@@ -93,10 +96,22 @@ def shell(row, hook: Hook) -> dict:
 def outcome_of(hook: Hook, effect: str) -> dict | None:
     if effect == "tests":
         return test_result(hook)
+    if effect == "pulls":
+        return pull_result(hook)
     if effect != "builds":
         return None
     output = f"{hook.tool.response.get('stdout') or ''}\n{hook.tool.response.get('stderr') or ''}"
     return {"ok": not BROKE.search(output)} if output.strip() else None
+
+
+def pull_result(hook: Hook) -> dict | None:
+    asked = PULL.search(hook.command)
+    if not asked:
+        return None
+    output = f"{hook.tool.response.get('stdout') or ''}\n{hook.tool.response.get('stderr') or ''}"
+    found = PULL_URL.search(output) or PULL_URL.search(asked.group(2) or "")
+    number = found.group(1) if found else (asked.group(2) or "").lstrip("#")
+    return {"pull": asked.group(1), "url": found.group(0) if found else "", "number": number if number.isdigit() else ""}
 
 
 def test_result(hook: Hook) -> dict | None:
