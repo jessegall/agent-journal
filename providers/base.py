@@ -149,14 +149,30 @@ class Provider(ABC):
             raw = source.read(size - offset)
         if raw:
             whole = raw[:raw.rfind(b"\n") + 1]
-            for line in whole.split(b"\n")[:-1]:
-                count += 1
-                row = parsed(line.decode(errors="replace"))
-                turn = self.turn(row) if isinstance(row, dict) else None
-                if turn:
-                    turns.append(Turn(count, *turn))
-            turns = self.refine(turns)
+            lines = whole.split(b"\n")[:-1]
+            turns = self.refine(turns + self.read_turns(lines, count))
+            count += len(lines)
             TRANSCRIPTS[str(path)] = (offset + len(whole), count, turns, (seam + whole)[-SEAM:])
+        return turns
+
+    def tail(self, path: Path, span: int = RECENT_BYTES) -> list:
+        try:
+            with Path(path).open("rb") as source:
+                start = max(0, source.seek(0, 2) - span)
+                source.seek(start)
+                raw = source.read()
+        except (OSError, TypeError):
+            return []
+        lines = raw[:raw.rfind(b"\n") + 1].split(b"\n")[:-1]
+        return self.refine(self.read_turns(lines[1:] if start else lines, 0))
+
+    def read_turns(self, lines: list[bytes], count: int) -> list:
+        turns = []
+        for i, line in enumerate(lines, count + 1):
+            row = parsed(line.decode(errors="replace"))
+            turn = self.turn(row) if isinstance(row, dict) else None
+            if turn:
+                turns.append(Turn(i, *turn))
         return turns
 
     def refine(self, turns: list[Turn]) -> list[Turn]:

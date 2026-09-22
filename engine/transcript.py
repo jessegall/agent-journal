@@ -96,8 +96,13 @@ def turns(record, agent) -> list:
 
 
 def last_turn(record, agent):
-    written = turns(record, agent)
-    return written[-1] if written else None
+    from providers import PROVIDERS
+    provider = PROVIDERS.get(agent.provider)
+    if not provider or not agent.transcript:
+        return None
+    settled(provider(), Path(agent.transcript), agent)
+    recent = [t for t in provider().tail(agent.transcript) if t.who == "agent" and t.text.strip()] or turns(record, agent)
+    return recent[-1] if recent else None
 
 
 def last_text(record, agent) -> str:
