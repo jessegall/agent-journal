@@ -1,7 +1,8 @@
 const transformers = [];
 
-export function register(fn) {
-    transformers.push(fn);
+export function register(fn, {first = false} = {}) {
+    if (first) transformers.unshift(fn);
+    else transformers.push(fn);
 }
 
 export function escape(text) {
