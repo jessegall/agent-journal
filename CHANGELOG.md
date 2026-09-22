@@ -4,6 +4,11 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.85.37 — The project badge blurs the page, and the chat is at its newest on return
+
+- While the project and environment badge shows, on returning to the tab or switching environment, the page behind it is blurred, so the badge is unmistakable.
+- Coming back to the tab scrolls the chat to its newest message.
+
 ## 2.85.36 — Other hooks in the agent panel, and arrow keys in the file browser
 
 - The agent panel's Hooks tab also lists, read only, the hooks registered in the agent's other settings files, such as ~/.claude/settings.json, each under the file it comes from. Removing one of the journal's own hooks there works again.

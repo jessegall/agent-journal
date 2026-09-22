@@ -27,6 +27,9 @@ onUnmounted(() => clearTimeout(timer));
 </script>
 
 <template>
+    <Transition name="veil">
+        <div v-if="showing" class="flash-veil" aria-hidden="true" />
+    </Transition>
     <Transition name="flash">
         <div v-if="showing" class="project-flash" :style="{'--tint': tint}" aria-hidden="true">
             <span class="badge" :style="{background: tint, color: negative}">{{ project.charAt(0).toUpperCase() }}</span>
@@ -53,6 +56,26 @@ onUnmounted(() => clearTimeout(timer));
         0 0 0 6px color-mix(in srgb, var(--tint) 12%, transparent);
     transform: translateX(-50%);
     pointer-events: none;
+}
+
+.flash-veil {
+    position: fixed;
+    inset: 0;
+    z-index: 89;
+    background: rgba(0, 0, 0, 0.18);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    pointer-events: none;
+}
+
+.veil-enter-active,
+.veil-leave-active {
+    transition: opacity 240ms ease;
+}
+
+.veil-enter-from,
+.veil-leave-to {
+    opacity: 0;
 }
 
 .badge {

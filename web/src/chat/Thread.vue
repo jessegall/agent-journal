@@ -19,6 +19,7 @@ import Turn from "./Turn.vue";
 import ThreadSkeleton from "./ThreadSkeleton.vue";
 import {usePoll} from "../poll.js";
 import {tellExtension} from "../platform/extension.js";
+import {flash} from "../platform/visibility.js";
 
 usePoll(...polled.agents);
 
@@ -153,6 +154,11 @@ function toBottom() {
     away.value = false;
     missed.value = 0;
 }
+
+watch(
+    () => flash.at,
+    () => nextTick(toBottom)
+);
 
 watch(
     () => store.dumping || store.terminal,
