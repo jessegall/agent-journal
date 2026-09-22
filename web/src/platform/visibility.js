@@ -46,6 +46,7 @@ async function back() {
 document.addEventListener("visibilitychange", () => (document.hidden ? left() : back()));
 window.addEventListener("blur", () => left());
 window.addEventListener("focus", back);
+window.addEventListener("pageshow", back);
 
 export function showAway() {
     Object.assign(away, {open: true, since: away.since || Date.now() - 86400000, back: Date.now()});
