@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.85.91 — Parked and blocked mean one thing each
+
+- The to-do skill lays out the difference: parked is work in hand that nothing stops, set aside because something else goes first by choice; blocked is a row that cannot go ahead until something happens (another to-do, a question to the user, or an outside condition). The work skill says the same, and filing a to-do is no longer called parking it.
+
 ## 2.85.90 — A write no longer rewrites its whole folder index
 
 - A type's index.json is written when 50 rows have changed or 30 seconds have passed, not on every write; the index in memory stays exact and every reader still checks each file's stamp. Taking in one changed message costs 15ms instead of 39ms.
