@@ -17,11 +17,13 @@ class ContextDetails(FeatureDetails):
     """
 
     help = """
-        The marks are the trigger's at list; a fact, a rule, or journal nothing "<why>" releases
-        the hold.
+        When a context mark holds your writes, decide before any other write: file what a later session would get wrong without
+        as journal fact create "<claim>" --set keywords="<word>,<word>", a ruling that binds every environment as
+        journal rule create "<ruling>" --set keywords="<word>,<word>", or run journal nothing "<why>" when there is nothing
+        to keep. Any of the three releases the hold. The marks are the percentages in the feature's trigger.
 
-        journal rule reread prints every standing rule and fact in full and marks the reading
-        done; it is owed again a week later.
+        Once a week run journal rule reread when you are told it is owed: it prints every standing rule and fact in full and
+        marks the reading done.
     """
 
     trigger = Trigger(at=(50, 70, 90, 95), unit=PERCENT)

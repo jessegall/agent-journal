@@ -15,14 +15,14 @@ class RulesDetails(FeatureDetails):
     """
 
     help = """
-        A rule binds every environment; one control injects the same managed block into both
-        instruction files.
+        When the user makes a ruling that binds every environment, record it as a rule: journal rule create "<the ruling>"
+        --brief "<the user's reason, and the message it came from>". Only the user strikes a rule. journal rule inject <n>
+        keeps a rule in the managed block of both AGENTS.md and CLAUDE.md.
 
-        A fact or rule can carry keywords, plain words set with --set keywords. When one of them
-        comes up as a whole word, the row is whispered to that session once, with its
-        reasoning; the call itself is never refused. --set keywords_in says where they match:
-        text (what the agent writes, in edits and in the chat), commands (shell commands), both
-        (the default), or everything (any tool call, file paths, searches and URLs included).
+        Give it keywords with --set keywords="<word>,<word>": when one comes up as a whole word, the row is whispered to
+        that session once, with its reasoning, and the call is never refused. --set keywords_in says where they match: text
+        (what you write, in edits and in the chat), commands (shell commands), both (the default), or everything (any tool call,
+        file paths, searches and URLs included).
     """
 
     runs_for_subagents = True

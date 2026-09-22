@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.94.9 — Journal skills say what to do
+
+The skills that only described their feature now instruct: when to act, what to do and the exact command, with how the feature works after it. That covers suggestions, memory checkpoints, reminders, browser control, facts, rules, the board, revisions, messages and plugins.
+
 ## 2.94.8 — The journal skill keeps its noun reference in a file of its own
 
 Every noun and its words, about 200 lines, moved out of the journal skill into references/nouns.md beside it, read when a noun's exact words are needed; the skill itself, loaded at every start, is a third of the size it was.

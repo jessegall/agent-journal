@@ -14,9 +14,12 @@ class BrowserDetails(FeatureDetails):
     abstract = "The agent asks the tab the user is driving for a picture, its text or a click, and the extension answers"
 
     help = """
-        The user turns driving on with the wheel in the chat window's bar; journal browser ask
-        shot|url|text|dom|console|click|type|goto|eval|scroll waits up to 30 seconds for the
-        answer.
+        When you need to see or act in the tab the user is driving, ask it: journal browser ask shot for a picture, ask text,
+        ask url, ask dom or ask console to read it, ask click "<selector>", ask type "<selector>" "<words>", ask goto <url>,
+        ask eval "<js>" or ask scroll top|bottom|<selector> to act. Each waits up to 30 seconds for the extension's answer.
+
+        It works only while the user drives a tab, which they turn on with the wheel in the chat window's bar; otherwise the
+        ask is refused and says so.
     """
 
     fixed = True

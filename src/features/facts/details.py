@@ -12,14 +12,14 @@ class FactsDetails(FeatureDetails):
     abstract = "What is true about the environment, said again to the agent as the window fills"
 
     help = """
-        A fact is something a later reader would get wrong without; it is handed back at every
-        tenth of the context.
+        When you learn something about this environment that a later session would get wrong without, write it as a fact:
+        journal fact create "<the claim>" --brief "<why it is true, where it shows>". It is handed back at every tenth of the
+        context. When it stops being true, strike it with journal fact strike <n> --how "<what changed>".
 
-        A fact or rule can carry keywords, plain words set with --set keywords. When one of them
-        comes up as a whole word, the row is whispered to that session once, with its
-        reasoning; the call itself is never refused. --set keywords_in says where they match:
-        text (what the agent writes, in edits and in the chat), commands (shell commands), both
-        (the default), or everything (any tool call, file paths, searches and URLs included).
+        Give it keywords with --set keywords="<word>,<word>": when one comes up as a whole word, the row is whispered to
+        that session once, with its reasoning, and the call is never refused. --set keywords_in says where they match: text
+        (what you write, in edits and in the chat), commands (shell commands), both (the default), or everything (any tool call,
+        file paths, searches and URLs included).
     """
 
     aliases = ("pins",)
