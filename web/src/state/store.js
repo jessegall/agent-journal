@@ -3,6 +3,7 @@ import {kept, remembered} from "../composables/remembered.js";
 
 export const store = reactive({
     spec: null,
+    drafting: 0,
     identity: null,
     rows: {},
     counts: {},

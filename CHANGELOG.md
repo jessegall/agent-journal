@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.84.33 — The viewer never reloads over a message you are writing
+
+When a newer viewer build arrives, the 60-second reload countdown now pauses while the chat's message box has text in it, and says so. It carries on once the box is empty or the message is sent, so a reload never throws away what you were typing.
+
 ## 2.84.32 — Links to rows are made on the server; the viewer only draws them
 
 The new Row links feature marks every row named in a brief, a section or an outcome, like to-do 648 or message 1712, when the text is sent to the viewer, and the viewer draws each mark as a chip that opens the row. The viewer's own reference finder is gone. The command line and downloads get the plain words, titles and abstracts stay plain, and text the viewer sends back is always saved as plain words. The row-links feature can be switched off in Settings.

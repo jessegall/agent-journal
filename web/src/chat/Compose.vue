@@ -1,5 +1,6 @@
 <script setup>
-import {computed, reactive, ref, watch} from "vue";
+import {computed, onUnmounted, reactive, ref, watch} from "vue";
+import {store} from "../state/store.js";
 import Icon from "../kit/Icon.vue";
 
 const props = defineProps({
@@ -16,6 +17,9 @@ const props = defineProps({
 });
 const emit = defineEmits(["unquote"]);
 const draft = reactive({text: "", files: [], sending: false, error: ""});
+const writing = computed(() => !!draft.text.trim());
+watch(writing, (is) => (store.drafting += is ? 1 : -1));
+onUnmounted(() => writing.value && (store.drafting -= 1));
 const area = ref(null);
 const attachment = {attachment: true, icon: "paperclip"};
 const actions = computed(() => [...props.tools, attachment]);

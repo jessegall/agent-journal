@@ -23,11 +23,16 @@ const stale = computed(() => {
 
 const RELOAD_AFTER = 60;
 const now = useNow();
-const reloadAt = ref(0);
-const left = computed(() => Math.max(0, Math.ceil(reloadAt.value - now.value)));
+const remaining = ref(0);
+const waiting = computed(() => store.drafting > 0);
+const left = computed(() => Math.ceil(remaining.value));
 
-watch(stale, (is) => (reloadAt.value = is ? now.value + RELOAD_AFTER : 0), {immediate: true});
-watch(left, (seconds) => reloadAt.value && !seconds && reload());
+watch(stale, (is) => (remaining.value = is ? RELOAD_AFTER : 0), {immediate: true});
+watch(now, (at, before) => {
+    if (!remaining.value || waiting.value) return;
+    remaining.value = Math.max(0, remaining.value - (at - before));
+    if (!remaining.value) reload();
+});
 
 onMounted(async () => {
     try {
@@ -59,9 +64,12 @@ async function upgrade() {
 <template>
     <template v-if="stale">
         <div class="band reloading">
-            <span class="text">A newer version of the viewer is running. This page reloads in {{ left }}s.</span>
+            <span class="text">
+                A newer version of the viewer is running.
+                {{ waiting ? `The reload waits while you write a message (${left}s left).` : `This page reloads in ${left}s.` }}
+            </span>
             <Btn kind="primary" small @click="reload">Reload now</Btn>
-            <span class="drain" :style="{animationDuration: `${RELOAD_AFTER}s`}" />
+            <span class="drain" :style="{animationDuration: `${RELOAD_AFTER}s`, animationPlayState: waiting ? 'paused' : 'running'}" />
         </div>
     </template>
     <template v-if="visible">
