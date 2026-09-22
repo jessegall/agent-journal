@@ -114,6 +114,7 @@ class Resource:
     lists_completed_unread: ClassVar[bool] = False
     cleared_by: ClassVar[str] = CLEARED     # what takes it off the user's list: opening it, completing it, or the user clearing it
     filters: ClassVar[tuple] = (OPEN, CLOSED)   # the ways its list can be narrowed, shown as the tabs above it
+    created_in_viewer: ClassVar[bool] = True     # its page offers a New button
     start_heading: ClassVar[str] = ""          # its heading in the start block, empty when it is not handed to a session
     start_as_count: ClassVar[bool] = False     # handed as a count, not row by row
     subagent_writable: ClassVar[bool] = True         # a subagent lent the environment may write it

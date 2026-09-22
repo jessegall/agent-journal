@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.85.19
+
+- The Messages page lists every message, open and processed, newest first, with no filter and no New message button. A type can say it is not created from the viewer, and one with no filters shows everything.
+- Chat etiquette also catches a message arriving or being read ("a new message came in", "reading it"), and its skill says those are never mentioned.
+- Skills have an open-book icon, on the agent bar's skills button, the sidebar, the skill panel and the Loaded skill lines in the chat.
+
 ## 2.85.18
 
 - Pull requests, a feature: when the agent opens a pull request with gh pr create, the journal reads the link it printed and pins the pull request over the chat, with a button to open it. Merging or closing it with gh pr merge or gh pr close takes the pin away. The status bar shows it as pull request.

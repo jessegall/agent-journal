@@ -6,6 +6,8 @@ from resources.shapes import FLAG, TEXT, Field, Options, Ranked, Reasoned, Shape
 
 class Message(Shape, Resource):
     deduplicates = True
+    filters = ()
+    created_in_viewer = False
     indexed = ("idempotency",)
     answer_command = "reply"
     editors = {USER: (USER, SYSTEM), AGENT: (AGENT, SYSTEM)}

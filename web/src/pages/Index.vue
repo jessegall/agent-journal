@@ -37,7 +37,9 @@ onUnmounted(() => {
     window.removeEventListener("touchmove", moved);
 });
 const listed = computed(() =>
-    [...(SHOWS[filter.value] || SHOWS.open)()].filter((r) => !r.data?.hidden).sort((a, b) => b.created - a.created)
+    [...(kind.value.filters?.length ? SHOWS[filter.value] || SHOWS.open : SHOWS.every)()]
+        .filter((r) => !r.data?.hidden)
+        .sort((a, b) => b.created - a.created || b.n - a.n)
 );
 const groups = computed(() => {
     const buckets = {};
@@ -80,10 +82,12 @@ async function select(n) {
                 <a class="flat" :href="`#/${route.env}/files`">Files</a>
             </template>
             <span class="grow" />
-            <Btn kind="primary" @click="adding = true">
-                <Icon name="plus" :size="12" />
-                New {{ kind.title.toLowerCase() }}
-            </Btn>
+            <template v-if="kind.created_in_viewer">
+                <Btn kind="primary" @click="adding = true">
+                    <Icon name="plus" :size="12" />
+                    New {{ kind.title.toLowerCase() }}
+                </Btn>
+            </template>
         </div>
         <template v-if="adding">
             <NewResource :type="type" @made="select" @close="adding = false" />

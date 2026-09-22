@@ -34,7 +34,7 @@ onUnmounted(() => window.removeEventListener("keydown", onEscape));
 <template>
     <aside class="skill-panel">
         <header class="skill-panel-head">
-            <Icon name="help" :size="14" />
+            <Icon name="book" :size="14" />
             <span class="skill-panel-title">{{ store.skill }}</span>
             <span class="grow" />
             <button type="button" class="skill-panel-close" title="Close" @click="store.skill = ''">
