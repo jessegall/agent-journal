@@ -11,7 +11,9 @@ const settled = ref(false);
 onMounted(() => setTimeout(() => (settled.value = true), 400));
 const logged = (e) => (e.type === "notification" && e.action === "created" && byRef(`notification:${e.n}`)) || {data: {}};
 const announced = (e) => logged(e).data.kind === "update";
+const raised = (e) => e.action === "raised";
 const written = (e) => logged(e).data.kind === "activity";
+const tone = (e) => (raised(e) ? e.data.tone : written(e) && logged(e).data.tone);
 const BUSY = new Set(["agent", "nudge"]);
 const opened = ref(new Set());
 const minute = (e) => Math.floor(e.at / 60);
@@ -46,6 +48,7 @@ function unfold(key) {
 }
 const did = (e) => (e.action === "updated" && e.data && e.data.section ? "sectioned" : e.action);
 function heading(e) {
+    if (raised(e)) return e.data.title;
     if (announced(e)) return "Journal updated";
     if (written(e)) return logged(e).title;
     const own = (meta(e.type).event_labels || {})[did(e)];
@@ -54,8 +57,8 @@ function heading(e) {
     return `${WORDS[e.action]} ${meta(e.type).title.toLowerCase()}`;
 }
 const hooked = (e) => [e.data?.hook, e.data?.tool].filter(Boolean).join(" ");
-const title = (e) => (written(e) ? logged(e).brief : hooked(e) || (byRef(`${e.type}:${e.n}`) || {}).title) || "";
-const who = (e) => (written(e) ? logged(e).data.plugin : e.actor[0].toUpperCase() + e.actor.slice(1));
+const title = (e) => (raised(e) ? e.data.brief : written(e) ? logged(e).brief : hooked(e) || (byRef(`${e.type}:${e.n}`) || {}).title) || "";
+const who = (e) => (raised(e) ? e.data.plugin : written(e) ? logged(e).data.plugin : e.actor[0].toUpperCase() + e.actor.slice(1));
 </script>
 
 <template>
@@ -73,7 +76,7 @@ const who = (e) => (written(e) ? logged(e).data.plugin : e.actor[0].toUpperCase(
                         'activity-row',
                         'activity-link',
                         {'activity-update': announced(item.event), 'activity-nested': item.nested},
-                        written(item.event) && `tone-${logged(item.event).data.tone}`,
+                        tone(item.event) && `tone-${tone(item.event)}`,
                     ]"
                     href="#"
                     @click.prevent="peek(item.event.type, item.event.n)"

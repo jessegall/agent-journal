@@ -54,7 +54,7 @@ def run(event: Event, record=None) -> None:
     before = cause()
     _cause.actor = event.data.get("cause") or event.actor
     try:
-        for pattern in (ANY, event.type, event.action, f"{event.type}.{event.action}"):
+        for pattern in (ANY, event.type, event.action, f"{event.type}.{event.action}", event.data.get("event") or ""):
             for enabled, listener in list(_listeners.get(pattern, ())):
                 if record is None or enabled(record):
                     listener(event, record)

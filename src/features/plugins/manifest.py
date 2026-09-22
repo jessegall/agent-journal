@@ -9,7 +9,7 @@ from resources.base import ACTIONS, Refused
 from resources.types import TYPES
 
 MANIFEST = Path(".journal-plugin") / "plugin.json"
-KEYS = ("name", "version", "title", "description", "journal", "requires", "env", "setup", "services", "on", "refuse", "reads", "refuse_seconds", "chat", "pages", "settings", "skills", "installed")
+KEYS = ("name", "version", "title", "description", "journal", "requires", "env", "setup", "services", "on", "refuse", "reads", "refuse_seconds", "chat", "pages", "settings", "skills", "installed", "events")
 NAME = re.compile(r"[a-z0-9][a-z0-9-]{1,31}$")
 WORD = re.compile(r"[a-z][a-z0-9_-]*$")
 PLACEHOLDER = re.compile(r"\{([a-z][a-z0-9_.]*)\}")
@@ -17,6 +17,7 @@ PATTERNS = {"*", *TYPES, *ACTIONS, *(f"{t}.{a}" for t in TYPES for a in ACTIONS)
 STEP = ("name", "run", "cwd")
 SERVICE = ("run", "cwd", "env", "port", "ready", "restart", "grace", "show")
 PAGE = ("name", "title", "icon", "service", "path", "status")
+TONES = ("", "warn", "good")
 SETTING = ("title", "default", "help", "env", "type", "options", "group", "when", "detail")
 KINDS = ("text", "textarea", "list", "number", "flag", "options")
 RESTARTS = ("always", "on-failure", "never")
@@ -55,6 +56,10 @@ def read(folder: Path, version: str = "") -> dict:
     checked["chat"] = chat(name, given.get("chat") or [])
     checked["pages"] = pages(name, given.get("pages") or [], checked["services"])
     checked["settings"] = typed(shaped(name, given.get("settings") or {}, "settings", SETTING, ()))
+    checked["events"] = shaped(name, given.get("events") or {}, "events", ("title", "tone"), ("title",))
+    for event, fields in checked["events"].items():
+        if fields.get("tone", "") not in TONES:
+            raise Refused(f"plugin.json: events.{event}.tone is one of {', '.join(t for t in TONES if t)}")
     if "refuse" in checked:
         checked["refuse"] = command(name, "refuse", checked["refuse"])
     checked["reads"] = bool(given.get("reads"))
