@@ -148,7 +148,7 @@ async function drop() {
     <template v-if="turn.type === 'skill'">
         <div class="thread-turn skill" :data-ref="turn.ref">
             <button type="button" class="thread-skill" :title="`Read the ${turn.title} skill`" @click="store.skill = turn.title">
-                <span class="thread-skill-dot" />
+                <Icon name="book" :size="12" />
                 Loaded skill
                 <strong>{{ turn.title }}</strong>
             </button>
@@ -352,13 +352,6 @@ async function drop() {
 .thread-skill strong {
     font-family: ui-monospace, "SF Mono", Menlo, monospace;
     font-weight: 500;
-}
-
-.thread-skill-dot {
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: var(--created);
 }
 
 .thread-made {

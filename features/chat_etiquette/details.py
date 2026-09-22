@@ -13,8 +13,9 @@ class ChatEtiquetteDetails(FeatureDetails):
     help = """
         The user sees every reply, reaction, pill, question, to-do and whether a message is read
         or processed, so the chat never tells them: no "your message is answered", "I replied",
-        "filed it as a pill" or "marked it read". Nor does it narrate the journal: its nudges,
-        hooks, holds and skill loads stay out of the chat. Say what the work is and what it
+        "filed it as a pill" or "marked it read". A message arriving and your reading it are
+        never mentioned either: no "a new message came in", "reading it first". Nor does it
+        narrate the journal: its nudges, hooks, holds and skill loads stay out of the chat. Say what the work is and what it
         came to, in plain words, and name every row with its type, such as to-do 12.
 
         A turn that talks about the journal's workings is named back to the agent once, with
