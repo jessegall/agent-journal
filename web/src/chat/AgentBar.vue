@@ -271,14 +271,25 @@ useOutside(bar, () => (open.value = ""));
                         <AgentUsage :usage="usage" />
                     </template>
                     <template #monitors>
-                        <CrewList heading="Monitors" :rows="data.monitor_rows || []" :total="data.monitors || 0" />
+                        <CrewList
+                            heading="Monitors"
+                            :agent="agent ? agent.n : 0"
+                            :rows="data.monitor_rows || []"
+                            :total="data.monitors || 0"
+                        />
                     </template>
                     <template #shells>
-                        <CrewList heading="Background shells" :rows="data.shell_rows || []" :total="data.shells || 0" />
+                        <CrewList
+                            heading="Background shells"
+                            :agent="agent ? agent.n : 0"
+                            :rows="data.shell_rows || []"
+                            :total="data.shells || 0"
+                        />
                     </template>
                     <template #default>
                         <CrewList
                             heading="Subagents"
+                            :agent="agent ? agent.n : 0"
                             :rows="data.subagent_rows || []"
                             :total="data.subagents || 0"
                             started="dispatched"

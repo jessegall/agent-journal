@@ -5,9 +5,11 @@ from typing import ClassVar
 from engine.events import AgentChanged, AgentReported, ResourceCreated, ResourceEvent
 from engine.sessions import Sessions
 from features.parts import AgentContext, Context, Handler
+from providers import PROVIDERS
 
 SUBAGENT = "subagent"
 STOPPED = "stopped"
+STOP = "stop"
 MINUTE = 60
 
 
@@ -27,6 +29,18 @@ class HoldEvicted(Handler):
             context.hold("evicted", "eviction", environment=repr(gone["environment"]), by=gone["by"], why=gone["why"])
         else:
             context.release("eviction")
+
+
+class AskToStop(Handler):
+    def handle(self, context: Context, event: AgentChanged) -> None:
+        row = context.journal.agents.load(event.agent)
+        stopping = row.data.get("stopping") or {}
+        provider = PROVIDERS.get(row.provider)
+        if not stopping or not provider:
+            return
+        speaking = context.speaking_to(row)
+        if speaking.once(STOP, f"{stopping['task']}|{stopping['at']}"):
+            speaking.agent.say(STOP, what=stopping["what"], how=provider().stop_instruction(stopping["task"]))
 
 
 class MarkSilentStopped(Handler):

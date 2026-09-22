@@ -3,12 +3,14 @@ import {computed, onUnmounted, ref} from "vue";
 import {span} from "../format/time.js";
 import {store} from "../state/store.js";
 import {useNow} from "../composables/now.js";
+import {api} from "../api/client.js";
 
 const props = defineProps({
     rows: {type: Array, default: () => []},
     total: {type: Number, default: 0},
     started: {type: String, default: "started"},
     heading: {type: String, default: ""},
+    agent: {type: Number, default: 0},
 });
 const emit = defineEmits(["open"]);
 const now = useNow();
@@ -22,6 +24,13 @@ const summary = computed(
         `${running.value} running, ${props.total} ${props.started} in this session` +
         (dropped.value ? `, ${dropped.value} older than ${minutes.value} minutes not shown.` : ".")
 );
+
+const asked = ref(new Set());
+
+async function stop(row) {
+    asked.value = new Set([...asked.value, row.task_id]);
+    await api.act("agent", props.agent, "stop_task", {task: row.task_id, what: row.task || row.command || row.task_id});
+}
 
 function lasted(row) {
     if (!row.at) return "";
@@ -52,6 +61,16 @@ function detail(row) {
                 <small>{{ detail(row) }}</small>
             </span>
             <small class="crew-when">{{ lasted(row) }}</small>
+            <template v-if="row.running && row.task_id && agent">
+                <span
+                    role="button"
+                    :class="['crew-stop', {asked: asked.has(row.task_id)}]"
+                    :title="asked.has(row.task_id) ? 'The agent was asked to stop it' : 'Stop it'"
+                    @click.stop="!asked.has(row.task_id) && stop(row)"
+                >
+                    {{ asked.has(row.task_id) ? "Stopping…" : "Stop" }}
+                </span>
+            </template>
         </button>
     </template>
 </template>
@@ -85,6 +104,26 @@ function detail(row) {
     color: var(--text-2);
     font-size: 12px;
     text-align: left;
+}
+
+.crew-stop {
+    flex: none;
+    padding: 1px 7px;
+    border: 1px solid var(--border-2);
+    border-radius: 6px;
+    color: var(--text-2);
+    font-size: 11px;
+    cursor: pointer;
+}
+
+.crew-stop:hover:not(.asked) {
+    border-color: var(--danger);
+    color: var(--danger);
+}
+
+.crew-stop.asked {
+    cursor: default;
+    opacity: 0.7;
 }
 
 .crew-row:not(:disabled) {

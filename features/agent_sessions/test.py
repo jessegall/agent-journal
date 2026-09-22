@@ -145,3 +145,14 @@ def test_the_start_question_never_offers_a_busy_environment_on_enter():
     assert asked_for(record, [], ask=ask, answering=True) == "side", "Enter takes a free choice, here a new environment"
     assert asked_for(record, [], ask=ask, answering=True) == record.env, "a busy one picked on purpose is taken over"
     assert Sessions(record.root).holder(record.env) == "", "and the agent there is moved off"
+
+
+def test_stop_in_the_viewer_tells_the_agent_to_stop_that_task_in_its_providers_words():
+    from controllers.types import Agents, Nudges
+    record = fresh()
+    report(record, "working", "PreToolUse", provider="claude")
+    agents = Agents(record, actor="user")
+    agent = agents.by_session("claude-1")
+    agents.stop_task(agent.n, "b7wu1410l", what="Poll production")
+    told = [n for n in Nudges(record).all() if n.title == "the user asked to stop Poll production"]
+    assert [n.brief for n in told] == ["run TaskStop with task_id b7wu1410l now; then carry on with the work"], "once, in Claude's words"

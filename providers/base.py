@@ -200,6 +200,9 @@ class Provider(ABC):
     def crew(self, path: Path) -> dict:
         return {}
 
+    def stop_instruction(self, task: str) -> str:
+        return f"stop task {task} now"
+
     def subagent_transcript(self, path: Path, session: str) -> Path | None:
         return None
 

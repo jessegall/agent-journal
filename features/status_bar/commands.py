@@ -11,7 +11,7 @@ READS = ("Read", "NotebookRead")
 TOOLS = {"Grep": "searches", "Glob": "searches", "WebSearch": "searches", "WebFetch": "fetches",
          "Agent": "dispatches", "Task": "dispatches", "Skill": "loads"}
 WRITING_COMMANDS = re.compile(r"(^|[;&|]\s*)(rm|mv|cp|git (commit|push|rm|mv)|sed -i|tee|touch|mkdir|npm install|pip install)\b|(?<![\d&])>>?\s*(?!/dev/null|&)\S")
-RING = 12
+RING = 30
 JOURNAL_DIR = ".journal"
 CHANGING = ("writes", "deletes")
 START = r"(?:^|[;&|(]\s*|\b(?:do|then)\s+)"

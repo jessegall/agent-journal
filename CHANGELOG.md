@@ -4,6 +4,11 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.85.17
+
+- A running background shell, monitor or background subagent has a Stop button in the agent bar. The journal cannot stop it itself, so it tells the agent at once in its provider's words (for Claude, run TaskStop with that task id). Each row now carries its task id.
+- The terminal view scrolls and shows its newest line instead of pushing it out of sight, and keeps the last 30 commands instead of 12.
+
 ## 2.85.16
 
 - Chat etiquette no longer names back a phrase the agent quotes as an example; only one it says is caught.
