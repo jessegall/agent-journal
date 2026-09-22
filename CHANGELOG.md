@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.84.133 — A link can point at a section or at lines of a doc
+
+- A row can link a part of a doc: journal todo link <n> "doc:41#The installer" for a section, or doc:41:10-24 for lines. The link names the part, and opening it scrolls the doc to that section and highlights it. The doc lists the rows that link any of its parts.
+
 ## 2.84.132 — A file pasted into the chat box is attached
 
 - Copying a file on the Mac and pasting it into the chat box attaches it, as if picked with the paperclip. The dump window's boxes take pasted files the same way.

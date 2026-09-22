@@ -2,32 +2,32 @@
 import {computed} from "vue";
 import Icon from "../kit/Icon.vue";
 import {peek} from "../route.js";
-import {byRef, linkedTo} from "../domain/records.js";
+import {byRef, linkedTo, refParts} from "../domain/records.js";
 import {age} from "../format/time.js";
 import {meta} from "../state/store.js";
 
 const props = defineProps({resource: Object, except: {type: Array, default: () => []}});
 const skip = (type) => meta(type).nested || (meta(type).fields.options && meta(type).needs_attention);
 const bar = (ref, direction) => {
-    const [type, n] = ref.split(":");
+    const {type, n, part} = refParts(ref);
     const r = byRef(ref);
     return {
         key: `${direction}${ref}`,
         ref,
         icon: meta(type).icon,
-        title: r ? r.title : `${meta(type).title} ${n}`,
+        title: `${r ? r.title : `${meta(type).title} ${n}`}${part ? ` · ${/^\d/.test(part) ? `lines ${part}` : part}` : ""}`,
         age: r ? age(r.updated || r.created) : "",
     };
 };
 const rows = computed(() => [
-    ...props.resource.refs.filter((r) => !skip(r.split(":")[0]) && !props.except.includes(r)).map((r) => bar(r, "to")),
+    ...props.resource.refs.filter((r) => !skip(refParts(r).type) && !props.except.includes(r)).map((r) => bar(r, "to")),
     ...linkedTo(props.resource.ref)
         .filter((r) => !skip(r.type))
         .map((r) => bar(r.ref, "from")),
 ]);
 const open = (ref) => {
-    const [t, n] = ref.split(":");
-    peek(t, Number(n));
+    const {type, n, part} = refParts(ref);
+    peek(type, n, 0, part ? encodeURIComponent(part) : "");
 };
 </script>
 
