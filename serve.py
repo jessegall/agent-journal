@@ -16,6 +16,7 @@ from commands.http import dispatch  # noqa: E402
 from engine import runtime  # noqa: E402
 from engine.stop import asked  # noqa: E402
 from engine.viewer import elsewhere, heartbeat, remember  # noqa: E402
+from engine.watch import threw  # noqa: E402
 from engine.engines import Children  # noqa: E402
 from controllers.types import warm, warm_record  # noqa: E402
 from engine.hooks import default_env, replay  # noqa: E402
@@ -56,19 +57,25 @@ class Handler(BaseHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(data)
             self.wfile.flush()
-            if reply.after:
-                reply.after()
+            self.finish_after(reply, url.path)
             return
         self.send_header("Cache-Control", "no-cache")
         self.end_headers()
-        if reply.after:
-            reply.after()
+        self.finish_after(reply, url.path)
         try:
             for chunk in reply.chunks:
                 self.wfile.write(chunk)
                 self.wfile.flush()
         except (BrokenPipeError, ConnectionResetError, OSError):
             reply.chunks.close()
+
+    def finish_after(self, reply, path: str) -> None:
+        if not reply.after:
+            return
+        try:
+            reply.after()
+        except Exception:
+            threw(self.root, runtime.env(self.root), f"after {path}")
 
     def do_GET(self):
         self.handle_one("GET")
