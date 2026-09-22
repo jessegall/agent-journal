@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.84.67 — Parked to-dos have their own group
+
+A to-do whose work is parked shows under Parked, in its own teal colour, in the to-do sidebar and on the To-dos page, instead of under In progress; orange stays for blocked. Work that ends without its to-do being done puts the to-do back on the list instead of leaving it marked started.
+
 ## 2.84.66 — The hub is easier to read
 
 The hub lists running journals first, the busy ones at the top, with stopped ones folded away underneath. Every journal starts collapsed, and each one carries two buttons on its bar: open it in this window, or in a new tab.

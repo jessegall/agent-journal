@@ -6,6 +6,7 @@ const UNSTARTED = ["building", "ready"];
 
 export const GROUPS = {
     started: "In progress",
+    parked: "Parked",
     blocked: "Blocked",
     planned: "Planned",
     waiting: "Waiting on others",
@@ -40,8 +41,14 @@ export function planned(r) {
     return !!plan && UNSTARTED.includes(plan.data.status);
 }
 
+export function parked(r) {
+    const work = r.data.status === "started" && r.data.work ? rows("work").find((w) => w.n === Number(r.data.work)) : null;
+    return !!work && !work.completed && !!work.data.parked;
+}
+
 export function groupOf(r) {
     if (r.data.blocked) return "blocked";
+    if (parked(r)) return "parked";
     if (planned(r)) return "planned";
     if (waitsOn(r).length) return "waiting";
     if (r.data.status === "started") return "started";
@@ -55,11 +62,13 @@ export const state = (r) =>
           ? "done"
           : r.data.blocked
             ? "blocked"
-            : planned(r)
-              ? "planned"
-              : r.data.status === "started"
-                ? "started"
-                : "open";
+            : parked(r)
+              ? "parked"
+              : planned(r)
+                ? "planned"
+                : r.data.status === "started"
+                  ? "started"
+                  : "open";
 
 export const toldToUser = (e) => !!meta(e.type) && meta(e.type).notified.includes("user");
 

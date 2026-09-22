@@ -71,11 +71,15 @@ class CloseWork(Handler):
     def handle(self, context: Context, event: WorkCompleted) -> None:
         tracker.end(event, context.record)
         n = context.journal.works.load(event.n).todo
-        if not n or not event.todo:
+        if not n:
             return
         todos = context.journal.todos
-        if not todos.load(int(n)).completed:
+        if todos.load(int(n)).completed:
+            return
+        if event.todo:
             todos.complete(int(n), how=f"work {event.n} ended")
+        else:
+            todos.update(int(n), status="")
 
 
 class EndWorkWithTodo(Handler):

@@ -123,3 +123,5 @@ def test_one_to_do_is_in_hand_until_it_is_parked_or_done():
     todos.complete(second.n, how="shipped")
     assert works.active() is None, "a to-do that is done ends its work"
     assert todos.start(third.n).todo == third.n, "so the next one starts"
+    works.complete(works.active().n, how="set aside")
+    assert todos.load(third.n).status == "", "work that ends without its to-do puts the to-do back on the list"
