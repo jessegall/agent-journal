@@ -1,4 +1,5 @@
 <script setup>
+import TextInput from "../kit/TextInput.vue";
 import TextDisplay from "../kit/TextDisplay.vue";
 import {computed, ref} from "vue";
 import {api} from "../api/client.js";
@@ -53,7 +54,7 @@ async function submit(text) {
         </template>
         <template v-else>
             <form class="own" @submit.prevent="submit(own)">
-                <input v-model="own" placeholder="Or choice in your own words…" />
+                <TextInput :value="own" class="grow" placeholder="Or choice in your own words…" @input="own = $event.target.value" />
                 <Btn kind="primary" small @click="submit(own)">{{ word(resource.type, "complete") }}</Btn>
                 <template v-if="changing">
                     <Btn small @click="changing = false">Keep it</Btn>
@@ -117,11 +118,7 @@ async function submit(text) {
     display: flex;
     gap: 6px;
 }
-.own input {
+.grow {
     flex: 1;
-    padding: 6px 10px;
-    border: 1px solid var(--border-2);
-    border-radius: 7px;
-    background: var(--bg);
 }
 </style>

@@ -1,4 +1,5 @@
 <script setup>
+import Chip from "../kit/Chip.vue";
 import {inject, ref} from "vue";
 import Icon from "../kit/Icon.vue";
 import PriorityIcon from "../kit/PriorityIcon.vue";
@@ -42,20 +43,20 @@ function begin(event) {
         </template>
         <span class="chips">
             <template v-for="name in people()" :key="name">
-                <span class="chip agent">{{ titleOf(name) }}</span>
+                <Chip tone="accent">{{ titleOf(name) }}</Chip>
             </template>
             <template v-if="card.worker && card.worker.parked">
-                <span class="chip">parked</span>
+                <Chip>parked</Chip>
             </template>
             <template v-if="card.reported">
-                <span class="chip">Reported</span>
+                <Chip>Reported</Chip>
             </template>
             <template v-if="card.question">
-                <span class="chip question" title="A question waits on you" @click.stop="peek('question', card.question)">!</span>
+                <Chip tone="danger" title="A question waits on you" @click.stop="peek('question', card.question)">!</Chip>
             </template>
         </span>
         <template v-if="card.plan">
-            <span class="chip" @click.stop="peek('plan', card.plan.n)">Plan {{ card.plan.n }} · phase {{ card.plan.phase }}</span>
+            <Chip @click.stop="peek('plan', card.plan.n)">Plan {{ card.plan.n }} · phase {{ card.plan.phase }}</Chip>
         </template>
         <template v-if="menu">
             <CardMenu :card="card" @close="menu = false" />
@@ -131,15 +132,6 @@ function begin(event) {
     line-height: 1.4;
 }
 
-.chip {
-    align-self: flex-start;
-    padding: 2px 8px;
-    border: 1px solid var(--border-2);
-    border-radius: 99px;
-    color: var(--text-2);
-    font-size: 11px;
-}
-
 .chips {
     display: flex;
     flex-wrap: wrap;
@@ -148,19 +140,5 @@ function begin(event) {
 
 .chips:empty {
     display: none;
-}
-
-.chip.agent {
-    color: var(--accent-text);
-}
-
-.chip.question {
-    border-color: var(--danger);
-    color: var(--danger);
-    font-weight: 700;
-}
-
-.chip:hover {
-    color: var(--text);
 }
 </style>

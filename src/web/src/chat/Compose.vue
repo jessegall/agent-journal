@@ -1,4 +1,5 @@
 <script setup>
+import CountBadge from "../kit/CountBadge.vue";
 import {computed, onUnmounted, reactive, ref, watch} from "vue";
 import {store} from "../state/store.js";
 import Icon from "../kit/Icon.vue";
@@ -147,7 +148,7 @@ async function use(tool) {
                         <button type="button" class="compose-attach" :title="action.title" :aria-label="action.title" @click="use(action)">
                             <Icon :name="action.icon" />
                             <template v-if="action.badge">
-                                <span class="compose-badge">{{ action.badge }}</span>
+                                <CountBadge :count="action.badge" />
                             </template>
                         </button>
                     </template>
@@ -277,22 +278,6 @@ async function use(tool) {
     align-items: center;
     gap: 6px;
     padding: 4px 8px 8px 10px;
-}
-
-.compose-badge {
-    position: absolute;
-    top: 1px;
-    right: 0;
-    min-width: 14px;
-    height: 14px;
-    padding: 0 3px;
-    border-radius: 7px;
-    background: var(--accent);
-    color: #fff;
-    font-size: 9.5px;
-    font-weight: 600;
-    line-height: 14px;
-    text-align: center;
 }
 
 .compose-attach {

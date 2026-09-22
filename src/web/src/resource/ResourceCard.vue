@@ -1,4 +1,5 @@
 <script setup>
+import Chip from "../kit/Chip.vue";
 import TextDisplay from "../kit/TextDisplay.vue";
 import Icon from "../kit/Icon.vue";
 import {age} from "../format/time.js";
@@ -23,7 +24,7 @@ const holds = computed(() => {
             <Icon :name="meta(resource.type).icon" :size="14" />
             <span class="n">{{ meta(resource.type).title }} {{ resource.n }}</span>
             <template v-if="resource.data.system">
-                <span class="badge" title="Ships with the journal; it cannot be removed">System</span>
+                <Chip title="Ships with the journal; it cannot be removed">System</Chip>
             </template>
             <span class="age">{{ age(resource.updated || resource.created) }}</span>
         </span>
@@ -82,15 +83,6 @@ const holds = computed(() => {
     display: inline-flex;
     align-items: center;
     gap: 4px;
-}
-
-.badge {
-    padding: 0 6px;
-    border: 1px solid var(--border-2);
-    border-radius: 999px;
-    color: var(--text-2);
-    font-size: 10.5px;
-    letter-spacing: 0.04em;
 }
 
 .card:hover {
