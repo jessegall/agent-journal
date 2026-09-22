@@ -32,6 +32,10 @@ def sessions(root: Path) -> Path:
     return folder(root) / "sessions"
 
 
+def builds(root: Path) -> Path:
+    return folder(root) / "builds"
+
+
 def session_file(root: Path, session: str, name: str) -> Path:
     return sessions(root) / session / name
 

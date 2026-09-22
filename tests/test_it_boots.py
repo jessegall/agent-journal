@@ -8,6 +8,7 @@ from pathlib import Path
 
 from engine.heal import broken
 from engine.package import point
+from engine.sessions import hold_build
 from install import STUBS
 from providers import DRIVERS
 from scripts.boot_guard import WAIT, launches
@@ -79,6 +80,19 @@ def test_the_journal_starts_on_a_record_with_a_damaged_row(tmp_path):
     (root / "environments" / "main" / "todo" / "003.md").write_text('---\n{"n": 3, "title": "odd", "unknown_field": 1}\n---\nbody\n')
     ran = subprocess.run([*journal, "status"], cwd=place, capture_output=True, text=True, timeout=WAIT)
     assert (ran.returncode, "Traceback" in ran.stderr) == (0, False), f"a damaged row stopped the journal:\n{ran.stderr}"
+
+
+def test_an_upgrade_keeps_a_build_a_live_session_runs_from(tmp_path):
+    root = installed(tmp_path)
+    good = (root / "journal.pyz").resolve()
+    old = [root / f"journal-0.0.{i}-old000000{i}.pyz" for i in range(3)]
+    for i, build in enumerate(old):
+        build.write_bytes(good.read_bytes())
+        os.utime(build, (i, i))
+    hold_build(root, old[0])
+    subprocess.run([sys.executable, str(HERE / "install.py"), "upgrade", str(root.parent)], env={**os.environ, "HOME": str(tmp_path / "home"), "AGENT_JOURNAL_BOOTSTRAPPED": "1"},
+                   capture_output=True, timeout=120)
+    assert [build.is_file() for build in old] == [True, False, True], "the build a live process runs from is kept; the other old ones go"
 
 
 def test_a_build_whose_supervisor_dies_on_start_goes_back_to_the_last_good_one(tmp_path):

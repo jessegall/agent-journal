@@ -3,7 +3,7 @@ import time
 from pathlib import Path
 
 from resources.types import TYPES
-from engine.stored import read_json, write_json
+from engine.stored import read_json, write_json, write_text
 from engine.proc import run
 from engine import runtime
 
@@ -19,6 +19,21 @@ def alive(pid: int) -> bool:
         return True
     except (OSError, ValueError, TypeError):
         return False
+
+
+def hold_build(root: Path, build: Path) -> None:
+    if build.suffix == ".pyz":
+        write_text(runtime.builds(root) / str(os.getpid()), build.name)
+
+
+def held_builds(root: Path) -> set[str]:
+    held = set()
+    for marker in runtime.builds(root).glob("*") if runtime.builds(root).is_dir() else ():
+        if marker.name.isdigit() and alive(int(marker.name)):
+            held.add(marker.read_text().strip())
+        else:
+            marker.unlink(missing_ok=True)
+    return held
 
 
 def live(session: dict) -> bool:
