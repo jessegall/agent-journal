@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.85.32 — The agent bar's buttons share one size and hover
+
+- The terminal and dock buttons are as tall as the counters beside them, so their hover has room around the icon. The dock button's hover is no longer cut off by an extra divider.
+
 ## 2.85.31 — The start offers to carry on the environment's last session
 
 - When journal claude or journal codex starts with no continue or resume, and an earlier session of that agent worked the environment, the start asks whether to carry on from it. Yes resumes that exact conversation: claude --resume with its id, or codex resume with its id.

@@ -424,16 +424,10 @@ useOutside(bar, () => (open.value = ""));
     color: var(--text-3);
 }
 
-.agent-detach {
-    flex: none;
-    margin-left: 8px;
-    padding-left: 10px;
-    border-left: 1px solid var(--border);
-}
-
 .agent-actions .agent-count {
+    height: 24px;
     margin: 0;
-    padding: 0 6px;
+    padding: 0 7px;
 }
 
 .agent-detach.on {
