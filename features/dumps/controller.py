@@ -1,10 +1,13 @@
 import controllers.types as types_module
 import resources.types as resources_module
 from controllers.base import CONTROLLERS, Controller
-from features.dumps.resource import ITEM, Dump
+import time
+
+from features.dumps.resource import ENTRY, ITEM, Dump
 from resources.base import Refused
 
 TEXT = "text"
+LOG_KEPT = 20
 
 
 class Dumps(Controller):
@@ -70,6 +73,18 @@ class Dumps(Controller):
         if not why.strip():
             raise Refused("say why it could not be filed")
         return self._write(n, item, **{ITEM.failed: why.strip()})
+
+    def log(self, n: int, status: str):
+        r = self.load(int(n))
+        if not status.strip():
+            raise Refused("say what you are doing")
+        if r.completed:
+            raise Refused(f"dump {r.n} is closed")
+        entries = [*(r.data.get("log") or []), {ENTRY.at: time.time(), ENTRY.text: status.strip()}]
+        return self.update(r.n, log=entries[-LOG_KEPT:])
+
+    def _in_hand(self):
+        return min(self._standing(), key=lambda r: r.n, default=None)
 
     def items(self, n: int) -> list[str]:
         r = self.load(int(n))

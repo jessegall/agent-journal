@@ -13,7 +13,8 @@ class DumpsDetails(FeatureDetails):
         every item becomes and files it, recording journal dump note <n> <item> "<what it is>",
         then journal dump filed <n> <item> "<what it did>" "<ref, ref>" or journal dump failed
         <n> <item> "<why>". journal dump name <n> "<name>" names its collection for what the
-        items are about. journal dump items <n> lists where every item stands, and the dump
+        items are about, and journal dump log <n> "<status>" tells the user what the agent is doing.
+        One dump is worked at a time; the next waits until it closes. journal dump items <n> lists where every item stands, and the dump
         closes by itself once every item is filed or failed.
     """
 
@@ -29,7 +30,9 @@ class DumpsDetails(FeatureDetails):
                 image is tagged with a few words and filed with the doc it belongs to; a document
                 becomes a doc or is attached to the doc it extends; where the material states a goal
                 or asks for a plan, start a plan with that goal. Record each item as you go with
-                journal dump note, then journal dump filed or journal dump failed. Ask only when you
+                journal dump note, then journal dump filed or journal dump failed, and tell the user
+                what you are doing at each step with journal dump log {{n}} "<status>": the dump
+                window shows it live. Ask only when you
                 truly cannot tell what an item is for.
             """,
         ),

@@ -20,7 +20,9 @@ const open = computed(() =>
         .filter((d) => !d.deleted && !d.completed)
         .sort((a, b) => b.n - a.n)
 );
-const dump = computed(() => (composing.value ? null : rows("dump").find((d) => d.n === chosen.value) || open.value[0] || null));
+const dump = computed(() =>
+    composing.value ? null : rows("dump").find((d) => d.n === chosen.value) || open.value[open.value.length - 1] || null
+);
 
 const names = (d) => [...(d.brief?.trim() ? ["text"] : []), ...Object.keys(d.data?.files || {}).sort()];
 const items = computed(() =>
@@ -40,7 +42,14 @@ const activity = computed(() => {
     const last = queue[queue.length - 1];
     return last && !last.done ? last.key : "";
 });
-const status = computed(() => activity.value || phrase("filing", now.value / 3));
+const log = computed(() => dump.value?.data?.log || []);
+const trail = computed(() => log.value.slice(-4, -1).reverse());
+const inHand = computed(() => open.value[open.value.length - 1] || null);
+const queued = computed(() => Boolean(working.value && inHand.value && inHand.value.n !== dump.value.n));
+const status = computed(() => {
+    if (queued.value) return `Waiting in line. The agent finishes dump ${inHand.value.n} first.`;
+    return log.value[log.value.length - 1]?.text || activity.value || phrase("filing", now.value / 3);
+});
 const progress = computed(() => (items.value.length ? (items.value.length - left.value) / items.value.length : 0));
 const collection = computed(() => (dump.value?.refs || []).find((ref) => ref.startsWith("collection:")) || "");
 const nextStep = computed(() =>
@@ -137,15 +146,27 @@ function follow(ref) {
             <div class="dump-items">
                 <template v-if="working">
                     <div class="dump-live">
-                        <div class="dump-live-line">
-                            <Spinner />
+                        <div :class="['dump-live-line', {queued}]">
+                            <template v-if="queued">
+                                <Icon name="clock" :size="13" />
+                            </template>
+                            <template v-else>
+                                <Spinner />
+                            </template>
                             <Transition name="dump-line" mode="out-in">
                                 <span :key="status">{{ status }}</span>
                             </Transition>
                         </div>
-                        <div class="dump-bar-track">
-                            <div class="dump-bar-fill" :style="{width: `${Math.max(progress, 0.04) * 100}%`}" />
-                        </div>
+                        <template v-if="!queued && trail.length">
+                            <ul class="dump-trail">
+                                <li v-for="entry in trail" :key="entry.at">{{ entry.text }}</li>
+                            </ul>
+                        </template>
+                        <template v-if="!queued">
+                            <div class="dump-bar-track">
+                                <div class="dump-bar-fill" :style="{width: `${Math.max(progress, 0.04) * 100}%`}" />
+                            </div>
+                        </template>
                     </div>
                 </template>
                 <p class="dump-status">
@@ -321,6 +342,21 @@ function follow(ref) {
     align-items: center;
     gap: 8px;
     color: var(--accent-text);
+}
+
+.dump-live-line.queued {
+    color: var(--text-2);
+}
+
+.dump-trail {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin: 0;
+    padding: 0 0 0 17px;
+    color: var(--text-3);
+    font-size: 12px;
+    list-style: none;
 }
 
 .dump-bar-track {

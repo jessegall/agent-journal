@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.84.106 — The agent logs its progress on a dump, and dumps are filed one at a time
+
+- journal dump log <n> "<status>" writes what the agent is doing to the dump; the dump window shows the newest as its live line and the few before it as a trail.
+- One dump is worked at a time: a dump dropped while another is open waits, shows as queued, and is handed to the agent when the one before it closes.
+- The dump window opens on the dump being worked.
+
 ## 2.84.105 — The agent names a dump's collection, and the dump window shows it working
 
 - journal dump name <n> "<name>" gives the dump's collection a name for what its items are about; the agent is told to name it once it has read them.
