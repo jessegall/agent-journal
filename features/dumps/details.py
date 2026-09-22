@@ -32,8 +32,9 @@ class DumpsDetails(FeatureDetails):
                 becomes a doc or is attached to the doc it extends; where the material states a goal
                 or asks for a plan, start a plan with that goal. Record each item as you go with
                 journal dump note, then journal dump filed or journal dump failed, and tell the user
-                what you are doing at each step with journal dump log {{n}} "<status>": the dump
-                window shows it live. When the pasted text holds several things, such as a summary,
+                what you are doing at each step with journal dump log {{n}} "<short title>" --detail
+                "<what you are doing and what you make of it>": the title is a few words like Adding
+                files, and the dump window shows both live. When the pasted text holds several things, such as a summary,
                 a transcript and a link, split it first with journal dump split {{n}} "Summary,
                 Transcript, Link" and file each part as its own item. Before you write a row, log
                 with --making "<type>, <title>" so a placeholder shows; once the row exists, log

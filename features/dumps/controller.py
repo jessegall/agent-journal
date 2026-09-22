@@ -198,15 +198,17 @@ class Dumps(Controller):
             raise Refused("say why it could not be filed")
         return self._write(n, item, **{ITEM.failed: why.strip()})
 
-    def log(self, n: int, status: str, on: str = "", making: str = ""):
+    def log(self, n: int, status: str, on: str = "", making: str = "", detail: str = ""):
         r = self.load(int(n))
         if not status.strip():
             raise Refused("say what you are doing")
+        if len(status.strip()) > LABEL:
+            raise Refused(f"a status is a short title of at most {LABEL} characters, like Adding files; the sentence goes in --detail")
         if r.completed:
             raise Refused(f"dump {r.n} is closed")
         if on.strip():
             self._hold(r, [on.strip()])
-        entries = [*(r.data.get("log") or []), {ENTRY.at: time.time(), ENTRY.text: status.strip(), ENTRY.on: on.strip(), ENTRY.making: making.strip()}]
+        entries = [*(r.data.get("log") or []), {ENTRY.at: time.time(), ENTRY.text: status.strip(), ENTRY.on: on.strip(), ENTRY.making: making.strip(), ENTRY.detail: detail.strip()}]
         return self.update(r.n, log=entries[-LOG_KEPT:])
 
     def ask(self, n: int, question: str, guesses: str = ""):

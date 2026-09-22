@@ -6,6 +6,7 @@ import {rows} from "../sync/rows.js";
 import Icon from "../kit/Icon.vue";
 import Btn from "../kit/Btn.vue";
 import Spinner from "../kit/Spinner.vue";
+import OptionList from "../kit/OptionList.vue";
 import {age} from "../format/time.js";
 import {useNow} from "../composables/now.js";
 
@@ -201,8 +202,8 @@ const band = computed(() => {
         case "added":
             return {
                 text: kept.value.length
-                    ? `${plural(kept.value.length, "thing", "things")} added to the journal.`
-                    : "Nothing was added to the journal.",
+                    ? `Done. ${plural(kept.value.length, "thing is", "things are")} in the journal now.`
+                    : "Done. Nothing was added to the journal.",
                 note: !choice.value.label
                     ? ""
                     : choice.value.pick < 0
@@ -211,7 +212,7 @@ const band = computed(() => {
             };
         case "choosing":
             return {
-                text: `${filed.value === total ? `All ${total}` : `${filed.value} of ${total}`} items filed. ${plural(kept.value.length, "thing", "things")} made.`,
+                text: `${filed.value < total ? `${filed.value} of ${total} items` : total === 1 ? "The item is" : `All ${total} items`} filed. ${plural(kept.value.length, "thing", "things")} made.`,
                 note: "None of it is in the journal yet. Pick what happens next and it all goes in at once.",
             };
         case "offering":
@@ -219,7 +220,11 @@ const band = computed(() => {
         case "waiting":
             return {text: "Sent. Waiting for the agent to pick this up."};
         default:
-            return {text: latest.value?.text || "Reading what you dropped", age: latest.value ? age(latest.value.at) : ""};
+            return {
+                text: latest.value?.text || "Reading what you dropped",
+                detail: latest.value?.detail || "",
+                age: latest.value ? age(latest.value.at) : "",
+            };
     }
 });
 const spinning = computed(() => ["filing", "offering", "waiting"].includes(phase.value));
@@ -307,6 +312,10 @@ async function stop() {
     stopping.value = false;
 }
 
+const steps = computed(() => [
+    ...options.value.map((o) => ({title: o.label})),
+    {title: "You decide", description: "The agent finishes everything on its own"},
+]);
 const foot = computed(() => {
     if (phase.value === "choosing") return {text: `${plural(kept.value.length, "thing goes", "things go")} in`};
     if (working.value) return {text: queued.value ? "Take out of the queue" : "Stop filing", run: () => (stopping.value = true)};
@@ -453,12 +462,17 @@ function leave(m) {
                             <span class="dump-band-age">{{ band.age }}</span>
                         </template>
                     </div>
+                    <template v-if="band.detail">
+                        <p class="dump-band-detail">{{ band.detail }}</p>
+                    </template>
                     <template v-if="band.note">
                         <p class="dump-band-note">{{ band.note }}</p>
                     </template>
                     <template v-if="trail.length">
                         <TransitionGroup name="dump-fade" tag="div" class="dump-trail">
-                            <span v-for="entry in trail" :key="entry.at">{{ entry.text }}</span>
+                            <span v-for="entry in trail" :key="entry.at">
+                                {{ entry.detail ? `${entry.text} · ${entry.detail}` : entry.text }}
+                            </span>
                         </TransitionGroup>
                     </template>
                     <template v-if="phase === 'asking'">
@@ -491,18 +505,12 @@ function leave(m) {
                         </div>
                     </template>
                     <template v-if="phase === 'choosing'">
-                        <div class="dump-steps">
-                            <button
-                                v-for="(option, i) in options"
-                                :key="i"
-                                type="button"
-                                class="dump-step"
-                                @click="act('choose', {pick: i})"
-                            >
-                                {{ option.label }}
-                            </button>
-                            <button type="button" class="dump-step primary" @click="act('choose', {pick: -1})">You decide</button>
-                        </div>
+                        <OptionList
+                            class="dump-steps"
+                            :options="steps"
+                            color="var(--created)"
+                            @pick="(i) => act('choose', {pick: i === options.length ? -1 : i})"
+                        />
                     </template>
                     <template v-if="phase === 'offering'">
                         <div class="dump-steps">
@@ -703,6 +711,14 @@ function leave(m) {
                 </template>
             </div>
 
+            <template v-if="added">
+                <div class="dump-finish">
+                    <button type="button" class="dump-finish-button" @click="store.dumping = false">
+                        <Icon name="check" :size="14" />
+                        Dump filed · Back to chat
+                    </button>
+                </div>
+            </template>
             <footer class="dump-foot">
                 <button type="button" class="dump-quiet" @click="more.open = true">
                     <Icon name="plus" :size="12" />
@@ -1070,6 +1086,44 @@ textarea {
     color: var(--text-3);
     font-size: 11.5px;
     font-variant-numeric: tabular-nums;
+}
+
+.dump-band-detail {
+    margin: -4px 0 0 23px;
+    color: var(--text-2);
+    font-size: 12.5px;
+    line-height: 1.5;
+}
+
+.dump-finish {
+    flex: none;
+    padding: 12px 16px 0;
+    border-top: 1px solid var(--line);
+}
+
+.dump-finish-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    height: 38px;
+    border: 1px solid var(--created);
+    border-radius: 9px;
+    background: color-mix(in srgb, var(--created) 16%, var(--raised));
+    color: var(--text);
+    font: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.dump-finish-button:hover {
+    background: color-mix(in srgb, var(--created) 24%, var(--raised));
+}
+
+.dump-finish + .dump-foot {
+    border-top: none;
 }
 
 .dump-band-note {

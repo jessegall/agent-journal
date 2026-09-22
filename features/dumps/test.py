@@ -146,7 +146,9 @@ def test_pasted_text_splits_into_parts_and_a_question_carries_guesses():
     agent.split(dump.n, "Summary, Transcript, Link")
     assert agent.items(dump.n) == ["Summary: not read yet", "Transcript: not read yet", "Link: not read yet"], "each part is an item of its own"
     agent.ask(dump.n, "Which doc is the link for?", guesses="The standup | Neither")
-    agent.log(dump.n, "Writing the rollout plan", making="plan, Autoscaler rollout")
+    assert refused(lambda: agent.log(dump.n, "I am writing the rollout plan that the standup asked for")).startswith("a status is a short title"), \
+        "a status is a short title"
+    agent.log(dump.n, "Writing the rollout plan", making="plan, Autoscaler rollout", detail="The standup set a goal")
     written = agent.load(dump.n)
     assert (written.data["question"]["guesses"], written.data["log"][-1]["making"]) == (["The standup", "Neither"], "plan, Autoscaler rollout"), \
         "a question carries the agent's guesses and a log line names what it is about to make"
