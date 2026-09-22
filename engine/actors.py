@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 
 from controllers.types import Agents, CONTROLLERS, Notifications, Works
 from engine.record import Record
-from resources.base import AGENT, SYSTEM, USER, Event
+from resources.base import AGENT, SYSTEM, USER, Event, Refused
 from resources.types import AgentRow, TYPES
 from engine.wording import counted
 from engine.drivers import TERMINAL
@@ -17,7 +17,12 @@ def spoken(r) -> str:
 
 
 def spoken_data(record: Record, event: Event) -> dict:
-    return CONTROLLERS[event.type](record, actor=SYSTEM).load(event.n).data if TYPES[event.type].typed_as_title else {}
+    if not TYPES[event.type].typed_as_title:
+        return {}
+    try:
+        return CONTROLLERS[event.type](record, actor=SYSTEM).load(event.n).data
+    except Refused:
+        return {}
 
 
 def grouped(events: list[Event]) -> dict[tuple, dict]:

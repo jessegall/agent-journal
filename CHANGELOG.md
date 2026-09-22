@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.84.119 — The engine skips events whose row is already gone
+
+- The hourly sweep removes old nudges; the engine then read the rows behind their deleted events and hit an error for each. A row that is gone now counts as having nothing to say.
+
 ## 2.84.118 — journal <noun> --help prints again, and a reopened dump waits its turn
 
 - Help for any command printed nothing once commands ran through the server: argparse wrote it to the server's own output. The parser now writes to the command's output, so journal dump --help and the rest show their words again.
