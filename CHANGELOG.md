@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.86.15 — The skill gate refuses again
+
+2.86.13 gave the Claude provider a second method named window, which replaced the one that measures the context, so every hook from a session with a transcript crashed and let the call through: no skill was required, no write was held. The new method is since_compaction, and the skill gate's test now drives the hook with a transcript that carries token usage, as a real one does.
+
 ## 2.86.14 — The skill gate steps aside for ten tool uses, set in Settings
 
 After its refusal limit the skill gate lets the next ten tool uses through, then asks for the missing skill again. Both numbers are settings of skill loading.

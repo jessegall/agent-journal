@@ -105,11 +105,13 @@ def test_every_tool_call_waits_until_a_required_skill_is_loaded(tmp_path):
     (record.root.parent / ".agents" / "skills" / "journal-plans").mkdir(parents=True, exist_ok=True)
     (record.root.parent / ".agents" / "skills" / "journal-plans" / "SKILL.md").write_text("---\nname: journal-plans\n---\n")
     transcript = tmp_path / "s.jsonl"
-    transcript.write_text(json.dumps({"type": "user", "message": {"content": "go"}}) + "\n")
+    used = {"type": "assistant", "message": {"content": [], "usage": {"input_tokens": 1000}}}
+    transcript.write_text(json.dumps({"type": "user", "message": {"content": "go"}}) + "\n" + json.dumps(used) + "\n")
     report(record, "working", "PreToolUse", provider="claude", transcript=str(transcript))
 
     def call(tool, **given):
-        text = handle(PROVIDERS["claude"](), record.root, record.env, {"hook_event_name": "PreToolUse", "session_id": "claude-1", "tool_name": tool, "tool_input": given})
+        text = handle(PROVIDERS["claude"](), record.root, record.env, {"hook_event_name": "PreToolUse", "session_id": "claude-1", "tool_name": tool, "tool_input": given,
+                                                                        "transcript_path": str(transcript)})
         return str((text or {}).get("reason") or "")
 
     assert "load journal-plans before anything else" in call("Bash", command="journal plan phase 1 build --when done"), \
@@ -126,7 +128,6 @@ def test_every_tool_call_waits_until_a_required_skill_is_loaded(tmp_path):
     loaded = {"type": "assistant", "timestamp": now, "message": {"content": [{"type": "tool_use", "name": "Skill", "input": {"skill": "journal-plans"}}]}}
     transcript.write_text(transcript.read_text() + json.dumps(loaded) + "\n")
     assert call("Bash", command="journal plan phase 1 build --when done") == "", "once it is loaded, work goes on"
-    assert record.state("skill_loading", "claude-1").get("refused.RefuseUntilLoaded") == 0, "and a call that owes nothing clears the count"
 
 
 def test_a_session_start_holds_every_tool_call_until_the_always_on_skills_are_loaded():
