@@ -12,10 +12,6 @@ STOPPED, IDLE, BUSY, WORKING, COMPACTING = "stopped", "idle", "busy", "working",
 STATES = (STOPPED, IDLE, BUSY, WORKING, COMPACTING)
 
 
-def spoken(r) -> str:
-    return f"{r.title} — {r.brief}" if r.brief else r.title
-
-
 def spoken_data(record: Record, event: Event) -> dict:
     if not TYPES[event.type].typed_as_title:
         return {}
@@ -34,7 +30,7 @@ def grouped(events: list[Event]) -> dict[tuple, dict]:
 
 def render(events: list[Event], record: Record) -> tuple[str, dict]:
     rows = [CONTROLLERS[e.type](record, actor=AGENT).read(e.n) for e in events if TYPES[e.type].typed_as_title]
-    line = [spoken(r) for r in sorted(rows, key=lambda r: not r.data.get("lead"))]
+    line = [r.agent_line() for r in sorted(rows, key=lambda r: not r.data.get("lead"))]
     return "; ".join(dict.fromkeys(line)), grouped([e for e in events if not TYPES[e.type].typed_as_title])
 
 

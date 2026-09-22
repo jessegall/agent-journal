@@ -4,6 +4,11 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.85.38 — A reaction reaches the agent as what it is, and is never announced
+
+- When the user reacts to a message, the agent is told which face is on which message, to act on it if it asks for something, and never to mention it. Before, it heard only "1 new reaction".
+- Chat etiquette also catches a turn that announces a reaction ("you reacted") or the state of the record ("nothing is open on my side", "nothing else is waiting"), and its skill teaches both.
+
 ## 2.85.37 — The project badge blurs the page, and the chat is at its newest on return
 
 - While the project and environment badge shows, on returning to the tab or switching environment, the page behind it is blurred, so the badge is unmistakable.

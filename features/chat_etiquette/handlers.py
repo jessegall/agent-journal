@@ -9,7 +9,8 @@ QUOTES = ('"', "“", "'")
 SHOP_TALK = re.compile(r"\b(?:(?:your|the|this) message (?:is|was) (?:answered|processed|read|replied to)|I(?:'ve| have)? (?:replied|reacted|answered your message|processed (?:it|your message))"
                        r"|(?:filed|added) (?:it )?as a pill|marked (?:it|the message|your message) (?:as )?read|the journal (?:told|nudged|reminded|held|asked) me"
                        r"|(?:a |one |two |\d+ )?new messages? (?:came in|just came in|arrived|is in|are in)|(?:I'?m |I am )?reading (?:it|them|your message|the new message)(?: first| now)?"
-                       r"|(?:loading|loaded) the \S+ skill)\b", re.IGNORECASE)
+                       r"|(?:loading|loaded) the \S+ skill|you reacted|thanks for the (?:reaction|\S+ reaction)"
+                       r"|nothing (?:else )?(?:is |was )?(?:open|waiting|pending|waits)(?: on my side| for me| here)?)\b", re.IGNORECASE)
 
 
 class NameShopTalk(Handler):

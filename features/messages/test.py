@@ -150,3 +150,12 @@ def test_a_row_named_by_a_bare_number_is_named_back_with_its_type():
 def test_a_reply_that_is_only_a_face_is_refused_and_points_at_react():
     asked = Messages(record := fresh(), actor="user").create("ship it?")
     assert "is a reaction: journal message react" in refused(lambda: Messages(record, actor="agent").reply(asked.n, "👍"))
+
+
+def test_a_reaction_from_the_user_reaches_the_agent_as_what_it_is():
+    from engine.actors import render
+    from resources.base import Event
+    asked = Messages(record := fresh(), actor="agent").create("ship it?")
+    face = Messages(record, actor="user").react(asked.n, "👍")
+    line, counted = render([Event(id=1, at=0.0, type="reaction", n=face.n, action="created", actor="user")], record)
+    assert (line.startswith(f"the user put 👍 on message {asked.n} - act on it"), counted) == (True, {}), "a face and what to do with it, never a bare count"
