@@ -7,7 +7,7 @@ import json
 import time
 
 from features.dumps.resource import ENTRY, ITEM, Dump
-from resources.base import AGENT, Refused
+from resources.base import AGENT, SYSTEM, Refused
 
 TEXT = "text"
 LOG_KEPT = 20
@@ -37,9 +37,9 @@ class Dumps(Controller):
         if not found:
             self.link(dump.n, collection.ref)
 
-    def _controller(self, ref: str):
+    def _controller(self, ref: str, actor: str = ""):
         type_, n = ref.split(":")
-        return CONTROLLERS[type_](self.record, actor=self.actor), int(n)
+        return CONTROLLERS[type_](self.record, actor=actor or self.actor), int(n)
 
     def _hold(self, dump, refs: list[str]) -> None:
         for ref in refs:
@@ -73,7 +73,7 @@ class Dumps(Controller):
         for ref in self._made(dump):
             if ref in left:
                 continue
-            controller, m = self._controller(ref)
+            controller, m = self._controller(ref, SYSTEM)
             try:
                 if controller.load(m).data.get(DRAFT_OF) == dump.ref:
                     controller.update(m, **{DRAFT_OF: ""})

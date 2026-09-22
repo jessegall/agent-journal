@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.84.147
+
+- A doc, plan or to-do a dump made now shows up as a notification when the dump goes into the journal. Confirming the dump used to mark everything it released as already seen by the user.
+
 ## 2.84.146
 
 - The agent says what it waits for with journal work await "<what>", and the chat's waiting bubble shows those words. A log entry or parking clears it, and while it stands the agent is asked every minute whether the wait still holds (a setting).
