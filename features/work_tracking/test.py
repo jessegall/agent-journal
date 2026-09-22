@@ -41,6 +41,7 @@ def test_on_idle_with_auto_enabled_and_nothing_open_the_next_row_is_offered():
     record.features = {**record.features, "work_tracking.auto": True}
     idle(record)
     assert nudges(record) == ["todo 1 next"], "auto on: the next row is offered once per idle stretch"
+    record.set_setting("permission_prompts", {"skip": False})
     assert launch_args(record, "claude", ["--model", "sonnet"]) == ["--permission-mode", "auto", "--model", "sonnet"], \
         "auto launches Claude with its automatic approval mode"
     assert launch_args(record, "codex", ["--model", "gpt-5"]) == ["--approve-for-me", "--model", "gpt-5"], \
