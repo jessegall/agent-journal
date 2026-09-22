@@ -53,6 +53,13 @@ function arrowDown(e) {
     }
 }
 
+function pasted(e) {
+    const files = Array.from(e.clipboardData?.files || []);
+    if (!files.length) return;
+    e.preventDefault();
+    draft.files.push(...files);
+}
+
 function picked(e) {
     draft.files.push(...e.target.files);
     e.target.value = "";
@@ -126,6 +133,7 @@ async function use(tool) {
                 @keydown.down="arrowDown"
                 @keydown.meta.enter.prevent="go"
                 @keydown.ctrl.enter.prevent="go"
+                @paste="pasted"
             />
             <div class="compose-foot">
                 <template v-for="action in actions" :key="action.icon">

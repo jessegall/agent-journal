@@ -149,6 +149,13 @@ function added(into, list) {
     into.files = [...into.files, ...Array.from(list || [])];
 }
 
+function pastedInto(into, e) {
+    const files = Array.from(e.clipboardData?.files || []);
+    if (!files.length) return;
+    e.preventDefault();
+    added(into, files);
+}
+
 function dropFiles(e) {
     draft.over = false;
     added(draft, e.dataTransfer?.files);
@@ -287,6 +294,7 @@ function follow(ref) {
             >
                 <textarea
                     v-model="draft.text"
+                    @paste="pastedInto(draft, $event)"
                     placeholder="Paste anything here: a transcript, notes, a chat. Drop files anywhere in this box."
                 />
                 <template v-if="draft.files.length">
@@ -475,7 +483,11 @@ function follow(ref) {
                         </button>
                     </template>
                     <template v-else>
-                        <textarea v-model="more.text" placeholder="Something you forgot: more text, or drop files below." />
+                        <textarea
+                            v-model="more.text"
+                            placeholder="Something you forgot: more text, or drop files below."
+                            @paste="pastedInto(more, $event)"
+                        />
                         <template v-if="more.files.length">
                             <ul class="dump-files">
                                 <li v-for="(file, i) in more.files" :key="file.name + i">
