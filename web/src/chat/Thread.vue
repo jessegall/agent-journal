@@ -394,7 +394,14 @@ watch(
                             :aria-label="waiting ? `The agent is waiting ${waiting}` : `The agent is ${activity}`"
                         >
                             <template v-if="waiting">
-                                <div class="thread-bubble waiting">Waiting {{ waiting }}</div>
+                                <div class="thread-bubble waiting">
+                                    <span>Waiting {{ waiting }}</span>
+                                    <span class="thread-dots">
+                                        <span class="thread-dot" />
+                                        <span class="thread-dot" />
+                                        <span class="thread-dot" />
+                                    </span>
+                                </div>
                             </template>
                             <template v-else-if="thought">
                                 <div class="thread-bubble thought">
@@ -523,6 +530,13 @@ watch(
     padding: 0 3px;
     font-size: 11px;
     color: var(--text-3);
+}
+
+.thread-dots {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin-left: 8px;
 }
 
 .thread-dot {

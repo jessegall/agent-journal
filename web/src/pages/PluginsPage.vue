@@ -121,24 +121,28 @@ function closeShown() {
     outcome.value = null;
 }
 
-async function plugin(p, action, body = {}) {
+async function act(p, action, body = {}) {
     busy.value = `${p.n}`;
-    reading.value = p.name;
-    await readLog();
     try {
         await api.act("plugin", p.n, action, body);
     } catch (e) {
         previewText.value = e.message;
     }
     busy.value = "";
+}
+
+async function plugin(p, action, body = {}) {
+    reading.value = p.name;
+    await readLog();
+    await act(p, action, body);
     await readLog();
 }
 
 async function remove(everything) {
     const p = removing.value;
     removing.value = null;
-    await plugin(p, "remove", {how: "removed from the viewer"});
-    if (everything) await plugin(p, "purge");
+    await act(p, "remove", {how: "removed from the viewer"});
+    if (everything) await act(p, "purge");
 }
 
 async function configure(p, key, value) {
