@@ -68,6 +68,7 @@ def test_what_a_dump_makes_stays_inside_it_until_the_user_confirms_it():
     user.confirm(dump.n)
     assert ([c.n for c in collections.all()], sorted(d.n for d in docs.all()), bool(Todos(record, actor=USER).load(task.n).deleted)) == \
         ([made.n], [earlier.n, doc.n], True), "confirmed, it all appears at once, less what the user left out"
+    assert "user" not in docs.load(doc.n).seen, "what it releases is still unread, so the user is told of it"
 
 
 def test_one_dump_is_worked_at_a_time_its_log_is_kept_and_filing_asks_for_the_next_step():
