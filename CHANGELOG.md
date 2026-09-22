@@ -4,6 +4,13 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.84.145
+
+- A functional design is a document, not a plan. The Functional design template is now for docs: what it is for, what the user sees and does, a Must have checklist anyone can tick, open questions, and what is not in this version. The agent explores while it writes it.
+- An approved design has a Make the plan button: it makes a plan linked to the design, carrying its checklist, and the agent builds the plan so every row names the points it covers.
+- The old two-phase plan template, Functional design then technical implementation, is retired on upgrade.
+- A plan's page shows its sections.
+
 ## 2.84.144
 
 - The agent bar counts the monitors the agent has watching, beside its background shells and subagents, and lists each with its description, command and how long it has run. A monitor ends when it reports, or at its deadline.

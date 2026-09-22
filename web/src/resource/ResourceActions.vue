@@ -3,7 +3,8 @@ import {computed, ref} from "vue";
 import {api} from "../api/client.js";
 import Btn from "../kit/Btn.vue";
 import {meta, word} from "../state/store.js";
-import {open} from "../domain/records.js";
+import {linkedTo, open} from "../domain/records.js";
+import {peek} from "../route.js";
 
 const props = defineProps({resource: Object});
 const emit = defineEmits(["edit"]);
@@ -23,6 +24,25 @@ async function addToCollection() {
         await api.act("collection", found.n, "add", {refs: [props.resource.ref]});
         collecting.value = false;
         text.value = "";
+    } catch (e) {
+        error.value = e.message;
+    }
+}
+
+const MUST_HAVE = "must have";
+const plannable = computed(
+    () =>
+        props.resource.type === "doc" &&
+        !!props.resource.completed &&
+        props.resource.sections.some((s) => s.title.toLowerCase() === MUST_HAVE) &&
+        !linkedTo(props.resource.ref).some((r) => r.type === "plan")
+);
+
+async function makePlan() {
+    error.value = "";
+    try {
+        const plan = await api.command("plan", "from_doc", {doc: props.resource.n});
+        peek("plan", plan.n);
     } catch (e) {
         error.value = e.message;
     }
@@ -78,6 +98,11 @@ async function run(method) {
             <Btn small @click="prompt = ''">Cancel</Btn>
         </template>
         <template v-else>
+            <template v-if="plannable">
+                <Btn kind="primary" small title="Turn this approved design into a plan that covers every must-have point" @click="makePlan">
+                    Make the plan
+                </Btn>
+            </template>
             <template v-if="!resource.completed">
                 <Btn small @click="emit('edit')">Edit</Btn>
             </template>
