@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.85.69 — Upgrading a plugin opens the same dialog as installing it
+
+- Upgrade shows what changes — commands it now also runs, and ones it no longer does — then everything it does, with Run and its spinner, and then the outcome. When it is already at the newest commit, it says so, and Run goes through its install steps again.
+- Every dialog is at most 640 pixels tall and scrolls inside.
+- An upgrade's setup steps get the plugin's chosen settings too.
+
 ## 2.85.68 — The context dropdown says when it last compacted, and the provider stays in view
 
 - The context dropdown in the agent bar says when the session last compacted, under its bar of the window used.

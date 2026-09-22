@@ -17,13 +17,17 @@ def runs(manifest: dict) -> list[str]:
     return [*steps, *servers, *handlers]
 
 
-def difference(before: dict, after: dict) -> str:
+def changed(before: dict, after: dict) -> list[dict]:
     was, now = runs(before), runs(after)
-    gone = [line for line in was if line not in now]
-    fresh = [line for line in now if line not in was]
-    if not gone and not fresh:
+    return [*({"kind": "gone", "line": line} for line in was if line not in now), *({"kind": "new", "line": line} for line in now if line not in was)]
+
+
+def difference(before: dict, after: dict) -> str:
+    lines = changed(before, after)
+    if not lines:
         return "It runs the same commands as the version you have."
-    return "\n".join(["What it runs changes:", *(f"  no longer: {line}" for line in gone), *(f"  now also: {line}" for line in fresh)])
+    words = {"gone": "no longer", "new": "now also"}
+    return "\n".join(["What it runs changes:", *(f"  {words[c['kind']]}: {c['line']}" for c in lines)])
 
 
 def clear(target: Path) -> None:

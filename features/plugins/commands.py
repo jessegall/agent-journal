@@ -63,7 +63,7 @@ class Upgrade(Command):
             manifest = read(where, VERSION)
             if again:
                 ports = {**ports_for(root, manifest), **((row.settings or {}).get("ports") or {})}
-                prepared(manifest, where, environment(root, manifest["name"], manifest, row.token, ports), log(root, manifest["name"]))
+                prepared(manifest, where, environment(root, manifest["name"], manifest, row.token, ports, (row.settings or {}).get(CHOSEN)), log(root, manifest["name"]))
                 restarted(root, manifest)
             return plugins.update(n, manifest=manifest, version=said_version(where, manifest), abstract=manifest.get("description") or "")
         where, manifest, commit, linked = staged(root, row.source, ref or row.revision, VERSION)
@@ -74,7 +74,7 @@ class Upgrade(Command):
             if not yes:
                 return f"{preview(manifest, row.source, commit)}\n\n{difference(row.manifest, manifest)}\nNothing has changed yet. To upgrade to exactly this, run it again with --yes --ref {commit}"
             ports = {**ports_for(root, manifest), **((row.settings or {}).get("ports") or {})}
-            env = environment(root, manifest["name"], manifest, row.token, ports)
+            env = environment(root, manifest["name"], manifest, row.token, ports, (row.settings or {}).get(CHOSEN))
             checked(manifest, where, env)
             prepared(manifest, where, env, log(root, manifest["name"]))
             place(plugins, where, linked, manifest, row.source, ref, commit, row.token, row=row, ports=ports)

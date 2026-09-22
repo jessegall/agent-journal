@@ -47,8 +47,8 @@ onUnmounted(() => window.removeEventListener("keydown", keys));
 .dialog-panel {
     display: flex;
     flex-direction: column;
-    width: min(760px, 100%);
-    max-height: 100%;
+    width: min(720px, 100%);
+    max-height: min(640px, 100%);
     border: 1px solid var(--border-2);
     border-radius: 12px;
     background: var(--raised);

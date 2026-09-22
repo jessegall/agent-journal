@@ -477,6 +477,20 @@ def post_plugins_preview(req: Request) -> Reply:
         drop(where, linked)
 
 
+@route("POST", "/api/{env}/plugins/{n}/upgrade-preview")
+def post_plugin_upgrade_preview(req: Request) -> Reply:
+    from controllers.types import Plugins
+    from features.plugins.commands import VERSION
+    from features.plugins.lifecycle import changed, drop
+    from features.plugins.source import previewed, staged
+    row = Plugins(req.record(), actor=USER).load(int(req.params["n"]))
+    where, manifest, commit, linked = staged(req.root, row.source, row.revision, VERSION)
+    try:
+        return Reply(200, {**previewed(manifest, row.source, commit), "current": commit == row.commit, "changes": changed(row.manifest or {}, manifest)})
+    finally:
+        drop(where, linked)
+
+
 @route("GET", "/api/plugins/{name}/log")
 def get_plugin_log(req: Request) -> Reply:
     from features.plugins.source import log
