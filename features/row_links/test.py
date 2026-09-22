@@ -17,3 +17,14 @@ def test_a_row_named_in_text_is_a_chip_in_the_viewer_and_plain_words_everywhere_
     assert shaped(todos.load(row.n), record)["brief"] == "answered message 1712, not `todo 5`", "the command line gets the plain words"
     todos.update(row.n, brief=viewer["brief"])
     assert todos.load(row.n).brief == "answered message 1712, not `todo 5`", "a marker sent back by the viewer is saved as plain words"
+
+
+def test_files_commits_and_links_are_marked_by_the_server_and_code_is_left_alone():
+    load()
+    record = fresh()
+    row = Todos(record, actor=USER).create("paths", brief="See engine/hooks.py, commit 4b64ddbb7 and https://example.com/a. `engine/x.py` stays")
+    viewed = shaped(row, record, VIEWER)["brief"]
+    assert "[[file engine/hooks.py|engine/hooks.py]]" in viewed and "[[commit 4b64ddbb7|4b64ddb]]" in viewed, "a path and a commit get their markers"
+    assert "[[url https://example.com/a|https://example.com/a]]" in viewed, "a link gets its marker"
+    assert "`engine/x.py`" in viewed, "a path in code is left as code"
+    assert shaped(row, record)["brief"] == row.brief, "outside the viewer the text stays plain"
