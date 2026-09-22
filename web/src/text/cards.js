@@ -1,5 +1,6 @@
 import {escape, register} from "./index.js";
 import {rows} from "../sync/rows.js";
+import {words} from "./markers.js";
 
 const MARKED = /^\[\[chip ([a-z]+):(\d+)\|([^\]]*)\]\][.:]?$/m;
 const PLAIN = /^([A-Za-z][\w-]*) #?(\d+)[.:]?$/m;
@@ -15,22 +16,20 @@ function alone(text, context) {
 function card(type, n, label, context) {
     const row = rows(type).find((r) => r.n === n);
     const kind = context.types.find((t) => t.name === type);
-    const title = row ? row.title : label;
-    const line = row
-        ? row.abstract ||
-          String(row.brief || "")
-              .split("\n")[0]
-              .slice(0, 160)
-        : "";
+    const title = words(row ? row.title : label);
+    const line = row ? words(row.abstract || String(row.brief || "").split("\n")[0]).slice(0, 160) : "";
     return `<a class="row-card" href="#" data-peek="${type}:${n}"><span class="row-card-kind">${escape(kind ? kind.title : type)} ${n}</span><span class="row-card-title">${escape(title)}</span>${line ? `<span class="row-card-line">${escape(line)}</span>` : ""}</a>`;
 }
 
-register((text, context) => {
-    const found = alone(text, context);
-    if (!found) return null;
-    return [
-        {kind: "text", text: text.slice(0, found.at)},
-        {kind: "html", html: card(found.type, found.n, found.label, context)},
-        {kind: "text", text: text.slice(found.at + found.length)},
-    ];
-}, {first: true});
+register(
+    (text, context) => {
+        const found = alone(text, context);
+        if (!found) return null;
+        return [
+            {kind: "text", text: text.slice(0, found.at)},
+            {kind: "html", html: card(found.type, found.n, found.label, context)},
+            {kind: "text", text: text.slice(found.at + found.length)},
+        ];
+    },
+    {first: true}
+);
