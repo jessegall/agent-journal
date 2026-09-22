@@ -40,35 +40,36 @@ const firstLine = (r) =>
     String(r.abstract || r.brief || "")
         .split("\n")
         .find((line) => line.trim()) || "";
-const picture = (r) => Object.keys(r.pictures || {})[0] || "";
+const picture = (r) => Object.keys(r.data?.pictures || {})[0] || "";
 </script>
 
 <template>
-    <ResourceBody :resource="resource" :comments="false" @close="emit('close')" />
-    <section class="cards" aria-label="In this group">
-        <template v-if="!members.length">
-            <p class="empty">
-                Nothing in this group yet. Add a row from its actions, or with journal group add {{ resource.n }} &lt;ref&gt;.
-            </p>
-        </template>
-        <template v-for="r in members" :key="r.ref">
-            <button type="button" class="card" @click="peek(r.type, r.n)">
-                <template v-if="picture(r)">
-                    <img class="thumb" :src="api.fileUrl(r.type, r.n, picture(r))" :alt="picture(r)" loading="lazy" />
-                </template>
-                <span class="kind">
-                    <Icon :name="meta(r.type).icon" :size="12" />
-                    {{ meta(r.type).title }} {{ r.n }}
-                    <span class="grow" />
-                    <span class="when">{{ age(r.updated || r.created) }}</span>
-                </span>
-                <span class="title">{{ r.title }}</span>
-                <template v-if="firstLine(r)">
-                    <span class="line">{{ firstLine(r) }}</span>
-                </template>
-            </button>
-        </template>
-    </section>
+    <ResourceBody :resource="resource" :comments="false" :links="false" @close="emit('close')">
+        <section class="cards" aria-label="In this group">
+            <template v-if="!members.length">
+                <p class="empty">
+                    Nothing in this group yet. Add a row from its actions, or with journal group add {{ resource.n }} &lt;ref&gt;.
+                </p>
+            </template>
+            <template v-for="r in members" :key="r.ref">
+                <button type="button" class="card" @click="peek(r.type, r.n)">
+                    <template v-if="picture(r)">
+                        <img class="thumb" :src="api.fileUrl(r.type, r.n, picture(r))" :alt="picture(r)" loading="lazy" />
+                    </template>
+                    <span class="kind">
+                        <Icon :name="meta(r.type).icon" :size="12" />
+                        {{ meta(r.type).title }} {{ r.n }}
+                        <span class="grow" />
+                        <span class="when">{{ age(r.updated || r.created) }}</span>
+                    </span>
+                    <span class="title">{{ r.title }}</span>
+                    <template v-if="firstLine(r)">
+                        <span class="line">{{ firstLine(r) }}</span>
+                    </template>
+                </button>
+            </template>
+        </section>
+    </ResourceBody>
 </template>
 
 <style scoped>
@@ -76,7 +77,7 @@ const picture = (r) => Object.keys(r.pictures || {})[0] || "";
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
     gap: 10px;
-    padding: 4px 32px 40px;
+    padding: 4px 0 16px;
 }
 
 .empty {

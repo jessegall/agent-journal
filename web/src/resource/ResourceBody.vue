@@ -26,6 +26,7 @@ const props = defineProps({
     resource: Object,
     comments: {type: Boolean, default: true},
     commentComposer: {type: Boolean, default: true},
+    links: {type: Boolean, default: true},
 });
 const emit = defineEmits(["close"]);
 const kind = computed(() => meta(props.resource.type));
@@ -239,7 +240,10 @@ async function save() {
             </section>
         </template>
         <Asked :resource="resource" />
-        <Links :resource="resource" />
+        <slot />
+        <template v-if="links">
+            <Links :resource="resource" />
+        </template>
         <footer class="foot">seen by {{ resource.seen.join(", ") || "nobody" }}</footer>
         <template v-if="comments">
             <Comments :resource="resource" :compose="commentComposer" />
