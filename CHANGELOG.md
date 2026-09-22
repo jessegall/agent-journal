@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.84.42 — The pre-push boot check takes 2.6 seconds instead of 4
+
+The boot check before every push now launches Claude and Codex at the same time in its scratch project and checks once, after both have quit, that nothing is left running. It takes about 2.6 seconds instead of 3.9, stays well under its 5-second limit, and also proves the journal keeps running while one session is still open and stops when the last one ends.
+
 ## 2.84.41 — A plan's long brief is folded, with the rest a click away
 
 A long plan brief no longer pushes the phases far down the page: past a few lines it is folded with "Show more", and "Show less" folds it again. It uses the same folding as long chat messages, now one shared piece of the viewer.
