@@ -4,6 +4,11 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.86.10 — The installer reads a package kept under src/
+
+- An upgrade, and install.sh, read the journal's package from src/ when a release keeps it there, and from the root otherwise; this readies installs for the move of all code under src/.
+- An upgrade whose source holds no package changes nothing, where it used to retire every installed file.
+
 ## 2.86.9 — A plugin's setup updates the rows it owns
 
 - When a plugin creates a row it already owns under the same title, that row is updated with what the new version says, so an upgrade can change its own check's command or wording; its locked rows stay locked to everyone else.

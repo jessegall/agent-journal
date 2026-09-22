@@ -52,11 +52,17 @@ def package_files(root: Path, left: tuple = LEFT_BEHIND) -> set[Path]:
     return files
 
 
+def packaged(source: Path) -> Path:
+    return source / SRC if (source / SRC / "install.py").is_file() else source
+
+
 def refresh(source: Path, target: Path) -> tuple[set, set]:
-    source, target = source.resolve(), target.resolve()
+    source, target = packaged(source).resolve(), target.resolve()
     if source == target:
         return set(), set()
     wanted = package_files(source)
+    if "install.py" not in {rel.as_posix() for rel in wanted}:
+        raise OSError(f"{source} holds no journal package; nothing was changed")
     existing = package_files(target, left=())
     gone = existing - wanted
     changed = {rel for rel in wanted if not (target / rel).is_file() or (source / rel).read_bytes() != (target / rel).read_bytes()}
@@ -260,9 +266,13 @@ def upgrade(project: Path, root: Path | None = None) -> list[str]:
     elif (PACKAGE / ".git").is_dir() and shutil.which("git"):
         pulled = subprocess.run(["git", "-C", str(PACKAGE), "pull", "--ff-only", "-q"], capture_output=True, text=True, timeout=120)
         done.append("package pulled" if pulled.returncode == 0 else f"package not pulled: {pulled.stderr.strip()}")
-    changed, gone = refresh(source, code(root))
-    if temporary:
-        shutil.rmtree(temporary, ignore_errors=True)
+    try:
+        changed, gone = refresh(source, code(root))
+    except OSError as error:
+        return done + [f"package not refreshed: {error}"]
+    finally:
+        if temporary:
+            shutil.rmtree(temporary, ignore_errors=True)
     done.append(f"package refreshed: {len(changed)} changed, {len(gone)} retired")
     if reloaded:
         finished = subprocess.run([sys.executable, str(code(root) / "install.py"), "finish", str(project)], capture_output=True, text=True, timeout=120)
@@ -278,8 +288,11 @@ def finish(project: Path, root: Path) -> list[str]:
     if not all((code(root) / name).is_file() for name in PACKAGE_FILES) and not os.environ.get("AGENT_JOURNAL_BOOTSTRAPPED"):
         temporary = Path(tempfile.mkdtemp())
         _, failed = fetch(temporary / "package")
-        if not failed:
-            refresh(temporary / "package", code(root))
+        try:
+            if not failed:
+                refresh(temporary / "package", code(root))
+        except OSError as error:
+            failed = str(error)
         shutil.rmtree(temporary, ignore_errors=True)
         done.append(f"package files an older installer did not know: {failed or 'fetched'}")
     done += configure(project, root)
