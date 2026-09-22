@@ -1,4 +1,5 @@
 <script setup>
+import SectionHeading from "../kit/SectionHeading.vue";
 import {computed} from "vue";
 import Icon from "../kit/Icon.vue";
 import {peek} from "../route.js";
@@ -37,7 +38,7 @@ const open = (ref) => {
 <template>
     <template v-if="rows.length">
         <section class="links">
-            <h3>Resources</h3>
+            <SectionHeading>Resources</SectionHeading>
             <template v-for="r in rows" :key="r.key">
                 <button type="button" class="bar" @click="open(r.ref)">
                     <Icon :name="r.icon" :size="13" />
@@ -52,15 +53,6 @@ const open = (ref) => {
 <style scoped>
 .links {
     margin-top: 16px;
-}
-
-h3 {
-    margin: 0 0 6px;
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--text-3);
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
 }
 
 .bar {

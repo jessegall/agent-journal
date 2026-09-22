@@ -52,12 +52,9 @@ def test_on_idle_with_auto_enabled_and_nothing_open_the_next_row_is_offered():
     assert launch_args(record, "codex", ["--ask-for-approval", "never"]) == ["--ask-for-approval", "never"], \
         "an explicit Codex approval choice wins"
     work = Works(record, actor=AGENT).create("on it", todo=1)
-    for kind in ("shells", "subagents", "monitors"):
-        idle(record, **{kind: 1})
-        assert nudges(record) == ["todo 1 next"], f"{kind} running in the background are a wait: the open work is not named"
-    idle(record, shells=0, subagents=0, monitors=0)
+    idle(record, shells=1, subagents=1, monitors=1)
     assert nudges(record) == ["todo 1 next", "work 1 is still open, with nothing logged"], \
-        "work open: nothing offered; the work feature speaks instead"
+        "background tasks are no wait: the open work is named"
     Works(record, actor=AGENT).complete(work.n, "done", todo=True)
     idle(record)
     assert nudges(record)[-1] == "todo 2 next", "the row closed with the work: the next row is offered"

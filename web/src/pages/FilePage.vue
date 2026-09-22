@@ -1,4 +1,5 @@
 <script setup>
+import EmptyState from "../kit/EmptyState.vue";
 import {computed, onMounted, ref, watch} from "vue";
 import {api} from "../api/client.js";
 import {highlight, languageOf} from "../text/highlight.js";
@@ -72,10 +73,10 @@ watch(() => [route.value.q, route.value.sub], load);
 <template>
     <section class="filepage">
         <template v-if="error">
-            <p class="empty">{{ error }}</p>
+            <EmptyState class="empty">{{ error }}</EmptyState>
         </template>
         <template v-if="matches.length">
-            <p class="empty">{{ matches.length }} files in the project are named {{ route.q }}:</p>
+            <EmptyState class="empty">{{ matches.length }} files in the project are named {{ route.q }}:</EmptyState>
             <ul class="matches">
                 <template v-for="path in matches" :key="path">
                     <li>
@@ -99,11 +100,11 @@ watch(() => [route.value.q, route.value.sub], load);
                     <Diff :text="diff" />
                 </template>
                 <template v-else>
-                    <p class="empty">No changes since the last commit.</p>
+                    <EmptyState class="empty">No changes since the last commit.</EmptyState>
                 </template>
             </template>
             <template v-else-if="file.kind.startsWith('image/')">
-                <p class="empty">An image; open it from Files if it is an attachment.</p>
+                <EmptyState class="empty">An image; open it from Files if it is an attachment.</EmptyState>
             </template>
             <template v-else>
                 <template v-if="picked">
@@ -180,9 +181,6 @@ watch(() => [route.value.q, route.value.sub], load);
     gap: 8px;
 }
 
-.empty {
-    color: var(--text-3);
-}
 
 .head {
     display: flex;

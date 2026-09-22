@@ -1,4 +1,5 @@
 <script setup>
+import SectionHeading from "../kit/SectionHeading.vue";
 import {computed, nextTick, reactive, ref, watch} from "vue";
 import {api} from "../api/client.js";
 import Btn from "../kit/Btn.vue";
@@ -76,7 +77,7 @@ async function send(text) {
                 <p class="none">No comments yet.</p>
             </template>
             <template v-for="group in groups" :key="group.title">
-                <h3>{{ group.title }}</h3>
+                <SectionHeading>{{ group.title }}</SectionHeading>
                 <template v-for="c in group.rows" :key="c.n">
                     <div :class="['comment', c.seen[0], {focused: c.n === props.focus}]" :data-comment="c.n">
                         <span class="who">
@@ -127,15 +128,6 @@ async function send(text) {
 
 .comment + h3 {
     margin-top: 18px;
-}
-
-h3 {
-    margin: 0 0 6px;
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--text-3);
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
 }
 
 .none {

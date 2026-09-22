@@ -1,6 +1,6 @@
 <script setup>
+import CloseButton from "./CloseButton.vue";
 import {onUnmounted, ref, watch} from "vue";
-import Icon from "./Icon.vue";
 import {closing} from "./closing.js";
 
 const props = defineProps({title: {type: String, default: ""}, follow: {type: Boolean, default: false}});
@@ -26,7 +26,7 @@ onUnmounted(() => watcher.disconnect());
             <section class="dialog-panel">
                 <header class="dialog-head">
                     <h3>{{ title }}</h3>
-                    <button type="button" class="dialog-close" title="Close" @click="close"><Icon name="x" /></button>
+                    <CloseButton @click="close" />
                 </header>
                 <div ref="body" class="dialog-body">
                     <slot />
@@ -96,20 +96,6 @@ onUnmounted(() => watcher.disconnect());
     margin: 0;
     font-size: 13.5px;
     font-weight: 600;
-}
-
-.dialog-close {
-    display: inline-flex;
-    padding: 4px;
-    border: 0;
-    border-radius: 6px;
-    background: none;
-    color: var(--text-3);
-    cursor: pointer;
-}
-
-.dialog-close:hover {
-    color: var(--text);
 }
 
 .dialog-body {

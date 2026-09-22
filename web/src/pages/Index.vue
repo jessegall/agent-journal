@@ -1,4 +1,5 @@
 <script setup>
+import EmptyState from "../kit/EmptyState.vue";
 import {useSighted} from "../composables/scrollback.js";
 import {computed, onUnmounted, ref} from "vue";
 import {api} from "../api/client.js";
@@ -93,7 +94,7 @@ async function select(n) {
             <NewResource :type="type" @made="select" @close="adding = false" />
         </template>
         <template v-if="!listed.length">
-            <p class="empty">
+            <EmptyState class="empty">
                 No {{ kind.title.toLowerCase() }}s
                 {{
                     filter === "open"
@@ -102,7 +103,7 @@ async function select(n) {
                             : "on this environment"
                         : filters.find((f) => f.key === filter).title.toLowerCase()
                 }}{{ filter !== "open" || !all.length ? " yet" : "" }}.
-            </p>
+            </EmptyState>
         </template>
         <SwitchCase :value="kind.listed_as_cards ? 'document' : kind.view">
             <template #document>
@@ -207,7 +208,6 @@ async function select(n) {
 
 .empty {
     margin: 18px 22px;
-    color: var(--text-3);
 }
 
 .cards {

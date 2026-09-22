@@ -1,6 +1,6 @@
 <script setup>
+import CloseButton from "../kit/CloseButton.vue";
 import {computed} from "vue";
-import Btn from "../kit/Btn.vue";
 import Icon from "../kit/Icon.vue";
 import CommentToggle from "./CommentToggle.vue";
 import TextDisplay from "../kit/TextDisplay.vue";
@@ -32,7 +32,7 @@ const changed = computed(() => revisions.topChanged);
                 </span>
                 <span class="grow" />
                 <CommentToggle :resource="resource" />
-                <Btn kind="icon" @click="emit('close')"><Icon name="x" /></Btn>
+                <CloseButton @click="emit('close')" />
             </header>
             <RevisionStrip :revisions="revisions" />
             <template v-if="!revisions.page">

@@ -100,7 +100,7 @@ async function run(method) {
             />
             <datalist id="open-collections">
                 <template v-for="c in collections" :key="c">
-                  <option :value="c" />
+                    <option :value="c" />
                 </template>
             </datalist>
             <Btn small @click="addToCollection">Add to collection</Btn>

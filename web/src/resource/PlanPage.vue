@@ -1,4 +1,5 @@
 <script setup>
+import CloseButton from "../kit/CloseButton.vue";
 import {computed, inject, ref, watchEffect} from "vue";
 import {api} from "../api/client.js";
 import Btn from "../kit/Btn.vue";
@@ -68,7 +69,7 @@ async function run(action, body = {}) {
             <span class="grow" />
             <DownloadLink :resource="resource" />
             <CommentToggle :resource="resource" />
-            <Btn kind="icon" @click="emit('close')"><Icon name="x" /></Btn>
+            <CloseButton @click="emit('close')" />
         </header>
         <h2 class="title">{{ resource.title }}</h2>
         <template v-if="resource.data.goal">

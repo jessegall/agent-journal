@@ -1,4 +1,5 @@
 <script setup>
+import SectionHeading from "../kit/SectionHeading.vue";
 import {computed} from "vue";
 import {route} from "../route.js";
 
@@ -10,10 +11,10 @@ const commits = computed(() => props.resource.data.commits || []);
 <template>
     <template v-if="files.length">
         <section class="block">
-            <h3>
+            <SectionHeading>
                 Files changed
                 <span class="muted">{{ files.length }}</span>
-            </h3>
+            </SectionHeading>
             <div class="trace-files">
                 <template v-for="f in files" :key="f.path">
                     <div class="trace-file" :title="f.path">
@@ -32,10 +33,10 @@ const commits = computed(() => props.resource.data.commits || []);
     </template>
     <template v-if="commits.length">
         <section class="block">
-            <h3>
+            <SectionHeading>
                 Commits
                 <span class="muted">{{ commits.length }}</span>
-            </h3>
+            </SectionHeading>
             <div class="trace-commits">
                 <template v-for="c in commits" :key="c.sha">
                     <div class="trace-commit">
@@ -55,11 +56,6 @@ const commits = computed(() => props.resource.data.commits || []);
 
 .block h3 {
     margin: 0 0 4px;
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--text-3);
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
 }
 
 .muted {

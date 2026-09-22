@@ -32,10 +32,10 @@ const holds = computed(() => {
         <template v-if="holds.length">
             <span class="holds">
                 <template v-for="h in holds" :key="h.type">
-                  <span class="holds-kind" :title="`${h.n} ${h.title.toLowerCase()}${h.n > 1 ? 's' : ''}`">
-                      <Icon :name="h.icon" :size="12" />
-                      {{ h.n }}
-                  </span>
+                    <span class="holds-kind" :title="`${h.n} ${h.title.toLowerCase()}${h.n > 1 ? 's' : ''}`">
+                        <Icon :name="h.icon" :size="12" />
+                        {{ h.n }}
+                    </span>
                 </template>
             </span>
         </template>

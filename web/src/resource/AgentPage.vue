@@ -1,10 +1,10 @@
 <script setup>
+import CloseButton from "../kit/CloseButton.vue";
 import {useSighted} from "../composables/scrollback.js";
 import {useTranscript} from "../composables/transcript.js";
 import {withWhispers} from "../domain/transcript.js";
 import {computed, ref, watch} from "vue";
 import {api} from "../api/client.js";
-import Btn from "../kit/Btn.vue";
 import CommentToggle from "./CommentToggle.vue";
 import DropList from "../kit/DropList.vue";
 import {modelFamily, providerName} from "../agents.js";
@@ -93,7 +93,7 @@ useSighted(topMark, earlier, {root: scroller, margin: "400px 0px"});
             <span :class="['state', state]">{{ state }}</span>
             <span class="grow" />
             <CommentToggle :resource="resource" />
-            <Btn kind="icon" @click="emit('close')"><Icon name="x" /></Btn>
+            <CloseButton @click="emit('close')" />
         </header>
         <template v-if="picked">
             <h2 class="title">{{ picked.task }}</h2>
