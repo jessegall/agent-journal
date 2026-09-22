@@ -5,7 +5,7 @@ from controllers.types import Facts, Questions, Reminders, Rules, Todos
 from features.record_audit.audit import evidence
 from features.memory_checkpoints.reread import owed as read_owed, standing
 from resources.base import AGENT, USER
-from tests.kit import nudges, report
+from tests.kit import nudges, tick
 from tests.conftest import fresh
 
 
@@ -57,6 +57,6 @@ def test_evidence_finds_dead_paths_and_verbs_and_a_struck_claim_has_none():
     Rules(record, actor=AGENT).action("reread")()
     assert read_owed(record) is False, "read: no longer owed"
 
-    report(record, "idle", "Stop")
+    tick(record)
     assert nudges(record)[0].startswith("3 things in the record have evidence against them") is True, \
         "the first report says what has evidence, with the retiring commands under it"
