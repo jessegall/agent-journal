@@ -47,6 +47,7 @@ function unedit() {
 }
 const busy = computed(() => !!agent.value && ["working", "compacting"].includes(agent.value.data.status));
 const waiting = computed(() => waitsFor(agent.value));
+const thought = computed(() => (agent.value && agent.value.data.thinking) || "");
 const away = ref(false);
 const missed = ref(0);
 const settledOnce = ref(false);
@@ -332,6 +333,12 @@ watch(
                         <template v-if="waiting">
                             <div class="thread-bubble waiting">Waiting {{ waiting }}</div>
                         </template>
+                        <template v-else-if="thought">
+                            <div class="thread-bubble thought">
+                                <span class="thought-label">thinking</span>
+                                <span class="thought-text">{{ thought }}</span>
+                            </div>
+                        </template>
                         <template v-else>
                             <div class="thread-bubble">
                                 <span class="thread-dot" />
@@ -395,6 +402,31 @@ watch(
     border: 1px solid #232529;
     border-radius: 9px;
     background: #161719;
+}
+
+.thread-turn.busy .thread-bubble.thought {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+    max-width: 520px;
+}
+
+.thought-label {
+    font-size: 10.5px;
+    color: var(--text-3);
+    letter-spacing: 0.02em;
+}
+
+.thought-text {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    color: var(--text-3);
+    font-size: 11px;
+    font-style: italic;
+    line-height: 1.45;
 }
 
 .thread-turn.busy .thread-bubble.waiting {

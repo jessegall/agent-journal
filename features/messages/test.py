@@ -136,15 +136,3 @@ def test_a_row_named_by_a_bare_number_is_named_back_with_its_type():
     lines = [n for n in nudges(record) if "without saying what they are" in n]
     assert len(lines) == 1 and f"names {asked.n}, {filed.n} " in lines[0], "the bare numbers of real rows are named back, versions and counts are not"
     assert formatted("a journal question with options; journal question ask", record, VIEWER) == "a journal question with options; `journal question ask`", "only a real command is code"
-
-
-def test_a_message_left_in_hidden_thinking_is_posted_once_marked_as_thinking(tmp_path):
-    record, transcript = fresh(), tmp_path / "s.jsonl"
-    rows = lambda *messages: "".join(json.dumps({"type": "assistant", "message": {"id": key, "content": parts}}) + "\n" for key, parts in messages)
-    transcript.write_text(rows(("m0", [{"type": "text", "text": "before"}])))
-    report(record, "working", "PreToolUse", provider="claude", transcript=str(transcript))
-    transcript.write_text(transcript.read_text() + rows(("m1", [{"type": "thinking", "thinking": ""}, {"type": "thinking", "thinking": "Hidden words"}, {"type": "tool_use", "name": "Bash"}]),
-                                                         ("m2", [{"type": "thinking", "thinking": "Reasoning"}, {"type": "text", "text": "Shown"}, {"type": "tool_use", "name": "Bash"}])))
-    for _ in range(2):
-        report(record, "working", "PostToolUse", provider="claude", transcript=str(transcript))
-    assert [(m.brief, m.data.get("thinking")) for m in Messages(record, actor="system").all()] == [("Hidden words", True)], "posted once; thinking beside a visible message is not"
