@@ -543,7 +543,9 @@ button.thread-pill:hover {
 
 .thread-text.thinking {
     color: var(--text-3);
+    font-size: 11px;
     font-style: italic;
+    line-height: 1.45;
 }
 
 .thread-text :deep(table) {
