@@ -5,7 +5,7 @@ from features.status_bar.shell import words
 GRAY, MUTED, RED, GREEN = "gray", "muted", "red", "green"
 VERBS = {"writes": "editing", "creates": "creating", "reads": "reading", "deletes": "deleting", "tests": "testing",
          "installs": "installing", "builds": "building", "journal": "journalling", "git": "git", "": "running",
-         "searches": "searching", "views": "viewing", "watches": "watching", "fetches": "fetching", "dispatches": "dispatching", "loads": "loading"}
+         "searches": "searching", "views": "viewing", "watches": "watching", "fetches": "fetching", "dispatches": "dispatching", "loads": "loading", "pulls": "pull request"}
 NOUNS = {"reads": "files", "tests": "tests", "installs": "dependencies"}
 HELD = ("writes", "deletes", "creates", "tests")
 USING = "using"
