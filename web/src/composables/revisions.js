@@ -22,12 +22,17 @@ export function useRevisions(resource) {
         {immediate: true}
     );
 
+    const loading = new Set();
+
     async function load(k) {
-        if (!k || pages[k]) return;
+        if (!k || pages[k] || loading.has(k)) return;
+        loading.add(k);
         try {
             pages[k] = await api.revision(resource().n, k);
         } catch (e) {
             error.value = e.message;
+        } finally {
+            loading.delete(k);
         }
     }
 
