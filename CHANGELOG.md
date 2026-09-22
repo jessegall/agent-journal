@@ -4,6 +4,11 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.85.61 — The working dots say what the agent is doing
+
+- Under the dots, the chat says what the agent is doing right now — reading, searching, running, writing — in the same word the status bar uses, and compacting while it compacts. Thinking still shows its thought.
+- A declared wait shows in the same place, in the agent's own words, even while the agent is idle; with nothing to do and nothing waited on, the dots are gone.
+
 ## 2.85.60 — The plugin dialog runs, then says how it went
 
 - While Run works, its button shows a spinner in place of its word and keeps its width.
