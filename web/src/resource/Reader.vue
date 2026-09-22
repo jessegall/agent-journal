@@ -7,7 +7,7 @@ import {holding, rows} from "../sync/rows.js";
 import ResourceBody from "./ResourceBody.vue";
 import DocumentPage from "./DocumentPage.vue";
 import PlanPage from "./PlanPage.vue";
-import DesignPage from "./DesignPage.vue";
+import Revisions from "./Revisions.vue";
 import AgentPage from "./AgentPage.vue";
 import Comments from "./Comments.vue";
 
@@ -25,7 +25,7 @@ watchEffect(() => {
     else go(route.value.env, type, Number(n));
 });
 const focusComment = computed(() => (props.depth ? 0 : route.value.open?.comment || 0));
-const shape = computed(() => (!props.type ? "" : ["plan", "agent", "design"].includes(props.type) ? props.type : meta(props.type).view));
+const shape = computed(() => (!props.type ? "" : ["plan", "agent"].includes(props.type) ? props.type : meta(props.type).view));
 const panel = computed(() => (["small", "wide"].includes(shape.value) ? "inspector" : shape.value));
 const close = () => (route.value.open ? unpeek() : go(route.value.env, props.type));
 const swapping = ref(false);
@@ -81,18 +81,17 @@ watch(
                                 <PlanPage :resource="resource" @close="close" />
                             </DocumentPage>
                         </template>
-                        <template #design>
-                            <DocumentPage :resource="resource" :focus="focusComment" @close="close">
-                                <DesignPage :resource="resource" @close="close" />
-                            </DocumentPage>
-                        </template>
                         <template #agent>
                             <DocumentPage :resource="resource" :focus="focusComment" @close="close">
                                 <AgentPage :resource="resource" @close="close" />
                             </DocumentPage>
                         </template>
                         <template #document>
-                            <DocumentPage :resource="resource" :focus="focusComment" @close="close" />
+                            <DocumentPage :resource="resource" :focus="focusComment" @close="close">
+                                <template v-if="resource.data.revisions?.length">
+                                    <Revisions :resource="resource" @close="close" />
+                                </template>
+                            </DocumentPage>
                         </template>
                         <template #default>
                             <ResourceBody :resource="resource" @close="close" />

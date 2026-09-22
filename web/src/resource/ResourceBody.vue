@@ -100,6 +100,7 @@ async function save() {
                 <h2 class="title">{{ resource.title }}</h2>
             </template>
         </header>
+        <slot name="head" />
         <template v-if="editing">
             <form class="edit" @submit.prevent="save">
                 <textarea
