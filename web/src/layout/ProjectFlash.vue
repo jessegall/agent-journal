@@ -12,12 +12,13 @@ watch(
     [() => flash.at, () => away.hidden],
     () => {
         showing.value = true;
-        if (away.hidden) {
+        if (document.visibilityState !== "visible") {
             clearTimeout(timer);
             timer = 0;
             return;
         }
-        if (!timer) timer = setTimeout(() => ((showing.value = false), (timer = 0)), SHOWN_FOR);
+        clearTimeout(timer);
+        timer = setTimeout(() => ((showing.value = false), (timer = 0)), SHOWN_FOR);
     },
     {immediate: true}
 );
@@ -35,7 +36,7 @@ onUnmounted(() => clearTimeout(timer));
         <div v-if="showing" class="flash-veil" aria-hidden="true" />
     </Transition>
     <Transition name="flash">
-        <div v-if="showing" class="project-flash" :style="{'--tint': tint}" aria-hidden="true">
+        <div v-if="showing" :class="['project-flash', {fading: !away.hidden}]" :style="{'--tint': tint}" aria-hidden="true">
             <span class="badge" :style="{background: tint, color: negative}">{{ project.charAt(0).toUpperCase() }}</span>
             <span class="name">{{ project }} · {{ route.env }}</span>
         </div>
@@ -80,6 +81,21 @@ onUnmounted(() => clearTimeout(timer));
 .veil-enter-from,
 .veil-leave-to {
     opacity: 0;
+}
+
+.project-flash.fading {
+    animation: hold-then-go 1050ms ease forwards;
+}
+
+@keyframes hold-then-go {
+    0%,
+    85% {
+        opacity: 1;
+    }
+
+    100% {
+        opacity: 0;
+    }
 }
 
 .badge {

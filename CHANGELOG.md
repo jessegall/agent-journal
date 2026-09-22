@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.85.52 — The badge goes in one second, whatever the page is doing
+
+- The badge fades on its own animation instead of a timer, so the work the viewer does when you come back cannot hold it on screen. Measured in the page: invisible 1.02 seconds after the tab is focused.
+
 ## 2.85.51 — Any file picker silences the badge, not only the chat's
 
 - Opening a file picker anywhere in the viewer — the chat's attachment button, the dump window, the new-resource dialog — keeps the project badge quiet for twenty seconds. It is caught in one place now.
