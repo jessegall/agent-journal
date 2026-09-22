@@ -6,7 +6,6 @@ class SuggestionsDetails(FeatureDetails):
 
     title = "Suggestions"
 
-    speaks_while_waiting = True
 
     abstract = "An accepted or adjusted suggestion becomes a to-do that cites it; a decline files nothing"
 

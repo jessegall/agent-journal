@@ -106,3 +106,20 @@ def test_what_reaches_the_network_is_not_held_against_the_budget():
     assert notified(record) == [], "installing, upgrading and previewing a plugin fetch from the network and take what they take"
     reports.report_console(record.root, record.env, "GET /api/main/dashboard took 200ms", "GET /api/main/dashboard", "", "slow")
     assert notified(record) == ["the viewer's GET /api/main/dashboard is slower than its budget"], "anything local keeps its budget"
+
+
+def test_a_slow_request_waits_while_the_agent_waits():
+    from controllers.types import Works
+    from resources.base import AGENT
+    from tests.kit import nudges, report
+    features.load()
+    record, reports = fresh(), FEATURES["dev_faults"].reports
+    turned(record, True)
+    report(record, "working", "PreToolUse")
+    work = Works(record, actor=AGENT).create("the release")
+    Works(record, actor=AGENT).action("await")("the CI run")
+    reports.spent(record.root, record.env, "request", "GET /api/pages", 400)
+    assert not [n for n in nudges(record) if "slower than its budget" in n], "a wait hears only what needs the agent to act"
+    Works(record, actor=AGENT).update(work.n, awaiting="")
+    reports.spent(record.root, record.env, "request", "GET /api/agents", 400)
+    assert [n for n in nudges(record) if "GET /api/agents" in n], "once the wait is over it is told again"

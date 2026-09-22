@@ -6,7 +6,6 @@ class CleanSlateDetails(FeatureDetails):
 
     title = "Clean slate"
 
-    speaks_while_waiting = True
 
     abstract = """
         At launch, every hook that is not the journal's can be set aside, and is put back when

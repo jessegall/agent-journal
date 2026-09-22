@@ -6,7 +6,6 @@ class DumpsDetails(FeatureDetails):
 
     title = "Dumps"
 
-    speaks_while_waiting = True
 
     abstract = "Drop anything in one place and the agent reads every item and files it into the record"
 

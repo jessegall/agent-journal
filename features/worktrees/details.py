@@ -6,7 +6,6 @@ class WorktreesDetails(FeatureDetails):
 
     title = "Worktrees"
 
-    speaks_while_waiting = True
 
     abstract = """
         A git worktree of the project works from the project's journal: one with no journal of

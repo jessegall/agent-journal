@@ -8,7 +8,6 @@ class CommitsDetails(FeatureDetails):
 
     aliases = ("commits",)
 
-    speaks_while_waiting = True
 
     abstract = "A commit whose message carries Journal: todos done and a to-do number closes that row"
 

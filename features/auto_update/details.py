@@ -9,7 +9,6 @@ class UpdatesDetails(FeatureDetails):
 
     aliases = ("updates",)
 
-    speaks_while_waiting = True
 
     abstract = "A newer journal is installed by itself, or the agent is told to install it"
 

@@ -6,7 +6,6 @@ class PluginsDetails(FeatureDetails):
 
     title = "Plugins"
 
-    speaks_while_waiting = True
 
     abstract = "A repository installed into the journal hears the bus, answers it, and may run services of its own"
 
