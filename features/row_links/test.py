@@ -18,7 +18,7 @@ def test_a_row_named_in_text_is_a_chip_in_the_viewer_and_plain_words_everywhere_
     todos.update(row.n, brief=viewer["brief"])
     assert todos.load(row.n).brief == "answered message 1712, not `todo 5`", "a marker sent back by the viewer is saved as plain words"
     listed = todos.create("reviews", brief="messages 3485, 3494 and 3508")
-    assert shaped(todos.load(listed.n), record, VIEWER)["brief"] == "[[chips message:3485,3494,3508|messages 3485, 3494 and 3508]]", \
+    assert shaped(todos.load(listed.n), record, VIEWER)["brief"] == "[[chips message:3485,3494,3508|messages 3485, 3494, 3508]]", \
         "several numbers after one type name are one chip naming each row"
 
 
