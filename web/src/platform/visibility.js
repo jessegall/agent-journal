@@ -21,6 +21,17 @@ export function pickingFiles() {
     picking = Date.now() + PICKING_FOR;
 }
 
+const FILE_INPUT = 'input[type="file"]';
+
+document.addEventListener(
+    "click",
+    (e) => {
+        const at = e.target instanceof Element ? e.target : null;
+        if (at && (at.matches(FILE_INPUT) || at.closest("label")?.querySelector(FILE_INPUT))) pickingFiles();
+    },
+    true
+);
+
 async function back() {
     if (document.visibilityState === "visible") away.hidden = false;
     if (document.visibilityState !== "visible" || !away.left) return;
