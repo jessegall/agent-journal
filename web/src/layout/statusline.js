@@ -113,5 +113,6 @@ export function doneOf(p, todos) {
 }
 
 export function planButton(p) {
+    if (p.completed) return null;
     return {ready: ["approve", "Approve"], waiting: ["continue", "Continue"], done: ["finish", "Finish"]}[p.data.status] || null;
 }
