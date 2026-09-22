@@ -11,7 +11,8 @@ SHOP_TALK = re.compile(r"\b(?:(?:your|the|this) message (?:is|was) (?:answered|p
                        r"|(?:a |one |two |\d+ )?new messages? (?:came in|just came in|arrived|is in|are in)|(?:I'?m |I am )?reading (?:it|them|your message|the new message)(?: first| now)?"
                        r"|(?:loading|loaded) the \S+ skill|you reacted|thanks for the (?:reaction|\S+ reaction)"
                        r"|nothing (?:else )?(?:is |was )?(?:open|waiting|pending|waits)(?: on my side| for me| here)?"
-                       r"|(?:still|nothing) (?:waiting|new yet|to report yet|yet)|(?:I'?m |I am )?still waiting)\b", re.IGNORECASE)
+                       r"|(?:^|(?<=[.!?]\s))(?:still waiting|nothing new yet|nothing to report yet|nothing yet)|I'?m still waiting|I am still waiting)\b",
+                       re.IGNORECASE | re.MULTILINE)
 
 
 class NameShopTalk(Handler):

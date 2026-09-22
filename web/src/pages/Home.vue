@@ -47,7 +47,13 @@ const tabs = computed(() => [
         </template>
         <template v-else>
             <div class="home-main">
-                <section :class="['home-section', 'home-thread', {roomy: !store.activity, wide: store.wide}]">
+                <section
+                    :class="[
+                        'home-section',
+                        'home-thread',
+                        {roomy: !store.activity, wide: store.wide || store.terminal, bare: store.terminal},
+                    ]"
+                >
                     <AgentBar />
                     <TransitionGroup name="act">
                         <Notice v-for="x in notices" :key="x.n" :notice="x" />
@@ -168,6 +174,10 @@ const tabs = computed(() => [
 
 .home-thread.wide {
     max-width: none;
+}
+
+.home-thread.bare {
+    --home-gutter: 0px;
 }
 
 .home-rail.wide {

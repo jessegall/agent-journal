@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.85.62 — A notch for the project, and a terminal the width of the pane
+
+- The colour band's project and environment sit in a black chip cut into the band, white on black, readable on every colour.
+- The terminal view fills the chat pane from edge to edge, without the chat's width limit or padding.
+- Chat etiquette catches waiting lines only when they are the agent's own status — a sentence that starts with still waiting or nothing new yet — not a sentence that describes the wait.
+
 ## 2.85.61 — The working dots say what the agent is doing
 
 - Under the dots, the chat says what the agent is doing right now — reading, searching, running, writing — in the same word the status bar uses, and compacting while it compacts. Thinking still shows its thought.
