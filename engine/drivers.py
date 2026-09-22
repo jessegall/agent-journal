@@ -38,6 +38,7 @@ class Driver(ABC):
     SKIP_ARGS = ()
     RESUMING: dict[str, int] = {}
     ALLOW, DENY = b"1", b"\x1b"
+    MOVE_TO_BACKGROUND = b""
     QUIET = 3.0
     PROMPT = re.compile(r"[›>$❯]\s*$")
 
@@ -146,6 +147,9 @@ class Driver(ABC):
         except OSError:
             self.fd = -1
             return False
+
+    def move_to_background(self) -> bool:
+        return bool(self.MOVE_TO_BACKGROUND) and self._wrote(self.MOVE_TO_BACKGROUND)
 
     def stop_turn(self) -> None:
         self._wrote(self.STOP)

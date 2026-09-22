@@ -36,6 +36,10 @@ class Speaker:
     def type(self, line: str, **values):
         return self.feature.journal.type(self.record, self.row, line, **values)
 
+    def move_to_background(self) -> dict:
+        from surfaces.control import move_to_background
+        return move_to_background(self.record.root, self.record.env, self.session)
+
     def command(self, line: str) -> dict:
         from surfaces.control import request
         action, _, value = line.partition(" ")

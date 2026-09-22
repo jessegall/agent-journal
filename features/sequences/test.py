@@ -26,3 +26,5 @@ def test_a_sequence_hands_its_steps_one_at_a_time_and_starts_on_its_moment():
     assert sequences.load(filing["n"]).runs == {}, "a run ends with the row it was about"
     assert refused(lambda: CONTROLLERS["sequence"](record, actor=USER).delete(filing["n"], why="tidy")) == \
         f"sequence {filing['n']} ships with the journal and cannot be removed", "a system sequence stays"
+    assert refused(lambda: CONTROLLERS["sequence"](record, actor=USER).update(filing["n"], title="Mine now")) == \
+        f"sequence {filing['n']} ships with the journal and cannot be changed", "and stays as it shipped"

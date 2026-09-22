@@ -2,7 +2,7 @@ import re
 from pathlib import Path
 
 from controllers.types import Agents, Notices, Notifications
-from engine.inputs import FORCE, PERMIT, queue
+from engine.inputs import BACKGROUND, FORCE, PERMIT, queue
 from engine.record import Record
 from engine.seats import live
 from engine import runtime
@@ -65,6 +65,12 @@ def delivered(record, sessions: set[str], action: str, label: str) -> None:
 def force(root: Path, env: str, session: str) -> dict:
     found = online(root, env, session)
     queued = queue(Path(root), session, "", "Force through", provider=found["provider"], action=FORCE)
+    return {k: v for k, v in queued.items() if k != "line"} | {"queued": True}
+
+
+def move_to_background(root: Path, env: str, session: str) -> dict:
+    found = online(root, env, session)
+    queued = queue(Path(root), session, "", "Move to the background", provider=found["provider"], action=BACKGROUND)
     return {k: v for k, v in queued.items() if k != "line"} | {"queued": True}
 
 

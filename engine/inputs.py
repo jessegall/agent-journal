@@ -6,7 +6,8 @@ from engine.stored import read_json, write_json
 STALE = 600.0
 FORCE = "force"
 PERMIT = "permit"
-KEYS = (FORCE, PERMIT)
+BACKGROUND = "background"
+KEYS = (FORCE, PERMIT, BACKGROUND)
 
 
 def queue(root: Path, session: str, line: str, label: str, **data) -> dict:

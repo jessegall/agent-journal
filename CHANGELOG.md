@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.84.152
+
+- A command that holds the agent's terminal longer than long_commands.after_minutes (2) is moved to the background the way Claude's own Ctrl+B does, and the agent is told. The provider's driver says how (MOVE_TO_BACKGROUND), and the agent's context has move_to_background; a provider without a way is left alone.
+- A system sequence cannot be changed, only run: its name, text, steps and starting moment are refused, and its page offers no Edit and no picker.
+- A sequence's start reads as one sentence, such as Starts by itself when a plan is created, with a Change button that opens the choices under plain labels.
+
 ## 2.84.151
 
 - Codex subagents show in the agent bar again. Codex now spawns them from inside its exec scripts, so the journal reads the spawn there, takes the new agent's id from the script's output, and tells running from finished by the subagent's own session file. Clicking one opens its session.
