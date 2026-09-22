@@ -113,6 +113,12 @@ def test_a_chosen_setting_reaches_the_plugins_commands():
     typed = installed(record, "typed", "exit 0", settings={"on": {"type": "flag", "default": "true"}, "level": {"type": "options", "options": ["low", "high"]}})
     assert "true or false" in refused(lambda: Configure().run(None, plugins, typed.n, "on", "yes")), "a switch takes true or false"
     assert "one of low, high" in refused(lambda: Configure().run(None, plugins, typed.n, "level", "mid")), "options take one of theirs"
+    from features.plugins.manifest import typed as checked
+    shown = checked({"php": {"type": "flag"}, "vue": {"type": "flag"}, "sin": {"type": "flag", "when": {"php": True}},
+                     "either": {"type": "flag", "when": [{"php": True}, {"vue": True}]}})
+    assert [shown["sin"]["when"], shown["either"]["when"]] == [[{"php": True}], [{"php": True}, {"vue": True}]], \
+        "a setting may be shown only while another has a value, or while any of several do"
+    assert "names settings" in refused(lambda: checked({"sin": {"type": "flag", "when": {"ruby": True}}})), "a condition names a setting that exists"
 
 
 def test_a_service_no_plugin_declares_is_stopped_and_forgotten():
