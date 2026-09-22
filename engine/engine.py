@@ -194,6 +194,9 @@ class Engine(Seat):
         for actor in self.actors:
             fresh = actor.cursor() == 0
             for e in self.record.events(actor.delivered_until()):
+                if e.type not in TYPES:
+                    actor.notified(e)
+                    continue
                 if fresh and e.at < self.born and not self.addressed(e):
                     if actor is self.agent and TYPES[e.type].typed_as_title:
                         CONTROLLERS[e.type](self.record, actor=AGENT).read(e.n)

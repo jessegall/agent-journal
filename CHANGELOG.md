@@ -4,6 +4,13 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.84.148
+
+- Sequences: steps the agent follows in order, one at a time. A sequence's parts are its steps; running it hands the agent the first, and marking a step done hands the next. A sequence can start by itself when something happens, such as a dump being created, and runs about that row; deleting the row ends the run.
+- A Sequences page lists them as cards. A system sequence ships with the journal, carries a System badge and cannot be removed. A sequence's page has a picker for the moment that starts it, and shows where each run is; the row a sequence runs about shows it in its inspector too.
+- The journal ships Filing a dump, a system sequence that starts on every new dump: read everything, file every item, offer what comes next. The dump's own arrival line now points at it.
+- The engine skips an event of a type it does not know yet, instead of stopping on it during an upgrade.
+
 ## 2.84.147
 
 - A doc, plan or to-do a dump made now shows up as a notification when the dump goes into the journal. Confirming the dump used to mark everything it released as already seen by the user.
