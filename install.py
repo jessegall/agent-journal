@@ -12,14 +12,6 @@ import zipfile
 from importlib.util import MAGIC_NUMBER
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
-from commands.cli import served  # noqa: E402
-from engine.package import point  # noqa: E402
-from engine.sessions import held_builds  # noqa: E402
-from migrations import run as migrate  # noqa: E402
-from features.journal_laws.policy import brief  # noqa: E402
-from providers import PROVIDERS  # noqa: E402
-from skills import LIBRARY, LINKED, publish  # noqa: E402
 
 PACKAGE = Path(__file__).resolve().parent
 PACKAGE_DIRS = ("commands", "controllers", "engine", "extension", "features", "migrations", "providers", "resources", "skills", "surfaces")
@@ -368,6 +360,34 @@ def main(argv: list[str]) -> list[str]:
         project = Path(argv[1] if len(argv) > 1 else ".").resolve()
         return finish(project, project / ".journal")
     return install(Path(word).resolve())
+
+
+
+def heal() -> None:
+    if (PACKAGE / "engine").is_dir():
+        return
+    if (PACKAGE / SRC / "install.py").is_file():
+        os.execv(sys.executable, [sys.executable, str(PACKAGE / SRC / "install.py"), *sys.argv[1:]])
+    temporary = Path(tempfile.mkdtemp())
+    try:
+        _, failed = fetch(temporary / "package")
+        if failed:
+            sys.exit(f"the journal's package is missing beside {PACKAGE} and could not be fetched: {failed}")
+        refresh(temporary / "package", PACKAGE)
+    finally:
+        shutil.rmtree(temporary, ignore_errors=True)
+
+
+if __name__ == "__main__":
+    heal()
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from commands.cli import served  # noqa: E402
+from engine.package import point  # noqa: E402
+from engine.sessions import held_builds  # noqa: E402
+from migrations import run as migrate  # noqa: E402
+from features.journal_laws.policy import brief  # noqa: E402
+from providers import PROVIDERS  # noqa: E402
+from skills import LIBRARY, LINKED, publish  # noqa: E402
 
 
 if __name__ == "__main__":

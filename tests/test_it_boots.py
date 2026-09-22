@@ -198,3 +198,13 @@ def test_a_migration_that_fails_leaves_the_record_as_it_was(tmp_path, monkeypatc
         "a failed migration puts every file back, records nothing as applied, and clears its backup"
     monkeypatch.setattr(migrations, "names", lambda: ["m9998_touch"])
     assert migrations.run(root) == ["m9998_touch"] and not left(), "a run that succeeds deletes its backup"
+
+
+def test_an_installer_left_with_only_itself_fetches_the_package_and_finishes(tmp_path):
+    code = tmp_path / ".journal" / "src"
+    code.mkdir(parents=True)
+    (code / "install.py").write_bytes((HERE / "install.py").read_bytes())
+    ran = subprocess.run([sys.executable, str(code / "install.py"), "finish", str(tmp_path)], cwd=tmp_path, capture_output=True, text=True,
+                         timeout=WAIT * 4, env={**os.environ, "AGENT_JOURNAL_REPO": str(HERE)})
+    assert ran.returncode == 0, f"an older installer copies only install.py and runs it; it must heal:\n{ran.stderr[-2000:]}"
+    assert (code / "engine").is_dir() and (tmp_path / ".journal" / "journal.pyz").is_file(), "the package is back and packed"
