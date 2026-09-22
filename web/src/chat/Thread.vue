@@ -52,7 +52,7 @@ const mine = computed(() => rows("message").filter((m) => !m.deleted && m.seen[0
 
 function editLast() {
     const last = mine.value[mine.value.length - 1];
-    if (last) editing.value = {n: last.n, text: quoted(last.brief).text};
+    if (last) editing.value = {n: last.n, ...quoted(last.brief)};
 }
 
 function unedit() {
@@ -210,7 +210,7 @@ function markActive() {
 
 async function post(text, files) {
     if (editing.value) {
-        await api.act("message", editing.value.n, "edit", {text});
+        await api.act("message", editing.value.n, "edit", {text: withQuote(editing.value.quote, text)});
         editing.value = null;
         return;
     }
