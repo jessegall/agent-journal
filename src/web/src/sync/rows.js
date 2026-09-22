@@ -1,5 +1,6 @@
 import {reactive, ref, watch} from "vue";
 import {api, onWrite} from "../api/client.js";
+import {remember, remembered} from "../composables/remembered.js";
 import {onOutboxChange} from "../chat/outbox.js";
 import {report} from "../faults.js";
 import {route} from "../route.js";
@@ -143,7 +144,7 @@ async function fetched(types, whole = false) {
     store.counts = {...store.counts, ...got.counts};
     Object.entries(got.rows).forEach(([type, listed]) => took(type, listed));
     if (whole) {
-        store.events = got.events;
+        keepEvents([...remembered(eventsKey(), []), ...got.events]);
         store.settings = got.settings;
     }
 }
@@ -177,10 +178,22 @@ export function reload() {
     return drain();
 }
 
+const KEPT_EVENTS = 50;
+const eventsKey = () => `events:${location.host}:${api.env()}`;
+
+function keepEvents(events) {
+    const byId = new Map(events.map((e) => [e.id, e]));
+    store.events = [...byId.values()].sort((a, b) => a.id - b.id).slice(-RECENT);
+    remember(eventsKey(), store.events.slice(-KEPT_EVENTS));
+}
+
+export function recallEvents() {
+    if (!store.events.length) store.events = remembered(eventsKey(), []);
+}
+
 export function heardEvents(events) {
     if (events.some((e) => !store.spec.types[e.type])) api.manifest().then((spec) => (store.spec = spec));
-    const byId = new Map([...store.events, ...events].map((e) => [e.id, e]));
-    store.events = [...byId.values()].sort((a, b) => a.id - b.id).slice(-RECENT);
+    keepEvents([...store.events, ...events]);
     refresh([...new Set(events.map((e) => e.type))].filter((type) => type !== "agent"));
 }
 
