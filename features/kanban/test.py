@@ -99,3 +99,10 @@ def test_the_board_and_its_moves_are_refused_while_the_feature_is_off():
     record.features = {"kanban": False}
     assert (refused(lambda: board(record)), refused(lambda: shift(record, n, "held", why="x"))) == \
         ("the kanban feature is off", "the kanban feature is off"), "both commands say so"
+
+
+def test_a_cards_words_pass_the_formatters_like_every_other_field():
+    features.load()
+    record = fresh()
+    Todos(record, actor=USER).create("[!info] tagged title")
+    assert [c["title"] for lane in board(record)["lanes"] for c in lane["cards"]] == ["tagged title"], "a leftover tag is taken off the card's title"
