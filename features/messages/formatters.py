@@ -3,7 +3,8 @@ import re
 from features.parts import Context, TextFormatter
 from resources.types import TYPES
 
-CODE = re.compile(r"(?<![`\w-])(?:journal\s+([a-z_]+)(?:\s+([a-z_]+))?|--[a-z][a-z-]*)(?![`\w])")
+CODE = re.compile(r"(?<![`\w./-])(?:journal\s+([a-z_]+)(?:\s+([a-z_]+))?|--[a-z][a-z-]*)(?![`\w])")
+FOREIGN = re.compile(r"[./]\S*\s+$")
 
 
 class CommandsAsCode(TextFormatter):
@@ -16,7 +17,7 @@ class CommandsAsCode(TextFormatter):
             parser()
         noun, word = found.group(1), found.group(2)
         if noun is None:
-            return f"`{found.group(0)}`"
+            return found.group(0) if FOREIGN.search(found.string[:found.start()]) else f"`{found.group(0)}`"
         if noun in TYPES:
             if word in words(noun):
                 return f"`{found.group(0)}`"
