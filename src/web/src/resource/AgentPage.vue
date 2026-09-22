@@ -1,5 +1,6 @@
 <script setup>
 import CloseButton from "../kit/CloseButton.vue";
+import TabBar from "../kit/TabBar.vue";
 import {useSighted} from "../composables/scrollback.js";
 import {useTranscript} from "../composables/transcript.js";
 import {withWhispers} from "../domain/transcript.js";
@@ -54,9 +55,9 @@ const state = computed(() => {
     return ["stopped", "idle", "compacting"].includes(reported) ? reported : works.value.some((w) => !w.completed) ? "working" : "busy";
 });
 const TABS = [
-    ["transcript", "Transcript"],
-    ["work", "Work"],
-    ["hooks", "Hooks"],
+    {key: "transcript", title: "Transcript"},
+    {key: "work", title: "Work"},
+    {key: "hooks", title: "Hooks"},
 ];
 const tab = ref("transcript");
 const scroller = ref(null);
@@ -166,18 +167,13 @@ useSighted(topMark, earlier, {root: scroller, margin: "400px 0px"});
                 @pick="() => go(route.env, 'skills')"
             />
         </div>
-        <div class="tabs" role="tablist">
-            <template v-for="[key, label] in TABS" :key="key">
-                <button type="button" role="tab" :aria-selected="tab === key" :class="['tab', {on: tab === key}]" @click="tab = key">
-                    {{ label }}
-                </button>
-            </template>
+        <TabBar v-model="tab" class="agent-tabs" :tabs="TABS">
             <template v-if="tab === 'transcript'">
                 <span class="tab-note">
                     {{ turns.length ? `${turns.length} of ${total} lines · live` : "live" }}
                 </span>
             </template>
-        </div>
+        </TabBar>
         <template v-if="tab === 'work'">
             <section class="block">
                 <template v-for="w in works" :key="w.n">
@@ -352,28 +348,13 @@ useSighted(topMark, earlier, {root: scroller, margin: "400px 0px"});
     gap: 8px;
 }
 
-.tabs {
+.agent-tabs {
     display: flex;
     align-items: stretch;
     gap: 16px;
     height: 32px;
     margin-top: 6px;
     border-bottom: 1px solid var(--border);
-}
-
-.tab {
-    padding: 0;
-    border: 0;
-    border-bottom: 2px solid transparent;
-    background: none;
-    font-size: 12px;
-    color: var(--text-3);
-    cursor: pointer;
-}
-
-.tab.on {
-    border-bottom-color: var(--accent);
-    color: var(--text);
 }
 
 .tab-note {

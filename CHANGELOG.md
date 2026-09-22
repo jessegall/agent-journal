@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.93.1 — One tab bar
+
+The list pages and the agent page draw their tabs with one kit component, TabBar, so every tab bar looks and behaves the same.
+
 ## 2.93.0 — A resource type declares how many rows it keeps
 
 A resource definition can declare how many of its rows are kept and which of them may go: nudges keep 100, notifications the user has seen 100, closed notices 100, answered browser asks 50. Once an hour the oldest past that count are removed. This replaces the hour and the day auto-archive gave nudges and notifications; keep.report and keep.todo stay as they were.
