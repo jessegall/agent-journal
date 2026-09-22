@@ -15,6 +15,15 @@ const brief = ref("");
 const error = ref("");
 const templates = ref([]);
 const template = ref(0);
+const depth = ref("normal");
+const details = ref("");
+const detailing = ref(false);
+const files = ref([]);
+const DEPTHS = [
+    {value: "normal", label: "Normal: a good plan, not every detail"},
+    {value: "thorough", label: "Thorough: researched, a to-do for every small thing"},
+];
+const depths = computed(() => DEPTHS.map((d) => ({...d, current: depth.value === d.value})));
 const values = reactive({});
 const fields = computed(() => templates.value.find((t) => t.n === template.value)?.data?.fields || []);
 watch(fields, (list) => {
@@ -44,8 +53,11 @@ async function submit() {
             title: title.value,
             abstract: abstract.value,
             brief: brief.value,
+            ...(props.type === "plan" ? {depth: depth.value} : {}),
             ...(template.value ? {template: template.value, template_values: {...values}} : {}),
         });
+        if (details.value.trim()) await api.act(props.type, resource.n, "section", {title: "Details", body: details.value.trim()});
+        for (const file of files.value) await api.upload(props.type, resource.n, file);
         emit("made", resource.n);
     } catch (e) {
         error.value = e.message;
@@ -59,6 +71,30 @@ async function submit() {
             <input v-model="title" class="new-title" :placeholder="`${meta(type).title} title`" maxlength="80" autofocus />
             <input v-model="abstract" :placeholder="label(type, 'abstract', 'One short line about it')" maxlength="200" />
             <textarea v-model="brief" :placeholder="label(type, 'brief', 'As long as it needs to be')" rows="10" />
+            <template v-if="detailing">
+                <textarea v-model="details" placeholder="Extra details, as long as they need to be" rows="6" />
+            </template>
+            <template v-if="files.length">
+                <div class="files">
+                    <span v-for="(file, i) in files" :key="file.name + i" class="file">
+                        {{ file.name }}
+                        <button type="button" class="file-x" title="Leave this file out" @click="files.splice(i, 1)">×</button>
+                    </span>
+                </div>
+            </template>
+            <div class="extras">
+                <template v-if="!detailing">
+                    <button type="button" class="extra" @click="detailing = true">Add details</button>
+                </template>
+                <label class="extra">
+                    Attach files
+                    <input type="file" multiple hidden @change="files = [...files, ...$event.target.files]" />
+                </label>
+            </div>
+            <div v-if="type === 'plan'" class="template">
+                <span class="label">How thorough</span>
+                <ChoiceList :choices="depths" @pick="depth = $event" />
+            </div>
             <div v-if="templates.length" class="template">
                 <span class="label">Start from</span>
                 <ChoiceList :choices="choices" @pick="template = $event" />
@@ -111,6 +147,50 @@ textarea {
     background: var(--bg);
     resize: vertical;
 }
+.extras {
+    display: flex;
+    gap: 14px;
+}
+
+.extra {
+    padding: 0;
+    border: none;
+    background: none;
+    color: var(--text-2);
+    font: inherit;
+    font-size: 12.5px;
+    cursor: pointer;
+}
+
+.extra:hover {
+    color: var(--text);
+}
+
+.files {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.file {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 8px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text-2);
+    font-size: 12px;
+}
+
+.file-x {
+    padding: 0;
+    border: none;
+    background: none;
+    color: var(--text-4);
+    cursor: pointer;
+}
+
 .template {
     display: flex;
     align-items: center;

@@ -18,6 +18,7 @@ class Plan(Shape, Resource):
         Field(name="stage"),
         Field(default=list, name="phases"),
         Field(default=1, name="current"),
+        Field(default="normal", name="depth"),
     ]
     start_heading = "PLANS running"
     needs_attention = True

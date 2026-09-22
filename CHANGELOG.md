@@ -4,6 +4,11 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.85.14
+
+- A plan has a depth, normal or thorough. The New plan dialog asks how thorough it must be; a thorough plan is researched and gets a to-do for every small thing, and the agent building it is told which. Asked for a plan in the chat, the agent settles the depth from what was said, judges it, or asks.
+- The new-record dialog can hold extra details, saved as a Details section, and attached files.
+
 ## 2.85.13
 
 - Any row can belong to the system, not only a sequence. A system row refuses edits, closing and deletion from the user or the agent, cannot be put in a collection, and its page offers no Edit, Add to collection, close or delete, and no comment on selected text. The guard lives in the one save every row passes through; a type names the data its runs may still move (a sequence's runs).

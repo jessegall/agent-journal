@@ -148,3 +148,15 @@ def test_claude_plan_mode_is_refused_for_a_journal_plan():
     record = fresh()
     text = handle(PROVIDERS["claude"](), record.root, record.env, {"hook_event_name": "PreToolUse", "session_id": "claude-1", "tool_name": "EnterPlanMode", "tool_input": {}})
     assert "journal plan create" in str(text), text
+
+
+def test_a_plan_is_built_at_the_depth_the_user_picked():
+    from controllers.types import Nudges
+    from tests.kit import report
+    record = fresh()
+    report(record, "working", "PreToolUse")
+    plans = Plans(record, actor=USER)
+    assert refused(lambda: plans.create("Rollout", depth="deep")) == "a plan's depth is normal or thorough", "only the two depths"
+    plans.create("Rollout", depth="thorough")
+    told = [n.brief for n in Nudges(record).all() if n.title.startswith("the user started plan")]
+    assert "file a to-do for every small thing" in told[-1], "the agent is told to plan every small thing"

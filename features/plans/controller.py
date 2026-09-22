@@ -9,6 +9,11 @@ BUILDING, DRAFT, READY, APPROVED, ACTIVE, WAITING, DONE, ABANDONED = "building",
 ENDED = (DONE, ABANDONED)
 PHASES, TODOS = "phases", "todos"
 STAGES = (PHASES, TODOS)
+DEPTHS = {
+    "normal": "Write a good plan at the normal depth: the phases and the rows that matter, not every detail.",
+    "thorough": "The user asked for a thorough plan: research every part before you write it and file a to-do for every "
+                "small thing, down to the details, so nothing is left to the imagination.",
+}
 
 
 class Plans(Controller):
@@ -18,6 +23,8 @@ class Plans(Controller):
         return r.status in ENDED
 
     def create(self, title: str, abstract: str = "", brief: str = "", **data):
+        if data.get("depth", "normal") not in DEPTHS:
+            self._refuse(f"a plan's depth is {' or '.join(DEPTHS)}")
         return super().create(title, abstract, brief, status=BUILDING, stage=PHASES, phases=[], current=1, **data)
 
     def from_doc(self, doc: int):
