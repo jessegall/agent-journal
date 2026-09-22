@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.85.75 — A line queued before a wait is dropped once the wait begins
+
+- A line that stays quiet during a wait, raised in the seconds before the agent declared one, used to arrive after it; it is dropped now, while the user's own lines still arrive.
+
 ## 2.85.74 — A command running in the background counts as waiting
 
 - While a background shell, subagent or monitor runs, the agent is waiting: the lines held during a wait, such as the end-or-park reminder, stay quiet.

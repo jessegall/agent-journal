@@ -81,8 +81,8 @@ class Journal:
     def say(self, record, agent, line: str, private: bool = False, actor: str = SYSTEM, delivery: str = CHANNEL, **values):
         if not self.feature.mine(agent) or (not self.feature.lines[line].while_waiting and waiting(record, agent)):
             return None
-        lead = self.feature.lines[line].lead
-        return self.send(record, self.message(Nudges, line, values, actor, session=agent.title, private=private, lead=lead, delivery=delivery))
+        lead, yields = self.feature.lines[line].lead, not self.feature.lines[line].while_waiting
+        return self.send(record, self.message(Nudges, line, values, actor, session=agent.title, private=private, lead=lead, delivery=delivery, yields=yields))
 
     def type(self, record, agent, line: str, **values):
         return self.say(record, agent, line, private=True, delivery=TERMINAL, **values)

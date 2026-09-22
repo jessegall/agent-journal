@@ -48,6 +48,8 @@ class Driver(ABC):
         self.fd = fd
         self.born = time.time()
         self.held: list[str] = []
+        self.yielding: list[str] = []
+        self.waiting = lambda: False
         self.groups: dict[tuple, dict] = {}
         self.sent_at = 0.0
         self.reported = (float("-inf"), None)
@@ -95,18 +97,23 @@ class Driver(ABC):
     def confirm(cls, printed: bytes) -> bytes:
         return b""
 
-    def send(self, text: str = "", groups: dict | None = None) -> bool:
+    def send(self, text: str = "", groups: dict | None = None, yielding: str = "") -> bool:
         line = joined(text)
         if line:
             self.held.append(line)
+        if joined(yielding):
+            self.yielding.append(joined(yielding))
         for key, numbers in (groups or {}).items():
             self.groups.setdefault(key, {}).update(dict.fromkeys(numbers))
         self.pump()
         return True
 
     def pump(self) -> str:
-        if not (self.held or self.groups) or time.time() - self.sent_at < BETWEEN:
+        if self.yielding and self.waiting():
+            self.yielding = []
+        if not (self.held or self.yielding or self.groups) or time.time() - self.sent_at < BETWEEN:
             return ""
+        self.held, self.yielding = self.held + self.yielding, []
         line = (f"the journal held back {len(self.held)} lines at once and dropped them - that many is a fault, not news" if len(self.held) > FLOOD
                 else "; ".join(dict.fromkeys(self.held + counted(self.groups))))
         self.held, self.groups, self.sent_at = [], {}, time.time()

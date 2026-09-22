@@ -42,6 +42,7 @@ class Engine(Seat):
     def __init__(self, record: Record, driver):
         self.record = record
         self.agent = Agent(record, driver)
+        driver.waiting = self.waiting
         self.actors: list[Actor] = [User(record), self.agent, System(record)]
         self.running = False
         self.born = time.time()
@@ -232,6 +233,11 @@ class Engine(Seat):
         self.agent.driver.send(line)
         self.typed_at = time.time()
         return f"typed: {line[:60]}"
+
+    def waiting(self) -> bool:
+        from features.journal import waiting
+        last = self.agent.driver.last_report()
+        return bool(last) and waiting(self.record, last)
 
     def clock(self) -> None:
         if time.time() - self.ticked_at < CLOCK_EVERY:
