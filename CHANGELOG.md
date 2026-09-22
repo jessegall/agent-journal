@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.85.78 — One foldable group, with its chevron on the right
+
+- A foldable group is one kit component, FoldGroup: a label, a count and a chevron flush right. The sidebar's groups and the plugin settings' groups both use it.
+
 ## 2.85.77 — Plugin settings fold, follow conditions, and every panel slides in and out
 
 - A plugin setting can carry when (shown only while another setting has a value, or any of several) and detail (its group starts folded). Every settings group folds open and shut.
