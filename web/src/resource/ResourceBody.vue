@@ -93,7 +93,6 @@ const docs = computed(() =>
                 <template v-if="kind.view === 'document'">
                     <DownloadLink :resource="resource" />
                 </template>
-                <CommentToggle />
                 <Btn kind="icon" @click="emit('close')"><Icon name="x" /></Btn>
             </div>
             <button v-if="resource.data?.template" type="button" class="from" @click="peek('template', Number(resource.data.template))">
@@ -142,6 +141,9 @@ const docs = computed(() =>
         <template v-else-if="!editing">
             <div class="controls">
                 <ResourceActions :resource="resource" @edit="edit" />
+                <span class="controls-end">
+                    <CommentToggle />
+                </span>
                 <template v-if="ranked">
                     <Priority :resource="resource" />
                 </template>
@@ -488,6 +490,11 @@ const docs = computed(() =>
     align-items: center;
     justify-content: space-between;
     gap: 10px;
+}
+
+.controls-end {
+    order: 2;
+    margin-left: auto;
 }
 
 .linked-docs {

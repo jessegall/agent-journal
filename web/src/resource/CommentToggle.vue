@@ -10,12 +10,19 @@ const talk = inject("talk", null);
     <template v-if="talk">
         <Btn small :class="['comment-toggle', {on: talk.talking.value}]" @click="talk.toggle()">
             <Icon name="bubble" :size="12" />
-            {{ talk.count.value ? `${talk.count.value} comment${talk.count.value === 1 ? "" : "s"}` : "Comment" }}
+            Comments
+            <template v-if="talk.count.value">
+                <span class="comment-count">{{ talk.count.value }}</span>
+            </template>
         </Btn>
     </template>
 </template>
 
 <style scoped>
+.comment-count {
+    color: var(--text-3);
+}
+
 .comment-toggle.on {
     border-color: var(--accent);
     color: var(--accent-text);

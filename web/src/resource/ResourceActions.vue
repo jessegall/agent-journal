@@ -2,6 +2,7 @@
 import {computed, ref} from "vue";
 import {api} from "../api/client.js";
 import Btn from "../kit/Btn.vue";
+import Icon from "../kit/Icon.vue";
 import {meta, word} from "../state/store.js";
 import {linkedTo, open} from "../domain/records.js";
 import {peek} from "../route.js";
@@ -110,14 +111,21 @@ async function run(method) {
                 </Btn>
             </template>
             <template v-if="!resource.completed && !resource.data.system">
-                <Btn small @click="emit('edit')">Edit</Btn>
+                <Btn small @click="emit('edit')">
+                    <Icon name="pencil" :size="12" />
+                    Edit
+                </Btn>
             </template>
             <template v-if="resource.type !== 'collection'">
-                <Btn small @click="collecting = true">Add to collection</Btn>
+                <Btn small @click="collecting = true">
+                    <Icon name="folder" :size="12" />
+                    Add to collection
+                </Btn>
             </template>
             <template v-for="m in offered" :key="m">
                 <Btn :kind="m === 'complete' ? 'ghost' : 'danger'" small @click="m === 'complete' ? (prompt = m) : run(m)">
-                    {{ word(resource.type, m) }}
+                    <Icon :name="m === 'complete' ? 'check' : 'close'" :size="12" />
+                    {{ word(resource.type, m).replace(/^\w/, (c) => c.toUpperCase()) }}
                 </Btn>
             </template>
         </template>
