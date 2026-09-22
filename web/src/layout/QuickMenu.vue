@@ -1,5 +1,5 @@
 <script setup>
-import {computed, nextTick, onMounted, ref} from "vue";
+import {computed, nextTick, onMounted, ref, watch} from "vue";
 import Compose from "../chat/Compose.vue";
 import {api} from "../api/client.js";
 import {sendMessage} from "../chat/outbox.js";
@@ -94,7 +94,7 @@ function openFile(file) {
     go(route.value.env, "file", 0, file.path);
 }
 
-const fileCommand = {label: "Open project file", keys: "file files open", hk: "f", icon: "file", run: browseFiles};
+const fileCommand = {label: "Open project file", keys: "file files open", hk: "f", icon: "file", run: browseFiles, opens: true};
 
 async function send(text, files) {
     emit("close");
@@ -188,6 +188,9 @@ function onKey(e) {
     } else if (e.key === "ArrowUp") {
         e.preventDefault();
         i.value = Math.max(cursor.value - 1, 0);
+    } else if (e.key === "ArrowRight" && rows.value[cursor.value] && rows.value[cursor.value].opens) {
+        e.preventDefault();
+        rows.value[cursor.value].run();
     } else if (e.key === "Enter") {
         e.preventDefault();
         e.stopPropagation();
@@ -198,6 +201,15 @@ function onKey(e) {
         emit("close");
     }
 }
+
+function inView(selector) {
+    nextTick(() => {
+        const on = document.querySelector(selector);
+        if (on) on.scrollIntoView({block: "nearest"});
+    });
+}
+watch(cursor, () => inView(".quick-row.on"));
+watch(fileIndex, () => inView(".quick-file.on"));
 
 function onInput(e) {
     q.value = e.target.value;
@@ -217,6 +229,9 @@ function onFileKey(e) {
     } else if (e.key === "ArrowUp") {
         e.preventDefault();
         fileIndex.value = Math.max(fileIndex.value - 1, 0);
+    } else if (e.key === "ArrowLeft" && !fileQuery.value) {
+        e.preventDefault();
+        back();
     } else if (e.key === "Enter") {
         e.preventDefault();
         e.stopPropagation();
@@ -565,5 +580,10 @@ function onFileKey(e) {
     min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
+}
+
+.quick-row,
+.quick-file {
+    scroll-margin-block: 40px;
 }
 </style>
