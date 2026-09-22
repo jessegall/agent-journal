@@ -30,6 +30,11 @@ def test_captures_are_cut_to_their_tail_and_files_of_quiet_sessions_are_removed(
     kept = runtime / "env"
     kept.write_text("main")
     os.utime(kept, (week_ago, week_ago))
+    ended, live = record.state("once", "gone"), record.state("once", "here")
+    ended.set("done", 1)
+    live.set("done", 1)
+    for f in ended.path.parent.iterdir():
+        os.utime(f, (week_ago, week_ago))
 
     text = tidy(record.root, house.values(record).days)
 
@@ -41,7 +46,8 @@ def test_captures_are_cut_to_their_tail_and_files_of_quiet_sessions_are_removed(
     assert [f.exists() for f in stale.values()] == [False] * 5, "every per-session file quiet past the days is removed"
     assert fresh_session.exists() is True, "a session touched recently stays"
     assert kept.read_text() == "main", "files that are not per-session stay, however old"
-    assert text == {"removed": 5, "trimmed": 2}, "it says what it did"
+    assert (ended.path.parent.exists(), live.path.exists()) == (False, True), "a session's state folder quiet past the days goes, a live one stays"
+    assert text == {"removed": 6, "trimmed": 2}, "it says what it did"
 
     with big.open("ab") as out:
         out.write(b"+more")

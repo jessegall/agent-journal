@@ -9,6 +9,7 @@ from pathlib import Path
 
 from engine import bus
 from resources.base import ACTIONS, ACTORS, PROJECT, Event
+from engine.state import State
 from engine.stored import held_back, read_json, write_json, write_text
 
 RESOURCES = "project"
@@ -160,6 +161,10 @@ class Record:
 
     def set_cursor(self, name: str, n: int) -> None:
         self.set_cursor_text(name, str(n))
+
+    def state(self, owner: str, session: str = "") -> State:
+        folder = self.root / "runtime" / "sessions" / session if session else self.home / "state"
+        return State(folder / f"{owner}.json")
 
     def setting(self, key: str, default=None):
         return self.settings().get(key, default)

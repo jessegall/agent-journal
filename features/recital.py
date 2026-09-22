@@ -1,5 +1,4 @@
 from engine.events import AgentUpdated
-from engine.stored import read_json, write_json
 from features import trigger
 from features.trigger import Trigger
 from features.base import Behaviour, Line
@@ -48,12 +47,11 @@ class WhisperOnKeyword(ToolInterceptor):
 
 
 def whisper_due(context: Context, ref: str) -> bool:
-    f = context.record.root / "runtime" / f"touched-{context.agent.session}.json"
-    last_uses, uses = read_json(f, {}), int(context.agent.row.uses or 0)
+    last_uses, uses = context.state.get("touched", {}), int(context.agent.row.uses or 0)
     every = context.feature.cadence(context.record, WHISPER).every
     if ref in last_uses and uses - int(last_uses[ref] or 0) < float(every):
         return False
-    write_json(f, {**last_uses, ref: uses})
+    context.state.set("touched", {**last_uses, ref: uses})
     return True
 
 

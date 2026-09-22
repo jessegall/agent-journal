@@ -1,9 +1,7 @@
-import fcntl
 import time
 from pathlib import Path
 
 from controllers.types import Agents, Works
-from engine.stored import read_json, write_json
 from providers import PROVIDERS
 from features.status_bar.commands import WRITES
 from resources.base import SYSTEM, names
@@ -62,21 +60,18 @@ def numstat(project: Path, old: str, new: str) -> tuple[int, int]:
     return int(added) if added.isdigit() else 0, int(removed) if removed.isdigit() else 0
 
 
-def tree_file(record, n: int, which: str) -> Path:
-    return record.home / "runtime" / f"files-{n}-{which}.json"
-
-
-def changes_file(record) -> Path:
-    return record.home / "runtime" / "changes.json"
+def files_of(record, n: int):
+    return record.state(f"work-{n}")
 
 
 def changes(record) -> list[dict]:
-    return read_json(changes_file(record)) or []
+    return record.state("work_tracking").get("changes", [])
 
 
 def noted(record, entries: list[dict]) -> None:
     if entries:
-        write_json(changes_file(record), [*changes(record), *entries][-KEPT:])
+        with record.state("work_tracking").changing() as held:
+            held["changes"] = [*held.get("changes", []), *entries][-KEPT:]
 
 
 def committed(project: Path, since: float) -> list[dict]:
@@ -89,13 +84,11 @@ TREES = ("base", "last")
 
 def begin(event, record) -> None:
     now = blobs(record, record.root.parent)
-    for which in TREES:
-        write_json(tree_file(record, event.n, which), now)
+    files_of(record, event.n).update({which: now for which in TREES})
 
 
 def end(event, record) -> None:
-    for which in TREES:
-        tree_file(record, event.n, which).unlink(missing_ok=True)
+    files_of(record, event.n).clear()
 
 
 def record_files(agent, record, work) -> None:
@@ -126,17 +119,11 @@ def record_files(agent, record, work) -> None:
 
 
 def trees(record, n: int, project: Path) -> tuple[dict, dict, dict]:
-    last_file = tree_file(record, n, "last")
-    last_file.parent.mkdir(parents=True, exist_ok=True)
-    with last_file.with_suffix(".lock").open("w") as lock:
-        fcntl.flock(lock, fcntl.LOCK_EX)
+    with files_of(record, n).changing() as held:
         now = blobs(record, project)
-        last = read_json(last_file)
-        base = read_json(tree_file(record, n, "base"))
-        if base is None:
-            base = last if last is not None else now
-            write_json(tree_file(record, n, "base"), base)
-        write_json(last_file, now)
+        last = held.get("last")
+        base = held.setdefault("base", last if last is not None else now)
+        held["last"] = now
     return base, now if last is None else last, now
 
 

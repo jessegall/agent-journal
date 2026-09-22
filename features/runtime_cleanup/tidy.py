@@ -1,3 +1,4 @@
+import shutil
 import time
 from pathlib import Path
 
@@ -13,6 +14,10 @@ def tidy(root: Path, days: float) -> dict:
     removed = [f for pattern in SESSIONS for f in runtime.glob(pattern) if f.is_file() and f.stat().st_mtime < quiet]
     for f in removed:
         f.unlink(missing_ok=True)
+    ended = [d for d in (runtime / "sessions").glob("*") if d.is_dir() and max((f.stat().st_mtime for f in d.iterdir()), default=0) < quiet]
+    for d in ended:
+        shutil.rmtree(d, ignore_errors=True)
+    removed += ended
     trimmed = [f for pattern, keep in TAILS.items() for f in runtime.glob(pattern) if f.is_file() and trim(f, keep)]
     return {"removed": len(removed), "trimmed": len(trimmed)}
 

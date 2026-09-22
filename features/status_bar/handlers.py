@@ -1,16 +1,15 @@
 import time
 
 from engine.events import AgentUpdated
-from engine.stored import write_json
 from features.parts import AgentContext, Handler
-from features.status_bar.bar import EMPTY, bar, bar_file
+from features.status_bar.bar import EMPTY, bar
 from features.status_bar.usage import observe
 
 
 class WriteBar(Handler):
     def handle(self, context: AgentContext, event: AgentUpdated) -> None:
         newest = context.journal.agents.primary()
-        write_json(bar_file(context.record.root, context.record.env), bar(newest, time.time()) if newest else EMPTY)
+        context.record.state("status_bar").set("bar", bar(newest, time.time()) if newest else EMPTY)
 
 
 class RefreshUsage(Handler):

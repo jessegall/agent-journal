@@ -3,8 +3,7 @@ import time
 from features.status_bar.group import grouped, ran
 from features.status_bar.queue import queue as messages
 from features.status_bar.queue import HOLD
-from features.status_bar.bar import bar, bar_file, played, current
-from engine.stored import write_json
+from features.status_bar.bar import bar, played, current
 from tests.conftest import fresh
 
 
@@ -116,18 +115,19 @@ def test_with_the_header_off_nothing_is_drawn_or_wiped():
     assert (band.SHOWN, band.release()) == (False, b""), "the terminal is the agent's alone: an exit clears none of its rows"
 
 
-def test_a_played_line_is_not_played_again(tmp_path):
+def test_a_played_line_is_not_played_again():
+    record = fresh()
     lately = time.time()
-    write_json(bar_file(tmp_path, "main"), {"queue": [{"at": 1.0, "done": True}, {"at": 2.0, "done": True}, {"at": lately, "done": False}]})
-    played(tmp_path, "main", 2.0)
-    assert [one["at"] for one in current(tmp_path, "main")["queue"]] == [lately]
-    played(tmp_path, "main", lately)
-    assert [one["at"] for one in current(tmp_path, "main")["queue"]] == [lately], "the line still running stays"
-    write_json(bar_file(tmp_path, "main"), {"queue": [{"at": lately, "done": True, "for": 0, "lingers": 10.0}]})
-    assert [one["at"] for one in current(tmp_path, "main")["queue"]] == [lately], "a finished line lingers before it goes"
-    played(tmp_path, "main", 2.0)
-    write_json(bar_file(tmp_path, "main"), {"queue": [{"at": 2.0, "done": True, "for": 0, "lingers": 10.0}]})
-    assert current(tmp_path, "main")["queue"] == [], "once it has lingered, a played line is not played again"
+    record.state("status_bar").set("bar", {"queue": [{"at": 1.0, "done": True}, {"at": 2.0, "done": True}, {"at": lately, "done": False}]})
+    played(record, 2.0)
+    assert [one["at"] for one in current(record)["queue"]] == [lately]
+    played(record, lately)
+    assert [one["at"] for one in current(record)["queue"]] == [lately], "the line still running stays"
+    record.state("status_bar").set("bar", {"queue": [{"at": lately, "done": True, "for": 0, "lingers": 10.0}]})
+    assert [one["at"] for one in current(record)["queue"]] == [lately], "a finished line lingers before it goes"
+    played(record, 2.0)
+    record.state("status_bar").set("bar", {"queue": [{"at": 2.0, "done": True, "for": 0, "lingers": 10.0}]})
+    assert current(record)["queue"] == [], "once it has lingered, a played line is not played again"
 
 
 def test_an_agent_whose_turn_ended_stays_idle_through_a_wakeup_or_a_helper_tool_call():

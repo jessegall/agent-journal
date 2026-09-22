@@ -1,7 +1,4 @@
-import fcntl
-import hashlib
 import re
-import time
 from abc import ABC
 from functools import cached_property
 from typing import ClassVar
@@ -216,18 +213,6 @@ class Feature(ABC):
     @cached_property
     def journal(self) -> Journal:
         return Journal(self)
-
-    def already(self, record, session: str, kind: str, key: str) -> bool:
-        runtime = record.root / "runtime"
-        runtime.mkdir(parents=True, exist_ok=True)
-        f, key = runtime / f"{kind}-{session}.json", hashlib.sha1(key.strip().encode()).hexdigest()
-        with (runtime / "already.lock").open("a") as held:
-            fcntl.flock(held, fcntl.LOCK_EX)
-            done = read_json(f, {})
-            if key in done:
-                return True
-            write_json(f, {**done, key: time.time()})
-        return False
 
     def plural(self, n: int, word: str) -> str:
         return plural(n, word)

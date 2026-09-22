@@ -1,35 +1,31 @@
 import time
-from pathlib import Path
 
 from controllers.types import Agents, Messages
-from engine.stored import read_json, write_json
 from features.skill_loading.catalogue import loaded_at
 from resources.base import SYSTEM, USER
 
 
-def required_file(record, session: str) -> Path:
-    return record.root / "runtime" / f"skills-required-{session}.json"
+def required(record, session: str):
+    return record.state("skill_loading", session)
 
 
 def require(record, session: str, skills: dict[str, float]) -> None:
-    f = required_file(record, session)
-    held = read_json(f, {})
+    state = required(record, session)
+    held = state.get("required", {})
     added = {name: at for name, at in skills.items() if name not in held}
     if added:
-        write_json(f, {**held, **added})
+        state.set("required", {**held, **added})
 
 
 def outstanding(record, row) -> list[str]:
-    f = required_file(record, row.title)
-    held = read_json(f, {})
+    state = required(record, row.title)
+    held = state.get("required", {})
     if not held:
         return []
     loaded = loaded_at(row)
     left = {name: at for name, at in held.items() if not loaded.get(name) or float(loaded[name]) < float(at)}
-    if left and left != held:
-        write_json(f, left)
-    elif not left:
-        f.unlink(missing_ok=True)
+    if left != held:
+        state.set("required", left)
     return sorted(left)
 
 
