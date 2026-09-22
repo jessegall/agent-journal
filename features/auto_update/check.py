@@ -44,7 +44,7 @@ class UpdateCheck:
         try:
             ran = subprocess.run([*entry("journal"), "--root", str(root), "upgrade"], cwd=root.parent, capture_output=True, text=True, timeout=INSTALL_WAIT)
             lines = (ran.stdout + ran.stderr).splitlines() + ([] if ran.returncode == 0 else [f"journal upgrade failed with exit {ran.returncode}"])
-        except (OSError, subprocess.SubprocessError) as error:
+        except Exception as error:
             lines = [f"package not refreshed: {error}"]
         finally:
             self.installing.release()

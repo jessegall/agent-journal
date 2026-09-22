@@ -73,3 +73,11 @@ def test_a_hook_that_crashes_is_told_to_the_agent_for_every_provider(monkeypatch
         lines = [f"{n.title} {n.brief}" for n in Nudges(record, actor=SYSTEM)._every()]
         assert any("hit an error" in line and f"TypeError: {name} crashed" in line for line in lines), \
             f"{name}: a crash inside the hook reaches the agent, with the error"
+    monkeypatch.undo()
+    from engine import runtime
+    (runtime.folder(record.root) / "hook-failures.log").write_text("1790000000 000 claude\n1790000001 500 claude\n")
+    dispatch("POST", "/api/hook/claude", record.root, {"root": str(record.root), "env": record.env}, body)
+    lines = [f"{n.title} {n.brief}" for n in Nudges(record, actor=SYSTEM)._every()]
+    assert any("no answer from the server 2 times (codes 000, 500)" in line for line in lines), \
+        "hooks the server never answered are told once it answers again"
+    assert not (runtime.folder(record.root) / "hook-failures.log").exists(), "and are told only once"

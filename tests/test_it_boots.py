@@ -87,6 +87,9 @@ def test_the_journal_starts_on_a_record_with_a_damaged_row(tmp_path):
     (root / "environments" / "main" / "todo" / "003.md").write_text('---\n{"n": 3, "title": "odd", "unknown_field": 1}\n---\nbody\n')
     ran = subprocess.run([*journal, "status"], cwd=place, capture_output=True, text=True, timeout=WAIT)
     assert (ran.returncode, "Traceback" in ran.stderr) == (0, False), f"a damaged row stopped the journal:\n{ran.stderr}"
+    subprocess.run([*journal, "todo", "all"], cwd=place, capture_output=True, timeout=WAIT)
+    notices = subprocess.run([*journal, "notice", "all"], cwd=place, capture_output=True, text=True, timeout=WAIT).stdout
+    assert "could not be read" in notices, "a row that cannot be read is named in a notice, never dropped in silence"
 
 
 def test_an_upgrade_keeps_a_build_a_live_session_runs_from(tmp_path):

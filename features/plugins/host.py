@@ -9,6 +9,7 @@ from controllers.types import Plugins
 from engine.bus import ANY
 from engine.hooks import default_env
 from engine.record import Record
+from engine.watch import threw
 from features.plugins.answer import apply
 from features.plugins.manifest import fill
 from features.plugins.payload import of
@@ -70,8 +71,8 @@ def watch(root: Path, journal) -> None:
         while True:
             try:
                 host.step(time.time())
-            except (OSError, ValueError, Refused):
-                pass
+            except Exception:
+                threw(root, default_env(root), "delivering events to plugins")
             time.sleep(WAIT)
 
 

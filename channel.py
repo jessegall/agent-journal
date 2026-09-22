@@ -55,11 +55,15 @@ def push(root: Path) -> None:
     at = start(f)
     while True:
         time.sleep(WAIT)
-        alive(root).touch()
-        lines, at = fresh_lines(f, at)
-        texts = contents(lines)
-        if texts:
-            say({"jsonrpc": "2.0", "method": "notifications/claude/channel", "params": {"content": "; ".join(texts), "meta": {"from": "journal"}}})
+        try:
+            alive(root).touch()
+            lines, at = fresh_lines(f, at)
+            texts = contents(lines)
+            if texts:
+                say({"jsonrpc": "2.0", "method": "notifications/claude/channel", "params": {"content": "; ".join(texts), "meta": {"from": "journal"}}})
+        except Exception:
+            from engine.watch import threw
+            threw(root, runtime.env(root), "the channel that carries lines to the agent")
 
 
 def launched() -> bool:

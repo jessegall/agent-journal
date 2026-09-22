@@ -20,7 +20,7 @@ out=${reply%
 *}
 case "$code" in
   200|403) [ -z "$out" ] || [ "$out" = "{}" ] || printf '%s\n' "$out" ;;
-  *) keep ;;
+  *) printf '%s %s %s\n' "$(date +%s)" "${code:-000}" "$1" >> "$root/runtime/hook-failures.log"; keep ;;
 esac
 rm -f "$body"
 exit 0

@@ -83,10 +83,12 @@ class SampleVideoFrames(Handler):
         try:
             done = subprocess.run(["ffmpeg", "-hide_banner", "-loglevel", "error", "-i", str(source), "-vf", f"fps=1/{every:g}", "-frames:v", str(MAX_FRAMES),
                                    "-q:v", "2", str(source.parent / f"{prefix}%04d.jpg")], capture_output=True, text=True, timeout=120)
-        except (OSError, subprocess.TimeoutExpired):
-            done = None
-        frames = sorted(source.parent.glob(f"{prefix}*.jpg")) if done and done.returncode == 0 else []
-        row.files[name] = f"video; {len(frames)} frames every {every:g} seconds"
+        except (OSError, subprocess.TimeoutExpired) as error:
+            done = subprocess.CompletedProcess([], -1, "", str(error))
+        frames = sorted(source.parent.glob(f"{prefix}*.jpg")) if done.returncode == 0 else []
+        errors = (done.stderr or "").strip().splitlines()
+        why = "" if done.returncode == 0 else f"; no frames: {errors[-1] if errors else 'ffmpeg failed'}"
+        row.files[name] = f"video; {len(frames)} frames every {every:g} seconds{why}"
         for frame in frames:
             row.files[frame.name] = f"video frame from {name}"
         messages.save(row, "updated", video=name, frames=[frame.name for frame in frames])
