@@ -234,6 +234,9 @@ function onFileKey(e) {
     } else if (e.key === "ArrowUp") {
         e.preventDefault();
         fileIndex.value = Math.max(fileIndex.value - 1, 0);
+    } else if (e.key === "ArrowRight" && selectedFile.value?.folder && e.target.selectionStart === fileQuery.value.length) {
+        e.preventDefault();
+        browseFiles(selectedFile.value.path);
     } else if ((e.key === "ArrowLeft" || e.key === "Backspace") && !fileQuery.value) {
         e.preventDefault();
         if (folder.value) browseFiles(parent.value);
@@ -332,7 +335,8 @@ function onFileKey(e) {
                     <div class="quick-foot">
                         <span>↑↓ move</span>
                         <span>↵ open</span>
-                        <span>⌫ up</span>
+                        <span>→ open folder</span>
+                        <span>← up</span>
                         <span class="quick-foot-note">/{{ folder }}</span>
                     </div>
                 </template>
@@ -439,18 +443,16 @@ function onFileKey(e) {
 }
 
 .quick-rows {
-    flex: 1;
-    min-height: 0;
-    max-height: 294px;
+    flex: none;
+    height: 330px;
     overflow-y: auto;
     overflow-x: hidden;
     padding: 6px;
 }
 
 .quick-files {
-    flex: 1;
-    min-height: 0;
-    max-height: 360px;
+    flex: none;
+    height: 330px;
     overflow-y: auto;
     overflow-x: hidden;
     padding: 6px;

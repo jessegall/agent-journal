@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.85.36 — Other hooks in the agent panel, and arrow keys in the file browser
+
+- The agent panel's Hooks tab also lists, read only, the hooks registered in the agent's other settings files, such as ~/.claude/settings.json, each under the file it comes from. Removing one of the journal's own hooks there works again.
+- In Open project file, the right arrow opens the highlighted folder and the left arrow goes up.
+- The quick menu keeps one height as you move between its screens.
+
 ## 2.85.35 — Each start question on its own screen, and --no-interaction
 
 - Each question at the start clears the screen below the banner, so it stands alone instead of printing under the one before.
