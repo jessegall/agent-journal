@@ -1,9 +1,11 @@
-from engine.events import AgentUpdated
+import re
+
+from engine.events import AgentMessageSent, AgentUpdated
 from features import trigger
 from features.trigger import Trigger
 from features.base import Behaviour, Line
 from features.parts import WHOLE_FEATURE, AgentContext, Context, Handler, ToolInterceptor
-from resources.base import KEYWORDS, WHOM
+from resources.base import KEYWORDS, KEYWORDS_IN, WHOM
 
 WHISPER = "whisper"
 
@@ -30,20 +32,43 @@ BEHAVIOURS = [
 ]
 
 
+TEXT, COMMANDS, BOTH, EVERYTHING = "text", "commands", "both", "everything"
+SCOPES = (TEXT, COMMANDS, BOTH, EVERYTHING)
+
+
+def searched(call, scope: str) -> str:
+    parts = {TEXT: (call.written,), COMMANDS: (call.command,), BOTH: (call.command, call.written)}.get(scope)
+    return call.text if parts is None else " ".join(part for part in parts if part)
+
+
+def mentioned(words, text: str) -> bool:
+    return any(re.search(rf"(?<![\w-]){re.escape(str(word))}(?![\w-])", text, re.IGNORECASE) for word in words if word)
+
+
+def recite(context: AgentContext, resources: str, text_of) -> None:
+    rows = getattr(context.journal, resources)
+    for row in rows._standing():
+        if mentioned(row.data.get(KEYWORDS) or [], text_of(row.data.get(KEYWORDS_IN) or BOTH)) and whisper_due(context, row.ref):
+            context.agent.whisper(WHISPER, type=rows.type, n=row.n, title=row.title, brief=row.brief)
+
+
 class WhisperOnKeyword(ToolInterceptor):
     def __init__(self, resources: str):
         self.resources = resources
 
     def intercept(self, context: AgentContext, call) -> str:
-        text = call.text.lower()
-        if not text or not context.on(WHISPER):
-            return ""
-        rows = getattr(context.journal, self.resources)
-        for row in rows._standing():
-            words = [w for w in row.data.get(KEYWORDS) or [] if w and str(w).lower() in text]
-            if words and whisper_due(context, row.ref):
-                context.agent.whisper(WHISPER, type=rows.type, n=row.n, title=row.title, brief=row.brief)
+        if context.on(WHISPER):
+            recite(context, self.resources, lambda scope: searched(call, scope))
         return ""
+
+
+class WhisperOnKeywordInChat(Handler):
+    def __init__(self, resources: str):
+        self.resources = resources
+
+    def handle(self, context: AgentContext, event: AgentMessageSent) -> None:
+        if context.on(WHISPER):
+            recite(context, self.resources, lambda scope: "" if scope == COMMANDS else event.text)
 
 
 def whisper_due(context: Context, ref: str) -> bool:

@@ -1,6 +1,10 @@
 
-from controllers.types import Nudges, Facts, Reminders
-from resources.base import AGENT, USER
+from controllers.types import Agents, Nudges, Facts, Reminders
+from engine import chat
+from engine.hooks import handle
+from features import load
+from providers import PROVIDERS
+from resources.base import AGENT, SYSTEM, USER
 from tests.kit import nudges, report
 from tests.conftest import fresh
 
@@ -25,3 +29,19 @@ def test_standing_pins_are_repeated_at_the_first_tenth_and_superseding_or_promot
         "promoted: a rule with the pin's words, the pin struck"
     Reminders(record, actor=USER).create("run the suites first", until="the suites are green on CI")
     assert Reminders(record).load(1).data["until"] == "the suites are green on CI", "a reminder keeps its until"
+
+
+def test_a_keyword_matches_as_a_whole_word_only_where_its_row_says():
+    load()
+    record = fresh()
+    report(record, "working", "PreToolUse")
+    facts = Facts(record, actor=USER)
+    ran, wrote = (facts.create(title, keywords="said", keywords_in=scope) for title, scope in (("in commands", "commands"), ("in text", "text")))
+    hook = lambda **tool: handle(PROVIDERS["claude"](), record.root, record.env, {"hook_event_name": "PreToolUse", "session_id": "claude-1", **tool})
+    hook(tool_name="Bash", tool_input={"command": "grep -rn unsaid ."})
+    assert not [n for n in Nudges(record).all() if n.title.startswith("fact ")], "a keyword inside another word does not match"
+    hook(tool_name="Bash", tool_input={"command": "grep -rn said ."})
+    hook(tool_name="Edit", tool_input={"file_path": "said.py", "new_string": "x = 1"})
+    chat.send(record, Agents(record, actor=SYSTEM).by_session("claude-1"), "I said so")
+    whispered = [n.title.split(" — ")[0] for n in Nudges(record).all() if n.title.startswith("fact ")]
+    assert whispered == [f"fact {ran.n}", f"fact {wrote.n}"], "a whole word in a command, then in chat; not inside 'unsaid', not in a file path"

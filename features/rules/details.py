@@ -17,10 +17,11 @@ class RulesDetails(FeatureDetails):
         A rule binds every environment; one control injects the same managed block into both
         instruction files.
 
-        A fact or rule can carry keywords, a list of words set with --set keywords. When a
-        command the agent is about to run, or text it is about to write, carries one of them,
-        the row is whispered to that session once, with its reasoning; the call itself is never
-        refused.
+        A fact or rule can carry keywords, plain words set with --set keywords. When one of them
+        comes up as a whole word, the row is whispered to that session once, with its
+        reasoning; the call itself is never refused. --set keywords_in says where they match:
+        text (what the agent writes, in edits and in the chat), commands (shell commands), both
+        (the default), or everything (any tool call, file paths, searches and URLs included).
     """
 
     runs_for_subagents = True
