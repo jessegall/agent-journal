@@ -8,7 +8,7 @@ class CommitsDetails(FeatureDetails):
 
     aliases = ("commits",)
 
-    abstract = "A commit whose message carries Journal: todos done <n> closes that row"
+    abstract = "A commit whose message carries Journal: todos done and a to-do number closes that row"
 
     help = "The trailer starts at column 0; prose and indented examples close nothing."
 

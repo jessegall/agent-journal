@@ -90,6 +90,9 @@ def test_skill_homes_that_are_one_folder_keep_real_skill_files(tmp_path):
         publish(tmp_path, ("claude", "codex"))
     assert ((tmp_path / "skills" / "journal").is_symlink(), (tmp_path / "skills" / "journal" / "SKILL.md").is_file()) == (False, True), \
         "a self-pointing link is replaced by the real folder, and linking onto the same folder is skipped"
+    import re
+    described = [line for f in (tmp_path / "skills").glob("journal*/SKILL.md") for line in f.read_text().splitlines() if line.startswith("description:")]
+    assert described and not [line for line in described if re.search(r"[<>]", line)], "no skill description carries angle brackets"
 
 
 def test_every_tool_call_waits_until_a_required_skill_is_loaded(tmp_path):
