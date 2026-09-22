@@ -28,6 +28,7 @@ SETTLE_BYTES = 65536
 
 class Claude(Provider):
     name = "claude"
+    sleeping_tools = ("ScheduleWakeup",)
     question_tools = frozenset({"AskUserQuestion"})
     briefing_file = "CLAUDE.md"
     skill_home = ".claude/skills"

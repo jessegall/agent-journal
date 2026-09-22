@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.84.17 — An agent waiting on its scheduled wakeup shows idle, not busy
+
+In /loop mode Claude ends its turn with ScheduleWakeup, and no further Stop follows, so the agent stayed "busy" until the session ended, and after two quiet minutes the journal would have interrupted it with Ctrl-C. A provider now names the tools that put the agent to sleep, and those report the agent idle.
+
 ## 2.84.16 — The launch sets aside only other hooks, never skills
 
 The clean-slate step when `journal claude` or `journal codex` starts now offers to set aside only the hooks that are not the journal's, and names the files they are in. Skills stay where they are. Skills an earlier version set aside are still put back when the agent exits or the journal stops.

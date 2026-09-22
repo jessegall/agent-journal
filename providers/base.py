@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 from pathlib import Path
 
 from engine.transcript import Turn
-from providers.payload import AskedQuestion, Hook, PERMISSION
+from providers.payload import AskedQuestion, Hook, PERMISSION, STATUS
 from resources.base import Refused
 from engine.stored import read_json, tail, write_text
 
@@ -34,6 +34,7 @@ class Provider(ABC):
     skill_home = ""
     link_skills = False
     retired_skill_homes = ()
+    sleeping_tools = ()
     controls = {"groups": [], "note": "This CLI does not expose model controls."}
 
     @classmethod
@@ -178,6 +179,9 @@ class Provider(ABC):
 
     def is_subagent(self, hook) -> bool:
         return False
+
+    def status(self, hook) -> str:
+        return "idle" if hook.tool.name in self.sleeping_tools else STATUS[hook.event]
 
     def facts(self, row, hook, root: Path) -> dict:
         context = self.context(hook)
