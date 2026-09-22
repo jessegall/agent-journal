@@ -9,6 +9,7 @@ class Template(Shape, Resource):
     event_labels = {"created": "Template written", "updated": "Template revised", "completed": "Template retired"}
     data_fields: ClassVar[list[Field]] = [
         Field(LIST, list, name="applies_to"),
+        Field(LIST, list, name="fields"),
     ]
     labels = {"brief": "Instructions"}
     icon = "docs"

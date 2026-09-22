@@ -1,5 +1,5 @@
 <script setup>
-import {computed, onMounted, ref} from "vue";
+import {computed, onMounted, reactive, ref, watch} from "vue";
 import {api} from "../api/client.js";
 import Btn from "../kit/Btn.vue";
 import ChoiceList from "../kit/ChoiceList.vue";
@@ -14,6 +14,12 @@ const brief = ref("");
 const error = ref("");
 const templates = ref([]);
 const template = ref(0);
+const values = reactive({});
+const fields = computed(() => templates.value.find((t) => t.n === template.value)?.data?.fields || []);
+watch(fields, (list) => {
+    Object.keys(values).forEach((key) => delete values[key]);
+    list.forEach((f) => (values[f.name] = f.default || (f.kind === "choice" ? f.options[0] : "")));
+});
 
 const choices = computed(() => [
     {value: 0, label: "No template", current: template.value === 0},
@@ -37,7 +43,7 @@ async function submit() {
             title: title.value,
             abstract: abstract.value,
             brief: brief.value,
-            ...(template.value ? {template: template.value} : {}),
+            ...(template.value ? {template: template.value, template_values: {...values}} : {}),
         });
         emit("made", resource.n);
     } catch (e) {
@@ -55,6 +61,22 @@ async function submit() {
             <span class="label">Start from</span>
             <ChoiceList :choices="choices" @pick="template = $event" />
         </div>
+        <template v-if="fields.length">
+            <div class="fields">
+                <label v-for="f in fields" :key="f.name" class="field">
+                    <span class="label">{{ f.label }}</span>
+                    <template v-if="f.kind === 'choice'">
+                        <ChoiceList
+                            :choices="f.options.map((o) => ({value: o, label: o, current: values[f.name] === o}))"
+                            @pick="values[f.name] = $event"
+                        />
+                    </template>
+                    <template v-else>
+                        <input v-model="values[f.name]" :type="f.kind === 'number' ? 'number' : 'text'" :placeholder="f.default || ''" />
+                    </template>
+                </label>
+            </div>
+        </template>
         <div class="foot">
             <span class="error">{{ error }}</span>
             <Btn @click="emit('close')">Cancel</Btn>
@@ -98,5 +120,22 @@ textarea {
     flex: 1;
     color: var(--danger);
     font-size: 12px;
+}
+
+.fields {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+}
+.field {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.field input {
+    flex: 1;
 }
 </style>
