@@ -99,7 +99,7 @@ def handle(provider, root: Path, env: str, hook) -> dict:
         return provider.response(blocked=next((reason for policy in POLICIES if serving(policy, provider, hook)
                                                and (reason := policy(provider, record, hook, row.title))), "")) if hook.event == "PreToolUse" else {}
     agents.saw(row.n, {"hook": hook.event, "tool": hook.tool.name, "file": hook.tool.file_path, "session": hook.session, "size": hook.tool.result_size, "skill": hook.tool.loaded_skill, "cause": AGENT},
-               status=STATUS[hook.event] or row.status or IDLE, **provider.facts(row, hook, root), **commands.shell(row, hook),
+               status=provider.status(hook) or row.status or IDLE, **provider.facts(row, hook, root), **commands.shell(row, hook),
                wrote=hook.event == "PostToolUse" and commands.writes(hook))
     if hook.event == "PreToolUse":
         why = next((reason for policy in POLICIES if serving(policy, provider, hook) and (reason := policy(provider, record, hook, row.title))), "")

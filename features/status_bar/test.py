@@ -5,6 +5,7 @@ from features.status_bar.queue import queue as messages
 from features.status_bar.queue import HOLD
 from features.status_bar.bar import bar, bar_file, played, current
 from engine.stored import write_json
+from tests.conftest import fresh
 
 
 NOW = 1_000_000.0
@@ -127,3 +128,14 @@ def test_a_played_line_is_not_played_again(tmp_path):
     played(tmp_path, "main", 2.0)
     write_json(bar_file(tmp_path, "main"), {"queue": [{"at": 2.0, "done": True, "for": 0, "lingers": 10.0}]})
     assert current(tmp_path, "main")["queue"] == [], "once it has lingered, a played line is not played again"
+
+
+def test_an_agent_waiting_on_its_scheduled_wakeup_is_idle_not_busy():
+    from controllers.types import Agents
+    from engine.hooks import handle
+    from providers import PROVIDERS
+    record = fresh()
+    claude = PROVIDERS["claude"]()
+    for event, tool in (("Stop", ""), ("PreToolUse", "ScheduleWakeup"), ("SubagentStop", "")):
+        handle(claude, record.root, record.env, {"hook_event_name": event, "session_id": "claude-wake", "tool_name": tool, "tool_input": {"delaySeconds": 1200}})
+    assert Agents(record).by_session("claude-wake").status == "idle", "the turn ended with a wakeup scheduled, so the agent waits, it is not busy"
