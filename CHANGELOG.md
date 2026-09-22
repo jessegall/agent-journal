@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.93.4 — One menu panel
+
+The dropdown's list and the board card's menu are one kit MenuPanel of kit MenuItems, so every floating menu has the same panel, rows and hover.
+
 ## 2.93.3 — Chips, count badges and text boxes come from the kit
 
 The small pill tags on board cards, the System badge and a plugin row's Locked badge are one kit Chip; the counts in the corner of the top bar and the compose buttons are one kit CountBadge; the choice box of an options question and the collection and outcome boxes of a row are kit TextInputs.
