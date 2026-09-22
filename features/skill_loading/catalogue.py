@@ -45,7 +45,7 @@ def subjects() -> set[str]:
 
 
 def defaults() -> set[str]:
-    return subjects() | {skill_name("command_tags")}
+    return {"journal"}
 
 
 def managed() -> set[str]:
