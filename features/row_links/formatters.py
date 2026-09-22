@@ -20,15 +20,19 @@ def chipped(text: str) -> str:
     return found.sub(lambda m: marked("chip", f"{names[m.group(1).lower()]}:{m.group(2)}", m.group(0)), text)
 
 
+def outside(pattern: re.Pattern, text: str, change) -> str:
+    parts, at = [], 0
+    for kept in pattern.finditer(text):
+        parts += [change(text[at:kept.start()]), kept.group(0)]
+        at = kept.end()
+    return "".join([*parts, change(text[at:])])
+
+
 class MarkRows(TextFormatter):
     surfaces = (VIEWER,)
 
     def format(self, context: Context, text: str) -> str:
-        parts, at = [], 0
-        for kept in KEPT.finditer(text):
-            parts += [chipped(text[at:kept.start()]), kept.group(0)]
-            at = kept.end()
-        return "".join([*parts, chipped(text[at:])])
+        return outside(KEPT, text, chipped)
 
 
 EXT = ("py|js|mjs|cjs|ts|tsx|jsx|vue|md|json|css|scss|html|txt|log|yml|yaml|toml|ini|sh|zsh|bash|svg|png|jpg|jpeg|gif|webp|csv|lock|php|cs|"
@@ -47,14 +51,6 @@ def a_file(path: str) -> bool:
 
 def a_commit(sha: str) -> bool:
     return bool(re.search(r"\d", sha) and re.search(r"[a-f]", sha))
-
-
-def outside(pattern: re.Pattern, text: str, change) -> str:
-    parts, at = [], 0
-    for kept in pattern.finditer(text):
-        parts += [change(text[at:kept.start()]), kept.group(0)]
-        at = kept.end()
-    return "".join([*parts, change(text[at:])])
 
 
 def linked(text: str) -> str:
