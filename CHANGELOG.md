@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.90.0 — The activity panel shows every event
+
+The activity panel lists every event in the record, not only those told to the user. Agent reports and nudges, the busiest by far, fold into one row per minute ("7 agent updates, 2 nudges") that opens to show each one, with the hook and tool it came from.
+
 ## 2.89.0 — The journal's code lives under src/
 
 Every package and entry point of the journal moved from the repository root into src/; the root keeps the docs, the tests, the scripts and a link to src/install.py. Nothing changes for a project: its installer reads src/, and an older installer that only knows the root copies that one install.py, which fetches the package and finishes the upgrade itself (2.88.0). In this repository, run the journal as python3 src/journal.py and build the viewer with npm --prefix src/web.

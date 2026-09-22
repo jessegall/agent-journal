@@ -2,7 +2,7 @@
 import TextDisplay from "../kit/TextDisplay.vue";
 import {computed, onMounted, ref} from "vue";
 import {peek} from "../route.js";
-import {byRef, toldToUser} from "../domain/records.js";
+import {byRef} from "../domain/records.js";
 import {age} from "../format/time.js";
 import {meta, store, word} from "../state/store.js";
 
@@ -12,12 +12,38 @@ onMounted(() => setTimeout(() => (settled.value = true), 400));
 const logged = (e) => (e.type === "notification" && e.action === "created" && byRef(`notification:${e.n}`)) || {data: {}};
 const announced = (e) => logged(e).data.kind === "update";
 const written = (e) => logged(e).data.kind === "activity";
-const visible = computed(() =>
-    [...store.events]
-        .reverse()
-        .filter((e) => e.action !== "stamped" && (toldToUser(e) || announced(e) || written(e)))
-        .slice(0, 80)
+const BUSY = new Set(["agent", "nudge"]);
+const opened = ref(new Set());
+const minute = (e) => Math.floor(e.at / 60);
+const rows = computed(() => {
+    const list = [];
+    for (const e of [...store.events].reverse().filter((e) => e.action !== "stamped")) {
+        const last = list[list.length - 1];
+        if (!BUSY.has(e.type)) list.push({key: e.id, event: e});
+        else if (last && last.events && last.minute === minute(e)) last.events.push(e);
+        else list.push({minute: minute(e), events: [e]});
+    }
+    return list.slice(0, 80).map((row) => (row.events ? {...row, key: `fold-${row.events[row.events.length - 1].id}`} : row));
+});
+const counted = (events) =>
+    Object.entries(Object.groupBy(events, (e) => e.type))
+        .map(([type, of]) => `${of.length} ${type === "agent" ? "agent update" : type}${of.length === 1 ? "" : "s"}`)
+        .join(", ");
+const items = computed(() =>
+    rows.value.flatMap((row) =>
+        row.events
+            ? [
+                  {key: row.key, fold: row},
+                  ...(opened.value.has(row.key) ? row.events.map((e) => ({key: e.id, event: e, nested: true})) : []),
+              ]
+            : [row]
+    )
 );
+function unfold(key) {
+    const next = new Set(opened.value);
+    next.has(key) ? next.delete(key) : next.add(key);
+    opened.value = next;
+}
 const did = (e) => (e.action === "updated" && e.data && e.data.section ? "sectioned" : e.action);
 function heading(e) {
     if (announced(e)) return "Journal updated";
@@ -27,32 +53,63 @@ function heading(e) {
     if (e.action === "completed") return `${meta(e.type).title} ${word(e.type, "complete")}`;
     return `${WORDS[e.action]} ${meta(e.type).title.toLowerCase()}`;
 }
-const title = (e) => (written(e) ? logged(e).brief : (byRef(`${e.type}:${e.n}`) || {}).title) || "";
+const hooked = (e) => [e.data?.hook, e.data?.tool].filter(Boolean).join(" ");
+const title = (e) => (written(e) ? logged(e).brief : hooked(e) || (byRef(`${e.type}:${e.n}`) || {}).title) || "";
 const who = (e) => (written(e) ? logged(e).data.plugin : e.actor[0].toUpperCase() + e.actor.slice(1));
 </script>
 
 <template>
     <TransitionGroup tag="div" class="activity-list" :name="settled ? 'act' : ''">
-        <a
-            v-for="e in visible"
-            :key="e.id"
-            :class="['activity-row', 'activity-link', {'activity-update': announced(e)}, written(e) && `tone-${logged(e).data.tone}`]"
-            href="#"
-            @click.prevent="peek(e.type, e.n)"
-        >
-            <span class="activity-text">
-                {{ heading(e) }}
-                <span class="activity-n">{{ e.n }}</span>
-            </span>
-            <template v-if="title(e)">
-                <TextDisplay inline class="activity-title" :text="title(e)" />
+        <template v-for="item in items" :key="item.key">
+            <template v-if="item.fold">
+                <button type="button" class="activity-row activity-fold" @click="unfold(item.key)">
+                    <span class="activity-text">{{ counted(item.fold.events) }}</span>
+                    <span class="activity-age">{{ age(item.fold.events[0].at) || "just now" }}</span>
+                </button>
             </template>
-            <span class="activity-age">{{ who(e) }} · {{ age(e.at) || "just now" }}</span>
-        </a>
+            <template v-else>
+                <a
+                    :class="[
+                        'activity-row',
+                        'activity-link',
+                        {'activity-update': announced(item.event), 'activity-nested': item.nested},
+                        written(item.event) && `tone-${logged(item.event).data.tone}`,
+                    ]"
+                    href="#"
+                    @click.prevent="peek(item.event.type, item.event.n)"
+                >
+                    <span class="activity-text">
+                        {{ heading(item.event) }}
+                        <span class="activity-n">{{ item.event.n }}</span>
+                    </span>
+                    <template v-if="title(item.event)">
+                        <TextDisplay inline class="activity-title" :text="title(item.event)" />
+                    </template>
+                    <span class="activity-age">{{ who(item.event) }} · {{ age(item.event.at) || "just now" }}</span>
+                </a>
+            </template>
+        </template>
     </TransitionGroup>
 </template>
 
 <style scoped>
+.activity-fold {
+    width: 100%;
+    border: 0;
+    background: none;
+    text-align: left;
+    font: inherit;
+    cursor: pointer;
+}
+
+.activity-fold .activity-text {
+    color: var(--text-3);
+}
+
+.activity-nested {
+    padding-left: 18px;
+}
+
 .tone-warn,
 .tone-good {
     border-left: 2px solid var(--tone);
