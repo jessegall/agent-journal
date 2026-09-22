@@ -17,7 +17,7 @@ from engine.wording import plural
 from engine.transcript import turns
 from engine.stored import read_json, write_json
 
-CLOCK_EVERY = 60.0
+CLOCK_EVERY = 10.0
 
 
 def emit_clock(record: Record, session: str) -> None:
@@ -237,7 +237,8 @@ class Engine(Seat):
         if time.time() - self.ticked_at < CLOCK_EVERY:
             return
         self.ticked_at = time.time()
-        emit_clock(self.record, self.agent.driver.session)
+        last = self.agent.driver.last_report()
+        emit_clock(self.record, last.title if last and last.title else self.agent.driver.session)
 
     def owed(self) -> str:
         waiting = []
