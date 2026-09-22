@@ -7,7 +7,7 @@ import {useNow} from "./now.js";
 const WINDOW = 8;
 
 export function useRevisions(resource) {
-    const numbers = computed(() => resource().data.revisions || []);
+    const numbers = computed(() => Array.from({length: Number(resource().data.revisions || 0)}, (_, i) => i + 1));
     const at = ref(-1);
     const pages = reactive({});
     const changes = ref(false);
@@ -22,10 +22,10 @@ export function useRevisions(resource) {
         {immediate: true}
     );
 
-    async function load(n) {
-        if (!n || pages[n]) return;
+    async function load(k) {
+        if (!k || pages[k]) return;
         try {
-            pages[n] = await api.show("doc", n);
+            pages[k] = await api.revision(resource().n, k);
         } catch (e) {
             error.value = e.message;
         }

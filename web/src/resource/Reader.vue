@@ -88,7 +88,7 @@ watch(
                         </template>
                         <template #document>
                             <DocumentPage :resource="resource" :focus="focusComment" @close="close">
-                                <template v-if="resource.data.revisions?.length">
+                                <template v-if="resource.data.revisions">
                                     <Revisions :resource="resource" @close="close" />
                                 </template>
                             </DocumentPage>

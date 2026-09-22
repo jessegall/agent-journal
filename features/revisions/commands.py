@@ -1,7 +1,7 @@
 import time
 
 from features.parts import Command, Context
-from features.revisions.history import CHANGE, OPEN_UNTIL, REVISION, REVISIONS, is_open
+from features.revisions.history import CHANGE, OPEN_UNTIL, REVISION, count, is_open, read
 from resources.base import SECTION, Refused
 
 
@@ -11,7 +11,7 @@ class Keep(Command):
     def run(self, context: Context, docs, n: int):
         doc = docs.load(int(n))
         if not is_open(doc):
-            raise Refused(f"revision {len(doc.data.get(REVISIONS) or [])} of doc {doc.n} is already kept")
+            raise Refused(f"revision {count(doc)} of doc {doc.n} is already kept")
         return docs.stamp(doc.n, **{OPEN_UNTIL: 0})
 
 
@@ -19,17 +19,17 @@ class Revisions(Command):
     name = "revisions"
 
     def run(self, context: Context, docs, n: int) -> list[str]:
-        return [listed(docs.load(k)) for k in docs.load(int(n)).data.get(REVISIONS) or []]
+        return [listed(read(docs, n, k)) for k in range(1, count(docs.load(int(n))) + 1)]
 
 
 class Revision(Command):
     name = "revision"
 
     def run(self, context: Context, docs, n: int, number: int):
-        found = docs.load(int(n)).data.get(REVISIONS) or []
-        if not 1 <= int(number) <= len(found):
-            raise Refused(f"doc {n} has revisions 1 to {len(found)}" if found else f"doc {n} has no revisions yet")
-        return docs.load(found[int(number) - 1])
+        found = count(docs.load(int(n)))
+        if not 1 <= int(number) <= found:
+            raise Refused(f"doc {n} has revisions 1 to {found}" if found else f"doc {n} has no revisions yet")
+        return read(docs, n, number)
 
 
 class Cut(Command):
