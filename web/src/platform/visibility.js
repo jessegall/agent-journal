@@ -4,15 +4,21 @@ import {missed} from "../domain/records.js";
 import {store} from "../state/store.js";
 
 const AWAY_AFTER = 60000;
+const PICKING_FOR = 20000;
+let picking = 0;
 
 export const away = reactive({open: false, since: 0, back: 0, left: 0, hidden: false});
 export const flash = reactive({at: Date.now()});
 
-function left(hidden = false) {
+function left() {
     away.left = away.left || Date.now();
-    if (!hidden) return;
+    if (Date.now() < picking) return;
     away.hidden = true;
     flash.at = Date.now();
+}
+
+export function pickingFiles() {
+    picking = Date.now() + PICKING_FOR;
 }
 
 async function back() {
@@ -26,7 +32,7 @@ async function back() {
     Object.assign(away, {open: true, since, back: Date.now()});
 }
 
-document.addEventListener("visibilitychange", () => (document.hidden ? left(true) : back()));
+document.addEventListener("visibilitychange", () => (document.hidden ? left() : back()));
 window.addEventListener("blur", () => left());
 window.addEventListener("focus", back);
 
