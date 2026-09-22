@@ -132,6 +132,8 @@ class Resource:
     stamped_when_notified: ClassVar[bool] = False              # the row is stamped with the moment the agent was told of it
     deduplicates: ClassVar[bool] = False
     indexed: ClassVar[tuple] = ()
+    shown_fields: ClassVar[tuple] = ()   # data fields its panel shows and edits
+    choices: ClassVar[dict] = {}         # the values a shown field may take, where they are fixed
     own_folder: ClassVar[bool] = False  # each row lives in a folder of its own, beside its files
     progress: ClassVar[tuple] = ()   # data a system row may still change as it runs
     loading: ClassVar[str] = MEMORY

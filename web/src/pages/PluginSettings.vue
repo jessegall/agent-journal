@@ -6,6 +6,7 @@ import ChoiceList from "../kit/ChoiceList.vue";
 import SidePanel from "../kit/SidePanel.vue";
 import Switch from "../kit/Switch.vue";
 import SwitchCase from "../kit/SwitchCase.vue";
+import TextInput from "../kit/TextInput.vue";
 
 const props = defineProps({plugin: {type: Object, required: true}});
 const emit = defineEmits(["close", "change"]);
@@ -74,11 +75,9 @@ const choices = (s) => s.options.map((option) => ({value: String(option), label:
                                 />
                             </template>
                             <template #default>
-                                <input
-                                    class="setting-value"
+                                <TextInput
                                     :type="s.type === 'number' ? 'number' : 'text'"
                                     :value="s.value"
-                                    spellcheck="false"
                                     @change="emit('change', s.key, $event.target.value)"
                                 />
                             </template>

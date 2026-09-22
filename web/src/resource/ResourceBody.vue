@@ -13,6 +13,7 @@ import ResourceActions from "./ResourceActions.vue";
 import Sections from "./Sections.vue";
 import OptionsPicker from "./OptionsPicker.vue";
 import Priority from "./Priority.vue";
+import DataFields from "./DataFields.vue";
 import Trace from "./Trace.vue";
 import Comments from "./Comments.vue";
 import Links from "./Links.vue";
@@ -172,6 +173,9 @@ const docs = computed(() =>
         </template>
         <template v-if="Array.isArray(resource.data.buttons) && resource.data.buttons.length">
             <Buttons :resource="resource" />
+        </template>
+        <template v-if="kind.shown_fields.length">
+            <DataFields :resource="resource" />
         </template>
         <template v-if="kind.fields.options">
             <OptionsPicker :resource="resource" />

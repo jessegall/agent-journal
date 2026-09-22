@@ -4,9 +4,15 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.85.93 — A trigger's panel shows and edits what it watches and does
+
+- A resource names the data fields its panel shows (shown_fields) and the values a field may take (choices); one DataFields component shows and edits them for any type. A trigger shows its words, where they count, what it does and what it sends.
+- kit TextInput is the one text box: plugin settings, line lists and data fields use it.
+- journal.agent.amend is named amend_line.
+
 ## 2.85.92 — A feature can add to another feature's line
 
-- Every line the agent hears has a key: <feature>.<line> for a feature's line, <type>.<action> for an arrival such as message.created. A feature amends a line by its key (journal.agent.amend), and the additions ride on the same line.
+- Every line the agent hears has a key: <feature>.<line> for a feature's line, <type>.<action> for an arrival such as message.created. A feature amends a line by its key (journal.agent.amend_line), and the additions ride on the same line.
 - The new-message line says how to answer it: 1 new message 4465 - answer by opening your turn with [!reply:4465]. The separate reply-tag reminder is gone.
 
 ## 2.85.91 — Parked and blocked mean one thing each

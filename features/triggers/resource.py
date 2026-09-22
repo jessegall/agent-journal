@@ -25,4 +25,6 @@ class Trigger(Shape, Resource):
         Field(TEXT, NUDGE, name="does"),
         Field(TEXT, name="text"),
     ]
-    labels = {"brief": "What it says", "outcome": "Why retired"}
+    labels = {"brief": "What it says", "outcome": "Why retired", "words": "Words", "words_in": "Where they count", "does": "What it does", "text": "What it sends"}
+    shown_fields = ("words", "words_in", "does", "text")
+    choices = {"does": list(DOES), "words_in": ["text", "commands", "both", "everything"]}

@@ -189,7 +189,7 @@ class AgentHooks:
     def __init__(self, feature):
         self.feature = feature
 
-    def amend(self, on: str, amendment) -> None:
+    def amend_line(self, on: str, amendment) -> None:
         AMENDS.setdefault(on, []).append(amendment)
 
     def interceptor(self, interceptor: ToolInterceptor) -> None:
