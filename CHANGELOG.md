@@ -4,6 +4,11 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.85.44 — The question card in the chat shows the question
+
+- A question in the chat now reads as the question itself, then its context and its choices. Before, the card showed only the context, while the side rail showed the question.
+- The project badge shows for a second and a half.
+
 ## 2.85.43 — A declared wait stands until the agent works again
 
 - journal work await says once what the agent is waiting for. A log entry no longer clears it; using a tool again does, and the agent is told that its wait is over because it is working again.
