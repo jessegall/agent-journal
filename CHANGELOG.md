@@ -4,6 +4,11 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.85.49 — The badge is for leaving the tab, not for a file dialog
+
+- Opening an attachment or any other file dialog no longer brings up the project badge: only the tab being hidden does. A blur was being read as leaving.
+- The badge goes nine tenths of a second after the tab is visible again, with a shorter fade.
+
 ## 2.85.48 — Only what is new reaches an agent that is waiting
 
 - Each feature says whether its lines may reach an agent that has declared a wait, and the answer is no unless it is stated. What still speaks is what carries something new: the user's messages, questions, dumps, a failing check, a permission prompt, a trigger, a plan's next step, a refusal that holds a tool call. The work reminders, standing facts and rules, reminders and a changed skill wait.
