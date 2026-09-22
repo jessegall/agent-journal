@@ -1,11 +1,16 @@
 import time
 
-from engine.events import AgentReported, SessionStarted, ToolFinished
+from dataclasses import dataclass
+from typing import ClassVar
+
+from engine.events import AgentReported, ResourceEvent, SessionStarted, ToolFinished
 from features import trigger
-from features.parts import AgentContext, Handler
+from features.parts import AgentContext, Context, Handler
 from features.skill_loading.catalogue import SKILL, chosen, skills
+from features.skill_loading.interceptors import require_named
 from features.skill_loading.required import require
 from providers import PROVIDERS
+from resources.base import SYSTEM, USER
 from resources.types import AgentRow
 
 WINDOWS = ("SessionStart", "PreCompact")
@@ -59,6 +64,22 @@ class RequireAlwaysSkills(Handler):
     def handle(self, context: AgentContext, event: SessionStarted) -> None:
         now = time.time()
         require(context.record, context.agent.session, {name: now for name in chosen(context.record)})
+
+
+@dataclass(frozen=True)
+class MessageArrived(ResourceEvent):
+    on: ClassVar[str] = "message.created"
+
+
+class RequireSkillsTheUserNames(Handler):
+    behaviour = "keywords"
+
+    def handle(self, context: Context, event: MessageArrived) -> None:
+        if event.actor != USER:
+            return
+        row = context.journal.acting(SYSTEM).agents.primary()
+        if row:
+            require_named(context.record, row, context.journal.messages.load(event.n).brief)
 
 
 class ShowLoadsInChat(Handler):

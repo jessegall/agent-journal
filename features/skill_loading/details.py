@@ -36,6 +36,11 @@ class SkillsDetails(FeatureDetails):
             abstract="The skills switched to every start on the Skills page, again after a compaction",
         ),
         Behaviour(
+            name="keywords",
+            title="Load a skill when one of its keywords comes up",
+            abstract="A skill's keywords, from its frontmatter or the Skills page, in what the user writes or the agent runs",
+        ),
+        Behaviour(
             name="stale",
             title="Hold tool calls when a skill changed since it was loaded",
             abstract="Every tool call waits until the agent loads the changed skill again",

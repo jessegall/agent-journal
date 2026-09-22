@@ -97,6 +97,13 @@ async function always(s, on) {
     await reload();
     busy.value = "";
 }
+
+async function keywords(s, words) {
+    busy.value = s.name;
+    await api.skillKeywords(s.name, words);
+    await reload();
+    busy.value = "";
+}
 </script>
 
 <template>
@@ -123,6 +130,7 @@ async function always(s, on) {
                                 @open="open"
                                 @load="loadNow"
                                 @always="always"
+                                @keywords="keywords"
                             />
                         </template>
                         <template v-else>
@@ -143,6 +151,7 @@ async function always(s, on) {
                                             @open="open"
                                             @load="loadNow"
                                             @always="always"
+                                            @keywords="keywords"
                                         />
                                     </template>
                                     <template v-else>
@@ -166,6 +175,7 @@ async function always(s, on) {
                                                     @open="open"
                                                     @load="loadNow"
                                                     @always="always"
+                                                    @keywords="keywords"
                                                 />
                                             </template>
                                         </template>

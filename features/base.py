@@ -86,6 +86,7 @@ class FeatureDetails:
     settings: ClassVar[list[Setting]] = []
     trigger: ClassVar[Trigger] = NEVER
     aliases: ClassVar[tuple] = ()
+    keywords: ClassVar[tuple] = ()     # words that make the agent load this feature's skill
     runs_for_subagents: ClassVar[bool] = False
     fixed: ClassVar[bool] = False
     primary: ClassVar[bool] = False
@@ -107,6 +108,7 @@ class Feature(ABC):
     lines: ClassVar[dict[str, Line]] = {}
     settings: ClassVar[list[Setting]] = []
     aliases: ClassVar[tuple] = ()      # names this feature used to have; a pair says the old feature is now one of its behaviours
+    keywords: ClassVar[tuple] = ()     # words that make the agent load this feature's skill
     runs_for_subagents: ClassVar[bool] = False
     default: ClassVar[bool] = True
     fixed: ClassVar[bool] = False
@@ -118,6 +120,8 @@ class Feature(ABC):
             cls.name, cls.lines, cls.behaviours, cls.settings, cls.trigger = d.name, {line.name: line for line in d.lines}, {b.name: b for b in d.behaviours}, d.settings, d.trigger
             cls.title, cls.abstract, cls.help = paragraphs(d.title), paragraphs(d.abstract), paragraphs(d.help)
             cls.aliases, cls.runs_for_subagents, cls.fixed, cls.default = d.aliases, d.runs_for_subagents, d.fixed, d.default
+            named = d.name.split("_") + [a for a in d.aliases if isinstance(a, str)]
+            cls.keywords = d.keywords or tuple(dict.fromkeys(w for word in named for w in (word, word[:-1] if word.endswith("s") else f"{word}s")))
         if cls.name:
             REGISTRY[cls.name] = cls
 
@@ -220,6 +224,7 @@ class Feature(ABC):
 
     def describe(self) -> dict:
         return {"name": self.name, "title": self.title, "abstract": self.abstract, "help": self.help, "default": self.default, "fixed": self.fixed,
+                "keywords": list(self.keywords),
                 "listens": sorted(set(self.journal.events.names)), "trigger": self.trigger.spec(),
                 "behaviours": {key: b.describe() for key, b in self.behaviours.items()},
                 "lines": {key: line.describe() for key, line in self.lines.items()},

@@ -7,7 +7,7 @@ from engine.record import Record
 from providers import PROVIDERS
 from resources.base import SYSTEM, names
 
-SKILL = names("name", "description", "path", "changed", "loaded", "stale", "always", "size")
+SKILL = names("name", "description", "path", "changed", "loaded", "stale", "always", "size", "keywords")
 from skills import LIBRARY, skill_name
 from engine.package import data
 
@@ -27,7 +27,8 @@ def described(f: Path, root: Path) -> dict:
     if not held or held[0] != stamp:
         head = frontmatter(f.read_text(errors="replace"))
         held = READ[str(f)] = (stamp, {SKILL.name: f.parent.name, SKILL.description: head.get("description", "").strip('"'), SKILL.path: str(f.relative_to(root)),
-                                       SKILL.changed: found.st_mtime, SKILL.size: found.st_size})
+                                       SKILL.changed: found.st_mtime, SKILL.size: found.st_size,
+                                       SKILL.keywords: [w.strip() for w in head.get("keywords", "").strip('"[]').split(",") if w.strip()]})
     return held[1]
 
 
@@ -83,6 +84,20 @@ def skills(record: Record, n: int = 0) -> list[dict]:
         at = when.get(s[SKILL.name], 0)
         out.append({**s, SKILL.loaded: at, SKILL.stale: bool(at) and s[SKILL.changed] > at, SKILL.always: s[SKILL.name] in always})
     return out
+
+
+def keywords(record: Record) -> dict[str, list[str]]:
+    chosen_words = record.setting("skill_loading", {}).get("keywords") or {}
+    out = {s[SKILL.name]: list(s[SKILL.keywords]) for s in catalogue(record.root.parent)}
+    for name, words in chosen_words.items():
+        out[name] = [w.strip() for w in (words if isinstance(words, list) else str(words).split(",")) if w.strip()]
+    return {name: words for name, words in out.items() if words}
+
+
+def set_keywords(record: Record, name: str, words: list[str]) -> list[str]:
+    settings = record.setting("skill_loading", {})
+    record.set_setting("skill_loading", {**settings, "keywords": {**(settings.get("keywords") or {}), name: words}})
+    return keywords(record).get(name, [])
 
 
 def always(record: Record, name: str, on: bool) -> list[str]:
