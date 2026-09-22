@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.84.13 — A push is refused when the journal does not boot
+
+`scripts/boot_guard.py` installs a packed copy into a scratch project, creates a row, starts the server, fetches the viewer and a list, and launches Claude and Codex with a stand-in agent, in about three seconds. The repository's pre-push hook runs it, so a build that cannot install, serve or launch never reaches GitHub. `journal stop` is quicker: the server checks for a stop request every 0.2 seconds instead of every second.
+
 ## 2.84.12 — Blocked to-dos show on the To-dos page, with their reason
 
 The To-dos page lost every open row older than the newest 25: the viewer trimmed each list to its last 25 rows on every page change, and the listing sent only the newest 25 open rows. Every open row now stays, so blocked to-dos appear in the Blocked group, and each held row carries a small label with the block reason, or which rows it waits on. Done rows still load 25 at a time as you scroll.

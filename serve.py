@@ -99,6 +99,7 @@ def serve(root: Path, port: int = 8430) -> ThreadingHTTPServer:
 
 WATCH_SECONDS = 1.0
 SETTLE_SECONDS = 1.5
+STOP_SECONDS = 0.2
 IGNORED_CODE_FOLDERS = {"__pycache__", "environments", "runtime", "tests"}
 
 
@@ -133,7 +134,7 @@ def watch_code(package: Path, server: ThreadingHTTPServer, changed: threading.Ev
 
 def watch_stop(root: Path, server: ThreadingHTTPServer, halting: threading.Event, began: float = 0.0) -> None:
     while not halting.is_set():
-        time.sleep(WATCH_SECONDS)
+        time.sleep(STOP_SECONDS)
         if asked(root, began):
             halting.set()
             server.shutdown()
