@@ -1,8 +1,8 @@
 from features.base import Feature
 from features.journal import Journal
-from features.work_tracking.commands import LogWork, ParkWork, ResumeWork
+from features.work_tracking.commands import AwaitWork, LogWork, ParkWork, ResumeWork
 from features.work_tracking.details import WorkDetails
-from features.work_tracking.handlers import (CloseWork, CountEdits, EndWorkWithTodo, HoldUntilDeclared, OfferNextRow, OfferNextRowOnTheClock, OpenWork, RemindOpenWork, ResetEditsOnLog,
+from features.work_tracking.handlers import (AskStillAwaiting, CloseWork, CountEdits, EndWorkWithTodo, HoldUntilDeclared, OfferNextRow, OfferNextRowOnTheClock, OpenWork, RemindOpenWork, ResetEditsOnLog,
                                     TrackFiles)
 from features.work_tracking.interceptors import RefuseHeldWrites
 
@@ -14,6 +14,8 @@ class WorkFeature(Feature):
         journal.commands.add("work", LogWork())
         journal.commands.add("work", ParkWork())
         journal.commands.add("work", ResumeWork())
+        journal.commands.add("work", AwaitWork())
+        journal.events.handler(AskStillAwaiting())
         journal.events.handler(HoldUntilDeclared())
         journal.events.handler(OpenWork())
         journal.events.handler(CloseWork())

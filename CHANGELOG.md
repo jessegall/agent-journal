@@ -4,6 +4,11 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.84.146
+
+- The agent says what it waits for with journal work await "<what>", and the chat's waiting bubble shows those words. A log entry or parking clears it, and while it stands the agent is asked every minute whether the wait still holds (a setting).
+- A background shell or subagent running on its own no longer makes the chat say the agent is waiting.
+
 ## 2.84.145
 
 - A functional design is a document, not a plan. The Functional design template is now for docs: what it is for, what the user sees and does, a Must have checklist anyone can tick, open questions, and what is not in this version. The agent explores while it writes it.

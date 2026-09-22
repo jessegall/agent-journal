@@ -26,6 +26,10 @@ class WorkDetails(FeatureDetails):
         when you are stuck or when something else has to happen first; never to wait for an
         answer you could carry on without, because under auto the list stops.
 
+        journal work await "<what>" says the agent is waiting for something, in its own words,
+        and the chat shows it; a log entry or parking clears it, and while it stands the agent
+        is asked every minute (work.ask_awaiting_every) whether the wait still holds.
+
         Auto mode is off by default: turning it on is the user's word to work the list and
         decide without blocking questions. The next ready row by priority is offered on idle
         while nothing is open; five minutes quiet with unparked work open earns a direct
@@ -53,6 +57,12 @@ class WorkDetails(FeatureDetails):
             default=20,
             title="Hold the writes after this many edits without a log entry",
             unit="edits",
+        ),
+        Setting(
+            name="ask_awaiting_every",
+            default=1,
+            title="Ask the agent whether it is still waiting every",
+            unit="minutes",
         ),
         Setting(
             name="name_work_every",
@@ -97,5 +107,14 @@ class WorkDetails(FeatureDetails):
         Line(
             name="next",
             title="todo {{n}} next",
+        ),
+        Line(
+            name="still awaiting",
+            title="you said you are waiting for {{what}}, {{minutes}} min ago - is that still true?",
+            brief="""
+                if it is, say so with journal work await "<what you wait for>"; if not, carry on:
+                journal work log what came of it and take the next step. Never wait for something
+                you can do without, and park a to-do for anything that has to wait longer.
+            """,
         ),
     ]

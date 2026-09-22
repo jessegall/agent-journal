@@ -1,3 +1,4 @@
+import time
 from dataclasses import dataclass
 from typing import ClassVar
 
@@ -103,6 +104,18 @@ class TrackFiles(Handler):
             return
         for work in working(context)[:1]:
             tracker.record_files(row, context.record, work)
+
+
+class AskStillAwaiting(Handler):
+    def handle(self, context: AgentContext, event: ClockTicked) -> None:
+        every = context.settings.ask_awaiting_every
+        for w in working(context)[:1]:
+            if not w.awaiting or not every:
+                continue
+            minutes = int((time.time() - (w.awaiting_since or time.time())) // 60)
+            if minutes >= every and context.state.get("awaiting asked") != f"{w.n}:{minutes // every}":
+                context.state.set("awaiting asked", f"{w.n}:{minutes // every}")
+                context.agent.say("still awaiting", what=w.awaiting, minutes=minutes)
 
 
 class RemindOpenWork(Handler):

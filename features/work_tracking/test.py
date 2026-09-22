@@ -157,3 +157,21 @@ def test_ending_work_names_the_work_still_parked():
     works.complete(second.n, how="fixed")
     assert nudges(record)[-1] == f"work {first.n}, the slow build, is still parked - can you continue it now?", \
         "ending work reminds the agent of the work it parked"
+
+
+def test_a_declared_wait_is_asked_about_and_cleared_when_the_work_moves():
+    from tests.kit import tick
+    record = fresh()
+    report(record, "working", "PreToolUse")
+    works = Works(record, actor=AGENT)
+    build = works.create("the release")
+    works.action("await")("the CI run on main")
+    works.update(build.n, awaiting_since=works.load(build.n).awaiting_since - 120)
+    tick(record)
+    assert nudges(record)[-1] == "you said you are waiting for the CI run on main, 2 min ago - is that still true?", \
+        "a wait that stands is asked about"
+    works.action("log")("CI passed")
+    assert works.load(build.n).awaiting == "", "a log entry clears the wait"
+    works.action("await")("the deploy")
+    works.action("park")("the release goes out tomorrow")
+    assert works.load(build.n).awaiting == "", "parking clears the wait"
