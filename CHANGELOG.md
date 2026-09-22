@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.84.23 — The chat and the status bar say what the agent is waiting for
+
+While the agent's subagents or background shells are running, the status bar reads "Waiting for 2 subagents" (or "for a background shell", or both), and the chat shows the same in place of the working dots.
+
 ## 2.84.22 — Old closed rows are packed into a zip per month
 
 Once an hour, rows that are done or archived and untouched for 30 days (`keep.pack` in days; 0 keeps them loose) move into `packed/<year-month>.zip` in their type's folder. They still list, open and search as before, straight from the zip; a packed row that changes becomes a loose file again, and new rows never reuse a packed row's number. Each zip is read back member by member before any loose file is removed. On this project's own record it packs about 1,500 rows and saves a fifth of the space. The code shipped inside 2.84.21; this release describes it.

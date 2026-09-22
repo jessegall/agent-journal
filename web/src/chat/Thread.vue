@@ -9,6 +9,7 @@ import {quoted, withQuote} from "../format/quote.js";
 import {chatOnly, laidOut} from "../platform/view.js";
 import {threadTurns} from "../domain/thread.js";
 import {agent, store} from "../state/store.js";
+import {waitsFor} from "../layout/statusline.js";
 import {polled} from "../sync/polled.js";
 import {earlier, rows} from "../sync/rows.js";
 import Compose from "./Compose.vue";
@@ -45,6 +46,7 @@ function unedit() {
     editing.value = null;
 }
 const busy = computed(() => !!agent.value && ["working", "compacting"].includes(agent.value.data.status));
+const waiting = computed(() => waitsFor(agent.value));
 const away = ref(false);
 const missed = ref(0);
 const settledOnce = ref(false);
@@ -322,13 +324,22 @@ watch(
                     />
                 </TransitionGroup>
                 <Transition name="rise">
-                    <div v-if="busy" class="thread-turn busy" aria-label="The agent is working">
-                        <div class="thread-bubble">
-                            <span class="thread-dot" />
-                            <span class="thread-dot" />
-                            <span class="thread-dot" />
-                        </div>
-                        <div class="thread-meta"><span>working</span></div>
+                    <div
+                        v-if="busy"
+                        class="thread-turn busy"
+                        :aria-label="waiting ? `The agent is waiting ${waiting}` : 'The agent is working'"
+                    >
+                        <template v-if="waiting">
+                            <div class="thread-bubble waiting">Waiting {{ waiting }}</div>
+                        </template>
+                        <template v-else>
+                            <div class="thread-bubble">
+                                <span class="thread-dot" />
+                                <span class="thread-dot" />
+                                <span class="thread-dot" />
+                            </div>
+                            <div class="thread-meta"><span>working</span></div>
+                        </template>
                     </div>
                 </Transition>
             </template>
@@ -384,6 +395,11 @@ watch(
     border: 1px solid #232529;
     border-radius: 9px;
     background: #161719;
+}
+
+.thread-turn.busy .thread-bubble.waiting {
+    font-size: 12.5px;
+    color: var(--text-2);
 }
 
 .thread-turn.busy .thread-meta {
