@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.89.0 — The journal's code lives under src/
+
+Every package and entry point of the journal moved from the repository root into src/; the root keeps the docs, the tests, the scripts and a link to src/install.py. Nothing changes for a project: its installer reads src/, and an older installer that only knows the root copies that one install.py, which fetches the package and finishes the upgrade itself (2.88.0). In this repository, run the journal as python3 src/journal.py and build the viewer with npm --prefix src/web.
+
+A skill rewritten while the skills are listed is skipped for that listing instead of failing the hook.
+
 ## 2.88.0 — The installer mends a package it finds missing
 
 Run as a script, install.py now checks that the journal's package sits beside it before it loads any of it: with a src/install.py beside it, it hands over to that one; with the package gone, it fetches the repository and puts the package back, then carries on. An older installer that copies only install.py and runs it therefore ends with a whole journal, which is what lets the package move under src/ in the next release without waiting for every install to update first.

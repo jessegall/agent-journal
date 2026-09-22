@@ -15,12 +15,13 @@ from scripts.boot_guard import WAIT, launches
 from scripts.checks.imports import imports, missing
 
 HERE = Path(__file__).resolve().parents[1]
+CODE = HERE / "src"
 
 
 def installed(place: Path) -> Path:
     (place / "project").mkdir()
     env = {**os.environ, "HOME": str(place / "home"), "AGENT_JOURNAL_BOOTSTRAPPED": "1"}
-    subprocess.run([sys.executable, str(HERE / "install.py"), "upgrade", str(place / "project")], env=env, capture_output=True, timeout=120)
+    subprocess.run([sys.executable, str(CODE / "install.py"), "upgrade", str(place / "project")], env=env, capture_output=True, timeout=120)
     return place / "project" / ".journal"
 
 
@@ -30,20 +31,20 @@ def test_every_import_in_the_package_resolves():
 
 def test_every_agent_launches_under_the_journal_and_exits_cleanly(tmp_path):
     for name in DRIVERS:
-        launches(tmp_path / name, HERE / "journal.py", name)
+        launches(tmp_path / name, CODE / "journal.py", name)
 
 
 def test_every_agent_launches_from_an_installed_zip(tmp_path):
     place = tmp_path
     (place / "project").mkdir()
     env = {**os.environ, "HOME": str(place / "home"), "AGENT_JOURNAL_BOOTSTRAPPED": "1"}
-    installed = subprocess.run([sys.executable, str(HERE / "install.py"), "upgrade", str(place / "project")], env=env, capture_output=True, text=True, timeout=120)
+    installed = subprocess.run([sys.executable, str(CODE / "install.py"), "upgrade", str(place / "project")], env=env, capture_output=True, text=True, timeout=120)
     root = place / "project" / ".journal"
     left = sorted(f.relative_to(root / "src").as_posix() for f in (root / "src").rglob("*.py"))
     assert ((root / "journal.pyz").is_file(), left) == (True, sorted(STUBS)), f"the Python is packed into one zip, a stub left at each old entry:\n{installed.stdout}{installed.stderr}"
     journal = [sys.executable, str(root / "journal.py"), "--root", str(root)]
     subprocess.run([*journal, "doc", "create", "Kept across upgrades"], cwd=place / "project", env=env, capture_output=True, timeout=WAIT)
-    again = subprocess.run([sys.executable, str(HERE / "install.py"), "upgrade", str(place / "project")], env=env, capture_output=True, text=True, timeout=120)
+    again = subprocess.run([sys.executable, str(CODE / "install.py"), "upgrade", str(place / "project")], env=env, capture_output=True, text=True, timeout=120)
     listed = subprocess.run([*journal, "doc", "all"], cwd=place / "project", env=env, capture_output=True, text=True, timeout=WAIT).stdout
     assert "Kept across upgrades" in listed, f"a project record survives an upgrade:\n{again.stdout}{again.stderr}"
     repository = place / "release"
@@ -61,7 +62,7 @@ def test_every_agent_launches_from_an_installed_zip(tmp_path):
         f"an installed journal upgrades itself from a release, keeps its records, and runs from a versioned build:\n{itself.stdout}{itself.stderr}"
     for name in DRIVERS:
         launches(place, root / "journal.py", name)
-    (repository / "channel.py").write_text((repository / "channel.py").read_text() + f"\nRELEASE = {os.urandom(4000).hex()!r}\n")
+    (repository / "src" / "channel.py").write_text((repository / "src" / "channel.py").read_text() + f"\nRELEASE = {os.urandom(4000).hex()!r}\n")
     subprocess.run(["git", "-c", "user.name=t", "-c", "user.email=t@t", "commit", "-qam", "a new build"], cwd=repository, capture_output=True, timeout=WAIT)
 
     moved = []
@@ -81,7 +82,7 @@ def test_every_agent_launches_from_an_installed_zip(tmp_path):
 def test_the_journal_starts_on_a_record_with_a_damaged_row(tmp_path):
     place = tmp_path
     root = place / ".journal"
-    journal = [sys.executable, str(HERE / "journal.py"), "--root", str(root)]
+    journal = [sys.executable, str(CODE / "journal.py"), "--root", str(root)]
     subprocess.run([*journal, "todo", "create", "a row"], cwd=place, capture_output=True, timeout=WAIT)
     (root / "environments" / "main" / "todo" / "002.md").write_text("")
     (root / "environments" / "main" / "todo" / "003.md").write_text('---\n{"n": 3, "title": "odd", "unknown_field": 1}\n---\nbody\n')
@@ -100,7 +101,7 @@ def test_an_upgrade_keeps_a_build_a_live_session_runs_from(tmp_path):
         build.write_bytes(good.read_bytes())
         os.utime(build, (i, i))
     hold_build(root, old[0])
-    subprocess.run([sys.executable, str(HERE / "install.py"), "upgrade", str(root.parent)], env={**os.environ, "HOME": str(tmp_path / "home"), "AGENT_JOURNAL_BOOTSTRAPPED": "1"},
+    subprocess.run([sys.executable, str(CODE / "install.py"), "upgrade", str(root.parent)], env={**os.environ, "HOME": str(tmp_path / "home"), "AGENT_JOURNAL_BOOTSTRAPPED": "1"},
                    capture_output=True, timeout=120)
     assert [build.is_file() for build in old] == [True, False, True], "the build a live process runs from is kept; the other old ones go"
 

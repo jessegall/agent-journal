@@ -3,7 +3,7 @@ import importlib
 import sys
 from pathlib import Path
 
-HERE = Path(__file__).resolve().parents[2]
+HERE = Path(__file__).resolve().parents[2] / "src"
 PACKAGES = ("commands", "controllers", "engine", "features", "migrations", "providers", "resources", "surfaces")
 ROOTS = (*PACKAGES, "install")
 

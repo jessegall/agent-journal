@@ -2,7 +2,7 @@ import ast
 import sys
 from pathlib import Path
 
-HERE = Path(__file__).resolve().parents[2]
+HERE = Path(__file__).resolve().parents[2] / "src"
 PARTS = {"Handler", "TextFormatter", "ToolInterceptor", "Command", "ActionInterceptor"}
 FEATURE_METHODS = {"register", "settings_view", "default_for"}
 SERVICES = {"dev_faults": {"reports"}, "plugins": {"host"}}

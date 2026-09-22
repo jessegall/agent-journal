@@ -3,6 +3,6 @@ set -eu
 
 root=$(git rev-parse --show-toplevel)
 cd "$root"
-git diff --cached --quiet -- VERSION && exit 0
-npm --prefix web run build
-git add web/dist
+git diff --cached --quiet -- src/VERSION && exit 0
+npm --prefix src/web run build
+git add src/web/dist

@@ -4,7 +4,7 @@ import sys
 import tokenize
 from pathlib import Path
 
-HERE = Path(__file__).resolve().parents[2]
+HERE = Path(__file__).resolve().parents[2] / "src"
 WORDS = frozenset({"said", "says", "heard", "spoke", "told", "shown", "became", "quiet_enough"})
 SKIPPED = frozenset({".venv", "node_modules", ".journal", ".claude", "web", "dist", "__pycache__", ".git"})
 SCRIPT = re.compile(r"<script[^>]*>(.*?)</script>", re.S)
