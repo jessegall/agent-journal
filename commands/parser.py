@@ -1,4 +1,5 @@
 import argparse
+from functools import cache
 import inspect
 import os
 from controllers.base import COMMANDS
@@ -17,6 +18,11 @@ from commands.queries import decided, halt, help_text, say, search_text, serve_f
 def actions(controller: type) -> list[str]:
     return sorted(name for name, f in inspect.getmembers(controller, inspect.isfunction)
                   if not name.startswith("_") and not getattr(f, "internal", False))
+
+@cache
+def words(type_: str) -> set[str]:
+    controller = CONTROLLERS[type_]
+    return {controller.resource.command_names.get(name, name) for name in {*actions(controller), *COMMANDS.get(type_, {})}}
 
 def truthy(word: str) -> bool:
     return word.strip().lower() in ("true", "yes", "on", "1")
