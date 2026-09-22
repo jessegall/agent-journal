@@ -100,7 +100,8 @@ class Environments(Controller):
         for rows, number in chosen:
             kept = stage / rows.type
             kept.mkdir(parents=True, exist_ok=True)
-            shutil.move(str(rows.path(number)), kept / rows.path(number).name)
+            (kept / rows.path(number).name).write_text(rows._text(number))
+            rows._remove(number)
             files = rows.path(number).with_suffix("")
             if files.is_dir():
                 shutil.move(str(files), kept / files.name)

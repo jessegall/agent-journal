@@ -2,9 +2,12 @@ import time
 
 from engine.events import AgentUpdated
 from features.parts import WHOLE_FEATURE, Context, Handler
-from resources.base import USER
+from controllers.base import CONTROLLERS
+from resources.base import ENVIRONMENT, SYSTEM, USER
 
 KEEP = {"report": 14, "todo": 7, "notification": 1}
+PACK_AFTER = 30
+UNPACKED = ("agent", "feature")
 FORGOTTEN = ("notification",)
 DAY = 86400
 
@@ -21,6 +24,11 @@ class ExpireOldRows(Handler):
             cutoff = time.time() - days * DAY
             for r in rows._every(deleted=type_ in FORGOTTEN):
                 getattr(self, f"expire_{type_}")(rows, r, cutoff, days)
+        days = context.record.keep.get("pack", PACK_AFTER)
+        if days:
+            for controller in CONTROLLERS.values():
+                if controller.resource.scope == ENVIRONMENT and controller.resource.type not in UNPACKED:
+                    controller(context.record, actor=SYSTEM)._pack(time.time() - days * DAY)
 
     def expire_report(self, rows, r, cutoff: float, days: int) -> None:
         if not r.completed and r.created < cutoff:

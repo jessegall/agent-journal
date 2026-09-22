@@ -2,7 +2,7 @@ import time
 
 
 from controllers.types import Notifications, Reports, Todos
-from resources.base import AGENT, USER
+from resources.base import AGENT, SYSTEM, USER, Refused
 from tests.kit import report
 from tests.conftest import fresh
 
@@ -55,3 +55,28 @@ def test_keep_zero_leaves_reports_listed():
     age(Reports(kept), r.n, created=time.time() - 300 * 86400)
     report(kept, "idle", "Stop")
     assert Reports(kept).load(r.n).completed == 0.0, "keep 0 leaves reports listed"
+
+
+def test_closed_rows_are_packed_into_a_zip_and_still_read_listed_reopened_and_removed():
+    record = fresh()
+    todos = Todos(record, actor=SYSTEM)
+    rows = [todos.create(f"row {i}") for i in range(3)]
+    for r in rows[:2]:
+        todos.complete(r.n, how="done")
+    folder = todos.path(rows[0].n).parent
+    assert todos._pack(time.time() + 1) == 2, "only the closed rows are packed"
+    assert (todos.path(rows[0].n).exists(), any((folder / "packed").glob("*.zip"))) == (False, True), "their files are gone into a zip"
+    assert [r.title for r in (todos.load(rows[0].n), todos.load(rows[1].n))] == ["row 0", "row 1"], "a packed row reads straight from the zip"
+    assert [row["n"] for row in todos.summaries()] == [r.n for r in rows], "and is still listed"
+    assert todos.create("next").n == rows[2].n + 1, "a new row never takes a packed row's number"
+    todos.reopen(rows[0].n, "again")
+    assert (todos.path(rows[0].n).exists(), todos.load(rows[0].n).completed, [row["n"] for row in todos.summaries()].count(rows[0].n)) == (True, 0.0, 1), \
+        "a packed row that changes is loose again, listed once"
+    todos.force_delete(rows[1].n)
+    try:
+        todos.load(rows[1].n)
+        raise AssertionError("a removed packed row is gone")
+    except Refused:
+        pass
+    todos.complete(rows[0].n, how="done again")
+    assert todos._pack(time.time() + 1) == 1 and todos.load(rows[0].n).completed, "packing into the same month again keeps the zip readable"
