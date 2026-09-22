@@ -38,6 +38,11 @@ def test_the_skip_switch_restarts_in_the_same_conversation_with_the_flag():
     off.set_setting("permission_prompts", {"skip": False})
     assert launch_args(off, "claude", ["--model", "opus"]) == ["--model", "opus"], "switched off in Settings, no flag is added"
     assert DRIVERS["codex"].skipping(["x"], True) == ["--dangerously-bypass-approvals-and-sandbox", "x"], "Codex runs its commands without asking"
+    codex = DRIVERS["codex"]
+    assert (codex.carried_on(["continue"]), codex.carried_on(["--resume", "abc"]), codex.carried_on(["-c", "k=v"])) == \
+        (["resume", "--last"], ["resume", "abc"], ["-c", "k=v"]), "Codex continues and resumes with its resume subcommand, and -c stays its config flag"
+    assert codex.carried_on(codex.resumed(codex.skipping(["continue"], True), "abc")) == \
+        ["resume", "abc", "--dangerously-bypass-approvals-and-sandbox"], "Codex restarts in the same conversation"
 
 
 def test_every_flag_typed_at_launch_reaches_the_agent_whatever_the_switch_says():

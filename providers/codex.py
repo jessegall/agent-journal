@@ -348,6 +348,8 @@ class CodexDriver(Driver):
     READY = b"AskCodextodoanything"
     OPENING = f"{MARK} The journal started this session."
     CONFIRM_AFTER = 3.0
+    RESUME = "resume"
+    CONTINUING = ("continue", "--continue")
 
     @classmethod
     def confirm(cls, printed: bytes) -> bytes:
@@ -356,4 +358,23 @@ class CodexDriver(Driver):
 
     def command(self, args: list[str], cwd: Path | None = None) -> list[str]:
         trusted = ["-c", f'projects."{Path(cwd).resolve()}".trust_level="trusted"'] if cwd else []
-        return ["codex", *(() if self.TRUSTS_HOOKS in args else (self.TRUSTS_HOOKS,)), *trusted, *args]
+        return ["codex", *(() if self.TRUSTS_HOOKS in args else (self.TRUSTS_HOOKS,)), *trusted, *self.carried_on(args)]
+
+    @classmethod
+    def carried_on(cls, args: list[str]) -> list[str]:
+        rest = [arg for arg in args if arg not in cls.CONTINUING]
+        if len(rest) < len(args):
+            return [cls.RESUME, "--last", *rest]
+        if "--resume" in args[:-1]:
+            at = args.index("--resume")
+            return [cls.RESUME, args[at + 1], *args[:at], *args[at + 2:]]
+        return args
+
+    @classmethod
+    def resumed(cls, args: list[str], conversation: str) -> list[str]:
+        if not conversation:
+            return args
+        rest = cls.carried_on(args)
+        if rest[:1] == [cls.RESUME]:
+            rest = rest[2:] if len(rest) > 1 and (rest[1] == "--last" or not rest[1].startswith("-")) else rest[1:]
+        return [cls.RESUME, conversation, *rest]
