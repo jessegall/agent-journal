@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.84.91 — A transcript becomes a dump
+
+The transcript skill is gone: it had the agent plan from a pasted transcript, which the dump replaces, and the upgrade removes it from every project. A message declared a transcript now becomes a dump, with the message's text and files as its items and links both ways, and the agent files it like any other dump.
+
 ## 2.84.90 — The dump window
 
 The chat's text box has a New dump button. It turns the chat into a dump window: paste anything and drop files in one box, press Dump, and the window follows the dump as the agent files it, one card per item with what the agent saw, what it made (each a link) or why it could not. At the end it shows how many were filed, a link to the dump's collection and the agent's suggested next step. Back to chat switches back at any time.
