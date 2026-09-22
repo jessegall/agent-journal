@@ -331,7 +331,7 @@ class Claude(Provider):
 
     def is_subagent(self, hook) -> bool:
         where = Path(getattr(hook, "transcript", "") or "").parts + Path(getattr(hook, "cwd", "") or "").parts
-        return "subagents" in where or "worktrees" in where
+        return bool(getattr(hook, "agent", "")) or "subagents" in where or "worktrees" in where
 
 
 class ClaudeDriver(Driver):

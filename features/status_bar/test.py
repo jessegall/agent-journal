@@ -130,7 +130,7 @@ def test_a_played_line_is_not_played_again(tmp_path):
     assert current(tmp_path, "main")["queue"] == [], "once it has lingered, a played line is not played again"
 
 
-def test_an_agent_waiting_on_its_scheduled_wakeup_is_idle_not_busy():
+def test_an_agent_whose_turn_ended_stays_idle_through_a_wakeup_or_a_helper_tool_call():
     from controllers.types import Agents
     from engine.hooks import handle
     from providers import PROVIDERS
@@ -139,3 +139,7 @@ def test_an_agent_waiting_on_its_scheduled_wakeup_is_idle_not_busy():
     for event, tool in (("Stop", ""), ("PreToolUse", "ScheduleWakeup"), ("SubagentStop", "")):
         handle(claude, record.root, record.env, {"hook_event_name": event, "session_id": "claude-wake", "tool_name": tool, "tool_input": {"delaySeconds": 1200}})
     assert Agents(record).by_session("claude-wake").status == "idle", "the turn ended with a wakeup scheduled, so the agent waits, it is not busy"
+    for event, tool, helper in (("Stop", "", ""), ("PreToolUse", "Bash", "a1b2c3"), ("PostToolUse", "Bash", "a1b2c3")):
+        handle(claude, record.root, record.env, {"hook_event_name": event, "session_id": "claude-helped", "tool_name": tool, "agent_id": helper,
+                                                 "tool_input": {"command": "ls"}})
+    assert Agents(record).by_session("claude-helped").status == "idle", "a tool call from a helper Claude Code runs itself leaves the agent idle"
