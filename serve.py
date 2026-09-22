@@ -100,6 +100,7 @@ def serve(root: Path, port: int = 8430) -> ThreadingHTTPServer:
 WATCH_SECONDS = 1.0
 SETTLE_SECONDS = 1.5
 STOP_SECONDS = 0.2
+LATE_STOP = 5.0
 IGNORED_CODE_FOLDERS = {"__pycache__", "environments", "runtime", "tests"}
 
 
@@ -146,7 +147,7 @@ def run(root: Path, port: int = 8430) -> None:
     changed = threading.Event()
     halting = threading.Event()
     threading.Thread(target=watch_code, args=(CODE.with_name("journal.pyz") if ZIPPED else CODE, server, changed), daemon=True).start()
-    threading.Thread(target=watch_stop, args=(root, server, halting, time.time()), daemon=True).start()
+    threading.Thread(target=watch_stop, args=(root, server, halting, time.time() - LATE_STOP), daemon=True).start()
     warm_record(Record(root, default_env(root)))
     threading.Thread(target=warm, args=(root,), daemon=True).start()
     engines = threading.Event()

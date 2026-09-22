@@ -1,6 +1,7 @@
 import argparse
 import os
 import shutil
+import signal
 import subprocess
 import sys
 import time
@@ -226,6 +227,8 @@ def supervise(ctx, agent: str) -> str:
     from engine.viewer import start
     from features.clean_slate.slate import put_back, remember, set_aside
     from features.auto_update.launch import latest_first
+    from engine.stop import ask, clear
+    from engine.typist import live
     record = ctx["record"]
     project = Path.cwd()
     held = latest_first(record)
@@ -237,6 +240,7 @@ def supervise(ctx, agent: str) -> str:
     env = asked_for(record, ctx["args"] or [])
     here = Record(record.root, env)
     put_back(here)
+    clear(record.root)
     try:
         if asked_slate(here, project, agent):
             print(f"journal: {set_aside(here, project, agent)}")
@@ -244,9 +248,12 @@ def supervise(ctx, agent: str) -> str:
             remember(here, False)
         url = start(record.root, project)
         print(f"journal: viewer {url}" if url else "journal: the viewer did not start; see .journal/runtime/viewer.log")
+        signal.signal(signal.SIGHUP, lambda *_: sys.exit(129))
         return str(run_supervisor(record.root, project, env, agent, ctx["args"] or []))
     finally:
         put_back(here)
+        if not live(record.root):
+            ask(record.root)
 
 def services(ctx) -> str:
     from engine.services import DOWN, UP, listed, log_file, want

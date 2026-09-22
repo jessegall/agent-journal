@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.84.18 — The journal stops when the last session in the project ends
+
+Quitting Claude or Codex now also stops the project's journal when no other session there is still running: the hooks set aside are put back, and the server, its engine and every service it ran stop. Closing the terminal window does the same. The next `journal claude` or `journal codex` starts it again.
+
 ## 2.84.17 — An agent waiting on its scheduled wakeup shows idle, not busy
 
 In /loop mode Claude ends its turn with ScheduleWakeup, and no further Stop follows, so the agent stayed "busy" until the session ended, and after two quiet minutes the journal would have interrupted it with Ctrl-C. A provider now names the tools that put the agent to sleep, and those report the agent idle.
