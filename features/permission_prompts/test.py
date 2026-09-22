@@ -78,6 +78,8 @@ def test_the_start_offers_to_carry_on_the_environments_last_session():
     assert asked_resume(record, "codex", [], ask=lambda _: "1", answering=True) == ["resume", "old-thread"], "yes resumes that environment's own session"
     assert asked_resume(record, "claude", ["--model", "opus"], ask=lambda _: "2", answering=True) == ["--model", "opus"], "no starts a new one"
     assert asked_resume(record, "claude", ["-c"], ask=lambda _: "1", answering=True) == ["-c"], "a typed continue is the answer already"
+    from commands.queries import defaults
+    assert asked_resume(record, "codex", [], ask=defaults, answering=True) == ["resume", "old-thread"], "--no-interaction takes the default without asking"
 
 
 def test_claude_is_kept_out_of_the_record_files_but_not_their_attachments(tmp_path):

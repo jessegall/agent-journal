@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.85.35 — Each start question on its own screen, and --no-interaction
+
+- Each question at the start clears the screen below the banner, so it stands alone instead of printing under the one before.
+- journal claude --no-interaction (or codex) takes every question's default and starts the agent straight away. The flag is not passed on to the agent.
+- The viewer's identity and upstream calls read the version directly instead of building the whole manifest, so they stay fast right after a restart.
+
 ## 2.85.34 — Open project file browses one folder at a time
 
 - The quick menu's Open project file lists one folder at a time, folders first, instead of every file in the project. Picking a folder opens it, and .., Backspace or the left arrow go up. The folder you are in shows in the search box and the footer.

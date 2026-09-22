@@ -150,6 +150,9 @@ def still_open(record) -> list[str]:
     return works + messages
 
 WORKTREE_FLAGS = ("--worktree", "-w")
+NO_INTERACTION = "--no-interaction"
+SAVED_CURSOR = "\x1b7"
+QUESTION_SCREEN = "\x1b8\x1b[J"
 
 
 def asked_for(record: Record, args: list[str], ask=input, answering=None) -> str:
@@ -187,7 +190,15 @@ def asked_for(record: Record, args: list[str], ask=input, answering=None) -> str
             print(f"a number from 1 to {len(names) + 1}")
 
 
+def defaults(_: str) -> str:
+    return ""
+
+
 def choose(heading: str, notes: list[str], choices: list[str], default: int, ask=input) -> int | None:
+    if ask is defaults:
+        return default
+    if sys.stdout.isatty():
+        print(QUESTION_SCREEN, end="")
     print(f"\n  {heading}\n  {'─' * len(heading)}")
     if notes:
         print("", *(f"    {line}" for line in notes), sep="\n")
@@ -210,7 +221,7 @@ def banner(agent: str, project: Path) -> str:
     lines = [f"agent-journal {version}", "", f"You're about to start {agent.capitalize()} under the journal,", f"in {project}.", "",
              "A question or two first. Enter takes the choice marked ← Enter."]
     rule = "─" * width
-    return "\x1b[2J\x1b[H" + "\n".join([f"┌{rule}┐", *(f"│ {line:<{width - 2}} │" for line in lines), f"└{rule}┘", ""])
+    return "\x1b[2J\x1b[H" + "\n".join([f"┌{rule}┐", *(f"│ {line:<{width - 2}} │" for line in lines), f"└{rule}┘", ""]) + SAVED_CURSOR
 
 
 def asked_slate(record: Record, project: Path, agent: str, ask=input, answering=None) -> bool:
@@ -266,17 +277,20 @@ def supervise(ctx, agent: str) -> str:
     held = latest_first(record)
     if held:
         print(f"journal: carrying on with {package_version()}: {held}")
-    if sys.stdin.isatty():
+    quiet = NO_INTERACTION in (ctx["args"] or [])
+    args = [arg for arg in ctx["args"] or [] if arg != NO_INTERACTION]
+    ask, answering = (defaults, True) if quiet else (input, None)
+    if sys.stdin.isatty() and not quiet:
         subprocess.run(["stty", "sane"], stdin=sys.stdin, check=False)
         print(banner(agent, project))
-    env = asked_for(record, ctx["args"] or [])
+    env = asked_for(record, args, ask, answering)
     here = Record(record.root, env)
     put_back(here)
     clear(record.root)
     try:
-        args = asked_resume(here, agent, ctx["args"] or [])
-        asked_prompts(here, agent, args)
-        if asked_slate(here, project, agent):
+        args = asked_resume(here, agent, args, ask, answering)
+        asked_prompts(here, agent, args, ask, answering)
+        if asked_slate(here, project, agent, ask, answering):
             print(f"journal: {set_aside(here, project, agent)}")
         else:
             remember(here, False)
