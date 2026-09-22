@@ -49,8 +49,9 @@ async function makePlan() {
     }
 }
 
+const locked = computed(() => (props.resource.data.locked === true && props.resource.data.plugin) || "");
 const offered = computed(() =>
-    props.resource.data.system
+    props.resource.data.system || locked.value
         ? []
         : props.resource.completed
           ? ["delete"]
@@ -79,6 +80,15 @@ async function run(method) {
 
 <template>
     <div class="actions">
+        <template v-if="locked">
+            <span
+                class="locked"
+                :title="`Made by the ${locked} plugin: it goes when the plugin is removed, and nothing else can remove or close it`"
+            >
+                <Icon name="lock" :size="11" />
+                Locked · {{ locked }}
+            </span>
+        </template>
         <template v-if="collecting">
             <input
                 v-model="text"
@@ -137,6 +147,18 @@ async function run(method) {
 </template>
 
 <style scoped>
+.locked {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    height: 24px;
+    padding: 0 9px;
+    border: 1px solid var(--border-2);
+    border-radius: 99px;
+    color: var(--text-3);
+    font-size: 11.5px;
+}
+
 .actions {
     display: flex;
     align-items: center;

@@ -4,6 +4,11 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.86.3 — A plugin makes a row once, and its locked rows say so
+
+- A plugin that creates a row it already owns under the same title gets that row back, so running its setup again adds nothing.
+- A locked plugin row shows a Locked badge with the plugin's name and why, and offers no delete or close button.
+
 ## 2.86.2 — A plugin's activity reaches the activity panel, in its colour
 
 - A plugin's activity entries show in the activity panel under the plugin's name, with their detail beneath; an entry may carry a tone (warn is amber, good is green). code-commandments marks Sin found amber and Sin repented green, and does not repeat a sin it already reported.

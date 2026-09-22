@@ -7,7 +7,7 @@ from features.plugins import services
 from features.plugins.commands import ClearLog, Configure, Disable, Enable, Install, Preview, Purge, Upgrade
 from features.plugins.details import PluginsDetails
 from features.plugins.host import watch
-from features.plugins.parts import AskPluginsToRefuse, ClearRemovedPlugin, KeepPluginRows, PluginChatRules
+from features.plugins.parts import AskPluginsToRefuse, ClearRemovedPlugin, KeepPluginRows, OneRowPerTitle, PluginChatRules
 
 
 class Plugins(Feature):
@@ -21,6 +21,7 @@ class Plugins(Feature):
         journal.events.handler(ClearRemovedPlugin())
         for action in ("delete", "complete"):
             journal.commands.intercept(action, KeepPluginRows())
+        journal.commands.intercept("create", OneRowPerTitle())
 
     def host(self, root: Path) -> None:
         threading.Thread(target=watch, args=(Path(root), self.journal), daemon=True).start()
