@@ -8,7 +8,7 @@ import {linkedTo, open} from "../domain/records.js";
 import {peek} from "../route.js";
 
 const props = defineProps({resource: Object});
-const emit = defineEmits(["edit"]);
+const emit = defineEmits(["edit", "close"]);
 const error = ref("");
 const prompt = ref("");
 const text = ref("");
@@ -70,6 +70,7 @@ async function run(method) {
         );
         prompt.value = "";
         text.value = "";
+        if (method === "delete") emit("close");
     } catch (e) {
         error.value = e.message;
     }
