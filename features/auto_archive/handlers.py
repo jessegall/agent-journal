@@ -5,7 +5,7 @@ from features.parts import WHOLE_FEATURE, AgentContext, Handler
 from controllers.base import CONTROLLERS
 from resources.base import ENVIRONMENT, SYSTEM, USER
 
-KEEP = {"report": 14, "todo": 7, "notification": 1, "nudge": 1}
+KEEP = {"report": 14, "todo": 7, "notification": 1, "nudge": 1 / 24}
 PACK_AFTER = 30
 UNPACKED = ("agent", "feature")
 FORGOTTEN = ("notification", "nudge")

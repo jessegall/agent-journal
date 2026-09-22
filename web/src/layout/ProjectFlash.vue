@@ -1,6 +1,6 @@
 <script setup>
 import {onUnmounted, ref, watch} from "vue";
-import {negative, project, tint} from "../identity.js";
+import {ink, project, tint} from "../identity.js";
 import {away, flash} from "../platform/visibility.js";
 import {route} from "../route.js";
 
@@ -37,7 +37,7 @@ onUnmounted(() => clearTimeout(timer));
     </Transition>
     <Transition name="flash">
         <div v-if="showing" :class="['project-flash', {fading: !away.hidden}]" :style="{'--tint': tint}" aria-hidden="true">
-            <span class="badge" :style="{background: tint, color: negative}">{{ project.charAt(0).toUpperCase() }}</span>
+            <span class="badge" :style="{background: tint, color: ink}">{{ project.charAt(0).toUpperCase() }}</span>
             <span class="name">{{ project }} · {{ route.env }}</span>
         </div>
     </Transition>

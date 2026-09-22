@@ -742,6 +742,7 @@ h2 {
 
 .acts {
     display: flex;
+    flex-wrap: wrap;
     gap: 8px;
     margin-top: auto;
 }
