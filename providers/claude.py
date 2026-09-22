@@ -18,6 +18,7 @@ from engine.drivers import ANSI, CHOICE, Driver
 ASKS = frozenset({"AskUserQuestion"})
 WINDOW, LONG_WINDOW, LONG_MARK = 200_000, 1_000_000, "[1m]"
 STATUS_SCRIPT = "claude-status.sh"
+RECORD_FILES = ("Read(./.journal/environments/*/*/*.md)", "Read(./.journal/project/*/*.md)")
 STATUS_HOME = (".journal", "claude-status")
 PLAN_WINDOWS = {"five_hour": ("5h", 300), "seven_day": ("7d", 10080)}
 NOTIFIED = re.compile(r"<tool-use-id>([^<]+)</tool-use-id>.*?<status>([^<]+)</status>", re.S)
@@ -107,6 +108,11 @@ class Claude(Provider):
         if "statusLine" not in settings:
             script = Path(command.split()[1]).with_name(STATUS_SCRIPT)
             self.save(project, {**settings, "statusLine": {"type": "command", "command": f"sh {script}", "padding": 0}})
+        settings = self.settings(project)
+        permissions = settings.get("permissions") or {}
+        deny = list(permissions.get("deny") or [])
+        if any(rule not in deny for rule in RECORD_FILES):
+            self.save(project, {**settings, "permissions": {**permissions, "deny": deny + [r for r in RECORD_FILES if r not in deny]}})
         return wired
 
     def usage(self, path: Path, now: float | None = None) -> dict | None:
