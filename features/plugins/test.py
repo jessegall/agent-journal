@@ -122,6 +122,11 @@ def test_a_chosen_setting_reaches_the_plugins_commands():
     from features.plugins.answer import apply
     apply(record, None, "typed", "", {"settings": {"level": "high", "made-up": "x"}})
     assert (plugins.load(typed.n).settings or {}).get(CHOSEN) == {"level": "high"}, "a plugin may fill in a setting it worked out, and only its own"
+    from features import FEATURES
+    from controllers.types import Notifications
+    apply(record, FEATURES["plugins"].journal, "typed", "", {"activity": {"title": "Sin found", "brief": "deep-nesting at src/A.php:12"}})
+    assert [(n.title, n.brief) for n in Notifications(record, actor=SYSTEM).all(completed=True) if n.title == "Sin found"] == [("Sin found", "deep-nesting at src/A.php:12")], \
+        "a plugin writes a line into the activity under its own name"
     from features.plugins.manifest import typed as checked
     shown = checked({"php": {"type": "flag"}, "vue": {"type": "flag"}, "sin": {"type": "flag", "when": {"php": True}},
                      "either": {"type": "flag", "when": [{"php": True}, {"vue": True}]}})
