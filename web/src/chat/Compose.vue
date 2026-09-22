@@ -1,5 +1,6 @@
 <script setup>
 import {computed, onUnmounted, reactive, ref, watch} from "vue";
+import {pickingFiles} from "../platform/visibility.js";
 import {store} from "../state/store.js";
 import Icon from "../kit/Icon.vue";
 import Markdown from "../resource/Markdown.vue";
@@ -138,7 +139,7 @@ async function use(tool) {
             <div class="compose-foot">
                 <template v-for="action in actions" :key="action.icon">
                     <template v-if="action.attachment">
-                        <label class="compose-attach" title="Attach files" aria-label="Attach files">
+                        <label class="compose-attach" title="Attach files" aria-label="Attach files" @click="pickingFiles">
                             <Icon name="paperclip" />
                             <input type="file" multiple hidden @change="picked" />
                         </label>

@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.85.50 — The badge is back on window switching, and quiet for the file picker
+
+- Leaving the window in any way shows the project badge again. Clicking the attachment button silences it for twenty seconds, so picking a file does not raise it.
+
 ## 2.85.49 — The badge is for leaving the tab, not for a file dialog
 
 - Opening an attachment or any other file dialog no longer brings up the project badge: only the tab being hidden does. A blur was being read as leaving.
