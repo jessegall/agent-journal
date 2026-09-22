@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.94.4 — A turn cut off on its way to the chat still arrives
+
+Claude's messages reach the chat piece by piece; a message whose last pieces never arrived (the server was restarting for an upgrade as the agent wrote its summary) stayed half-held and never showed. When the turn stops, the Stop hook's full last message now finishes it, and a piece that turns up later does not send it twice.
+
 ## 2.94.3 — A pasted stack trace shows as a console card again
 
 A browser stack trace pasted into a message showed part of itself as a code block of raw icon markup: the file links the server adds had landed inside the stack's frames, so the viewer no longer knew it for a stack. The viewer now reads a stack or a code block by its plain words, so the paste shows as one console card with every frame. The chat no longer throws when its scroll area is missing for a moment while the server restarts.
