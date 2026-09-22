@@ -54,6 +54,11 @@ class MessagesDetails(FeatureDetails):
             abstract="A message of several sentences run together is named back once, at the end of the turn",
             trigger=Trigger(on=IDLE),
         ),
+        Behaviour(
+            name="numbers",
+            title="Name what a number in a message is",
+            abstract="A message that names a row by a bare number, like 'answered 1712' or '(644)', is named back so the type can be added and the chat links it",
+        ),
     ]
 
     settings = [
@@ -89,5 +94,10 @@ class MessagesDetails(FeatureDetails):
             name="paragraphs",
             title="your last message ran its paragraphs together",
             brief="a blank line between parts is what makes a message readable: one thought to a paragraph",
+        ),
+        Line(
+            name="numbers",
+            title="your message {{n}} names {{numbers}} without saying what they are",
+            brief='put the type before each number, like message 1712 or to-do 644, so the chat links it: journal message edit {{n}} "<the text>"',
         ),
     ]

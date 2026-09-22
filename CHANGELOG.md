@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.84.25 — The agent is told when a number in its message has no type
+
+When the agent's chat message names a row by a bare number, like "answered 1712" or "(644)", it is told which numbers they are and asked to put the type in front (message 1712, to-do 644), so the chat can link them. Only numbers of rows that exist count; versions, counts and code are left alone. It is the new "numbers" behaviour of the Messages feature and can be switched off in Settings.
+
 ## 2.84.24 — A feature part that always has an agent says so in its type
 
 Handlers of agent events and tool interceptors now receive an `AgentContext`, whose agent is always there, so the 26 checks for a missing agent in those parts are gone. Other parts keep the plain `Context`, where the agent may be absent. No behaviour changes.
