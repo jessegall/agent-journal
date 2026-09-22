@@ -1,7 +1,7 @@
 <script setup>
 import {onUnmounted, ref, watch} from "vue";
 import {negative, project, tint} from "../identity.js";
-import {flash} from "../platform/visibility.js";
+import {away, flash} from "../platform/visibility.js";
 import {route} from "../route.js";
 
 const SHOWN_FOR = 2000;
@@ -9,11 +9,11 @@ const showing = ref(false);
 let timer = 0;
 
 watch(
-    () => flash.at,
+    [() => flash.at, () => away.hidden],
     () => {
         showing.value = true;
         clearTimeout(timer);
-        timer = setTimeout(() => (showing.value = false), SHOWN_FOR);
+        if (!away.hidden) timer = setTimeout(() => (showing.value = false), SHOWN_FOR);
     },
     {immediate: true}
 );

@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.85.45 — The project badge is already there while the tab is away
+
+- The project and environment badge appears the moment the tab loses focus and stays while it is in the background, so it is visible when looking through windows. It fades a second and a half after the tab is focused again.
+
 ## 2.85.44 — The question card in the chat shows the question
 
 - A question in the chat now reads as the question itself, then its context and its choices. Before, the card showed only the context, while the side rail showed the question.

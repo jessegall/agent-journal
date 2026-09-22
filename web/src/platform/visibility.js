@@ -6,14 +6,17 @@ import {store} from "../state/store.js";
 const FLASH_AFTER = 1000;
 const AWAY_AFTER = 60000;
 
-export const away = reactive({open: false, since: 0, back: 0, left: 0});
+export const away = reactive({open: false, since: 0, back: 0, left: 0, hidden: false});
 export const flash = reactive({at: Date.now()});
 
 function left() {
     away.left = away.left || Date.now();
+    away.hidden = true;
+    flash.at = Date.now();
 }
 
 async function back() {
+    away.hidden = false;
     if (document.visibilityState !== "visible" || !away.left) return;
     const since = away.left;
     away.left = 0;
