@@ -6,7 +6,7 @@ import CommentToggle from "./CommentToggle.vue";
 import DownloadLink from "./DownloadLink.vue";
 import Icon from "../kit/Icon.vue";
 import {peek, route} from "../route.js";
-import {waitsOn} from "../domain/records.js";
+import {byRef, waitsOn} from "../domain/records.js";
 import {age} from "../format/time.js";
 import {label, meta, word} from "../state/store.js";
 import ResourceActions from "./ResourceActions.vue";
@@ -21,6 +21,7 @@ import CheckResult from "./CheckResult.vue";
 import Buttons from "./Buttons.vue";
 import RuleControls from "./RuleControls.vue";
 import Markdown from "./Markdown.vue";
+import ResourceCard from "./ResourceCard.vue";
 
 const props = defineProps({
     resource: Object,
@@ -67,6 +68,15 @@ async function save() {
         draft.error = e.message;
     }
 }
+const WITHOUT_DOC_CARDS = ["doc", "collection"];
+const docs = computed(() =>
+    WITHOUT_DOC_CARDS.includes(props.resource.type)
+        ? []
+        : props.resource.refs
+              .filter((ref) => ref.startsWith("doc:"))
+              .map(byRef)
+              .filter((d) => d && !d.deleted)
+);
 </script>
 
 <template>
@@ -241,8 +251,16 @@ async function save() {
         </template>
         <Asked :resource="resource" />
         <slot />
+        <template v-if="docs.length">
+            <section class="linked-docs">
+                <h3 class="linked-docs-head">Documents</h3>
+                <div class="linked-docs-cards">
+                    <ResourceCard v-for="d in docs" :key="d.ref" :resource="d" @click="peek('doc', d.n)" />
+                </div>
+            </section>
+        </template>
         <template v-if="links">
-            <Links :resource="resource" />
+            <Links :resource="resource" :except="docs.map((d) => d.ref)" />
         </template>
         <footer class="foot">seen by {{ resource.seen.join(", ") || "nobody" }}</footer>
         <template v-if="comments">
@@ -462,6 +480,25 @@ async function save() {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: 10px;
+}
+
+.linked-docs {
+    margin: 18px 0 0;
+}
+
+.linked-docs-head {
+    margin: 0 0 8px;
+    color: var(--text-3);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.linked-docs-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
     gap: 10px;
 }
 </style>

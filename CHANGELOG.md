@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.84.131 — A to-do shows the docs it carries as cards
+
+- A doc linked to a to-do, or to any row but a doc or collection, shows on that row's page as a card under Documents, with its title, a line of what it is and its parts, instead of only as a link at the bottom. journal todo link <n> doc:<d> attaches one.
+
 ## 2.84.130 — The Tools page shows its tools as cards
 
 - Tools list as cards, like documents, instead of rows. A type opts in with listed_as_cards, without changing how its rows open.
