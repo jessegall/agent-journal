@@ -3,6 +3,7 @@ from contextlib import contextmanager
 from pathlib import Path
 
 from controllers.types import Agents, Notifications
+from engine import runtime
 from engine.record import Record
 from resources.base import SYSTEM
 
@@ -12,6 +13,7 @@ SAID = 300
 EVERY = 10
 AGAIN = 300
 BUDGET = {"request": 50, "hook": 50, "command": 50}
+WARMED = ("request", "hook")
 
 
 class FaultReports:
@@ -58,7 +60,7 @@ class FaultReports:
             self.spent(root, env, kind, name, (time.perf_counter() - began) * 1000)
 
     def spent(self, root, env: str, kind: str, name: str, took: float, working: float | None = None) -> None:
-        if took < min(BUDGET.values() or [0]):
+        if took < min(BUDGET.values() or [0]) or (kind in WARMED and runtime.warming()):
             return
         try:
             record = Record(Path(root), env)
@@ -68,6 +70,8 @@ class FaultReports:
             return
 
     def report_console(self, root, env: str, message: str, where: str, stack: str, kind: str = "threw") -> bool:
+        if kind == "slow" and runtime.warming():
+            return True
         record = Record(Path(root), env)
         if not self.feature.on(record, "budget" if kind in ("slow", "overlap", "page", "refetch") else "console"):
             return False

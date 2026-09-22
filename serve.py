@@ -13,6 +13,7 @@ import features
 from surfaces import updates  # noqa: E402
 import migrations  # noqa: E402
 from commands.http import dispatch  # noqa: E402
+from engine import runtime  # noqa: E402
 from engine.stop import asked  # noqa: E402
 from engine.viewer import elsewhere, heartbeat, remember  # noqa: E402
 from engine.engines import Children  # noqa: E402
@@ -142,6 +143,7 @@ def watch_stop(root: Path, server: ThreadingHTTPServer, halting: threading.Event
 
 
 def run(root: Path, port: int = 8430) -> None:
+    runtime.STARTED[0] = time.time()
     server = serve(root, port)
     print(f"http://127.0.0.1:{server.server_address[1]}/", flush=True)
     changed = threading.Event()
