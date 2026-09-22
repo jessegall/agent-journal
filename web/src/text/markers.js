@@ -6,6 +6,11 @@ const FILE_ICON =
 
 const RENDERERS = {
     chip: (value, label) => `<a class="row-pill" href="#" data-peek="${value}">${label}</a>`,
+    chips: (value, label) => {
+        const type = value.split(":")[0];
+        const linked = label.replace(/#?(\d+)/g, (whole, n) => `<a class="row-pill-n" href="#" data-peek="${type}:${n}">${whole}</a>`);
+        return `<span class="row-pill">${linked}</span>`;
+    },
     file: (value, label, context) =>
         `<a class="row-pill file-pill" href="#/${context.env}/file?q=${encodeURIComponent(value)}">${FILE_ICON}${label}</a>`,
     commit: (value, label, context) => `<a class="row-pill" href="#/${context.env}/commit/${value}">${label}</a>`,
