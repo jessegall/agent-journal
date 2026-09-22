@@ -34,7 +34,7 @@ def in_settings(home: Path, was: str, now: str) -> bool:
 
 def in_gates(runtime: Path, was: str, now: str) -> int:
     changed = 0
-    for f in sorted(runtime.glob("gate-*.json")):
+    for f in sorted(runtime.glob("sessions/*/gate-*.json")):
         holds = read_json(f)
         if holds is None:
             continue
@@ -47,10 +47,9 @@ def in_gates(runtime: Path, was: str, now: str) -> int:
 
 def in_triggers(runtime: Path, was: str, now: str) -> int:
     changed = 0
-    for f in sorted(runtime.glob(f"trigger-*-{was}.json")) + sorted(runtime.glob(f"trigger-*-{was}.*.json")):
-        session = f.name[len("trigger-"):-len(".json")].rsplit(f"-{was}", 1)[0]
-        tail = f.name[len(f"trigger-{session}-{was}"):-len(".json")]
-        target = f.with_name(f"trigger-{session}-{now}{tail}.json")
+    for f in sorted(runtime.glob(f"sessions/*/trigger-{was}.json")) + sorted(runtime.glob(f"sessions/*/trigger-{was}.*.json")):
+        tail = f.name[len(f"trigger-{was}"):-len(".json")]
+        target = f.with_name(f"trigger-{now}{tail}.json")
         if not target.exists():
             f.rename(target)
             changed += 1

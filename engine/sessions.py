@@ -44,7 +44,7 @@ class Sessions:
         self.root = Path(root)
 
     def path(self, session: str) -> Path:
-        return self.root / "runtime" / f"session-{session}.json"
+        return runtime.session_file(self.root, session, "session.json")
 
     def read(self, session: str) -> dict:
         return read_json(self.path(session), {})
@@ -86,8 +86,7 @@ class Sessions:
         return self.read(session).get("environment", "")
 
     def all(self) -> dict[str, dict]:
-        return {p.stem.removeprefix("session-"): read_json(p, {})
-                for p in sorted((self.root / "runtime").glob("session-*.json"))} if (self.root / "runtime").is_dir() else {}
+        return {p.parent.name: read_json(p, {}) for p in sorted(runtime.sessions(self.root).glob("*/session.json"))}
 
     def holder(self, env: str) -> str:
         for session, s in self.all().items():

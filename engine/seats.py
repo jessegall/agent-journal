@@ -3,6 +3,7 @@ from pathlib import Path
 
 from engine.sessions import Sessions
 from engine.stored import read_json
+from engine import runtime
 
 ONLINE_FOR = 5.0
 
@@ -32,8 +33,8 @@ def live(root: Path) -> list[tuple[dict, dict]]:
 
 def seats(root: Path) -> list[dict]:
     found = []
-    for path in (Path(root) / "runtime").glob("seat-*.json"):
+    for path in runtime.sessions(root).glob("*/seat.json"):
         seat = read_json(path)
         if seat is not None:
-            found.append({**seat, "terminal": path.stem.removeprefix("seat-")})
+            found.append({**seat, "terminal": path.parent.name})
     return found

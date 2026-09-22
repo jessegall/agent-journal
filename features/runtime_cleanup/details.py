@@ -16,9 +16,9 @@ class HousekeepingDetails(FeatureDetails):
     """
 
     help = """
-        Once an hour: each printed-<session> capture keeps its last 64 KB, each log its last
-        1 MB; trigger, gate, seat, session and capture files untouched for housekeeping.days (7)
-        are removed.
+        Once an hour: each session keeps its files in runtime/sessions/<session>; its printed
+        capture keeps its last 64 KB and every log its last 1 MB, and a session's folder untouched
+        for housekeeping.days (2) is removed whole.
     """
 
     fixed = True
@@ -28,7 +28,7 @@ class HousekeepingDetails(FeatureDetails):
     settings = [
         Setting(
             name="days",
-            default=7,
+            default=2,
             title="Remove a quiet session's files after",
             unit="days",
         ),

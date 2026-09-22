@@ -10,6 +10,7 @@ from engine.record import Record
 from engine.version import version
 from engine.viewer import marked, running
 from resources.base import SYSTEM
+from engine import runtime
 
 ROWS = 2
 SHOWN = False
@@ -193,7 +194,7 @@ class Band:
 
     def seat(self) -> dict:
         try:
-            return json.loads((self.root / "runtime" / f"seat-{self.session}.json").read_text())
+            return json.loads(runtime.session_file(self.root, self.session, "seat.json").read_text())
         except (OSError, ValueError):
             return {}
 

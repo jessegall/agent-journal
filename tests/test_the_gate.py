@@ -3,7 +3,7 @@ import json
 
 import features
 from controllers.types import Works
-from engine.hooks import handle
+from engine.hooks import gate_file, handle
 from features.base import held
 from providers import PROVIDERS
 from resources.base import AGENT
@@ -50,5 +50,5 @@ def test_a_write_is_refused_until_work_is_open_for_every_provider():
         Works(record, actor=AGENT).complete(work.n, "done")
         assert hook("PreToolUse", "Write", file_path="y.py") == {"decision": "block", "reason": REFUSED}, \
             f"{name}: work ended, nothing open: refused again"
-        assert json.loads((root / "runtime" / f"gate-{env}-{session}.json").read_text())["work_tracking"] == REFUSED, \
+        assert json.loads(gate_file(root, env, session).read_text())["work_tracking"] == REFUSED, \
             f"{name}: the flag is a file per environment and session, with the why"

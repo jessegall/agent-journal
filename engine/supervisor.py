@@ -118,13 +118,13 @@ def run(root: Path, cwd: Path, env: str, agent: str, fd: int, session: str, life
     drawn = top.draw if band.SHOWN else (lambda *_, **__: b"")
     shifted = rows_below.feed if band.SHOWN else (lambda data: data)
     unshifted = band.unshifted if band.SHOWN else (lambda data: data)
-    printed = root / "runtime" / f"printed-{session}"
-    typed = root / "runtime" / f"typed-{session}"
+    printed = runtime.session_file(root, session, "printed")
+    typed = runtime.session_file(root, session, "typed")
     typed_at = 0.0
     relaunching = runtime.relaunch_file(root, session)
     printed.parent.mkdir(parents=True, exist_ok=True)
     out = printed.open("ab")
-    screen = (root / "runtime" / f"screen-{session}").open("ab")
+    screen = runtime.session_file(root, session, "screen").open("ab")
     inbox = typist.listen(root, session)
     answered = False
     early = b""
@@ -141,7 +141,7 @@ def run(root: Path, cwd: Path, env: str, agent: str, fd: int, session: str, life
         screen.flush()
 
     def sized() -> None:
-        write_json(root / "runtime" / f"screen-{session}.json", {"rows": shape[0], "cols": shape[1], "at": screen.tell(), "printed": out.tell()})
+        write_json(runtime.session_file(root, session, "screen.json"), {"rows": shape[0], "cols": shape[1], "at": screen.tell(), "printed": out.tell()})
 
     def frame() -> None:
         shape[0], shape[1] = resize(fd)

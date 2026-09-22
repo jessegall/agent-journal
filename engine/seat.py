@@ -4,6 +4,7 @@ from engine.actors import COMPACTING, WORKING
 from providers import PROVIDERS
 from engine.stored import write_json
 from engine.proc import git
+from engine import runtime
 
 WEB_HOSTS = ("github.com", "gitlab.com", "bitbucket.org")
 
@@ -60,6 +61,6 @@ class Seat:
         self.branch()
         self.crew()
         last = self.agent.driver.last_report()
-        write_json(self.record.root / "runtime" / f"seat-{self.agent.driver.session}.json", {"at": time.time(), "agent": self.agent.driver.name, "state": self.agent.state(), "env": self.record.env,
+        write_json(runtime.session_file(self.record.root, self.agent.driver.session, "seat.json"), {"at": time.time(), "agent": self.agent.driver.name, "state": self.agent.state(), "env": self.record.env,
                                  "why": self.why, "printed": self.agent.driver.last_printed(),
                                  "report": {"title": last.title, **last.data} if last else {}})
