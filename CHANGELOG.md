@@ -4,6 +4,11 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.85.83 — Every inspector is the one side panel
+
+- The resource inspector, documents, plans and agents open in kit SidePanel at its normal, wide or page width, with the same slide and the same blur fading in and out; stacked layers step back under the top one as before.
+- SidePanel can be led by its parent (open, dismiss) for panels that close through the route.
+
 ## 2.85.82 — A plugin can fill in settings it worked out itself
 
 - A plugin's answer may carry settings: values for its own settings, stored as chosen when they differ. The code-commandments plugin uses it to fill Folders to check with the folders it detects on install.
