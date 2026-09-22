@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.88.0 — The installer mends a package it finds missing
+
+Run as a script, install.py now checks that the journal's package sits beside it before it loads any of it: with a src/install.py beside it, it hands over to that one; with the package gone, it fetches the repository and puts the package back, then carries on. An older installer that copies only install.py and runs it therefore ends with a whole journal, which is what lets the package move under src/ in the next release without waiting for every install to update first.
+
 ## 2.87.5 — The chat follows new messages to the bottom
 
 Only a scroll the user makes (the wheel, a touch, the keyboard or the scrollbar) stops the chat following the newest message; the scroll a growing thread causes by itself no longer counts as the user scrolling up.
