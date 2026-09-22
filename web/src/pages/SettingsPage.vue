@@ -34,6 +34,12 @@ const delivers = (how) => {
 async function setDelivery(how, value) {
     await api.saveSettings({delivery: {...((store.settings && store.settings.delivery) || {}), [how]: value}});
 }
+
+const viewerOn = (key) => (store.settings?.viewer || {})[key] !== false;
+
+async function setViewer(key, value) {
+    await api.saveSettings({viewer: {...(store.settings?.viewer || {}), [key]: value}});
+}
 const OPENED = "journal.settings.opened";
 const opened = ref(remembered(OPENED, []));
 const open = (key) => opened.value.includes(key);
@@ -147,6 +153,22 @@ async function sweep(e) {
                 </span>
                 <span class="control">
                     <Switch :on="delivers('channel')" @change="(v) => setDelivery('channel', v)" />
+                </span>
+            </div>
+        </section>
+        <section class="group" :class="{shut: !open('viewer')}">
+            <header class="group-head" role="button" tabindex="0" @click="fold('viewer')">
+                <span class="fold" />
+                <h2>Viewer</h2>
+                <p class="lead">What this page does on its own.</p>
+            </header>
+            <div class="row">
+                <span class="text">
+                    <span class="title">Show While you were away</span>
+                    <span class="help">After a minute or more away from this tab, a card lists what the agent did meanwhile</span>
+                </span>
+                <span class="control">
+                    <Switch :on="viewerOn('away')" @change="(v) => setViewer('away', v)" />
                 </span>
             </div>
         </section>

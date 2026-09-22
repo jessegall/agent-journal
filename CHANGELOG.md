@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.84.108 — A setting turns the While you were away card off
+
+- Settings has a Viewer section with a switch for the While you were away card; off, coming back to the tab opens nothing. The quick menu can still show it on demand.
+
 ## 2.84.107 — The dump window is a live view of what the agent is making
 
 - No more item cards: the window shows what you dropped, a status panel with what the agent is doing now, the steps before it and how much is filed, and the rows it made as Documents-page cards that pop in as they are filed.
