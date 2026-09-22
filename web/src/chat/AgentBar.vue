@@ -366,6 +366,16 @@ useOutside(bar, () => (open.value = ""));
     cursor: pointer;
 }
 
+.agent-facts > .agent-fact-lead:first-child {
+    position: sticky;
+    z-index: 1;
+    left: 0;
+    margin-left: 0;
+    padding-right: 10px;
+    background: #111215;
+    box-shadow: 8px 0 8px -6px #111215;
+}
+
 .agent-fact-lead:hover {
     background: var(--hover);
     color: var(--text);

@@ -4,6 +4,11 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.85.68 — The context dropdown says when it last compacted, and the provider stays in view
+
+- The context dropdown in the agent bar says when the session last compacted, under its bar of the window used.
+- The provider stays pinned at the left of the agent bar while its facts scroll.
+
 ## 2.85.67 — A question card says whose answer it is
 
 - The chosen option on a question card is marked Your answer, or The agent's answer when the agent chose it.
