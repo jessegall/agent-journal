@@ -25,6 +25,7 @@ const asked = ref(false);
 const previewText = ref("");
 const shown = ref(null);
 const removing = ref(null);
+const outcome = ref(null);
 const KINDS = {needs: "Needs", setup: "On install", service: "Runs", on: "Listens", refuse: "May refuse", page: "Page", setting: "Setting"};
 const busy = ref("");
 const plugins = computed(() =>
@@ -79,13 +80,17 @@ async function preview() {
 async function install() {
     busy.value = "install";
     try {
-        await api.command("plugin", "install", {source: source.value, yes: true});
+        outcome.value = {ok: true, text: await api.command("plugin", "install", {source: source.value, yes: true})};
         source.value = "";
-        previewText.value = "";
     } catch (e) {
-        previewText.value = e.message;
+        outcome.value = {ok: false, text: e.message};
     }
     busy.value = "";
+}
+
+function closeShown() {
+    shown.value = null;
+    outcome.value = null;
 }
 
 async function plugin(p, action, body = {}) {
@@ -177,29 +182,48 @@ async function askAgent() {
             </template>
         </header>
         <template v-if="shown">
-            <Dialog :title="shown.title" @close="shown = null">
-                <p class="shown-from">
-                    from {{ shown.source }}
-                    <template v-if="shown.commit">at {{ shown.commit.slice(0, 12) }}</template>
-                </p>
-                <template v-if="shown.description">
-                    <p class="shown-what">{{ shown.description }}</p>
+            <Dialog :title="shown.title" @close="closeShown">
+                <template v-if="outcome">
+                    <p :class="['shown-result', {failed: !outcome.ok}]">
+                        {{ outcome.ok ? `${shown.title} is installed.` : "It did not install. Nothing of it was kept." }}
+                    </p>
+                    <pre class="shown-output">{{ outcome.text }}</pre>
                 </template>
-                <p class="shown-lead">It runs as you, with your files and your network. This is everything it does:</p>
-                <div class="shown-rows">
-                    <template v-for="(row, i) in shown.rows" :key="i">
-                        <div class="shown-row">
-                            <span :class="['shown-kind', row.kind]">{{ KINDS[row.kind] || row.kind }}</span>
-                            <span class="shown-label">{{ row.label }}</span>
-                            <code class="shown-command">{{ row.command }}</code>
-                        </div>
+                <template v-else>
+                    <p class="shown-from">
+                        from {{ shown.source }}
+                        <template v-if="shown.commit">at {{ shown.commit.slice(0, 12) }}</template>
+                    </p>
+                    <template v-if="shown.description">
+                        <p class="shown-what">{{ shown.description }}</p>
                     </template>
-                </div>
+                    <p class="shown-lead">It runs as you, with your files and your network. This is everything it does:</p>
+                    <div class="shown-rows">
+                        <template v-for="(row, i) in shown.rows" :key="i">
+                            <div class="shown-row">
+                                <span :class="['shown-kind', row.kind]">{{ KINDS[row.kind] || row.kind }}</span>
+                                <span class="shown-label">{{ row.label }}</span>
+                                <code class="shown-command">{{ row.command }}</code>
+                            </div>
+                        </template>
+                    </div>
+                </template>
                 <template #foot>
-                    <Btn @click="shown = null">Cancel</Btn>
-                    <Btn kind="primary" :disabled="busy === 'install'" @click="install">
-                        {{ busy === "install" ? "Running…" : "Run" }}
-                    </Btn>
+                    <template v-if="outcome">
+                        <template v-if="!outcome.ok">
+                            <Btn @click="outcome = null">Back</Btn>
+                        </template>
+                        <Btn kind="primary" @click="closeShown">Close</Btn>
+                    </template>
+                    <template v-else>
+                        <Btn :disabled="busy === 'install'" @click="closeShown">Cancel</Btn>
+                        <Btn kind="primary" class="run" :disabled="busy === 'install'" @click="install">
+                            <span :class="{hidden: busy === 'install'}">Run</span>
+                            <template v-if="busy === 'install'">
+                                <Spinner class="run-spinner" />
+                            </template>
+                        </Btn>
+                    </template>
                 </template>
             </Dialog>
         </template>
@@ -356,6 +380,44 @@ h2 {
     background: var(--bg);
     color: inherit;
     font: inherit;
+}
+
+.run {
+    position: relative;
+}
+
+.run .hidden {
+    visibility: hidden;
+}
+
+.run-spinner {
+    position: absolute;
+    inset: 0;
+    margin: auto;
+}
+
+.shown-result {
+    margin: 0 0 10px;
+    color: #63b37c;
+    font-size: 13px;
+}
+
+.shown-result.failed {
+    color: #e0795f;
+}
+
+.shown-output {
+    max-height: 360px;
+    margin: 0;
+    overflow: auto;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--code-bg);
+    color: var(--text-2);
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: 11.5px;
+    white-space: pre-wrap;
 }
 
 .shown-from,
