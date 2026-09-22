@@ -1,11 +1,27 @@
 <script setup>
-import {computed} from "vue";
+import {computed, ref, watch} from "vue";
 import OptionsPicker from "./OptionsPicker.vue";
+import {api} from "../api/client.js";
 import {linkedTo} from "../domain/records.js";
 import {meta} from "../state/store.js";
 
 const props = defineProps({resource: Object});
-const questions = computed(() => linkedTo(props.resource.ref).filter((r) => meta(r.type).fields.options && meta(r.type).needs_attention));
+const asking = (r) => meta(r.type).fields.options && meta(r.type).needs_attention;
+const live = computed(() => linkedTo(props.resource.ref).filter(asking));
+const earlier = ref([]);
+watch(
+    () => props.resource.ref,
+    async (about) => {
+        earlier.value = [];
+        const found = await api.command("question", "linked_to", {ref: about}).catch(() => []);
+        if (about === props.resource.ref) earlier.value = found;
+    },
+    {immediate: true}
+);
+const questions = computed(() => {
+    const held = new Set(live.value.map((q) => q.ref));
+    return [...live.value, ...earlier.value.filter((q) => !held.has(q.ref))].sort((a, b) => !!a.completed - !!b.completed || b.n - a.n);
+});
 </script>
 
 <template>
