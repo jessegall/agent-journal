@@ -155,7 +155,8 @@ class Codex(Provider):
     def dispatch(self, tool) -> dict:
         if not tool.name.endswith("spawn_agent"):
             return {}
-        return {"kind": tool.task_name.strip().lower(), "model": tool.model.strip(), "model_supported": True}
+        kind = str(tool.tool_input.get("agent_type") or "").strip().lower()
+        return {"kind": kind, "task": tool.task_name.strip().lower(), "model": tool.model.strip(), "model_supported": True}
 
     def turn(self, row: dict) -> tuple[str, str] | None:
         payload = row.get("payload") or {}

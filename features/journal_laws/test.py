@@ -41,13 +41,16 @@ def test_the_law_refuses_an_unbounded_dispatch_and_allows_a_bounded_one():
     cases = (("claude", "Agent", {"subagent_type": "general-purpose", "model": "sonnet"}),
              ("claude", "Agent", {"subagent_type": "Explore"}),
              ("codex", "collaboration.spawn_agent", {"task_name": "general", "model": "gpt-5.6-luna"}),
-             ("codex", "collaboration.spawn_agent", {"task_name": "search_history"}))
+             ("codex", "collaboration.spawn_agent", {"task_name": "search_history"}),
+             ("codex", "collaboration.spawn_agent", {"agent_type": "default", "model": "gpt-5.6-luna"}),
+             ("codex", "collaboration.spawn_agent", {"agent_type": "risk_reviewer"}))
     for name, tool, given in cases:
         result = handle(PROVIDERS[name](), record.root, record.env, {"hook_event_name": "PreToolUse", "session_id": f"{name}-law", "tool_name": tool, "tool_input": given})
         assert result.get("decision") == "block", f"{name}: the law refuses an invalid dispatch"
 
     allowed = (("claude", "Agent", {"subagent_type": "Explore", "model": "haiku"}),
-               ("codex", "collaboration.spawn_agent", {"task_name": "search_history", "model": "gpt-5.6-luna"}))
+               ("codex", "collaboration.spawn_agent", {"task_name": "search_history", "model": "gpt-5.6-luna"}),
+               ("codex", "collaboration.spawn_agent", {"agent_type": "risk_reviewer", "model": "gpt-5.6-luna"}))
     for name, tool, given in allowed:
         result = handle(PROVIDERS[name](), record.root, record.env, {"hook_event_name": "PreToolUse", "session_id": f"{name}-law", "tool_name": tool, "tool_input": given})
         assert result == {}, f"{name}: a bounded dispatch with a model goes through"
