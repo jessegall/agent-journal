@@ -1,4 +1,5 @@
 import fcntl
+import json
 import os
 import re
 import secrets
@@ -82,9 +83,14 @@ def own_journal(root: Path) -> Path:
     return bin_dir
 
 
+def chosen_values(manifest: dict, chosen: dict | None) -> dict:
+    return {key: str((chosen or {}).get(key, setting.get("default", ""))) for key, setting in (manifest.get("settings") or {}).items()}
+
+
 def chosen_env(manifest: dict, chosen: dict | None) -> dict:
-    return {str(setting["env"]): str((chosen or {}).get(key, setting.get("default", "")))
-            for key, setting in (manifest.get("settings") or {}).items() if setting.get("env")}
+    values = chosen_values(manifest, chosen)
+    named = {str(setting["env"]): values[key] for key, setting in (manifest.get("settings") or {}).items() if setting.get("env")}
+    return {**named, "JOURNAL_SETTINGS": json.dumps(values)}
 
 
 def environment(root: Path, name: str, manifest: dict, token: str, ports: dict | None = None, chosen: dict | None = None) -> dict:

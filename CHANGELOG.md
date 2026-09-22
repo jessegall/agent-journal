@@ -4,6 +4,11 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.85.71
+
+- A foreground command running 30 seconds is moved to the background; the setting is in seconds now, and the engine's clock reaches the session the hooks report on, ticking every 10 seconds.
+- A plugin's commands read every chosen setting as JSON from JOURNAL_SETTINGS.
+
 ## 2.85.70 — A plugin's settings open in a side panel, typed by its manifest
 
 - A plugin's card has a Settings button that opens its settings in a side panel, grouped under headings.

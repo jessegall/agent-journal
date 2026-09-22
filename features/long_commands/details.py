@@ -13,24 +13,24 @@ class LongCommandsDetails(FeatureDetails):
 
     help = """
         When the agent runs a command in the foreground and it is still running after
-        long_commands.after_minutes (2), the journal moves it to the background the way the
+        long_commands.after_seconds (30), the journal moves it to the background the way the
         agent's own terminal does (Claude's Ctrl+B) and tells the agent, which is told again when
         it ends. A provider without a way to do that is left alone.
     """
 
     settings = [
         Setting(
-            name="after_minutes",
-            default=2,
+            name="after_seconds",
+            default=30,
             title="Move a command to the background after",
-            unit="minutes",
+            unit="seconds",
         ),
     ]
 
     lines = [
         Line(
             name="moved",
-            title="your command ran {{minutes}} min in the foreground and was moved to the background",
+            title="your command ran {{seconds}}s in the foreground and was moved to the background",
             brief="carry on with other work; you are told when it ends",
         ),
     ]
