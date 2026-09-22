@@ -1,4 +1,6 @@
 <script setup>
+import TextInput from "../kit/TextInput.vue";
+import Chip from "../kit/Chip.vue";
 import {computed, ref} from "vue";
 import {api} from "../api/client.js";
 import Btn from "../kit/Btn.vue";
@@ -81,21 +83,20 @@ async function run(method) {
 <template>
     <div class="actions">
         <template v-if="locked">
-            <span
-                class="locked"
-                :title="`Made by the ${locked} plugin: it goes when the plugin is removed, and nothing else can remove or close it`"
-            >
+            <Chip :title="`Made by the ${locked} plugin: it goes when the plugin is removed, and nothing else can remove or close it`">
                 <Icon name="lock" :size="11" />
                 Locked · {{ locked }}
-            </span>
+            </Chip>
         </template>
         <template v-if="collecting">
-            <input
-                v-model="text"
+            <TextInput
+                :value="text"
+                class="grow"
                 list="open-collections"
                 placeholder="A collection, or a new name"
                 autofocus
                 @keydown.enter="addToCollection"
+                @input="text = $event.target.value"
                 @keydown.esc="collecting = false"
             />
             <datalist id="open-collections">
@@ -107,11 +108,13 @@ async function run(method) {
             <Btn small @click="collecting = false">Cancel</Btn>
         </template>
         <template v-else-if="prompt">
-            <input
-                v-model="text"
+            <TextInput
+                :value="text"
+                class="grow"
                 :placeholder="meta(resource.type).labels.outcome || 'A word on how'"
                 autofocus
                 @keydown.enter="run(prompt)"
+                @input="text = $event.target.value"
                 @keydown.esc="prompt = ''"
             />
             <Btn small @click="run(prompt)">{{ word(resource.type, prompt) }}</Btn>
@@ -149,30 +152,14 @@ async function run(method) {
 </template>
 
 <style scoped>
-.locked {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    height: 24px;
-    padding: 0 9px;
-    border: 1px solid var(--border-2);
-    border-radius: 99px;
-    color: var(--text-3);
-    font-size: 11.5px;
-}
-
 .actions {
     display: flex;
     align-items: center;
     gap: 6px;
     margin: 10px 0;
 }
-input {
+.grow {
     flex: 1;
-    padding: 5px 10px;
-    border: 1px solid var(--border-2);
-    border-radius: 7px;
-    background: var(--raised);
 }
 .error {
     color: var(--danger);

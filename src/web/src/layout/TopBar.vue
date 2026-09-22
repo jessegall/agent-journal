@@ -1,4 +1,5 @@
 <script setup>
+import CountBadge from "../kit/CountBadge.vue";
 import {computed, onUnmounted, ref} from "vue";
 import Icon from "../kit/Icon.vue";
 import RailWaiting from "../pages/RailWaiting.vue";
@@ -44,7 +45,7 @@ useOutside(wrap, () => (drop.value = false));
                 <button type="button" :class="['icon-btn', {on: drop}]" title="Notifications" :aria-expanded="drop" @click="drop = !drop">
                     <Icon name="bell" />
                     <template v-if="waiting">
-                        <span class="tool-badge">{{ waiting }}</span>
+                        <CountBadge :count="waiting" />
                     </template>
                 </button>
                 <Transition name="drop">
@@ -137,21 +138,6 @@ useOutside(wrap, () => (drop.value = false));
 .icon-btn .ico {
     width: 15px;
     height: 15px;
-}
-.tool-badge {
-    position: absolute;
-    top: -2px;
-    right: -3px;
-    min-width: 15px;
-    height: 15px;
-    padding: 0 4px;
-    border-radius: 8px;
-    background: var(--accent);
-    color: #fff;
-    font-size: 10px;
-    line-height: 15px;
-    text-align: center;
-    pointer-events: none;
 }
 .drop-wrap {
     position: relative;

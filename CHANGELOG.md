@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.93.3 — Chips, count badges and text boxes come from the kit
+
+The small pill tags on board cards, the System badge and a plugin row's Locked badge are one kit Chip; the counts in the corner of the top bar and the compose buttons are one kit CountBadge; the choice box of an options question and the collection and outcome boxes of a row are kit TextInputs.
+
 ## 2.93.2 — The check's dot and buttons come from the kit
 
 The pulsing dot on a check is the kit Dot, which now draws a glowing dot of any size; a check's Run button and a notice's Allow, Deny and Force now buttons are kit buttons, showing the kit spinner while they work.
