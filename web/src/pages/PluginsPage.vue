@@ -24,6 +24,7 @@ const wish = ref("");
 const asked = ref(false);
 const previewText = ref("");
 const shown = ref(null);
+const removing = ref(null);
 const KINDS = {needs: "Needs", setup: "On install", service: "Runs", on: "Listens", refuse: "May refuse", page: "Page", setting: "Setting"};
 const busy = ref("");
 const plugins = computed(() =>
@@ -98,6 +99,13 @@ async function plugin(p, action, body = {}) {
     }
     busy.value = "";
     await readLog();
+}
+
+async function remove(everything) {
+    const p = removing.value;
+    removing.value = null;
+    await plugin(p, "remove", {how: "removed from the viewer"});
+    if (everything) await plugin(p, "purge");
 }
 
 async function readLog() {
@@ -195,6 +203,19 @@ async function askAgent() {
                 </template>
             </Dialog>
         </template>
+        <template v-if="removing">
+            <Dialog :title="`Remove ${removing.title}`" @close="removing = null">
+                <p class="shown-lead">
+                    Its services stop, its hooks and refusals no longer run, and its folder is taken away. What it kept of its own —
+                    settings, caches, anything it wrote in its data folder — can stay, in case you install it again, or go with it.
+                </p>
+                <template #foot>
+                    <Btn @click="removing = null">Cancel</Btn>
+                    <Btn @click="remove(false)">Remove, keep what it kept</Btn>
+                    <Btn kind="danger" @click="remove(true)">Remove everything</Btn>
+                </template>
+            </Dialog>
+        </template>
         <div class="cards">
             <template v-for="p in plugins" :key="p.n">
                 <article class="card">
@@ -239,14 +260,7 @@ async function askAgent() {
                             Run setup again
                         </Btn>
                         <Btn small @click="toggleLog(p)">{{ readingOf(p) ? "Hide log" : "Log" }}</Btn>
-                        <Btn
-                            kind="danger"
-                            small
-                            :disabled="busy === `${p.n}`"
-                            @click="plugin(p, 'remove', {how: 'removed from the viewer'})"
-                        >
-                            Remove
-                        </Btn>
+                        <Btn kind="danger" small :disabled="busy === `${p.n}`" @click="removing = p">Remove</Btn>
                     </footer>
                 </article>
             </template>

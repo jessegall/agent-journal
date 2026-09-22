@@ -90,6 +90,15 @@ def test_a_failing_setup_step_installs_nothing_and_says_which_step_failed(tmp_pa
 
 
 
+def test_removing_a_plugin_stops_its_services_and_takes_its_folder():
+    from engine.services import DOWN, wanted
+    record = alone()
+    row = installed(record, "linter", "exit 0", services={"web": {"run": "sleep 30"}})
+    Plugins(record, actor=SYSTEM).complete(row.n, how="removed")
+    assert (wanted(record.root, "linter.web"), folder(record.root, "linter").exists()) == (DOWN, False), \
+        "its service is asked to stop and its folder is gone"
+
+
 def test_a_service_no_plugin_declares_is_stopped_and_forgotten():
     record = fresh()
     left = subprocess.Popen(["sleep", "30"], start_new_session=True)
