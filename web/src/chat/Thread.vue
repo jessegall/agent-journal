@@ -480,6 +480,7 @@ watch(
 
 .thread-turn.busy .thread-bubble {
     display: flex;
+    align-self: flex-start;
     align-items: center;
     gap: 4px;
     padding: 10px 12px;

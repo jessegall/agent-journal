@@ -17,7 +17,7 @@ from engine.wording import plural
 from engine.transcript import turns
 from engine.stored import read_json, write_json
 
-CLOCK_EVERY = 10.0
+CLOCK_EVERY = 5.0
 
 
 def emit_clock(record: Record, session: str) -> None:

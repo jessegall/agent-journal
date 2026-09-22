@@ -31,6 +31,6 @@ class LongCommandsDetails(FeatureDetails):
         Line(
             name="moved",
             title="your command ran {{seconds}}s in the foreground and was moved to the background",
-            brief="carry on with other work; you are told when it ends",
+            brief="carry on with other work; you are told when it ends. Start a command you expect to take long in the background yourself",
         ),
     ]
