@@ -53,6 +53,25 @@ const loads = (agents) =>
             }))
         );
 
+const compactions = (agents) =>
+    agents
+        .filter((a) => !a.data.parent)
+        .flatMap((a) =>
+            (a.data.compactions || []).map((mark) => ({
+                ref: `compacted:${a.n}:${mark.at}`,
+                type: "compacted",
+                n: a.n,
+                who: "agent",
+                created: mark.at,
+                seen: ["agent"],
+                refs: [],
+                data: {},
+                sections: [],
+                title: "Context compacted",
+                brief: "",
+            }))
+        );
+
 const madeByAgent = (docs) =>
     docs
         .filter((d) => !d.deleted && d.seen[0] === "agent")
@@ -75,6 +94,7 @@ export function threadTurns(rows, pending) {
         ...rows.comment.filter((c) => !c.deleted && hasParent(c)).map((c) => ({...c, who: c.seen[0]})),
         ...rows.question.filter((q) => !q.deleted).map((q) => ({...q, who: "agent"})),
         ...loads(rows.agent || []),
+        ...compactions(rows.agent || []),
         ...madeByAgent(rows.doc || []),
         ...pending.filter((p) => !live.some((m) => promisedFor(p, m) && delivered(p, m))),
     ].sort((a, b) => a.created - b.created);

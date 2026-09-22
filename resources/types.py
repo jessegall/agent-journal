@@ -253,6 +253,7 @@ class AgentRow(Shape, Resource):
         Field(default=dict, name="usage"),
         Field(default=list, name="skills"),
         Field(default=list, name="skill_loads"),
+        Field(default=list, name="compactions"),
         Field(default=0, name="shells"),
         Field(default=0, name="subagents"),
         Field(default=list, name="shell_rows"),
