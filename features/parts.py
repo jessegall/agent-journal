@@ -1,4 +1,6 @@
+import hashlib
 import inspect
+import time
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, ClassVar, get_type_hints
 
@@ -7,7 +9,7 @@ from controllers.types import Agents
 from engine import bus
 from engine.events import AgentEvent
 from engine.hooks import POLICIES
-from engine.stored import read_json, write_json
+from engine.state import State
 from features.format import FORMATTERS
 from resources.base import SYSTEM, Refused
 
@@ -76,7 +78,11 @@ class Context:
         self.feature.release(self.record, behaviour, self.agent.row if self.agent else None)
 
     def once(self, kind: str, key: str) -> bool:
-        return not self.feature.already(self.record, self.agent.session, kind, key)
+        return self.record.state("once", self.agent.session).claim(f"{kind}.{hashlib.sha1(key.strip().encode()).hexdigest()}", time.time())
+
+    @property
+    def state(self) -> "State":
+        return self.record.state(self.feature.name, self.agent.session if self.agent else "")
 
 
 @dataclass
@@ -166,11 +172,10 @@ class Client:
                            formatter.surfaces))
 
 
-def limited(context: Context, interceptor: ToolInterceptor, session: str, refused: str) -> str:
-    f = context.record.root / "runtime" / f"refused-{session}.json"
-    counts, key = read_json(f, {}), f"{context.feature.name}.{type(interceptor).__name__}"
-    count = int(counts.get(key, 0)) + 1 if refused else 0
-    write_json(f, {**counts, key: count})
+def limited(context: "AgentContext", interceptor: ToolInterceptor, refused: str) -> str:
+    key = f"refused.{type(interceptor).__name__}"
+    count = int(context.state.get(key, 0)) + 1 if refused else 0
+    context.state.set(key, count)
     return refused if count <= int(context.settings[interceptor.limit]) else ""
 
 
@@ -189,7 +194,7 @@ class AgentHooks:
                 return ""
             context = AgentContext.of(feature, record, row, provider, hook)
             refused = interceptor.intercept(context, hook.tool) or ""
-            return limited(context, interceptor, session, refused) if interceptor.limit else refused
+            return limited(context, interceptor, refused) if interceptor.limit else refused
         policy.feature = feature
         POLICIES.append(policy)
 

@@ -5,7 +5,6 @@ from pathlib import Path
 
 from engine.heal import refused
 from engine.package import entry
-from engine.stored import read_json, write_json
 from engine.version import version
 from features import FEATURES
 from features.dev_faults.developing import developing
@@ -30,10 +29,8 @@ class UpdateCheck:
         installed, latest = version(), upstream(root)
         if not feature.on(record) or not newer(latest, installed) or refused(root, latest):
             return ""
-        tried = root / "runtime" / "updates.json"
-        if read_json(tried, {}).get("tried") == latest:
+        if not record.state("auto_update").claim(f"tried.{latest}", time.time()):
             return ""
-        write_json(tried, {"tried": latest})
         if feature.on(record, "install") and not developing(root.parent):
             threading.Thread(target=self.install, args=(feature, latest), daemon=True).start()
             return f"installing {latest}"

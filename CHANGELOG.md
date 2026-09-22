@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.84.30 — Features keep their state through the record
+
+Feature parts no longer build their own runtime file names. `record.state(owner, session)` and a part's `context.state` hold one small JSON object per owner: a session's under `.journal/runtime/sessions/<session>/`, an environment's under `.journal/environments/<env>/state/`. The status bar, the browser driver, the update check, the largest-result notice, keyword whispers, refusal counts, run-once keys, required skills and the file tracker all use it. A session's folder is removed by the hourly tidy once it has gone quiet, and the upgrade removes the old loose files. The trigger and write-hold files are unchanged.
+
 ## 2.84.29 — Long file names in a row's Files list stay on one line
 
 A file name like "Screenshot 2026-09-21 at 21.56.10.png" no longer wraps into a narrow column beside its description. The name takes one line, cut off with an ellipsis when it is too long and shown whole on hover, and the description sits underneath.

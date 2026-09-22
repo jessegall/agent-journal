@@ -1,5 +1,4 @@
 from engine.events import ToolFinished
-from engine.stored import read_json, write_json
 from features.parts import AgentContext, Handler
 
 LARGEST_RESULT = "largest result"
@@ -11,8 +10,7 @@ class NoticeLargestResult(Handler):
     def handle(self, context: AgentContext, event: ToolFinished) -> None:
         if event.size < int(context.settings.result_floor):
             return
-        f = context.record.root / "runtime" / f"largest-result-{context.agent.session}.json"
-        if event.size <= int(read_json(f, 0) or 0):
+        if event.size <= int(context.state.get("largest", 0)):
             return
-        write_json(f, event.size)
+        context.state.set("largest", event.size)
         context.agent.whisper(LARGEST_RESULT, tool=event.tool or "that tool", size=f"{event.size:,}")

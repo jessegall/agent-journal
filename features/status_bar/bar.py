@@ -1,7 +1,5 @@
 import time
-from pathlib import Path
 
-from engine.stored import read_json, write_json
 from features.status_bar.group import grouped, ran
 from features.status_bar.queue import queue
 
@@ -12,21 +10,13 @@ def bar(row, now: float = 0.0) -> dict:
     return {"queue": queue(grouped(ran(row.commands)), now)}
 
 
-def bar_file(root, env: str) -> Path:
-    return Path(root) / "runtime" / f"bar-{env}.json"
+def played(record, at: float) -> None:
+    record.state("status_bar").set("played", at)
 
 
-def played_file(root, env: str) -> Path:
-    return Path(root) / "runtime" / f"bar-played-{env}.json"
-
-
-def played(root, env: str, at: float) -> None:
-    write_json(played_file(root, env), {"at": at})
-
-
-def current(root, env: str) -> dict:
-    last = read_json(played_file(root, env), {}).get("at", 0.0)
-    held = read_json(bar_file(root, env), EMPTY)
+def current(record) -> dict:
+    state = record.state("status_bar")
+    last, held = state.get("played", 0.0), state.get("bar", EMPTY)
     return {**held, "queue": [one for one in held["queue"] if one["at"] > last or (one["at"] == last and not ended(one))]}
 
 
