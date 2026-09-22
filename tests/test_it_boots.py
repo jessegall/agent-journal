@@ -42,6 +42,11 @@ def test_every_agent_launches_from_an_installed_zip(tmp_path):
     root = place / "project" / ".journal"
     left = sorted(f.relative_to(root / "src").as_posix() for f in (root / "src").rglob("*.py"))
     assert ((root / "journal.pyz").is_file(), left) == (True, sorted(STUBS)), f"the Python is packed into one zip, a stub left at each old entry:\n{installed.stdout}{installed.stderr}"
+    from engine import runtime
+    assert not runtime.upgrading(root), "an upgrade that has finished leaves no mark, so the supervisor may reload"
+    (root / "runtime" / "upgrading").touch()
+    assert runtime.upgrading(root), "while one is under way, the mark holds the supervisor's reload back"
+    (root / "runtime" / "upgrading").unlink()
     journal = [sys.executable, str(root / "journal.py"), "--root", str(root)]
     subprocess.run([*journal, "doc", "create", "Kept across upgrades"], cwd=place / "project", env=env, capture_output=True, timeout=WAIT)
     again = subprocess.run([sys.executable, str(CODE / "install.py"), "upgrade", str(place / "project")], env=env, capture_output=True, text=True, timeout=120)

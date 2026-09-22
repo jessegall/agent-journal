@@ -65,3 +65,15 @@ def off(root: Path) -> bool:
 
 def warming() -> bool:
     return bool(STARTED[0]) and time.time() - STARTED[0] < WARM_UP
+
+
+UPGRADE_MARK = "upgrading"
+UPGRADE_LONGEST = 600
+
+
+def upgrading(root: Path) -> bool:
+    mark = Path(root) / "runtime" / UPGRADE_MARK
+    try:
+        return time.time() - mark.stat().st_mtime < UPGRADE_LONGEST
+    except OSError:
+        return False

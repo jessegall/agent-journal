@@ -231,10 +231,12 @@ def run(root: Path, cwd: Path, env: str, agent: str, fd: int, session: str, life
                     break
             if now - last_checks >= CHECKS_EVERY:
                 last_checks = now
+                if not kept:
+                    driver, kept = checks(root, env, agent, session)
                 run_checks(root, driver, kept)
             if now - last_check >= RELOAD_EVERY:
                 last_check = now
-                if watched(root) != stamps:
+                if watched(root) != stamps and not runtime.upgrading(root):
                     result = RELOAD
                     break
     finally:
