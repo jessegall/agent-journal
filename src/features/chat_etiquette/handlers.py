@@ -12,7 +12,7 @@ SHOP_TALK = re.compile(r"\b(?:(?:your|the|this) message (?:is|was) (?:answered|p
                        r"|(?:loading|loaded) the \S+ skill|you reacted|thanks for the (?:reaction|\S+ reaction)"
                        r"|nothing (?:else )?(?:is |was )?(?:open|waiting|pending|waits)(?: on my side| for me| here)?"
                        r"|(?:^|(?<=[.!?]\s))(?:still waiting|nothing new yet|nothing to report yet|nothing yet)|I'?m still waiting|I am still waiting"
-                       r"|(?:message|to-do|todo|question|comment)s? \d+(?:(?:,| and|, and) \d+)* (?:is|was|are|were) (?:already )?(?:answered|processed|read|filed|closed|done|replied to)"
+                       r"|(?<!once )(?<!when )(?<!until )(?<!after )(?<!before )(?:message|to-do|todo|question|comment)s? \d+(?:(?:,| and|, and) \d+)* (?:is|was|are|were) (?:already )?(?:answered|processed|read|filed|closed|done|replied to)"
                        r"|repl(?:y|ies) (?:to [^.]{0,40})?went out|(?:still )?listed as (?:waiting|unread|unanswered|open)"
                        r"|closing (?:both|them|it) explicitly|still (?:unread|unanswered))\b",
                        re.IGNORECASE | re.MULTILINE)
