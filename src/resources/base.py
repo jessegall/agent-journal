@@ -132,6 +132,8 @@ class Resource:
     editors: ClassVar[dict] = {}              # who may change the words of a row written by whom: {USER: (USER,)}; unnamed authors are open to all
     stamped_when_notified: ClassVar[bool] = False              # the row is stamped with the moment the agent was told of it
     deduplicates: ClassVar[bool] = False
+    kept: ClassVar[int] = 0     # how many prunable rows are kept, newest first; older ones are pruned; 0 keeps every row
+    pruned_when: ClassVar[str] = ""   # which rows may be pruned: any (""), those the user has "seen", or those "closed"
     indexed: ClassVar[tuple] = ()
     shown_fields: ClassVar[tuple] = ()   # data fields its panel shows and edits
     choices: ClassVar[dict] = {}         # the values a shown field may take, where they are fixed

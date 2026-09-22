@@ -283,6 +283,8 @@ class AgentRow(Shape, Resource):
 
 class Notification(Shape, Resource):
     type = "notification"
+    kept = 100
+    pruned_when = "seen"
     needs_attention = True
     icon = "bell"
     details: ClassVar[ResourceDetails] = ResourceDetails(
@@ -296,6 +298,8 @@ class Notification(Shape, Resource):
 
 class Notice(Shape, Resource):
     type = "notice"
+    kept = 100
+    pruned_when = "closed"
     event_labels = {"created": "Notice", "completed": "Notice closed"}
     icon = "band"
     command_names = {"complete": "close"}
@@ -407,6 +411,8 @@ class Environment(Shape, Resource):
 class Ask(Shape, Resource):
     loading = LAZY
     type = "browser"
+    kept = 50
+    pruned_when = "closed"
     data_fields: ClassVar[list[Field]] = [
         Field(name="op"),
         Field(default=list, name="args"),
@@ -441,6 +447,7 @@ class FeatureRow(Shape, Resource):
 class Nudge(Shape, Resource):
     loading = LAZY
     type = "nudge"
+    kept = 100
     notify_actions = ("created",)
     addressed_to_agent = True
     data_fields: ClassVar[list[Field]] = [
