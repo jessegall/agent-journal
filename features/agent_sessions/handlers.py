@@ -2,7 +2,7 @@ import time
 from dataclasses import dataclass
 from typing import ClassVar
 
-from engine.events import AgentUpdated, ResourceCreated, ResourceEvent
+from engine.events import AgentChanged, AgentReported, ResourceCreated, ResourceEvent
 from engine.sessions import Sessions
 from features.parts import AgentContext, Context, Handler
 
@@ -19,7 +19,7 @@ class TodoUpdated(ResourceEvent):
 class HoldEvicted(Handler):
     behaviour = "eviction"
 
-    def handle(self, context: AgentContext, event: AgentUpdated) -> None:
+    def handle(self, context: AgentContext, event: AgentReported) -> None:
         sessions = Sessions(context.record.root)
         session = context.agent.session
         gone = sessions.read(session).get("evicted")
@@ -32,7 +32,7 @@ class HoldEvicted(Handler):
 class MarkSilentStopped(Handler):
     behaviour = "liveness"
 
-    def handle(self, context: AgentContext, event: AgentUpdated) -> None:
+    def handle(self, context: AgentContext, event: AgentReported) -> None:
         agents = context.journal.agents
         silent = time.time() - context.settings.quiet * MINUTE
         for row in agents._every():
@@ -70,7 +70,7 @@ class HandBackReport(Handler):
 class ClearLapsedAssignments(Handler):
     behaviour = "subagents"
 
-    def handle(self, context: AgentContext, event: AgentUpdated) -> None:
+    def handle(self, context: AgentContext, event: AgentReported) -> None:
         subagents = {a.title: a for a in context.journal.agents._standing() if a.status == SUBAGENT}
         if not subagents:
             return
@@ -82,3 +82,9 @@ class ClearLapsedAssignments(Handler):
                 continue
             todos.update(t.n, assigned="", lapsed=who)
             context.agent.say("lapsed", who=who, n=t.n, minutes=limit // MINUTE)
+
+
+class ClearLapsedAssignmentsOnChange(ClearLapsedAssignments):
+    def handle(self, context: AgentContext, event: AgentChanged) -> None:
+        if event.action == "updated":
+            super().handle(context, event)

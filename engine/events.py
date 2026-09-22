@@ -92,8 +92,8 @@ class AgentMessageSent(AgentEvent):
 
 
 @dataclass(frozen=True)
-class AgentUpdated(AgentEvent):
-    on: ClassVar[str] = "agent.updated"
+class AgentReported(AgentEvent):
+    on: ClassVar[str] = "agent.reported"
     hook_name: ClassVar[str] = ""
     hook: str = ""
     tool: str = ""
@@ -103,7 +103,7 @@ class AgentUpdated(AgentEvent):
     skill: str = ""
 
     @classmethod
-    def read(cls, event) -> "AgentUpdated":
+    def read(cls, event) -> "AgentReported":
         return cls(agent=event.n, hook=str(event.data.get("hook") or ""), tool=str(event.data.get("tool") or ""),
                    file=str(event.data.get("file") or ""), session=str(event.data.get("session") or ""),
                    size=int(event.data.get("size") or 0), skill=str(event.data.get("skill") or ""))
@@ -113,48 +113,48 @@ class AgentUpdated(AgentEvent):
 
 
 @dataclass(frozen=True)
-class SessionStarted(AgentUpdated):
+class SessionStarted(AgentReported):
     hook_name: ClassVar[str] = "SessionStart"
     event_name: ClassVar[str] = "agent.session.started"
 
 
 @dataclass(frozen=True)
-class PromptSubmitted(AgentUpdated):
+class PromptSubmitted(AgentReported):
     hook_name: ClassVar[str] = "UserPromptSubmit"
     event_name: ClassVar[str] = "agent.prompt.submitted"
 
 
 @dataclass(frozen=True)
-class ToolStarted(AgentUpdated):
+class ToolStarted(AgentReported):
     hook_name: ClassVar[str] = "PreToolUse"
     event_name: ClassVar[str] = "agent.tool.started"
 
 
 @dataclass(frozen=True)
-class ToolFinished(AgentUpdated):
+class ToolFinished(AgentReported):
     hook_name: ClassVar[str] = "PostToolUse"
     event_name: ClassVar[str] = "agent.tool.finished"
 
 
 @dataclass(frozen=True)
-class TurnStopped(AgentUpdated):
+class TurnStopped(AgentReported):
     hook_name: ClassVar[str] = "Stop"
     event_name: ClassVar[str] = "agent.turn.stopped"
 
 
 @dataclass(frozen=True)
-class ContextCompacting(AgentUpdated):
+class ContextCompacting(AgentReported):
     hook_name: ClassVar[str] = "PreCompact"
     event_name: ClassVar[str] = "agent.context.compacting"
 
 
 @dataclass(frozen=True)
-class SessionEnded(AgentUpdated):
+class SessionEnded(AgentReported):
     hook_name: ClassVar[str] = "SessionEnd"
     event_name: ClassVar[str] = "agent.session.ended"
 
 
 @dataclass(frozen=True)
-class PermissionRequested(AgentUpdated):
+class PermissionRequested(AgentReported):
     hook_name: ClassVar[str] = "PermissionRequest"
     event_name: ClassVar[str] = "agent.permission.requested"

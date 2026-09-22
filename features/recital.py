@@ -1,6 +1,6 @@
 import re
 
-from engine.events import AgentMessageSent, AgentUpdated
+from engine.events import AgentMessageSent, AgentReported
 from features import trigger
 from features.trigger import Trigger
 from features.base import Behaviour, Line
@@ -86,7 +86,7 @@ class RepeatStanding(Handler):
     def __init__(self, resources: str):
         self.resources = resources
 
-    def handle(self, context: AgentContext, event: AgentUpdated) -> None:
+    def handle(self, context: AgentContext, event: AgentReported) -> None:
         resources = getattr(context.journal, self.resources)
         rows = [r for r in resources._standing() if r.data.get(WHOM, context.agent.session) == context.agent.session]
         if rows:

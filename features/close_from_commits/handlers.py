@@ -1,7 +1,7 @@
 import re
 from pathlib import Path
 
-from engine.events import AgentUpdated
+from engine.events import AgentReported
 from engine.proc import git
 from features.parts import AgentContext, Context, Handler
 from resources.base import Refused
@@ -13,7 +13,7 @@ class CloseRowsFromCommits(Handler):
     def __init__(self):
         self.seen: dict[str, int] = {}
 
-    def handle(self, context: AgentContext, event: AgentUpdated) -> None:
+    def handle(self, context: AgentContext, event: AgentReported) -> None:
         project = context.record.root.parent
         if not self.moved(project):
             return

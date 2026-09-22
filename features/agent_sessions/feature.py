@@ -1,5 +1,5 @@
 from features.agent_sessions.details import AgentsDetails
-from features.agent_sessions.handlers import ClearLapsedAssignments, HandBackReport, HoldEvicted, KeepSubagentAlive, MarkSilentStopped
+from features.agent_sessions.handlers import ClearLapsedAssignments, ClearLapsedAssignmentsOnChange, HandBackReport, HoldEvicted, KeepSubagentAlive, MarkSilentStopped
 from features.base import Feature
 from features.journal import Journal
 
@@ -13,3 +13,4 @@ class AgentsFeature(Feature):
         journal.events.handler(KeepSubagentAlive())
         journal.events.handler(HandBackReport())
         journal.events.handler(ClearLapsedAssignments())
+        journal.events.handler(ClearLapsedAssignmentsOnChange())

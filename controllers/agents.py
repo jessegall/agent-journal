@@ -12,7 +12,7 @@ class Agents(Controller):
     def saw(self, n: int, fact: dict, **data):
         r = self.load(n)
         r.data.update(self._shaped(data))
-        return self.save(r, "updated", **fact)
+        return self.save(r, "reported", **fact)
 
     def primary(self):
         rows = [row for row in self._standing() if not row.parent]

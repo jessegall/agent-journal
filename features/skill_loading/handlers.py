@@ -1,6 +1,6 @@
 import time
 
-from engine.events import AgentUpdated, SessionStarted, ToolFinished
+from engine.events import AgentReported, SessionStarted, ToolFinished
 from features import trigger
 from features.parts import AgentContext, Handler
 from features.skill_loading.catalogue import SKILL, chosen, skills
@@ -17,7 +17,7 @@ def journal_skill(name: str) -> bool:
 
 
 class RemindUnloaded(Handler):
-    def handle(self, context: AgentContext, event: AgentUpdated) -> None:
+    def handle(self, context: AgentContext, event: AgentReported) -> None:
         row, name = context.agent.row, context.feature.name
         state = trigger.last(context.record, row.title, name)
         if row.event in WINDOWS and state.get(AgentRow.event) != row.event:
@@ -35,7 +35,7 @@ class RemindUnloaded(Handler):
 class HoldUntilReloaded(Handler):
     behaviour = "reload"
 
-    def handle(self, context: AgentContext, event: AgentUpdated) -> None:
+    def handle(self, context: AgentContext, event: AgentReported) -> None:
         row = context.agent.row
         since = float(trigger.last(context.record, row.title, context.feature.name).get("since") or 0)
         provider = PROVIDERS.get(row.provider)
@@ -47,7 +47,7 @@ class HoldUntilReloaded(Handler):
 class NameStaleSkills(Handler):
     behaviour = "stale"
 
-    def handle(self, context: AgentContext, event: AgentUpdated) -> None:
+    def handle(self, context: AgentContext, event: AgentReported) -> None:
         changed = {s[SKILL.name]: s[SKILL.changed] for s in skills(context.record, context.agent.row.n) if s[SKILL.stale]}
         if changed:
             require(context.record, context.agent.session, changed)
