@@ -4,6 +4,11 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.84.143
+
+- The agent bar has a terminal button: it lists the commands the agent ran lately, one per line like a terminal, newest at the bottom, with the one still running lit.
+- The bar's right side is two groups with a thin divider between: what is running (background shells, now a play icon, and subagents), then the views (terminal and detach).
+
 ## 2.84.142
 
 - The dump band leads with a short title such as Adding files, then what the agent is doing, then its earlier lines muted. journal dump log takes the title and --detail, and refuses a title longer than 40 characters.

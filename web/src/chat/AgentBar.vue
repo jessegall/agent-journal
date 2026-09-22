@@ -5,6 +5,7 @@ import {modelFamily, pendingChoice, providerName} from "../agents.js";
 import Icon from "../kit/Icon.vue";
 import Spinner from "../kit/Spinner.vue";
 import CrewList from "./CrewList.vue";
+import CommandLog from "./CommandLog.vue";
 import AgentAppoint from "./AgentAppoint.vue";
 import AgentControls from "./AgentControls.vue";
 import AgentUsage from "./AgentUsage.vue";
@@ -40,7 +41,7 @@ const counts = computed(() => [
         title: skills.value.length ? `${skills.value.length} skill(s) loaded in this window` : "No journal skill is loaded in this window",
         rows: skills.value,
     },
-    {key: "shells", icon: "terminal", n: live(data.value && data.value.shell_rows), title: "background shells running now", rows: []},
+    {key: "shells", icon: "play", n: live(data.value && data.value.shell_rows), title: "background shells running now", rows: []},
     {key: "subagents", icon: "agents", n: live(data.value && data.value.subagent_rows), title: "subagents running now", rows: []},
 ]);
 const skillCount = computed(() => counts.value[0]);
@@ -201,6 +202,16 @@ useOutside(bar, () => (open.value = ""));
                         {{ c.n }}
                     </button>
                 </template>
+                <span class="agent-divider" />
+                <button
+                    type="button"
+                    :class="['agent-fact', 'agent-count', {open: open === 'commands'}]"
+                    title="What the agent ran lately, like a terminal"
+                    :aria-expanded="open === 'commands'"
+                    @click="toggle('commands', $event)"
+                >
+                    <Icon name="terminal" />
+                </button>
                 <template v-if="!alone">
                     <button
                         type="button"
@@ -240,6 +251,9 @@ useOutside(bar, () => (open.value = ""));
                     </template>
                     <template #usage>
                         <AgentUsage :usage="usage" />
+                    </template>
+                    <template #commands>
+                        <CommandLog :commands="data.commands || []" />
                     </template>
                     <template #shells>
                         <CrewList :rows="data.shell_rows || []" :total="data.shells || 0" />
@@ -388,6 +402,13 @@ useOutside(bar, () => (open.value = ""));
 
 .agent-detach.on {
     color: var(--accent-text);
+}
+
+.agent-divider {
+    width: 1px;
+    height: 14px;
+    margin: 0 4px;
+    background: var(--border-2);
 }
 
 .bar-drop {
