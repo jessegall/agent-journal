@@ -2,10 +2,19 @@
 import Dot from "../kit/Dot.vue";
 import Icon from "../kit/Icon.vue";
 import PriorityIcon from "../kit/PriorityIcon.vue";
-import {state} from "../domain/records.js";
+import {state, waitsOn} from "../domain/records.js";
 import {age} from "../format/time.js";
 import {meta} from "../state/store.js";
-defineProps({resource: Object, selected: Boolean});
+import {computed} from "vue";
+
+const props = defineProps({resource: Object, selected: Boolean});
+
+const held = computed(() => {
+    if (props.resource.completed) return "";
+    if (props.resource.data.blocked) return props.resource.data.blocked;
+    const refs = waitsOn(props.resource);
+    return refs.length ? `Waits on ${refs.map((ref) => "#" + ref.split(":")[1]).join(", ")}` : "";
+});
 </script>
 
 <template>
@@ -30,6 +39,9 @@ defineProps({resource: Object, selected: Boolean});
                 </span>
             </template>
         </span>
+        <template v-if="held">
+            <span class="held" :title="held">{{ held }}</span>
+        </template>
         <span class="age">{{ age(resource.updated || resource.created) }}</span>
     </button>
 </template>
@@ -83,6 +95,18 @@ defineProps({resource: Object, selected: Boolean});
     white-space: nowrap;
     color: var(--text-3);
     font-size: 12.5px;
+}
+.held {
+    flex-shrink: 0;
+    padding: 1px 7px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text-2);
+    font-size: 11.5px;
+    white-space: nowrap;
+    max-width: 240px;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 .age {
     color: var(--text-3);

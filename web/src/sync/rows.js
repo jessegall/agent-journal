@@ -31,7 +31,8 @@ export function rows(type) {
 function trimmed(type) {
     const held = store.rows[type] || [];
     if (held.length <= PAGE) return;
-    store.rows[type] = held.slice(-PAGE);
+    const recent = new Set(held.slice(-PAGE));
+    store.rows[type] = held.filter((r) => recent.has(r) || !r.completed);
     paging.size[type] = PAGE;
     paging.more[type] = true;
 }
