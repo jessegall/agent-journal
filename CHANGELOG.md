@@ -4,6 +4,11 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.85.9
+
+- Questions and suggestions have their own tabs beside the chat and are no longer notifications. Each lists what is open and waiting on you; clicking a question jumps the chat straight to it, without a smooth scroll. The rail's tabs show the active one's name and the others as icons with their counts.
+- The journal skill tells the agent never to mention replies, reactions, pills or reading a message, since the user sees them.
+
 ## 2.85.8
 
 - The agent bar's terminal button switches the chat window to the terminal view, filling the pane with the agent's commands, newest at the bottom, with Back to chat, the way the dump window does. It no longer opens as a dropdown.

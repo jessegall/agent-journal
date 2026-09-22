@@ -3,7 +3,7 @@ import {computed} from "vue";
 import Icon from "../kit/Icon.vue";
 import {api} from "../api/client.js";
 import {peek, route} from "../route.js";
-import {finishedUnread, happened, unreadByUser} from "../domain/records.js";
+import {finishedUnread, happened, open as openRows, unreadByUser} from "../domain/records.js";
 import {rows} from "../sync/rows.js";
 import {age} from "../format/time.js";
 import {focusTurn} from "../platform/view.js";
@@ -18,9 +18,12 @@ const TINT = {
     rule: "var(--open)",
     reminder: "var(--open)",
 };
-const cards = computed(() =>
+const props = defineProps({type: {type: String, default: ""}});
+const OWN_TABS = ["question", "suggestion"];
+const waiting = computed(() => openRows(props.type).sort((a, b) => b.created - a.created));
+const notifications = computed(() =>
     types.value
-        .filter((t) => t.needs_attention)
+        .filter((t) => t.needs_attention && !OWN_TABS.includes(t.name))
         .flatMap((t) => [
             ...unreadByUser(t.name),
             ...(t.lists_completed_unread ? finishedUnread(t.name) : []),
@@ -29,8 +32,13 @@ const cards = computed(() =>
         .filter((r, i, all) => all.findIndex((other) => other.ref === r.ref) === i)
         .sort((a, b) => b.created - a.created)
 );
+const cards = computed(() => (props.type ? waiting.value : notifications.value));
 
 async function open(r) {
+    if (props.type) {
+        if (!focusTurn(r.ref, {instant: true})) peek(r.type, r.n);
+        return;
+    }
     if (!r.data.kept) await api.act(r.type, r.n, "set", {key: "kept", value: "true"});
     if (!focusTurn(r.ref)) peek(r.type, r.n);
 }
@@ -45,7 +53,7 @@ async function dismiss(r) {
     <template v-if="!cards.length">
         <div class="home-rail-empty">
             <Icon name="todos" />
-            <p>No highlights to review.</p>
+            <p>{{ type ? "Nothing waiting on you." : "No highlights to review." }}</p>
         </div>
     </template>
     <template v-else>
@@ -54,7 +62,7 @@ async function dismiss(r) {
                 <div v-for="r in cards" :key="r.ref" :class="['needs-card', r.type]" @click="open(r)">
                     <div class="needs-card-top">
                         <span class="needs-card-kind">{{ happened(r) }}</span>
-                        <template v-if="meta(r.type).cleared_by !== 'completed' || r.completed || r.data.kept">
+                        <template v-if="!type && (meta(r.type).cleared_by !== 'completed' || r.completed || r.data.kept)">
                             <button type="button" class="needs-dismiss" title="Seen — take it off the list" @click.stop="dismiss(r)">
                                 <Icon name="close" />
                             </button>

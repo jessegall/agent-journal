@@ -11,6 +11,7 @@ import Notice from "../chat/Notice.vue";
 import AgentBar from "../chat/AgentBar.vue";
 import RailWaiting from "./RailWaiting.vue";
 import RailTodos from "./RailTodos.vue";
+import Icon from "../kit/Icon.vue";
 
 const tab = ref("waiting");
 const ready = ref(false);
@@ -22,9 +23,18 @@ onMounted(() => {
 });
 onUnmounted(() => cancelAnimationFrame(frame));
 const notices = computed(() => open("notice"));
+const OWN_TABS = ["question", "suggestion"];
 const tabs = computed(() => [
-    ["waiting", "Notifications", types.value.filter((t) => t.needs_attention).flatMap((t) => unreadByUser(t.name)).length, true],
-    ["todos", "To-dos", open("todo").length, false],
+    [
+        "waiting",
+        "Notifications",
+        types.value.filter((t) => t.needs_attention && !OWN_TABS.includes(t.name)).flatMap((t) => unreadByUser(t.name)).length,
+        true,
+        "bell",
+    ],
+    ["question", "Questions", open("question").length, true, "questions"],
+    ["suggestion", "Suggestions", open("suggestion").length, true, "bubble"],
+    ["todos", "To-dos", open("todo").length, false, "todos"],
 ]);
 </script>
 
@@ -61,21 +71,26 @@ const tabs = computed(() => [
                 <div class="home-divider" role="separator" aria-orientation="vertical" />
                 <div :class="['home-rail', {wide: store.wide}]">
                     <div class="rail-tabs" role="tablist">
-                        <template v-for="[key, label, n, warm] in tabs" :key="key">
+                        <template v-for="[key, label, n, warm, icon] in tabs" :key="key">
                             <button
                                 type="button"
                                 role="tab"
+                                :title="label"
+                                :aria-label="label"
                                 :aria-selected="tab === key"
                                 :class="['rail-tab', {on: tab === key}]"
                                 @click="tab = key"
                             >
-                                {{ label }}
+                                <template v-if="tab === key">{{ label }}</template>
+                                <template v-else><Icon :name="icon" :size="13" /></template>
                                 <span :class="['rail-tab-n', {hot: n && warm}]">{{ n }}</span>
                             </button>
                         </template>
                     </div>
                     <SwitchCase :value="tab">
                         <template #todos><RailTodos /></template>
+                        <template #question><RailWaiting type="question" /></template>
+                        <template #suggestion><RailWaiting type="suggestion" /></template>
                         <template #default><RailWaiting /></template>
                     </SwitchCase>
                 </div>
@@ -220,7 +235,9 @@ const tabs = computed(() => [
     align-items: stretch;
     height: 34px;
     padding: 0 var(--rail-gutter);
-    gap: 14px;
+    gap: 12px;
+    overflow-x: auto;
+    scrollbar-width: none;
     border-bottom: 1px solid var(--border);
     background: #111215;
 }
