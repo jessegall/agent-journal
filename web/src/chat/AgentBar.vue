@@ -43,6 +43,7 @@ const counts = computed(() => [
     },
     {key: "shells", icon: "play", n: live(data.value && data.value.shell_rows), title: "background shells running now", rows: []},
     {key: "subagents", icon: "agents", n: live(data.value && data.value.subagent_rows), title: "subagents running now", rows: []},
+    {key: "monitors", icon: "crosshair", n: live(data.value && data.value.monitor_rows), title: "monitors watching now", rows: []},
 ]);
 const skillCount = computed(() => counts.value[0]);
 const activityCounts = computed(() => counts.value.slice(1));
@@ -254,6 +255,9 @@ useOutside(bar, () => (open.value = ""));
                     </template>
                     <template #commands>
                         <CommandLog :commands="data.commands || []" />
+                    </template>
+                    <template #monitors>
+                        <CrewList :rows="data.monitor_rows || []" :total="data.monitors || 0" />
                     </template>
                     <template #shells>
                         <CrewList :rows="data.shell_rows || []" :total="data.shells || 0" />
