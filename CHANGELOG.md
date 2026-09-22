@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.91.1 — A line waits with the engine, not in the send queue
+
+While the agent's last line went out less than five seconds ago, the next ones wait with the engine instead of in the send queue, so a line about a message the agent answers in that moment is dropped rather than sent late.
+
 ## 2.91.0 — Plugins raise their own events
 
 A plugin's manifest declares its events under events, each with a title and a tone (warn or good), and its answer raises one with raise: {"event": "<name>", "brief": "<what happened>"}. The event lands on the bus as <plugin>.<name>, so features and other plugins can listen to it by that name, and the activity panel shows it with its title, brief and tone. It replaces the activity answer key, which is retired; Code Commandments raises sin-found and sin-resolved from its next release.

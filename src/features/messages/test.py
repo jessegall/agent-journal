@@ -166,3 +166,25 @@ def test_a_reaction_from_the_user_reaches_the_agent_as_what_it_is():
     face = Messages(record, actor="user").react(asked.n, "👍")
     line, counted = render([Event(id=1, at=0.0, type="reaction", n=face.n, action="created", actor="user")], record)
     assert (line.startswith(f"the user put 👍 on message {asked.n} - act on it"), counted) == (True, {}), "a face and what to do with it, never a bare count"
+
+
+def test_a_line_about_a_message_waits_for_the_driver_and_is_dropped_once_the_message_is_answered(monkeypatch):
+    import time
+    from engine.engine import Engine
+    from providers import DRIVERS
+    record = fresh()
+    report(record, "working", "PreToolUse")
+    engine = Engine(record, DRIVERS["claude"](record, "claude-1"))
+    driver, delivered = engine.agent.driver, []
+    monkeypatch.setattr(driver, "deliver", delivered.append)
+    m = Messages(record, actor=USER).create("how is it going?")
+    Messages(record, actor=AGENT).read(m.n)
+    report(record, "working", "PreToolUse")
+    driver.sent_at = time.time()
+    engine.deliver()
+    assert delivered == [], "the driver sent a line a moment ago: the next one waits with the engine"
+    Messages(record, actor=AGENT).reply(m.n, "going well")
+    driver.sent_at = 0
+    driver.pump()
+    engine.deliver()
+    assert not any("before you write" in line for line in delivered), "answered in the meantime: the waiting line is dropped, not sent late"

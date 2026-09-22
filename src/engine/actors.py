@@ -101,7 +101,7 @@ class Agent(Actor):
         return spoken_data(self.record, event).get("delivery") == TERMINAL
 
     def flush(self) -> str:
-        if not self.pending:
+        if not self.pending or not self.driver.ready():
             return ""
         for e in [e for e in self.pending if settled(self.record, e)]:
             self.notified(e)
