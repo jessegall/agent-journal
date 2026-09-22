@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.84.9 — The server always comes back after an upgrade
+
+Message 2233. Overnight the server restarted after an upgrade from the build file it had started from, which a later upgrade had already pruned: it could not start, and with it went the engine that says "todo n next" in auto mode and asks whether the agent is still working after five quiet minutes. A process that restarts or starts a helper now goes through the `journal.pyz` link, so it always lands on the newest build, and old builds are kept for a week instead of three upgrades, so a long session can always finish reading its own.
+
+What to do about it: `journal upgrade`.
+
 ## 2.84.8 — Proven: a session survives an upgrade under it
 
 A session that started before 2.84.3 still crashed when it ended, with `ZipImportError: bad local file header`, because an upgrade had overwritten the one `journal.pyz` it was reading. Builds have been versioned since 2.84.3; the start-up test now proves it holds: it starts a session, upgrades the journal under it to a different build, lets the agent quit on its own the way a real one does, and fails if anything crashes. With the old in-place overwrite put back, it fails with exactly that error.

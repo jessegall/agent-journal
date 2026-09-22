@@ -29,6 +29,7 @@ REPOSITORY = "https://github.com/jessegall/agent-journal"
 SRC = "src"
 ARCHIVE = "journal.pyz"
 KEPT_BUILDS = 3
+KEPT_BUILD_DAYS = 7
 KEPT_COPIES = 5
 NOT_RECORD = ("src", "runtime", "attic", "plugin-data")
 STUBS = {"journal.py": "journal", "channel.py": "channel", "serve.py": "serve", "engine/supervisor.py": "engine.supervisor", "engine/keeper.py": "engine.keeper"}
@@ -356,7 +357,7 @@ def pack(root: Path) -> str:
     pointer.symlink_to(target.name)
     pointer.replace(root / ARCHIVE)
     for old in sorted(root.glob("journal-*.pyz"), key=lambda f: f.stat().st_mtime, reverse=True)[KEPT_BUILDS:]:
-        if old != target:
+        if old != target and time.time() - old.stat().st_mtime > KEPT_BUILD_DAYS * 86400:
             old.unlink(missing_ok=True)
     for f in files:
         f.unlink()
