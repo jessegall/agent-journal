@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from typing import ClassVar
 
 from engine.events import ResourceEvent
+from engine.services import DOWN, want
 from features.parts import Context, Handler, TextFormatter, ToolInterceptor
 from features.plugins.lifecycle import called, clear
 from features.plugins.manifest import fill
@@ -66,7 +67,10 @@ class AskPluginsToRefuse(ToolInterceptor):
 class ClearRemovedPlugin(Handler):
     def handle(self, context: Context, event: PluginRemoved) -> None:
         rows = context.journal.plugins
-        name = called(rows.load(event.n))
+        row = rows.load(event.n)
+        name = called(row)
         still = any(r.n != event.n and called(r) == name for r in rows._standing())
         if name and not still:
+            for service in (row.manifest or {}).get("services") or {}:
+                want(context.record.root, f"{name}.{service}", DOWN)
             clear(folder(context.record.root, name))

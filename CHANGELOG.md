@@ -4,6 +4,11 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.85.58 — Removing a plugin takes all of it
+
+- Removing a plugin stops its services before its folder is taken away; its hooks and refusals stop with it.
+- The Plugins page asks first: remove it and keep what it kept of its own, in case it comes back, or remove everything.
+
 ## 2.85.57 — A plugin's preview is a list you read, not terminal output
 
 - Previewing a plugin opens a dialog with one row per thing it does — what it needs, what it runs on install, what it listens to, what it may refuse, the pages and settings it brings — each with the command beside it. The button says Run, because that is what it does.
