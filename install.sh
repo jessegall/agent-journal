@@ -12,8 +12,10 @@ command -v python3 >/dev/null 2>&1 || { echo "python3 is required"; exit 1; }
 REPO="${AGENT_JOURNAL_REPO:-https://github.com/jessegall/agent-journal}"
 TMP="$(mktemp -d)"
 git clone --quiet --depth 1 "$REPO" "$TMP/pkg"
+PKG="$TMP/pkg"
+[ -f "$PKG/src/install.py" ] && PKG="$PKG/src"
 mkdir -p .journal/src
-for f in "$TMP"/pkg/* "$TMP"/pkg/.gitignore; do
+for f in "$PKG"/* "$TMP"/pkg/.gitignore; do
   case "$(basename "$f")" in
     install.sh|tests|__pycache__|.gitignore|README.md|CHANGELOG.md|CLAUDE.md) ;;
     web) mkdir -p .journal/src/web && rm -rf .journal/src/web/dist && cp -R "$f/dist" .journal/src/web/dist ;;

@@ -1,3 +1,4 @@
+import pytest
 from types import SimpleNamespace
 
 import features.auto_update.check as updates
@@ -130,3 +131,22 @@ def test_a_launch_repairs_a_half_done_upgrade_and_says_when_records_were_lost(tm
     shutil.rmtree(root / "project")
     assert launch.repaired(record) == launch.LOST and launch.repaired(record) == "", "records lost to 2.84.0 are said once, plainly"
     assert [n.title for n in Notices(record, actor="system").all()].count(launch.LOST) == 1
+
+
+def test_an_upgrade_reads_a_package_under_src_and_never_empties_an_install(tmp_path):
+    import install
+    moved, flat, empty, target = tmp_path / "moved", tmp_path / "flat", tmp_path / "empty", tmp_path / "target"
+    for base in (moved / "src", flat):
+        (base / "engine").mkdir(parents=True)
+        (base / "install.py").write_text("# installer\n")
+        (base / "engine" / "clock.py").write_text("TICK = 1\n")
+    empty.mkdir()
+    (target / "engine").mkdir(parents=True)
+    (target / "engine" / "clock.py").write_text("TICK = 0\n")
+    install.refresh(moved, target)
+    assert (target / "engine" / "clock.py").read_text() == "TICK = 1\n", "a release that keeps its code under src/ is read from there"
+    install.refresh(flat, target)
+    assert (target / "install.py").is_file(), "a release laid out the old way still installs"
+    with pytest.raises(OSError, match="holds no journal package"):
+        install.refresh(empty, target)
+    assert (target / "engine" / "clock.py").is_file(), "a source with no package retires nothing"
