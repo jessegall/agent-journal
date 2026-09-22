@@ -41,6 +41,14 @@ const items = computed(() =>
             : [row]
     )
 );
+const toggled = ref(new Set());
+const newsworthy = (e) => raised(e) || e.type === "notification";
+const expanded = (e) => newsworthy(e) !== toggled.value.has(e.id);
+function toggle(e) {
+    const next = new Set(toggled.value);
+    next.has(e.id) ? next.delete(e.id) : next.add(e.id);
+    toggled.value = next;
+}
 function unfold(key) {
     const next = new Set(opened.value);
     next.has(key) ? next.delete(key) : next.add(key);
@@ -71,25 +79,26 @@ const who = (e) => (raised(e) ? e.data.plugin : written(e) ? logged(e).data.plug
                 </button>
             </template>
             <template v-else>
-                <a
+                <div
                     :class="[
                         'activity-row',
                         'activity-link',
-                        {'activity-update': announced(item.event), 'activity-nested': item.nested},
+                        {'activity-update': announced(item.event), 'activity-nested': item.nested, 'activity-open': expanded(item.event)},
                         tone(item.event) && `tone-${tone(item.event)}`,
                     ]"
-                    href="#"
-                    @click.prevent="peek(item.event.type, item.event.n)"
+                    @click="toggle(item.event)"
                 >
                     <span class="activity-text">
                         {{ heading(item.event) }}
-                        <span class="activity-n">{{ item.event.n }}</span>
+                        <a class="activity-n" href="#" @click.prevent.stop="peek(item.event.type, item.event.n)">{{ item.event.n }}</a>
                     </span>
-                    <template v-if="title(item.event)">
-                        <TextDisplay inline class="activity-title" :text="title(item.event)" />
+                    <template v-if="expanded(item.event)">
+                        <template v-if="title(item.event)">
+                            <TextDisplay inline class="activity-title" :text="title(item.event)" />
+                        </template>
+                        <span class="activity-age">{{ who(item.event) }} · {{ age(item.event.at) || "just now" }}</span>
                     </template>
-                    <span class="activity-age">{{ who(item.event) }} · {{ age(item.event.at) || "just now" }}</span>
-                </a>
+                </div>
             </template>
         </template>
     </TransitionGroup>
@@ -196,6 +205,17 @@ const who = (e) => (raised(e) ? e.data.plugin : written(e) ? logged(e).data.plug
 .activity-link {
     color: inherit;
     border-radius: 7px;
+    cursor: pointer;
+}
+
+a.activity-n {
+    color: inherit;
+    text-decoration: none;
+}
+
+a.activity-n:hover {
+    color: var(--accent-text);
+    opacity: 1;
 }
 
 .activity-link:hover {
