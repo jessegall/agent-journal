@@ -145,6 +145,12 @@ async function configure(p, key, value) {
     await api.act("plugin", p.n, "configure", {key, value});
 }
 
+async function clearLog() {
+    const p = plugins.value.find((row) => row.name === reading.value);
+    if (p) await api.act("plugin", p.n, "clear_log");
+    await readLog();
+}
+
 async function readLog() {
     if (!reading.value) return;
     try {
@@ -352,6 +358,9 @@ async function askAgent() {
         <template v-if="reading">
             <Dialog :title="`${reading} log`" follow @close="reading = ''">
                 <pre class="log">{{ logged || (busy ? "Starting…" : "Nothing is logged yet.") }}</pre>
+                <template #foot>
+                    <Btn small :disabled="!logged" @click="clearLog">Clear</Btn>
+                </template>
             </Dialog>
         </template>
         <template v-if="guide">

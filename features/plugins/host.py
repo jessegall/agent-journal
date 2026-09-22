@@ -14,7 +14,7 @@ from features.plugins.manifest import fill
 from features.plugins.payload import of
 from features.plugins.queue import drain
 from features.plugins.run import SECONDS, call
-from features.plugins.source import CHOSEN, environment, folder, log
+from features.plugins.source import CHOSEN, environment, folder, log, logged
 from resources.base import PLUGIN, Refused, SYSTEM
 
 REPLAY = 600
@@ -153,6 +153,8 @@ class Host:
                 if not ok:
                     self.failed(record, plugin, reply, now)
                     continue
+            if reply:
+                logged(record.root, plugin, f"{payload.get('event')} {json.dumps(reply, ensure_ascii=False)}")
             apply(record, self.journal, plugin, str(payload.get("agent", {}).get("session") or ""), reply if isinstance(reply, dict) else {})
             self.cleared(record, plugin)
         return True, 1
@@ -162,10 +164,8 @@ class Host:
         return {**{f"ports.{name}": port for name, port in ports.items()}, "dir": str(folder(record.root, self.name(row)))}
 
     def failed(self, record, plugin: str, why, now: float = 0.0) -> None:
+        logged(record.root, plugin, why)
         where = log(record.root, plugin)
-        where.parent.mkdir(parents=True, exist_ok=True)
-        with where.open("a") as f:
-            f.write(f"{why}\n")
         count = self.trouble.get(plugin, {}).get("failures", 0) + 1
         waited = min(BACKOFF * 2 ** max(0, count - PATIENCE), LONGEST_WAIT) if count >= PATIENCE else 0.0
         notice = self.trouble.get(plugin, {}).get("notice")
