@@ -1,0 +1,29 @@
+from typing import ClassVar
+
+from resources.base import DOCUMENT, Resource, ResourceDetails
+from resources.shapes import Field, Shape, names
+
+ITEM = names("insight", "outcome", "refs", "failed")
+
+
+class Dump(Shape, Resource):
+    listed_open = True
+    type = "dump"
+    event_labels = {"created": "Dumped", "completed": "Dump filed"}
+    status_labels = {"read": "reading a dump", "filed": "filing a dump"}
+    data_fields: ClassVar[list[Field]] = [
+        Field(default=dict, name="items"),
+    ]
+    needs_attention = True
+    icon = "inbox"
+    command_names = {"complete": "close"}
+    labels = {"brief": "What you dumped", "outcome": "Filed"}
+    details: ClassVar[ResourceDetails] = ResourceDetails(
+        title="Dump",
+        abstract="Raw material the user drops in one place, which the agent reads and files into the record",
+        help=("A dump holds pasted text (its brief) and dropped files; each is an item. The agent decides what every item "
+              "becomes and files it: journal dump read <n> <item> \"<what it is>\", then journal dump filed <n> <item> "
+              "\"<what it did>\" \"<ref, ref>\" or journal dump failed <n> <item> \"<why>\". journal dump items <n> lists where "
+              "every item stands; the dump closes by itself once every item is filed or failed."),
+    )
+    view = DOCUMENT
