@@ -259,8 +259,11 @@ class Stored:
             memo[self.type, deleted] = rows
         return [r.fork() for r in memo[self.type, deleted]]
 
-    def _standing(self, closed_since: float = 0) -> list[Resource]:
-        return self._ordered([self.load(row["n"]) for row in self.summaries() if not row["deleted"] and (not row["completed"] or closed_since and row["completed"] >= closed_since)])
+    def _standing(self, closed_since: float = 0, closed_last: int = 0) -> list[Resource]:
+        rows = [row for row in self.summaries() if not row["deleted"]]
+        closed = [row for row in rows if row["completed"] and closed_since and row["completed"] >= closed_since]
+        kept = sorted(closed, key=lambda row: row["completed"])[-closed_last:] if closed_last else closed
+        return self._ordered([self.load(row["n"]) for row in rows if not row["completed"]] + [self.load(row["n"]) for row in kept])
 
     def _ordered(self, rows: list[Resource]) -> list[Resource]:
         return rows
