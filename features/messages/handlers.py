@@ -2,7 +2,7 @@ import re
 from dataclasses import dataclass
 from typing import ClassVar
 
-from engine.events import AgentMessageSent, AgentUpdated, ResourceCreated, ResourceEvent
+from engine.events import AgentMessageSent, AgentReported, ResourceCreated, ResourceEvent
 from engine.transcript import IDLE, last_text
 from features import trigger
 from features.messages.answering import in_hand, read_and_open, theirs, unanswered
@@ -56,7 +56,7 @@ class ResetCountsOnArrival(Handler):
 
 
 class NameUnread(Handler):
-    def handle(self, context: AgentContext, event: AgentUpdated) -> None:
+    def handle(self, context: AgentContext, event: AgentReported) -> None:
         if not any(AGENT not in row["seen"] and not row["completed"] and not row["deleted"] for row in context.journal.messages.summaries()):
             context.release("unread")
             trigger.write(context.record, context.agent.row, context.feature.keyed("unread"), count=0)
@@ -69,7 +69,7 @@ class NameUnread(Handler):
 
 
 class NameUnanswered(Handler):
-    def handle(self, context: AgentContext, event: AgentUpdated) -> None:
+    def handle(self, context: AgentContext, event: AgentReported) -> None:
         held = unanswered(context.journal)
         if not held:
             trigger.write(context.record, context.agent.row, context.feature.keyed("answering"), count=0)
@@ -81,7 +81,7 @@ class NameUnanswered(Handler):
 class CloseHandled(Handler):
     behaviour = "closing"
 
-    def handle(self, context: AgentContext, event: AgentUpdated) -> None:
+    def handle(self, context: AgentContext, event: AgentReported) -> None:
         if context.agent.row.status != IDLE:
             return
         for message in read_and_open(context.journal):
@@ -132,7 +132,7 @@ class LinkToMessageInHand(Handler):
 class NameRunTogether(Handler):
     behaviour = "paragraphs"
 
-    def handle(self, context: AgentContext, event: AgentUpdated) -> None:
+    def handle(self, context: AgentContext, event: AgentReported) -> None:
         last = last_text(context.record, context.agent.row).strip()
         if len(last) >= RUN_ON and "\n\n" not in last and last.count(". ") >= SENTENCES:
             context.agent.whisper("paragraphs")

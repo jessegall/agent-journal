@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.84.95 — A hook report is its own event
+
+What the hooks report on every tool call was recorded as agent updated, the same as a real change to the agent. It is now agent.reported, and every feature that listens to the hooks listens to that; agent.updated means a real change to the agent row. The memory hold and lapsed assignments still hear both.
+
 ## 2.84.94 — The agent hears what its commit closed
 
 When a commit's Journal: todos done trailer closes a to-do, and that ends the work open on it, the agent is told at once, for example: commit 87cc442b closed to-do 809 and ended work 727.

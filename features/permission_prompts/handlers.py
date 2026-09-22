@@ -1,11 +1,11 @@
-from engine.events import AgentUpdated
+from engine.events import AgentReported
 from features.parts import AgentContext, Handler
 
 PERMISSION = "permission"
 
 
 class ShowWaitingPermission(Handler):
-    def handle(self, context: AgentContext, event: AgentUpdated) -> None:
+    def handle(self, context: AgentContext, event: AgentReported) -> None:
         if context.agent.row.subagent:
             return
         session = context.agent.session

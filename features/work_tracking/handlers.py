@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import ClassVar
 
-from engine.events import AgentUpdated, AnyEvent, ClockTicked, ResourceEvent, ToolFinished
+from engine.events import AgentReported, AnyEvent, ClockTicked, ResourceEvent, ToolFinished
 from features import trigger
 from features.parts import WHOLE_FEATURE, AgentContext, Context, Handler
 from features.work_tracking import tracker
@@ -103,13 +103,13 @@ class TrackFiles(Handler):
 class RemindOpenWork(Handler):
     behaviour = WHOLE_FEATURE
 
-    def handle(self, context: AgentContext, event: AgentUpdated) -> None:
+    def handle(self, context: AgentContext, event: AgentReported) -> None:
         for w in working(context)[:1]:
             context.agent.say("open" if w.sections else "unlogged", n=w.n)
 
 
 class CountEdits(Handler):
-    def handle(self, context: AgentContext, event: AgentUpdated) -> None:
+    def handle(self, context: AgentContext, event: AgentReported) -> None:
         work = working(context)[:1]
         if not context.agent.row.wrote or not work:
             return
@@ -135,7 +135,7 @@ class ResetEditsOnLog(Handler):
 class OfferNextRow(Handler):
     behaviour = "auto"
 
-    def handle(self, context: AgentContext, event: AgentUpdated) -> None:
+    def handle(self, context: AgentContext, event: AgentReported) -> None:
         offer(context)
 
 

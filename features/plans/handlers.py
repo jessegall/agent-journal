@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import ClassVar
 
-from engine.events import AgentUpdated, AnyEvent, ResourceEvent
+from engine.events import AgentReported, AnyEvent, ResourceEvent
 from features.plans.controller import BUILDING, PHASES, WAITING
 from features.plans.progress import catch_up
 from features.plans.resource import PHASE
@@ -10,7 +10,7 @@ from features.parts import AgentContext, Context, Handler
 from resources.base import AGENT, USER
 
 WRITTEN = ("created", "updated", "linked")
-ADVANCES = {("todo", "completed"), ("plan", "updated"), ("agent", "updated")}
+ADVANCES = {("todo", "completed"), ("plan", "updated"), ("agent", "reported")}
 
 
 @dataclass(frozen=True)
@@ -43,7 +43,7 @@ class GuideBuilding(Handler):
 
 
 class PassCheckpointsInAuto(Handler):
-    def handle(self, context: AgentContext, event: AgentUpdated) -> None:
+    def handle(self, context: AgentContext, event: AgentReported) -> None:
         if not automatic(context.record):
             return
         plans = context.journal.plans

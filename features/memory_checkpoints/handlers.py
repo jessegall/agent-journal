@@ -1,4 +1,4 @@
-from engine.events import AgentUpdated, ResourceCreated
+from engine.events import AgentChanged, AgentReported, ResourceCreated
 from features.memory_checkpoints.reread import owed
 from features.parts import AgentContext, Context, Handler
 
@@ -6,7 +6,7 @@ DECISIONS = ("fact", "rule")
 
 
 class DecideAtMarks(Handler):
-    def handle(self, context: AgentContext, event: AgentUpdated) -> None:
+    def handle(self, context: AgentContext, event: AgentReported) -> None:
         if context.agent.row.decided:
             context.release()
         elif context.due():
@@ -24,6 +24,12 @@ class ReleaseOnceDecided(Handler):
 class NameOwedReading(Handler):
     behaviour = "rereading"
 
-    def handle(self, context: AgentContext, event: AgentUpdated) -> None:
+    def handle(self, context: AgentContext, event: AgentReported) -> None:
         if owed(context.record):
             context.agent.say("reread")
+
+
+class DecideAtMarksOnChange(DecideAtMarks):
+    def handle(self, context: AgentContext, event: AgentChanged) -> None:
+        if event.action == "updated":
+            super().handle(context, event)

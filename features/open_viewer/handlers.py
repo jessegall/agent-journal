@@ -4,7 +4,7 @@ from features import trigger
 from features.parts import AgentContext, Handler
 
 SHOWN = "shown"
-WRITTEN = ("created", "updated")
+WRITTEN = ("created", "updated", "reported")
 
 
 class ShowViewerTab(Handler):

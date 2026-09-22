@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from engine.events import AgentMessageSent, AgentUpdated
+from engine.events import AgentMessageSent, AgentReported
 from features.parts import AgentContext, Handler
 from providers import PROVIDERS
 
@@ -9,7 +9,7 @@ TURN_STARTS = ("UserPromptSubmit", "SessionEnd")
 
 
 class FollowThinking(Handler):
-    def handle(self, context: AgentContext, event: AgentUpdated) -> None:
+    def handle(self, context: AgentContext, event: AgentReported) -> None:
         row = context.agent.row
         kind, transcript = PROVIDERS.get(row.provider), Path(row.transcript or "")
         if not kind or not transcript.is_file():
