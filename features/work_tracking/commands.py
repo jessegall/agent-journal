@@ -19,8 +19,7 @@ class LogWork(Command):
 
     def run(self, context: Context, works: Works, text: str, n: int = 0):
         row = in_hand(works, n)
-        logged = works.section(row.n, f"{len(row.sections) + 1} · {time.strftime('%Y-%m-%d %H:%M')}", text)
-        return works.update(row.n, awaiting="") if row.awaiting else logged
+        return works.section(row.n, f"{len(row.sections) + 1} · {time.strftime('%Y-%m-%d %H:%M')}", text)
 
 
 class ParkWork(Command):

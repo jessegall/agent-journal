@@ -4,6 +4,11 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.85.43 — A declared wait stands until the agent works again
+
+- journal work await says once what the agent is waiting for. A log entry no longer clears it; using a tool again does, and the agent is told that its wait is over because it is working again.
+- The work tracking skill says to declare the wait instead of writing another line each time nothing has changed, and chat etiquette catches "still waiting", "nothing new yet" and "nothing to report yet".
+
 ## 2.85.42 — No Comments button on a system row
 
 - A row the journal ships, such as a system sequence, no longer shows the Comments button: not in the side panel, nor on a plan or document page, nor in the revisions view.

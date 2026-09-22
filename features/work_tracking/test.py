@@ -171,7 +171,10 @@ def test_a_declared_wait_is_asked_about_and_cleared_when_the_work_moves():
     assert nudges(record)[-1] == "you said you are waiting for the CI run on main, 2 min ago - is that still true?", \
         "a wait that stands is asked about"
     works.action("log")("CI passed")
-    assert works.load(build.n).awaiting == "", "a log entry clears the wait"
+    assert works.load(build.n).awaiting == "the CI run on main", "a log entry leaves the wait standing"
+    report(record, "working", "PostToolUse", tool="Bash")
+    assert works.load(build.n).awaiting == "", "working again clears it"
+    assert [n for n in nudges(record) if "your wait for the CI run on main is over" in n], "and the agent is told why"
     works.action("await")("the deploy")
     works.action("park")("the release goes out tomorrow")
     assert works.load(build.n).awaiting == "", "parking clears the wait"
