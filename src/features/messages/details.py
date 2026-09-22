@@ -17,16 +17,13 @@ class MessagesDetails(FeatureDetails):
     """
 
     help = """
-        Unread messages are named at the first tool use after one arrives and every third
-        after; five times ignored, the writes are held. A message that has been read is named
-        again before the next write, a few times, and never refused over.
+        To hand the user a document, or any row, put its reference on a line of its own, such as doc 41: the chat shows it as a
+        card they can open.
 
-        To hand the user a document, or any row, put its reference on a line of its own, such
-        as doc 41: the chat shows it as a card they can open.
-
-        A reply, a reaction, or processing every part closes it, and a message the agent wrote
-        closes as soon as the user has seen it. Every row the agent files while a message is in
-        its hands is linked to that message.
+        Unread messages are named at the first tool use after one arrives and every third after; five times ignored, your
+        writes are held. A message you have read is named again before the next write, a few times, and never refused over.
+        A reply, a reaction, or processing every part closes it; a message you wrote closes as soon as the user has seen it,
+        and every row you file while a message is in your hands is linked to it.
     """
 
     aliases = (("inbox", "unread"), ("handled", "closing"), ("status", "answering"))

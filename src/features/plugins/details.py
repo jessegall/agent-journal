@@ -11,14 +11,14 @@ class PluginsDetails(FeatureDetails):
     abstract = "A repository installed into the journal hears the bus, answers it, and may run services of its own"
 
     help = """
-        The servers a plugin declares are kept up while the session runs and die with it; one
-        that gives up is said once over the chat, and journal services
-        list|start|stop|restart|log <plugin>.<service> inspects them.
+        Install a plugin with journal plugin install <url>, upgrade it with journal plugin upgrade <n>, and change a setting with
+        journal plugin configure <n> <key> --value <value>. Install shows every command before it runs any, because a plugin
+        runs as you. Its .journal-plugin/plugin.json says what it listens to, what it runs, which pages it shows and which
+        events it raises.
 
-        Install one with journal plugin install <url>: its .journal-plugin/plugin.json says what
-        it listens to, what it runs and which pages it shows. A plugin runs as you; install
-        shows every command before it runs any. It writes back by calling the journal itself,
-        or by appending journal commands to the file at $JOURNAL_QUEUE, one per line, which the
+        When one of its servers gives up, you are told once; journal services list|start|stop|restart|log <plugin>.<service>
+        inspects them. The servers a plugin declares are kept up while the session runs and stop with it. A plugin writes back
+        by calling the journal itself, or by appending journal commands to the file at $JOURNAL_QUEUE, one per line, which the
         host drains a few at a time.
     """
 

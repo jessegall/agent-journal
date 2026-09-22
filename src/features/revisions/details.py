@@ -16,13 +16,13 @@ class RevisionsDetails(FeatureDetails):
     """
 
     help = """
-        Every edit to a doc changes its open revision in place. A revision is kept when the user
-        presses Keep this revision, when journal doc keep <n> runs, or by itself after
-        revisions.keep_after_minutes (30) without an edit; the next edit opens a new revision
-        copied from the kept one, so nothing kept is ever changed. journal doc revisions <n>
-        lists them, journal doc revision <n> <k> shows one, and journal doc cut <n> "<part>"
-        removes a part. The viewer shows a row of revisions above the document to step back
-        through, and what each one changed.
+        Edit a doc as usual; each edit changes its open revision in place. When a version is worth keeping, run
+        journal doc keep <n>: the next edit then opens a new revision copied from the kept one, so nothing kept is ever
+        changed. A revision is also kept when the user presses Keep this revision, or by itself after
+        revisions.keep_after_minutes (30) without an edit.
+
+        journal doc revisions <n> lists them, journal doc revision <n> <k> shows one, and journal doc cut <n> "<part>" removes
+        a part. The viewer shows a row of revisions above the document, and what each one changed.
     """
 
     settings = [

@@ -12,13 +12,13 @@ class RemindersDetails(FeatureDetails):
     abstract = "The standing reminders said again to the agent when it comes to rest after work"
 
     help = """
-        Said again every tenth of the context window, so a long session hears them a handful of
-        times. Settings sets the cadence: every n percent, uses or minutes, or on idle, worked
-        or start.
+        When you keep forgetting to do something you already know, write a reminder: journal reminder create "<what to do>".
+        It is said again every tenth of the context window, so a long session hears it a handful of times; Settings can change
+        the cadence to every n percent, uses or minutes, or to idle, worked or start.
 
-        A reminder written with --set whom=<session> is said to that session alone and stays out
-        of the start block, which is how an agent reminds itself of something it keeps
-        forgetting, or leaves one for the agent it is about to dispatch.
+        To remind only one session, add --set whom=<session>: it is said to that session alone and stays out of the start
+        block. Use it to remind yourself, or to leave an instruction for an agent you are about to dispatch. Retire one that is
+        no longer needed with journal reminder retire <n>.
     """
 
     trigger = Trigger(every=10, unit=PERCENT)
