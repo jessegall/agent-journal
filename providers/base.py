@@ -180,6 +180,9 @@ class Provider(ABC):
     def is_subagent(self, hook) -> bool:
         return False
 
+    def hidden_messages(self, transcript: Path, offset: int) -> tuple[list[str], int]:
+        return [], offset
+
     def status(self, hook) -> str:
         return "idle" if hook.tool.name in self.sleeping_tools else STATUS[hook.event]
 
