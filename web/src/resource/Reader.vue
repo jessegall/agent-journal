@@ -1,5 +1,6 @@
 <script setup>
 import {computed, ref, watch, watchEffect} from "vue";
+import SidePanel from "../kit/SidePanel.vue";
 import SwitchCase from "../kit/SwitchCase.vue";
 import {go, route, swap, unpeek} from "../route.js";
 import {meta} from "../state/store.js";
@@ -45,119 +46,79 @@ watch(
 </script>
 
 <template>
-    <Transition name="reader" appear @after-leave="emit('gone')">
-        <div
-            v-if="resource && !leaving"
-            :key="panel"
-            :class="['reader', shape, {under: depth, over}]"
-            :style="{'--depth': depth, zIndex: 20 - depth}"
-            @click.self="close"
-        >
-            <template v-if="panel === 'inspector'">
-                <aside :class="['inspector', {swapping, 'focusing-comment': focusComment}]">
-                    <div class="inspector-pages">
-                        <Transition name="inspector-page">
-                            <div :key="resource.ref" :class="['inspector-page', shape]">
-                                <template v-if="swapping">
-                                    <div class="skeleton">
-                                        <span class="blank short" />
-                                        <span class="blank wide" />
-                                        <span class="blank" />
-                                        <span class="blank" />
-                                        <span class="blank half" />
-                                    </div>
-                                </template>
-                                <template v-else>
-                                    <ResourceBody :resource="resource" :comment-composer="false" @close="close" />
-                                </template>
-                            </div>
-                        </Transition>
-                    </div>
-                    <Comments :resource="resource" :show-thread="!!focusComment" :focus="focusComment" />
-                </aside>
-            </template>
-            <template v-else>
-                <div class="page">
-                    <SwitchCase :value="shape">
-                        <template #plan>
-                            <DocumentPage :resource="resource" :focus="focusComment" @close="close">
-                                <PlanPage :resource="resource" @close="close" />
-                            </DocumentPage>
-                        </template>
-                        <template #collection>
-                            <DocumentPage :resource="resource" :focus="focusComment" :shown="resource.refs" @close="close">
-                                <CollectionPage :resource="resource" @close="close" />
-                            </DocumentPage>
-                        </template>
-                        <template #agent>
-                            <DocumentPage :resource="resource" :focus="focusComment" @close="close">
-                                <AgentPage :resource="resource" @close="close" />
-                            </DocumentPage>
-                        </template>
-                        <template #document>
-                            <DocumentPage :resource="resource" :focus="focusComment" @close="close">
-                                <template v-if="resource.data.revisions">
-                                    <Revisions :resource="resource" @close="close" />
-                                </template>
-                            </DocumentPage>
-                        </template>
-                        <template #default>
-                            <ResourceBody :resource="resource" @close="close" />
-                        </template>
-                    </SwitchCase>
+    <SidePanel
+        :open="!!resource && !leaving"
+        :width="panel === 'inspector' ? (shape === 'wide' ? 'wide' : 'normal') : 'page'"
+        :depth="depth"
+        :over="over"
+        @dismiss="close"
+        @close="emit('gone')"
+    >
+        <template v-if="panel === 'inspector'">
+            <div :class="['inspector', {swapping, 'focusing-comment': focusComment}]">
+                <div class="inspector-pages">
+                    <Transition name="inspector-page">
+                        <div :key="resource.ref" :class="['inspector-page', shape]">
+                            <template v-if="swapping">
+                                <div class="skeleton">
+                                    <span class="blank short" />
+                                    <span class="blank wide" />
+                                    <span class="blank" />
+                                    <span class="blank" />
+                                    <span class="blank half" />
+                                </div>
+                            </template>
+                            <template v-else>
+                                <ResourceBody :resource="resource" :comment-composer="false" @close="close" />
+                            </template>
+                        </div>
+                    </Transition>
                 </div>
-            </template>
-        </div>
-    </Transition>
+                <Comments :resource="resource" :show-thread="!!focusComment" :focus="focusComment" />
+            </div>
+        </template>
+        <template v-else>
+            <div class="page">
+                <SwitchCase :value="shape">
+                    <template #plan>
+                        <DocumentPage :resource="resource" :focus="focusComment" @close="close">
+                            <PlanPage :resource="resource" @close="close" />
+                        </DocumentPage>
+                    </template>
+                    <template #collection>
+                        <DocumentPage :resource="resource" :focus="focusComment" :shown="resource.refs" @close="close">
+                            <CollectionPage :resource="resource" @close="close" />
+                        </DocumentPage>
+                    </template>
+                    <template #agent>
+                        <DocumentPage :resource="resource" :focus="focusComment" @close="close">
+                            <AgentPage :resource="resource" @close="close" />
+                        </DocumentPage>
+                    </template>
+                    <template #document>
+                        <DocumentPage :resource="resource" :focus="focusComment" @close="close">
+                            <template v-if="resource.data.revisions">
+                                <Revisions :resource="resource" @close="close" />
+                            </template>
+                        </DocumentPage>
+                    </template>
+                    <template #default>
+                        <ResourceBody :resource="resource" @close="close" />
+                    </template>
+                </SwitchCase>
+            </div>
+        </template>
+    </SidePanel>
 </template>
 
 <style scoped>
-.reader {
-    position: fixed;
-    inset: 0;
-    z-index: 20;
-}
-.reader.small,
-.reader.wide,
-.reader.document,
-.reader.plan,
-.reader.agent {
-    background: rgba(0, 0, 0, 0.4);
-    backdrop-filter: blur(3px);
-}
-.reader.over {
-    background: transparent;
-    backdrop-filter: none;
-}
-
-.reader.under {
-    pointer-events: none;
-}
-
-.reader.under .inspector,
-.reader.under .page {
-    transform: translateX(calc(var(--depth) * -28px));
-    filter: brightness(0.8);
-    transition:
-        transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1),
-        filter 0.28s ease;
-}
-
 .inspector {
-    position: absolute;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    width: min(460px, 100%);
+    position: relative;
     display: flex;
     flex-direction: column;
+    height: 100%;
     overflow: hidden;
-    background: var(--bg);
-    border-left: 1px solid var(--border);
-    box-shadow: -20px 0 50px rgba(0, 0, 0, 0.4);
-    transition: width 0.26s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
-
 .inspector::before {
     content: "";
     position: absolute;
@@ -219,9 +180,6 @@ watch(
     padding: 10px 20px 14px;
     border-top: 1px solid var(--border);
     background: var(--bg);
-}
-.reader.wide .inspector {
-    width: min(760px, 100%);
 }
 
 .skeleton {
@@ -305,15 +263,7 @@ watch(
     transform: translateX(-32px);
 }
 .page {
-    position: absolute;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    width: min(1180px, 68%);
-    overflow: auto;
-    border-left: 1px solid var(--border);
-    background: var(--bg);
-    box-shadow: -24px 0 60px rgba(0, 0, 0, 0.45);
+    min-height: 100%;
 }
 .page > :deep(.body) {
     max-width: 800px;
@@ -327,52 +277,20 @@ watch(
     padding: 36px 32px 8px;
 }
 
-.reader-enter-active,
-.reader-leave-active {
-    transition: background 0.24s ease;
-}
-
-.reader-enter-active .inspector,
-.reader-leave-active .inspector {
-    transition:
-        transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1),
-        width 0.26s cubic-bezier(0.2, 0.8, 0.2, 1);
-}
-
-.reader-enter-active .page,
-.reader-leave-active .page {
-    transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
-}
-
-.reader-enter-from,
-.reader-leave-to {
-    background: transparent;
-}
-
-.reader-enter-from .inspector,
-.reader-leave-to .inspector {
-    transform: translateX(100%);
-}
-
-.reader-enter-from .page,
-.reader-leave-to .page {
-    transform: translateX(100%);
-}
-
-.reader-leave-active :deep(.document-body),
-.reader-leave-active :deep(.document-aside) {
+.side-leave-active :deep(.document-body),
+.side-leave-active :deep(.document-aside) {
     animation: none;
     transition:
         transform 0.26s cubic-bezier(0.2, 0.8, 0.2, 1),
         opacity 0.22s ease-in;
 }
 
-.reader-leave-to :deep(.document-body) {
+.side-leave-to :deep(.document-body) {
     opacity: 0;
     transform: translateX(-28px);
 }
 
-.reader-leave-to :deep(.document-aside) {
+.side-leave-to :deep(.document-aside) {
     opacity: 0;
     transform: translateX(28px);
 }

@@ -2,28 +2,40 @@
 import Icon from "./Icon.vue";
 import {closing} from "./closing.js";
 
-defineProps({title: String, abstract: String});
-const emit = defineEmits(["close"]);
-const {shown, close, closed} = closing(emit);
+const props = defineProps({
+    title: {type: String, default: ""},
+    abstract: {type: String, default: ""},
+    width: {type: String, default: "normal"},
+    open: {type: Boolean, default: null},
+    depth: {type: Number, default: 0},
+    over: {type: Boolean, default: false},
+});
+const emit = defineEmits(["close", "dismiss"]);
+const {shown, close, closed} = closing(emit, props);
 </script>
 
 <template>
     <Transition name="side" appear @after-leave="closed">
-        <div v-if="shown" class="veil" @click.self="close">
-            <aside class="panel" role="dialog" :aria-label="title">
-                <header class="head">
-                    <div class="names">
-                        <h2>{{ title }}</h2>
-                        <template v-if="abstract">
-                            <p class="abstract">{{ abstract }}</p>
-                        </template>
+        <div v-if="shown" :class="['veil', {over, under: depth}]" :style="{'--depth': depth, zIndex: 40 - depth}" @click.self="close">
+            <aside :class="['panel', width]" role="dialog" :aria-label="title">
+                <template v-if="title">
+                    <header class="head">
+                        <div class="names">
+                            <h2>{{ title }}</h2>
+                            <template v-if="abstract">
+                                <p class="abstract">{{ abstract }}</p>
+                            </template>
+                        </div>
+                        <slot name="actions" />
+                        <button type="button" class="close" title="Close" @click="close"><Icon name="close" /></button>
+                    </header>
+                    <div class="body">
+                        <slot />
                     </div>
-                    <slot name="actions" />
-                    <button type="button" class="close" title="Close" @click="close"><Icon name="close" /></button>
-                </header>
-                <div class="body">
+                </template>
+                <template v-else>
                     <slot />
-                </div>
+                </template>
             </aside>
         </div>
     </Transition>
@@ -34,7 +46,22 @@ const {shown, close, closed} = closing(emit);
     position: fixed;
     inset: 0;
     z-index: 40;
-    background: color-mix(in srgb, #000 35%, transparent);
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(3px);
+}
+
+.veil.over {
+    background: transparent;
+    backdrop-filter: none;
+}
+
+.veil.under {
+    pointer-events: none;
+}
+
+.veil.under .panel {
+    filter: brightness(0.8);
+    transform: translateX(calc(var(--depth) * -28px));
 }
 
 .panel {
@@ -44,24 +71,41 @@ const {shown, close, closed} = closing(emit);
     bottom: 0;
     display: flex;
     flex-direction: column;
-    width: min(520px, 100vw);
+    width: min(480px, 100vw);
     border-left: 1px solid var(--border);
     background: var(--bg);
-    box-shadow: -16px 0 40px color-mix(in srgb, #000 30%, transparent);
+    box-shadow: -20px 0 50px rgba(0, 0, 0, 0.4);
+    transition:
+        width 0.26s cubic-bezier(0.2, 0.8, 0.2, 1),
+        transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1),
+        filter 0.28s ease;
+}
+
+.panel.wide {
+    width: min(760px, 100vw);
+}
+
+.panel.page {
+    width: min(1180px, 68%);
+    overflow: auto;
 }
 
 .side-enter-active,
-.side-leave-active,
+.side-leave-active {
+    transition:
+        background 0.24s ease,
+        backdrop-filter 0.24s ease;
+}
+
 .side-enter-active .panel,
 .side-leave-active .panel {
-    transition:
-        opacity 0.2s ease,
-        transform 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
+    transition: transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 .side-enter-from,
 .side-leave-to {
-    opacity: 0;
+    background: transparent;
+    backdrop-filter: blur(0);
 }
 
 .side-enter-from .panel,

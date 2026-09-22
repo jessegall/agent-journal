@@ -4,7 +4,7 @@ import Icon from "./Icon.vue";
 import {closing} from "./closing.js";
 
 const props = defineProps({title: {type: String, default: ""}, follow: {type: Boolean, default: false}});
-const emit = defineEmits(["close"]);
+const emit = defineEmits(["close", "dismiss"]);
 const {shown, close, closed} = closing(emit);
 const body = ref(null);
 const toBottom = () => body.value && (body.value.scrollTop = body.value.scrollHeight);
