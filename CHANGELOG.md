@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.84.26 — The bare-number check leaves counts and quotes alone
+
+The check from 2.84.25 flagged its own release note. A number in brackets, which is usually a count, no longer counts as a row, and quoted text is skipped like code. Only a number right after a word such as answered, filed or parked is named back.
+
 ## 2.84.25 — The agent is told when a number in its message has no type
 
 When the agent's chat message names a row by a bare number, like "answered 1712" or "(644)", it is told which numbers they are and asked to put the type in front (message 1712, to-do 644), so the chat can link them. Only numbers of rows that exist count; versions, counts and code are left alone. It is the new "numbers" behaviour of the Messages feature and can be switched off in Settings.
