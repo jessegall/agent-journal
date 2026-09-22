@@ -1,6 +1,7 @@
 <script setup>
 import {computed, reactive} from "vue";
 import {api} from "../api/client.js";
+import FoldGroup from "../kit/FoldGroup.vue";
 import Icon from "../kit/Icon.vue";
 import {ink, project, tint} from "../identity.js";
 import {route} from "../route.js";
@@ -44,105 +45,81 @@ async function makeEnv() {
             <Icon name="panel" />
             Hub
         </a>
-        <div class="group">
-            <button type="button" class="group-label fold-head" :aria-expanded="!folded.environment" @click="fold('environment')">
-                Environment
-                <span :class="['fold', {shut: folded.environment}]" />
-            </button>
-            <template v-if="!folded.environment">
-                <a :class="['item', {on: !route.page}]" :href="`#/${route.env}`">
-                    <Icon name="home" />
-                    Home
-                </a>
-                <template v-if="boardOn">
-                    <a :class="['item', {on: route.page === 'board'}]" :href="`#/${route.env}/board`">
-                        <Icon name="board" />
-                        Board
-                        <span class="count">{{ counted("todo") || "" }}</span>
-                    </a>
-                </template>
-                <template v-for="t in navTypes('environment')" :key="t.name">
-                    <a :class="['item', {on: route.page === t.name}]" :href="`#/${route.env}/${t.name}`">
-                        <Icon :name="t.icon" />
-                        {{ t.title }}s
-                        <span :class="['count', {hot: t.needs_attention && count(t)}]">{{ count(t) || "" }}</span>
-                    </a>
-                </template>
-                <a :class="['item', {on: route.page === 'settings'}]" :href="`#/${route.env}/settings`">
-                    <Icon name="settings" />
-                    Settings
+        <FoldGroup class="group" label="Environment" :open="!folded.environment" @toggle="fold('environment')">
+            <a :class="['item', {on: !route.page}]" :href="`#/${route.env}`">
+                <Icon name="home" />
+                Home
+            </a>
+            <template v-if="boardOn">
+                <a :class="['item', {on: route.page === 'board'}]" :href="`#/${route.env}/board`">
+                    <Icon name="board" />
+                    Board
+                    <span class="count">{{ counted("todo") || "" }}</span>
                 </a>
             </template>
-        </div>
-        <div class="group">
-            <button type="button" class="group-label fold-head" :aria-expanded="!folded.project" @click="fold('project')">
-                Project
-                <span :class="['fold', {shut: folded.project}]" />
-            </button>
-            <template v-if="!folded.project">
-                <template v-for="t in navTypes('project')" :key="t.name">
-                    <a :class="['item', {on: route.page === t.name}]" :href="`#/${route.env}/${t.name}`">
-                        <Icon :name="t.icon" />
-                        {{ t.title }}s
-                        <span class="count">{{ counted(t.name) || "" }}</span>
-                    </a>
-                </template>
-                <a :class="['item', {on: route.page === 'skills'}]" :href="`#/${route.env}/skills`">
-                    <Icon name="book" />
-                    Skills
+            <template v-for="t in navTypes('environment')" :key="t.name">
+                <a :class="['item', {on: route.page === t.name}]" :href="`#/${route.env}/${t.name}`">
+                    <Icon :name="t.icon" />
+                    {{ t.title }}s
+                    <span :class="['count', {hot: t.needs_attention && count(t)}]">{{ count(t) || "" }}</span>
                 </a>
-                <a :class="['item', {on: route.page === 'plugins'}]" :href="`#/${route.env}/plugins`">
-                    <Icon name="plug" />
-                    Plugins
-                </a>
-                <a :class="['item', {on: route.page === 'services'}]" :href="`#/${route.env}/services`">
-                    <Icon name="terminal" />
-                    Services
-                </a>
-                <template v-for="p in pages" :key="`${p.plugin}.${p.name}`">
-                    <a
-                        :class="['item', {on: route.page === 'page' && String(route.n) === `${p.plugin}.${p.name}`}]"
-                        :href="`#/${route.env}/page/${p.plugin}.${p.name}`"
-                    >
-                        <Icon :name="p.icon" />
-                        {{ p.title }}
-                        <span :class="['plugin-dot', p.state]" />
-                    </a>
-                </template>
             </template>
-        </div>
-        <div class="group">
-            <button type="button" class="group-label fold-head" :aria-expanded="!folded.environments" @click="fold('environments')">
-                Environments
-                <span :class="['fold', {shut: folded.environments}]" />
-            </button>
-            <template v-if="!folded.environments">
-                <template v-for="e in envs" :key="e.n">
-                    <a :class="['item', {on: route.env === e.title}]" :href="`#/${e.title}`">
-                        <span :class="['env-dot', {live: live(e.title)}]" />
-                        {{ e.title }}
-                    </a>
-                </template>
-                <button type="button" class="item item-new" @click="draft.open = true">
-                    <Icon name="plus" />
-                    New environment
-                </button>
-                <template v-if="draft.open">
-                    <form class="env-new" @submit.prevent="makeEnv">
-                        <input
-                            v-model="draft.name"
-                            class="field"
-                            placeholder="a short name"
-                            autofocus
-                            @keydown.escape="draft.open = false"
-                        />
-                        <template v-if="draft.error">
-                            <p class="error">{{ draft.error }}</p>
-                        </template>
-                    </form>
-                </template>
+            <a :class="['item', {on: route.page === 'settings'}]" :href="`#/${route.env}/settings`">
+                <Icon name="settings" />
+                Settings
+            </a>
+        </FoldGroup>
+        <FoldGroup class="group" label="Project" :open="!folded.project" @toggle="fold('project')">
+            <template v-for="t in navTypes('project')" :key="t.name">
+                <a :class="['item', {on: route.page === t.name}]" :href="`#/${route.env}/${t.name}`">
+                    <Icon :name="t.icon" />
+                    {{ t.title }}s
+                    <span class="count">{{ counted(t.name) || "" }}</span>
+                </a>
             </template>
-        </div>
+            <a :class="['item', {on: route.page === 'skills'}]" :href="`#/${route.env}/skills`">
+                <Icon name="book" />
+                Skills
+            </a>
+            <a :class="['item', {on: route.page === 'plugins'}]" :href="`#/${route.env}/plugins`">
+                <Icon name="plug" />
+                Plugins
+            </a>
+            <a :class="['item', {on: route.page === 'services'}]" :href="`#/${route.env}/services`">
+                <Icon name="terminal" />
+                Services
+            </a>
+            <template v-for="p in pages" :key="`${p.plugin}.${p.name}`">
+                <a
+                    :class="['item', {on: route.page === 'page' && String(route.n) === `${p.plugin}.${p.name}`}]"
+                    :href="`#/${route.env}/page/${p.plugin}.${p.name}`"
+                >
+                    <Icon :name="p.icon" />
+                    {{ p.title }}
+                    <span :class="['plugin-dot', p.state]" />
+                </a>
+            </template>
+        </FoldGroup>
+        <FoldGroup class="group" label="Environments" :open="!folded.environments" @toggle="fold('environments')">
+            <template v-for="e in envs" :key="e.n">
+                <a :class="['item', {on: route.env === e.title}]" :href="`#/${e.title}`">
+                    <span :class="['env-dot', {live: live(e.title)}]" />
+                    {{ e.title }}
+                </a>
+            </template>
+            <button type="button" class="item item-new" @click="draft.open = true">
+                <Icon name="plus" />
+                New environment
+            </button>
+            <template v-if="draft.open">
+                <form class="env-new" @submit.prevent="makeEnv">
+                    <input v-model="draft.name" class="field" placeholder="a short name" autofocus @keydown.escape="draft.open = false" />
+                    <template v-if="draft.error">
+                        <p class="error">{{ draft.error }}</p>
+                    </template>
+                </form>
+            </template>
+        </FoldGroup>
         <div class="side-bottom">
             <div class="side-foot side-foot-row">
                 <span class="side-foot-version">Agent journal {{ store.spec.version || "" }}</span>
@@ -230,47 +207,6 @@ async function makeEnv() {
     justify-content: center;
     font-size: 11px;
     color: var(--text-2);
-}
-.group {
-    display: flex;
-    flex-direction: column;
-    gap: 1px;
-}
-.group-label {
-    font-size: 11.5px;
-    font-weight: 500;
-    color: var(--text-3);
-    padding: 4px 8px 6px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-.fold-head {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    width: 100%;
-    background: none;
-    border: 0;
-    text-align: left;
-    cursor: pointer;
-    border-radius: 6px;
-}
-.fold-head:hover {
-    color: var(--text-2);
-}
-.fold {
-    width: 5px;
-    height: 5px;
-    margin-right: 4px;
-    border-right: 1.5px solid currentColor;
-    border-bottom: 1.5px solid currentColor;
-    transform: rotate(45deg);
-    transition: transform 0.15s;
-    opacity: 0.7;
-}
-.fold.shut {
-    transform: rotate(-45deg);
 }
 .item {
     display: flex;

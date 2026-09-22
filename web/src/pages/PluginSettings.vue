@@ -1,6 +1,6 @@
 <script setup>
 import {computed, reactive} from "vue";
-import Icon from "../kit/Icon.vue";
+import FoldGroup from "../kit/FoldGroup.vue";
 import ChoiceList from "../kit/ChoiceList.vue";
 import SidePanel from "../kit/SidePanel.vue";
 import Switch from "../kit/Switch.vue";
@@ -36,15 +36,14 @@ const choices = (s) => s.options.map((option) => ({value: String(option), label:
 <template>
     <SidePanel :title="`${plugin.title} settings`" :abstract="plugin.what" @close="emit('close')">
         <template v-for="group in groups" :key="group.name">
-            <section class="group">
-                <template v-if="group.name">
-                    <button type="button" class="group-name" :aria-expanded="!group.folded" @click="toggled[group.name] = !group.folded">
-                        <Icon name="chevron" :size="11" :class="['group-chevron', {open: !group.folded}]" />
-                        <span>{{ group.name }}</span>
-                        <span class="group-count">{{ group.settings.length }}</span>
-                    </button>
-                </template>
-                <template v-for="s in group.folded ? [] : group.settings" :key="s.key">
+            <FoldGroup
+                class="group"
+                :label="group.name || 'Settings'"
+                :count="group.settings.length"
+                :open="!group.folded"
+                @toggle="toggled[group.name] = !group.folded"
+            >
+                <template v-for="s in group.settings" :key="s.key">
                     <div :class="['setting', s.type]">
                         <div class="setting-names">
                             <span class="setting-title">{{ s.title }}</span>
@@ -78,53 +77,14 @@ const choices = (s) => s.options.map((option) => ({value: String(option), label:
                         </template>
                     </div>
                 </template>
-            </section>
+            </FoldGroup>
         </template>
     </SidePanel>
 </template>
 
 <style scoped>
 .group {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
     margin-bottom: 8px;
-}
-
-.group-name {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    margin: 0 0 6px;
-    padding: 4px 0;
-    border: 0;
-    background: none;
-    color: var(--text-3);
-    font: inherit;
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 0.05em;
-    text-align: left;
-    text-transform: uppercase;
-    cursor: pointer;
-}
-
-.group-name:hover {
-    color: var(--text);
-}
-
-.group-chevron {
-    transform: rotate(-90deg);
-    transition: transform 0.15s ease;
-}
-
-.group-chevron.open {
-    transform: none;
-}
-
-.group-count {
-    color: var(--text-4);
-    font-weight: 500;
 }
 
 .setting {

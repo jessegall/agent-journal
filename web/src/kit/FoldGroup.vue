@@ -1,0 +1,75 @@
+<script setup>
+defineProps({label: {type: String, required: true}, count: {type: [Number, String], default: ""}, open: {type: Boolean, default: true}});
+const emit = defineEmits(["toggle"]);
+</script>
+
+<template>
+    <div class="fold-group">
+        <button type="button" class="fold-head" :aria-expanded="open" @click="emit('toggle')">
+            <span class="fold-label">{{ label }}</span>
+            <template v-if="count !== ''">
+                <span class="fold-count">{{ count }}</span>
+            </template>
+            <span :class="['fold-mark', {shut: !open}]" />
+        </button>
+        <template v-if="open">
+            <slot />
+        </template>
+    </div>
+</template>
+
+<style scoped>
+.fold-group {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+}
+
+.fold-head {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    width: 100%;
+    padding: 4px 8px 6px;
+    border: 0;
+    border-radius: 6px;
+    background: none;
+    color: var(--text-3);
+    font: inherit;
+    font-size: 11.5px;
+    font-weight: 500;
+    text-align: left;
+    cursor: pointer;
+}
+
+.fold-head:hover {
+    color: var(--text-2);
+}
+
+.fold-label {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.fold-count {
+    color: var(--text-4);
+}
+
+.fold-mark {
+    flex: none;
+    width: 5px;
+    height: 5px;
+    margin: 0 4px 0 auto;
+    border-right: 1.5px solid currentColor;
+    border-bottom: 1.5px solid currentColor;
+    opacity: 0.7;
+    transform: rotate(45deg);
+    transition: transform 0.15s;
+}
+
+.fold-mark.shut {
+    transform: rotate(-45deg);
+}
+</style>
