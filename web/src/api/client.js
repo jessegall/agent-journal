@@ -226,6 +226,10 @@ export class ApiClient {
         return this.get(this.here(`/diff${query({path})}`));
     }
 
+    previewPlugin(source) {
+        return this.post(this.here("/plugins/preview"), {source});
+    }
+
     projectFiles(folder = "") {
         return this.get(this.here(`/project-files${query({folder})}`));
     }

@@ -50,7 +50,7 @@ def address(source: str) -> str:
 
 
 def values(root: Path, name: str, token: str, ports: dict | None = None) -> dict:
-    return {"dir": str(folder(root, name)), "data": str(data(root, name)), "root": str(Path(root)),
+    return {"dir": str(folder(root, name)), "data": str(data(root, name)), "root": str(Path(root)), "project": str(Path(root).parent),
             "journal.url": running(Path(root)) or "", "journal.env": default_env(Path(root)), "token": token,
             "queue": str(Path(root) / "runtime" / "plugins" / f"{name}.queue"),
             **{f"ports.{service}": port for service, port in (ports or {}).items()}}
@@ -113,25 +113,26 @@ def prepared(manifest: dict, where: Path, env: dict, record_log: Path) -> None:
             raise Refused(f"setup step {step['name']!r} failed ({code}): {command_text(command)}\n{tail}\nthe whole output is in {record_log}")
 
 
-def preview(manifest: dict, source: str, commit: str) -> str:
+def previewed(manifest: dict, source: str, commit: str) -> dict:
     name = manifest["name"]
-    lines = [f"{manifest.get('title') or name} {manifest.get('version') or ''}".strip(), f"from {source}" + (f" at {commit[:12]}" if commit else ""),
-             manifest.get("description") or "", "", "It runs as you, with your files and your network. These are its commands:"]
-    for tool, wanted in (manifest.get("requires") or {}).items():
-        lines.append(f"  needs {tool}: {command_text(wanted['check'])}")
-    for step in manifest.get("setup") or []:
-        lines.append(f"  setup {step['name']}: {command_text(step['run'])}")
-    for service, spec in (manifest.get("services") or {}).items():
-        lines.append(f"  service {service}: {command_text(spec['run'])}")
-    for pattern, handler in (manifest.get("on") or {}).items():
-        lines.append(f"  on {pattern}: {handler.get('post') or command_text(handler.get('run'))}")
-    if manifest.get("refuse"):
-        lines.append(f"  may refuse a write: {command_text(manifest['refuse'])}")
-    for page in manifest.get("pages") or []:
-        lines.append(f"  page {page['title']}: {page['service']}{page['path']}")
-    for key, setting in (manifest.get("settings") or {}).items():
-        lines.append(f"  setting {key}: reads {setting['env']}" if setting.get("env") else f"  setting {key}: {setting.get('title') or key}")
-    return "\n".join(line for line in lines if line is not None)
+    rows = [{"kind": "needs", "label": tool, "command": command_text(wanted["check"])} for tool, wanted in (manifest.get("requires") or {}).items()]
+    rows += [{"kind": "setup", "label": step["name"], "command": command_text(step["run"])} for step in manifest.get("setup") or []]
+    rows += [{"kind": "service", "label": service, "command": command_text(spec["run"])} for service, spec in (manifest.get("services") or {}).items()]
+    rows += [{"kind": "on", "label": pattern, "command": handler.get("post") or command_text(handler.get("run"))} for pattern, handler in (manifest.get("on") or {}).items()]
+    rows += [{"kind": "refuse", "label": "may refuse a write", "command": command_text(manifest["refuse"])}] if manifest.get("refuse") else []
+    rows += [{"kind": "page", "label": page["title"], "command": f"{page['service']}{page['path']}"} for page in manifest.get("pages") or []]
+    rows += [{"kind": "setting", "label": key, "command": f"reads {setting['env']}" if setting.get("env") else str(setting.get("title") or key)}
+             for key, setting in (manifest.get("settings") or {}).items()]
+    return {"name": name, "title": f"{manifest.get('title') or name} {manifest.get('version') or ''}".strip(),
+            "source": source, "commit": commit, "description": manifest.get("description") or "", "rows": rows}
+
+
+def preview(manifest: dict, source: str, commit: str) -> str:
+    shown = previewed(manifest, source, commit)
+    lines = [shown["title"], f"from {source}" + (f" at {commit[:12]}" if commit else ""), shown["description"], "",
+             "It runs as you, with your files and your network. These are its commands:"]
+    lines += [f"  {row['kind']} {row['label']}: {row['command']}" for row in shown["rows"]]
+    return "\n".join(lines)
 
 
 def said_version(where: Path, manifest: dict) -> str:
