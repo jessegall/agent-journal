@@ -1,5 +1,5 @@
 <script setup>
-import {computed, onMounted, onUnmounted, ref} from "vue";
+import {computed, onMounted, onUnmounted, ref, watch} from "vue";
 import SwitchCase from "../kit/SwitchCase.vue";
 import {route} from "../route.js";
 import {open, unreadByUser} from "../domain/records.js";
@@ -23,6 +23,14 @@ onMounted(() => {
 });
 onUnmounted(() => cancelAnimationFrame(frame));
 const notices = computed(() => open("notice"));
+const waitingQuestions = computed(() => open("question").map((q) => q.n));
+watch(
+    waitingQuestions,
+    (now, before) => {
+        if (now.some((n) => !(before || []).includes(n))) tab.value = "question";
+    },
+    {immediate: true}
+);
 const OWN_TABS = ["question", "suggestion"];
 const tabs = computed(() => [
     [
