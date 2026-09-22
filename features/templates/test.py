@@ -47,7 +47,9 @@ def test_the_templates_instructions_come_before_the_work_for_the_agent():
     assert Todos(record, actor=AGENT).show(row.n).preface.startswith(f"TEMPLATE {flow.n}, Research first"), \
         "a row under a plan made from a template shows its instructions first"
     plans.ready(plan.n)
-    Plans(record, actor=USER).activate(plan.n)
+    plans = Plans(record, actor=USER)
+    plans.approve(plan.n)
+    plans.start(plan.n)
     Works(record, actor=AGENT).create("digest research", todo=row.n)
     assert [n.title for n in Nudges(record).all() if n.title.startswith(f"template {flow.n}")], "starting its work tells the agent the instructions"
 

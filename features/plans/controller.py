@@ -5,7 +5,7 @@ from controllers.types import Docs
 from features.plans.resource import PHASE, Plan
 from resources.base import AGENT, SECTION, Refused, check_title
 
-BUILDING, DRAFT, READY, ACTIVE, WAITING, DONE, ABANDONED = "building", "draft", "ready", "active", "waiting", "done", "abandoned"
+BUILDING, DRAFT, READY, APPROVED, ACTIVE, WAITING, DONE, ABANDONED = "building", "draft", "ready", "approved", "active", "waiting", "done", "abandoned"
 ENDED = (DONE, ABANDONED)
 PHASES, TODOS = "phases", "todos"
 STAGES = (PHASES, TODOS)
@@ -78,12 +78,17 @@ class Plans(Controller):
                 self._refuse(f"plan {n} cannot be ready: phase {i} has no to-dos")
         return self._status(r, READY, BUILDING, DRAFT)
 
-    def activate(self, n: int):
-        self._user_only("activate")
+    def approve(self, n: int):
+        self._user_only("approve")
+        return self._status(self.load(n), APPROVED, DRAFT, READY)
+
+    def start(self, n: int):
         r = self.load(n)
         if any(x.status in (ACTIVE, WAITING) for x in self._every() if x.n != n):
             self._refuse("one plan is active at a time on an environment")
-        return self._status(r, ACTIVE, DRAFT, READY)
+        if r.status in (DRAFT, READY):
+            self._refuse(f"plan {n} waits for the user to approve it")
+        return self._status(r, ACTIVE, APPROVED)
 
     def resume(self, n: int):
         self._user_only("continue")
@@ -92,7 +97,7 @@ class Plans(Controller):
         return self._status(r, ACTIVE, WAITING)
 
     def abandon(self, n: int, why: str = ""):
-        return self._status(self.load(n), ABANDONED, BUILDING, DRAFT, READY, ACTIVE, WAITING, why=why)
+        return self._status(self.load(n), ABANDONED, BUILDING, DRAFT, READY, APPROVED, ACTIVE, WAITING, why=why)
 
     def _status(self, r, to: str, *allowed: str, **event):
         if r.status not in allowed:
