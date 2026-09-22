@@ -562,6 +562,30 @@ button.thread-pill:hover {
     font-size: inherit;
 }
 
+.thread-text :deep(table) {
+    display: block;
+    max-width: 100%;
+    margin: 6px 0;
+    overflow-x: auto;
+    border-collapse: collapse;
+    font-size: 12px;
+}
+
+.thread-text :deep(th),
+.thread-text :deep(td) {
+    padding: 4px 8px;
+    border: 1px solid var(--border);
+    text-align: left;
+    vertical-align: top;
+    white-space: nowrap;
+}
+
+.thread-text :deep(th) {
+    color: var(--text);
+    background: var(--raised);
+    font-weight: 600;
+}
+
 .thread-text :deep(a) {
     color: var(--accent-text);
 }

@@ -73,6 +73,8 @@ function list(lines) {
     return `<${tag}>${items.map((i) => `<li>${spans(i)}</li>`).join("")}</${tag}>`;
 }
 
+const opensTable = (lines, i) => lines[i].includes("|") && /^\s*\|?\s*:?-{3,}/.test(lines[i + 1] || "");
+
 function markdown(text) {
     const lines = String(text || "")
         .replace(/\r\n/g, "\n")
@@ -104,7 +106,7 @@ function markdown(text) {
             i += 1;
             continue;
         }
-        if (line.includes("|") && /^\s*\|?\s*:?-{3,}/.test(lines[i + 1] || "")) {
+        if (opensTable(lines, i)) {
             let end = i + 2;
             while (end < lines.length && lines[end].includes("|")) end += 1;
             out.push(table(lines.slice(i, end)));
@@ -133,7 +135,12 @@ function markdown(text) {
             continue;
         }
         let end = i;
-        while (end < lines.length && lines[end].trim() && !/^(#{1,6}\s|```|~~~|(?:>|&gt;)\s?|\s*(?:[-*+]|\d+[.)])\s+)/.test(lines[end]))
+        while (
+            end < lines.length &&
+            lines[end].trim() &&
+            !opensTable(lines, end) &&
+            !/^(#{1,6}\s|```|~~~|(?:>|&gt;)\s?|\s*(?:[-*+]|\d+[.)])\s+)/.test(lines[end])
+        )
             end += 1;
         out.push(`<p>${spans(lines.slice(i, end).join("\n")).replace(/\n/g, "<br>")}</p>`);
         i = end;
