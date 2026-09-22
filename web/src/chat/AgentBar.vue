@@ -41,9 +41,27 @@ const counts = computed(() => [
         title: skills.value.length ? `${skills.value.length} skill(s) loaded in this window` : "No journal skill is loaded in this window",
         rows: skills.value,
     },
-    {key: "shells", icon: "play", n: live(data.value && data.value.shell_rows), title: "background shells running now", rows: []},
-    {key: "subagents", icon: "agents", n: live(data.value && data.value.subagent_rows), title: "subagents running now", rows: []},
-    {key: "monitors", icon: "crosshair", n: live(data.value && data.value.monitor_rows), title: "monitors watching now", rows: []},
+    {
+        key: "shells",
+        icon: "play",
+        n: live(data.value && data.value.shell_rows),
+        title: "Background shells: commands the agent left running in the background",
+        rows: [],
+    },
+    {
+        key: "subagents",
+        icon: "agents",
+        n: live(data.value && data.value.subagent_rows),
+        title: "Subagents: helpers the agent dispatched",
+        rows: [],
+    },
+    {
+        key: "monitors",
+        icon: "crosshair",
+        n: live(data.value && data.value.monitor_rows),
+        title: "Monitors: watchers the agent started, each telling it when something happens",
+        rows: [],
+    },
 ]);
 const skillCount = computed(() => counts.value[0]);
 const activityCounts = computed(() => counts.value.slice(1));
@@ -257,13 +275,19 @@ useOutside(bar, () => (open.value = ""));
                         <CommandLog :commands="data.commands || []" />
                     </template>
                     <template #monitors>
-                        <CrewList :rows="data.monitor_rows || []" :total="data.monitors || 0" />
+                        <CrewList heading="Monitors" :rows="data.monitor_rows || []" :total="data.monitors || 0" />
                     </template>
                     <template #shells>
-                        <CrewList :rows="data.shell_rows || []" :total="data.shells || 0" />
+                        <CrewList heading="Background shells" :rows="data.shell_rows || []" :total="data.shells || 0" />
                     </template>
                     <template #default>
-                        <CrewList :rows="data.subagent_rows || []" :total="data.subagents || 0" started="dispatched" @open="openSession" />
+                        <CrewList
+                            heading="Subagents"
+                            :rows="data.subagent_rows || []"
+                            :total="data.subagents || 0"
+                            started="dispatched"
+                            @open="openSession"
+                        />
                     </template>
                 </SwitchCase>
             </div>
@@ -400,8 +424,9 @@ useOutside(bar, () => (open.value = ""));
     border-left: 1px solid var(--border);
 }
 
-.agent-activity-subagents {
-    margin-left: 8px;
+.agent-actions .agent-count {
+    margin: 0;
+    padding: 0 6px;
 }
 
 .agent-detach.on {
