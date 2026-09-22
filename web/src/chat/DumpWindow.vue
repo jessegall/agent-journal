@@ -8,7 +8,7 @@ import Icon from "../kit/Icon.vue";
 import Btn from "../kit/Btn.vue";
 import Spinner from "../kit/Spinner.vue";
 import ResourceCard from "../resource/ResourceCard.vue";
-import {phrase} from "../layout/statusline.js";
+import {age} from "../format/time.js";
 import {useNow} from "../composables/now.js";
 
 const draft = reactive({text: "", files: [], sending: false, error: "", over: false});
@@ -57,14 +57,15 @@ const trail = computed(() => log.value.slice(-4, -1).reverse());
 const progress = computed(() => (items.value.length ? settled.value / items.value.length : 0));
 
 const now = useNow(3000);
-const activity = computed(() => {
-    const queue = store.bar?.queue || [];
-    const last = queue[queue.length - 1];
-    return last && !last.done ? last.key : "";
-});
+const QUIET_AFTER = 180;
+const started = computed(() => Boolean(log.value.length || items.value.some((i) => i.state !== "waiting")));
+const quietFor = computed(() => (working.value && started.value && !queued.value ? now.value - (dump.value.updated || 0) : 0));
+const quiet = computed(() => quietFor.value > QUIET_AFTER && !asked.value);
 const status = computed(() => {
     if (queued.value) return `Waiting for dump ${inHand.value.n} to finish first`;
-    return latest.value?.text || activity.value || phrase("filing", now.value / 3);
+    if (!started.value) return "Waiting for the agent to pick this up";
+    if (quiet.value) return `No update for ${Math.round(quietFor.value / 60)} min. The agent may be busy elsewhere`;
+    return latest.value?.text || "Reading the items";
 });
 
 const filedRefs = computed(() => [...new Set(items.value.flatMap((i) => i.refs || []))]);
@@ -291,7 +292,7 @@ function follow(ref) {
                     </ul>
                 </div>
 
-                <div :class="['dump-live', stage.toLowerCase().replace(' ', '-')]">
+                <div :class="['dump-live', stage.toLowerCase().replace(' ', '-'), {quiet, unstarted: working && !started}]">
                     <div class="dump-live-line">
                         <template v-if="suggesting">
                             <Spinner />
@@ -302,8 +303,11 @@ function follow(ref) {
                         <template v-else-if="dump.completed">
                             <Icon name="check" :size="14" />
                         </template>
-                        <template v-else-if="queued">
+                        <template v-else-if="queued || !started">
                             <Icon name="clock" :size="14" />
+                        </template>
+                        <template v-else-if="quiet">
+                            <Icon name="help" :size="14" />
                         </template>
                         <template v-else-if="asked">
                             <Icon name="help" :size="14" />
@@ -316,7 +320,13 @@ function follow(ref) {
                                 {{ dump.completed ? finishedText : asked ? `The agent asks: ${asked}` : status }}
                             </span>
                         </Transition>
+                        <template v-if="working && started && !quiet && !asked && latest">
+                            <span class="dump-when">{{ age(latest.at) }}</span>
+                        </template>
                         <span class="grow" />
+                        <template v-if="quiet">
+                            <button type="button" class="dump-stop-open" @click="store.dumping = false">Back to chat</button>
+                        </template>
                         <template v-if="dump.completed">
                             <Btn kind="primary" small :disabled="suggesting && !confirmed" @click="finish">
                                 {{ confirmed ? "Done" : "Confirm" }}
@@ -793,6 +803,25 @@ function follow(ref) {
     50% {
         opacity: 0.35;
     }
+}
+
+.dump-when {
+    flex: none;
+    color: var(--text-3);
+    font-size: 12px;
+    font-weight: 400;
+}
+
+.dump-live.quiet {
+    border-color: color-mix(in srgb, var(--blocking) 45%, var(--border));
+}
+
+.dump-live.quiet .dump-live-line > :first-child {
+    color: var(--blocking);
+}
+
+.dump-live.unstarted .dump-live-line {
+    color: var(--text-2);
 }
 
 .dump-trail {
