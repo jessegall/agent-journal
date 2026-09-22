@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.84.49 — Arrow keys step in and out of the quick menu
+
+In the quick menu, the right arrow opens the selected entry's own list (the project files), and the left arrow goes back to the menu. Moving the selection down or up keeps it in view with some room around it, instead of running off the edge of the list.
+
 ## 2.84.48 — The board's cards pass the formatters
 
 A card's title and the reason it is held on the Kanban board now go through the same formatters as every other text a person reads, so a leftover tag no longer shows on a card.
