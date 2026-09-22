@@ -34,6 +34,8 @@ async function submit(text) {
         <OptionList
             :options="options"
             :chosen="resource.completed ? resource.outcome : ''"
+            :chosen-by="resource.data.answered_by || ''"
+            :reason="resource.data.reason || ''"
             :suggested="pick - 1"
             :disabled="settled"
             @pick="(i) => submit(options[i].title)"

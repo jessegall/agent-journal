@@ -9,6 +9,8 @@ const props = defineProps({
     suggested: {type: Number, default: -1},
     disabled: Boolean,
     color: {type: String, default: "var(--accent)"},
+    chosenBy: {type: String, default: ""},
+    reason: {type: String, default: ""},
 });
 const emit = defineEmits(["pick"]);
 const holding = ref(-1);
@@ -47,12 +49,18 @@ onUnmounted(save);
                 <template v-if="i === suggested && !disabled">
                     <span class="pick">The agent's pick</span>
                 </template>
+                <template v-if="chosen && chosen === o.title">
+                    <span class="pick">{{ chosenBy === "agent" ? "The agent's answer" : "Your answer" }}</span>
+                </template>
                 <span class="label">{{ o.title }}</span>
                 <template v-if="o.description">
                     <span class="desc">{{ o.description }}</span>
                 </template>
                 <template v-if="o.code">
                     <code class="code">{{ o.code }}</code>
+                </template>
+                <template v-if="chosen && chosen === o.title && chosenBy === 'agent' && reason">
+                    <span class="reason">{{ reason }}</span>
                 </template>
                 <template v-if="holding === i">
                     <span class="hold-note">Saving this choice… click it again to cancel</span>
@@ -146,6 +154,13 @@ onUnmounted(save);
     font-size: 11px;
     letter-spacing: 0.04em;
     text-transform: uppercase;
+}
+
+.reason {
+    margin-top: 4px;
+    color: var(--text-3);
+    font-size: 11.5px;
+    font-style: italic;
 }
 
 .desc {

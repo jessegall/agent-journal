@@ -4,6 +4,11 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.85.67 — A question card says whose answer it is
+
+- The chosen option on a question card is marked Your answer, or The agent's answer when the agent chose it.
+- The agent answering a question itself must give its reason, which the card shows beneath its answer in small muted text.
+
 ## 2.85.66 — The chat marks where the agent compacted
 
 - Each compaction is kept on the agent's row, once per compaction, and the chat shows it where it happened: an amber, dashed mark reading the agent compacted its context, with the time. It stands apart from the green line of a loaded skill.

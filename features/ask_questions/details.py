@@ -19,7 +19,10 @@ class QuestionsDetails(FeatureDetails):
     help = """
         A question or a suggestion is answered by clicking a choice; the choice is held for a
         moment before it is saved, and clicking it again in that moment takes it back.
-        questions.hold sets the moment in seconds, three by default.
+        questions.hold sets the moment in seconds, three by default. The card marks the answer
+        as the user's; when the agent answers a question itself, journal question answer <n>
+        "<choice>" --set reason="<why>" is required, and the card shows the agent's answer with
+        that reason beneath it.
 
         A message with two or more listed options and a question, or the language of putting a
         decision to the user, tells the agent to use journal question ask --set options=…; its
