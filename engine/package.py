@@ -14,7 +14,7 @@ def data(*parts: str) -> Path:
 
 def entry(module: str) -> list[str]:
     if ZIPPED:
-        return [sys.executable, str(CODE), "-m", module]
+        return [sys.executable, str(CODE.with_name("journal.pyz")), "-m", module]
     return [sys.executable, str(CODE.joinpath(*module.split("."))) + ".py"]
 
 
