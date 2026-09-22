@@ -55,11 +55,6 @@ class MessagesDetails(FeatureDetails):
             trigger=Trigger(on=IDLE),
         ),
         Behaviour(
-            name="hidden",
-            title="Show messages left in hidden thinking",
-            abstract="A message the agent wrote that was kept as hidden thinking, with no visible message after it, is shown in the chat marked as thinking",
-        ),
-        Behaviour(
             name="numbers",
             title="Name what a number in a message is",
             abstract="A message that names a row by a bare number, like 'answered 1712', is named back so the type can be added and the chat links it; quoted text and code are left alone",

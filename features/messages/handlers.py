@@ -1,5 +1,4 @@
 import re
-from pathlib import Path
 from dataclasses import dataclass
 from typing import ClassVar
 
@@ -9,7 +8,6 @@ from features import trigger
 from features.messages.answering import in_hand, read_and_open, theirs, unanswered
 from features.parts import AgentContext, Context, Handler
 from resources.base import AGENT, ENVIRONMENT, SECTION, USER, titled
-from providers import PROVIDERS
 from resources.types import TYPES
 
 LINKED = ("message", "comment", "reaction", "nudge", "notification", "agent")
@@ -161,21 +159,3 @@ class NameBareNumbers(Handler):
 
 def numbers(context: AgentContext) -> set[int]:
     return {row["n"] for name, type_ in TYPES.items() if type_.scope == ENVIRONMENT for row in context.journal.of(name).summaries()}
-
-
-class PostHiddenMessages(Handler):
-    behaviour = "hidden"
-
-    def handle(self, context: AgentContext, event: AgentUpdated) -> None:
-        row = context.agent.row
-        kind, transcript = PROVIDERS.get(row.provider), Path(row.transcript or "")
-        if not kind or not transcript.is_file():
-            return
-        held = context.state.get("transcript", {})
-        if held.get("path") != str(transcript):
-            context.state.set("transcript", {"path": str(transcript), "offset": transcript.stat().st_size})
-            return
-        texts, offset = kind().hidden_messages(transcript, int(held.get("offset") or 0))
-        context.state.set("transcript", {"path": str(transcript), "offset": offset})
-        for text in texts:
-            context.journal.acting(AGENT).messages.create(titled(text), brief=text, thinking=True)

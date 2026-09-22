@@ -329,7 +329,7 @@ class Claude(Provider):
                 return row.get("type") == "user" or bool(thinking)
         return False
 
-    def hidden_messages(self, transcript: Path, offset: int) -> tuple[list[str], int]:
+    def thoughts(self, transcript: Path, offset: int) -> tuple[list[tuple[str, str]], int]:
         try:
             with open(transcript, "rb") as f:
                 f.seek(offset)
@@ -353,10 +353,15 @@ class Claude(Provider):
             elif row.get("type") == "user":
                 ends.append("")
                 done = at
-        finished = [key for key in dict.fromkeys(ends) if key in blocks]
-        texts = [part["thinking"].strip() for key in finished if not any(part.get("type") == "text" for part in blocks[key])
-                 for part in blocks[key] if part.get("type") == "thinking" and (part.get("thinking") or "").strip()]
-        return texts, done
+        found = []
+        for key in dict.fromkeys(ends):
+            parts = blocks.get(key, [])
+            thought = "\n\n".join(part["thinking"].strip() for part in parts if part.get("type") == "thinking" and (part.get("thinking") or "").strip())
+            if any(part.get("type") == "text" for part in parts):
+                found.append(("text", ""))
+            elif thought:
+                found.append(("thinking", thought))
+        return found, done
 
     def is_subagent(self, hook) -> bool:
         where = Path(getattr(hook, "transcript", "") or "").parts + Path(getattr(hook, "cwd", "") or "").parts

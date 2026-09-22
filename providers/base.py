@@ -180,7 +180,7 @@ class Provider(ABC):
     def is_subagent(self, hook) -> bool:
         return False
 
-    def hidden_messages(self, transcript: Path, offset: int) -> tuple[list[str], int]:
+    def thoughts(self, transcript: Path, offset: int) -> tuple[list[tuple[str, str]], int]:
         return [], offset
 
     def status(self, hook) -> str:
