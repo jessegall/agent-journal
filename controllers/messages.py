@@ -4,6 +4,11 @@ from resources.base import AGENT, Refused, titled
 from controllers.comments import Comments
 
 
+def only_emoji(text: str) -> bool:
+    kept = "".join(ch for ch in text if not ch.isspace())
+    return bool(kept) and not any(ch.isalnum() or ch in ".,;:!?-_'\"()[]<>/@#" for ch in kept) and any(ord(ch) > 0x2000 for ch in kept)
+
+
 class Messages(Controller):
     resource = types.Message
 
@@ -48,6 +53,8 @@ class Messages(Controller):
         return self.section(n, part, result)
 
     def reply(self, n: int, text: str, file: str = ""):
+        if only_emoji(text):
+            self._refuse(f"a reply that is only {text.strip()} is a reaction: journal message react {n} \"{text.strip()}\"")
         lines = (self.load(n).brief or self.load(n).title).strip().split("\n")
         while lines and (lines[0].startswith(">") or not lines[0].strip()):
             lines.pop(0)
