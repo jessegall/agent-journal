@@ -16,6 +16,7 @@ from resources.base import Refused, SYSTEM
 from resources.types import AgentRow
 from engine.stored import write_text
 from engine import runtime
+from engine.wording import plural
 from engine.stored import last_lines
 from engine.version import version as package_version
 
@@ -160,36 +161,49 @@ def asked_for(record: Record, args: list[str], ask=input, answering=None) -> str
     if not names:
         return record.env
     sessions = Sessions(record.root)
-    print("journal: which environment?")
-    for i, name in enumerate(names, 1):
-        print(f"  {i}. {name}" + ("  (an agent is working here)" if sessions.holder(name) else "") + ("  [Enter]" if name == record.env else ""))
-    print(f"  {len(names) + 1}. a new environment")
+    choices = [name + ("   (an agent is working here)" if sessions.holder(name) else "") for name in names] + ["A new environment"]
+    default = names.index(record.env) if record.env in names else len(names)
     while True:
+        picked = choose("Which environment", [], choices, default, ask)
+        if picked is None:
+            return record.env
+        if picked < len(names):
+            if not sessions.holder(names[picked]):
+                return names[picked]
+            print(f"    An agent is working {names[picked]}; pick another.")
+            continue
         try:
-            picked = ask("> ").strip() or str(names.index(record.env) + 1 if record.env in names else len(names) + 1)
+            return Environments(record, actor=SYSTEM).create(ask("    Name: ").strip()).title
         except EOFError:
             return record.env
-        if picked.isdigit() and 1 <= int(picked) <= len(names):
-            name = names[int(picked) - 1]
-            if not sessions.holder(name):
-                return name
-            print(f"an agent is working {name}; pick another")
-        elif picked == str(len(names) + 1):
-            try:
-                return Environments(record, actor=SYSTEM).create(ask("name: ").strip()).title
-            except EOFError:
-                return record.env
-            except Refused as e:
-                print(e)
+        except Refused as e:
+            print(f"    {e}")
         else:
             print(f"a number from 1 to {len(names) + 1}")
+
+
+def choose(heading: str, notes: list[str], choices: list[str], default: int, ask=input) -> int | None:
+    print(f"\n  {heading}\n  {'─' * len(heading)}")
+    if notes:
+        print("", *(f"    {line}" for line in notes), sep="\n")
+    print("")
+    for i, choice in enumerate(choices, 1):
+        print(f"    {i}  {choice}" + ("   ← Enter" if i - 1 == default else ""))
+    while True:
+        try:
+            picked = ask("\n  > ").strip() or str(default + 1)
+        except EOFError:
+            return None
+        if picked.isdigit() and 1 <= int(picked) <= len(choices):
+            return int(picked) - 1
+        print(f"    A number from 1 to {len(choices)}.")
 
 
 def banner(agent: str, project: Path) -> str:
     width = max(40, shutil.get_terminal_size().columns - 4)
     version = package_version()
     lines = [f"agent-journal {version}", "", f"You're about to start {agent.capitalize()} under the journal,", f"in {project}.", "",
-             "A question or two first. Enter takes the choice marked [Enter]."]
+             "A question or two first. Enter takes the choice marked ← Enter."]
     rule = "─" * width
     return "\x1b[2J\x1b[H" + "\n".join([f"┌{rule}┐", *(f"│ {line:<{width - 2}} │" for line in lines), f"└{rule}┘", ""])
 
@@ -202,20 +216,13 @@ def asked_slate(record: Record, project: Path, agent: str, ask=input, answering=
     if not answering or not FEATURES["clean_slate"].enabled(record) or not (skills or hooks):
         return False
     last = state(record).get("last", True)
-    names = ", ".join(s.name for s in skills[:6]) + (", …" if len(skills) > 6 else "")
-    print("\njournal: set aside everything that is not the journal's until it stops?")
-    print(f"  {len(skills)} other skills" + (f" ({names})" if skills else "") + f", and the other hooks in {len(hooks)} " + ("file." if len(hooks) == 1 else "files."))
-    print("  They are kept under .journal/runtime/set-aside and put back when the agent exits or the journal stops.")
-    print("  1. yes, a clean slate" + ("  [Enter]" if last else ""))
-    print("  2. no, keep them" + ("" if last else "  [Enter]"))
-    while True:
-        try:
-            picked = ask("> ").strip() or ("1" if last else "2")
-        except EOFError:
-            return False
-        if picked in ("1", "2"):
-            return picked == "1"
-        print("1 or 2")
+    notes = []
+    if skills:
+        notes += [f"{plural(len(skills), 'other skill')}:", *(f"  {s.name}" for s in skills[:3]), *([f"  and {len(skills) - 3} more"] if len(skills) > 3 else [])]
+    if hooks:
+        notes += [f"Other hooks in {plural(len(hooks), 'file')}"]
+    notes += ["", "They are put back when the agent exits or the journal stops."]
+    return choose("Start with a clean slate", notes, ["Yes, set them aside", "No, keep them"], 0 if last else 1, ask) == 0
 
 
 def supervise(ctx, agent: str) -> str:
