@@ -5,6 +5,7 @@ from features.settings import Setting
 
 class TagsDetails(FeatureDetails):
     name = "command_tags"
+    when = "you open a turn with a tag such as [!reply:N], or a tag you wrote was refused"
 
     title = "Command tags"
 

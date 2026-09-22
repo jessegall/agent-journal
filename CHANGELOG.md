@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.94.7 — The messages and questions skills read as one
+
+The hand-written text for the messages and questions skills no longer carries a description of its own that the generated skill threw away; the skill's description is the feature's, which now says when to load it, and the text follows under it. The chat etiquette and command tags skills say when to load them (whenever you write in the chat, or open a turn with a tag) instead of claiming to run by themselves.
+
 ## 2.94.6 — A feature skill says when to load it
 
 A feature's skill description now opens with when to load it ("Load it when the user has left a message, or before replying…") for the twenty features the agent works with directly; one that runs by itself says so. A feature declares it with a when sentence beside its abstract.

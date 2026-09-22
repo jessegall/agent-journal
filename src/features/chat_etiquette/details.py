@@ -5,6 +5,7 @@ SHOP = "shop"
 
 class ChatEtiquetteDetails(FeatureDetails):
     name = "chat_etiquette"
+    when = "you write anything the user will read in the chat"
 
     title = "Chat etiquette"
 
