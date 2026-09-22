@@ -158,6 +158,9 @@ class Resource:
     def ref(self) -> str:
         return f"{self.type}:{self.n}"
 
+    def agent_line(self) -> str:
+        return f"{self.title} — {self.brief}" if self.brief else self.title
+
     def fork(self) -> "Resource":
         return replace(self, sections=[dict(s) for s in self.sections], refs=list(self.refs), seen=list(self.seen), data=copied(self.data))
 

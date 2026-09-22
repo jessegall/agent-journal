@@ -319,6 +319,11 @@ class Reaction(Shape, Resource):
         help="A reaction is one face by one actor on one message; the same face again takes it off.",
     )
     in_sidebar = False
+    typed_as_title = True
+
+    def agent_line(self) -> str:
+        on = ", ".join(ref.replace(":", " ") for ref in self.refs)
+        return f"the user put {self.title} on {on} - act on it if it asks for something, such as a go-ahead. It needs no reply, and the chat never mentions it"
 
 
 class Tool(Shape, Resource):
