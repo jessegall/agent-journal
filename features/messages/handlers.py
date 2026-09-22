@@ -1,3 +1,4 @@
+import re
 from dataclasses import dataclass
 from typing import ClassVar
 
@@ -6,7 +7,8 @@ from engine.transcript import IDLE, last_text
 from features import trigger
 from features.messages.answering import in_hand, read_and_open, theirs, unanswered
 from features.parts import AgentContext, Context, Handler
-from resources.base import AGENT, SECTION, USER, titled
+from resources.base import AGENT, ENVIRONMENT, SECTION, USER, titled
+from resources.types import TYPES
 
 LINKED = ("message", "comment", "reaction", "nudge", "notification", "agent")
 ANSWERS = {"comment": "answered", "reaction": "acknowledged"}
@@ -134,3 +136,26 @@ class NameRunTogether(Handler):
         last = last_text(context.record, context.agent.row).strip()
         if len(last) >= RUN_ON and "\n\n" not in last and last.count(". ") >= SENTENCES:
             context.agent.whisper("paragraphs")
+
+
+VERBS = r"answered|replied to|closed|filed|started|parked|resumed|ended|finished|struck|reopened|processed"
+BARE = re.compile(rf"\b(?:{VERBS})\s+#?(\d+)\b|\((\d{{2,}})\)", re.IGNORECASE)
+CODE = re.compile(r"`[^`]*`")
+
+
+class NameBareNumbers(Handler):
+    behaviour = "numbers"
+
+    def handle(self, context: AgentContext, event: AgentMessageSent) -> None:
+        found = dict.fromkeys(int(a or b) for a, b in BARE.findall(CODE.sub("", event.text)))
+        if not found:
+            return
+        known = numbers(context)
+        named = [str(n) for n in found if n in known]
+        sent = next((m for m in reversed(context.journal.messages.summaries()) if m["seen"][:1] == [AGENT]), None)
+        if named and sent:
+            context.agent.whisper("numbers", n=sent["n"], numbers=", ".join(named))
+
+
+def numbers(context: AgentContext) -> set[int]:
+    return {row["n"] for name, type_ in TYPES.items() if type_.scope == ENVIRONMENT for row in context.journal.of(name).summaries()}

@@ -133,3 +133,14 @@ def test_messages_shown_at_once_arrive_whole_and_claude_is_read_from_its_display
         rows.write(json.dumps({"type": "assistant", "timestamp": now, "message": {"content": [{"type": "text", "text": "only in the transcript"}]}}) + "\n")
     engine.tick()
     assert "only in the transcript" not in chat(), "Claude's messages come from its display hook alone"
+
+
+def test_a_row_named_by_a_bare_number_is_named_back_with_its_type():
+    from engine import chat
+    record = fresh()
+    report(record, "working", "PreToolUse")
+    asked = [Messages(record, actor="user").create(f"hi {i}") for i in range(2)][-1]
+    filed = Works(record, actor=AGENT).create("a job")
+    chat.send(record, Agents(record, actor="system").by_session("claude-1"), f"Answered {asked.n}, parked {filed.n}, then work {filed.n} (1); 2.84.24 and (99) passed")
+    lines = [n for n in nudges(record) if "without saying what they are" in n]
+    assert len(lines) == 1 and f"names {asked.n}, {filed.n} " in lines[0], "the bare numbers of real rows are named back, versions and counts are not"
