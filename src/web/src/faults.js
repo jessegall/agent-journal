@@ -24,20 +24,21 @@ export function report(kind, words, where, stack = "") {
     }).catch(() => {});
 }
 
-function watched(phase, method, url) {
+function watched(phase, method, url, body) {
     const href = new URL(url, location.origin);
     if (href.pathname.endsWith(CONSOLE)) return;
     const where = `${method} ${href.pathname}`;
+    const same = body instanceof FormData ? where : `${where} ${JSON.stringify(body ?? null)}`;
     if (phase === "answered") {
-        flying.set(where, flying.get(where) - 1);
+        flying.set(same, flying.get(same) - 1);
         setTimeout(() => timed(href.href, where), SETTLE);
         return;
     }
-    if (flying.get(where)) report("overlap", `two requests to ${where} were in flight at once`, where);
+    if (flying.get(same)) report("overlap", `two requests to ${where} were in flight at once`, where);
     const asked = href.searchParams.get("last");
     if (asked !== null && (Number(asked) === 0 || Number(asked) > PAGE))
         report("page", `${where} asked for ${asked === "0" ? "every row" : `${asked} rows`}`, where);
-    flying.set(where, (flying.get(where) || 0) + 1);
+    flying.set(same, (flying.get(same) || 0) + 1);
 }
 
 function timed(href, where) {
