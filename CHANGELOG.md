@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.86.12 — The activity list keeps its order
+
+Events heard from the live stream and from the poll are merged by id, so an older entry no longer sits above newer ones in the activity panel, and none shows twice.
+
 ## 2.86.11 — Only a declared await counts as waiting
 
 A background shell, subagent or monitor no longer counts as the agent waiting; only `journal work await` does, so the nudges held during a wait, "carry on" among them, reach an agent that has background tasks.
