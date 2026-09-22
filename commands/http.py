@@ -36,7 +36,7 @@ from resources.base import AGENT, OPENED, USER, Refused, titled
 from resources.types import Ask
 from engine.stored import write_text, last_lines
 from engine.proc import git, ran
-from commands.dispatch import JSON, Missing, PLAIN, Reply, Request, represented, route, shaped
+from commands.dispatch import JSON, KEEP_SHAPED, Missing, PLAIN, Reply, Request, represented, route, settled, shaped
 from features.format import VIEWER
 from commands.dispatch import dispatch  # noqa: F401
 
@@ -554,7 +554,22 @@ def listing(controller, record, query: dict) -> dict:
     if completed and last:
         standing = [row for row in rows if not row["completed"]][None if controller.resource.listed_open else -last:]
         kept = sorted({row["n"]: row for row in (*standing, *kept)}.values(), key=lambda row: row["n"])
-    return {"rows": [shaped(controller.load(row["n"]), record, VIEWER) for row in kept], "more": len(rows) > len(kept)}
+    stamp = settled(record)
+    return {"rows": [viewed(controller, record, row, stamp) for row in kept], "more": len(rows) > len(kept)}
+
+
+VIEWED: dict[tuple, tuple] = {}
+
+
+def viewed(controller, record, row: dict, settings: tuple) -> dict:
+    key = (str(record.home), controller.type, row["n"])
+    stamp = (row.get("stamp"), settings)
+    held = VIEWED.get(key)
+    if not row.get("stamp") or not held or held[0] != stamp:
+        if len(VIEWED) >= KEEP_SHAPED:
+            VIEWED.clear()
+        held = VIEWED[key] = (stamp, shaped(controller.load(row["n"]), record, VIEWER))
+    return held[1]
 
 
 def counted(record, types) -> dict:

@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.84.71 — The dashboard answers in a few milliseconds
+
+Every dashboard poll loaded about 400 rows from disk just to find they had not changed. Listings now keep each row as the viewer last saw it, keyed on its file, and load only the rows that changed. On this project's record the dashboard went from 14ms to under 5ms while the agent works.
+
 ## 2.84.70 — A numbered list is not a bare row number
 
 The bare-number check read the numbers of a numbered list as row numbers, and a verb ending in s after a number ("784 waits") as a count. List markers are left alone now, verbs are told apart from counted nouns, and the check stops at the end of a line.
