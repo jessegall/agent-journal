@@ -11,6 +11,7 @@ import {quoted} from "../format/quote.js";
 import {clock} from "../format/time.js";
 import {focusTurn, laidOut} from "../platform/view.js";
 import {meta, store, types} from "../state/store.js";
+import {words as plain} from "../text/markers.js";
 import {rows} from "../sync/rows.js";
 import {render} from "../text/index.js";
 import "../text/all.js";
@@ -150,6 +151,17 @@ async function drop() {
                 <span class="thread-skill-dot" />
                 Loaded skill
                 <strong>{{ turn.title }}</strong>
+            </button>
+        </div>
+    </template>
+    <template v-else-if="turn.type === 'made'">
+        <div class="thread-turn made" :data-ref="turn.ref">
+            <button type="button" class="thread-made" @click="peek(turn.made.type, turn.made.n)">
+                <span class="thread-made-kind">{{ meta(turn.made.type).title }} created</span>
+                <span class="thread-made-title">{{ turn.made.title }}</span>
+                <template v-if="turn.made.abstract">
+                    <span class="thread-made-line">{{ plain(turn.made.abstract) }}</span>
+                </template>
             </button>
         </div>
     </template>
@@ -347,6 +359,41 @@ async function drop() {
     height: 6px;
     border-radius: 50%;
     background: var(--created);
+}
+
+.thread-made {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    max-width: 420px;
+    padding: 10px 12px;
+    border: 1px solid var(--border-2);
+    border-radius: 9px;
+    background: var(--raised);
+    color: var(--text);
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+.thread-made:hover {
+    border-color: var(--accent);
+}
+
+.thread-made-kind {
+    color: var(--created);
+    font-size: 11px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.thread-made-title {
+    font-weight: 500;
+}
+
+.thread-made-line {
+    color: var(--text-2);
+    font-size: 12.5px;
 }
 
 .thread-receipt {

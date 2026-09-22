@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.85.6
+
+- A doc the agent creates appears in the chat at that moment as a Document created card, with its title and summary, and opens on click. The notification stays as well.
+
 ## 2.85.5
 
 - A row named on a line of its own in the chat, such as doc 41, shows as a card with its kind, title and summary, and opens on click. The agent hands the user a document this way; the messages skill says so.

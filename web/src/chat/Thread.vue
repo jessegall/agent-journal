@@ -125,7 +125,14 @@ const pending = ref([]);
 const linked = new Map();
 const thread = computed(() => {
     const made = threadTurns(
-        {message: rows("message"), comment: rows("comment"), question: rows("question"), reaction: rows("reaction"), agent: store.agents},
+        {
+            message: rows("message"),
+            comment: rows("comment"),
+            question: rows("question"),
+            reaction: rows("reaction"),
+            doc: rows("doc"),
+            agent: store.agents,
+        },
         pending.value
     );
     made.keys.forEach((placeholder, ref) => linked.set(ref, placeholder));
