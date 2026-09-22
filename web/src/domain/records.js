@@ -17,11 +17,19 @@ export const GROUPS = {
 export const open = (type) => rows(type).filter((r) => !r.completed && !r.deleted);
 export const unreadByUser = (type) => open(type).filter((r) => !r.seen.includes("user"));
 export const finishedUnread = (type) => rows(type).filter((r) => r.completed && !r.deleted && !r.seen.includes("user"));
-export const linkedTo = (ref) => types.value.flatMap((t) => rows(t.name).filter((r) => r.refs.includes(ref) && !r.deleted));
+const pointsAt = (link, ref) => link === ref || link.startsWith(`${ref}#`) || link.startsWith(`${ref}:`);
+export const linkedTo = (ref) =>
+    types.value.flatMap((t) => rows(t.name).filter((r) => r.refs.some((link) => pointsAt(link, ref)) && !r.deleted));
+
+export function refParts(ref) {
+    const [whole, section = ""] = ref.split("#");
+    const [type, n, lines = ""] = whole.split(":");
+    return {type, n: Number(n), part: section || lines};
+}
 
 export function byRef(ref) {
-    const [type, n] = ref.split(":");
-    return rows(type).find((r) => r.n === Number(n)) || null;
+    const {type, n} = refParts(ref);
+    return rows(type).find((r) => r.n === n) || null;
 }
 
 export function waitsOn(r) {

@@ -1,5 +1,6 @@
 <script setup>
-import {computed, provide, ref, watch} from "vue";
+import {computed, nextTick, provide, ref, watch} from "vue";
+import {route} from "../route.js";
 import {rows} from "../sync/rows.js";
 import ResourceBody from "./ResourceBody.vue";
 import Comments from "./Comments.vue";
@@ -41,11 +42,39 @@ function panelLeft() {
 }
 
 provide("talk", {talking, count, toggle: () => (talking.value = !talking.value), say: (text) => (quote.value = text)});
+const body = ref(null);
+const LIT_FOR = 2500;
+
+function sectionAt(part) {
+    const sections = [...(body.value?.querySelectorAll(".section") || [])];
+    const lines = part.match(/^(\d+)(?:-\d+)?$/);
+    if (!lines) return sections.find((el) => el.querySelector("h3")?.textContent.trim().toLowerCase() === part.toLowerCase());
+    let at = (props.resource.brief || "").split("\n").length;
+    const index = props.resource.sections.findIndex((section) => {
+        at += 1 + (section.body || "").split("\n").length;
+        return at >= Number(lines[1]);
+    });
+    return sections[index < 0 ? sections.length - 1 : index];
+}
+
+watch(
+    () => [route.value.sub, props.resource.n],
+    async ([sub]) => {
+        if (!sub) return;
+        await nextTick();
+        const found = sectionAt(decodeURIComponent(sub));
+        if (!found) return;
+        found.scrollIntoView({block: "start", behavior: "smooth"});
+        found.classList.add("part-lit");
+        setTimeout(() => found.classList.remove("part-lit"), LIT_FOR);
+    },
+    {immediate: true}
+);
 </script>
 
 <template>
     <div :class="['document', {shifted}]">
-        <div class="document-body" @transitionend.self="shiftedDone">
+        <div ref="body" class="document-body" @transitionend.self="shiftedDone">
             <Highlight @quote="quote = $event">
                 <slot>
                     <ResourceBody :resource="resource" :comments="false" :links="false" @close="emit('close')" />
@@ -154,5 +183,14 @@ provide("talk", {talking, count, toggle: () => (talking.value = !talking.value),
 .document-aside.aside-leave-to {
     transform: translateX(100%);
     opacity: 0;
+}
+
+.document-body :deep(.section.part-lit) {
+    border-radius: 8px;
+    background: color-mix(in srgb, var(--accent) 12%, transparent);
+    box-shadow: 0 0 0 6px color-mix(in srgb, var(--accent) 12%, transparent);
+    transition:
+        background 0.6s ease,
+        box-shadow 0.6s ease;
 }
 </style>
