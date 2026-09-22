@@ -8,7 +8,6 @@ class AgentsDetails(FeatureDetails):
 
     title = "Agent sessions"
 
-    speaks_while_waiting = True
 
     abstract = """
         Every agent session is kept honest: one evicted from its environment is held, one gone

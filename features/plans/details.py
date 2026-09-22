@@ -6,7 +6,6 @@ class PlansDetails(FeatureDetails):
 
     title = "Planning"
 
-    speaks_while_waiting = True
 
     abstract = "A plan advances as its rows close: a phase completes, a checkpoint waits, the last phase ends it"
 

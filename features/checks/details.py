@@ -6,7 +6,6 @@ class ChecksDetails(FeatureDetails):
 
     title = "Checks"
 
-    speaks_while_waiting = True
 
     abstract = """
         Scripts that say pass or fail about the project, run on demand or on their own timer; a

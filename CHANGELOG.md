@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.86.8 — During a wait the journal speaks only when the agent must act
+
+- While a wait is declared or a background task runs, only what needs the agent reaches it: the user's messages and answers, permission prompts, the browser tab and buttons the user drives, the user's triggers, and the wait itself. Slow-request reports, update checks, failing checks, plans, suggestions, dumps, worktrees, pull requests, skill reminders, context checkpoints and plugin notes wait until the wait is over.
+
 ## 2.86.7 — The viewer has no sins left
 
 - Check for sins passes: control flow sits on template tags, the chat's turn kinds dispatch through SwitchCase, and templates no longer reach three levels into data. The chat's created card is MadeCard and a dump's created row is DumpMadeRow.
