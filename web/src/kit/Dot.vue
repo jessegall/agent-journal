@@ -4,6 +4,7 @@ import {computed} from "vue";
 const COLOR = {
     started: "var(--progress)",
     blocked: "var(--blocking)",
+    parked: "var(--parked)",
     planned: "var(--text-3)",
     done: "var(--progress)",
     asked: "var(--blocking)",
