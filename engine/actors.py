@@ -12,6 +12,19 @@ STOPPED, IDLE, BUSY, WORKING, COMPACTING = "stopped", "idle", "busy", "working",
 STATES = (STOPPED, IDLE, BUSY, WORKING, COMPACTING)
 
 
+def settled(record: Record, event: Event) -> bool:
+    rows = spoken_data(record, event).get("rows") or []
+    return bool(rows) and all(finished(record, ref) for ref in rows)
+
+
+def finished(record: Record, ref: str) -> bool:
+    kind, _, n = ref.partition(":")
+    try:
+        return bool(CONTROLLERS[kind](record, actor=SYSTEM).load(int(n)).completed)
+    except (KeyError, ValueError, Refused):
+        return False
+
+
 def spoken_data(record: Record, event: Event) -> dict:
     if not TYPES[event.type].typed_as_title:
         return {}
@@ -90,6 +103,9 @@ class Agent(Actor):
     def flush(self) -> str:
         if not self.pending:
             return ""
+        for e in [e for e in self.pending if settled(self.record, e)]:
+            self.notified(e)
+            self.pending.remove(e)
         typed = [e for e in self.pending if self.typed(e)]
         yielding = [e for e in self.pending if e not in typed and spoken_data(self.record, e).get("yields")]
         line, groups = render([e for e in self.pending if e not in typed and e not in yielding], self.record)
