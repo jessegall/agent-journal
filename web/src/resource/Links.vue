@@ -19,12 +19,15 @@ const bar = (ref, direction) => {
         age: r ? age(r.updated || r.created) : "",
     };
 };
-const rows = computed(() => [
-    ...props.resource.refs.filter((r) => !skip(refParts(r).type) && !props.except.includes(r)).map((r) => bar(r, "to")),
-    ...linkedTo(props.resource.ref)
-        .filter((r) => !skip(r.type))
-        .map((r) => bar(r.ref, "from")),
-]);
+const rows = computed(() => {
+    const listed = [
+        ...props.resource.refs.filter((r) => !skip(refParts(r).type) && !props.except.includes(r)).map((r) => bar(r, "to")),
+        ...linkedTo(props.resource.ref)
+            .filter((r) => !skip(r.type) && !props.except.includes(r.ref))
+            .map((r) => bar(r.ref, "from")),
+    ];
+    return listed.filter((row, i) => listed.findIndex((other) => other.ref === row.ref) === i);
+});
 const open = (ref) => {
     const {type, n, part} = refParts(ref);
     peek(type, n, 0, part ? encodeURIComponent(part) : "");
