@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.84.59 — One to-do in hand at a time
+
+Starting a to-do while another is in hand is refused, naming the one in hand: park it or finish it first, just like work. A parked to-do leaves Doing on the board and sits in Held with its reason. Marking a to-do done now also ends the work that was open on it, so the next one can start.
+
 ## 2.84.58 — Closing a notice twice is quiet
 
 Pressing X on a notice something else had already closed showed an error. A notice that is already closed now stays closed without a word. Closing any other row twice says "is already closed" instead of "is already close".
