@@ -4,6 +4,7 @@ import subprocess
 from pathlib import Path
 
 from engine.record import Record
+from engine.wording import plural
 from engine.stored import read_json
 from providers import PROVIDERS
 from providers.base import journal_hook
@@ -70,7 +71,8 @@ def set_aside(record: Record, project: Path, agent: str) -> str:
         put_back(record)
         return f"nothing set aside, everything is where it was: {error}"
     record.set_setting(KEY, {**state(record), "moved": moved, "last": True})
-    return f"set aside {len(skills)} other skills and the other hooks in {len(hooks)} " + ("file" if len(hooks) == 1 else "files") + ", until the journal stops"
+    parts = [plural(len(skills), "other skill")] * bool(skills) + [f"the other hooks in {plural(len(hooks), 'file')}"] * bool(hooks)
+    return f"set aside {' and '.join(parts)} until the journal stops"
 
 
 def put_back(record: Record) -> int:
