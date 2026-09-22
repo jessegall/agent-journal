@@ -18,6 +18,7 @@ class Check(Shape, Resource):
     data_fields: ClassVar[list[Field]] = [
         Field(TEXT, name="command"),
         Field(NUMBER, default=0, name="every"),
+        Field(TEXT, name="failure"),
         Field(default=dict, name="last"),
         Field(default=dict, name="running"),
         Field(default=list, name="runs"),

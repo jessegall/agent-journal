@@ -21,6 +21,9 @@ def test_a_check_runs_its_command_and_a_failure_is_filed_until_it_passes():
     (record.root.parent / "marker").write_text("")
     assert checks.run(check.n, wait=True).last["ok"] is True
     assert open_notices(record) == [], "a pass clears the failure it filed"
+    worded = Checks(record, actor=USER).create("Sins", command="echo '3 sins across 1 skill.'; exit 1", failure="The checker found {summary}")
+    Checks(record, actor=USER).run(worded.n, wait=True)
+    assert "The checker found 3 sins across 1 skill." in open_notices(record), "a check says in its own words what failed, with its last line"
 
 
 def test_a_check_without_a_command_refuses_in_words():
@@ -37,7 +40,8 @@ def test_only_the_checks_that_are_due_come_up_on_the_timer():
     checks = Checks(record, actor=USER)
     hourly = checks.create("Hourly", command="true", every=60)
     checks.create("By hand", command="true")
-    assert [c.n for c in checks._due(10_000)] == [hourly.n]
+    assert checks._due(hourly.created + 60) == [], "a new check does not run the moment it is made"
+    assert [c.n for c in checks._due(hourly.created + 3600)] == [hourly.n], "it runs a full interval after it was made"
     checks.run(hourly.n, wait=True)
     assert checks._due(checks.load(hourly.n).last["at"] + 60) == [], "it waits its minutes after a run"
 

@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.86.6 — A failing check says what failed
+
+- A failing check's notification carries its own result line (check 22 failed - 31 sins across 2 skills.), or its own words when it sets failure, as in Code Commandments found {summary}.
+- A new check with an interval first runs one interval after it was made, not the moment it is created.
+- A map setting (the command tags' runs) is declared like any other: the shipped entries with the user's laid over them. Features no longer wrap their settings view by hand.
+
 ## 2.86.5 — The text component is TextDisplay
 
 - kit Text is named TextDisplay, so it no longer shares its name with the browser's own Text.

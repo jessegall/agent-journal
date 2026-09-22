@@ -81,7 +81,7 @@ class Checks(Controller):
 
     def _due(self, now: float) -> list:
         return [check for check in self._standing()
-                if check.command and check.every and now - float((check.last or {}).get("at") or 0) >= float(check.every) * 60]
+                if check.command and check.every and now - float((check.last or {}).get("at") or check.created) >= float(check.every) * 60]
 
 
 resources_module.register(Check)

@@ -81,7 +81,7 @@ async function skipPrompts(skip) {
         <template v-if="feature.settings.length && (feature.fixed || on(feature.name, feature.default))">
             <section class="block">
                 <h3>Settings</h3>
-                <template v-for="setting in feature.settings" :key="setting.name">
+                <template v-for="setting in feature.settings.filter((s) => s.kind !== 'map')" :key="setting.name">
                     <div class="row">
                         <span class="text">
                             <span class="title">{{ setting.title }}</span>
