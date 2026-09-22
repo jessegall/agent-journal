@@ -4,6 +4,11 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.84.113 — Deleting a row keeps the index in step, and the chat returns to its newest line
+
+- A deleted row is taken out of the in-memory index the way a saved one is updated, so sweeping old nudges no longer makes every listing rescan the folder. A hook stays near 8ms during and after the sweep.
+- Back to chat from the dump window scrolls the chat to the newest message.
+
 ## 2.84.112 — What a dump makes stays inside it until you confirm it
 
 - Rows the agent makes for a dump (docs, plans, to-dos, its collection) are drafts of that dump: they show as cards in the dump window and nowhere else, not in lists, counts, search or the next row under auto. Confirm in the dump window brings them all into the record at once; Leave out on a card deletes that draft first. A row the dump only extended is never hidden.

@@ -72,7 +72,7 @@ class Controller(Stored, Files, Links):
         folder = self.path(r.n).parent
         before = self._moved(folder) if folder.is_dir() else None
         write_text(self.path(r.n), r.dump())
-        self._written(r, before)
+        self._reindexed(r.n, before, r)
         self.record.emit(self.type, r.n, action, self.actor, **event)
         return r
 

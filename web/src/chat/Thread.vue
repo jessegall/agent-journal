@@ -138,6 +138,13 @@ function toBottom() {
     missed.value = 0;
 }
 
+watch(
+    () => store.dumping,
+    (dumping) => {
+        if (!dumping) nextTick(() => requestAnimationFrame(toBottom));
+    }
+);
+
 function settled() {
     if (!stillReading() && !away.value) toBottom();
 }
