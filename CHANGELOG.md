@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.84.64 — Every bare row number is named back
+
+The check for bare row numbers only caught a number right after a few verbs, so "my reply to 2770" or "parking 784" slipped through without a chip. It now catches any standalone number that is a real row, and leaves alone a number with its type before it (to-do 785, line 42), a count (144 passed, 6 changed files), a version, a time, a range, a thousands figure, and anything in code or quotes. The agent is told which numbers to reword.
+
 ## 2.84.63 — Quotes read like the message they came from
 
 The quote above a reply in the chat, and the Replying to box over the composer, render their text the way the message does: row chips and formatting instead of raw `[[chip …]]` markers. Inline code in the chat and in documents no longer breaks across lines.
