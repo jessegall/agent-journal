@@ -134,6 +134,7 @@ class ToolInterceptor:
 
 class Command:
     name: ClassVar[str] = ""
+    network: ClassVar[bool] = False
 
     def run(self, context: Context, controller, *args, **kwargs):
         raise NotImplementedError
@@ -217,6 +218,7 @@ class Commands:
         given = list(inspect.signature(command.run).parameters.values())[2:]
         call.__signature__ = inspect.Signature([inspect.Parameter("controller", inspect.Parameter.POSITIONAL_OR_KEYWORD), *given])
         call.__name__ = command.name
+        call.network = command.network
         COMMANDS.setdefault(type_, {})[command.name] = call
 
     def intercept(self, action: str, interceptor: ActionInterceptor) -> None:

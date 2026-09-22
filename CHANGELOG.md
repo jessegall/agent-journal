@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.85.85 — What reaches the network is not held against the time budget
+
+- A command may say it reaches the network (plugin preview, install and upgrade do); it, the request that runs it and the viewer's timing of it are left out of the 50ms budget. Everything local keeps it.
+
 ## 2.85.84 — Only writing ends a wait; plugins publish skills
 
 - A declared wait ends only when the agent writes something (an edit, or a command that changes files). Reading, checking output and answering messages leave it standing.

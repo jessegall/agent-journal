@@ -95,3 +95,14 @@ def test_the_first_seconds_after_the_server_starts_are_not_held_against_the_budg
         runtime.STARTED[0] = 0.0
     reports.spent(record.root, record.env, "request", "GET /api/pages", 400)
     assert "request GET /api/pages is slower than its budget" in notified(record), "once warm, the budget holds again"
+
+
+def test_what_reaches_the_network_is_not_held_against_the_budget():
+    features.load()
+    record, reports = fresh(), FEATURES["dev_faults"].reports
+    turned(record, True)
+    reports.report_console(record.root, record.env, "POST /api/main/plugin/8/upgrade took 5000ms", "POST /api/main/plugin/8/upgrade", "", "slow")
+    reports.report_console(record.root, record.env, "POST /api/main/plugins/preview took 1500ms", "POST /api/main/plugins/preview", "", "slow")
+    assert notified(record) == [], "installing, upgrading and previewing a plugin fetch from the network and take what they take"
+    reports.report_console(record.root, record.env, "GET /api/main/dashboard took 200ms", "GET /api/main/dashboard", "", "slow")
+    assert notified(record) == ["the viewer's GET /api/main/dashboard is slower than its budget"], "anything local keeps its budget"
