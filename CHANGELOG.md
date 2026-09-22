@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.85.16
+
+- Chat etiquette no longer names back a phrase the agent quotes as an example; only one it says is caught.
+
 ## 2.85.15
 
 - Chat etiquette, a feature with its own skill: the agent talks about the work, never about the journal's workings, since the user sees every reply, reaction, pill and read themselves. A turn that slips ("your message is answered", "I replied", "filed as a pill") is named back to the agent once.
