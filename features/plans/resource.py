@@ -7,6 +7,7 @@ PHASE = names("title", "when", "checkpoint", "brief", "todos")
 
 
 class Plan(Shape, Resource):
+    listed_open = True
     type = "plan"
     notify_actions = ("updated",)
     event_labels = {"created": "Plan started", "completed": "Plan acknowledged"}
