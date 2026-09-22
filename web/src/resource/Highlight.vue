@@ -1,34 +1,46 @@
 <script setup>
-import {reactive} from "vue";
+import {onUnmounted, reactive, ref} from "vue";
 import Icon from "../kit/Icon.vue";
 
 const emit = defineEmits(["quote"]);
 const mark = reactive({text: "", x: 0, y: 0});
+const area = ref(null);
+let range = null;
+
+function place() {
+    if (!range || !area.value) return;
+    const rect = range.getBoundingClientRect();
+    const box = area.value.getBoundingClientRect();
+    mark.x = rect.left - box.left + rect.width / 2;
+    mark.y = rect.top - box.top;
+}
 
 function picked(e) {
     const selection = window.getSelection();
     const text = selection ? selection.toString().trim() : "";
     if (!text || !selection.rangeCount || !e.currentTarget.contains(selection.anchorNode)) {
         mark.text = "";
+        range = null;
         return;
     }
-    const rect = selection.getRangeAt(0).getBoundingClientRect();
-    const box = e.currentTarget.getBoundingClientRect();
+    range = selection.getRangeAt(0).cloneRange();
     mark.text = text;
-    mark.x = rect.left - box.left + rect.width / 2;
-    mark.y = rect.top - box.top + e.currentTarget.scrollTop;
+    place();
 }
 
 function quote() {
-    const selection = window.getSelection();
-    emit("quote", mark.text, selection && selection.rangeCount ? selection.getRangeAt(0).cloneRange() : null);
+    emit("quote", mark.text, range);
     mark.text = "";
+    range = null;
     window.getSelection().removeAllRanges();
 }
+
+window.addEventListener("scroll", place, {capture: true, passive: true});
+onUnmounted(() => window.removeEventListener("scroll", place, {capture: true}));
 </script>
 
 <template>
-    <div class="highlight" @mouseup="picked" @keyup="picked">
+    <div ref="area" class="highlight" @mouseup="picked" @keyup="picked">
         <slot />
         <template v-if="mark.text">
             <button type="button" class="highlight-go" :style="{left: `${mark.x}px`, top: `${mark.y}px`}" @mousedown.prevent @click="quote">
