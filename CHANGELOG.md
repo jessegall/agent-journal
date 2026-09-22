@@ -4,6 +4,11 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.85.55 — A notice looks like a notice, and a plugin can hear every moment
+
+- A notice over the chat has its own colour — a cyan edge and dot, or green and amber by tone — instead of the indigo the user's own messages wear.
+- A plugin can listen to MessageDisplay like any other hook event, and its manifest may set reads and refuse_seconds, which the plugin runner already honoured.
+
 ## 2.85.54 — The blur goes with the badge
 
 - The blur behind the badge fades on the same curve and clears its blur as it goes, instead of hanging on after the badge has gone. Measured in the page: badge gone at 1.04s, blur at 1.08s.

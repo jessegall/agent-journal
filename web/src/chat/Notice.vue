@@ -55,13 +55,16 @@ async function close() {
 
 <style scoped>
 .chat-notice {
+    --tone: #4fc3d7;
+
     flex: none;
     display: flex;
     align-items: center;
     gap: 9px;
-    padding: 7px 14px;
+    padding: 7px 14px 7px 11px;
     border-bottom: 1px solid var(--border);
-    background: color-mix(in srgb, var(--accent) 10%, var(--bg));
+    border-left: 3px solid var(--tone);
+    background: color-mix(in srgb, var(--tone) 14%, var(--bg));
     color: var(--text);
     font-size: 12px;
 }
@@ -71,7 +74,7 @@ async function close() {
     width: 6px;
     height: 6px;
     border-radius: 50%;
-    background: var(--accent);
+    background: var(--tone);
 }
 
 .chat-notice-text {
@@ -88,15 +91,15 @@ button.chat-notice-go {
 .chat-notice-go {
     flex: none;
     padding: 3px 9px;
-    border: 1px solid color-mix(in srgb, var(--accent) 45%, transparent);
+    border: 1px solid color-mix(in srgb, var(--tone) 55%, transparent);
     border-radius: 6px;
-    background: color-mix(in srgb, var(--accent) 18%, transparent);
+    background: color-mix(in srgb, var(--tone) 22%, transparent);
     color: var(--text);
     font-size: 11.5px;
 }
 
 .chat-notice-go:hover {
-    background: color-mix(in srgb, var(--accent) 30%, transparent);
+    background: color-mix(in srgb, var(--tone) 38%, transparent);
     color: #fff;
 }
 
@@ -120,19 +123,11 @@ button.chat-notice-go {
 }
 
 .chat-notice.tone-good {
-    background: color-mix(in srgb, #3d7a4f 16%, var(--bg));
-}
-
-.chat-notice.tone-good .chat-notice-dot {
-    background: #63b37c;
+    --tone: #63b37c;
 }
 
 .chat-notice.tone-warn {
-    background: color-mix(in srgb, #8a6a2f 18%, var(--bg));
-}
-
-.chat-notice.tone-warn .chat-notice-dot {
-    background: #d8a94a;
+    --tone: #d8a94a;
 }
 
 .chat-notice-go.forcing {

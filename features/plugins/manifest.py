@@ -2,18 +2,18 @@ import json
 import re
 from pathlib import Path
 
-from providers.payload import EVENTS
+from providers.payload import DISPLAYED, EVENTS
 from features.base import REGISTRY
 from surfaces.updates import newer
 from resources.base import ACTIONS, Refused
 from resources.types import TYPES
 
 MANIFEST = Path(".journal-plugin") / "plugin.json"
-KEYS = ("name", "version", "title", "description", "journal", "requires", "env", "setup", "services", "on", "refuse", "chat", "pages", "settings")
+KEYS = ("name", "version", "title", "description", "journal", "requires", "env", "setup", "services", "on", "refuse", "reads", "refuse_seconds", "chat", "pages", "settings")
 NAME = re.compile(r"[a-z0-9][a-z0-9-]{1,31}$")
 WORD = re.compile(r"[a-z][a-z0-9_-]*$")
 PLACEHOLDER = re.compile(r"\{([a-z][a-z0-9_.]*)\}")
-PATTERNS = {"*", *TYPES, *ACTIONS, *(f"{t}.{a}" for t in TYPES for a in ACTIONS), "hook.*", *(f"hook.{e}" for e in EVENTS)}
+PATTERNS = {"*", *TYPES, *ACTIONS, *(f"{t}.{a}" for t in TYPES for a in ACTIONS), "hook.*", *(f"hook.{e}" for e in (*EVENTS, DISPLAYED))}
 STEP = ("name", "run", "cwd")
 SERVICE = ("run", "cwd", "env", "port", "ready", "restart", "grace", "show")
 PAGE = ("name", "title", "icon", "service", "path", "status")
@@ -54,6 +54,11 @@ def read(folder: Path, version: str = "") -> dict:
     checked["chat"] = chat(name, given.get("chat") or [])
     checked["pages"] = pages(name, given.get("pages") or [], checked["services"])
     checked["settings"] = shaped(name, given.get("settings") or {}, "settings", SETTING, ())
+    if "refuse" in checked:
+        checked["refuse"] = command(name, "refuse", checked["refuse"])
+    checked["reads"] = bool(given.get("reads"))
+    if "refuse_seconds" in checked and not isinstance(checked["refuse_seconds"], (int, float)):
+        raise Refused("plugin.json: refuse_seconds is a number of seconds")
     return checked
 
 
