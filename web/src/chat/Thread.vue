@@ -202,10 +202,27 @@ onUnmounted(() => {
     clearTimeout(idleTimer);
 });
 
+let scrolledAt = 0;
+const BY_HAND = 600;
+
+function scrolledByHand() {
+    scrolledAt = Date.now();
+}
+
+function wheeled() {
+    markActive();
+    scrolledByHand();
+}
+
 function watchScroll() {
     const s = scroller.value;
     if (!s) return;
-    away.value = s.scrollHeight - s.scrollTop - s.clientHeight > 40;
+    const far = s.scrollHeight - s.scrollTop - s.clientHeight > 40;
+    if (far && !away.value && Date.now() - scrolledAt > BY_HAND) {
+        toBottom();
+        return;
+    }
+    away.value = far;
     if (settledOnce.value && away.value) scrolledUp.value = true;
     if (scrolledUp.value && s.scrollTop < NEAR_TOP) older();
 }
@@ -369,7 +386,10 @@ watch(
                 @mouseenter="(reading.inside = true) && markActive()"
                 @mouseleave="reading.inside = false"
                 @mousemove="markActive"
-                @wheel.passive="markActive"
+                @wheel.passive="wheeled"
+                @touchmove.passive="scrolledByHand"
+                @keydown="scrolledByHand"
+                @pointerdown="scrolledByHand"
             >
                 <template v-if="rendering">
                     <div ref="topMark" class="thread-top" />

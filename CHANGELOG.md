@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.87.5 — The chat follows new messages to the bottom
+
+Only a scroll the user makes (the wheel, a touch, the keyboard or the scrollbar) stops the chat following the newest message; the scroll a growing thread causes by itself no longer counts as the user scrolling up.
+
 ## 2.87.4 — A line about a message already answered is not sent late
 
 A line can name the rows it is about; when every one of them has closed before the line goes out, it is dropped. The line asking the agent to answer a read message is the first to use it, so it no longer arrives after the message was answered.
