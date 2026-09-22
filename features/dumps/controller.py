@@ -1,10 +1,11 @@
 import controllers.types as types_module
 import resources.types as resources_module
 from controllers.base import CONTROLLERS, Controller
+from controllers.stored import DRAFT_OF
 import time
 
 from features.dumps.resource import ENTRY, ITEM, Dump
-from resources.base import Refused
+from resources.base import AGENT, Refused
 
 TEXT = "text"
 LOG_KEPT = 20
@@ -27,10 +28,53 @@ class Dumps(Controller):
     def _collect(self, dump, refs: list[str]):
         collections = self._collections()
         found = self._collection(dump)
-        collection = collections.load(found) if found else collections.create(f"Dump {dump.n}, {dump.title}"[:80], abstract=f"Everything dump {dump.n} was filed into")
+        collection = collections.load(found) if found else collections.create(f"Dump {dump.n}, {dump.title}"[:80], abstract=f"Everything dump {dump.n} was filed into",
+                                                                              **{DRAFT_OF: dump.ref})
         collections.add(collection.n, refs)
         if not found:
             self.link(dump.n, collection.ref)
+
+    def _controller(self, ref: str):
+        type_, n = ref.split(":")
+        return CONTROLLERS[type_](self.record, actor=self.actor), int(n)
+
+    def _hold(self, dump, refs: list[str]) -> None:
+        for ref in refs:
+            try:
+                controller, n = self._controller(ref)
+                row = controller.load(n)
+            except (KeyError, ValueError, Refused):
+                continue
+            if row.created >= dump.created and not row.data.get(DRAFT_OF) and not dump.data.get("confirmed"):
+                controller.update(n, **{DRAFT_OF: dump.ref})
+
+    def _made(self, dump) -> list[str]:
+        items = (dump.data.get("items") or {}).values()
+        refs = [ref for i in items for ref in i.get(ITEM.refs) or []] + [e.get(ENTRY.on) for e in dump.data.get("log") or [] if e.get(ENTRY.on)]
+        found = self._collection(dump)
+        return list(dict.fromkeys(refs + ([f"collection:{found}"] if found else [])))
+
+    def confirm(self, n: int):
+        if self.actor == AGENT:
+            self._refuse("only the user confirms a dump: they do it in the dump window")
+        dump = self.load(int(n))
+        if not dump.completed:
+            self._refuse(f"dump {dump.n} is still being filed")
+        for ref in self._made(dump):
+            controller, m = self._controller(ref)
+            try:
+                if controller.load(m).data.get(DRAFT_OF) == dump.ref:
+                    controller.update(m, **{DRAFT_OF: ""})
+            except Refused:
+                continue
+        return self.update(dump.n, confirmed=time.time())
+
+    def leave(self, n: int, ref: str):
+        dump = self.load(int(n))
+        controller, m = self._controller(ref)
+        if controller.load(m).data.get(DRAFT_OF) != dump.ref:
+            self._refuse(f"{ref} is not waiting in dump {dump.n}")
+        return controller.delete(m, why=f"left out of dump {dump.n}")
 
     def name(self, n: int, title: str):
         found = self._collection(self.load(int(n)))
@@ -63,6 +107,7 @@ class Dumps(Controller):
         if not how.strip():
             raise Refused("say what was done with it")
         found = [ref.strip() for ref in refs.split(",") if ref.strip()]
+        self._hold(self.load(int(n)), found)
         for ref in found:
             self.link(int(n), ref)
         if found:
@@ -80,6 +125,8 @@ class Dumps(Controller):
             raise Refused("say what you are doing")
         if r.completed:
             raise Refused(f"dump {r.n} is closed")
+        if on.strip():
+            self._hold(r, [on.strip()])
         entries = [*(r.data.get("log") or []), {ENTRY.at: time.time(), ENTRY.text: status.strip(), ENTRY.on: on.strip()}]
         return self.update(r.n, log=entries[-LOG_KEPT:])
 

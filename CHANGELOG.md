@@ -4,6 +4,15 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.84.112 — What a dump makes stays inside it until you confirm it
+
+- Rows the agent makes for a dump (docs, plans, to-dos, its collection) are drafts of that dump: they show as cards in the dump window and nowhere else, not in lists, counts, search or the next row under auto. Confirm in the dump window brings them all into the record at once; Leave out on a card deletes that draft first. A row the dump only extended is never hidden.
+- The dump window opens on a filed dump that still waits for confirmation. Dumps filed before this release are confirmed on upgrade.
+- The dump window's look follows the design review: accent only on the spinner, the bar and the card being written; the app's own green for Filed; status lines start with a capital; the writing mark sits where the card's age is; a smoother shimmer, and none under reduced motion.
+- The Claude hook is fast again: numbering a new row read the whole folder (7700 nudges, 44ms), and an index rewrite made the next listing rescan its folder. Nudges older than a day are removed once an hour.
+- A URL written in bold no longer takes the closing ** into the link.
+- Setting a runtime/profile-requests flag keeps a profile of every request over budget in runtime/slow, for finding what is slow in the live server.
+
 ## 2.84.111 — Row chips and file links share one way of skipping marked text
 
 - The row-chip formatter wrote its own copy of the loop that leaves code and existing markers alone; it now uses the same function as the file and link formatter.

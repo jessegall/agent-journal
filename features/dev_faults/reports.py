@@ -1,3 +1,6 @@
+import cProfile
+import io
+import pstats
 import time
 from contextlib import contextmanager
 from pathlib import Path
@@ -14,6 +17,8 @@ EVERY = 10
 AGAIN = 300
 BUDGET = {"request": 50, "hook": 50, "command": 50}
 WARMED = ("request", "hook")
+PROFILING = "profile-requests"
+SLOW = "slow"
 
 
 class FaultReports:
@@ -59,13 +64,25 @@ class FaultReports:
         finally:
             self.spent(root, env, kind, name, (time.perf_counter() - began) * 1000)
 
-    def spent(self, root, env: str, kind: str, name: str, took: float, working: float | None = None) -> None:
+    def profiler(self, root) -> cProfile.Profile | None:
+        return cProfile.Profile() if (runtime.folder(root) / PROFILING).exists() else None
+
+    def kept(self, root, name: str, took: float, profile: cProfile.Profile) -> None:
+        out = io.StringIO()
+        pstats.Stats(profile, stream=out).sort_stats("cumulative").print_stats(30)
+        folder = runtime.folder(root) / SLOW
+        folder.mkdir(exist_ok=True)
+        (folder / f"{time.strftime('%H%M%S')}-{name.replace('/', '_').replace(' ', '-')}-{took:.0f}ms.txt").write_text(out.getvalue())
+
+    def spent(self, root, env: str, kind: str, name: str, took: float, working: float | None = None, profile=None) -> None:
         if took < min(BUDGET.values() or [0]) or (kind in WARMED and runtime.warming()):
             return
         try:
             record = Record(Path(root), env)
             if self.feature.on(record, "budget") and 0 < self.milliseconds(record, kind) < took:
                 self.slow(record, kind, name, took, working)
+                if profile:
+                    self.kept(root, name, took, profile)
         except (OSError, ValueError, KeyError):
             return
 

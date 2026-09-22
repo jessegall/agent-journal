@@ -135,13 +135,13 @@ def later(reply: Reply, then) -> Reply:
     return reply
 
 
-def timed(reply: Reply, root: Path, env: str, method: str, path: str, began: tuple) -> Reply:
+def timed(reply: Reply, root: Path, env: str, method: str, path: str, began: tuple, profile=None) -> Reply:
     faults = features.FEATURES.get("dev_faults")
     if not faults:
         return reply
     took = (time.perf_counter() - began[0]) * 1000
     working = (time.thread_time() - began[1]) * 1000
-    return later(reply, lambda: faults.reports.spent(root, env, "hook" if "/hook/" in path else "request", f"{method} {path}", took, working))
+    return later(reply, lambda: faults.reports.spent(root, env, "hook" if "/hook/" in path else "request", f"{method} {path}", took, working, profile))
 
 
 def dispatch(method: str, path: str, root: Path, query: dict, body: dict) -> Reply:
@@ -149,11 +149,22 @@ def dispatch(method: str, path: str, root: Path, query: dict, body: dict) -> Rep
     if not found:
         return static(path) if method == "GET" else Reply(404, {"error": "no such route"})
     r, params = found
+    faults = features.FEATURES.get("dev_faults")
+    profile = faults.reports.profiler(root) if faults else None
     began = (time.perf_counter(), time.thread_time())
     try:
         with bus.held() as queued:
-            reply = r.handler(Request(root, params, query, body))
-        return timed(later(reply, lambda: bus.release(queued)), root, params.get("env") or "main", method, path, began)
+            try:
+                if profile:
+                    profile.enable()
+            except ValueError:
+                profile = None
+            try:
+                reply = r.handler(Request(root, params, query, body))
+            finally:
+                if profile:
+                    profile.disable()
+        return timed(later(reply, lambda: bus.release(queued)), root, params.get("env") or "main", method, path, began, profile)
     except Missing as e:
         return Reply(404, {"error": str(e)})
     except Refused as e:
