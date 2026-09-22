@@ -4,6 +4,11 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.84.117 — The dump window only says what is really happening
+
+- Before the agent touches a dump it says Waiting for the agent to pick this up; after that it shows only the agent's own log lines, with how long ago the last one came. Three minutes without an update turns it into a warning that the agent may be busy elsewhere, with a way back to the chat. The borrowed agent activity and the rotating phrases are gone.
+- The hub's list of journals answers at once from its last probe and refreshes it in the background, so a journal that is restarting no longer holds the page.
+
 ## 2.84.116 — Each dropped item shows what it is and what it became
 
 - You dropped is a list of the items, not chips: each has a state dot (waiting, reading, filed, not filed), the agent's note on what it is or what it did with it, and links to the rows it made. Failures sit in the same list.

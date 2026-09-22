@@ -4,6 +4,7 @@ import mimetypes
 import os
 import re
 import tempfile
+import threading
 import time
 from email import policy
 from email.parser import BytesParser
@@ -271,11 +272,18 @@ def identity_at(port: int) -> dict | None:
     return viewer.identity(f"http://127.0.0.1:{port}/", PROBE_WAIT)
 
 
+def probe() -> None:
+    with ThreadPoolExecutor(len(viewer.PORTS)) as pool:
+        PROBED[:] = [time.time(), [(port, got) for port, got in zip(viewer.PORTS, pool.map(identity_at, viewer.PORTS)) if got]]
+
+
 @route("GET", "/api/journals")
 def get_journals(req: Request) -> Reply:
-    if time.time() - PROBED[0] >= PROBE_FOR:
-        with ThreadPoolExecutor(len(viewer.PORTS)) as pool:
-            PROBED[:] = [time.time(), [(port, got) for port, got in zip(viewer.PORTS, pool.map(identity_at, viewer.PORTS)) if got]]
+    if not PROBED[0]:
+        probe()
+    elif time.time() - PROBED[0] >= PROBE_FOR:
+        PROBED[0] = time.time()
+        threading.Thread(target=probe, daemon=True).start()
     found = [{"port": port, "project": got.get("project", ""), "version": got.get("version", ""), "root": got.get("root", ""), "current": got.get("root") == str(req.root), "running": True}
              for port, got in PROBED[1]]
     up = {str(req.root.resolve()), *(str(Path(j["root"]).resolve()) for j in found)}
