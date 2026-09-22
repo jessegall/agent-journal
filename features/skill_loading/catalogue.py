@@ -11,6 +11,7 @@ SKILL = names("name", "description", "path", "changed", "loaded", "stale", "alwa
 from skills import LIBRARY, skill_name
 from engine.package import data
 
+READ: dict[str, tuple] = {}
 HOMES = (LIBRARY, *(cls.skill_home for cls in PROVIDERS.values() if cls.skill_home))
 
 
@@ -19,13 +20,22 @@ def frontmatter(text: str) -> dict:
     return dict(re.findall(r"^(\w+):\s*(.*)$", m.group(1), re.M)) if m else {}
 
 
+def described(f: Path, root: Path) -> dict:
+    found = f.stat()
+    stamp = (found.st_mtime_ns, found.st_size)
+    held = READ.get(str(f))
+    if not held or held[0] != stamp:
+        head = frontmatter(f.read_text(errors="replace"))
+        held = READ[str(f)] = (stamp, {SKILL.name: f.parent.name, SKILL.description: head.get("description", "").strip('"'), SKILL.path: str(f.relative_to(root)),
+                                       SKILL.changed: found.st_mtime, SKILL.size: found.st_size})
+    return held[1]
+
+
 def catalogue(root: Path) -> list[dict]:
     out = {}
     for home in HOMES:
         for f in sorted((root / home).glob("*/SKILL.md")):
-            head = frontmatter(f.read_text(errors="replace"))
-            out.setdefault(f.parent.name, {SKILL.name: f.parent.name, SKILL.description: head.get("description", "").strip('"'), SKILL.path: str(f.relative_to(root)),
-                                           SKILL.changed: f.stat().st_mtime, SKILL.size: f.stat().st_size})
+            out.setdefault(f.parent.name, described(f, root))
     return list(out.values())
 
 
