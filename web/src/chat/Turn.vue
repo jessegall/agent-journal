@@ -217,6 +217,9 @@ async function drop() {
                         v-html="quoteHtml"
                     />
                 </template>
+                <template v-if="turn.type === 'question' && turn.title && turn.title !== words.text">
+                    <p class="thread-ask">{{ turn.title }}</p>
+                </template>
                 <Folded :at="FOLD_AT">
                     <div ref="text" class="thread-text" @click="follow" v-html="html" />
                 </Folded>
@@ -762,6 +765,13 @@ button.thread-pill:hover {
 
 .thread-text :deep(.console-more[open] .console-more-expanded) {
     display: inline;
+}
+
+.thread-ask {
+    margin: 0 0 6px;
+    font-size: 14.5px;
+    font-weight: 600;
+    color: var(--text);
 }
 
 .thread-context {
