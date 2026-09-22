@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.96.4 — The working dots say what is running
+
+Under the working dots the chat names the command or tool beside its verb, in smaller muted text ("reading Thread.vue", "running git status"), taken from the status bar's queue.
+
 ## 2.96.3 — The project name is a pill inside the band
 
 The black chip naming the project and environment is a pill rounded all round, with space above and below it inside the coloured band, instead of a tab hanging from the band's top edge.
