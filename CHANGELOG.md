@@ -4,6 +4,11 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.84.128 — Ending work names what is still parked, and hooks stop re-reading the transcript
+
+- When work ends while other work is parked, the agent is told: work N, its title, is still parked - can you continue it now? with why it was parked and how to resume it.
+- Every hook re-read and parsed the last megabyte of the session's transcript whenever it grew, about 40ms on a long session. It now reads only the new lines since the last hook.
+
 ## 2.84.127 — A feature's test is capped at 10 tests, not at a number of lines
 
 - The shape check counted lines in each feature's test.py; it now counts test methods, at most 10.

@@ -145,3 +145,15 @@ def test_an_idle_agent_under_auto_is_offered_the_next_row_even_when_its_idle_rep
     tick(record)
     assert [n for n in nudges(record) if n == f"todo {row.n} next"] == [f"todo {row.n} next"], \
         "the engine's clock offers it once, when the report that ends a turn never came"
+
+
+def test_ending_work_names_the_work_still_parked():
+    record = fresh()
+    report(record, "working", "PreToolUse")
+    works = Works(record, actor=AGENT)
+    first = works.create("the slow build")
+    works.action("park")("the build takes an hour")
+    second = works.create("a quick fix")
+    works.complete(second.n, how="fixed")
+    assert nudges(record)[-1] == f"work {first.n}, the slow build, is still parked - can you continue it now?", \
+        "ending work reminds the agent of the work it parked"
