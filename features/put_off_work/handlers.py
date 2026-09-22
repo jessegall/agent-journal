@@ -2,7 +2,7 @@ import re
 
 from engine.events import AgentUpdated
 from engine.transcript import last_text
-from features.parts import WHOLE_FEATURE, Context, Handler
+from features.parts import WHOLE_FEATURE, AgentContext, Context, Handler
 from resources.base import AGENT
 
 DEFERS = re.compile(r"\b(I'?ll (do|get to|come back to|handle|look at) (that|it|this)|after this|once (the|this|that) \w+ (is|are|finishes|lands)|next,? I'?ll|later on|I'?ll come back)\b", re.IGNORECASE)
@@ -13,7 +13,7 @@ SINCE = 600
 class NameDeferredWork(Handler):
     behaviour = WHOLE_FEATURE
 
-    def handle(self, context: Context, event: AgentUpdated) -> None:
+    def handle(self, context: AgentContext, event: AgentUpdated) -> None:
         found = DEFERS.search(last_text(context.record, context.agent.row) or "")
         if found and not self.parked_since(context, float(context.agent.row.at or 0) - SINCE):
             context.agent.say("deferred", words=found.group(0))

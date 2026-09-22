@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from typing import ClassVar
 
 from engine.events import AgentUpdated, ResourceEvent
-from features.parts import Context, Handler
+from features.parts import AgentContext, Context, Handler
 
 
 @dataclass(frozen=True)
@@ -21,7 +21,7 @@ class RunDueChecks(Handler):
     def __init__(self):
         self.running: set[str] = set()
 
-    def handle(self, context: Context, event: AgentUpdated) -> None:
+    def handle(self, context: AgentContext, event: AgentUpdated) -> None:
         checks = context.journal.checks
         for check in checks._due(time.time()):
             key = f"{context.record.root}:{check.n}"

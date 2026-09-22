@@ -8,7 +8,7 @@ from typing import ClassVar
 from controllers.types import CONTROLLERS
 from engine.events import ResourceEvent, SessionStarted
 from features.attachment_descriptions.video import MAX_FRAMES, probe, spacing
-from features.parts import Context, Handler
+from features.parts import AgentContext, Context, Handler
 
 MEDIA = ("image/", "video/")
 
@@ -53,9 +53,7 @@ class TagNewMedia(Handler):
 class TagMissingAtStart(Handler):
     behaviour = "tagging"
 
-    def handle(self, context: Context, event: SessionStarted) -> None:
-        if not context.agent:
-            return
+    def handle(self, context: AgentContext, event: SessionStarted) -> None:
         for type_ in CONTROLLERS:
             for row in context.journal.of(type_)._every():
                 for name, tags in row.files.items():

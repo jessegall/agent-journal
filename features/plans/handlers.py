@@ -6,7 +6,7 @@ from features.plans.controller import BUILDING, PHASES, WAITING
 from features.plans.progress import catch_up
 from features.plans.resource import PHASE
 from features.work_tracking.auto import automatic
-from features.parts import Context, Handler
+from features.parts import AgentContext, Context, Handler
 from resources.base import AGENT, USER
 
 WRITTEN = ("created", "updated", "linked")
@@ -43,7 +43,7 @@ class GuideBuilding(Handler):
 
 
 class PassCheckpointsInAuto(Handler):
-    def handle(self, context: Context, event: AgentUpdated) -> None:
+    def handle(self, context: AgentContext, event: AgentUpdated) -> None:
         if not automatic(context.record):
             return
         plans = context.journal.plans

@@ -1,10 +1,10 @@
-from features.parts import ActionInterceptor, Context, ToolInterceptor
+from features.parts import ActionInterceptor, AgentContext, Context, ToolInterceptor
 from controllers.types import Todos
 from features.plans.progress import held, running
 
 
 class RefusePlanMode(ToolInterceptor):
-    def intercept(self, context: Context, call) -> str:
+    def intercept(self, context: AgentContext, call) -> str:
         if not call.plans:
             return ""
         title, brief = context.feature.line("plan mode", {})

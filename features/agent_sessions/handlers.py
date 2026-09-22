@@ -4,7 +4,7 @@ from typing import ClassVar
 
 from engine.events import AgentUpdated, ResourceCreated, ResourceEvent
 from engine.sessions import Sessions
-from features.parts import Context, Handler
+from features.parts import AgentContext, Context, Handler
 
 SUBAGENT = "subagent"
 STOPPED = "stopped"
@@ -19,9 +19,7 @@ class TodoUpdated(ResourceEvent):
 class HoldEvicted(Handler):
     behaviour = "eviction"
 
-    def handle(self, context: Context, event: AgentUpdated) -> None:
-        if not context.agent:
-            return
+    def handle(self, context: AgentContext, event: AgentUpdated) -> None:
         sessions = Sessions(context.record.root)
         session = context.agent.session
         gone = sessions.read(session).get("evicted")
@@ -34,7 +32,7 @@ class HoldEvicted(Handler):
 class MarkSilentStopped(Handler):
     behaviour = "liveness"
 
-    def handle(self, context: Context, event: AgentUpdated) -> None:
+    def handle(self, context: AgentContext, event: AgentUpdated) -> None:
         agents = context.journal.agents
         silent = time.time() - context.settings.quiet * MINUTE
         for row in agents._every():
@@ -72,7 +70,7 @@ class HandBackReport(Handler):
 class ClearLapsedAssignments(Handler):
     behaviour = "subagents"
 
-    def handle(self, context: Context, event: AgentUpdated) -> None:
+    def handle(self, context: AgentContext, event: AgentUpdated) -> None:
         subagents = {a.title: a for a in context.journal.agents._standing() if a.status == SUBAGENT}
         if not subagents:
             return
@@ -83,5 +81,4 @@ class ClearLapsedAssignments(Handler):
             if not who or who not in subagents or time.time() - float(subagents[who].active or 0) < limit:
                 continue
             todos.update(t.n, assigned="", lapsed=who)
-            if context.agent:
-                context.agent.say("lapsed", who=who, n=t.n, minutes=limit // MINUTE)
+            context.agent.say("lapsed", who=who, n=t.n, minutes=limit // MINUTE)

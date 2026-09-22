@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.84.24 — A feature part that always has an agent says so in its type
+
+Handlers of agent events and tool interceptors now receive an `AgentContext`, whose agent is always there, so the 26 checks for a missing agent in those parts are gone. Other parts keep the plain `Context`, where the agent may be absent. No behaviour changes.
+
 ## 2.84.23 — The chat and the status bar say what the agent is waiting for
 
 While the agent's subagents or background shells are running, the status bar reads "Waiting for 2 subagents" (or "for a background shell", or both), and the chat shows the same in place of the working dots.

@@ -1,15 +1,15 @@
 import io
 
 from engine.events import AgentMessageSending
-from features.parts import Context, Handler
+from features.parts import AgentContext, Context, Handler
 from features.command_tags.reading import CARRIED, named, reader, replies, runs, stripped, tag_spelling
 from resources.base import AGENT
 
 
 class RunTagCommands(Handler):
-    def handle(self, context: Context, event: AgentMessageSending) -> None:
+    def handle(self, context: AgentContext, event: AgentMessageSending) -> None:
         message = event.text
-        if context.agent and CARRIED.search(message) and context.once("tagged", message):
+        if CARRIED.search(message) and context.once("tagged", message):
             self.run(context, message)
         if replies(message):
             event.stop()

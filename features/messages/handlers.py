@@ -5,7 +5,7 @@ from engine.events import AgentMessageSent, AgentUpdated, ResourceCreated, Resou
 from engine.transcript import IDLE, last_text
 from features import trigger
 from features.messages.answering import in_hand, read_and_open, theirs, unanswered
-from features.parts import Context, Handler
+from features.parts import AgentContext, Context, Handler
 from resources.base import AGENT, SECTION, USER, titled
 
 LINKED = ("message", "comment", "reaction", "nudge", "notification", "agent")
@@ -40,8 +40,8 @@ def patient(context: Context, behaviour: str) -> int:
 
 
 class SaveAgentMessage(Handler):
-    def handle(self, context: Context, event: AgentMessageSent) -> None:
-        if context.agent and event.text.strip() and context.once("shown", event.text):
+    def handle(self, context: AgentContext, event: AgentMessageSent) -> None:
+        if event.text.strip() and context.once("shown", event.text):
             context.journal.acting(AGENT).messages.create(titled(event.text), brief=event.text)
 
 
@@ -54,9 +54,7 @@ class ResetCountsOnArrival(Handler):
 
 
 class NameUnread(Handler):
-    def handle(self, context: Context, event: AgentUpdated) -> None:
-        if not context.agent:
-            return
+    def handle(self, context: AgentContext, event: AgentUpdated) -> None:
         if not any(AGENT not in row["seen"] and not row["completed"] and not row["deleted"] for row in context.journal.messages.summaries()):
             context.release("unread")
             trigger.write(context.record, context.agent.row, context.feature.keyed("unread"), count=0)
@@ -69,9 +67,7 @@ class NameUnread(Handler):
 
 
 class NameUnanswered(Handler):
-    def handle(self, context: Context, event: AgentUpdated) -> None:
-        if not context.agent:
-            return
+    def handle(self, context: AgentContext, event: AgentUpdated) -> None:
         held = unanswered(context.journal)
         if not held:
             trigger.write(context.record, context.agent.row, context.feature.keyed("answering"), count=0)
@@ -83,8 +79,8 @@ class NameUnanswered(Handler):
 class CloseHandled(Handler):
     behaviour = "closing"
 
-    def handle(self, context: Context, event: AgentUpdated) -> None:
-        if not context.agent or context.agent.row.status != IDLE:
+    def handle(self, context: AgentContext, event: AgentUpdated) -> None:
+        if context.agent.row.status != IDLE:
             return
         for message in read_and_open(context.journal):
             results = [*message.refs, *(s[SECTION.body] for s in message.sections)]
@@ -134,7 +130,7 @@ class LinkToMessageInHand(Handler):
 class NameRunTogether(Handler):
     behaviour = "paragraphs"
 
-    def handle(self, context: Context, event: AgentUpdated) -> None:
+    def handle(self, context: AgentContext, event: AgentUpdated) -> None:
         last = last_text(context.record, context.agent.row).strip()
         if len(last) >= RUN_ON and "\n\n" not in last and last.count(". ") >= SENTENCES:
             context.agent.whisper("paragraphs")

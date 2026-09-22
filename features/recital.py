@@ -3,7 +3,7 @@ from engine.stored import read_json, write_json
 from features import trigger
 from features.trigger import Trigger
 from features.base import Behaviour, Line
-from features.parts import WHOLE_FEATURE, Context, Handler, ToolInterceptor
+from features.parts import WHOLE_FEATURE, AgentContext, Context, Handler, ToolInterceptor
 from resources.base import KEYWORDS, WHOM
 
 WHISPER = "whisper"
@@ -35,9 +35,9 @@ class WhisperOnKeyword(ToolInterceptor):
     def __init__(self, resources: str):
         self.resources = resources
 
-    def intercept(self, context: Context, call) -> str:
+    def intercept(self, context: AgentContext, call) -> str:
         text = call.text.lower()
-        if not text or not context.agent or not context.on(WHISPER):
+        if not text or not context.on(WHISPER):
             return ""
         rows = getattr(context.journal, self.resources)
         for row in rows._standing():
@@ -63,7 +63,7 @@ class RepeatStanding(Handler):
     def __init__(self, resources: str):
         self.resources = resources
 
-    def handle(self, context: Context, event: AgentUpdated) -> None:
+    def handle(self, context: AgentContext, event: AgentUpdated) -> None:
         resources = getattr(context.journal, self.resources)
         rows = [r for r in resources._standing() if r.data.get(WHOM, context.agent.session) == context.agent.session]
         if rows:

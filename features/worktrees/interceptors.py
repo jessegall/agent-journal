@@ -1,12 +1,12 @@
 from pathlib import Path
 
 from engine.worktree import checkout
-from features.parts import Context, ToolInterceptor
+from features.parts import AgentContext, ToolInterceptor
 from features.worktrees.links import excluded
 
 
 class LinkWorktreeJournal(ToolInterceptor):
-    def intercept(self, context: Context, call) -> str:
+    def intercept(self, context: AgentContext, call) -> str:
         cwd = getattr(context.hook, "cwd", "")
         top = checkout(Path(cwd)) if cwd else None
         journal = top / ".journal" if top else None

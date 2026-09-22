@@ -2,7 +2,7 @@ import time
 
 from engine.events import AgentUpdated, SessionStarted, ToolFinished
 from features import trigger
-from features.parts import Context, Handler
+from features.parts import AgentContext, Handler
 from features.skill_loading.catalogue import SKILL, chosen, skills
 from features.skill_loading.required import require
 from providers import PROVIDERS
@@ -17,9 +17,7 @@ def journal_skill(name: str) -> bool:
 
 
 class RemindUnloaded(Handler):
-    def handle(self, context: Context, event: AgentUpdated) -> None:
-        if not context.agent:
-            return
+    def handle(self, context: AgentContext, event: AgentUpdated) -> None:
         row, name = context.agent.row, context.feature.name
         state = trigger.last(context.record, row.title, name)
         if row.event in WINDOWS and state.get(AgentRow.event) != row.event:
@@ -37,10 +35,10 @@ class RemindUnloaded(Handler):
 class HoldUntilReloaded(Handler):
     behaviour = "reload"
 
-    def handle(self, context: Context, event: AgentUpdated) -> None:
-        row = context.agent.row if context.agent else None
-        since = float(trigger.last(context.record, row.title, context.feature.name).get("since") or 0) if row else 0
-        provider = PROVIDERS.get(row.provider) if row else None
+    def handle(self, context: AgentContext, event: AgentUpdated) -> None:
+        row = context.agent.row
+        since = float(trigger.last(context.record, row.title, context.feature.name).get("since") or 0)
+        provider = PROVIDERS.get(row.provider)
         if not since or not provider or not row.transcript:
             return
         require(context.record, row.title, {"journal": since})
@@ -49,7 +47,7 @@ class HoldUntilReloaded(Handler):
 class NameStaleSkills(Handler):
     behaviour = "stale"
 
-    def handle(self, context: Context, event: AgentUpdated) -> None:
+    def handle(self, context: AgentContext, event: AgentUpdated) -> None:
         changed = {s[SKILL.name]: s[SKILL.changed] for s in skills(context.record, context.agent.row.n) if s[SKILL.stale]}
         if changed:
             require(context.record, context.agent.session, changed)
@@ -58,16 +56,15 @@ class NameStaleSkills(Handler):
 class RequireAlwaysSkills(Handler):
     behaviour = "always"
 
-    def handle(self, context: Context, event: SessionStarted) -> None:
-        if context.agent:
-            now = time.time()
-            require(context.record, context.agent.session, {name: now for name in chosen(context.record)})
+    def handle(self, context: AgentContext, event: SessionStarted) -> None:
+        now = time.time()
+        require(context.record, context.agent.session, {name: now for name in chosen(context.record)})
 
 
 class ShowLoadsInChat(Handler):
     behaviour = "chat"
 
-    def handle(self, context: Context, event: ToolFinished) -> None:
-        if context.agent and event.skill:
+    def handle(self, context: AgentContext, event: ToolFinished) -> None:
+        if event.skill:
             loads = [*(context.agent.row.data.get(AgentRow.skill_loads) or []), {"skill": event.skill, "at": time.time()}]
             context.journal.agents.update(context.agent.row.n, **{AgentRow.skill_loads: loads[-KEPT_LOADS:]})
