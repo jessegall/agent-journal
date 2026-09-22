@@ -129,3 +129,19 @@ def test_each_environment_gets_its_own_engine_process_and_sees_only_its_own_agen
     monkeypatch.setattr(typist, "live", lambda root: ["claude-1", "claude-2"])
     assert engines.Children(record.root).wanted() == {"main", "feature-x"}, "one engine process per environment with a live agent"
     assert engines.Engines(record.root, "feature-x").mine() == ["claude-2"], "a process runs only its own environment's live agents"
+
+
+def test_the_start_question_never_offers_a_busy_environment_on_enter():
+    import os
+    from commands.queries import asked_for
+    from controllers.types import Environments
+    from engine.sessions import Sessions
+    from resources.base import SYSTEM
+    record = fresh()
+    Environments(record, actor=SYSTEM).create(record.env)
+    Sessions(record.root).bind("codex-x", record.env, pid=os.getpid(), provider="codex")
+    answers = iter(["", "side", "1", "y"])
+    ask = lambda _="": next(answers)
+    assert asked_for(record, [], ask=ask, answering=True) == "side", "Enter takes a free choice, here a new environment"
+    assert asked_for(record, [], ask=ask, answering=True) == record.env, "a busy one picked on purpose is taken over"
+    assert Sessions(record.root).holder(record.env) == "", "and the agent there is moved off"
