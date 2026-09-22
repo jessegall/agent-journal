@@ -28,7 +28,7 @@ const revisions = useRevisions(() => props.resource);
                     Doc {{ resource.n }}, revision {{ revisions.at + 1 }}
                 </span>
                 <span class="grow" />
-                <CommentToggle />
+                <CommentToggle :resource="resource" />
                 <Btn kind="icon" @click="emit('close')"><Icon name="x" /></Btn>
             </header>
             <RevisionStrip :revisions="revisions" />

@@ -142,7 +142,7 @@ const docs = computed(() =>
             <div class="controls">
                 <ResourceActions :resource="resource" @edit="edit" />
                 <span class="controls-end">
-                    <CommentToggle />
+                    <CommentToggle :resource="resource" />
                 </span>
                 <template v-if="ranked">
                     <Priority :resource="resource" />
