@@ -4,7 +4,7 @@ from engine.version import version
 from features.parts import Command, Context
 from features.plugins.lifecycle import called, difference, drop, place, restarted
 from features.plugins.manifest import read
-from features.plugins.source import alone, checked, data, environment, folder, log, ports_for, prepared, preview, said_version, staged, token
+from features.plugins.source import CHOSEN, alone, checked, data, environment, folder, log, ports_for, prepared, preview, said_version, staged, token
 from resources.base import Refused
 
 VERSION = version()
@@ -98,6 +98,21 @@ class Disable(Command):
 
     def run(self, context: Context, plugins, n: int):
         return plugins.update(n, enabled=False)
+
+
+class Configure(Command):
+    name = "configure"
+
+    def run(self, context: Context, plugins, n: int, key: str, value: str = ""):
+        row = plugins.load(n)
+        declared = (row.manifest or {}).get("settings") or {}
+        if key not in declared:
+            raise Refused(f"{called(row)} has no setting {key!r}; it has {', '.join(declared) or 'none'}")
+        kept = dict(row.settings or {})
+        kept[CHOSEN] = {**(kept.get(CHOSEN) or {}), key: value}
+        updated = plugins.update(row.n, settings=kept)
+        restarted(plugins.record.root, row.manifest or {})
+        return updated
 
 
 class Purge(Command):

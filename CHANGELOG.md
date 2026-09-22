@@ -4,6 +4,11 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.85.65 — A plugin's settings are on its card, and they reach it
+
+- Each setting a plugin declares shows on its card on the Plugins page, with its help and its value, and changing it saves at once. journal plugin configure <n> <key> <value> does the same from the command line.
+- A chosen value reaches every command the plugin runs through the setting's variable, and the plugin's services restart to pick it up. Declared settings were never applied before.
+
 ## 2.85.64 — The chip test expects the comma list
 
 - The row-links test expects a chip of several rows to read as a comma list, as 2.85.63 made it. 2.85.63 reached main without its tag because this test still expected the old wording.

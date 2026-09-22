@@ -13,6 +13,7 @@ from install import fetch
 from resources.base import Refused
 
 HOME = "plugins"
+CHOSEN = "chosen"
 DATA = "plugin-data"
 LOGS = "plugins"
 REPOSITORY = re.compile(r"[\w.-]+/[\w.-]+$")
@@ -81,11 +82,16 @@ def own_journal(root: Path) -> Path:
     return bin_dir
 
 
-def environment(root: Path, name: str, manifest: dict, token: str, ports: dict | None = None) -> dict:
+def chosen_env(manifest: dict, chosen: dict | None) -> dict:
+    return {str(setting["env"]): str((chosen or {}).get(key, setting.get("default", "")))
+            for key, setting in (manifest.get("settings") or {}).items() if setting.get("env")}
+
+
+def environment(root: Path, name: str, manifest: dict, token: str, ports: dict | None = None, chosen: dict | None = None) -> dict:
     where = values(root, name, token, ports)
     given = fill(manifest.get("env") or {}, where)
     path = f"{own_journal(root)}{os.pathsep}{os.environ.get('PATH', '')}"
-    return {**os.environ, "PATH": path, **{str(k): str(v) for k, v in given.items()},
+    return {**os.environ, "PATH": path, **{str(k): str(v) for k, v in given.items()}, **chosen_env(manifest, chosen),
             "JOURNAL_ROOT": where["root"], "JOURNAL_URL": where["journal.url"], "JOURNAL_TOKEN": token,
             "JOURNAL": str(Path(root) / "journal"), "JOURNAL_ENV": where["journal.env"], "JOURNAL_PLUGIN": name,
             "JOURNAL_PLUGIN_DIR": where["dir"], "JOURNAL_PLUGIN_DATA": where["data"], "JOURNAL_QUEUE": where["queue"]}

@@ -99,6 +99,19 @@ def test_removing_a_plugin_stops_its_services_and_takes_its_folder():
         "its service is asked to stop and its folder is gone"
 
 
+def test_a_chosen_setting_reaches_the_plugins_commands():
+    from features.plugins.commands import Configure
+    from features.plugins.source import CHOSEN, environment
+    record = alone()
+    row = installed(record, "linter", "exit 0", settings={"quiet": {"title": "Quiet", "default": "", "env": "QUIET"}})
+    plugins = Plugins(record, actor=SYSTEM)
+    assert environment(record.root, "linter", row.manifest, row.token)["QUIET"] == "", "unchanged, a setting is its default"
+    Configure().run(None, plugins, row.n, "quiet", "SourceReminder")
+    chosen = (plugins.load(row.n).settings or {}).get(CHOSEN)
+    assert environment(record.root, "linter", row.manifest, row.token, chosen=chosen)["QUIET"] == "SourceReminder", "and a chosen value reaches its env"
+    assert "has no setting" in refused(lambda: Configure().run(None, plugins, row.n, "loud", "x"))
+
+
 def test_a_service_no_plugin_declares_is_stopped_and_forgotten():
     record = fresh()
     left = subprocess.Popen(["sleep", "30"], start_new_session=True)

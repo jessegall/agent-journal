@@ -14,7 +14,7 @@ from features.plugins.manifest import fill
 from features.plugins.payload import of
 from features.plugins.queue import drain
 from features.plugins.run import SECONDS, call
-from features.plugins.source import environment, folder, log
+from features.plugins.source import CHOSEN, environment, folder, log
 from resources.base import PLUGIN, Refused, SYSTEM
 
 REPLAY = 600
@@ -141,7 +141,7 @@ class Host:
         payload = of(record, event, plugin, where)
         if its_own(event, plugin, payload.get("resource")):
             return True, 0
-        env = environment(record.root, plugin, row.manifest, row.token)
+        env = environment(record.root, plugin, row.manifest, row.token, chosen=(row.settings or {}).get(CHOSEN))
         for handler in handlers:
             if handler.get("post"):
                 ok, reply = post(fill(handler["post"], self.places(record, row)), payload, row.token)

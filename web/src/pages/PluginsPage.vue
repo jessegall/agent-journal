@@ -40,6 +40,12 @@ const plugins = computed(() =>
             source: p.data.source,
             commit: p.data.commit ? p.data.commit.slice(0, 12) : "linked folder",
             enabled: !!p.data.enabled,
+            settings: Object.entries((p.data.manifest || {}).settings || {}).map(([key, s]) => ({
+                key,
+                title: s.title || key,
+                help: s.help || "",
+                value: String(((p.data.settings || {}).chosen || {})[key] ?? s.default ?? ""),
+            })),
         }))
 );
 const services = ref([]);
@@ -111,6 +117,10 @@ async function remove(everything) {
     removing.value = null;
     await plugin(p, "remove", {how: "removed from the viewer"});
     if (everything) await plugin(p, "purge");
+}
+
+async function configure(p, key, value) {
+    await plugin(p, "configure", {key, value});
 }
 
 async function readLog() {
@@ -273,6 +283,24 @@ async function askAgent() {
                             </template>
                         </div>
                     </template>
+                    <template v-if="p.settings.length">
+                        <div class="settings">
+                            <template v-for="s in p.settings" :key="s.key">
+                                <label class="setting">
+                                    <span class="setting-title">{{ s.title }}</span>
+                                    <template v-if="s.help">
+                                        <span class="setting-help">{{ s.help }}</span>
+                                    </template>
+                                    <input
+                                        class="setting-value"
+                                        :value="s.value"
+                                        spellcheck="false"
+                                        @change="configure(p, s.key, $event.target.value)"
+                                    />
+                                </label>
+                            </template>
+                        </div>
+                    </template>
                     <footer class="acts">
                         <Btn small :disabled="busy === `${p.n}`" @click="plugin(p, 'upgrade', {yes: true})">
                             <template v-if="busy === `${p.n}`">
@@ -418,6 +446,46 @@ h2 {
     font-family: ui-monospace, "SF Mono", Menlo, monospace;
     font-size: 11.5px;
     white-space: pre-wrap;
+}
+
+.settings {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 10px 0 4px;
+    border-top: 1px solid var(--border);
+}
+
+.setting {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.setting-title {
+    color: var(--text);
+    font-size: 12.5px;
+}
+
+.setting-help {
+    color: var(--text-3);
+    font-size: 11.5px;
+}
+
+.setting-value {
+    margin-top: 3px;
+    padding: 6px 9px;
+    border: 1px solid var(--border-2);
+    border-radius: 7px;
+    background: var(--bg);
+    color: var(--text);
+    font: inherit;
+    font-size: 12.5px;
+}
+
+.setting-value:focus {
+    outline: none;
+    border-color: var(--accent);
 }
 
 .shown-from,
