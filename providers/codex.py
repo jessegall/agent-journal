@@ -15,6 +15,10 @@ TOOLS = {"exec": "Bash", "exec_command": "Bash", "shell": "Bash", "shell_command
 SKILL_LOOP = re.compile(r"for\s+\w+\s+in\s+([^;]+);\s*do")
 TAIL_BYTES = 262144
 WINDOW_LABELS = {300: "5h", 1440: "1d", 10080: "7d"}
+SPAWN_IN_SCRIPT = re.compile(r"tools\.\w*spawn_agent\(")
+SCRIPT_FIELD = r"{}:\s*\"([^\"]*)\""
+SPAWNED = re.compile(r'"agent_id":"([^"]+)"')
+TASK_EVENTS = re.compile(r'"type":"(task_started|task_complete)"')
 
 
 class Codex(Provider):
@@ -237,16 +241,24 @@ class Codex(Provider):
             return f"{minutes // 60}h"
         return f"{minutes}m"
 
+    def subagent_transcript(self, path: Path, session: str) -> Path | None:
+        return next(Path(path).parent.parent.glob(f"*/rollout-*-{session}.jsonl"), None)
+
+    def subagent_state(self, path: Path, session: str) -> tuple[bool, float]:
+        found = self.subagent_transcript(path, session)
+        events = TASK_EVENTS.findall("".join(tail(found, TAIL_BYTES))) if found else []
+        running = not events or events[-1] == "task_started"
+        return running, 0.0 if running or not found else found.stat().st_mtime
+
     def crew(self, path: Path) -> dict:
         rows = [row for _, row in self.entries(path)]
         uses = [use for row in rows for use in self.tool_uses(row)]
         skills = sorted({str((use.get("input") or {}).get("skill") or "") for use in uses if use.get("name") == "Skill"} - {""})
-        subagents = sum(1 for use in uses if str(use.get("name") or "").endswith("spawn_agent"))
         subagent_rows = []
         shell_rows = []
         shells = 0
         compacting = False
-        pending = {}
+        pending, spawning = {}, {}
         for row in rows:
             payload = row.get("payload") or {}
             if not isinstance(payload, dict):
@@ -256,7 +268,10 @@ class Codex(Provider):
                 key = payload.get("call_id") or payload.get("id")
                 raw = payload.get("arguments") or payload.get("input") or ""
                 text = str(raw)
-                if name.endswith("spawn_agent"):
+                if name == "exec" and SPAWN_IN_SCRIPT.search(text):
+                    field = lambda key: (re.search(SCRIPT_FIELD.format(key), text) or [None, ""])[1]
+                    spawning[key] = {"task": field("task_name") or "subagent", "type": field("agent_type"), "model": field("model")}
+                elif name.endswith("spawn_agent"):
                     try:
                         detail = json.loads(raw) if isinstance(raw, str) else raw
                     except (TypeError, ValueError):
@@ -265,6 +280,12 @@ class Codex(Provider):
                     subagent_rows.append({"task": str(detail.get("task_name") or "subagent"), "model": str(detail.get("model") or "")})
                 elif name.rsplit(".", 1)[-1] in ("exec", "exec_command", "shell", "shell_command"):
                     pending[key] = text
+                spawned = spawning.pop(key, None) if payload.get("type") == "custom_tool_call_output" else None
+                found = SPAWNED.search(str(payload.get("output"))) if spawned else None
+                if found:
+                    running, ended = self.subagent_state(path, found.group(1))
+                    subagent_rows.append({**spawned, "session": found.group(1), "running": running, "at": timestamp(str(row.get("timestamp") or "")),
+                                          "ended": ended, "status": "" if running else "finished"})
                 if payload.get("type") == "custom_tool_call_output" and str(payload.get("output") or "").startswith("Script running with cell ID"):
                     shells += 1
                     command = pending.get(payload.get("call_id") or payload.get("id"), "")
@@ -273,7 +294,7 @@ class Codex(Provider):
                 compacting = True
             elif row.get("type") == "response_item" and (payload.get("role") == "assistant" or payload.get("type") in ("reasoning", "function_call", "custom_tool_call")):
                 compacting = False
-        return {AgentRow.skills: skills, AgentRow.shells: shells, AgentRow.subagents: subagents,
+        return {AgentRow.skills: skills, AgentRow.shells: shells, AgentRow.subagents: len(subagent_rows),
                 AgentRow.shell_rows: shell_rows, AgentRow.subagent_rows: subagent_rows, AgentRow.compacting: compacting}
 
     def effort(self, project: Path, transcript: Path | None = None) -> str:
