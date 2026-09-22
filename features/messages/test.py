@@ -30,12 +30,19 @@ def test_a_read_message_is_named_back_until_the_agent_answers_it():
     assert text() == ["answer message 1 before you write anything"], \
         "the first tool use after reading names the message and says to answer it"
     assert holds().get("status", "") == "", "nothing is refused over it: it tells, it does not hold"
+    from controllers.types import Nudges
+    from engine.actors import settled
+    from resources.base import Event
+    line = [n for n in Nudges(record).all() if "before you write" in n.title][-1]
+    queued = Event(id=0, type="nudge", n=line.n, action="created", actor="system", at=0.0, data={})
+    assert settled(record, queued) is False, "while the message is open, the line still goes out"
     for i in range(5):
         report(record, "working", "PreToolUse")
     assert len(text()) == 3, "said three times in all and then it lets the agent be"
     Messages(record, actor=AGENT).reply(m.n, "halfway: the build is green, wiring the last route")
     report(record, "working", "PreToolUse")
     assert holds().get("status", "") == "", "a reply settles it and lifts the hold"
+    assert settled(record, queued) is True, "a line still queued about a message now answered is dropped, not sent late"
 
 
 def test_unread_messages_are_nudged_with_growing_urgency_until_the_inbox_is_read():
