@@ -2,46 +2,18 @@ import os
 import subprocess
 import sys
 import tempfile
-import time
 from pathlib import Path
 
 from install import STUBS
 from providers import DRIVERS
+from scripts.boot_guard import WAIT, launches
 from scripts.checks.imports import imports, missing
 
 HERE = Path(__file__).resolve().parents[1]
-STANDIN = ("#!/bin/sh\ntouch \"$0.started\"\necho \"Ask Codex to do anything\"\n(read line; echo \"$line\" > \"$0.typed\") &\n"
-           "while [ ! -f \"$0.quit\" ]; do sleep 0.1; done\n")
-WAIT = 20.0
 
 
 def test_every_import_in_the_package_resolves():
     assert [f"{path.name}:{node.lineno}" for path, node in imports() for alias in node.names if missing(node.module, alias.name)] == []
-
-
-def launches(place: Path, entry: Path, name: str, during=None) -> None:
-    (place / "bin").mkdir(exist_ok=True)
-    (place / "project" / f".{name}").mkdir(parents=True, exist_ok=True)
-    standin = place / "bin" / name
-    standin.write_text(STANDIN)
-    standin.chmod(0o755)
-    env = {**os.environ, "PATH": f"{place / 'bin'}{os.pathsep}{os.environ['PATH']}", "AGENT_JOURNAL_HOME": str(place / "home"), "HOME": str(place / "home")}
-    env.pop("JOURNAL_ENV", None)
-    journal = [sys.executable, str(entry), "--root", str(place / "project" / ".journal")]
-    launched = subprocess.Popen([*journal, name], cwd=place / "project", env=env, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-    began = time.time()
-    awaited = place / "bin" / (f"{name}.typed" if DRIVERS[name].confirm(b"Ask Codex to do anything") else f"{name}.started")
-    while not awaited.exists() and launched.poll() is None and time.time() - began < WAIT:
-        time.sleep(0.1)
-    if during:
-        during()
-    (place / "bin" / f"{name}.quit").touch()
-    text = launched.communicate(timeout=WAIT)[0].decode(errors="replace")
-    (place / "bin" / f"{name}.quit").unlink()
-    subprocess.run([*journal, "stop"], cwd=place / "project", env=env, capture_output=True, timeout=WAIT)
-    assert "Traceback" not in text, f"journal {name} crashed:\n{text}"
-    assert (place / "bin" / f"{name}.started").exists(), f"journal {name} never started the agent:\n{text}"
-    assert awaited.exists(), f"journal {name} never typed its first message:\n{text}"
 
 
 def test_every_agent_launches_under_the_journal_and_exits_cleanly():
