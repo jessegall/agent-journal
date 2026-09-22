@@ -61,3 +61,15 @@ def test_the_start_asks_about_permission_prompts_only_when_the_flag_is_not_typed
     assert asked == [], "a typed flag is the answer already"
     asked_prompts(record, "claude", [], ask=lambda _: "2", answering=True)
     assert record.setting("permission_prompts", {}).get("skip") is False, "No keeps the prompts, and is remembered"
+
+
+def test_claude_is_kept_out_of_the_record_files_but_not_their_attachments(tmp_path):
+    from providers import PROVIDERS
+    from providers.claude import RECORD_FILES
+    claude = PROVIDERS["claude"]()
+    claude.save(tmp_path, {"permissions": {"deny": ["Read(./.env)"]}})
+    claude.wire(tmp_path, f"sh {tmp_path}/.journal/src/hook.sh claude {tmp_path}/.journal")
+    claude.wire(tmp_path, f"sh {tmp_path}/.journal/src/hook.sh claude {tmp_path}/.journal")
+    deny = claude.settings(tmp_path)["permissions"]["deny"]
+    assert deny == ["Read(./.env)", *RECORD_FILES], "rows are denied once, beside what the project already denied"
+    assert all("*/*.md" in rule for rule in RECORD_FILES), "only the row files: an attached picture a folder deeper stays readable"

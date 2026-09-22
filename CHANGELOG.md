@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.84.93 — Claude stays out of the record files
+
+Claude Code shows a diff in its terminal whenever a file the agent has read changes on disk, so an agent that once opened a row under .journal saw every later write to it echoed. The journal now adds two Read deny rules to the project's .claude/settings.local.json for the row files themselves; the CLI is the way in. Attachments such as screenshots stay readable.
+
 ## 2.84.92 — Plain names in the dump test
 
 A variable in the dump feature's test was named with a story word; it is named for what it holds.
