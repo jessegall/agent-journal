@@ -3,7 +3,6 @@ from pathlib import Path
 from engine.events import AgentMessageSent, AgentUpdated
 from features.parts import AgentContext, Handler
 from providers import PROVIDERS
-from resources.base import AGENT, titled
 
 THINKING = "thinking"
 TURN_STARTS = ("UserPromptSubmit", "SessionEnd")
@@ -24,8 +23,7 @@ class FollowThinking(Handler):
         thought = row.data.get(THINKING) or ""
         for what, text in found:
             thought = text if what == THINKING else ""
-        if thought and event.hook in TURN_STARTS:
-            context.journal.acting(AGENT).messages.create(titled(thought), brief=thought, thinking=True)
+        if event.hook in TURN_STARTS:
             thought = ""
         if thought != (row.data.get(THINKING) or ""):
             context.journal.agents.stamp(row.n, **{THINKING: thought})

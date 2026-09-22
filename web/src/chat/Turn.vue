@@ -51,7 +51,6 @@ onMounted(() =>
     })
 );
 const mine = computed(() => props.turn.who === "user");
-const thinking = computed(() => !!(props.turn.data && props.turn.data.thinking));
 const SAID = {sent: "sent", delivered: "delivered to the agent", read: "read", filed: "processed"};
 const state = computed(() => {
     const turn = props.turn;
@@ -194,11 +193,8 @@ async function drop() {
                         {{ words.quote }}
                     </p>
                 </template>
-                <template v-if="thinking">
-                    <span class="thread-thinking">thinking</span>
-                </template>
                 <Folded :at="FOLD_AT">
-                    <div ref="text" :class="['thread-text', {thinking}]" @click="follow" v-html="html" />
+                    <div ref="text" class="thread-text" @click="follow" v-html="html" />
                 </Folded>
                 <template v-if="turn.type === 'question'">
                     <template v-if="turn.abstract">
@@ -533,19 +529,6 @@ button.thread-pill:hover {
     padding: 0;
     background: none;
     font-size: inherit;
-}
-
-.thread-thinking {
-    font-size: 10.5px;
-    color: var(--text-3);
-    letter-spacing: 0.02em;
-}
-
-.thread-text.thinking {
-    color: var(--text-3);
-    font-size: 11px;
-    font-style: italic;
-    line-height: 1.45;
 }
 
 .thread-text :deep(table) {
