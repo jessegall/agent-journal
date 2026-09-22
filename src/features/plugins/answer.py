@@ -5,9 +5,9 @@ from engine.hooks import gate_file
 from engine.stored import read_json, write_json
 from features.plugins.lifecycle import called
 from features.plugins.source import CHOSEN
-from resources.base import PLUGIN, Refused, SYSTEM, check_abstract, check_title
+from resources.base import PLUGIN, RAISED, Refused, SYSTEM, check_abstract, check_title
 
-KEYS = ("whisper", "say", "notify", "notice", "todo", "hold", "settings", "activity")
+KEYS = ("whisper", "say", "notify", "notice", "todo", "hold", "settings", "raise")
 MOST = 20
 HELD = "plugin"
 
@@ -28,6 +28,16 @@ def nudged(record, journal, plugin: str, session: str, text: str, private: bool)
     row = next((r for r in rows._every() if r.title == session), None) if session else rows.primary()
     if row:
         journal.say(record, row, "plugin", private=private, actor=PLUGIN, title=plugin, brief=text, plugin=plugin)
+
+
+def raised(record, plugin: str, fields: dict) -> None:
+    row = next((r for r in Plugins(record, actor=PLUGIN)._standing() if called(r) == plugin), None)
+    name = str(fields.get("event") or "")
+    declared = ((row.manifest or {}).get("events") or {}).get(name) if row else None
+    if not declared:
+        raise Refused(f"{plugin} declares no event {name}")
+    record.emit("plugin", row.n, RAISED, PLUGIN, event=f"{plugin}.{name}", title=str(declared.get("title") or name), tone=str(declared.get("tone") or ""),
+                brief=str(fields.get("brief") or ""), plugin=plugin)
 
 
 def settled(record, plugin: str, values: dict) -> None:
@@ -69,9 +79,9 @@ def one(record, journal, plugin: str, session: str, key: str, value) -> None:
         fields = value if isinstance(value, dict) else {"title": str(value)}
         journal.notice(record, "plugin", actor=PLUGIN, title=check_title(str(fields.get("title") or "")), brief=str(fields.get("brief") or ""),
                        tone=fields.get("tone") or "", link=fields.get("link") or "", plugin=plugin)
-    elif key == "activity":
-        entry = value if isinstance(value, dict) else {"title": str(value)}
-        journal.log(record, "plugin", title=check_title(str(entry.get("title") or plugin)), brief=str(entry.get("brief") or ""), plugin=plugin, kind="activity", tone=str(entry.get("tone") or ""))
+    elif key == "raise":
+        for fields in value if isinstance(value, list) else [value]:
+            raised(record, plugin, fields if isinstance(fields, dict) else {"event": str(fields)})
     elif key == "settings" and isinstance(value, dict):
         settled(record, plugin, value)
     elif key == "todo":

@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.91.0 — Plugins raise their own events
+
+A plugin's manifest declares its events under events, each with a title and a tone (warn or good), and its answer raises one with raise: {"event": "<name>", "brief": "<what happened>"}. The event lands on the bus as <plugin>.<name>, so features and other plugins can listen to it by that name, and the activity panel shows it with its title, brief and tone. It replaces the activity answer key, which is retired; Code Commandments raises sin-found and sin-resolved from its next release.
+
 ## 2.90.0 — The activity panel shows every event
 
 The activity panel lists every event in the record, not only those told to the user. Agent reports and nudges, the busiest by far, fold into one row per minute ("7 agent updates, 2 nudges") that opens to show each one, with the hook and tool it came from.

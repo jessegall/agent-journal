@@ -28,7 +28,7 @@ LONGEST_WAIT = 300.0
 
 
 def patterns(event) -> tuple:
-    return (ANY, event.type, event.action, f"{event.type}.{event.action}", f"hook.{event.data.get('hook')}" if event.data.get("hook") else "", "hook.*" if event.data.get("hook") else "")
+    return (ANY, event.type, event.action, f"{event.type}.{event.action}", event.data.get("event") or "", f"hook.{event.data.get('hook')}" if event.data.get("hook") else "", "hook.*" if event.data.get("hook") else "")
 
 
 def listening(manifest: dict, event) -> list[dict]:
