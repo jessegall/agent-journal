@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.96.2 — The activity and files sidebars remember their last items
+
+The browser keeps the last 50 events of the activity sidebar and the last 50 changed files of the files sidebar for each journal and environment, and shows them at once when the viewer opens; fresh ones are merged in as they arrive, so the sidebars are never empty or short on a return.
+
 ## 2.96.1 — The supervisor does not reload in the middle of an upgrade
 
 An upgrade copies the package in, packs it and clears the loose copies; the supervisor could reload in between and fail to start its checks (a module it looked for was already gone), leaving the update check and the five-minute check-in off for the session. An upgrade now marks itself while it runs and the supervisor waits for it to finish; checks that did not start are tried again.

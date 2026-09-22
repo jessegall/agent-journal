@@ -4,16 +4,22 @@ import {api} from "../api/client.js";
 import {route} from "../route.js";
 import {age} from "../format/time.js";
 import {usePoll} from "../poll.js";
+import {remember, remembered} from "../composables/remembered.js";
 
 const EVERY = 4000;
-const changes = ref([]);
+const KEPT = 50;
+const changesKey = `changes:${location.host}:${api.env()}`;
+const changes = ref(remembered(changesKey, []));
 const settled = ref(false);
 
 usePoll(
     "changes",
     () => api.changes(),
     EVERY,
-    (got) => (changes.value = got.changes || [])
+    (got) => {
+        changes.value = got.changes || [];
+        remember(changesKey, changes.value.slice(0, KEPT));
+    }
 );
 onMounted(() => setTimeout(() => (settled.value = true), 400));
 </script>

@@ -1,7 +1,7 @@
 import {api} from "../api/client.js";
 import {go, route} from "../route.js";
 import {store, types} from "../state/store.js";
-import {reload} from "./rows.js";
+import {recallEvents, reload} from "./rows.js";
 import {listen} from "./stream.js";
 
 export async function boot() {
@@ -11,6 +11,7 @@ export async function boot() {
         return boot();
     }
     types.value.filter((t) => t.name !== "nudge").forEach((t) => (store.rows[t.name] = store.rows[t.name] || []));
+    recallEvents();
     store.pages = await api.pages();
     await reload();
     store.booted = true;
