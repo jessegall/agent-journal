@@ -226,8 +226,8 @@ export class ApiClient {
         return this.get(this.here(`/diff${query({path})}`));
     }
 
-    projectFiles() {
-        return this.get(this.here("/project-files"));
+    projectFiles(folder = "") {
+        return this.get(this.here(`/project-files${query({folder})}`));
     }
 
     bar() {
