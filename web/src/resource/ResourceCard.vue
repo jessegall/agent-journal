@@ -3,7 +3,18 @@ import Icon from "../kit/Icon.vue";
 import {age} from "../format/time.js";
 import {meta} from "../state/store.js";
 import {words} from "../text/markers.js";
-defineProps({resource: Object});
+import {computed} from "vue";
+
+const props = defineProps({resource: Object});
+const holds = computed(() => {
+    if (props.resource.type !== "collection") return [];
+    const counted = {};
+    for (const ref of props.resource.refs) {
+        const type = ref.split(":")[0];
+        if (meta(type).title) counted[type] = (counted[type] || 0) + 1;
+    }
+    return Object.entries(counted).map(([type, n]) => ({type, n, icon: meta(type).icon, title: meta(type).title}));
+});
 </script>
 
 <template>
@@ -18,6 +29,14 @@ defineProps({resource: Object});
         </span>
         <span class="title">{{ resource.title }}</span>
         <span class="abstract">{{ resource.abstract || words(resource.brief).slice(0, 160) }}</span>
+        <template v-if="holds.length">
+            <span class="holds">
+                <span v-for="h in holds" :key="h.type" class="holds-kind" :title="`${h.n} ${h.title.toLowerCase()}${h.n > 1 ? 's' : ''}`">
+                    <Icon :name="h.icon" :size="12" />
+                    {{ h.n }}
+                </span>
+            </span>
+        </template>
         <template v-if="resource.sections.length">
             <span class="parts">
                 {{ resource.sections.length }} {{ resource.type === "sequence" ? "step" : "part"
@@ -48,6 +67,21 @@ defineProps({resource: Object});
     text-align: left;
     cursor: pointer;
 }
+.holds {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: auto;
+    color: var(--text-3);
+    font-size: 11.5px;
+}
+
+.holds-kind {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
 .badge {
     padding: 0 6px;
     border: 1px solid var(--border-2);
