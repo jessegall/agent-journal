@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.94.5 — "Once to-do 1024 is done" is not talk about the journal
+
+The chat etiquette no longer names back a row's state that follows once, when, until, after or before: it is a condition on future work, not a report on the record.
+
 ## 2.94.4 — A turn cut off on its way to the chat still arrives
 
 Claude's messages reach the chat piece by piece; a message whose last pieces never arrived (the server was restarting for an upgrade as the agent wrote its summary) stayed half-held and never showed. When the turn stops, the Stop hook's full last message now finishes it, and a piece that turns up later does not send it twice.

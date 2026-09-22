@@ -27,4 +27,5 @@ def test_chat_that_talks_about_the_journal_is_named_back_and_the_skill_is_always
         ["Message 4636 is answered", "replies to messages 4749, 4750 went out", "Closing both explicitly"], \
         "the state of the user's rows is not news either"
     assert SHOP_TALK.search("To-do 1013 trims the log; the reply hint is in the brief.") is None, "naming a row and its work is fine"
+    assert SHOP_TALK.search("plus journal-todos once to-do 1024 is done") is None, "and so is naming what happens once a row is done"
     assert "journal-chat-etiquette" in primary(), "its skill is loaded at every start, like the journal's own"
