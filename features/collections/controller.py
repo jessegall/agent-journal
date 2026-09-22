@@ -1,24 +1,24 @@
 import controllers.types as types_module
 import resources.types as resources_module
 from controllers.base import CONTROLLERS, Controller
-from features.groups.resource import Group
+from features.collections.resource import Collection
 from resources.base import SYSTEM, Refused
 
 
-class Groups(Controller):
-    resource = Group
+class Collections(Controller):
+    resource = Collection
 
     def create(self, title: str, abstract: str = "", brief: str = "", **data):
         if any(row["title"].lower() == title.strip().lower() for row in self.summaries() if not row["deleted"] and not row["completed"]):
-            raise Refused(f"a group called {title.strip()!r} is already open")
+            raise Refused(f"a collection called {title.strip()!r} is already open")
         return super().create(title, abstract, brief, **data)
 
     def add(self, n: int, refs: list[str]):
-        group = self.load(int(n))
+        collection = self.load(int(n))
         for ref in refs:
             self._member(ref)
-            group = self.link(group.n, ref)
-        return group
+            collection = self.link(collection.n, ref)
+        return collection
 
     def remove(self, n: int, ref: str):
         return self.unlink(int(n), ref)
@@ -41,5 +41,5 @@ class Groups(Controller):
         return CONTROLLERS[kind](self.record, actor=SYSTEM).load(int(number))
 
 
-resources_module.register(Group)
-types_module.register(Groups)
+resources_module.register(Collection)
+types_module.register(Collections)

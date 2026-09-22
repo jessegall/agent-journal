@@ -8,7 +8,7 @@ import ResourceBody from "./ResourceBody.vue";
 import DocumentPage from "./DocumentPage.vue";
 import PlanPage from "./PlanPage.vue";
 import Revisions from "./Revisions.vue";
-import GroupPage from "./GroupPage.vue";
+import CollectionPage from "./CollectionPage.vue";
 import AgentPage from "./AgentPage.vue";
 import Comments from "./Comments.vue";
 
@@ -26,7 +26,9 @@ watchEffect(() => {
     else go(route.value.env, type, Number(n));
 });
 const focusComment = computed(() => (props.depth ? 0 : route.value.open?.comment || 0));
-const shape = computed(() => (!props.type ? "" : ["plan", "agent", "group"].includes(props.type) ? props.type : meta(props.type).view));
+const shape = computed(() =>
+    !props.type ? "" : ["plan", "agent", "collection"].includes(props.type) ? props.type : meta(props.type).view
+);
 const panel = computed(() => (["small", "wide"].includes(shape.value) ? "inspector" : shape.value));
 const close = () => (route.value.open ? unpeek() : go(route.value.env, props.type));
 const swapping = ref(false);
@@ -82,9 +84,9 @@ watch(
                                 <PlanPage :resource="resource" @close="close" />
                             </DocumentPage>
                         </template>
-                        <template #group>
+                        <template #collection>
                             <DocumentPage :resource="resource" :focus="focusComment" :shown="resource.refs" @close="close">
-                                <GroupPage :resource="resource" @close="close" />
+                                <CollectionPage :resource="resource" @close="close" />
                             </DocumentPage>
                         </template>
                         <template #agent>
