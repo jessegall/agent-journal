@@ -4,6 +4,11 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.85.63 — A waiting question opens its tab, and a chip of rows is a comma list
+
+- When a question is waiting, or a new one arrives, Home's side panel turns to the Questions tab by itself.
+- A chip that names several rows reads as a comma list — to-dos 919, 945 — however the sentence joined them.
+
 ## 2.85.62 — A notch for the project, and a terminal the width of the pane
 
 - The colour band's project and environment sit in a black chip cut into the band, white on black, readable on every colour.

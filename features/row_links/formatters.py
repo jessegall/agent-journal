@@ -23,7 +23,9 @@ def chipped(text: str) -> str:
         name, more = names[m.group(1).lower()], re.findall(r"\d+", m.group(3))
         if not more:
             return marked("chip", f"{name}:{m.group(2)}", m.group(0))
-        return marked("chips", f"{name}:{','.join([m.group(2), *more])}", m.group(0))
+        numbers = [m.group(2), *more]
+        word = m.group(0)[:m.start(2) - m.start(0)].rstrip(" #")
+        return marked("chips", f"{name}:{','.join(numbers)}", f"{word} {', '.join(numbers)}")
 
     return found.sub(chip, text)
 
