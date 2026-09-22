@@ -1,6 +1,6 @@
 import controllers.types as types_module
 import resources.types as resources_module
-from controllers.base import Controller
+from controllers.base import CONTROLLERS, Controller
 from features.dumps.resource import ITEM, Dump
 from resources.base import Refused
 
@@ -9,6 +9,20 @@ TEXT = "text"
 
 class Dumps(Controller):
     resource = Dump
+
+    def create(self, title: str, abstract: str = "", brief: str = "", **data):
+        dump = super().create(title, abstract, brief, **data)
+        self._collect(dump, [dump.ref])
+        return self.load(dump.n)
+
+    def _collect(self, dump, refs: list[str]):
+        collections = CONTROLLERS["collection"](self.record, actor=self.actor)
+        name = f"Dump {dump.n}, {dump.title}"[:80]
+        found = next((row["n"] for row in collections.summaries() if row["title"] == name and not row["deleted"] and not row["completed"]), 0)
+        collection = collections.load(found) if found else collections.create(name, abstract=f"Everything dump {dump.n} was filed into")
+        collections.add(collection.n, refs)
+        if collection.ref not in self.load(dump.n).refs:
+            self.link(dump.n, collection.ref)
 
     def _names(self, r) -> list[str]:
         return ([TEXT] if r.brief.strip() else []) + sorted(r.files)
@@ -37,6 +51,8 @@ class Dumps(Controller):
         found = [ref.strip() for ref in refs.split(",") if ref.strip()]
         for ref in found:
             self.link(int(n), ref)
+        if found:
+            self._collect(self.load(int(n)), found)
         return self._write(n, item, **{ITEM.outcome: how.strip(), ITEM.refs: found, ITEM.failed: ""})
 
     def failed(self, n: int, item: str, why: str):

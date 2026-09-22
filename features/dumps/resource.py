@@ -15,6 +15,7 @@ class Dump(Shape, Resource):
         Field(default=dict, name="items"),
     ]
     needs_attention = True
+    in_sidebar = False
     icon = "inbox"
     command_names = {"complete": "close"}
     labels = {"brief": "What you dumped", "outcome": "Filed"}
