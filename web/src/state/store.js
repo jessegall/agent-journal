@@ -5,6 +5,7 @@ export const store = reactive({
     spec: null,
     drafting: 0,
     dumping: false,
+    skill: "",
     identity: null,
     rows: {},
     counts: {},

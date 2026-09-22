@@ -33,6 +33,7 @@ import Lightbox from "./kit/Lightbox.vue";
 import QuickMenu from "./layout/QuickMenu.vue";
 import ChatWindow from "./layout/ChatWindow.vue";
 import AwayCard from "./layout/AwayCard.vue";
+import SkillPanel from "./layout/SkillPanel.vue";
 import ProjectFlash from "./layout/ProjectFlash.vue";
 import UpgradeBand from "./layout/UpgradeBand.vue";
 import ThreadSkeleton from "./chat/ThreadSkeleton.vue";
@@ -184,6 +185,9 @@ const chatFloats = computed(() => store.detached && !store.extension.holding && 
                 <template v-if="away.open">
                     <AwayCard />
                 </template>
+                <Transition name="skill-slide">
+                    <SkillPanel v-if="store.skill" />
+                </Transition>
                 <ProjectFlash />
                 <template v-if="chatFloats">
                     <ExtensionSection :extension="store.extension" />
@@ -309,5 +313,15 @@ const chatFloats = computed(() => store.detached && !store.extension.holding && 
 .quick-enter-from :deep(.quick-menu),
 .quick-leave-to :deep(.quick-menu) {
     transform: translate(-50%, -8px) scale(0.98);
+}
+
+.skill-slide-enter-active,
+.skill-slide-leave-active {
+    transition: transform 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.skill-slide-enter-from,
+.skill-slide-leave-to {
+    transform: translateX(100%);
 }
 </style>

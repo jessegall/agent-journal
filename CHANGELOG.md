@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.84.129 — A Loaded skill badge opens the skill to read
+
+- Clicking a Loaded skill badge in the chat slides in a side panel with that skill's text; the close button or Escape puts it away.
+
 ## 2.84.128 — Ending work names what is still parked, and hooks stop re-reading the transcript
 
 - When work ends while other work is parked, the agent is told: work N, its title, is still parked - can you continue it now? with why it was parked and how to resume it.

@@ -146,11 +146,11 @@ async function drop() {
 <template>
     <template v-if="turn.type === 'skill'">
         <div class="thread-turn skill" :data-ref="turn.ref">
-            <span class="thread-skill">
+            <button type="button" class="thread-skill" :title="`Read the ${turn.title} skill`" @click="store.skill = turn.title">
                 <span class="thread-skill-dot" />
                 Loaded skill
                 <strong>{{ turn.title }}</strong>
-            </span>
+            </button>
         </div>
     </template>
     <template v-else-if="turn.type === 'receipt'">
@@ -327,7 +327,14 @@ async function drop() {
     border-radius: 7px;
     background: color-mix(in srgb, var(--created) 8%, transparent);
     color: color-mix(in srgb, var(--created) 75%, var(--text-3));
+    font: inherit;
     font-size: 12px;
+    cursor: pointer;
+}
+
+.thread-skill:hover {
+    border-color: color-mix(in srgb, var(--created) 55%, transparent);
+    color: var(--created);
 }
 
 .thread-skill strong {
