@@ -53,6 +53,11 @@ const loads = (agents) =>
             }))
         );
 
+const madeByAgent = (docs) =>
+    docs
+        .filter((d) => !d.deleted && d.seen[0] === "agent")
+        .map((d) => ({...d, ref: `made:${d.ref}`, type: "made", made: d, who: "agent", seen: ["agent"], refs: [d.ref]}));
+
 const promisedFor = (p, m) =>
     p.data.idempotency && m.data?.idempotency
         ? p.data.idempotency === m.data.idempotency
@@ -70,6 +75,7 @@ export function threadTurns(rows, pending) {
         ...rows.comment.filter((c) => !c.deleted && hasParent(c)).map((c) => ({...c, who: c.seen[0]})),
         ...rows.question.filter((q) => !q.deleted).map((q) => ({...q, who: "agent"})),
         ...loads(rows.agent || []),
+        ...madeByAgent(rows.doc || []),
         ...pending.filter((p) => !live.some((m) => promisedFor(p, m) && delivered(p, m))),
     ].sort((a, b) => a.created - b.created);
     return {turns, keys};
