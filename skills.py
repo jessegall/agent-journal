@@ -40,10 +40,13 @@ def reference() -> str:
     out = ["## Reference: every noun and its own words", "",
            f"Every noun takes these words: {', '.join(sorted(shared))}. A noun that renames one says so below. "
            "journal <noun> --help prints every word with its arguments.", ""]
+    owners = {type(f).__module__.rsplit(".", 1)[0]: name for name, f in features.FEATURES.items()}
     for type_, controller in CONTROLLERS.items():
         r = controller.resource
+        owner = owners.get(controller.__module__.rsplit(".", 1)[0])
         out.append(f"### {type_} — {r.details.abstract}")
-        out.append(f"{r.details.help}  Scope: {r.scope}. Seen by: {', '.join(r.notified) or 'nobody'}.")
+        told = f"The {skill_name(owner)} skill says how it works." if owner else r.details.help
+        out.append(f"{told}  Scope: {r.scope}. Seen by: {', '.join(r.notified) or 'nobody'}.")
         renamed = [f"{name} is {word}" for name, word in sorted(r.command_names.items()) if name in shared and word != name]
         if renamed:
             out.append(f"Renamed: {', '.join(renamed)}.")
