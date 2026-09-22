@@ -53,3 +53,12 @@ def test_a_dump_makes_its_own_collection_and_everything_it_files_joins_it():
     agent.filed(dump.n, "text", "a doc and a to-do", f"{doc.ref}, {task.ref}")
     assert collections.members(made[0].n)[1:] == ["doc 1  The launch", "todo 1  book the room"], "what it files joins the same collection"
     assert made[0].ref in agent.load(dump.n).refs, "the dump links its collection"
+
+
+def test_the_agent_is_asked_for_the_next_step_once_a_dump_is_filed():
+    from tests.kit import nudges, report
+    record = fresh()
+    report(record, "working", "PreToolUse")
+    dump = CONTROLLERS["dump"](record, actor=USER).create("One note", brief="a note")
+    CONTROLLERS["dump"](record, actor=AGENT).failed(dump.n, "text", "nothing in it to keep")
+    assert f"dump {dump.n} is filed (0 filed, 1 failed) - suggest the next step" in nudges(record), "closing the dump asks for the next step"

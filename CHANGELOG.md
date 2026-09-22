@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.84.87 — A filed dump ends with a suggested next step
+
+When the last item of a dump is filed, the agent is asked to suggest the next step, linked to the dump and its collection: a plan to write, a decision to make, a follow-up to send. You accept, adjust or decline it like any suggestion.
+
 ## 2.84.86 — A dump makes its own collection
 
 Every dump opens a collection named after it, holding the dump and everything it is filed into, so all that came from one dump is found together. Dumps are no longer listed in the sidebar: you start them from the chat, and what you keep is the collection.

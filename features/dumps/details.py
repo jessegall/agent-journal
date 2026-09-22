@@ -30,4 +30,13 @@ class DumpsDetails(FeatureDetails):
                 truly cannot tell what an item is for.
             """,
         ),
+        Line(
+            name="filed",
+            title="dump {{n}} is filed ({{outcome}}) - suggest the next step",
+            brief="""
+                File a suggestion for what you would do next with what was filed, and why, and link
+                it to dump:{{n}} and collection:{{collection}}. A plan to write, a decision to make or
+                a follow-up to send: the user accepts, adjusts or declines it.
+            """,
+        ),
     ]
