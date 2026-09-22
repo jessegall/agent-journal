@@ -371,6 +371,10 @@ class CodexDriver(Driver):
         return args
 
     @classmethod
+    def resuming(cls, args: list[str]) -> bool:
+        return cls.carried_on(args)[:1] == [cls.RESUME]
+
+    @classmethod
     def resumed(cls, args: list[str], conversation: str) -> list[str]:
         if not conversation:
             return args

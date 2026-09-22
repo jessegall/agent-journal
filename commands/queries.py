@@ -240,6 +240,18 @@ def asked_prompts(record: Record, agent: str, args: list[str], ask=input, answer
         record.set_setting("permission_prompts", {**record.setting("permission_prompts", {}), "skip": picked == 0})
 
 
+def asked_resume(record: Record, agent: str, args: list[str], ask=input, answering=None) -> list[str]:
+    from engine.sessions import Sessions
+    from providers import DRIVERS
+    answering = sys.stdin.isatty() if answering is None else answering
+    driver = DRIVERS.get(agent)
+    earlier = Sessions(record.root).last(record.env, agent) if driver else ""
+    if not answering or not earlier or driver.resuming(args):
+        return args
+    notes = [f"An earlier {agent.capitalize()} session worked {record.env}. Carrying on opens that conversation again."]
+    return driver.resumed(args, earlier) if choose("Carry on from the last session", notes, ["Yes, carry on", "No, start a new one"], 0, ask) == 0 else args
+
+
 def supervise(ctx, agent: str) -> str:
     from engine.terminal import run as run_supervisor
     from engine.viewer import start
@@ -260,7 +272,8 @@ def supervise(ctx, agent: str) -> str:
     put_back(here)
     clear(record.root)
     try:
-        asked_prompts(here, agent, ctx["args"] or [])
+        args = asked_resume(here, agent, ctx["args"] or [])
+        asked_prompts(here, agent, args)
         if asked_slate(here, project, agent):
             print(f"journal: {set_aside(here, project, agent)}")
         else:
@@ -268,7 +281,7 @@ def supervise(ctx, agent: str) -> str:
         url = start(record.root, project)
         print(f"journal: viewer {url}" if url else "journal: the viewer did not start; see .journal/runtime/viewer.log")
         signal.signal(signal.SIGHUP, lambda *_: sys.exit(129))
-        return str(run_supervisor(record.root, project, env, agent, ctx["args"] or []))
+        return str(run_supervisor(record.root, project, env, agent, args))
     finally:
         put_back(here)
         if not live(record.root):
