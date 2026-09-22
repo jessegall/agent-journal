@@ -253,14 +253,16 @@ def asked_resume(record: Record, agent: str, args: list[str], ask=input, answeri
 
 
 def supervise(ctx, agent: str) -> str:
-    from engine.terminal import run as run_supervisor
+    from engine.terminal import carried
     from engine.viewer import start
     from features.clean_slate.slate import put_back, remember, set_aside
     from features.auto_update.launch import latest_first
-    from engine.stop import ask, clear
-    from engine.typist import live
+    from engine.stop import clear
     record = ctx["record"]
     project = Path.cwd()
+    taken = carried()
+    if taken:
+        return started(record, project, agent, taken["env"], taken["args"], taken)
     held = latest_first(record)
     if held:
         print(f"journal: carrying on with {package_version()}: {held}")
@@ -280,8 +282,21 @@ def supervise(ctx, agent: str) -> str:
             remember(here, False)
         url = start(record.root, project)
         print(f"journal: viewer {url}" if url else "journal: the viewer did not start; see .journal/runtime/viewer.log")
+    except BaseException:
+        put_back(here)
+        raise
+    return started(record, project, agent, env, args)
+
+
+def started(record: Record, project: Path, agent: str, env: str, args: list[str], taken: dict | None = None) -> str:
+    from engine.terminal import run as run_supervisor
+    from features.clean_slate.slate import put_back
+    from engine.stop import ask
+    from engine.typist import live
+    here = Record(record.root, env)
+    try:
         signal.signal(signal.SIGHUP, lambda *_: sys.exit(129))
-        return str(run_supervisor(record.root, project, env, agent, args))
+        return str(run_supervisor(record.root, project, env, agent, args, taken))
     finally:
         put_back(here)
         if not live(record.root):

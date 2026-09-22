@@ -1,3 +1,4 @@
+import json
 import os
 import pty
 import signal
@@ -14,7 +15,7 @@ from install import code
 from engine import runtime
 from engine.heal import heal
 from engine.stored import read_json
-from engine.package import CODE, entry
+from engine.package import CODE, ZIPPED, entry
 
 RELOAD = 75
 STOP = 76
@@ -22,6 +23,7 @@ RELAUNCH = 77
 HEAL = 78
 QUICK = 30.0
 CHECK_EVERY = 0.5
+CARRIED = "AGENT_JOURNAL_CARRIED"
 
 
 def watched(root: Path) -> tuple:
@@ -100,23 +102,42 @@ def launch(root: Path, cwd: Path, env: str, agent: str, args: list[str], convers
     return pid, fd, session
 
 
-def run(root: Path, cwd: Path, env: str, agent: str, args: list[str]) -> int:
+def carried() -> dict | None:
+    given = os.environ.pop(CARRIED, "")
+    return json.loads(given) if given else None
+
+
+def outdated(root: Path) -> bool:
+    return ZIPPED and (root / "journal.pyz").resolve() != CODE
+
+
+def carry_on(env: str, args: list[str], pid: int, fd: int, session: str, saved) -> None:
+    os.set_inheritable(fd, True)
+    kept = saved and [*saved[:6], [c.hex() if isinstance(c, bytes) else c for c in saved[6]]]
+    os.environ[CARRIED] = json.dumps({"env": env, "args": args, "pid": pid, "fd": fd, "session": session, "saved": kept})
+    os.execv(sys.executable, [sys.executable, *sys.orig_argv[1:]])
+
+
+def run(root: Path, cwd: Path, env: str, agent: str, args: list[str], taken: dict | None = None) -> int:
     hold_build(root, CODE)
-    pid, fd, session = launch(root, cwd, env, agent, args)
+    pid, fd, session = (taken["pid"], taken["fd"], taken["session"]) if taken else launch(root, cwd, env, agent, args)
     runtime.set_env(root, env)
-    print(f"journal: environment {env}")
+    if not taken:
+        print(f"journal: environment {env}")
     stdin, stdout = sys.stdin.fileno(), sys.stdout.fileno()
-    saved = None
+    saved = taken and taken["saved"] and [*taken["saved"][:6], [bytes.fromhex(c) if isinstance(c, str) else c for c in taken["saved"][6]]]
     coordinator = None
     status = None
     try:
         try:
-            saved = termios.tcgetattr(stdin)
+            saved = saved or termios.tcgetattr(stdin)
             tty.setraw(stdin)
         except termios.error:
             pass
         alive, held = lifeline()
         while status is None:
+            if outdated(root):
+                carry_on(env, args, pid, fd, session, saved)
             stamps = watched(root)
             began = time.time()
             coordinator = spawn_supervisor(root, cwd, env, agent, fd, session, alive)

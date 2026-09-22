@@ -260,43 +260,15 @@ def upgrade(project: Path, root: Path | None = None) -> list[str]:
     elif (PACKAGE / ".git").is_dir() and shutil.which("git"):
         pulled = subprocess.run(["git", "-C", str(PACKAGE), "pull", "--ff-only", "-q"], capture_output=True, text=True, timeout=120)
         done.append("package pulled" if pulled.returncode == 0 else f"package not pulled: {pulled.stderr.strip()}")
-    running = {name: previous(root, name) for name in RESTARTS}
     changed, gone = refresh(source, code(root))
-    restarted = {name for name, was in running.items() if was is not None and (not (source / name).is_file() or was != (source / name).read_bytes())}
     if temporary:
         shutil.rmtree(temporary, ignore_errors=True)
     done.append(f"package refreshed: {len(changed)} changed, {len(gone)} retired")
-    done += owed(root, restarted)
     if reloaded:
         finished = subprocess.run([sys.executable, str(code(root) / "install.py"), "finish", str(project)], capture_output=True, text=True, timeout=120)
         return done + (finished.stdout.strip().splitlines() if finished.returncode == 0 else [f"package refreshed but configuration failed: {finished.stderr.strip()}"])
     done += finish(project, root)
     return done
-
-
-RESTARTS = {"engine/terminal.py": "The journal's terminal was updated - quit and run journal claude again"}
-
-
-def previous(root: Path, name: str) -> bytes | None:
-    try:
-        with zipfile.ZipFile(root / ARCHIVE) as archive:
-            return archive.read(name)
-    except (OSError, KeyError, zipfile.BadZipFile):
-        f = code(root) / name
-        return f.read_bytes() if f.is_file() else None
-
-
-def owed(root: Path, changed: set) -> list[str]:
-    reasons = [why for name, why in RESTARTS.items() if name in changed]
-    if reasons:
-        from controllers.types import Notices
-        from engine import runtime
-        from engine.record import Record
-        from resources.base import SYSTEM
-        notices = Notices(Record(root, runtime.env(root)), actor=SYSTEM)
-        for why in reasons:
-            notices.create(why, tone="warn")
-    return reasons
 
 
 def finish(project: Path, root: Path) -> list[str]:
