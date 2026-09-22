@@ -283,6 +283,9 @@ class Controller(Stored, Files, Links):
         return [self.load(row["n"]) for row in self.summaries() if who not in row["seen"] and not row["completed"] and not row["deleted"]]
 
     def all(self, deleted: bool = False, completed: bool = False, last: int = LAST) -> list[Resource]:
+        if not (completed or deleted) and int(last) and type(self)._ordered is Stored._ordered:
+            open_ = [row["n"] for row in self.summaries() if not row["deleted"] and not row["completed"]]
+            return [self.load(n) for n in open_[-int(last):]]
         rows = self._every(deleted) if completed or deleted else self._standing()
         rows = rows if completed else [r for r in rows if not r.completed]
         return rows[-int(last):] if int(last) else rows
