@@ -10,6 +10,7 @@ from engine import bus
 from engine.events import AgentEvent
 from engine.hooks import POLICIES
 from engine.state import State
+from engine.wording import AMENDS
 from features.format import FORMATTERS
 from resources.base import SYSTEM, Refused
 
@@ -187,6 +188,9 @@ def limited(context: "AgentContext", interceptor: ToolInterceptor, refused: str)
 class AgentHooks:
     def __init__(self, feature):
         self.feature = feature
+
+    def amend(self, on: str, amendment) -> None:
+        AMENDS.setdefault(on, []).append(amendment)
 
     def interceptor(self, interceptor: ToolInterceptor) -> None:
         feature = self.feature
