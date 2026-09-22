@@ -3,6 +3,7 @@ from features.base import FeatureDetails
 
 class CollectionsDetails(FeatureDetails):
     name = "collections"
+    when = "rows that belong together should be grouped into a collection"
 
     title = "Collections"
 

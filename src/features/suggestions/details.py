@@ -3,6 +3,7 @@ from features.base import FeatureDetails
 
 class SuggestionsDetails(FeatureDetails):
     name = "suggestions"
+    when = "you would propose a change nobody asked for"
 
     title = "Suggestions"
 

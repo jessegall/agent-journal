@@ -4,6 +4,7 @@ from features.settings import Setting
 
 class KanbanDetails(FeatureDetails):
     name = "kanban"
+    when = "to-dos are moved between lanes or the board is read"
 
     title = "Kanban board"
 

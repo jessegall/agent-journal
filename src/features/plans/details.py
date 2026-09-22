@@ -3,6 +3,7 @@ from features.base import FeatureDetails, Line
 
 class PlansDetails(FeatureDetails):
     name = "plans"
+    when = "the user asks for a plan, phases or a roadmap, or a plan is started, advanced or finished"
 
     title = "Planning"
 

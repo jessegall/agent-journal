@@ -3,6 +3,7 @@ from features.base import FeatureDetails
 
 class BrowserDetails(FeatureDetails):
     name = "browser_control"
+    when = "you need to see or act in the tab the user is driving"
 
     title = "Controlling your browser tab"
 

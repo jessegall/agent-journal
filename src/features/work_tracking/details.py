@@ -5,6 +5,7 @@ from features.trigger import IDLE, Trigger, WORKED
 
 class WorkDetails(FeatureDetails):
     name = "work_tracking"
+    when = "you start, log, park, await or end work, or before the first write"
 
     title = "Work tracking"
 

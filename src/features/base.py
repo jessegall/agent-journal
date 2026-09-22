@@ -88,6 +88,7 @@ class FeatureDetails:
     trigger: ClassVar[Trigger] = NEVER
     aliases: ClassVar[tuple] = ()
     keywords: ClassVar[tuple] = ()     # words that make the agent load this feature's skill
+    when: ClassVar[str] = ""   # when the agent should load its skill; empty for a feature that runs by itself
     speaks_while_waiting: ClassVar[bool] = False   # whether its lines still reach an agent that declared a wait
     runs_for_subagents: ClassVar[bool] = False
     fixed: ClassVar[bool] = False
@@ -111,6 +112,7 @@ class Feature(ABC):
     settings: ClassVar[list[Setting]] = []
     aliases: ClassVar[tuple] = ()      # names this feature used to have; a pair says the old feature is now one of its behaviours
     keywords: ClassVar[tuple] = ()     # words that make the agent load this feature's skill
+    when: ClassVar[str] = ""
     speaks_while_waiting: ClassVar[bool] = False
     runs_for_subagents: ClassVar[bool] = False
     default: ClassVar[bool] = True
@@ -121,7 +123,7 @@ class Feature(ABC):
         if cls.details:
             d = cls.details
             cls.name, cls.lines, cls.behaviours, cls.settings, cls.trigger = d.name, {line.name: line for line in d.lines}, {b.name: b for b in d.behaviours}, d.settings, d.trigger
-            cls.title, cls.abstract, cls.help = paragraphs(d.title), paragraphs(d.abstract), paragraphs(d.help)
+            cls.title, cls.abstract, cls.help, cls.when = paragraphs(d.title), paragraphs(d.abstract), paragraphs(d.help), d.when
             cls.aliases, cls.runs_for_subagents, cls.fixed, cls.default = d.aliases, d.runs_for_subagents, d.fixed, d.default
             named = d.name.split("_") + [a for a in d.aliases if isinstance(a, str)]
             cls.speaks_while_waiting = d.speaks_while_waiting
@@ -230,7 +232,7 @@ class Feature(ABC):
 
     def describe(self) -> dict:
         return {"name": self.name, "title": self.title, "abstract": self.abstract, "help": self.help, "default": self.default, "fixed": self.fixed,
-                "keywords": list(self.keywords),
+                "keywords": list(self.keywords), "when": self.when,
                 "listens": sorted(set(self.journal.events.names)), "trigger": self.trigger.spec(),
                 "behaviours": {key: b.describe() for key, b in self.behaviours.items()},
                 "lines": {key: line.describe() for key, line in self.lines.items()},

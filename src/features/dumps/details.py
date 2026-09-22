@@ -3,6 +3,7 @@ from features.base import FeatureDetails, Line
 
 class DumpsDetails(FeatureDetails):
     name = "dumps"
+    when = "the user drops items into a dump, or a dump is being worked"
 
     title = "Dumps"
 

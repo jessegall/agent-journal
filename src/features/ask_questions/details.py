@@ -6,6 +6,7 @@ from features.settings import Setting
 
 class QuestionsDetails(FeatureDetails):
     name = "ask_questions"
+    when = "a decision only the user can make comes up, or before offering the user choices"
 
     title = "Questions, not prose choices"
 
