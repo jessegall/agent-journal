@@ -39,6 +39,9 @@ def test_a_sequence_hands_its_steps_one_at_a_time_and_starts_on_its_moment():
     CONTROLLERS["dump"](record, actor=USER).delete(other.n, why="dropped by mistake")
     assert all(not key.endswith(f"dump:{other.n}") for key in sequences.load(filing["n"]).runs), "a run ends with the row it was about"
     assert refused(lambda: CONTROLLERS["sequence"](record, actor=USER).delete(filing["n"], why="tidy")) == \
-        f"sequence {filing['n']} ships with the journal and cannot be removed", "a system sequence stays"
+        f"sequence {filing['n']} ships with the journal and cannot be changed or removed", "a system sequence stays"
     assert refused(lambda: CONTROLLERS["sequence"](record, actor=USER).update(filing["n"], title="Mine now")) == \
-        f"sequence {filing['n']} ships with the journal and cannot be changed", "and stays as it shipped"
+        f"sequence {filing['n']} ships with the journal and cannot be changed or removed", "and stays as it shipped"
+    collection = CONTROLLERS["collection"](record, actor=USER).create("Keep")
+    assert refused(lambda: CONTROLLERS["collection"](record, actor=USER).add(collection.n, [f"sequence:{filing['n']}"])) == \
+        f"sequence:{filing['n']} ships with the journal and cannot be put in a collection", "nor collected"

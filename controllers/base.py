@@ -5,7 +5,7 @@ from functools import partial
 
 from engine.markers import plain
 from engine.record import Record
-from resources.base import USER, Refused, Resource, SECTION, check_abstract, check_title
+from resources.base import SYSTEM, USER, Refused, Resource, SECTION, check_abstract, check_title
 from resources.shapes import Options, check, normalize_options, typed
 from engine.stored import write_text
 from controllers.files import Files
@@ -61,8 +61,21 @@ class Controller(Stored, Files, Links):
         if action == "deleted" or rewritten:
             self._refuse(f"{self.type} {r.n} was written by the {stored.seen[0]}: answer it with journal {self.type} {self.resource.answer_command} {r.n} \"<text>\" instead of changing it")
 
+    def _shipped(self, r: Resource, action: str) -> None:
+        if self.actor == SYSTEM or not self._exists(r.n):
+            return
+        stored = self.load(r.n)
+        if not stored.data.get("system"):
+            return
+        free = ("kept", *self.resource.progress)
+        kept = lambda row: {k: v for k, v in row.data.items() if k not in free}
+        if action in ("deleted", "completed") or any(getattr(stored, f) != getattr(r, f) for f in WORDS) or \
+                stored.sections != r.sections or kept(stored) != kept(r):
+            self._refuse(f"{self.type} {r.n} ships with the journal and cannot be changed or removed")
+
     @internal
     def save(self, r: Resource, action: str, **event) -> Resource:
+        self._shipped(r, action)
         self._guarded(r, action)
         self._unmarked(r)
         self._note_force(r)

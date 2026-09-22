@@ -116,7 +116,7 @@ async function run(method) {
                     Edit
                 </Btn>
             </template>
-            <template v-if="resource.type !== 'collection'">
+            <template v-if="resource.type !== 'collection' && !resource.data.system">
                 <Btn small @click="collecting = true">
                     <Icon name="folder" :size="12" />
                     Add to collection

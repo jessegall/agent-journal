@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.85.13
+
+- Any row can belong to the system, not only a sequence. A system row refuses edits, closing and deletion from the user or the agent, cannot be put in a collection, and its page offers no Edit, Add to collection, close or delete, and no comment on selected text. The guard lives in the one save every row passes through; a type names the data its runs may still move (a sequence's runs).
+
 ## 2.85.12
 
 - In every document viewer the Comments button sits at the right of the action row, beside Edit, Add to collection, Final and Delete, and is named Comments with its count. Those buttons each carry an icon, and their names start with a capital.

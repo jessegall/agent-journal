@@ -75,7 +75,7 @@ watch(
 <template>
     <div :class="['document', {shifted}]">
         <div ref="body" class="document-body" @transitionend.self="shiftedDone">
-            <Highlight @quote="quote = $event">
+            <Highlight :off="!!resource.data?.system" @quote="quote = $event">
                 <slot>
                     <ResourceBody :resource="resource" :comments="false" :links="false" @close="emit('close')" />
                 </slot>
