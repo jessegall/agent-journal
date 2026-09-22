@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.84.142
+
+- The dump band leads with a short title such as Adding files, then what the agent is doing, then its earlier lines muted. journal dump log takes the title and --detail, and refuses a title longer than 40 characters.
+- A dump's next steps use the question's picker in green: nothing is chosen until you click, and a click is held a moment before it counts. The picker is one component, kit/OptionList.vue, that takes a colour.
+- A finished dump ends with one clear button, Dump filed · Back to chat.
+
 ## 2.84.141
 
 - A command in a message, such as python3 journal.py --root .journal upgrade, is no longer broken into code fragments: a flag of another program and a .journal path stay plain text.
