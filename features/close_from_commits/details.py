@@ -1,4 +1,4 @@
-from features.base import FeatureDetails
+from features.base import FeatureDetails, Line
 
 
 class CommitsDetails(FeatureDetails):
@@ -11,3 +11,11 @@ class CommitsDetails(FeatureDetails):
     abstract = "A commit whose message carries Journal: todos done <n> closes that row"
 
     help = "The trailer starts at column 0; prose and indented examples close nothing."
+
+    lines = [
+        Line(
+            name="closed",
+            title="commit {{sha}} closed {{rows}}{{ended}}",
+            brief="The rows and the work are done; take the next one.",
+        ),
+    ]

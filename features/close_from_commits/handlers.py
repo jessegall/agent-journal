@@ -32,15 +32,22 @@ class CloseRowsFromCommits(Handler):
         out = git(["log", "--format=%H%x1f%s%x1f%B%x1e", "-n", "50"], project)
         return [tuple(c.strip("\n").split("\x1f", 2)) for c in out.split("\x1e") if c.strip()]
 
-    def close(self, context: Context, sha: str, subject: str, body: str) -> None:
-        todos = context.journal.todos
+    def close(self, context: AgentContext, sha: str, subject: str, body: str) -> None:
+        todos, works = context.journal.todos, context.journal.works
+        closed, ended = [], []
         for numbers, how in TRAILER.findall(body):
             for n in re.findall(r"\d+", numbers):
                 try:
-                    if not todos.load(int(n)).completed:
-                        todos.complete(int(n), how=how or f"{subject} ({sha[:9]})", commit=sha)
+                    if todos.load(int(n)).completed:
+                        continue
+                    open_work = [w.n for w in works._standing() if int(w.todo or 0) == int(n)]
+                    todos.complete(int(n), how=how or f"{subject} ({sha[:9]})", commit=sha)
                 except Refused:
                     continue
+                closed.append(f"to-do {n}")
+                ended += [f"work {w}" for w in open_work if works.load(w).completed]
+        if closed:
+            context.agent.say("closed", sha=sha[:9], rows=", ".join(closed), ended=f" and ended {', '.join(ended)}" if ended else "")
 
     def moved(self, project) -> bool:
         try:
