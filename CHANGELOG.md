@@ -4,6 +4,14 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.86.0 — Features append to each other's lines, and plugins own what they bring
+
+A minor release: the new abilities of 2.85.73 to 2.85.94 gathered under one number.
+
+- A feature appends to another feature's line by its key: journal.agent.append_to_line("message.created", ...). The new-message line carries its reply hint that way.
+- Plugins publish skills, own the rows they create (locked, removed with them), write to the activity panel, fill their settings from an installed step, and take list settings and conditions.
+- Every inspector and dialog is one kit component that animates in and out.
+
 ## 2.85.94 — Deleting a resource closes its inspector for good
 
 - Deleting any resource from its inspector closes the inspector and leaves the row's address, so it no longer reopens.
