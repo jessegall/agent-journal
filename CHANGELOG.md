@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.84.60 — Thinking and row links are back on
+
+The upgrade fault fixed in 2.84.55 had also switched off the thinking bubble and row links in every environment. With thinking off, nothing cleared the last thought, so an old one stayed in the bubble. The upgrade switches back on each feature that was turned off in the same moment an unknown feature was set aside; features you switched off yourself stay off.
+
 ## 2.84.59 — One to-do in hand at a time
 
 Starting a to-do while another is in hand is refused, naming the one in hand: park it or finish it first, just like work. A parked to-do leaves Doing on the board and sits in Held with its reason. Marking a to-do done now also ends the work that was open on it, so the next one can start.
