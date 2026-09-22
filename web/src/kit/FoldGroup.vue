@@ -31,6 +31,9 @@ const emit = defineEmits(["toggle"]);
 }
 
 .fold-head {
+    position: sticky;
+    z-index: 1;
+    top: var(--fold-top, 0);
     display: flex;
     align-items: center;
     gap: 6px;
@@ -38,7 +41,7 @@ const emit = defineEmits(["toggle"]);
     padding: 4px 8px 6px;
     border: 0;
     border-radius: 6px;
-    background: none;
+    background: var(--fold-bg, var(--bg));
     color: var(--text-3);
     font: inherit;
     font-size: 11.5px;

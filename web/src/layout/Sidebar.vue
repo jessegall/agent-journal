@@ -133,6 +133,8 @@ async function makeEnv() {
     width: 236px;
     flex: none;
     background: var(--side);
+    --fold-bg: var(--side);
+    --fold-top: 48px;
     border-right: 1px solid var(--border);
     display: flex;
     flex-direction: column;
