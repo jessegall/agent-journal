@@ -2,12 +2,12 @@ import re
 from pathlib import Path
 
 from controllers.types import Agents, Notices, Notifications
-from engine.inputs import BACKGROUND, FORCE, PERMIT, queue
+from engine.inputs import BACKGROUND, FORCE, PERMIT, SHELL, queue
 from engine.record import Record
 from engine.seats import live
 from engine import runtime
 from engine.stored import write_json
-from providers import PROVIDERS
+from providers import DRIVERS, PROVIDERS
 from resources.base import SYSTEM, Refused
 
 
@@ -71,6 +71,16 @@ def force(root: Path, env: str, session: str) -> dict:
 def move_to_background(root: Path, env: str, session: str) -> dict:
     found = online(root, env, session)
     queued = queue(Path(root), session, "", "Move to the background", provider=found["provider"], action=BACKGROUND)
+    return {k: v for k, v in queued.items() if k != "line"} | {"queued": True}
+
+
+def shell(root: Path, env: str, session: str, command: str) -> dict:
+    found = online(root, env, session)
+    if not DRIVERS[found["provider"]].SHELL:
+        raise Refused(f"{found['provider']} has no shell command to type")
+    if not command.strip():
+        raise Refused("type a command to run")
+    queued = queue(Path(root), session, "", f"Run {command.strip()}", provider=found["provider"], action=SHELL, value=command.strip())
     return {k: v for k, v in queued.items() if k != "line"} | {"queued": True}
 
 

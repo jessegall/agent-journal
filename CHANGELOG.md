@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.95.0 — The terminal view runs a command in the agent's terminal
+
+Under the chat's terminal view there is a command line: what the user types there is typed into the agent's terminal as a shell command (with Claude's ! in front), which Claude Code runs and shows. It waits until the agent is idle. A provider without such a command, Codex for now, refuses it and says so.
+
 ## 2.94.9 — Journal skills say what to do
 
 The skills that only described their feature now instruct: when to act, what to do and the exact command, with how the feature works after it. That covers suggestions, memory checkpoints, reminders, browser control, facts, rules, the board, revisions, messages and plugins.

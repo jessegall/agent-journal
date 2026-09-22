@@ -421,6 +421,7 @@ class Claude(Provider):
 class ClaudeDriver(Driver):
     name = "claude"
     DISPLAY_HOOK = True
+    SHELL = "!"
     AUTO_ARGS = ("--permission-mode", "auto")
     APPROVAL_FLAGS = frozenset({"--permission-mode", "--dangerously-skip-permissions"})
     SKIP_ARGS = ("--dangerously-skip-permissions",)

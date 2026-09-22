@@ -32,6 +32,7 @@ class Driver(ABC):
     CLEAR_LINE = b"\x05\x15"
     name = ""
     DISPLAY_HOOK = False
+    SHELL = ""
     AUTO_ARGS = ()
     APPROVAL_FLAGS = frozenset()
     CONFIRM_AFTER = 0.0
@@ -131,7 +132,12 @@ class Driver(ABC):
         return False
 
     def type_in(self, text: str) -> bool:
-        line = f"{MARK} {joined(text)}"
+        return self._typed(f"{MARK} {joined(text)}", confirmed=True)
+
+    def run_shell(self, command: str) -> bool:
+        return bool(self.SHELL) and self._typed(f"{self.SHELL}{command.strip()}", confirmed=False)
+
+    def _typed(self, line: str, confirmed: bool) -> bool:
         started = time.time()
         self.clear_input()
         time.sleep(ENTER_AFTER)
@@ -140,6 +146,8 @@ class Driver(ABC):
         time.sleep(ENTER_AFTER)
         if not self._wrote(b"\r"):
             return False
+        if not confirmed:
+            return True
         for _ in range(RESUBMITS):
             time.sleep(RECHECK)
             if self._submitted(started):

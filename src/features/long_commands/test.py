@@ -48,3 +48,21 @@ def test_a_background_command_the_hook_refused_is_not_counted_as_running(tmp_pat
     transcript.write_text("\n".join(json.dumps(row) for row in (use(1), result(1, True), use(2), result(2, False))) + "\n")
     shells = {row["command"]: row["running"] for row in Claude().crew(transcript)["shell_rows"]}
     assert shells == {"sleep 1": False, "sleep 2": True}, "a refused call never started; one that started runs until it ends"
+
+
+def test_a_command_from_the_terminal_view_is_typed_into_the_agents_terminal_as_a_shell_command(monkeypatch):
+    from engine import engine as engine_module
+    from engine.engine import Engine
+    from engine.inputs import SHELL, queue
+    from providers import DRIVERS
+    record = fresh()
+    report(record, "idle", "Stop")
+    engine = Engine(record, DRIVERS["claude"](record, "claude-1"))
+    typed = []
+    monkeypatch.setattr(engine.agent.driver, "_wrote", lambda raw: typed.append(raw) or True)
+    monkeypatch.setattr(engine_module.time, "sleep", lambda seconds: None)
+    monkeypatch.setattr(engine.agent, "state", lambda: engine_module.IDLE)
+    queue(record.root, "claude-1", "", "Run git status", provider="claude", action=SHELL, value="git status")
+    assert engine.shelled() == "ran in the terminal: git status"
+    assert typed[-2:] == [b"!git status", b"\r"], "typed with Claude's shell mark and entered once, with no journal mark in front"
+    assert DRIVERS["codex"].SHELL == "", "a provider without a shell mark takes no command"
