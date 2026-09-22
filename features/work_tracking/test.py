@@ -148,16 +148,37 @@ def test_an_idle_agent_under_auto_is_offered_the_next_row_even_when_its_idle_rep
         "the engine's clock offers it once, when the report that ends a turn never came"
 
 
-def test_ending_work_names_the_work_still_parked():
+def test_parked_and_blocked_rows_are_named_back_to_the_agent():
     record = fresh()
     report(record, "working", "PreToolUse")
-    works = Works(record, actor=AGENT)
+    works, todos = Works(record, actor=AGENT), Todos(record, actor=AGENT)
     first = works.create("the slow build")
     works.action("park")("the build takes an hour")
     second = works.create("a quick fix")
     works.complete(second.n, how="fixed")
-    assert nudges(record)[-1] == f"work {first.n}, the slow build, is still parked - can you continue it now?", \
-        "ending work reminds the agent of the work it parked"
+    parked = f"work {first.n}, the slow build, is still parked - can you continue it now?"
+    assert nudges(record)[-1] == parked, "ending work reminds the agent of the work it parked"
+    loose = todos.create("a row done without work")
+    todos.complete(loose.n, how="done")
+    assert nudges(record).count(parked) == 2, "closing a to-do reminds it too"
+
+    record.set_setting("work_tracking", {"ask_blocked_every": 2})
+    base, extra = todos.create("the base"), todos.create("another base")
+    waiting = todos.create("built on both")
+    todos.after(waiting.n, str(base.n))
+    todos.after(waiting.n, str(extra.n))
+    stuck = todos.create("the migration")
+    todos.block(stuck.n, "the user decides the schema")
+    todos.complete(base.n, how="done")
+    assert (todos.load(waiting.n).after, any("is unblocked" in n for n in nudges(record))) == ([f"todo:{extra.n}"], False), \
+        "one of two rows closed: the closed one comes off the row, and it still waits"
+    todos.complete(extra.n, how="done")
+    assert todos.load(waiting.n).after == [] and nudges(record)[-2:].count(
+        f"todo {waiting.n}, built on both, is unblocked - todo {extra.n} closed") == 1, "the last one closed: it is unblocked and the agent is told"
+    blocked = f"todo {stuck.n}, the migration, is still blocked - is it still?"
+    assert nudges(record).count(blocked) == 1, "a row blocked from outside is asked about every second closed to-do, not in between"
+    todos.complete(todos.create("one more").n, how="done")
+    assert nudges(record).count(blocked) == 2, "and again two closed to-dos later"
 
 
 def test_a_declared_wait_is_asked_about_and_cleared_when_the_work_moves():

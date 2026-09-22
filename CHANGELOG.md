@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.87.0 — Parked and blocked rows are named back to the agent
+
+Closing a to-do now also names the work still parked, as ending work already did. A closed to-do comes off every row that waited on it, and when the last one closes the agent is told the row is unblocked. A to-do blocked on something outside the list is named with its reason every five closed to-dos (work_tracking.ask_blocked_every), asking whether it is still blocked.
+
+The line asking the agent to answer a read message now says how, with the reply tag, as the new-message line does; what a feature adds to another feature's line goes in its brief, so the line is never cut short. A background command the hook refused no longer counts as a running task.
+
 ## 2.86.16 — An error in a hook or a request is told to the agent
 
 A hook or a request that raises no longer passes in silence: the traceback goes to .journal/runtime/engine.log, a notice is kept over the chat, and the agent is told what failed and where, once per distinct error. That covers the work the server does after answering a hook, such as putting the agent's turn into the chat.

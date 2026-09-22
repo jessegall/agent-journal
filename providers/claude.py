@@ -292,7 +292,7 @@ class Claude(Provider):
                 continue
             for block in row["message"]["content"]:
                 if isinstance(block, dict) and block.get("type") == "tool_result":
-                    ended.setdefault(str(block.get("tool_use_id") or ""), ("returned", at))
+                    ended.setdefault(str(block.get("tool_use_id") or ""), ("refused" if block.get("is_error") else "returned", at))
         for use in (u for u in uses if u["name"] == "TaskStop"):
             stopped = tasks.get(str(use["input"].get("task_id") or use["input"].get("shell_id") or ""))
             if stopped and ended.get(stopped, ("returned",))[0] == "returned":
