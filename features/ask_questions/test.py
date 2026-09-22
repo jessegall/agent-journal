@@ -25,6 +25,11 @@ def test_offers_choices_recognizes_numbered_and_lettered_options_but_not_prose()
     assert offers_choices("See question 3.\nWhich do you want?\n1. blue\n2. red") is True, "choices beside a named question still count"
     assert offers_choices("Questions 60-63 are yours in the viewer:\n- 60, where it lives?\n- 61, what Doing does?") is False, \
         "lines naming questions already asked, in the plural, do not count"
+    assert offers_choices("I asked \"is there an agent?\" and:\n- one\n- two") is False, "a question inside quotes is not asked"
+    assert offers_choices("**Did the hook fire?** I checked.\n\n- **Does it fire?** Yes, for every real message, and the server passed each one on to the chat, whole.\n"
+                          "- **Why some went missing:** they were written into hidden thinking, never as messages at all.") is False, \
+        "a summary answering questions in long points offers no choices"
+    assert offers_choices("I found two ways.\n\n- keep it\n- drop it\n\nWhich do you prefer?") is True, "a closing question after the options still counts"
 
 
 def test_choices_offered_in_prose_hold_writes_until_a_question_is_asked_properly():

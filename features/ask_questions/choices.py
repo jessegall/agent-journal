@@ -6,6 +6,8 @@ ASKING = re.compile(r"\?|\b(should I|shall I|do you want|would you like|would yo
                     r"|one thing I need from you|one question for you|the one decision|I would want your call|your pick)\b", re.IGNORECASE)
 NAMED = re.compile(r"\bquestions? (\d+)(?:\s*(?:-|–|to)\s*(\d+))?", re.IGNORECASE)
 LEADING = re.compile(r"^\s*(?:[-*•]\s*)?\**(\d+)\b")
+QUOTED = re.compile(r"`[^`\n]*`|\"[^\"\n]*\"|“[^”\n]*”")
+OPTION = 80
 
 
 def named_numbers(text: str) -> set[int]:
@@ -22,5 +24,12 @@ def points_at_named(line: str, named: set[int]) -> bool:
 
 def offers_choices(text: str) -> bool:
     named = named_numbers(text)
-    asked = "\n".join(line for line in text.splitlines() if not points_at_named(line, named))
-    return len(LISTED.findall(text)) >= 2 and bool(ASKING.search(asked))
+    paragraphs = [part for part in re.split(r"\n\s*\n", QUOTED.sub("", text)) if part.strip()]
+    for at, paragraph in enumerate(paragraphs):
+        options = [line for line in paragraph.splitlines() if LISTED.match(line) and len(line.strip()) <= OPTION]
+        if len(options) < 2:
+            continue
+        around = "\n".join(paragraphs[max(0, at - 1):at + 2]).splitlines()
+        if any(ASKING.search(line) for line in around if not LISTED.match(line) and not points_at_named(line, named)):
+            return True
+    return False
