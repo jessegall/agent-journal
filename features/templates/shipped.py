@@ -1,14 +1,6 @@
 from features.templates.controller import Templates
 from resources.base import SYSTEM
 
-BLANK = {
-    "title": "Blank plan",
-    "applies_to": ["plan"],
-    "brief": "Build the plan with the user, in order. Name the goal as what is true when it is done. Add every phase with the line "
-             "that says when it is complete, and mark a checkpoint where the user should look before it goes on. Then file the "
-             "rows and put each under its phase, and mark the plan ready. Only the user approves it; the agent then starts it.",
-    "parts": [],
-}
 MUST_HAVE = "Must have"
 FUNCTIONAL = {
     "title": "Functional design",
@@ -24,8 +16,8 @@ FUNCTIONAL = {
               ("Open questions", "what still has to be decided, each asked through the journal"),
               ("Not in this version", "what is left out on purpose")],
 }
-RETIRED = ("Functional design, then technical implementation",)
-SHIPPED = (BLANK, FUNCTIONAL)
+RETIRED = ("Functional design, then technical implementation", "Blank plan")
+SHIPPED = (FUNCTIONAL,)
 
 
 def ship(record) -> list[str]:

@@ -22,7 +22,21 @@ FILING_A_DUMP = {
                                   "the user picks one."),
     ],
 }
-SHIPPED = (FILING_A_DUMP,)
+BUILDING_A_PLAN = {
+    "title": "Building a plan",
+    "brief": "How a plan is built with the user, in order, from its goal to the moment it is ready for them to approve.",
+    "starts_on": "plan.created",
+    "steps": [
+        ("Name the goal", "Settle with the user what is true when the plan is done, and set it as the plan's goal."),
+        ("Add the phases", "Add every phase in order with journal plan phase <n> \"<title>\" --when \"<complete when>\", and "
+                           "--checkpoint where the user should look before it goes on."),
+        ("File the rows", "journal plan stage <n> todos, then file the to-dos and put each under its phase with journal plan "
+                          "todos <n> <phase> <rows>."),
+        ("Hand it over", "When every phase has rows, journal plan ready <n>. Only the user approves it; you start it when "
+                         "they have."),
+    ],
+}
+SHIPPED = (FILING_A_DUMP, BUILDING_A_PLAN)
 
 
 def ship(record) -> list[str]:

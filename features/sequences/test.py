@@ -10,7 +10,7 @@ def test_a_sequence_hands_its_steps_one_at_a_time_and_starts_on_its_moment():
     features.load()
     record = fresh()
     report(record, "working", "PreToolUse")
-    assert (ship(record), ship(record)) == (["Filing a dump"], []), "shipped once, never twice"
+    assert (ship(record), ship(record)) == (["Filing a dump", "Building a plan"], []), "shipped once, never twice"
     sequences = CONTROLLERS["sequence"](record, actor=AGENT)
     filing = next(r for r in sequences.summaries() if r["title"] == "Filing a dump")
     dump = CONTROLLERS["dump"](record, actor=USER).create("Standup", brief="notes")
