@@ -585,7 +585,7 @@ def counted(record, types) -> dict:
     for type_, controller in ((t, CONTROLLERS[t]) for t in types):
         tally = {"all": 0, "open": 0, "unread": 0}
         for row in controller(record, actor=USER).summaries():
-            if row["deleted"]:
+            if row["deleted"] or row.get("hidden"):
                 continue
             tally["all"] += 1
             if not row["completed"]:

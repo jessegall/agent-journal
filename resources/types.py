@@ -93,6 +93,7 @@ class Doc(Shape, Resource):
         help="A doc is written once, cited by facts and rules, and read before anything it settles is re-investigated.",
     )
     view = DOCUMENT
+    indexed = ("hidden",)
 
 
 class Report(Shape, Resource):

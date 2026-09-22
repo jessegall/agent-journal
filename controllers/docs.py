@@ -5,6 +5,18 @@ from resources import types
 class Docs(Controller):
     resource = types.Doc
 
+    def hide(self, n: int):
+        return self.update(int(n), hidden=True)
+
+    def unhide(self, n: int):
+        return self.update(int(n), hidden=False)
+
+    def _standing(self):
+        return [r for r in super()._standing() if not r.data.get("hidden")]
+
+    def search(self, term: str):
+        return [r for r in super().search(term) if not r.data.get("hidden")]
+
     def draft(self, n: int):
         return self.update(n, status="draft")
 

@@ -36,7 +36,9 @@ onUnmounted(() => {
     window.removeEventListener("wheel", moved);
     window.removeEventListener("touchmove", moved);
 });
-const listed = computed(() => [...(SHOWS[filter.value] || SHOWS.open)()].sort((a, b) => b.created - a.created));
+const listed = computed(() =>
+    [...(SHOWS[filter.value] || SHOWS.open)()].filter((r) => !r.data?.hidden).sort((a, b) => b.created - a.created)
+);
 const groups = computed(() => {
     const buckets = {};
     for (const r of listed.value) (buckets[groupOf(r)] ||= []).push(r);
