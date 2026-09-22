@@ -105,3 +105,12 @@ class KeepPluginRows(ActionInterceptor):
         if name and row.data.get("locked") is True and installed(controller.record, name):
             controller._refuse(f"{controller.type} {n} belongs to the {name} plugin: it goes when the plugin is removed")
         return None
+
+
+class OneRowPerTitle(ActionInterceptor):
+    def intercept(self, context: Context, controller, title: str = "", **data):
+        name = str(data.get(OWNER) or "")
+        if not name:
+            return None
+        found = next((row for row in controller.summaries() if row.get(OWNER) == name and row["title"] == title and not row["deleted"]), None)
+        return controller.load(found["n"]) if found else None

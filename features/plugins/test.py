@@ -180,6 +180,8 @@ def test_a_row_a_plugin_creates_is_its_own_locked_and_goes_with_it():
     record = alone()
     plugin = installed(record, "checker", "exit 0")
     assert run(["--root", str(record.root), "--plugin", "checker", "check", "create", "The code keeps its shape", "--set", "command=sh check.sh"]) == 0
+    assert run(["--root", str(record.root), "--plugin", "checker", "check", "create", "The code keeps its shape", "--set", "command=sh check.sh"]) == 0
+    assert len(CONTROLLERS["check"](record, actor=USER).all()) == 1, "running its setup again does not make a second one"
     check = next(r for r in CONTROLLERS["check"](record, actor=USER).all())
     assert (check.data.get("plugin"), check.data.get("locked")) == ("checker", True), "a row a plugin creates is stamped as its own and locked"
     assert "belongs to the checker plugin" in refused(lambda: CONTROLLERS["check"](record, actor=USER).delete(check.n, "tidy")), "nobody else removes it"
