@@ -4,6 +4,11 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.85.15
+
+- Chat etiquette, a feature with its own skill: the agent talks about the work, never about the journal's workings, since the user sees every reply, reaction, pill and read themselves. A turn that slips ("your message is answered", "I replied", "filed as a pill") is named back to the agent once.
+- A feature can be primary: its skill is loaded at every start and stays chosen even when the user picked their own list, like the journal skill. Chat etiquette is the first.
+
 ## 2.85.14
 
 - A plan has a depth, normal or thorough. The New plan dialog asks how thorough it must be; a thorough plan is researched and gets a to-do for every small thing, and the agent building it is told which. Asked for a plan in the chat, the agent settles the depth from what was said, judges it, or asks.

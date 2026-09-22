@@ -44,8 +44,12 @@ def subjects() -> set[str]:
     return {"journal", *(skill_name(path.stem) for path in folder.glob("*.md") if path.name != "journal.md")}
 
 
+def primary() -> set[str]:
+    return {"journal", *(skill_name(name) for name, f in features.FEATURES.items() if f.details and f.details.primary)}
+
+
 def defaults() -> set[str]:
-    return {"journal"}
+    return primary()
 
 
 def managed() -> set[str]:
@@ -66,7 +70,7 @@ def loaded_at(agent) -> dict[str, float]:
 def chosen(record: Record) -> list[str]:
     named = record.setting(Record.skills)
     current = managed() & available(record.root.parent)
-    return sorted(current & (defaults() if named is None else set(named)))
+    return sorted(current & (defaults() if named is None else set(named) | primary()))
 
 
 def skills(record: Record, n: int = 0) -> list[dict]:

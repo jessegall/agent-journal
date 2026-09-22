@@ -88,6 +88,7 @@ class FeatureDetails:
     aliases: ClassVar[tuple] = ()
     runs_for_subagents: ClassVar[bool] = False
     fixed: ClassVar[bool] = False
+    primary: ClassVar[bool] = False
     default: ClassVar[bool] = True
 
     @classmethod
