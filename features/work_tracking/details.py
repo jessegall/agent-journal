@@ -64,6 +64,11 @@ class WorkDetails(FeatureDetails):
 
     lines = [
         Line(
+            name="parked",
+            title="work {{n}}, {{title}}, is still parked{{more}} - can you continue it now?",
+            brief="it was parked because: {{why}}. journal work resume {{n}} picks it up again.",
+        ),
+        Line(
             name="open",
             title="work {{n}} is still open",
             brief='end it or park it before you stop: journal work end {{n}} --how "<what landed>", or journal work park {{n}} "<why it waits>"',

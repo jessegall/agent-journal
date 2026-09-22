@@ -13,6 +13,7 @@ FOLDS: dict[tuple, tuple] = {}
 TRANSCRIPTS: dict[str, tuple] = {}
 SEAM = 256
 RECENT_BYTES = 1_000_000
+RECENT_ROWS = 1000
 LEGACY = ".journal/hook.py"
 
 
@@ -112,7 +113,16 @@ class Provider(ABC):
         held = RECENT.get(str(path))
         if held and held[0] == size:
             return held[1]
-        rows = [row for row in (parsed(line) for line in tail(path, RECENT_BYTES)) if isinstance(row, dict)]
+        if held and held[0] < size <= held[0] + RECENT_BYTES:
+            with Path(path).open("rb") as source:
+                source.seek(held[0])
+                raw = source.read(size - held[0])
+            whole = raw[:raw.rfind(b"\n") + 1]
+            added = [row for row in (parsed(line) for line in whole.decode(errors="replace").splitlines()) if isinstance(row, dict)]
+            rows = (held[1] + added)[-RECENT_ROWS:]
+            RECENT[str(path)] = (held[0] + len(whole), rows)
+            return rows
+        rows = [row for row in (parsed(line) for line in tail(path, RECENT_BYTES)) if isinstance(row, dict)][-RECENT_ROWS:]
         RECENT[str(path)] = (size, rows)
         return rows
 
