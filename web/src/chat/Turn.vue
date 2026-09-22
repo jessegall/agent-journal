@@ -1,4 +1,5 @@
 <script setup>
+import Text from "../kit/Text.vue";
 import {computed, nextTick, onMounted, ref, watch} from "vue";
 import {api} from "../api/client.js";
 import Icon from "../kit/Icon.vue";
@@ -177,7 +178,7 @@ async function drop() {
                 <span class="thread-made-kind">{{ meta(turn.made.type).title }} created</span>
                 <span class="thread-made-title">{{ turn.made.title }}</span>
                 <template v-if="turn.made.abstract">
-                    <span class="thread-made-line">{{ plain(turn.made.abstract) }}</span>
+                    <Text inline class="thread-made-line" :text="turn.made.abstract" />
                 </template>
             </button>
         </div>
@@ -234,7 +235,7 @@ async function drop() {
                 </Folded>
                 <template v-if="turn.type === 'question'">
                     <template v-if="turn.abstract">
-                        <p class="thread-context">{{ turn.abstract }}</p>
+                        <Text class="thread-context" :text="turn.abstract" />
                     </template>
                     <OptionsPicker :resource="turn" />
                 </template>

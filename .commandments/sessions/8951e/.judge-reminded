@@ -1,5 +1,21 @@
-/Users/jessegall/projects/agent-journal/web/src/kit/Icon.vue
-/Users/jessegall/projects/agent-journal/web/src/resource/ResourceActions.vue
+/Users/jessegall/projects/agent-journal/.commandments/config.php
+/Users/jessegall/projects/agent-journal/web/src/chat/Compose.vue
+/Users/jessegall/projects/agent-journal/web/src/chat/DumpWindow.vue
+/Users/jessegall/projects/agent-journal/web/src/chat/Turn.vue
+/Users/jessegall/projects/agent-journal/web/src/kit/SidePanel.vue
+/Users/jessegall/projects/agent-journal/web/src/kit/Text.vue
+/Users/jessegall/projects/agent-journal/web/src/layout/ActivityEvents.vue
+/Users/jessegall/projects/agent-journal/web/src/layout/SkillPanel.vue
+/Users/jessegall/projects/agent-journal/web/src/pages/RailWaiting.vue
+/Users/jessegall/projects/agent-journal/web/src/resource/Asked.vue
+/Users/jessegall/projects/agent-journal/web/src/resource/Comments.vue
+/Users/jessegall/projects/agent-journal/web/src/resource/OptionsPicker.vue
+/Users/jessegall/projects/agent-journal/web/src/resource/PlanPage.vue
+/Users/jessegall/projects/agent-journal/web/src/resource/ResourceBody.vue
+/Users/jessegall/projects/agent-journal/web/src/resource/ResourceCard.vue
+/Users/jessegall/projects/agent-journal/web/src/resource/ResourceRow.vue
+/Users/jessegall/projects/agent-journal/web/src/resource/Revisions.vue
+/Users/jessegall/projects/agent-journal/web/src/resource/Sections.vue
 -----
 Batch marker for the code-commandments judge reminder (`commandments judge-reminder`, wired as
 Stop + PreToolUse hooks). The lines above the separator are the changed-file set it last

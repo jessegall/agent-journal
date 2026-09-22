@@ -1,4 +1,5 @@
 <script setup>
+import Text from "../kit/Text.vue";
 import Dot from "../kit/Dot.vue";
 import Icon from "../kit/Icon.vue";
 import PriorityIcon from "../kit/PriorityIcon.vue";
@@ -6,7 +7,6 @@ import {parkedFor, state, waitsOn} from "../domain/records.js";
 import {age} from "../format/time.js";
 import {meta} from "../state/store.js";
 import {computed} from "vue";
-import {words} from "../text/markers.js";
 
 const props = defineProps({resource: Object, selected: Boolean});
 
@@ -37,7 +37,7 @@ const held = computed(() => {
             <span class="title">{{ resource.title }}</span>
             <template v-if="resource.abstract || resource.brief">
                 <span class="abstract">
-                    {{ resource.abstract || words(resource.brief).split("\n")[0] }}
+                    <Text inline :text="resource.abstract || resource.brief" />
                 </span>
             </template>
         </span>

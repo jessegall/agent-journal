@@ -9,7 +9,7 @@ import Icon from "../kit/Icon.vue";
 import {peek, route} from "../route.js";
 import {state} from "../domain/records.js";
 import {holding, rows} from "../sync/rows.js";
-import Markdown from "./Markdown.vue";
+import Text from "../kit/Text.vue";
 import Sections from "./Sections.vue";
 import Folded from "../kit/Folded.vue";
 
@@ -72,7 +72,7 @@ async function run(action, body = {}) {
         </header>
         <h2 class="title">{{ resource.title }}</h2>
         <template v-if="resource.data.goal">
-            <Markdown class="goal" :text="resource.data.goal" />
+            <Text class="goal" :text="resource.data.goal" />
         </template>
         <div class="actions">
             <template v-if="button">
@@ -89,7 +89,7 @@ async function run(action, body = {}) {
         <template v-if="resource.brief">
             <div class="brief">
                 <Folded :at="220" :keep="160">
-                    <Markdown :text="resource.brief" />
+                    <Text :text="resource.brief" />
                 </Folded>
             </div>
         </template>

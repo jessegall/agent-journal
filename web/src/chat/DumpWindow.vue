@@ -1,4 +1,5 @@
 <script setup>
+import Text from "../kit/Text.vue";
 import {computed, reactive, ref, watch} from "vue";
 import {api} from "../api/client.js";
 import {store} from "../state/store.js";
@@ -581,7 +582,7 @@ function leave(m) {
                                             <span class="dump-made-text">
                                                 <span class="dump-made-title">{{ m.row?.title || `${m.type} ${m.n}` }}</span>
                                                 <template v-if="m.row?.abstract">
-                                                    <span class="dump-made-line">{{ m.row.abstract }}</span>
+                                                    <Text inline class="dump-made-line" :text="m.row.abstract" />
                                                 </template>
                                             </span>
                                             <template v-if="!m.left">
@@ -596,7 +597,7 @@ function leave(m) {
                                         <template v-if="opened === m.ref && m.row">
                                             <div class="dump-made-open">
                                                 <template v-if="m.row.brief">
-                                                    <p class="dump-lead">{{ m.row.brief }}</p>
+                                                    <Text class="dump-lead" :text="m.row.brief" />
                                                 </template>
                                                 <div v-for="s in m.row.sections || []" :key="s.title" class="dump-part">
                                                     <span class="dump-part-label">{{ s.title }}</span>

@@ -1,10 +1,10 @@
 <script setup>
+import Text from "../kit/Text.vue";
 import {computed, ref} from "vue";
 import {api} from "../api/client.js";
 import Btn from "../kit/Btn.vue";
 import OptionList from "../kit/OptionList.vue";
 import {word} from "../state/store.js";
-import {words} from "../text/markers.js";
 
 const props = defineProps({resource: Object});
 const own = ref("");
@@ -44,7 +44,7 @@ async function submit(text) {
             <template v-if="ownWords">
                 <div class="own-words">
                     <span>Your own words</span>
-                    <span class="own-words-text">{{ words(resource.outcome) }}</span>
+                    <Text inline class="own-words-text" :text="resource.outcome" />
                 </div>
             </template>
             <div class="after">

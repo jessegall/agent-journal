@@ -1,4 +1,5 @@
 <script setup>
+import Text from "../kit/Text.vue";
 import {computed, ref, watch} from "vue";
 import OptionsPicker from "./OptionsPicker.vue";
 import {api} from "../api/client.js";
@@ -32,7 +33,7 @@ const questions = computed(() => {
                 <div :class="['asked-one', {done: q.completed}]">
                     <p class="asked-text">{{ q.title }}</p>
                     <template v-if="q.abstract">
-                        <p class="asked-context">{{ q.abstract }}</p>
+                        <Text class="asked-context" :text="q.abstract" />
                     </template>
                     <OptionsPicker :resource="q" />
                 </div>
