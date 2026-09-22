@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.84.50 — List pages keep their tabs and group headers in view
+
+On the list pages (to-dos, messages and the rest), the tabs stay at the top while the list scrolls, and each group's header stays just below them until the next group takes its place.
+
 ## 2.84.49 — Arrow keys step in and out of the quick menu
 
 In the quick menu, the right arrow opens the selected entry's own list (the project files), and the left arrow goes back to the menu. Moving the selection down or up keeps it in view with some room around it, instead of running off the edge of the list.
