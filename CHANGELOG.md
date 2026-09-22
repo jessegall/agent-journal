@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.84.58 — Closing a notice twice is quiet
+
+Pressing X on a notice something else had already closed showed an error. A notice that is already closed now stays closed without a word. Closing any other row twice says "is already closed" instead of "is already close".
+
 ## 2.84.57 — Hourly and daily jobs never hold up a hook
 
 Archiving old rows (hourly) and the record audit (daily) ran inside whichever hook happened to land when they came due, up to a second. They now run on the engine's own clock in the server, beside the hooks.

@@ -172,7 +172,7 @@ class Controller(Stored, Files, Links):
             return taken
         r = self.load(n)
         if r.completed:
-            self._refuse(f"{self.type} {n} is already {self.named('complete')}")
+            self._refuse(f"{self.type} {n} is already closed")
         r.completed = time.time()
         r.outcome = how
         r.data.update(self._shaped(data))
