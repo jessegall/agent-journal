@@ -4,6 +4,11 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.85.26 — The dashboard and the board read only what they show
+
+- The dashboard counts only the types the viewer shows, not nudges, reactions or agents, so a busy nudge folder no longer slows every refresh.
+- The to-do board opens only open rows and rows closed within its done days, picked from the index, instead of every to-do ever filed.
+
 ## 2.85.25
 
 - Every doc lives in a folder of its own: project/doc/041/doc.md, with its attachments beside it and its kept revisions in project/doc/041/revisions/. A migration moves existing docs, under the new migration backup; tested on a copy of a real record, every doc, revision and attachment is kept word for word. The store writes, finds and lists a row the same way whether it lives loose or in its own folder.

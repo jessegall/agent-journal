@@ -602,7 +602,7 @@ def get_dashboard(req: Request) -> Reply:
     wanted = [t for t in (req.query.get("types") or "").split(",") if t in CONTROLLERS]
     lists = {t: listing(CONTROLLERS[t](record, actor=USER), record, req.query) for t in wanted}
     whole = "events" in req.query
-    return Reply(200, {"rows": lists, "counts": counted(record, CONTROLLERS if whole else wanted), **({"events": [asdict(e) for e in record.events(0, int(req.query["events"] or 0))],
+    return Reply(200, {"rows": lists, "counts": counted(record, [t for t, c in CONTROLLERS.items() if c.resource.in_sidebar or c.resource.needs_attention or t in wanted] if whole else wanted), **({"events": [asdict(e) for e in record.events(0, int(req.query["events"] or 0))],
                                            "settings": settings(record)} if whole else {})})
 
 
