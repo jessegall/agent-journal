@@ -329,6 +329,35 @@ class Claude(Provider):
                 return row.get("type") == "user" or bool(thinking)
         return False
 
+    def hidden_messages(self, transcript: Path, offset: int) -> tuple[list[str], int]:
+        try:
+            with open(transcript, "rb") as f:
+                f.seek(offset)
+                lines = f.read().split(b"\n")
+        except OSError:
+            return [], offset
+        blocks: dict[str, list[dict]] = {}
+        ends, at, done = [], offset, offset
+        for line in lines[:-1]:
+            at += len(line) + 1
+            try:
+                row = json.loads(line)
+            except ValueError:
+                continue
+            message = row.get("message") or {}
+            if row.get("type") == "assistant" and isinstance(message.get("content"), list):
+                blocks.setdefault(message.get("id", ""), []).extend(message["content"])
+                if any(part.get("type") == "tool_use" for part in message["content"]):
+                    ends.append(message.get("id", ""))
+                    done = at
+            elif row.get("type") == "user":
+                ends.append("")
+                done = at
+        finished = [key for key in dict.fromkeys(ends) if key in blocks]
+        texts = [part["thinking"].strip() for key in finished if not any(part.get("type") == "text" for part in blocks[key])
+                 for part in blocks[key] if part.get("type") == "thinking" and (part.get("thinking") or "").strip()]
+        return texts, done
+
     def is_subagent(self, hook) -> bool:
         where = Path(getattr(hook, "transcript", "") or "").parts + Path(getattr(hook, "cwd", "") or "").parts
         return bool(getattr(hook, "agent", "")) or "subagents" in where or "worktrees" in where

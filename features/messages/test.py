@@ -2,9 +2,10 @@ import json
 from datetime import datetime, timezone
 
 from controllers.types import Agents, Messages, Nudges, Works
-from engine.hooks import gate_file, handle
+from engine.hooks import displayed, gate_file, handle
 from features.base import held
-from providers import PROVIDERS
+from engine.sessions import Sessions
+from providers import DRIVERS, PROVIDERS
 from resources.base import AGENT, USER
 from tests.conftest import fresh
 from tests.kit import nudges, report
@@ -110,27 +111,17 @@ def test_a_private_nudge_reaches_the_session_it_names_whichever_name_it_uses():
 
 def test_messages_shown_at_once_arrive_whole_and_claude_is_read_from_its_display_hook_only(tmp_path):
     from engine.engine import Engine
-    from engine.hooks import displayed
-    from engine.sessions import Sessions
-    from providers import DRIVERS
-    record = fresh()
-    report(record, "working", "PreToolUse")
+    record, transcript, now = fresh(), tmp_path / "s.jsonl", datetime.now(timezone.utc).isoformat()
+    transcript.write_text(json.dumps({"type": "user", "timestamp": now, "message": {"content": "go"}}) + "\n")
+    report(record, "working", "PreToolUse", provider="claude", transcript=str(transcript))
     Sessions(record.root).bind("claude-1", record.env, provider="claude")
-    first = {"session_id": "claude-1", "hook_event_name": "MessageDisplay", "message_id": "a"}
-    displayed(record.root, {**first, "index": 0, "final": False, "delta": "first "})
-    displayed(record.root, {**first, "message_id": "b", "index": 0, "final": True, "delta": "second"})
-    displayed(record.root, {**first, "index": 1, "final": True, "delta": "whole"})
+    for piece in ({"index": 0, "final": False, "delta": "first "}, {"message_id": "b", "index": 0, "final": True, "delta": "second"}, {"index": 1, "final": True, "delta": "whole"}):
+        displayed(record.root, {"session_id": "claude-1", "hook_event_name": "MessageDisplay", "message_id": "a", **piece})
     chat = lambda: [m.brief for m in Messages(record, actor="system").all() if m.seen[:1] == ["agent"]]
     assert chat() == ["second", "first whole"], "a message that finishes never drops the pieces of one still being shown"
-    transcript = tmp_path / "s.jsonl"
-    now = datetime.now(timezone.utc).isoformat()
-    transcript.write_text(json.dumps({"type": "user", "timestamp": now, "message": {"content": "go"}}) + "\n")
-    agents = Agents(record, actor="system")
-    agents.update(agents.by_session("claude-1").n, provider="claude", transcript=str(transcript))
     engine = Engine(record, DRIVERS["claude"](record, "claude-1"))
     engine.tick()
-    with transcript.open("a") as rows:
-        rows.write(json.dumps({"type": "assistant", "timestamp": now, "message": {"content": [{"type": "text", "text": "only in the transcript"}]}}) + "\n")
+    transcript.write_text(transcript.read_text() + json.dumps({"type": "assistant", "timestamp": now, "message": {"content": [{"type": "text", "text": "only in the transcript"}]}}) + "\n")
     engine.tick()
     assert "only in the transcript" not in chat(), "Claude's messages come from its display hook alone"
 
@@ -144,3 +135,16 @@ def test_a_row_named_by_a_bare_number_is_named_back_with_its_type():
     chat.send(record, Agents(record, actor="system").by_session("claude-1"), f"Answered {asked.n}, parked {filed.n}, then work {filed.n}; the suite ({asked.n}) and \"finished {filed.n}\" pass")
     lines = [n for n in nudges(record) if "without saying what they are" in n]
     assert len(lines) == 1 and f"names {asked.n}, {filed.n} " in lines[0], "the bare numbers of real rows are named back, versions and counts are not"
+
+
+def test_a_message_left_in_hidden_thinking_is_posted_once_marked_as_thinking(tmp_path):
+    record, transcript = fresh(), tmp_path / "s.jsonl"
+    rows = lambda *messages: "".join(json.dumps({"type": "assistant", "message": {"id": key, "content": parts}}) + "\n" for key, parts in messages)
+    transcript.write_text(rows(("m0", [{"type": "text", "text": "before"}])))
+    report(record, "working", "PreToolUse", provider="claude", transcript=str(transcript))
+    with transcript.open("a") as out:
+        out.write(rows(("m1", [{"type": "thinking", "thinking": ""}, {"type": "thinking", "thinking": "Hidden words"}, {"type": "tool_use", "name": "Bash"}]),
+                       ("m2", [{"type": "thinking", "thinking": "Reasoning"}, {"type": "text", "text": "Shown"}, {"type": "tool_use", "name": "Bash"}])))
+    for _ in range(2):
+        report(record, "working", "PostToolUse", provider="claude", transcript=str(transcript))
+    assert [(m.brief, m.data.get("thinking")) for m in Messages(record, actor="system").all()] == [("Hidden words", True)], "posted once; thinking beside a visible message is not"
