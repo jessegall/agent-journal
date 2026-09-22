@@ -24,24 +24,11 @@ class DumpsDetails(FeatureDetails):
             name="arrived",
             title="dump {{n}}, {{title}}, has {{count}} to file - journal dump items {{n}}",
             brief="""
-                Load the journal-dumps skill first if it is not loaded. Read every item, then name its collection for what the items are about, in a few
-                words a person would search for: journal dump name {{n}} "<name>". Decide what each
-                item becomes and file it: a transcript or meeting
-                notes become a doc with a summary at the top, the decisions and the open points; an
-                image is tagged with a few words and filed with the doc it belongs to; a document
-                becomes a doc or is attached to the doc it extends; where the material states a goal
-                or asks for a plan, start a plan with that goal. Record each item as you go with
-                journal dump note, then journal dump filed or journal dump failed, and tell the user
-                what you are doing at each step with journal dump log {{n}} "<short title>" --detail
-                "<what you are doing and what you make of it>": the title is a few words like Adding
-                files, and the dump window shows both live. When the pasted text holds several things, such as a summary,
-                a transcript and a link, split it first with journal dump split {{n}} "Summary,
-                Transcript, Link" and file each part as its own item. Before you write a row, log
-                with --making "<type>, <title>" so a placeholder shows; once the row exists, log
-                with --on <type:n> so its row shows while you write it. Ask only when you truly
-                cannot tell what an item is for, in the dump window with journal dump ask {{n}}
-                "<question>" --guesses "<likely answer>|<another>", never in the chat: the user
-                is looking at the dump.
+                Load the journal-dumps skill first if it is not loaded. The Filing a dump sequence
+                hands you its steps one at a time: follow each one and mark it done with journal
+                sequence next, and it hands you the next. Tell the user what you do with journal
+                dump log, and ask only in the dump window, never in the chat: the user is looking
+                at the dump.
             """,
         ),
         Line(

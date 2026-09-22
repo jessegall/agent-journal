@@ -17,6 +17,8 @@ import Trace from "./Trace.vue";
 import Comments from "./Comments.vue";
 import Links from "./Links.vue";
 import Asked from "./Asked.vue";
+import SequenceRuns from "./SequenceRuns.vue";
+import StartsOn from "./StartsOn.vue";
 import CheckResult from "./CheckResult.vue";
 import Buttons from "./Buttons.vue";
 import RuleControls from "./RuleControls.vue";
@@ -251,6 +253,10 @@ const docs = computed(() =>
             </section>
         </template>
         <Asked :resource="resource" />
+        <SequenceRuns :resource="resource" />
+        <template v-if="resource.type === 'sequence' && !resource.completed">
+            <StartsOn :resource="resource" />
+        </template>
         <slot />
         <template v-if="docs.length">
             <section class="linked-docs">

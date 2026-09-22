@@ -49,7 +49,13 @@ async function makePlan() {
 }
 
 const offered = computed(() =>
-    props.resource.completed ? ["delete"] : meta(props.resource.type).closed_first ? ["complete"] : ["complete", "delete"]
+    props.resource.data.system
+        ? []
+        : props.resource.completed
+          ? ["delete"]
+          : meta(props.resource.type).closed_first
+            ? ["complete"]
+            : ["complete", "delete"]
 );
 
 async function run(method) {

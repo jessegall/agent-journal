@@ -11,12 +11,26 @@ defineProps({resource: Object});
         <span class="head">
             <Icon :name="meta(resource.type).icon" :size="14" />
             <span class="n">{{ meta(resource.type).title }} {{ resource.n }}</span>
+            <template v-if="resource.data.system">
+                <span class="badge" title="Ships with the journal; it cannot be removed">System</span>
+            </template>
             <span class="age">{{ age(resource.updated || resource.created) }}</span>
         </span>
         <span class="title">{{ resource.title }}</span>
         <span class="abstract">{{ resource.abstract || words(resource.brief).slice(0, 160) }}</span>
         <template v-if="resource.sections.length">
-            <span class="parts">{{ resource.sections.length }} part{{ resource.sections.length > 1 ? "s" : "" }}</span>
+            <span class="parts">
+                {{ resource.sections.length }} {{ resource.type === "sequence" ? "step" : "part"
+                }}{{ resource.sections.length > 1 ? "s" : "" }}
+                <template v-if="resource.type === 'sequence'">
+                    ·
+                    {{
+                        resource.data.starts_on
+                            ? `starts when a ${resource.data.starts_on.replace(".completed", " is finished").replace(".created", " is created")}`
+                            : "run by hand"
+                    }}
+                </template>
+            </span>
         </template>
     </button>
 </template>
@@ -34,6 +48,15 @@ defineProps({resource: Object});
     text-align: left;
     cursor: pointer;
 }
+.badge {
+    padding: 0 6px;
+    border: 1px solid var(--border-2);
+    border-radius: 999px;
+    color: var(--text-2);
+    font-size: 10.5px;
+    letter-spacing: 0.04em;
+}
+
 .card:hover {
     border-color: var(--border-2);
     background: var(--hover);
