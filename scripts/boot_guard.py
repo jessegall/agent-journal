@@ -39,9 +39,9 @@ def launches(place: Path, entry: Path, name: str, during=None) -> None:
             during()
         (place / "bin" / f"{name}.quit").touch()
         text = launched.communicate(timeout=WAIT)[0].decode(errors="replace")
-        subprocess.run([*journal, "stop"], cwd=place / "project", env=env, capture_output=True, timeout=WAIT)
         left = lingering(place)
     finally:
+        subprocess.run([*journal, "stop"], cwd=place / "project", env=env, capture_output=True, timeout=WAIT)
         (place / "bin" / f"{name}.quit").touch()
         launched.kill()
         launched.wait(WAIT)
@@ -50,7 +50,7 @@ def launches(place: Path, entry: Path, name: str, during=None) -> None:
     assert "Traceback" not in text, f"journal {name} crashed:\n{text}"
     assert (place / "bin" / f"{name}.started").exists(), f"journal {name} never started the agent:\n{text}"
     assert awaited.exists(), f"journal {name} never typed its first message:\n{text}"
-    assert not left, f"journal {name} left processes running after journal stop:\n" + "\n".join(left)
+    assert not left, f"journal {name} left processes running after the session ended:\n" + "\n".join(left)
 
 
 def lingering(place: Path, within: float = 3.0) -> list[str]:
