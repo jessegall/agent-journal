@@ -35,6 +35,13 @@ const props = defineProps({
 const emit = defineEmits(["close"]);
 const kind = computed(() => meta(props.resource.type));
 const files = computed(() => Object.entries(props.resource.data.files || {}));
+const template = computed(() => props.resource.data.template || "");
+const blocked = computed(() => props.resource.data.blocked || "");
+const seenBy = computed(() => props.resource.seen.join(", ") || "nobody");
+const briefLabel = computed(() => kind.value.labels.brief || "");
+const buttons = computed(() => (Array.isArray(props.resource.data.buttons) ? props.resource.data.buttons : []));
+const fieldsShown = computed(() => kind.value.shown_fields.length > 0);
+const optioned = computed(() => !!kind.value.fields.options);
 const ranked = computed(() => !!kind.value.fields.priority && !props.resource.completed);
 const traced = computed(() => !!kind.value.fields.changed);
 const madeFor = computed(() => (kind.value.fields.applies_to ? props.resource.data.applies_to || [] : null));
@@ -96,10 +103,12 @@ const docs = computed(() =>
                 </template>
                 <Btn kind="icon" @click="emit('close')"><Icon name="x" /></Btn>
             </div>
-            <button v-if="resource.data?.template" type="button" class="from" @click="peek('template', Number(resource.data.template))">
-                <Icon name="docs" :size="11" />
-                Made from template {{ resource.data.template }}
-            </button>
+            <template v-if="resource.data?.template">
+                <button type="button" class="from" @click="peek('template', Number(template))">
+                    <Icon name="docs" :size="11" />
+                    Made from template {{ template }}
+                </button>
+            </template>
             <template v-if="editing">
                 <input
                     v-model="draft.title"
@@ -123,7 +132,7 @@ const docs = computed(() =>
                     placeholder="Abstract, at most 200 characters"
                     @keydown.esc="editing = false"
                 />
-                <textarea v-model="draft.brief" rows="6" :placeholder="kind.labels.brief || 'Brief'" @keydown.esc="editing = false" />
+                <textarea v-model="draft.brief" rows="6" :placeholder="briefLabel || 'Brief'" @keydown.esc="editing = false" />
                 <div class="edit-row">
                     <Btn kind="primary" small @click="save">Save</Btn>
                     <Btn small @click="editing = false">Cancel</Btn>
@@ -150,9 +159,9 @@ const docs = computed(() =>
                 </template>
             </div>
         </template>
-        <template v-if="!resource.completed && (resource.data.blocked || parkedFor(resource) || waits.length)">
+        <template v-if="!resource.completed && (blocked || parkedFor(resource) || waits.length)">
             <p class="waits">
-                <template v-if="resource.data.blocked">Blocked: {{ resource.data.blocked }}</template>
+                <template v-if="blocked">Blocked: {{ blocked }}</template>
                 <template v-if="parkedFor(resource)">Parked: {{ parkedFor(resource) }}</template>
                 <template v-if="waits.length">
                     Waits on
@@ -171,13 +180,13 @@ const docs = computed(() =>
         <template v-if="resource.type === 'check'">
             <CheckResult :resource="resource" />
         </template>
-        <template v-if="Array.isArray(resource.data.buttons) && resource.data.buttons.length">
+        <template v-if="buttons.length">
             <Buttons :resource="resource" />
         </template>
-        <template v-if="kind.shown_fields.length">
+        <template v-if="fieldsShown">
             <DataFields :resource="resource" />
         </template>
-        <template v-if="kind.fields.options">
+        <template v-if="optioned">
             <OptionsPicker :resource="resource" />
         </template>
         <template v-if="madeFor">
@@ -216,8 +225,8 @@ const docs = computed(() =>
         </template>
         <template v-if="resource.brief && !editing">
             <section class="block">
-                <template v-if="kind.labels.brief">
-                    <h3>{{ kind.labels.brief }}</h3>
+                <template v-if="briefLabel">
+                    <h3>{{ briefLabel }}</h3>
                 </template>
                 <TextDisplay :text="resource.brief" />
             </section>
@@ -268,14 +277,16 @@ const docs = computed(() =>
             <section class="linked-docs">
                 <h3 class="linked-docs-head">Documents</h3>
                 <div class="linked-docs-cards">
-                    <ResourceCard v-for="d in docs" :key="d.ref" :resource="d" @click="peek('doc', d.n)" />
+                    <template v-for="d in docs" :key="d.ref">
+                        <ResourceCard :resource="d" @click="peek('doc', d.n)" />
+                    </template>
                 </div>
             </section>
         </template>
         <template v-if="links">
             <Links :resource="resource" :except="docs.map((d) => d.ref)" />
         </template>
-        <footer class="foot">seen by {{ resource.seen.join(", ") || "nobody" }}</footer>
+        <footer class="foot">seen by {{ seenBy }}</footer>
         <template v-if="comments">
             <Comments :resource="resource" :compose="commentComposer" />
         </template>

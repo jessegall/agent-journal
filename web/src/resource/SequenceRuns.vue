@@ -33,30 +33,32 @@ function open(ref) {
     <template v-if="runs.length">
         <section class="runs">
             <h3>Running now</h3>
-            <div v-for="r in runs" :key="`${r.sequence.n}-${r.about}`" class="run">
-                <div class="run-head">
-                    <template v-if="resource.type === 'sequence'">
-                        <span>{{ r.about === BY_HAND ? "Started by hand" : "About" }}</span>
-                        <template v-if="r.about !== BY_HAND">
-                            <button type="button" class="run-link" @click="open(r.about)">{{ r.about.replace(":", " ") }}</button>
-                        </template>
-                    </template>
-                    <template v-else>
-                        <button type="button" class="run-link" @click="open(r.sequence.ref)">{{ r.sequence.title }}</button>
-                    </template>
-                    <span class="grow" />
-                    <span class="run-count">{{ r.waiting ? "waiting its turn" : `step ${r.step} of ${r.sequence.sections.length}` }}</span>
-                </div>
-                <ol class="steps">
-                    <li
-                        v-for="(s, i) in r.sequence.sections"
-                        :key="s.title"
-                        :class="{done: i + 1 < r.step, current: !r.waiting && i + 1 === r.step}"
-                    >
-                        {{ s.title }}
-                    </li>
-                </ol>
-            </div>
+            <template v-for="r in runs" :key="`${r.sequence.n}-${r.about}`">
+              <div class="run">
+                  <div class="run-head">
+                      <template v-if="resource.type === 'sequence'">
+                          <span>{{ r.about === BY_HAND ? "Started by hand" : "About" }}</span>
+                          <template v-if="r.about !== BY_HAND">
+                              <button type="button" class="run-link" @click="open(r.about)">{{ r.about.replace(":", " ") }}</button>
+                          </template>
+                      </template>
+                      <template v-else>
+                          <button type="button" class="run-link" @click="open(r.sequence.ref)">{{ r.sequence.title }}</button>
+                      </template>
+                      <span class="grow" />
+                      <span class="run-count">{{ r.waiting ? "waiting its turn" : `step ${r.step} of ${r.sequence.sections.length}` }}</span>
+                  </div>
+                  <ol class="steps">
+                      <template v-for="(s, i) in r.sequence.sections" :key="s.title">
+                        <li
+                            :class="{done: i + 1 < r.step, current: !r.waiting && i + 1 === r.step}"
+                        >
+                            {{ s.title }}
+                        </li>
+                      </template>
+                  </ol>
+              </div>
+            </template>
         </section>
     </template>
 </template>

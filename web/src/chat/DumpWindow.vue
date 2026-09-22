@@ -1,5 +1,6 @@
 <script setup>
 import TextDisplay from "../kit/TextDisplay.vue";
+import DumpMadeRow from "./DumpMadeRow.vue";
 import {computed, reactive, ref, watch} from "vue";
 import {api} from "../api/client.js";
 import {store} from "../state/store.js";
@@ -371,16 +372,12 @@ function leave(m) {
                 </button>
                 <template v-if="switching">
                     <div class="dump-menu">
-                        <button
-                            v-for="d in others"
-                            :key="d.n"
-                            type="button"
-                            :class="['dump-menu-row', {current: d.n === dump?.n}]"
-                            @click="pick(d.n)"
-                        >
-                            <span class="dump-menu-title">Dump {{ d.n }} · {{ d.title }}</span>
-                            <span :class="['dump-pill', TONES[pillOf(d)]]">{{ PILLS[pillOf(d)] }}</span>
-                        </button>
+                        <template v-for="d in others" :key="d.n">
+                            <button type="button" :class="['dump-menu-row', {current: d.n === dump?.n}]" @click="pick(d.n)">
+                                <span class="dump-menu-title">Dump {{ d.n }} · {{ d.title }}</span>
+                                <span :class="['dump-pill', TONES[pillOf(d)]]">{{ PILLS[pillOf(d)] }}</span>
+                            </button>
+                        </template>
                         <span class="dump-menu-rule" />
                         <button type="button" class="dump-menu-row" @click="fresh">
                             <Icon name="plus" :size="12" />
@@ -416,13 +413,15 @@ function leave(m) {
                     />
                     <template v-if="draft.files.length">
                         <div class="dump-files">
-                            <span v-for="(file, i) in draft.files" :key="file.name + i" class="dump-file">
-                                <Icon name="paperclip" :size="12" />
-                                {{ file.name }}
-                                <button type="button" class="dump-x" title="Leave this file out" @click="draft.files.splice(i, 1)">
-                                    ×
-                                </button>
-                            </span>
+                            <template v-for="(file, i) in draft.files" :key="file.name + i">
+                                <span class="dump-file">
+                                    <Icon name="paperclip" :size="12" />
+                                    {{ file.name }}
+                                    <button type="button" class="dump-x" title="Leave this file out" @click="draft.files.splice(i, 1)">
+                                        ×
+                                    </button>
+                                </span>
+                            </template>
                         </div>
                     </template>
                     <div class="dump-row">
@@ -480,16 +479,11 @@ function leave(m) {
                         <div class="dump-ask">
                             <template v-if="guesses.length">
                                 <div class="dump-chips">
-                                    <button
-                                        v-for="guess in guesses"
-                                        :key="guess"
-                                        type="button"
-                                        class="dump-chip"
-                                        :disabled="reply.sending"
-                                        @click="answer(guess)"
-                                    >
-                                        {{ guess }}
-                                    </button>
+                                    <template v-for="guess in guesses" :key="guess">
+                                        <button type="button" class="dump-chip" :disabled="reply.sending" @click="answer(guess)">
+                                            {{ guess }}
+                                        </button>
+                                    </template>
                                 </div>
                             </template>
                             <div class="dump-answer">
@@ -515,7 +509,9 @@ function leave(m) {
                     </template>
                     <template v-if="phase === 'offering'">
                         <div class="dump-steps">
-                            <span v-for="i in 3" :key="i" class="dump-step-ghost" />
+                            <template v-for="i in 3" :key="i">
+                                <span class="dump-step-ghost" />
+                            </template>
                         </div>
                     </template>
                     <template v-if="phase === 'stopped' && kept.length">
@@ -569,69 +565,21 @@ function leave(m) {
                                     </template>
                                 </div>
                                 <TransitionGroup name="dump-pop" tag="div" class="dump-rows">
-                                    <div
-                                        v-for="m in made"
-                                        :key="m.ref"
-                                        :class="['dump-made-row', {writing: m.writing, open: opened === m.ref, left: m.left}]"
-                                    >
-                                        <template v-if="m.writing">
-                                            <span class="dump-shimmer" />
-                                        </template>
-                                        <button type="button" class="dump-made-head" @click="toggle(m)">
-                                            <span class="dump-made-icon"><Icon :name="typeOf(m.type).icon || 'file'" :size="12" /></span>
-                                            <span class="dump-made-text">
-                                                <span class="dump-made-title">{{ m.row?.title || `${m.type} ${m.n}` }}</span>
-                                                <template v-if="m.row?.abstract">
-                                                    <TextDisplay inline class="dump-made-line" :text="m.row.abstract" />
-                                                </template>
-                                            </span>
-                                            <template v-if="!m.left">
-                                                <span class="dump-tag">{{ m.type }} {{ m.n }}</span>
-                                            </template>
-                                        </button>
-                                        <template v-if="m.left">
-                                            <button type="button" class="dump-put-back" @click="act('keep', {ref: m.ref})">
-                                                Left out · Put back
-                                            </button>
-                                        </template>
-                                        <template v-if="opened === m.ref && m.row">
-                                            <div class="dump-made-open">
-                                                <template v-if="m.row.brief">
-                                                    <TextDisplay class="dump-lead" :text="m.row.brief" />
-                                                </template>
-                                                <div v-for="s in m.row.sections || []" :key="s.title" class="dump-part">
-                                                    <span class="dump-part-label">{{ s.title }}</span>
-                                                    <span class="dump-part-text">{{ s.body }}</span>
-                                                </div>
-                                                <div class="dump-row">
-                                                    <span class="dump-from">{{ m.from }}</span>
-                                                    <span class="grow" />
-                                                    <template v-if="!added">
-                                                        <button
-                                                            type="button"
-                                                            class="dump-small leave"
-                                                            title="Drop this and keep it out of the journal"
-                                                            @click="leave(m)"
-                                                        >
-                                                            Leave out
-                                                        </button>
-                                                    </template>
-                                                    <button type="button" class="dump-small" @click="opened = ''">Close</button>
-                                                </div>
-                                            </div>
-                                        </template>
-                                    </div>
+                                    <template v-for="m in made" :key="m.ref">
+                                        <DumpMadeRow
+                                            :made="m"
+                                            :row="m.row"
+                                            :icon="typeOf(m.type).icon || 'file'"
+                                            :open="opened === m.ref"
+                                            :added="added"
+                                            @toggle="toggle(m)"
+                                            @keep="act('keep', {ref: m.ref})"
+                                            @leave="leave(m)"
+                                            @close="opened = ''"
+                                        />
+                                    </template>
                                     <template v-if="making">
-                                        <div key="making" class="dump-made-row writing">
-                                            <span class="dump-shimmer" />
-                                            <span class="dump-made-head">
-                                                <span class="dump-made-icon" />
-                                                <span class="dump-made-text">
-                                                    <span class="dump-made-title">Processing · {{ making }}</span>
-                                                    <span class="dump-bone" />
-                                                </span>
-                                            </span>
-                                        </div>
+                                        <DumpMadeRow key="making" :making="making" />
                                     </template>
                                 </TransitionGroup>
                             </div>
@@ -640,11 +588,13 @@ function leave(m) {
                         <template v-if="added && summary.length">
                             <div class="dump-section">
                                 <div class="dump-heading">In the journal now</div>
-                                <div v-for="line in summary" :key="line.label" :class="['dump-summary-row', {dim: line.dim}]">
-                                    <span class="dump-summary-label">{{ line.label }}</span>
-                                    <span class="grow" />
-                                    <span class="dump-summary-value">{{ line.value }}</span>
-                                </div>
+                                <template v-for="line in summary" :key="line.label">
+                                    <div :class="['dump-summary-row', {dim: line.dim}]">
+                                        <span class="dump-summary-label">{{ line.label }}</span>
+                                        <span class="grow" />
+                                        <span class="dump-summary-value">{{ line.value }}</span>
+                                    </div>
+                                </template>
                             </div>
                         </template>
                     </div>
@@ -652,20 +602,22 @@ function leave(m) {
                     <template v-if="items.length && !added">
                         <div class="dump-dropped">
                             <div class="dump-heading">You dropped · {{ items.length }}</div>
-                            <div v-for="item in items" :key="item.name" :class="['dump-item', item.state, {quiet}]">
-                                <span class="dump-dot" />
-                                <span class="dump-item-text">
-                                    <span class="dump-item-head">
-                                        <span class="dump-item-name">{{ label(item.name) }}</span>
-                                        <span class="dump-item-state">
-                                            {{ quiet && item.state === "reading" ? "was being read" : ITEM_STATES[item.state] }}
+                            <template v-for="item in items" :key="item.name">
+                                <div :class="['dump-item', item.state, {quiet}]">
+                                    <span class="dump-dot" />
+                                    <span class="dump-item-text">
+                                        <span class="dump-item-head">
+                                            <span class="dump-item-name">{{ label(item.name) }}</span>
+                                            <span class="dump-item-state">
+                                                {{ quiet && item.state === "reading" ? "was being read" : ITEM_STATES[item.state] }}
+                                            </span>
                                         </span>
+                                        <template v-if="item.note">
+                                            <span class="dump-item-note">{{ item.note }}</span>
+                                        </template>
                                     </span>
-                                    <template v-if="item.note">
-                                        <span class="dump-item-note">{{ item.note }}</span>
-                                    </template>
-                                </span>
-                            </div>
+                                </div>
+                            </template>
                         </div>
                     </template>
                 </div>
@@ -679,13 +631,15 @@ function leave(m) {
                         />
                         <template v-if="more.files.length">
                             <div class="dump-files">
-                                <span v-for="(file, i) in more.files" :key="file.name + i" class="dump-file">
-                                    <Icon name="paperclip" :size="12" />
-                                    {{ file.name }}
-                                    <button type="button" class="dump-x" title="Leave this file out" @click="more.files.splice(i, 1)">
-                                        ×
-                                    </button>
-                                </span>
+                                <template v-for="(file, i) in more.files" :key="file.name + i">
+                                    <span class="dump-file">
+                                        <Icon name="paperclip" :size="12" />
+                                        {{ file.name }}
+                                        <button type="button" class="dump-x" title="Leave this file out" @click="more.files.splice(i, 1)">
+                                            ×
+                                        </button>
+                                    </span>
+                                </template>
                             </div>
                         </template>
                         <div class="dump-row">
@@ -1366,192 +1320,8 @@ textarea {
     gap: 6px;
 }
 
-.dump-made-row {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    border: 1px solid var(--border);
-    border-radius: 9px;
-    background: var(--raised);
-}
-
-.dump-made-row.writing {
-    border-color: color-mix(in srgb, var(--accent) 45%, var(--border));
-}
-
-.dump-made-row.open {
-    border-color: var(--border-3);
-}
-
-.dump-made-row.left .dump-made-head {
-    opacity: 0.45;
-    cursor: default;
-}
-
-.dump-shimmer {
-    position: absolute;
-    inset: 0;
-    border-radius: 9px;
-    background: linear-gradient(100deg, transparent 18%, color-mix(in srgb, var(--accent) 18%, transparent) 50%, transparent 82%);
-    background-size: 200% 100%;
-    pointer-events: none;
-    animation: dump-shim 1.8s ease-in-out infinite;
-}
-
-.dump-made-head {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    width: 100%;
-    min-height: 40px;
-    padding: 8px 10px;
-    border: none;
-    background: transparent;
-    color: inherit;
-    font: inherit;
-    cursor: pointer;
-}
-
-.dump-made-row.writing .dump-made-head {
-    cursor: default;
-}
-
-.dump-made-icon {
-    display: flex;
-    flex: none;
-    align-items: center;
-    justify-content: center;
-    width: 22px;
-    height: 22px;
-    border-radius: 6px;
-    background: var(--accent-dim);
-    color: var(--accent-text);
-}
-
-.dump-made-text {
-    display: flex;
-    flex: 1;
-    flex-direction: column;
-    gap: 1px;
-    min-width: 0;
-    text-align: left;
-}
-
 .dump-made-title,
-.dump-made-line {
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-}
-
-.dump-made-title {
-    color: var(--text);
-    font-size: 12.5px;
-}
-
-.dump-made-row.writing .dump-made-title {
-    color: var(--accent-text);
-}
-
-.dump-made-row.left .dump-made-title {
-    text-decoration: line-through;
-}
-
-.dump-made-line {
-    color: var(--text-3);
-    font-size: 11.5px;
-}
-
-.dump-bone {
-    display: block;
-    width: 58%;
-    height: 7px;
-    margin-top: 3px;
-    border-radius: 3px;
-    background: var(--border);
-}
-
-.dump-tag {
-    flex: none;
-    color: var(--text-4);
-    font-size: 10px;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-}
-
-.dump-put-back {
-    position: absolute;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    display: flex;
-    align-items: center;
-    padding: 0 10px;
-    border: none;
-    background: none;
-    color: var(--text-3);
-    font: inherit;
-    font-size: 11px;
-    cursor: pointer;
-}
-
-.dump-put-back:hover {
-    color: var(--text);
-}
-
-.dump-made-open {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    padding: 0 12px 12px;
-    border-top: 1px solid var(--line);
-    background: var(--bg);
-    animation: dump-fadein 0.2s ease-out;
-}
-
 .dump-lead,
-.dump-part-text {
-    display: -webkit-box;
-    overflow: hidden;
-    color: var(--text-2);
-    font-size: 12.5px;
-    line-height: 1.55;
-    white-space: pre-line;
-    -webkit-box-orient: vertical;
-}
-
-.dump-lead {
-    margin: 10px 0 0;
-    -webkit-line-clamp: 6;
-}
-
-.dump-part-text {
-    -webkit-line-clamp: 4;
-}
-
-.dump-part {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-}
-
-.dump-part-label {
-    color: var(--text-4);
-    font-size: 10.5px;
-    letter-spacing: 0.09em;
-    text-transform: uppercase;
-}
-
-.dump-from {
-    min-width: 0;
-    overflow: hidden;
-    color: var(--text-4);
-    font-size: 11.5px;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-}
-
 .dump-small {
     height: 22px;
     padding: 0 9px;
@@ -1744,16 +1514,6 @@ textarea {
     opacity: 0;
 }
 
-@keyframes dump-shim {
-    from {
-        background-position: 130% 0;
-    }
-
-    to {
-        background-position: -30% 0;
-    }
-}
-
 @keyframes dump-rise {
     from {
         opacity: 0;
@@ -1783,10 +1543,6 @@ textarea {
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .dump-shimmer {
-        display: none;
-    }
-
     .dump-pop-enter-active,
     .dump-menu,
     .dump-more,

@@ -31,10 +31,12 @@ const holds = computed(() => {
         <TextDisplay inline class="abstract" :text="resource.abstract || resource.brief" />
         <template v-if="holds.length">
             <span class="holds">
-                <span v-for="h in holds" :key="h.type" class="holds-kind" :title="`${h.n} ${h.title.toLowerCase()}${h.n > 1 ? 's' : ''}`">
-                    <Icon :name="h.icon" :size="12" />
-                    {{ h.n }}
-                </span>
+                <template v-for="h in holds" :key="h.type">
+                  <span class="holds-kind" :title="`${h.n} ${h.title.toLowerCase()}${h.n > 1 ? 's' : ''}`">
+                      <Icon :name="h.icon" :size="12" />
+                      {{ h.n }}
+                  </span>
+                </template>
             </span>
         </template>
         <template v-if="resource.sections.length">
