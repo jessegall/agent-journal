@@ -14,6 +14,7 @@ from features.plugins.manifest import fill
 from features.plugins.payload import of
 from features.plugins.queue import drain
 from features.plugins.run import SECONDS, call
+from features.plugins.skills import published
 from features.plugins.source import CHOSEN, environment, folder, log, logged
 from resources.base import PLUGIN, Refused, SYSTEM
 
@@ -157,6 +158,8 @@ class Host:
                 logged(record.root, plugin, f"{payload.get('event')} {json.dumps(reply, ensure_ascii=False)}")
             apply(record, self.journal, plugin, str(payload.get("agent", {}).get("session") or ""), reply if isinstance(reply, dict) else {})
             self.cleared(record, plugin)
+        if event.type == "plugin":
+            published(record.root, plugin, row.manifest)
         return True, 1
 
     def places(self, record, row) -> dict:

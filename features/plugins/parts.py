@@ -11,6 +11,7 @@ from features.plugins.lifecycle import called, clear
 from features.plugins.manifest import fill
 from features.plugins.payload import refusal
 from features.plugins.run import call
+from features.plugins.skills import withdrawn
 from features.plugins.source import CHOSEN, environment, folder, logged
 from features.status_bar import commands
 
@@ -76,4 +77,5 @@ class ClearRemovedPlugin(Handler):
         if name and not still:
             for service in (row.manifest or {}).get("services") or {}:
                 want(context.record.root, f"{name}.{service}", DOWN)
+            withdrawn(context.record.root, name)
             clear(folder(context.record.root, name))

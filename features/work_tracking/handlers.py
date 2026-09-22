@@ -108,6 +108,8 @@ class TrackFiles(Handler):
 
 class ClearWaitOnActivity(Handler):
     def handle(self, context: AgentContext, event: ToolFinished) -> None:
+        if not context.agent.row.wrote:
+            return
         started = float(((context.agent.row.data.get("commands") or [{}])[-1]).get("at") or 0)
         for w in working(context)[:1]:
             if w.awaiting and started > float(w.awaiting_since or 0):
