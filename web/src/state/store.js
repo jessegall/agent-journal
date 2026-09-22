@@ -4,6 +4,7 @@ import {kept, remembered} from "../composables/remembered.js";
 export const store = reactive({
     spec: null,
     drafting: 0,
+    dumping: false,
     identity: null,
     rows: {},
     counts: {},
