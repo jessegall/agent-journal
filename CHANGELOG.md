@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.85.81 — A plugin setting can be a list, edited one line at a time
+
+- A setting of type list is edited as rows you add and remove (kit LineList); its value reaches the plugin one entry per line. The code-commandments plugin uses it for the folders it checks and leaves out.
+- A plugin settings group's title lines up with the settings under it.
+- FeaturePanel's line pieces no longer put v-for on an element.
+
 ## 2.85.80 — A plugin's note to the agent says its name once, then its words
 
 - A whisper or line from a plugin is titled with the plugin's name, so its text is no longer shown twice.

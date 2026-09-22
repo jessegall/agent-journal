@@ -18,7 +18,7 @@ STEP = ("name", "run", "cwd")
 SERVICE = ("run", "cwd", "env", "port", "ready", "restart", "grace", "show")
 PAGE = ("name", "title", "icon", "service", "path", "status")
 SETTING = ("title", "default", "help", "env", "type", "options", "group", "when", "detail")
-KINDS = ("text", "textarea", "number", "flag", "options")
+KINDS = ("text", "textarea", "list", "number", "flag", "options")
 RESTARTS = ("always", "on-failure", "never")
 
 

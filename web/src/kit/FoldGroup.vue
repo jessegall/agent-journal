@@ -1,11 +1,16 @@
 <script setup>
-defineProps({label: {type: String, required: true}, count: {type: [Number, String], default: ""}, open: {type: Boolean, default: true}});
+defineProps({
+    label: {type: String, required: true},
+    count: {type: [Number, String], default: ""},
+    open: {type: Boolean, default: true},
+    flush: {type: Boolean, default: false},
+});
 const emit = defineEmits(["toggle"]);
 </script>
 
 <template>
     <div class="fold-group">
-        <button type="button" class="fold-head" :aria-expanded="open" @click="emit('toggle')">
+        <button type="button" :class="['fold-head', {flush}]" :aria-expanded="open" @click="emit('toggle')">
             <span class="fold-label">{{ label }}</span>
             <template v-if="count !== ''">
                 <span class="fold-count">{{ count }}</span>
@@ -40,6 +45,14 @@ const emit = defineEmits(["toggle"]);
     font-weight: 500;
     text-align: left;
     cursor: pointer;
+}
+
+.fold-head.flush {
+    padding-inline: 0;
+}
+
+.fold-head.flush .fold-mark {
+    margin-right: 6px;
 }
 
 .fold-head:hover {
