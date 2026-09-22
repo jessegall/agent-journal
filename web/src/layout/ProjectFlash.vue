@@ -64,7 +64,22 @@ onUnmounted(() => clearTimeout(timer));
 }
 
 .flash-veil.fading {
-    animation: hold-then-go 1050ms ease forwards;
+    animation: veil-go 1050ms ease forwards;
+}
+
+@keyframes veil-go {
+    0%,
+    85% {
+        opacity: 1;
+        backdrop-filter: blur(6px);
+        -webkit-backdrop-filter: blur(6px);
+    }
+
+    100% {
+        opacity: 0;
+        backdrop-filter: blur(0);
+        -webkit-backdrop-filter: blur(0);
+    }
 }
 
 .flash-veil {
