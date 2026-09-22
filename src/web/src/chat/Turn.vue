@@ -14,7 +14,7 @@ import {quoted} from "../format/quote.js";
 import {clock} from "../format/time.js";
 import {focusTurn, laidOut} from "../platform/view.js";
 import {meta, store, types} from "../state/store.js";
-import {words as plain} from "../text/markers.js";
+import {words as plain} from "../text/words.js";
 import {rows} from "../sync/rows.js";
 import {render} from "../text/index.js";
 import "../text/all.js";

@@ -183,11 +183,12 @@ let added = null;
 
 onMounted(() => {
     grew = new ResizeObserver(settled);
-    for (const el of scroller.value.children) grew.observe(el);
-    added = new MutationObserver(() => {
+    const watchRows = () => {
         for (const el of scroller.value?.children || []) grew.observe(el);
-    });
-    added.observe(scroller.value, {childList: true});
+    };
+    watchRows();
+    added = new MutationObserver(watchRows);
+    if (scroller.value) added.observe(scroller.value, {childList: true});
     frame = requestAnimationFrame(() => {
         frame = requestAnimationFrame(() => (rendering.value = true));
     });

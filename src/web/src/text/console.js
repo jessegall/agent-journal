@@ -1,4 +1,5 @@
 import {register} from "./index.js";
+import {words} from "./words.js";
 
 const HEAD =
     /(?:(?<![\w/])[\w.\/-]+\.[a-z]{1,4}:\d+\s+)?(?:Uncaught(?: \(in promise\))?\s+)?\b[A-Z][\w$]*(?:Error|Exception|Warning)\b:?\s/g;
@@ -57,7 +58,8 @@ function python(text) {
 }
 
 register((text) => {
-    const found = python(text) || browser(text);
+    const plain = words(text);
+    const found = python(plain) || browser(plain);
     if (!found) return null;
     return [
         {kind: "text", text: found.lead},
