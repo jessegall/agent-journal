@@ -4,6 +4,11 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.85.5
+
+- A row named on a line of its own in the chat, such as doc 41, shows as a card with its kind, title and summary, and opens on click. The agent hands the user a document this way; the messages skill says so.
+- A text transformer can ask to run first, so the cards see a row's name before it becomes a chip.
+
 ## 2.85.4
 
 - A plan finishes itself once every row in its last phase is done, instead of waiting on a Finish press, and shows up among your notifications as finished and unread so you can look it over.
