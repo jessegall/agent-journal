@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.84.111 — Row chips and file links share one way of skipping marked text
+
+- The row-chip formatter wrote its own copy of the loop that leaves code and existing markers alone; it now uses the same function as the file and link formatter.
+
 ## 2.84.110 — A write no longer makes the next listing rescan its whole folder
 
 - Every save renamed its row file into place, which changed the folder's time, so the next listing of that type rescanned every row in it: a new message cost the dashboard up to 270ms. A save now updates the index for its one row, unless something else wrote to the folder in between. The first dashboard after a write is back under 10ms.
