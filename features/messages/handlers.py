@@ -138,16 +138,34 @@ class NameRunTogether(Handler):
             context.agent.whisper("paragraphs")
 
 
-VERBS = r"answered|replied to|closed|filed|started|parked|resumed|ended|finished|struck|reopened|processed"
-BARE = re.compile(rf"\b(?:{VERBS})\s+#?(\d+)\b", re.IGNORECASE)
+STANDALONE = re.compile(r"(?<![\w.,:/–—-])#?(\d+)(?![\w%:/–—-]|[.,]\d)")
 QUOTED = re.compile(r"`[^`]*`|\"[^\"]*\"|“[^”]*”")
+NAMING = {"to-do", "to-dos", "version", "v", "line", "lines", "phase", "step", "port", "revision", "revisions", "number", "page", "row", "rows",
+          "commit", "id", "of", "and", "or"}
+COUNTING = {"passed", "failed", "more", "left", "of", "per", "out", "times", "ms", "kb", "mb", "px", "percent", "in"}
+
+
+def typed_before(text: str) -> bool:
+    words = re.findall(r"[\w-]+", text.lower())[-1:]
+    return bool(words) and (words[0] in NAMING or words[0].rstrip("s") in TYPES)
+
+
+def unit_after(text: str) -> bool:
+    words = re.match(r"\s*([a-z]+)(?:\s+([a-z]+))?", text.lower())
+    return bool(words) and (words.group(1) in COUNTING or any(len(w) > 3 and w.endswith("s") for w in words.groups() if w))
+
+
+def bare(text: str) -> list[int]:
+    text = QUOTED.sub("", text)
+    return list(dict.fromkeys(int(m.group(1)) for m in STANDALONE.finditer(text)
+                              if not typed_before(text[max(0, m.start() - 24):m.start()]) and not unit_after(text[m.end():m.end() + 16])))
 
 
 class NameBareNumbers(Handler):
     behaviour = "numbers"
 
     def handle(self, context: AgentContext, event: AgentMessageSent) -> None:
-        found = dict.fromkeys(int(n) for n in BARE.findall(QUOTED.sub("", event.text)))
+        found = bare(event.text)
         if not found:
             return
         known = numbers(context)
