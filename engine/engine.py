@@ -6,7 +6,7 @@ from controllers.types import CONTROLLERS, Agents
 import features
 from engine import bus, chat, runtime
 from engine.actors import Actor, Agent, BUSY, IDLE, STOPPED, System, User, WORKING, spoken_data
-from engine.inputs import FORCE, PERMIT, take
+from engine.inputs import BACKGROUND, FORCE, PERMIT, take
 from surfaces.control import CARRY_ON, delivered
 from engine.record import Record
 from engine.watch import STEADY_AFTER, broke, steady
@@ -71,7 +71,7 @@ class Engine(Seat):
         self.relay()
         if not self.agent.driver.DISPLAY_HOOK:
             self.announce_written()
-        self.why = (self.permitted() or self.probe() or self.forced() or self.typing() or self.control()
+        self.why = (self.permitted() or self.backgrounded() or self.probe() or self.forced() or self.typing() or self.control()
                     or self.deliver() or self.nudge())
         self.seat()
         self.clock()
@@ -155,6 +155,11 @@ class Engine(Seat):
             return ""
         self.agent.driver.permit(queued.get("value") == "allow")
         return f"permission: {queued.get('value')}"
+
+    def backgrounded(self) -> str:
+        if not take(self.record.root, self.names(), BACKGROUND):
+            return ""
+        return "moved the running command to the background" if self.agent.driver.move_to_background() else ""
 
     def forced(self) -> str:
         if self.agent.state() == IDLE or not take(self.record.root, self.names(), FORCE):

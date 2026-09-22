@@ -109,7 +109,7 @@ async function run(method) {
                     Make the plan
                 </Btn>
             </template>
-            <template v-if="!resource.completed">
+            <template v-if="!resource.completed && !resource.data.system">
                 <Btn small @click="emit('edit')">Edit</Btn>
             </template>
             <template v-if="resource.type !== 'collection'">
