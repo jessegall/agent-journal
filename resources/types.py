@@ -27,6 +27,7 @@ class Message(Shape, Resource):
 
 
 class Todo(Ranked, Resource):
+    listed_open = True
     type = "todo"
     event_labels = {"created": "To-do created", "completed": "To-do done"}
     data_fields: ClassVar[list[Field]] = [
@@ -167,6 +168,7 @@ class Reminder(Shape, Resource):
 
 
 class Question(Options, Resource):
+    listed_open = True
     type = "question"
     event_labels = {"created": "Question asked", "completed": "Question answered"}
     status_labels = {"create": "asking", "complete": "answering"}
@@ -184,6 +186,7 @@ class Question(Options, Resource):
 
 
 class Suggestion(Options, Resource):
+    listed_open = True
     type = "suggestion"
     event_labels = {"created": "Suggestion made", "completed": "Suggestion decided"}
     status_labels = {"create": "suggesting", "complete": "deciding", "delete": "withdrawing"}

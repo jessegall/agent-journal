@@ -117,6 +117,7 @@ class Resource:
     subagent_writable: ClassVar[bool] = True         # a subagent lent the environment may write it
     nested: ClassVar[bool] = False      # it exists about another resource and is shown under it, never on its own
     closed_first: ClassVar[bool] = False
+    listed_open: ClassVar[bool] = False    # its open rows are a working list: a listing carries every one of them
     scope: ClassVar[str] = ENVIRONMENT   # whose it is: one environment's, or the whole project's
     notified: ClassVar[tuple] = (USER, AGENT)   # who is told of its events, besides the actor
     typed_as_title: ClassVar[bool] = False            # typed to the agent as its title, not as "type n action"
