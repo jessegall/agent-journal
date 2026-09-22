@@ -59,7 +59,7 @@ class NameStaleSkills(Handler):
         if held:
             require(context.record, context.agent.session, held)
         rest = sorted(set(changed) - always)
-        if rest:
+        if rest and context.once("stale", ", ".join(rest)):
             context.agent.whisper("stale", skills=", ".join(rest))
 
 
