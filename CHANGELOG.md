@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.84.52 — The revision strip passes the one-client check
+
+A helper in the revision strip was named like an endpoint call; renamed, so `journal check sweep` passes again.
+
 ## 2.84.51 — A design is a document with revisions
 
 Designs are no longer a type of their own. Every doc keeps its revisions: an edit changes the open revision in place, and Keep this revision, `journal doc keep <n>` or 30 quiet minutes keep it, so the next edit starts a new one. `journal doc revisions <n>`, `doc revision <n> <k>` and `doc cut <n> "<part>"` join the doc's words. The viewer shows a revision strip on every doc with revisions; an earlier revision opens read-only with what changed. The upgrade turns each design into a doc, points its revisions and every link at it, and packs the old design folder into `.journal/attic/design.tar.gz`.
