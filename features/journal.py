@@ -1,9 +1,10 @@
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from functools import cached_property
 
 from controllers.base import NAMED, Controller
 from controllers.types import CONTROLLERS, Notices, Notifications, Nudges
 from engine.drivers import CHANNEL, TERMINAL
+from engine.wording import amended
 from features.parts import AgentHooks, Client, Commands, Events
 from resources.base import SYSTEM, titled
 
@@ -82,7 +83,8 @@ class Journal:
         if not self.feature.mine(agent) or (not self.feature.lines[line].while_waiting and waiting(record, agent)):
             return None
         lead, yields = self.feature.lines[line].lead, not self.feature.lines[line].while_waiting
-        return self.send(record, self.message(Nudges, line, values, actor, session=agent.title, private=private, lead=lead, delivery=delivery, yields=yields))
+        message = self.message(Nudges, line, values, actor, session=agent.title, private=private, lead=lead, delivery=delivery, yields=yields)
+        return self.send(record, replace(message, title=amended(f"{self.feature.name}.{line}", values, message.title)))
 
     def type(self, record, agent, line: str, **values):
         return self.say(record, agent, line, private=True, delivery=TERMINAL, **values)

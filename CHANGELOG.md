@@ -4,6 +4,11 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.85.92 — A feature can add to another feature's line
+
+- Every line the agent hears has a key: <feature>.<line> for a feature's line, <type>.<action> for an arrival such as message.created. A feature amends a line by its key (journal.agent.amend), and the additions ride on the same line.
+- The new-message line says how to answer it: 1 new message 4465 - answer by opening your turn with [!reply:4465]. The separate reply-tag reminder is gone.
+
 ## 2.85.91 — Parked and blocked mean one thing each
 
 - The to-do skill lays out the difference: parked is work in hand that nothing stops, set aside because something else goes first by choice; blocked is a row that cannot go ahead until something happens (another to-do, a question to the user, or an outside condition). The work skill says the same, and filing a to-do is no longer called parking it.

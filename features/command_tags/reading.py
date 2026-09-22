@@ -55,3 +55,8 @@ def named(extras: str) -> dict[str, str]:
 
 def tag_spelling(text: str) -> str:
     return SETTING.sub(r"\1=", text)
+
+
+def answered(values: dict) -> str:
+    numbers = values["numbers"]
+    return f"answer by opening your turn with [!reply:{numbers[0]}]" if len(numbers) == 1 else "answer each by opening a turn with [!reply:<n>]"

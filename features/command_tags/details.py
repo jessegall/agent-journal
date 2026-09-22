@@ -1,4 +1,4 @@
-from features.base import Behaviour, FeatureDetails, Line
+from features.base import FeatureDetails, Line
 
 
 class TagsDetails(FeatureDetails):
@@ -40,21 +40,5 @@ class TagsDetails(FeatureDetails):
             name="refused",
             title="the {{tag}} tag on {{on}} did not run",
             brief="{{error}} - add what is missing to the tag itself",
-        ),
-        Line(
-            name="by tag",
-            title="reply to message {{n}} with the reply tag",
-            brief="""
-                open your turn with [!reply:{{n}}] and the turn itself becomes the reply,
-                so journal message reply is never needed
-            """,
-        ),
-    ]
-
-    behaviours = [
-        Behaviour(
-            name="replying",
-            title="Remind the agent to reply by tag",
-            abstract="When the agent runs journal message reply, it is told the reply tag does the same",
         ),
     ]

@@ -68,11 +68,13 @@ def unload() -> None:
     from features.base import rebooted
     from engine.hooks import POLICIES
     from features.format import FORMATTERS
+    from engine.wording import AMENDS
     COMMANDS.clear()
     HANDLERS.clear()
     FORMATTERS.clear()
     bus.clear()
     POLICIES.clear()
+    AMENDS.clear()
     FEATURES.clear()
     SWITCHED.clear()
     SEATED.clear()

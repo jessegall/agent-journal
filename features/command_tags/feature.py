@@ -3,8 +3,7 @@ from features.journal import Journal
 from features.command_tags.details import TagsDetails
 from features.command_tags.formatters import StripTags
 from features.command_tags.handlers import RunTagCommands
-from features.command_tags.interceptors import NotifyTagNotUsed
-from features.command_tags.reading import runs
+from features.command_tags.reading import answered, runs
 
 
 class Tags(Feature):
@@ -13,7 +12,7 @@ class Tags(Feature):
     def register(self, journal: Journal) -> None:
         journal.events.handler(RunTagCommands())
         journal.client.formatter(StripTags())
-        journal.agent.interceptor(NotifyTagNotUsed())
+        journal.agent.amend("message.created", answered)
 
     def settings_view(self, record) -> dict:
         settings = record.setting(self.name, {})

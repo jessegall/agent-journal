@@ -52,20 +52,20 @@ def test_every_message_reaches_the_chat_and_nothing_asks_for_a_tag(tmp_path):
     assert visible("[!reply:n] plus the command tags") == "[!reply:n] plus the command tags", "only a real number or name makes a tag"
 
 
-def test_replying_by_command_is_answered_with_the_tag_that_does_it():
-    from engine.hooks import handle
-    from providers import PROVIDERS
-    record = fresh()
-    hook = {"hook_event_name": "PreToolUse", "session_id": "claude-1", "tool_name": "Bash"}
-    handle(PROVIDERS["claude"](), record.root, record.env, {**hook, "tool_input": {"command": 'journal message reply 12 "on it"'}})
-    assert [n.brief.split(" and ")[0] for n in Nudges(record).all() if "reply tag" in n.title] == ["open your turn with [!reply:12]"], \
-        "the reply command is answered with the tag"
-    handle(PROVIDERS["claude"](), record.root, record.env, {**hook, "tool_input": {"command": 'journal message reply 13 "see" --file a.txt'}})
-    assert not [n for n in Nudges(record).all() if "13 with the reply tag" in n.title], "a reply carrying a file is what the command is for"
-    record.set_setting("features", {"command_tags.replying": False})
-    handle(PROVIDERS["claude"](), record.root, record.env, {**hook, "tool_input": {"command": 'journal message reply 14 "ok"'}})
-    assert not [n for n in Nudges(record).all() if "14 with the reply tag" in n.title], "with its behaviour off, the part is not called"
-
+def test_a_new_message_says_how_to_answer_it_in_the_same_line():
+    from engine.wording import counted
+    fresh()
+    assert counted({("message", "created"): {4465: None}}) == ["1 new message 4465 - answer by opening your turn with [!reply:4465]"], \
+        "the tags feature adds to the messages line; no second line follows"
+    assert counted({("message", "created"): {1: None, 2: None}})[0].endswith("answer each by opening a turn with [!reply:<n>]")
+    assert counted({("todo", "created"): {3: None}}) == ["1 new todo 3"], "a line nobody amends is left as it is"
+    from engine.wording import AMENDS, amended
+    AMENDS.setdefault("work_tracking.open", []).append(lambda values: f"work {values['n']} can be ended from the board")
+    try:
+        assert amended("work_tracking.open", {"n": 7}, "work 7 is still open") == "work 7 is still open - work 7 can be ended from the board", \
+            "any registered line is amended by its feature and name"
+    finally:
+        AMENDS["work_tracking.open"].pop()
 
 def test_the_last_message_is_read_only_once_claude_has_written_it(tmp_path):
     from providers import PROVIDERS
