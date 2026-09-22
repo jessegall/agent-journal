@@ -1,6 +1,7 @@
-/Users/jessegall/projects/agent-journal/src/web/src/kit/TabBar.vue
-/Users/jessegall/projects/agent-journal/src/web/src/pages/Index.vue
-/Users/jessegall/projects/agent-journal/src/web/src/resource/AgentPage.vue
+/Users/jessegall/projects/agent-journal/src/web/src/chat/Notice.vue
+/Users/jessegall/projects/agent-journal/src/web/src/kit/Dot.vue
+/Users/jessegall/projects/agent-journal/src/web/src/resource/CheckCard.vue
+/Users/jessegall/projects/agent-journal/src/web/src/resource/CheckResult.vue
 -----
 Batch marker for the code-commandments judge reminder (`commandments judge-reminder`, wired as
 Stop + PreToolUse hooks). The lines above the separator are the changed-file set it last

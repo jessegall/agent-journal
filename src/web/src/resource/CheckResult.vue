@@ -1,4 +1,6 @@
 <script setup>
+import Btn from "../kit/Btn.vue";
+import Dot from "../kit/Dot.vue";
 import {computed, nextTick, ref, watch} from "vue";
 import {api} from "../api/client.js";
 import {age} from "../format/time.js";
@@ -51,7 +53,7 @@ async function save(key, value) {
 <template>
     <section :class="['hero', state.verdict]">
         <div class="status">
-            <span class="dot" />
+            <Dot glow :size="12" :pulsing="state.verdict === 'running'" />
             <div class="words">
                 <span class="verdict">{{ VERDICTS[state.verdict] }}</span>
                 <span class="since">
@@ -64,9 +66,15 @@ async function save(key, value) {
                 </span>
             </div>
             <span class="grow" />
-            <button type="button" class="run" :disabled="asked || state.verdict === 'running'" @click="run">
-                {{ state.verdict === "running" ? "Running…" : "Run now" }}
-            </button>
+            <Btn
+                kind="primary"
+                small
+                :busy="asked || state.verdict === 'running'"
+                :disabled="asked || state.verdict === 'running'"
+                @click="run"
+            >
+                Run now
+            </Btn>
         </div>
         <template v-if="state.verdict === 'running'">
             <CheckProgress :state="state" />
@@ -143,24 +151,6 @@ async function save(key, value) {
     gap: 12px;
 }
 
-.dot {
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-    background: var(--tone);
-    box-shadow: 0 0 0 4px color-mix(in srgb, var(--tone) 22%, transparent);
-}
-
-.running .dot {
-    animation: pulse 1.2s ease-in-out infinite;
-}
-
-@keyframes pulse {
-    50% {
-        box-shadow: 0 0 0 8px color-mix(in srgb, var(--tone) 8%, transparent);
-    }
-}
-
 .words {
     display: flex;
     flex-direction: column;
@@ -180,26 +170,6 @@ async function save(key, value) {
 
 .grow {
     flex: 1;
-}
-
-.run {
-    padding: 6px 14px;
-    border: 1px solid color-mix(in srgb, var(--accent) 50%, transparent);
-    border-radius: 7px;
-    background: color-mix(in srgb, var(--accent) 22%, transparent);
-    color: var(--text);
-    font: inherit;
-    font-size: 12.5px;
-    cursor: pointer;
-}
-
-.run:hover:not(:disabled) {
-    background: color-mix(in srgb, var(--accent) 34%, transparent);
-}
-
-.run:disabled {
-    opacity: 0.55;
-    cursor: default;
 }
 
 .field {
