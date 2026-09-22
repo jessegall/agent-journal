@@ -245,7 +245,7 @@ function follow(ref) {
                         :title="'Switch to another dump'"
                         @click="switching = !switching"
                     >
-                        {{ dump ? `Dump ${dump.n} · ${dump.title}` : "New dump" }}
+                        <span class="dump-title-text">{{ dump ? `Dump ${dump.n} · ${dump.title}` : "New dump" }}</span>
                         <Icon name="down" :size="12" />
                     </button>
                 </template>
@@ -545,6 +545,12 @@ function follow(ref) {
     background: none;
     font: inherit;
     cursor: pointer;
+}
+
+.dump-title-text {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
 }
 
 .dump-title-button:hover {
