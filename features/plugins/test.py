@@ -98,3 +98,12 @@ def test_a_service_no_plugin_declares_is_stopped_and_forgotten():
     Manager(record.root).tick()
     assert left.wait(timeout=5) is not None, "its process is stopped"
     assert not status_file(record.root, "gone.web").exists(), "and it is no longer listed"
+
+
+def test_stopping_a_service_stops_every_process_it_forked():
+    from engine.keeper import gone, teardown
+    service = subprocess.Popen(["/bin/sh", "-c", "sleep 30 & sleep 30 & wait"], start_new_session=True)
+    time.sleep(0.2)
+    teardown(service.pid, 1.0)
+    assert (service.wait(timeout=5) is not None, gone(service.pid)) == (True, True), \
+        "the service and the workers it forked go together, as one process group"
