@@ -11,10 +11,6 @@ const line = (c) =>
 </script>
 
 <template>
-    <p class="bar-none">What the agent ran lately, newest at the bottom.</p>
-    <template v-if="!commands.length">
-        <p class="bar-none">Nothing yet.</p>
-    </template>
     <div class="log">
         <template v-for="c in newestFirst" :key="c.at">
             <div :class="['log-line', {running: !c.done, shell: c.tool === 'Bash'}]">
@@ -26,12 +22,6 @@ const line = (c) =>
 </template>
 
 <style scoped>
-.bar-none {
-    margin: 4px 6px 6px;
-    color: var(--text-4);
-    font-size: 12px;
-}
-
 .log {
     display: flex;
     flex-direction: column-reverse;

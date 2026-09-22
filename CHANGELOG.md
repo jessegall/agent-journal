@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.85.22
+
+- The terminal view has no header or intro line; it fills the chat pane edge to edge, slides in when opened and out when closed, and the agent bar's terminal button opens and closes it.
+
 ## 2.85.21
 
 - No skill description carries angle brackets, which the Skill Creator validator rejects: journal-close-from-commits is reworded, and the generator strips them from any description.
