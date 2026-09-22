@@ -9,9 +9,10 @@ from urllib.parse import unquote
 import features
 from features.base import generation
 from controllers.types import CONTROLLERS
-from engine import bus
+from engine import bus, runtime
 from engine.markers import plain
 from engine.record import Record
+from engine.watch import threw
 from features.format import formatted
 from resources.base import as_dict, USER, Refused
 from engine.package import data
@@ -171,7 +172,15 @@ def dispatch(method: str, path: str, root: Path, query: dict, body: dict) -> Rep
     except Refused as e:
         return Reply(400, {"error": str(e)})
     except (TypeError, AttributeError) as e:
+        threw(root, env_of(root, params, query), f"{method} {path}")
         return Reply(400, {"error": f"not an action here: {e}"})
+    except Exception as e:
+        threw(root, env_of(root, params, query), f"{method} {path}")
+        return Reply(500, {"error": f"{type(e).__name__}: {e}"})
+
+
+def env_of(root: Path, params: dict, query: dict) -> str:
+    return params.get("env") or query.get("env") or runtime.env(root)
 
 
 def represented(got, record=None):

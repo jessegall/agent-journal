@@ -1,4 +1,5 @@
 import time
+import traceback
 from pathlib import Path
 
 from controllers.types import Notices
@@ -10,7 +11,7 @@ SHOWN = 14
 TITLE = "The engine is not running"
 FAULT = "The engine hit an error and carried on"
 WHICH = "fault"
-SAYS = "journal: the engine hit an error and kept going; the last of it is below and the whole of it is in .journal/runtime/engine.log. Fix it, then say so."
+SAYS = "journal: {where} hit an error and kept going; the last of it is below and the whole of it is in .journal/runtime/engine.log. Fix it, then say so."
 STEADY = "the engine has been running cleanly again"
 STEADY_AFTER = 30
 SAID = "journal: the engine stopped the moment it started, so nothing is being delivered. Its last words are in .journal/runtime/engine.log — fix it, then say so."
@@ -55,10 +56,26 @@ def fault_of(trouble: str) -> str:
     return lines[-1].strip() if lines else ""
 
 
-def broke(record, trouble: str, driver=None) -> None:
+def broke(record, trouble: str, driver=None, where: str = "the engine") -> None:
     fault = fault_of(trouble)
-    if once(record, FAULT, trouble, fault) and driver and driver.alive():
-        driver.send(f"{SAYS} {fault}")
+    if not once(record, FAULT, trouble, fault):
+        return
+    line = SAYS.format(where=where)
+    if driver and driver.alive():
+        driver.send(f"{line} {fault}")
+    else:
+        from controllers.types import Nudges
+        Nudges(record, actor=SYSTEM)._to_primary(f"{where} hit an error"[-80:].replace(":", " "), brief=f"{line} {fault}")
+
+
+def threw(root: Path, env: str, where: str) -> None:
+    trouble = traceback.format_exc()
+    try:
+        with log_file(root).open("a") as log:
+            log.write(f"{where}\n{trouble}")
+        broke(Record(Path(root), env), trouble, where=where)
+    except Exception:
+        traceback.print_exc()
 
 
 def steady(record) -> None:

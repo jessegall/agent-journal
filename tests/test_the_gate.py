@@ -52,3 +52,24 @@ def test_a_write_is_refused_until_work_is_open_for_every_provider():
             f"{name}: work ended, nothing open: refused again"
         assert json.loads(gate_file(root, env, session).read_text())["work_tracking"] == REFUSED, \
             f"{name}: the flag is a file per environment and session, with the why"
+
+
+def test_a_hook_that_crashes_is_told_to_the_agent_for_every_provider(monkeypatch):
+    from commands.dispatch import dispatch
+    import commands.http  # noqa: F401
+    from controllers.types import Nudges
+    from resources.base import SYSTEM
+    from tests.kit import report
+    features.load()
+    record = fresh()
+    report(record, "working", "PreToolUse")
+
+    for name, provider_cls in PROVIDERS.items():
+        def crash(self, row, hook, root):
+            raise TypeError(f"{name} crashed")
+        monkeypatch.setattr(provider_cls, "facts", crash)
+        body = {"hook_event_name": "PreToolUse", "session_id": "claude-1", "tool_name": "Read", "tool_input": {"file_path": "x.py"}}
+        dispatch("POST", f"/api/hook/{name}", record.root, {"root": str(record.root), "env": record.env}, body)
+        lines = [f"{n.title} {n.brief}" for n in Nudges(record, actor=SYSTEM)._every()]
+        assert any("hit an error" in line and f"TypeError: {name} crashed" in line for line in lines), \
+            f"{name}: a crash inside the hook reaches the agent, with the error"
