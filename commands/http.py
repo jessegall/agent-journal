@@ -26,8 +26,9 @@ from features.skill_loading.required import load_now
 from controllers.base import LAST
 from controllers.types import Agents, CONTROLLERS, Environments, Features, Nudges
 from features.browser_control.controller import Asks
-from engine import bus, viewer
+from engine import bus, runtime, viewer
 from engine.manifest import manifest
+from engine.version import version
 from engine.hooks import answer, displayed
 from providers.payload import DISPLAYED
 from engine.record import Record
@@ -90,9 +91,8 @@ def get_manifest(req: Request) -> Reply:
 
 @route("GET", "/api/identity")
 def get_identity(req: Request) -> Reply:
-    m = manifest(req.root)
-    names = [row["title"] for row in Environments(Record(req.root, m["environment"]), actor=USER).summaries() if not row["deleted"]]
-    return Reply(200, {**identity(req.root), "root": str(req.root), "version": m["version"], "environments": names})
+    names = [row["title"] for row in Environments(Record(req.root, runtime.env(req.root)), actor=USER).summaries() if not row["deleted"]]
+    return Reply(200, {**identity(req.root), "root": str(req.root), "version": version(), "environments": names})
 
 
 @route("POST", "/api/identity")
@@ -213,7 +213,7 @@ def post_settings(req: Request) -> Reply:
 
 @route("GET", "/api/upstream")
 def get_upstream(req: Request) -> Reply:
-    installed = manifest(req.root)["version"]
+    installed = version()
     latest = upstream(req.root)
     return Reply(200, {"installed": installed, "latest": latest, "newer": newer(latest, installed)})
 
