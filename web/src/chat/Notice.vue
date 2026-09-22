@@ -1,7 +1,7 @@
 <script setup>
+import CloseButton from "../kit/CloseButton.vue";
 import {ref} from "vue";
 import {api} from "../api/client.js";
-import Icon from "../kit/Icon.vue";
 import {route} from "../route.js";
 
 const props = defineProps({notice: Object});
@@ -49,7 +49,7 @@ async function close() {
                 {{ forcing ? "Forcing" : "Force now" }}
             </button>
         </template>
-        <button type="button" class="chat-notice-x" title="Close this" @click="close"><Icon name="close" /></button>
+        <CloseButton title="Close this" @click="close" />
     </div>
 </template>
 
@@ -101,20 +101,6 @@ button.chat-notice-go {
 .chat-notice-go:hover {
     background: color-mix(in srgb, var(--tone) 38%, transparent);
     color: #fff;
-}
-
-.chat-notice-x {
-    flex: none;
-    padding: 2px 5px;
-    border: 0;
-    border-radius: 6px;
-    background: none;
-    color: var(--text-3);
-}
-
-.chat-notice-x:hover {
-    background: rgba(255, 255, 255, 0.08);
-    color: var(--text);
 }
 
 .chat-notice-x .ico {

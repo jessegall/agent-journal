@@ -1,6 +1,6 @@
 <script setup>
+import CloseButton from "./CloseButton.vue";
 import TextDisplay from "./TextDisplay.vue";
-import Icon from "./Icon.vue";
 import {closing} from "./closing.js";
 
 const props = defineProps({
@@ -28,7 +28,7 @@ const {shown, close, closed} = closing(emit, props);
                             </template>
                         </div>
                         <slot name="actions" />
-                        <button type="button" class="close" title="Close" @click="close"><Icon name="close" /></button>
+                        <CloseButton @click="close" />
                     </header>
                     <div class="body">
                         <slot />
@@ -138,23 +138,6 @@ h2 {
     color: var(--text-2);
     font-size: 12.5px;
     line-height: 1.45;
-}
-
-.close {
-    display: grid;
-    place-items: center;
-    width: 26px;
-    height: 26px;
-    border: 0;
-    border-radius: 6px;
-    background: none;
-    color: var(--text-3);
-    cursor: pointer;
-}
-
-.close:hover {
-    background: var(--hover);
-    color: var(--text);
 }
 
 .body {

@@ -1,4 +1,5 @@
 <script setup>
+import EmptyState from "../kit/EmptyState.vue";
 import {computed, reactive, ref} from "vue";
 import Icon from "../kit/Icon.vue";
 import JournalBar from "../layout/JournalBar.vue";
@@ -39,11 +40,11 @@ function toggleStopped() {
             </span>
         </div>
         <template v-if="loaded && running.length < 2">
-            <p class="empty">
+            <EmptyState class="empty">
                 Only this journal is running. Start another with
                 <code>journal claude</code>
                 in its project and it appears here.
-            </p>
+            </EmptyState>
         </template>
         <div class="group">
             <h3 class="group-head">Running</h3>
@@ -89,7 +90,6 @@ function toggleStopped() {
 
 .empty {
     padding: 24px 22px;
-    color: var(--text-3);
 }
 
 .empty code {

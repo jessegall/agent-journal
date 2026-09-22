@@ -1,4 +1,5 @@
 <script setup>
+import EmptyState from "../kit/EmptyState.vue";
 import {computed, onMounted, ref, watch} from "vue";
 import {api} from "../api/client.js";
 import {route} from "../route.js";
@@ -46,7 +47,7 @@ function blocks(f) {
 <template>
     <section class="commit">
         <template v-if="error">
-            <p class="empty">{{ error }}</p>
+            <EmptyState class="empty">{{ error }}</EmptyState>
         </template>
         <template v-if="commit">
             <header class="head">
@@ -88,7 +89,6 @@ function blocks(f) {
 }
 
 .empty {
-    color: var(--text-3);
 }
 
 .head {

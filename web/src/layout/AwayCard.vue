@@ -1,6 +1,6 @@
 <script setup>
+import CloseButton from "../kit/CloseButton.vue";
 import {computed, onUnmounted} from "vue";
-import Icon from "../kit/Icon.vue";
 import {go, peek, route} from "../route.js";
 import {missed} from "../domain/records.js";
 import {age, span} from "../format/time.js";
@@ -33,7 +33,7 @@ onUnmounted(() => window.removeEventListener("keydown", onEscape));
                 While you were away{{ lines.length ? `: ${lines.length} ${lines.length === 1 ? "notification" : "notifications"}` : "" }}
             </span>
             <span class="away-for">{{ forText }}</span>
-            <button type="button" class="away-close" title="Dismiss" @click="away.open = false"><Icon name="close" /></button>
+            <CloseButton title="Dismiss" @click="away.open = false" />
         </div>
         <div class="away-lines">
             <template v-for="d in lines" :key="d.key">
@@ -115,31 +115,6 @@ onUnmounted(() => window.removeEventListener("keydown", onEscape));
     font-size: 11px;
     color: var(--text-3);
     white-space: nowrap;
-}
-
-.away-close {
-    flex: none;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 22px;
-    height: 22px;
-    padding: 0;
-    border: none;
-    border-radius: 5px;
-    background: transparent;
-    color: var(--text-3);
-    cursor: pointer;
-}
-
-.away-close:hover {
-    background: #212329;
-    color: var(--text);
-}
-
-.away-close .ico {
-    width: 12px;
-    height: 12px;
 }
 
 .away-lines {

@@ -1,4 +1,6 @@
 <script setup>
+import SectionHeading from "../kit/SectionHeading.vue";
+import CloseButton from "../kit/CloseButton.vue";
 import {computed, reactive, ref} from "vue";
 import {api} from "../api/client.js";
 import Btn from "../kit/Btn.vue";
@@ -101,7 +103,7 @@ const docs = computed(() =>
                 <template v-if="kind.view === 'document'">
                     <DownloadLink :resource="resource" />
                 </template>
-                <Btn kind="icon" @click="emit('close')"><Icon name="x" /></Btn>
+                <CloseButton @click="emit('close')" />
             </div>
             <template v-if="resource.data?.template">
                 <button type="button" class="from" @click="peek('template', Number(template))">
@@ -191,7 +193,7 @@ const docs = computed(() =>
         </template>
         <template v-if="madeFor">
             <section class="block">
-                <h3>Made for</h3>
+                <SectionHeading>Made for</SectionHeading>
                 <div class="keywords">
                     <template v-if="madeFor.length">
                         <template v-for="type in madeFor" :key="type">
@@ -206,7 +208,7 @@ const docs = computed(() =>
         </template>
         <template v-if="keywords.length">
             <section class="block">
-                <h3>Keywords</h3>
+                <SectionHeading>Keywords</SectionHeading>
                 <p class="lead">Said to the agent when one of these words comes up in what it is about to run or write.</p>
                 <div class="keywords">
                     <template v-for="word in keywords" :key="word">
@@ -226,7 +228,7 @@ const docs = computed(() =>
         <template v-if="resource.brief && !editing">
             <section class="block">
                 <template v-if="briefLabel">
-                    <h3>{{ briefLabel }}</h3>
+                    <SectionHeading>{{ briefLabel }}</SectionHeading>
                 </template>
                 <TextDisplay :text="resource.brief" />
             </section>
@@ -239,7 +241,7 @@ const docs = computed(() =>
         </template>
         <template v-if="resource.completed">
             <section class="block">
-                <h3>
+                <SectionHeading>
                     {{
                         label(
                             resource.type,
@@ -247,13 +249,13 @@ const docs = computed(() =>
                             word(resource.type, "complete").replace(/^\w/, (c) => c.toUpperCase())
                         )
                     }}
-                </h3>
+                </SectionHeading>
                 <TextDisplay :text="resource.outcome || age(resource.completed)" />
             </section>
         </template>
         <template v-if="files.length">
             <section class="block">
-                <h3>Files</h3>
+                <SectionHeading>Files</SectionHeading>
                 <template v-for="[name, what] in files" :key="name">
                     <a class="file" :href="api.fileUrl(resource.type, resource.n, name)" target="_blank" :title="name">
                         <Icon name="clip" :size="13" />
@@ -275,7 +277,7 @@ const docs = computed(() =>
         <slot />
         <template v-if="docs.length">
             <section class="linked-docs">
-                <h3 class="linked-docs-head">Documents</h3>
+                <SectionHeading class="linked-docs-head">Documents</SectionHeading>
                 <div class="linked-docs-cards">
                     <template v-for="d in docs" :key="d.ref">
                         <ResourceCard :resource="d" @click="peek('doc', d.n)" />
@@ -449,11 +451,6 @@ const docs = computed(() =>
 }
 .block h3 {
     margin: 0 0 4px;
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--text-3);
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
 }
 .file {
     display: flex;

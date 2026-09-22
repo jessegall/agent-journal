@@ -1,4 +1,5 @@
 <script setup>
+import EmptyState from "../kit/EmptyState.vue";
 import {computed, reactive, watchEffect} from "vue";
 import {api} from "../api/client.js";
 import Icon from "../kit/Icon.vue";
@@ -47,9 +48,9 @@ const picture = (r) => Object.keys(r.data?.pictures || {})[0] || "";
     <ResourceBody :resource="resource" :comments="false" :links="false" @close="emit('close')">
         <section class="cards" aria-label="In this collection">
             <template v-if="!members.length">
-                <p class="empty">
+                <EmptyState class="empty">
                     Nothing in this collection yet. Add a row from its actions, or with journal collection add {{ resource.n }} &lt;ref&gt;.
-                </p>
+                </EmptyState>
             </template>
             <template v-for="r in members" :key="r.ref">
                 <button type="button" class="card" @click="peek(r.type, r.n)">
@@ -82,7 +83,6 @@ const picture = (r) => Object.keys(r.data?.pictures || {})[0] || "";
 
 .empty {
     grid-column: 1 / -1;
-    color: var(--text-3);
     font-size: 13px;
 }
 

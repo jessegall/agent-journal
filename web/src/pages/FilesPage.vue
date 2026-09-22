@@ -1,4 +1,6 @@
 <script setup>
+import EmptyState from "../kit/EmptyState.vue";
+import SectionHeading from "../kit/SectionHeading.vue";
 import {computed, onMounted, ref} from "vue";
 import {api} from "../api/client.js";
 import Icon from "../kit/Icon.vue";
@@ -27,13 +29,15 @@ const pictures = computed(() => images.value.map((f) => ({url: f.url, name: f.na
             <span class="count">{{ files.length }} files on {{ route.env }}</span>
         </div>
         <template v-if="loaded && !files.length">
-            <p class="empty">No files are stored on this environment yet. Files attached to a message or added to a document show here.</p>
+            <EmptyState class="empty">
+                No files are stored on this environment yet. Files attached to a message or added to a document show here.
+            </EmptyState>
         </template>
         <template v-if="images.length">
-            <h3 class="label">
+            <SectionHeading class="label">
                 Images
                 <span class="muted">{{ images.length }}</span>
-            </h3>
+            </SectionHeading>
             <div class="gallery">
                 <template v-for="(f, i) in images" :key="f.url">
                     <figure class="tile">
@@ -50,10 +54,10 @@ const pictures = computed(() => images.value.map((f) => ({url: f.url, name: f.na
             </div>
         </template>
         <template v-if="others.length">
-            <h3 class="label">
+            <SectionHeading class="label">
                 Other files
                 <span class="muted">{{ others.length }}</span>
-            </h3>
+            </SectionHeading>
             <div class="rows">
                 <template v-for="f in others" :key="f.url">
                     <div class="row">
@@ -91,16 +95,10 @@ const pictures = computed(() => images.value.map((f) => ({url: f.url, name: f.na
 
 .empty {
     padding: 24px 22px;
-    color: var(--text-3);
 }
 
 .label {
     margin: 22px 22px 10px;
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--text-3);
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
 }
 
 .muted {

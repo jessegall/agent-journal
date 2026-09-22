@@ -1,4 +1,5 @@
 <script setup>
+import EmptyState from "../kit/EmptyState.vue";
 import {computed, onMounted, ref, watch} from "vue";
 import {api} from "../api/client.js";
 import Icon from "../kit/Icon.vue";
@@ -115,7 +116,7 @@ async function keywords(s, words) {
             </template>
         </div>
         <template v-if="loaded && !rows.length">
-            <p class="empty">No skills are installed under .claude/skills or .codex/skills.</p>
+            <EmptyState class="empty">No skills are installed under .claude/skills or .codex/skills.</EmptyState>
         </template>
         <template v-if="rows.length">
             <div class="rows">
@@ -213,7 +214,6 @@ async function keywords(s, words) {
 
 .empty {
     padding: 24px 22px;
-    color: var(--text-3);
 }
 
 .rows {

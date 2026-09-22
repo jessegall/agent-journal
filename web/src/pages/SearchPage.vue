@@ -1,4 +1,5 @@
 <script setup>
+import EmptyState from "../kit/EmptyState.vue";
 import {nextTick, onMounted, ref, watch} from "vue";
 import {api} from "../api/client.js";
 import Icon from "../kit/Icon.vue";
@@ -33,7 +34,7 @@ watch(
             <input ref="input" v-model="q" placeholder="Search everything on this environment…" autofocus />
         </form>
         <template v-if="route.q && !hits.length">
-            <p class="empty">Nothing matches “{{ route.q }}”.</p>
+            <EmptyState class="empty">Nothing matches “{{ route.q }}”.</EmptyState>
         </template>
         <div class="cards">
             <template v-for="r in hits" :key="r.ref">
@@ -84,7 +85,6 @@ watch(
 
 .empty {
     margin: 16px 0;
-    color: var(--text-3);
 }
 
 .cards {

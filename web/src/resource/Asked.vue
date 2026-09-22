@@ -1,4 +1,5 @@
 <script setup>
+import SectionHeading from "../kit/SectionHeading.vue";
 import TextDisplay from "../kit/TextDisplay.vue";
 import {computed, ref, watch} from "vue";
 import OptionsPicker from "./OptionsPicker.vue";
@@ -28,7 +29,7 @@ const questions = computed(() => {
 <template>
     <template v-if="questions.length">
         <section class="asked">
-            <h3>Questions in this {{ meta(resource.type).title.toLowerCase() }}</h3>
+            <SectionHeading>Questions in this {{ meta(resource.type).title.toLowerCase() }}</SectionHeading>
             <template v-for="q in questions" :key="q.ref">
                 <div :class="['asked-one', {done: q.completed}]">
                     <p class="asked-text">{{ q.title }}</p>
@@ -49,11 +50,6 @@ const questions = computed(() => {
 
 h3 {
     margin: 0 0 8px;
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--text-3);
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
 }
 
 .asked-one {

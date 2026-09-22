@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.86.11 — Only a declared await counts as waiting
+
+A background shell, subagent or monitor no longer counts as the agent waiting; only `journal work await` does, so the nudges held during a wait, "carry on" among them, reach an agent that has background tasks.
+
+The viewer's close buttons, section headings and empty states are one kit component each, and the "Reload now" banner no longer comes back after a reload.
+
 ## 2.86.10 — The installer reads a package kept under src/
 
 - An upgrade, and install.sh, read the journal's package from src/ when a release keeps it there, and from the root otherwise; this readies installs for the move of all code under src/.
