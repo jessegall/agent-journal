@@ -1,5 +1,5 @@
 <script setup>
-import Text from "../kit/Text.vue";
+import TextDisplay from "../kit/TextDisplay.vue";
 import Dot from "../kit/Dot.vue";
 import Icon from "../kit/Icon.vue";
 import PriorityIcon from "../kit/PriorityIcon.vue";
@@ -37,7 +37,7 @@ const held = computed(() => {
             <span class="title">{{ resource.title }}</span>
             <template v-if="resource.abstract || resource.brief">
                 <span class="abstract">
-                    <Text inline :text="resource.abstract || resource.brief" />
+                    <TextDisplay inline :text="resource.abstract || resource.brief" />
                 </span>
             </template>
         </span>

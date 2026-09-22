@@ -2,7 +2,7 @@
 import {computed, onUnmounted, reactive, ref, watch} from "vue";
 import {store} from "../state/store.js";
 import Icon from "../kit/Icon.vue";
-import Text from "../kit/Text.vue";
+import TextDisplay from "../kit/TextDisplay.vue";
 
 const props = defineProps({
     placeholder: {type: String, default: "Message the agent"},
@@ -106,7 +106,7 @@ async function use(tool) {
         <template v-if="quote">
             <div class="compose-quote">
                 <span class="compose-quote-label">{{ quoteLabel }}</span>
-                <Text class="compose-quote-text" :text="quote" />
+                <TextDisplay class="compose-quote-text" :text="quote" />
                 <button type="button" class="compose-quote-x" title="Not a reply after all" @click="emit('unquote')">×</button>
             </div>
         </template>

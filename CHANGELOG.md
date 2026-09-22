@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.86.5 — The text component is TextDisplay
+
+- kit Text is named TextDisplay, so it no longer shares its name with the browser's own Text.
+
 ## 2.86.4 — Every text the viewer shows passes one text component
 
 - kit Text renders the journal's markup (row references as chips, files, code) with an inline mode for one-liners and a full mode for bodies; it replaces resource/Markdown. Activity lines, list rows, cards, the chat's made lines and contexts, dump leads, side panel abstracts and waiting cards all use it, so no raw [[file ...]] markup reaches the screen.
