@@ -140,8 +140,11 @@ class NameRunTogether(Handler):
 
 STANDALONE = re.compile(r"(?<![\w.,:/–—-])#?(\d+)(?![\w%:/–—-]|[.,]\d)")
 QUOTED = re.compile(r"`[^`]*`|\"[^\"]*\"|“[^”]*”")
+LISTED = re.compile(r"^\s*\d+[.)]\s", re.MULTILINE)
 NAMING = {"to-do", "to-dos", "version", "v", "line", "lines", "phase", "step", "port", "revision", "revisions", "number", "page", "row", "rows",
           "commit", "id", "of", "and", "or"}
+VERBS = {"waits", "needs", "holds", "runs", "goes", "shows", "stays", "keeps", "closes", "opens", "starts", "ends", "lands", "takes",
+         "gets", "makes", "sits", "asks", "says", "works", "fails", "passes", "comes", "becomes", "belongs", "covers", "lists", "reads"}
 COUNTING = {"passed", "failed", "more", "left", "of", "per", "out", "times", "ms", "kb", "mb", "px", "percent", "in"}
 
 
@@ -151,12 +154,12 @@ def typed_before(text: str) -> bool:
 
 
 def unit_after(text: str) -> bool:
-    words = re.match(r"\s*([a-z]+)(?:\s+([a-z]+))?", text.lower())
-    return bool(words) and (words.group(1) in COUNTING or any(len(w) > 3 and w.endswith("s") for w in words.groups() if w))
+    words = re.match(r"[ \t]*([a-z]+)(?:[ \t]+([a-z]+))?", text.lower())
+    return bool(words) and (words.group(1) in COUNTING or any(len(w) > 3 and w.endswith("s") and w not in VERBS for w in words.groups() if w))
 
 
 def bare(text: str) -> list[int]:
-    text = QUOTED.sub("", text)
+    text = LISTED.sub("", QUOTED.sub("", text))
     return list(dict.fromkeys(int(m.group(1)) for m in STANDALONE.finditer(text)
                               if not typed_before(text[max(0, m.start() - 24):m.start()]) and not unit_after(text[m.end():m.end() + 16])))
 

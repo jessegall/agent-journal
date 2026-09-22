@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.84.70 — A numbered list is not a bare row number
+
+The bare-number check read the numbers of a numbered list as row numbers, and a verb ending in s after a number ("784 waits") as a count. List markers are left alone now, verbs are told apart from counted nouns, and the check stops at the end of a line.
+
 ## 2.84.69 — An answered question leaves the notifications panel
 
 A question you had opened stayed on the Notifications panel after it was answered. Answering it now takes it off, and the upgrade clears answered questions that were still there.
