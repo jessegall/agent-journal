@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.85.64 — The chip test expects the comma list
+
+- The row-links test expects a chip of several rows to read as a comma list, as 2.85.63 made it. 2.85.63 reached main without its tag because this test still expected the old wording.
+
 ## 2.85.63 — A waiting question opens its tab, and a chip of rows is a comma list
 
 - When a question is waiting, or a new one arrives, Home's side panel turns to the Questions tab by itself.
