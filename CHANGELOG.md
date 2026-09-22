@@ -4,6 +4,11 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.85.39 — A skill loads itself when one of its keywords comes up
+
+- Every skill can carry keywords: the journal's own skills get them from their feature, any SKILL.md can name its own in its frontmatter, and the Skills page sets them per skill.
+- When a keyword comes up in what the user writes or in what the agent is about to run, that skill is owed, and the agent's tool calls wait until it is loaded. The Skill loading feature has a switch for it.
+
 ## 2.85.38 — A reaction reaches the agent as what it is, and is never announced
 
 - When the user reacts to a message, the agent is told which face is on which message, to act on it if it asks for something, and never to mention it. Before, it heard only "1 new reaction".

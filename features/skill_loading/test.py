@@ -1,6 +1,6 @@
 import features
 
-from controllers.types import Messages
+from controllers.types import Agents, Messages
 from engine.queries import start_block
 from features.skill_loading.catalogue import SKILL, always, catalogue, handed, skills
 from features.skill_loading.required import load_now
@@ -144,3 +144,20 @@ def test_a_session_start_holds_every_tool_call_until_the_always_on_skills_are_lo
     from controllers.types import Agents
     assert [load["skill"] for load in Agents(record, actor="system").by_session("codex-1").data["skill_loads"]] == ["journal-work-tracking"], \
         "the load is kept on the agent, for the chat to show"
+
+
+def test_a_skills_keyword_makes_the_agent_load_it():
+    from features.skill_loading.catalogue import keywords, set_keywords
+    from features.skill_loading.interceptors import require_named
+    from features.skill_loading.required import outstanding
+    record = fresh()
+    report(record, "working", "PreToolUse")
+    agent = Agents(record, actor="system").by_session("claude-1")
+    from skills import render
+    assert "keywords: dumps, dump" in render()["journal-dumps/SKILL.md"], "a shipped skill carries its own keywords"
+    set_keywords(record, "journal-plans", ["roadmap"])
+    assert keywords(record)["journal-plans"] == ["roadmap"], "words set on the Skills page are kept"
+    require_named(record, agent, "here is the roadmap")
+    assert "journal-plans" in outstanding(record, agent), "and the skill is owed before the next tool call"
+    require_named(record, agent, "nothing to see")
+    assert outstanding(record, agent) == ["journal-plans"], "a text without a keyword asks for nothing"

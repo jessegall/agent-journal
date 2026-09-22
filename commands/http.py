@@ -21,7 +21,7 @@ from surfaces.summary import summarize
 from surfaces.color import identity, set_color
 from surfaces.updates import newer, upstream
 from surfaces.control import force as force_session, options as control_options, permit, relaunch, request as control_session
-from features.skill_loading.catalogue import SKILL, always, catalogue, skills
+from features.skill_loading.catalogue import SKILL, always, catalogue, set_keywords, skills
 from features.skill_loading.required import load_now
 from controllers.base import LAST
 from controllers.types import Agents, CONTROLLERS, Environments, Features, Nudges
@@ -341,6 +341,13 @@ def post_skill_load(req: Request) -> Reply:
 def post_skill_always(req: Request) -> Reply:
     record = req.record()
     return Reply(200, {"skills": always(record, req.params["name"], bool(req.body.get("on")))})
+
+
+@route("POST", "/api/{env}/skills/{name}/keywords")
+def post_skill_keywords(req: Request) -> Reply:
+    given = req.body.get("keywords")
+    words = given if isinstance(given, list) else str(given or "").split(",")
+    return Reply(200, {"keywords": set_keywords(req.record(), req.params["name"], [w.strip() for w in words if w.strip()])})
 
 
 def listed_types() -> list[str]:

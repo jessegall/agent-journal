@@ -1,8 +1,10 @@
 import re
+import time
 
 from features import trigger
 from features.parts import AgentContext, ToolInterceptor
-from features.skill_loading.catalogue import loaded_at
+from features.recital import mentioned
+from features.skill_loading.catalogue import keywords, loaded_at
 from features.skill_loading.required import outstanding, require
 from skills import LIBRARY
 
@@ -22,6 +24,21 @@ class RequireCommandSkill(ToolInterceptor):
         if not at or at < since:
             require(context.record, row.title, {skill: since})
         return ""
+
+
+class RequireKeywordSkill(ToolInterceptor):
+    behaviour = "keywords"
+
+    def intercept(self, context: AgentContext, call) -> str:
+        require_named(context.record, context.agent.row, call.text)
+        return ""
+
+
+def require_named(record, row, text: str) -> None:
+    loaded = loaded_at(row)
+    named = {name: time.time() for name, words in keywords(record).items() if not loaded.get(name) and mentioned(words, text)}
+    if named:
+        require(record, row.title, named)
 
 
 class RefuseUntilLoaded(ToolInterceptor):

@@ -298,6 +298,10 @@ export class ApiClient {
         return this.post(this.here(`/skills/${name}/always`), {on});
     }
 
+    skillKeywords(name, keywords) {
+        return this.post(this.here(`/skills/${name}/keywords`), {keywords});
+    }
+
     report(body) {
         return this.post(this.here("/console"), body);
     }

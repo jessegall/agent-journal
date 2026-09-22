@@ -11,7 +11,7 @@ defineProps({
     opened: {type: String, default: ""},
     text: {type: String, default: ""},
 });
-defineEmits(["open", "load", "always"]);
+defineEmits(["open", "load", "always", "keywords"]);
 
 function state(skill) {
     return skill.stale ? "Changed since loaded" : skill.loaded ? "Loaded" : "";
@@ -43,11 +43,48 @@ function state(skill) {
         />
     </div>
     <template v-if="opened === skill.name">
+        <div class="keywords" :style="{'--depth': depth}">
+            <label :for="`keywords-${skill.name}`">Load it when these words come up</label>
+            <input
+                :id="`keywords-${skill.name}`"
+                class="keyword-input"
+                :value="(skill.keywords || []).join(', ')"
+                placeholder="dump, drop, paste"
+                spellcheck="false"
+                @change="$emit('keywords', skill, $event.target.value)"
+            />
+        </div>
         <pre class="text" :style="{'--depth': depth}">{{ text }}</pre>
     </template>
 </template>
 
 <style scoped>
+.keywords {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-left: calc(var(--depth) * 18px);
+    padding: 8px 10px;
+    color: var(--text-3);
+    font-size: 12px;
+}
+
+.keyword-input {
+    flex: 1 1 auto;
+    min-width: 0;
+    padding: 5px 8px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--bg);
+    color: var(--text);
+    font: inherit;
+}
+
+.keyword-input:focus {
+    outline: none;
+    border-color: var(--accent);
+}
+
 .row {
     display: flex;
     align-items: center;
