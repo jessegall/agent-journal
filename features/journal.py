@@ -21,6 +21,8 @@ class Message:
 
 def waiting(record, agent) -> bool:
     from controllers.types import Works
+    if any(agent.data.get(kind) for kind in ("shells", "subagents", "monitors")):
+        return True
     return any(w.awaiting for w in Works(record, actor=SYSTEM)._standing() if str(w.data.get("agent") or "") in ("", agent.title))
 
 

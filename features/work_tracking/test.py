@@ -52,7 +52,10 @@ def test_on_idle_with_auto_enabled_and_nothing_open_the_next_row_is_offered():
     assert launch_args(record, "codex", ["--ask-for-approval", "never"]) == ["--ask-for-approval", "never"], \
         "an explicit Codex approval choice wins"
     work = Works(record, actor=AGENT).create("on it", todo=1)
-    idle(record)
+    for kind in ("shells", "subagents", "monitors"):
+        idle(record, **{kind: 1})
+        assert nudges(record) == ["todo 1 next"], f"{kind} running in the background are a wait: the open work is not named"
+    idle(record, shells=0, subagents=0, monitors=0)
     assert nudges(record) == ["todo 1 next", "work 1 is still open, with nothing logged"], \
         "work open: nothing offered; the work feature speaks instead"
     Works(record, actor=AGENT).complete(work.n, "done", todo=True)
@@ -167,6 +170,8 @@ def test_a_declared_wait_is_asked_about_and_cleared_when_the_work_moves():
     works = Works(record, actor=AGENT)
     build = works.create("the release")
     works.action("await")("the CI run on main")
+    idle(record)
+    assert not [n for n in nudges(record) if "still open" in n], "a declared wait holds the end-or-park line"
     works.update(build.n, awaiting_since=works.load(build.n).awaiting_since - 60)
     tick(record)
     assert not [n for n in nudges(record) if n.startswith("check the CI run")], "a minute in, the wait is left alone"
@@ -179,6 +184,8 @@ def test_a_declared_wait_is_asked_about_and_cleared_when_the_work_moves():
     since = works.load(build.n).awaiting_since
     report(record, "working", "PostToolUse", tool="Bash", commands=[{"what": "journal work await", "tool": "Bash", "at": since - 1}])
     assert works.load(build.n).awaiting == "the CI run on main", "the call that declared the wait does not end it"
+    report(record, "working", "PostToolUse", tool="Bash", commands=[{"what": "journal work await", "tool": "Bash", "at": since}])
+    assert works.load(build.n).awaiting == "the CI run on main", "nor does a call started the same instant"
     report(record, "working", "PostToolUse", tool="Bash", commands=[{"what": "ps", "tool": "Bash", "at": time.time()}])
     assert works.load(build.n).awaiting == "", "working again clears it"
     assert [n for n in nudges(record) if "your wait for the CI run on main is over" in n], "and the agent is told why"

@@ -4,6 +4,11 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.85.74 — A command running in the background counts as waiting
+
+- While a background shell, subagent or monitor runs, the agent is waiting: the lines held during a wait, such as the end-or-park reminder, stay quiet.
+- Only a tool call started after the wait was declared ends it.
+
 ## 2.85.73 — A wait is no longer ended by the call that declared it
 
 - journal work await counted as activity and cleared its own wait at once; only a call started after the wait was declared ends it now.

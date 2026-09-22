@@ -110,7 +110,7 @@ class ClearWaitOnActivity(Handler):
     def handle(self, context: AgentContext, event: ToolFinished) -> None:
         started = float(((context.agent.row.data.get("commands") or [{}])[-1]).get("at") or 0)
         for w in working(context)[:1]:
-            if w.awaiting and started >= float(w.awaiting_since or 0):
+            if w.awaiting and started > float(w.awaiting_since or 0):
                 context.journal.works.update(w.n, awaiting="")
                 context.agent.whisper("wait cleared", what=w.awaiting)
 
