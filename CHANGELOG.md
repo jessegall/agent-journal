@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.85.0
+
+- A new minor version, gathering the 2.84 line: the rebuilt dump page, sequences, the functional design doc that becomes a plan, declared waits, monitors and the terminal view in the agent bar, long commands moved to the background, and Codex subagents shown again.
+
 ## 2.84.152
 
 - A command that holds the agent's terminal longer than long_commands.after_minutes (2) is moved to the background the way Claude's own Ctrl+B does, and the agent is told. The provider's driver says how (MOVE_TO_BACKGROUND), and the agent's context has move_to_background; a provider without a way is left alone.
