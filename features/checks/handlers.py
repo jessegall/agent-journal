@@ -1,3 +1,4 @@
+import re
 import threading
 import time
 from dataclasses import dataclass
@@ -15,6 +16,9 @@ class CheckUpdated(ResourceEvent):
     @classmethod
     def read(cls, event) -> "CheckUpdated":
         return cls(n=event.n, action=event.action, type=event.type, actor=event.actor, ran=bool(event.data.get("ran")))
+
+
+ANSI = re.compile(r"\x1b\[[0-9;]*m")
 
 
 class RunDueChecks(Handler):
@@ -42,7 +46,8 @@ class ReportCheckResult(Handler):
         if not event.ran:
             return
         check = context.journal.checks.load(event.n)
-        title = f"check {check.n} failed - {check.title}"[:80]
+        said = summary((check.last or {}).get("output") or "") or check.title
+        title = (str(check.data.get("failure") or "").replace("{summary}", said) or f"check {check.n} failed - {said}")[:80]
         if (check.last or {}).get("ok"):
             for stale in context.journal.notifications.linked_to(check.ref):
                 if not stale.completed:
@@ -52,3 +57,8 @@ class ReportCheckResult(Handler):
         agent = context.journal.agents.primary()
         if agent:
             context.speaking_to(agent).agent.say("failed", title=title, n=check.n)
+
+
+def summary(output: str) -> str:
+    lines = [ANSI.sub("", line).strip() for line in output.splitlines()]
+    return next((line for line in reversed(lines) if line and not line.startswith(("↳", "#"))), "")

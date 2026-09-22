@@ -1,4 +1,6 @@
 from features.base import FeatureDetails, Line
+from features.command_tags.reading import RUNS
+from features.settings import Setting
 
 
 class TagsDetails(FeatureDetails):
@@ -34,6 +36,15 @@ class TagsDetails(FeatureDetails):
         they appear; and a refusal comes back as a nudge on the next turn rather than at the
         moment of acting.
     """
+
+    settings = [
+        Setting(
+            name="runs",
+            default=dict(RUNS),
+            title="What each tag runs",
+            abstract="A tag's name and the journal command it runs; entries set here are laid over the shipped ones.",
+        ),
+    ]
 
     lines = [
         Line(
