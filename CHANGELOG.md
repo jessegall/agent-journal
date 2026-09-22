@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.85.76 — Nudges are kept an hour, so writes stay quick
+
+- Every write rescans its type's folder and rewrites its index. Nudges arrive at about 200 an hour and were kept a day, so each hook paid for thousands of rows; they are kept an hour now.
+- The project letter is white, or near-black on a light project colour, instead of the colour's opposite.
+- A plugin card's buttons wrap onto a new line.
+
 ## 2.85.75 — A line queued before a wait is dropped once the wait begins
 
 - A line that stays quiet during a wait, raised in the seconds before the agent declared one, used to arrive after it; it is dropped now, while the user's own lines still arrive.

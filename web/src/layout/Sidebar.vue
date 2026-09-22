@@ -2,7 +2,7 @@
 import {computed, reactive} from "vue";
 import {api} from "../api/client.js";
 import Icon from "../kit/Icon.vue";
-import {negative, project, tint} from "../identity.js";
+import {ink, project, tint} from "../identity.js";
 import {route} from "../route.js";
 import {boardOn, counted, navTypes, store} from "../state/store.js";
 import {polled} from "../sync/polled.js";
@@ -37,7 +37,7 @@ async function makeEnv() {
 <template>
     <aside class="side">
         <a class="project" :href="`#/${route.env}`" :title="project">
-            <span class="logo" :style="{background: tint, color: negative}">{{ project.charAt(0).toUpperCase() }}</span>
+            <span class="logo" :style="{background: tint, color: ink}">{{ project.charAt(0).toUpperCase() }}</span>
             <span class="project-name">{{ project }}</span>
         </a>
         <a :class="['item', 'hub-item', {on: route.page === 'hub'}]" :href="`#/${route.env}/hub`">

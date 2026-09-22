@@ -13,8 +13,3 @@ export const ink = computed(() => {
 export const many = computed(
     () => new Set(store.online.map((a) => a.environment)).size > 1 || store.journals.filter((j) => j.running).length > 1
 );
-export const negative = computed(() => {
-    const hex = tint.value.replace("#", "");
-    const full = hex.length === 3 ? [...hex].map((c) => c + c).join("") : hex;
-    return `#${(0xffffff ^ parseInt(full, 16)).toString(16).padStart(6, "0")}`;
-});

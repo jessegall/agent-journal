@@ -44,12 +44,12 @@ def test_seen_notifications_past_their_keep_days_go_unseen_ones_stay():
     age(notes, seen_old.n, created=time.time() - 2 * 86400)
     age(notes, unseen_old.n, created=time.time() - 2 * 86400)
     nudges = Nudges(record, actor=SYSTEM)
-    old_line, new_line = nudges.create("said yesterday"), nudges.create("said just now")
-    age(nudges, old_line.n, created=time.time() - 2 * 86400)
+    old_line, new_line = nudges.create("said two hours ago"), nudges.create("said just now")
+    age(nudges, old_line.n, created=time.time() - 2 * 3600)
     tick(record)
     assert sorted(r.n for r in notes.all(deleted=True, completed=True)) == [unseen_old.n, seen_new.n], \
         "a seen notification past a day is removed entirely; unseen and recent ones stay"
-    assert [r.n for r in nudges.all(deleted=True, completed=True)] == [new_line.n], "a nudge past a day is removed; it was said already"
+    assert [r.n for r in nudges.all(deleted=True, completed=True)] == [new_line.n], "a nudge past an hour is removed; it was said already"
 
 
 def test_keep_zero_leaves_reports_listed():
