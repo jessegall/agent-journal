@@ -3,6 +3,7 @@ import {computed, onMounted, ref} from "vue";
 import {api} from "../api/client.js";
 import ChoiceList from "../kit/ChoiceList.vue";
 import {pendingChoice} from "../agents.js";
+import {age} from "../format/time.js";
 
 const props = defineProps({control: String, agent: Object});
 const emit = defineEmits(["done"]);
@@ -11,6 +12,10 @@ const controlling = ref("");
 const error = ref("");
 const data = computed(() => props.agent.data);
 const filled = computed(() => Math.round(Number(data.value.context || 0)));
+const compacted = computed(() => {
+    const marks = data.value.compactions || [];
+    return marks.length ? `Last compacted ${age(marks[marks.length - 1].at)}` : "Not compacted in this session";
+});
 const chosen = computed(() => controls.value.groups.filter((group) => group.key === props.control));
 const current = computed(() => (props.control === "effort" ? `effort ${data.value.effort || "not reported"}` : data.value.model));
 
@@ -49,6 +54,7 @@ async function control(action, value) {
             <span>Used</span>
             <strong>{{ filled }}%</strong>
             <span class="bar-usage-track"><span :style="{width: `${filled}%`}" /></span>
+            <small>{{ compacted }}</small>
         </div>
     </template>
     <template v-else>
