@@ -82,3 +82,11 @@ def test_a_question_tool_is_asked_in_the_journal_and_never_opens_in_the_terminal
     assert (question.title, [o["title"] for o in question.data["options"]], question.seen[:1]) == \
         ("Which store - files or SQLite?", ["Files", "SQLite"], [AGENT]), "the question and its options are filed as the agent's"
     assert result.get("decision") == "block" and f"question {question.n}" in result.get("reason", ""), "the call is refused with the number"
+
+
+def test_an_answered_question_leaves_the_notifications_panel():
+    record = fresh()
+    asked = Questions(record, actor=AGENT).create("which one?")
+    Questions(record, actor=USER).set(asked.n, "kept", "true")
+    Questions(record, actor=USER).complete(asked.n, how="this one")
+    assert Questions(record, actor=USER).load(asked.n).data.get("kept") is False, "the answer takes it off the panel it was kept on"
