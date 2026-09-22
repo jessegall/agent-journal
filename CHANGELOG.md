@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.84.73 — Small counts are not taken for row numbers
+
+A number under 100 is only named back as a bare row number when a word like replied to, parked or closed comes right before it; otherwise it is a count, as in "from 980 files to 45". Larger numbers are checked as before.
+
 ## 2.84.72 — The runtime folder is one folder per session
 
 Every file a session writes (its seat, gate, triggers, terminal capture, typed and printed lines) now lives in `runtime/sessions/<session>/` under a plain name, instead of hundreds of loose files named after the session. The cleanup removes a session's folder whole once it has been quiet for two days (it was seven), and runs on the engine's clock instead of inside a hook. The upgrade moves every existing file into its session's folder and deletes left-overs no version writes any more.

@@ -158,10 +158,16 @@ def unit_after(text: str) -> bool:
     return bool(words) and (words.group(1) in COUNTING or any(len(w) > 3 and w.endswith("s") and w not in VERBS for w in words.groups() if w))
 
 
+HANDLED = re.compile(r"\b(?:repl(?:y|ied|ying) to|answer(?:ed|ing)?|clos(?:ed|ing)|fil(?:ed|ing)|start(?:ed|ing)|park(?:ed|ing)|resum(?:ed|ing)|end(?:ed|ing)"
+                     r"|finish(?:ed|ing)|struck|reopen(?:ed|ing)|process(?:ed|ing))\s+#?$", re.IGNORECASE)
+SMALL = 100
+
+
 def bare(text: str) -> list[int]:
     text = LISTED.sub("", QUOTED.sub("", text))
     return list(dict.fromkeys(int(m.group(1)) for m in STANDALONE.finditer(text)
-                              if not typed_before(text[max(0, m.start() - 24):m.start()]) and not unit_after(text[m.end():m.end() + 16])))
+                              if not typed_before(text[max(0, m.start() - 24):m.start()]) and not unit_after(text[m.end():m.end() + 16])
+                              and (int(m.group(1)) >= SMALL or HANDLED.search(text[max(0, m.start() - 24):m.start()]))))
 
 
 class NameBareNumbers(Handler):
