@@ -76,14 +76,17 @@ class Stored:
         SUMMARIES[str(folder)] = (moved, rows)
         return rows
 
-    def _written(self, r: Resource, before: tuple) -> None:
+    def _reindexed(self, n: int, before: tuple | None, r: Resource | None = None) -> None:
         folder = self.record.folder(self.type, self.resource.scope)
         held, known = SUMMARIES.get(str(folder)), INDEXED.get(str(folder))
         if not held or known is None or held[0] != before:
             return
-        found = self.path(r.n).stat()
-        known[r.n] = self._row(r, f"{found.st_mtime_ns}-{found.st_size}")
-        self._summarised(folder, self._moved(folder), [known[n] for n in sorted(known) if not known[n].get(DAMAGED)])
+        if r is None:
+            known.pop(n, None)
+        else:
+            found = self.path(n).stat()
+            known[n] = self._row(r, f"{found.st_mtime_ns}-{found.st_size}")
+        self._summarised(folder, self._moved(folder), [known[m] for m in sorted(known) if not known[m].get(DAMAGED)])
 
     def _row(self, r: Resource, stamp: str) -> dict:
         return {"n": r.n, "title": r.title, "deleted": r.deleted, "completed": r.completed, "seen": r.seen, "refs": r.refs, "updated": r.updated,
@@ -170,10 +173,13 @@ class Stored:
         return self.path(n).is_file() or n in self._packed()
 
     def _remove(self, n: int) -> None:
+        folder = self.path(n).parent
+        before = self._moved(folder) if folder.is_dir() else None
         self.path(n).unlink(missing_ok=True)
         packed = self._packed()
         if n in packed:
-            write_json(self.path(n).parent / PACKED / INDEX, {k: row for k, row in packed.items() if k != n})
+            write_json(folder / PACKED / INDEX, {k: row for k, row in packed.items() if k != n})
+        self._reindexed(n, before)
 
     def _pack(self, before: float) -> int:
         folder = self.record.folder(self.type, self.resource.scope)
