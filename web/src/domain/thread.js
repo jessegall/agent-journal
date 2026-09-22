@@ -53,7 +53,10 @@ const loads = (agents) =>
             }))
         );
 
-const promisedFor = (p, m) => words(m.brief) === p.brief && m.created >= p.created - PROMISED_WITHIN;
+const promisedFor = (p, m) =>
+    p.data.idempotency && m.data?.idempotency
+        ? p.data.idempotency === m.data.idempotency
+        : words(m.brief) === p.brief && m.created >= p.created - PROMISED_WITHIN;
 
 const delivered = (p, m) => Object.keys(m.data.files || {}).length >= Object.keys(p.data.files).length;
 

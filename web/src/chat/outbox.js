@@ -111,7 +111,7 @@ async function writeQueue(queue) {
     if (!local && !remote) throw new Error("Could not save the message for retry");
 }
 
-function token() {
+export function token() {
     if (globalThis.crypto?.randomUUID) return crypto.randomUUID();
     return `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 }
@@ -200,9 +200,9 @@ export function startOutbox(env) {
     if (!retryTimer) retryTimer = setInterval(retry, RETRY_MS);
 }
 
-export async function sendMessage(env, body, files = []) {
+export async function sendMessage(env, body, files = [], id = token()) {
     const record = {
-        id: token(),
+        id,
         origin: location.origin,
         env,
         title: body.title,
