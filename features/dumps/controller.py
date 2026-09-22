@@ -114,6 +114,18 @@ class Dumps(Controller):
             self._collect(self.load(int(n)), found)
         return self._write(n, item, **{ITEM.outcome: how.strip(), ITEM.refs: found, ITEM.failed: ""})
 
+    def stop(self, n: int):
+        if self.actor == AGENT:
+            self._refuse("only the user stops a dump")
+        r = self.load(int(n))
+        if r.completed:
+            self._refuse(f"dump {r.n} is already closed")
+        names = self._names(r)
+        items = r.data.get("items") or {}
+        filed = sum(1 for name in names if (items.get(name) or {}).get(ITEM.outcome))
+        self.update(r.n, stopped=True)
+        return self.complete(r.n, how=f"stopped, {filed} filed, {len(names) - filed} left out")
+
     def failed(self, n: int, item: str, why: str):
         if not why.strip():
             raise Refused("say why it could not be filed")

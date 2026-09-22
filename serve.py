@@ -142,6 +142,13 @@ def watch_stop(root: Path, server: ThreadingHTTPServer, halting: threading.Event
             server.shutdown()
 
 
+def warm_viewer(root: Path, env: str) -> None:
+    from commands.parser import parser
+    from controllers.types import CONTROLLERS
+    parser()
+    dispatch("GET", f"/api/{env}/dashboard", root, {"types": ",".join(CONTROLLERS), "completed": "1", "last": "25", "events": "100"}, {})
+
+
 def run(root: Path, port: int = 8430) -> None:
     runtime.STARTED[0] = time.time()
     server = serve(root, port)
@@ -151,6 +158,7 @@ def run(root: Path, port: int = 8430) -> None:
     threading.Thread(target=watch_code, args=(CODE.with_name("journal.pyz") if ZIPPED else CODE, server, changed), daemon=True).start()
     threading.Thread(target=watch_stop, args=(root, server, halting, time.time() - LATE_STOP), daemon=True).start()
     warm_record(Record(root, default_env(root)))
+    warm_viewer(root, default_env(root))
     threading.Thread(target=replay, args=(root,), daemon=True).start()
     threading.Thread(target=warm, args=(root,), daemon=True).start()
     engines = threading.Event()
