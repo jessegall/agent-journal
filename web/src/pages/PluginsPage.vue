@@ -5,7 +5,6 @@ import Btn from "../kit/Btn.vue";
 import Dialog from "../kit/Dialog.vue";
 import PluginSettings from "./PluginSettings.vue";
 import Icon from "../kit/Icon.vue";
-import Spinner from "../kit/Spinner.vue";
 import Switch from "../kit/Switch.vue";
 import {route} from "../route.js";
 import {store} from "../state/store.js";
@@ -99,6 +98,10 @@ async function install() {
             : await api.command("plugin", "install", {source: source.value, yes: true});
         outcome.value = {ok: true, text: typeof said === "string" ? said : `${shown.value.title} is up to date.`};
         if (!upgrading) source.value = "";
+        if (!upgrading && said && said.n) {
+            closeShown();
+            configuring.value = said.n;
+        }
     } catch (e) {
         outcome.value = {ok: false, text: e.message};
     }
@@ -215,7 +218,7 @@ async function askAgent() {
                     placeholder="https://github.com/owner/repo, owner/repo, or a folder"
                     @keydown.enter="preview"
                 />
-                <Btn :disabled="!source || busy === 'preview'" @click="preview">{{ busy === "preview" ? "Reading…" : "Preview" }}</Btn>
+                <Btn :busy="busy === 'preview'" :disabled="!source || busy === 'preview'" @click="preview">Scan</Btn>
             </div>
             <template v-if="previewText">
                 <pre class="preview">{{ previewText }}</pre>
@@ -278,12 +281,7 @@ async function askAgent() {
                     </template>
                     <template v-else>
                         <Btn :disabled="busy === 'install'" @click="closeShown">Cancel</Btn>
-                        <Btn kind="primary" class="run" :disabled="busy === 'install'" @click="install">
-                            <span :class="{hidden: busy === 'install'}">Run</span>
-                            <template v-if="busy === 'install'">
-                                <Spinner class="run-spinner" />
-                            </template>
-                        </Btn>
+                        <Btn kind="primary" :busy="busy === 'install'" :disabled="busy === 'install'" @click="install">Run</Btn>
                     </template>
                 </template>
             </Dialog>
@@ -338,12 +336,7 @@ async function askAgent() {
                         </div>
                     </template>
                     <footer class="acts">
-                        <Btn small :disabled="busy === `${p.n}`" @click="upgrade(p)">
-                            <template v-if="busy === `${p.n}`">
-                                <Spinner />
-                            </template>
-                            Upgrade
-                        </Btn>
+                        <Btn small :busy="busy === `${p.n}`" :disabled="busy === `${p.n}`" @click="upgrade(p)">Upgrade</Btn>
                         <Btn small :disabled="busy === `${p.n}`" @click="plugin(p, 'upgrade', {yes: true, again: true})">
                             Run setup again
                         </Btn>
@@ -452,20 +445,6 @@ h2 {
     font: inherit;
 }
 
-.run {
-    position: relative;
-}
-
-.run .hidden {
-    visibility: hidden;
-}
-
-.run-spinner {
-    position: absolute;
-    inset: 0;
-    margin: auto;
-}
-
 .shown-result {
     margin: 0 0 10px;
     color: #63b37c;
@@ -488,20 +467,6 @@ h2 {
     font-size: 11.5px;
     line-height: 1.55;
     white-space: pre-wrap;
-}
-
-.run {
-    position: relative;
-}
-
-.run .hidden {
-    visibility: hidden;
-}
-
-.run-spinner {
-    position: absolute;
-    inset: 0;
-    margin: auto;
 }
 
 .shown-result {

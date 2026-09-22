@@ -4,6 +4,11 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.85.87 — Scan, with a spinner, and a new plugin opens its settings
+
+- The button beside the plugin field is Scan and spins while it reads the repository; kit Btn has a busy state that keeps its width, used by Scan, Run and Upgrade.
+- A plugin that finishes installing opens its settings panel at once.
+
 ## 2.85.86 — The waiting bubble has the moving dots, and removing a plugin keeps its log shut
 
 - The Waiting bubble at the bottom of the chat shows the three moving dots after its text.
