@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.84.11 — A tool call's hook no longer re-reads every skill
+
+The budget check reported the agent's hook at 54 to 64 ms. Each tool call re-read and parsed every `SKILL.md` to spot a skill that changed since it was loaded; each file's header is now kept and read again only when the file's time or size changes (rule 47). A hook through the server now takes 3 to 8 ms.
+
+What to do about it: `journal upgrade`.
+
 ## 2.84.10 — The launch screen reads easily
 
 Message 2109, to-do 741. Both launch questions now share one layout: a heading with a line under it, the notes indented, a blank line before the choices, each choice on its own indented line with `← Enter` beside the default. The clean slate question gives a count and at most three skill names, one per line, instead of a run-on list of dozens, and leaves out hooks when there are none; its confirmation reads "set aside 1 other skill until the journal stops". Checked in a real terminal: the questions, the agent starting and quitting, and the skill coming back.
