@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.84.66 — The hub is easier to read
+
+The hub lists running journals first, the busy ones at the top, with stopped ones folded away underneath. Every journal starts collapsed, and each one carries two buttons on its bar: open it in this window, or in a new tab.
+
 ## 2.84.65 — Two viewer glitches
 
 The revision strip asked for the same revision twice when it moved quickly; it now asks once. The chat thread stopped watching its list when it closed, which ended an error thrown after leaving the page.
