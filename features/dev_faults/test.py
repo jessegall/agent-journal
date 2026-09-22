@@ -2,6 +2,7 @@ import time
 
 import features
 from controllers.types import Features, Notifications
+from engine import runtime
 from features import FEATURES
 from features.dev_faults.feature import Faults
 from resources.base import SYSTEM
@@ -79,3 +80,18 @@ def test_a_switch_sent_under_its_old_name_too_keeps_the_new_names_value():
     features = {**settings["features"], "dev_faults.budget": False}
     saved = dispatch("POST", f"/api/{record.env}/settings", record.root, {}, {"features": features}).body
     assert saved["features"]["dev_faults.budget"] is False, "the old name 'budget' in the same list must not turn it back on"
+
+
+def test_the_first_seconds_after_the_server_starts_are_not_held_against_the_budget():
+    features.load()
+    record, reports = fresh(), FEATURES["dev_faults"].reports
+    turned(record, True)
+    runtime.STARTED[0] = time.time()
+    try:
+        reports.spent(record.root, record.env, "request", "GET /api/pages", 400)
+        reports.spent(record.root, record.env, "command", "todo all", 400)
+        assert notified(record) == ["command todo all is slower than its budget"], "a request that met a server still warming is let be; a command is not"
+    finally:
+        runtime.STARTED[0] = 0.0
+    reports.spent(record.root, record.env, "request", "GET /api/pages", 400)
+    assert "request GET /api/pages is slower than its budget" in notified(record), "once warm, the budget holds again"

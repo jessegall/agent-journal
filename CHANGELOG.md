@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.84.61 — A restart is not counted against the budget
+
+For the first 20 seconds after the server starts, slow requests and hooks, including those the viewer times, are not filed as faults: they met a server still loading. Warm, the same requests answer in a few milliseconds. Commands keep their budget at all times, and everything after the first 20 seconds is held to 50ms as before.
+
 ## 2.84.60 — Thinking and row links are back on
 
 The upgrade fault fixed in 2.84.55 had also switched off the thinking bubble and row links in every environment. With thinking off, nothing cleared the last thought, so an old one stayed in the bubble. The upgrade switches back on each feature that was turned off in the same moment an unknown feature was set aside; features you switched off yourself stay off.
