@@ -4,6 +4,11 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.84.144
+
+- The agent bar counts the monitors the agent has watching, beside its background shells and subagents, and lists each with its description, command and how long it has run. A monitor ends when it reports, or at its deadline.
+- A background task stopped with TaskStop is shown as stopped at once, instead of running until the session ends.
+
 ## 2.84.143
 
 - The agent bar has a terminal button: it lists the commands the agent ran lately, one per line like a terminal, newest at the bottom, with the one still running lit.

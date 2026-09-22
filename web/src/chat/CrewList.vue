@@ -16,6 +16,11 @@ const recent = computed(() => props.rows.filter((r) => r.running || now.value - 
 const listed = computed(() => [...recent.value.filter((r) => r.running), ...recent.value.filter((r) => !r.running).reverse()]);
 const dropped = computed(() => props.rows.length - recent.value.length);
 const running = computed(() => props.rows.filter((r) => r.running).length);
+const summary = computed(
+    () =>
+        `${running.value} running, ${props.total} ${props.started} in this session` +
+        (dropped.value ? `, ${dropped.value} older than ${minutes.value} minutes not shown.` : ".")
+);
 
 function lasted(row) {
     if (!row.at) return "";
@@ -28,11 +33,7 @@ function detail(row) {
 </script>
 
 <template>
-    <p class="crew-none">
-        {{ running }} running, {{ total }} {{ started }} in this session
-        <template v-if="dropped">, {{ dropped }} older than {{ minutes }} minutes not shown</template>
-        .
-    </p>
+    <p class="crew-none">{{ summary }}</p>
     <template v-for="row in listed" :key="row.id || row.cell || `${row.task}-${row.model}`">
         <button
             type="button"

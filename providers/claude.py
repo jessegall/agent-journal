@@ -22,6 +22,9 @@ RECORD_FILES = ("Read(./.journal/environments/*/*/*.md)", "Read(./.journal/proje
 STATUS_HOME = (".journal", "claude-status")
 PLAN_WINDOWS = {"five_hour": ("5h", 300), "seven_day": ("7d", 10080)}
 NOTIFIED = re.compile(r"<tool-use-id>([^<]+)</tool-use-id>.*?<status>([^<]+)</status>", re.S)
+TASK_ID = re.compile(r"\b(?:ID:|task) (\w+)")
+MONITOR_LONGEST = 1800
+MONITOR_DEFAULT = 300000
 DISPATCHES = ("Agent", "Task")
 QUIET_SUBAGENT = 600
 SETTLE_BYTES = 65536
@@ -267,8 +270,8 @@ class Claude(Provider):
         at = timestamp(str(row.get("timestamp") or ""))
         return [{"id": b.get("id", ""), "name": b.get("name", ""), "input": b.get("input") or {}, "at": at} for b in content or () if isinstance(b, dict) and b.get("type") == "tool_use"]
 
-    def endings(self, rows: list[dict]) -> dict[str, tuple[str, float]]:
-        ended = {}
+    def endings(self, rows: list[dict], uses: list[dict]) -> dict[str, tuple[str, float]]:
+        ended, tasks = {}, {}
         for row in rows:
             at = timestamp(str(row.get("timestamp") or ""))
             if row.get("type") == "queue-operation" and row.get("operation") == "enqueue":
@@ -279,6 +282,13 @@ class Claude(Provider):
             for block in row["message"]["content"]:
                 if isinstance(block, dict) and block.get("type") == "tool_result":
                     ended.setdefault(str(block.get("tool_use_id") or ""), ("returned", at))
+                    task = TASK_ID.search(str(block.get("content") or ""))
+                    if task:
+                        tasks[task.group(1)] = str(block.get("tool_use_id") or "")
+        for use in (u for u in uses if u["name"] == "TaskStop"):
+            stopped = tasks.get(str(use["input"].get("task_id") or use["input"].get("shell_id") or ""))
+            if stopped and ended.get(stopped, ("returned",))[0] == "returned":
+                ended[stopped] = ("stopped", use["at"])
         return ended
 
     def loaded(self, uses: list[dict]) -> list[str]:
@@ -292,7 +302,7 @@ class Claude(Provider):
     def crew(self, path: Path) -> dict:
         rows = [row for _, row in self.entries(path)]
         uses = [use for row in rows for use in self.tool_uses(row)]
-        ended = self.endings(rows)
+        ended = self.endings(rows, uses)
         sessions = {}
         for meta in Path(path).with_suffix("").joinpath("subagents").glob("*.meta.json"):
             try:
@@ -316,8 +326,20 @@ class Claude(Provider):
             finished = status not in ("", "returned")
             shells.append({"id": use["id"], "command": str(use["input"].get("command") or "")[:160], "task": str(use["input"].get("description") or ""),
                            "running": not finished, "at": use["at"], "ended": done if finished else 0.0, "status": status if finished else ""})
+        monitors = []
+        for use in (u for u in uses if u["name"] == "Monitor"):
+            given = use["input"]
+            status, done = ended.get(use["id"], ("", 0.0))
+            notified = status not in ("", "returned")
+            deadline = use["at"] + min(float(given.get("timeout_ms") or MONITOR_DEFAULT) / 1000, MONITOR_LONGEST)
+            finished = notified or now > deadline
+            monitors.append({"id": use["id"], "command": str(given.get("command") or (given.get("ws") or {}).get("url") or "")[:160],
+                             "task": str(given.get("description") or "monitor"), "running": not finished, "at": use["at"],
+                             "ended": (done if notified else deadline) if finished else 0.0,
+                             "status": (status if notified else "expired") if finished else ""})
         return {AgentRow.skills: self.loaded(uses), AgentRow.shells: len(shells), AgentRow.subagents: len(subagents),
-                AgentRow.shell_rows: shells, AgentRow.subagent_rows: subagents}
+                AgentRow.monitors: len(monitors), AgentRow.shell_rows: shells, AgentRow.subagent_rows: subagents,
+                AgentRow.monitor_rows: monitors}
 
     def subagent_transcript(self, path: Path, session: str) -> Path | None:
         found = Path(path).with_suffix("").joinpath("subagents", f"agent-{session}.jsonl")
