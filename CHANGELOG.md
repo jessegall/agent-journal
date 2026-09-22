@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.87.1 — No error is swallowed
+
+An audit found eleven places where a failure passed without a word; each now goes through the same report as a crashed hook (the traceback in .journal/runtime/engine.log, a notice, and one line to the agent). The engine loops, the plugin host and its services watcher, the channel that carries lines to the agent, a check's runner, the auto-upgrade and the supervisor's checks keep running after an error and report it. A row that cannot be read raises a notice instead of vanishing from every list, a video whose frames fail says why, and a hook the server never answered is reported by the next one it does.
+
 ## 2.87.0 — Parked and blocked rows are named back to the agent
 
 Closing a to-do now also names the work still parked, as ending work already did. A closed to-do comes off every row that waited on it, and when the last one closes the agent is told the row is unblocked. A to-do blocked on something outside the list is named with its reason every five closed to-dos (work_tracking.ask_blocked_every), asking whether it is still blocked.

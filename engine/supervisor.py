@@ -8,7 +8,6 @@ import sys
 import termios
 import threading
 import time
-import traceback
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
@@ -18,6 +17,7 @@ from engine import viewer  # noqa: E402
 from engine.services import Manager  # noqa: E402
 from engine import typist  # noqa: E402
 from engine import runtime  # noqa: E402
+from engine.watch import threw  # noqa: E402
 from engine.stop import asked  # noqa: E402
 from engine.terminal import HEAL, RELAUNCH, RELOAD, STOP, watched  # noqa: E402
 from engine.actors import Agent  # noqa: E402
@@ -92,7 +92,7 @@ def checks(root: Path, env: str, agent: str, session: str) -> tuple:
         watcher = Agent(record, DRIVERS[agent](record, session))
         return watcher.driver, (CheckIn(watcher), UpdateCheck(watcher))
     except Exception:
-        failed(root, "the checks could not start")
+        threw(root, env, "starting the supervisor checks")
         return None, ()
 
 
@@ -103,12 +103,8 @@ def run_checks(root: Path, driver, kept: tuple) -> None:
         for check in kept:
             check.tick()
     except Exception:
-        failed(root, "a check failed")
+        threw(root, runtime.env(root), "a supervisor check")
 
-
-def failed(root: Path, what: str) -> None:
-    with (root / "runtime" / "supervisor.log").open("a") as log:
-        log.write(f"{time.ctime()} {what}\n{traceback.format_exc()}\n")
 
 
 def run(root: Path, cwd: Path, env: str, agent: str, fd: int, session: str, lifeline: int = -1) -> int:

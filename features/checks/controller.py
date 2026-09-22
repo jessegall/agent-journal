@@ -6,6 +6,7 @@ import controllers.types as types_module
 import resources.types as resources_module
 from controllers.base import Controller
 from engine.proc import streamed
+from engine.watch import threw
 from features.checks.resource import Check
 from resources.base import Refused
 
@@ -53,12 +54,18 @@ class Checks(Controller):
         if not check.command:
             raise Refused(f"check {n} has no command: journal check set {n} command \"<what to run>\"")
         if not wait:
-            threading.Thread(target=self._ran, args=(n,), daemon=True).start()
+            threading.Thread(target=self._ran_in_background, args=(n,), daemon=True).start()
             return f"check {n} is running; its result lands on the row, and a failure is told to you"
         return self._ran(n)
 
     def sweep(self, wait: bool = False):
         return [self.run(check.n, wait=wait) for check in self._standing() if check.command]
+
+    def _ran_in_background(self, n: int) -> None:
+        try:
+            self._ran(n)
+        except Exception:
+            threw(self.record.root, self.record.env, f"running check {n}")
 
     def _ran(self, n: int):
         check = self.load(n)

@@ -5,6 +5,7 @@ from pathlib import Path
 from controllers.types import Notices
 from engine.hooks import default_env
 from engine.record import Record
+from engine.watch import threw
 from engine.services import BLOCKED, FAILED, log_file, states
 
 WATCH = 5.0
@@ -17,7 +18,10 @@ def watch(root: Path, feature) -> None:
 
 def keep(root: Path, feature) -> None:
     while True:
-        notice_stopped(root, feature)
+        try:
+            notice_stopped(root, feature)
+        except Exception:
+            threw(root, default_env(root), "watching plugin services")
         time.sleep(WATCH)
 
 

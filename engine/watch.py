@@ -11,6 +11,7 @@ SHOWN = 14
 TITLE = "The engine is not running"
 FAULT = "The engine hit an error and carried on"
 WHICH = "fault"
+DAMAGED = "A row could not be read and is left out"
 SAYS = "journal: {where} hit an error and kept going; the last of it is below and the whole of it is in .journal/runtime/engine.log. Fix it, then say so."
 STEADY = "the engine has been running cleanly again"
 STEADY_AFTER = 30
@@ -68,14 +69,18 @@ def broke(record, trouble: str, driver=None, where: str = "the engine") -> None:
         Nudges(record, actor=SYSTEM)._to_primary(f"{where} hit an error"[-80:].replace(":", " "), brief=f"{line} {fault}")
 
 
-def threw(root: Path, env: str, where: str) -> None:
+def threw(root: Path, env: str, where: str, driver=None) -> None:
     trouble = traceback.format_exc()
     try:
         with log_file(root).open("a") as log:
             log.write(f"{where}\n{trouble}")
-        broke(Record(Path(root), env), trouble, where=where)
+        broke(Record(Path(root), env), trouble, driver, where)
     except Exception:
         traceback.print_exc()
+
+
+def damaged(record, path: str, error: str) -> None:
+    once(record, DAMAGED, f"{path} could not be read, so it is left out of every list: {error}", path)
 
 
 def steady(record) -> None:

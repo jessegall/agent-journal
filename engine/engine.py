@@ -1,6 +1,4 @@
-import sys
 import time
-import traceback
 
 from controllers.types import CONTROLLERS, Agents
 import features
@@ -9,7 +7,7 @@ from engine.actors import Actor, Agent, BUSY, IDLE, STOPPED, System, User, WORKI
 from engine.inputs import BACKGROUND, FORCE, PERMIT, take
 from surfaces.control import CARRY_ON, delivered
 from engine.record import Record
-from engine.watch import STEADY_AFTER, broke, steady
+from engine.watch import STEADY_AFTER, steady, threw
 from resources.base import AGENT, SYSTEM, USER, Event
 from resources.types import TYPES, priority
 from engine.seat import Seat
@@ -265,10 +263,7 @@ class Engine(Seat):
                 steady(self.record)
         except Exception:
             self.clean = 0
-            trouble = traceback.format_exc()
-            sys.stderr.write(trouble)
-            sys.stderr.flush()
-            broke(self.record, trouble, self.agent.driver)
+            threw(self.record.root, self.record.env, "the engine", self.agent.driver)
 
     def run(self) -> None:
         self.start()

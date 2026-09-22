@@ -140,8 +140,11 @@ class Stored:
                 continue
             try:
                 r = self.load(n)
-            except (Refused, OSError):
+            except (Refused, OSError) as error:
                 rows[n] = {"n": n, DAMAGED: True, "stamp": stamp}
+                if self.resource.type != "notice":
+                    from engine.watch import damaged
+                    damaged(self.record, str(self.path(n)), str(error))
                 continue
             rows[n] = self._row(r, stamp)
         changed = sum(1 for n, row in rows.items() if known.get(n) is not row) + len(known.keys() - rows.keys())

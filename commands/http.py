@@ -29,6 +29,7 @@ from features.browser_control.controller import Asks
 from engine import bus, runtime, viewer
 from engine.manifest import manifest
 from engine.version import version
+from engine.watch import broke
 from engine.hooks import answer, displayed
 from providers.payload import DISPLAYED
 from engine.record import Record
@@ -64,12 +65,24 @@ def settings(record: Record) -> dict:
             **{name: view for name, f in features.FEATURES.items() if (view := f.settings_view(record)) is not None}}
 
 
+def unanswered(root: Path, env: str) -> None:
+    f = runtime.folder(root) / "hook-failures.log"
+    if not f.is_file():
+        return
+    lines = f.read_text(errors="replace").splitlines()
+    f.unlink(missing_ok=True)
+    codes = sorted({line.split()[1] for line in lines if len(line.split()) > 1})
+    broke(Record(root, env or runtime.env(root)), "\n".join([*lines[-5:], f"the hook got no answer from the server {len(lines)} times (codes {', '.join(codes)})"]),
+          where="the hook")
+
+
 @route("POST", "/api/hook/{provider}")
 def post_hook(req: Request) -> Reply:
     if Path(req.query.get("root") or "").resolve() != req.root.resolve() or req.params["provider"] not in PROVIDERS:
         return Reply(409, {})
     if req.body.get("hook_event_name") == DISPLAYED:
         return Reply(200, {}, after=lambda: displayed(req.root, req.body))
+    unanswered(req.root, req.query.get("env") or "")
     provider = PROVIDERS[req.params["provider"]]()
     out = answer(provider, req.root, {**req.body, "inbox": req.query.get("inbox") or ""}, int(req.query.get("pid") or 0), req.query.get("env") or "")
     return Reply(403 if provider.refused(out) else 200, out)

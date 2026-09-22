@@ -6,9 +6,10 @@ import sys
 import threading
 from pathlib import Path
 
-from engine import typist
+from engine import runtime, typist
 from engine.record import Record
 from engine.sessions import Sessions
+from engine.watch import threw
 from engine.engine import TICK, Engine
 from engine.package import CODE, ZIPPED
 
@@ -51,7 +52,10 @@ class Engines:
             while not stopping.is_set() and current(self.root) and not self.owned(held):
                 stopping.wait(TICK)
             while not stopping.is_set() and os.getppid() == self.parent and current(self.root):
-                self.tick()
+                try:
+                    self.tick()
+                except Exception:
+                    threw(self.root, self.env, f"the engines of {self.env}")
                 stopping.wait(TICK)
 
     def owned(self, held) -> bool:
@@ -120,5 +124,8 @@ class Children:
 
     def run(self, stopping) -> None:
         while not stopping.is_set():
-            self.tick()
+            try:
+                self.tick()
+            except Exception:
+                threw(self.root, runtime.env(self.root), "starting the engines")
             stopping.wait(TICK)
