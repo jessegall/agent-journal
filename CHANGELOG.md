@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.85.82 — A plugin can fill in settings it worked out itself
+
+- A plugin's answer may carry settings: values for its own settings, stored as chosen when they differ. The code-commandments plugin uses it to fill Folders to check with the folders it detects on install.
+
 ## 2.85.81 — A plugin setting can be a list, edited one line at a time
 
 - A setting of type list is edited as rows you add and remove (kit LineList); its value reaches the plugin one entry per line. The code-commandments plugin uses it for the folders it checks and leaves out.
