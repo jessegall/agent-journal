@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.96.3 — The project name is a pill inside the band
+
+The black chip naming the project and environment is a pill rounded all round, with space above and below it inside the coloured band, instead of a tab hanging from the band's top edge.
+
 ## 2.96.2 — The activity and files sidebars remember their last items
 
 The browser keeps the last 50 events of the activity sidebar and the last 50 changed files of the files sidebar for each journal and environment, and shows them at once when the viewer opens; fresh ones are merged in as they arrive, so the sidebars are never empty or short on a return.
