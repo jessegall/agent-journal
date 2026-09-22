@@ -53,8 +53,15 @@ class SkillsDetails(FeatureDetails):
             name="most_refusals",
             default=5,
             title="Refuse tool calls for a missing skill at most",
-            abstract="After this many refusals in a row the call goes through, so an agent is never stuck",
+            abstract="After this many refusals in a row the calls go through for a while, so an agent is never stuck",
             unit="times",
+        ),
+        Setting(
+            name="steps_aside",
+            default=10,
+            title="Then let tool calls through for",
+            abstract="After these, the missing skill is asked for again",
+            unit="tool uses",
         ),
     ]
 

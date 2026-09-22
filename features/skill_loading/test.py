@@ -117,12 +117,16 @@ def test_every_tool_call_waits_until_a_required_skill_is_loaded(tmp_path):
     assert "Skill: journal-plans" in call("Read", file_path="x.py"), "and every other tool call waits too"
     assert call("Skill", skill="journal-plans") == "", "loading a skill is never refused"
     record.set_setting("skill_loading", {"most_refusals": 3})
-    assert [bool(call("Read", file_path="x.py")) for _ in range(52)] == [True, *[False] * 50, True], \
-        "after the limit in a row the gate steps aside for fifty tool uses, then refuses again"
+    assert [bool(call("Read", file_path="x.py")) for _ in range(12)] == [True, *[False] * 10, True], \
+        "after the limit in a row the gate steps aside for ten tool uses, then refuses again"
+    record.set_setting("skill_loading", {"most_refusals": 2, "steps_aside": 2})
+    assert [bool(call("Read", file_path="x.py")) for _ in range(4)] == [True, False, False, True], \
+        "both the limit and how long the gate steps aside are settings"
     now = datetime.now(timezone.utc).isoformat()
     loaded = {"type": "assistant", "timestamp": now, "message": {"content": [{"type": "tool_use", "name": "Skill", "input": {"skill": "journal-plans"}}]}}
     transcript.write_text(transcript.read_text() + json.dumps(loaded) + "\n")
     assert call("Bash", command="journal plan phase 1 build --when done") == "", "once it is loaded, work goes on"
+    assert record.state("skill_loading", "claude-1").get("refused.RefuseUntilLoaded") == 0, "and a call that owes nothing clears the count"
 
 
 def test_a_session_start_holds_every_tool_call_until_the_always_on_skills_are_loaded():
