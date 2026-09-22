@@ -4,6 +4,11 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.84.105 — The agent names a dump's collection, and the dump window shows it working
+
+- journal dump name <n> "<name>" gives the dump's collection a name for what its items are about; the agent is told to name it once it has read them.
+- While a dump is being filed, the dump window shows a spinner, what the agent is doing right now (or a rotating working line), and a bar of items filed.
+
 ## 2.84.104 — A session starts with the journal skill alone, a third of its old size
 
 - Only the journal skill is named at start; the subject skills stay on the Skills page and load when their subject comes up.

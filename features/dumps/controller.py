@@ -15,14 +15,25 @@ class Dumps(Controller):
         self._collect(dump, [dump.ref])
         return self.load(dump.n)
 
+    def _collections(self):
+        return CONTROLLERS["collection"](self.record, actor=self.actor)
+
+    def _collection(self, dump) -> int:
+        return next((int(ref.split(":")[1]) for ref in dump.refs if ref.startswith("collection:")), 0)
+
     def _collect(self, dump, refs: list[str]):
-        collections = CONTROLLERS["collection"](self.record, actor=self.actor)
-        name = f"Dump {dump.n}, {dump.title}"[:80]
-        found = next((row["n"] for row in collections.summaries() if row["title"] == name and not row["deleted"] and not row["completed"]), 0)
-        collection = collections.load(found) if found else collections.create(name, abstract=f"Everything dump {dump.n} was filed into")
+        collections = self._collections()
+        found = self._collection(dump)
+        collection = collections.load(found) if found else collections.create(f"Dump {dump.n}, {dump.title}"[:80], abstract=f"Everything dump {dump.n} was filed into")
         collections.add(collection.n, refs)
-        if collection.ref not in self.load(dump.n).refs:
+        if not found:
             self.link(dump.n, collection.ref)
+
+    def name(self, n: int, title: str):
+        found = self._collection(self.load(int(n)))
+        if not found:
+            raise Refused(f"dump {n} has no collection")
+        return self._collections().update(found, title=title.strip())
 
     def _names(self, r) -> list[str]:
         return ([TEXT] if r.brief.strip() else []) + sorted(r.files)

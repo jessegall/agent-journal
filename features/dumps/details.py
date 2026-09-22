@@ -12,7 +12,8 @@ class DumpsDetails(FeatureDetails):
         A dump holds pasted text and dropped files; each is an item. The agent decides what
         every item becomes and files it, recording journal dump note <n> <item> "<what it is>",
         then journal dump filed <n> <item> "<what it did>" "<ref, ref>" or journal dump failed
-        <n> <item> "<why>". journal dump items <n> lists where every item stands, and the dump
+        <n> <item> "<why>". journal dump name <n> "<name>" names its collection for what the
+        items are about. journal dump items <n> lists where every item stands, and the dump
         closes by itself once every item is filed or failed.
     """
 
@@ -21,7 +22,9 @@ class DumpsDetails(FeatureDetails):
             name="arrived",
             title="dump {{n}}, {{title}}, has {{count}} to file - journal dump items {{n}}",
             brief="""
-                Read every item and decide what it becomes, then file it: a transcript or meeting
+                Read every item, then name its collection for what the items are about, in a few
+                words a person would search for: journal dump name {{n}} "<name>". Decide what each
+                item becomes and file it: a transcript or meeting
                 notes become a doc with a summary at the top, the decisions and the open points; an
                 image is tagged with a few words and filed with the doc it belongs to; a document
                 becomes a doc or is attached to the doc it extends; where the material states a goal

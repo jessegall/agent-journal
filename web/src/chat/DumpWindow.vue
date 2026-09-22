@@ -7,6 +7,9 @@ import {peek} from "../route.js";
 import Icon from "../kit/Icon.vue";
 import Btn from "../kit/Btn.vue";
 import Markdown from "../resource/Markdown.vue";
+import Spinner from "../kit/Spinner.vue";
+import {phrase} from "../layout/statusline.js";
+import {useNow} from "../composables/now.js";
 
 const draft = reactive({text: "", files: [], sending: false, error: "", over: false});
 const chosen = ref(0);
@@ -30,6 +33,15 @@ const items = computed(() =>
         : []
 );
 const left = computed(() => items.value.filter((i) => i.state === "waiting" || i.state === "noted").length);
+const now = useNow(3000);
+const working = computed(() => Boolean(dump.value && !dump.value.completed));
+const activity = computed(() => {
+    const queue = store.bar?.queue || [];
+    const last = queue[queue.length - 1];
+    return last && !last.done ? last.key : "";
+});
+const status = computed(() => activity.value || phrase("filing", now.value / 3));
+const progress = computed(() => (items.value.length ? (items.value.length - left.value) / items.value.length : 0));
 const collection = computed(() => (dump.value?.refs || []).find((ref) => ref.startsWith("collection:")) || "");
 const nextStep = computed(() =>
     dump.value ? rows("suggestion").find((s) => !s.deleted && !s.completed && s.refs.includes(dump.value.ref)) : null
@@ -123,9 +135,22 @@ function follow(ref) {
 
         <template v-else>
             <div class="dump-items">
+                <template v-if="working">
+                    <div class="dump-live">
+                        <div class="dump-live-line">
+                            <Spinner />
+                            <Transition name="dump-line" mode="out-in">
+                                <span :key="status">{{ status }}</span>
+                            </Transition>
+                        </div>
+                        <div class="dump-bar-track">
+                            <div class="dump-bar-fill" :style="{width: `${Math.max(progress, 0.04) * 100}%`}" />
+                        </div>
+                    </div>
+                </template>
                 <p class="dump-status">
                     <template v-if="dump.completed">{{ dump.outcome }}</template>
-                    <template v-else>{{ left }} of {{ items.length }} still being filed</template>
+                    <template v-else>{{ items.length - left }} of {{ items.length }} filed</template>
                     <template v-if="collection">
                         ·
                         <a href="#" class="dump-link" @click.prevent="follow(collection)">open its collection</a>
@@ -277,6 +302,49 @@ function follow(ref) {
     gap: 10px;
     padding: 12px 0;
     overflow-y: auto;
+}
+
+.dump-live {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--raised);
+    color: var(--text-2);
+    font-size: 13px;
+}
+
+.dump-live-line {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--accent-text);
+}
+
+.dump-bar-track {
+    height: 3px;
+    overflow: hidden;
+    border-radius: 2px;
+    background: var(--border);
+}
+
+.dump-bar-fill {
+    height: 100%;
+    border-radius: 2px;
+    background: var(--accent);
+    transition: width 0.4s ease;
+}
+
+.dump-line-enter-active,
+.dump-line-leave-active {
+    transition: opacity 0.25s ease;
+}
+
+.dump-line-enter-from,
+.dump-line-leave-to {
+    opacity: 0;
 }
 
 .dump-status {
