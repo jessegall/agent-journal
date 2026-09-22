@@ -1,4 +1,6 @@
 <script setup>
+import MenuItem from "./MenuItem.vue";
+import MenuPanel from "./MenuPanel.vue";
 import {onUnmounted, ref} from "vue";
 import Icon from "./Icon.vue";
 
@@ -42,9 +44,9 @@ onUnmounted(() => document.removeEventListener("click", away, true));
             <Icon name="chevron" :size="11" />
         </button>
         <template v-if="open">
-            <div class="drop-list">
+            <MenuPanel class="drop-list">
                 <template v-for="item in items" :key="item.key">
-                    <button type="button" :class="['drop-item', {on: item.key === picked}]" @click="choose(item)">
+                    <MenuItem :on="item.key === picked" @click="choose(item)">
                         <template v-if="item.running !== undefined">
                             <span :class="['drop-dot', {live: item.running}]" />
                         </template>
@@ -52,12 +54,12 @@ onUnmounted(() => document.removeEventListener("click", away, true));
                         <template v-if="item.note">
                             <span class="drop-note">{{ item.note }}</span>
                         </template>
-                    </button>
+                    </MenuItem>
                 </template>
                 <template v-if="!items.length">
                     <p class="drop-none">{{ empty }}</p>
                 </template>
-            </div>
+            </MenuPanel>
         </template>
     </div>
 </template>
@@ -98,46 +100,11 @@ onUnmounted(() => document.removeEventListener("click", away, true));
 }
 
 .drop-list {
-    position: absolute;
-    z-index: 40;
     top: 30px;
     left: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
     min-width: 260px;
     max-height: 320px;
     overflow-y: auto;
-    padding: 6px;
-    border: 1px solid var(--border-2);
-    border-radius: 9px;
-    background: var(--raised);
-    box-shadow: 0 14px 36px rgba(0, 0, 0, 0.45);
-}
-
-.drop-item {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 6px 8px;
-    border: 0;
-    border-radius: 6px;
-    background: none;
-    color: var(--text-2);
-    font: inherit;
-    font-size: 12px;
-    text-align: left;
-    cursor: pointer;
-}
-
-.drop-item:hover {
-    background: var(--hover);
-    color: var(--text);
-}
-
-.drop-item.on {
-    background: color-mix(in srgb, var(--accent) 16%, transparent);
-    color: var(--text);
 }
 
 .drop-item-text {

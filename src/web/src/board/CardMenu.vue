@@ -1,4 +1,6 @@
 <script setup>
+import MenuItem from "../kit/MenuItem.vue";
+import MenuPanel from "../kit/MenuPanel.vue";
 import {inject, ref} from "vue";
 import {api} from "../api/client.js";
 import {useOutside} from "../composables/outside.js";
@@ -25,41 +27,32 @@ function move(lane) {
 </script>
 
 <template>
-    <div ref="menu" class="menu" @click.stop>
+    <MenuPanel ref="menu" class="menu" @click.stop>
         <template v-if="card.targets.length">
             <p class="label">Move to</p>
             <template v-for="lane in card.targets" :key="lane">
-                <button type="button" class="entry" @click="move(lane)">{{ TITLES[lane] }}</button>
+                <MenuItem @click="move(lane)">{{ TITLES[lane] }}</MenuItem>
             </template>
         </template>
         <template v-if="store.board.agents.length">
             <p class="label">Assign to</p>
             <template v-for="agent in store.board.agents" :key="agent.name">
-                <button type="button" class="entry" @click="assign({to: agent.name})">{{ agent.name }}</button>
+                <MenuItem @click="assign({to: agent.name})">{{ agent.name }}</MenuItem>
             </template>
             <template v-if="card.assigned">
-                <button type="button" class="entry" @click="assign({off: true})">Unassign</button>
+                <MenuItem @click="assign({off: true})">Unassign</MenuItem>
             </template>
         </template>
-        <button type="button" class="entry open" @click="(emit('close'), peek('todo', card.n))">Open</button>
-    </div>
+        <MenuItem class="open" @click="(emit('close'), peek('todo', card.n))">Open</MenuItem>
+    </MenuPanel>
 </template>
 
 <style scoped>
 .menu {
-    position: absolute;
     top: 30px;
     right: 6px;
-    z-index: 5;
-    display: flex;
-    flex-direction: column;
     min-width: 170px;
     max-width: 240px;
-    padding: 6px;
-    border: 1px solid var(--border-2);
-    border-radius: 9px;
-    background: var(--side);
-    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.4);
 }
 
 .label {
@@ -68,25 +61,6 @@ function move(lane) {
     font-size: 11px;
     text-transform: uppercase;
     letter-spacing: 0.04em;
-}
-
-.entry {
-    overflow: hidden;
-    padding: 6px 8px;
-    border: 0;
-    border-radius: 6px;
-    background: none;
-    color: var(--text);
-    font: inherit;
-    font-size: 12.5px;
-    text-align: left;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    cursor: pointer;
-}
-
-.entry:hover {
-    background: var(--hover);
 }
 
 .open {
