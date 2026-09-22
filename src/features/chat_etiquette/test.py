@@ -20,4 +20,11 @@ def test_chat_that_talks_about_the_journal_is_named_back_and_the_skill_is_always
          'your chat talked about the journal\'s workings - "Your message is answered"',
          'your chat talked about the journal\'s workings - "You reacted"'], \
         "only the turn about the journal's workings is named back"
+    from features.chat_etiquette.handlers import SHOP_TALK
+    assert [SHOP_TALK.search(text).group(0) for text in ("Message 4636 is answered. Continuing.",
+                                                          "The replies to messages 4749, 4750 went out, but they're still listed as waiting.",
+                                                          "Closing both explicitly:")] == \
+        ["Message 4636 is answered", "replies to messages 4749, 4750 went out", "Closing both explicitly"], \
+        "the state of the user's rows is not news either"
+    assert SHOP_TALK.search("To-do 1013 trims the log; the reply hint is in the brief.") is None, "naming a row and its work is fine"
     assert "journal-chat-etiquette" in primary(), "its skill is loaded at every start, like the journal's own"
