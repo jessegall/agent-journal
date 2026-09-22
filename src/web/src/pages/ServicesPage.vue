@@ -1,4 +1,5 @@
 <script setup>
+import Console from "../kit/Console.vue";
 import {computed, ref} from "vue";
 import {api} from "../api/client.js";
 import Btn from "../kit/Btn.vue";
@@ -55,7 +56,7 @@ const {reading, log, read} = useServiceLog();
                 </span>
             </div>
             <template v-if="reading === row.id">
-                <pre class="log">{{ log || "Nothing is logged yet." }}</pre>
+                <Console :text="log || 'Nothing is logged yet.'" />
             </template>
         </template>
     </section>
@@ -146,18 +147,5 @@ const {reading, log, read} = useServiceLog();
     flex: none;
     display: flex;
     gap: 6px;
-}
-
-.log {
-    margin: 0;
-    padding: 10px 12px;
-    max-height: 300px;
-    overflow: auto;
-    border: 1px solid var(--border-2);
-    border-radius: 9px;
-    background: var(--code-bg);
-    font-family: ui-monospace, "SF Mono", Menlo, monospace;
-    font-size: 12px;
-    white-space: pre-wrap;
 }
 </style>

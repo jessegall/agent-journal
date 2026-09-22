@@ -1,8 +1,7 @@
 <script setup>
-import {computed} from "vue";
+import Console from "../kit/Console.vue";
 
-const props = defineProps({commands: {type: Array, default: () => []}});
-const newestFirst = computed(() => [...props.commands].reverse());
+defineProps({commands: {type: Array, default: () => []}});
 
 const line = (c) =>
     c.tool === "Bash"
@@ -11,30 +10,17 @@ const line = (c) =>
 </script>
 
 <template>
-    <div class="log">
-        <template v-for="c in newestFirst" :key="c.at">
+    <Console>
+        <template v-for="c in commands" :key="c.at">
             <div :class="['log-line', {running: !c.done, shell: c.tool === 'Bash'}]">
                 <span class="log-mark">{{ c.tool === "Bash" ? "$" : "›" }}</span>
                 <span class="log-text">{{ line(c) }}</span>
             </div>
         </template>
-    </div>
+    </Console>
 </template>
 
 <style scoped>
-.log {
-    display: flex;
-    flex-direction: column-reverse;
-    max-height: 340px;
-    overflow-y: auto;
-    padding: 8px 10px;
-    border-radius: 7px;
-    background: var(--code-bg);
-    font-family: ui-monospace, "SF Mono", Menlo, monospace;
-    font-size: 11.5px;
-    line-height: 1.55;
-}
-
 .log-line {
     display: flex;
     gap: 7px;
