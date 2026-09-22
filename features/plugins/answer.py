@@ -25,7 +25,7 @@ def nudged(record, journal, plugin: str, session: str, text: str, private: bool)
     rows = Agents(record, actor=SYSTEM)
     row = next((r for r in rows._every() if r.title == session), None) if session else rows.primary()
     if row:
-        journal.say(record, row, "plugin", private=private, actor=PLUGIN, title=text, brief=text, plugin=plugin)
+        journal.say(record, row, "plugin", private=private, actor=PLUGIN, title=plugin, brief=text, plugin=plugin)
 
 
 def wanted(reply: dict) -> list[tuple[str, object]]:

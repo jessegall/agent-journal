@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.85.80 — A plugin's note to the agent says its name once, then its words
+
+- A whisper or line from a plugin is titled with the plugin's name, so its text is no longer shown twice.
+
 ## 2.85.79 — Every plugin answer is written to its log, and the log can be cleared
 
 - Each answer a plugin gives, to a hook moment or to a refusal it was asked about, is written to its log with the time; journal plugin clear_log and the log dialog's Clear button empty it.
