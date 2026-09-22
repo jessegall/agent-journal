@@ -85,6 +85,8 @@ def test_one_dump_is_worked_at_a_time_its_log_is_kept_and_filing_asks_for_the_ne
     agent.failed(dump.n, "text", "nothing in it to keep")
     assert f"dump {dump.n} is filed (0 filed, 1 failed) - suggest the next step" in nudges(record), "closing the dump asks for the next step"
     assert nudges(record)[-1] == f"dump {later.n}, Another, has 1 item to file - journal dump items {later.n}", "and hands over the next one"
+    CONTROLLERS["dump"](record, actor=USER).reopen(dump.n, "more to add")
+    assert agent._in_hand().n == later.n, "a reopened dump joins the back of the queue, behind the one being filed"
     CONTROLLERS["dump"](record, actor=USER).stop(later.n)
     assert (agent.load(later.n).outcome, [n for n in nudges(record) if n.startswith(f"dump {later.n} is filed")]) == \
         ("stopped, 0 filed, 1 left out", []), "a stopped dump says what was left out and asks for no next step"

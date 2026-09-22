@@ -24,7 +24,7 @@ class DumpsDetails(FeatureDetails):
             name="arrived",
             title="dump {{n}}, {{title}}, has {{count}} to file - journal dump items {{n}}",
             brief="""
-                Read every item, then name its collection for what the items are about, in a few
+                Load the journal-dumps skill first if it is not loaded. Read every item, then name its collection for what the items are about, in a few
                 words a person would search for: journal dump name {{n}} "<name>". Decide what each
                 item becomes and file it: a transcript or meeting
                 notes become a doc with a summary at the top, the decisions and the open points; an

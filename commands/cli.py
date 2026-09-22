@@ -14,7 +14,7 @@ from engine.sessions import Sessions, allowed
 from resources.base import Refused
 from resources.shapes import typed
 from engine import runtime
-from commands.parser import Misused, parser
+from commands.parser import PRINTED, Misused, parser
 from engine.stored import undoable
 from engine.worktree import checkout
 
@@ -106,6 +106,7 @@ def lifted(argv: list[str]) -> tuple[list[str], str]:
 
 def run(argv: list[str], out=None, err=None) -> int:
     out, err = out or sys.stdout, err or sys.stderr
+    PRINTED.set(out)
     features.load()
     forced = "--force" in argv
     argv, why = lifted(argv)
