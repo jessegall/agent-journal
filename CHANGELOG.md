@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.84.40 — The comment button stays with the selected text while you scroll
+
+After selecting text in a document or a file, the "Comment on this" button now moves with the selection when the page scrolls, instead of staying where it first appeared.
+
 ## 2.84.39 — Keywords are plain words, matched where you choose
 
 A keyword on a fact, rule or reminder is now matched as a whole word, so variants like "said =" or ".said" are no longer needed: "said" is enough, and "unsaid" does not count. Each row has one setting for where its keywords match: text (what the agent writes, in edits and in the chat), commands (shell commands), both (the default) or everything (any tool call, including file paths, searches and URLs). The inspector shows it under Keywords as "Matched in". The agent's chat messages are now checked too, and the laws carry plain keywords and a scope of their own.
