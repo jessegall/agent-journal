@@ -231,6 +231,7 @@ class Comment(Shape, Resource):
 
 class AgentRow(Shape, Resource):
     type = "agent"
+    event_labels = {"reported": "Agent reported", "updated": "Agent updated"}
     data_fields: ClassVar[list[Field]] = [
         Field(name="status"),
         Field(name="event"),
