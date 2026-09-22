@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.85.53 — The badge and its blur appear at once and only fade out
+
+- Leaving the tab shows the badge and the blur behind it instantly, with no fade in, so switching back and forth quickly never leaves them half drawn. Both fade out together a second after the tab is focused.
+
 ## 2.85.52 — The badge goes in one second, whatever the page is doing
 
 - The badge fades on its own animation instead of a timer, so the work the viewer does when you come back cannot hold it on screen. Measured in the page: invisible 1.02 seconds after the tab is focused.
