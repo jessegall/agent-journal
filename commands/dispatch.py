@@ -166,7 +166,8 @@ def dispatch(method: str, path: str, root: Path, query: dict, body: dict) -> Rep
             finally:
                 if profile:
                     profile.disable()
-        return timed(later(reply, lambda: bus.release(queued)), root, params.get("env") or "main", method, path, began, profile)
+        return guarded(timed(later(reply, lambda: bus.release(queued)), root, params.get("env") or "main", method, path, began, profile),
+                       root, env_of(root, params, query), f"after {method} {path}")
     except Missing as e:
         return Reply(404, {"error": str(e)})
     except Refused as e:
@@ -177,6 +178,20 @@ def dispatch(method: str, path: str, root: Path, query: dict, body: dict) -> Rep
     except Exception as e:
         threw(root, env_of(root, params, query), f"{method} {path}")
         return Reply(500, {"error": f"{type(e).__name__}: {e}"})
+
+
+def guarded(reply: Reply, root: Path, env: str, where: str) -> Reply:
+    after = reply.after
+    if not after:
+        return reply
+
+    def run() -> None:
+        try:
+            after()
+        except Exception:
+            threw(root, env, where)
+    reply.after = run
+    return reply
 
 
 def env_of(root: Path, params: dict, query: dict) -> str:

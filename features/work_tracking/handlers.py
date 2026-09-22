@@ -35,6 +35,11 @@ class TodoCompleted(ResourceEvent):
 
 
 @dataclass(frozen=True)
+class PlanCompleted(ResourceEvent):
+    on: ClassVar[str] = "plan.completed"
+
+
+@dataclass(frozen=True)
 class WorkLogged(ResourceEvent):
     on: ClassVar[str] = "work.updated"
     section: str = ""
@@ -89,25 +94,37 @@ class CloseWork(Handler):
 def name_parked(context: Context) -> None:
     parked = [w for w in context.journal.works._standing() if w.parked]
     agent = context.journal.agents.primary()
-    if parked and agent:
-        context.speaking_to(agent).agent.say("parked", n=parked[0].n, title=parked[0].title, why=parked[0].parked,
-                                             more=f" and {len(parked) - 1} more" if len(parked) > 1 else "")
+    state, now = context.record.state(context.feature.name), time.time()
+    if not parked or not agent or now - float(state.get("parked_named", 0)) <= ASKED_AGAIN_AFTER:
+        return
+    context.speaking_to(agent).agent.say("parked", n=parked[0].n, title=parked[0].title, why=parked[0].parked,
+                                         more=f" and {len(parked) - 1} more" if len(parked) > 1 else "")
+    state.set("parked_named", now)
 
 
 class NameParkedOnTodoDone(Handler):
     def handle(self, context: Context, event: TodoCompleted) -> None:
-        if not context.journal.todos.load(event.n).work:
+        if not any(int(w.todo or 0) == event.n for w in context.journal.works._standing()):
             name_parked(context)
+
+
+def name_unblocked(context: Context, ref: str) -> None:
+    todos, agent = context.journal.todos, context.journal.agents.primary()
+    if not agent:
+        return
+    for row in [r for r in todos._standing() if ref in (r.after or []) and not r.blocked and not todos.waits(r)]:
+        context.speaking_to(agent).agent.say("unblocked", n=row.n, title=row.title, closed=ref.replace(":", " "))
 
 
 class UnblockWaitingRows(Handler):
     def handle(self, context: Context, event: TodoCompleted) -> None:
-        todos, ref = context.journal.todos, f"todo:{event.n}"
-        agent = context.journal.agents.primary()
-        for row in [r for r in todos._standing() if ref in (r.after or [])]:
-            freed = todos.update(row.n, after=[r for r in row.after if r != ref])
-            if agent and not todos.waits(freed):
-                context.speaking_to(agent).agent.say("unblocked", n=row.n, title=row.title, closed=event.n)
+        if not context.journal.todos.load(event.n).struck:
+            name_unblocked(context, f"todo:{event.n}")
+
+
+class UnblockWhenPlanFinishes(Handler):
+    def handle(self, context: Context, event: PlanCompleted) -> None:
+        name_unblocked(context, f"plan:{event.n}")
 
 
 class AskStillBlocked(Handler):
@@ -116,7 +133,7 @@ class AskStillBlocked(Handler):
         closed = int(state.get("closed", 0)) + 1
         state.set("closed", closed)
         agent = context.journal.agents.primary()
-        if not agent or closed % int(context.settings["ask_blocked_every"]):
+        if not agent or closed % max(1, int(context.settings["ask_blocked_every"])):
             return
         asked, now = state.get("asked", {}), time.time()
         for row in [r for r in context.journal.todos._standing() if r.blocked and now - float(asked.get(str(r.n), 0)) > ASKED_AGAIN_AFTER]:

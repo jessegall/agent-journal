@@ -158,9 +158,11 @@ def test_parked_and_blocked_rows_are_named_back_to_the_agent():
     works.complete(second.n, how="fixed")
     parked = f"work {first.n}, the slow build, is still parked - can you continue it now?"
     assert nudges(record)[-1] == parked, "ending work reminds the agent of the work it parked"
-    loose = todos.create("a row done without work")
-    todos.complete(loose.n, how="done")
-    assert nudges(record).count(parked) == 2, "closing a to-do reminds it too"
+    todos.complete(todos.create("a row done right after").n, how="done")
+    assert nudges(record).count(parked) == 1, "not again within ten minutes"
+    record.state("work_tracking").set("parked_named", 0)
+    todos.complete(todos.create("a row done later").n, how="done")
+    assert nudges(record).count(parked) == 2, "later, closing a to-do reminds it too"
 
     record.set_setting("work_tracking", {"ask_blocked_every": 2})
     base, extra = todos.create("the base"), todos.create("another base")
@@ -170,11 +172,14 @@ def test_parked_and_blocked_rows_are_named_back_to_the_agent():
     stuck = todos.create("the migration")
     todos.block(stuck.n, "the user decides the schema")
     todos.complete(base.n, how="done")
-    assert (todos.load(waiting.n).after, any("is unblocked" in n for n in nudges(record))) == ([f"todo:{extra.n}"], False), \
-        "one of two rows closed: the closed one comes off the row, and it still waits"
+    assert (todos.waits(todos.load(waiting.n)), any("is unblocked" in n for n in nudges(record))) == ([f"todo:{extra.n}"], False), \
+        "one of two rows closed: it still waits on the other, and nothing is said"
     todos.complete(extra.n, how="done")
-    assert todos.load(waiting.n).after == [] and nudges(record)[-2:].count(
-        f"todo {waiting.n}, built on both, is unblocked - todo {extra.n} closed") == 1, "the last one closed: it is unblocked and the agent is told"
+    assert nudges(record)[-2:].count(f"todo {waiting.n}, built on both, is unblocked - todo {extra.n} closed") == 1, \
+        "the last one closed: the agent is told the row is unblocked"
+    todos.reopen(extra.n, "not done after all")
+    assert todos.waits(todos.load(waiting.n)) == [f"todo:{extra.n}"], "the row keeps what it waits on, so reopening one makes it wait again"
+    todos.complete(extra.n, how="done")
     blocked = f"todo {stuck.n}, the migration, is still blocked - is it still?"
     assert nudges(record).count(blocked) == 1, "a row blocked from outside is asked about every second closed to-do, not in between"
     todos.complete(todos.create("one more").n, how="done")

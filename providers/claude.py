@@ -292,12 +292,15 @@ class Claude(Provider):
                 continue
             for block in row["message"]["content"]:
                 if isinstance(block, dict) and block.get("type") == "tool_result":
-                    ended.setdefault(str(block.get("tool_use_id") or ""), ("refused" if block.get("is_error") else "returned", at))
+                    ended.setdefault(str(block.get("tool_use_id") or ""), ("refused" if self.refused_by_hook(block) else "returned", at))
         for use in (u for u in uses if u["name"] == "TaskStop"):
             stopped = tasks.get(str(use["input"].get("task_id") or use["input"].get("shell_id") or ""))
             if stopped and ended.get(stopped, ("returned",))[0] == "returned":
                 ended[stopped] = ("stopped", use["at"])
         return ended
+
+    def refused_by_hook(self, block: dict) -> bool:
+        return bool(block.get("is_error")) and "hook error" in json.dumps(block.get("content") or "")
 
     def loaded(self, uses: list[dict]) -> list[str]:
         return sorted({str(u["input"].get("skill") or "") for u in uses if u["name"] == "Skill"} - {""})
@@ -307,8 +310,11 @@ class Claude(Provider):
             return []
         return self.loaded([use for _, row in self.entries(session) for use in self.tool_uses(row)])
 
+    def starts_window(self, row: dict) -> bool:
+        return bool(row.get("isCompactSummary"))
+
     def since_compaction(self, rows: list[dict]) -> list[dict]:
-        starts = [i for i, row in enumerate(rows) if row.get("isCompactSummary")]
+        starts = [i for i, row in enumerate(rows) if self.starts_window(row)]
         return rows[starts[-1]:] if starts else rows
 
     def crew(self, path: Path) -> dict:

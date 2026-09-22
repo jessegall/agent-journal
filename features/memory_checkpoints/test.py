@@ -40,3 +40,17 @@ def test_a_context_mark_holds_writes_until_the_agent_pins_rules_or_says_nothing(
     record.set_setting("triggers", {"context": {"at": [96], "unit": "percent"}})
     report(record, "working", "PostToolUse", context=95)
     assert bool(gate()) is False, "the marks are a setting"
+
+
+def test_every_standing_rule_and_fact_is_read_again_a_week_on():
+    from features.memory_checkpoints.reread import owed, standing
+    record = fresh()
+    Facts(record, actor=AGENT).create("the port is 8423", brief="seen in the heartbeat", keywords=["port"])
+    struck = Facts(record, actor=AGENT).create("the port is 8430", brief="an old port", keywords=["port"])
+    Facts(record, actor=AGENT).complete(struck.n, "moved")
+    Rules(record, actor=AGENT).create("main only", brief="the user said so", keywords=["branch"])
+    assert owed(record) is False, "a young record owes no reading pass yet"
+    assert owed(record, days=0) is True, "a week after its first event, never read: owed"
+    assert sorted(r.ref for r in standing(record)) == ["fact:1", "rule:1"], "the reading pass is every standing rule and fact"
+    Rules(record, actor=AGENT).action("reread")()
+    assert owed(record) is False, "read: no longer owed"

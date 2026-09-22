@@ -2,7 +2,7 @@ from features.base import Feature
 from features.journal import Journal
 from features.work_tracking.commands import AwaitWork, LogWork, ParkWork, ResumeWork
 from features.work_tracking.details import WorkDetails
-from features.work_tracking.handlers import (AskStillAwaiting, ClearWaitOnActivity, CloseWork, CountEdits, EndWorkWithTodo, HoldUntilDeclared, AskStillBlocked, NameParkedOnTodoDone, UnblockWaitingRows, OfferNextRow, OfferNextRowOnTheClock, OpenWork, RemindOpenWork, ResetEditsOnLog,
+from features.work_tracking.handlers import (AskStillAwaiting, ClearWaitOnActivity, CloseWork, CountEdits, EndWorkWithTodo, HoldUntilDeclared, AskStillBlocked, NameParkedOnTodoDone, UnblockWaitingRows, UnblockWhenPlanFinishes, OfferNextRow, OfferNextRowOnTheClock, OpenWork, RemindOpenWork, ResetEditsOnLog,
                                     TrackFiles)
 from features.work_tracking.interceptors import RefuseHeldWrites
 
@@ -23,6 +23,7 @@ class WorkFeature(Feature):
         journal.events.handler(EndWorkWithTodo())
         journal.events.handler(NameParkedOnTodoDone())
         journal.events.handler(UnblockWaitingRows())
+        journal.events.handler(UnblockWhenPlanFinishes())
         journal.events.handler(AskStillBlocked())
         journal.events.handler(TrackFiles())
         journal.events.handler(RemindOpenWork())

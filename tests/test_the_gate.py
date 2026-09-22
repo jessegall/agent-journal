@@ -9,10 +9,11 @@ from providers import PROVIDERS
 from resources.base import AGENT
 from tests.conftest import fresh
 
-REFUSED = 'nothing is open, so this write would not be filed: journal work start "<the work>" first'
 
 
 def test_a_write_is_refused_until_work_is_open_for_every_provider():
+    features.load()
+    REFUSED = features.FEATURES["work_tracking"].line("undeclared held", {})[0]
     record = fresh()
     root, env = record.root, record.env
 
@@ -57,7 +58,7 @@ def test_a_write_is_refused_until_work_is_open_for_every_provider():
 def test_a_hook_that_crashes_is_told_to_the_agent_for_every_provider(monkeypatch):
     from commands.dispatch import dispatch
     import commands.http  # noqa: F401
-    from controllers.types import Nudges
+    from controllers.types import Notices, Nudges
     from resources.base import SYSTEM
     from tests.kit import report
     features.load()
@@ -73,6 +74,11 @@ def test_a_hook_that_crashes_is_told_to_the_agent_for_every_provider(monkeypatch
         lines = [f"{n.title} {n.brief}" for n in Nudges(record, actor=SYSTEM)._every()]
         assert any("hit an error" in line and f"TypeError: {name} crashed" in line for line in lines), \
             f"{name}: a crash inside the hook reaches the agent, with the error"
+        dispatch("POST", f"/api/hook/{name}", record.root, {"root": str(record.root), "env": record.env}, body)
+        assert len([line for line in lines if "crashed" in line]) == len([n for n in Nudges(record, actor=SYSTEM)._every() if "crashed" in n.brief]), \
+            f"{name}: the same error again is not told twice"
+        for notice in Notices(record, actor=SYSTEM)._standing():
+            Notices(record, actor=SYSTEM).complete(notice.n, "fixed")
     monkeypatch.undo()
     from engine import runtime
     (runtime.folder(record.root) / "hook-failures.log").write_text("1790000000 000 claude\n1790000001 500 claude\n")

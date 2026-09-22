@@ -3,7 +3,6 @@ import time
 
 from controllers.types import Facts, Questions, Reminders, Rules, Todos
 from features.record_audit.audit import evidence
-from features.memory_checkpoints.reread import owed as read_owed, standing
 from resources.base import AGENT, USER
 from tests.kit import nudges, tick
 from tests.conftest import fresh
@@ -49,13 +48,6 @@ def test_evidence_finds_dead_paths_and_verbs_and_a_struck_claim_has_none():
     questions.path(q.n).write_text(old.dump())
     assert [e["evidence"] for e in evidence(record) if e["ref"] == row.ref] == ["waiting on the user for over 7 days (question 1)"], \
         "eight days waiting: evidence"
-
-    assert read_owed(record) is False, "a young record owes no reading pass yet"
-    assert read_owed(record, days=0) is True, "a week after its first event, never read: owed"
-    assert sorted(r.ref for r in standing(record)) == ["fact:1", "fact:3", "rule:1", "rule:2", "rule:3"], \
-        "the reading pass is every standing rule and fact, in full"
-    Rules(record, actor=AGENT).action("reread")()
-    assert read_owed(record) is False, "read: no longer owed"
 
     tick(record)
     assert nudges(record)[0].startswith("3 things in the record have evidence against them") is True, \

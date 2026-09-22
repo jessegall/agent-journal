@@ -1,3 +1,5 @@
+import re
+import threading
 import time
 import traceback
 from pathlib import Path
@@ -11,6 +13,8 @@ SHOWN = 14
 TITLE = "The engine is not running"
 FAULT = "The engine hit an error and carried on"
 WHICH = "fault"
+FRAME = re.compile(r'File "([^"]+)", line (\d+)')
+ONCE = threading.Lock()
 DAMAGED = "A row could not be read and is left out"
 SAYS = "journal: {where} hit an error and kept going; the last of it is below and the whole of it is in .journal/runtime/engine.log. Fix it, then say so."
 STEADY = "the engine has been running cleanly again"
@@ -34,11 +38,12 @@ def crashed(code: int | None, since: float) -> bool:
 
 
 def once(record, title: str, brief: str, which: str = "") -> bool:
-    notices = Notices(record, actor=SYSTEM)
-    if any(n.title == title and n.data.get(WHICH, "") == which for n in notices._standing()):
-        return False
-    notices.create(title, brief=brief, tone="warn", **{WHICH: which})
-    return True
+    with ONCE:
+        notices = Notices(record, actor=SYSTEM)
+        if any(n.title == title and n.data.get(WHICH, "") == which for n in notices._standing()):
+            return False
+        notices.create(title, brief=brief, tone="warn", **{WHICH: which})
+        return True
 
 
 def over(record, title: str, how: str) -> None:
@@ -57,9 +62,15 @@ def fault_of(trouble: str) -> str:
     return lines[-1].strip() if lines else ""
 
 
+def place_of(trouble: str) -> str:
+    frames = FRAME.findall(str(trouble or ""))
+    kind = fault_of(trouble).split(":", 1)[0]
+    return f"{kind} at {frames[-1][0]}:{frames[-1][1]}" if frames else fault_of(trouble)
+
+
 def broke(record, trouble: str, driver=None, where: str = "the engine") -> None:
     fault = fault_of(trouble)
-    if not once(record, FAULT, trouble, fault):
+    if not once(record, FAULT, trouble, place_of(trouble)):
         return
     line = SAYS.format(where=where)
     if driver and driver.alive():

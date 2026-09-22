@@ -236,7 +236,12 @@ class Provider(ABC):
     def loaded_skills(self, path: Path) -> dict[str, float]:
         return dict(self.folded(path, self.skill_loads, dict))
 
+    def starts_window(self, row: dict) -> bool:
+        return False
+
     def skill_loads(self, loads: dict, row: dict) -> dict:
+        if self.starts_window(row):
+            loads.clear()
         for use in self.tool_uses(row):
             skill = (use.get("input") or {}).get("skill")
             if use.get("name") == "Skill" and skill:
