@@ -10,7 +10,7 @@ export function useRevisions(resource) {
     const numbers = computed(() => resource().data.revisions || []);
     const at = ref(-1);
     const pages = reactive({});
-    const changes = ref(true);
+    const changes = ref(false);
     const error = ref("");
     const now = useNow(15000);
 
@@ -87,5 +87,5 @@ export function useRevisions(resource) {
         }
     }
 
-    return reactive({numbers, at, changes, error, open, latest, page, parts, topChanged, status, note, ticks, go, keep});
+    return reactive({numbers, at, changes, error, open, latest, comparing, page, parts, topChanged, status, note, ticks, go, keep});
 }

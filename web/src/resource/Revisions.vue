@@ -13,7 +13,7 @@ const revisions = useRevisions(() => props.resource);
 </script>
 
 <template>
-    <template v-if="revisions.latest">
+    <template v-if="revisions.latest && !revisions.comparing">
         <ResourceBody :resource="resource" :comments="false" @close="emit('close')">
             <template #head>
                 <RevisionStrip :revisions="revisions" />
@@ -56,9 +56,11 @@ const revisions = useRevisions(() => props.resource);
                             </template>
                         </header>
                         <template v-if="part.kind === 'changed'">
-                            <pre
-                                class="diff"
-                            ><template v-for="(line, i) in part.lines" :key="i"><span :class="['line', line.kind]">{{ line.text || " " }}</span></template></pre>
+                            <div class="diff">
+                                <template v-for="(line, i) in part.lines" :key="i">
+                                    <Markdown :class="['line', line.kind]" :text="line.text || ' '" />
+                                </template>
+                            </div>
                         </template>
                         <template v-else>
                             <Markdown :text="part.body" />
@@ -154,17 +156,21 @@ const revisions = useRevisions(() => props.resource);
 
 .diff {
     margin: 4px 0 0;
-    font-family: inherit;
     font-size: 13px;
     line-height: 1.55;
-    white-space: pre-wrap;
 }
 
 .line {
-    display: block;
+    min-height: 1.55em;
     padding: 0 6px;
     border-radius: 3px;
     color: var(--text-2);
+}
+
+.line :deep(p),
+.line :deep(ul),
+.line :deep(ol) {
+    margin: 0;
 }
 
 .line.added {
