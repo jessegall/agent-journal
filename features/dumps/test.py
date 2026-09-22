@@ -40,3 +40,16 @@ def test_the_agent_is_told_when_a_dump_arrives_and_when_more_is_dropped_on_it(tm
     assert f"dump {dump.n}, A pile, has 2 items to file - journal dump items {dump.n}" in nudges(record), "a file dropped on it later is named again"
     CONTROLLERS["dump"](record, actor=AGENT).create("the agent's own", brief="notes")
     assert not [n for n in nudges(record) if "the agent's own" in n], "a dump the agent made is not announced to it"
+
+
+def test_a_dump_makes_its_own_collection_and_everything_it_files_joins_it():
+    record = fresh()
+    dump = CONTROLLERS["dump"](record, actor=USER).create("Launch notes", brief="notes")
+    collections = CONTROLLERS["collection"](record, actor=USER)
+    made = [c for c in collections.all() if c.title == f"Dump {dump.n}, Launch notes"]
+    assert (len(made), collections.members(made[0].n)) == (1, [f"dump {dump.n}  Launch notes"]), "a new dump has its collection, with itself in it"
+    agent = CONTROLLERS["dump"](record, actor=AGENT)
+    doc, task = Docs(record, actor=AGENT).create("The launch"), Todos(record, actor=AGENT).create("book the room")
+    agent.filed(dump.n, "text", "a doc and a to-do", f"{doc.ref}, {task.ref}")
+    assert collections.members(made[0].n)[1:] == ["doc 1  The launch", "todo 1  book the room"], "what it files joins the same collection"
+    assert made[0].ref in agent.load(dump.n).refs, "the dump links its collection"

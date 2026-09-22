@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.84.86 — A dump makes its own collection
+
+Every dump opens a collection named after it, holding the dump and everything it is filed into, so all that came from one dump is found together. Dumps are no longer listed in the sidebar: you start them from the chat, and what you keep is the collection.
+
 ## 2.84.85 — The agent files a dump the moment it arrives
 
 When you create a dump, or drop another file on one that is open, the agent is told how many items wait to be filed, and how to file each kind: a transcript becomes a doc with its summary, decisions and open points, an image is tagged and filed with its doc, a document becomes a doc, and a stated goal starts a plan. It asks only when it cannot tell what an item is for.
