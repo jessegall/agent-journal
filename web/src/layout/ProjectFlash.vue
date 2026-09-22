@@ -33,7 +33,7 @@ onUnmounted(() => clearTimeout(timer));
 
 <template>
     <Transition name="veil">
-        <div v-if="showing" class="flash-veil" aria-hidden="true" />
+        <div v-if="showing" :class="['flash-veil', {fading: !away.hidden}]" aria-hidden="true" />
     </Transition>
     <Transition name="flash">
         <div v-if="showing" :class="['project-flash', {fading: !away.hidden}]" :style="{'--tint': tint}" aria-hidden="true">
@@ -63,6 +63,10 @@ onUnmounted(() => clearTimeout(timer));
     pointer-events: none;
 }
 
+.flash-veil.fading {
+    animation: hold-then-go 1050ms ease forwards;
+}
+
 .flash-veil {
     position: fixed;
     inset: 0;
@@ -73,7 +77,10 @@ onUnmounted(() => clearTimeout(timer));
     pointer-events: none;
 }
 
-.veil-enter-active,
+.veil-enter-active {
+    transition: none;
+}
+
 .veil-leave-active {
     transition: opacity 240ms ease;
 }
@@ -116,20 +123,13 @@ onUnmounted(() => clearTimeout(timer));
 }
 
 .flash-enter-active {
-    transition:
-        opacity 180ms ease,
-        transform 240ms cubic-bezier(0.22, 0.7, 0.3, 1);
+    transition: none;
 }
 
 .flash-leave-active {
     transition:
         opacity 150ms ease,
         transform 150ms ease;
-}
-
-.flash-enter-from {
-    opacity: 0;
-    transform: translate(-50%, -8px) scale(0.97);
 }
 
 .flash-leave-to {
