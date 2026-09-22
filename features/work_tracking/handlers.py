@@ -1,10 +1,11 @@
 from dataclasses import dataclass
 from typing import ClassVar
 
-from engine.events import AgentUpdated, AnyEvent, ResourceEvent, ToolFinished
+from engine.events import AgentUpdated, AnyEvent, ClockTicked, ResourceEvent, ToolFinished
 from features import trigger
 from features.parts import WHOLE_FEATURE, AgentContext, Context, Handler
 from features.work_tracking import tracker
+from engine.transcript import IDLE
 from features.work_tracking.next import next
 from resources.types import Work
 
@@ -135,8 +136,20 @@ class OfferNextRow(Handler):
     behaviour = "auto"
 
     def handle(self, context: AgentContext, event: AgentUpdated) -> None:
-        if working(context):
-            return
-        row = next(context.record)
-        if row:
-            context.agent.say("next", n=row.n)
+        offer(context)
+
+
+class OfferNextRowOnTheClock(Handler):
+    def handle(self, context: AgentContext, event: ClockTicked) -> None:
+        if context.on("auto") and context.agent.row.status == IDLE:
+            offer(context)
+
+
+def offer(context: AgentContext) -> None:
+    if working(context):
+        return
+    row = next(context.record)
+    stretch = f"{row.n}:{context.agent.row.at}" if row else ""
+    if row and context.state.get("offered") != stretch:
+        context.state.set("offered", stretch)
+        context.agent.say("next", n=row.n)

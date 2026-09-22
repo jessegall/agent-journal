@@ -126,3 +126,40 @@ def test_one_to_do_is_in_hand_until_it_is_parked_or_done():
     assert todos.start(third.n).todo == third.n, "so the next one starts"
     works.complete(works.active().n, how="set aside")
     assert todos.load(third.n).status == "", "work that ends without its to-do puts the to-do back on the list"
+
+
+def test_when_a_phase_completes_under_auto_the_next_phase_row_is_offered():
+    from features.plans.controller import Plans
+    record = fresh()
+    record.features = {**record.features, "work_tracking.auto": True}
+    todos, plans = Todos(record, actor=AGENT), Plans(record, actor=AGENT)
+    first, second = todos.create("phase one's row"), todos.create("phase two's row")
+    plan = plans.create("two phases", goal="both done")
+    for p, row in ((1, first), (2, second)):
+        plans.phase(plan.n, f"phase {p}", when="its row is done")
+        plans.place(plan.n, p, [row.n])
+    plans.ready(plan.n)
+    Plans(record, actor=USER).activate(plan.n)
+    todos.start(first.n)
+    todos.complete(first.n, how="done")
+    idle(record)
+    assert f"todo {second.n} next" in nudges(record), "the row of the phase that just opened is offered at once"
+
+
+def test_an_idle_agent_under_auto_is_offered_the_next_row_even_when_its_idle_report_was_lost():
+    from tests.kit import tick
+    record = fresh()
+    record.features = {**record.features, "work_tracking.auto": True}
+    from controllers.types import Agents
+    from engine.stored import write_text
+    row = Todos(record, actor=USER).create("waiting")
+    report(record, "working", "PreToolUse")
+    agents = Agents(record, actor=USER)
+    agent = agents.by_session("claude-1")
+    agent.data["status"] = "idle"
+    write_text(agents.path(agent.n), agent.dump())
+    assert nudges(record) == [], "the turn ended without its report, so nothing was offered"
+    tick(record)
+    tick(record)
+    assert [n for n in nudges(record) if n == f"todo {row.n} next"] == [f"todo {row.n} next"], \
+        "the engine's clock offers it once, when the report that ends a turn never came"
