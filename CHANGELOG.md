@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.84.100 — The dump window transitions out when it closes
+
+- Back to chat fades the dump window out over the chat instead of cutting to it.
+
 ## 2.84.99 — The hub shows each journal in its own colour
 
 - Each journal's dot on the hub takes that journal's colour, dimmed when it is not running.
