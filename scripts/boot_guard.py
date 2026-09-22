@@ -21,7 +21,7 @@ LIMIT = 5.0
 
 
 def launches(place: Path, entry: Path, name: str, during=None) -> None:
-    (place / "bin").mkdir(exist_ok=True)
+    (place / "bin").mkdir(parents=True, exist_ok=True)
     (place / "project" / f".{name}").mkdir(parents=True, exist_ok=True)
     standin = place / "bin" / name
     standin.write_text(STANDIN)
@@ -30,19 +30,40 @@ def launches(place: Path, entry: Path, name: str, during=None) -> None:
     env.pop("JOURNAL_ENV", None)
     journal = [sys.executable, str(entry), "--root", str(place / "project" / ".journal")]
     launched = subprocess.Popen([*journal, name], cwd=place / "project", env=env, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-    began = time.time()
-    awaited = place / "bin" / (f"{name}.typed" if DRIVERS[name].confirm(b"Ask Codex to do anything") else f"{name}.started")
-    while not awaited.exists() and launched.poll() is None and time.time() - began < WAIT:
-        time.sleep(0.1)
-    if during:
-        during()
-    (place / "bin" / f"{name}.quit").touch()
-    text = launched.communicate(timeout=WAIT)[0].decode(errors="replace")
-    (place / "bin" / f"{name}.quit").unlink()
-    subprocess.run([*journal, "stop"], cwd=place / "project", env=env, capture_output=True, timeout=WAIT)
+    try:
+        began = time.time()
+        awaited = place / "bin" / (f"{name}.typed" if DRIVERS[name].confirm(b"Ask Codex to do anything") else f"{name}.started")
+        while not awaited.exists() and launched.poll() is None and time.time() - began < WAIT:
+            time.sleep(0.1)
+        if during:
+            during()
+        (place / "bin" / f"{name}.quit").touch()
+        text = launched.communicate(timeout=WAIT)[0].decode(errors="replace")
+        subprocess.run([*journal, "stop"], cwd=place / "project", env=env, capture_output=True, timeout=WAIT)
+        left = lingering(place)
+    finally:
+        (place / "bin" / f"{name}.quit").touch()
+        launched.kill()
+        launched.wait(WAIT)
+        cleared(place)
+        (place / "bin" / f"{name}.quit").unlink(missing_ok=True)
     assert "Traceback" not in text, f"journal {name} crashed:\n{text}"
     assert (place / "bin" / f"{name}.started").exists(), f"journal {name} never started the agent:\n{text}"
     assert awaited.exists(), f"journal {name} never typed its first message:\n{text}"
+    assert not left, f"journal {name} left processes running after journal stop:\n" + "\n".join(left)
+
+
+def lingering(place: Path, within: float = 3.0) -> list[str]:
+    began = time.time()
+    while True:
+        found = subprocess.run(["pgrep", "-fl", str(place).removeprefix("/private")], capture_output=True, text=True, timeout=WAIT).stdout.splitlines()
+        if not found or time.time() - began >= within:
+            return found
+        time.sleep(0.1)
+
+
+def cleared(place: Path) -> None:
+    subprocess.run(["pkill", "-9", "-f", str(place).removeprefix("/private")], capture_output=True, timeout=WAIT)
 
 
 def serves(journal: list[str], cwd: Path, env: dict) -> None:
@@ -85,6 +106,7 @@ def guard() -> float:
             launches(place, root / "journal.py", name)
         return time.time() - began
     finally:
+        cleared(place)
         shutil.rmtree(place, ignore_errors=True)
 
 

@@ -1,7 +1,6 @@
 import os
 import subprocess
 import sys
-import tempfile
 import time
 import zipfile
 from pathlib import Path
@@ -20,13 +19,13 @@ def test_every_import_in_the_package_resolves():
     assert [f"{path.name}:{node.lineno}" for path, node in imports() for alias in node.names if missing(node.module, alias.name)] == []
 
 
-def test_every_agent_launches_under_the_journal_and_exits_cleanly():
+def test_every_agent_launches_under_the_journal_and_exits_cleanly(tmp_path):
     for name in DRIVERS:
-        launches(Path(tempfile.mkdtemp(prefix="boot-")), HERE / "journal.py", name)
+        launches(tmp_path / name, HERE / "journal.py", name)
 
 
-def test_every_agent_launches_from_an_installed_zip():
-    place = Path(tempfile.mkdtemp(prefix="boot-"))
+def test_every_agent_launches_from_an_installed_zip(tmp_path):
+    place = tmp_path
     (place / "project").mkdir()
     env = {**os.environ, "HOME": str(place / "home"), "AGENT_JOURNAL_BOOTSTRAPPED": "1"}
     installed = subprocess.run([sys.executable, str(HERE / "install.py"), "upgrade", str(place / "project")], env=env, capture_output=True, text=True, timeout=120)
@@ -63,8 +62,8 @@ def test_every_agent_launches_from_an_installed_zip():
     launches(place, root / "journal.py", "claude", during=upgraded)
 
 
-def test_the_journal_starts_on_a_record_with_a_damaged_row():
-    place = Path(tempfile.mkdtemp(prefix="boot-"))
+def test_the_journal_starts_on_a_record_with_a_damaged_row(tmp_path):
+    place = tmp_path
     root = place / ".journal"
     journal = [sys.executable, str(HERE / "journal.py"), "--root", str(root)]
     subprocess.run([*journal, "todo", "create", "a row"], cwd=place, capture_output=True, timeout=WAIT)
@@ -74,8 +73,8 @@ def test_the_journal_starts_on_a_record_with_a_damaged_row():
     assert (ran.returncode, "Traceback" in ran.stderr) == (0, False), f"a damaged row stopped the journal:\n{ran.stderr}"
 
 
-def test_a_build_whose_supervisor_dies_on_start_goes_back_to_the_last_good_one():
-    place = Path(tempfile.mkdtemp(prefix="boot-"))
+def test_a_build_whose_supervisor_dies_on_start_goes_back_to_the_last_good_one(tmp_path):
+    place = tmp_path
     (place / "project").mkdir()
     env = {**os.environ, "HOME": str(place / "home"), "AGENT_JOURNAL_BOOTSTRAPPED": "1"}
     subprocess.run([sys.executable, str(HERE / "install.py"), "upgrade", str(place / "project")], env=env, capture_output=True, timeout=120)
@@ -92,8 +91,8 @@ def test_a_build_whose_supervisor_dies_on_start_goes_back_to_the_last_good_one()
     assert ((root / "journal.pyz").resolve(), broken(root)) == (good, [bad.name]), "the journal went back to the build that works and remembers the broken one"
 
 
-def test_a_build_whose_server_dies_on_start_goes_back_to_the_last_good_one():
-    place = Path(tempfile.mkdtemp(prefix="boot-"))
+def test_a_build_whose_server_dies_on_start_goes_back_to_the_last_good_one(tmp_path):
+    place = tmp_path
     (place / "project").mkdir()
     env = {**os.environ, "HOME": str(place / "home"), "AGENT_JOURNAL_BOOTSTRAPPED": "1"}
     subprocess.run([sys.executable, str(HERE / "install.py"), "upgrade", str(place / "project")], env=env, capture_output=True, timeout=120)
