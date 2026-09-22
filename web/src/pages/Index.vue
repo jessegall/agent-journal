@@ -98,7 +98,7 @@ async function select(n) {
                 }}{{ filter !== "open" || !all.length ? " yet" : "" }}.
             </p>
         </template>
-        <SwitchCase :value="kind.view">
+        <SwitchCase :value="kind.listed_as_cards ? 'document' : kind.view">
             <template #document>
                 <div class="cards">
                     <template v-for="r in listed" :key="r.n">

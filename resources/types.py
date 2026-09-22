@@ -315,6 +315,7 @@ class Reaction(Shape, Resource):
 
 class Tool(Shape, Resource):
     type = "tool"
+    listed_as_cards = True
     subagent_writable = False
     icon = "wrench"
     details: ClassVar[ResourceDetails] = ResourceDetails(

@@ -108,6 +108,7 @@ class Resource:
     event_labels: ClassVar[dict] = {}   # how an event on it reads in the viewer: {"created": "Work started"}
     view: ClassVar[str] = SMALL  # how it is read: a small inspector, a wide one, or a document page
     in_sidebar: ClassVar[bool] = True   # whether it sits in the sidebar
+    listed_as_cards: ClassVar[bool] = False
     icon: ClassVar[str] = "dot"  # the viewer's glyph for it
     needs_attention: ClassVar[bool] = False   # unread by the user, it waits on them
     lists_completed_unread: ClassVar[bool] = False

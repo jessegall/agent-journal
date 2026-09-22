@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.84.130 — The Tools page shows its tools as cards
+
+- Tools list as cards, like documents, instead of rows. A type opts in with listed_as_cards, without changing how its rows open.
+
 ## 2.84.129 — A Loaded skill badge opens the skill to read
 
 - Clicking a Loaded skill badge in the chat slides in a side panel with that skill's text; the close button or Escape puts it away.
