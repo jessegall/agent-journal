@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.84.54 — The first hook after a restart is fast
+
+The checks that look at what the agent last wrote read only the end of the transcript. Before, the first Stop after the server restarted parsed the whole session transcript, 55,000 lines and 600ms in a long session. It now takes under 50ms; the full transcript is still read for the conversation pages.
+
 ## 2.84.53 — `journal nothing` from the agent's shell lifts its own hold
 
 At a context mark, `journal nothing "<why>"` run without a session used to land on a made-up agent row, so the hold stayed. It now falls back to the environment's own agent, and says so plainly when no agent is running.
