@@ -62,6 +62,13 @@ function unedit() {
 const busy = computed(() => !!agent.value && ["working", "compacting"].includes(agent.value.data.status));
 const waiting = computed(() => waitsFor(rows("work")));
 const thought = computed(() => (agent.value && agent.value.data.thinking) || "");
+const activity = computed(() => {
+    if (agent.value && agent.value.data.status === "compacting") return "compacting";
+    const queue = (store.bar && store.bar.queue) || [];
+    const last = queue[queue.length - 1];
+    const fresh = last && (!last.done || Date.now() / 1000 - last.at < last.lingers);
+    return (fresh && last.parts && last.parts[0] && last.parts[0].value) || "working";
+});
 const away = ref(false);
 const missed = ref(0);
 const settledOnce = ref(false);
@@ -382,9 +389,9 @@ watch(
                     </TransitionGroup>
                     <Transition name="rise">
                         <div
-                            v-if="busy"
+                            v-if="busy || waiting"
                             class="thread-turn busy"
-                            :aria-label="waiting ? `The agent is waiting ${waiting}` : 'The agent is working'"
+                            :aria-label="waiting ? `The agent is waiting ${waiting}` : `The agent is ${activity}`"
                         >
                             <template v-if="waiting">
                                 <div class="thread-bubble waiting">Waiting {{ waiting }}</div>
@@ -401,7 +408,9 @@ watch(
                                     <span class="thread-dot" />
                                     <span class="thread-dot" />
                                 </div>
-                                <div class="thread-meta"><span>working</span></div>
+                                <div class="thread-meta">
+                                    <span>{{ activity }}</span>
+                                </div>
                             </template>
                         </div>
                     </Transition>
