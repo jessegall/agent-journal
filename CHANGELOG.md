@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.85.23
+
+- Before any migration runs, the record is backed up in full (every environment, the project's rows, the migration ledger and settings) into a folder of its own beside the record. If a migration fails, the record is restored from that backup and nothing is marked as applied; when every migration succeeds, the backup is deleted.
+
 ## 2.85.22
 
 - The terminal view has no header or intro line; it fills the chat pane edge to edge, slides in when opened and out when closed, and the agent bar's terminal button opens and closes it.

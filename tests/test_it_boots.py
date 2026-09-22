@@ -147,3 +147,30 @@ def test_a_message_shown_while_the_server_is_down_reaches_the_chat_once_it_is_ba
         server.terminate()
         server.wait(WAIT)
     assert "said while the server was down" in listed, "a message shown while the server was down reaches the chat once it is back"
+
+
+def test_a_migration_that_fails_leaves_the_record_as_it_was(tmp_path, monkeypatch):
+    import types
+    import migrations
+    root = tmp_path / ".journal"
+    (root / "environments" / "main" / "todo").mkdir(parents=True)
+    kept = root / "environments" / "main" / "todo" / "001.md"
+    kept.write_text("the user's row")
+    touched, broke = types.ModuleType("migrations.m9998_touch"), types.ModuleType("migrations.m9999_break")
+    touched.run = lambda r: kept.write_text("changed halfway") or "touched"
+
+    def breaking(r):
+        raise RuntimeError("the migration broke")
+    broke.run = breaking
+    monkeypatch.setitem(sys.modules, "migrations.m9998_touch", touched)
+    monkeypatch.setitem(sys.modules, "migrations.m9999_break", broke)
+    monkeypatch.setattr(migrations, "names", lambda: ["m9998_touch", "m9999_break"])
+    try:
+        migrations.run(root)
+    except RuntimeError:
+        pass
+    left = lambda: list(root.glob(f".{migrations.BACKUP}-*"))
+    assert (kept.read_text(), migrations.applied(root), left()) == ("the user's row", {}, []), \
+        "a failed migration puts every file back, records nothing as applied, and clears its backup"
+    monkeypatch.setattr(migrations, "names", lambda: ["m9998_touch"])
+    assert migrations.run(root) == ["m9998_touch"] and not left(), "a run that succeeds deletes its backup"
