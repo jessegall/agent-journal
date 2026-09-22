@@ -160,21 +160,27 @@ def elsewhere(root: Path) -> str:
 
 
 def start(root: Path, project: Path) -> str:
+    return launch(root, project)[0]
+
+
+def launch(root: Path, project: Path) -> tuple[str, int | None]:
     already = running(root) or elsewhere(root)
     if already:
-        return already
+        return already, None
     port = available(last(root).get("port", 0))
     log = root / "runtime" / "viewer.log"
     log.parent.mkdir(parents=True, exist_ok=True)
     command = [*entry("journal"), "--root", str(root), "serve", "--port", str(port)]
     with log.open("a") as output:
-        subprocess.Popen(command, cwd=project, stdin=subprocess.DEVNULL, stdout=output, stderr=output, start_new_session=True)
+        server = subprocess.Popen(command, cwd=project, stdin=subprocess.DEVNULL, stdout=output, stderr=output, start_new_session=True)
     for _ in range(60):
         time.sleep(0.1)
         url = running(root)
         if url:
-            return url
-    return ""
+            return url, None
+        if server.poll() is not None:
+            return "", server.returncode
+    return "", None
 
 
 def show(url: str, opener=webbrowser.open, focuser=existing_tab) -> str:

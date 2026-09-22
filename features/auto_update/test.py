@@ -1,21 +1,30 @@
-import features.auto_update.handlers as updates
+from types import SimpleNamespace
+
+import features.auto_update.check as updates
+from engine.heal import ledger
+from engine.stored import write_json
+from features import load
 from tests.conftest import fresh
-from engine.engine import emit_clock
-from tests.kit import nudges, report
 
 
-def test_the_engine_clock_tells_the_agent_of_a_newer_version_once_when_it_does_not_install_itself(monkeypatch):
+def test_the_update_check_tells_the_agent_of_a_newer_version_once_when_it_does_not_install_itself(monkeypatch):
+    load()
     record = fresh()
     record.set_setting("features", {**record.setting("features", {}), "auto_update.install": False})
-    record.set_setting("triggers", {"updates": {"every": 0, "unit": "minutes"}})
+    record.set_setting("triggers", {"auto_update": {"every": 0, "unit": "minutes"}})
+    sent = []
+    check = updates.UpdateCheck(SimpleNamespace(record=record, driver=SimpleNamespace(send=sent.append)))
     monkeypatch.setattr(updates, "upstream", lambda root: "99.0.0")
-    report(record, "idle", "Stop")
-    emit_clock(record, "claude-1")
-    notified = [n for n in nudges(record) if n.startswith("journal 99.0.0 is out")]
-    assert len(notified) == 1, "told once, with the version it would install"
+    check.tick()
+    check.tick()
+    assert [line for line in sent if line.startswith("journal 99.0.0 is out")] == sent and len(sent) == 1, "told once, with the version it would install"
     monkeypatch.setattr(updates, "upstream", lambda root: "0.0.1")
-    emit_clock(record, "claude-1")
-    assert len([n for n in nudges(record) if "is out" in n]) == 1, "an older published version says nothing"
+    check.tick()
+    assert len(sent) == 1, "an older published version says nothing"
+    write_json(ledger(record.root), {"builds": ["journal-98.0.0-0123456789.pyz"]})
+    monkeypatch.setattr(updates, "upstream", lambda root: "98.0.0")
+    check.tick()
+    assert len(sent) == 1, "a version that would not start here is never offered again"
 
 
 def test_the_installed_command_runs_quietly_before_any_server_has_started(tmp_path):

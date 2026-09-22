@@ -4,6 +4,7 @@ import sys
 from pathlib import Path
 
 from controllers.types import Notices
+from engine.heal import refused
 from engine.version import version
 from features import FEATURES
 from features.dev_faults.developing import developing
@@ -52,7 +53,7 @@ def latest_first(record) -> str:
         cache = root / "runtime" / "upstream.cache"
         fetched(cache)
         latest = cache.read_text().strip() if cache.is_file() else ""
-        if not newer(latest, version()):
+        if not newer(latest, version()) or refused(root, latest):
             return notice
         from install import upgrade
         print(f"journal: installing {latest} before it starts", flush=True)

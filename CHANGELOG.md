@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.84.14 — The journal goes back to the last good build when a new one cannot start
+
+When a newly installed build's supervisor dies as it starts, or its server exits with an error three times in a row, the process that holds the terminal points `.journal/journal.pyz` back at the newest earlier build and says so in the terminal. The bad build is remembered in `.journal/runtime/broken.json`, and neither the launch nor the background update installs that version again; the next release is installed as usual. A supervisor that dies later is restarted at once instead of waiting for new code.
+
+The update check and the five-minute "are you still working?" check now run in the supervisor beside each session, not in the server, so both keep working while the server is down.
+
 ## 2.84.13 — A push is refused when the journal does not boot
 
 `scripts/boot_guard.py` installs a packed copy into a scratch project, creates a row, starts the server, fetches the viewer and a list, and launches Claude and Codex with a stand-in agent, in about three seconds. The repository's pre-push hook runs it, so a build that cannot install, serve or launch never reaches GitHub. `journal stop` is quicker: the server checks for a stop request every 0.2 seconds instead of every second.

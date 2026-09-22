@@ -12,12 +12,15 @@ class UpdatesDetails(FeatureDetails):
     abstract = "A newer journal is installed by itself, or the agent is told to install it"
 
     help = """
-        Every five minutes the engine compares the version published on GitHub
-        with the one installed.
+        Every five minutes the supervisor beside each session compares the version published
+        on GitHub with the one installed, so updates keep coming while the server is down.
 
         With install on, a newer version is installed in the background, once per version, and
         the server reloads itself; with it off, or when installing fails, the agent is told to
         run journal upgrade. A journal being developed never installs itself.
+
+        A build that cannot start its supervisor or its server is set aside: the journal goes
+        back to the last build that worked and never installs that version again.
     """
 
     trigger = Trigger(every=5, unit=MINUTES)

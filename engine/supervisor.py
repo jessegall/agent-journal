@@ -8,6 +8,7 @@ import sys
 import termios
 import threading
 import time
+import traceback
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
@@ -18,7 +19,12 @@ from engine.services import Manager  # noqa: E402
 from engine import typist  # noqa: E402
 from engine import runtime  # noqa: E402
 from engine.stop import asked  # noqa: E402
-from engine.terminal import RELAUNCH, RELOAD, STOP, watched  # noqa: E402
+from engine.terminal import HEAL, RELAUNCH, RELOAD, STOP, watched  # noqa: E402
+from engine.actors import Agent  # noqa: E402
+from engine.record import Record  # noqa: E402
+import features  # noqa: E402
+from features.auto_update.check import UpdateCheck  # noqa: E402
+from features.work_tracking.auto import CheckIn  # noqa: E402
 from engine.stored import write_json  # noqa: E402
 
 ESCAPES = re.compile(rb"\x1b(?:\[[\x30-\x3f]*[\x20-\x2f]*[\x40-\x7e]|\][^\x07\x1b]*(?:\x07|\x1b\\)|[P_^X][^\x1b]*\x1b\\|O[\x40-\x7e]|[@-_])")
@@ -26,6 +32,9 @@ RELOAD_EVERY = 5.0
 VIEWER_EVERY = 10.0
 SERVICES_EVERY = 1.0
 TYPED_EVERY = 1.0
+CHECKS_EVERY = 1.0
+SERVER_CRASHES = 3
+RETRY_AFTER = 1.0
 
 
 def press(fd: int, keys: bytes) -> None:
@@ -64,12 +73,42 @@ ENTER_AFTER = 0.3
 FRAME_END = b"\x1b[?25h"
 
 
-def keep_viewer(root: Path, cwd: Path, watching) -> object:
+def keep_viewer(root: Path, cwd: Path, watching, exits: list) -> object:
     if watching and watching.is_alive():
         return watching
-    thread = threading.Thread(target=viewer.start, args=(root, cwd), daemon=True)
+    thread = threading.Thread(target=lambda: exits.append(viewer.launch(root, cwd)[1]), daemon=True)
     thread.start()
     return thread
+
+
+def crashing(exits: list) -> bool:
+    return len(exits) >= SERVER_CRASHES and all(exits[-SERVER_CRASHES:])
+
+
+def checks(root: Path, env: str, agent: str, session: str) -> tuple:
+    try:
+        features.load()
+        record = Record(root, env)
+        watcher = Agent(record, DRIVERS[agent](record, session))
+        return watcher.driver, (CheckIn(watcher), UpdateCheck(watcher))
+    except Exception:
+        failed(root, "the checks could not start")
+        return None, ()
+
+
+def run_checks(root: Path, driver, kept: tuple) -> None:
+    try:
+        if driver:
+            driver.pump()
+        for check in kept:
+            check.tick()
+    except Exception:
+        failed(root, "a check failed")
+
+
+def failed(root: Path, what: str) -> None:
+    with (root / "runtime" / "supervisor.log").open("a") as log:
+        log.write(f"{time.ctime()} {what}\n{traceback.format_exc()}\n")
 
 
 def run(root: Path, cwd: Path, env: str, agent: str, fd: int, session: str, lifeline: int = -1) -> int:
@@ -118,9 +157,12 @@ def run(root: Path, cwd: Path, env: str, agent: str, fd: int, session: str, life
     show(drawn(cols, force=True, cursor=where, first=band.region(rows)))
     began = time.time()
     last_check = 0.0
-    last_viewer = time.time()
+    last_viewer = 0.0
     last_services = 0.0
     watching = None
+    exits: list = []
+    driver, kept = checks(root, env, agent, session)
+    last_checks = 0.0
     services = Manager(root, lifeline)
     last_band = 0.0
     last_out = 0.0
@@ -185,9 +227,15 @@ def run(root: Path, cwd: Path, env: str, agent: str, fd: int, session: str, life
             if now - last_services >= SERVICES_EVERY:
                 last_services = now
                 services.tick()
-            if now - last_viewer >= VIEWER_EVERY:
+            if now - last_viewer >= (RETRY_AFTER if exits and exits[-1] else VIEWER_EVERY):
                 last_viewer = now
-                watching = keep_viewer(root, cwd, watching)
+                watching = keep_viewer(root, cwd, watching, exits)
+                if crashing(exits):
+                    result = HEAL
+                    break
+            if now - last_checks >= CHECKS_EVERY:
+                last_checks = now
+                run_checks(root, driver, kept)
             if now - last_check >= RELOAD_EVERY:
                 last_check = now
                 if watched(root) != stamps:
