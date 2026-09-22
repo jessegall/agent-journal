@@ -23,7 +23,7 @@ import StartsOn from "./StartsOn.vue";
 import CheckResult from "./CheckResult.vue";
 import Buttons from "./Buttons.vue";
 import RuleControls from "./RuleControls.vue";
-import Text from "../kit/Text.vue";
+import TextDisplay from "../kit/TextDisplay.vue";
 import ResourceCard from "./ResourceCard.vue";
 
 const props = defineProps({
@@ -134,7 +134,7 @@ const docs = computed(() =>
             </form>
         </template>
         <template v-else-if="resource.abstract">
-            <Text class="abstract" :text="resource.abstract" />
+            <TextDisplay class="abstract" :text="resource.abstract" />
         </template>
         <template v-if="resource.deleted">
             <p class="waits">This was deleted.</p>
@@ -219,7 +219,7 @@ const docs = computed(() =>
                 <template v-if="kind.labels.brief">
                     <h3>{{ kind.labels.brief }}</h3>
                 </template>
-                <Text :text="resource.brief" />
+                <TextDisplay :text="resource.brief" />
             </section>
         </template>
         <template v-if="resource.type !== 'message'">
@@ -239,7 +239,7 @@ const docs = computed(() =>
                         )
                     }}
                 </h3>
-                <Text :text="resource.outcome || age(resource.completed)" />
+                <TextDisplay :text="resource.outcome || age(resource.completed)" />
             </section>
         </template>
         <template v-if="files.length">

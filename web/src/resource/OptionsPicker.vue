@@ -1,5 +1,5 @@
 <script setup>
-import Text from "../kit/Text.vue";
+import TextDisplay from "../kit/TextDisplay.vue";
 import {computed, ref} from "vue";
 import {api} from "../api/client.js";
 import Btn from "../kit/Btn.vue";
@@ -44,7 +44,7 @@ async function submit(text) {
             <template v-if="ownWords">
                 <div class="own-words">
                     <span>Your own words</span>
-                    <Text inline class="own-words-text" :text="resource.outcome" />
+                    <TextDisplay inline class="own-words-text" :text="resource.outcome" />
                 </div>
             </template>
             <div class="after">

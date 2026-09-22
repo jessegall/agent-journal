@@ -1,5 +1,5 @@
 <script setup>
-import Text from "../kit/Text.vue";
+import TextDisplay from "../kit/TextDisplay.vue";
 import {computed, onMounted, ref} from "vue";
 import {peek} from "../route.js";
 import {byRef, toldToUser} from "../domain/records.js";
@@ -45,7 +45,7 @@ const who = (e) => (written(e) ? logged(e).data.plugin : e.actor[0].toUpperCase(
                 <span class="activity-n">{{ e.n }}</span>
             </span>
             <template v-if="title(e)">
-                <Text inline class="activity-title" :text="title(e)" />
+                <TextDisplay inline class="activity-title" :text="title(e)" />
             </template>
             <span class="activity-age">{{ who(e) }} · {{ age(e.at) || "just now" }}</span>
         </a>

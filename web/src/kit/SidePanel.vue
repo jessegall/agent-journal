@@ -1,5 +1,5 @@
 <script setup>
-import Text from "./Text.vue";
+import TextDisplay from "./TextDisplay.vue";
 import Icon from "./Icon.vue";
 import {closing} from "./closing.js";
 
@@ -24,7 +24,7 @@ const {shown, close, closed} = closing(emit, props);
                         <div class="names">
                             <h2>{{ title }}</h2>
                             <template v-if="abstract">
-                                <Text class="abstract" :text="abstract" />
+                                <TextDisplay class="abstract" :text="abstract" />
                             </template>
                         </div>
                         <slot name="actions" />
