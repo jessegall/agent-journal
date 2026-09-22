@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.84.12 — Blocked to-dos show on the To-dos page, with their reason
+
+The To-dos page lost every open row older than the newest 25: the viewer trimmed each list to its last 25 rows on every page change, and the listing sent only the newest 25 open rows. Every open row now stays, so blocked to-dos appear in the Blocked group, and each held row carries a small label with the block reason, or which rows it waits on. Done rows still load 25 at a time as you scroll.
+
 ## 2.84.11 — A tool call's hook no longer re-reads every skill
 
 The budget check reported the agent's hook at 54 to 64 ms. Each tool call re-read and parsed every `SKILL.md` to spot a skill that changed since it was loaded; each file's header is now kept and read again only when the file's time or size changes (rule 47). A hook through the server now takes 3 to 8 ms.

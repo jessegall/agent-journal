@@ -537,7 +537,7 @@ def listing(controller, record, query: dict) -> dict:
         rows.sort(key=lambda row: row["updated"])
     kept = rows[-last:] if last else rows
     if completed and last:
-        standing = [row for row in rows if not row["completed"]][-last:]
+        standing = [row for row in rows if not row["completed"]]
         kept = sorted({row["n"]: row for row in (*standing, *kept)}.values(), key=lambda row: row["n"])
     return {"rows": [shaped(controller.load(row["n"]), record) for row in kept], "more": len(rows) > len(kept)}
 
