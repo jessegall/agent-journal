@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.85.24
+
+- Chat messages have a Copy action beside React, Reply and Pin; it copies the message's plain text and says Copied for a moment.
+
 ## 2.85.23
 
 - Before any migration runs, the record is backed up in full (every environment, the project's rows, the migration ledger and settings) into a folder of its own beside the record. If a migration fails, the record is restored from that backup and nothing is marked as applied; when every migration succeeds, the backup is deleted.

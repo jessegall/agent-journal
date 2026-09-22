@@ -72,6 +72,14 @@ const commentParent = computed(() => {
     const [type, n] = parent.split(":");
     return {type, n: Number(n), label: `${meta(type).title.toLowerCase()} ${n}`};
 });
+const copied = ref(false);
+
+async function copy() {
+    await navigator.clipboard.writeText(plain(words.value.text));
+    copied.value = true;
+    setTimeout(() => (copied.value = false), 1500);
+}
+
 const messageReply = computed(() => commentParent.value?.type === "message");
 const resourceComment = computed(() => !!commentParent.value && !messageReply.value);
 
@@ -253,6 +261,9 @@ async function drop() {
                         @click.stop="emit('pin', {text: words.text, ref: turn.ref})"
                     >
                         Pin
+                    </button>
+                    <button type="button" class="thread-tool" title="Copy the text of this" @click.stop="copy">
+                        {{ copied ? "Copied" : "Copy" }}
                     </button>
                     <template v-if="mine && !turn.completed">
                         <button
