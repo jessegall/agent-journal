@@ -2,6 +2,7 @@
 import {computed, onMounted, reactive, ref, watch} from "vue";
 import {api} from "../api/client.js";
 import Btn from "../kit/Btn.vue";
+import Dialog from "../kit/Dialog.vue";
 import ChoiceList from "../kit/ChoiceList.vue";
 import {route} from "../route.js";
 import {label, meta, word} from "../state/store.js";
@@ -53,46 +54,54 @@ async function submit() {
 </script>
 
 <template>
-    <form class="new" @submit.prevent="submit">
-        <input v-model="title" :placeholder="`${meta(type).title} title`" maxlength="80" autofocus @keydown.esc="emit('close')" />
-        <input v-model="abstract" :placeholder="label(type, 'abstract', 'One short line about it')" maxlength="200" />
-        <textarea v-model="brief" :placeholder="label(type, 'brief', 'As long as it needs to be')" rows="3" />
-        <div v-if="templates.length" class="template">
-            <span class="label">Start from</span>
-            <ChoiceList :choices="choices" @pick="template = $event" />
-        </div>
-        <template v-if="fields.length">
-            <div class="fields">
-                <label v-for="f in fields" :key="f.name" class="field">
-                    <span class="label">{{ f.label }}</span>
-                    <template v-if="f.kind === 'choice'">
-                        <ChoiceList
-                            :choices="f.options.map((o) => ({value: o, label: o, current: values[f.name] === o}))"
-                            @pick="values[f.name] = $event"
-                        />
-                    </template>
-                    <template v-else>
-                        <input v-model="values[f.name]" :type="f.kind === 'number' ? 'number' : 'text'" :placeholder="f.default || ''" />
-                    </template>
-                </label>
+    <Dialog :title="`New ${meta(type).title.toLowerCase()}`" @close="emit('close')">
+        <form class="new" @submit.prevent="submit">
+            <input v-model="title" class="new-title" :placeholder="`${meta(type).title} title`" maxlength="80" autofocus />
+            <input v-model="abstract" :placeholder="label(type, 'abstract', 'One short line about it')" maxlength="200" />
+            <textarea v-model="brief" :placeholder="label(type, 'brief', 'As long as it needs to be')" rows="10" />
+            <div v-if="templates.length" class="template">
+                <span class="label">Start from</span>
+                <ChoiceList :choices="choices" @pick="template = $event" />
             </div>
-        </template>
-        <div class="foot">
-            <span class="error">{{ error }}</span>
-            <Btn @click="emit('close')">Cancel</Btn>
-            <Btn kind="primary" @click="submit">{{ word(type, "create").replace(/^\w/, (c) => c.toUpperCase()) }}</Btn>
-        </div>
-    </form>
+            <template v-if="fields.length">
+                <div class="fields">
+                    <label v-for="f in fields" :key="f.name" class="field">
+                        <span class="label">{{ f.label }}</span>
+                        <template v-if="f.kind === 'choice'">
+                            <ChoiceList
+                                :choices="f.options.map((o) => ({value: o, label: o, current: values[f.name] === o}))"
+                                @pick="values[f.name] = $event"
+                            />
+                        </template>
+                        <template v-else>
+                            <input
+                                v-model="values[f.name]"
+                                :type="f.kind === 'number' ? 'number' : 'text'"
+                                :placeholder="f.default || ''"
+                            />
+                        </template>
+                    </label>
+                </div>
+            </template>
+            <div class="foot">
+                <span class="error">{{ error }}</span>
+                <Btn @click="emit('close')">Cancel</Btn>
+                <Btn kind="primary" @click="submit">{{ word(type, "create").replace(/^\w/, (c) => c.toUpperCase()) }}</Btn>
+            </div>
+        </form>
+    </Dialog>
 </template>
 
 <style scoped>
 .new {
     display: flex;
     flex-direction: column;
-    gap: 8px;
-    padding: 14px 22px;
-    border-bottom: 1px solid var(--border);
-    background: var(--raised);
+    gap: 10px;
+}
+
+.new-title {
+    font-size: 15px;
+    font-weight: 500;
 }
 input,
 textarea {
