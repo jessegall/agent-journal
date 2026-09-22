@@ -11,7 +11,7 @@ const emit = defineEmits(["close"]);
 const quote = ref("");
 const shownAlready = computed(() => ((props.resource.data || {}).phases || []).flatMap((ph) => (ph.todos || []).map((n) => `todo:${n}`)));
 const count = computed(() => rows("comment").filter((c) => c.refs.includes(props.resource.ref) && !c.deleted).length);
-const talking = ref(count.value > 0 || props.focus > 0);
+const talking = ref(props.focus > 0);
 const shifted = ref(talking.value);
 const panel = ref(talking.value);
 watch(quote, (q) => q && (talking.value = true));

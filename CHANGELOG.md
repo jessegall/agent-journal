@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.84.47 — A document opens with its comment sidebar closed
+
+A document with comments no longer opens with the comment sidebar already out; it starts closed every time, and opens by itself only when you follow a link to one of its comments.
+
 ## 2.84.46 — The chat waits while you read
 
 When you have scrolled up and the mouse is over the chat, new messages no longer pull it down; scrolling with the wheel counts as reading. After 30 seconds with the mouse still, the chat takes you back to the newest message by itself. A message you send, or moving the mouse out of the chat, still takes you to the bottom at once.
