@@ -1,5 +1,6 @@
 <script setup>
 import EmptyState from "../kit/EmptyState.vue";
+import TabBar from "../kit/TabBar.vue";
 import {useSighted} from "../composables/scrollback.js";
 import {computed, onUnmounted, ref} from "vue";
 import {api} from "../api/client.js";
@@ -64,20 +65,7 @@ async function select(n) {
 <template>
     <section class="index">
         <div class="bar">
-            <div class="tabs" role="tablist">
-                <template v-for="f in filters" :key="f.key">
-                    <button
-                        type="button"
-                        role="tab"
-                        :aria-selected="filter === f.key"
-                        :class="['tab', {on: filter === f.key}]"
-                        @click="filter = f.key"
-                    >
-                        {{ f.title }}
-                        <span class="tab-n">{{ f.count }}</span>
-                    </button>
-                </template>
-            </div>
+            <TabBar v-model="filter" :tabs="filters" />
             <template v-if="kind.view === 'document'">
                 <span class="sep" />
                 <a class="flat" :href="`#/${route.env}/files`">Files</a>
@@ -147,47 +135,6 @@ async function select(n) {
     width: 1px;
     height: 16px;
     background: var(--border-2);
-}
-
-.tabs {
-    display: flex;
-    align-items: stretch;
-    align-self: stretch;
-    gap: 14px;
-}
-
-.tab {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 0;
-    border: 0;
-    border-bottom: 2px solid transparent;
-    background: none;
-    color: var(--text-3);
-    font-size: 11.5px;
-    letter-spacing: 0.03em;
-    text-transform: uppercase;
-    cursor: pointer;
-}
-
-.tab:hover {
-    color: var(--text-2);
-}
-
-.tab.on {
-    border-bottom-color: var(--accent);
-    color: var(--text);
-}
-
-.tab-n {
-    font-size: 11px;
-    color: var(--text-3);
-    font-variant-numeric: tabular-nums;
-}
-
-.tab.on .tab-n {
-    color: var(--accent-text);
 }
 
 .flat {
