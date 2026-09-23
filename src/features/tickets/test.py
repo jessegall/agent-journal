@@ -51,3 +51,34 @@ def test_a_ticket_is_bound_to_one_environment_its_worktree_and_session_share():
     assert tickets.agent_session(ticket.n) == "", "no session holds it until its agent starts"
     Sessions(record.root).bind("claude-7", bound.work_environment, provider="claude")
     assert tickets.agent_session(ticket.n) == "claude-7", "the session is whichever one holds the ticket's environment"
+
+
+def test_an_agent_runs_under_a_supervisor_with_no_terminal(tmp_path):
+    import json
+    import os
+    import signal
+    import subprocess
+    import sys
+    import time
+    from pathlib import Path
+    root = tmp_path / ".journal"
+    root.mkdir()
+    spec = {"root": str(root), "cwd": str(tmp_path), "env": "ticket-1", "agent": "claude", "worker": ["sleep", "20"], "heal": ["true"],
+            "ended": ["true"], "args": [], "headless": True,
+            "command": [sys.executable, "-c", "import time; print('agent up', flush=True); time.sleep(20)"], "environ": dict(os.environ)}
+    supervisor = Path(__file__).resolve().parents[2] / "supervisor.py"
+    child = subprocess.Popen([sys.executable, str(supervisor), json.dumps(spec)], stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL,
+                             stderr=subprocess.DEVNULL, start_new_session=True)
+    try:
+        printed = lambda: b"".join(p.read_bytes() for p in (root / "runtime" / "sessions").glob("*/printed"))
+        deadline = time.time() + 10
+        while b"agent up" not in printed() and time.time() < deadline:
+            time.sleep(0.1)
+        time.sleep(1)
+        assert (b"agent up" in printed(), child.poll()) == (True, None), \
+            "the agent starts, its output is captured, and with no keyboard it keeps running"
+    finally:
+        for launched in (root / "runtime" / "sessions").glob("*/launched.json"):
+            os.kill(json.loads(launched.read_text())["pid"], signal.SIGKILL)
+        os.killpg(child.pid, signal.SIGKILL)
+        child.wait(timeout=5)

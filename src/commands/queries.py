@@ -286,6 +286,11 @@ def asked_resume(record: Record, agent: str, args: list[str], ask=input, answeri
     return driver.resumed([*args, *last], earlier) if picked == 0 else args
 
 
+def attached(ctx) -> str:
+    from engine.terminal import attach
+    return attach(ctx["record"].root, ctx["target"])
+
+
 def supervise(ctx, agent: str) -> str:
     from engine.terminal import carried
     from engine.viewer import start

@@ -1,5 +1,6 @@
 import json
 import os
+import subprocess
 from dataclasses import dataclass, replace
 from pathlib import Path
 
@@ -105,21 +106,68 @@ def carried() -> dict | None:
     return json.loads(given) if given else None
 
 
-def supervise(root: Path, cwd: Path, env: str, agent: str, args: list[str], taken: dict | None = None) -> None:
+def launch_spec(root: Path, cwd: Path, env: str, agent: str, args: list[str], taken: dict | None = None) -> dict:
     from providers import DRIVERS
-    hold_build(root, CODE)
-    runtime.set_env(root, env)
     if not taken:
         cwd, args = DRIVERS[agent].placed(cwd, args)
         env = environment(checkout(cwd)) or env
     journal = [*entry("journal"), "--root", str(root)]
-    spec = {"root": str(root), "cwd": str(cwd), "env": env, "agent": agent,
+    return {"root": str(root), "cwd": str(cwd), "env": env, "agent": agent,
             "worker": entry("engine.worker"), "heal": [*journal, "heal"], "ended": [*journal, "--env", env, "ended"],
             **({"adopt": {"pid": taken["pid"], "fd": taken["fd"], "session": taken["session"], "saved": taken["saved"]}, "args": args}
                if taken else launching(root, cwd, env, agent, args))}
+
+
+def supervise(root: Path, cwd: Path, env: str, agent: str, args: list[str], taken: dict | None = None) -> None:
+    hold_build(root, CODE)
+    runtime.set_env(root, env)
+    spec = launch_spec(root, cwd, env, agent, args, taken)
     if taken:
         os.set_inheritable(taken["fd"], True)
     else:
-        print(f"journal: environment {env}")
+        print(f"journal: environment {spec['env']}")
     started = entry("supervisor")
     os.execv(started[0], [*started, json.dumps(spec)])
+
+
+def detached(root: Path, cwd: Path, env: str, agent: str, args: list[str]) -> int:
+    started = entry("supervisor")
+    child = subprocess.Popen([*started, json.dumps({**launch_spec(root, cwd, env, agent, args), "headless": True})],
+                             stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True)
+    hold_build(root, CODE, child.pid)
+    return child.pid
+
+
+DETACH = b"\x1d"
+SHOWN_BACK = 65536
+
+
+def attach(root: Path, session: str) -> str:
+    import select
+    import sys
+    import termios
+    import tty
+    from engine import typist
+    screen = runtime.session_file(root, session, "screen")
+    if not screen.is_file():
+        return f"journal: no session {session} to attach to"
+    at = max(0, screen.stat().st_size - SHOWN_BACK)
+    saved = termios.tcgetattr(sys.stdin.fileno())
+    tty.setraw(sys.stdin.fileno())
+    try:
+        while True:
+            with screen.open("rb") as shown:
+                shown.seek(at)
+                fresh = shown.read()
+            at += len(fresh)
+            os.write(sys.stdout.fileno(), fresh)
+            ready, _, _ = select.select([sys.stdin.fileno()], [], [], 0.2)
+            if ready:
+                keys = os.read(sys.stdin.fileno(), 4096)
+                if not keys or DETACH in keys:
+                    break
+                typist.send(root, session, keys)
+    finally:
+        termios.tcsetattr(sys.stdin.fileno(), termios.TCSADRAIN, saved)
+    return f"\njournal: left session {session}; it runs on"
+
