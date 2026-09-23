@@ -13,7 +13,7 @@ import SwitchCase from "../kit/SwitchCase.vue";
 import {go, peek, route} from "../route.js";
 import {span} from "../format/time.js";
 import {detach} from "../platform/extension.js";
-import {agent, store} from "../state/store.js";
+import {agent, feedOn, store} from "../state/store.js";
 import {polled} from "../sync/polled.js";
 import {usePoll} from "../poll.js";
 import {useOutside} from "../composables/outside.js";
@@ -32,6 +32,12 @@ const used = (window) => Math.max(0, Math.min(100, Number(window.used ?? 100 - w
 const usageLabel = computed(() => (usage.value.length ? `${Math.round(used(usage.value[0]))}%` : "usage"));
 const filled = computed(() => Math.round(Number((data.value && data.value.context) || 0)));
 const live = (rows) => (rows || []).filter((r) => r.running).length;
+const PANES = [
+    {key: "chat", icon: "chat", title: "Chat"},
+    {key: "feed", icon: "edits", title: "File feed: the agent's edits as it makes them"},
+    {key: "terminal", icon: "terminal", title: "What the agent ran lately, like a terminal"},
+];
+const panes = computed(() => PANES.filter((p) => p.key !== "feed" || feedOn.value));
 const counts = computed(() => [
     {
         key: "skills",
@@ -226,15 +232,19 @@ useOutside(bar, () => (open.value = ""));
                     </button>
                 </template>
                 <span class="agent-divider" />
-                <button
-                    type="button"
-                    :class="['agent-fact', 'agent-count', {open: store.terminal}]"
-                    title="What the agent ran lately, like a terminal"
-                    :aria-pressed="store.terminal"
-                    @click="((store.dumping = false), (store.terminal = !store.terminal))"
-                >
-                    <Icon name="terminal" />
-                </button>
+                <div class="agent-panes">
+                    <template v-for="p in panes" :key="p.key">
+                        <button
+                            type="button"
+                            :class="['agent-pane', {on: store.pane === p.key}]"
+                            :title="p.title"
+                            :aria-pressed="store.pane === p.key"
+                            @click="((store.dumping = false), (store.pane = p.key))"
+                        >
+                            <Icon :name="p.icon" />
+                        </button>
+                    </template>
+                </div>
                 <template v-if="!alone">
                     <button
                         type="button"
@@ -448,6 +458,40 @@ useOutside(bar, () => (open.value = ""));
     height: 14px;
     margin: 0 4px;
     background: var(--border-2);
+}
+
+.agent-panes {
+    display: flex;
+    gap: 2px;
+}
+
+.agent-pane {
+    display: grid;
+    place-items: center;
+    width: 26px;
+    height: 24px;
+    padding: 0;
+    border: 0;
+    border-radius: 6px;
+    background: none;
+    color: var(--text-3);
+    transition:
+        background 0.15s,
+        color 0.15s;
+}
+
+.agent-pane :deep(.ico) {
+    color: inherit;
+}
+
+.agent-pane:hover {
+    background: var(--hover);
+    color: var(--text);
+}
+
+.agent-pane.on {
+    background: var(--sel);
+    color: var(--text);
 }
 
 .bar-drop {

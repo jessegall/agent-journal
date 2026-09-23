@@ -25,6 +25,7 @@ from surfaces.updates import newer, upstream
 from surfaces.control import force as force_session, options as control_options, permit, relaunch, request as control_session, shell
 from features.skill_loading.catalogue import SKILL, always, catalogue, set_keywords, skills
 from features.skill_loading.required import load_now
+from features.file_feed.feed import edits_since
 from controllers.base import LAST, networked
 from controllers.types import Agents, CONTROLLERS, Environments, Features, Nudges
 from features.browser_control.controller import Asks
@@ -171,6 +172,11 @@ class TranscriptQuery(Loaded):
     since: int = 0
     before: int = 0
     last: int = TRANSCRIPT_PAGE
+
+
+@dataclass(frozen=True)
+class EditsQuery(Loaded):
+    since: int = 0
 
 
 @dataclass(frozen=True)
@@ -562,6 +568,12 @@ def transcript_of(req: Request, session: str = "") -> Reply:
 @route("GET", "/api/{env}/agent/{n}/transcript")
 def get_transcript(req: Request) -> Reply:
     return transcript_of(req)
+
+
+@route("GET", "/api/{env}/agent/{n}/edits")
+def get_edits(req: Request) -> Reply:
+    row = Agents(req.record(), actor=USER).load(int(req.params["n"]))
+    return Reply(200, asdict(edits_since(row, req.query_as(EditsQuery).since)))
 
 
 @route("GET", "/api/{env}/agent/{n}/subagent/{session}/transcript")

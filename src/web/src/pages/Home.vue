@@ -12,8 +12,15 @@ import AgentBar from "../chat/AgentBar.vue";
 import RailWaiting from "./RailWaiting.vue";
 import RailTodos from "./RailTodos.vue";
 import Icon from "../kit/Icon.vue";
+import ResizeHandle from "../kit/ResizeHandle.vue";
+import {remember, remembered} from "../composables/remembered.js";
 
 const tab = ref("waiting");
+const RAIL_WIDTH = "home-rail-width";
+const railWidth = ref(remembered(RAIL_WIDTH, 0));
+const railStyle = computed(() => (railWidth.value ? {width: `${railWidth.value}px`} : {}));
+const resize = (width) => remember(RAIL_WIDTH, (railWidth.value = Math.round(width)));
+const resetWidth = () => remember(RAIL_WIDTH, (railWidth.value = 0));
 const ready = ref(false);
 let frame = 0;
 onMounted(() => {
@@ -55,13 +62,7 @@ const tabs = computed(() => [
         </template>
         <template v-else>
             <div class="home-main">
-                <section
-                    :class="[
-                        'home-section',
-                        'home-thread',
-                        {roomy: !store.activity, wide: store.wide || store.terminal, bare: store.terminal},
-                    ]"
-                >
+                <section :class="['home-section', 'home-thread', {bare: store.pane === 'terminal'}]">
                     <AgentBar />
                     <TransitionGroup name="act">
                         <Notice v-for="x in notices" :key="x.n" :notice="x" />
@@ -82,8 +83,8 @@ const tabs = computed(() => [
                         <Thread />
                     </template>
                 </section>
-                <div class="home-divider" role="separator" aria-orientation="vertical" />
-                <div :class="['home-rail', {wide: store.wide}]">
+                <ResizeHandle :min="260" :max="720" @resize="resize" @reset="resetWidth" />
+                <div :class="['home-rail', {wide: store.wide}]" :style="railStyle">
                     <div class="rail-tabs" role="tablist">
                         <template v-for="[key, label, n, warm, icon] in tabs" :key="key">
                             <button
@@ -147,7 +148,6 @@ const tabs = computed(() => [
 .home-loading {
     flex: 1;
     min-height: 0;
-    max-width: 1080px;
     display: flex;
 }
 
@@ -164,7 +164,6 @@ const tabs = computed(() => [
     flex: 1 1 auto;
     min-width: 0;
     min-height: 0;
-    max-width: 1080px;
     display: flex;
     flex-direction: column;
     padding: 0;
@@ -176,16 +175,6 @@ const tabs = computed(() => [
 
 .home-thread > :deep(.thread) > :is(.dump, .terminal) {
     margin: 0 calc(-1 * var(--home-gutter));
-}
-
-@media (min-width: 1280px) {
-    .home-thread.roomy {
-        --home-gutter: 72px;
-    }
-}
-
-.home-thread.wide {
-    max-width: none;
 }
 
 .home-thread.bare {
@@ -225,15 +214,6 @@ const tabs = computed(() => [
 .home-away-back:hover {
     background: var(--hover);
     color: var(--text);
-}
-
-.home-divider {
-    flex: none;
-    width: 5px;
-    margin: 0 -2px;
-    cursor: col-resize;
-    background: transparent;
-    z-index: 3;
 }
 
 .home-rail {

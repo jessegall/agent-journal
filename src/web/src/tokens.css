@@ -30,6 +30,12 @@
     --danger-soft: #d98c8c;
     --created: #6cc08b;
     --font: "Geist", -apple-system, "Segoe UI", system-ui, sans-serif;
+    --mono: "Geist Mono", ui-monospace, "SF Mono", Menlo, monospace;
+    --add-bg: oklch(0.62 0.1 150 / 0.1);
+    --add-fg: oklch(0.72 0.08 150);
+    --del-bg: oklch(0.62 0.12 25 / 0.1);
+    --del-fg: oklch(0.72 0.09 25);
+    --ease: cubic-bezier(0.2, 0.9, 0.25, 1);
 }
 *,
 *::before,

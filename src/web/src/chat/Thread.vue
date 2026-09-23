@@ -10,12 +10,13 @@ import {route} from "../route.js";
 import {quoted, withQuote} from "../format/quote.js";
 import {chatOnly, laidOut} from "../platform/view.js";
 import {threadTurns} from "../domain/thread.js";
-import {agent, store} from "../state/store.js";
+import {agent, feedOn, store} from "../state/store.js";
 import {waitsFor} from "../layout/statusline.js";
 import {polled} from "../sync/polled.js";
 import {earlier, paging, rows} from "../sync/rows.js";
 import DumpWindow from "./DumpWindow.vue";
 import TerminalWindow from "./TerminalWindow.vue";
+import FileFeed from "./FileFeed.vue";
 import Compose from "./Compose.vue";
 import Turn from "./Turn.vue";
 import ThreadSkeleton from "./ThreadSkeleton.vue";
@@ -27,6 +28,10 @@ usePoll(...polled.agents);
 
 const IDLE = 30000;
 const scroller = ref(null);
+const terminalOpen = computed(() => store.pane === "terminal" && !store.dumping);
+const chatOpen = computed(() => store.pane !== "terminal" && !store.dumping);
+const feeding = computed(() => store.pane === "feed" && feedOn.value && Boolean(agent.value));
+const feedKey = computed(() => (agent.value ? `${agent.value.n}:${agent.value.data.transcript}` : ""));
 const quote = ref({text: "", ref: ""});
 const editing = ref(null);
 const pageTools = chatOnly
@@ -44,7 +49,7 @@ const composeTools = computed(() => [
             ? `Dumps: ${dumpsInProgress.value} still filing or waiting for you`
             : "New dump: drop text and files for the agent to file",
         badge: dumpsInProgress.value,
-        go: () => ((store.terminal = false), (store.dumping = true)),
+        go: () => ((store.pane = "chat"), (store.dumping = true)),
     },
 ]);
 
@@ -177,7 +182,7 @@ watch(
 );
 
 watch(
-    () => store.dumping || store.terminal,
+    () => store.dumping || store.pane === "terminal",
     (away) => {
         if (!away) nextTick(() => requestAnimationFrame(toBottom));
     }
@@ -352,10 +357,10 @@ watch(
             <DumpWindow v-if="store.dumping" />
         </Transition>
         <Transition name="terminal">
-            <TerminalWindow v-if="store.terminal && !store.dumping" />
+            <TerminalWindow v-if="terminalOpen" />
         </Transition>
-        <template v-if="!store.dumping && !store.terminal">
-            <div class="thread-write">
+        <template v-if="chatOpen">
+            <div :class="['thread-write', {hidden: feeding}]">
                 <Transition name="rise">
                     <button
                         v-if="away"
@@ -389,56 +394,63 @@ watch(
             <template v-if="!ready">
                 <ThreadSkeleton />
             </template>
-            <div
-                ref="scroller"
-                :class="['thread-scroll', {focusing: store.focus, loading: !ready}]"
-                @scroll.passive="watchScroll"
-                @mouseenter="(reading.inside = true) && markActive()"
-                @mouseleave="reading.inside = false"
-                @mousemove="markActive"
-                @wheel.passive="wheeled"
-                @touchmove.passive="scrolledByHand"
-                @keydown="scrolledByHand"
-                @pointerdown="scrolledByHand"
-            >
-                <template v-if="rendering">
-                    <div ref="topMark" class="thread-top" />
-                    <template v-if="!turns.length">
-                        <p class="thread-empty">Nothing has been said here yet.</p>
-                    </template>
-                    <TransitionGroup :name="settledOnce ? 'turn' : ''">
-                        <Turn
-                            v-for="t in turns"
-                            :key="keyOf(t)"
-                            :turn="t"
-                            @reply="quote = $event"
-                            @edit="editing = $event"
-                            @pin="pin($event.text, $event.ref)"
-                            @grew="settled"
-                        />
-                    </TransitionGroup>
-                    <Transition name="status">
-                        <div
-                            v-if="busy || waiting"
-                            class="thread-turn busy"
-                            :aria-label="waiting ? `The agent is waiting ${waiting}` : `The agent is ${activity}`"
-                        >
-                            <div class="thread-meta">
-                                <Dot kind="started" solid :size="6" />
-                                <template v-if="waiting">
-                                    <span>Waiting {{ waiting }}</span>
-                                </template>
-                                <template v-else-if="thought">
-                                    <span>thinking</span>
-                                    <span class="thread-meta-on thought">{{ thought }}</span>
-                                </template>
-                                <template v-else>
-                                    <RunningCommand :idle="activity" />
-                                </template>
+            <div class="thread-views">
+                <div
+                    ref="scroller"
+                    :class="['thread-scroll', {focusing: store.focus, loading: !ready, hidden: feeding}]"
+                    @scroll.passive="watchScroll"
+                    @mouseenter="(reading.inside = true) && markActive()"
+                    @mouseleave="reading.inside = false"
+                    @mousemove="markActive"
+                    @wheel.passive="wheeled"
+                    @touchmove.passive="scrolledByHand"
+                    @keydown="scrolledByHand"
+                    @pointerdown="scrolledByHand"
+                >
+                    <template v-if="rendering">
+                        <div ref="topMark" class="thread-top" />
+                        <template v-if="!turns.length">
+                            <p class="thread-empty">Nothing has been said here yet.</p>
+                        </template>
+                        <TransitionGroup :name="settledOnce ? 'turn' : ''">
+                            <Turn
+                                v-for="t in turns"
+                                :key="keyOf(t)"
+                                :turn="t"
+                                @reply="quote = $event"
+                                @edit="editing = $event"
+                                @pin="pin($event.text, $event.ref)"
+                                @grew="settled"
+                            />
+                        </TransitionGroup>
+                        <Transition name="status">
+                            <div
+                                v-if="busy || waiting"
+                                class="thread-turn busy"
+                                :aria-label="waiting ? `The agent is waiting ${waiting}` : `The agent is ${activity}`"
+                            >
+                                <div class="thread-meta">
+                                    <Dot kind="started" solid :size="6" />
+                                    <template v-if="waiting">
+                                        <span>Waiting {{ waiting }}</span>
+                                    </template>
+                                    <template v-else-if="thought">
+                                        <span>thinking</span>
+                                        <span class="thread-meta-on thought">{{ thought }}</span>
+                                    </template>
+                                    <template v-else>
+                                        <RunningCommand :idle="activity" />
+                                    </template>
+                                </div>
                             </div>
-                        </div>
-                    </Transition>
-                </template>
+                        </Transition>
+                    </template>
+                </div>
+                <Transition name="pane">
+                    <template v-if="feeding">
+                        <FileFeed :key="feedKey" :agent="agent.n" />
+                    </template>
+                </Transition>
             </div>
         </template>
     </div>
@@ -552,10 +564,22 @@ watch(
     inset: 0;
 }
 
+.thread-views {
+    position: relative;
+    order: 1;
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-height: 0;
+}
+
 .thread-scroll {
     order: 1;
     flex: 1;
     min-height: 0;
+    transition:
+        opacity 0.18s,
+        visibility 0s;
     overflow-y: auto;
     overflow-x: hidden;
     display: flex;
@@ -576,6 +600,24 @@ watch(
         filter 0.25s ease;
 }
 
+.thread-scroll.hidden {
+    visibility: hidden;
+    opacity: 0;
+    transition:
+        opacity 0.18s,
+        visibility 0s 0.18s;
+}
+
+.pane-enter-active,
+.pane-leave-active {
+    transition: opacity 0.18s;
+}
+
+.pane-enter-from,
+.pane-leave-to {
+    opacity: 0;
+}
+
 .thread-write {
     order: 3;
     position: relative;
@@ -585,6 +627,10 @@ watch(
     gap: 6px;
     margin: 0 calc(-1 * var(--home-gutter));
     padding: 8px var(--home-gutter) 12px;
+}
+
+.thread-write.hidden {
+    display: none;
 }
 
 .thread-write :deep(.compose-box) {

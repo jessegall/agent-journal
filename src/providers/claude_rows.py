@@ -2,7 +2,9 @@ from dataclasses import dataclass, field
 
 from engine.fields import Loaded
 from engine.transcript import timestamp
-from providers.payload import ToolCall
+from providers.payload import EditKind, FileEdit, Hunk, ToolCall
+
+CREATED = "create"
 
 
 @dataclass(frozen=True)
@@ -62,6 +64,35 @@ class Message(Loaded):
 class Attachment(Loaded):
     prompt: str = ""
     origin: Origin = Origin()
+
+
+@dataclass(frozen=True)
+class PatchHunk(Loaded):
+    aliases = {"old_start": ("oldStart",), "new_start": ("newStart",)}
+    old_start: int = 0
+    new_start: int = 0
+    lines: tuple[str, ...] = ()
+
+
+@dataclass(frozen=True)
+class EditResult(Loaded):
+    aliases = {"path": ("filePath",), "patch": ("structuredPatch",)}
+    type: str = ""
+    path: str = ""
+    content: str = ""
+    patch: tuple[PatchHunk, ...] = ()
+
+    def edits(self, key: str, at: float) -> list[FileEdit]:
+        if self.type == CREATED:
+            return [FileEdit(key, self.path, at, EditKind.NEW, (Hunk.added(self.content),))]
+        hunks = tuple(Hunk(hunk.old_start, hunk.new_start, hunk.lines) for hunk in self.patch)
+        return [FileEdit(key, self.path, at, EditKind.EDIT, hunks)] if hunks else []
+
+
+@dataclass(frozen=True)
+class Edited(Loaded):
+    aliases = {"result": ("toolUseResult",)}
+    result: EditResult = EditResult()
 
 
 @dataclass(frozen=True)

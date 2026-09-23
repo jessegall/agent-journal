@@ -5,7 +5,7 @@ export const store = reactive({
     spec: null,
     drafting: 0,
     dumping: false,
-    terminal: false,
+    pane: "chat",
     skill: "",
     identity: null,
     rows: {},
@@ -55,5 +55,6 @@ export const counted = (type, key = "open") => (store.counts && store.counts[typ
 export const agent = computed(
     () => [...store.agents].filter((a) => !a.data.parent).sort((a, b) => (b.data.at || 0) - (a.data.at || 0))[0] || null
 );
+export const feedOn = computed(() => !store.settings || store.settings.features.file_feed !== false);
 export const boardOn = computed(() => !store.settings || store.settings.features.kanban !== false);
 export const autoOn = computed(() => !!(store.settings && store.settings.features["work_tracking.auto"]));
