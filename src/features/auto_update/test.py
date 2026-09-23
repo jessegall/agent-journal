@@ -47,11 +47,11 @@ def test_the_update_check_tells_the_agent_of_a_newer_version_once_when_it_does_n
     assert relaunch.tick() == "" and not runtime.relaunch_file(record.root, "claude-1").exists(), "a busy agent is never restarted"
     state["now"] = IDLE
     assert relaunch.tick() == "relaunching", "an idle agent launched the old way is restarted"
-    assert json.loads(runtime.relaunch_file(record.root, "claude-1").read_text()) == {"resume": "conversation-1"}, "in the same conversation"
+    assert "conversation-1" in json.loads(runtime.relaunch_file(record.root, "claude-1").read_text())["command"], "in the same conversation"
     Sessions(record.root).write("claude-1", launch=LAUNCH)
     assert relaunch.tick() == "", "one launched the current way is left alone"
     import subprocess
-    from engine.terminal import stop
+    from supervisor import stop
     stubborn = subprocess.Popen(["sh", "-c", "trap '' HUP TERM; sleep 30"])
     began = time.time()
     stop(stubborn.pid, grace=0.2)

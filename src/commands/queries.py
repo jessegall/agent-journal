@@ -1,7 +1,6 @@
 import argparse
 import os
 import shutil
-import signal
 import subprocess
 import sys
 import time
@@ -303,19 +302,24 @@ def supervise(ctx, agent: str) -> str:
 
 
 def started(record: Record, project: Path, agent: str, env: str, args: list[str], taken: dict | None = None) -> str:
-    from engine.terminal import run as run_supervisor
+    from engine.terminal import supervise as hand_over
+    hand_over(record.root, project, env, agent, args, taken)
+    return ""
+
+
+def ended(ctx) -> str:
     from features.clean_slate.slate import put_back
     from engine.stop import ask
     from engine.typist import live
-    here = Record(record.root, env)
-    try:
-        signal.signal(signal.SIGHUP, lambda *_: sys.exit(129))
-        signal.signal(signal.SIGTERM, lambda *_: sys.exit(143))
-        return str(run_supervisor(record.root, project, env, agent, args, taken))
-    finally:
-        put_back(here)
-        if not live(record.root):
-            ask(record.root)
+    put_back(ctx["record"])
+    if not live(ctx["record"].root):
+        ask(ctx["record"].root)
+    return ""
+
+
+def healed(ctx) -> str:
+    from engine.heal import heal
+    return heal(ctx["record"].root)
 
 def services(ctx) -> str:
     from engine.services import DOWN, UP, listed, log_file, want

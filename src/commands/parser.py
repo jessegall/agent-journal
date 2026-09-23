@@ -13,7 +13,7 @@ from engine.transcript import conversation, user
 from resources.base import AGENT
 from engine.version import version
 from features.runtime_cleanup.tidy import summary, tidy
-from commands.queries import decided, halt, help_text, say, search_text, serve_forever, services, settings_text, speed, supervise, switched, transcript, upgrade_here, verify
+from commands.queries import decided, ended, halt, healed, help_text, say, search_text, serve_forever, services, settings_text, speed, supervise, switched, transcript, upgrade_here, verify
 
 
 def actions(controller: type) -> list[str]:
@@ -124,6 +124,8 @@ def built(only: str) -> argparse.ArgumentParser:
     add_query(cmds, "serve", "the web viewer", lambda ctx: serve_forever(ctx), ("--port", {"type": int, "default": 8430}))
     add_query(cmds, "upgrade", "pull the package, wire the hooks, write the skills, run the migrations", lambda ctx: upgrade_here(ctx))
     add_query(cmds, "stop", "stop this journal: its viewer, its engine and every service a plugin runs", lambda ctx: halt(ctx))
+    add_query(cmds, "ended", "a session's agent has exited: put back what was set aside, and stop the journal when no session is left", lambda ctx: ended(ctx))
+    add_query(cmds, "heal", "go back to the last build that started, when the one installed will not", lambda ctx: healed(ctx))
     add_query(cmds, "speed", "median milliseconds for lists, commands, a hook call and the viewer API, and the runtime folder's size", lambda ctx: speed(ctx),
               ("--runs", {"type": int, "default": 5}), ("--url", {"default": ""}), ("--out", {"default": ""}))
     add_query(cmds, "tidy", "run the housekeeping now: trim captures and logs, drop quiet sessions' files", lambda ctx: summary(tidy(ctx["record"].root, features.FEATURES["runtime_cleanup"].values(ctx["record"]).days)))

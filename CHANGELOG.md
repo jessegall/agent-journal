@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.118.0 — A slim supervisor holds the agent and never reloads
+
+The process that holds the agent's terminal is now a small supervisor that uses only the standard library and imports none of the journal's code, so it never needs reloading. It starts the agent, relays its terminal, types what the journal sends, and restarts the agent in the same conversation, with the same flags and the same session, when asked. Everything else the old supervisor did now lives in a worker it starts and restarts on every new build without touching the agent. A restart no longer hangs: the agent could not finish exiting while its terminal output went unread, and the supervisor now keeps reading it while it waits. A session running when this version installs is handed over to the new supervisor where it stands, and restarted once, when idle, to pick up the new way of launching.
+
 ## 2.117.1 — A restart of the agent can no longer hang
 
 Restarting the agent sent it one hang-up signal and then waited for it to exit with no limit, so an agent that did not exit on that signal left the restart stuck, with the environment still held. Stopping the agent now escalates, hang-up, then terminate, then kill, three seconds apart, so a restart always goes through.

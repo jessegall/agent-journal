@@ -6,10 +6,8 @@ from pathlib import Path
 from controllers.types import Agents
 from engine.actors import IDLE
 from engine.heal import refused
-from engine.runtime import relaunch_file
 from engine.sessions import Sessions
-from engine.stored import write_json
-from engine.terminal import LAUNCH
+from engine.terminal import LAUNCH, relaunch
 from engine.package import entry
 from engine.version import version
 from features import FEATURES
@@ -79,5 +77,5 @@ class Relaunch:
         if not last or not last.title:
             return ""
         Agents(record, actor=SYSTEM).card(last.n, label=f"Restarted the agent in the same conversation to pick up journal {version()}", icon="agents", tone="good")
-        write_json(relaunch_file(root, driver.session), {"resume": last.title})
+        relaunch(root, record.env, driver.session, last.title)
         return "relaunching"

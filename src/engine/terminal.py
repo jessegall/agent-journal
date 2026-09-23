@@ -1,32 +1,20 @@
 import json
 import os
-import pty
-import signal
-import subprocess
-import sys
-import termios
-import time
-import tty
 from pathlib import Path
 
-from engine.band import release
 from engine.sessions import ACTIVE_ENV, hold_build
 from install import code
 from engine import runtime
-from engine.heal import heal
-from engine.stored import read_json
-from engine.package import CODE, ZIPPED, entry
+from engine.stored import read_json, write_json
+from engine.package import CODE, entry
 
 RELOAD = 75
 STOP = 76
 RELAUNCH = 77
-STOP_GRACE = 3.0
-STOP_STEP = 0.05
-LAUNCH = 1
 HEAL = 78
-QUICK = 30.0
-CHECK_EVERY = 0.5
+LAUNCH = 2
 CARRIED = "AGENT_JOURNAL_CARRIED"
+LAUNCHED = "launched.json"
 
 
 def watched(root: Path) -> tuple:
@@ -46,26 +34,34 @@ def output_cap(root: Path, env: str, provider) -> dict:
     return {**wrapper, "JOURNAL_OUTPUT_LINES": str(lines), "JOURNAL_PROVIDER": provider.name, "JOURNAL_OUTPUT_DIR": str(runtime.folder(root) / "outputs")} if wrapper else {}
 
 
-def session_of(agent: str, pid: int) -> str:
-    return f"{agent}-{pid}"
+def launching(root: Path, cwd: Path, env: str, agent: str, args: list[str], conversation: str = "") -> dict:
+    from providers import DRIVERS, PROVIDERS
+    from engine.record import Record
+    from features.work_tracking.auto import launch_args
+    driver = DRIVERS[agent]
+    command = driver.command(driver, driver.resumed(launch_args(Record(root, env), agent, args), conversation), cwd)
+    return {"command": command, "args": args, "launch": LAUNCH, "environ": agent_environment(env=env, capped=output_cap(root, env, PROVIDERS[agent]()))}
 
 
-def pid_of(session: str) -> int:
-    tail = session.rsplit("-", 1)[-1]
-    return int(tail) if tail.isdigit() else 0
+def seated(root: Path, env: str, session: str, agent: str) -> None:
+    from controllers.types import Environments
+    from engine.record import Record
+    from engine.sessions import Sessions
+    from resources.base import SYSTEM
+    launched = read_json(runtime.session_file(root, session, LAUNCHED), {})
+    Sessions(root).bind(session, env, pid=launched.get("pid") or 0, provider=agent)
+    Sessions(root).write(session, args=launched.get("command") or [], launch=launched.get("launch") or 0)
+    Environments(Record(root, env), actor=SYSTEM)._seat(env, session)
 
 
-def spawn_agent(command: list[str], cwd: Path, env: str = "", capped: dict | None = None) -> tuple[int, int]:
-    pid, fd = pty.fork()
-    if pid == 0:
-        os.chdir(cwd)
-        os.execvpe(command[0], command, agent_environment(env=env, capped=capped))
-    return pid, fd
-
-
-def spawn_supervisor(root: Path, cwd: Path, env: str, agent: str, fd: int, session: str, lifeline: int = -1) -> subprocess.Popen:
-    return subprocess.Popen([*entry("engine.supervisor"), str(root), str(cwd), env, agent, str(fd), session, str(lifeline)], cwd=cwd,
-                            pass_fds=(fd, lifeline) if lifeline >= 0 else (fd,))
+def relaunch(root: Path, env: str, session: str, conversation: str) -> Path:
+    from engine.sessions import Sessions
+    launched = read_json(runtime.session_file(root, session, LAUNCHED), {})
+    agent = Sessions(root).read(session).get("provider") or session.split("-", 1)[0]
+    cwd = Path(launched.get("cwd") or root.parent)
+    asked = runtime.relaunch_file(root, session)
+    write_json(asked, launching(root, cwd, env, agent, launched.get("args") or [], conversation))
+    return asked
 
 
 def lifeline() -> tuple[int, int]:
@@ -75,129 +71,22 @@ def lifeline() -> tuple[int, int]:
     return read, write
 
 
-def child(pid: int, block: bool = False) -> tuple[int, int]:
-    try:
-        return os.waitpid(pid, 0 if block else os.WNOHANG)
-    except ChildProcessError:
-        return pid, 0
-
-
-def stop(pid: int, grace: float = STOP_GRACE) -> int:
-    for sent in (signal.SIGHUP, signal.SIGTERM, signal.SIGKILL):
-        try:
-            os.kill(pid, sent)
-        except ProcessLookupError:
-            return child(pid, block=True)[1]
-        until = time.time() + grace
-        while time.time() < until:
-            ended, status = child(pid)
-            if ended:
-                return status
-            time.sleep(STOP_STEP)
-    return child(pid, block=True)[1]
-
-
-def seat(root: Path, env: str, session: str, pid: int, agent: str, command: list[str]) -> None:
-    from controllers.types import Environments
-    from engine.record import Record
-    from engine.sessions import Sessions
-    from resources.base import SYSTEM
-    Sessions(root).bind(session, env, pid=pid, provider=agent)
-    Sessions(root).write(session, args=command, launch=LAUNCH)
-    Environments(Record(root, env), actor=SYSTEM)._seat(env, session)
-
-
-def launch(root: Path, cwd: Path, env: str, agent: str, args: list[str], conversation: str = "") -> tuple[int, int, str]:
-    from providers import DRIVERS, PROVIDERS
-    from engine.record import Record
-    from features.work_tracking.auto import launch_args
-
-    driver = DRIVERS[agent]
-    command = driver.command(driver, driver.resumed(launch_args(Record(root, env), agent, args), conversation), cwd)
-    pid, fd = spawn_agent(command, cwd, env, output_cap(root, env, PROVIDERS[agent]()))
-    session = session_of(agent, pid)
-    seat(root, env, session, pid, agent, command)
-    return pid, fd, session
-
-
 def carried() -> dict | None:
     given = os.environ.pop(CARRIED, "")
     return json.loads(given) if given else None
 
 
-def outdated(root: Path) -> bool:
-    return ZIPPED and (root / "journal.pyz").resolve() != CODE
-
-
-def carry_on(env: str, args: list[str], pid: int, fd: int, session: str, saved) -> None:
-    os.set_inheritable(fd, True)
-    kept = saved and [*saved[:6], [c.hex() if isinstance(c, bytes) else c for c in saved[6]]]
-    os.environ[CARRIED] = json.dumps({"env": env, "args": args, "pid": pid, "fd": fd, "session": session, "saved": kept})
-    os.execv(sys.executable, [sys.executable, *sys.orig_argv[1:]])
-
-
-def run(root: Path, cwd: Path, env: str, agent: str, args: list[str], taken: dict | None = None) -> int:
+def supervise(root: Path, cwd: Path, env: str, agent: str, args: list[str], taken: dict | None = None) -> None:
     hold_build(root, CODE)
-    pid, fd, session = (taken["pid"], taken["fd"], taken["session"]) if taken else launch(root, cwd, env, agent, args)
     runtime.set_env(root, env)
-    if not taken:
+    journal = [*entry("journal"), "--root", str(root)]
+    spec = {"root": str(root), "cwd": str(cwd), "env": env, "agent": agent,
+            "worker": entry("engine.worker"), "heal": [*journal, "heal"], "ended": [*journal, "--env", env, "ended"],
+            **({"adopt": {"pid": taken["pid"], "fd": taken["fd"], "session": taken["session"], "saved": taken["saved"]}, "args": args}
+               if taken else launching(root, cwd, env, agent, args))}
+    if taken:
+        os.set_inheritable(taken["fd"], True)
+    else:
         print(f"journal: environment {env}")
-    stdin, stdout = sys.stdin.fileno(), sys.stdout.fileno()
-    saved = taken and taken["saved"] and [*taken["saved"][:6], [bytes.fromhex(c) if isinstance(c, str) else c for c in taken["saved"][6]]]
-    coordinator = None
-    status = None
-    try:
-        try:
-            saved = saved or termios.tcgetattr(stdin)
-            tty.setraw(stdin)
-        except termios.error:
-            pass
-        alive, held = lifeline()
-        while status is None:
-            if outdated(root):
-                carry_on(env, args, pid, fd, session, saved)
-            stamps = watched(root)
-            began = time.time()
-            coordinator = spawn_supervisor(root, cwd, env, agent, fd, session, alive)
-            code = coordinator.wait()
-            coordinator = None
-            ended, status = child(pid)
-            if ended:
-                break
-            status = None
-            if code == RELOAD:
-                continue
-            if code == RELAUNCH:
-                asked = runtime.relaunch_file(root, session)
-                conversation = str((read_json(asked, {}) or {}).get("resume") or "")
-                asked.unlink(missing_ok=True)
-                stop(pid)
-                os.close(fd)
-                pid, fd, session = launch(root, cwd, env, agent, args, conversation)
-                continue
-            if code == STOP:
-                status = stop(pid)
-                break
-            if code and (code == HEAL or time.time() - began < QUICK):
-                line = heal(root)
-                if line:
-                    os.write(stdout, f"\r\n{line}\r\n".encode())
-            elif code:
-                continue
-            while watched(root) == stamps:
-                ended, status = child(pid)
-                if ended:
-                    break
-                status = None
-                time.sleep(CHECK_EVERY)
-    finally:
-        if coordinator and coordinator.poll() is None:
-            coordinator.terminate()
-            coordinator.wait()
-        if status is None:
-            status = stop(pid)
-        os.write(stdout, release())
-        if saved is not None:
-            termios.tcsetattr(stdin, termios.TCSADRAIN, saved)
-        os.close(fd)
-    return os.waitstatus_to_exitcode(status)
+    started = entry("supervisor")
+    os.execv(started[0], [*started, json.dumps(spec)])
