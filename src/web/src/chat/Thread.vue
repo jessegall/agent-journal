@@ -176,7 +176,7 @@ watch(
 );
 
 function settled() {
-    if (!stillReading() && !away.value) toBottom();
+    if (!stillReading() && !away.value && !store.focus) toBottom();
 }
 
 let grew = null;
@@ -220,7 +220,7 @@ function watchScroll() {
     const s = scroller.value;
     if (!s) return;
     const far = s.scrollHeight - s.scrollTop - s.clientHeight > 40;
-    if (far && !away.value && Date.now() - scrolledAt > BY_HAND) {
+    if (far && !away.value && !store.focus && Date.now() - scrolledAt > BY_HAND) {
         toBottom();
         return;
     }
