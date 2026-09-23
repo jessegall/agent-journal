@@ -9,7 +9,6 @@ from resources.base import ACTIONS, Refused
 from resources.types import TYPES
 from engine.hooks import CANCELABLE
 from features.plugins.declared import Manifest
-from engine.fields import text_of
 
 MANIFEST = Path(".journal-plugin") / "plugin.json"
 KEYS = ("name", "version", "title", "description", "journal", "requires", "env", "setup", "services", "on", "refuse", "reads", "refuse_seconds", "refuse_socket", "chat", "pages", "settings", "skills", "installed", "events", "cancels")
@@ -39,16 +38,16 @@ def read(folder: Path, version: str = "") -> Manifest:
     for key in given:
         if key not in KEYS:
             raise Refused(f"plugin.json: unknown key {key!r}; known: {', '.join(KEYS)}")
-    name = text_of(given, "name")
-    if not NAME.fullmatch(name):
+    name = given.get("name")
+    if not isinstance(name, str) or not NAME.fullmatch(name):
         raise Refused(f"plugin.json: name must be 2-32 lowercase letters, digits or dashes, got {name!r}")
     taken = {**{n: n for n in REGISTRY},
              **{old if isinstance(old, str) else old[0]: n for n, cls in REGISTRY.items() for old in cls.aliases}}
     if name in taken:
         raise Refused(f"plugin.json: name {name!r} is a built-in feature"
                       + (f", which {taken[name]} used to be called" if taken[name] != name else ""))
-    wanted = text_of(given, "journal")
-    if wanted and version and newer(wanted, version):
+    wanted = given.get("journal")
+    if wanted and version and newer(str(wanted), version):
         raise Refused(f"{name} needs journal {wanted} or newer; this is {version} — run journal upgrade")
     checked = {key: given[key] for key in KEYS if key in given}
     checked["requires"] = shaped(name, given.get("requires") or {}, "requires", ("check", "hint"), ("check",))
@@ -139,7 +138,8 @@ def steps(name: str, given) -> list[dict]:
         for field in step:
             if field not in STEP:
                 raise Refused(f"plugin.json: setup step {i} has unknown key {field!r}; known: {', '.join(STEP)}")
-        out.append({"name": str(step.get("name") or f"step {i}"), "run": command(name, f"setup step {i}", step.get("run")), "cwd": text_of(step, "cwd")})
+        out.append({"name": str(step.get("name") or f"step {i}"), "run": command(name, f"setup step {i}", step.get("run")),
+                    **({"cwd": str(step["cwd"])} if step.get("cwd") else {})})
     return out
 
 
@@ -170,7 +170,7 @@ def chat(name: str, given) -> list:
         raise Refused("plugin.json: chat is a list of {\"find\": \"<regex>\", \"as\": \"<markdown>\"}")
     out = []
     for rule in given:
-        if not isinstance(rule, dict) or set(rule) - {"find", "as"} or not text_of(rule, "find") or not text_of(rule, "as"):
+        if not isinstance(rule, dict) or set(rule) - {"find", "as"} or not all(isinstance(rule.get(key), str) and rule[key] for key in ("find", "as")):
             raise Refused(f"plugin.json: each chat rule is {{\"find\": \"<regex>\", \"as\": \"<markdown>\"}}, got {rule!r}")
         try:
             re.compile(rule["find"])
@@ -206,9 +206,9 @@ def pages(name: str, given, declared: dict) -> list[dict]:
         for field in page:
             if field not in PAGE:
                 raise Refused(f"plugin.json: page has unknown key {field!r}; known: {', '.join(PAGE)}")
-        service = text_of(page, "service")
+        service = page.get("service")
         if service not in declared:
-            raise Refused(f"plugin.json: page {text_of(page, 'title', 'name')!r} names service {service!r}, which is not declared")
+            raise Refused(f"plugin.json: page {page.get('title') or page.get('name')!r} names service {service!r}, which is not declared")
         out.append({**page, "name": str(page.get("name") or service), "title": str(page.get("title") or name.title()), "path": str(page.get("path") or "/")})
     return out
 

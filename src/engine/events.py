@@ -1,10 +1,10 @@
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from typing import ClassVar
-from engine.fields import text_of, whole_of
+from engine.fields import Loaded
 
 
 @dataclass(frozen=True)
-class TypedEvent:
+class TypedEvent(Loaded):
     on: ClassVar[str] = ""
     event_name: ClassVar[str] = ""
 
@@ -25,7 +25,7 @@ class ResourceEvent(TypedEvent):
 
     @classmethod
     def read(cls, event) -> "ResourceEvent":
-        return cls(n=event.n, action=event.action, type=event.type, actor=event.actor)
+        return replace(cls.from_json(event.data), n=event.n, action=event.action, type=event.type, actor=event.actor)
 
 
 @dataclass(frozen=True)
@@ -41,6 +41,10 @@ class ResourceCreated(ResourceEvent):
 @dataclass(frozen=True)
 class AgentEvent(TypedEvent):
     agent: int = 0
+
+    @classmethod
+    def read(cls, event) -> "AgentEvent":
+        return replace(cls.from_json(event.data), agent=event.n)
 
 
 @dataclass(frozen=True)
@@ -87,10 +91,6 @@ class AgentMessageSent(AgentEvent):
     on: ClassVar[str] = "agent.message.sent"
     text: str = ""
 
-    @classmethod
-    def read(cls, event) -> "AgentMessageSent":
-        return cls(agent=event.n, text=text_of(event.data, "text"))
-
 
 @dataclass(frozen=True)
 class AgentReported(AgentEvent):
@@ -102,12 +102,6 @@ class AgentReported(AgentEvent):
     session: str = ""
     size: int = 0
     skill: str = ""
-
-    @classmethod
-    def read(cls, event) -> "AgentReported":
-        data = event.data
-        return cls(agent=event.n, hook=text_of(data, "hook"), tool=text_of(data, "tool"), file=text_of(data, "file"), session=text_of(data, "session"),
-                   size=whole_of(data, "size"), skill=text_of(data, "skill"))
 
     def wanted(self) -> bool:
         return not self.hook_name or self.hook == self.hook_name

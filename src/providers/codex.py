@@ -9,7 +9,7 @@ from providers.payload import AgentCall, AskCall, BashCall, EVENTS, PERMISSION, 
 from providers.base import Provider, parsed
 from providers.payload import Dispatch, Hook, ToolCall
 from providers.codex_rows import Row
-from engine.fields import text_of
+from engine.fields import Loaded
 from resources.types import AgentRow
 from engine.stored import tail
 from engine.drivers import ANSI, MARK, Driver
@@ -36,6 +36,12 @@ class CodexShell(BashCall):
 def script_field(text: str, key: str, missing: str) -> str:
     found = re.search(SCRIPT_FIELD.format(key), text)
     return found[1] if found and found[1] else missing
+
+
+@dataclass(frozen=True)
+class Spawned(Loaded):
+    task_name: str = "subagent"
+    model: str = ""
 
 
 def arguments_of(raw) -> dict:
@@ -273,8 +279,8 @@ class Codex(Provider):
                     spawning[key] = {"task": script_field(text, "task_name", "subagent"), "type": script_field(text, "agent_type", ""),
                                      "model": script_field(text, "model", "")}
                 elif name.endswith("spawn_agent"):
-                    detail = arguments_of(payload.arguments)
-                    subagent_rows.append({"task": text_of(detail, "task_name") if text_of(detail, "task_name") else "subagent", "model": text_of(detail, "model")})
+                    asked = Spawned.from_json(arguments_of(payload.arguments))
+                    subagent_rows.append({"task": asked.task_name, "model": asked.model})
                 elif name.rsplit(".", 1)[-1] in ("exec", "exec_command", "shell", "shell_command"):
                     pending[key] = text
                 spawned = spawning.pop(key, None) if payload.type == "custom_tool_call_output" else None

@@ -16,7 +16,7 @@ from engine.stored import read_json, tail, write_json, write_text
 from engine import runtime
 from engine.sessions import Sessions
 from engine.drivers import ANSI, CHOICE, Driver
-from engine.fields import list_of, number_of, text_of
+from engine.fields import Loaded
 
 ASKS = frozenset({"AskUserQuestion"})
 SENDS = "SendMessage"
@@ -45,20 +45,15 @@ SETTLE_BYTES = 65536
 
 
 @dataclass(frozen=True)
-class HandedLine:
-    line: str
-    at: float
+class HandedLine(Loaded):
+    line: str = ""
+    at: float = 0.0
 
 
 @dataclass(frozen=True)
-class Handed:
-    lines: tuple = ()
+class Handed(Loaded):
+    lines: tuple[HandedLine, ...] = ()
     typed_until: float = 0.0
-
-    @classmethod
-    def from_json(cls, raw) -> "Handed":
-        raw = raw if isinstance(raw, dict) else {}
-        return cls(tuple(HandedLine(text_of(h, "line"), number_of(h, "at")) for h in list_of(raw, "lines") if isinstance(h, dict)), number_of(raw, "typed_until"))
 
     def to_json(self) -> dict:
         return {"lines": [asdict(h) for h in self.lines], "typed_until": self.typed_until}

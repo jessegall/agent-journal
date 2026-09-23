@@ -6,7 +6,7 @@ import time
 from dataclasses import asdict, dataclass, replace
 from pathlib import Path
 
-from engine.fields import number_of, text_of
+from engine.fields import Loaded
 from engine.keeper import ServiceSpec, ServiceState, gone, teardown
 from engine.record import Record
 from engine.stored import read_json, write_json
@@ -45,15 +45,13 @@ def log_file(root: Path, sid: str) -> Path:
 
 
 @dataclass(frozen=True)
-class Wanted:
+class Wanted(Loaded):
     want: str = UP
     nonce: float = 0.0
 
     @classmethod
     def read(cls, root: Path, sid: str) -> "Wanted":
-        raw = read_json(want_file(root, sid), {})
-        raw = raw if isinstance(raw, dict) else {}
-        return cls(text_of(raw, "want") if text_of(raw, "want") else UP, number_of(raw, "nonce"))
+        return cls.from_json(read_json(want_file(root, sid), {}))
 
 
 def status(root: Path, sid: str) -> ServiceState:

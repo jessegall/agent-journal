@@ -40,6 +40,10 @@ export class ApiClient {
         return `/${this.env()}${path}`;
     }
 
+    changelog() {
+        return this.get("/changelog");
+    }
+
     manifest() {
         return this.get("/manifest");
     }

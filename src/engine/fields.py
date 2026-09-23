@@ -11,9 +11,9 @@ class Loaded:
     keyed_by: ClassVar[str] = ""
 
     @classmethod
-    def from_json(cls, raw: dict):
+    def from_json(cls, raw):
         given = {}
-        for name, keys, convert in plan(cls):
+        for name, keys, convert in plan(cls) if isinstance(raw, dict) else ():
             for key in keys:
                 value = raw.get(key)
                 if value is not None and value != "":

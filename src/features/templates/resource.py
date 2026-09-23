@@ -1,23 +1,19 @@
 from dataclasses import asdict, dataclass
 from typing import ClassVar
 
-from engine.fields import list_of, text_of
+from engine.fields import Loaded
 
 from resources.base import DOCUMENT, PROJECT, Resource, ResourceDetails
 from resources.shapes import LIST, TEXT, Field, Shape
 
 
 @dataclass(frozen=True)
-class TemplateField:
-    name: str
-    label: str
-    kind: str
+class TemplateField(Loaded):
+    name: str = ""
+    label: str = ""
+    kind: str = ""
     options: tuple = ()
     default: str = ""
-
-    @classmethod
-    def from_json(cls, raw: dict) -> "TemplateField":
-        return cls(text_of(raw, "name"), text_of(raw, "label"), text_of(raw, "kind"), tuple(list_of(raw, "options")), text_of(raw, "default"))
 
     def to_json(self) -> dict:
         return {**asdict(self), "options": list(self.options)}

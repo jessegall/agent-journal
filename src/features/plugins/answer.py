@@ -4,7 +4,7 @@ from pathlib import Path
 
 from controllers.types import Agents, Plugins, Todos
 from engine.hooks import gate_file
-from engine.fields import text_of
+from engine.fields import Loaded
 from engine.stored import read_json, write_json
 from features.plugins.declared import declared, settings_of
 from features.plugins.lifecycle import called
@@ -17,8 +17,8 @@ HELD = "plugin"
 
 
 @dataclass(frozen=True)
-class Posting:
-    title: str
+class Posting(Loaded):
+    title: str = ""
     abstract: str = ""
     brief: str = ""
     about: str = ""
@@ -30,8 +30,7 @@ class Posting:
     def of(cls, value, key: str = "title") -> "Posting":
         if not isinstance(value, dict):
             return cls(**{"title": "", key: str(value)})
-        return cls(title=text_of(value, "title"), abstract=text_of(value, "abstract"), brief=text_of(value, "brief"), about=text_of(value, "about"),
-                   tone=text_of(value, "tone"), link=text_of(value, "link"), event=text_of(value, "event"))
+        return cls.from_json(value)
 
 
 @dataclass(frozen=True)

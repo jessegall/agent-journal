@@ -15,6 +15,7 @@ const PAGES = {
     commit: "Commit",
     skills: "Skills",
     services: "Services",
+    about: "About",
     plugins: "Plugins",
     page: "Plugin",
     hub: "Hub",

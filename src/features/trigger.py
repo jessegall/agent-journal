@@ -1,9 +1,8 @@
 import time
 from dataclasses import asdict, dataclass, replace
 
-from engine.fields import list_of, number_of, text_of
+from engine.fields import Loaded
 from resources.base import names
-from resources.types import AgentRow
 from engine.stored import read_json, write_json
 from engine import runtime
 
@@ -14,7 +13,7 @@ TRIGGER = names("unit", "on", "every", "at")
 
 
 @dataclass(frozen=True)
-class Trigger:
+class Trigger(Loaded):
     unit: str = ""
     every: float = 0
     at: tuple = ()
@@ -27,13 +26,10 @@ class Trigger:
         return {key: list(value) if key == TRIGGER.at else value for key, value in
                 ((TRIGGER.unit, self.unit), (TRIGGER.every, self.every), (TRIGGER.at, self.at), (TRIGGER.on, self.on)) if value}
 
-    @classmethod
-    def read(cls, spec: dict) -> "Trigger":
-        return cls(unit=text_of(spec, TRIGGER.unit), every=number_of(spec, TRIGGER.every), at=tuple(list_of(spec, TRIGGER.at)), on=text_of(spec, TRIGGER.on))
 
 
 @dataclass(frozen=True)
-class Mark:
+class Mark(Loaded):
     context: float = 0.0
     uses: int = 0
     status: str = ""
@@ -45,21 +41,13 @@ class Mark:
     notified: bool | None = None
     viewer_opened: bool = False
 
-    @classmethod
-    def from_json(cls, raw) -> "Mark":
-        raw = raw if isinstance(raw, dict) else {}
-        return cls(context=number_of(raw, AgentRow.context), uses=int(number_of(raw, AgentRow.uses)), status=text_of(raw, AgentRow.status),
-                   event=text_of(raw, AgentRow.event), at=number_of(raw, AgentRow.at), count=int(number_of(raw, "count")),
-                   edits=int(number_of(raw, "edits")), since=number_of(raw, "since"), notified=raw.get("notified"),
-                   viewer_opened=bool(raw.get("viewer_opened")))
-
 
 NEVER = Trigger()
 
 
 def spec(record, name: str, default: Trigger) -> Trigger:
     saved = record.triggers.get(name)
-    return Trigger.read(saved) if isinstance(saved, dict) else default
+    return Trigger.from_json(saved) if isinstance(saved, dict) else default
 
 
 def _file(record, session: str, name: str):

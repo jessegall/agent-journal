@@ -8,7 +8,7 @@ from engine import runtime
 from controllers.types import Agents
 from resources.base import SYSTEM
 from resources.types import AgentRow
-from engine.fields import number_of, text_of
+from engine.fields import Loaded
 from dataclasses import dataclass
 
 DISPATCHED, RETURNED = "dispatched", "returned"
@@ -25,18 +25,14 @@ def web_remote(url: str) -> str:
 
 
 @dataclass(frozen=True)
-class SubagentRow:
-    id: str
-    task: str
-    kind: str
-    model: str
-    ended: float
-    status: str
-
-    @classmethod
-    def from_json(cls, raw: dict) -> "SubagentRow":
-        return cls(text_of(raw, "id", "session", "task"), text_of(raw, "task"), text_of(raw, "type"), text_of(raw, "model"), number_of(raw, "ended"),
-                   text_of(raw, "status"))
+class SubagentRow(Loaded):
+    aliases = {"id": ("id", "session", "task"), "kind": ("type",)}
+    id: str = ""
+    task: str = ""
+    kind: str = ""
+    model: str = ""
+    ended: float = 0.0
+    status: str = ""
 
 class Seat:
     def branch(self) -> str:

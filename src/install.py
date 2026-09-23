@@ -16,7 +16,7 @@ from pathlib import Path
 
 PACKAGE = Path(__file__).resolve().parent
 PACKAGE_DIRS = ("commands", "controllers", "engine", "extension", "features", "migrations", "providers", "resources", "skills", "surfaces")
-PACKAGE_FILES = ("VERSION", "__main__.py", "channel.py", "claude-status.sh", "hook.sh", "install.py", "output_cap.sh", "journal.py", "serve.py", "supervisor.py", "skills.py")
+PACKAGE_FILES = ("VERSION", "CHANGELOG.md", "__main__.py", "channel.py", "claude-status.sh", "hook.sh", "install.py", "output_cap.sh", "journal.py", "serve.py", "supervisor.py", "skills.py")
 PACKAGE_TREES = (*PACKAGE_DIRS, "web/dist")
 LEFT_BEHIND = (".DS_Store", "test.py")
 RETIRED = ("hook.py", "support")

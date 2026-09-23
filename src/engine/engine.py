@@ -18,7 +18,7 @@ from engine.seat import Seat
 from engine.wording import plural
 from engine.transcript import PEER, SENT, turns
 from engine.stored import read_json, write_json
-from engine.fields import mapping_of, number_of
+from engine.fields import Loaded
 
 CLOCK_EVERY = 5.0
 
@@ -43,14 +43,9 @@ def after(written: list, line: int) -> list[str]:
 
 
 @dataclass(frozen=True)
-class PeerLog:
+class PeerLog(Loaded):
     at: float = 0.0
     names: dict = field(default_factory=dict)
-
-    @classmethod
-    def from_json(cls, raw) -> "PeerLog":
-        raw = raw if isinstance(raw, dict) else {}
-        return cls(number_of(raw, "at"), mapping_of(raw, "names"))
 
 class Engine(Seat):
     def __init__(self, record: Record, driver):

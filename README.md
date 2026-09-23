@@ -157,4 +157,4 @@ Every record command is a noun and a word:
 and `journal help <word>` prints focused help. The generated `journal` skill carries the same
 reference for each agent.
 
-The journal updates itself: every half hour it checks for a newer published version and installs it (the Updates feature; switch it off in Settings to have the agent told instead). Upgrade by hand with `journal upgrade`. Release history is in [CHANGELOG.md](CHANGELOG.md).
+The journal updates itself: every half hour it checks for a newer published version and installs it (the Updates feature; switch it off in Settings to have the agent told instead). Upgrade by hand with `journal upgrade`. Release history is in [CHANGELOG.md](src/CHANGELOG.md), and in the viewer under the version at the foot of the sidebar.
