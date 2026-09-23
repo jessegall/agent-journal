@@ -38,7 +38,7 @@ def announce(root: Path, version: str = "") -> str:
     return version
 
 
-UPSTREAM = "https://raw.githubusercontent.com/jessegall/agent-journal/main/VERSION"
+UPSTREAM = "https://raw.githubusercontent.com/jessegall/agent-journal/main/src/VERSION"
 
 
 UPSTREAM_FOR = 900
