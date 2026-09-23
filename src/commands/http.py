@@ -25,6 +25,7 @@ from surfaces.updates import newer, upstream
 from surfaces.control import force as force_session, pause as pause_session, resume as resume_session, options as control_options, permit, relaunch, request as control_session, shell
 from features.skill_loading.catalogue import SKILL, always, catalogue, set_keywords, skills
 from features.skill_loading.required import load_now
+from engine.files import found_files
 from features.file_feed.feed import edits_since, notes
 from features.status_bar.outputs import outputs
 from controllers.base import LAST, networked
@@ -129,6 +130,7 @@ class ControlsQuery(Loaded):
 @dataclass(frozen=True)
 class ShellLine(Loaded):
     command: str = ""
+    now: bool = False
 
 
 @dataclass
@@ -179,6 +181,11 @@ class TranscriptQuery(Loaded):
     since: int = 0
     before: int = 0
     last: int = TRANSCRIPT_PAGE
+
+
+@dataclass(frozen=True)
+class FindQuery(Loaded):
+    q: str = ""
 
 
 @dataclass(frozen=True)
@@ -285,7 +292,8 @@ def post_agent_permit(req: Request) -> Reply:
 
 @route("POST", "/api/{env}/agent/{session}/shell")
 def post_agent_shell(req: Request) -> Reply:
-    return Reply(200, shell(req.root, req.params["env"], req.params["session"], req.body_as(ShellLine).command))
+    line = req.body_as(ShellLine)
+    return Reply(200, shell(req.root, req.params["env"], req.params["session"], line.command, line.now))
 
 
 @route("GET", "/api/{env}/agent/{session}/screen")
@@ -582,6 +590,11 @@ def get_project_files(req: Request) -> Reply:
             listed["size"] = entry.stat().st_size
         out.append(listed)
     return Reply(200, sorted(out, key=lambda x: (not x["folder"], x["name"].lower())))
+
+
+@route("GET", "/api/{env}/project-files/find")
+def get_project_files_found(req: Request) -> Reply:
+    return Reply(200, [asdict(found) for found in found_files(req.root.parent.resolve(), req.query_as(FindQuery).q)])
 
 
 def transcript_of(req: Request, session: str | None = None) -> Reply:

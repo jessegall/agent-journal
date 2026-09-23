@@ -63,8 +63,18 @@ class Hashed:
     sha: str
 
 
+@dataclass(frozen=True)
+class FoundFile:
+    path: str
+    name: str
+    size: int
+    folder: bool = False
+
+
 INDEXES: dict[Path, Indexed] = {}
 HASHED: dict[Path, Hashed] = {}
+UNTRACKED: dict[Path, tuple[str, ...]] = {}
+MOST_FOUND = 50
 
 
 @cache
@@ -106,6 +116,7 @@ def blobs(record, project: Path) -> dict:
     tree = dict(tracked(project))
     dirty = list(dict.fromkeys(p for p in git(["ls-files", "-m", "-o", "-d", "--exclude-standard", "-z"], project).split("\0") if p))
     present = [p for p in dirty if (project / p).is_file()]
+    UNTRACKED[project] = tuple(p for p in present if p not in tree)
     for path in set(dirty) - set(present):
         tree.pop(path, None)
     tree.update(hashed(project, present))
@@ -115,6 +126,26 @@ def blobs(record, project: Path) -> dict:
 
 def blob_texts(project: Path, shas: list[str]) -> dict[str, str]:
     return {EMPTY_BLOB: "", **git_objects(project, [sha for sha in dict.fromkeys(shas) if sha != EMPTY_BLOB])}
+
+
+def project_paths(project: Path) -> set[str]:
+    if project not in UNTRACKED:
+        UNTRACKED[project] = tuple(p for p in git(["ls-files", "-o", "--exclude-standard", "-z"], project).split("\0") if p)
+    return {*tracked(project), *UNTRACKED[project]}
+
+
+def found_files(project: Path, needle: str) -> list[FoundFile]:
+    wanted = needle.strip().lower()
+    ranked = sorted((match_rank(path, wanted), len(path), path) for path in project_paths(project) if wanted in path.lower())
+    found = [project / path for _, _, path in ranked]
+    return [FoundFile(str(path.relative_to(project)), path.name, path.stat().st_size) for path in found if path.is_file()][:MOST_FOUND]
+
+
+def match_rank(path: str, wanted: str) -> int:
+    name = path.rsplit("/", 1)[-1].lower()
+    if name.startswith(wanted):
+        return 0
+    return 1 if wanted in name else 2
 
 
 def line_counts(project: Path, pairs: list[tuple[str, str]]) -> dict[tuple[str, str], LineCount]:

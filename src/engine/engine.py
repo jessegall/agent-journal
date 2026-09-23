@@ -258,7 +258,7 @@ class Engine(Seat):
         return "moved the running command to the background" if self.agent.driver.move_to_background() else ""
 
     def forced(self) -> str:
-        if self.agent.state() == IDLE or not take(self.record.root, self.names(), FORCE):
+        if not take(self.record.root, self.names(), FORCE) or self.agent.state() == IDLE:
             return ""
         self.agent.driver.stop_turn()
         for _ in range(int(SETTLE / STEP)):
