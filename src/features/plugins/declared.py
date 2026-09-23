@@ -65,6 +65,13 @@ class ChatRule(Loaded):
 
 
 @dataclass(frozen=True)
+class Dashboard(Loaded):
+    name: str
+    title: str
+    icon: str = ""
+
+
+@dataclass(frozen=True)
 class Page(Loaded):
     name: str
     title: str
@@ -126,6 +133,7 @@ class Manifest(Loaded):
     refuse_socket: str = ""
     chat: tuple[ChatRule, ...] = ()
     pages: tuple[Page, ...] = ()
+    dashboards: tuple[Dashboard, ...] = ()
     settings: tuple[Setting, ...] = ()
     skills: str = ""
     installed: str = ""

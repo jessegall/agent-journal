@@ -33,6 +33,10 @@ export function go(env, page = "", n = 0, q = "") {
     location.hash = `#/${env}${page ? `/${page}` : ""}${n ? `/${n}` : ""}${q ? `?q=${encodeURIComponent(q)}` : ""}`;
 }
 
+export function showFile(env, path, line = 0) {
+    location.hash = `#/${env}/file?q=${encodeURIComponent(path)}${line ? `&line=${line}` : ""}`;
+}
+
 const entry = (open) => `${open.type}:${open.n}${open.comment ? `:${open.comment}` : ""}`;
 
 function opening(stack, sub = "") {

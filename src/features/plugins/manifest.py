@@ -11,7 +11,7 @@ from engine.hooks import CANCELABLE
 from features.plugins.declared import Manifest
 
 MANIFEST = Path(".journal-plugin") / "plugin.json"
-KEYS = ("name", "version", "title", "description", "journal", "requires", "env", "setup", "services", "on", "refuse", "reads", "refuse_seconds", "refuse_socket", "chat", "pages", "settings", "skills", "load", "installed", "events", "cancels")
+KEYS = ("name", "version", "title", "description", "journal", "requires", "env", "setup", "services", "on", "refuse", "reads", "refuse_seconds", "refuse_socket", "chat", "pages", "dashboards", "settings", "skills", "load", "installed", "events", "cancels")
 NAME = re.compile(r"[a-z0-9][a-z0-9-]{1,31}$")
 WORD = re.compile(r"[a-z][a-z0-9_-]*$")
 PLACEHOLDER = re.compile(r"\{([a-z][a-z0-9_.]*)\}")
@@ -19,6 +19,7 @@ PATTERNS = {"*", *TYPES, *ACTIONS, *(f"{t}.{a}" for t in TYPES for a in ACTIONS)
 STEP = ("name", "run", "cwd")
 SERVICE = ("run", "cwd", "env", "port", "ready", "restart", "grace", "show")
 PAGE = ("name", "title", "icon", "service", "path", "status")
+DASHBOARD = ("name", "title", "icon")
 TONES = ("", "warn", "good")
 SETTING = ("title", "default", "help", "env", "type", "options", "group", "when", "detail")
 KINDS = ("text", "textarea", "list", "number", "flag", "options")
@@ -59,6 +60,7 @@ def read(folder: Path, version: str = "") -> Manifest:
         raise Refused(f"plugin.json: refuse_socket names one of its services, not {given['refuse_socket']!r}")
     checked["chat"] = chat(name, given.get("chat") or [])
     checked["pages"] = pages(name, given.get("pages") or [], checked["services"])
+    checked["dashboards"] = dashboards(given.get("dashboards") or [])
     checked["settings"] = typed(shaped(name, given.get("settings") or {}, "settings", SETTING, ()))
     checked["events"] = shaped(name, given.get("events") or {}, "events", ("title", "tone", "card"), ("title",))
     for event, fields in checked["events"].items():
@@ -224,6 +226,20 @@ def pages(name: str, given, declared: dict) -> list[dict]:
         if service not in declared:
             raise Refused(f"plugin.json: page {page.get('title') or page.get('name')!r} names service {service!r}, which is not declared")
         out.append({**page, "name": str(page.get("name") or service), "title": str(page.get("title") or name.title()), "path": str(page.get("path") or "/")})
+    return out
+
+
+def dashboards(given) -> list[dict]:
+    if not isinstance(given, list):
+        raise Refused("plugin.json: dashboards is a list of dashboards")
+    out = []
+    for board in given:
+        if not isinstance(board, dict) or not board.get("name"):
+            raise Refused(f"plugin.json: each dashboard is an object with a name, and may have {', '.join(DASHBOARD[1:])}")
+        for field in board:
+            if field not in DASHBOARD:
+                raise Refused(f"plugin.json: dashboard has unknown key {field!r}; known: {', '.join(DASHBOARD)}")
+        out.append({**board, "name": str(board["name"]), "title": str(board.get("title") or board["name"]).strip()})
     return out
 
 

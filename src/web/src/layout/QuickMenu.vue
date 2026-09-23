@@ -6,7 +6,7 @@ import {api} from "../api/client.js";
 import {sendMessage} from "../chat/outbox.js";
 import Icon from "../kit/Icon.vue";
 import SwitchCase from "../kit/SwitchCase.vue";
-import {go, peek, route} from "../route.js";
+import {go, peek, route, showFile} from "../route.js";
 import {unreadByUser} from "../domain/records.js";
 import {showAway} from "../platform/visibility.js";
 import {autoOn, meta, navTypes, store, types} from "../state/store.js";
@@ -97,7 +97,7 @@ function openFile(file) {
     if (!file) return;
     if (file.folder) return browseFiles(file.path);
     emit("close");
-    go(route.value.env, "file", 0, file.path);
+    showFile(route.value.env, file.path);
 }
 
 const fileCommand = {label: "Open project file", keys: "file files open", hk: "f", icon: "file", run: browseFiles, opens: true};
@@ -508,6 +508,4 @@ function onFileKey(e) {
     overflow: hidden;
     text-overflow: ellipsis;
 }
-
-
 </style>

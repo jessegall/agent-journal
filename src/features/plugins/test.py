@@ -208,7 +208,7 @@ def test_stopping_a_service_stops_every_process_it_forked():
         "and removes what it left, so the new run starts from nothing of the old one's"
 
 
-def test_a_plugins_skills_are_published_marked_as_its_own_and_taken_back():
+def test_a_plugins_skills_and_dashboards_are_published_as_its_own():
     from features.plugins.skills import published, withdrawn
     from skills import LIBRARY
     record = alone()
@@ -227,6 +227,23 @@ def test_a_plugins_skills_are_published_marked_as_its_own_and_taken_back():
     assert not (project / LIBRARY / "teacher-two").exists(), "an upgrade that drops a skill takes it back"
     assert withdrawn(record.root, "teacher") == ["teacher-one"], "removing the plugin takes back exactly its own skills"
     assert (project / LIBRARY / "teacher-mine").is_dir(), "a skill it did not publish is left alone"
+    import commands.http  # noqa: F401
+    from commands.dispatch import dispatch
+    from features.plugins.source import data
+    from controllers.types import Plugins
+    row = Plugins(record, actor=SYSTEM).create("teacher", enabled=True, token="t0ken", settings={},
+                                               manifest={"name": "teacher", "dashboards": [{"name": "sins", "title": "Sins"}]})
+    ask = lambda: dispatch("GET", f"/api/{record.env}/plugin/{row.n}/dashboard/sins", record.root, {}, {}).body
+    assert "has not written" in ask()["missing"], "a declared dashboard the plugin has not written yet says so"
+    (data(record.root, "teacher") / "dashboards").mkdir(parents=True)
+    written = {"pages": {"overview": {"title": "Sins", "view": {"type": "stack", "children": [
+        {"type": "stat", "label": "Sins", "value": 3, "open": "sin/deep-nesting"}]}},
+        "sin/deep-nesting": {"title": "deep-nesting", "view": {"type": "text", "body": "why"}}}}
+    (data(record.root, "teacher") / "dashboards" / "sins.json").write_text(json.dumps(written))
+    assert (ask()["title"], ask()["start"]) == ("Sins", "overview"), "it is served from the plugin's data folder, starting at its first page"
+    written["pages"]["overview"]["view"]["children"].append({"type": "chart"})
+    (data(record.root, "teacher") / "dashboards" / "sins.json").write_text(json.dumps(written))
+    assert "pages.overview.view.children[1]" in ask()["broken"], "a node that does not fit the format is named by its place"
 
 
 def test_a_row_a_plugin_creates_is_its_own_locked_and_goes_with_it():

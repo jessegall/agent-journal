@@ -27,7 +27,7 @@ from features.skill_loading.catalogue import SKILL, always, catalogue, set_keywo
 from features.skill_loading.required import load_now
 from features.file_feed.feed import edits_since
 from controllers.base import LAST, networked
-from controllers.types import Agents, CONTROLLERS, Environments, Features, Nudges
+from controllers.types import Agents, CONTROLLERS, Environments, Features, Nudges, Plugins
 from features.browser_control.controller import Asks
 from engine import bus, runtime, viewer
 from engine.manifest import manifest
@@ -40,7 +40,11 @@ from engine.transcript import page
 from providers import PROVIDERS
 from resources.base import AGENT, OPENED, USER, Refused, titled
 from resources.types import Ask
-from engine.stored import write_text, last_lines
+from engine.stored import read_json, write_text, last_lines
+from features.plugins.dashboard import checked
+from features.plugins.declared import declared
+from features.plugins.lifecycle import called
+from features.plugins.source import data
 from engine.proc import git, ran
 from engine.project_files import UNLISTED, matching
 from commands.dispatch import JSON, KEEP_SHAPED, Missing, PLAIN, Reply, Request, represented, route, settled, shaped
@@ -533,6 +537,21 @@ def get_files(req: Request) -> Reply:
         c = CONTROLLERS[type_](record, actor=USER)
         out += [attached_file(record, type_, r, name, c.folder(r.n) / name) for r in c._attached() for name in r.files if (c.folder(r.n) / name).is_file()]
     return Reply(200, sorted(out, key=lambda x: -x["at"]))
+
+
+@route("GET", "/api/{env}/plugin/{n}/dashboard/{name}")
+def get_plugin_dashboard(req: Request) -> Reply:
+    row = Plugins(req.record(), actor=USER).load(int(req.params["n"]))
+    board = next((b for b in declared(row).dashboards if b.name == req.params["name"]), None)
+    if board is None:
+        raise Missing(f"{called(row)} declares no dashboard {req.params['name']}")
+    found = read_json(data(req.record().root, called(row)) / "dashboards" / f"{board.name}.json", None)
+    if found is None:
+        return Reply(200, {"title": board.title, "missing": f"{called(row)} has not written its {board.title} dashboard yet"})
+    try:
+        return Reply(200, {"title": board.title, **checked(found)})
+    except Refused as broken:
+        return Reply(200, {"title": board.title, "broken": str(broken)})
 
 
 @route("GET", "/api/{env}/project-files")
