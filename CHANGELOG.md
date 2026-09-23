@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.113.5 — A terminal-view command is queued through a reload instead of refused
+
+While the journal reloads after an upgrade, a session goes quiet for a few seconds, and a command typed in the terminal view was refused with session is not online. A command, an allow or deny, or a move to the background for a session seen within the last minute is now queued, and done once the session is back.
+
 ## 2.113.4 — A terminal-view command is typed at once, and a mark's title lines up
 
 A command typed in the terminal view is typed into the agent's terminal straight away, even while the agent works, since Claude queues what is typed; it waits only while a permission prompt is on screen, where the keys would answer it. A chat mark's title and the bold name beside it sit on one baseline again.

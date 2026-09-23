@@ -10,6 +10,8 @@ from engine.stored import write_json
 from providers import DRIVERS, PROVIDERS
 from resources.base import SYSTEM, Refused
 
+RELOAD_GRACE = 60.0
+
 
 def configured(provider: str, current_model: str = "") -> tuple[type, dict]:
     cls = PROVIDERS.get(provider)
@@ -46,7 +48,7 @@ CARRY_ON = "Carry on with what you were doing; the model or effort change you we
 
 
 def online(root: Path, env: str, session: str) -> dict:
-    found = next((agent for _, agent in live(Path(root)) if agent["session"] == session), None)
+    found = next((agent for _, agent in live(Path(root), within=RELOAD_GRACE) if agent["session"] == session), None)
     if not found:
         raise Refused(f"session {session!r} is not online")
     if found["environment"] != env:
