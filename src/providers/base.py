@@ -3,7 +3,7 @@ import json
 import pickle
 import time
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import ClassVar
 
@@ -57,6 +57,14 @@ def parsed(line: str):
         return json.loads(line)
     except ValueError:
         return None
+
+
+@dataclass
+class SkillWindows:
+    used: int = 0
+    loads: dict[str, int] = field(default_factory=dict)
+    prior_used: int = 0
+    prior_loads: dict[str, int] = field(default_factory=dict)
 
 
 @dataclass(frozen=True)
@@ -300,6 +308,7 @@ class Provider(ABC):
     def read_ahead(self, path: Path) -> None:
         self.transcript(path)
         self.loaded_skills(path)
+        self.prior_window(path)
         self.recent(path)
 
     def loaded_skills(self, path: Path) -> dict[str, float]:
@@ -307,6 +316,24 @@ class Provider(ABC):
 
     def starts_window(self, row: dict) -> bool:
         return False
+
+    def tokens_of(self, row: dict) -> int | None:
+        return None
+
+    def prior_window(self, path: Path) -> SkillWindows:
+        return self.folded(path, self.skill_windows, SkillWindows)
+
+    def skill_windows(self, windows: SkillWindows, row: dict) -> SkillWindows:
+        if self.starts_window(row):
+            windows.prior_used, windows.prior_loads = windows.used, windows.loads
+            windows.used, windows.loads = 0, {}
+        used = self.tokens_of(row)
+        if used is not None:
+            windows.used = used
+        for use in self.tool_uses(row):
+            if use.name == "Skill" and use.skill:
+                windows.loads[use.skill] = windows.used
+        return windows
 
     def skill_loads(self, loads: dict, row: dict) -> dict:
         if self.starts_window(row):

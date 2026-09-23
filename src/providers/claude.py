@@ -342,6 +342,9 @@ class Claude(Provider):
     def starts_window(self, row: Row) -> bool:
         return row.compact_summary
 
+    def tokens_of(self, row: Row) -> int | None:
+        return row.tokens
+
     def crew(self, path: Path) -> dict:
         held = self.folded(path, self.crew_rows, Crew)
         uses, ids = held.uses, held.ids
