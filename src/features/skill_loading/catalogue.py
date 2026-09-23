@@ -1,5 +1,6 @@
 from functools import cache
 import re
+import time
 from pathlib import Path
 
 import features
@@ -14,6 +15,8 @@ from engine.package import data
 
 READ: dict[str, tuple] = {}
 LISTED: dict[str, tuple] = {}
+CATALOGUED: dict[str, tuple] = {}
+FRESH_FOR = 5.0
 HOMES = (LIBRARY, *(cls.skill_home for cls in PROVIDERS.values() if cls.skill_home))
 
 
@@ -35,6 +38,10 @@ def described(f: Path, root: Path) -> dict:
 
 
 def catalogue(root: Path) -> list[dict]:
+    marks = tuple(marked(root / home) for home in HOMES)
+    held = CATALOGUED.get(str(root))
+    if held and held[1] == marks and time.monotonic() - held[0] < FRESH_FOR:
+        return held[2]
     out = {}
     for home in HOMES:
         for f in skill_files(root / home):
@@ -42,18 +49,25 @@ def catalogue(root: Path) -> list[dict]:
                 out.setdefault(f.parent.name, described(f, root))
             except FileNotFoundError:
                 continue
-    return list(out.values())
+    CATALOGUED[str(root)] = (time.monotonic(), marks, list(out.values()))
+    return CATALOGUED[str(root)][2]
+
+
+def marked(home: Path) -> int:
+    try:
+        return home.stat().st_mtime_ns
+    except OSError:
+        return 0
 
 
 def skill_files(home: Path) -> list[Path]:
-    try:
-        mark = home.stat().st_mtime_ns
-    except OSError:
+    mark = marked(home)
+    if not mark:
         return []
     held = LISTED.get(str(home))
     if not held or held[0] != mark:
-        held = LISTED[str(home)] = (mark, sorted(p for p in home.iterdir() if p.is_dir()))
-    return [folder / "SKILL.md" for folder in held[1] if (folder / "SKILL.md").is_file()]
+        held = LISTED[str(home)] = (mark, [folder / "SKILL.md" for folder in sorted(p for p in home.iterdir() if p.is_dir()) if (folder / "SKILL.md").is_file()])
+    return held[1]
 
 
 @cache
