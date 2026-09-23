@@ -99,6 +99,12 @@ const open = (page) => emit("open", page);
         <template #text>
             <TextDisplay class="text" :text="node.body" />
         </template>
+        <template #fact>
+            <div class="fact">
+                <span class="fact-label">{{ node.label }}</span>
+                <TextDisplay class="fact-body" :text="node.body" />
+            </div>
+        </template>
         <template #badge>
             <span :class="['badge', node.tone]">{{ node.text }}</span>
         </template>
@@ -235,6 +241,24 @@ const open = (page) => emit("open", page);
 .list-note {
     color: var(--text-3);
     font-size: 12px;
+}
+
+.fact {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.fact-label {
+    color: var(--text);
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.fact-body {
+    color: var(--text-2);
+    font-size: 13px;
+    line-height: 1.55;
 }
 
 .badge {
