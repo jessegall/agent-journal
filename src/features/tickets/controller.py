@@ -1,6 +1,8 @@
 import controllers.types as types_module
 from controllers.types import Environments
+from engine.record import Record
 from engine.sessions import Sessions
+from features.permission_prompts.feature import prompted
 import resources.types as resources_module
 from controllers.base import Controller, internal
 from features.boards.controller import Boards
@@ -46,6 +48,7 @@ class Tickets(Controller):
         environments = Environments(self.record, actor=self.actor)
         if not environments._titled(name):
             environments.create(name, abstract=f"Where {self.type} {ticket.n} runs")
+        prompted(Record(self.record.root, name))
         return self.update(ticket.n, work_environment=name)
 
     def agent_session(self, n: int) -> str:
@@ -65,7 +68,7 @@ class Tickets(Controller):
         if self.agent_session(ticket.n):
             return ticket
         driver, place = DRIVERS[agent], ticket.work_environment
-        args = driver.resumed(driver.within([], place), Sessions(self.record.root).last(place, agent))
+        args = driver.resumed(driver.within([*driver.AUTO_ARGS], place), Sessions(self.record.root).last(place, agent))
         detached(self.record.root, self.record.root.parent, place, agent, args)
         return self.load(ticket.n)
 

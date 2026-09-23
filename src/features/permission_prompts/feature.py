@@ -27,3 +27,7 @@ class Permissions(Feature):
 
 def skipped(record) -> bool:
     return bool(record.setting("permission_prompts", {}).get("skip", True))
+
+
+def prompted(record) -> None:
+    record.set_setting("permission_prompts", {**record.setting("permission_prompts", {}), "skip": False})
