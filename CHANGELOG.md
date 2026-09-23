@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.119.1 — A plugin's socket check no longer drops out half the time
+
+On macOS the journal's half-close after sending a hook to a plugin's service failed whenever the service had already answered, about 60% of calls, and a failed answer skipped the plugin's check instead of running its command. The journal no longer half-closes, and a service that fails or answers nonsense is passed over for the command. Nothing to do.
+
 ## 2.119.0 — A plugin can answer the write check from a running service
 
 A plugin's "refuse" command started a new process on every tool call, which is most of the time a hook takes when a plugin checks reads too. A plugin can now name one of its services with "refuse_socket": the service listens on the Unix socket at $JOURNAL_PLUGIN_SOCKET, reads one JSON line and writes its answer, and the command runs only when nothing listens there. Plugins that do not use it are unchanged.

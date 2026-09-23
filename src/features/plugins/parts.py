@@ -67,7 +67,7 @@ class AskPluginsToRefuse(ToolInterceptor):
             started = time.monotonic()
             payload = refusal(record, hook, name, where, writes)
             served = (row.manifest or {}).get("refuse_socket") and asked(Path(env["JOURNAL_PLUGIN_SOCKET"]), payload, seconds)
-            ok, reply = served or call(fill(asking, env), where, env, payload, seconds)
+            ok, reply = served if served and served[0] else call(fill(asking, env), where, env, payload, seconds)
             left -= time.monotonic() - started
             if ok and reply:
                 logged(record.root, name, f"refuse? {hook.tool.name} {json.dumps(reply, ensure_ascii=False)}")

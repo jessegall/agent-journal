@@ -34,11 +34,11 @@ def installed(record, name, guard, **manifest):
                                                 manifest={"name": name, "refuse": "sh guard.sh", **manifest})
 
 
-def answer_once(listening):
+def answer_once(listening, reply=b'{"refuse": "from its service"}\n'):
     taken, _ = listening.accept()
     with taken:
         json.loads(taken.makefile().readline())
-        taken.sendall(b'{"refuse": "from its service"}\n')
+        taken.sendall(reply)
 
 
 def writing(record, file="a.py"):
@@ -91,6 +91,8 @@ def test_a_plugin_may_refuse_a_write_and_its_words_reach_the_agent():
         listening.listen()
         threading.Thread(target=lambda: answer_once(listening), daemon=True).start()
         assert writing(served) == {"decision": "block", "reason": "served: from its service"}, "a plugin's running service answers without a process started"
+        threading.Thread(target=lambda: answer_once(listening, b"garbled\n"), daemon=True).start()
+        assert writing(served) == {"decision": "block", "reason": "served: from the command"}, "a service that answers nonsense is passed over for the command"
         path.unlink()
 
 
