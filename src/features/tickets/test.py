@@ -94,7 +94,11 @@ def test_moving_a_ticket_to_its_start_stage_launches_its_agent_once_in_its_workt
     tickets = Tickets(record, actor=USER)
     ticket = tickets.create("Dark mode", board=board.n)
     tickets.move(ticket.n, "Building")
-    assert launched == [(f"ticket-{ticket.n}", "claude", ["--worktree", f"ticket-{ticket.n}"])], "the start stage launches the ticket's agent in its own worktree"
+    from engine.record import Record
+    from features.permission_prompts.feature import skipped
+    assert (launched, skipped(Record(record.root, f"ticket-{ticket.n}"))) == \
+        ([(f"ticket-{ticket.n}", "claude", ["--permission-mode", "auto", "--worktree", f"ticket-{ticket.n}"])], False), \
+        "the start stage launches the ticket's agent in its own worktree, in a named permission mode, never skipping prompts"
     Sessions(record.root).bind("claude-9", f"ticket-{ticket.n}", provider="claude")
     tickets.start(ticket.n)
     assert len(launched) == 1, "a ticket whose agent runs is not started twice"
