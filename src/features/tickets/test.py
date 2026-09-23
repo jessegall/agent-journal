@@ -170,3 +170,27 @@ def test_a_drafted_ticket_waits_for_the_user_to_confirm_it_before_it_can_start()
         (True, "Ideas"), "a draft cannot start, and stays where it was"
     assert "only the user confirms" in refused(lambda: Tickets(record, actor=AGENT).confirm(drafted.n)), "the agent cannot confirm its own draft"
     assert Tickets(record, actor=USER).confirm(drafted.n).draft is False, "the user confirms it"
+
+
+def test_a_ticket_waits_on_a_confirmed_dependency_and_starts_when_it_closes(monkeypatch):
+    import engine.terminal
+    from resources.base import AGENT
+    from tests.conftest import refused
+    launched = []
+    monkeypatch.setattr(engine.terminal, "detached", lambda root, cwd, env, agent, args: launched.append(env) or 1)
+    record = fresh()
+    board = Boards(record, actor=USER).create("Features", stages=["Ideas", "Building"], meanings={"Building": "start"})
+    user, agent = Tickets(record, actor=USER), Tickets(record, actor=AGENT)
+    api, ui = user.create("An API", board=board.n), user.create("Its screen", board=board.n)
+    agent.depend(ui.n, api.n)
+    assert user.load(ui.n).dependencies == {api.ref: "proposed"}, "the agent only proposes a dependency"
+    user.decline_dependencies(ui.n)
+    assert user.load(ui.n).dependencies == {}, "a declined proposal is gone and holds nothing"
+    agent.depend(ui.n, api.n)
+    user.accept_dependencies(ui.n)
+    assert "would wait on itself" in refused(lambda: user.depend(api.n, ui.n)), "a cycle is refused"
+    user.move(ui.n, "Building")
+    assert (launched, user.load(ui.n).queued) == ([], True), "a ticket waiting on an open one does not start"
+    user.complete(api.n, how="shipped")
+    user.start_queued()
+    assert (launched, user.load(ui.n).queued) == ([f"ticket-{ui.n}"], False), "once its dependency closes, the sweep starts it"
