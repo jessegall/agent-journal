@@ -11,7 +11,7 @@ class CommitsDetails(FeatureDetails):
 
     abstract = "A commit whose message carries Journal: todos done and a to-do number closes that row"
 
-    help = "The trailer starts at column 0; prose and indented examples close nothing."
+    help = "The trailer starts at column 0; prose and indented examples close nothing. Every commit shows in the chat as a mark with its hash, branch and subject."
 
     lines = [
         Line(
