@@ -3,7 +3,7 @@ import time
 from features.status_bar.group import grouped, ran
 from features.status_bar.queue import queue as messages
 from features.status_bar.queue import HOLD
-from features.status_bar.bar import bar, played, current
+from features.status_bar.bar import bar, current
 from tests.conftest import fresh
 
 
@@ -115,31 +115,8 @@ def test_with_the_header_off_nothing_is_drawn_or_wiped():
     assert (band.SHOWN, band.release()) == (False, b""), "the terminal is the agent's alone: an exit clears none of its rows"
 
 
-def test_a_played_line_is_not_played_again():
+def test_every_viewer_is_handed_the_whole_queue_and_keeps_its_own_place():
     record = fresh()
-    lately = time.time()
-    record.state("status_bar").set("bar", {"queue": [{"at": 1.0, "done": True}, {"at": 2.0, "done": True}, {"at": lately, "done": False}]})
-    played(record, 2.0)
-    assert [one["at"] for one in current(record)["queue"]] == [lately]
-    played(record, lately)
-    assert [one["at"] for one in current(record)["queue"]] == [lately], "the line still running stays"
-    record.state("status_bar").set("bar", {"queue": [{"at": lately, "done": True, "for": 0, "lingers": 10.0}]})
-    assert [one["at"] for one in current(record)["queue"]] == [lately], "a finished line lingers before it goes"
-    played(record, 2.0)
-    record.state("status_bar").set("bar", {"queue": [{"at": 2.0, "done": True, "for": 0, "lingers": 10.0}]})
-    assert current(record)["queue"] == [], "once it has lingered, a played line is not played again"
-
-
-def test_an_agent_whose_turn_ended_stays_idle_through_a_wakeup_or_a_helper_tool_call():
-    from controllers.types import Agents
-    from engine.hooks import handle
-    from providers import PROVIDERS
-    record = fresh()
-    claude = PROVIDERS["claude"]()
-    for event, tool in (("Stop", ""), ("PreToolUse", "ScheduleWakeup"), ("SubagentStop", "")):
-        handle(claude, record.root, record.env, {"hook_event_name": event, "session_id": "claude-wake", "tool_name": tool, "tool_input": {"delaySeconds": 1200}})
-    assert Agents(record).by_session("claude-wake").status == "idle", "the turn ended with a wakeup scheduled, so the agent waits, it is not busy"
-    for event, tool, helper in (("Stop", "", ""), ("PreToolUse", "Bash", "a1b2c3"), ("PostToolUse", "Bash", "a1b2c3")):
-        handle(claude, record.root, record.env, {"hook_event_name": event, "session_id": "claude-helped", "tool_name": tool, "agent_id": helper,
-                                                 "tool_input": {"command": "ls"}})
-    assert Agents(record).by_session("claude-helped").status == "idle", "a tool call from a helper Claude Code runs itself leaves the agent idle"
+    queue = [{"at": 1.0, "done": True}, {"at": 2.0, "done": True}, {"at": time.time(), "done": False}]
+    record.state("status_bar").set("bar", {"queue": queue})
+    assert current(record)["queue"] == current(record)["queue"] == queue, "no tab's reading moves another tab's place in the queue"

@@ -4,9 +4,10 @@ import {store} from "../state/store.js";
 import {polled} from "../sync/polled.js";
 import {TICK, line, visibleQueue} from "../layout/bar.js";
 import {usePoll} from "../poll.js";
-import {api} from "../api/client.js";
 
 usePoll(...polled.bar);
+
+defineProps({idle: {type: String, default: "working"}});
 
 const COUNT_UP = 360;
 const state = ref({at: 0, since: 0});
@@ -19,7 +20,6 @@ function step() {
     const queue = (store.bar && store.bar.queue) || [];
     const now = Date.now() / 1000;
     const got = visibleQueue(queue, state.value, now);
-    if (got.message && got.at !== state.value.at) api.played(got.at).catch(() => {});
     state.value = {at: got.at, since: got.since};
     message.value = got.message;
     elapsed.value = got.message ? Math.max(0, now - got.since) : 0;
@@ -80,6 +80,9 @@ watch(shownLine, (now) => {
                 </span>
             </span>
         </Transition>
+        <template v-if="!shownLine">
+            <span class="running-idle">{{ idle }}</span>
+        </template>
     </span>
 </template>
 
