@@ -73,11 +73,11 @@ class Decision(Loaded):
 
 
 class Provider(ABC):
-    name = ""
-    question_tools = frozenset()
     tool_kinds: ClassVar[dict] = {"Bash": BashCall, "Read": ReadCall, "NotebookRead": ReadCall, "Edit": WriteCall, "MultiEdit": WriteCall, "Write": WriteCall,
                                   "NotebookEdit": WriteCall, "Grep": SearchCall, "Glob": SearchCall, "WebSearch": SearchCall, "WebFetch": FetchCall,
                                   "Skill": SkillCall, "Agent": AgentCall, "Task": AgentCall}
+    name = ""
+    question_tools = frozenset()
     briefing_file = ""
     skill_home = ""
     link_skills = False

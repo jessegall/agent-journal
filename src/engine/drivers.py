@@ -32,7 +32,6 @@ def joined(text: str) -> str:
 class Driver(ABC):
     STOP = b"\x1b"
     CLEAR_LINE = b"\x05\x15"
-    name = ""
     DISPLAY_HOOK = False
     SHELL = ""
     AUTO_ARGS = ()
@@ -43,10 +42,11 @@ class Driver(ABC):
     WORKTREE: tuple = ()
     WORKTREES: tuple = ()
     EXIT = ""
-    ALLOW, DENY = b"1", b"\x1b"
     MOVE_TO_BACKGROUND = b""
     QUIET = 3.0
     PROMPT = re.compile(r"[›>$❯]\s*$")
+    name = ""
+    ALLOW, DENY = b"1", b"\x1b"
 
     def __init__(self, record, session: str, fd: int = -1):
         self.record = record

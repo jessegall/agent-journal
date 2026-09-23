@@ -20,17 +20,11 @@ class TemplateField(Loaded):
 
 
 class Template(Shape, Resource):
-    type = "template"
-    event_labels = {"created": "Template written", "updated": "Template revised", "completed": "Template retired"}
     data_fields: ClassVar[list[Field]] = [
         Field(LIST, list, name="applies_to"),
         Field(LIST, list, name="fields"),
         Field(TEXT, name="purpose"),
     ]
-    labels = {"brief": "Instructions"}
-    icon = "docs"
-    command_names = {"complete": "retire"}
-    scope = PROJECT
     details: ClassVar[ResourceDetails] = ResourceDetails(
         title="Template",
         abstract="Instructions put in front of anything made from it, with the parts it starts with",
@@ -38,6 +32,12 @@ class Template(Shape, Resource):
               "Its parts are the skeleton a new resource starts with. applies_to lists the types it is for, such as plan or todo; "
               "an empty list means any type. journal template create \"<name>\" --brief \"<instructions>\" --set applies_to=plan writes one."),
     )
+    type = "template"
+    event_labels = {"created": "Template written", "updated": "Template revised", "completed": "Template retired"}
+    labels = {"brief": "Instructions"}
+    icon = "docs"
+    command_names = {"complete": "retire"}
+    scope = PROJECT
     view = DOCUMENT
 
     @property
