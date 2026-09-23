@@ -6,7 +6,7 @@ from engine import attic
 from engine.record import Record
 from engine.sessions import Sessions
 from resources import types
-from resources.base import ENVIRONMENT, SYSTEM, Refused, check_title
+from resources.base import AGENT, ENVIRONMENT, SYSTEM, Refused, check_title
 from engine import runtime
 from engine.wording import plural
 from controllers.facts import Facts
@@ -144,6 +144,18 @@ class Environments(Controller):
             self.sessions().evict(holder, self.session, env.title, why)
         self.sessions().bind(self.session, env.title)
         return self.update(n, holder=self.session, claimed={"from": holder, "why": why})
+
+    def launch(self, n: int, agent: str = "claude"):
+        from engine.terminal import detached
+        from providers import DRIVERS
+        if self.actor == AGENT:
+            self._refuse("only the user starts an agent in an environment: they do it from the viewer")
+        if agent not in DRIVERS:
+            self._refuse(f"no agent called {agent!r}; the agents are {', '.join(DRIVERS)}")
+        env = self.load(int(n))
+        self.vacant(env.title)
+        detached(self.record.root, self.record.root.parent, env.title, agent, [*DRIVERS[agent].AUTO_ARGS])
+        return self.update(env.n, launched=time.time(), launched_agent=agent)
 
     def leave(self, n: int):
         self.sessions().unbind(self.session)

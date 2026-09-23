@@ -266,6 +266,10 @@ export class ApiClient {
         return this.list("agent", {completed: true, last, by: "updated"}).then((got) => got.rows);
     }
 
+    launchAgent(n, agent) {
+        return this.act("environment", n, "launch", {agent});
+    }
+
     appoint(session) {
         return this.post(this.here("/appoint"), {session});
     }
