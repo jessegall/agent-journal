@@ -4,11 +4,15 @@ from engine.sessions import Sessions
 import resources.types as resources_module
 from controllers.base import Controller, internal
 from features.boards.controller import Boards
+from features.boards.resource import START
 from features.kanban.board import BoardLanes, Card
 from features.kanban.lanes import Lane
 from features.tickets.resource import Ticket
 from resources.base import Refused, Resource
 from resources.shapes import LEVELS
+
+
+AGENT_CLI = "claude"
 
 
 class Tickets(Controller):
@@ -49,7 +53,21 @@ class Tickets(Controller):
         return Sessions(self.record.root).holder(ticket.work_environment) if ticket.work_environment else ""
 
     def move(self, n: int, stage: str):
-        return self.update(int(n), stage=stage.strip())
+        moved = self.update(int(n), stage=stage.strip())
+        if moved.board and Boards(self.record, actor=self.actor).load(int(moved.board)).meanings.get(moved.stage) == START:
+            return self.start(moved.n)
+        return moved
+
+    def start(self, n: int, agent: str = AGENT_CLI):
+        from engine.terminal import detached
+        from providers import DRIVERS
+        ticket = self.bind(int(n))
+        if self.agent_session(ticket.n):
+            return ticket
+        driver, place = DRIVERS[agent], ticket.work_environment
+        args = driver.resumed(driver.within([], place), Sessions(self.record.root).last(place, agent))
+        detached(self.record.root, self.record.root.parent, place, agent, args)
+        return self.load(ticket.n)
 
     def _stages(self, board) -> list:
         return Boards(self.record, actor=self.actor).load(int(board)).stages if board else []

@@ -82,3 +82,19 @@ def test_an_agent_runs_under_a_supervisor_with_no_terminal(tmp_path):
             os.kill(json.loads(launched.read_text())["pid"], signal.SIGKILL)
         os.killpg(child.pid, signal.SIGKILL)
         child.wait(timeout=5)
+
+
+def test_moving_a_ticket_to_its_start_stage_launches_its_agent_once_in_its_worktree(monkeypatch):
+    import engine.terminal
+    from engine.sessions import Sessions
+    launched = []
+    monkeypatch.setattr(engine.terminal, "detached", lambda root, cwd, env, agent, args: launched.append((env, agent, args)) or 1)
+    record = fresh()
+    board = Boards(record, actor=USER).create("Features", stages=["Ideas", "Building"], meanings={"Building": "start"})
+    tickets = Tickets(record, actor=USER)
+    ticket = tickets.create("Dark mode", board=board.n)
+    tickets.move(ticket.n, "Building")
+    assert launched == [(f"ticket-{ticket.n}", "claude", ["--worktree", f"ticket-{ticket.n}"])], "the start stage launches the ticket's agent in its own worktree"
+    Sessions(record.root).bind("claude-9", f"ticket-{ticket.n}", provider="claude")
+    tickets.start(ticket.n)
+    assert len(launched) == 1, "a ticket whose agent runs is not started twice"
