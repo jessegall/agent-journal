@@ -103,9 +103,11 @@ class Driver(ABC):
         return opened(project, project.joinpath(*cls.WORKTREES, name), f"worktree-{name}"), cls.unworktreed(args)
 
     @classmethod
-    def resumed(cls, args: list[str], conversation: str) -> list[str]:
-        if not cls.RESUMING or not conversation:
-            return args
+    def within(cls, args: list[str], name: str) -> list[str]:
+        return args if not cls.WORKTREE or cls.worktree(args) else [*args, cls.WORKTREE[0], name]
+
+    @classmethod
+    def unresumed(cls, args: list[str]) -> list[str]:
         kept, dropping = [], 0
         for arg in args:
             if dropping:
@@ -114,7 +116,13 @@ class Driver(ABC):
                 dropping = cls.RESUMING[arg]
             else:
                 kept.append(arg)
-        return [*kept, next(iter(cls.RESUMING)), conversation]
+        return kept
+
+    @classmethod
+    def resumed(cls, args: list[str], conversation: str) -> list[str]:
+        if not cls.RESUMING or not conversation:
+            return args
+        return [*cls.unresumed(args), next(iter(cls.RESUMING)), conversation]
 
     def permit(self, allow: bool) -> None:
         self._wrote(self.ALLOW if allow else self.DENY)
