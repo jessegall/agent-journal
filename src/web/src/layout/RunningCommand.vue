@@ -92,9 +92,7 @@ watch(shownLine, (now) => {
     position: relative;
     display: flex;
     align-items: center;
-    justify-content: flex-end;
-    max-width: 44ch;
-    margin-left: auto;
+    justify-content: flex-start;
     font-size: 10.5px;
     color: var(--text-3);
     pointer-events: none;
@@ -195,7 +193,7 @@ watch(shownLine, (now) => {
 
 .roll-leave-active {
     position: absolute;
-    right: 0;
+    left: 0;
     transition:
         opacity var(--command-out) ease,
         transform var(--command-out) cubic-bezier(0.22, 0.7, 0.3, 1);

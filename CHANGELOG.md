@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.103.13 — The status line's command detail reads from the left
+
+In the status line above the chat input, the running command follows on from the left like the rest of the line; it no longer hugs the right edge, which it only did while it shared the top bar with the work title.
+
 ## 2.103.12 — The rolling command detail lives in the chat's status line
 
 The command the agent is running, with its rolling animation, now shows in the status line above the chat input instead of the top bar. The top bar says only what state the agent is in (working, busy, idle) and what it is working on, so nothing slides along it any more.
