@@ -234,6 +234,7 @@ class Comment(Shape, Resource):
 
 class AgentRow(Shape, Resource):
     type = "agent"
+    takes_comments = False
     formatted_data = {"cards": ("detail",), "subagent_rows": ("task",)}
     event_labels = {"reported": "Agent reported", "updated": "Agent updated"}
     data_fields: ClassVar[list[Field]] = [
@@ -289,6 +290,7 @@ class AgentRow(Shape, Resource):
 
 class Notification(Shape, Resource):
     type = "notification"
+    takes_comments = False
     kept = 100
     pruned_when = "seen"
     needs_attention = True
@@ -304,6 +306,7 @@ class Notification(Shape, Resource):
 
 class Notice(Shape, Resource):
     type = "notice"
+    takes_comments = False
     kept = 100
     pruned_when = "closed"
     event_labels = {"created": "Notice", "completed": "Notice closed"}
@@ -320,6 +323,7 @@ class Notice(Shape, Resource):
 
 class Reaction(Shape, Resource):
     type = "reaction"
+    takes_comments = False
     data_fields: ClassVar[list[Field]] = [
         Field(name="face"),
     ]
@@ -417,6 +421,7 @@ class Environment(Shape, Resource):
 class Ask(Shape, Resource):
     loading = LAZY
     type = "browser"
+    takes_comments = False
     kept = 50
     pruned_when = "closed"
     data_fields: ClassVar[list[Field]] = [
@@ -436,6 +441,7 @@ class Ask(Shape, Resource):
 
 class FeatureRow(Shape, Resource):
     type = "feature"
+    takes_comments = False
     icon = "dot"
     in_sidebar = False
     data_fields: ClassVar[list[Field]] = [
@@ -453,6 +459,7 @@ class FeatureRow(Shape, Resource):
 class Nudge(Shape, Resource):
     loading = LAZY
     type = "nudge"
+    takes_comments = False
     kept = 100
     notify_actions = ("created",)
     addressed_to_agent = True
