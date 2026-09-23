@@ -22,6 +22,9 @@ class TicketsDetails(FeatureDetails):
 
         At most tickets.running tickets have an agent running at once; a ticket started beyond that waits queued, and the
         minute sweep starts it when one finishes.
+
+        A rule, doc or tool written from a ticket's environment is held as a proposal for that ticket: it is closed and
+        binds nothing until the ticket's branch is merged, when it is reopened; if the ticket closes unmerged it is deleted.
     """
 
     trigger = Trigger(every=1, unit=MINUTES)

@@ -139,6 +139,13 @@ def test_a_started_ticket_closes_when_its_branch_is_merged_and_not_before():
     git("switch", "-q", "-c", f"worktree-{ticket.work_environment}")
     git("commit", "-q", "--allow-empty", "-m", "dark mode")
     git("switch", "-q", home)
+    import features
+    from controllers.types import Docs
+    from engine.record import Record
+    features.load()
+    written = Docs(Record(record.root, ticket.work_environment), actor=USER).create("How dark mode works")
+    assert (bool(Docs(record).load(written.n).completed), Docs(record).load(written.n).data.get("proposed_for")) == (True, ticket.ref), \
+        "a doc written from the ticket's environment waits as a proposal for that ticket"
     assert "is not merged" in refused(lambda: tickets.complete(ticket.n)), "a started ticket is not closed while its branch is unmerged"
     assert tickets.close_merged() == [], "nothing unmerged is closed"
     tickets.keep_branches()
@@ -148,3 +155,4 @@ def test_a_started_ticket_closes_when_its_branch_is_merged_and_not_before():
     tickets.close_merged()
     closed = tickets.load(ticket.n)
     assert (bool(closed.completed), closed.stage) == (True, "Shipped"), "once merged it closes by itself, in its board's done stage"
+    assert Docs(record).load(written.n).completed == 0.0, "and what it proposed counts from the merge on"
