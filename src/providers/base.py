@@ -331,16 +331,16 @@ class Provider(ABC):
         if used is not None:
             windows.used = used
         for use in self.tool_uses(row):
-            if use.name == "Skill" and use.skill:
-                windows.loads[use.skill] = windows.used
+            if use.skill_loaded:
+                windows.loads[use.skill_loaded] = windows.used
         return windows
 
     def skill_loads(self, loads: dict, row: dict) -> dict:
         if self.starts_window(row):
             loads.clear()
         for use in self.tool_uses(row):
-            if use.name == "Skill" and use.skill:
-                loads[use.skill] = use.at
+            if use.skill_loaded:
+                loads[use.skill_loaded] = use.at
         return loads
 
     def folded(self, path: Path, fold, start):

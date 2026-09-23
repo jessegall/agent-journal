@@ -320,7 +320,7 @@ class Claude(Provider):
         return sorted(self.folded(session, self.skill_names, set))
 
     def skill_names(self, names: set, row: Row) -> set:
-        names.update(use.skill for use in self.tool_uses(row) if use.name == "Skill" and use.skill)
+        names.update(use.skill_loaded for use in self.tool_uses(row) if use.skill_loaded)
         return names
 
     def crew_rows(self, crew: "Crew", row: Row) -> "Crew":

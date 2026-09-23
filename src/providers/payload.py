@@ -111,6 +111,10 @@ class ToolCall(Loaded):
     def url(self) -> str:
         return self.ws.url
 
+    @property
+    def skill_loaded(self) -> str:
+        return self.skill if self.name == "Skill" else ""
+
 
 @dataclass(frozen=True)
 class ToolUse(Loaded):
