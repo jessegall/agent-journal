@@ -5,6 +5,7 @@ import {api} from "../api/client.js";
 import Btn from "../kit/Btn.vue";
 import Dialog from "../kit/Dialog.vue";
 import PluginSettings from "./PluginSettings.vue";
+import PluginDashboard from "./PluginDashboard.vue";
 import Icon from "../kit/Icon.vue";
 import Switch from "../kit/Switch.vue";
 import {route} from "../route.js";
@@ -28,6 +29,7 @@ const shown = ref(null);
 const removing = ref(null);
 const outcome = ref(null);
 const configuring = ref(0);
+const viewing = ref(null);
 const configured = computed(() => plugins.value.find((p) => p.n === configuring.value));
 const KINDS = {needs: "Needs", setup: "On install", service: "Runs", on: "Listens", refuse: "May refuse", page: "Page", setting: "Setting"};
 const busy = ref("");
@@ -43,6 +45,7 @@ const plugins = computed(() =>
             source: p.data.source,
             commit: p.data.commit ? p.data.commit.slice(0, 12) : "linked folder",
             enabled: !!p.data.enabled,
+            dashboards: (p.data.manifest || {}).dashboards || [],
             settings: Object.entries((p.data.manifest || {}).settings || {}).map(([key, s]) => ({
                 key,
                 title: s.title || key,
@@ -312,6 +315,9 @@ async function askAgent() {
                 </template>
             </Dialog>
         </template>
+        <template v-if="viewing">
+            <PluginDashboard :plugin="viewing.plugin" :board="viewing.board" @close="viewing = null" />
+        </template>
         <template v-if="configured">
             <PluginSettings :plugin="configured" @close="configuring = 0" @change="(key, value) => configure(configured, key, value)" />
         </template>
@@ -366,6 +372,9 @@ async function askAgent() {
                         <Btn small :disabled="busy === `${p.n}`" @click="plugin(p, 'upgrade', {yes: true, again: true})">
                             Run setup again
                         </Btn>
+                        <template v-for="board in p.dashboards" :key="board.name">
+                            <Btn small @click="viewing = {plugin: p, board}">{{ board.title }}</Btn>
+                        </template>
                         <template v-if="p.settings.length">
                             <Btn small @click="configuring = p.n">Settings</Btn>
                         </template>

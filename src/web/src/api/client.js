@@ -104,6 +104,10 @@ export class ApiClient {
         return this.post(`/services/${id}`, {want});
     }
 
+    pluginDashboard(n, name) {
+        return this.get(this.here(`/plugin/${n}/dashboard/${encodeURIComponent(name)}`));
+    }
+
     pluginUrl(page, at) {
         return page.url.replace(page.path, "").replace("127.0.0.1", location.hostname) + at;
     }

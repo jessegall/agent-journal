@@ -37,6 +37,17 @@ class PluginsDetails(FeatureDetails):
         by calling the journal itself, or by appending journal commands to the file at $JOURNAL_QUEUE, one per line, which the
         host drains a few at a time. journal plugin raise <plugin> <event> "<brief>" in that file raises one of the events its
         manifest declares, with the same card and activity item as an answer that raises it.
+
+        A plugin shows its output as a dashboard: "dashboards": [{"name": "<id>", "title": "<Title>"}] in its manifest, and a
+        JSON file it writes to $JOURNAL_PLUGIN_DATA/dashboards/<id>.json whenever its output changes. The viewer lists each
+        dashboard as a button on the Plugins page and opens it in a large panel, drawn from the file:
+        {"title": "...", "start": "<page id>", "pages": {"<page id>": {"title": "...", "view": <node>}}}. A node is
+        {"type": ..., props, "children": [nodes]}: stack (gap), row (gap, wrap), grid (columns, gap) and card (title, note,
+        open) hold children; heading (text, level), divider, stat (label, value, note, tone, open), bars (title, unit, items of
+        label, value, note, tone, open), table (columns, rows of cells, tone, open), list (items of label, note, badge, tone,
+        open), text (body, with the chat's formatting), badge (text, tone), code (text, language) and file (path, line, label)
+        draw. tone is note, good, warn, danger or muted; open names another page of the same dashboard, and the panel keeps a
+        trail back. A file that does not fit is shown with the place that is wrong, such as pages.overview.view.children[1].
     """
 
     fixed = True
