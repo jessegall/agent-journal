@@ -2,7 +2,7 @@
 import {computed, onUnmounted, ref, watch} from "vue";
 import {store} from "../state/store.js";
 import {polled} from "../sync/polled.js";
-import {TICK, line, visibleQueue} from "./bar.js";
+import {TICK, line, visibleQueue} from "../layout/bar.js";
 import {usePoll} from "../poll.js";
 import {api} from "../api/client.js";
 
@@ -64,18 +64,18 @@ watch(shownLine, (now) => {
 </script>
 
 <template>
-    <span :class="['statusbar-running', {ending: !shownLine}]">
+    <span :class="['running', {ending: !shownLine}]">
         <Transition name="roll">
-            <span v-if="shownLine" :key="shownLine.key" :class="['statusbar-run-line', {done: shownLine.done}]">
-                <TransitionGroup tag="span" name="token" class="statusbar-run-text" :title="shownLine.text">
-                    <span v-for="(part, i) in shownLine.parts" :key="`${i}-${part.value}`" :class="['statusbar-run-token', part.color]">
+            <span v-if="shownLine" :key="shownLine.key" :class="['running-line', {done: shownLine.done}]">
+                <TransitionGroup tag="span" name="token" class="running-text" :title="shownLine.text">
+                    <span v-for="(part, i) in shownLine.parts" :key="`${i}-${part.value}`" :class="['running-token', part.color]">
                         <template v-if="part.increments">{{ amount(part) }}</template>
                         <template v-else>{{ part.value }}</template>
                     </span>
                 </TransitionGroup>
-                <span class="statusbar-running-slot">
+                <span class="running-slot">
                     <Transition name="clock">
-                        <span v-if="shownLine.clock" class="statusbar-running-for">{{ shownLine.clock }}</span>
+                        <span v-if="shownLine.clock" class="running-for">{{ shownLine.clock }}</span>
                     </Transition>
                 </span>
             </span>
@@ -84,7 +84,7 @@ watch(shownLine, (now) => {
 </template>
 
 <style scoped>
-.statusbar-running {
+.running {
     --command-in: 180ms;
     --command-out: 150ms;
     flex: 0 1 auto;
@@ -98,7 +98,7 @@ watch(shownLine, (now) => {
     pointer-events: none;
 }
 
-.statusbar-run-line {
+.running-line {
     position: relative;
     display: inline-flex;
     align-items: center;
@@ -108,7 +108,7 @@ watch(shownLine, (now) => {
     opacity: 0.75;
 }
 
-.statusbar-run-text {
+.running-text {
     position: relative;
     flex: 0 1 auto;
     min-width: 0;
@@ -119,7 +119,7 @@ watch(shownLine, (now) => {
     white-space: nowrap;
 }
 
-.statusbar-run-token {
+.running-token {
     flex: none;
     transition:
         opacity var(--command-in) ease,
@@ -143,12 +143,12 @@ watch(shownLine, (now) => {
     transform: translateY(-10px);
 }
 
-.statusbar-run-token.gray {
+.running-token.gray {
     color: var(--text-2);
     font-weight: 500;
 }
 
-.statusbar-run-token.muted {
+.running-token.muted {
     flex: 0 1 auto;
     min-width: 0;
     overflow: hidden;
@@ -157,22 +157,22 @@ watch(shownLine, (now) => {
     font-size: 0.88em;
 }
 
-.statusbar-run-token.green {
+.running-token.green {
     color: var(--created);
     font-variant-numeric: tabular-nums;
 }
 
-.statusbar-run-token.red {
+.running-token.red {
     color: var(--danger);
     font-variant-numeric: tabular-nums;
 }
 
-.statusbar-running-slot {
+.running-slot {
     flex: none;
     display: inline-flex;
 }
 
-.statusbar-running-for {
+.running-for {
     display: inline-block;
     overflow: hidden;
     white-space: nowrap;
@@ -181,7 +181,7 @@ watch(shownLine, (now) => {
     font-variant-numeric: tabular-nums;
 }
 
-.statusbar-run-line.done .statusbar-running-for {
+.running-line.done .running-for {
     opacity: 0.55;
 }
 
@@ -199,7 +199,7 @@ watch(shownLine, (now) => {
         transform var(--command-out) cubic-bezier(0.22, 0.7, 0.3, 1);
 }
 
-.statusbar-running.ending .roll-leave-active {
+.running.ending .roll-leave-active {
     transition:
         opacity var(--command-out) ease 90ms,
         transform var(--command-out) cubic-bezier(0.22, 0.7, 0.3, 1) 90ms;

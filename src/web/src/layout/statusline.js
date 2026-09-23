@@ -30,8 +30,10 @@ export function queued(todos, auto, questions = []) {
     return auto && open.some((t) => !t.data.blocked && !t.data.assigned && !asked(t) && !waits(t));
 }
 
-export function wordOf(state, waiting = false) {
-    return capital(state === "idle" && waiting ? "waiting" : state);
+const WORDS = {working: "Working", busy: "Busy", compacting: "Busy"};
+
+export function wordOf(state) {
+    return WORDS[state] || "Idle";
 }
 
 export function lineOf(agent, works, auto = false) {
@@ -87,10 +89,6 @@ const SAID = {
 export function phrase(kind, seed) {
     const words = SAID[kind] || SAID.bearings;
     return words[Math.floor(Number(seed) || 0) % words.length];
-}
-
-export function capital(word) {
-    return word[0].toUpperCase() + word.slice(1);
 }
 
 export const SHOWN = ["building", "ready", "approved", "active", "waiting", "done"];
