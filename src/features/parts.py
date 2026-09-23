@@ -89,7 +89,7 @@ class Context:
 
     @property
     def state(self) -> "State":
-        return self.record.state(self.feature.name, self.agent.session if self.agent else "")
+        return self.record.state(self.feature.name, self.agent.session if self.agent else None)
 
 
 @dataclass

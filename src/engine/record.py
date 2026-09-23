@@ -183,8 +183,8 @@ class Record:
     def set_cursor(self, name: str, n: int) -> None:
         self.set_cursor_text(name, str(n))
 
-    def state(self, owner: str, session: str = "") -> State:
-        folder = self.root / "runtime" / "sessions" / session if session else self.home / "state"
+    def state(self, owner: str, session: str | None = None) -> State:
+        folder = self.home / "state" if session is None else self.root / "runtime" / "sessions" / session
         return State(folder / f"{owner}.json")
 
     def setting(self, key: str, default=None):

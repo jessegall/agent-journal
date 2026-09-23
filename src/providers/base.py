@@ -87,11 +87,11 @@ class Provider(ABC):
     controls = {"groups": [], "note": "This CLI does not expose model controls."}
 
     @classmethod
-    def control_options(cls, current_model: str = "") -> dict:
+    def control_options(cls, current_model: str) -> dict:
         return cls.controls
 
     @classmethod
-    def control_choice(cls, action: str, value: str, current_model: str = "") -> dict:
+    def control_choice(cls, action: str, value: str, current_model: str) -> dict:
         configured = cls.control_options(current_model)
         group = next((group for group in configured.get("groups", []) if group["key"] == action), None)
         selected = next((item for item in (group or {}).get("choices", []) if item["value"] == value), None)
@@ -108,10 +108,11 @@ class Provider(ABC):
     def compacted(self, hook: Hook) -> bool:
         return False
 
-    def response(self, event: str = "", text: str = "", blocked: str = "") -> dict:
-        if blocked:
-            return {"decision": "block", "reason": blocked}
+    def response(self, event: str, text: str) -> dict:
         return {"hookSpecificOutput": {"hookEventName": event, "additionalContext": text}} if text else {}
+
+    def blocking(self, reason: str) -> dict:
+        return {"decision": "block", "reason": reason}
 
     def refused(self, response: dict) -> bool:
         return Decision.from_json(response).decision == "block"

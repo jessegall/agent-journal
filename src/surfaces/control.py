@@ -14,7 +14,7 @@ from resources.base import SYSTEM, Refused
 RELOAD_GRACE = 60.0
 
 
-def configured(provider: str, current_model: str = "") -> tuple[type, dict]:
+def configured(provider: str, current_model: str) -> tuple[type, dict]:
     cls = PROVIDERS.get(provider)
     return cls, cls.control_options(current_model) if cls else {"groups": [], "note": "This CLI does not expose model controls."}
 
@@ -25,7 +25,7 @@ def current(group: str, value: str, model: str, effort: str) -> bool:
     return group == "effort" and value == effort
 
 
-def options(provider: str, current_model: str = "", current_effort: str = "") -> dict:
+def options(provider: str, current_model: str, current_effort: str) -> dict:
     _, controls = configured(provider, current_model)
     return {
         "provider": provider,
@@ -38,7 +38,7 @@ def options(provider: str, current_model: str = "", current_effort: str = "") ->
     }
 
 
-def choice(provider: str, action: str, value: str, current_model: str = "") -> dict:
+def choice(provider: str, action: str, value: str, current_model: str) -> dict:
     cls = PROVIDERS.get(provider)
     if not cls:
         raise Refused(f"{provider or 'this agent'} does not support {action} {value!r}")
