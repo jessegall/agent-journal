@@ -1,6 +1,7 @@
 import os
 import time
 import zipfile
+from dataclasses import dataclass
 from pathlib import Path
 from resources.base import LAZY, MEMORY, OWNER, PART_OF, Refused, Resource
 from engine.stored import read_json, write_json, write_text
@@ -20,8 +21,8 @@ SUMMARIES: dict[str, tuple] = {}
 HELD: dict[str, tuple] = {}
 PACKS: dict[str, tuple] = {}
 INDEXED: dict[str, dict] = {}
-STAMPED: dict[str, tuple] = {}
-STAMPS_FRESH = 5.0
+STAMPED: dict[str, "Stamped"] = {}
+STAMPS_FRESH = 60.0
 WRITTEN: dict[str, float] = {}
 FLUSH_ROWS, FLUSH_SECONDS = 50, 30.0
 OPEN: dict[str, tuple] = {}
@@ -47,6 +48,14 @@ def opened(archive: Path) -> zipfile.ZipFile:
         held = OPEN[str(archive)] = (stamp, zipfile.ZipFile(archive))
     return held[1]
 
+
+
+@dataclass(frozen=True)
+class Stamped:
+    mark: int
+    checked: float
+    stamps: dict
+    inodes: dict
 
 class Stored:
     @internal
@@ -121,12 +130,23 @@ class Stored:
 
     def _stamps(self, folder: Path) -> dict[int, str]:
         if not self.resource.own_folder:
-            mark = os.stat(folder).st_mtime_ns
+            mark, now = os.stat(folder).st_mtime_ns, time.monotonic()
             held = STAMPED.get(str(folder))
-            if held and held[0] == mark and time.monotonic() - held[1] < STAMPS_FRESH:
-                return held[2]
-            stamps = {int(e.name[:-3]): f"{e.stat().st_mtime_ns}-{e.stat().st_size}" for e in os.scandir(folder) if e.name.endswith(".md") and e.name[:-3].isdigit()}
-            STAMPED[str(folder)] = (mark, time.monotonic(), stamps)
+            fresh = held and now - held.checked < STAMPS_FRESH
+            if fresh and held.mark == mark:
+                return held.stamps
+            stamps, inodes = {}, {}
+            for e in os.scandir(folder):
+                if not (e.name.endswith(".md") and e.name[:-3].isdigit()):
+                    continue
+                n = int(e.name[:-3])
+                inodes[n] = e.inode()
+                if fresh and held.inodes.get(n) == inodes[n]:
+                    stamps[n] = held.stamps[n]
+                else:
+                    found = e.stat()
+                    stamps[n] = f"{found.st_mtime_ns}-{found.st_size}"
+            STAMPED[str(folder)] = Stamped(mark, held.checked if fresh else now, stamps, inodes)
             return stamps
         stamps = {}
         for e in os.scandir(folder):
