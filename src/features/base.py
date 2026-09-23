@@ -34,8 +34,8 @@ PLACEHOLDER = re.compile(r"\{\{(\w+)\}\}")
 
 
 class Line:
-    def __init__(self, title: str, brief: str = "", lead: bool = False, name: str = "", while_waiting: bool | None = None):
-        self.name, self.title, self.brief, self.lead = name, paragraphs(title), paragraphs(brief), lead
+    def __init__(self, title: str, brief: str = "", lead: bool = False, name: str = "", while_waiting: bool | None = None, label: str = ""):
+        self.name, self.title, self.brief, self.lead, self.label = name, paragraphs(title), paragraphs(brief), lead, label
         self.while_waiting = while_waiting   # whether it is still said while the agent waits; None takes the feature's answer
 
     def placeholders(self) -> list[str]:
