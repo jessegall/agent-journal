@@ -66,6 +66,6 @@ const empty = computed(() => ready.value && !cards.value.length);
     flex-wrap: wrap;
     align-items: flex-start;
     gap: 10px;
-    padding: 16px 0;
+    padding: 16px 14px;
 }
 </style>

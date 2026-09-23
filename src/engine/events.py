@@ -132,6 +132,18 @@ class ToolFinished(AgentReported):
 
 
 @dataclass(frozen=True)
+class FileEdited(AgentEvent):
+    on: ClassVar[str] = "file.edit"
+    at: float = 0.0
+    path: str = ""
+    kind: str = ""
+    before: str = ""
+    after: str = ""
+    added: int = 0
+    removed: int = 0
+
+
+@dataclass(frozen=True)
 class TurnStopped(AgentReported):
     hook_name: ClassVar[str] = "Stop"
     event_name: ClassVar[str] = "agent.turn.stopped"

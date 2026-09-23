@@ -2,7 +2,7 @@ import time
 from dataclasses import dataclass
 from typing import ClassVar
 
-from engine.events import AgentReported, AnyEvent, ClockTicked, ResourceEvent, ToolFinished
+from engine.events import AgentReported, AnyEvent, ClockTicked, FileEdited, ResourceEvent, ToolFinished
 from features import trigger
 from features.parts import WHOLE_FEATURE, AgentContext, Context, Handler
 from features.work_tracking import tracker
@@ -147,12 +147,9 @@ class EndWorkWithTodo(Handler):
 
 
 class TrackFiles(Handler):
-    def handle(self, context: AgentContext, event: ToolFinished) -> None:
-        row = context.agent.row
-        if not row.wrote:
-            return
+    def handle(self, context: AgentContext, event: FileEdited) -> None:
         for work in working(context)[:1]:
-            tracker.record_files(row, context.record, work)
+            tracker.record_edit(context.agent.row, context.record, work, event)
 
 
 POLLED = 3
