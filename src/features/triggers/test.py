@@ -42,3 +42,17 @@ def test_a_trigger_fires_on_what_the_user_writes():
     Triggers(record, actor="user").create("ship it", text="run the suite before the release", **{"words": ["release"]})
     Messages(record, actor="user").create("time for a release")
     assert [n for n in nudges(record) if "ship it" in n], "the user's own words fire it too"
+
+
+def test_a_trigger_fires_on_what_the_agent_says_in_the_chat():
+    from engine.hooks import displayed
+    from engine.sessions import Sessions
+    features.load()
+    record = fresh()
+    report(record, "working", "PreToolUse", provider="claude")
+    Sessions(record.root).bind("claude-1", record.env, provider="claude")
+    Triggers(record, actor="user").create("no greeting", text="the test word is denied", **{"words": ["hello"], "does": "deny", "words_in": "text"})
+    displayed(record.root, {"session_id": "claude-1", "hook_event_name": "MessageDisplay", "message_id": "a", "index": 0, "final": True, "delta": "Hello! Ready."})
+    cards = [(card["label"], card["tone"]) for card in Agents(record, actor="system").by_session("claude-1").data["cards"]]
+    assert (cards, [n for n in nudges(record) if "no greeting" in n] != []) == ([("Trigger no greeting caught a denied word in the agent's message", "danger")], True), \
+        "a denied word in the agent's own chat is marked and the agent is told"
