@@ -118,7 +118,7 @@ def test_moving_a_ticket_to_its_start_stage_launches_its_agent_once_in_its_workt
     from tests.kit import report
     report(Record(record.root, f"ticket-{ticket.n}"), "working", "PreToolUse", session="claude-9")
     card = next(card for lane in tickets.board(board.n)["lanes"] for card in lane["cards"] if card["n"] == ticket.n)
-    assert card["reason"] == f"working in ticket-{ticket.n}", "the card says what its agent is doing and where"
+    assert card["reason"].startswith(f"working in ticket-{ticket.n} · "), "the card says what its agent is doing, where, and how long ago"
     record.set_setting("tickets", {"running": 1})
     second = tickets.create("Search", board=board.n)
     assert (tickets.move(second.n, "Building").queued, len(launched)) == (True, 1), "past the limit a ticket waits queued instead of launching"

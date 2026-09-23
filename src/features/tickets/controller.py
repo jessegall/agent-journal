@@ -1,10 +1,12 @@
 import time
+from pathlib import Path
 from dataclasses import asdict, dataclass
 
 import controllers.types as types_module
 from controllers.types import Environments, Features
 from engine.record import Record
 from engine import typist
+from engine.actors import IDLE
 from engine.seats import terminal_of
 from engine.state import State
 from engine.stop import ask_session
@@ -27,9 +29,20 @@ from resources.shapes import LEVELS
 
 PROPOSED, CONFIRMED = "proposed", "confirmed"
 LAUNCHING_FOR = 60.0
+SILENT_AFTER = 300.0
 CARD_EXTRAS: list = []
 HELD = ("rule", "doc", "tool")
 QUIET_IN_TICKETS = ("dev_faults",)
+
+
+def ordinal(n: int) -> str:
+    return f"{n}{'th' if 10 <= n % 100 <= 20 else {1: 'st', 2: 'nd', 3: 'rd'}.get(n % 10, 'th')}"
+
+
+def ago(seconds: float) -> str:
+    if seconds < 60:
+        return f"{int(seconds)}s"
+    return f"{int(seconds // 60)}m" if seconds < 3600 else f"{int(seconds // 3600)}h"
 
 
 @dataclass(frozen=True)
@@ -37,6 +50,7 @@ class CardState:
     kind: str
     text: str
     session: str = ""
+    age: str = ""
 
 
 @dataclass(frozen=True)
@@ -95,7 +109,8 @@ class Tickets(Controller):
                 *([{"label": "Approve plan", "action": "approve_plan"},
                    {"label": "Read plan", "href": f"#/{ticket.work_environment}/plan/{ticket.plan}"}] if waits else []),
                 *([{"label": "Ask for changes", "action": "tell", "note": True}] if waits and session else []),
-                *([{"label": "Send back", "action": "send_back", "note": True}] if reviewed else [])]
+                *([{"label": "Send back", "action": "send_back", "note": True}] if reviewed else []),
+                *([{"label": "Start next", "action": "start_next"}] if ticket.queued and not self._waiting_on(ticket) else [])]
 
     def _meaning(self, ticket) -> str:
         return Boards(self.record, actor=self.actor).load(int(ticket.board)).meanings.get(ticket.stage, "") if ticket.board else ""
@@ -138,17 +153,27 @@ class Tickets(Controller):
         state = self._agent_state(ticket, row, running)
         if self._plan_waits(ticket):
             return CardState("you", f"{state.text} in {place}; its plan waits for your approval", session)
-        return CardState(state.kind, f"{state.text} in {place}", session)
+        return CardState(state.kind, f"{state.text} in {place}" + (f" · {state.age}" if state.age else ""), session)
 
     def _agent_state(self, ticket, row, running: int) -> CardState:
         if row:
-            return CardState("you", "waiting for you") if row.asking else CardState("running", row.status)
+            return self._live_state(row)
         waits = self._waiting_on(ticket)
         if waits:
             return CardState("blocked", f"waiting on {', '.join(ref.replace(':', ' ') for ref in waits)}")
         if ticket.queued:
-            return CardState("queued", f"queued while {running} of {TicketsDetails.values(self.record).running} agents run")
+            position = ordinal(self._queue().index(ticket.n) + 1)
+            return CardState("queued", f"{position} in the queue, starts when one of {TicketsDetails.values(self.record).running} agents finishes")
         return CardState("stopped", "stopped")
+
+    def _live_state(self, row) -> CardState:
+        if row.asking:
+            return CardState("you", "waiting for you")
+        quiet = time.time() - float(row.at)
+        if row.status != IDLE and quiet > SILENT_AFTER:
+            return CardState("you", f"silent for {int(quiet // 60)}m")
+        step = f"{row.tool} {Path(row.file).name}".strip() if row.tool else row.status
+        return CardState("running", step, age=ago(quiet))
 
     def bind(self, n: int):
         ticket = self.load(int(n))
@@ -294,13 +319,13 @@ class Tickets(Controller):
             if self._live(ticket):
                 return ticket
             if self._waiting_on(ticket) or len(self._running()) >= int(TicketsDetails.values(self.record).running):
-                return self.update(ticket.n, queued=True)
+                return self.update(ticket.n, queued=True, queued_at=ticket.queued_at or time.time())
             driver, place = DRIVERS[ticket.agent], ticket.work_environment
             earlier = Sessions(self.record.root).last(place, ticket.agent)
             args = driver.within([*driver.AUTO_ARGS], place)
             detached(self.record.root, self.record.root.parent, place, ticket.agent,
                      driver.resumed(args, earlier) if earlier else driver.prompted(args, self._kickoff(ticket)))
-            return self.update(ticket.n, queued=False, launched=time.time())
+            return self.update(ticket.n, queued=False, queued_at=0.0, launched=time.time())
 
     def _kickoff(self, ticket) -> str:
         return (f"You work {ticket.ref}, {ticket.title}, in this environment and its worktree. {ticket.brief}\n"
@@ -310,9 +335,19 @@ class Tickets(Controller):
 
     @internal
     def start_queued(self) -> None:
-        for ticket in sorted((r for r in self._standing() if r.queued and not self._waiting_on(r)), key=lambda r: r.updated):
-            if self.start(ticket.n).queued:
+        for n in self._queue():
+            if self.start(n).queued:
                 return
+
+    def _queue(self) -> list:
+        return [r.n for r in sorted((r for r in self._standing() if r.queued and not self._waiting_on(r)), key=lambda r: r.queued_at)]
+
+    def start_next(self, n: int):
+        ticket = self.load(int(n))
+        if not ticket.queued:
+            self._refuse(f"{self.type} {ticket.n} is not queued")
+        first = min((self.load(m).queued_at for m in self._queue()), default=time.time())
+        return self.update(ticket.n, queued_at=first - 1)
 
     def _running(self) -> list:
         return [r for r in self._standing() if r.work_environment and self._live(r)]
