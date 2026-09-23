@@ -133,3 +133,7 @@ textarea {
         transform: translateX(250%);
     }
 }
+
+.row-pill-num {
+    font-size: 0.88em;
+}

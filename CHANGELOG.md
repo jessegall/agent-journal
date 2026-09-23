@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.102.7 — A file in a diff opens that file, and chip numbers sit level with their word
+
+In a commit's diff, each file's header line (diff --git a/… b/…) is a link to that file's page, like the file list above it. In a row chip such as "message 5187" the number is drawn a little smaller, so it no longer stands taller than the word.
+
 ## 2.102.6 — Dismissing a card from the rail is not told to the agent
 
 Closing a card in the viewer's rail, such as a fact or a rule the user was shown, only sets whether that row stays on the user's own rail and marks it read. Neither reaches the agent any more: an update now names the fields it changed, and a user update that touches only view-only fields (kept) is left out of the agent's lines. A real edit by the user is told as before.
