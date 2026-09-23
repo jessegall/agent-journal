@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.105.1 — Plugin dialogs keep one height
+
+The plugin install and update dialog and the plugin log dialog open at one fixed height, and only their content scrolls, so they no longer jump as output arrives. The kit's Dialog takes a fixed option for any dialog whose content grows.
+
 ## 2.105.0 — A long foreground command is an event anything can cancel, and moving it shows in the chat
 
 Before a foreground command that runs too long is moved to the background, the journal raises agent.command.long; any feature or plugin can cancel it with a reason, and then the command stays in the foreground and the agent is told why. Otherwise it is moved, and the chat shows a mark, "Moved a long command to the background", and another when that command ends. Every cancelable event now collects every canceler's reason instead of only the first, and the owner of the effect acts only after all were asked. Chat marks the journal adds go through one method on the agents controller, which plugin marks use too.
