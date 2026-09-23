@@ -241,7 +241,7 @@ async function drop() {
                         />
                     </template>
                     <template v-if="between">
-                        <BubbleHeader icon="agents" :label="between" />
+                        <BubbleHeader icon="agents" :label="between" tone="muted" small />
                     </template>
                     <template v-if="results.length || turn.type === 'question'">
                         <div :class="['thread-results', {live: !turn.completed}]">
@@ -384,10 +384,8 @@ async function drop() {
 }
 
 .thread-turn.peer .thread-bubble {
-    padding: 1px 0 1px 10px;
-    border: 0;
-    border-left: 2px solid var(--border-2);
-    border-radius: 0;
+    padding: 7px 10px;
+    border-color: #1d1e22;
     background: none;
     color: var(--text-3);
     font-size: 12px;

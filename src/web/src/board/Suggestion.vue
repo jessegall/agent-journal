@@ -1,74 +1,126 @@
 <script setup>
-import {computed, ref} from "vue";
+import {computed, reactive, ref, watch} from "vue";
 import {api} from "../api/client.js";
-import {useReveal} from "../composables/reveal.js";
+import {useTyping} from "../composables/reveal.js";
 import {store} from "../state/store.js";
+import InlineEdit from "../kit/InlineEdit.vue";
+import SkeletonLine from "../kit/SkeletonLine.vue";
 
-const props = defineProps({ticket: {type: Object, default: null}, picked: Boolean});
-const emit = defineEmits(["toggle"]);
+const props = defineProps({ticket: {type: Object, default: null}, picked: Boolean, active: Boolean, paused: Boolean, order: Number});
+const emit = defineEmits(["toggle", "revealed"]);
+const TITLE_MS = 600;
+const BRIEF_MS = 1100;
+const {type, wait} = useTyping();
+const shown = reactive({started: false, title: 0, owner: false, brief: 0, waits: false, done: false});
 const title = computed(() => (props.ticket ? props.ticket.title : ""));
 const brief = computed(() => (props.ticket ? props.ticket.brief : ""));
-const count = useReveal(title.value.length + brief.value.length);
-const typing = computed(() => !props.ticket || count.value < title.value.length + brief.value.length);
-const shownTitle = computed(() => (typing.value ? title.value.slice(0, count.value) : title.value));
-const shownBrief = computed(() => (typing.value ? brief.value.slice(0, Math.max(0, count.value - title.value.length)) : brief.value));
-const onTitle = computed(() => typing.value && count.value <= title.value.length);
-const waits = computed(() => Object.keys((props.ticket && props.ticket.data.dependencies) || {}).map((ref) => `#${ref.split(":")[1]}`));
 const owner = computed(() => {
     const name = props.ticket ? props.ticket.data.owner : "";
     return name ? (store.board.roles.find((role) => role.name === name) || {title: name}).title : "";
 });
+const waits = computed(() => Object.keys((props.ticket && props.ticket.data.dependencies) || {}).map((ref) => `#${ref.split(":")[1]}`));
+const stage = computed(() => {
+    if (shown.done) return "done";
+    if (shown.started) return "writing";
+    return props.paused ? "paused" : "waiting";
+});
+const TAGS = {waiting: "", paused: "Waits for your answer", writing: "Drafting", done: "Suggested ticket"};
+const tag = computed(() => (stage.value === "done" && props.picked ? "Picked" : TAGS[stage.value]));
+const TAG_BARS = [{width: "64px", height: 8}];
+const OWNER_BARS = [{width: "30%", height: 8}];
+const fields = computed(() => [
+    {
+        name: "title",
+        text: shown.done ? title.value : title.value.slice(0, shown.title),
+        typed: shown.title,
+        caret: stage.value === "writing" && !shown.owner,
+        bars: [
+            {width: "78%", height: 12},
+            {width: "44%", height: 12},
+        ],
+    },
+    {
+        name: "brief",
+        text: shown.done ? brief.value : brief.value.slice(0, shown.brief),
+        typed: shown.brief,
+        caret: stage.value === "writing" && shown.owner,
+        bars: [
+            {width: "100%", height: 9},
+            {width: "62%", height: 9},
+        ],
+    },
+]);
+const still = computed(() => stage.value !== "waiting");
 const editing = ref("");
-const edit = (field) => !typing.value && (editing.value = field);
-const toggle = () => !typing.value && !editing.value && emit("toggle");
+const edit = (field) => shown.done && (editing.value = field);
+const toggle = () => shown.done && !editing.value && emit("toggle");
 
-async function save(field, event) {
-    if (editing.value !== field) return;
-    editing.value = "";
-    const text = event.target.innerText.trim();
-    if (text && text !== props.ticket[field]) await api.act("ticket", props.ticket.n, "update", {[field]: text});
+async function reveal() {
+    shown.started = true;
+    await wait(200);
+    await type(title.value.length, TITLE_MS, (at) => (shown.title = at));
+    await wait(120);
+    shown.owner = true;
+    await wait(160);
+    await type(brief.value.length, BRIEF_MS, (at) => (shown.brief = at));
+    shown.waits = true;
+    await wait(200);
+    shown.done = true;
+    emit("revealed");
 }
 
-const tag = computed(() => (typing.value ? "Drafting" : props.picked ? "Picked" : "Suggested ticket"));
+watch(
+    () => props.active && Boolean(props.ticket),
+    (go) => go && !shown.started && reveal(),
+    {immediate: true}
+);
+
+async function save(field, text) {
+    editing.value = "";
+    if (text && text !== props.ticket[field]) await api.act("ticket", props.ticket.n, "update", {[field]: text});
+}
 </script>
 
 <template>
     <div
-        :class="['pick', {picked, writing: typing}]"
+        :class="['pick', stage, `order-${order % 3}`, {picked}]"
         role="button"
         tabindex="0"
         :aria-pressed="picked"
-        title="Click to keep it; double-click its title or brief to change them"
+        :title="shown.done ? 'Click to keep it; double-click its title or brief to change them' : ''"
         @click="toggle"
         @keydown.space.prevent="toggle"
         @keydown.enter.prevent="toggle"
     >
         <span class="pick-top">
-            <span>{{ tag }}</span>
+            <SkeletonLine :filled="Boolean(tag)" :still="still" :bars="TAG_BARS">
+                <span :class="['tag', {faded: !tag}]">
+                    <span class="tag-dot" />
+                    {{ tag }}
+                </span>
+            </SkeletonLine>
             <span :class="['check', {on: picked}]">✓</span>
         </span>
-        <span
-            :class="['pick-title', {caret: onTitle, editing: editing === 'title'}]"
-            :contenteditable="editing === 'title'"
-            @dblclick.stop="edit('title')"
-            @click="editing && $event.stopPropagation()"
-            @blur="save('title', $event)"
-        >
-            {{ shownTitle }}
-        </span>
-        <span
-            :class="['pick-brief', {caret: typing && !onTitle, editing: editing === 'brief'}]"
-            :contenteditable="editing === 'brief'"
-            @dblclick.stop="edit('brief')"
-            @click="editing && $event.stopPropagation()"
-            @blur="save('brief', $event)"
-        >
-            {{ shownBrief }}
-        </span>
-        <template v-if="owner">
-            <span class="owner">For {{ owner }}</span>
+        <template v-for="field in fields" :key="field.name">
+            <SkeletonLine :class="`line-${field.name}`" :filled="field.typed > 0" :still="still" :bars="field.bars">
+                <template v-if="field.typed">
+                    <InlineEdit
+                        :class="`pick-${field.name}`"
+                        :text="field.text"
+                        :editing="editing === field.name"
+                        :caret="field.caret"
+                        @start="edit(field.name)"
+                        @save="(text) => save(field.name, text)"
+                    />
+                </template>
+            </SkeletonLine>
         </template>
-        <template v-if="waits.length">
+        <SkeletonLine class="line-owner" :filled="shown.owner" :still="still" :bars="OWNER_BARS">
+            <template v-if="shown.owner && owner">
+                <span class="owner">For {{ owner }}</span>
+            </template>
+        </SkeletonLine>
+        <template v-if="shown.waits && waits.length">
             <span class="waits">
                 Waits on
                 <b>{{ waits.join(", ") }}</b>
@@ -82,54 +134,129 @@ const tag = computed(() => (typing.value ? "Drafting" : props.picked ? "Picked" 
     display: flex;
     flex-direction: column;
     gap: 8px;
-    min-height: 150px;
-    padding: 16px;
+    height: 200px;
+    overflow: hidden;
+    padding: 16px 16px 14px;
     border: 1px solid var(--border-2);
-    border-radius: 12px;
-    background: var(--raised);
-    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4);
+    border-radius: 13px;
+    background: rgba(28, 29, 33, 0.96);
+    box-shadow: 0 18px 50px rgba(0, 0, 0, 0.35);
     color: var(--text);
     font: inherit;
     font-size: 13px;
     text-align: left;
-    cursor: pointer;
-    animation: rise 0.5s cubic-bezier(0.2, 0.9, 0.25, 1) both;
-    transition: border-color 0.2s;
-}
-
-.pick:hover {
-    border-color: var(--border-3);
-}
-
-.pick.picked {
-    border-color: var(--accent);
-}
-
-.pick.writing {
     cursor: default;
+    animation: rise 0.32s cubic-bezier(0.2, 0.9, 0.25, 1) both;
+    transition:
+        border-color 0.2s,
+        transform 0.25s cubic-bezier(0.2, 0.9, 0.25, 1);
+}
+
+.pick.order-1 {
+    animation-delay: 0.06s;
+}
+
+.pick.order-2 {
+    animation-delay: 0.12s;
+}
+
+.pick.waiting,
+.pick.paused {
+    border-color: var(--border);
+}
+
+.pick.done {
+    cursor: pointer;
+}
+
+.pick.done:hover {
+    border-color: var(--border-3);
+    transform: translateY(-2px);
+}
+
+.pick.picked,
+.pick.picked:hover {
+    border-color: var(--accent);
+    box-shadow:
+        0 0 0 1px var(--accent),
+        0 18px 50px rgba(0, 0, 0, 0.35);
 }
 
 .pick-top {
     display: flex;
+    flex: none;
     align-items: center;
     justify-content: space-between;
-    color: var(--text-3);
+    height: 20px;
+}
+
+.line-title {
+    order: 1;
+    height: 40px;
+}
+
+.line-owner {
+    order: 2;
+    height: 16px;
+}
+
+.line-brief {
+    order: 3;
+    height: 40px;
+}
+
+.tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    color: var(--text-4);
     font-size: 11px;
+    letter-spacing: 0.02em;
+    transition: opacity 0.18s;
+}
+
+.pick.writing .tag,
+.pick.done .tag {
+    color: var(--text-3);
+}
+
+.tag-dot {
+    width: 0;
+    height: 6px;
+    margin-right: -7px;
+    border-radius: 50%;
+    background: var(--progress);
+    opacity: 0;
+    transition:
+        width 0.15s,
+        margin 0.15s,
+        opacity 0.15s;
+}
+
+.pick.writing .tag-dot {
+    width: 6px;
+    margin-right: 0;
+    opacity: 1;
 }
 
 .check {
     display: grid;
     place-items: center;
-    width: 18px;
-    height: 18px;
+    width: 20px;
+    height: 20px;
     border: 1.5px solid var(--border-3);
     border-radius: 50%;
     color: transparent;
-    font-size: 11px;
+    font-size: 12px;
     transition:
-        background 0.15s,
-        border-color 0.15s,
-        color 0.15s;
+        opacity 0.2s,
+        background 0.2s,
+        border-color 0.2s,
+        color 0.2s;
+}
+
+.pick:not(.done) .check {
+    opacity: 0;
 }
 
 .check.on {
@@ -139,54 +266,53 @@ const tag = computed(() => (typing.value ? "Drafting" : props.picked ? "Picked" 
 }
 
 .pick-title {
-    min-height: 20px;
-    font-size: 14px;
+    display: -webkit-box;
+    overflow: hidden;
+    font-size: 15px;
     font-weight: 500;
-    line-height: 1.4;
-}
-
-.editing {
-    outline: 1px solid var(--accent);
-    outline-offset: 2px;
-    border-radius: 3px;
-    cursor: text;
-}
-
-.pick-brief {
-    color: var(--text-2);
-    line-height: 1.5;
+    line-height: 20px;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
 }
 
 .owner {
     color: var(--text-3);
     font-size: 12px;
+    line-height: 16px;
+    animation: fade-in 0.16s both;
+}
+
+.pick-brief {
+    display: -webkit-box;
+    overflow: hidden;
+    color: var(--text-2);
+    line-height: 20px;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
 }
 
 .waits {
+    order: 4;
     margin-top: auto;
-    padding-top: 6px;
+    overflow: hidden;
     color: var(--text-3);
     font-size: 12px;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    animation: fade-in 0.2s both;
 }
 
 .waits b {
-    color: var(--text-2);
+    color: var(--accent-text);
     font-weight: 500;
 }
 
-.caret::after {
-    content: "";
-    display: inline-block;
-    width: 2px;
-    height: 1.05em;
-    margin-left: 2px;
-    vertical-align: -3px;
-    background: var(--text-2);
-    animation: blink 0.9s steps(1) infinite;
+.faded {
+    opacity: 0;
 }
 
-@keyframes blink {
-    50% {
+@keyframes fade-in {
+    from {
         opacity: 0;
     }
 }
@@ -194,7 +320,7 @@ const tag = computed(() => (typing.value ? "Drafting" : props.picked ? "Picked" 
 @keyframes rise {
     from {
         opacity: 0;
-        transform: translateY(14px);
+        transform: translateY(8px);
     }
 }
 </style>
