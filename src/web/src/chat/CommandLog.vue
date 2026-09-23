@@ -7,6 +7,7 @@ defineProps({
     queued: {type: Array, default: () => []},
     outputs: {type: Object, default: () => ({})},
 });
+const emit = defineEmits(["now"]);
 
 const opened = ref(new Set());
 
@@ -17,7 +18,7 @@ function toggle(at) {
 }
 
 const line = (c) =>
-    c.tool === "Bash"
+    c.tool === "Bash" || c.tool === "Typed"
         ? c.command
         : `${c.tool.replace(/^mcp__/, "").replaceAll("__", " · ")} ${c.subject && c.subject !== c.command ? c.subject : ""}`.trim();
 </script>
@@ -42,6 +43,9 @@ const line = (c) =>
                 <span class="log-mark">$</span>
                 <span class="log-text">{{ q.command }}</span>
                 <span class="log-state">pending</span>
+                <button type="button" class="log-now" title="Interrupt the agent and run this command now" @click="emit('now', q.command)">
+                    Run now
+                </button>
             </div>
         </template>
     </Console>
@@ -65,6 +69,22 @@ const line = (c) =>
 .log-state {
     margin-left: auto;
     font-style: italic;
+}
+
+.log-now {
+    margin-left: 8px;
+    padding: 0 6px;
+    border: 1px solid var(--border-2);
+    border-radius: 4px;
+    background: none;
+    color: var(--text-2);
+    font: inherit;
+    cursor: pointer;
+}
+
+.log-now:hover {
+    border-color: var(--border-3);
+    color: var(--text);
 }
 
 .log-line.running {
