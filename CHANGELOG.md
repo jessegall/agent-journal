@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.101.1 — journal-todos is loaded at every start and cannot be switched off
+
+The to-do rules moved out of the journal skill into journal-todos, which is now mandatory like the journal and chat-etiquette skills: a subject skill is marked primary in its own front matter. The journal skill keeps a line pointing to it.
+
 ## 2.101.0 — A rule or fact said to the agent by its keyword shows in the chat
 
 When a keyword brings a rule or a fact back to the agent, the chat shows a small card at that moment, "Reminded the agent of rule 41" with its title, which opens the row. The agent row keeps the last 50 of them.

@@ -171,3 +171,10 @@ def test_a_skills_keyword_makes_the_agent_load_it():
     assert "journal-plans" in outstanding(record, agent), "and the skill is owed before the next tool call"
     require_named(record, agent, "nothing to see")
     assert outstanding(record, agent) == ["journal-plans"], "a text without a keyword asks for nothing"
+
+
+def test_the_todos_skill_is_loaded_at_every_start_and_cannot_be_switched_off():
+    from features import load
+    from features.skill_loading.catalogue import primary
+    load()
+    assert "journal-todos" in primary(), "marked primary in its own front matter, like a feature's skill"
