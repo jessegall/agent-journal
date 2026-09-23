@@ -16,7 +16,7 @@ KEYS = (FORCE, PERMIT, BACKGROUND)
 @dataclass(frozen=True)
 class Input(Loaded):
     session: str = ""
-    line: str = ""
+    keys: tuple = ()
     label: str = ""
     at: float = 0.0
     action: str = ""
@@ -29,7 +29,7 @@ class Input(Loaded):
 
     @property
     def for_viewer(self) -> dict:
-        return {**{key: value for key, value in asdict(self).items() if key != "line"}, "queued": True}
+        return {**{key: value for key, value in asdict(self).items() if key != "keys"}, "queued": True}
 
 
 @dataclass(frozen=True)
@@ -43,8 +43,8 @@ def waiting_commands(row) -> list[QueuedCommand]:
     return [QueuedCommand.from_json(given) for given in row.queued_commands if isinstance(given, dict)] if row else []
 
 
-def queue(root: Path, session: str, line: str, label: str, action: str = "", provider: str = "", value: str = "") -> Input:
-    queued = Input(session, line, label, time.time(), action, provider, value)
+def queue(root: Path, session: str, keys: tuple, label: str, action: str = "", provider: str = "", value: str = "") -> Input:
+    queued = Input(session, tuple(keys), label, time.time(), action, provider, value)
     folder = Path(root) / "runtime" / "inputs"
     folder.mkdir(parents=True, exist_ok=True)
     if queued.lasting:
