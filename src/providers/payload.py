@@ -75,6 +75,8 @@ class Dispatch:
     model: str
     model_supported: bool
     task: str = ""
+    description: str = ""
+    name_supported: bool = False
 
 
 @dataclass(frozen=True)

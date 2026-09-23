@@ -223,7 +223,7 @@ class Claude(Provider):
         if not isinstance(tool, AgentCall) or tool.name != "Agent":
             return None
         kind = tool.kind.strip().lower()
-        return Dispatch(kind=kind, model=tool.model.strip(), model_supported=kind != "fork")
+        return Dispatch(kind=kind, model=tool.model.strip(), model_supported=kind != "fork", description=tool.task.strip(), name_supported=True)
 
     def model(self, hook: Hook) -> str:
         path = hook.transcript
