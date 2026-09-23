@@ -194,6 +194,18 @@ def test_stopping_a_service_stops_every_process_it_forked():
     teardown(service.pid, 1.0)
     assert (service.wait(timeout=5) is not None, gone(service.pid)) == (True, True), \
         "the service and the workers it forked go together, as one process group"
+    from engine.services import lock_file, log_file, want
+    record = fresh()
+    restarted = subprocess.Popen(["/bin/sh", "-c", "sleep 30 & wait"], start_new_session=True)
+    status_file(record.root, "fresh.web").parent.mkdir(parents=True, exist_ok=True)
+    status_file(record.root, "fresh.web").write_text(json.dumps({"state": "ready", "keeper": restarted.pid, "pgid": restarted.pid}))
+    for place in (lock_file, log_file):
+        place(record.root, "fresh.web").write_text("old")
+    want(record.root, "fresh.web", "up", nonce=time.time())
+    Manager(record.root).remove("fresh.web")
+    assert restarted.wait(timeout=5) is not None, "a restart first stops the old run"
+    assert [place(record.root, "fresh.web").exists() for place in (status_file, lock_file, log_file)] == [False, False, False], \
+        "and removes what it left, so the new run starts from nothing of the old one's"
 
 
 def test_a_plugins_skills_are_published_marked_as_its_own_and_taken_back():

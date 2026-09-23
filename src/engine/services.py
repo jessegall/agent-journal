@@ -17,6 +17,7 @@ UP, DOWN = "up", "down"
 BLOCKED, FAILED = "blocked", "failed"
 RESTING = (BLOCKED, FAILED, "stopped", "exited")
 BACKOFF = (1.0, 2.0, 4.0, 8.0, 16.0, 30.0)
+KEEPER_EXIT = 3.0
 CRASHES, WITHIN = 5, 60.0
 
 
@@ -152,6 +153,11 @@ def alive(pid: int) -> bool:
     if not pid:
         return False
     try:
+        if os.waitpid(int(pid), os.WNOHANG)[0]:
+            return False
+    except ChildProcessError:
+        pass
+    try:
         os.kill(int(pid), 0)
     except ProcessLookupError:
         return False
@@ -195,13 +201,20 @@ class Manager:
     def retire(self, declared: set[str]) -> list[str]:
         gone_now = [sid for sid in states(self.root) if sid not in declared]
         for sid in gone_now:
-            current = status(self.root, sid)
-            self.stop(sid, current)
-            if current.pgid and not gone(current.pgid):
-                teardown(current.pgid, 1.0)
-            for place in (status_file, spec_file, want_file, lock_file, log_file):
-                place(self.root, sid).unlink(missing_ok=True)
+            self.remove(sid)
+            want_file(self.root, sid).unlink(missing_ok=True)
         return gone_now
+
+    def remove(self, sid: str) -> None:
+        current = status(self.root, sid)
+        self.stop(sid, current)
+        if current.pgid and not gone(current.pgid):
+            teardown(current.pgid, 1.0)
+        until = time.monotonic() + KEEPER_EXIT
+        while self.living(current.keeper) and time.monotonic() < until:
+            time.sleep(0.05)
+        for place in (status_file, spec_file, lock_file, log_file):
+            place(self.root, sid).unlink(missing_ok=True)
 
     def one(self, spec: ServiceSpec) -> bool:
         sid = spec.id
@@ -213,7 +226,7 @@ class Manager:
             return False
         if asked.nonce > self.marks.get(sid, 0.0):
             self.marks[sid] = asked.nonce
-            self.stop(sid, current)
+            self.remove(sid)
             self.crashes.pop(sid, None)
             self.waiting.pop(sid, None)
             current = ServiceState()
