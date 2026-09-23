@@ -1,6 +1,7 @@
 <script setup>
 import {computed} from "vue";
 import {useReveal} from "../composables/reveal.js";
+import {store} from "../state/store.js";
 
 const props = defineProps({ticket: {type: Object, default: null}, picked: Boolean});
 const emit = defineEmits(["toggle"]);
@@ -12,6 +13,10 @@ const shownTitle = computed(() => (typing.value ? title.value.slice(0, count.val
 const shownBrief = computed(() => (typing.value ? brief.value.slice(0, Math.max(0, count.value - title.value.length)) : brief.value));
 const onTitle = computed(() => typing.value && count.value <= title.value.length);
 const waits = computed(() => Object.keys((props.ticket && props.ticket.data.dependencies) || {}).map((ref) => `#${ref.split(":")[1]}`));
+const owner = computed(() => {
+    const name = props.ticket ? props.ticket.data.owner : "";
+    return name ? (store.board.roles.find((role) => role.name === name) || {title: name}).title : "";
+});
 const tag = computed(() => (typing.value ? "Drafting" : props.picked ? "Picked" : "Suggested ticket"));
 </script>
 
@@ -23,6 +28,9 @@ const tag = computed(() => (typing.value ? "Drafting" : props.picked ? "Picked" 
         </span>
         <span :class="['pick-title', {caret: onTitle}]">{{ shownTitle }}</span>
         <span :class="['pick-brief', {caret: typing && !onTitle}]">{{ shownBrief }}</span>
+        <template v-if="owner">
+            <span class="owner">For {{ owner }}</span>
+        </template>
         <template v-if="waits.length">
             <span class="waits">
                 Waits on
@@ -103,6 +111,11 @@ const tag = computed(() => (typing.value ? "Drafting" : props.picked ? "Picked" 
 .pick-brief {
     color: var(--text-2);
     line-height: 1.5;
+}
+
+.owner {
+    color: var(--text-3);
+    font-size: 12px;
 }
 
 .waits {

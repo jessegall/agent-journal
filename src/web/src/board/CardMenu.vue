@@ -14,12 +14,19 @@ const emit = defineEmits(["close"]);
 const board = inject("board");
 const menu = ref(null);
 const slots = computed(() => store.board.slots);
+const roles = computed(() => store.board.roles);
 const TITLES = {todo: "To do", held: "Held", doing: "Doing", asked: "Needs you", done: "Done"};
 useOutside(menu, () => emit("close"));
 
 async function assign(body) {
     emit("close");
     await api.act("todo", props.card.n, "assign", body);
+    board.refresh();
+}
+
+async function own(owner) {
+    emit("close");
+    await api.act("ticket", props.card.n, "update", {owner});
     board.refresh();
 }
 
@@ -39,6 +46,15 @@ function move(lane) {
                     {{ TITLES[lane] || lane }}
                     <span class="effect">{{ moveEffect(card, board.meaningOf(lane), slots) }}</span>
                 </MenuItem>
+            </template>
+        </template>
+        <template v-if="card.type === 'ticket' && roles.length">
+            <p class="label">Assign to</p>
+            <template v-for="role in roles" :key="role.name">
+                <MenuItem @click="own(role.name)">{{ role.title }}</MenuItem>
+            </template>
+            <template v-if="card.assigned">
+                <MenuItem @click="own('')">Unassign</MenuItem>
             </template>
         </template>
         <template v-if="card.type === 'todo' && store.board.agents.length">

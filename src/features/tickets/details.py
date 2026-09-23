@@ -22,7 +22,8 @@ class TicketsDetails(FeatureDetails):
 
         A message about a board comes from the board's New work panel and asks for tickets on it: split the work into a few
         tickets and draft each with journal ticket create "<the work>" --brief "<what is wanted>" --set board=<n> --set
-        draft=true, naming any ticket one waits on with journal ticket depend. Then reply to the message in one short line,
+        draft=true, naming any ticket one waits on with journal ticket depend, and the role that should take it with --set
+        owner=<domain>/<role> when the project's agent organization has one. Then reply to the message in one short line,
         or ask there what is unclear: the panel shows the reply and the drafts as cards, and the user picks the ones to keep.
         A draft cannot start; only the user confirms it.
 

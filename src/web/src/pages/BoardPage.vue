@@ -101,7 +101,14 @@ const refusal = ref("");
 let clearing = 0;
 
 function take(got) {
-    Object.assign(store.board, {lanes: got.lanes, agents: got.agents, slots: got.slots, planHold: got.plan_hold, loaded: true});
+    Object.assign(store.board, {
+        lanes: got.lanes,
+        agents: got.agents,
+        slots: got.slots,
+        roles: got.roles || [],
+        planHold: got.plan_hold,
+        loaded: true,
+    });
 }
 
 const load = () => (tickets.value ? api.ticketBoard(store.board.lens.board) : api.board(store.board.lens));

@@ -85,7 +85,15 @@ class Tickets(Controller):
         running = self._running()
         lanes = BoardLanes([(Lane(stage, stage), [self._card(r, stage, stages, sessions, len(running)) for r in tickets if r.stage == stage])
                             for stage in stages], [])
-        return {**lanes.shaped(), "slots": asdict(self._slots(running, sessions))}
+        return {**lanes.shaped(), "slots": asdict(self._slots(running, sessions)), "roles": self._roles()}
+
+    def _roles(self) -> list:
+        from features.organization.files import organization
+        try:
+            found = organization(self.record.root.parent)
+        except Refused:
+            return []
+        return [{"name": f"{domain.name}/{role.name}", "title": role.title or role.name} for domain in found.domains for role in domain.roles]
 
     def _slots(self, running: list, sessions: dict) -> Slots:
         kinds = [self._runtime(ticket, sessions, len(running)).kind for ticket in self._standing()]
@@ -95,7 +103,7 @@ class Tickets(Controller):
     def _card(self, ticket, stage: str, stages: list, sessions: dict, running: int) -> Card:
         extras = [extra(self.record, ticket) for extra in CARD_EXTRAS]
         state = self._runtime(ticket, sessions, running)
-        return Card(ticket.n, ticket.title, LEVELS["default"], stage, reason=state.text, state=state.kind, session=state.session, targets=[s for s in stages if s != stage],
+        return Card(ticket.n, ticket.title, LEVELS["default"], stage, reason=state.text, state=state.kind, session=state.session, assigned=ticket.owner, targets=[s for s in stages if s != stage],
                     updated=ticket.updated, completed=ticket.completed, type=self.type,
                     actions=[*self._actions(ticket, state.session), *(action for more in extras for action in more.actions)],
                     link=next((more.link for more in extras if more.link), ""),
