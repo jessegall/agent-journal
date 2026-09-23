@@ -1,5 +1,5 @@
 <script setup>
-import {chatOnly} from "./platform/view.js";
+import {chatOnly, soloView} from "./platform/view.js";
 import ExtensionSection from "./ExtensionSection.vue";
 
 import {computed, onMounted, onUnmounted, ref, watch, watchEffect} from "vue";
@@ -35,6 +35,7 @@ import Reader from "./resource/Reader.vue";
 import Lightbox from "./kit/Lightbox.vue";
 import QuickMenu from "./layout/QuickMenu.vue";
 import ChatWindow from "./layout/ChatWindow.vue";
+import ViewWindow from "./layout/ViewWindow.vue";
 import AwayCard from "./layout/AwayCard.vue";
 import SkillPanel from "./layout/SkillPanel.vue";
 import ProjectFlash from "./layout/ProjectFlash.vue";
@@ -154,6 +155,9 @@ const chatFloats = computed(() => store.detached && !store.extension.holding && 
     </template>
     <template v-else-if="store.spec && chatOnly">
         <ChatWindow />
+    </template>
+    <template v-else-if="store.spec && soloView">
+        <ViewWindow />
     </template>
     <template v-else-if="store.spec">
         <div class="viewer">
