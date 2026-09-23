@@ -4,7 +4,7 @@ import {computed, onMounted, ref} from "vue";
 defineOptions({inheritAttrs: false});
 const props = defineProps({
     anchor: {type: Object, default: null},
-    align: {type: String, default: "right"},
+    align: {type: String, default: "auto"},
     minWidth: {type: Number, default: 0},
     maxWidth: {type: Number, default: 0},
     maxHeight: {type: Number, default: 0},
@@ -12,12 +12,17 @@ const props = defineProps({
 const panel = ref(null);
 const px = (value) => (value ? `${value}px` : undefined);
 const size = computed(() => ({minWidth: px(props.minWidth), maxWidth: px(props.maxWidth), maxHeight: px(props.maxHeight)}));
+const EDGE = 8;
+const side = (edge) => (props.align === "auto" ? (edge.left + edge.right < window.innerWidth ? "left" : "right") : props.align);
+const within = (limit, room) => `${Math.max(0, limit ? Math.min(limit, room) : room)}px`;
 const place = computed(() => {
     if (!props.anchor) return size.value;
     const edge = props.anchor.getBoundingClientRect();
-    const top = `${edge.bottom + 4}px`;
-    if (props.align === "left") return {...size.value, top, left: `${edge.left}px`};
-    return {...size.value, top, right: `${window.innerWidth - edge.right}px`};
+    const top = edge.bottom + 4;
+    const fits = {...size.value, top: `${top}px`, maxHeight: within(props.maxHeight, window.innerHeight - top - EDGE)};
+    if (side(edge) === "left")
+        return {...fits, left: `${edge.left}px`, maxWidth: within(props.maxWidth, window.innerWidth - edge.left - EDGE)};
+    return {...fits, right: `${window.innerWidth - edge.right}px`, maxWidth: within(props.maxWidth, edge.right - EDGE)};
 });
 const emit = defineEmits(["close"]);
 const items = () => [...panel.value.querySelectorAll("button:not(:disabled)")];
