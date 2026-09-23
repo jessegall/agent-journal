@@ -3,6 +3,7 @@ import {computed, onMounted, onUnmounted, provide, ref, watch} from "vue";
 import {api} from "../api/client.js";
 import Btn from "../kit/Btn.vue";
 import Icon from "../kit/Icon.vue";
+import Toast from "../kit/Toast.vue";
 import AgentDrawer from "../board/AgentDrawer.vue";
 import AgentSlots from "../board/AgentSlots.vue";
 import AgentStrip from "../board/AgentStrip.vue";
@@ -39,10 +40,12 @@ const firstBoard = ref(false);
 const FIRST_BOARD_SEEN = "board.first-board-seen";
 const workStage = ref("");
 const newWork = (stage = "") => (tickets.value ? ((workStage.value = stage), (writingWork.value = true)) : (adding.value = "todo"));
-const KEYS = {"/": () => finder.value.focus(), n: newWork};
+const toast = ref(null);
+const undo = () => toast.value && toast.value.action && (toast.value.action(), (toast.value = null));
+const KEYS = {"/": () => finder.value.focus(), n: newWork, z: (e) => (e.metaKey || e.ctrlKey) && undo()};
 const openFlow = () => writingWork.value || firstBoard.value;
 const onKey = (e) =>
-    KEYS[e.key] && !e.target.closest("input,textarea,[contenteditable]") && !openFlow() && (e.preventDefault(), KEYS[e.key]());
+    KEYS[e.key] && !e.target.closest("input,textarea,[contenteditable]") && !openFlow() && (e.preventDefault(), KEYS[e.key](e));
 onMounted(async () => {
     window.addEventListener("keydown", onKey);
     const known = (await loadRows("board")).filter((board) => !board.completed && !board.deleted);
@@ -145,11 +148,14 @@ function keepAndMove({card, lane}) {
     shift(card, lane, {});
 }
 
+const laneTitle = (key) => (store.board.lanes.find((lane) => lane.key === key) || {title: key}).title;
+
 async function shift(card, lane, words) {
     asking.value = null;
     moving.value = card.n;
     try {
         await (card.type === "ticket" ? api.moveTicket(card.n, lane) : api.shift(card.n, lane, words));
+        toast.value = {text: `Moved #${card.n} to ${laneTitle(lane)}`, label: "Undo", action: () => move({...card, lane}, card.lane)};
     } catch (e) {
         refusal.value = e.message;
         clearTimeout(clearing);
@@ -249,6 +255,7 @@ const ask = usePoll(
                 </template>
             </div>
         </template>
+        <Toast :toast="toast" @done="toast = null" />
         <template v-if="noting">
             <NotePrompt :ask="noting" @send="sendNote" @close="noting = null" />
         </template>
