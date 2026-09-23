@@ -1,3 +1,5 @@
+import os
+
 from controllers.types import Agents, Notices
 from engine.hooks import handle
 from providers import DRIVERS, PROVIDERS
@@ -74,12 +76,17 @@ def test_the_start_offers_to_carry_on_the_environments_last_session():
     record = fresh()
     assert asked_resume(record, "codex", [], ask=lambda _: "1", answering=True) == [], "nothing to carry on, nothing asked"
     Sessions(record.root).bind("old-thread", record.env, pid=999999, provider="codex")
-    Sessions(record.root).bind("claude-conversation", record.env, pid=999999, provider="claude")
+    Sessions(record.root).bind("5e3c0a1f-conversation", record.env, pid=999999, provider="claude")
     assert asked_resume(record, "codex", [], ask=lambda _: "1", answering=True) == ["resume", "old-thread"], "yes resumes that environment's own session"
     assert asked_resume(record, "claude", ["--model", "opus"], ask=lambda _: "2", answering=True) == ["--model", "opus"], "no starts a new one"
     assert asked_resume(record, "claude", ["-c"], ask=lambda _: "1", answering=True) == ["-c"], "a typed continue is the answer already"
     from commands.queries import defaults
     assert asked_resume(record, "codex", [], ask=defaults, answering=True) == ["resume", "old-thread"], "--no-interaction takes the default without asking"
+    Sessions(record.root).bind("claude-4242", record.env, pid=999999, provider="claude")
+    assert asked_resume(record, "claude", [], ask=lambda _: "1", answering=True) == ["--resume", "5e3c0a1f-conversation"], "a supervisor's name is no conversation"
+    from engine.hooks import answer
+    answer(PROVIDERS["claude"](), record.root, {"hook_event_name": "UserPromptSubmit", "session_id": "5e3c0a1f-conversation", "cwd": str(record.root.parent)}, os.getpid())
+    assert asked_resume(record, "claude", [], ask=lambda _: "1", answering=True) == [], "a conversation restarted under a new process is still running"
 
 
 def test_claude_is_kept_out_of_the_record_files_but_not_their_attachments(tmp_path):

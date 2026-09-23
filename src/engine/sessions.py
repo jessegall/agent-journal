@@ -86,7 +86,8 @@ class Sessions:
 
     def last(self, env: str, provider: str) -> str:
         ended = [(float(s.get("seen") or s.get("since") or 0), name) for name, s in self.all().items()
-                 if s.get("environment") == env and s.get("provider") == provider and s.get("pid") and not live(s)]
+                 if s.get("environment") == env and s.get("provider") == provider and s.get("pid") and not live(s)
+                 and not name.startswith(f"{provider}-")]
         return max(ended)[1] if ended else ""
 
     def touch(self, session: str) -> None:

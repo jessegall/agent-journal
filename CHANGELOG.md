@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.118.1 — Carrying on offers the right conversation after a restart
+
+A Claude restarted by the supervisor kept its conversation recorded under the old process, so the journal took the running conversation for an ended one and offered it as "carry on from the last session" to the next launch, a `--worktree` launch included. A restarted Claude now updates its process on its first hook, and the supervisor's own session names are never offered as a conversation. The dashboard also stops re-reading every row file of a type whose folder has not changed. Nothing to do.
+
 ## 2.118.0 — A slim supervisor holds the agent and never reloads
 
 The process that holds the agent's terminal is now a small supervisor that uses only the standard library and imports none of the journal's code, so it never needs reloading. It starts the agent, relays its terminal, types what the journal sends, and restarts the agent in the same conversation, with the same flags and the same session, when asked. Everything else the old supervisor did now lives in a worker it starts and restarts on every new build without touching the agent. A restart no longer hangs: the agent could not finish exiting while its terminal output went unread, and the supervisor now keeps reading it while it waits. A session running when this version installs is handed over to the new supervisor where it stands, and restarted once, when idle, to pick up the new way of launching.

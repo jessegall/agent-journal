@@ -5,7 +5,7 @@ from pathlib import Path
 from controllers.types import Agents, Environments
 from engine.actors import IDLE
 from engine.record import Record
-from engine.sessions import Sessions, agent_pid
+from engine.sessions import Sessions, agent_pid, alive
 from engine.worktree import checkout
 from resources.base import AGENT, SYSTEM
 from engine import chat, runtime
@@ -134,6 +134,8 @@ def answer(provider, root: Path, raw: dict, pid: int, prefer: str = "") -> dict:
         wrapper = f"{provider.name}-{agent_pid(pid)}"
         if top and sessions.read(wrapper):
             sessions.bind(wrapper, env)
+    elif not alive(sessions.read(session).get("pid") or 0):
+        sessions.write(session, pid=agent_pid(pid))
     sessions.touch(session)
     return handle(provider, root, env, hook)
 
