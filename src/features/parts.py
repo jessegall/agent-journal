@@ -8,7 +8,7 @@ from controllers.base import COMMANDS, HANDLERS
 from controllers.types import Agents
 from engine import bus
 from engine.events import AgentEvent
-from engine.hooks import POLICIES
+from engine.hooks import CANCELERS, POLICIES
 from engine.state import State
 from engine.wording import APPENDS
 from features.format import FORMATTERS
@@ -134,6 +134,13 @@ class ToolInterceptor:
         raise NotImplementedError
 
 
+class Canceler:
+    event: ClassVar[str] = ""
+
+    def cancel(self, context: "AgentContext", data: dict) -> str:
+        raise NotImplementedError
+
+
 class Command:
     name: ClassVar[str] = ""
     network: ClassVar[bool] = False
@@ -219,6 +226,16 @@ class AgentHooks:
             return limited(context, interceptor, refused) if interceptor.limit else refused
         policy.feature = feature
         POLICIES.append(policy)
+
+    def canceler(self, canceler: Canceler) -> None:
+        feature = self.feature
+
+        def cancel(provider, record, hook, session, data) -> str:
+            if not feature.enabled(record):
+                return ""
+            row = Agents(record, actor=SYSTEM).by_session(session)
+            return canceler.cancel(AgentContext.of(feature, record, row, provider, hook), data) or ""
+        CANCELERS.setdefault(canceler.event, []).append(cancel)
 
 
 class Commands:

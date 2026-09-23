@@ -67,3 +67,21 @@ def test_a_law_is_whispered_on_its_keyword_and_the_largest_result_is_named_once(
         handle(claude, record.root, record.env, {**call, "hook_event_name": "PostToolUse", "tool_response": {"stdout": "x" * size}})
     named = [n.title for n in Nudges(record).all() if "the largest this session" in n.title]
     assert [title.split(" characters")[0].split()[-1] for title in named] == ["30,014", "40,014"], "only a new largest result is named"
+
+
+def test_a_dispatch_is_an_event_a_plugin_can_cancel_even_when_the_laws_allow_it():
+    from controllers.types import Plugins
+    from features import load
+    from features.plugins.source import folder, home
+    from resources.base import SYSTEM
+    load()
+    record = fresh()
+    where = folder(record.root, "quiet")
+    home(record.root).mkdir(parents=True, exist_ok=True)
+    where.mkdir(parents=True, exist_ok=True)
+    (where / "cancel.sh").write_text("cat > /dev/null; echo '{\"cancel\": \"no subagents during the demo\"}'")
+    Plugins(record, actor=SYSTEM).create("quiet", enabled=True, token="t0ken", settings={}, manifest={"name": "quiet", "cancels": {"agent.dispatching": "sh cancel.sh"}})
+    hook = lambda tool, given: handle(PROVIDERS["claude"](), record.root, record.env, {"hook_event_name": "PreToolUse", "session_id": "claude-cancel", "tool_name": tool, "tool_input": given})
+    refused = hook("Agent", {"subagent_type": "Explore", "model": "haiku"})
+    assert refused.get("decision") == "block" and "no subagents during the demo" in refused.get("reason", ""), refused
+    assert hook("Read", {"file_path": "a.py"}).get("decision") != "block", "only the dispatch is asked about"

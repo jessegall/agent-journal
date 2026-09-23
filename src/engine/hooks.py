@@ -14,6 +14,19 @@ from providers.payload import PERMISSION, STATUS
 from features.status_bar import commands
 
 POLICIES: list = []
+CANCELERS: dict[str, list] = {}
+DISPATCHING = "agent.dispatching"
+CANCELABLE = (DISPATCHING,)
+
+
+def cancelled(name: str, provider, record, hook, session: str, data: dict) -> str:
+    return next((reason for cancel in CANCELERS.get(name, []) if (reason := cancel(provider, record, hook, session, data))), "")
+
+
+def gated(provider, record, hook, session: str) -> str:
+    dispatch = provider.dispatch(hook.tool)
+    reason = cancelled(DISPATCHING, provider, record, hook, session, dispatch) if dispatch else ""
+    return reason or next((reason for policy in POLICIES if serving(policy, provider, hook) and (reason := policy(provider, record, hook, session))), "")
 
 
 def start_file(root: Path, env: str, compacted: bool = False) -> Path:
@@ -135,13 +148,12 @@ def handle(provider, root: Path, env: str, hook) -> dict:
     if provider.is_subagent(hook):
         if hook.event == PERMISSION or row.asking:
             agents.update(row.n, asking=provider.asking(hook))
-        return provider.response(blocked=next((reason for policy in POLICIES if serving(policy, provider, hook)
-                                               and (reason := policy(provider, record, hook, row.title))), "")) if hook.event == "PreToolUse" else {}
+        return provider.response(blocked=gated(provider, record, hook, row.title)) if hook.event == "PreToolUse" else {}
     agents.saw(row.n, {"hook": hook.event, "tool": hook.tool.name, "file": hook.tool.file_path, "session": hook.session, "size": hook.tool.result_size, "skill": hook.tool.loaded_skill, "cause": AGENT},
                status=provider.status(hook) or row.status or IDLE, **provider.facts(row, hook, root), **commands.shell(row, hook),
                wrote=hook.event == "PostToolUse" and commands.writes(hook))
     if hook.event == "PreToolUse":
-        why = next((reason for policy in POLICIES if serving(policy, provider, hook) and (reason := policy(provider, record, hook, row.title))), "")
+        why = gated(provider, record, hook, row.title)
         return provider.response(blocked=f"{why}{alongside(hook)}" if why else "")
     if hook.event == "SessionStart":
         return provider.response(hook.event, start(root, env, provider.compacted(hook)))

@@ -61,10 +61,7 @@ def brief(project: Path) -> list[Path]:
     return written
 
 
-def refusal(provider, tool) -> str:
-    dispatch = provider.dispatch(tool)
-    if not dispatch:
-        return ""
+def refusal(dispatch: dict) -> str:
     if dispatch.get("kind") in GENERIC and dispatch.get("task", "") in GENERIC:
         return "Journal law L2 refuses generic subagents. Choose a specific agent type or give the dispatch a concrete task name and bounded assignment."
     if dispatch.get("model_supported") and not dispatch.get("model"):

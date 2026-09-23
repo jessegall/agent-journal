@@ -7,7 +7,7 @@ from typing import ClassVar
 from controllers.types import CONTROLLERS, Plugins
 from engine.events import ResourceEvent
 from engine.services import DOWN, want
-from features.parts import ActionInterceptor, Context, Handler, TextFormatter, ToolInterceptor
+from features.parts import ActionInterceptor, Canceler, Context, Handler, TextFormatter, ToolInterceptor
 from features.plugins.lifecycle import called, clear
 from features.plugins.manifest import fill
 from features.plugins.payload import refusal
@@ -67,6 +67,26 @@ class AskPluginsToRefuse(ToolInterceptor):
                 logged(record.root, name, f"refuse? {hook.tool.name} {json.dumps(reply, ensure_ascii=False)}")
             if ok and isinstance(reply, dict) and str(reply.get("refuse") or "").strip():
                 return f"{name}: {str(reply['refuse']).strip()}"
+        return ""
+
+
+class AskPluginsToCancel(Canceler):
+    def __init__(self, event: str):
+        self.event = event
+
+    def cancel(self, context: Context, data: dict) -> str:
+        record = context.record
+        for row in context.journal.plugins._every():
+            asking = ((row.manifest or {}).get("cancels") or {}).get(self.event)
+            if not row.enabled or row.completed or not asking:
+                continue
+            name = called(row)
+            where = folder(record.root, name)
+            env = environment(record.root, name, row.manifest, row.token, chosen=(row.settings or {}).get(CHOSEN))
+            ok, reply = call(fill(asking, env), where, env, {"event": self.event, "data": data}, min(float(row.manifest.get("refuse_seconds") or EACH), LONGEST_EACH))
+            if ok and isinstance(reply, dict) and str(reply.get("cancel") or "").strip():
+                logged(record.root, name, f"cancelled {self.event}: {reply['cancel']}")
+                return f"{name}: {str(reply['cancel']).strip()}"
         return ""
 
 
