@@ -154,7 +154,10 @@ class Sessions:
 
     def grant(self, session: str, env: str, on: bool = True) -> list[str]:
         lent = set(self.read(session).grants)
-        lent.add(env) if on else lent.discard(env)
+        if on:
+            lent.add(env)
+        else:
+            lent.discard(env)
         return list(self.write(session, grants=sorted(lent)).grants)
 
     def granted(self, session: str, env: str) -> bool:

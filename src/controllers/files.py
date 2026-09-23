@@ -20,7 +20,10 @@ class Files:
         if not source.exists():
             raise Refused(f"no such file: {path}")
         target = self.folder(n) / source.name
-        shutil.copytree(source, target, dirs_exist_ok=True) if source.is_dir() else shutil.copy2(source, target)
+        if source.is_dir():
+            shutil.copytree(source, target, dirs_exist_ok=True)
+        else:
+            shutil.copy2(source, target)
         r = self.load(n)
         r.files[source.name] = description
         size = dimensions(target) if target.is_file() else None

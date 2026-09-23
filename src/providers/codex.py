@@ -111,10 +111,10 @@ class Codex(Provider):
                   "request_user_input": AskCall}
     briefing_file = "AGENTS.md"
     skill_home = ".agents/skills"
+    retired_skill_homes = (".codex/skills",)
 
     def skill_load(self, name: str) -> str:
         return f"read {self.skill_home}/{name}/SKILL.md"
-    retired_skill_homes = (".codex/skills",)
 
     @classmethod
     def control_options(cls, current_model: str = "") -> dict:

@@ -52,6 +52,10 @@ class CardState:
     session: str = ""
     age: str = ""
 
+    @classmethod
+    def plain(cls) -> "CardState":
+        return cls("", "")
+
 
 @dataclass(frozen=True)
 class Slots:
@@ -158,7 +162,7 @@ class Tickets(Controller):
         if proposed:
             return CardState("you", f"the agent proposes it waits on {', '.join(ref.replace(':', ' ') for ref in proposed)}")
         if not place:
-            return CardState("draft", "a draft, waiting for your confirmation") if ticket.draft else CardState("", "")
+            return CardState("draft", "a draft, waiting for your confirmation") if ticket.draft else CardState.plain()
         session = next((name for name, held in sessions.items() if held.environment == place and live(held)), "")
         row = Agents(Record(self.record.root, place), actor=SYSTEM)._titled(session) if session else None
         state = self._agent_state(ticket, row, running)
