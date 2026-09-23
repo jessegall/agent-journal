@@ -1,6 +1,6 @@
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 
-from engine.fields import list_of, mapping_of, number_of, text_of
+from engine.fields import Loaded
 
 
 def command_text(command) -> str:
@@ -8,10 +8,11 @@ def command_text(command) -> str:
 
 
 @dataclass(frozen=True)
-class Requirement:
+class Requirement(Loaded):
+    keyed_by = "tool"
     tool: str
     check: object
-    hint: str
+    hint: str = ""
 
     @property
     def hint_text(self) -> str:
@@ -19,33 +20,34 @@ class Requirement:
 
 
 @dataclass(frozen=True)
-class Step:
-    name: str
+class Step(Loaded):
     run: object
-    cwd: str
+    name: str = ""
+    cwd: str = ""
 
 
 @dataclass(frozen=True)
-class Service:
-    name: str
-    run: object
-    cwd: str
-    env: dict
-    port: object
-    ready_path: str
-    restart: str
-    grace: float
-    show: dict
-
-    @classmethod
-    def from_payload(cls, name: str, raw: dict) -> "Service":
-        return cls(name=name, run=raw["run"], cwd=text_of(raw, "cwd"), env=mapping_of(raw, "env"), port=raw.get("port"),
-                   ready_path=text_of(mapping_of(raw, "ready"), "path"), restart=text_of(raw, "restart") if text_of(raw, "restart") else "on-failure",
-                   grace=number_of(raw, "grace") if number_of(raw, "grace") else 5.0, show=mapping_of(raw, "show"))
+class Ready(Loaded):
+    path: str = ""
 
 
 @dataclass(frozen=True)
-class Handler:
+class Service(Loaded):
+    keyed_by = "name"
+    name: str
+    run: object
+    cwd: str = ""
+    env: dict = field(default_factory=dict)
+    port: object = None
+    ready: Ready = Ready()
+    restart: str = "on-failure"
+    grace: float = 5.0
+    show: dict = field(default_factory=dict)
+
+
+@dataclass(frozen=True)
+class Handler(Loaded):
+    keyed_by = "pattern"
     pattern: str
     run: object = None
     post: str = ""
@@ -56,27 +58,30 @@ class Handler:
 
 
 @dataclass(frozen=True)
-class ChatRule:
+class ChatRule(Loaded):
+    aliases = {"replacement": ("as",)}
     find: str
     replacement: str
 
 
 @dataclass(frozen=True)
-class Page:
+class Page(Loaded):
     name: str
     title: str
     service: str
     path: str
-    icon: str
-    status: str
+    icon: str = ""
+    status: str = ""
 
 
 @dataclass(frozen=True)
-class Setting:
+class Setting(Loaded):
+    keyed_by = "key"
+    aliases = {"kind": ("type",)}
     key: str
-    title: str
-    default: object
-    env: str
+    title: str = ""
+    default: object = ""
+    env: str = ""
     kind: str = "text"
     options: tuple = ()
 
@@ -86,72 +91,51 @@ class Setting:
 
 
 @dataclass(frozen=True)
-class Card:
+class Card(Loaded):
     label: str = ""
     icon: str = ""
     tone: str = ""
     color: str = ""
 
-    @classmethod
-    def from_json(cls, raw: dict) -> "Card | None":
-        if not raw:
-            return None
-        return cls(text_of(raw, "label"), text_of(raw, "icon"), text_of(raw, "tone"), text_of(raw, "color"))
+
+@dataclass(frozen=True)
+class DeclaredEvent(Loaded):
+    keyed_by = "name"
+    name: str
+    title: str = ""
+    tone: str = ""
+    card: Card | None = None
 
 
 @dataclass(frozen=True)
-class DeclaredEvent:
-    name: str
-    title: str
-    tone: str
-    card: Card | None
-
-
-@dataclass(frozen=True)
-class Manifest:
-    stored: dict
-    name: str
+class Manifest(Loaded):
+    aliases = {"handlers": ("on",)}
+    stored: dict = field(default_factory=dict)
+    name: str = ""
     version: str = ""
     title: str = ""
     description: str = ""
-    requires: tuple = ()
+    requires: tuple[Requirement, ...] = ()
     env: dict = field(default_factory=dict)
-    setup: tuple = ()
-    services: tuple = ()
-    handlers: tuple = ()
+    setup: tuple[Step, ...] = ()
+    services: tuple[Service, ...] = ()
+    handlers: tuple[Handler, ...] = ()
     refuse: object = None
     reads: bool = False
     refuse_seconds: float = 0.0
     refuse_socket: str = ""
-    chat: tuple = ()
-    pages: tuple = ()
-    settings: tuple = ()
+    chat: tuple[ChatRule, ...] = ()
+    pages: tuple[Page, ...] = ()
+    settings: tuple[Setting, ...] = ()
     skills: str = ""
     installed: str = ""
-    events: tuple = ()
+    events: tuple[DeclaredEvent, ...] = ()
     cancels: dict = field(default_factory=dict)
 
     @classmethod
     def of(cls, raw) -> "Manifest":
-        raw = raw if isinstance(raw, dict) else {}
-        handlers = mapping_of(raw, "on")
-        return cls(
-            stored=raw, name=text_of(raw, "name"), version=text_of(raw, "version"), title=text_of(raw, "title"), description=text_of(raw, "description"),
-            requires=tuple(Requirement(tool, wanted["check"], text_of(wanted, "hint")) for tool, wanted in mapping_of(raw, "requires").items()),
-            env=mapping_of(raw, "env"),
-            setup=tuple(Step(text_of(step, "name"), step["run"], text_of(step, "cwd")) for step in list_of(raw, "setup")),
-            services=tuple(Service.from_payload(name, given) for name, given in mapping_of(raw, "services").items()),
-            handlers=tuple(Handler(pattern, given.get("run"), text_of(given, "post")) for pattern, given in handlers.items()),
-            refuse=raw.get("refuse"), reads=bool(raw.get("reads")), refuse_seconds=number_of(raw, "refuse_seconds"),
-            refuse_socket=text_of(raw, "refuse_socket"),
-            chat=tuple(ChatRule(rule["find"], rule["as"]) for rule in list_of(raw, "chat")),
-            pages=tuple(Page(page["name"], page["title"], page["service"], page["path"], text_of(page, "icon"), text_of(page, "status")) for page in list_of(raw, "pages")),
-            settings=tuple(Setting(key, text_of(given, "title"), given.get("default", ""), text_of(given, "env"), text_of(given, "type") if text_of(given, "type") else "text",
-                                   tuple(list_of(given, "options"))) for key, given in mapping_of(raw, "settings").items()),
-            skills=text_of(raw, "skills"), installed=text_of(raw, "installed"),
-            events=tuple(DeclaredEvent(name, text_of(given, "title"), text_of(given, "tone"), Card.from_json(mapping_of(given, "card")))
-                         for name, given in mapping_of(raw, "events").items()),
-            cancels=mapping_of(raw, "cancels"))
+        given = raw if isinstance(raw, dict) else {}
+        return replace(cls.from_json(given), stored=given)
 
     @property
     def heading(self) -> str:
@@ -172,19 +156,19 @@ def declared(row) -> Manifest:
 
 
 @dataclass(frozen=True)
-class PluginSettings:
+class PluginSettings(Loaded):
     ports: dict = field(default_factory=dict)
     chosen: dict = field(default_factory=dict)
     kept: dict = field(default_factory=dict)
 
     @classmethod
-    def from_json(cls, raw) -> "PluginSettings":
-        raw = raw if isinstance(raw, dict) else {}
-        return cls(mapping_of(raw, "ports"), mapping_of(raw, "chosen"), raw)
+    def of(cls, raw) -> "PluginSettings":
+        given = raw if isinstance(raw, dict) else {}
+        return replace(cls.from_json(given), kept=given)
 
     def to_json(self) -> dict:
         return {**self.kept, "ports": self.ports, "chosen": self.chosen}
 
 
 def settings_of(row) -> PluginSettings:
-    return PluginSettings.from_json(row.settings)
+    return PluginSettings.of(row.settings)
