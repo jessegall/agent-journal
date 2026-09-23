@@ -4,6 +4,7 @@ from argparse import _SubParsersAction
 
 from commands.parser import parser
 from controllers.types import Facts, Questions, Reminders, Rules, Todos
+from engine.project_files import matching
 from resources.base import SYSTEM
 
 CLAIMS = (Rules, Facts, Reminders)
@@ -22,7 +23,7 @@ def command_words() -> dict[str, set[str]]:
 
 
 def missing_paths(project, text: str) -> list[str]:
-    return sorted({p for p in PATH.findall(text) if not (project / p).exists()})
+    return sorted({p for p in PATH.findall(text) if not (project / p).exists() and not matching(project, p)})
 
 
 def unknown_verbs(text: str, words: dict[str, set[str]]) -> list[str]:

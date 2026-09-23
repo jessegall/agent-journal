@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.113.3 — The record audit finds a file named without its folder
+
+The daily audit called a file gone when a rule or fact named it by its name alone, or by a path from before the code moved under src/, such as engine/terminal.py. It now looks the name up anywhere in the project, by file name or by the end of its path, before saying it is gone.
+
 ## 2.113.2 — The chat etiquette skill teaches reacting to a short acknowledgement
 
 The chat etiquette skill now says that a message which only needs acknowledging, such as ok, thanks or carry on, gets a reaction instead of written words, and that a reaction can sit beside a reply or a filed to-do.
