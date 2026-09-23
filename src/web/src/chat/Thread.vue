@@ -425,7 +425,7 @@ watch(
                             :aria-label="waiting ? `The agent is waiting ${waiting}` : `The agent is ${activity}`"
                         >
                             <div class="thread-meta">
-                                <Dot kind="started" glow pulsing :size="7" />
+                                <Dot kind="started" glow pulsing :size="5" />
                                 <template v-if="waiting">
                                     <span>Waiting {{ waiting }}</span>
                                 </template>
@@ -519,6 +519,7 @@ watch(
 
 .thread-turn.busy {
     --tone: var(--accent);
+    translate: 0 6px;
 }
 
 .thread-turn.busy .thread-meta {
