@@ -1,9 +1,11 @@
 import features
 import json
 
+import pytest
+
 from controllers.types import Messages, Questions
 from features.ask_questions.choices import offers_choices
-from resources.base import AGENT, USER
+from resources.base import AGENT, USER, Refused
 from tests.kit import idle, nudges
 from tests.conftest import fresh, holds
 from commands.http import dispatch
@@ -96,3 +98,16 @@ def test_a_question_keeps_who_answered_and_the_agent_must_say_why():
     assert (answered.data["answered_by"], answered.data["reason"]) == (AGENT, "the user said blue earlier")
     theirs = Questions(record, actor=AGENT).create("Ship it?")
     assert Questions(record, actor=USER).complete(theirs.n, how="yes").data["answered_by"] == USER, "the user needs no reason"
+
+
+def test_a_question_that_lists_its_options_again_in_its_text_is_refused():
+    features.load()
+    record = fresh()
+    options = [{"title": "Release now", "text": "Push and tag."}, {"title": "Fix first", "text": "Work the fault first."}]
+    asked = Questions(record, actor=AGENT)
+    with pytest.raises(Refused):
+        asked.create("Release now or later", brief="Two ways:\nA: release it now\nB: fix the fault first", options=options)
+    with pytest.raises(Refused):
+        asked.create("Release now or later", brief="The fault is open.\n- Release now: push and tag\n- Fix first: work the fault", options=options)
+    assert asked.create("Release now or later", brief="The dashboard fault is still open; Release now ships it anyway.", options=options).n, \
+        "a question whose text gives the context and leaves the options to their buttons is asked"
