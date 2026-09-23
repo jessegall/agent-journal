@@ -20,6 +20,7 @@ SENDS = "SendMessage"
 SESSIONS = "uds:"
 WINDOW, LONG_WINDOW, LONG_MARK = 200_000, 1_000_000, "[1m]"
 STATUS_SCRIPT = "claude-status.sh"
+BASH_INPUT = re.compile(r"^<bash-input>(.*)</bash-input>$", re.S)
 EVALED = re.compile(r"&& eval '(.*)' < /dev/null && pwd -P", re.S)
 RECORD_FILES = ("Read(./.journal/environments/*/*/*.md)", "Read(./.journal/project/*/*.md)")
 STATUS_HOME = (".journal", "claude-status")
@@ -174,6 +175,15 @@ class Claude(Provider):
 
     def shell_wrapper(self, script: Path) -> dict:
         return {"CLAUDE_CODE_SHELL_PREFIX": str(script), "JOURNAL_SESSION_VARIABLE": "CLAUDE_CODE_SESSION_ID"}
+
+    def shell_runs(self, path: Path) -> list[tuple[float, str]]:
+        runs = []
+        for row in self.recent(path):
+            content = (row.get("message") or {}).get("content")
+            found = row.get("type") == "user" and isinstance(content, str) and BASH_INPUT.match(content)
+            if found:
+                runs.append((timestamp(row.get("timestamp") or ""), found[1]))
+        return runs
 
     def unwrapped_command(self, command: str) -> str:
         found = EVALED.search(command)

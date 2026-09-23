@@ -73,8 +73,17 @@ def test_a_command_from_the_terminal_view_is_typed_into_the_agents_terminal_as_a
     control.shell(record.root, record.env, "claude-1", "git status")
     pending = lambda: [c["command"] for c in Agents(record).by_session("claude-1").data.get("queued_commands") or []]
     assert pending() == ["git status"], "queued for a session seen moments ago, as during a reload, and pending until typed"
-    assert engine.shelled() == "ran in the terminal: git status"
-    assert pending() == [], "typed while the agent works, since Claude queues what is typed; no longer pending"
+    assert engine.shelled() == "typed in the terminal: git status"
+    assert pending() == ["git status"], "typed while the agent works, since Claude queues it, and pending until it runs"
+    import json
+    from datetime import datetime, timezone
+    transcript = record.root / "transcript.jsonl"
+    ran_at = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+    transcript.write_text(json.dumps({"type": "user", "timestamp": ran_at, "message": {"role": "user", "content": "<bash-input>git status</bash-input>"}}) + "\n")
+    Agents(record).update(Agents(record).by_session("claude-1").n, transcript=str(transcript), provider="claude")
+    engine.agent.driver.reported = (float("-inf"), None)
+    engine.ran()
+    assert pending() == [], "no longer pending once the transcript shows it ran"
     Agents(record).update(Agents(record).by_session("claude-1").n, asking={"tool": "Bash"})
     engine.agent.driver.reported = (float("-inf"), None)
     control.shell(record.root, record.env, "claude-1", "ls")
