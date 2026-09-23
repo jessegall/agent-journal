@@ -2,11 +2,17 @@
 import Chip from "../kit/Chip.vue";
 import TextDisplay from "../kit/TextDisplay.vue";
 import Icon from "../kit/Icon.vue";
+import ProgressBar from "../kit/ProgressBar.vue";
 import {age} from "../format/time.js";
 import {meta} from "../state/store.js";
 import {computed} from "vue";
 
 const props = defineProps({resource: Object});
+const plan = computed(() => {
+    if (props.resource.type !== "plan") return null;
+    const {phases = [], status = "building", current = 1} = props.resource.data;
+    return {total: phases.length, finished: status === "done" ? phases.length : Math.max(0, current - 1), status};
+});
 const holds = computed(() => {
     if (props.resource.type !== "collection") return [];
     const counted = {};
@@ -29,7 +35,13 @@ const holds = computed(() => {
             <span class="age">{{ age(resource.updated || resource.created) }}</span>
         </span>
         <span class="title">{{ resource.title }}</span>
-        <TextDisplay inline class="abstract" :text="resource.abstract || resource.brief" />
+        <template v-if="plan">
+            <span class="plan-steps">{{ plan.finished }} of {{ plan.total }} phases · {{ plan.status }}</span>
+            <ProgressBar :value="plan.finished" :max="plan.total" :tone="plan.status === 'done' ? 'good' : ''" />
+        </template>
+        <template v-else>
+            <TextDisplay inline class="abstract" :text="resource.abstract || resource.brief" />
+        </template>
         <template v-if="holds.length">
             <span class="holds">
                 <template v-for="h in holds" :key="h.type">
@@ -40,7 +52,7 @@ const holds = computed(() => {
                 </template>
             </span>
         </template>
-        <template v-if="resource.sections.length">
+        <template v-if="resource.sections.length && !plan">
             <span class="parts">
                 {{ resource.sections.length }} {{ resource.type === "sequence" ? "step" : "part"
                 }}{{ resource.sections.length > 1 ? "s" : "" }}
@@ -109,6 +121,12 @@ const holds = computed(() => {
 .title {
     font-weight: 500;
 }
+.plan-steps {
+    margin-top: auto;
+    font-size: 12px;
+    color: var(--text-3);
+}
+
 .abstract {
     color: var(--text-3);
     font-size: 12.5px;

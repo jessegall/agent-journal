@@ -16,6 +16,7 @@ EVENTS = tuple(STATUS)
 
 
 
+OUTPUT_KEYS = ("stdout", "stderr", "content", "result", "text", "output")
 SKILL_READ = re.compile(r"(?:^|[\s'\"/=(])(?:\.(?:codex|agents|claude)/)?skills/(journal(?:-[\w-]+)?)/SKILL\.md")
 
 
@@ -114,6 +115,20 @@ class ToolCall(Loaded):
         return self.skill if self.name == "Skill" else ""
 
 
+def response_text(response) -> str:
+    if isinstance(response, str):
+        return response
+    if isinstance(response, list):
+        return "\n".join(text for part in response if (text := response_text(part)))
+    if not isinstance(response, dict):
+        return ""
+    if "file" in response:
+        return response_text(response["file"])
+    if response.get("filenames") and not response.get("content"):
+        return "\n".join(response["filenames"])
+    return "\n".join(text for key in OUTPUT_KEYS if (text := response_text(response.get(key))))
+
+
 @dataclass(frozen=True)
 class ToolUse(Loaded):
     needs: ClassVar[tuple] = ()
@@ -183,6 +198,10 @@ class ToolUse(Loaded):
     def result_size(self) -> int:
         return len(json.dumps(self.response)) if self.response and self.response.get("type") != "image" else 0
 
+    @property
+    def output(self) -> str:
+        return response_text(self.response)
+
 
 @dataclass(frozen=True)
 class BashCall(ToolUse):
@@ -250,6 +269,10 @@ class WriteCall(FileCall):
     @property
     def words(self) -> tuple:
         return (self.file_path, self.written)
+
+    @property
+    def output(self) -> str:
+        return ""
 
     @property
     def writings(self) -> tuple:

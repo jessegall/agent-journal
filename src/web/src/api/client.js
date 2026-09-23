@@ -310,6 +310,10 @@ export class ApiClient {
         return this.get(this.here(`/agent/${agent}/edits${query({since})}`));
     }
 
+    outputs(agent) {
+        return this.get(this.here(`/agent/${agent}/outputs`));
+    }
+
     stream() {
         return new EventSource(this.url(this.here("/stream")));
     }

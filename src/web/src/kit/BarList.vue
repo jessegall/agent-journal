@@ -1,11 +1,11 @@
 <script setup>
 import {computed} from "vue";
+import ProgressBar from "./ProgressBar.vue";
 
 const props = defineProps({items: {type: Array, required: true}, unit: {type: String, default: ""}});
 const emit = defineEmits(["open"]);
 const most = computed(() => Math.max(1, ...props.items.map((item) => Number(item.value) || 0)));
 const unitText = computed(() => (/^[a-z]/i.test(props.unit) ? ` ${props.unit}` : props.unit));
-const width = (item) => `${Math.max(2, (100 * (Number(item.value) || 0)) / most.value)}%`;
 </script>
 
 <template>
@@ -18,9 +18,7 @@ const width = (item) => `${Math.max(2, (100 * (Number(item.value) || 0)) / most.
                 @click="item.open && emit('open', item.open)"
             >
                 <span class="bar-name">{{ item.label }}</span>
-                <span class="bar-track">
-                    <span class="bar-fill" :style="{width: width(item)}" />
-                </span>
+                <ProgressBar :value="Number(item.value) || 0" :max="most" :tone="item.tone" :least="2" />
                 <span class="bar-value">{{ item.value }}{{ unitText }}</span>
             </component>
         </template>
@@ -61,29 +59,6 @@ const width = (item) => `${Math.max(2, (100 * (Number(item.value) || 0)) / most.
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-}
-
-.bar-track {
-    height: 8px;
-    border-radius: 4px;
-    background: var(--line);
-    overflow: hidden;
-}
-
-.bar-fill {
-    display: block;
-    height: 100%;
-    border-radius: 4px;
-    background: var(--accent);
-    transition: width 0.4s cubic-bezier(0.2, 0.9, 0.25, 1);
-}
-
-.warn .bar-fill {
-    background: var(--tone-warn);
-}
-
-.danger .bar-fill {
-    background: var(--tone-danger);
 }
 
 .bar-value {
