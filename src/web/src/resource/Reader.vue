@@ -41,7 +41,7 @@ const focusComment = computed(() => (props.depth ? 0 : route.value.open?.comment
 const shape = computed(() =>
     !props.type ? "" : ["plan", "agent", "collection"].includes(props.type) ? props.type : meta(props.type).view
 );
-const WIDTHS = {small: "normal", wide: "wide", agent: "full"};
+const WIDTHS = {small: "normal", wide: "wide"};
 const panelWidth = computed(() => WIDTHS[shape.value] || "page");
 const panel = computed(() => (["small", "wide"].includes(shape.value) ? "inspector" : shape.value));
 const close = () => (route.value.open ? unpeek() : go(route.value.env, props.type));

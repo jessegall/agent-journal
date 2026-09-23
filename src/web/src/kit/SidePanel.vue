@@ -91,12 +91,6 @@ const {shown, close, closed} = closing(emit, props);
     overflow: auto;
 }
 
-.panel.full {
-    width: 100%;
-    border-left: 0;
-    overflow: auto;
-}
-
 .side-enter-active,
 .side-leave-active {
     transition:
