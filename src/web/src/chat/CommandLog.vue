@@ -5,8 +5,8 @@ defineProps({commands: {type: Array, default: () => []}});
 
 const line = (c) =>
     c.tool === "Bash"
-        ? c.what
-        : `${c.tool.replace(/^mcp__/, "").replaceAll("__", " · ")} ${c.subject && c.subject !== c.what ? c.subject : ""}`.trim();
+        ? c.command
+        : `${c.tool.replace(/^mcp__/, "").replaceAll("__", " · ")} ${c.subject && c.subject !== c.command ? c.subject : ""}`.trim();
 </script>
 
 <template>

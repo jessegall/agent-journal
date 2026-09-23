@@ -153,7 +153,7 @@ def test_stop_in_the_viewer_tells_the_agent_to_stop_that_task_in_its_providers_w
     report(record, "working", "PreToolUse", provider="claude")
     agents = Agents(record, actor="user")
     agent = agents.by_session("claude-1")
-    agents.stop_task(agent.n, "b7wu1410l", what="Poll production")
+    agents.stop_task(agent.n, "b7wu1410l", description="Poll production")
     told = [n for n in Nudges(record).all() if n.title == "the user asked to stop Poll production"]
     assert [n.brief for n in told] == ["run TaskStop with task_id b7wu1410l now; then carry on with the work"], "once, in Claude's words"
 

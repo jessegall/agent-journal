@@ -164,7 +164,7 @@ POLLED = 3
 
 class NameRepeatedChecks(Handler):
     def handle(self, context: AgentContext, event: ToolFinished) -> None:
-        shell = [c.get("what") for c in context.agent.row.data.get("commands") or [] if c.get("tool") == "Bash"][-POLLED:]
+        shell = [c.get("command") for c in context.agent.row.data.get("commands") or [] if c.get("tool") == "Bash"][-POLLED:]
         if len(shell) < POLLED or len(set(shell)) > 1 or any(w.awaiting for w in working(context)):
             return
         if context.once("polled", shell[-1]):
@@ -179,7 +179,7 @@ class ClearWaitOnActivity(Handler):
         for w in working(context)[:1]:
             if w.awaiting and started > float(w.awaiting_since or 0):
                 context.journal.works.update(w.n, awaiting="")
-                context.agent.whisper("wait cleared", what=w.awaiting)
+                context.agent.whisper("wait cleared", awaiting=w.awaiting)
 
 
 class AskStillAwaiting(Handler):
@@ -191,7 +191,7 @@ class AskStillAwaiting(Handler):
             minutes = int((time.time() - (w.awaiting_since or time.time())) // 60)
             if minutes >= every and context.state.get("awaiting asked") != f"{w.n}:{minutes // every}":
                 context.state.set("awaiting asked", f"{w.n}:{minutes // every}")
-                context.agent.say("still awaiting", what=w.awaiting, minutes=minutes)
+                context.agent.say("still awaiting", awaiting=w.awaiting, minutes=minutes)
 
 
 class RemindOpenWork(Handler):

@@ -393,7 +393,7 @@ def get_files(req: Request) -> Reply:
             for name in r.files:
                 f = c.folder(r.n) / name
                 if f.is_file():
-                    out.append({"type": type_, "n": r.n, "title": r.title, "name": name, "what": r.files.get(name, ""), "size": f.stat().st_size,
+                    out.append({"type": type_, "n": r.n, "title": r.title, "name": name, "description": r.files.get(name, ""), "size": f.stat().st_size,
                                 "at": f.stat().st_mtime, "image": (mimetypes.guess_type(name)[0] or "").startswith("image/"),
                                 "url": f"/api/{record.env}/{type_}/{r.n}/files/{name}"})
     return Reply(200, sorted(out, key=lambda x: -x["at"]))

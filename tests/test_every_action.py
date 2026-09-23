@@ -10,7 +10,7 @@ from tests.conftest import fresh
 
 WORLD = ("run", "install", "uninstall", "upgrade", "services", "archive_file", "pickup", "unarchive", "ask")
 SAID = {"title": "a row worth keeping", "text": "a line of words", "body": "the body", "why": "it stopped being true",
-        "how": "it landed", "name": "a name", "term": "row", "what": "what it is", "word": "done",
+        "how": "it landed", "name": "a name", "term": "row", "description": "what it is", "awaiting": "the build", "word": "done",
         "question": "which way", "part": "their words", "became": "todo:1", "value": "high", "face": "\U0001f44d",
         "env": "main", "kind": "note", "ref": "todo:1", "tags": "one two", "abstract": "one line",
         "brief": "why, and where to start", "outcome": "done", "message": "a log line", "actor": USER,

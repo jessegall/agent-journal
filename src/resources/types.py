@@ -479,8 +479,8 @@ class Nudge(Shape, Resource):
     typed_as_title = True
 
 
-RUNNING = names("what", "tool", "at", "done", "changed", "files", "made", "effect", "result", "before")
-COMMAND = names("what", "tool", "at", "effect", "subject", "done", "result", "files", "made", "changed")
+RUNNING = names("command", "tool", "at", "done", "changed", "files", "made", "effect", "result", "before")
+COMMAND = names("command", "tool", "at", "effect", "subject", "done", "result", "files", "made", "changed")
 
 def register(*classes) -> None:
     TYPES.update({c.type: c for c in classes})

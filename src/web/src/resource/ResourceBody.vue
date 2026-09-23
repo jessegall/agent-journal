@@ -256,13 +256,13 @@ const docs = computed(() =>
         <template v-if="files.length">
             <section class="block">
                 <SectionHeading>Files</SectionHeading>
-                <template v-for="[name, what] in files" :key="name">
+                <template v-for="[name, description] in files" :key="name">
                     <a class="file" :href="api.fileUrl(resource.type, resource.n, name)" target="_blank" :title="name">
                         <Icon name="clip" :size="13" />
                         <span class="file-text">
                             <span class="file-name">{{ name }}</span>
-                            <template v-if="what">
-                                <span class="what">{{ what }}</span>
+                            <template v-if="description">
+                                <span class="description">{{ description }}</span>
                             </template>
                         </span>
                     </a>
@@ -473,7 +473,7 @@ const docs = computed(() =>
     text-overflow: ellipsis;
     white-space: nowrap;
 }
-.what {
+.description {
     color: var(--text-3);
     font-size: 12px;
 }

@@ -27,10 +27,10 @@ class Agents(Controller):
         row = self.load(int(n))
         return self.update(row.n, cards=[*(row.data.get("cards") or []), {"at": time.time(), **card}][-KEPT_CARDS:])
 
-    def stop_task(self, n: int, task: str, what: str = ""):
+    def stop_task(self, n: int, task: str, description: str = ""):
         if not task.strip():
             self._refuse("name the task to stop")
-        return self.update(int(n), stopping={"task": task.strip(), "what": what.strip() or task.strip(), "at": time.time()})
+        return self.update(int(n), stopping={"task": task.strip(), "description": description.strip() or task.strip(), "at": time.time()})
 
     def primary(self):
         rows = [row for row in self._standing() if not row.parent]

@@ -3,7 +3,7 @@ from resources.types import COMMAND
 
 
 def ran(commands: list[dict] | None) -> list[dict]:
-    return [dissect(one) for one in commands or [] if (one.get(COMMAND.what) or "").strip()]
+    return [dissect(one) for one in commands or [] if (one.get(COMMAND.command) or "").strip()]
 
 
 def grouped(commands: list[dict]) -> list[list[dict]]:

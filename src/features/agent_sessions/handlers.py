@@ -53,7 +53,7 @@ class AskToStop(Handler):
             return
         speaking = context.speaking_to(row)
         if speaking.once(STOP, f"{stopping['task']}|{stopping['at']}"):
-            speaking.agent.say(STOP, what=stopping["what"], how=provider().stop_instruction(stopping["task"]))
+            speaking.agent.say(STOP, description=stopping["description"], how=provider().stop_instruction(stopping["task"]))
 
 
 class MarkSilentStopped(Handler):
