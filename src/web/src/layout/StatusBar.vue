@@ -10,7 +10,7 @@ import {go, peek, route} from "../route.js";
 import {agent, autoOn, store} from "../state/store.js";
 import {polled} from "../sync/polled.js";
 import {rows} from "../sync/rows.js";
-import {currentWork, doneOf, lineOf, phaseOf, planButton, queued, rowsOf, shownPlans, stateOf, wordOf} from "./statusline.js";
+import {barPlan, currentWork, lineOf, otherPlans, queued, stateOf, wordOf} from "./statusline.js";
 import {usePoll} from "../poll.js";
 import {runPlan, setAuto} from "../actions/work.js";
 
@@ -34,9 +34,9 @@ const sentence = computed(() => {
     return {head: now.slice(0, cut), tail: now.slice(cut)};
 });
 watch(line, (now, before) => (was.value = before || ""));
-const plans = computed(() => shownPlans(rows("plan")));
+const bar = computed(() => barPlan(rows("plan"), !route.value.page && !store.detached));
+const others = computed(() => otherPlans(rows("plan")));
 const error = ref("");
-const done = (p) => doneOf(p, rows("todo"));
 
 async function runBar(p) {
     error.value = "";
@@ -83,9 +83,18 @@ async function runBar(p) {
             </button>
         </span>
     </div>
-    <TransitionGroup name="planbar">
-        <PSection v-for="p in plans" :key="p.n" :plans="plans" :error="error" :data="p.data" :p="p" @run-bar="runBar" />
-    </TransitionGroup>
+    <Transition name="planbar">
+        <PSection
+            v-if="bar"
+            :key="bar.n"
+            :p="bar"
+            :data="bar.data"
+            :others="others"
+            :error="error"
+            @run-bar="runBar"
+            @failed="error = $event"
+        />
+    </Transition>
 </template>
 
 <style scoped>

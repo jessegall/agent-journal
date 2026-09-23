@@ -25,6 +25,9 @@ class PlansDetails(FeatureDetails):
 
         Only the user approves a plan, and then you start it with journal plan start <n>; only the user continues it past a checkpoint; with the auto
         feature on, checkpoints are passed without waiting.
+
+        One plan runs at a time. Starting a plan parks the one that runs, and journal plan park
+        <n> sets a plan aside; a parked plan's rows wait until it is started again.
     """
 
     lines = [
@@ -60,7 +63,17 @@ class PlansDetails(FeatureDetails):
         Line(
             name="approved",
             title="the user approved plan {{n}}, {{title}} - start it",
-            brief="journal plan start {{n}} makes it active; then work its first phase's rows in order",
+            brief="journal plan start {{n}} makes it active and parks a plan that runs; then work its first phase's rows in order",
+        ),
+        Line(
+            name="picked up",
+            title="the user started plan {{n}}, {{title}} - it is active now",
+            brief="work the rows of its current phase, phase {{phase}}, in order; a plan that ran is parked and its rows wait",
+        ),
+        Line(
+            name="parked",
+            title="the user parked plan {{n}}, {{title}}",
+            brief="its open rows wait until it is started again: leave them and go on with other work",
         ),
         Line(
             name="plan mode",
