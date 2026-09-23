@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.110.3 — Code in small text is sized to the text around it
+
+A command or a name in code inside a chat mark, a card or any small text was drawn at a fixed 12px and stood out above the words beside it. Code now takes its size from the text it sits in.
+
 ## 2.110.2 — Reading a long file whole is refused for Codex too
 
 Codex reads files through its shell tools (exec, exec_command, shell), so a cat of a file over 300 lines through any of them is refused the same way Claude's is, with the line count and a pointer to read a range or grep. Each provider now says which of its tools is a shell command and what the command is. Codex has no shell prefix, so the output cap stays Claude's; Codex caps its own exec output.

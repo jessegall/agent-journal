@@ -69,7 +69,7 @@ function follow(e) {
     border-radius: 4px;
     background: var(--raised);
     font-family: ui-monospace, "SF Mono", Menlo, monospace;
-    font-size: 12px;
+    font-size: 0.92em;
 }
 
 .md :deep(:not(pre) > code) {
