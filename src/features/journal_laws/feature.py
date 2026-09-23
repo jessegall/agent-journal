@@ -9,7 +9,7 @@ class Law(Feature):
     details = LawDetails
 
     def register(self, journal: Journal) -> None:
-        journal.agent.interceptor(EnforceDispatchLaw())
+        journal.agent.canceler(EnforceDispatchLaw())
         journal.agent.interceptor(WhisperLawOnKeyword())
         journal.events.handler(WhisperLawInChat())
         journal.events.handler(NoticeLargestResult())

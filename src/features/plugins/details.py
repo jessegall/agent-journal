@@ -16,6 +16,10 @@ class PluginsDetails(FeatureDetails):
         runs as you. Its .journal-plugin/plugin.json says what it listens to, what it runs, which pages it shows and which
         events it raises.
 
+        Some events can be cancelled before they happen, such as agent.dispatching, raised when a subagent is about to be
+        dispatched. A plugin cancels one through "cancels": {"agent.dispatching": "<command>"} in its manifest: the command
+        reads the event as JSON and answers {"cancel": "<reason>"} to stop it, and the reason is what the agent is told.
+
         When one of its servers gives up, you are told once; journal services list|start|stop|restart|log <plugin>.<service>
         inspects them. The servers a plugin declares are kept up while the session runs and stop with it. A plugin writes back
         by calling the journal itself, or by appending journal commands to the file at $JOURNAL_QUEUE, one per line, which the

@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.104.0 — A subagent dispatch is an event anything can cancel
+
+Before a subagent is dispatched, the journal raises agent.dispatching, and any feature or plugin can cancel it with a reason; the first reason is what the agent is told. The journal's laws now enforce the model and generic-agent rules this way instead of through a tool interceptor of their own. A plugin cancels through "cancels": {"agent.dispatching": "<command>"} in its manifest: the command reads the event as JSON and answers {"cancel": "<reason>"}. Features register a Canceler with journal.agent.canceler. The tool gate's two copies of its policy loop are now one function.
+
 ## 2.103.15 — Housekeeping features ship no skill
 
 A feature that runs by itself and asks nothing of the agent generates no skill: runtime cleanup, auto-archive, opening the viewer, clean slate, the status bar and thinking. A feature says so with has_skill = False in its details, and the next install removes their skill folders.

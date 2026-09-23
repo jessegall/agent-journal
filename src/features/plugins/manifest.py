@@ -7,9 +7,10 @@ from features.base import REGISTRY
 from surfaces.updates import newer
 from resources.base import ACTIONS, Refused
 from resources.types import TYPES
+from engine.hooks import CANCELABLE
 
 MANIFEST = Path(".journal-plugin") / "plugin.json"
-KEYS = ("name", "version", "title", "description", "journal", "requires", "env", "setup", "services", "on", "refuse", "reads", "refuse_seconds", "chat", "pages", "settings", "skills", "installed", "events")
+KEYS = ("name", "version", "title", "description", "journal", "requires", "env", "setup", "services", "on", "refuse", "reads", "refuse_seconds", "chat", "pages", "settings", "skills", "installed", "events", "cancels")
 NAME = re.compile(r"[a-z0-9][a-z0-9-]{1,31}$")
 WORD = re.compile(r"[a-z][a-z0-9_-]*$")
 PLACEHOLDER = re.compile(r"\{([a-z][a-z0-9_.]*)\}")
@@ -62,6 +63,10 @@ def read(folder: Path, version: str = "") -> dict:
             shaped(name, {event: fields["card"]}, "events.card", ("label", "color", "icon"), ())
         if fields.get("tone", "") not in TONES:
             raise Refused(f"plugin.json: events.{event}.tone is one of {', '.join(t for t in TONES if t)}")
+    if "cancels" in checked:
+        if not isinstance(checked["cancels"], dict) or any(event not in CANCELABLE for event in checked["cancels"]):
+            raise Refused(f"plugin.json: cancels names events that can be cancelled: {', '.join(CANCELABLE)}")
+        checked["cancels"] = {event: command(name, f"cancels.{event}", run) for event, run in checked["cancels"].items()}
     if "refuse" in checked:
         checked["refuse"] = command(name, "refuse", checked["refuse"])
     checked["reads"] = bool(given.get("reads"))

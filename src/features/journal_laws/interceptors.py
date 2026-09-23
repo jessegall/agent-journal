@@ -1,12 +1,15 @@
 from features.journal_laws.policy import LAWS, refusal
 from engine.events import AgentMessageSent
-from features.parts import AgentContext, Handler, ToolInterceptor
+from engine.hooks import DISPATCHING
+from features.parts import AgentContext, Canceler, Handler, ToolInterceptor
 from features.recital import COMMANDS, WHISPER, mentioned, searched, whisper_due
 
 
-class EnforceDispatchLaw(ToolInterceptor):
-    def intercept(self, context: AgentContext, call) -> str:
-        return refusal(context.provider, call)
+class EnforceDispatchLaw(Canceler):
+    event = DISPATCHING
+
+    def cancel(self, context: AgentContext, data: dict) -> str:
+        return refusal(data)
 
 
 class WhisperLawOnKeyword(ToolInterceptor):
