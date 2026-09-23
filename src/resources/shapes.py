@@ -107,6 +107,23 @@ class Ranked(Shape):
     labels = {"priority": "Priority"}
 
 
+class Placed(Shape):
+    data_fields: ClassVar[list[Field]] = [
+        Field(NUMBER, 0.0, name="rank"),
+    ]
+
+    @property
+    def position(self) -> float:
+        return float(self.rank or self.n)
+
+
+def rank_before(rows: list, before: int) -> float:
+    at = next((i for i, row in enumerate(rows) if row.n == before), None)
+    if at is None:
+        raise Refused(f"#{before} is not in the same column")
+    return (rows[at - 1].position + rows[at].position) / 2 if at else rows[at].position / 2
+
+
 CHANGE = names("path", "added", "removed", "created")
 COMMIT = names("sha", "subject")
 

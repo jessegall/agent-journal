@@ -1,7 +1,7 @@
 from typing import ClassVar
 
 from resources.base import AGENT, COMPLETED, DOCUMENT, LAZY, OPENED, PROJECT, SYSTEM, USER, Resource, ResourceDetails
-from resources.shapes import FLAG, TEXT, Field, Options, Ranked, Reasoned, Shape, Traced
+from resources.shapes import FLAG, TEXT, Field, Options, Placed, Ranked, Reasoned, Shape, Traced
 
 
 class Message(Shape, Resource):
@@ -29,7 +29,7 @@ class Message(Shape, Resource):
     )
 
 
-class Todo(Ranked, Resource):
+class Todo(Ranked, Placed, Resource):
     listed_open = True
     type = "todo"
     event_labels = {"created": "To-do created", "completed": "To-do done", "updated.read": "To-do read", "updated.assign": "To-do assigned",

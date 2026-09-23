@@ -38,14 +38,20 @@ function onKey(e) {
 const over = ref(false);
 const reorders = computed(() => {
     const moved = drag.dragged.value;
-    return Boolean(moved) && moved.n !== props.card.n && moved.state === "queued" && props.card.state === "queued";
+    if (!moved || moved.n === props.card.n || moved.type !== props.card.type) return false;
+    return moved.lane === props.card.lane || drag.takes(props.card.lane);
 });
 
 async function dropBefore() {
     over.value = false;
     const moved = drag.dragged.value;
     drag.end();
-    await api.act("ticket", moved.n, "queue_before", {other: props.card.n});
+    if (moved.lane !== props.card.lane) {
+        const shifted = board.move(moved, props.card.lane);
+        if (!shifted) return;
+        await shifted;
+    }
+    await api.act(moved.type, moved.n, "place", {before: props.card.n});
     board.refresh();
 }
 
@@ -156,6 +162,7 @@ function begin(event) {
 <style scoped>
 .card {
     position: relative;
+    transition: margin-top 0.18s cubic-bezier(0.2, 0.9, 0.25, 1);
     display: flex;
     flex-direction: column;
     gap: 6px;
@@ -176,7 +183,18 @@ function begin(event) {
 }
 
 .card.before {
-    box-shadow: 0 -2px 0 var(--accent);
+    margin-top: 48px;
+}
+
+.card.before::before {
+    content: "";
+    position: absolute;
+    top: -26px;
+    right: 0;
+    left: 0;
+    height: 2px;
+    border-radius: 1px;
+    background: var(--accent);
 }
 
 .card.dragged {
