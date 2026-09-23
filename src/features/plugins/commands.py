@@ -3,7 +3,7 @@ import shutil
 
 from engine.version import version
 from features.parts import Command, Context
-from features.plugins.answer import apply
+from features.plugins.answer import Posting, apply, raised
 from features.plugins.declared import Manifest, Setting, declared, settings_of
 from features.plugins.lifecycle import called, difference, drop, place, restarted
 from features.plugins.manifest import fill, read
@@ -148,6 +148,14 @@ class Configure(Command):
         updated = plugins.update(row.n, settings=replace(settings, chosen={**settings.chosen, key: value}).to_json())
         restarted(plugins.record.root, manifest)
         return updated
+
+
+class Raise(Command):
+    name = "raise"
+
+    def run(self, context: Context, plugins, plugin: str, event: str, brief: str):
+        raised(plugins.record, plugin, "", Posting(event=event, brief=brief))
+        return f"{plugin}.{event} raised"
 
 
 class Purge(Command):
