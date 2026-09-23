@@ -31,14 +31,14 @@ def by_hand(one: dict) -> bool:
 
 
 def piece_of(one: dict, kind: str = "") -> dict:
-    what = one.get(COMMAND.what) or ""
+    text = one.get(COMMAND.command) or ""
     roots = {"searches": SEARCHERS, "reads": READERS}.get(kind)
     if roots:
-        doing = [p for p in parsed(what, spoken, filtered=False) if does(p, roots)]
+        doing = [p for p in parsed(text, spoken, filtered=False) if does(p, roots)]
         named = [p for p in doing if a_path(p["args"])]
         if doing:
             return (named or doing)[0]
-    found = [p for p in parsed(what, spoken) if kind in ("", JOURNAL) or not p["own"]]
+    found = [p for p in parsed(text, spoken) if kind in ("", JOURNAL) or not p["own"]]
     return found[0] if found else {}
 
 

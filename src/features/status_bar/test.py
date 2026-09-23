@@ -10,12 +10,12 @@ from tests.conftest import fresh
 NOW = 1_000_000.0
 
 
-def shell(what, at=NOW, **more):
-    return {"what": what, "tool": "Bash", "at": at, **more}
+def shell(command, at=NOW, **more):
+    return {"command": command, "tool": "Bash", "at": at, **more}
 
 
 def edit(name, at=NOW, **more):
-    return {"what": f"editing {name}", "tool": "Edit", "files": [name], "at": at, "effect": "writes", **more}
+    return {"command": f"editing {name}", "tool": "Edit", "files": [name], "at": at, "effect": "writes", **more}
 
 
 def queue(commands, now=NOW):
@@ -27,11 +27,11 @@ def text(commands, now=NOW):
 
 
 def used(tool, subject, at=NOW, **more):
-    return {"what": f"using {subject}", "tool": tool, "subject": subject, "at": at, **more}
+    return {"command": f"using {subject}", "tool": tool, "subject": subject, "at": at, **more}
 
 
 def read(name, at=NOW, **more):
-    return {"what": f"reading {name}", "tool": "Read", "files": [name], "at": at, "effect": "reads", **more}
+    return {"command": f"reading {name}", "tool": "Read", "files": [name], "at": at, "effect": "reads", **more}
 
 
 def coloured(commands, now=NOW):
@@ -66,7 +66,7 @@ def test_the_verb_is_the_root_and_the_only_unmuted_part():
     assert text([shell("git add -A"), shell("git commit -m x", NOW + 1, effect="writes", done=NOW + 2), shell("git push", NOW + 3)]) == \
         [["git", ["tracking", "committing", "pushing"], ["files", "changes", "changes"]]], \
         "a run of git commands is one message, rooted under git"
-    assert [text([{"what": f"reading {f}", "tool": "Read", "at": NOW, "effect": "reads", "files": [f]}])[0][0] for f in ("a.png", "b.mp4")] == \
+    assert [text([{"command": f"reading {f}", "tool": "Read", "at": NOW, "effect": "reads", "files": [f]}])[0][0] for f in ("a.png", "b.mp4")] == \
         ["viewing", "watching"], "a picture and a film have their own words"
     assert (text([shell("x", effect="writes", files=["a.py"], made=["a.py"])])[0][0],
             queue([shell("x", effect="writes", files=["a.py"], made=["a.py"])], NOW)[0]["hold"]) == ("creating", HOLD), \

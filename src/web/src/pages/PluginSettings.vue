@@ -37,7 +37,7 @@ const choices = (s) => s.options.map((option) => ({value: String(option), label:
 </script>
 
 <template>
-    <SidePanel :title="`${plugin.title} settings`" :abstract="plugin.what" @close="emit('close')">
+    <SidePanel :title="`${plugin.title} settings`" :abstract="plugin.description" @close="emit('close')">
         <template v-for="group in groups" :key="group.name">
             <FoldGroup
                 flush

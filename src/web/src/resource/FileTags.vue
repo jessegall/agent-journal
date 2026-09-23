@@ -8,7 +8,7 @@ const editing = ref(false);
 const draft = ref("");
 
 function edit() {
-    draft.value = props.file.what || "";
+    draft.value = props.file.description || "";
     editing.value = true;
 }
 
@@ -19,9 +19,9 @@ function cancel() {
 async function save() {
     const tags = draft.value.trim();
     editing.value = false;
-    if (tags !== props.file.what) {
+    if (tags !== props.file.description) {
         await api.act(props.file.type, props.file.n, "tag", {name: props.file.name, tags});
-        props.file.what = tags;
+        props.file.description = tags;
     }
 }
 </script>
@@ -39,7 +39,7 @@ async function save() {
         />
     </template>
     <template v-else>
-        <button type="button" class="tags" :class="{empty: !file.what}" @click="edit">{{ file.what || "Add tags" }}</button>
+        <button type="button" class="tags" :class="{empty: !file.description}" @click="edit">{{ file.description || "Add tags" }}</button>
     </template>
 </template>
 

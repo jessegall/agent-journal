@@ -147,12 +147,12 @@ class WorkDetails(FeatureDetails):
         ),
         Line(
             name="wait cleared",
-            title="your wait for {{what}} is over, because you are working again",
+            title="your wait for {{awaiting}} is over, because you are working again",
             brief='say journal work await "<what you wait for>" again if you are still only waiting',
         ),
         Line(
             name="still awaiting",
-            title="check {{what}} now - you have waited {{minutes}} min",
+            title="check {{awaiting}} now - you have waited {{minutes}} min",
             brief="""
                 look at the thing itself: the background shell's output, the process, the run's
                 status. If it is still going, say journal work await "<what you wait for>" again and

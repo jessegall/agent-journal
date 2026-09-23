@@ -51,7 +51,7 @@ def stamped(commands: list, running: dict, doing: str = "", at: float = 0.0) -> 
     which = next((i for i in reversed(range(len(rows))) if when and rows[i].get(COMMAND.at) == when), None)
     if which is None:
         which = next((i for i in reversed(range(len(rows)))
-                      if doing and rows[i].get(COMMAND.what) == doing and not rows[i].get(COMMAND.done)), None)
+                      if doing and rows[i].get(COMMAND.command) == doing and not rows[i].get(COMMAND.done)), None)
     return [{**one, **ended} if i == which else one for i, one in enumerate(rows)]
 
 
@@ -72,15 +72,15 @@ def in_project(path: str, cwd: str) -> bool:
 def shell(row, hook: Hook) -> dict:
     doing = hook.tool.doing.strip()[:400]
     running = dict(row.running)
-    before = {k: v for k, v in running.items() if k in (RUNNING.what, RUNNING.tool, RUNNING.at, RUNNING.done, RUNNING.effect, RUNNING.changed, RUNNING.result)}
+    before = {k: v for k, v in running.items() if k in (RUNNING.command, RUNNING.tool, RUNNING.at, RUNNING.done, RUNNING.effect, RUNNING.changed, RUNNING.result)}
     if hook.event == "UserPromptSubmit":
         return {AgentRow.running: {RUNNING.before: before} if before.get(RUNNING.done) else {}, AgentRow.commands: list(row.commands)}
     if hook.event == "PreToolUse" and doing:
         now = time.time()
         kind = effect(hook)
-        running = {RUNNING.what: doing, RUNNING.tool: hook.tool.name, RUNNING.at: now, **({RUNNING.effect: kind} if kind else {}),
+        running = {RUNNING.command: doing, RUNNING.tool: hook.tool.name, RUNNING.at: now, **({RUNNING.effect: kind} if kind else {}),
                    **({RUNNING.before: before} if before.get(RUNNING.done) else {})}
-        ran = {COMMAND.what: doing, COMMAND.tool: hook.tool.name, COMMAND.at: now,
+        ran = {COMMAND.command: doing, COMMAND.tool: hook.tool.name, COMMAND.at: now,
                **({COMMAND.effect: kind} if kind else {}),
                **({COMMAND.files: [hook.tool.file_path]} if hook.tool.file_path else {}),
                **({COMMAND.subject: hook.tool.subject} if hook.tool.subject and not hook.tool.file_path else {})}

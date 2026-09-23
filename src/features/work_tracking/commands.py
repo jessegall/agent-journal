@@ -32,10 +32,10 @@ class ParkWork(Command):
 class AwaitWork(Command):
     name = "await"
 
-    def run(self, context: Context, works: Works, what: str, n: int = 0):
-        if not what.strip():
+    def run(self, context: Context, works: Works, awaiting: str, n: int = 0):
+        if not awaiting.strip():
             raise Refused("say what you are waiting for")
-        return works.update(in_hand(works, n).n, awaiting=what.strip(), awaiting_since=time.time())
+        return works.update(in_hand(works, n).n, awaiting=awaiting.strip(), awaiting_since=time.time())
 
 
 class ResumeWork(Command):

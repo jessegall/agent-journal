@@ -196,7 +196,7 @@ def test_a_declared_wait_is_asked_about_and_cleared_when_the_work_moves():
     report(record, "working", "PreToolUse")
     works = Works(record, actor=AGENT)
     build = works.create("the release")
-    check = {"tool": "Bash", "what": "tail -3 build.log", "at": 1.0}
+    check = {"tool": "Bash", "command": "tail -3 build.log", "at": 1.0}
     for i in range(1, 5):
         report(record, "working", "PostToolUse", commands=[check] * i)
     polling = [n for n in nudges(record) if "same check" in n]
@@ -214,13 +214,13 @@ def test_a_declared_wait_is_asked_about_and_cleared_when_the_work_moves():
     works.action("log")("CI passed")
     assert works.load(build.n).awaiting == "the CI run on main", "a log entry leaves the wait standing"
     since = works.load(build.n).awaiting_since
-    report(record, "working", "PostToolUse", tool="Bash", wrote=True, commands=[{"what": "journal work await", "tool": "Bash", "at": since - 1}])
+    report(record, "working", "PostToolUse", tool="Bash", wrote=True, commands=[{"command": "journal work await", "tool": "Bash", "at": since - 1}])
     assert works.load(build.n).awaiting == "the CI run on main", "the call that declared the wait does not end it"
-    report(record, "working", "PostToolUse", tool="Bash", wrote=True, commands=[{"what": "journal work await", "tool": "Bash", "at": since}])
+    report(record, "working", "PostToolUse", tool="Bash", wrote=True, commands=[{"command": "journal work await", "tool": "Bash", "at": since}])
     assert works.load(build.n).awaiting == "the CI run on main", "nor does a call started the same instant"
-    report(record, "working", "PostToolUse", tool="Read", wrote=False, commands=[{"what": "tail test.log", "tool": "Bash", "at": time.time()}])
+    report(record, "working", "PostToolUse", tool="Read", wrote=False, commands=[{"command": "tail test.log", "tool": "Bash", "at": time.time()}])
     assert works.load(build.n).awaiting == "the CI run on main", "reading, checking and answering messages leave the wait standing"
-    report(record, "working", "PostToolUse", tool="Edit", wrote=True, commands=[{"what": "Edit a.py", "tool": "Edit", "at": time.time()}])
+    report(record, "working", "PostToolUse", tool="Edit", wrote=True, commands=[{"command": "Edit a.py", "tool": "Edit", "at": time.time()}])
     assert works.load(build.n).awaiting == "", "writing again clears it"
     assert [n for n in nudges(record) if "your wait for the CI run on main is over" in n], "and the agent is told why"
     from controllers.types import Facts

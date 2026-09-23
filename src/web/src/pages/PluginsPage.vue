@@ -38,7 +38,7 @@ const plugins = computed(() =>
             n: p.n,
             name: (p.data.manifest || {}).name || "",
             title: p.title,
-            what: p.abstract || "It says nothing about itself.",
+            description: p.abstract || "It says nothing about itself.",
             version: p.data.version || "no version",
             source: p.data.source,
             commit: p.data.commit ? p.data.commit.slice(0, 12) : "linked folder",
@@ -339,7 +339,7 @@ async function askAgent() {
                         </span>
                         <Switch :on="p.enabled" @change="(v) => plugin(p, v ? 'enable' : 'disable')" />
                     </header>
-                    <p class="what">{{ p.what }}</p>
+                    <p class="description">{{ p.description }}</p>
                     <p class="from">
                         {{ p.source }}
                         <small>{{ p.commit }}</small>
@@ -631,7 +631,7 @@ h2 {
     font-weight: 400;
 }
 
-.what {
+.description {
     margin: 0;
     color: var(--text-2);
     font-size: 12.5px;

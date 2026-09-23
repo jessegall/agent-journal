@@ -72,7 +72,7 @@ class AgentsDetails(FeatureDetails):
     lines = [
         Line(
             name="stop",
-            title="the user asked to stop {{what}}",
+            title="the user asked to stop {{description}}",
             brief="{{how}}; then carry on with the work",
         ),
         Line(

@@ -128,5 +128,5 @@ def built(only: str) -> argparse.ArgumentParser:
               ("--runs", {"type": int, "default": 5}), ("--url", {"default": ""}), ("--out", {"default": ""}))
     add_query(cmds, "tidy", "run the housekeeping now: trim captures and logs, drop quiet sessions' files", lambda ctx: summary(tidy(ctx["record"].root, features.FEATURES["runtime_cleanup"].values(ctx["record"]).days)))
     add_query(cmds, "services", "the services plugins run: list them, start, stop or restart one, read its log, or keep them up in this terminal with up",
-              lambda ctx: services(ctx), ("what", {"nargs": "?", "default": "list"}), ("which", {"nargs": "?", "default": ""}), ("--lines", {"type": int, "default": 40}))
+              lambda ctx: services(ctx), ("action", {"nargs": "?", "default": "list"}), ("which", {"nargs": "?", "default": ""}), ("--lines", {"type": int, "default": 40}))
     return top

@@ -29,7 +29,7 @@ const asked = ref(new Set());
 
 async function stop(row) {
     asked.value = new Set([...asked.value, row.task_id]);
-    await api.act("agent", props.agent, "stop_task", {task: row.task_id, what: row.task || row.command || row.task_id});
+    await api.act("agent", props.agent, "stop_task", {task: row.task_id, description: row.task || row.command || row.task_id});
 }
 
 function lasted(row) {

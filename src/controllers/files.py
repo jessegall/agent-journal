@@ -15,18 +15,18 @@ class Files:
         f.mkdir(exist_ok=True)
         return f
 
-    def attach(self, n: int, path: str, what: str = "") -> Resource:
+    def attach(self, n: int, path: str, description: str = "") -> Resource:
         source = Path(path)
         if not source.exists():
             raise Refused(f"no such file: {path}")
         target = self.folder(n) / source.name
         shutil.copytree(source, target, dirs_exist_ok=True) if source.is_dir() else shutil.copy2(source, target)
         r = self.load(n)
-        r.files[source.name] = what
+        r.files[source.name] = description
         size = dimensions(target) if target.is_file() else None
         if size:
             r.pictures[source.name] = list(size)
-        return self.save(r, "updated", file=source.name, what=what)
+        return self.save(r, "updated", file=source.name, description=description)
 
     def tag(self, n: int, name: str, tags: str) -> Resource:
         r = self.load(n)

@@ -319,18 +319,18 @@ def started(record: Record, project: Path, agent: str, env: str, args: list[str]
 def services(ctx) -> str:
     from engine.services import DOWN, UP, listed, log_file, want
     root = ctx["record"].root
-    what, which = ctx["what"], ctx["which"]
-    if what == "up":
+    action, which = ctx["action"], ctx["which"]
+    if action == "up":
         return services_up(root)
-    if what == "log":
+    if action == "log":
         return tail(log_file(root, which), ctx["lines"])
-    if what in ("start", "stop", "restart"):
+    if action in ("start", "stop", "restart"):
         if not which:
-            raise Refused(f"say which service to {what}: journal services {what} <plugin>.<service>")
-        want(root, which, DOWN if what == "stop" else UP, nonce=time.time() if what == "restart" else 0.0)
-        return f"{which} is asked to {'stop' if what == 'stop' else 'run'}"
-    if what != "list":
-        raise Refused(f"services knows list, up, start, stop, restart and log, not {what!r}")
+            raise Refused(f"say which service to {action}: journal services {action} <plugin>.<service>")
+        want(root, which, DOWN if action == "stop" else UP, nonce=time.time() if action == "restart" else 0.0)
+        return f"{which} is asked to {'stop' if action == 'stop' else 'run'}"
+    if action != "list":
+        raise Refused(f"services knows list, up, start, stop, restart and log, not {action!r}")
     lines = [f"{s['id']:<28} {s['state']:<10} {s['url']}{'  ' + s['why'] if s['why'] else ''}" for s in listed(root)]
     return "\n".join(lines) or "no plugin declares a service"
 
