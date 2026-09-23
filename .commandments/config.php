@@ -33,5 +33,7 @@ return function (Config $config): void {
     );
 
     $config->exclude(
+        '.venv',
+        '__pycache__',
     );
 };
