@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.103.4 — Waiting and thinking are the plain status line too
+
+"Waiting …" and the agent's latest thinking no longer sit in a card: like the working status, each is one plain line above the chat input, led by the pulsing dot.
+
 ## 2.103.3 — A pulsing dot on the status line replaces the working dots
 
 While the agent works, the chat shows its status line led by a small pulsing dot instead of a bubble of three bouncing dots; "Waiting …" carries the same dot. Chat marks no longer print their time: the turns around them carry it, and hovering a mark shows it.
