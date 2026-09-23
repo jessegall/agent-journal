@@ -1,5 +1,8 @@
 <script setup>
-const props = defineProps({text: {type: String, default: ""}, editing: Boolean, caret: Boolean});
+import {computed} from "vue";
+
+const props = defineProps({text: {type: String, default: ""}, editing: Boolean, caret: Boolean, typing: Boolean});
+const words = computed(() => props.text.match(/\S+\s*/g) || []);
 const emit = defineEmits(["start", "save"]);
 const stopWhileEditing = (event) => props.editing && event.stopPropagation();
 const save = (event) => props.editing && emit("save", event.target.innerText.trim());
@@ -13,7 +16,12 @@ const save = (event) => props.editing && emit("save", event.target.innerText.tri
         @click="stopWhileEditing"
         @blur="save"
     >
-        {{ text }}
+        <template v-if="typing && !editing">
+            <template v-for="(word, at) in words" :key="at">
+                <span class="word">{{ word }}</span>
+            </template>
+        </template>
+        <template v-else>{{ text }}</template>
     </span>
 </template>
 
@@ -23,6 +31,24 @@ const save = (event) => props.editing && emit("save", event.target.innerText.tri
     outline-offset: 2px;
     border-radius: 3px;
     cursor: text;
+}
+
+.word {
+    animation: word-in 0.42s cubic-bezier(0.2, 0.7, 0.3, 1) both;
+    white-space: pre-wrap;
+}
+
+@keyframes word-in {
+    from {
+        opacity: 0;
+        filter: blur(2px);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .word {
+        animation: none;
+    }
 }
 
 .caret::after {

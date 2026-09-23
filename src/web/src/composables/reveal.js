@@ -12,7 +12,7 @@ export function useReveal(length, every = 16) {
     return count;
 }
 
-export function useTyping(tick = 16) {
+export function useTyping() {
     const timers = new Set();
     const wait = (ms) =>
         new Promise((done) => {
@@ -21,12 +21,15 @@ export function useTyping(tick = 16) {
             timers.add(timer);
         });
 
-    async function type(length, ms, show) {
-        if (still) return show(length);
-        const step = Math.max(1, Math.ceil(length / Math.max(1, Math.round(ms / tick))));
-        for (let at = step; at < length + step; at += step) {
-            show(Math.min(at, length));
-            await wait(tick);
+    async function type(text, ms, show) {
+        if (still) return show(text.length);
+        const words = text.match(/\S+\s*/g) || [];
+        const pace = ms / Math.max(1, text.length);
+        let at = 0;
+        for (const word of words) {
+            at += word.length;
+            show(at);
+            await wait(word.length * pace * (0.4 + Math.random() * 1.2) + (/[.,;:!?]\s*$/.test(word) ? 140 : 0));
         }
     }
 

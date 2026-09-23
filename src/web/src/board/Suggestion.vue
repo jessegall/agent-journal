@@ -8,8 +8,8 @@ import SkeletonLine from "../kit/SkeletonLine.vue";
 
 const props = defineProps({ticket: {type: Object, default: null}, picked: Boolean, active: Boolean, paused: Boolean, order: Number});
 const emit = defineEmits(["toggle", "revealed"]);
-const TITLE_MS = 600;
-const BRIEF_MS = 1100;
+const TITLE_MS = 900;
+const BRIEF_MS = 2000;
 const {type, wait} = useTyping();
 const shown = reactive({started: false, title: 0, owner: false, brief: 0, waits: false, done: false});
 const title = computed(() => (props.ticket ? props.ticket.title : ""));
@@ -58,11 +58,11 @@ const toggle = () => shown.done && !editing.value && emit("toggle");
 async function reveal() {
     shown.started = true;
     await wait(200);
-    await type(title.value.length, TITLE_MS, (at) => (shown.title = at));
+    await type(title.value, TITLE_MS, (at) => (shown.title = at));
     await wait(120);
     shown.owner = true;
     await wait(160);
-    await type(brief.value.length, BRIEF_MS, (at) => (shown.brief = at));
+    await type(brief.value, BRIEF_MS, (at) => (shown.brief = at));
     shown.waits = true;
     await wait(200);
     shown.done = true;
@@ -109,6 +109,7 @@ async function save(field, text) {
                         :text="field.text"
                         :editing="editing === field.name"
                         :caret="field.caret"
+                        :typing="stage === 'writing'"
                         @start="edit(field.name)"
                         @save="(text) => save(field.name, text)"
                     />
