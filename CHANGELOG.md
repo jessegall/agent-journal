@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.114.0 — A finished subagent's mark carries the report it led to
+
+When a subagent ends, its mark in the chat says whether it finished or was stopped (a stopped one is amber). A report the agent files within half an hour of a subagent ending is tied to that subagent: its mark names the report, and clicking it opens the report. A mark with no report opens the subagent itself.
+
 ## 2.113.13 — Subagent marks and loaded skills open what they name
 
 A chat mark for a dispatched or finished subagent opens that subagent in the inspector. Each skill listed in the agent bar's skills dropdown opens its skill panel, as a loaded-skill mark in the chat does.

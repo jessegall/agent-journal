@@ -1,5 +1,5 @@
 from features.agent_sessions.details import AgentsDetails
-from features.agent_sessions.handlers import AskToStop, ClearLapsedAssignments, ClearLapsedAssignmentsOnChange, HandBackReport, HoldEvicted, KeepSubagentAlive, MarkSilentStopped, RecordCompactions
+from features.agent_sessions.handlers import AskToStop, ClearLapsedAssignments, ClearLapsedAssignmentsOnChange, HandBackReport, HoldEvicted, KeepSubagentAlive, LinkReportToSubagent, MarkSilentStopped, RecordCompactions
 from features.base import Feature
 from features.journal import Journal
 
@@ -14,5 +14,6 @@ class AgentsFeature(Feature):
         journal.events.handler(RecordCompactions())
         journal.events.handler(KeepSubagentAlive())
         journal.events.handler(HandBackReport())
+        journal.events.handler(LinkReportToSubagent())
         journal.events.handler(ClearLapsedAssignments())
         journal.events.handler(ClearLapsedAssignmentsOnChange())

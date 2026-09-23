@@ -12,6 +12,8 @@ STOPPED = "stopped"
 STOP = "stop"
 MINUTE = 60
 
+REPORT_WITHIN = 1800
+
 COMPACTING = "compacting"
 KEPT_COMPACTIONS = 50
 ONE_COMPACTION = 120
@@ -77,6 +79,20 @@ class KeepSubagentAlive(Handler):
         if made.agent:
             agents = context.journal.agents
             agents.update(agents.by_session(made.agent).n, active=time.time(), dispatcher=made.dispatcher or "", status=SUBAGENT)
+
+
+class LinkReportToSubagent(Handler):
+    behaviour = "subagents"
+
+    def handle(self, context: Context, event: ResourceCreated) -> None:
+        if event.type != "report" or event.actor != "agent":
+            return
+        agents = context.journal.agents
+        row = agents.primary()
+        linked = dict((row and row.data.get("subagent_reports")) or {})
+        ended = [s for s in (row and row.data.get("subagent_rows")) or [] if s.get("ended") and s["id"] not in linked and time.time() - s["ended"] < REPORT_WITHIN]
+        if ended:
+            agents.update(row.n, subagent_reports={**linked, max(ended, key=lambda s: s["ended"])["id"]: event.n})
 
 
 class HandBackReport(Handler):

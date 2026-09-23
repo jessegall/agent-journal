@@ -179,3 +179,20 @@ def test_a_subagent_dispatched_and_returned_is_an_event_on_the_agent_heard_once(
         Seat.subagents_moved(seat, last, subagents)
     heard = [(e.action, e.data.get("task"), e.data.get("kind"), e.data.get("model")) for e in record.events() if e.type == "agent" and e.action in ("dispatched", "returned")]
     assert heard == [("dispatched", "audit the hooks", "auditor", "sonnet"), ("returned", "audit the hooks", "auditor", "sonnet")], heard
+
+
+def test_a_report_filed_after_a_subagent_ended_is_linked_to_it():
+    from controllers.types import Reports
+    from features import load
+    load()
+    record = fresh()
+    agents = Agents(record)
+    row = agents.by_session("claude-main")
+    now = time.time()
+    agents.update(row.n, at=now, status="working", subagent_rows=[
+        {"id": "use-old", "task": "an old audit", "ended": now - 7200},
+        {"id": "use-1", "task": "audit the disk", "ended": now - 60},
+        {"id": "use-2", "task": "still running", "ended": 0.0},
+    ])
+    made = Reports(record, actor=AGENT).create("what the audit found")
+    assert agents.load(row.n).data.get("subagent_reports") == {"use-1": made.n}, "the report goes with the subagent that ended last, not one still running or long gone"
