@@ -18,6 +18,7 @@ import "../text/all.js";
 import Trace from "./Trace.vue";
 import AgentHooks from "./AgentHooks.vue";
 import TaskList from "./TaskList.vue";
+import SubagentChat from "../chat/SubagentChat.vue";
 import {usePoll} from "../poll.js";
 import {stamp} from "../format/time.js";
 
@@ -61,7 +62,9 @@ const TABS = [
     {key: "work", title: "Work"},
     {key: "hooks", title: "Hooks"},
 ];
-const tabs = computed(() => (picked.value ? [TABS[0], {key: "tasks", title: "Tasks"}, ...TABS.slice(1)] : TABS));
+const tabs = computed(() =>
+    picked.value ? [{key: "chat", title: "Chat"}, TABS[0], {key: "tasks", title: "Tasks"}, ...TABS.slice(1)] : TABS
+);
 const TASKS_EVERY = 4000;
 const tasks = ref([]);
 usePoll(
@@ -70,7 +73,11 @@ usePoll(
     TASKS_EVERY,
     (got) => (tasks.value = got || [])
 );
-const tab = ref("transcript");
+const tab = ref(picked.value ? "chat" : "transcript");
+watch(
+    () => picked.value && picked.value.session,
+    (session) => (tab.value = session ? "chat" : "transcript")
+);
 const scroller = ref(null);
 const topMark = ref(null);
 const WHO = {
@@ -198,6 +205,11 @@ useSighted(topMark, earlier, {root: scroller, margin: "400px 0px"});
                 <template v-if="!works.length">
                     <p class="none">{{ picked ? "No work filed by this subagent." : "No work on this agent yet." }}</p>
                 </template>
+            </section>
+        </template>
+        <template v-if="tab === 'chat' && picked">
+            <section class="block">
+                <SubagentChat :turns="turns" :session="picked.session" :task="picked.task" />
             </section>
         </template>
         <template v-if="tab === 'tasks' && picked">
