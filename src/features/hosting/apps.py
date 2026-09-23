@@ -1,4 +1,5 @@
 import time
+from dataclasses import dataclass
 from pathlib import Path
 
 from engine import runtime
@@ -60,3 +61,17 @@ def idle(tickets, ticket, minutes: int) -> bool:
 def app_here(record) -> str:
     ticket = next((r for r in hosted(record.root) if r.work_environment == record.env), None)
     return address(record.root, ticket)["url"] if ticket else ""
+
+
+@dataclass(frozen=True)
+class CardExtra:
+    actions: list
+    link: str = ""
+
+
+def app_on_card(record, ticket) -> CardExtra:
+    if not hosting_of(record.root.parent):
+        return CardExtra([])
+    if not ticket.hosted:
+        return CardExtra([{"label": "Run its app", "action": "host"}])
+    return CardExtra([{"label": "Stop its app", "action": "unhost"}], address(record.root, ticket)["url"])

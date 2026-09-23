@@ -21,6 +21,7 @@ from resources.shapes import LEVELS
 
 AGENT_CLI = "claude"
 PROPOSED, CONFIRMED = "proposed", "confirmed"
+CARD_EXTRAS: list = []
 HELD = ("rule", "doc", "tool")
 
 
@@ -45,9 +46,20 @@ class Tickets(Controller):
         stages = self._stages(n)
         tickets = [r for r in self._standing() if int(r.board) == int(n)]
         sessions = Sessions(self.record.root).all()
-        return BoardLanes([(Lane(stage, stage), [Card(r.n, r.title, LEVELS["default"], stage, reason=self._runtime(r, sessions),
-                                                     targets=[s for s in stages if s != stage], updated=r.updated, completed=r.completed, type=self.type)
-                                                for r in tickets if r.stage == stage]) for stage in stages], []).shaped()
+        return BoardLanes([(Lane(stage, stage), [self._card(r, stage, stages, sessions) for r in tickets if r.stage == stage]) for stage in stages], []).shaped()
+
+    def _card(self, ticket, stage: str, stages: list, sessions: dict) -> Card:
+        extras = [extra(self.record, ticket) for extra in CARD_EXTRAS]
+        return Card(ticket.n, ticket.title, LEVELS["default"], stage, reason=self._runtime(ticket, sessions), targets=[s for s in stages if s != stage],
+                    updated=ticket.updated, completed=ticket.completed, type=self.type,
+                    actions=[*self._actions(ticket), *(action for more in extras for action in more.actions)],
+                    link=next((more.link for more in extras if more.link), ""))
+
+    def _actions(self, ticket) -> list:
+        proposed = any(stance == PROPOSED for stance in ticket.dependencies.values())
+        return [*([{"label": "Confirm", "action": "confirm"}] if ticket.draft else []),
+                *([{"label": "Accept its dependency", "action": "accept_dependencies"},
+                   {"label": "Decline its dependency", "action": "decline_dependencies"}] if proposed else [])]
 
     def _runtime(self, ticket, sessions: dict) -> str:
         place = ticket.work_environment

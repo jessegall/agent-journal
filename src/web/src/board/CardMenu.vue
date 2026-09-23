@@ -20,6 +20,12 @@ async function assign(body) {
     board.refresh();
 }
 
+async function act(action) {
+    emit("close");
+    await api.act(props.card.type, props.card.n, action);
+    board.refresh();
+}
+
 function move(lane) {
     emit("close");
     board.move(props.card, lane);
@@ -28,6 +34,9 @@ function move(lane) {
 
 <template>
     <MenuPanel ref="menu" class="menu" :anchor="anchor" @click.stop>
+        <template v-for="action in card.actions" :key="action.action">
+            <MenuItem @click="act(action.action)">{{ action.label }}</MenuItem>
+        </template>
         <template v-if="card.targets.length">
             <p class="label">Move to</p>
             <template v-for="lane in card.targets" :key="lane">
