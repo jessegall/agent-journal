@@ -1,44 +1,85 @@
 from dataclasses import dataclass, field
 
-from engine.fields import list_of, mapping_of, number_of, text_of
+from engine.fields import Loaded
 from engine.transcript import timestamp
 from providers.payload import ToolCall
 
-USAGE = ("input_tokens", "cache_read_input_tokens", "cache_creation_input_tokens")
+
+@dataclass(frozen=True)
+class Part(Loaded):
+    text: str = ""
 
 
 @dataclass(frozen=True)
-class Block:
-    type: str
+class Block(Loaded):
+    type: str = ""
     text: str = ""
     thinking: str = ""
     name: str = ""
     id: str = ""
     tool_use_id: str = ""
     input: dict = field(default_factory=dict)
-    result: str = ""
+    content: object = None
     is_error: bool = False
 
-    @classmethod
-    def from_payload(cls, raw: dict) -> "Block":
-        content = raw.get("content")
-        parts = content if isinstance(content, list) else []
-        result = content if isinstance(content, str) else "\n".join(text_of(part, "text") for part in parts if isinstance(part, dict))
-        return cls(type=text_of(raw, "type"), text=text_of(raw, "text"), thinking=text_of(raw, "thinking"), name=text_of(raw, "name"),
-                   id=text_of(raw, "id"), tool_use_id=text_of(raw, "tool_use_id"), input=mapping_of(raw, "input"), result=result,
-                   is_error=bool(raw.get("is_error")))
+    @property
+    def result(self) -> str:
+        if isinstance(self.content, str):
+            return self.content
+        parts = self.content if isinstance(self.content, list) else []
+        return "\n".join(Part.from_json(part).text for part in parts if isinstance(part, dict))
 
 
 @dataclass(frozen=True)
-class Origin:
+class Origin(Loaded):
+    aliases = {"sender": ("from",)}
     kind: str = ""
     name: str = ""
     sender: str = ""
     body: str = ""
 
-    @classmethod
-    def from_payload(cls, raw: dict) -> "Origin":
-        return cls(kind=text_of(raw, "kind"), name=text_of(raw, "name"), sender=text_of(raw, "from"), body=text_of(raw, "body"))
+
+@dataclass(frozen=True)
+class Usage(Loaded):
+    input_tokens: int = 0
+    cache_read_input_tokens: int = 0
+    cache_creation_input_tokens: int = 0
+
+    @property
+    def total(self) -> int:
+        return self.input_tokens + self.cache_read_input_tokens + self.cache_creation_input_tokens
+
+
+@dataclass(frozen=True)
+class Message(Loaded):
+    id: str = ""
+    model: str = ""
+    content: object = None
+    usage: Usage | None = None
+
+
+@dataclass(frozen=True)
+class Attachment(Loaded):
+    prompt: str = ""
+    origin: Origin = Origin()
+
+
+@dataclass(frozen=True)
+class Entry(Loaded):
+    aliases = {"parent": ("parentUuid",), "sidechain": ("isSidechain",), "agent_id": ("agentId",), "meta": ("isMeta",),
+               "compact_summary": ("isCompactSummary",)}
+    type: str = ""
+    timestamp: str = ""
+    parent: str = ""
+    sidechain: bool = False
+    agent_id: str = ""
+    meta: bool = False
+    compact_summary: bool = False
+    message: Message = Message()
+    attachment: Attachment = Attachment()
+    origin: Origin = Origin()
+    operation: str = ""
+    content: str = ""
 
 
 @dataclass(frozen=True)
@@ -63,17 +104,15 @@ class Row:
 
     @classmethod
     def from_payload(cls, raw: dict) -> "Row":
-        message, attachment = mapping_of(raw, "message"), mapping_of(raw, "attachment")
-        content = message.get("content")
-        usage = mapping_of(message, "usage")
-        return cls(type=text_of(raw, "type"), at=timestamp(text_of(raw, "timestamp")), parent=text_of(raw, "parentUuid"),
-                   sidechain=bool(raw.get("isSidechain")), agent_id=text_of(raw, "agentId"), meta=bool(raw.get("isMeta")),
-                   compact_summary=bool(raw.get("isCompactSummary")), message_id=text_of(message, "id"), model=text_of(message, "model"),
-                   tokens=sum(int(number_of(usage, key)) for key in USAGE) if usage else None,
-                   text=content if isinstance(content, str) else None,
-                   blocks=tuple(Block.from_payload(block) for block in list_of(message, "content") if isinstance(block, dict)),
-                   origin=Origin.from_payload(mapping_of(raw, "origin")), queued=Origin.from_payload(mapping_of(attachment, "origin")),
-                   prompt=text_of(attachment, "prompt"), operation=text_of(raw, "operation"), content=text_of(raw, "content"))
+        entry = Entry.from_json(raw)
+        message = entry.message
+        content = message.content
+        return cls(type=entry.type, at=timestamp(entry.timestamp), parent=entry.parent, sidechain=entry.sidechain, agent_id=entry.agent_id,
+                   meta=entry.meta, compact_summary=entry.compact_summary, message_id=message.id, model=message.model,
+                   tokens=message.usage.total if message.usage else None, text=content if isinstance(content, str) else None,
+                   blocks=tuple(Block.from_json(block) for block in content if isinstance(block, dict)) if isinstance(content, list) else (),
+                   origin=entry.origin, queued=entry.attachment.origin, prompt=entry.attachment.prompt, operation=entry.operation,
+                   content=entry.content)
 
     @property
     def main(self) -> bool:

@@ -1,16 +1,22 @@
 from dataclasses import dataclass, field
 
-from engine.fields import mapping_of, number_of, text_of
+from engine.fields import Loaded
 from engine.transcript import timestamp
 
 TEXT_PARTS = ("input_text", "output_text", "text")
 
 
+@dataclass(frozen=True)
+class ContentPart(Loaded):
+    type: str = ""
+    text: str = ""
+
+
 def content_text(content) -> str:
     if isinstance(content, str):
         return content
-    parts = content if isinstance(content, list) else []
-    return "\n".join(text_of(part, "text") for part in parts if isinstance(part, dict) and text_of(part, "type") in TEXT_PARTS)
+    parts = (ContentPart.from_json(part) for part in (content if isinstance(content, list) else []) if isinstance(part, dict))
+    return "\n".join(part.text for part in parts if part.type in TEXT_PARTS)
 
 
 def either(raw: dict, snake: str, camel: str):
@@ -30,48 +36,93 @@ class Limit:
                    int(either(raw, "resets_at", "resetsAt")))
 
 
-def limits_of(raw) -> tuple[Limit, ...] | None:
-    if not isinstance(raw, dict):
-        return None
-    found = []
-    for key in ("primary", "secondary"):
-        window = raw.get(key)
-        if not isinstance(window, dict):
-            continue
-        try:
-            found.append(Limit.from_payload(key, window))
-        except (TypeError, ValueError):
-            continue
-    return tuple(found)
+@dataclass(frozen=True)
+class RateLimits(Loaded):
+    primary: dict = field(default_factory=dict)
+    secondary: dict = field(default_factory=dict)
+
+    @property
+    def limits(self) -> tuple[Limit, ...]:
+        found = []
+        for key, window in (("primary", self.primary), ("secondary", self.secondary)):
+            try:
+                found.append(Limit.from_payload(key, window))
+            except (TypeError, ValueError):
+                continue
+        return tuple(found)
 
 
 @dataclass(frozen=True)
-class Payload:
+class TokenUsage(Loaded):
+    aliases = {"used": ("total_tokens", "input_tokens")}
+    used: int = 0
+
+
+@dataclass(frozen=True)
+class TokenInfo(Loaded):
+    last_token_usage: TokenUsage = TokenUsage()
+    model_context_window: int = 0
+
+
+@dataclass(frozen=True)
+class Spawn(Loaded):
+    parent_thread_id: str = ""
+
+
+@dataclass(frozen=True)
+class Subagent(Loaded):
+    thread_spawn: Spawn = Spawn()
+
+
+@dataclass(frozen=True)
+class Source(Loaded):
+    subagent: Subagent = Subagent()
+
+
+@dataclass(frozen=True)
+class Payload(Loaded):
+    aliases = {"call": ("name",), "key": ("call_id", "id"), "arguments": ("arguments", "input"), "output_parts": ("output",),
+               "rate_limits": ("rate_limits", "rateLimits")}
     type: str = ""
     role: str = ""
-    name: str = ""
+    namespace: str = ""
+    call: str = ""
     key: str = ""
     arguments: object = None
     output: str = ""
-    output_text: str = ""
-    text: str = ""
-    used_tokens: int = 0
-    window: int = 0
-    limits: tuple | None = None
-    parent_thread: str = ""
+    output_parts: object = None
+    content: object = None
+    info: TokenInfo = TokenInfo()
+    rate_limits: RateLimits | None = None
+    source: Source = Source()
 
-    @classmethod
-    def from_payload(cls, raw: dict) -> "Payload":
-        info = mapping_of(raw, "info")
-        usage = mapping_of(info, "last_token_usage")
-        spawn = mapping_of(mapping_of(mapping_of(raw, "source"), "subagent"), "thread_spawn")
-        return cls(type=text_of(raw, "type"), role=text_of(raw, "role"),
-                   name=".".join(part for part in (text_of(raw, "namespace"), text_of(raw, "name")) if part), key=text_of(raw, "call_id", "id"),
-                   arguments=next((raw[key] for key in ("arguments", "input") if raw.get(key)), None), output=text_of(raw, "output"),
-                   output_text=content_text(raw.get("output")),
-                   text=content_text(raw.get("content")), used_tokens=int(number_of(usage, "total_tokens", "input_tokens")),
-                   window=int(number_of(info, "model_context_window")), limits=limits_of(either(raw, "rate_limits", "rateLimits")),
-                   parent_thread=text_of(spawn, "parent_thread_id"))
+    @property
+    def name(self) -> str:
+        return ".".join(part for part in (self.namespace, self.call) if part)
+
+    @property
+    def output_text(self) -> str:
+        return content_text(self.output_parts)
+
+    @property
+    def text(self) -> str:
+        return content_text(self.content)
+
+    @property
+    def used_tokens(self) -> int:
+        return self.info.last_token_usage.used
+
+    @property
+    def window(self) -> int:
+        return self.info.model_context_window
+
+    @property
+    def limits(self) -> tuple | None:
+        return self.rate_limits.limits if self.rate_limits else None
+
+    @property
+    def parent_thread(self) -> str:
+        return self.source.subagent.thread_spawn.parent_thread_id
 
     @property
     def argument_text(self) -> str:
@@ -86,6 +137,12 @@ class Row:
 
     @classmethod
     def from_payload(cls, raw: dict) -> "Row":
-        payload = raw.get("payload")
-        return cls(type=text_of(raw, "type"), at=timestamp(text_of(raw, "timestamp")),
-                   payload=Payload.from_payload(payload) if isinstance(payload, dict) else Payload())
+        entry = Entry.from_json(raw)
+        return cls(type=entry.type, at=timestamp(entry.timestamp), payload=entry.payload)
+
+
+@dataclass(frozen=True)
+class Entry(Loaded):
+    type: str = ""
+    timestamp: str = ""
+    payload: Payload = Payload()
