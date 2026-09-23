@@ -125,6 +125,14 @@ def loaded_at(agent) -> dict[str, float]:
     return provider().loaded_skills(Path(agent.transcript))
 
 
+def recent_before_compaction(agent, share: float) -> set[str]:
+    provider = PROVIDERS.get(agent.provider)
+    if not provider or not agent.transcript:
+        return set()
+    prior = provider().prior_window(Path(agent.transcript))
+    return {name for name, used in prior.prior_loads.items() if used >= prior.prior_used * (1 - share)}
+
+
 def chosen(record: Record) -> list[str]:
     named = record.setting(Record.skills)
     current = managed() & available(record.root.parent)

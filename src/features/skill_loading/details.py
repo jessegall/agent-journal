@@ -34,7 +34,7 @@ class SkillsDetails(FeatureDetails):
         Behaviour(
             name="always",
             title="Hold tool calls at a session start until every always-on skill is loaded",
-            abstract="The skills switched to every start on the Skills page, again after a compaction",
+            abstract="The skills switched to every start on the Skills page, and after a compaction the ones used shortly before it",
         ),
         Behaviour(
             name="keywords",
@@ -62,6 +62,13 @@ class SkillsDetails(FeatureDetails):
             title="Then let tool calls through for",
             abstract="After these, the missing skill is asked for again",
             unit="tool uses",
+        ),
+        Setting(
+            name="recent_share",
+            default=25,
+            title="After a compaction, also reload the skills used in the last",
+            abstract="Besides the every-start skills, the ones loaded in this last part of the context before it was compacted",
+            unit="percent of the context",
         ),
     ]
 
