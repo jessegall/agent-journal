@@ -20,8 +20,8 @@ class MessagesDetails(FeatureDetails):
         To hand the user a document, or any row, put its reference on a line of its own, such as doc 41: the chat shows it as a
         card they can open.
 
-        You are reminded of an unread message at your first tool use after it arrives and at every third one after; after five
-        reminders your writes are held. A message you have read but not answered is mentioned again before your next writes, a
+        Each new message is named to you as it arrives. The inbox reminder follows only while more than five wait unread, or once
+        you are idle: at your next tool use and at every third one after; after five reminders your writes are held. A message you have read but not answered is mentioned again before your next writes, a
         few times, without holding them.
         A reply, a reaction, or processing every part closes it; a message you wrote closes as soon as the user has seen it,
         and every row you file while a message is in your hands is linked to it.
@@ -33,7 +33,7 @@ class MessagesDetails(FeatureDetails):
         Behaviour(
             name="unread",
             title="Name the unread messages",
-            abstract="Said at the first tool use after one arrives and every third after",
+            abstract="Said while more than five wait unread or the agent is idle, then every third use",
             trigger=Trigger(every=3, unit=USES),
         ),
         Behaviour(
