@@ -11,6 +11,7 @@ from features.boards.controller import Boards
 from features.boards.resource import DONE, START
 from features.kanban.board import BoardLanes, Card
 from features.kanban.lanes import Lane
+from features.tickets.details import TicketsDetails
 from features.tickets.resource import Ticket
 from controllers.types import Agents
 from resources.base import SYSTEM, Refused, Resource
@@ -51,7 +52,7 @@ class Tickets(Controller):
             return ""
         session = next((name for name, held in sessions.items() if held.environment == place and live(held)), "")
         row = Agents(Record(self.record.root, place), actor=SYSTEM)._titled(session) if session else None
-        state = "waiting for you" if row and row.asking else row.status if row else "stopped"
+        state = "waiting for you" if row and row.asking else row.status if row else "queued" if ticket.queued else "stopped"
         return f"{state} in {place}"
 
     def bind(self, n: int):
@@ -124,10 +125,21 @@ class Tickets(Controller):
         ticket = self.bind(int(n))
         if self.agent_session(ticket.n):
             return ticket
+        if len(self._running()) >= int(TicketsDetails.values(self.record).running):
+            return self.update(ticket.n, queued=True)
         driver, place = DRIVERS[agent], ticket.work_environment
         args = driver.resumed(driver.within([*driver.AUTO_ARGS], place), Sessions(self.record.root).last(place, agent))
         detached(self.record.root, self.record.root.parent, place, agent, args)
-        return self.load(ticket.n)
+        return self.update(ticket.n, queued=False)
+
+    @internal
+    def start_queued(self) -> None:
+        for ticket in sorted((r for r in self._standing() if r.queued), key=lambda r: r.updated):
+            if self.start(ticket.n).queued:
+                return
+
+    def _running(self) -> list:
+        return [r for r in self._standing() if r.work_environment and self.agent_session(r.n)]
 
     def _stages(self, board) -> list:
         return Boards(self.record, actor=self.actor).load(int(board)).stages if board else []

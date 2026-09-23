@@ -1,4 +1,4 @@
-from features.base import FeatureDetails
+from features.base import FeatureDetails, Setting
 from features.trigger import MINUTES, Trigger
 
 
@@ -19,6 +19,18 @@ class TicketsDetails(FeatureDetails):
         A started ticket closes only once its branch is merged into the project's branch: once a minute the journal closes
         every ticket whose branch is merged, in its board's done stage, and stops its agent with /exit. Its worktree stays.
         journal ticket complete <n> --yes closes one anyway.
+
+        At most tickets.running tickets have an agent running at once; a ticket started beyond that waits queued, and the
+        minute sweep starts it when one finishes.
     """
 
     trigger = Trigger(every=1, unit=MINUTES)
+
+    settings = [
+        Setting(
+            name="running",
+            default=3,
+            title="Tickets whose agents run at once",
+            unit="tickets",
+        ),
+    ]
