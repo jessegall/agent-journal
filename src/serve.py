@@ -102,7 +102,7 @@ def serve(root: Path, port: int = 8430) -> ThreadingHTTPServer:
 WATCH_SECONDS = 1.0
 SETTLE_SECONDS = 1.5
 STOP_SECONDS = 0.2
-FREEZE_SECONDS = 60.0
+FREEZE_SECONDS = 10.0
 LATE_STOP = 5.0
 IGNORED_CODE_FOLDERS = {"__pycache__", "environments", "runtime", "tests"}
 
