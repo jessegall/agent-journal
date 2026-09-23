@@ -17,6 +17,6 @@ def test_a_link_in_the_chat_that_no_pin_carries_is_named_once_with_the_command_t
     chat.send(record, agent, f"The design is ready: [Board]({design}). Also https://claude.ai/design/p/pinned, http://127.0.0.1:8424/ and https://github.com/o/r/pull/12.")
     chat.send(record, agent, f"Same link again: {design}.")
     from controllers.types import Nudges
-    said = [row.brief for row in Nudges(record, actor=SYSTEM)._every() if row.title.startswith("a link you gave")]
-    assert [brief.split(" - ")[0] for brief in said] == [design], \
+    briefs = [row.brief for row in Nudges(record, actor=SYSTEM)._every() if row.title.startswith("a link you gave")]
+    assert [brief.split(" - ")[0] for brief in briefs] == [design], \
         "an unpinned outside link is named once; a pinned one, the viewer and a pull request are not"

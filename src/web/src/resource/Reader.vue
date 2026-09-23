@@ -36,6 +36,7 @@ watchEffect(() => {
     if (route.value.open) swap(type, Number(n));
     else go(route.value.env, type, Number(n));
 });
+const takesComments = computed(() => !!meta(props.type)?.takes_comments);
 const focusComment = computed(() => (props.depth ? 0 : route.value.open?.comment || 0));
 const shape = computed(() =>
     !props.type ? "" : ["plan", "agent", "collection"].includes(props.type) ? props.type : meta(props.type).view
@@ -92,7 +93,9 @@ watch(
                         </div>
                     </Transition>
                 </div>
-                <Comments :resource="resource" :show-thread="!!focusComment" :focus="focusComment" />
+                <template v-if="takesComments">
+                    <Comments :resource="resource" :show-thread="!!focusComment" :focus="focusComment" />
+                </template>
             </div>
         </template>
         <template v-else>
