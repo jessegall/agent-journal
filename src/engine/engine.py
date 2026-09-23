@@ -192,7 +192,8 @@ class Engine(Seat):
         return f"permission: {queued.get('value')}"
 
     def shelled(self) -> str:
-        if self.agent.state() != IDLE:
+        last = self.agent.driver.last_report()
+        if last and last.data.get("asking"):
             return ""
         queued = take(self.record.root, self.names(), SHELL)
         if not queued:

@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.113.4 — A terminal-view command is typed at once, and a mark's title lines up
+
+A command typed in the terminal view is typed into the agent's terminal straight away, even while the agent works, since Claude queues what is typed; it waits only while a permission prompt is on screen, where the keys would answer it. A chat mark's title and the bold name beside it sit on one baseline again.
+
 ## 2.113.3 — The record audit finds a file named without its folder
 
 The daily audit called a file gone when a rule or fact named it by its name alone, or by a path from before the code moved under src/, such as engine/terminal.py. It now looks the name up anywhere in the project, by file name or by the end of its path, before saying it is gone.

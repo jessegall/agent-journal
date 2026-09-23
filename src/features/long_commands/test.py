@@ -60,7 +60,7 @@ def test_a_command_from_the_terminal_view_is_typed_into_the_agents_terminal_as_a
     typed = []
     monkeypatch.setattr(engine.agent.driver, "_wrote", lambda raw: typed.append(raw) or True)
     monkeypatch.setattr(engine_module.time, "sleep", lambda seconds: None)
-    monkeypatch.setattr(engine.agent, "state", lambda: engine_module.IDLE)
+    monkeypatch.setattr(engine.agent, "state", lambda: "busy")
     from controllers.types import Agents
     from surfaces import control
     monkeypatch.setattr(control, "online", lambda root, env, session: {"provider": "claude"})
@@ -68,7 +68,11 @@ def test_a_command_from_the_terminal_view_is_typed_into_the_agents_terminal_as_a
     pending = lambda: [c["command"] for c in Agents(record).by_session("claude-1").data.get("queued_commands") or []]
     assert pending() == ["git status"], "the command shows as pending until it is typed"
     assert engine.shelled() == "ran in the terminal: git status"
-    assert pending() == [], "typed, it is no longer pending"
+    assert pending() == [], "typed while the agent works, since Claude queues what is typed; no longer pending"
+    Agents(record).update(Agents(record).by_session("claude-1").n, asking={"tool": "Bash"})
+    engine.agent.driver.reported = (float("-inf"), None)
+    control.shell(record.root, record.env, "claude-1", "ls")
+    assert engine.shelled() == "" and pending() == ["ls"], "held while a permission prompt would take the keys"
     assert typed[-2:] == [b"!git status", b"\r"], "typed with Claude's shell mark and entered once, with no journal mark in front"
     assert DRIVERS["codex"].SHELL == "", "a provider without a shell mark takes no command"
 

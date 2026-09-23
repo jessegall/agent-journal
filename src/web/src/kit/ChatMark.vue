@@ -80,8 +80,14 @@ button.mark:hover {
 
 .head {
     display: flex;
+    align-items: baseline;
     gap: 5px;
     white-space: nowrap;
+}
+
+.head :deep(.md) {
+    color: inherit;
+    line-height: inherit;
 }
 
 
