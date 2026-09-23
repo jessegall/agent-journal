@@ -29,6 +29,11 @@ class ChatEtiquetteDetails(FeatureDetails):
         why, or what you would do instead, and when it will happen. Filing only is enough for a
         message that hands over work and asks nothing.
 
+        A message that only needs acknowledging, such as "ok", "thanks", "carry on" or a nod, gets a
+        reaction instead of written words: journal message react <n> "👍", or 🙏 for thanks. A
+        reaction can sit beside a reply or a filed to-do when both fit; write words only when
+        there is something to say.
+
         A turn that talks about the journal's workings is named back to you once, with
         the words that gave it away.
     """
