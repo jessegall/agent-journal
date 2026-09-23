@@ -103,7 +103,7 @@ button.mark:hover {
 }
 
 .mark .detail {
-    grid-column: 2;
+    grid-column: 1 / -1;
     overflow: hidden;
     color: color-mix(in srgb, var(--text-3) 80%, transparent);
     font-size: 10px;

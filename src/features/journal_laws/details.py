@@ -23,6 +23,11 @@ class LawDetails(FeatureDetails):
         After a tool call whose result is larger than the floor and larger than any earlier one
         in the session, you are told its size and that the next read can be narrower. It
         is said only on a new largest result, so a session hears it once or twice.
+
+        A shell command whose output runs past twice output_lines is shown by its two ends, and
+        the whole output is kept as an output row with its file, named in the cut line, to grep
+        or read by range; the last 50 are kept. This needs a provider that runs its commands
+        through a shell prefix, as Claude does.
     """
 
     fixed = True

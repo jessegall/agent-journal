@@ -1,8 +1,11 @@
 from features.base import Feature
 from features.journal import Journal
+from features.journal_laws.controller import Outputs
 from features.journal_laws.details import LawDetails
 from features.journal_laws.handlers import NoticeLargestResult
 from features.journal_laws.interceptors import EnforceDispatchLaw, RefuseWholeLongReads, WhisperLawInChat, WhisperLawOnKeyword
+
+__all__ = ["Outputs"]
 
 
 class Law(Feature):

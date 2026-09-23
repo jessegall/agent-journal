@@ -240,6 +240,9 @@ class Controller(Stored, Files, Links):
     def force_delete(self, n: int) -> None:
         self.load(n)
         self._remove(n)
+        files = self._folder() / f"{n:03d}"
+        if files.is_dir():
+            shutil.rmtree(files)
         self.record.emit(self.type, n, "deleted", self.actor, force=True)
 
     def move(self, n: int, env: str) -> Resource:

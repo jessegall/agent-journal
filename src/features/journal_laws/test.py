@@ -105,21 +105,37 @@ def test_reading_a_long_file_whole_is_refused_and_a_range_or_a_short_file_passes
     assert hook("Bash", {"command": "cat long.py | head -20"}).get("decision") != "block", "a cat already cut short passes"
 
 
-def test_a_long_command_output_keeps_its_ends_and_its_exit_code_through_the_prefix_claude_is_launched_with():
+def test_a_long_command_output_keeps_its_ends_and_the_whole_of_it_as_an_output_row(tmp_path):
     import subprocess
+    import sys
     from pathlib import Path
     from engine.terminal import output_cap
+    from features import load
+    from features.journal_laws.controller import Outputs
+    from providers import PROVIDERS
+    load()
     record = fresh()
-    cap = Path(__file__).resolve().parents[2] / "output_cap.sh"
-    ran = subprocess.run([str(cap), "seq 1 1000; exit 3"], capture_output=True, text=True, env={"PATH": "/usr/bin:/bin", "JOURNAL_OUTPUT_LINES": "3"}, timeout=20)
-    assert (ran.returncode, ran.stdout.splitlines()[:3], ran.stdout.splitlines()[-3:]) == (3, ["1", "2", "3"], ["998", "999", "1000"]), ran.stdout
-    assert "994 lines cut here" in ran.stdout, "the cut is said, with how to see the rest"
-    short = subprocess.run([str(cap), "seq 1 5"], capture_output=True, text=True, env={"PATH": "/usr/bin:/bin", "JOURNAL_OUTPUT_LINES": "3"}, timeout=20)
-    assert short.stdout.split() == ["1", "2", "3", "4", "5"], "short output passes whole"
-    launched = output_cap(record.root, record.env)
-    assert launched == {"CLAUDE_CODE_SHELL_PREFIX": str(record.root / "src" / "output_cap.sh"), "JOURNAL_OUTPUT_LINES": "200"}, launched
+    src = Path(__file__).resolve().parents[2]
+    shim = tmp_path / "journal"
+    shim.write_text(f'#!/bin/sh\nexec "{sys.executable}" "{src / "journal.py"}" --root "{record.root}" --env "{record.env}" "$@"\n')
+    shim.chmod(0o755)
+    env = {"PATH": f"{tmp_path}:/usr/bin:/bin", "JOURNAL_OUTPUT_LINES": "3", "JOURNAL_OUTPUT_DIR": str(tmp_path / "outputs")}
+    ran = subprocess.run([str(src / "output_cap.sh"), "seq 1 1000; exit 3"], capture_output=True, text=True, env=env, timeout=30)
+    assert (ran.returncode, ran.stdout.splitlines()[:3], ran.stdout.splitlines()[-3:]) == (3, ["1", "2", "3"], ["998", "999", "1000"]), ran.stdout + ran.stderr
+    cut = ran.stdout.splitlines()[3]
+    assert "994 lines cut here" in cut and "output 1," in cut, cut
+    row = Outputs(record).load(1)
+    kept = Path(cut.split(" at ", 1)[1].split(": grep", 1)[0])
+    assert (row.data["command"], row.data["lines"], kept.read_text().split()) == ("seq 1 1000; exit 3", 1000, [str(i) for i in range(1, 1001)]), row
+    short = subprocess.run([str(src / "output_cap.sh"), "seq 1 5"], capture_output=True, text=True, env=env, timeout=20)
+    assert short.stdout.split() == ["1", "2", "3", "4", "5"] and Outputs(record).numbers() == [1], "short output passes whole and keeps no row"
+    Outputs(record).force_delete(1)
+    assert not kept.exists(), "a pruned output takes its file with it"
+    launched = output_cap(record.root, record.env, PROVIDERS["claude"]())
+    assert launched["CLAUDE_CODE_SHELL_PREFIX"] == str(record.root / "src" / "output_cap.sh") and launched["JOURNAL_OUTPUT_LINES"] == "200", launched
+    assert output_cap(record.root, record.env, PROVIDERS["codex"]()) == {}, "codex has no shell prefix and caps its own output"
     record.set_setting("journal_laws", {"output_lines": 0})
-    assert output_cap(record.root, record.env) == {}, "0 keeps every line"
+    assert output_cap(record.root, record.env, PROVIDERS["claude"]()) == {}, "0 keeps every line"
 
 
 def test_codex_reading_a_long_file_whole_through_its_shell_is_refused_too():
