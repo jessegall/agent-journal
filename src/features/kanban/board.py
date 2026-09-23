@@ -27,6 +27,7 @@ class Card:
     type: str = "todo"
     actions: list = field(default_factory=list)
     link: str = ""
+    link_label: str = ""
     state: str = ""
     session: str = ""
 
