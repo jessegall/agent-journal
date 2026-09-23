@@ -4,7 +4,10 @@ import SidePanel from "../kit/SidePanel.vue";
 import SwitchCase from "../kit/SwitchCase.vue";
 import {go, route, swap, unpeek} from "../route.js";
 import {meta} from "../state/store.js";
-import {holding, rows} from "../sync/rows.js";
+import {damaged, holding, rows} from "../sync/rows.js";
+import {api} from "../api/client.js";
+import Btn from "../kit/Btn.vue";
+import EmptyState from "../kit/EmptyState.vue";
 import ResourceBody from "./ResourceBody.vue";
 import DocumentPage from "./DocumentPage.vue";
 import PlanPage from "./PlanPage.vue";
@@ -16,6 +19,13 @@ import Comments from "./Comments.vue";
 const props = defineProps({type: String, n: Number, depth: {type: Number, default: 0}, over: Boolean, leaving: Boolean});
 const emit = defineEmits(["gone"]);
 const resource = computed(() => (props.type ? rows(props.type).find((r) => r.n === props.n) : null) || null);
+const broken = computed(() => (!resource.value && props.type ? damaged[`${props.type}:${props.n}`] : "") || "");
+const repairAsked = ref(false);
+
+async function askRepair() {
+    await api.create("message", {title: `Please review and repair ${props.type} ${props.n}`, brief: `It cannot be read: ${broken.value}`});
+    repairAsked.value = true;
+}
 watchEffect(() => {
     if (props.type && props.n && !resource.value) holding(props.type, [props.n]);
 });
@@ -47,14 +57,22 @@ watch(
 
 <template>
     <SidePanel
-        :open="!!resource && !leaving"
+        :open="(!!resource || !!broken) && !leaving"
         :width="panel === 'inspector' ? (shape === 'wide' ? 'wide' : 'normal') : 'page'"
         :depth="depth"
         :over="over"
         @dismiss="close"
         @close="emit('gone')"
     >
-        <template v-if="panel === 'inspector'">
+        <template v-if="broken">
+            <div class="damaged">
+                <EmptyState>{{ meta(type).title }} {{ n }} is damaged and cannot be read: {{ broken }}</EmptyState>
+                <Btn kind="primary" small :disabled="repairAsked" @click="askRepair">
+                    {{ repairAsked ? "The agent is asked to repair it" : "Ask the agent to review and repair it" }}
+                </Btn>
+            </div>
+        </template>
+        <template v-else-if="panel === 'inspector'">
             <div :class="['inspector', {swapping, 'focusing-comment': focusComment}]">
                 <div class="inspector-pages">
                     <Transition name="inspector-page">
@@ -112,6 +130,14 @@ watch(
 </template>
 
 <style scoped>
+.damaged {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 20px;
+}
+
 .inspector {
     position: relative;
     display: flex;
