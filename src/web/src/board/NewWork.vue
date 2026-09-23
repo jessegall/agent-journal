@@ -40,6 +40,15 @@ const drafts = computed(() =>
     )
 );
 const writing = computed(() => Boolean(lastSent.value) && !replies.value.some((c) => c.created >= lastSent.value));
+const STALLED_AFTER = 120000;
+const stalled = ref(false);
+const lastAsked = ref("");
+let stallTimer = 0;
+watch(writing, (on) => {
+    clearTimeout(stallTimer);
+    stalled.value = false;
+    if (on) stallTimer = setTimeout(() => (stalled.value = writing.value && !drafts.value.length), STALLED_AFTER);
+});
 const first = computed(() => props.stage || props.board.data.stages[0]);
 const unpicked = () => drafts.value.filter((t) => !picked.value.includes(t.n));
 const waitsOn = (ticket) => Object.keys(ticket.data.dependencies || {}).map((ref) => Number(ref.split(":")[1]));
@@ -76,9 +85,27 @@ async function send(text) {
     say(true, text);
     since.value = since.value || now() - 5;
     lastSent.value = now() - 1;
+    lastAsked.value = text;
     await drop(unpicked());
+    await ask(text);
+}
+
+async function ask(text) {
     const message = await sendMessage(route.value.env, {brief: text, about: props.board.ref, newWork: true});
     sent.value = [...sent.value, message.id];
+}
+
+async function stop() {
+    lastSent.value = 0;
+    say(false, "Stopped. Say what you would like instead.");
+    await ask("Stop drafting tickets for my last request; I will say what I want instead.");
+    panel.value.focus();
+}
+
+function askAgain() {
+    stalled.value = false;
+    lastSent.value = now() - 1;
+    ask(lastAsked.value);
 }
 
 async function again() {
@@ -136,7 +163,19 @@ async function add() {
             <template v-if="writing">
                 <ChatLine thinking />
             </template>
+            <template v-if="stalled">
+                <ChatLine text="No answer yet. The agent may be busy with other work." />
+            </template>
             <template #actions>
+                <template v-if="writing">
+                    <div class="choose">
+                        <span class="note">The agent is writing tickets.</span>
+                        <template v-if="stalled">
+                            <Btn small @click="askAgain">Ask again</Btn>
+                        </template>
+                        <Btn small @click="stop">Stop</Btn>
+                    </div>
+                </template>
                 <template v-if="drafts.length && !writing">
                     <div class="choose">
                         <span class="note">{{ note }}</span>
