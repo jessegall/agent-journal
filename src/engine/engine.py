@@ -12,6 +12,8 @@ from engine.inputs import BACKGROUND, FORCE, PAUSE, PERMIT, RESUME, SHELL, take,
 from surfaces.control import CARRY_ON, RESUMED, delivered
 from engine.record import Record
 from engine.watch import STEADY_AFTER, steady, threw
+from features.status_bar.commands import RING
+from features.status_bar.runs import TYPED, CommandRun
 from providers import PROVIDERS
 from resources.base import AGENT, SYSTEM, USER, VIEW_ONLY, Event, titled
 from resources.types import TYPES, priority
@@ -220,7 +222,16 @@ class Engine(Seat):
         waiting = waiting_commands(row)
         kept = [replace(c, typed=time.time()) if c.at == queued.at else c for c in waiting if typed or c.at != queued.at]
         agents.update(row.n, queued_commands=[asdict(c) for c in kept])
+        if typed:
+            self.typed(row, [queued.value])
         return f"typed in the terminal: {queued.value}" if typed else ""
+
+    def typed(self, row, commands: list[str]) -> None:
+        if not commands:
+            return
+        now = time.time()
+        runs = [CommandRun(command=command, tool=TYPED, at=now, done=now).to_json() for command in commands]
+        Agents(self.record, actor=SYSTEM).update(row.n, commands=[*row.commands, *runs][-RING:])
 
     def ran(self) -> None:
         row = self.agent.driver.last_report()
@@ -284,6 +295,7 @@ class Engine(Seat):
         if queued.action and queued.label:
             delivered(self.record, self.names(), queued.action, queued.label)
         row = Agents(self.record, actor=SYSTEM).by_session(last.title if last else self.agent.driver.session)
+        self.typed(row, [key for key in queued.keys if key.strip() and key.isprintable()])
         if queued.action in row.pending:
             self.agent.mark(row.status, row.event, pending={k: v for k, v in row.pending.items() if k != queued.action})
         return f"controlled: {queued.label}"

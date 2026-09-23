@@ -3,6 +3,7 @@ from dataclasses import dataclass, replace
 from engine.fields import Loaded
 
 COUNTED = ("edited", "created", "deleted", "added", "removed")
+TYPED = "Typed"
 
 
 @dataclass(frozen=True)
