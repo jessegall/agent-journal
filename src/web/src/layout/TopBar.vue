@@ -21,6 +21,7 @@ const PAGES = {
     hub: "Hub",
     file: "File",
     kanban: "Board",
+    organization: "Organization",
 };
 const title = computed(() =>
     !route.value.page ? "Home" : PAGES[route.value.page] || (meta(route.value.page) ? `${meta(route.value.page).title}s` : route.value.page)
