@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.102.8 — Suggestions have a light bulb icon, the same everywhere
+
+Suggestions show a light bulb in the navigation sidebar and in the chat side panel alike. The side panel's tabs now take each type's icon from the type itself, so a tab and the sidebar can no longer disagree.
+
 ## 2.102.7 — A file in a diff opens that file, and chip numbers sit level with their word
 
 In a commit's diff, each file's header line (diff --git a/… b/…) is a link to that file's page, like the file list above it. In a row chip such as "message 5187" the number is drawn a little smaller, so it no longer stands taller than the word.

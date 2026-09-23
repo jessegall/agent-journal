@@ -4,7 +4,7 @@ import SwitchCase from "../kit/SwitchCase.vue";
 import {route} from "../route.js";
 import {open, unreadByUser} from "../domain/records.js";
 import {detach} from "../platform/extension.js";
-import {store, types} from "../state/store.js";
+import {meta, store, types} from "../state/store.js";
 import Thread from "../chat/Thread.vue";
 import ThreadSkeleton from "../chat/ThreadSkeleton.vue";
 import Notice from "../chat/Notice.vue";
@@ -40,9 +40,9 @@ const tabs = computed(() => [
         true,
         "bell",
     ],
-    ["question", "Questions", open("question").length, true, "questions"],
-    ["suggestion", "Suggestions", open("suggestion").length, true, "bubble"],
-    ["todos", "To-dos", open("todo").length, false, "todos"],
+    ["question", "Questions", open("question").length, true, meta("question").icon],
+    ["suggestion", "Suggestions", open("suggestion").length, true, meta("suggestion").icon],
+    ["todos", "To-dos", open("todo").length, false, meta("todo").icon],
 ]);
 </script>
 

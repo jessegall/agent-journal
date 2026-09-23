@@ -206,7 +206,7 @@ class Suggestion(Options, Resource):
     start_heading = "SUGGESTIONS waiting on the user"
     needs_attention = True
     cleared_by = COMPLETED
-    icon = "up"
+    icon = "bulb"
     command_names = {"complete": "decide", "create": "suggest", "delete": "withdraw"}
     labels = {"outcome": "Decision", "brief": "Why"}
     details: ClassVar[ResourceDetails] = ResourceDetails(
