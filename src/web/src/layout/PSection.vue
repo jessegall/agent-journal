@@ -4,7 +4,7 @@ import {api} from "../api/client.js";
 import Icon from "../kit/Icon.vue";
 import {go, peek, route} from "../route.js";
 import {holding, rows} from "../sync/rows.js";
-import {currentWork, doneOf, lineOf, phaseOf, planButton, queued, rowsOf, shownPlans, stateOf, wordOf} from "./statusline.js";
+import {currentWork, doneOf, lineOf, NOT_STARTED, phaseOf, planButton, queued, rowsOf, shownPlans, stateOf, wordOf} from "./statusline.js";
 
 const props = defineProps<{plans: unknown; error: string; data: unknown; p: unknown}>();
 watchEffect(() => {
@@ -25,9 +25,8 @@ defineEmits<{runBar: [unknown]}>();
                 <span class="planbar-dot">·</span>
                 <span class="planbar-phase">{{ phaseOf(p) }}</span>
             </template>
-            <template v-if="data.status === 'building'">
-                <span class="planbar-step">being written</span>
-                <span class="planbar-track building" role="progressbar"><span /></span>
+            <template v-if="NOT_STARTED[data.status]">
+                <span class="planbar-step">{{ NOT_STARTED[data.status] }}</span>
             </template>
             <template v-else>
                 <span class="planbar-step" :title="`Phase ${data.current || 1} of ${data.phases.length}`">
@@ -126,11 +125,6 @@ defineEmits<{runBar: [unknown]}>();
     border-radius: 3px;
     overflow: hidden;
     background: var(--line);
-}
-
-.planbar-track.building > span {
-    width: 40%;
-    animation: writing 1.6s ease-in-out infinite;
 }
 
 .planbar-track > span {
