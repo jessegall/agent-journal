@@ -310,6 +310,7 @@ def started(record: Record, project: Path, agent: str, env: str, args: list[str]
     here = Record(record.root, env)
     try:
         signal.signal(signal.SIGHUP, lambda *_: sys.exit(129))
+        signal.signal(signal.SIGTERM, lambda *_: sys.exit(143))
         return str(run_supervisor(record.root, project, env, agent, args, taken))
     finally:
         put_back(here)
