@@ -150,3 +150,40 @@ def test_an_upgrade_reads_a_package_under_src_and_never_empties_an_install(tmp_p
     with pytest.raises(OSError, match="holds no journal package"):
         install.refresh(empty, target)
     assert (target / "engine" / "clock.py").is_file(), "a source with no package retires nothing"
+
+
+def test_a_hook_during_an_upgrade_waits_for_the_server_instead_of_failing(tmp_path):
+    import http.server
+    import socket
+    import subprocess
+    import threading
+    import time
+    from pathlib import Path
+    hook = Path(__file__).resolve().parents[2] / "hook.sh"
+    with socket.socket() as probe:
+        probe.bind(("127.0.0.1", 0))
+        port = probe.getsockname()[1]
+    (tmp_path / "runtime").mkdir()
+    (tmp_path / "runtime" / "heartbeat").write_text(f"{int(time.time())} http://127.0.0.1:{port}/\n")
+    (tmp_path / "runtime" / "upgrading").write_text("")
+
+    class Answer(http.server.BaseHTTPRequestHandler):
+        def do_POST(self):
+            self.rfile.read(int(self.headers.get("Content-Length") or 0))
+            self.send_response(200)
+            self.end_headers()
+            self.wfile.write(b'{"reason": "served"}')
+
+        def log_message(self, *_):
+            pass
+
+    def serve_late():
+        time.sleep(1.2)
+        server = http.server.HTTPServer(("127.0.0.1", port), Answer)
+        server.handle_request()
+        server.server_close()
+    threading.Thread(target=serve_late, daemon=True).start()
+    ran = subprocess.run(["sh", str(hook), "claude", str(tmp_path)], input='{"hook_event_name": "PreToolUse"}', capture_output=True, text=True,
+                         env={"PATH": "/usr/bin:/bin:/usr/local/bin:/opt/homebrew/bin", "AGENT_JOURNAL_ACTIVE": "1"}, timeout=20)
+    assert ran.stdout.strip() == '{"reason": "served"}', (ran.stdout, ran.stderr)
+    assert not (tmp_path / "runtime" / "hook-failures.log").exists(), "no failure is logged for a server that was only restarting"
