@@ -28,6 +28,7 @@ class Card:
     actions: list = field(default_factory=list)
     link: str = ""
     state: str = ""
+    session: str = ""
 
 
 @dataclass

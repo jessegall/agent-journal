@@ -2,9 +2,10 @@ from dataclasses import asdict, dataclass
 
 import controllers.types as types_module
 from controllers.types import Environments
-from engine import typist
 from engine.record import Record
-from engine.worktree import keep, merged
+from engine.seats import terminal_of
+from engine.stop import ask_session
+from engine.worktree import keep, merged, tip
 from engine.sessions import Sessions, live
 from features.permission_prompts.feature import prompted
 import resources.types as resources_module
@@ -31,6 +32,7 @@ HELD = ("rule", "doc", "tool")
 class CardState:
     kind: str
     text: str
+    session: str = ""
 
 
 @dataclass(frozen=True)
@@ -75,7 +77,7 @@ class Tickets(Controller):
     def _card(self, ticket, stage: str, stages: list, sessions: dict, running: int) -> Card:
         extras = [extra(self.record, ticket) for extra in CARD_EXTRAS]
         state = self._runtime(ticket, sessions, running)
-        return Card(ticket.n, ticket.title, LEVELS["default"], stage, reason=state.text, state=state.kind, targets=[s for s in stages if s != stage],
+        return Card(ticket.n, ticket.title, LEVELS["default"], stage, reason=state.text, state=state.kind, session=state.session, targets=[s for s in stages if s != stage],
                     updated=ticket.updated, completed=ticket.completed, type=self.type,
                     actions=[*self._actions(ticket), *(action for more in extras for action in more.actions)],
                     link=next((more.link for more in extras if more.link), ""))
@@ -111,8 +113,8 @@ class Tickets(Controller):
         row = Agents(Record(self.record.root, place), actor=SYSTEM)._titled(session) if session else None
         state = self._agent_state(ticket, row, running)
         if self._plan_waits(ticket):
-            return CardState("you", f"{state.text} in {place}; its plan waits for your approval")
-        return CardState(state.kind, f"{state.text} in {place}")
+            return CardState("you", f"{state.text} in {place}; its plan waits for your approval", session)
+        return CardState(state.kind, f"{state.text} in {place}", session)
 
     def _agent_state(self, ticket, row, running: int) -> CardState:
         if row:
@@ -190,7 +192,7 @@ class Tickets(Controller):
         return DRIVERS[AGENT_CLI].branch(ticket.work_environment)
 
     def _merged(self, ticket) -> bool:
-        return merged(self.record.root.parent, self._branch(ticket))
+        return merged(self.record.root.parent, self._branch(ticket), ticket.base)
 
     def stop(self, n: int):
         ticket = self.load(int(n))
@@ -198,10 +200,9 @@ class Tickets(Controller):
         return ticket
 
     def _stop(self, ticket) -> None:
-        from providers import DRIVERS
         session = self.agent_session(ticket.n)
-        if session and DRIVERS[AGENT_CLI].EXIT:
-            typist.send(self.record.root, session, f"{DRIVERS[AGENT_CLI].EXIT}\r".encode())
+        if session:
+            ask_session(self.record.root, terminal_of(self.record.root, session))
 
     def move(self, n: int, stage: str):
         ticket = self.load(int(n))
@@ -260,6 +261,8 @@ class Tickets(Controller):
         from providers import DRIVERS
         self._confirmed(self.load(int(n)))
         ticket = self.bind(int(n))
+        if not ticket.base:
+            ticket = self.update(ticket.n, base=tip(self.record.root.parent))
         if self.agent_session(ticket.n):
             return ticket
         if self._waiting_on(ticket) or len(self._running()) >= int(TicketsDetails.values(self.record).running):

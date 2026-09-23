@@ -142,6 +142,33 @@ DETACH = b"\x1d"
 SHOWN_BACK = 65536
 
 
+@dataclass(frozen=True)
+class ScreenPart:
+    data: str
+    at: int
+    rows: int
+    cols: int
+
+
+def screen_since(root: Path, terminal: str, since: int) -> ScreenPart:
+    import base64
+    screen = runtime.session_file(root, terminal, "screen")
+    shape = read_json(runtime.session_file(root, terminal, "screen.json"), {"rows": 40, "cols": 120})
+    if not screen.is_file():
+        return ScreenPart("", 0, int(shape["rows"]), int(shape["cols"]))
+    size = screen.stat().st_size
+    at = max(0, size - SHOWN_BACK) if since < 0 or since > size else since
+    with screen.open("rb") as shown:
+        shown.seek(at)
+        fresh = shown.read(size - at)
+    return ScreenPart(base64.b64encode(fresh).decode(), at + len(fresh), int(shape["rows"]), int(shape["cols"]))
+
+
+def type_keys(root: Path, terminal: str, text: str) -> bool:
+    from engine import typist
+    return typist.send(root, terminal, text.encode())
+
+
 def attach(root: Path, session: str) -> str:
     import select
     import sys

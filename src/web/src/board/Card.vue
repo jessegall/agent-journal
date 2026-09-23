@@ -54,11 +54,14 @@ function begin(event) {
                 </button>
             </span>
         </span>
-        <template v-if="card.reason || card.link">
+        <template v-if="card.reason || card.link || card.session">
             <span class="meta">
                 <template v-if="card.reason">
                     <StateDot :state="card.state" />
                     <span class="reason">{{ card.reason }}</span>
+                </template>
+                <template v-if="card.session">
+                    <button type="button" class="watch" @click.stop="board.watchAgent(card)">Watch agent</button>
                 </template>
                 <template v-if="card.link">
                     <a class="app" :href="card.link" target="_blank" rel="noopener" @click.stop>Open app ↗</a>
@@ -222,6 +225,20 @@ function begin(event) {
     font-size: 11.5px;
     font-variant-numeric: tabular-nums;
     line-height: 20px;
+}
+
+.watch {
+    margin-left: auto;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--text-2);
+    font: inherit;
+    cursor: pointer;
+}
+
+.watch:hover {
+    color: var(--text);
 }
 
 .app {

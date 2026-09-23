@@ -26,7 +26,7 @@ class CloseRowsFromCommits(Handler):
             for sha, subject, body in commits:
                 if sha == seen:
                     break
-                context.journal.agents.card(context.agent.row.n, label=f"Agent committed {sha[:8]} on {branch}", icon="branch", title=subject)
+                context.journal.agents.card(context.agent.row.n, label=f"Agent committed {sha[:8]} on {branch}", icon="branch", tone="commit", title=subject)
                 self.close(context, sha, subject, body)
         context.record.set_cursor_text(context.feature.name, commits[0][0])
 

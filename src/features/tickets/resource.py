@@ -25,6 +25,7 @@ class Ticket(Shape, Resource):
         Field(TEXT, name="source_id"),
         Field(TEXT, name="owner"),
         Field(TEXT, name="work_environment"),
+        Field(TEXT, "", name="base"),
         Field(NUMBER, 0, name="plan"),
         Field(FLAG, False, name="queued"),
         Field(FLAG, False, name="draft"),

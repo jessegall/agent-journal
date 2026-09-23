@@ -50,6 +50,9 @@ function move(lane) {
                 <MenuItem @click="assign({off: true})">Unassign</MenuItem>
             </template>
         </template>
+        <template v-if="card.session">
+            <MenuItem @click="(emit('close'), board.watchAgent(card))">Watch its agent</MenuItem>
+        </template>
         <MenuItem class="open" @click="(emit('close'), peek(card.type, card.n))">Open</MenuItem>
     </MenuPanel>
 </template>

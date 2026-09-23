@@ -3,6 +3,7 @@ import {computed, onMounted, onUnmounted, provide, ref, watch} from "vue";
 import {api} from "../api/client.js";
 import Btn from "../kit/Btn.vue";
 import Icon from "../kit/Icon.vue";
+import AgentDrawer from "../board/AgentDrawer.vue";
 import AgentSlots from "../board/AgentSlots.vue";
 import AgentStrip from "../board/AgentStrip.vue";
 import Lane from "../board/Lane.vue";
@@ -91,6 +92,8 @@ const ASKS = {held: true, done: true};
 const moving = ref(0);
 const asking = ref(null);
 const stopping = ref(null);
+const watching = ref(null);
+const watchAgent = (card) => (watching.value = card);
 const LIVE_STATES = ["running", "you"];
 const refusal = ref("");
 let clearing = 0;
@@ -140,7 +143,7 @@ async function shift(card, lane, words) {
     }
 }
 
-provide("board", {move, moving, refresh, meaningOf, newWork});
+provide("board", {move, moving, refresh, meaningOf, newWork, watchAgent});
 
 const lens = (change) => (store.board.lens = {...store.board.lens, ...change});
 watch(() => [store.board.lens.plan, store.board.lens.agent, store.board.lens.board], refresh);
@@ -227,6 +230,9 @@ const ask = usePoll(
                     />
                 </template>
             </div>
+        </template>
+        <template v-if="watching">
+            <AgentDrawer :card="watching" @close="watching = null" @stopped="refresh" />
         </template>
         <template v-if="stopping">
             <StopPrompt :move="stopping" @stop="stopAndMove(stopping)" @keep="keepAndMove(stopping)" @close="stopping = null" />

@@ -81,6 +81,10 @@ def live(root: Path, within: float = ONLINE_FOR) -> list[tuple[Seat, LiveAgent]]
     return sorted(found.values(), key=lambda pair: (-pair[1].at, pair[1].session))
 
 
+def terminal_of(root: Path, session: str) -> str:
+    return next((seat.terminal for seat in seats(root) if session in (seat.session, seat.terminal)), "")
+
+
 def seats(root: Path, within: float | None = None) -> list[Seat]:
     found, now = [], time.time()
     for path in runtime.sessions(root).glob("*/seat.json"):
