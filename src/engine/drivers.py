@@ -84,6 +84,14 @@ class Driver(ABC):
         return next((name for name in named if not name.startswith("-")), "")
 
     @classmethod
+    def continued(cls, args: list[str], project: Path) -> str:
+        return cls.latest(project) if any(cls.RESUMING.get(arg) == 0 for arg in args) else ""
+
+    @classmethod
+    def latest(cls, project: Path) -> str:
+        return ""
+
+    @classmethod
     def worktree(cls, args: list[str]) -> str:
         named = [following for flag, following in zip(args, args[1:]) if flag in cls.WORKTREE]
         joined = [value for flag, _, value in (arg.partition("=") for arg in args) if flag in cls.WORKTREE]

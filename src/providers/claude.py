@@ -457,6 +457,11 @@ class ClaudeDriver(Driver):
         return ["claude", *(() if self.TAKES_OURS[0] in args else self.TAKES_OURS), *self.CHANNEL, *args]
 
     @classmethod
+    def latest(cls, project: Path) -> str:
+        folder = Path.home() / ".claude" / "projects" / re.sub(r"[^A-Za-z0-9]", "-", str(project))
+        return max(folder.glob("*.jsonl"), key=lambda path: path.stat().st_mtime, default=Path()).stem
+
+    @classmethod
     def confirm(cls, printed: bytes) -> bytes:
         plain = b"".join(ANSI.sub(b"", printed).split())
         return b"\r" if cls.CHANNEL[0].encode() in plain and CHOICE.search(plain) else b""
