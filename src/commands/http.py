@@ -574,11 +574,11 @@ def get_project_files(req: Request) -> Reply:
     return Reply(200, sorted(out, key=lambda x: (not x["folder"], x["name"].lower())))
 
 
-def transcript_of(req: Request, session: str = "") -> Reply:
+def transcript_of(req: Request, session: str | None = None) -> Reply:
     row = Agents(req.record(), actor=USER).load(int(req.params["n"]))
     provider = PROVIDERS[row.provider]() if row.provider in PROVIDERS and row.transcript else None
     path = Path(row.transcript) if provider else None
-    if session:
+    if session is not None:
         known = any(r.get("session") == session for r in row.subagent_rows)
         path = provider.subagent_transcript(path, session) if provider and known else None
         if not path:
