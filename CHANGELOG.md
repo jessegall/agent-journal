@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.113.1 — A to-do struck from a plan not yet approved leaves the plan
+
+While a plan is being built, or waits for approval, a to-do struck from it is taken out of its phase instead of staying there as struck. Once the plan is approved, a struck row stays in its phase on the record, as before.
+
 ## 2.113.0 — A command typed in the terminal view shows as pending until it runs
 
 A command typed in the terminal view is typed into the agent's terminal as a shell command (!command for Claude) once the agent comes to rest. Until then it stands at the bottom of the terminal log as pending, so a queued command is visible instead of running unseen later.

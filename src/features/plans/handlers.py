@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from typing import ClassVar
 
 from engine.events import AgentReported, AnyEvent, ResourceEvent
-from features.plans.controller import APPROVED, BUILDING, DEPTHS, PHASES, WAITING
+from features.plans.controller import APPROVED, BUILDING, DEPTHS, DRAFT, PHASES, READY, WAITING
 from features.plans.progress import catch_up
 from features.plans.resource import PHASE
 from features.work_tracking.auto import automatic
@@ -61,6 +61,19 @@ class PassCheckpointsInAuto(Handler):
         for plan in plans._every():
             if plan.status == WAITING:
                 plans.resume(plan.n)
+
+
+class TakeStruckRowsOutOfUnapprovedPlans(Handler):
+    def handle(self, context: Context, event: AnyEvent) -> None:
+        if (event.type, event.action) != ("todo", "completed") or not context.journal.todos.load(event.n).data.get("struck"):
+            return
+        plans = context.journal.plans
+        for plan in plans._every():
+            if plan.status not in (BUILDING, DRAFT, READY):
+                continue
+            for p, phase in enumerate(plan.phases, 1):
+                if event.n in phase[PHASE.todos]:
+                    plans.place(plan.n, p, [event.n], off=True)
 
 
 class AdvancePlans(Handler):
