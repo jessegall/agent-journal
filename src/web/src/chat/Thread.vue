@@ -377,9 +377,9 @@ watch(
                 </Transition>
                 <template v-if="editing">
                     <div class="thread-answering">
-                        <span class="thread-answering-label">Editing</span>
+                        <span class="thread-answering-label">Editing message {{ editing.n }}</span>
                         <span class="thread-answering-text">{{ editing.text }}</span>
-                        <button type="button" class="thread-answering-x" title="Leave it as it was" @click="unedit">×</button>
+                        <button type="button" class="thread-answering-x" title="Leave it as it was (Esc)" @click="unedit">×</button>
                     </div>
                 </template>
                 <Compose
