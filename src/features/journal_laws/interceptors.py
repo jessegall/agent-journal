@@ -1,3 +1,6 @@
+import re
+from pathlib import Path
+
 from features.journal_laws.policy import LAWS, refusal
 from engine.events import AgentMessageSent
 from engine.hooks import DISPATCHING
@@ -30,3 +33,30 @@ def whisper_laws(context: AgentContext, text_of) -> None:
     for law in LAWS:
         if mentioned(law.keywords, text_of(law.keywords_in)) and whisper_due(context, f"law:{law.name}"):
             context.agent.whisper(WHISPER, type="law", n=law.name, title=law.text, brief=law.reason)
+
+
+CAT = re.compile(r"(?:^|[;&|]\s*)cat\s+([^\s|;&<>-][^\s|;&<>]*)\s*(?=$|[;&])")
+
+
+def lines_in(path: Path) -> int:
+    try:
+        with path.open("rb") as f:
+            return sum(chunk.count(b"\n") for chunk in iter(lambda: f.read(1 << 16), b""))
+    except OSError:
+        return 0
+
+
+class RefuseWholeLongReads(ToolInterceptor):
+    def intercept(self, context: AgentContext, call) -> str:
+        whole = call.name == "Read" and not call.tool_input.get("offset") and not call.tool_input.get("limit")
+        cat = CAT.search(call.command) if call.name == "Bash" else None
+        named = call.file_path if whole else cat.group(1) if cat else ""
+        if not named:
+            return ""
+        path = Path(named).expanduser()
+        path = path if path.is_absolute() else Path(context.hook.cwd or context.record.root.parent) / path
+        count, limit = lines_in(path), int(context.settings.whole_read_lines)
+        if count <= limit:
+            return ""
+        instead = "read a range (offset and limit)" if whole else "print a range with sed -n"
+        return f"{named} has {count:,} lines: {instead}, or grep for what you need first (law L3, read narrowly)"

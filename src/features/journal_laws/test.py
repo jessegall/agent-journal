@@ -85,3 +85,21 @@ def test_a_dispatch_is_an_event_a_plugin_can_cancel_even_when_the_laws_allow_it(
     refused = hook("Agent", {"subagent_type": "Explore", "model": "haiku"})
     assert refused.get("decision") == "block" and "no subagents during the demo" in refused.get("reason", ""), refused
     assert hook("Read", {"file_path": "a.py"}).get("decision") != "block", "only the dispatch is asked about"
+
+
+def test_reading_a_long_file_whole_is_refused_and_a_range_or_a_short_file_passes():
+    from features import load
+    load()
+    record = fresh()
+    project = record.root.parent
+    (project / "long.py").write_text("x = 1\n" * 400)
+    (project / "short.py").write_text("x = 1\n" * 20)
+    hook = lambda tool, given: handle(PROVIDERS["claude"](), record.root, record.env, {"hook_event_name": "PreToolUse", "session_id": "claude-read", "tool_name": tool,
+                                                                                        "cwd": str(project), "tool_input": given})
+    whole = hook("Read", {"file_path": str(project / "long.py")})
+    assert whole.get("decision") == "block" and "has 400 lines: read a range (offset and limit)" in whole.get("reason", ""), whole
+    assert hook("Read", {"file_path": str(project / "long.py"), "offset": 1, "limit": 50}).get("decision") != "block", "a range passes"
+    assert hook("Read", {"file_path": str(project / "short.py")}).get("decision") != "block", "a short file passes whole"
+    cat = hook("Bash", {"command": "cat long.py"})
+    assert cat.get("decision") == "block" and "print a range with sed -n" in cat.get("reason", ""), cat
+    assert hook("Bash", {"command": "cat long.py | head -20"}).get("decision") != "block", "a cat already cut short passes"
