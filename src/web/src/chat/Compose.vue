@@ -54,6 +54,15 @@ function arrowDown(e) {
     }
 }
 
+function escaped(e) {
+    if (props.preset && props.down) {
+        e.preventDefault();
+        e.stopPropagation();
+        draft.text = "";
+        props.down();
+    }
+}
+
 function pasted(e) {
     const files = Array.from(e.clipboardData?.files || []);
     if (!files.length) return;
@@ -132,6 +141,7 @@ async function use(tool) {
                 @keydown.enter.exact="!$event.isComposing && ($event.preventDefault(), go())"
                 @keydown.up="arrowUp"
                 @keydown.down="arrowDown"
+                @keydown.esc="escaped"
                 @keydown.meta.enter.prevent="go"
                 @keydown.ctrl.enter.prevent="go"
                 @paste="pasted"
