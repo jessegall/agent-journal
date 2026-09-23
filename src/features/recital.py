@@ -1,4 +1,5 @@
 import re
+import time
 
 from engine.events import AgentMessageSent, AgentReported
 from features import trigger
@@ -47,11 +48,16 @@ def mentioned(words, text: str) -> bool:
     return any(re.search(rf"(?<![\w-]){re.escape(str(word))}(?![\w-])", text, re.IGNORECASE) for word in words if word)
 
 
+KEPT_WHISPERS = 50
+
+
 def recite(context: AgentContext, resources: str, text_of) -> None:
     rows = getattr(context.journal, resources)
     for row in rows._standing():
         if mentioned(row.data.get(KEYWORDS) or [], text_of(row.data.get(KEYWORDS_IN) or BOTH)) and whisper_due(context, row.ref):
             context.agent.whisper(WHISPER, type=rows.type, n=row.n, title=row.title, brief=row.brief)
+            kept = context.agent.row.data.get("whispers") or []
+            context.journal.agents.update(context.agent.row.n, whispers=[*kept, {"at": time.time(), "ref": row.ref, "title": row.title}][-KEPT_WHISPERS:])
 
 
 class WhisperOnKeyword(ToolInterceptor):

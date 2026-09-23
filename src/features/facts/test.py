@@ -45,3 +45,5 @@ def test_a_keyword_matches_as_a_whole_word_only_where_its_row_says():
     chat.send(record, Agents(record, actor=SYSTEM).by_session("claude-1"), "I said so")
     whispered = [n.title.split(" — ")[0] for n in Nudges(record).all() if n.title.startswith("fact ")]
     assert whispered == [f"fact {ran.n}", f"fact {wrote.n}"], "a whole word in a command, then in chat; not inside 'unsaid', not in a file path"
+    shown = [(w["ref"], w["title"]) for w in Agents(record, actor=SYSTEM).by_session("claude-1").data.get("whispers") or []]
+    assert shown == [(ran.ref, "in commands"), (wrote.ref, "in text")], f"each reminder is kept on the agent for the chat to show: {shown}"
