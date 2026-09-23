@@ -129,3 +129,31 @@ def test_enter_is_pressed_again_until_the_agent_takes_the_line(monkeypatch):
     driver._report = lambda: SimpleNamespace(at=time.time()) if written.count(b"\r") >= 2 else None
     assert (driver.type_in("hello"), written.count(b"\r")) == (True, 2), "the first Enter was swallowed: pressed again, then the hook says it was taken"
     assert b"[journal] hello" in written, "a typed line says it is the journal's, so the agent never takes it for the user"
+
+
+def test_lines_are_typed_once_the_channel_stops_delivering_them(tmp_path):
+    import json
+    import time
+    from datetime import datetime, timezone
+    from types import SimpleNamespace
+    from engine import runtime
+    from providers import DRIVERS
+    record = fresh()
+    driver = DRIVERS["claude"](record, "claude-1")
+    alive = runtime.channel_alive(record.root)
+    alive.parent.mkdir(parents=True, exist_ok=True)
+    alive.touch()
+    transcript = tmp_path / "t.jsonl"
+    transcript.write_text("")
+    driver.last_report = lambda: SimpleNamespace(transcript=str(transcript))
+    stamp = lambda: datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+    written = lambda *rows: transcript.write_text(transcript.read_text() + "".join(json.dumps(r) + "\n" for r in rows))
+    assert driver._handed("todo 5 next") is True, "a live channel takes the line"
+    time.sleep(0.01)
+    written({"type": "user", "timestamp": stamp(), "message": {"role": "user", "content": '<channel source="journal" from="journal">\ntodo 5 next'}},
+            *({"type": "assistant", "timestamp": stamp(), "message": {"content": "working"}} for _ in range(4)))
+    assert driver._handed("2 new messages 7, 8") is True, "a line that reached the agent keeps the channel in use"
+    time.sleep(0.01)
+    written(*({"type": "assistant", "timestamp": stamp(), "message": {"content": "working"}} for _ in range(4)))
+    assert driver._handed("work 1 open") is False, "a line the agent never received, while it kept working, sends the next lines to the terminal"
+    assert driver._handed("todo 6 next") is False, "and keeps typing them for a while rather than losing more"

@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.115.2 — Journal lines are typed when the channel stops delivering
+
+The journal handed its lines to the channel as long as the channel's process was alive, even when nothing it sent reached the agent. It now checks that they arrive: when the agent keeps working and a line handed to the channel never shows up in its conversation, the journal types its lines into the terminal instead for five minutes, then tries the channel again.
+
 ## 2.115.1 — The chat's status line no longer falls back to working while the agent is busy
 
 The chat decided whether to show the status line with a check of its own on the last entry only, and once that entry had finished it showed the bare word working, even while the line had something to say. The chat now always shows the status line, which falls back to working itself, or names the subagent the agent is waiting on. The one shared marker of what had been shown, which any open tab could move for all of them, is gone: each tab keeps its own place.

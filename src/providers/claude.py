@@ -10,7 +10,7 @@ from providers.payload import DISPLAYED, EVENTS
 from providers.base import Provider, journal_hook
 from providers.payload import Hook
 from resources.types import AgentRow
-from engine.stored import read_json, tail, write_text
+from engine.stored import read_json, tail, write_json, write_text
 from engine import runtime
 from engine.sessions import Sessions
 from engine.drivers import ANSI, CHOICE, Driver
@@ -20,6 +20,12 @@ SENDS = "SendMessage"
 SESSIONS = "uds:"
 WINDOW, LONG_WINDOW, LONG_MARK = 200_000, 1_000_000, "[1m]"
 STATUS_SCRIPT = "claude-status.sh"
+HANDED = "channel-handed.json"
+HANDED_KEPT = 20
+HANDED_TEXT = 80
+MOVED_ON = 4
+TYPED_FOR = 300
+CHANNEL_MARK = '<channel source="journal"'
 BASH_INPUT = re.compile(r"^<bash-input>(.*)</bash-input>$", re.S)
 EVALED = re.compile(r"&& eval '(.*)' < /dev/null && pwd -P", re.S)
 RECORD_FILES = ("Read(./.journal/environments/*/*/*.md)", "Read(./.journal/project/*/*.md)")
@@ -480,8 +486,31 @@ class ClaudeDriver(Driver):
         try:
             if not self.record.delivery.get("channel", True) or time.time() - runtime.channel_alive(root).stat().st_mtime > self.LISTENING:
                 return False
+            if not self._delivering():
+                return False
             with runtime.channel_queue(root).open("a") as queue:
                 queue.write(json.dumps({"content": line, "meta": {"from": "journal"}}) + "\n")
+            handed = runtime.session_file(root, self.session, HANDED)
+            held = read_json(handed, {})
+            write_json(handed, {**held, "lines": [*(held.get("lines") or [])[-HANDED_KEPT:], {"line": line[:HANDED_TEXT], "at": time.time()}]})
             return True
         except OSError:
             return False
+
+    def _delivering(self) -> bool:
+        handed = runtime.session_file(self.record.root, self.session, HANDED)
+        held = read_json(handed, {})
+        if time.time() < float(held.get("typed_until") or 0):
+            return False
+        last = self.last_report()
+        waiting = held.get("lines") or []
+        if not waiting or not last or not last.transcript:
+            return True
+        rows = Claude().recent(Path(last.transcript))
+        arrived = [str((row.get("message") or {}).get("content") or "") for row in rows if row.get("type") == "user"]
+        arrived = [text for text in arrived if text.startswith(CHANNEL_MARK)]
+        times = [timestamp(str(row.get("timestamp") or "")) for row in rows]
+        lost = [h for h in waiting if not any(h["line"] in text for text in arrived) and sum(1 for at in times if at > h["at"]) >= MOVED_ON]
+        kept = [h for h in waiting if not any(h["line"] in text for text in arrived) and h not in lost]
+        write_json(handed, {"lines": [], "typed_until": time.time() + TYPED_FOR} if lost else {"lines": kept})
+        return not lost
