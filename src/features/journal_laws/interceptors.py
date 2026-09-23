@@ -7,6 +7,7 @@ from engine.hooks import DISPATCHING
 from features.parts import AgentContext, Canceler, Handler, ToolInterceptor
 from features.recital import COMMANDS, WHISPER, mentioned, searched, whisper_due
 from providers.payload import ReadCall
+from resources.types import TYPES
 
 
 class EnforceDispatchLaw(Canceler):
@@ -61,6 +62,8 @@ class RefuseWholeLongReads(ToolInterceptor):
             return ""
         path = Path(named).expanduser()
         path = path if path.is_absolute() else Path(context.hook.cwd or context.record.root.parent) / path
+        if any(path.is_relative_to(context.record.folder(kind.type, kind.scope)) for kind in TYPES.values() if kind.read_whole):
+            return ""
         count, limit = lines_in(path), int(context.settings.whole_read_lines)
         if count <= limit:
             return ""

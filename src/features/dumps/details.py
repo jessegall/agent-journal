@@ -24,7 +24,7 @@ class DumpsDetails(FeatureDetails):
     lines = [
         Line(
             name="arrived",
-            title="dump {{n}}, {{title}}, has {{count}} to file - journal dump items {{n}}",
+            title="dump {{n}} has {{count}} to file - journal dump items {{n}}",
             brief="""
                 Load the journal-dumps skill first if it is not loaded. The Filing a dump sequence
                 hands you its steps one at a time: follow each one and mark it done with journal

@@ -12,6 +12,7 @@ def test_a_dump_is_read_and_filed_item_by_item_and_closes_when_every_item_is_set
     dumps.attach(dump.n, str(dropped))
     agent = CONTROLLERS["dump"](record, actor=AGENT)
     assert agent.items(dump.n) == ["text: not read yet", "notes.md: not read yet"], "the pasted text and every file are items"
+    assert dump.title == f"Dump {dump.n}", "a dump is titled by its number until the agent names it"
 
     agent.note(dump.n, "text", "a transcript of Tuesday's planning meeting")
     named = agent.name(dump.n, "Q3 planning meeting")
@@ -22,6 +23,7 @@ def test_a_dump_is_read_and_filed_item_by_item_and_closes_when_every_item_is_set
     collection = CONTROLLERS["collection"](record, actor=USER).load(named.n)
     assert (collection.title, {doc.ref, task.ref} <= set(collection.refs)) == ("Q3 planning meeting", True), \
         "the agent names the collection, and what is filed later still goes into it"
+    assert agent.load(dump.n).title == "Q3 planning meeting", "naming the collection names the dump too"
 
     assert "has no item 'other.md'" in refused(lambda: agent.note(dump.n, "other.md", "x")), "an item the dump does not have is refused"
     assert "say why" in refused(lambda: agent.failed(dump.n, "notes.md", " ")), "a failure needs words"
@@ -37,11 +39,11 @@ def test_the_agent_is_told_when_a_dump_arrives_and_when_more_is_dropped_on_it(tm
     dumps = CONTROLLERS["dump"](record, actor=USER)
     dump = dumps.create("A pile", brief="some pasted text")
     arrived = [n for n in nudges(record) if n.startswith(f"dump {dump.n}")]
-    assert arrived == [f"dump {dump.n}, A pile, has 1 item to file - journal dump items {dump.n}"], "a new dump is named with what waits"
+    assert arrived == [f"dump {dump.n} has 1 item to file - journal dump items {dump.n}"], "a new dump is named with what waits"
     more = tmp_path / "later.png"
     more.write_bytes(b"png")
     dumps.attach(dump.n, str(more))
-    assert f"dump {dump.n}, A pile, has 2 items to file - journal dump items {dump.n}" in nudges(record), "a file dropped on it later is named again"
+    assert f"dump {dump.n} has 2 items to file - journal dump items {dump.n}" in nudges(record), "a file dropped on it later is named again"
     CONTROLLERS["dump"](record, actor=AGENT).create("the agent's own", brief="notes")
     assert not [n for n in nudges(record) if "the agent's own" in n], "a dump the agent made is not announced to it"
 
@@ -55,7 +57,7 @@ def test_what_a_dump_makes_stays_inside_it_until_the_user_confirms_it():
     doc, task = Docs(record, actor=AGENT).create("The launch"), Todos(record, actor=AGENT).create("book the room")
     agent.filed(dump.n, "text", "a doc and a to-do, and the older doc extended", f"{doc.ref}, {task.ref}, {earlier.ref}")
     made = collections.load(agent._collection(agent.load(dump.n)))
-    assert collections.members(made.n) == [f"dump {dump.n}  Launch notes", "doc 2  The launch", "todo 1  book the room", "doc 1  An older doc"], \
+    assert collections.members(made.n) == [f"dump {dump.n}  Dump {dump.n}", "doc 2  The launch", "todo 1  book the room", "doc 1  An older doc"], \
         "the dump's collection holds everything it filed"
     assert ([c.n for c in collections.all()], [d.n for d in docs.all()], [t.n for t in Todos(record, actor=USER).all()]) == ([], [earlier.n], []), \
         "until confirmed, what it made is listed nowhere; a row it only extended stays listed"
@@ -89,7 +91,7 @@ def test_one_dump_is_worked_at_a_time_its_log_is_kept_and_filing_asks_for_the_ne
     assert refused(lambda: agent.log(dump.n, " ")) == "say what you are doing", "a log entry needs words"
     agent.failed(dump.n, "text", "nothing in it to keep")
     assert f"dump {dump.n} is filed (0 filed, 1 failed) - offer the user what to do next" in nudges(record), "closing the dump asks for the next steps"
-    assert nudges(record)[-1] == f"dump {later.n}, Another, has 1 item to file - journal dump items {later.n}", "and hands over the next one"
+    assert nudges(record)[-1] == f"dump {later.n} has 1 item to file - journal dump items {later.n}", "and hands over the next one"
     CONTROLLERS["dump"](record, actor=USER).reopen(dump.n, "more to add")
     assert agent._in_hand().n == later.n, "a reopened dump joins the back of the queue, behind the one being filed"
     CONTROLLERS["dump"](record, actor=USER).stop(later.n)

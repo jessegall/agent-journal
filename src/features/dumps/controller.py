@@ -17,8 +17,9 @@ OFFERED = 4
 class Dumps(Controller):
     resource = Dump
 
-    def create(self, title: str, abstract: str = "", brief: str = "", **data):
-        dump = super().create(title, abstract, brief, queued_at=time.time(), **data)
+    def create(self, title: str = "", abstract: str = "", brief: str = "", **data):
+        with self.record.locked():
+            dump = super().create(f"Dump {(self.numbers() or [0])[-1] + 1}", abstract, brief, queued_at=time.time(), **data)
         self._collect(dump, [dump.ref])
         return self.load(dump.n)
 
@@ -31,7 +32,7 @@ class Dumps(Controller):
     def _collect(self, dump, refs: list[str]):
         collections = self._collections()
         found = self._collection(dump)
-        collection = collections.load(found) if found else collections.create(f"Dump {dump.n}, {dump.title}"[:80], abstract=f"Everything dump {dump.n} was filed into",
+        collection = collections.load(found) if found else collections.create(dump.title, abstract=f"Everything dump {dump.n} was filed into",
                                                                               **{DRAFT_OF: dump.ref})
         collections.add(collection.n, refs)
         if not found:
@@ -146,6 +147,7 @@ class Dumps(Controller):
         found = self._collection(self.load(int(n)))
         if not found:
             raise Refused(f"dump {n} has no collection")
+        self.update(int(n), title=title.strip())
         return self._collections().update(found, title=title.strip())
 
     def _names(self, r) -> list[str]:

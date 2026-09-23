@@ -46,7 +46,7 @@ class PromptFiling(Handler):
         items = dump.data.get("items") or {}
         waiting = [name for name in dumps._names(dump) if not (items.get(name) or {}).get(ITEM.insight)]
         if agent and waiting and not dump.completed:
-            context.speaking_to(agent).agent.say("arrived", n=dump.n, title=dump.title, count=context.feature.plural(len(waiting), "item"))
+            context.speaking_to(agent).agent.say("arrived", n=dump.n, count=context.feature.plural(len(waiting), "item"))
 
 
 @dataclass(frozen=True)
@@ -61,7 +61,7 @@ class TranscriptToDump(Handler):
         if message.data.get("kind") != "transcript" or any(ref.startswith("dump:") for ref in message.refs):
             return
         dumps = context.journal.acting(USER).dumps
-        dump = dumps.create(message.title, brief=message.brief)
+        dump = dumps.create(brief=message.brief)
         for path in messages.paths(message.n):
             dumps.attach(dump.n, path)
         dumps.link(dump.n, message.ref)
