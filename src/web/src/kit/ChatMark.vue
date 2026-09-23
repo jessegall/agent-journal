@@ -12,24 +12,23 @@ const props = defineProps({
     name: {type: String, default: ""},
     at: {type: Number, default: 0},
     detail: {type: String, default: ""},
+    title: {type: String, default: ""},
 });
 
 const attrs = useAttrs();
 const tag = computed(() => (attrs.onClick ? "button" : "span"));
 const shade = computed(() => props.color || (props.tone ? `var(--tone-${props.tone})` : ""));
+const hover = computed(() => [props.title, props.at ? clock(props.at) : ""].filter(Boolean).join(" · "));
 const tint = computed(() => (shade.value ? {"--mark": shade.value} : {}));
 </script>
 
 <template>
-    <component :is="tag" :type="tag === 'button' ? 'button' : undefined" :class="['mark', {tinted: shade}]" :style="tint">
+    <component :is="tag" :type="tag === 'button' ? 'button' : undefined" :class="['mark', {tinted: shade}]" :style="tint" :title="hover">
         <Icon :name="icon" :size="9" />
         <span class="head">
             {{ label }}
             <template v-if="name">
                 <strong>{{ name }}</strong>
-            </template>
-            <template v-if="at">
-                <span class="when">{{ clock(at) }}</span>
             </template>
         </span>
         <template v-if="detail">
@@ -80,10 +79,6 @@ button.mark:hover {
     white-space: nowrap;
 }
 
-.when {
-    margin-left: auto;
-    padding-left: 10px;
-}
 
 .head strong {
     color: var(--text-2);
