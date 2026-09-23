@@ -1,3 +1,4 @@
+/Users/jessegall/projects/agent-journal/src/engine/version.py
 /Users/jessegall/projects/agent-journal/src/features/boards/__init__.py
 /Users/jessegall/projects/agent-journal/src/features/boards/controller.py
 /Users/jessegall/projects/agent-journal/src/features/boards/details.py
@@ -11,7 +12,10 @@
 /Users/jessegall/projects/agent-journal/src/features/tickets/feature.py
 /Users/jessegall/projects/agent-journal/src/features/tickets/resource.py
 /Users/jessegall/projects/agent-journal/src/features/tickets/test.py
+/Users/jessegall/projects/agent-journal/src/web/src/board/Card.vue
+/Users/jessegall/projects/agent-journal/src/web/src/board/CardMenu.vue
 /Users/jessegall/projects/agent-journal/src/web/src/kit/Icon.vue
+/Users/jessegall/projects/agent-journal/src/web/src/pages/BoardPage.vue
 -----
 Batch marker for the code-commandments judge reminder (`commandments judge-reminder`, wired as
 Stop + PreToolUse hooks). The lines above the separator are the changed-file set it last

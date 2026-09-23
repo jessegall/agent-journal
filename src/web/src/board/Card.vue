@@ -29,8 +29,8 @@ function begin(event) {
         :draggable="card.targets.length > 0"
         @dragstart="begin"
         @dragend="drag.end"
-        @click="peek('todo', card.n)"
-        @keydown.enter="peek('todo', card.n)"
+        @click="peek(card.type, card.n)"
+        @keydown.enter="peek(card.type, card.n)"
     >
         <span class="top">
             <PriorityIcon :value="card.priority" />

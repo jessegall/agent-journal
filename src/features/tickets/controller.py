@@ -2,8 +2,11 @@ import controllers.types as types_module
 import resources.types as resources_module
 from controllers.base import Controller, internal
 from features.boards.controller import Boards
+from features.kanban.board import BoardLanes, Card
+from features.kanban.lanes import Lane
 from features.tickets.resource import Ticket
 from resources.base import Refused, Resource
+from resources.shapes import LEVELS
 
 
 class Tickets(Controller):
@@ -15,13 +18,19 @@ class Tickets(Controller):
         if known:
             return self.update(known.n, title=title, abstract=abstract or None, brief=brief or None)
         opening = self._stages(data.get("board"))[:1]
-        return super().create(title, abstract, brief, source=source, **dict(zip(["stage"], opening)), **data)
+        return super().create(title, abstract, brief, source=source, **{**dict(zip(["stage"], opening)), **data})
 
     @internal
     def save(self, r: Resource, action: str, **event) -> Resource:
         if r.board and r.stage not in self._stages(r.board):
             raise Refused(f"board {r.board} has no stage {r.stage!r}")
         return super().save(r, action, **event)
+
+    def board(self, n: int) -> dict:
+        stages = self._stages(n)
+        tickets = [r for r in self._standing() if int(r.board) == int(n)]
+        return BoardLanes([(Lane(stage, stage), [Card(r.n, r.title, LEVELS["default"], stage, targets=[s for s in stages if s != stage], updated=r.updated,
+                                                     completed=r.completed, type=self.type) for r in tickets if r.stage == stage]) for stage in stages], []).shaped()
 
     def move(self, n: int, stage: str):
         return self.update(int(n), stage=stage.strip())

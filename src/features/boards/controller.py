@@ -22,7 +22,7 @@ class Boards(Controller):
         board = self.load(int(n))
         return self.update(board.n, stages=[*board.stages, name.strip()], meanings={**board.meanings, **({name.strip(): meaning} if meaning else {})})
 
-    def mark(self, n: int, stage: str, meaning: str):
+    def meaning(self, n: int, stage: str, meaning: str):
         board = self.load(int(n))
         return self.update(board.n, meanings={**board.meanings, stage: meaning})
 
