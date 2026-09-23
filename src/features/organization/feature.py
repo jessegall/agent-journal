@@ -1,6 +1,6 @@
 from features.base import Feature
 from features.journal import Journal
-from features.organization.commands import ShowOrganization
+from features.organization.commands import Delegate, ReportCoversOutputs, ShowOrganization
 from features.organization.details import OrganizationDetails
 
 
@@ -9,3 +9,5 @@ class OrganizationFeature(Feature):
 
     def register(self, journal: Journal) -> None:
         journal.commands.add("ticket", ShowOrganization())
+        journal.commands.add("todo", Delegate())
+        journal.commands.intercept("update", ReportCoversOutputs())

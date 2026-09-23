@@ -15,6 +15,7 @@
 /Users/jessegall/projects/agent-journal/src/features/messages/test.py
 /Users/jessegall/projects/agent-journal/src/features/organization/__init__.py
 /Users/jessegall/projects/agent-journal/src/features/organization/commands.py
+/Users/jessegall/projects/agent-journal/src/features/organization/delegation.py
 /Users/jessegall/projects/agent-journal/src/features/organization/details.py
 /Users/jessegall/projects/agent-journal/src/features/organization/feature.py
 /Users/jessegall/projects/agent-journal/src/features/organization/files.py
