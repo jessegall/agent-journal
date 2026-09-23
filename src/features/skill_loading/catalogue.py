@@ -1,3 +1,4 @@
+from functools import cache
 import re
 from pathlib import Path
 
@@ -48,8 +49,13 @@ def subjects() -> set[str]:
     return {"journal", *(skill_name(path.stem) for path in folder.glob("*.md") if path.name != "journal.md")}
 
 
+@cache
+def marked_primary() -> frozenset[str]:
+    return frozenset(skill_name(path.stem) for path in data("skills").glob("*.md") if frontmatter(path.read_text(errors="replace")).get("primary") == "true")
+
+
 def primary() -> set[str]:
-    return {"journal", *(skill_name(name) for name, f in features.FEATURES.items() if f.details and f.details.primary)}
+    return {"journal", *marked_primary(), *(skill_name(name) for name, f in features.FEATURES.items() if f.details and f.details.primary)}
 
 
 def defaults() -> set[str]:
