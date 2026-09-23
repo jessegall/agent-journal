@@ -106,8 +106,14 @@ def test_leftover_plugin_checkouts_and_old_environment_archives_are_removed_and_
     unkept = root / "runtime" / "outputs" / "output-abc"
     unkept.write_text("a command's whole output that never became a row")
     os.utime(unkept, (old, old))
+    (root / "runtime" / "slow").mkdir()
+    for i in range(52):
+        profile = root / "runtime" / "slow" / f"{i:03}-GET-_api_summary-60ms.txt"
+        profile.write_text("profile")
+        os.utime(profile, (old + i, old + i))
     tidy(root, 2)
     assert not unkept.exists(), "an output file left behind for a day goes"
+    assert sorted(f.name[:3] for f in (root / "runtime" / "slow").iterdir())[:1] == ["002"], "only the newest fifty slow-request profiles are kept"
     assert (stale.exists(), fresh_one.exists()) == (False, True), "a checkout an install left behind goes after an hour; one being installed stays"
     assert (gone.exists(), snapshot.exists(), recent.exists()) == (False, True, True), "an old environment archive goes; upgrade snapshots are kept by their own count"
     assert (root / "runtime" / "channel.jsonl").stat().st_size == 1024 * 1024, "the channel log is cut to its tail"
