@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.112.0 — The chat shows when a long output was cut or a long read refused
+
+When the journal cuts a long command output, a mark in the chat says how many lines were held back and links the output row that keeps the whole of it. When it refuses reading a long file whole, a mark names the file, its length and what the agent was told to do instead. An output row now carries the command as the agent wrote it, not Claude's shell wrapping around it. The viewer no longer throws on an event of a type it has not heard of yet: it fetches the types first.
+
 ## 2.111.0 — The whole of a cut command output is kept, the last 50 of them
 
 When a shell command prints more than twice output_lines, the agent still sees its two ends, and the whole output is now kept as an output row with its file. The cut line names the row and the file's path, so the agent can grep it or read a range instead of running the command again. Only the last 50 outputs are kept; removing one removes its file. The shell wrapper is now asked of the provider: Claude runs its commands through it, and Codex, which has no shell prefix and caps its own output, is launched without it. A chat mark's second line now starts under its icon.

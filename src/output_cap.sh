@@ -11,7 +11,7 @@ status=${PIPESTATUS[0]}
 count=$(awk 'END { print NR }' "$whole")
 if [ "$count" -gt $((2 * keep)) ]; then
     ending=$(tail -n "$keep" "$whole")
-    if kept=$(journal output keep "$whole" --command_line="$1" 2>&1); then
+    if kept=$(journal output keep "$whole" --command_line="$1" --provider="${JOURNAL_PROVIDER:-}" --session_id="${JOURNAL_SESSION_VARIABLE:+${!JOURNAL_SESSION_VARIABLE}}" --shown=$((2 * keep)) 2>&1); then
         read -r n path <<< "$kept"
         echo "… $((count - 2 * keep)) lines cut here; the whole output is output $n, at $path: grep it or sed -n a range"
     else
