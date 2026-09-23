@@ -61,7 +61,8 @@ async function send() {
         .split("\n")
         .map((line) => `> ${line}`)
         .join("\n");
-    await sendMessage(route.value.env, {brief: `About ${file.value.path}, ${where}:\n\n${quoted}\n\n${words.value.trim()}`});
+    const path = file.value.root ? `${file.value.root}/${file.value.path}` : file.value.path;
+    await sendMessage(route.value.env, {brief: `About ${path}, ${where}:\n\n${quoted}\n\n${words.value.trim()}`});
     picked.value = null;
     sent.value = true;
 }
@@ -93,8 +94,15 @@ watch(() => [route.value.q, route.value.sub], load);
                 <Icon name="file" />
                 <code class="path">{{ file.path }}</code>
                 <span class="when">{{ file.gone ? "deleted" : `${file.lines ? `${file.lines} lines · ` : ""}${file.size} bytes` }}</span>
-                <a class="mode" :href="shown(changes ? '' : 'diff')">{{ changes ? "Whole file" : "Changes" }}</a>
+                <template v-if="!file.project">
+                    <a class="mode" :href="shown(changes ? '' : 'diff')">{{ changes ? "Whole file" : "Changes" }}</a>
+                </template>
             </header>
+            <template v-if="file.project">
+                <p class="elsewhere">
+                    From another project, <strong>{{ file.project }}</strong>, at <code>{{ file.root }}</code>
+                </p>
+            </template>
             <template v-if="changes">
                 <template v-if="diff">
                     <Diff :text="diff" />
@@ -188,6 +196,17 @@ watch(() => [route.value.q, route.value.sub], load);
     gap: 10px;
     padding-bottom: 14px;
     border-bottom: 1px solid var(--border);
+}
+
+.elsewhere {
+    margin: 10px 0 0;
+    color: var(--text-3);
+    font-size: 12px;
+}
+
+.elsewhere strong {
+    color: var(--text-2);
+    font-weight: 600;
 }
 
 .head .ico {
