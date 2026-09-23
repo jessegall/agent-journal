@@ -1,7 +1,7 @@
 <script setup>
 import {computed} from "vue";
 import ChatMark from "../kit/ChatMark.vue";
-import {peek} from "../route.js";
+import {peekRef} from "../route.js";
 import {meta} from "../state/store.js";
 
 const props = defineProps({
@@ -16,5 +16,12 @@ const named = computed(() => `${(meta(type.value) || {title: type.value}).title.
 </script>
 
 <template>
-    <ChatMark icon="reminders" label="Reminded the agent of" :name="named" :at="at" :title="`Open ${named}: ${title}`" @click="peek(type, n)" />
+    <ChatMark
+        icon="reminders"
+        label="Reminded the agent of"
+        :name="named"
+        :at="at"
+        :title="`Open ${named}: ${title}`"
+        @click="peekRef(row)"
+    />
 </template>

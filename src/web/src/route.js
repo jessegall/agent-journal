@@ -46,13 +46,17 @@ export function peek(type, n, comment = 0, sub = "") {
     opening([...(at < 0 ? stack : stack.slice(0, at)), {type, n, comment}], sub);
 }
 
+export function peekRef(ref) {
+    const [type, n] = ref.split(":");
+    peek(type, Number(n));
+}
+
 export function peekChip(e) {
     const chip = e.target.closest("[data-peek]");
     if (!chip) return;
     e.preventDefault();
     e.stopPropagation();
-    const [type, n] = chip.dataset.peek.split(":");
-    peek(type, Number(n));
+    peekRef(chip.dataset.peek);
 }
 
 export function swap(type, n) {

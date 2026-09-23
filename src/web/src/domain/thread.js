@@ -70,6 +70,7 @@ const cards = (agents) =>
                 detail: c.detail,
                 command: c.command,
                 title: c.title,
+                row: c.ref,
             })
         )
     );
