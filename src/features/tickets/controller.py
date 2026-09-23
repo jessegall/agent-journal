@@ -24,7 +24,7 @@ from features.tickets.resource import Ticket
 from controllers.types import Agents
 from features.plans.controller import READY, Plans
 from resources.base import AGENT, SYSTEM, Refused, Resource
-from resources.shapes import LEVELS
+from resources.shapes import LEVELS, rank_before
 
 
 PROPOSED, CONFIRMED = "proposed", "confirmed"
@@ -80,7 +80,7 @@ class Tickets(Controller):
 
     def board(self, n: int) -> dict:
         stages = self._stages(n)
-        tickets = [r for r in self._standing() if int(r.board) == int(n) and not r.draft]
+        tickets = sorted((r for r in self._standing() if int(r.board) == int(n) and not r.draft), key=lambda r: r.position)
         sessions = Sessions(self.record.root).all()
         running = self._running()
         lanes = BoardLanes([(Lane(stage, stage), [self._card(r, stage, stages, sessions, len(running)) for r in tickets if r.stage == stage])
@@ -359,6 +359,13 @@ class Tickets(Controller):
         at = queue.index(target.n)
         before = self.load(queue[at - 1]).queued_at if at else target.queued_at - 1
         return self.update(ticket.n, queued_at=(before + target.queued_at) / 2)
+
+    def place(self, n: int, before: int):
+        ticket, target = self.load(int(n)), self.load(int(before))
+        if ticket.queued and target.queued:
+            return self.queue_before(ticket.n, target.n)
+        column = sorted((r for r in self._standing() if r.n != ticket.n and int(r.board) == int(target.board) and r.stage == target.stage), key=lambda r: r.position)
+        return self.update(ticket.n, rank=rank_before(column, target.n))
 
     def start_next(self, n: int):
         ticket = self.load(int(n))

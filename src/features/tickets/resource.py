@@ -1,12 +1,12 @@
 from typing import ClassVar
 
 from resources.base import PROJECT, USER, Resource, ResourceDetails
-from resources.shapes import FLAG, NUMBER, TEXT, Field, Shape
+from resources.shapes import FLAG, NUMBER, TEXT, Field, Placed, Shape
 
 AGENT_CLI = "claude"
 
 
-class Ticket(Shape, Resource):
+class Ticket(Placed, Resource):
     type = "ticket"
     icon = "ticket"
     scope = PROJECT

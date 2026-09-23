@@ -2,7 +2,7 @@ import time
 from controllers.base import Controller, internal, CONTROLLERS
 from resources import types
 from resources.base import SYSTEM, Refused
-from resources.shapes import LEVELS
+from resources.shapes import LEVELS, rank_before
 from controllers.questions import Questions
 
 
@@ -110,8 +110,14 @@ class Todos(Controller):
             raise Refused(f"a priority is a number or one of {', '.join(LEVELS)}")
         return self.update(n, priority=LEVELS.get(level, int(level) if level.lstrip("-").isdigit() else 0))
 
+    def place(self, n: int, before: int):
+        todo, target = self.load(int(n)), self.load(int(before))
+        level = int(target.priority or LEVELS["default"])
+        column = [t for t in self._ordered(self._standing()) if t.n != todo.n and int(t.priority or LEVELS["default"]) == level]
+        return self.update(todo.n, priority=level, rank=rank_before(column, target.n))
+
     def _ordered(self, rows: list) -> list:
-        return sorted(rows, key=lambda t: (-int(t.priority or LEVELS["default"]), t.n))
+        return sorted(rows, key=lambda t: (-int(t.priority or LEVELS["default"]), t.position, t.n))
 
     def _every(self, deleted: bool = False) -> list:
         return self._ordered(super()._every(deleted))

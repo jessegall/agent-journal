@@ -134,3 +134,19 @@ def test_an_ended_plan_holds_none_of_its_rows():
     plans.start(plan.n)
     assert (held(record, Todos(record, actor=USER).load(row.n)), lane(record, row.n)) == (False, "todo"), \
         "only the running plan's phase counts; the abandoned one still linking the row holds nothing"
+
+
+def test_a_card_dropped_before_another_takes_that_place_and_its_priority():
+    features.load()
+    record = fresh()
+    todos = Todos(record, actor=USER)
+    first, second, third = (todos.create(title).n for title in ("First", "Second", "Third"))
+    todos.priority(first, "high")
+    todos.place(third, before=second)
+    column = [card["n"] for lane in board(record)["lanes"] if lane["key"] == "todo" for card in lane["cards"]]
+    assert column == [first, third, second], f"the dropped card sits right before the one it was dropped on: {column}"
+    todos.place(third, before=first)
+    assert todos.load(third).priority == todos.load(first).priority, "dropped above a higher one, it takes that priority, so auto mode works it in that order"
+    assert [t.n for t in todos._standing()][:2] == [third, first], "and the order the board shows is the order the journal hands out"
+    todos.complete(second, how="done")
+    assert "same column" in refused(lambda: todos.place(first, before=second)), "a card is only placed among the open cards of its column"

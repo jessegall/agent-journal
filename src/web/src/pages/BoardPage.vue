@@ -178,7 +178,8 @@ const leavesItsAgent = (card, lane) =>
 function move(card, lane) {
     if (leavesItsAgent(card, lane)) stopping.value = {card, lane};
     else if (card.type === "todo" && (ASKS[lane] || (card.lane === "done" && lane === "todo"))) asking.value = {card, lane};
-    else shift(card, lane, {});
+    else return shift(card, lane, {});
+    return null;
 }
 
 async function stopAndMove({card, lane}) {
