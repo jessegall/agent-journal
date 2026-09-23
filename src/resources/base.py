@@ -141,6 +141,7 @@ class Resource:
     shown_fields: ClassVar[tuple] = ()   # data fields its panel shows and edits
     choices: ClassVar[dict] = {}         # the values a shown field may take, where they are fixed
     own_folder: ClassVar[bool] = False  # each row lives in a folder of its own, beside its files
+    read_whole: ClassVar[bool] = False  # its files are read whole by the agent, however long
     progress: ClassVar[tuple] = ()   # data a system row may still change as it runs
     loading: ClassVar[str] = MEMORY
     data_fields: ClassVar[list[Field]] = [

@@ -108,6 +108,10 @@ def test_reading_a_long_file_whole_is_refused_and_a_range_or_a_short_file_passes
     cat = hook("Bash", {"command": "cat long.py"})
     assert cat.get("decision") == "block" and "print a range with sed -n" in cat.get("reason", ""), cat
     assert hook("Bash", {"command": "cat long.py | head -20"}).get("decision") != "block", "a cat already cut short passes"
+    dropped = record.folder("dump") / "001" / "proposal.md"
+    dropped.parent.mkdir(parents=True)
+    dropped.write_text("x = 1\n" * 400)
+    assert hook("Read", {"file_path": str(dropped)}).get("decision") != "block", "a file dropped in a dump is read whole"
 
 
 def test_a_long_command_output_keeps_its_ends_and_the_whole_of_it_as_an_output_row(tmp_path):

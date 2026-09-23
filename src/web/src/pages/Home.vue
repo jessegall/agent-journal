@@ -174,6 +174,10 @@ const tabs = computed(() => [
     padding: 0 var(--home-gutter);
 }
 
+.home-thread > :deep(.thread) > :is(.dump, .terminal) {
+    margin: 0 calc(-1 * var(--home-gutter));
+}
+
 @media (min-width: 1280px) {
     .home-thread.roomy {
         --home-gutter: 72px;

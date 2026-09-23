@@ -17,6 +17,7 @@ class Dump(Shape, Resource):
         Field(default=list, name="log"),
     ]
     needs_attention = True
+    read_whole = True
     in_sidebar = False
     icon = "inbox"
     command_names = {"complete": "close"}

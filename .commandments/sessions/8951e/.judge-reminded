@@ -1,8 +1,12 @@
-/Users/jessegall/projects/agent-journal/src/commands/queries.py
-/Users/jessegall/projects/agent-journal/src/features/agent_sessions/history.py
-/Users/jessegall/projects/agent-journal/src/features/agent_sessions/test.py
-/Users/jessegall/projects/agent-journal/src/providers/base.py
-/Users/jessegall/projects/agent-journal/src/providers/claude.py
+/Users/jessegall/projects/agent-journal/src/features/dumps/controller.py
+/Users/jessegall/projects/agent-journal/src/features/dumps/details.py
+/Users/jessegall/projects/agent-journal/src/features/dumps/handlers.py
+/Users/jessegall/projects/agent-journal/src/features/dumps/resource.py
+/Users/jessegall/projects/agent-journal/src/features/dumps/test.py
+/Users/jessegall/projects/agent-journal/src/features/journal_laws/interceptors.py
+/Users/jessegall/projects/agent-journal/src/features/journal_laws/test.py
+/Users/jessegall/projects/agent-journal/src/resources/base.py
+/Users/jessegall/projects/agent-journal/src/web/src/pages/Home.vue
 -----
 Batch marker for the code-commandments judge reminder (`commandments judge-reminder`, wired as
 Stop + PreToolUse hooks). The lines above the separator are the changed-file set it last
