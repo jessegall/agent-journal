@@ -1,8 +1,0 @@
-marked-at: 1790108387
------
-Code-commandments — where the `edits` watcher has looked up to.
-
-The block above the first divider is this file's state, one `name: value` per line:
-  marked-at  the unix time of the last look; a judged file newer than this is one a tool has changed since
-
-Safe to delete — it regenerates.

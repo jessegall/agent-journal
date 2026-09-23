@@ -1,8 +1,0 @@
-count: 2
------
-Code-commandments counter `repent-feedback` — a hook heartbeat.
-
-The block above the first divider is this file's state, one `name: value` per line:
-  count  the running count. It rate-limits the post-repent feedback nudge
-
-Safe to delete — it regenerates.
