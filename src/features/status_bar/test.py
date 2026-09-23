@@ -142,6 +142,7 @@ def test_a_model_change_is_typed_into_the_terminal_whole_and_raw(monkeypatch):
     os.utime(seat, None)
     monkeypatch.setattr(control, "choice", lambda provider, action, value, model: {"label": "Luna", "commands": ["/model", "\x1b[B\x1b[B", ""]})
     control.request(record.root, record.env, "claude-1", "model", "luna")
+    assert engine.shelled() == "", "the terminal box's reader leaves a model or effort change alone"
     assert engine.control(stopped=True) == "controlled: Luna"
     entered = [raw for raw in typed if raw.strip(b"\x05\x15\x7f")]
     assert entered == [b"/model", b"\r", b"\x1b[B\x1b[B", b"\r", b"\r"] and not any(MARK.encode() in raw for raw in typed), \
