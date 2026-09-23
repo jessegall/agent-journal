@@ -13,6 +13,7 @@ import FirstBoard from "../board/FirstBoard.vue";
 import NewWork from "../board/NewWork.vue";
 import {remember, remembered} from "../composables/remembered.js";
 import {load as loadRows, rows} from "../sync/rows.js";
+import NotePrompt from "../board/NotePrompt.vue";
 import ShiftPrompt from "../board/ShiftPrompt.vue";
 import StopPrompt from "../board/StopPrompt.vue";
 import NewResource from "../resource/NewResource.vue";
@@ -92,6 +93,8 @@ const moving = ref(0);
 const asking = ref(null);
 const stopping = ref(null);
 const watching = ref(null);
+const noting = ref(null);
+const askNote = (ask) => (noting.value = ask);
 const watchAgent = (card) => (watching.value = card);
 const LIVE_STATES = ["running", "you"];
 const refusal = ref("");
@@ -122,6 +125,13 @@ async function stopAndMove({card, lane}) {
     shift(card, lane, {});
 }
 
+async function sendNote(note) {
+    const {card, action} = noting.value;
+    noting.value = null;
+    await api.act(card.type, card.n, action.action, {note});
+    refresh();
+}
+
 function keepAndMove({card, lane}) {
     stopping.value = null;
     shift(card, lane, {});
@@ -142,7 +152,7 @@ async function shift(card, lane, words) {
     }
 }
 
-provide("board", {move, moving, refresh, meaningOf, newWork, watchAgent});
+provide("board", {move, moving, refresh, meaningOf, newWork, watchAgent, askNote});
 
 const lens = (change) => (store.board.lens = {...store.board.lens, ...change});
 watch(() => [store.board.lens.plan, store.board.lens.agent, store.board.lens.board], refresh);
@@ -229,6 +239,9 @@ const ask = usePoll(
                     />
                 </template>
             </div>
+        </template>
+        <template v-if="noting">
+            <NotePrompt :ask="noting" @send="sendNote" @close="noting = null" />
         </template>
         <template v-if="watching">
             <AgentDrawer :card="watching" @close="watching = null" @stopped="refresh" />

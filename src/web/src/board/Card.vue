@@ -21,7 +21,8 @@ const titleOf = (name) => (store.board.agents.find((agent) => agent.name === nam
 const people = () => [...new Set([props.card.assigned, props.card.worker && props.card.worker.agent].filter(Boolean))];
 
 async function act(action) {
-    await api.act(props.card.type, props.card.n, action);
+    if (action.note) return board.askNote({card: props.card, action});
+    await api.act(props.card.type, props.card.n, action.action);
     board.refresh();
 }
 
@@ -89,7 +90,7 @@ function begin(event) {
                         <a class="action-link" :href="action.href" target="_blank" rel="noopener" @click.stop>{{ action.label }} ↗</a>
                     </template>
                     <template v-else>
-                        <Btn small :kind="i ? 'ghost' : 'primary'" @click.stop="act(action.action)">{{ action.label }}</Btn>
+                        <Btn small :kind="i ? 'ghost' : 'primary'" @click.stop="act(action)">{{ action.label }}</Btn>
                     </template>
                 </template>
             </span>
