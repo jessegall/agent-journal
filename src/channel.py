@@ -26,7 +26,9 @@ def say(message: dict) -> None:
 
 def start(f: Path) -> int:
     carried = os.environ.pop(READ_AT, "")
-    return int(carried) if carried else f.stat().st_size if f.exists() else 0
+    if carried:
+        return int(carried)
+    return f.stat().st_size if f.exists() else 0
 
 
 def fresh_lines(f: Path, at: int) -> tuple[list[str], int]:
