@@ -4,6 +4,7 @@ import {span} from "../format/time.js";
 import {store} from "../state/store.js";
 import {useNow} from "../composables/now.js";
 import {api} from "../api/client.js";
+import TextDisplay from "../kit/TextDisplay.vue";
 
 const props = defineProps({
     rows: {type: Array, default: () => []},
@@ -57,7 +58,7 @@ function detail(row) {
         >
             <span :class="['crew-dot', {on: row.running}]" />
             <span class="crew-what">
-                {{ row.task || row.command }}
+                <TextDisplay inline :text="row.task || row.command" />
                 <small>{{ detail(row) }}</small>
             </span>
             <small class="crew-when">{{ lasted(row) }}</small>
