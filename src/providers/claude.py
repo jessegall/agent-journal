@@ -360,8 +360,9 @@ class Claude(Provider):
         for use in (u for u in uses if u.name in DISPATCHES):
             session = sessions.get(use.id)
             status, done = ended.get(use.id, ("", 0.0))
-            writing = session is not None and session.is_file() and now - session.stat().st_mtime <= QUIET_SUBAGENT
-            running = not status or status == "returned" and writing
+            written = session.stat().st_mtime if session is not None and session.is_file() else 0.0
+            writing = now - written <= QUIET_SUBAGENT
+            running = not status or writing and (status == "returned" or written > done)
             subagents.append({"id": use.id, "task_id": ids.get(use.id, ""), "task": use.description if use.description else "subagent", "type": use.subagent_type,
                               "model": use.model, "running": running, "at": use.at, "ended": 0.0 if running else done,
                               "status": "" if running else status,

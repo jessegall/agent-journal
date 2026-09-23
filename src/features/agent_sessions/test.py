@@ -226,15 +226,27 @@ def test_a_background_subagent_stops_running_when_its_completion_arrives(tmp_pat
         {"type": "tool_use", "id": "a1", "name": "Agent", "input": {"description": "review", "prompt": "p", "subagent_type": "reviewer"}}]}}
     launched = {"type": "user", "timestamp": "2026-09-23T00:00:01Z", "message": {"content": [
         {"type": "tool_result", "tool_use_id": "a1", "content": "Async agent launched successfully. agentId: x1"}]}}
-    completed = {"type": "queue-operation", "operation": "enqueue", "timestamp": "2026-09-23T00:05:00Z",
-                 "content": "<task-notification><tool-use-id>a1</tool-use-id><status>completed</status></task-notification>"}
+    import os
+    import time
+    from datetime import datetime, timezone
+    stamp = lambda at: datetime.fromtimestamp(at, timezone.utc).isoformat()
+    now = time.time()
+    completed = lambda at: {"type": "queue-operation", "operation": "enqueue", "timestamp": stamp(at),
+                            "content": "<task-notification><tool-use-id>a1</tool-use-id><status>completed</status></task-notification>"}
     transcript = tmp_path / "s.jsonl"
     folder = transcript.with_suffix("").joinpath("subagents")
     folder.mkdir(parents=True)
     (folder / "agent-x1.meta.json").write_text(json.dumps({"toolUseId": "a1"}))
-    (folder / "agent-x1.jsonl").write_text("{}\n")
+    session = folder / "agent-x1.jsonl"
+    session.write_text("{}\n")
+    os.utime(session, (now - 20, now - 20))
     transcript.write_text("\n".join(json.dumps(row) for row in (dispatched, launched)) + "\n")
     assert Claude().crew(transcript)["subagent_rows"][0]["running"], "a launched subagent still writing runs"
     with transcript.open("a") as f:
-        f.write(json.dumps(completed) + "\n")
-    assert not Claude().crew(transcript)["subagent_rows"][0]["running"], "its completion ends it, though its transcript was written just now"
+        f.write(json.dumps(completed(now - 10)) + "\n")
+    assert not Claude().crew(transcript)["subagent_rows"][0]["running"], "its completion ends it, though its transcript was written just before"
+    os.utime(session, (now, now))
+    assert Claude().crew(transcript)["subagent_rows"][0]["running"], "resumed by a message, it writes again and runs again"
+    with transcript.open("a") as f:
+        f.write(json.dumps(completed(now + 1)) + "\n")
+    assert not Claude().crew(transcript)["subagent_rows"][0]["running"], "and its next completion ends it again"
