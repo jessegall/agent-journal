@@ -5,6 +5,7 @@ from pathlib import Path
 from resources.base import Refused, check_title
 
 INCLUDED = ".worktreeinclude"
+KEPT = "refs/journal/worktrees"
 
 
 def checkout(start: Path) -> Path | None:
@@ -31,14 +32,20 @@ def linked(project: Path) -> set[str]:
 
 
 def opened(project: Path, folder: Path, branch: str) -> Path:
-    if folder.is_dir():
-        return folder
-    known = git(project, "rev-parse", "--verify", "--quiet", f"refs/heads/{branch}").returncode == 0
-    made = git(project, "worktree", "add", str(folder), *((branch,) if known else ("-b", branch)))
-    if made.returncode:
-        raise SystemExit(f"journal: the worktree {folder.name} could not be made: {made.stderr.strip()}")
-    included(project, folder)
+    kept = f"{KEPT}/{folder.name}"
+    if not folder.is_dir():
+        known = present(project, f"refs/heads/{branch}")
+        start = () if known or not present(project, kept) else (kept,)
+        made = git(project, "worktree", "add", str(folder), *((branch,) if known else ("-b", branch, *start)))
+        if made.returncode:
+            raise SystemExit(f"journal: the worktree {folder.name} could not be made: {made.stderr.strip()}")
+        included(project, folder)
+    git(project, "update-ref", kept, f"refs/heads/{branch}")
     return folder
+
+
+def present(project: Path, ref: str) -> bool:
+    return git(project, "rev-parse", "--verify", "--quiet", ref).returncode == 0
 
 
 def included(project: Path, folder: Path) -> None:
