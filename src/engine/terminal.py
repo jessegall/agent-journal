@@ -39,9 +39,9 @@ def watched(root: Path) -> tuple:
     return (str((root / "journal.pyz").resolve()), *((str(f), f.stat().st_mtime_ns) for f in files if f.is_file()))
 
 
-def agent_environment(base: dict | None = None, env: str = "", capped: dict | None = None) -> dict:
+def agent_environment(base: dict | None = None, env: str | None = None, capped: dict | None = None) -> dict:
     made = {**(base if base is not None else os.environ), ACTIVE_ENV: "1"}
-    if env:
+    if env is not None:
         made["JOURNAL_ENV"] = env
     return {**made, **(capped or {})}
 
