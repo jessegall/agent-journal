@@ -49,8 +49,15 @@ def test_a_ticket_is_bound_to_one_environment_its_worktree_and_session_share():
     assert (bound.work_environment, Environments(record)._titled(bound.work_environment) is not None, tickets.bind(ticket.n).work_environment) == \
         (f"ticket-{ticket.n}", True, f"ticket-{ticket.n}"), "binding makes the ticket's environment once, named for the ticket, which its worktree takes too"
     assert tickets.agent_session(ticket.n) == "", "no session holds it until its agent starts"
+    Sessions(record.root).write("claude-old", environment=bound.work_environment, provider="claude", pid=999999)
+    assert Sessions(record.root).choose("claude-new", "claude", "main") == "main", "a plain session never lands in a ticket's environment"
     Sessions(record.root).bind("claude-7", bound.work_environment, provider="claude")
     assert tickets.agent_session(ticket.n) == "claude-7", "the session is whichever one holds the ticket's environment"
+    tickets.complete(ticket.n, how="still running")
+    assert Environments(record)._titled(bound.work_environment) is not None, "an environment whose agent still runs is kept when its ticket closes"
+    other = tickets.bind(tickets.create("Search").n)
+    tickets.complete(other.n, how="shipped")
+    assert Environments(record)._titled(other.work_environment) is None, "a closed ticket's idle environment goes to the attic"
 
 
 def test_an_agent_runs_under_a_supervisor_with_no_terminal(tmp_path):

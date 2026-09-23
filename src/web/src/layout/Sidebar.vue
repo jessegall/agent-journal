@@ -13,7 +13,7 @@ import {usePoll} from "../poll.js";
 usePoll(...polled.agents);
 usePoll(...polled.pages);
 
-const envs = computed(() => rows("environment").filter((e) => !e.completed));
+const envs = computed(() => rows("environment").filter((e) => !e.completed && !e.data.owner));
 const pages = computed(() => store.pages || []);
 const draft = reactive({open: false, name: "", error: ""});
 const folded = reactive({});

@@ -47,13 +47,24 @@ class Tickets(Controller):
         name = f"{self.type}-{ticket.n}"
         environments = Environments(self.record, actor=self.actor)
         if not environments._titled(name):
-            environments.create(name, abstract=f"Where {self.type} {ticket.n} runs")
+            environments.create(name, abstract=f"Where {self.type} {ticket.n} runs", owner=ticket.ref)
         prompted(Record(self.record.root, name))
         return self.update(ticket.n, work_environment=name)
 
     def agent_session(self, n: int) -> str:
         ticket = self.load(int(n))
         return Sessions(self.record.root).holder(ticket.work_environment) if ticket.work_environment else ""
+
+    def complete(self, n: int, how: str = "", **data):
+        closed = super().complete(n, how, **data)
+        environments = Environments(self.record, actor=self.actor)
+        place = environments._titled(closed.work_environment) if closed.work_environment else None
+        if place:
+            try:
+                environments.complete(place.n, how=f"{self.type} {closed.n} closed", yes=True)
+            except Refused:
+                pass
+        return closed
 
     def move(self, n: int, stage: str):
         moved = self.update(int(n), stage=stage.strip())
