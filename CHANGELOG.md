@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.113.2 — The chat etiquette skill teaches reacting to a short acknowledgement
+
+The chat etiquette skill now says that a message which only needs acknowledging, such as ok, thanks or carry on, gets a reaction instead of written words, and that a reaction can sit beside a reply or a filed to-do.
+
 ## 2.113.1 — A to-do struck from a plan not yet approved leaves the plan
 
 While a plan is being built, or waits for approval, a to-do struck from it is taken out of its phase instead of staying there as struck. Once the plan is approved, a struck row stays in its phase on the record, as before.
