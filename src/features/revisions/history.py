@@ -4,15 +4,16 @@ from pathlib import Path
 from engine.stored import write_text
 from resources.base import SECTION
 
+
 REVISIONS, OPEN_UNTIL, REVISION, CHANGE = "revisions", "open_until", "revision", "change"
 
 
 def count(doc) -> int:
-    return int(doc.data.get(REVISIONS) or 0)
+    return int(doc.revisions)
 
 
 def is_open(doc) -> bool:
-    return bool(count(doc)) and time.time() < float(doc.data.get(OPEN_UNTIL) or 0)
+    return bool(count(doc)) and time.time() < float(doc.open_until)
 
 
 def path(docs, n: int, k: int) -> Path:

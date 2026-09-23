@@ -95,7 +95,7 @@ class Controller(Stored, Files, Links):
 
     def _unmarked(self, r: Resource) -> None:
         r.title, r.abstract, r.brief, r.outcome = plain(r.title), plain(r.abstract), plain(r.brief), plain(r.outcome)
-        r.sections = [{**s, SECTION.body: plain(s.get(SECTION.body) or "")} for s in r.sections]
+        r.sections = [{**s, SECTION.body: plain(s[SECTION.body])} for s in r.sections]
 
     def _finished(self, r: Resource) -> bool:
         return bool(r.completed)

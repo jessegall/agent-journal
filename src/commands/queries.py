@@ -371,4 +371,4 @@ def decided(ctx) -> str:
     if row is None:
         raise Refused("no agent session is running on this environment to note it on")
     agents.update(row.n, **{**row.data, AgentRow.decided: ctx["why"]})
-    return f"noted: {ctx['why']} - the checkpoint at {int(row.context or 0)}% is released"
+    return f"noted: {ctx['why']} - the checkpoint at {int(row.context)}% is released"

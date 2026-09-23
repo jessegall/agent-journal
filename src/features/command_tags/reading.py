@@ -25,11 +25,11 @@ ANY = pattern(dict.fromkeys((*RETIRED, *RUNS)))
 
 
 def visible(text: str) -> str:
-    return ANY.sub(lambda found: found.group(1) or "", str(text or ""))
+    return ANY.sub(lambda found: found.expand(r"\1"), text)
 
 
-def runs(settings: dict) -> dict:
-    return {**RUNS, **settings.get("runs", {})}
+def runs(settings) -> dict:
+    return {**RUNS, **settings.runs}
 
 
 def reader(settings: dict) -> re.Pattern:
@@ -37,7 +37,7 @@ def reader(settings: dict) -> re.Pattern:
 
 
 def stripped(text: str, settings: dict) -> str:
-    return reader(settings).sub(lambda found: found.group(1) or "", str(text or ""))
+    return reader(settings).sub(lambda found: found.expand(r"\1"), text)
 
 
 def internal(text: str) -> bool:
@@ -57,6 +57,5 @@ def tag_spelling(text: str) -> str:
     return SETTING.sub(r"\1=", text)
 
 
-def answered(values: dict) -> str:
-    numbers = values["numbers"]
+def answered(numbers: list, **_) -> str:
     return f"answer by opening your turn with [!reply:{numbers[0]}]" if len(numbers) == 1 else "answer each by opening a turn with [!reply:<n>]"

@@ -1,7 +1,32 @@
+from dataclasses import asdict, dataclass
 from typing import ClassVar
+
+from engine.fields import number_of, text_of, whole_of
 
 from resources.base import PROJECT, USER, Resource, ResourceDetails
 from resources.shapes import NUMBER, TEXT, Field, Shape
+
+
+@dataclass(frozen=True)
+class CheckRun:
+    ok: bool | None = None
+    code: int = 0
+    at: float = 0.0
+    took: float = 0.0
+    steps: int = 0
+    output: str = ""
+
+    @classmethod
+    def from_json(cls, raw: dict) -> "CheckRun":
+        return cls(ok=raw.get("ok"), code=whole_of(raw, "code"), at=number_of(raw, "at"), took=number_of(raw, "took"),
+                   steps=whole_of(raw, "steps"), output=text_of(raw, "output"))
+
+    def to_json(self) -> dict:
+        return asdict(self)
+
+    @property
+    def summary(self) -> dict:
+        return {"ok": self.ok, "code": self.code, "at": self.at, "took": self.took}
 
 
 class Check(Shape, Resource):
@@ -24,3 +49,7 @@ class Check(Shape, Resource):
         Field(default=list, name="runs"),
     ]
     view = "check"
+
+    @property
+    def last_run(self) -> CheckRun:
+        return CheckRun.from_json(self.last)

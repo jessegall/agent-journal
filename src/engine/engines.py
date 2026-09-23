@@ -26,7 +26,7 @@ class Engines:
 
     def seated(self, session: str) -> Engine | None:
         from providers import DRIVERS
-        provider = Sessions(self.root).read(session).get("provider", "")
+        provider = Sessions(self.root).read(session).provider
         if provider not in DRIVERS:
             return None
         record = Record(self.root, self.env)

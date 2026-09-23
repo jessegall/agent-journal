@@ -25,9 +25,10 @@ def walk(project: Path) -> tuple[list[Path], dict[str, list[str]]]:
         for folder, dirs, names in os.walk(project):
             dirs[:] = [name for name in dirs if not name.startswith(".") and name not in UNLISTED]
             for path in (Path(folder) / name for name in names):
-                if path.is_file():
-                    paths.append(path)
-                    by_name.setdefault(path.name, []).append(str(path.relative_to(project)))
+                if not path.is_file():
+                    continue
+                paths.append(path)
+                by_name.setdefault(path.name, []).append(str(path.relative_to(project)))
         WALKED[str(project)] = (time.time(), paths, by_name)
     finally:
         WALKING.discard(str(project))

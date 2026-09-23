@@ -146,8 +146,9 @@ class Resource:
     data_fields: ClassVar[list[Field]] = [
         Field(default=dict, name="files"),
         Field(default=dict, name="pictures"),
-        Field(name="agent"),
-        Field(name="dispatcher"),
+        Field(default="", name="agent"),
+        Field(default="", name="dispatcher"),
+        Field(default="", name="plugin"),
     ]
     n: int = 0
     title: str = ""
@@ -211,8 +212,8 @@ def check_title(title: str) -> str:
 
 
 def titled(text: str) -> str:
-    lines = (text or "").splitlines()
-    line = " ".join(next((l for l in lines if l.strip() and not l.startswith(">")), text or "").split()).replace(":", " -")
+    lines = text.splitlines()
+    line = " ".join(next((l for l in lines if l.strip() and not l.startswith(">")), text).split()).replace(":", " -")
     if len(line) <= TITLE_MAX:
         return line or "untitled"
     cut = line[:TITLE_MAX - 1]

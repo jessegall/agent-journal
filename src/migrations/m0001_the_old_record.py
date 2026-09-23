@@ -9,6 +9,7 @@ from controllers.types import CONTROLLERS, Docs, Messages, Notifications, Rules,
 from engine.record import Record
 from resources.base import AGENT, Refused, SYSTEM, USER, TITLE_MAX, titled
 from engine.stored import write_text
+from engine.fields import text_of, whole_of
 
 FRONT = re.compile(r"^---\n(.*?)\n---\n?(.*)$", re.DOTALL)
 
@@ -26,9 +27,10 @@ def front(path: Path) -> tuple[dict, str]:
         return {}, path.read_text()
     fields = {}
     for line in m.group(1).splitlines():
-        if ":" in line:
-            k, v = line.split(":", 1)
-            fields[k.strip()] = v.strip()
+        if ":" not in line:
+            continue
+        k, v = line.split(":", 1)
+        fields[k.strip()] = v.strip()
     return fields, m.group(2).strip()
 
 
@@ -81,7 +83,7 @@ class Migration:
         if self.fresh(record, "fact"):
             for i, p in enumerate(load_json(home / "pins.json", "pins"), 1):
                 body = (home / "pins" / p["body"]).read_text().strip() if p.get("body") and (home / "pins" / p["body"]).is_file() else ""
-                self.write(record, "fact", i, p["fact"], brief=body, actor=AGENT, created=when(p.get("at")), completed=when(p.get("struck_at")) or (time.time() if p.get("struck") else 0.0), outcome=p.get("struck") or "")
+                self.write(record, "fact", i, p["fact"], brief=body, actor=AGENT, created=when(p.get("at")), completed=when(p.get("struck_at")) or (time.time() if p.get("struck") else 0.0), outcome=text_of(p, "struck"))
         if self.fresh(record, "reminder"):
             for i, r in enumerate(load_json(home / "reminders.json", "reminders"), 1):
                 self.write(record, "reminder", i, r["text"], created=when(r.get("at")), completed=when(r.get("done")), until=r.get("until", ""))
@@ -96,7 +98,7 @@ class Migration:
                 options = [{"title": o.get("label", ""), "description": o.get("description", ""), "code": o.get("code", "")} for o in q.get("options", [])]
                 refs = [l.replace("inbox:", "message:").replace("todos:", "todo:") for l in q.get("links", [])]
                 self.write(record, "question", i, q["text"], abstract=q.get("description", ""), actor=AGENT, created=when(q.get("at")), completed=when(q.get("answered_at")),
-                           outcome=q.get("answer") or "", options=options, pick=q.get("pick"), refs=refs)
+                           outcome=text_of(q, "answer"), options=options, pick=q.get("pick"), refs=refs)
         if self.fresh(record, "work"):
             for i, w in enumerate(load_json(home / "work.json", "work"), 1):
                 notes = [{"title": n.get("at", "")[:19], "body": n.get("text", "")} for n in w.get("notes", [])]
@@ -111,7 +113,7 @@ class Migration:
         if self.fresh(record, "report"):
             for i, r in enumerate(load_json(home / "reports.json", "reports"), 1):
                 self.write(record, "report", i, r["title"], brief=r.get("body", ""), actor=AGENT, created=when(r.get("at")),
-                           completed=when(r.get("archived_at")), outcome=r.get("archived") or "", refs=[r["about"].replace("todos:", "todo:")] if r.get("about") else [])
+                           completed=when(r.get("archived_at")), outcome=text_of(r, "archived"), refs=[r["about"].replace("todos:", "todo:")] if r.get("about") else [])
         if self.fresh(record, "notification"):
             for i, n in enumerate(load_json(home / "notifications.json", "notifications"), 1):
                 self.write(record, "notification", i, n["text"], actor=SYSTEM, created=when(n.get("at")))
@@ -134,14 +136,14 @@ class Migration:
                 self.write(record, "rule", n, fact, brief=body, created=when(fields.get("at")), completed=time.time() if (n - 1 < len(rules) and rules[n - 1].get("struck")) else 0.0)
             for i, r in enumerate(load_json(self.root / "record.json", "rules"), 1):
                 if not Rules(record, actor=SYSTEM).path(i).is_file():
-                    self.write(record, "rule", i, r["fact"], created=when(r.get("at")), completed=time.time() if r.get("struck") else 0.0, outcome=r.get("struck") or "")
+                    self.write(record, "rule", i, r["fact"], created=when(r.get("at")), completed=time.time() if r.get("struck") else 0.0, outcome=text_of(r, "struck"))
         if self.fresh(record, "doc"):
             for folder in sorted(p for p in (self.root / "docs").iterdir() if p.is_dir()) if (self.root / "docs").is_dir() else []:
                 index = folder / "index.md"
                 if not index.is_file():
                     continue
                 fields, body = front(index)
-                n = int(fields.get("n") or 0)
+                n = whole_of(fields, "n")
                 if not n:
                     continue
                 parts = []

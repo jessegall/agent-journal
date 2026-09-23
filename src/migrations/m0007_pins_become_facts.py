@@ -15,16 +15,15 @@ def run(root: Path) -> str:
     folders = rows = touched = 0
     for home in sorted(p for p in (root / "environments").glob("*") if p.is_dir()):
         old = home / WAS
-        if old.is_dir():
-            new = home / NOW
-            new.mkdir(exist_ok=True)
-            for entry in sorted(old.iterdir()):
-                target = new / entry.name
-                if not target.exists():
-                    entry.rename(target)
-                    rows += entry.is_file()
-            if not any(old.iterdir()):
-                old.rmdir()
+        if not old.is_dir():
+            continue
+        new = home / NOW
+        new.mkdir(exist_ok=True)
+        for entry in (entry for entry in sorted(old.iterdir()) if not (new / entry.name).exists()):
+            entry.rename(new / entry.name)
+            rows += (new / entry.name).is_file()
+        if not any(old.iterdir()):
+            old.rmdir()
             folders += 1
         for f in sorted(home.rglob("*")):
             if not f.is_file() or f.suffix not in TEXT or f.parent.name == "runtime":

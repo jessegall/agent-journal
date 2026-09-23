@@ -19,8 +19,8 @@ class RequireCommandSkill(ToolInterceptor):
         if not skill:
             return ""
         row = context.agent.row
-        since = float(trigger.last(context.record, row.title, context.feature.name).get("since") or 0)
-        at = float(loaded_at(row).get(skill) or 0)
+        since = trigger.last(context.record, row.title, context.feature.name).since
+        at = loaded_at(row).get(skill, 0.0)
         if not at or at < since:
             require(context.record, row.title, {skill: since})
         return ""

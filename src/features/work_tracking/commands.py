@@ -45,5 +45,5 @@ class ResumeWork(Command):
         row = works.load(n)
         if not row.parked:
             raise Refused(f"work {row.n} is not parked")
-        works._gate(int(row.todo or 0))
+        works._gate(int(row.todo))
         return works.update(n, parked="")

@@ -8,6 +8,7 @@ from pathlib import Path
 from controllers.types import Agents
 from engine.record import Record
 from engine.version import version
+from engine.seats import Seat
 from engine.viewer import marked, running
 from resources.base import SYSTEM
 from engine import runtime
@@ -192,18 +193,19 @@ class Band:
         self.url_at = 0.0
         self.asked_at = 0.0
 
-    def seat(self) -> dict:
+    def seat(self) -> Seat:
         try:
-            return json.loads(runtime.session_file(self.root, self.session, "seat.json").read_text())
+            raw = json.loads(runtime.session_file(self.root, self.session, "seat.json").read_text())
         except (OSError, ValueError):
-            return {}
+            raw = {}
+        return Seat.from_json(raw, self.session)
 
-    def agent(self, seat: dict) -> dict:
-        if seat.get("report"):
-            return seat["report"]
-        record = Record(self.root, seat.get("env") or self.env)
+    def context(self, seat: Seat) -> float:
+        if seat.report:
+            return seat.context
+        record = Record(self.root, seat.env if seat.env else self.env)
         agent = Agents(record, actor=SYSTEM).primary()
-        return {"title": agent.title, **agent.data} if agent and agent.event else {}
+        return float(agent.context) if agent and agent.event else 0.0
 
     def viewer(self) -> str:
         now = time.time()
@@ -217,8 +219,8 @@ class Band:
 
     def lines(self, cols: int) -> list[str]:
         seat = self.seat()
-        env = seat.get("env") or self.env
-        return [self.banner(cols, env, self.agent(seat)), self.address(cols)]
+        env = seat.env if seat.env else self.env
+        return [self.banner(cols, env, self.context(seat)), self.address(cols)]
 
     def shade(self, x: int, cols: int) -> tuple[int, int, int]:
         t = x / max(1, cols - 1) * (len(GRADIENT) - 1)
@@ -233,12 +235,12 @@ class Band:
             cells.append(f"{ESC}[48;2;{r};{g};{b}m{ch}")
         return f"{ESC}[{1 if bold else 22}m{ESC}[38;2;245;246;250m" + "".join(cells) + RESET
 
-    def banner(self, cols: int, env: str, agent: dict) -> str:
+    def banner(self, cols: int, env: str, context: float) -> str:
         brand = f"{BRAND} {version()}".strip()
         left = max(0, (cols - len(brand)) // 2)
         clock = datetime.now().strftime("%H:%M:%S")
         left_text = f"{self.project} · {env}"
-        right_text = f"context {round(float(agent.get('context') or 0))}% · {clock}"
+        right_text = f"context {round(context)}% · {clock}"
         text = list(" " * cols)
         text[2:min(cols, 2 + len(left_text))] = left_text[:max(0, cols - 2)]
         text[left:min(cols, left + len(brand))] = brand[:max(0, cols - left)]

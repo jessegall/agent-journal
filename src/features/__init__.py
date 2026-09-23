@@ -31,9 +31,10 @@ def load(root: Path | None = None) -> list[str]:
                 rename(root, old, f"{name}.{key}" if key else name)
     from features.base import rebooted
     for name, cls in REGISTRY.items():
-        if name not in FEATURES:
-            FEATURES[name] = cls()
-            FEATURES[name].wire()
+        if name in FEATURES:
+            continue
+        FEATURES[name] = cls()
+        FEATURES[name].wire()
     if not SWITCHED:
         SWITCHED.extend(bus.on(kind, rebooted) for kind in CHANGE_SWITCHES)
     from features.base import generation

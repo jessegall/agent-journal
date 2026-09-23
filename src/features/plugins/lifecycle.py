@@ -3,27 +3,29 @@ import time
 from pathlib import Path
 
 from engine.services import UP, want
+from features.plugins.declared import Manifest, declared, settings_of
 from features.plugins.skills import published
 from features.plugins.source import folder, home, said_version
+from dataclasses import replace
 
 
 def called(row) -> str:
-    return str((row.manifest or {}).get("name") or "")
+    return declared(row).name
 
 
-def runs(manifest: dict) -> list[str]:
-    steps = [f"setup {step['name']}: {step['run']}" for step in manifest.get("setup") or []]
-    servers = [f"service {name}: {spec['run']}" for name, spec in (manifest.get("services") or {}).items()]
-    handlers = [f"on {pattern}: {handler.get('post') or handler.get('run')}" for pattern, handler in (manifest.get("on") or {}).items()]
+def runs(manifest: Manifest) -> list[str]:
+    steps = [f"setup {step.name}: {step.run}" for step in manifest.setup]
+    servers = [f"service {service.name}: {service.run}" for service in manifest.services]
+    handlers = [f"on {handler.pattern}: {handler.post if handler.post else handler.run}" for handler in manifest.handlers]
     return [*steps, *servers, *handlers]
 
 
-def changed(before: dict, after: dict) -> list[dict]:
+def changed(before: Manifest, after: Manifest) -> list[dict]:
     was, now = runs(before), runs(after)
     return [*({"kind": "gone", "line": line} for line in was if line not in now), *({"kind": "new", "line": line} for line in now if line not in was)]
 
 
-def difference(before: dict, after: dict) -> str:
+def difference(before: Manifest, after: Manifest) -> str:
     lines = changed(before, after)
     if not lines:
         return "It runs the same commands as the version you have."
@@ -43,13 +45,13 @@ def drop(staging: Path, linked: bool) -> None:
         shutil.rmtree(staging, ignore_errors=True)
 
 
-def restarted(root: Path, manifest: dict) -> None:
-    for service in (manifest.get("services") or {}):
-        want(root, f"{manifest['name']}.{service}", UP, nonce=time.time())
+def restarted(root: Path, manifest: Manifest) -> None:
+    for service in manifest.services:
+        want(root, f"{manifest.name}.{service.name}", UP, nonce=time.time())
 
 
-def place(plugins, where: Path, linked: bool, manifest: dict, source: str, ref: str, commit: str, secret: str, row=None, ports: dict | None = None):
-    name = manifest["name"]
+def place(plugins, where: Path, linked: bool, manifest: Manifest, source: str, ref: str, commit: str, secret: str, row=None, ports: dict | None = None):
+    name = manifest.name
     target = folder(plugins.record.root, name)
     home(plugins.record.root).mkdir(parents=True, exist_ok=True)
     clear(target)
@@ -57,8 +59,9 @@ def place(plugins, where: Path, linked: bool, manifest: dict, source: str, ref: 
         target.symlink_to(where)
     else:
         where.rename(target)
-    kept = {"source": source, "revision": ref, "commit": commit, "version": said_version(target, manifest), "linked": linked, "manifest": manifest}
+    kept = {"source": source, "revision": ref, "commit": commit, "version": said_version(target, manifest), "linked": linked, "manifest": manifest.stored}
     published(plugins.record.root, name, manifest)
+    held = ports if ports else {}
     if row:
-        return plugins.update(row.n, abstract=manifest.get("description") or "", settings={**(row.settings or {}), "ports": ports or {}}, **kept)
-    return plugins.create(manifest.get("title") or name, abstract=manifest.get("description") or "", enabled=True, settings={"ports": ports or {}}, token=secret, **kept)
+        return plugins.update(row.n, abstract=manifest.description, settings=replace(settings_of(row), ports=held).to_json(), **kept)
+    return plugins.create(manifest.heading, abstract=manifest.description, enabled=True, settings={"ports": held}, token=secret, **kept)

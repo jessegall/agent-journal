@@ -3,7 +3,7 @@ import re
 import controllers.types as types_module
 import resources.types as resources_module
 from controllers.base import Controller
-from features.templates.resource import Template
+from features.templates.resource import Template, TemplateField
 from resources.base import Refused
 
 
@@ -31,8 +31,8 @@ class Templates(Controller):
         if not name:
             self._refuse("a field needs a label with a letter or a number in it")
         r = self.load(int(n))
-        made = {"name": name, "label": label.strip(), "kind": kind, "options": choices, "default": default}
-        return self.update(r.n, fields=[f for f in r.data.get("fields") or [] if f["name"] != name] + [made])
+        made = TemplateField(name, label.strip(), kind, tuple(choices), default)
+        return self.update(r.n, fields=[f.to_json() for f in r.declared_fields if f.name != name] + [made.to_json()])
 
     def _known(self, given) -> None:
         names = [name.strip() for name in (given.split(",") if isinstance(given, str) else given or []) if name.strip()]

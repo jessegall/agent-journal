@@ -1,7 +1,7 @@
 import json
 import re
 import time
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import ClassVar
 
@@ -10,13 +10,15 @@ from engine.events import ResourceEvent
 from engine.services import DOWN, want
 from features.parts import ActionInterceptor, Canceler, Context, Handler, TextFormatter, ToolInterceptor
 from features.plugins.lifecycle import called, clear
+from features.plugins.declared import declared, settings_of
 from features.plugins.manifest import fill
 from features.plugins.payload import refusal
-from features.plugins.run import asked, call
+from features.plugins.run import PluginReply, asked, call
 from features.plugins.skills import withdrawn
-from features.plugins.source import CHOSEN, environment, folder, logged
+from features.plugins.source import environment, folder, logged
 from features.status_bar import commands
 from resources.base import OWNER, PLUGIN, SYSTEM
+from engine.fields import text_of
 
 EACH = 1.5
 LONGEST_EACH = 3.0
@@ -40,7 +42,7 @@ class PluginChatRules(TextFormatter):
         memo = getattr(context.record, "memo", None)
         if memo is not None and CHAT_RULES in memo:
             return memo[CHAT_RULES]
-        found = [(rule["find"], rule["as"]) for row in context.journal.plugins._standing() if row.enabled for rule in (row.manifest or {}).get("chat") or []]
+        found = [(rule.find, rule.replacement) for row in context.journal.plugins._standing() if row.enabled for rule in declared(row).chat]
         if memo is not None:
             memo[CHAT_RULES] = found
         return found
@@ -48,7 +50,7 @@ class PluginChatRules(TextFormatter):
 
 def placed(record, row) -> tuple:
     name = called(row)
-    return name, folder(record.root, name), environment(record.root, name, row.manifest, row.token, chosen=(row.settings or {}).get(CHOSEN))
+    return name, folder(record.root, name), environment(record.root, name, declared(row), row.token, chosen=settings_of(row).chosen)
 
 
 class AskPluginsToRefuse(ToolInterceptor):
@@ -57,22 +59,24 @@ class AskPluginsToRefuse(ToolInterceptor):
         writes = commands.writes(hook)
         left = ALTOGETHER
         for row in context.journal.plugins._every():
-            asking = (row.manifest or {}).get("refuse")
+            manifest = declared(row)
+            asking = manifest.refuse
             if not row.enabled or row.completed or not asking or left <= 0:
                 continue
-            if not writes and not (row.manifest or {}).get("reads"):
+            if not writes and not manifest.reads:
                 continue
             name, where, env = placed(record, row)
-            seconds = min(float(row.manifest.get("refuse_seconds") or EACH), LONGEST_EACH, left)
+            seconds = min(manifest.refuse_seconds if manifest.refuse_seconds else EACH, LONGEST_EACH, left)
             started = time.monotonic()
             payload = refusal(record, hook, name, where, writes)
-            served = (row.manifest or {}).get("refuse_socket") and asked(Path(env["JOURNAL_PLUGIN_SOCKET"]), payload, seconds)
+            served = manifest.refuse_socket and asked(Path(env["JOURNAL_PLUGIN_SOCKET"]), payload, seconds)
             ok, reply = served if served and served[0] else call(fill(asking, env), where, env, payload, seconds)
             left -= time.monotonic() - started
             if ok and reply:
                 logged(record.root, name, f"refuse? {hook.tool.name} {json.dumps(reply, ensure_ascii=False)}")
-            if ok and isinstance(reply, dict) and str(reply.get("refuse") or "").strip():
-                return f"{name}: {str(reply['refuse']).strip()}"
+            refused = PluginReply.from_json(reply).refuse if ok else ""
+            if refused:
+                return f"{name}: {refused}"
         return ""
 
 
@@ -80,17 +84,19 @@ class AskPluginsToCancel(Canceler):
     def __init__(self, event: str):
         self.event = event
 
-    def cancel(self, context: Context, data: dict) -> str:
+    def cancel(self, context: Context, data) -> str:
         record = context.record
         for row in context.journal.plugins._every():
-            asking = ((row.manifest or {}).get("cancels") or {}).get(self.event)
+            manifest = declared(row)
+            asking = manifest.cancels.get(self.event)
             if not row.enabled or row.completed or not asking:
                 continue
             name, where, env = placed(record, row)
-            ok, reply = call(fill(asking, env), where, env, {"event": self.event, "data": data}, min(float(row.manifest.get("refuse_seconds") or EACH), LONGEST_EACH))
-            if ok and isinstance(reply, dict) and str(reply.get("cancel") or "").strip():
-                logged(record.root, name, f"cancelled {self.event}: {reply['cancel']}")
-                return f"{name}: {str(reply['cancel']).strip()}"
+            ok, reply = call(fill(asking, env), where, env, {"event": self.event, "data": asdict(data)}, min(manifest.refuse_seconds if manifest.refuse_seconds else EACH, LONGEST_EACH))
+            cancelled = PluginReply.from_json(reply).cancel if ok else ""
+            if cancelled:
+                logged(record.root, name, f"cancelled {self.event}: {cancelled}")
+                return f"{name}: {cancelled}"
         return ""
 
 
@@ -109,8 +115,8 @@ class ClearRemovedPlugin(Handler):
         name = called(row)
         still = any(r.n != event.n and called(r) == name for r in rows._standing())
         if name and not still:
-            for service in (row.manifest or {}).get("services") or {}:
-                want(context.record.root, f"{name}.{service}", DOWN)
+            for service in declared(row).services:
+                want(context.record.root, f"{name}.{service.name}", DOWN)
             withdrawn(context.record.root, name)
             forgotten(context.record, name)
             clear(folder(context.record.root, name))
@@ -125,7 +131,7 @@ class KeepPluginRows(ActionInterceptor):
         if not n or controller.actor in (SYSTEM, PLUGIN):
             return None
         row = controller.load(n)
-        name = str(row.data.get(OWNER) or "")
+        name = row.plugin
         if name and row.data.get("locked") is True and installed(controller.record, name):
             controller._refuse(f"{controller.type} {n} belongs to the {name} plugin: it goes when the plugin is removed")
         return None
@@ -133,7 +139,7 @@ class KeepPluginRows(ActionInterceptor):
 
 class OneRowPerTitle(ActionInterceptor):
     def intercept(self, context: Context, controller, title: str = "", abstract: str = "", brief: str = "", **data):
-        name = str(data.get(OWNER) or "")
+        name = text_of(data, OWNER)
         if not name:
             return None
         found = next((row for row in controller.summaries() if row.get(OWNER) == name and row["title"] == title and not row["deleted"]), None)

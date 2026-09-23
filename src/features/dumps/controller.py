@@ -2,7 +2,7 @@ import controllers.types as types_module
 import resources.types as resources_module
 from controllers.base import CONTROLLERS, Controller
 from controllers.stored import DRAFT_OF
-from features.message_buttons.shaping import LABEL, one
+from features.message_buttons.shaping import Button, LABEL, one
 import json
 import time
 
@@ -95,14 +95,13 @@ class Dumps(Controller):
         except ValueError:
             self._refuse("options is a JSON list of {label} or {label, type, n, action}")
         steps = []
-        for option in given[:OFFERED] if isinstance(given, list) else []:
-            label = str((option or {}).get("label") or "").strip()[:LABEL] if isinstance(option, dict) else ""
-            if not label:
+        for option in (Button.from_payload(o) for o in (given[:OFFERED] if isinstance(given, list) else []) if isinstance(o, dict)):
+            if not option.label:
                 continue
-            action = one(self.record, option) if option.get("action") else {}
-            if option.get("action") and not action:
-                self._refuse(f"{label}: {option.get('type')} {option.get('action')} is not a command")
-            steps.append(action or {"label": label})
+            action = one(self.record, option.to_json()) if option.action else {}
+            if option.action and not action:
+                self._refuse(f"{option.label}: {option.type} {option.action} is not a command")
+            steps.append(action if action else {"label": option.label})
         if not steps:
             self._refuse("offer at least one next step with a label")
         return self.update(r.n, options=steps, chosen={})

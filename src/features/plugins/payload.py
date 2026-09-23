@@ -27,12 +27,17 @@ def agent(record, session: str) -> dict:
     return {"session": row.title, "status": row.status, "model": row.model, "cwd": row.cwd} if row else {}
 
 
+def session_of(event) -> str:
+    session = event.data.get("session")
+    return session if isinstance(session, str) else ""
+
+
 def of(record, event, plugin: str, where: Path) -> dict:
     return {"v": VERSION, "event": named(event), "id": event.id, "at": event.at,
             "type": event.type, "n": event.n, "action": event.action, "actor": event.actor, "data": dict(event.data),
             "env": record.env, "project": str(record.root.parent),
             "resource": resource(record, event),
-            "agent": agent(record, str(event.data.get("session") or "")),
+            "agent": agent(record, session_of(event)),
             "plugin": {"name": plugin, "dir": str(where)}}
 
 

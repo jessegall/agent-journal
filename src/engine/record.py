@@ -174,7 +174,8 @@ class Record:
 
     def cursor(self, name: str) -> int:
         try:
-            return int(self.cursor_text(name) or 0)
+            text = self.cursor_text(name)
+            return int(text) if text else 0
         except ValueError:
             return 0
 

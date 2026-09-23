@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 from pathlib import Path
 
 from engine.transcript import Turn
-from providers.payload import AskedQuestion, Hook, PERMISSION, STATUS
+from providers.payload import AskedQuestion, Dispatch, Hook, PERMISSION, STATUS, UsageWindow, asked_in
 from resources.base import Refused
 from engine.stored import read_json, tail, write_text
 
@@ -71,11 +71,11 @@ class Provider(ABC):
     def context(self, hook: Hook) -> float | None:
         return None
 
-    def usage(self, path: Path, now: float | None = None) -> dict | None:
+    def usage(self, path: Path, now: float | None = None) -> list[UsageWindow] | None:
         return None
 
-    def dispatch(self, tool) -> dict:
-        return {}
+    def dispatch(self, tool) -> Dispatch | None:
+        return None
 
     def shell_command(self, tool) -> str:
         return tool.command if tool.name == "Bash" else ""
@@ -96,14 +96,7 @@ class Provider(ABC):
         return tool.name in self.question_tools
 
     def asked_questions(self, tool) -> list[AskedQuestion]:
-        asked = []
-        for question in tool.tool_input.get("questions") or []:
-            if not isinstance(question, dict) or not str(question.get("question") or "").strip():
-                continue
-            options = [{"title": str(option.get("label") or ""), "description": str(option.get("description") or "")}
-                       for option in question.get("options") or [] if isinstance(option, dict) and option.get("label")]
-            asked.append(AskedQuestion(str(question["question"]).strip(), options))
-        return asked
+        return list(asked_in(tool.tool_input))
 
     def session(self, path: Path | None) -> dict:
         return {}
@@ -130,11 +123,11 @@ class Provider(ABC):
                 source.seek(held[0])
                 raw = source.read(size - held[0])
             whole = raw[:raw.rfind(b"\n") + 1]
-            added = [row for row in (parsed(line) for line in whole.decode(errors="replace").splitlines()) if isinstance(row, dict)]
+            added = [self.row_of(row) for row in (parsed(line) for line in whole.decode(errors="replace").splitlines()) if isinstance(row, dict)]
             rows = (held[1] + added)[-RECENT_ROWS:]
             RECENT[str(path)] = (held[0] + len(whole), rows)
             return rows
-        rows = [row for row in (parsed(line) for line in tail(path, RECENT_BYTES)) if isinstance(row, dict)][-RECENT_ROWS:]
+        rows = [self.row_of(row) for row in (parsed(line) for line in tail(path, RECENT_BYTES)) if isinstance(row, dict)][-RECENT_ROWS:]
         RECENT[str(path)] = (size, rows)
         return rows
 
@@ -150,7 +143,7 @@ class Provider(ABC):
             except ValueError:
                 continue
             if isinstance(row, dict):
-                found.append((i, row))
+                found.append((i, self.row_of(row)))
         return found
 
     def settling(self, path: Path) -> bool:
@@ -192,13 +185,16 @@ class Provider(ABC):
         turns = []
         for i, line in enumerate(lines, count + 1):
             row = parsed(line.decode(errors="replace"))
-            turn = self.turn(row) if isinstance(row, dict) else None
+            turn = self.turn(self.row_of(row)) if isinstance(row, dict) else None
             if turn:
                 turns.append(Turn(i, *turn))
         return turns
 
     def refine(self, turns: list[Turn]) -> list[Turn]:
         return turns
+
+    def row_of(self, raw: dict):
+        return raw
 
     def turn(self, row: dict) -> tuple[str, str] | None:
         return None
@@ -231,7 +227,7 @@ class Provider(ABC):
         context = self.context(hook)
         return {"event": hook.event, "tool": hook.tool.name, **self.session(hook.transcript), "file": hook.tool.file_path,
                 "cwd": hook.cwd or row.cwd or "", "at": time.time(),
-                "provider": self.name, "uses": int(row.uses or 0) + (hook.event == "PreToolUse"), "transcript": str(hook.transcript or row.transcript or ""),
+                "provider": self.name, "uses": int(row.uses) + (hook.event == "PreToolUse"), "transcript": str(hook.transcript) if hook.transcript else row.transcript,
                 "inbox": self.inbox(hook) or row.inbox or "", "model": self.model(hook) or row.model or "",
                 "effort": self.effort(Path(hook.cwd or root.parent), hook.transcript), "started": row.started or time.time(),
                 "context": row.context or 0 if context is None else context, "asking": self.asking(hook),
@@ -255,9 +251,8 @@ class Provider(ABC):
         if self.starts_window(row):
             loads.clear()
         for use in self.tool_uses(row):
-            skill = (use.get("input") or {}).get("skill")
-            if use.get("name") == "Skill" and skill:
-                loads[str(skill)] = float(use.get("at") or 0)
+            if use.name == "Skill" and use.skill:
+                loads[use.skill] = use.at
         return loads
 
     def folded(self, path: Path, fold, start):
@@ -277,7 +272,7 @@ class Provider(ABC):
             for line in whole.decode(errors="replace").splitlines():
                 row = parsed(line)
                 if isinstance(row, dict):
-                    state = fold(state, row)
+                    state = fold(state, self.row_of(row))
             offset += len(whole)
         FOLDS[key] = (offset, state)
         return state

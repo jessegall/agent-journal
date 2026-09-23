@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING, ClassVar, get_type_hints
 from controllers.base import COMMANDS, HANDLERS
 from controllers.types import Agents
 from engine import bus
-from engine.events import AgentEvent
+from engine.events import AgentChanged, AgentEvent
 from engine.hooks import CANCELERS, POLICIES
 from engine.state import State
 from engine.wording import APPENDS
@@ -117,6 +117,12 @@ class Handler:
         raise NotImplementedError
 
 
+class OnAgentUpdated:
+    def handle(self, context: AgentContext, event: AgentChanged) -> None:
+        if event.action == "updated":
+            super().handle(context, event)
+
+
 class TextFormatter:
     surfaces: ClassVar[tuple] = ()
     behaviour: ClassVar[str | None] = None
@@ -137,7 +143,7 @@ class ToolInterceptor:
 class Canceler:
     event: ClassVar[str] = ""
 
-    def cancel(self, context: "AgentContext", data: dict) -> str:
+    def cancel(self, context: "AgentContext", data) -> str:
         raise NotImplementedError
 
 

@@ -25,9 +25,8 @@ def chipped(text: str) -> str:
         name, more = names[m.group(1).lower()], re.findall(r"\d+", m.group(3))
         if not more:
             return marked("chip", f"{name}:{m.group(2)}", m.group(0))
-        numbers = [m.group(2), *more]
-        word = m.group(0)[:m.start(2) - m.start(0)].rstrip(" #")
-        return marked("chips", f"{name}:{','.join(numbers)}", f"{word} {', '.join(numbers)}")
+        chips = [marked("chip", f"{name}:{n}", f"{m.group(1)} {n}") for n in (m.group(2), *more)]
+        return f"{', '.join(chips[:-1])} and {chips[-1]}"
 
     return found.sub(chip, text)
 
@@ -103,7 +102,7 @@ def found(part: str, project: Path) -> list[str]:
 
 def filed(m, project: Path, names: dict[str, str]) -> str:
     value = resolved(project, m.group(2)) if a_file(m.group(2)) else ""
-    return m.group(1) + chip(value, m.group(3) or "", names) if value else m.group(0)
+    return m.group(1) + chip(value, m.expand(r"\3"), names) if value else m.group(0)
 
 
 def linked(text: str, project: Path, names: dict[str, str]) -> str:
@@ -114,7 +113,7 @@ def linked(text: str, project: Path, names: dict[str, str]) -> str:
 def coded(span: str, project: Path, names: dict[str, str]) -> str:
     m = PATH.fullmatch(span.strip("`").strip())
     value = existing(project, m.group(2)) if m and a_file(m.group(2)) else ""
-    return chip(value, m.group(3) or "", names) if value else span
+    return chip(value, m.expand(r"\3"), names) if value else span
 
 
 class MarkPaths(TextFormatter):

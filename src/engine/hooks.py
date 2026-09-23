@@ -1,4 +1,5 @@
 import re
+from dataclasses import dataclass
 import threading
 from pathlib import Path
 
@@ -12,6 +13,7 @@ from engine import chat, runtime
 from engine.stored import read_json, write_json
 from providers.payload import PERMISSION, STATUS
 from features.status_bar import commands
+from engine.fields import text_of, whole_of
 
 POLICIES: list = []
 CANCELERS: dict[str, list] = {}
@@ -47,7 +49,7 @@ def serving(policy, provider, hook) -> bool:
 
 
 def alongside(hook) -> str:
-    ran = [found.group(1).strip() for found in JOURNAL.finditer(hook.command or "")]
+    ran = [found.group(1).strip() for found in JOURNAL.finditer(hook.command)]
     return f" — and these were on the same line, so they did not run either: {'; '.join(ran)}" if ran else ""
 
 
@@ -72,24 +74,38 @@ def replay(root: Path) -> None:
             raw = read_json(f, None)
             f.unlink(missing_ok=True)
             if isinstance(raw, dict):
-                shown(root, raw)
+                display_chunk(root, raw)
 
 
 def displayed(root: Path, raw: dict) -> None:
     replay(root)
-    shown(root, raw)
+    display_chunk(root, raw)
 
 
-def shown(root: Path, raw: dict) -> None:
-    session, message = str(raw.get("session_id") or ""), str(raw.get("message_id") or "")
+@dataclass(frozen=True)
+class Chunk:
+    session: str
+    message: str
+    index: int
+    delta: str
+    final: bool
+
+    @classmethod
+    def from_payload(cls, raw: dict) -> "Chunk":
+        return cls(text_of(raw, "session_id"), text_of(raw, "message_id"), whole_of(raw, "index"), text_of(raw, "delta"), bool(raw.get("final")))
+
+
+def display_chunk(root: Path, raw: dict) -> None:
+    chunk = Chunk.from_payload(raw)
+    session, message = chunk.session, chunk.message
     f = runtime.session_file(root, session, "displayed.json")
     with SHOWING:
         held = read_json(f, {})
         if message in held.get(DONE, []):
             return
-        parts = {**held.get(message, {}), str(int(raw.get("index") or 0)): str(raw.get("delta") or "")}
+        parts = {**held.get(message, {}), str(chunk.index): chunk.delta}
         rest = {key: value for key, value in held.items() if key != message}
-        if not raw.get("final"):
+        if not chunk.final:
             write_json(f, {**rest, message: parts})
             return
         write_json(f, {**rest, DONE: [*rest.get(DONE, []), message][-KEPT_DONE:]})
@@ -125,16 +141,16 @@ def answer(provider, root: Path, raw: dict, pid: int, prefer: str = "") -> dict:
     hook = Hook.read(raw)
     session = hook.session
     env = sessions.environment(session)
-    if not env or not sessions.read(session).get("provider"):
+    if not env or not sessions.read(session).provider:
         top = checkout(Path(hook.cwd)) if hook.cwd else None
         env = top.name if top else prefer or sessions.choose(session, provider.name, default_env(root))
         sessions.bind(session, env, pid=agent_pid(pid), provider=provider.name)
         environments = Environments(Record(root, env), actor=SYSTEM)
         environments._seat(env, session)
         wrapper = f"{provider.name}-{agent_pid(pid)}"
-        if top and sessions.read(wrapper):
+        if top and sessions.known(wrapper):
             sessions.bind(wrapper, env)
-    elif not alive(sessions.read(session).get("pid") or 0):
+    elif not alive(sessions.read(session).pid):
         sessions.write(session, pid=agent_pid(pid))
     sessions.touch(session)
     return handle(provider, root, env, hook)

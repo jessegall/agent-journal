@@ -1,3 +1,4 @@
+import json
 import os
 import sys
 import tempfile
@@ -17,6 +18,12 @@ from engine.record import Record  # noqa: E402
 
 def fresh(env: str = "t") -> Record:
     return Record(Path(tempfile.mkdtemp(dir=isolation.world())) / ".journal", env)
+
+
+def holds(record: Record, session: str = "claude-1") -> dict:
+    from engine.hooks import gate_file
+    f = gate_file(record.root, record.env, session)
+    return json.loads(f.read_text()) if f.is_file() else {}
 
 
 def refused(fn) -> str:

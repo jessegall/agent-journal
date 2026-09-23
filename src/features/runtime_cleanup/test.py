@@ -43,7 +43,7 @@ def test_captures_are_cut_to_their_tail_and_quiet_sessions_are_removed_whole():
     assert (log.stat().st_size, log.read_bytes().endswith(b"last line\n")) == (1024 * 1024, True), "a log keeps its last megabyte"
     assert (gone.exists(), small.exists()) == (False, True), "a session's folder quiet past the days goes whole, a live one stays"
     assert kept.read_text() == "main", "files that are not per-session stay, however old"
-    assert text == {"removed": 1, "trimmed": 2, "events": 0, "leftovers": 0}, "it says what it did"
+    assert (text.removed, text.trimmed, text.events, text.leftovers) == (1, 2, 0, 0), "it says what it did"
 
     with big.open("ab") as out:
         out.write(b"+more")

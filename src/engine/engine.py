@@ -1,4 +1,5 @@
 import time
+from dataclasses import asdict, dataclass, field, replace
 
 from pathlib import Path
 
@@ -6,7 +7,7 @@ from controllers.types import CONTROLLERS, Agents, Messages
 import features
 from engine import bus, chat, runtime
 from engine.actors import Actor, Agent, BUSY, IDLE, STOPPED, System, User, WORKING, spoken_data
-from engine.inputs import BACKGROUND, FORCE, PERMIT, SHELL, take
+from engine.inputs import BACKGROUND, FORCE, PERMIT, SHELL, take, waiting_commands
 from surfaces.control import CARRY_ON, delivered
 from engine.record import Record
 from engine.watch import STEADY_AFTER, steady, threw
@@ -17,6 +18,7 @@ from engine.seat import Seat
 from engine.wording import plural
 from engine.transcript import PEER, SENT, turns
 from engine.stored import read_json, write_json
+from engine.fields import mapping_of, number_of
 
 CLOCK_EVERY = 5.0
 
@@ -38,6 +40,17 @@ def after(written: list, line: int) -> list[str]:
     known = next((i for i, t in enumerate(written) if t.line == line), None)
     return [t.text for t in (written[known + 1:] if known is not None else written[-1:])]
 
+
+
+@dataclass(frozen=True)
+class PeerLog:
+    at: float = 0.0
+    names: dict = field(default_factory=dict)
+
+    @classmethod
+    def from_json(cls, raw) -> "PeerLog":
+        raw = raw if isinstance(raw, dict) else {}
+        return cls(number_of(raw, "at"), mapping_of(raw, "names"))
 
 class Engine(Seat):
     def __init__(self, record: Record, driver):
@@ -108,11 +121,12 @@ class Engine(Seat):
         self.peer_size = size
         f = runtime.session_file(self.record.root, row.title, "peers.json")
         seen = read_json(f, None)
+        log = PeerLog.from_json(seen)
         recent = sorted((t for t in provider().tail(row.transcript) if t.kind == PEER and t.who.startswith((f"{PEER}:", f"{SENT}:"))), key=lambda t: t.at)
-        newest = max([t.at for t in recent] + [float((seen or {}).get("at") or 0)])
-        names = dict((seen or {}).get("names") or {})
+        newest = max([t.at for t in recent] + [log.at])
+        names = dict(log.names)
         for t in recent if seen is not None else []:
-            if t.at <= float(seen.get("at") or 0):
+            if t.at <= log.at:
                 continue
             kind, _, rest = t.who.partition(":")
             if kind == PEER:
@@ -121,7 +135,7 @@ class Engine(Seat):
                 Messages(self.record, actor=AGENT).create(titled(t.text), brief=t.text, peer=name)
             else:
                 Messages(self.record, actor=AGENT).create(titled(t.text), brief=t.text, sent_to=names.get(rest, rest))
-        write_json(f, {"at": newest, "names": names})
+        write_json(f, asdict(PeerLog(newest, names)))
 
     def announce_written(self) -> None:
         last = self.agent.driver.last_report()
@@ -150,7 +164,7 @@ class Engine(Seat):
         last = driver.last_report()
         if last is None or not driver.alive():
             return ""
-        reported = float(last.at or 0)
+        reported = float(last.at)
         silent = time.time() - max(reported, self.typed_at) >= SILENT_AFTER and driver.quiet_for() >= SILENT_AFTER
         if self.probed_at > reported:
             if time.time() - self.probed_at < PROBE_WAIT:
@@ -168,6 +182,11 @@ class Engine(Seat):
             self.probed_at = time.time()
             return "silent for two minutes: probing with Ctrl-C"
         return ""
+
+    def passed_over(self, actor, e) -> None:
+        if actor is self.agent and TYPES[e.type].typed_as_title:
+            CONTROLLERS[e.type](self.record, actor=AGENT).read(e.n)
+        actor.notified(e)
 
     def addressed(self, e) -> bool:
         return spoken_data(self.record, e).get("session") in self.names()
@@ -189,8 +208,8 @@ class Engine(Seat):
         queued = take(self.record.root, self.names(), PERMIT)
         if not queued:
             return ""
-        self.agent.driver.permit(queued.get("value") == "allow")
-        return f"permission: {queued.get('value')}"
+        self.agent.driver.permit(queued.value == "allow")
+        return f"permission: {queued.value}"
 
     def shelled(self) -> str:
         last = self.agent.driver.last_report()
@@ -199,29 +218,30 @@ class Engine(Seat):
         queued = take(self.record.root, self.names(), SHELL)
         if not queued:
             return ""
-        typed = self.agent.driver.run_shell(queued["value"])
+        typed = self.agent.driver.run_shell(queued.value)
         agents = Agents(self.record, actor=SYSTEM)
-        row = agents.by_session(queued["session"])
-        waiting = row.data.get("queued_commands") or []
-        agents.update(row.n, queued_commands=[{**c, "typed": time.time()} if c.get("at") == queued["at"] else c for c in waiting if typed or c.get("at") != queued["at"]])
-        return f"typed in the terminal: {queued['value']}" if typed else ""
+        row = agents.by_session(queued.session)
+        waiting = waiting_commands(row)
+        kept = [replace(c, typed=time.time()) if c.at == queued.at else c for c in waiting if typed or c.at != queued.at]
+        agents.update(row.n, queued_commands=[asdict(c) for c in kept])
+        return f"typed in the terminal: {queued.value}" if typed else ""
 
     def ran(self) -> None:
         row = self.agent.driver.last_report()
-        waiting = (row and row.data.get("queued_commands")) or []
+        waiting = waiting_commands(row)
         provider = PROVIDERS.get(row.provider) if row else None
-        if not any(c.get("typed") for c in waiting) or not provider or not row.transcript:
+        if not any(c.typed for c in waiting) or not provider or not row.transcript:
             return
         runs = provider().shell_runs(Path(row.transcript))
         left = []
         for c in waiting:
-            run = next((r for r in runs if c.get("typed") and r[1] == c["command"] and r[0] >= c["typed"] - 1), None)
+            run = next((r for r in runs if c.typed and r[1] == c.command and r[0] >= c.typed - 1), None)
             if run:
                 runs.remove(run)
             else:
                 left.append(c)
         if len(left) != len(waiting):
-            Agents(self.record, actor=SYSTEM).update(row.n, queued_commands=left)
+            Agents(self.record, actor=SYSTEM).update(row.n, queued_commands=[asdict(c) for c in left])
 
     def backgrounded(self) -> str:
         if not take(self.record.root, self.names(), BACKGROUND):
@@ -247,17 +267,17 @@ class Engine(Seat):
         queued = take(self.record.root, self.names())
         if not queued:
             return ""
-        self.agent.driver.deliver(queued["line"])
+        self.agent.driver.deliver(queued.line)
         self.controlled_at = time.time()
         if self.carry_on:
             self.carry_on = False
             self.agent.driver.deliver(CARRY_ON)
-        if queued.get("action") and queued.get("label"):
-            delivered(self.record, self.names(), queued["action"], queued["label"])
-        row = Agents(self.record, actor=SYSTEM).by_session((last and last.title) or self.agent.driver.session)
-        if queued.get("action") in row.pending:
-            self.agent.mark(row.status or "", row.event or "", pending={k: v for k, v in row.pending.items() if k != queued["action"]})
-        return f"controlled: {queued['label']}"
+        if queued.action and queued.label:
+            delivered(self.record, self.names(), queued.action, queued.label)
+        row = Agents(self.record, actor=SYSTEM).by_session(last.title if last else self.agent.driver.session)
+        if queued.action in row.pending:
+            self.agent.mark(row.status, row.event, pending={k: v for k, v in row.pending.items() if k != queued.action})
+        return f"controlled: {queued.label}"
 
     def deliver(self) -> str:
         if self.agent.driver.last_report() is None:
@@ -270,9 +290,7 @@ class Engine(Seat):
                     actor.notified(e)
                     continue
                 if fresh and e.at < self.born and not self.addressed(e):
-                    if actor is self.agent and TYPES[e.type].typed_as_title:
-                        CONTROLLERS[e.type](self.record, actor=AGENT).read(e.n)
-                    actor.notified(e)
+                    self.passed_over(actor, e)
                     continue
                 caused = e.data.get("cause") == AGENT and not TYPES[e.type].addressed_to_agent
                 mine = actor is self.agent and ((e.actor != USER and e.action not in TYPES[e.type].notify_actions) or caused)
@@ -292,7 +310,7 @@ class Engine(Seat):
         if self.agent.state() != IDLE:
             return self.agent.state()
         last = self.agent.driver.last_report()
-        if last and self.typed_at and float(last.at or 0) < self.typed_at:
+        if last and self.typed_at and float(last.at) < self.typed_at:
             return "typed, waiting for the hooks"
         line = self.owed()
         if not line:

@@ -11,7 +11,7 @@ from features.recital import COMMANDS, WHISPER, mentioned, searched, whisper_due
 class EnforceDispatchLaw(Canceler):
     event = DISPATCHING
 
-    def cancel(self, context: AgentContext, data: dict) -> str:
+    def cancel(self, context: AgentContext, data) -> str:
         return refusal(data)
 
 

@@ -1,7 +1,9 @@
 import time
 import uuid
+from dataclasses import asdict, dataclass
 from pathlib import Path
 from engine.stored import read_json, write_json
+from engine.fields import number_of, text_of
 
 STALE = 600.0
 FORCE = "force"
@@ -11,39 +13,75 @@ SHELL = "shell"
 KEYS = (FORCE, PERMIT, BACKGROUND)
 
 
-def queue(root: Path, session: str, line: str, label: str, **data) -> dict:
-    queued = {"session": session, "line": line, "label": label, "at": time.time(), **data}
+@dataclass(frozen=True)
+class Input:
+    session: str
+    line: str
+    label: str
+    at: float
+    action: str = ""
+    provider: str = ""
+    value: str = ""
+
+    @classmethod
+    def from_json(cls, raw: dict) -> "Input":
+        return cls(text_of(raw, "session"), text_of(raw, "line"), text_of(raw, "label"), number_of(raw, "at"), text_of(raw, "action"),
+                   text_of(raw, "provider"), text_of(raw, "value"))
+
+    @property
+    def lasting(self) -> bool:
+        return bool(self.action) and self.action not in KEYS
+
+    @property
+    def for_viewer(self) -> dict:
+        return {**{key: value for key, value in asdict(self).items() if key != "line"}, "queued": True}
+
+
+@dataclass(frozen=True)
+class QueuedCommand:
+    at: float
+    command: str
+    typed: float = 0.0
+
+    @classmethod
+    def from_json(cls, raw: dict) -> "QueuedCommand":
+        return cls(number_of(raw, "at"), text_of(raw, "command"), number_of(raw, "typed"))
+
+
+def waiting_commands(row) -> list[QueuedCommand]:
+    return [QueuedCommand.from_json(given) for given in row.queued_commands if isinstance(given, dict)] if row else []
+
+
+def queue(root: Path, session: str, line: str, label: str, action: str = "", provider: str = "", value: str = "") -> Input:
+    queued = Input(session, line, label, time.time(), action, provider, value)
     folder = Path(root) / "runtime" / "inputs"
     folder.mkdir(parents=True, exist_ok=True)
-    if lasting(queued):
+    if queued.lasting:
         for path in folder.glob("*.json"):
             older = read_json(path)
-            if isinstance(older, dict) and (older.get("session"), older.get("action")) == (session, queued["action"]):
+            if isinstance(older, dict) and Input.from_json(older).session == session and Input.from_json(older).action == action:
                 path.unlink(missing_ok=True)
     target = folder / f"{time.time_ns()}-{uuid.uuid4().hex}.json"
-    write_json(target, queued)
+    write_json(target, asdict(queued))
     return queued
 
 
-def take(root: Path, sessions: set[str], action: str = "") -> dict:
+def take(root: Path, sessions: set[str], action: str = "") -> Input | None:
     folder = Path(root) / "runtime" / "inputs"
     for path in sorted(folder.glob("*.json")):
-        queued = read_json(path)
-        if not isinstance(queued, dict):
+        raw = read_json(path)
+        if not isinstance(raw, dict):
             path.unlink(missing_ok=True)
             continue
-        if not lasting(queued) and time.time() - float(queued.get("at") or 0) > STALE:
+        queued = Input.from_json(raw)
+        if not queued.lasting and time.time() - queued.at > STALE:
             path.unlink(missing_ok=True)
             continue
-        if queued.get("session") not in sessions or pressed(queued.get("action")) != pressed(action):
+        if queued.session not in sessions or pressed(queued.action) != pressed(action):
             continue
         path.unlink(missing_ok=True)
         return queued
-    return {}
-
-
-def lasting(queued: dict) -> bool:
-    return bool(queued.get("action")) and queued.get("action") not in KEYS
+    return None
 
 
 def pressed(action) -> str:

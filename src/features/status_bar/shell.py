@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 import re
 
 from engine.shell import without_scripts
@@ -102,23 +103,31 @@ def journal_words(w: list[str]) -> list[str]:
     return out
 
 
-def piece_parts(piece: str, translate=None) -> dict:
+@dataclass(frozen=True)
+class Piece:
+    root: str
+    args: tuple = ()
+    own: bool = False
+    script: bool = False
+
+
+def piece_parts(piece: str, translate=None) -> Piece | None:
     w = verb_of(piece)
     if not w or w[0] in NOISE:
-        return {}
+        return None
     if w[0].split("/")[-1].lower() in RUNNERS and JOURNAL_SCRIPT.search(w[1] if len(w) > 1 else ""):
         w = w[1:]
     verb = w[0].split("/")[-1]
     if translate and JOURNAL_VERB.match(verb):
         words = translate(journal_words(w[1:]))
-        return {"own": True, "root": words, "args": []} if words else {}
+        return Piece(root=words, own=True) if words else None
     root = [verb]
     while verb in SUBVERBS and len(w) > len(root) and not w[len(root)].startswith("-") and (len(root) == 1 or root[-1] == "run"):
         root.append(w[len(root)])
     given = w[len(root):]
     args = [x for i, x in enumerate(given)
             if not DROPPED.match(x) and not (DIGITS.match(x) and (given[i - 1] if i else "").startswith("-"))]
-    return {"own": False, "root": " ".join(root), "args": args, "script": any(x.startswith("<<") for x in w)}
+    return Piece(root=" ".join(root), args=tuple(args), script=any(x.startswith("<<") for x in w))
 
 
 def expanded(parts: list[str]) -> list[str]:
@@ -137,7 +146,7 @@ def expanded(parts: list[str]) -> list[str]:
     return out
 
 
-def parsed(command: str, translate=None, filtered: bool = True) -> list[dict]:
+def parsed(command: str, translate=None, filtered: bool = True) -> list[Piece]:
     parts = expanded(pieces(without_scripts(command)))
     kept = [p for i, p in enumerate(parts) if not (filtered and i > 0 and (verb_of(p) or [""])[0] in FILTERS)]
     return [one for one in (piece_parts(p, translate) for p in kept) if one]

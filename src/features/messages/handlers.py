@@ -34,7 +34,7 @@ class MessagesUpdated(ResourceEvent):
 
 def counted(context: Context, behaviour: str) -> int:
     key, row = context.feature.keyed(behaviour), context.agent.row
-    count = int(trigger.last(context.record, row.title, key).get("count") or 0) + 1
+    count = trigger.last(context.record, row.title, key).count + 1
     trigger.write(context.record, row, key, count=count)
     return count
 
@@ -57,8 +57,8 @@ class ResetCountsOnArrival(Handler):
     def handle(self, context: Context, event: MessageCreated) -> None:
         every = context.feature.behaviours["unread"].trigger.every
         for row in context.feature.live(context.record):
-            trigger.write(context.record, row, context.feature.keyed("unread"), uses=int(row.uses or 0) - every)
-            trigger.write(context.record, row, context.feature.keyed("answering"), uses=int(row.uses or 0), count=0)
+            trigger.write(context.record, row, context.feature.keyed("unread"), uses=int(row.uses) - every)
+            trigger.write(context.record, row, context.feature.keyed("answering"), uses=int(row.uses), count=0)
 
 
 class NameUnread(Handler):

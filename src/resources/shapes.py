@@ -30,9 +30,8 @@ def check(name: str, spec, value):
         if not isinstance(value, list) or not all(isinstance(v, dict) for v in value):
             raise Refused(f"{name} is a list of rows")
         for row in value:
-            for column, kind in spec["rows"].items():
-                if column in row:
-                    check(f"{name}.{column}", kind, row[column])
+            for column in (column for column in spec["rows"] if column in row):
+                check(f"{name}.{column}", spec["rows"][column], row[column])
         return value
     if spec == LIST and isinstance(value, str):
         value = [word.strip() for word in value.split(",") if word.strip()]

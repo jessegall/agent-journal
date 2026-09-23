@@ -7,11 +7,20 @@ import time
 from pathlib import Path
 from engine.package import modules
 from engine.stored import read_json, write_text
+from engine.fields import number_of, text_of
+from dataclasses import dataclass
 
 
 
 def names() -> list[str]:
     return [name for name, _ in modules("migrations") if re.fullmatch(r"m\d{4}_\w+", name)]
+
+
+def shipped(root: Path, ship, kind: str) -> str:
+    from engine import runtime
+    from engine.record import Record
+    made = ship(Record(Path(root), runtime.env(Path(root))))
+    return f"{kind} shipped: {', '.join(made)}" if made else f"the shipped {kind} are already there"
 
 
 def ledger(root: Path) -> Path:
@@ -20,6 +29,16 @@ def ledger(root: Path) -> Path:
 
 def applied(root: Path) -> dict:
     return read_json(ledger(root), {})
+
+
+@dataclass(frozen=True)
+class MigrationRun:
+    at: float
+    result: str
+
+
+def ran(root: Path) -> dict[str, MigrationRun]:
+    return {name: MigrationRun(number_of(entry, "at"), text_of(entry, "result")) for name, entry in applied(root).items() if isinstance(entry, dict)}
 
 
 RECORD = ("environments", "project", "plugin-data", "migrations.json", "record.json", "settings.json")

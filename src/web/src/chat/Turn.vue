@@ -614,15 +614,6 @@ button.thread-pill:hover {
     color: var(--accent-text);
 }
 
-.thread-text :deep(.row-pill-n) {
-    color: inherit;
-    text-decoration: none;
-}
-
-.thread-text :deep(.row-pill-n:hover) {
-    text-decoration: underline;
-}
-
 .thread-text :deep(.row-pill) {
     padding: 0 4px;
     border: 1px solid var(--border-2);

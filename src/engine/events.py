@@ -1,5 +1,6 @@
 from dataclasses import dataclass, field
 from typing import ClassVar
+from engine.fields import text_of, whole_of
 
 
 @dataclass(frozen=True)
@@ -72,7 +73,7 @@ class AgentMessageSending(AgentEvent):
 
     @property
     def text(self) -> str:
-        return str(self.data.get("text") or "")
+        return str(self.data["text"])
 
     def change(self, text: str) -> None:
         self.data["text"] = text
@@ -88,7 +89,7 @@ class AgentMessageSent(AgentEvent):
 
     @classmethod
     def read(cls, event) -> "AgentMessageSent":
-        return cls(agent=event.n, text=str(event.data.get("text") or ""))
+        return cls(agent=event.n, text=text_of(event.data, "text"))
 
 
 @dataclass(frozen=True)
@@ -104,9 +105,9 @@ class AgentReported(AgentEvent):
 
     @classmethod
     def read(cls, event) -> "AgentReported":
-        return cls(agent=event.n, hook=str(event.data.get("hook") or ""), tool=str(event.data.get("tool") or ""),
-                   file=str(event.data.get("file") or ""), session=str(event.data.get("session") or ""),
-                   size=int(event.data.get("size") or 0), skill=str(event.data.get("skill") or ""))
+        data = event.data
+        return cls(agent=event.n, hook=text_of(data, "hook"), tool=text_of(data, "tool"), file=text_of(data, "file"), session=text_of(data, "session"),
+                   size=whole_of(data, "size"), skill=text_of(data, "skill"))
 
     def wanted(self) -> bool:
         return not self.hook_name or self.hook == self.hook_name

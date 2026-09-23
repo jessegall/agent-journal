@@ -100,7 +100,7 @@ def test_the_header_names_the_installed_version(tmp_path):
     import re
     from engine.band import Band
     from engine.version import version
-    current = re.sub(r"\x1b\[[0-9;]*m", "", Band(tmp_path, "main", "claude-1", "project").banner(120, "main", {}))
+    current = re.sub(r"\x1b\[[0-9;]*m", "", Band(tmp_path, "main", "claude-1", "project").banner(120, "main", 0.0))
     assert f"JOURNAL {version()}" in current, current
 
 

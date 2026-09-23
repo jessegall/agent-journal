@@ -5,7 +5,7 @@ HEREDOC = re.compile(r"<<-?\s*['\"]?(\w+)")
 
 def without_scripts(command: str) -> str:
     kept, end, patch = [], "", False
-    for line in str(command or "").split("\n"):
+    for line in command.split("\n"):
         if line.strip() == "*** Begin Patch":
             patch = True
             continue

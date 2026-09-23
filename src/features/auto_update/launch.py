@@ -1,4 +1,3 @@
-import json
 import os
 import sys
 from pathlib import Path
@@ -10,6 +9,7 @@ from features import FEATURES
 from features.dev_faults.developing import developing
 from resources.base import SYSTEM
 from surfaces.updates import fetched, newer
+from migrations import ran
 
 LOST = "Project records were lost in the 2.84.0 upgrade - restore them from a backup"
 RESTORE = ("Docs, rules, templates, checks and tools were deleted by the 2.84.0 upgrade. Restore the folder "
@@ -22,8 +22,8 @@ def restart(root: Path) -> None:
 
 def lost(record) -> bool:
     root = Path(record.root)
-    ledger = json.loads((root / "migrations.json").read_text()) if (root / "migrations.json").is_file() else {}
-    moved = str((ledger.get("m0000_project_resources") or {}).get("result") or "")
+    runs = ran(root)
+    moved = runs["m0000_project_resources"].result if "m0000_project_resources" in runs else ""
     kept = any((root / "project").rglob("*.md")) if (root / "project").is_dir() else False
     return "into resources/" in moved and not kept
 

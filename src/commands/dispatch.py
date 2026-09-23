@@ -16,6 +16,7 @@ from engine.watch import threw
 from features.format import formatted
 from resources.base import as_dict, USER, Refused
 from engine.package import data
+from engine.fields import text_of, whole_of
 
 
 WEB = data("web", "dist")
@@ -73,6 +74,15 @@ class Request:
         if self.kept is None:
             self.kept = Record(self.root, self.params["env"], memo=True)
         return self.kept
+
+    def query_text(self, key: str) -> str:
+        return text_of(self.query, key)
+
+    def query_whole(self, key: str) -> int:
+        return whole_of(self.query, key)
+
+    def body_text(self, key: str) -> str:
+        return text_of(self.body, key)
 
     def controller(self):
         type_ = self.params["type"]
@@ -197,7 +207,8 @@ def guarded(reply: Reply, root: Path, env: str, where: str) -> Reply:
 
 
 def env_of(root: Path, params: dict, query: dict) -> str:
-    return params.get("env") or query.get("env") or runtime.env(root)
+    named = text_of(params, "env") if text_of(params, "env") else text_of(query, "env")
+    return named if named else runtime.env(root)
 
 
 def represented(got, record=None):

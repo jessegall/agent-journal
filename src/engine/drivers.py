@@ -163,7 +163,7 @@ class Driver(ABC):
 
     def _submitted(self, since: float) -> bool:
         row = self._report()
-        return bool(row) and float(row.at or 0) >= since
+        return bool(row) and float(row.at) >= since
 
     def _wrote(self, raw: bytes) -> bool:
         if self.fd < 0:
@@ -206,8 +206,8 @@ class Driver(ABC):
         from controllers.types import Agents
         from resources.base import SYSTEM
         rows = [r for r in Agents(self.record, actor=SYSTEM)._every()
-                if r.event and (r.title == self.session or self.owns(r) or (r.provider == self.name and float(r.at or 0) >= self.born - 1))]
-        return max(rows, key=lambda r: float(r.at or 0)) if rows else None
+                if r.event and (r.title == self.session or self.owns(r) or (r.provider == self.name and float(r.at) >= self.born - 1))]
+        return max(rows, key=lambda r: float(r.at)) if rows else None
 
     def owns(self, row) -> bool:
         return False

@@ -130,12 +130,13 @@ class Stored:
             return stamps
         stamps = {}
         for e in os.scandir(folder):
-            if e.is_dir() and e.name.isdigit():
-                try:
-                    found = os.stat(os.path.join(e.path, f"{self.type}.md"))
-                except OSError:
-                    continue
-                stamps[int(e.name)] = f"{found.st_mtime_ns}-{found.st_size}"
+            if not e.is_dir() or not e.name.isdigit():
+                continue
+            try:
+                found = os.stat(os.path.join(e.path, f"{self.type}.md"))
+            except OSError:
+                continue
+            stamps[int(e.name)] = f"{found.st_mtime_ns}-{found.st_size}"
         return stamps
 
     def _indexed(self, folder: Path) -> tuple[list[dict], bool]:

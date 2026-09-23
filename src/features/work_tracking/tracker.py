@@ -1,12 +1,12 @@
+from dataclasses import replace
 import time
 from pathlib import Path
 
 from controllers.types import Agents, Works
 from providers import PROVIDERS
-from features.status_bar.commands import WRITES
+from features.status_bar.runs import Delta, command_runs, current_run
 from resources.base import SYSTEM, names
 from resources.shapes import CHANGE, COMMIT
-from resources.types import COMMAND, RUNNING
 from skills import LIBRARY
 from engine.proc import run
 
@@ -114,8 +114,10 @@ def record_files(agent, record, work) -> None:
     commits = committed(project, work.created)
     if list(files.values()) != work.changed or commits != work.commits:
         Works(record, actor=SYSTEM).update(work.n, changed=list(files.values()), commits=commits)
-    if any(delta[k] for k in (DELTA.edited, DELTA.created, DELTA.deleted)):
-        count(record, agent.n, finished(agent.running), delta, touched, [e[NOTE.path] for e in entries if e[NOTE.kind] == DELTA.created])
+    counts = Delta(**delta)
+    if counts.changed_files:
+        finished = current_run(agent).finished
+        count(record, agent.n, finished.at if finished else 0.0, counts, touched, [e[NOTE.path] for e in entries if e[NOTE.kind] == DELTA.created])
 
 
 def trees(record, n: int, project: Path) -> tuple[dict, dict, dict]:
@@ -127,30 +129,14 @@ def trees(record, n: int, project: Path) -> tuple[dict, dict, dict]:
     return base, now if last is None else last, now
 
 
-def finished(running: dict) -> float:
-    run = running if running.get(RUNNING.done) else running.get(RUNNING.before) or {}
-    return run.get(RUNNING.at, 0)
-
-
-def could_write(one: dict) -> bool:
-    return (one.get(COMMAND.tool) or "Bash") in ("Bash", *WRITES)
-
-
-def count(record, n: int, ran: float, delta: dict, touched: list, made: list) -> None:
+def count(record, n: int, ran: float, delta: Delta, touched: list, made: list) -> None:
     agents = Agents(record, actor=SYSTEM)
     row = agents.load(n)
-    running = row.running
-    late = running.get(RUNNING.at) != ran
-    edited = running.get(RUNNING.before) or {} if late else running
-    if not ran or edited.get(RUNNING.at) != ran:
+    running = current_run(row)
+    late = running.at != ran
+    edited = running.before if late else running
+    if not ran or edited is None or edited.at != ran:
         return
-    prior = edited.get(RUNNING.changed) or {}
-    known = edited.get(RUNNING.files) or []
-    fresh = edited.get(RUNNING.made) or []
-    edited = {**edited, RUNNING.changed: {key: prior.get(key, 0) + value for key, value in delta.items()},
-              RUNNING.files: [*known, *(p for p in touched if p not in known)],
-              RUNNING.made: [*fresh, *(p for p in made if p not in fresh)]}
-    agents.update(n, running={**running, RUNNING.before: edited} if late else edited,
-                  commands=[{**one, COMMAND.files: edited[RUNNING.files], COMMAND.made: edited[RUNNING.made],
-                              COMMAND.changed: edited[RUNNING.changed]}
-                            if one.get(COMMAND.at) == ran and could_write(one) else one for one in row.commands])
+    edited = edited.counted(delta, touched, made)
+    runs = [replace(one, files=edited.files, made=edited.made, changed=edited.changed) if one.at == ran and one.could_write else one for one in command_runs(row)]
+    agents.update(n, running=(replace(running, before=edited) if late else edited).to_json(), commands=[one.to_json() for one in runs])
