@@ -11,11 +11,11 @@ from tests.conftest import fresh
 def test_evidence_finds_dead_paths_and_verbs_and_a_struck_claim_has_none():
     record = fresh()
     project = record.root.parent
-    (project / "v2").mkdir()
-    (project / "v2" / "serve.py").write_text("")
+    (project / "src" / "v2").mkdir(parents=True)
+    (project / "src" / "v2" / "serve.py").write_text("")
     pins = Facts(record, actor=AGENT)
     rules = Rules(record, actor=USER)
-    pins.create("the server is v2/serve.py", keywords="word")
+    pins.create("the server is v2/serve.py", keywords="word", brief="serve.py starts it; it moved under src/ and is still v2/serve.py")
     pins.create("the launcher was launch.py", keywords="word", brief="see old/launch.py for the relay")
     rules.create("close a row with `journal todo done`", keywords="word", brief="never with `journal frobnicate 4`")
     rules.create("journal disable must only run when the user asks", keywords="word")
