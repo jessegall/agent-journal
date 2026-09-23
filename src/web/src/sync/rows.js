@@ -15,6 +15,7 @@ const seen = ref(0);
 const loaded = new Set();
 const changed = new Set();
 const owed = new Set();
+const fetching = new Set();
 const asked = new Map();
 const absent = new Map();
 let owedWhole = false;
@@ -149,6 +150,15 @@ function unasked(types) {
 
 async function fetched(types, whole = false) {
     if (!whole) unasked(types);
+    types.forEach((type) => fetching.add(type));
+    try {
+        await pull(types, whole);
+    } finally {
+        types.forEach((type) => fetching.delete(type));
+    }
+}
+
+async function pull(types, whole) {
     const plain = types.filter((type) => (paging.size[type] || PAGE) === PAGE);
     const sized = types.filter((type) => !plain.includes(type));
     const [got] = await Promise.all([
@@ -180,10 +190,13 @@ async function drain() {
 }
 
 export function refresh(types, because = true) {
-    types.filter(Boolean).forEach((type) => {
-        owed.add(type);
-        if (because) changed.add(type);
-    });
+    types
+        .filter(Boolean)
+        .filter((type) => because || !fetching.has(type))
+        .forEach((type) => {
+            owed.add(type);
+            if (because) changed.add(type);
+        });
     if (owed.has("settings")) owedWhole = true;
     return drain();
 }
