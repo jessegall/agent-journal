@@ -15,8 +15,7 @@ from resources.base import SYSTEM
 OVER = "is slower than its budget"
 THREW = "the viewer threw"
 SAID = 300
-EVERY = 10
-AGAIN = 300
+TOLD_EVERY = 25
 BUDGET = {"request": 50, "hook": 50, "command": 50}
 WARMED = ("request", "hook")
 PROFILING = "profile-requests"
@@ -41,18 +40,24 @@ class FaultReports:
     def file(self, record, title: str, brief: str, **data) -> None:
         rows = Notifications(record, actor=SYSTEM)
         standing = rows._titled(title, standing=True)
-        times = (int(standing.data.get("times", 0)) if standing else 0) + 1
-        notified_at = float(standing.data.get("notified_at", 0)) if standing else 0.0
+        agent = Agents(record, actor=SYSTEM).primary()
+        if standing and not self._due(standing, agent):
+            rows.stamp(standing.n, times=int(standing.data["times"]) + 1, **data)
+            return
+        times = int(standing.data["times"]) + 1 if standing else 1
         summary = f"{brief} Seen {self.feature.plural(times, 'time')}."
-        telling = times == 1 or times % EVERY == 0 or time.time() - notified_at >= AGAIN
-        notified_at = time.time() if telling else notified_at
+        told = {"told_uses": agent.uses} if agent else {}
         if standing:
-            rows.update(standing.n, brief=summary, times=times, notified_at=notified_at, **data)
+            rows.update(standing.n, brief=summary, times=times, **told, **data)
         else:
-            self.feature.journal.log(record, "fault", title=title, summary=summary, times=times, notified_at=notified_at, **data)
-        agent = Agents(record, actor=SYSTEM).primary() if telling else None
+            self.feature.journal.log(record, "fault", title=title, summary=summary, times=times, **told, **data)
         if agent:
             self.feature.journal.say(record, agent, "fault", title=title, summary=summary)
+
+    @staticmethod
+    def _due(standing, agent) -> bool:
+        told = standing.data.get("told_uses")
+        return bool(agent) and (told is None or agent.uses - int(told) >= TOLD_EVERY)
 
     def slow(self, record, kind: str, name: str, took: float, working: float | None = None) -> None:
         if working is not None and working <= self.milliseconds(record, kind):
