@@ -1,3 +1,4 @@
+from features.hosting.apps import app_here
 from features.organization.delegation import brief, missing, queued_behind
 from features.organization.files import organization
 from features.parts import ActionInterceptor, Command, Context
@@ -23,7 +24,7 @@ class Delegate(Command):
         row = todos.create(task, brief=given, domain=found.name, role=chosen.name)
         if ahead:
             todos.after(row.n, ahead.n)
-        text = brief(found, chosen, row.n, task, given)
+        text = brief(found, chosen, row.n, task, given, app_here(context.record))
         return {"todo": row.n, "waits": ahead.n if ahead else 0, "brief": text, "out": text}
 
 

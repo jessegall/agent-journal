@@ -109,7 +109,14 @@ def planned(root: Path, name: str, service, port: int, blocked: str, env: dict, 
     sid = f"{name}.{service.name}"
     return ServiceSpec(id=sid, plugin=name, service=service.name, port=port, blocked=blocked, run=service.run, cwd=str(where / service.cwd),
                        env={**env, **service.env}, path=service.ready.path, restart=service.restart, grace=service.grace, show=service.show,
-                       lock=str(lock_file(root, sid)), log=str(log_file(root, sid)), status=str(status_file(root, sid)), spec=str(spec_file(root, sid)))
+                       **files_for(root, sid))
+
+
+SOURCES: list = []
+
+
+def files_for(root: Path, sid: str) -> dict:
+    return {"lock": str(lock_file(root, sid)), "log": str(log_file(root, sid)), "status": str(status_file(root, sid)), "spec": str(spec_file(root, sid))}
 
 
 def specs(root: Path) -> list[ServiceSpec]:
@@ -138,7 +145,7 @@ def specs(root: Path) -> list[ServiceSpec]:
             places = {**ports, "port": spec.port, "dir": str(where)}
             out.append(replace(spec, run=fill(spec.run, places), env={key: str(fill(value, places)) for key, value in spec.env.items()},
                                url=f"http://127.0.0.1:{spec.port}" if spec.port else ""))
-    return out
+    return [*out, *(spec for source in SOURCES for spec in source(root, taken))]
 
 
 def alive(pid: int) -> bool:
