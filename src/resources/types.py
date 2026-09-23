@@ -424,7 +424,7 @@ class Environment(Shape, Resource):
     scope = PROJECT
     in_sidebar = False
     notified = ()
-    data_fields: ClassVar[list[Field]] = [Field(TEXT, name="owner")]
+    data_fields: ClassVar[list[Field]] = [Field(TEXT, "", name="owner")]
 
 
 class Ask(Shape, Resource):
