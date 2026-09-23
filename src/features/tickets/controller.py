@@ -58,14 +58,13 @@ class Tickets(Controller):
     def _actions(self, ticket) -> list:
         proposed = any(stance == PROPOSED for stance in ticket.dependencies.values())
         return [*([{"label": "Confirm", "action": "confirm"}] if ticket.draft else []),
-                *([{"label": "Accept its dependency", "action": "accept_dependencies"},
-                   {"label": "Decline its dependency", "action": "decline_dependencies"}] if proposed else [])]
+                *([{"label": "Accept", "action": "accept_dependencies"}, {"label": "Decline", "action": "decline_dependencies"}] if proposed else [])]
 
     def _runtime(self, ticket, sessions: dict) -> str:
         place = ticket.work_environment
         proposed = [ref for ref, stance in ticket.dependencies.items() if stance == PROPOSED]
         if proposed:
-            return f"proposed to wait on {', '.join(proposed)}; accept or decline it"
+            return f"the agent proposes it waits on {', '.join(ref.replace(':', ' ') for ref in proposed)}"
         if not place:
             return "a draft, waiting for your confirmation" if ticket.draft else ""
         session = next((name for name, held in sessions.items() if held.environment == place and live(held)), "")
