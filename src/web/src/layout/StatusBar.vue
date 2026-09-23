@@ -52,7 +52,7 @@ async function runBar(p) {
     <div class="statusbar" @click.self="inspect">
         <Dot :class="['statusbar-dot', {live: state !== 'stopped'}]" kind="started" solid :size="8" />
         <button type="button" class="statusbar-text" @click="inspect">
-            <b>{{ wordOf(state, waiting) }}</b>
+            <b>{{ wordOf(state) }}</b>
             <span class="statusbar-roll">
                 <template v-if="sentence.head">
                     <span class="statusbar-head">{{ sentence.head }}</span>

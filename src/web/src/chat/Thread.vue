@@ -1,6 +1,6 @@
 <script setup>
 import Dot from "../kit/Dot.vue";
-import RunningCommand from "../layout/RunningCommand.vue";
+import RunningCommand from "./RunningCommand.vue";
 import {keepingPlace, useSighted} from "../composables/scrollback.js";
 import {computed, nextTick, onMounted, onUnmounted, ref, watch} from "vue";
 import {api} from "../api/client.js";
