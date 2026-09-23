@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.115.0 — Sequences show in the chat
+
+When a sequence starts, whether by hand or by the moment it waits for, the chat shows a violet mark naming the sequence, its first step and the row it is about. Each move to the next step, the finish and an abandoned run show the same way.
+
 ## 2.114.4 — A command that waits is not reported as slow
 
 The developer budget for commands counted every second a command took, so journal check run --wait and check sweep --wait were reported as many seconds over while they only waited for the check to finish. A command is now held to its working time, as requests already were.
