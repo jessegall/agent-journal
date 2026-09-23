@@ -18,7 +18,7 @@ const line = (c) =>
             </div>
         </template>
         <template v-for="q in queued" :key="q.at">
-            <div class="log-line shell queued" title="Typed into the agent's terminal when it next comes to rest">
+            <div class="log-line shell queued" title="Waiting to be typed into the agent's terminal">
                 <span class="log-mark">$</span>
                 <span class="log-text">{{ q.command }}</span>
                 <span class="log-state">pending</span>
