@@ -90,6 +90,18 @@ button.mark:hover {
     font-weight: 500;
 }
 
+.mark .detail :deep(.row-pill) {
+    padding: 0 5px;
+    font-family: inherit;
+    font-size: inherit;
+    line-height: inherit;
+}
+
+.mark .detail :deep(.row-pill .ico) {
+    width: 10px;
+    height: 10px;
+}
+
 .mark .detail {
     grid-column: 2;
     overflow: hidden;

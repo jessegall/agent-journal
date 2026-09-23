@@ -291,6 +291,7 @@ class AgentRow(Shape, Resource):
 class Notification(Shape, Resource):
     type = "notification"
     takes_comments = False
+    event_labels = {"completed": "Notification cleared", "updated.read": "Notification read"}
     kept = 100
     pruned_when = "seen"
     needs_attention = True
@@ -309,7 +310,7 @@ class Notice(Shape, Resource):
     takes_comments = False
     kept = 100
     pruned_when = "closed"
-    event_labels = {"created": "Notice", "completed": "Notice closed"}
+    event_labels = {"created": "Notice", "completed": "Notice closed", "updated.read": "Notice read"}
     icon = "band"
     command_names = {"complete": "close"}
     details: ClassVar[ResourceDetails] = ResourceDetails(
