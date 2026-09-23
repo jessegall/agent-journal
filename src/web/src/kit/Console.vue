@@ -1,9 +1,9 @@
 <script setup>
-defineProps({text: {type: String, default: ""}});
+defineProps({text: {type: String, default: ""}, fill: {type: Boolean, default: false}});
 </script>
 
 <template>
-    <div class="console">
+    <div :class="['console', {fill}]">
         <div class="console-body">
             <slot>
                 <span class="console-text">{{ text }}</span>
@@ -25,6 +25,18 @@ defineProps({text: {type: String, default: ""}});
     font-family: ui-monospace, "SF Mono", Menlo, monospace;
     font-size: 11.5px;
     line-height: 1.55;
+}
+
+.console.fill {
+    flex: 1;
+    max-height: none;
+    margin: 0 -14px -14px;
+    padding: 12px 14px;
+    border-radius: 0;
+}
+
+.console.fill:first-child {
+    margin-top: -14px;
 }
 
 .console-body {

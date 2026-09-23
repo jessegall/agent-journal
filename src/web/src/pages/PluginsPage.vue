@@ -252,11 +252,11 @@ async function askAgent() {
                     <p :class="['shown-result', {failed: !outcome.ok}]">
                         {{ outcome.ok ? `${shown.title} is installed.` : "It did not install. Nothing of it was kept." }}
                     </p>
-                    <Console :text="live || outcome.text" />
+                    <Console fill :text="live || outcome.text" />
                 </template>
                 <template v-else-if="busy === 'install'">
                     <p class="shown-result">{{ shown.upgrading ? "Upgrading" : "Installing" }}…</p>
-                    <Console :text="live || 'Starting…'" />
+                    <Console fill :text="live || 'Starting…'" />
                 </template>
                 <template v-else>
                     <p class="shown-from">
@@ -380,7 +380,7 @@ async function askAgent() {
         </div>
         <template v-if="reading">
             <Dialog :title="`${reading} log`" follow fixed @close="reading = ''">
-                <Console :text="logged || (busy ? 'Starting…' : 'Nothing is logged yet.')" />
+                <Console fill :text="logged || (busy ? 'Starting…' : 'Nothing is logged yet.')" />
                 <template #foot>
                     <Btn small :disabled="!logged" @click="clearLog">Clear</Btn>
                 </template>
