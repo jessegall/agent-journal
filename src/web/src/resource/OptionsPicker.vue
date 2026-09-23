@@ -6,10 +6,15 @@ import {api} from "../api/client.js";
 import Btn from "../kit/Btn.vue";
 import OptionList from "../kit/OptionList.vue";
 import {word} from "../state/store.js";
+import {sendMessage} from "../chat/outbox.js";
+import {route} from "../route.js";
 
 const props = defineProps({resource: Object});
 const own = ref("");
 const changing = ref(false);
+const elaborating = ref(false);
+const elaborated = ref(false);
+const ELABORATE = "Elaborate on this question: say more about what each option means here and which you would pick, and I will choose.";
 const optionText = (option = {}) => String(option.title || option.label || option.value || "");
 const options = computed(() =>
     (Array.isArray(props.resource.data.options) ? props.resource.data.options : []).map((option) => {
@@ -30,6 +35,16 @@ async function submit(text) {
     if (props.resource.completed) await api.act(props.resource.type, props.resource.n, "set", {key: "outcome", value: choice});
     else await api.act(props.resource.type, props.resource.n, word(props.resource.type, "complete"), {how: choice});
     changing.value = false;
+}
+
+async function elaborate() {
+    elaborating.value = true;
+    try {
+        await sendMessage(route.value.env, {brief: ELABORATE, about: props.resource.ref});
+        elaborated.value = true;
+    } finally {
+        elaborating.value = false;
+    }
 }
 </script>
 
@@ -58,6 +73,15 @@ async function submit(text) {
         <template v-else>
             <form class="own" @submit.prevent="submit(own)">
                 <TextInput :value="own" class="grow" placeholder="Or choice in your own words…" @input="own = $event.target.value" />
+                <Btn
+                    small
+                    :busy="elaborating"
+                    :disabled="elaborated"
+                    title="Ask the agent for more context on this question"
+                    @click="elaborate"
+                >
+                    {{ elaborated ? "Asked to elaborate" : "Elaborate" }}
+                </Btn>
                 <Btn kind="primary" small @click="submit(own)">{{ word(resource.type, "complete") }}</Btn>
                 <template v-if="changing">
                     <Btn small @click="changing = false">Keep it</Btn>

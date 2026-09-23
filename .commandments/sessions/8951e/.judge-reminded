@@ -12,6 +12,7 @@
 /Users/jessegall/projects/agent-journal/src/engine/version.py
 /Users/jessegall/projects/agent-journal/src/engine/worker.py
 /Users/jessegall/projects/agent-journal/src/engine/worktree.py
+/Users/jessegall/projects/agent-journal/src/features/ask_questions/details.py
 /Users/jessegall/projects/agent-journal/src/features/boards/__init__.py
 /Users/jessegall/projects/agent-journal/src/features/boards/controller.py
 /Users/jessegall/projects/agent-journal/src/features/boards/details.py
@@ -91,6 +92,7 @@
 /Users/jessegall/projects/agent-journal/src/web/src/pages/PluginPage.vue
 /Users/jessegall/projects/agent-journal/src/web/src/pages/ServicesPage.vue
 /Users/jessegall/projects/agent-journal/src/web/src/resource/NewResource.vue
+/Users/jessegall/projects/agent-journal/src/web/src/resource/OptionsPicker.vue
 /Users/jessegall/projects/agent-journal/src/web/src/resource/ResourceBody.vue
 /Users/jessegall/projects/agent-journal/src/web/src/resource/StageMeanings.vue
 /Users/jessegall/projects/agent-journal/tests/test_the_gate.py
