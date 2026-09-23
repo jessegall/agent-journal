@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.103.7 — The status line ends in an ellipsis, and its dot holds still
+
+The status line above the chat input stays on one line and is cut off with an ellipsis when it is wider than the chat; its first word always shows. Its dot no longer pulses: it is the same steady coloured dot as the top bar's, now one kit component (Dot solid) used by both.
+
 ## 2.103.6 — Chat mark icons a size up
 
 Chat mark icons are 12px, big enough to make out while staying close to the height of their text.

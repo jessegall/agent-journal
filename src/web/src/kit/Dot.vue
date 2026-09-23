@@ -16,12 +16,16 @@ const props = defineProps({
     glow: {type: Boolean, default: false},
     size: {type: Number, default: 10},
     pulsing: {type: Boolean, default: false},
+    solid: {type: Boolean, default: false},
 });
 const color = computed(() => COLOR[props.kind] || COLOR.open);
 </script>
 
 <template>
-    <template v-if="glow">
+    <template v-if="solid">
+        <span class="solid" :style="{'--size': `${size}px`}" role="img" :aria-label="kind" />
+    </template>
+    <template v-else-if="glow">
         <span :class="['glow', {pulsing}]" :style="{'--size': `${size}px`}" role="img" :aria-label="kind" />
     </template>
     <template v-else>
@@ -44,6 +48,14 @@ const color = computed(() => COLOR[props.kind] || COLOR.open);
     margin: 0 3px;
     border: 2px solid;
     border-radius: 50%;
+}
+
+.solid {
+    flex: none;
+    width: var(--size);
+    height: var(--size);
+    border-radius: 50%;
+    background: var(--tone);
 }
 
 .glow {

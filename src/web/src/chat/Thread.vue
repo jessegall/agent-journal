@@ -425,7 +425,7 @@ watch(
                             :aria-label="waiting ? `The agent is waiting ${waiting}` : `The agent is ${activity}`"
                         >
                             <div class="thread-meta">
-                                <Dot kind="started" glow pulsing :size="5" />
+                                <Dot kind="started" solid :size="6" />
                                 <template v-if="waiting">
                                     <span>Waiting {{ waiting }}</span>
                                 </template>
@@ -503,7 +503,7 @@ watch(
     display: flex;
     flex-direction: column;
     gap: 3px;
-    max-width: max-content;
+    max-width: 100%;
 }
 
 .thread-turn.busy .thread-bubble {
@@ -526,6 +526,8 @@ watch(
     display: flex;
     align-items: center;
     gap: 7px;
+    min-width: 0;
+    white-space: nowrap;
     padding: 0 3px;
     font-size: 11px;
     color: var(--text-3);
@@ -537,6 +539,7 @@ watch(
 }
 
 .thread-meta-on {
+    min-width: 0;
     overflow: hidden;
     margin-left: 6px;
     color: var(--text-4);

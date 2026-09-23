@@ -3,6 +3,7 @@ import PSection from "./PSection.vue";
 
 import {computed, onMounted, onUnmounted, ref, watch} from "vue";
 import {api} from "../api/client.js";
+import Dot from "../kit/Dot.vue";
 import Icon from "../kit/Icon.vue";
 import RunningCommand from "./RunningCommand.vue";
 import Switch from "../kit/Switch.vue";
@@ -55,7 +56,7 @@ async function runBar(p) {
 
 <template>
     <div class="statusbar" @click.self="inspect">
-        <span :class="['statusbar-dot', {live: state !== 'stopped'}]" />
+        <Dot :class="['statusbar-dot', {live: state !== 'stopped'}]" kind="started" solid :size="8" />
         <button type="button" class="statusbar-text" @click="inspect">
             <b>{{ wordOf(state, waiting) }}</b>
             <span class="statusbar-roll">
@@ -113,15 +114,11 @@ async function runBar(p) {
 }
 
 .statusbar-dot {
-    width: 8px;
-    height: 8px;
-    flex: none;
-    border-radius: 50%;
-    background: var(--text-3);
+    --tone: var(--text-3);
 }
 
 .statusbar-dot.live {
-    background: var(--accent);
+    --tone: var(--accent);
 }
 
 .statusbar-text {
