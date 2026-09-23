@@ -37,3 +37,17 @@ def test_a_board_holds_its_tickets_in_its_own_stages_and_marks_what_they_mean():
     assert [(lane["title"], [(card["n"], card["type"], card["targets"]) for card in lane["cards"]]) for lane in lanes] == \
         [("Ideas", []), ("Building", []), ("Shipped", [(ticket.n, "ticket", ["Ideas", "Building"])])], "the board shows its stages as lanes, each ticket movable to the others"
     assert tickets.create("Search", board=board.n, stage="Building").stage == "Building", "a ticket can start in a stage it names"
+
+
+def test_a_ticket_is_bound_to_one_environment_its_worktree_and_session_share():
+    from controllers.types import Environments
+    from engine.sessions import Sessions
+    record = fresh()
+    tickets = Tickets(record, actor=USER)
+    ticket = tickets.create("Dark mode")
+    bound = tickets.bind(ticket.n)
+    assert (bound.work_environment, Environments(record)._titled(bound.work_environment) is not None, tickets.bind(ticket.n).work_environment) == \
+        (f"ticket-{ticket.n}", True, f"ticket-{ticket.n}"), "binding makes the ticket's environment once, named for the ticket, which its worktree takes too"
+    assert tickets.agent_session(ticket.n) == "", "no session holds it until its agent starts"
+    Sessions(record.root).bind("claude-7", bound.work_environment, provider="claude")
+    assert tickets.agent_session(ticket.n) == "claude-7", "the session is whichever one holds the ticket's environment"

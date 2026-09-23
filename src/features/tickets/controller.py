@@ -1,4 +1,6 @@
 import controllers.types as types_module
+from controllers.types import Environments
+from engine.sessions import Sessions
 import resources.types as resources_module
 from controllers.base import Controller, internal
 from features.boards.controller import Boards
@@ -31,6 +33,20 @@ class Tickets(Controller):
         tickets = [r for r in self._standing() if int(r.board) == int(n)]
         return BoardLanes([(Lane(stage, stage), [Card(r.n, r.title, LEVELS["default"], stage, targets=[s for s in stages if s != stage], updated=r.updated,
                                                      completed=r.completed, type=self.type) for r in tickets if r.stage == stage]) for stage in stages], []).shaped()
+
+    def bind(self, n: int):
+        ticket = self.load(int(n))
+        if ticket.work_environment:
+            return ticket
+        name = f"{self.type}-{ticket.n}"
+        environments = Environments(self.record, actor=self.actor)
+        if not environments._titled(name):
+            environments.create(name, abstract=f"Where {self.type} {ticket.n} runs")
+        return self.update(ticket.n, work_environment=name)
+
+    def agent_session(self, n: int) -> str:
+        ticket = self.load(int(n))
+        return Sessions(self.record.root).holder(ticket.work_environment) if ticket.work_environment else ""
 
     def move(self, n: int, stage: str):
         return self.update(int(n), stage=stage.strip())
