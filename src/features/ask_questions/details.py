@@ -30,6 +30,10 @@ class QuestionsDetails(FeatureDetails):
         writes wait until a question is created. A line naming a question by number points at
         one already asked and does not count.
 
+        Each option carries its own title and text; the question's title, abstract and brief
+        give the context only. A question that lists its options again, as A/B/C or numbered
+        lines or one line per option name, is refused.
+
         A question tool the provider offers, such as Claude Code's AskUserQuestion, never opens
         in the terminal: each question in the call is filed as a journal question with its
         options, and the call is refused with the numbers, so you carry on and hear the

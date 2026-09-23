@@ -33,3 +33,17 @@ def offers_choices(text: str) -> bool:
         if any(ASKING.search(line) for line in around if not LISTED.match(line) and not points_at_named(line, named)):
             return True
     return False
+
+
+RESTATED = re.compile(r"^\s*(?:\(?[A-Za-z]\)|[A-Za-z][.):]|\d+[.):]|option \w+[.):]?)\s+\S", re.MULTILINE | re.IGNORECASE)
+
+
+BULLET = re.compile(r"^\s*(?:[-*•]\s+|\*\*)?")
+
+
+def restates(text: str, titles: list[str]) -> bool:
+    if len(titles) < 2:
+        return False
+    starts = [BULLET.sub("", line).lower() for line in text.splitlines()]
+    listed = sum(1 for title in titles if title and any(line.startswith(title.lower()) for line in starts))
+    return len(RESTATED.findall(text)) >= len(titles) or listed == len(titles)
