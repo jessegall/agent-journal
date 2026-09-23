@@ -301,9 +301,9 @@ useSighted(topMark, earlier, {root: scroller, margin: "400px 0px"});
     z-index: 5;
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 8px;
     margin: 0 -24px;
-    padding: 12px 24px 0;
+    padding: 8px 24px 0;
     background: var(--bg);
 }
 
@@ -396,7 +396,8 @@ useSighted(topMark, earlier, {root: scroller, margin: "400px 0px"});
     align-items: stretch;
     gap: 16px;
     height: 32px;
-    margin-top: 6px;
+    margin: 2px -24px 0;
+    padding: 0 24px;
     border-bottom: 1px solid var(--border);
 }
 
