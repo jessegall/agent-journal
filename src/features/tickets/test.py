@@ -176,7 +176,10 @@ def test_a_drafted_ticket_waits_for_the_user_to_confirm_it_before_it_can_start()
     assert ("is a draft" in refused(lambda: Tickets(record, actor=USER).move(drafted.n, "Building")), Tickets(record).load(drafted.n).stage) == \
         (True, "Ideas"), "a draft cannot start, and stays where it was"
     assert "only the user confirms" in refused(lambda: Tickets(record, actor=AGENT).confirm(drafted.n)), "the agent cannot confirm its own draft"
+    shown = lambda: [card["n"] for lane in Tickets(record, actor=USER).board(board.n)["lanes"] for card in lane["cards"]]
+    assert drafted.n not in shown(), "a draft stays off the board"
     assert Tickets(record, actor=USER).confirm(drafted.n).draft is False, "the user confirms it"
+    assert drafted.n in shown(), "once confirmed it shows on the board"
 
 
 def test_a_ticket_waits_on_a_confirmed_dependency_and_starts_when_it_closes(monkeypatch):

@@ -80,7 +80,7 @@ class Tickets(Controller):
 
     def board(self, n: int) -> dict:
         stages = self._stages(n)
-        tickets = [r for r in self._standing() if int(r.board) == int(n)]
+        tickets = [r for r in self._standing() if int(r.board) == int(n) and not r.draft]
         sessions = Sessions(self.record.root).all()
         running = self._running()
         lanes = BoardLanes([(Lane(stage, stage), [self._card(r, stage, stages, sessions, len(running)) for r in tickets if r.stage == stage])
