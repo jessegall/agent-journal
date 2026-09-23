@@ -138,6 +138,11 @@ watch(
     padding: 36px 32px 60px;
 }
 
+.document-body :deep(.body.agent-page) {
+    max-width: none;
+    padding: 0 24px 24px;
+}
+
 .document-body :deep(.body) > .head {
     margin: -36px -32px 0;
     padding: 36px 32px 8px;
