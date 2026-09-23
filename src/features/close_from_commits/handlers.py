@@ -22,9 +22,11 @@ class CloseRowsFromCommits(Handler):
             return
         seen = context.record.cursor_text(context.feature.name)
         if seen:
+            branch = git(["branch", "--show-current"], project).strip() or "a detached head"
             for sha, subject, body in commits:
                 if sha == seen:
                     break
+                context.journal.agents.card(context.agent.row.n, label=f"Agent committed {sha[:8]} on {branch}", icon="branch", title=subject)
                 self.close(context, sha, subject, body)
         context.record.set_cursor_text(context.feature.name, commits[0][0])
 

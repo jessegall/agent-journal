@@ -13,7 +13,7 @@ import Buttons from "../resource/Buttons.vue";
 import OptionsPicker from "../resource/OptionsPicker.vue";
 import Attachments from "./Attachments.vue";
 import MadeCard from "./MadeCard.vue";
-import {peek, route} from "../route.js";
+import {peek, peekChip, route} from "../route.js";
 import {quoted} from "../format/quote.js";
 import {clock} from "../format/time.js";
 import {focusTurn, laidOut} from "../platform/view.js";
@@ -109,14 +109,6 @@ function toQuoted() {
     if (hit) focusTurn(hit.ref);
 }
 
-function follow(e) {
-    const pill = e.target.closest("[data-peek]");
-    if (!pill) return;
-    e.preventDefault();
-    e.stopPropagation();
-    const [type, n] = pill.dataset.peek.split(":");
-    peek(type, Number(n));
-}
 function worded(ref, word) {
     return ref.type && meta(ref.type) ? `${meta(ref.type).title.toLowerCase()} ${ref.n}` : word;
 }
@@ -217,7 +209,7 @@ async function drop() {
         </template>
         <template #receipt>
             <div class="thread-turn receipt" :data-ref="turn.ref">
-                <div class="thread-receipt" @click="follow" v-html="html" />
+                <div class="thread-receipt" @click="peekChip" v-html="html" />
             </div>
         </template>
         <template #default>
@@ -275,7 +267,7 @@ async function drop() {
                         <p class="thread-ask">{{ turn.title }}</p>
                     </template>
                     <Folded :at="FOLD_AT">
-                        <div ref="text" class="thread-text" @click="follow" v-html="html" />
+                        <div ref="text" class="thread-text" @click="peekChip" v-html="html" />
                     </Folded>
                     <template v-if="turn.type === 'question'">
                         <template v-if="turn.abstract">

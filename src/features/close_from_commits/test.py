@@ -46,3 +46,8 @@ def test_a_journal_trailer_at_column_0_closes_the_row_it_names(tmp_path):
     commit("third\n\nJournal: todos done 3")
     assert [n for n in nudges(record) if n.startswith("commit ")][-1].endswith("closed to-do 3 and ended work 1"), \
         "the agent is told what its commit closed and which work that ended"
+    from controllers.types import Agents
+    branch = git("branch", "--show-current").stdout.strip()
+    sha = git("rev-parse", "HEAD").stdout.strip()
+    marks = [card["label"] for card in Agents(record, actor=SYSTEM).by_session("claude-1").data["cards"]]
+    assert (len(marks), marks[-1]) == (6, f"Agent committed {sha[:8]} on {branch}"), "every commit after the first look is marked in the chat with its hash and branch"

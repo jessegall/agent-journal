@@ -1,7 +1,7 @@
 <script setup>
 import {computed} from "vue";
 import {render} from "../text/index.js";
-import {peek, route} from "../route.js";
+import {peekChip, route} from "../route.js";
 import {types} from "../state/store.js";
 import "../text/all.js";
 
@@ -15,23 +15,14 @@ const html = computed(() => {
     const made = render(said, {types: types.value, env: route.value.env});
     return props.inline ? made.replace(/^<p>|<\/p>\s*$/g, "") : made;
 });
-
-function follow(e) {
-    const pill = e.target.closest("[data-peek]");
-    if (!pill) return;
-    e.preventDefault();
-    e.stopPropagation();
-    const [type, n] = pill.dataset.peek.split(":");
-    peek(type, Number(n));
-}
 </script>
 
 <template>
     <template v-if="inline">
-        <span class="md inline" @click="follow" v-html="html" />
+        <span class="md inline" @click="peekChip" v-html="html" />
     </template>
     <template v-else>
-        <div class="md" @click="follow" v-html="html" />
+        <div class="md" @click="peekChip" v-html="html" />
     </template>
 </template>
 
