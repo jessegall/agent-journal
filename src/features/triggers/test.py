@@ -30,6 +30,9 @@ def test_a_trigger_denies_a_command_and_nudges_on_a_word():
     assert "no force pushes" in fired(record, "git push --force origin main"), "a deny refuses the call with its reason"
     assert fired(record, "grep migration engine") == "", "a nudge lets the call through"
     assert [n for n in nudges(record) if "mind the migrations" in n], "and says its line to the agent"
+    cards = [(card["label"], card["tone"]) for card in Agents(record, actor="system").by_session("claude-1").data["cards"]]
+    assert cards == [("Trigger no force pushes denied the call", "danger"), ("Trigger mind the migrations nudged the agent", "note")], \
+        "each firing is marked in the chat with what it did, a deny in the danger tone"
 
 
 def test_a_trigger_fires_on_what_the_user_writes():

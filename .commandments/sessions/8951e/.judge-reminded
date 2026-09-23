@@ -1,4 +1,5 @@
-/Users/jessegall/projects/agent-journal/src/features/messages/test_codex.py
+/Users/jessegall/projects/agent-journal/src/features/triggers/handlers.py
+/Users/jessegall/projects/agent-journal/src/features/triggers/test.py
 -----
 Batch marker for the code-commandments judge reminder (`commandments judge-reminder`, wired as
 Stop + PreToolUse hooks). The lines above the separator are the changed-file set it last

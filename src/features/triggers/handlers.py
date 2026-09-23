@@ -8,6 +8,7 @@ from features.triggers.resource import DENY, INSTRUCT, MESSAGE, NUDGE
 from resources.base import SYSTEM, USER
 
 WATCHING = "watching"
+DONE = {MESSAGE: "sent a message", NUDGE: "nudged the agent", INSTRUCT: "instructed the agent", DENY: "denied the call"}
 
 
 def firing(context, text_of) -> list:
@@ -16,6 +17,8 @@ def firing(context, text_of) -> list:
 
 
 def fire(context, agent, row) -> None:
+    context.journal.acting(SYSTEM).agents.card(agent.n, label=f"Trigger {row.title} {DONE[row.does]}", icon="flag",
+                                               tone="danger" if row.does == DENY else "note", title=row.text or row.brief)
     if row.does == MESSAGE:
         context.journal.acting(USER).messages.create(row.title, brief=row.brief or row.text)
     elif row.does in (NUDGE, INSTRUCT):
@@ -27,9 +30,9 @@ class WatchWhatTheAgentDoes(ToolInterceptor):
 
     def intercept(self, context: AgentContext, call) -> str:
         for row in firing(context, lambda scope: searched(call, scope)):
+            fire(context, context.agent.row, row)
             if row.does == DENY:
                 return f"{row.title} - {row.text or row.brief or 'this call is denied by a trigger'}"
-            fire(context, context.agent.row, row)
         return ""
 
 

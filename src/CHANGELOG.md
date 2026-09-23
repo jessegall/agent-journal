@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.121.1 — A fired trigger shows in the chat
+
+Whenever a trigger fires, the chat shows a mark naming it and what it did: sent a message, nudged the agent, instructed it, or denied the call. A deny is marked in the danger tone. Nothing to do.
+
 ## 2.121.0 — Worktree sessions resume and continue in place, and dumps read whole
 
 journal claude --continue goes back to the environment and worktree of the conversation it continues, without asking, as --resume already did. Resuming a conversation the journal never saw offers to fill the chat from its transcript. A worktree removed even with its branch comes back with the work its last launch recorded.
