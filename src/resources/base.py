@@ -23,6 +23,7 @@ KEYWORDS_IN = "keywords_in"
 PART_OF = "part_of"
 OWNER = "plugin"
 ENVIRONMENT, PROJECT = "environment", "project"
+SIDEBAR, RESULTS, WORKINGS, UNLISTED = "sidebar", "results", "workings", ""
 SCOPES = (ENVIRONMENT, PROJECT)
 LAZY, EAGER, MEMORY = "lazy", "eager", "memory"
 ACTORS = (USER, AGENT, SYSTEM, PLUGIN)
@@ -112,7 +113,8 @@ class Resource:
     formatted_data: ClassVar[dict] = {}  # data lists whose items carry words a person reads: {"cards": ("detail",)}
     event_labels: ClassVar[dict] = {}   # how an event on it reads in the viewer: {"created": "Work started"}
     view: ClassVar[str] = SMALL  # how it is read: a small inspector, a wide one, or a document page
-    in_sidebar: ClassVar[bool] = True   # whether it sits in the sidebar
+    in_sidebar: ClassVar[bool] = True   # whether the viewer lists it and counts it
+    listed_under: ClassVar[str] = WORKINGS   # where it is listed: the sidebar, or a group on the Resources page
     listed_as_cards: ClassVar[bool] = False
     icon: ClassVar[str] = "dot"  # the viewer's glyph for it
     needs_attention: ClassVar[bool] = False   # unread by the user, it waits on them
