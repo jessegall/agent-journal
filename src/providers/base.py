@@ -1,4 +1,6 @@
+import hashlib
 import json
+import pickle
 import time
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
@@ -13,6 +15,31 @@ from engine.stored import read_json, tail, write_text
 
 RECENT: dict[str, tuple] = {}
 FOLDS: dict[tuple, tuple] = {}
+FOLD_CACHE = Path.home() / ".cache" / "agent-journal" / "folds"
+KEEP_EVERY = 10.0
+KEPT: dict[tuple, float] = {}
+
+
+def fold_file(key: tuple) -> Path:
+    return FOLD_CACHE / f"{hashlib.sha1('|'.join(key).encode()).hexdigest()[:20]}.pickle"
+
+
+def kept_fold(key: tuple) -> tuple | None:
+    try:
+        return pickle.loads(fold_file(key).read_bytes())
+    except (OSError, pickle.UnpicklingError, EOFError, AttributeError, ImportError, TypeError):
+        return None
+
+
+def keep_fold(key: tuple, offset: int, state) -> None:
+    if time.monotonic() - KEPT.get(key, 0.0) < KEEP_EVERY:
+        return
+    KEPT[key] = time.monotonic()
+    try:
+        FOLD_CACHE.mkdir(parents=True, exist_ok=True)
+        fold_file(key).write_bytes(pickle.dumps((offset, state)))
+    except (OSError, pickle.PicklingError):
+        return
 TRANSCRIPTS: dict[str, tuple] = {}
 SEAM = 256
 RECENT_BYTES = 1_000_000
@@ -295,7 +322,7 @@ class Provider(ABC):
             size = Path(path).stat().st_size
         except (OSError, TypeError):
             return start()
-        offset, state = FOLDS.get(key) or (0, start())
+        offset, state = FOLDS.get(key) or kept_fold(key) or (0, start())
         if size < offset:
             offset, state = 0, start()
         if size > offset:
@@ -308,6 +335,7 @@ class Provider(ABC):
                 if isinstance(row, dict):
                     state = fold(state, self.row_of(row))
             offset += len(whole)
+            keep_fold(key, offset, state)
         FOLDS[key] = (offset, state)
         return state
 
