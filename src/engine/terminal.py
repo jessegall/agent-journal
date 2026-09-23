@@ -1,6 +1,6 @@
 import json
 import os
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from pathlib import Path
 
 from engine.sessions import ACTIVE_ENV, hold_build
@@ -9,6 +9,7 @@ from engine import runtime
 from engine.stored import read_json, write_json
 from engine.package import CODE, entry
 from engine.fields import list_of, text_of, whole_of
+from engine.worktree import checkout, environment
 
 RELOAD = 75
 STOP = 76
@@ -67,25 +68,19 @@ class Seat:
     agent: str
     session: str
 
-    @classmethod
-    def of(cls, root: Path, env: str, agent: str, session: str) -> "Seat":
-        return cls(root, environment_of(agent, Launched.read(root, session).args, env), agent, session)
 
-
-def environment_of(agent: str, args, env: str) -> str:
-    from providers import DRIVERS
-    return DRIVERS[agent].worktree(list(args)) or env
-
-
-def seated(seat: Seat) -> None:
+def seated(seat: Seat) -> Seat:
     from controllers.types import Environments
     from engine.record import Record
     from engine.sessions import Sessions
     from resources.base import SYSTEM
     launched = Launched.read(seat.root, seat.session)
-    Sessions(seat.root).bind(seat.session, seat.env, pid=launched.pid, provider=seat.agent)
-    Sessions(seat.root).write(seat.session, args=list(launched.command), launch=launched.launch)
-    Environments(Record(seat.root, seat.env), actor=SYSTEM)._seat(seat.env, seat.session)
+    sessions = Sessions(seat.root)
+    if not sessions.known(seat.session):
+        sessions.bind(seat.session, seat.env)
+        Environments(Record(seat.root, seat.env), actor=SYSTEM)._seat(seat.env, seat.session)
+    sessions.write(seat.session, pid=launched.pid, provider=seat.agent, args=list(launched.command), launch=launched.launch)
+    return replace(seat, env=sessions.environment(seat.session) or seat.env)
 
 
 def relaunch(root: Path, env: str, session: str, conversation: str) -> Path:
@@ -112,8 +107,12 @@ def carried() -> dict | None:
 
 
 def supervise(root: Path, cwd: Path, env: str, agent: str, args: list[str], taken: dict | None = None) -> None:
+    from providers import DRIVERS
     hold_build(root, CODE)
     runtime.set_env(root, env)
+    if not taken:
+        cwd, args = DRIVERS[agent].placed(cwd, args)
+        env = environment(checkout(cwd)) or env
     journal = [*entry("journal"), "--root", str(root)]
     spec = {"root": str(root), "cwd": str(cwd), "env": env, "agent": agent,
             "worker": entry("engine.worker"), "heal": [*journal, "heal"], "ended": [*journal, "--env", env, "ended"],

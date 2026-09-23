@@ -7,7 +7,7 @@ from controllers.types import Agents, Environments
 from engine.actors import IDLE
 from engine.record import Record
 from engine.sessions import Sessions, agent_pid, alive
-from engine.worktree import checkout
+from engine.worktree import checkout, environment
 from resources.base import AGENT, SYSTEM
 from engine import chat, runtime
 from engine.stored import read_json, write_json
@@ -141,15 +141,16 @@ def answer(provider, root: Path, raw: dict, pid: int, prefer: str = "") -> dict:
     hook = Hook.read(raw, provider.tool_kinds)
     session = hook.session
     env = sessions.environment(session)
-    if not env or not sessions.read(session).provider:
-        top = checkout(Path(hook.cwd)) if hook.cwd else None
-        env = top.name if top else prefer or sessions.choose(session, provider.name, default_env(root))
+    worked = "" if provider.is_subagent(hook) else environment(checkout(Path(hook.cwd)) if hook.cwd else None)
+    if not env or not sessions.read(session).provider or worked and worked != env:
+        env = worked or prefer or sessions.choose(session, provider.name, default_env(root))
         sessions.bind(session, env, pid=agent_pid(pid), provider=provider.name)
         environments = Environments(Record(root, env), actor=SYSTEM)
         environments._seat(env, session)
-        wrapper = f"{provider.name}-{agent_pid(pid)}"
-        if top and sessions.known(wrapper):
-            sessions.bind(wrapper, env)
+        terminal = sessions.terminal(provider.name, agent_pid(pid))
+        if worked and terminal:
+            sessions.bind(terminal, env)
+            environments._seat(env, terminal)
     elif not alive(sessions.read(session).pid):
         sessions.write(session, pid=agent_pid(pid))
     sessions.touch(session)

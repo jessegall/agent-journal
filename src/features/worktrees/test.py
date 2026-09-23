@@ -30,21 +30,87 @@ def test_a_linked_worktree_without_a_journal_is_linked_to_the_projects_and_kept_
     assert (own / ".journal").is_symlink() is False, "a worktree with a journal of its own is left alone"
 
 
-def test_a_session_started_in_a_worktree_works_the_environment_named_after_it(tmp_path):
-    from engine.hooks import answer
-    from engine.sessions import Sessions
-    from providers import PROVIDERS
-    record = fresh()
+def worktree_of(tmp_path, name: str):
     main = tmp_path / "main"
-    (main / ".git" / "worktrees" / "feature-x").mkdir(parents=True)
-    worktree = tmp_path / "feature-x"
+    (main / ".git" / "worktrees" / name).mkdir(parents=True, exist_ok=True)
+    worktree = tmp_path / name
     worktree.mkdir()
-    (worktree / ".git").write_text(f"gitdir: {main / '.git' / 'worktrees' / 'feature-x'}\n")
+    (worktree / ".git").write_text(f"gitdir: {main / '.git' / 'worktrees' / name}\n")
+    return worktree
+
+
+def hooked(record, session: str, cwd, pid: int, **given) -> None:
+    from engine.hooks import answer
+    from providers import PROVIDERS
+    answer(PROVIDERS["claude"](), record.root, {"hook_event_name": "UserPromptSubmit", "session_id": session, "cwd": str(cwd), **given}, pid)
+
+
+def test_a_session_started_in_a_worktree_works_the_environment_named_after_it(tmp_path):
+    from engine.sessions import Sessions
+    record = fresh()
     Sessions(record.root).bind("claude-4242", record.env, pid=4242, provider="claude")
-    answer(PROVIDERS["claude"](), record.root, {"hook_event_name": "SessionStart", "session_id": "in-the-worktree", "cwd": str(worktree)}, 4242)
+    hooked(record, "in-the-worktree", worktree_of(tmp_path, "feature-x"), 4242)
     sessions = Sessions(record.root)
     assert (sessions.environment("in-the-worktree"), sessions.environment("claude-4242")) == ("feature-x", "feature-x"), \
         "the session and the terminal it runs in both work the worktree's environment"
+
+
+def test_a_resumed_conversation_in_a_worktree_moves_there_with_its_terminal(tmp_path):
+    from controllers.types import Environments
+    from engine.sessions import Sessions
+    from resources.base import SYSTEM
+    record = fresh()
+    sessions = Sessions(record.root)
+    environments = Environments(record, actor=SYSTEM)
+    sessions.bind("claude-5151", record.env, pid=5151, provider="claude")
+    environments._seat(record.env, "claude-5151")
+    sessions.bind("resumed", record.env, pid=5151, provider="claude")
+    hooked(record, "resumed", worktree_of(tmp_path, "feature-z") / "src", 5151)
+    assert (sessions.environment("resumed"), sessions.environment("claude-5151")) == ("feature-z", "feature-z"), \
+        "a conversation the journal already knew follows the worktree it now runs in, and so does its restarted terminal"
+    hooked(record, "resumed", tmp_path / "main", 5151, agent_id="helper")
+    assert sessions.environment("resumed") == "feature-z", "a subagent's hook outside the worktree never moves the main conversation"
+
+
+def test_a_subagent_in_its_own_worktree_never_moves_the_main_conversation(tmp_path):
+    from engine.sessions import Sessions
+    record = fresh()
+    Sessions(record.root).bind("main-conversation", record.env, pid=6161, provider="claude")
+    hooked(record, "main-conversation", worktree_of(tmp_path, "agent-a1b2"), 6161, agent_id="a1b2")
+    assert Sessions(record.root).environment("main-conversation") == record.env, "an isolated subagent's worktree is the subagent's, not the session's"
+
+
+def test_a_restarted_worker_keeps_the_seat_its_terminal_moved_to():
+    from engine.sessions import Sessions
+    from engine.terminal import Seat, seated
+    record = fresh()
+    first = seated(Seat(record.root, record.env, "claude", "claude-7171"))
+    Sessions(record.root).bind("claude-7171", "elsewhere")
+    again = seated(Seat(record.root, record.env, "claude", "claude-7171"))
+    assert (first.env, again.env, Sessions(record.root).environment("claude-7171")) == (record.env, "elsewhere", "elsewhere"), \
+        "a new build restarts the worker, and the terminal stays where it was moved"
+
+
+def test_journal_claude_with_a_worktree_makes_it_itself_and_starts_claude_inside_it(tmp_path):
+    import subprocess
+    import pytest
+    from providers.claude import ClaudeDriver
+    project = tmp_path / "project"
+    project.mkdir()
+    for command in (["git", "init", "-q"], ["git", "-c", "user.email=t@t", "-c", "user.name=t", "commit", "-q", "--allow-empty", "-m", "start"]):
+        subprocess.run(command, cwd=project, check=True, timeout=30)
+    (project / ".env").write_text("SECRET=1\n")
+    (project / ".worktreeinclude").write_text(".env\n")
+    cwd, args = ClaudeDriver.placed(project, ["--dangerously-skip-permissions", "--worktree=feature-q", "--resume", "c1"])
+    assert (cwd, args) == (project / ".claude" / "worktrees" / "feature-q", ["--dangerously-skip-permissions", "--resume", "c1"]), \
+        "Claude starts inside the worktree without a worktree of its own to clean up"
+    assert ((cwd / ".env").read_text(), subprocess.run(["git", "branch", "--show-current"], cwd=cwd, capture_output=True, text=True, timeout=30).stdout.strip()) == \
+        ("SECRET=1\n", "worktree-feature-q"), "it is made on Claude's branch name, with the files .worktreeinclude lists"
+    assert ClaudeDriver.placed(project, ["-w", "feature-q"]) == (cwd, []), "an existing worktree is reused"
+    assert ClaudeDriver.placed(project, ["-c"]) == (project, ["-c"]), "without a worktree Claude starts in the project"
+    for name in ("a:b", "a/b"):
+        with pytest.raises(SystemExit):
+            ClaudeDriver.placed(project, ["-w", name])
 
 
 def test_a_command_run_inside_a_worktree_works_the_worktrees_environment(tmp_path):
@@ -58,18 +124,3 @@ def test_a_command_run_inside_a_worktree_works_the_worktrees_environment(tmp_pat
     (record.root / "environments" / "feature-y").mkdir(parents=True)
     text, code = captured(["--cwd", str(worktree), "todo", "create", "from the worktree"], record.root)
     assert (code, (record.root / "environments" / "feature-y" / "todo").is_dir()) == (0, True), text
-
-
-def test_a_terminal_restarted_on_a_resumed_worktree_conversation_is_seated_in_the_worktrees_environment():
-    from engine.sessions import Sessions
-    from engine.stored import write_json
-    from engine.terminal import LAUNCHED, Seat, seated
-    from engine import runtime
-    record = fresh()
-    Sessions(record.root).bind("resumed-in-the-worktree", "feature-z", pid=999999, provider="claude")
-    for session, args in (("claude-5151", ["-w", "feature-z", "--resume", "resumed-in-the-worktree"]), ("claude-5252", ["--worktree=feature-w"])):
-        write_json(runtime.session_file(record.root, session, LAUNCHED), {"pid": 5151, "args": args})
-        seated(Seat.of(record.root, record.env, "claude", session))
-    sessions = Sessions(record.root)
-    assert (sessions.environment("claude-5151"), sessions.environment("claude-5252")) == ("feature-z", "feature-w"), \
-        "a terminal launched on a worktree works that worktree's environment, whichever way the flag is written"

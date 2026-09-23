@@ -142,8 +142,8 @@ def test_the_start_question_never_offers_a_busy_environment_on_enter():
     Sessions(record.root).bind("codex-x", record.env, pid=os.getpid(), provider="codex")
     answers = iter(["", "side", "1", "1"])
     ask = lambda _="": next(answers)
-    assert asked_for(record, [], ask=ask, answering=True) == "side", "Enter takes a free choice, here a new environment"
-    assert asked_for(record, [], ask=ask, answering=True) == record.env, "a busy one picked on purpose is taken over"
+    assert asked_for(record, ask=ask, answering=True) == "side", "Enter takes a free choice, here a new environment"
+    assert asked_for(record, ask=ask, answering=True) == record.env, "a busy one picked on purpose is taken over"
     assert Sessions(record.root).holder(record.env) == "", "and the agent there is moved off"
 
 

@@ -11,7 +11,7 @@ import features
 from engine.record import Record
 from engine.transcript import Turn, search as search_transcript
 from features.command_tags.reading import visible
-from providers import PROVIDERS
+from providers import DRIVERS, PROVIDERS
 from resources.base import Refused, SYSTEM
 from resources.types import AgentRow
 from engine.stored import write_text
@@ -148,15 +148,14 @@ def still_open(record) -> list[str]:
     messages = [f"message {m.n} was read and never answered: {m.title}" for m in unanswered(FEATURES["messages"].journal.at(record))]
     return works + messages
 
-WORKTREE_FLAGS = ("--worktree", "-w")
 NO_INTERACTION = "--no-interaction"
 SAVED_CURSOR = "\x1b7"
 QUESTION_SCREEN = "\x1b8\x1b[J"
 
 
-def asked_for(record: Record, args: list[str], ask=input, answering=None) -> str:
+def asked_for(record: Record, worktree: str = "", ask=input, answering=None) -> str:
     answering = sys.stdin.isatty() if answering is None else answering
-    if not answering or "--env" in sys.argv or any(a in WORKTREE_FLAGS or a.startswith("--worktree=") for a in args):
+    if not answering or "--env" in sys.argv or worktree:
         return record.env
     from controllers.types import Environments
     from engine.sessions import Sessions
@@ -238,7 +237,6 @@ def asked_slate(record: Record, project: Path, agent: str, ask=input, answering=
 
 def asked_prompts(record: Record, agent: str, args: list[str], ask=input, answering=None) -> None:
     from features.permission_prompts.feature import skipped
-    from providers import DRIVERS
     answering = sys.stdin.isatty() if answering is None else answering
     driver = DRIVERS.get(agent)
     if not answering or not driver or not driver.SKIP_ARGS or set(driver.SKIP_ARGS) <= set(args):
@@ -252,7 +250,6 @@ def asked_prompts(record: Record, agent: str, args: list[str], ask=input, answer
 
 def asked_resume(record: Record, agent: str, args: list[str], ask=input, answering=None) -> list[str]:
     from engine.sessions import Sessions
-    from providers import DRIVERS
     answering = sys.stdin.isatty() if answering is None else answering
     driver = DRIVERS.get(agent)
     worked = (driver and driver.worktree(args)) or record.env
@@ -283,7 +280,7 @@ def supervise(ctx, agent: str) -> str:
     if sys.stdin.isatty() and not quiet:
         subprocess.run(["stty", "sane"], stdin=sys.stdin, check=False)
         print(banner(agent, project))
-    env = asked_for(record, args, ask, answering)
+    env = asked_for(record, DRIVERS[agent].worktree(args), ask, answering)
     here = Record(record.root, env)
     put_back(here)
     clear(record.root)

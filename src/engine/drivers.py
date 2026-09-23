@@ -9,6 +9,7 @@ from engine import typist
 from resources.base import SYSTEM
 from engine.wording import counted
 from engine import runtime
+from engine.worktree import environment, opened
 
 ENTER_AFTER = 0.3
 MARK = "[journal]"
@@ -39,6 +40,7 @@ class Driver(ABC):
     SKIP_ARGS = ()
     RESUMING: dict[str, int] = {}
     WORKTREE: tuple = ()
+    WORKTREES: tuple = ()
     ALLOW, DENY = b"1", b"\x1b"
     MOVE_TO_BACKGROUND = b""
     QUIET = 3.0
@@ -78,8 +80,26 @@ class Driver(ABC):
     @classmethod
     def worktree(cls, args: list[str]) -> str:
         named = [following for flag, following in zip(args, args[1:]) if flag in cls.WORKTREE]
-        joined = [arg.split("=", 1)[1] for arg in args if "=" in arg and arg.split("=", 1)[0] in cls.WORKTREE]
+        joined = [value for flag, _, value in (arg.partition("=") for arg in args) if flag in cls.WORKTREE]
         return next((name for name in (*named, *joined) if name and not name.startswith("-")), "")
+
+    @classmethod
+    def unworktreed(cls, args: list[str]) -> list[str]:
+        name = cls.worktree(args)
+        if not name:
+            return args
+        joined = {f"{flag}={name}" for flag in cls.WORKTREE}
+        return [arg for i, arg in enumerate(args)
+                if arg not in cls.WORKTREE and arg not in joined and not (arg == name and i and args[i - 1] in cls.WORKTREE)]
+
+    @classmethod
+    def placed(cls, project: Path, args: list[str]) -> tuple[Path, list[str]]:
+        name = cls.worktree(args)
+        if not name:
+            return project, args
+        if environment(Path(name)) != name:
+            raise SystemExit(f"journal: {name!r} cannot name a worktree; use one plain word, without a colon or a slash")
+        return opened(project, project.joinpath(*cls.WORKTREES, name), f"worktree-{name}"), cls.unworktreed(args)
 
     @classmethod
     def resumed(cls, args: list[str], conversation: str) -> list[str]:

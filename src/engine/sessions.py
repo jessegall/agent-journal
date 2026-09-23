@@ -134,6 +134,9 @@ class Sessions:
         if runtime.env_file(self.root).is_file() and runtime.env(self.root) == old:
             runtime.set_env(self.root, new)
 
+    def terminal(self, provider: str, pid: int) -> str:
+        return next((name for name, s in self.all().items() if name.startswith(f"{provider}-") and s.pid == pid), "")
+
     def environment(self, session: str) -> str:
         return self.read(session).environment
 
