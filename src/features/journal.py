@@ -106,10 +106,13 @@ class Journal:
         CONTROLLERS[row.type](record, actor=SYSTEM).complete(row.n, how=how)
 
     def message(self, kind: type, line: str, values: dict, actor: str = SYSTEM, **data) -> Message:
-        filled = set(self.feature.lines[line].placeholders()) if line in self.feature.lines else set()
+        spec = self.feature.lines.get(line)
+        filled = set(spec.placeholders()) if spec else set()
         title, brief = self.feature.line(line, {key: value for key, value in values.items() if key in filled})
         kept = {key: value for key, value in values.items() if key not in filled}
         abstract = str(kept.pop("abstract", ""))
+        if spec and spec.label:
+            kept["label"] = spec.label
         return Message(kind, title, abstract, brief, self.feature.name, actor, data={**kept, **data})
 
     def send(self, record, message: Message):

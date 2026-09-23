@@ -35,5 +35,6 @@ class ChecksDetails(FeatureDetails):
             name="failing",
             title="{{title}}",
             brief="{{output}}",
+            label="Check failed",
         ),
     ]
