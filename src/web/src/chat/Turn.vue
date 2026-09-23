@@ -18,7 +18,7 @@ import {clock} from "../format/time.js";
 import {focusTurn, laidOut} from "../platform/view.js";
 import {meta, store, types} from "../state/store.js";
 import {words as plain} from "../text/words.js";
-import {rows} from "../sync/rows.js";
+import {optimistic, rows} from "../sync/rows.js";
 import {render} from "../text/index.js";
 import "../text/all.js";
 
@@ -153,7 +153,8 @@ function refOf(word) {
 
 async function react(face) {
     picking.value = false;
-    await api.act(props.turn.type, props.turn.n, "react", {face});
+    const pending = {ref: `reaction:pending-${Date.now()}`, type: "reaction", n: 0, refs: [props.turn.ref], seen: ["user"], data: {face}, deleted: 0};
+    await optimistic("reaction", pending, () => api.act(props.turn.type, props.turn.n, "react", {face}));
 }
 
 async function drop() {
