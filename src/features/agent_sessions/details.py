@@ -10,12 +10,12 @@ class AgentsDetails(FeatureDetails):
 
 
     abstract = """
-        Every agent session is kept honest: one evicted from its environment is held, one gone
-        quiet is marked stopped, and a subagent's rows are minded and handed back
+        Every agent session is tracked: one pushed out of its environment has its writes held, one
+        silent too long is marked stopped, and a subagent's assigned rows come back when it goes silent
     """
 
     help = """
-        Another session claimed the environment with a reason; the hold names it. A row still
+        When another session claims your environment, your writes are held and you are told its reason. A row still
         saying working or idle with no word from it for agents.quiet minutes is marked stopped,
         because a session that ended without its last hook would say working for ever.
 
@@ -41,7 +41,7 @@ class AgentsDetails(FeatureDetails):
         Behaviour(
             name="subagents",
             title="Mind a subagent's rows",
-            abstract="Its writes keep it alive; a report is handed to the dispatcher; silence gives its rows back",
+            abstract="Its writes mark it as working; its report goes to the agent that dispatched it; when it goes silent, its assigned rows come back",
         ),
     ]
 

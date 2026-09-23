@@ -9,7 +9,7 @@ class DeferralDetails(FeatureDetails):
 
     aliases = ("deferral",)
 
-    abstract = "Work put off in words, with no to-do parked, is named back to the agent once"
+    abstract = "If you say you will do something later without filing a to-do for it, you are told once"
 
     help = """
         A sentence like 'I'll do that after this' is the title of a to-do; file it immediately

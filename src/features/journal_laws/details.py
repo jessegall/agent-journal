@@ -17,8 +17,8 @@ class LawDetails(FeatureDetails):
         Always on. The laws are handed to every session, kept in AGENTS.md and CLAUDE.md, and
         enforced before a subagent dispatch.
 
-        Each law carries plain keywords and where they match, declared beside it. When one of
-        them comes up as a whole word, the law is whispered with its reason.
+        Each law carries plain keywords and where they match, declared beside it. When one of them appears as a
+        whole word, you are shown the law once, with its reason.
 
         After a tool call whose result is larger than the floor and larger than any earlier one
         in the session, you are told its size and that the next read can be narrower. It

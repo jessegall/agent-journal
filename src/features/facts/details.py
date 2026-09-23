@@ -16,8 +16,8 @@ class FactsDetails(FeatureDetails):
         journal fact create "<the claim>" --brief "<why it is true, where it shows>". It is handed back at every quarter of the
         context. When it stops being true, strike it with journal fact strike <n> --how "<what changed>".
 
-        Give it keywords with --set keywords="<word>,<word>": when one comes up as a whole word, the row is whispered to
-        that session once, with its reasoning, and the call is never refused. --set keywords_in says where they match: text
+        Give it keywords with --set keywords="<word>,<word>": when one appears as a whole word, you are shown the
+        row once, with its reasoning, and the tool call still goes through. --set keywords_in says where they match: text
         (what you write, in edits and in the chat), commands (shell commands), both (the default), or everything (any tool call,
         file paths, searches and URLs included).
     """

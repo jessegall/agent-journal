@@ -7,7 +7,7 @@ class TrackingDetails(FeatureDetails):
 
     title = "Source links"
 
-    abstract = "A plan, doc or report that cites nothing it was built on is named back to the agent"
+    abstract = "If you create a plan, doc or report without linking what you read to build it, you are told which link to add"
 
     help = """
         A plan, doc or report created soon after you read a report or doc, and citing none

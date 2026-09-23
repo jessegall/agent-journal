@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.113.11 — Skills say plainly who does what
+
+Every generated skill ended with a paragraph about the feature's machinery (what it listens to, when it speaks, its switches), which an agent cannot act on; it is gone, and the Settings page still shows the switches. Lines that said things like "named back to you", "whispered", "kept honest" or "minded" now say plainly what happens and who does it: you are told once, you are shown the rule, your writes are held.
+
 ## 2.113.10 — The output cap leaves MCP servers alone
 
 Claude starts its MCP servers through the same shell prefix as its commands, so since 2.110.0 the output cap sat on their message streams: it copied them into a file that kept growing and passed on only their first 200 lines. It now caps only a shell command the agent runs, which Claude wraps in eval, and starts anything else untouched. Restart a session to start its MCP servers without it. Output files left behind for a day are removed by the hourly housekeeping.

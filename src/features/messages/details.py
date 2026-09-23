@@ -12,16 +12,17 @@ class MessagesDetails(FeatureDetails):
     speaks_while_waiting = True
 
     abstract = """
-        What the user leaves for the agent is named until it is read, answered before the work
-        starts, and closed once it is dealt with
+        A message the user leaves you is shown to you until you read it, answered before you go on
+        working, and closed once you have dealt with it
     """
 
     help = """
         To hand the user a document, or any row, put its reference on a line of its own, such as doc 41: the chat shows it as a
         card they can open.
 
-        Unread messages are named at the first tool use after one arrives and every third after; five times ignored, your
-        writes are held. A message you have read is named again before the next write, a few times, and never refused over.
+        You are reminded of an unread message at your first tool use after it arrives and at every third one after; after five
+        reminders your writes are held. A message you have read but not answered is mentioned again before your next writes, a
+        few times, without holding them.
         A reply, a reaction, or processing every part closes it; a message you wrote closes as soon as the user has seen it,
         and every row you file while a message is in your hands is linked to it.
     """
@@ -54,13 +55,13 @@ class MessagesDetails(FeatureDetails):
         Behaviour(
             name="paragraphs",
             title="Keep the paragraphs of a message apart",
-            abstract="A message of several sentences run together is named back once, at the end of the turn",
+            abstract="A message of several sentences run together earns you one reminder, at the end of the turn",
             trigger=Trigger(on=IDLE),
         ),
         Behaviour(
             name="numbers",
             title="Name what a number in a message is",
-            abstract="A message that names a row by a bare number, like 'answered 1712', is named back so the type can be added and the chat links it; quoted text and code are left alone",
+            abstract="A message that names a row by a bare number, like 'answered 1712', earns you a reminder to add the type, so the chat links it; quoted text and code are left alone",
         ),
     ]
 

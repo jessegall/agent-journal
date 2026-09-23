@@ -10,8 +10,8 @@ class CleanupDetails(FeatureDetails):
     aliases = ("cleanup",)
 
     abstract = """
-        What in the record has evidence against it — a file that is gone, a command that does
-        not exist, a row waiting on the user too long — said to the agent once a day
+        Once a day you are told which rows in the record no longer hold: a file that is gone, a
+        command that does not exist, a row waiting on the user too long
     """
 
     help = "Each finding names the row, what is wrong with it, and the command that retires it."
