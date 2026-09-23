@@ -22,7 +22,12 @@ defineProps({on: Boolean});
     cursor: pointer;
 }
 
-.menu-item:hover {
+.menu-item:disabled {
+    opacity: 0.45;
+    cursor: default;
+}
+
+.menu-item:hover:enabled {
     background: var(--hover);
     color: var(--text);
 }

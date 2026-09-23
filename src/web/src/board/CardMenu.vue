@@ -2,7 +2,8 @@
 import MenuItem from "../kit/MenuItem.vue";
 import MenuPanel from "../kit/MenuPanel.vue";
 import StageDot from "../kit/StageDot.vue";
-import {inject, ref} from "vue";
+import {moveEffect, refused} from "./moves.js";
+import {computed, inject, ref} from "vue";
 import {api} from "../api/client.js";
 import {useOutside} from "../composables/outside.js";
 import {peek} from "../route.js";
@@ -12,6 +13,7 @@ const props = defineProps({card: Object, anchor: {type: Object, default: null}})
 const emit = defineEmits(["close"]);
 const board = inject("board");
 const menu = ref(null);
+const slots = computed(() => store.board.slots);
 const TITLES = {todo: "To do", held: "Held", doing: "Doing", asked: "Needs you", done: "Done"};
 useOutside(menu, () => emit("close"));
 
@@ -32,9 +34,10 @@ function move(lane) {
         <template v-if="card.targets.length">
             <p class="label">Move to</p>
             <template v-for="lane in card.targets" :key="lane">
-                <MenuItem @click="move(lane)">
+                <MenuItem :disabled="refused(card, board.meaningOf(lane))" @click="move(lane)">
                     <StageDot :meaning="board.meaningOf(lane)" />
                     {{ TITLES[lane] || lane }}
+                    <span class="effect">{{ moveEffect(card, board.meaningOf(lane), slots) }}</span>
                 </MenuItem>
             </template>
         </template>
@@ -57,6 +60,12 @@ function move(lane) {
     right: 6px;
     min-width: 170px;
     max-width: 240px;
+}
+
+.effect {
+    margin-left: auto;
+    padding-left: 12px;
+    color: var(--text-4);
 }
 
 .label {
