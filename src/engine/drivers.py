@@ -114,7 +114,11 @@ class Driver(ABC):
             return project, args
         if environment(Path(name)) != name:
             raise SystemExit(f"journal: {name!r} cannot name a worktree; use one plain word, without a colon or a slash")
-        return opened(project, project.joinpath(*cls.WORKTREES, name), f"worktree-{name}"), cls.unworktreed(args)
+        return opened(project, project.joinpath(*cls.WORKTREES, name), cls.branch(name)), cls.unworktreed(args)
+
+    @classmethod
+    def branch(cls, name: str) -> str:
+        return f"worktree-{name}"
 
     @classmethod
     def within(cls, args: list[str], name: str) -> list[str]:

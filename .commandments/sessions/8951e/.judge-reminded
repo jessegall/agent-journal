@@ -1,9 +1,11 @@
 /Users/jessegall/projects/agent-journal/src/commands/parser.py
 /Users/jessegall/projects/agent-journal/src/commands/queries.py
+/Users/jessegall/projects/agent-journal/src/engine/drivers.py
 /Users/jessegall/projects/agent-journal/src/engine/inputs.py
 /Users/jessegall/projects/agent-journal/src/engine/sessions.py
 /Users/jessegall/projects/agent-journal/src/engine/terminal.py
 /Users/jessegall/projects/agent-journal/src/engine/version.py
+/Users/jessegall/projects/agent-journal/src/engine/worktree.py
 /Users/jessegall/projects/agent-journal/src/features/boards/__init__.py
 /Users/jessegall/projects/agent-journal/src/features/boards/controller.py
 /Users/jessegall/projects/agent-journal/src/features/boards/details.py
@@ -18,6 +20,7 @@
 /Users/jessegall/projects/agent-journal/src/features/tickets/controller.py
 /Users/jessegall/projects/agent-journal/src/features/tickets/details.py
 /Users/jessegall/projects/agent-journal/src/features/tickets/feature.py
+/Users/jessegall/projects/agent-journal/src/features/tickets/handlers.py
 /Users/jessegall/projects/agent-journal/src/features/tickets/resource.py
 /Users/jessegall/projects/agent-journal/src/features/tickets/test.py
 /Users/jessegall/projects/agent-journal/src/resources/types.py

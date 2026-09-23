@@ -53,10 +53,10 @@ def test_a_ticket_is_bound_to_one_environment_its_worktree_and_session_share():
     assert Sessions(record.root).choose("claude-new", "claude", "main") == "main", "a plain session never lands in a ticket's environment"
     Sessions(record.root).bind("claude-7", bound.work_environment, provider="claude")
     assert tickets.agent_session(ticket.n) == "claude-7", "the session is whichever one holds the ticket's environment"
-    tickets.complete(ticket.n, how="still running")
+    tickets.complete(ticket.n, how="still running", yes=True)
     assert Environments(record)._titled(bound.work_environment) is not None, "an environment whose agent still runs is kept when its ticket closes"
     other = tickets.bind(tickets.create("Search").n)
-    tickets.complete(other.n, how="shipped")
+    tickets.complete(other.n, how="shipped", yes=True)
     assert Environments(record)._titled(other.work_environment) is None, "a closed ticket's idle environment goes to the attic"
 
 
@@ -113,3 +113,29 @@ def test_moving_a_ticket_to_its_start_stage_launches_its_agent_once_in_its_workt
     report(Record(record.root, f"ticket-{ticket.n}"), "working", "PreToolUse", session="claude-9")
     card = next(card for lane in tickets.board(board.n)["lanes"] for card in lane["cards"] if card["n"] == ticket.n)
     assert card["reason"] == f"working in ticket-{ticket.n}", "the card says what its agent is doing and where"
+
+
+def test_a_started_ticket_closes_when_its_branch_is_merged_and_not_before():
+    import subprocess
+    from tests.conftest import refused
+    record = fresh()
+    project = record.root.parent
+
+    def git(*args):
+        return subprocess.run(["git", "-c", "user.email=t@t", "-c", "user.name=t", *args], cwd=project, check=True, capture_output=True, text=True, timeout=30)
+
+    git("init", "-q")
+    git("commit", "-q", "--allow-empty", "-m", "start")
+    board = Boards(record, actor=USER).create("Features", stages=["Doing", "Shipped"], meanings={"Shipped": "done"})
+    tickets = Tickets(record, actor=USER)
+    ticket = tickets.bind(tickets.create("Dark mode", board=board.n).n)
+    home = git("branch", "--show-current").stdout.strip()
+    git("switch", "-q", "-c", f"worktree-{ticket.work_environment}")
+    git("commit", "-q", "--allow-empty", "-m", "dark mode")
+    git("switch", "-q", home)
+    assert "is not merged" in refused(lambda: tickets.complete(ticket.n)), "a started ticket is not closed while its branch is unmerged"
+    assert tickets.close_merged() == [], "nothing unmerged is closed"
+    git("merge", "-q", "--no-edit", f"worktree-{ticket.work_environment}")
+    tickets.close_merged()
+    closed = tickets.load(ticket.n)
+    assert (bool(closed.completed), closed.stage) == (True, "Shipped"), "once merged it closes by itself, in its board's done stage"

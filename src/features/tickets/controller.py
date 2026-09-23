@@ -1,12 +1,14 @@
 import controllers.types as types_module
 from controllers.types import Environments
+from engine import typist
 from engine.record import Record
+from engine.worktree import merged
 from engine.sessions import Sessions, live
 from features.permission_prompts.feature import prompted
 import resources.types as resources_module
 from controllers.base import Controller, internal
 from features.boards.controller import Boards
-from features.boards.resource import START
+from features.boards.resource import DONE, START
 from features.kanban.board import BoardLanes, Card
 from features.kanban.lanes import Lane
 from features.tickets.resource import Ticket
@@ -67,8 +69,12 @@ class Tickets(Controller):
         ticket = self.load(int(n))
         return Sessions(self.record.root).holder(ticket.work_environment) if ticket.work_environment else ""
 
-    def complete(self, n: int, how: str = "", **data):
-        closed = super().complete(n, how, **data)
+    def complete(self, n: int, how: str = "", yes: bool = False, **data):
+        ticket = self.load(int(n))
+        if ticket.work_environment and not yes and not self._merged(ticket):
+            raise Refused(f"{self.type} {ticket.n}'s branch {self._branch(ticket)} is not merged: merge its pull request first, or --yes closes it anyway")
+        closed = super().complete(ticket.n, how, **data)
+        self._stop(closed)
         environments = Environments(self.record, actor=self.actor)
         place = environments._titled(closed.work_environment) if closed.work_environment else None
         if place:
@@ -77,6 +83,29 @@ class Tickets(Controller):
             except Refused:
                 pass
         return closed
+
+    @internal
+    def close_merged(self) -> list:
+        merged = [r for r in self._standing() if r.work_environment and self._merged(r)]
+        for ticket in merged:
+            finished = [stage for stage, meaning in (Boards(self.record, actor=self.actor).load(int(ticket.board)).meanings.items() if ticket.board else ()) if meaning == DONE]
+            if finished:
+                self.update(ticket.n, stage=finished[0])
+            self.complete(ticket.n, how=f"its branch {self._branch(ticket)} was merged")
+        return merged
+
+    def _branch(self, ticket) -> str:
+        from providers import DRIVERS
+        return DRIVERS[AGENT_CLI].branch(ticket.work_environment)
+
+    def _merged(self, ticket) -> bool:
+        return merged(self.record.root.parent, self._branch(ticket))
+
+    def _stop(self, ticket) -> None:
+        from providers import DRIVERS
+        session = self.agent_session(ticket.n)
+        if session and DRIVERS[AGENT_CLI].EXIT:
+            typist.send(self.record.root, session, f"{DRIVERS[AGENT_CLI].EXIT}\r".encode())
 
     def move(self, n: int, stage: str):
         moved = self.update(int(n), stage=stage.strip())

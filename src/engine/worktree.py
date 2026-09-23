@@ -44,6 +44,11 @@ def opened(project: Path, folder: Path, branch: str) -> Path:
     return folder
 
 
+def merged(project: Path, branch: str) -> bool:
+    ref = f"refs/heads/{branch}"
+    return present(project, ref) and git(project, "merge-base", "--is-ancestor", ref, "HEAD").returncode == 0
+
+
 def present(project: Path, ref: str) -> bool:
     return git(project, "rev-parse", "--verify", "--quiet", ref).returncode == 0
 
