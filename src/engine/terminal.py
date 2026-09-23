@@ -20,6 +20,7 @@ from engine.package import CODE, ZIPPED, entry
 RELOAD = 75
 STOP = 76
 RELAUNCH = 77
+LAUNCH = 1
 HEAL = 78
 QUICK = 30.0
 CHECK_EVERY = 0.5
@@ -93,7 +94,7 @@ def seat(root: Path, env: str, session: str, pid: int, agent: str, command: list
     from engine.sessions import Sessions
     from resources.base import SYSTEM
     Sessions(root).bind(session, env, pid=pid, provider=agent)
-    Sessions(root).write(session, args=command)
+    Sessions(root).write(session, args=command, launch=LAUNCH)
     Environments(Record(root, env), actor=SYSTEM)._seat(env, session)
 
 

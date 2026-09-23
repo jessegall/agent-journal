@@ -50,11 +50,23 @@ def contents(lines: list[str]) -> list[str]:
     return [s for s in texts if s]
 
 
+def build(root: Path) -> Path:
+    return (root / "journal.pyz").resolve()
+
+
+def renewed(root: Path, began: Path) -> bool:
+    return build(root) != began and build(root).is_file()
+
+
 def push(root: Path) -> None:
     f = queue(root)
     at = start(f)
+    began = build(root)
     while True:
         time.sleep(WAIT)
+        if renewed(root, began):
+            sys.stdout.flush()
+            os.execv(sys.executable, sys.orig_argv)
         try:
             alive(root).touch()
             lines, at = fresh_lines(f, at)
