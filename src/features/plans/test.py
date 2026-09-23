@@ -160,3 +160,24 @@ def test_a_plan_is_built_at_the_depth_the_user_picked():
     plans.create("Rollout", depth="thorough")
     told = [n.brief for n in Nudges(record).all() if n.title.startswith("the user started plan")]
     assert "file a to-do for every small thing" in told[-1], "the agent is told to plan every small thing"
+
+
+def test_a_row_struck_while_its_plan_is_unapproved_leaves_the_plan_and_stays_once_approved():
+    from features import load
+    load()
+    record = fresh()
+    todos, by_agent, by_user = Todos(record, actor=AGENT), Plans(record, actor=AGENT), Plans(record, actor=USER)
+    building = by_agent.create("still building", goal="rows revised")
+    by_agent.phase(building.n, "only phase", when="its rows close")
+    kept, dropped = todos.create("kept").n, todos.create("dropped").n
+    by_agent.place(building.n, 1, [kept, dropped])
+    todos.strike(dropped, "no longer part of it")
+    assert by_agent.load(building.n).phases[0]["todos"] == [kept], "a row struck before approval leaves the plan"
+    approved = by_agent.create("approved", goal="rows stay on the record")
+    by_agent.phase(approved.n, "only phase", when="its rows close")
+    row = todos.create("struck after approval").n
+    by_agent.place(approved.n, 1, [row, todos.create("other").n])
+    by_agent.ready(approved.n)
+    by_user.approve(approved.n)
+    todos.strike(row, "dropped later")
+    assert row in by_agent.load(approved.n).phases[0]["todos"], "once approved, a struck row stays in its phase"
