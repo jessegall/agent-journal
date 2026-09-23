@@ -82,7 +82,8 @@ class SampleVideoFrames(Handler):
             done = subprocess.CompletedProcess([], -1, "", str(error))
         frames = sorted(source.parent.glob(f"{prefix}*.jpg")) if done.returncode == 0 else []
         errors = (done.stderr or "").strip().splitlines()
-        why = "" if done.returncode == 0 else f"; no frames: {errors[-1] if errors else 'ffmpeg failed'}"
+        failure = errors[-1] if errors else "ffmpeg failed"
+        why = "" if done.returncode == 0 else f"; no frames: {failure}"
         row.files[name] = f"video; {len(frames)} frames every {every:g} seconds{why}"
         for frame in frames:
             row.files[frame.name] = f"video frame from {name}"

@@ -9,6 +9,10 @@ from resources.base import AGENT, titled
 FILED = "filed"
 
 
+
+def option_title(option) -> str:
+    return Option.from_json(option).title if isinstance(option, dict) else str(option)
+
 class AskInTheJournal(ToolInterceptor):
     def intercept(self, context: AgentContext, call) -> str:
         if not context.provider.question(call):
@@ -32,7 +36,7 @@ class OptionsOnlyInTheirButtons(ActionInterceptor):
             return None
         given = data.get("options")
         options = json.loads(given) if isinstance(given, str) and given.strip().startswith("[") else given
-        titles = [Option.from_json(option).title if isinstance(option, dict) else str(option) for option in options] if isinstance(options, list) else []
+        titles = [option_title(option) for option in options] if isinstance(options, list) else []
         if restates(f"{title}\n{abstract}\n{brief}", titles):
             controller._refuse("the options already carry their own titles and text, so the question does not list them again: "
                                "take the A/B/C or numbered option lines, or the option names, out of its title, abstract and brief")

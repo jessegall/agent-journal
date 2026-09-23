@@ -58,7 +58,8 @@ class RefuseWholeLongReads(ToolInterceptor):
         shell = context.provider.shell_command(call)
         cat = CAT.search(shell) if shell else None
         whole = isinstance(call, ReadCall) and call.whole
-        named = call.file_path if whole else cat.group(1) if cat else ""
+        printed = cat.group(1) if cat else ""
+        named = call.file_path if whole else printed
         if not named:
             return ""
         path = Path(named).expanduser()

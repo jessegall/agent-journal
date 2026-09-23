@@ -94,7 +94,9 @@ class Setting(Loaded):
 
     @property
     def summary(self) -> str:
-        return f"reads {self.env}" if self.env else self.title if self.title else self.key
+        if self.env:
+            return f"reads {self.env}"
+        return self.title if self.title else self.key
 
 
 @dataclass(frozen=True)
