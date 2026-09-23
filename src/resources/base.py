@@ -121,6 +121,7 @@ class Resource:
     start_heading: ClassVar[str] = ""          # its heading in the start block, empty when it is not handed to a session
     start_as_count: ClassVar[bool] = False     # handed as a count, not row by row
     subagent_writable: ClassVar[bool] = True         # a subagent lent the environment may write it
+    takes_comments: ClassVar[bool] = True   # its inspector has a comment section
     nested: ClassVar[bool] = False      # it exists about another resource and is shown under it, never on its own
     closed_first: ClassVar[bool] = False
     listed_open: ClassVar[bool] = False    # its open rows are a working list: a listing carries every one of them

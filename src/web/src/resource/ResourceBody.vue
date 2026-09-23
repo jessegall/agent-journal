@@ -289,7 +289,7 @@ const docs = computed(() =>
             <Links :resource="resource" :except="docs.map((d) => d.ref)" />
         </template>
         <footer class="foot">seen by {{ seenBy }}</footer>
-        <template v-if="comments">
+        <template v-if="comments && kind?.takes_comments">
             <Comments :resource="resource" :compose="commentComposer" />
         </template>
     </article>

@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.102.4 — Only resources people discuss have a comment section
+
+A resource type says whether it takes comments (takes_comments, carried in the manifest). Agents, notifications, notices, reactions, browser asks, features and nudges do not, so their inspectors no longer end in an empty comment section.
+
 ## 2.102.3 — Reminder chat marks are one line
 
 A chat mark for a rule, fact or reminder said to the agent is a single line, "Reminded the agent of rule 41" and the time; clicking it opens the row, and hovering shows its title. Plugin marks, such as code-commandments' sin marks, keep their second line.
