@@ -1,3 +1,5 @@
+from dataclasses import dataclass
+
 import controllers.types as types_module
 from controllers.types import Environments
 from engine import typist
@@ -25,6 +27,12 @@ CARD_EXTRAS: list = []
 HELD = ("rule", "doc", "tool")
 
 
+@dataclass(frozen=True)
+class CardState:
+    kind: str
+    text: str
+
+
 class Tickets(Controller):
     resource = Ticket
 
@@ -46,11 +54,14 @@ class Tickets(Controller):
         stages = self._stages(n)
         tickets = [r for r in self._standing() if int(r.board) == int(n)]
         sessions = Sessions(self.record.root).all()
-        return BoardLanes([(Lane(stage, stage), [self._card(r, stage, stages, sessions) for r in tickets if r.stage == stage]) for stage in stages], []).shaped()
+        running = len(self._running())
+        return BoardLanes([(Lane(stage, stage), [self._card(r, stage, stages, sessions, running) for r in tickets if r.stage == stage])
+                           for stage in stages], []).shaped()
 
-    def _card(self, ticket, stage: str, stages: list, sessions: dict) -> Card:
+    def _card(self, ticket, stage: str, stages: list, sessions: dict, running: int) -> Card:
         extras = [extra(self.record, ticket) for extra in CARD_EXTRAS]
-        return Card(ticket.n, ticket.title, LEVELS["default"], stage, reason=self._runtime(ticket, sessions), targets=[s for s in stages if s != stage],
+        state = self._runtime(ticket, sessions, running)
+        return Card(ticket.n, ticket.title, LEVELS["default"], stage, reason=state.text, state=state.kind, targets=[s for s in stages if s != stage],
                     updated=ticket.updated, completed=ticket.completed, type=self.type,
                     actions=[*self._actions(ticket), *(action for more in extras for action in more.actions)],
                     link=next((more.link for more in extras if more.link), ""))
@@ -60,20 +71,29 @@ class Tickets(Controller):
         return [*([{"label": "Confirm", "action": "confirm"}] if ticket.draft else []),
                 *([{"label": "Accept", "action": "accept_dependencies"}, {"label": "Decline", "action": "decline_dependencies"}] if proposed else [])]
 
-    def _runtime(self, ticket, sessions: dict) -> str:
+    def _runtime(self, ticket, sessions: dict, running: int) -> CardState:
         place = ticket.work_environment
         proposed = [ref for ref, stance in ticket.dependencies.items() if stance == PROPOSED]
         if proposed:
-            return f"the agent proposes it waits on {', '.join(ref.replace(':', ' ') for ref in proposed)}"
+            return CardState("you", f"the agent proposes it waits on {', '.join(ref.replace(':', ' ') for ref in proposed)}")
         if not place:
-            return "a draft, waiting for your confirmation" if ticket.draft else ""
+            return CardState("draft", "a draft, waiting for your confirmation") if ticket.draft else CardState("", "")
         session = next((name for name, held in sessions.items() if held.environment == place and live(held)), "")
         row = Agents(Record(self.record.root, place), actor=SYSTEM)._titled(session) if session else None
+        state = self._agent_state(ticket, row, running)
+        if ticket.plan and Plans(Record(self.record.root, place), actor=SYSTEM).load(int(ticket.plan)).status == READY:
+            return CardState("you", f"{state.text} in {place}; its plan waits for your approval")
+        return CardState(state.kind, f"{state.text} in {place}")
+
+    def _agent_state(self, ticket, row, running: int) -> CardState:
+        if row:
+            return CardState("you", "waiting for you") if row.asking else CardState("running", row.status)
         waits = self._waiting_on(ticket)
-        state = ("waiting for you" if row and row.asking else row.status if row else f"waiting on {', '.join(waits)}" if waits
-                 else "queued" if ticket.queued else "stopped")
-        waiting = ticket.plan and Plans(Record(self.record.root, place), actor=SYSTEM).load(int(ticket.plan)).status == READY
-        return f"{state} in {place}" + ("; its plan waits for your approval" if waiting else "")
+        if waits:
+            return CardState("blocked", f"waiting on {', '.join(ref.replace(':', ' ') for ref in waits)}")
+        if ticket.queued:
+            return CardState("queued", f"queued while {running} of {TicketsDetails.values(self.record).running} agents run")
+        return CardState("stopped", "stopped")
 
     def bind(self, n: int):
         ticket = self.load(int(n))
