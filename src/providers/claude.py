@@ -171,6 +171,9 @@ class Claude(Provider):
     def compacted(self, hook: Hook) -> bool:
         return hook.source == "compact"
 
+    def shell_wrapper(self, script: Path) -> dict:
+        return {"CLAUDE_CODE_SHELL_PREFIX": str(script)}
+
     def dispatch(self, tool) -> dict:
         if tool.name != "Agent":
             return {}

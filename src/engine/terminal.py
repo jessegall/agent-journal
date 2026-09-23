@@ -35,11 +35,12 @@ def agent_environment(base: dict | None = None, env: str = "", capped: dict | No
     return {**(base if base is not None else os.environ), ACTIVE_ENV: "1", **({"JOURNAL_ENV": env} if env else {}), **(capped or {})}
 
 
-def output_cap(root: Path, env: str) -> dict:
+def output_cap(root: Path, env: str, provider) -> dict:
     from engine.record import Record
     from features.journal_laws.details import LawDetails
     lines = int(LawDetails.values(Record(root, env)).output_lines)
-    return {"CLAUDE_CODE_SHELL_PREFIX": str(code(root) / "output_cap.sh"), "JOURNAL_OUTPUT_LINES": str(lines)} if lines > 0 else {}
+    wrapper = provider.shell_wrapper(code(root) / "output_cap.sh") if lines > 0 else {}
+    return {**wrapper, "JOURNAL_OUTPUT_LINES": str(lines), "JOURNAL_OUTPUT_DIR": str(runtime.folder(root) / "outputs")} if wrapper else {}
 
 
 def session_of(agent: str, pid: int) -> str:
@@ -97,13 +98,13 @@ def seat(root: Path, env: str, session: str, pid: int, agent: str, command: list
 
 
 def launch(root: Path, cwd: Path, env: str, agent: str, args: list[str], conversation: str = "") -> tuple[int, int, str]:
-    from providers import DRIVERS
+    from providers import DRIVERS, PROVIDERS
     from engine.record import Record
     from features.work_tracking.auto import launch_args
 
     driver = DRIVERS[agent]
     command = driver.command(driver, driver.resumed(launch_args(Record(root, env), agent, args), conversation), cwd)
-    pid, fd = spawn_agent(command, cwd, env, output_cap(root, env))
+    pid, fd = spawn_agent(command, cwd, env, output_cap(root, env, PROVIDERS[agent]()))
     session = session_of(agent, pid)
     seat(root, env, session, pid, agent, command)
     return pid, fd, session

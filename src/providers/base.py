@@ -80,6 +80,9 @@ class Provider(ABC):
     def shell_command(self, tool) -> str:
         return tool.command if tool.name == "Bash" else ""
 
+    def shell_wrapper(self, script: Path) -> dict:
+        return {}
+
     def skill_load(self, name: str) -> str:
         return f"Skill: {name}"
 
