@@ -1,8 +1,7 @@
-/Users/jessegall/projects/agent-journal/src/commands/menu.py
-/Users/jessegall/projects/agent-journal/src/commands/queries.py
-/Users/jessegall/projects/agent-journal/src/engine/drivers.py
-/Users/jessegall/projects/agent-journal/src/engine/worktree.py
-/Users/jessegall/projects/agent-journal/src/features/clean_slate/slate.py
+/Users/jessegall/projects/agent-journal/src/engine/fields.py
+/Users/jessegall/projects/agent-journal/src/features/status_bar/runs.py
+/Users/jessegall/projects/agent-journal/src/providers/claude_rows.py
+/Users/jessegall/projects/agent-journal/src/providers/codex_rows.py
 -----
 Batch marker for the code-commandments judge reminder (`commandments judge-reminder`, wired as
 Stop + PreToolUse hooks). The lines above the separator are the changed-file set it last

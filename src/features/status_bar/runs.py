@@ -1,21 +1,17 @@
 from dataclasses import dataclass, replace
 
-from engine.fields import list_of, mapping_of, number_of, text_of, whole_of
+from engine.fields import Loaded
 
 COUNTED = ("edited", "created", "deleted", "added", "removed")
 
 
 @dataclass(frozen=True)
-class Delta:
+class Delta(Loaded):
     edited: int = 0
     created: int = 0
     deleted: int = 0
     added: int = 0
     removed: int = 0
-
-    @classmethod
-    def from_json(cls, raw: dict) -> "Delta":
-        return cls(**{key: whole_of(raw, key) for key in COUNTED})
 
     def to_json(self) -> dict:
         return {key: getattr(self, key) for key in COUNTED}
@@ -29,20 +25,13 @@ class Delta:
 
 
 @dataclass(frozen=True)
-class Outcome:
+class Outcome(Loaded):
     ok: bool | None = None
     passed: int = 0
     failed: int = 0
     pull: str = ""
     url: str = ""
     number: str = ""
-
-    @classmethod
-    def from_json(cls, raw) -> "Outcome | None":
-        if not isinstance(raw, dict) or not raw:
-            return None
-        return cls(ok=raw.get("ok"), passed=whole_of(raw, "passed"), failed=whole_of(raw, "failed"), pull=text_of(raw, "pull"),
-                   url=text_of(raw, "url"), number=text_of(raw, "number"))
 
     def to_json(self) -> dict:
         if self.pull:
@@ -53,7 +42,7 @@ class Outcome:
 
 
 @dataclass(frozen=True)
-class CommandRun:
+class CommandRun(Loaded):
     command: str = ""
     tool: str = ""
     at: float = 0.0
@@ -65,15 +54,6 @@ class CommandRun:
     changed: Delta | None = None
     result: Outcome | None = None
     before: "CommandRun | None" = None
-
-    @classmethod
-    def from_json(cls, raw) -> "CommandRun":
-        raw = raw if isinstance(raw, dict) else {}
-        changed, before = mapping_of(raw, "changed"), mapping_of(raw, "before")
-        return cls(command=text_of(raw, "command"), tool=text_of(raw, "tool"), at=number_of(raw, "at"), done=number_of(raw, "done"),
-                   effect=text_of(raw, "effect"), subject=text_of(raw, "subject"), files=tuple(list_of(raw, "files")), made=tuple(list_of(raw, "made")),
-                   changed=Delta.from_json(changed) if changed else None, result=Outcome.from_json(raw.get("result")),
-                   before=cls.from_json(before) if before else None)
 
     def to_json(self) -> dict:
         kept = {"command": self.command, "tool": self.tool, "at": self.at, "done": self.done, "effect": self.effect, "subject": self.subject,

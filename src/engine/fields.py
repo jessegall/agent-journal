@@ -3,8 +3,7 @@ from functools import cache
 from types import UnionType
 from typing import Any, ClassVar, Union, get_args, get_origin, get_type_hints
 
-CONTAINERS = {tuple: (list, tuple), list: (list, tuple), dict: (dict,)}
-EMPTY = (None, "", {}, [])
+SKIPPED = object()
 
 
 class Loaded:
@@ -14,56 +13,49 @@ class Loaded:
     @classmethod
     def from_json(cls, raw: dict):
         given = {}
-        for name, kind in declared(cls):
-            found = [raw[key] for key in cls.aliases.get(name, (name,)) if raw.get(key) not in EMPTY]
-            if found and fits(kind, found[0]):
-                given[name] = shaped(kind, found[0])
+        for name, keys, convert in plan(cls):
+            for key in keys:
+                value = raw.get(key)
+                if value is not None and value != "":
+                    value = convert(value)
+                    if value is not SKIPPED:
+                        given[name] = value
+                    break
         return cls(**given)
 
 
 @cache
-def declared(cls) -> tuple:
+def plan(cls) -> tuple:
     hints = get_type_hints(cls)
-    return tuple((field.name, hints[field.name]) for field in fields(cls) if field.init)
+    return tuple((field.name, cls.aliases.get(field.name, (field.name,)), converter(hints[field.name])) for field in fields(cls) if field.init)
 
 
-def plain(kind):
+@cache
+def converter(kind):
     if get_origin(kind) in (Union, UnionType):
-        return next(arg for arg in get_args(kind) if arg is not type(None))
-    return kind
-
-
-def fits(kind, value) -> bool:
-    kind = plain(kind)
-    base = get_origin(kind) or kind
-    if isinstance(base, type) and issubclass(base, Loaded):
-        return isinstance(value, dict)
-    if base is tuple and keyed(kind):
-        return isinstance(value, dict)
-    return isinstance(value, CONTAINERS.get(base, object))
-
-
-def keyed(kind) -> bool:
-    item = next(iter(get_args(kind)), None)
-    return isinstance(item, type) and issubclass(item, Loaded) and bool(item.keyed_by)
-
-
-def shaped(kind, value):
-    kind = plain(kind)
+        return converter(next(arg for arg in get_args(kind) if arg is not type(None)))
     base = get_origin(kind) or kind
     if base in (Any, object):
-        return value
+        return lambda value: value
     if isinstance(base, type) and issubclass(base, Loaded):
-        return base.from_json(value)
-    if base is tuple and keyed(kind):
-        item = get_args(kind)[0]
-        return tuple(item.from_json({**one, item.keyed_by: key}) for key, one in value.items() if isinstance(one, dict))
+        return lambda value: base.from_json(value) if isinstance(value, dict) and value else SKIPPED
     if base is tuple:
-        item = next(iter(get_args(kind)), Any)
-        return tuple(shaped(item, one) for one in value if fits(item, one))
+        return items(next(iter(get_args(kind)), Any))
+    if base in (dict, list):
+        return lambda value: base(value) if isinstance(value, (dict,) if base is dict else (list, tuple)) and value else SKIPPED
+    if base is str:
+        return lambda value: value if isinstance(value, str) else str(value)
     if base is int:
-        return int(float(value))
-    return base(value)
+        return lambda value: value if type(value) is int else int(float(value))
+    return base
+
+
+def items(kind):
+    if isinstance(kind, type) and issubclass(kind, Loaded) and kind.keyed_by:
+        return lambda value: tuple(kind.from_json({**one, kind.keyed_by: key}) for key, one in value.items() if isinstance(one, dict)) \
+            if isinstance(value, dict) and value else SKIPPED
+    one = converter(kind)
+    return lambda value: tuple(item for item in map(one, value) if item is not SKIPPED) if isinstance(value, (list, tuple)) and value else SKIPPED
 
 
 def text_of(raw: dict, *keys: str) -> str:
