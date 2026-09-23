@@ -22,9 +22,9 @@ KEPT = ("agent", "feature", "environment")
 
 
 class Environments(Controller):
-    resource = types.Environment
     OPEN_BEFORE_REMOVING = (Todos, Facts, Reminders, Messages, Questions)
     PICKED_UP = (Works, Todos, Questions, Messages)
+    resource = types.Environment
 
     def _seat(self, name: str, session: str):
         row = self._titled(name) or self.create(name)

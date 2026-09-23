@@ -104,7 +104,6 @@ class Event:
 
 @dataclass
 class Resource:
-    type = ""              # the type's name; its title, abstract and help are the type's own words
     details: ClassVar[ResourceDetails] = ResourceDetails()
     command_names: ClassVar[dict] = {}   # what this type calls a controller method: {"complete": "done", "create": "add"}
     status_labels: ClassVar[dict] = {}    # how the bar says a command on it: {"complete": "answering"}
@@ -152,6 +151,7 @@ class Resource:
         Field(default="", name="plugin"),
         Field(default="", name="environment"),
     ]
+    type = ""              # the type's name; its title, abstract and help are the type's own words
     n: int = 0
     title: str = ""
     abstract: str = ""

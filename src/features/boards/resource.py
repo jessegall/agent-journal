@@ -8,22 +8,22 @@ MEANINGS = (START, REVIEW, DONE)
 
 
 class Board(Shape, Resource):
-    type = "board"
-    icon = "board"
-    scope = PROJECT
-    view = WIDE
-    in_sidebar = False
-    created_in_viewer = True
     details: ClassVar[ResourceDetails] = ResourceDetails(
         title="Board",
         abstract="A named board of tickets with stages of its own",
         help="A board holds tickets in stages the user names. A stage can be marked as where work starts, where it waits for "
              "review, or where it is done; the journal acts on a stage only once it is marked.",
     )
-    notified = (USER,)
     data_fields: ClassVar[list[Field]] = [
         Field(LIST, list, name="stages"),
         Field(default=dict, name="meanings"),
     ]
+    type = "board"
+    icon = "board"
+    scope = PROJECT
+    view = WIDE
+    in_sidebar = False
+    created_in_viewer = True
+    notified = (USER,)
     labels = {"brief": "What it is for", "outcome": "Why closed", "stages": "Stages", "meanings": "What the stages mean"}
     shown_fields = ("stages",)

@@ -450,7 +450,6 @@ class Claude(Provider):
 
 
 class ClaudeDriver(Driver):
-    name = "claude"
     DISPLAY_HOOK = True
     SHELL = "!"
     AUTO_ARGS = ("--permission-mode", "auto")
@@ -464,6 +463,7 @@ class ClaudeDriver(Driver):
     CHANNEL = ("--dangerously-load-development-channels", "server:journal")
     LISTENING = 15.0
     MOVE_TO_BACKGROUND = b"\x02"
+    name = "claude"
 
     def command(self, args: list[str], cwd: Path | None = None) -> list[str]:
         return ["claude", *(() if self.TAKES_OURS[0] in args else self.TAKES_OURS), *self.CHANNEL, *args]

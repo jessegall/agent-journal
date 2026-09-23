@@ -5,6 +5,15 @@ from resources.shapes import FLAG, TEXT, Field, Options, Placed, Ranked, Reasone
 
 
 class Message(Shape, Resource):
+    data_fields: ClassVar[list[Field]] = [
+        Field(TEXT, name="idempotency"),
+        Field(name="delivered"),
+    ]
+    details: ClassVar[ResourceDetails] = ResourceDetails(
+        title="Message",
+        abstract="What the user left for the agent, or the agent for the user",
+        help="A message is read once by the other side and processed part by part; what each part became is written on it.",
+    )
     deduplicates = True
     filters = ()
     created_in_viewer = False
@@ -15,26 +24,12 @@ class Message(Shape, Resource):
     event_labels = {"created": "Message", "completed": "Message processed", "updated.read": "Message read", "updated.process": "Message part filed",
                     "updated.edit": "Message edited", "updated.file": "Message file filed"}
     icon = "mail"
-    data_fields: ClassVar[list[Field]] = [
-        Field(TEXT, name="idempotency"),
-        Field(name="delivered"),
-    ]
     stamped_when_notified = True
     cleared_by = OPENED
     command_names = {"complete": "processed"}
-    details: ClassVar[ResourceDetails] = ResourceDetails(
-        title="Message",
-        abstract="What the user left for the agent, or the agent for the user",
-        help="A message is read once by the other side and processed part by part; what each part became is written on it.",
-    )
 
 
 class Todo(Ranked, Placed, Resource):
-    listed_open = True
-    type = "todo"
-    event_labels = {"created": "To-do created", "completed": "To-do done", "updated.read": "To-do read", "updated.assign": "To-do assigned",
-                    "updated.report": "To-do reported", "updated.block": "To-do blocked", "updated.unblock": "To-do unblocked",
-                    "updated.after": "To-do waits on another", "updated.priority": "To-do priority set", "updated.start": "To-do started"}
     data_fields: ClassVar[list[Field]] = [
         Field(name="status"),
         Field(name="work"),
@@ -44,22 +39,24 @@ class Todo(Ranked, Placed, Resource):
         Field(name="after"),
         Field(name="struck"),
     ]
-    start_heading = "TO-DOS waiting — delayed work, not an instruction to start any of it"
-    start_as_count = True
-    icon = "circle"
-    command_names = {"complete": "done"}
-    labels = {"outcome": "How"}
     details: ClassVar[ResourceDetails] = ResourceDetails(
         title="To-do",
         abstract="One thing to do later, with a brief that says why and where to start",
         help="A to-do waits on the list until it is started as work and closed; auto mode works the list in order.",
     )
+    listed_open = True
+    type = "todo"
+    event_labels = {"created": "To-do created", "completed": "To-do done", "updated.read": "To-do read", "updated.assign": "To-do assigned",
+                    "updated.report": "To-do reported", "updated.block": "To-do blocked", "updated.unblock": "To-do unblocked",
+                    "updated.after": "To-do waits on another", "updated.priority": "To-do priority set", "updated.start": "To-do started"}
+    start_heading = "TO-DOS waiting — delayed work, not an instruction to start any of it"
+    start_as_count = True
+    icon = "circle"
+    command_names = {"complete": "done"}
+    labels = {"outcome": "How"}
 
 
 class Work(Traced, Resource):
-    type = "work"
-    event_labels = {"created": "Work started", "sectioned": "Work logged", "completed": "Work ended"}
-    status_labels = {"create": "starting", "complete": "ending"}
     data_fields: ClassVar[list[Field]] = [
         Field(default=0, name="todo"),
         Field(name="status"),
@@ -67,29 +64,37 @@ class Work(Traced, Resource):
         Field(default="", name="awaiting"),
         Field(default=0, name="awaiting_since"),
     ]
-    start_heading = "STILL OPEN, from this or an earlier session"
-    icon = "play"
-    notified = (USER,)
-    command_names = {"complete": "end", "create": "start"}
     details: ClassVar[ResourceDetails] = ResourceDetails(
         title="Work",
         abstract="What the agent is doing right now, declared before its first write",
         help="Work is opened by the agent, updated as it moves and ended when done; the agent that opened it has seen it.",
     )
+    type = "work"
+    event_labels = {"created": "Work started", "sectioned": "Work logged", "completed": "Work ended"}
+    status_labels = {"create": "starting", "complete": "ending"}
+    start_heading = "STILL OPEN, from this or an earlier session"
+    icon = "play"
+    notified = (USER,)
+    command_names = {"complete": "end", "create": "start"}
     in_sidebar = False
 
 
 class Doc(Shape, Resource):
-    loading = LAZY
-    own_folder = True
-    type = "doc"
-    event_labels = {"created": "Doc written", "completed": "Doc settled"}
-    status_labels = {"complete": "settling"}
     data_fields: ClassVar[list[Field]] = [
         Field(name="status"),
         Field(default=0, name="revisions"),
         Field(default=0, name="open_until"),
     ]
+    details: ClassVar[ResourceDetails] = ResourceDetails(
+        title="Document",
+        abstract="What stays true about the project, catalogued for every session",
+        help="A doc is written once, cited by facts and rules, and read before anything it settles is re-investigated.",
+    )
+    loading = LAZY
+    own_folder = True
+    type = "doc"
+    event_labels = {"created": "Doc written", "completed": "Doc settled"}
+    status_labels = {"complete": "settling"}
     start_heading = "docs in the project; none is listed here, so look one up when a question needs it: journal doc search <term>, journal doc all"
     start_as_count = True
     subagent_writable = False
@@ -97,16 +102,16 @@ class Doc(Shape, Resource):
     icon = "file"
     command_names = {"complete": "final"}
     scope = PROJECT
-    details: ClassVar[ResourceDetails] = ResourceDetails(
-        title="Document",
-        abstract="What stays true about the project, catalogued for every session",
-        help="A doc is written once, cited by facts and rules, and read before anything it settles is re-investigated.",
-    )
     view = DOCUMENT
     indexed = ("hidden",)
 
 
 class Report(Shape, Resource):
+    details: ClassVar[ResourceDetails] = ResourceDetails(
+        title="Report",
+        abstract="What was checked and what was found, written for the user, read once",
+        help="A report answers something the user asked to have checked; it ages out or becomes a doc.",
+    )
     loading = LAZY
     type = "report"
     event_labels = {"created": "Report written", "completed": "Report archived"}
@@ -115,15 +120,15 @@ class Report(Shape, Resource):
     icon = "report"
     command_names = {"complete": "archive"}
     closed_first = True
-    details: ClassVar[ResourceDetails] = ResourceDetails(
-        title="Report",
-        abstract="What was checked and what was found, written for the user, read once",
-        help="A report answers something the user asked to have checked; it ages out or becomes a doc.",
-    )
     view = DOCUMENT
 
 
 class Fact(Reasoned, Resource):
+    details: ClassVar[ResourceDetails] = ResourceDetails(
+        title="Fact",
+        abstract="Something true about this environment that a later session would get wrong without",
+        help="A fact is handed to every session on its environment; it is struck when it stops being true.",
+    )
     type = "fact"
     event_labels = {"created": "Fact noted", "completed": "Fact struck"}
     status_labels = {"complete": "striking"}
@@ -133,20 +138,20 @@ class Fact(Reasoned, Resource):
     lists_completed_unread = True
     icon = "pin"
     command_names = {"complete": "strike"}
-    details: ClassVar[ResourceDetails] = ResourceDetails(
-        title="Fact",
-        abstract="Something true about this environment that a later session would get wrong without",
-        help="A fact is handed to every session on its environment; it is struck when it stops being true.",
-    )
 
 
 class Rule(Reasoned, Resource):
-    type = "rule"
-    event_labels = {"created": "Rule made", "completed": "Rule struck"}
-    status_labels = {"complete": "striking"}
     data_fields: ClassVar[list[Field]] = [
         Field(FLAG, name="injected"),
     ]
+    details: ClassVar[ResourceDetails] = ResourceDetails(
+        title="Rule",
+        abstract="A ruling that binds every environment of the project",
+        help="A rule is decided by the user, cited where it applies, and struck only by them.",
+    )
+    type = "rule"
+    event_labels = {"created": "Rule made", "completed": "Rule struck"}
+    status_labels = {"complete": "striking"}
     start_heading = "RULES, in force on every environment"
     subagent_writable = False
     needs_attention = True
@@ -154,32 +159,35 @@ class Rule(Reasoned, Resource):
     icon = "list"
     command_names = {"complete": "strike"}
     scope = PROJECT
-    details: ClassVar[ResourceDetails] = ResourceDetails(
-        title="Rule",
-        abstract="A ruling that binds every environment of the project",
-        help="A rule is decided by the user, cited where it applies, and struck only by them.",
-    )
 
 
 class Reminder(Shape, Resource):
-    type = "reminder"
-    event_labels = {"created": "Reminder set", "completed": "Reminder retired"}
-    status_labels = {"complete": "retiring"}
-    start_heading = "REMINDERS, said again at every stop"
     data_fields: ClassVar[list[Field]] = [
         Field(name="whom"),
     ]
-    needs_attention = True
-    icon = "clock"
-    command_names = {"complete": "retire"}
     details: ClassVar[ResourceDetails] = ResourceDetails(
         title="Reminder",
         abstract="An instruction said again until it is retired",
         help="A reminder repeats at every start and every so often mid-work, because knowing is not doing. One written with --set whom=<session> is said to that agent alone, which is how an agent reminds itself or leaves one for another.",
     )
+    type = "reminder"
+    event_labels = {"created": "Reminder set", "completed": "Reminder retired"}
+    status_labels = {"complete": "retiring"}
+    start_heading = "REMINDERS, said again at every stop"
+    needs_attention = True
+    icon = "clock"
+    command_names = {"complete": "retire"}
 
 
 class Question(Options, Resource):
+    data_fields: ClassVar[list[Field]] = [
+        Field(TEXT, "", name="reason"),
+    ]
+    details: ClassVar[ResourceDetails] = ResourceDetails(
+        title="Question",
+        abstract="Something the agent asks the user, with choices to pick",
+        help="A question waits for the user; its answer reaches the agent as an event.",
+    )
     listed_open = True
     type = "question"
     event_labels = {"created": "Question asked", "completed": "Question answered"}
@@ -190,38 +198,35 @@ class Question(Options, Resource):
     icon = "help"
     command_names = {"complete": "answer", "create": "ask"}
     labels = {"outcome": "Answer", "abstract": "Context"}
-    data_fields: ClassVar[list[Field]] = [
-        Field(TEXT, "", name="reason"),
-    ]
-    details: ClassVar[ResourceDetails] = ResourceDetails(
-        title="Question",
-        abstract="Something the agent asks the user, with choices to pick",
-        help="A question waits for the user; its answer reaches the agent as an event.",
-    )
 
 
 class Suggestion(Options, Resource):
+    data_fields: ClassVar[list[Field]] = [
+        Field(name="decision"),
+    ]
+    details: ClassVar[ResourceDetails] = ResourceDetails(
+        title="Suggestion",
+        abstract="A change the agent proposes unasked; the user accepts, adjusts or declines it, and nothing waits",
+        help="Accepting or adjusting files a to-do from it; a decline is a ruling the agent does not propose again.",
+    )
     listed_open = True
     type = "suggestion"
     event_labels = {"created": "Suggestion made", "completed": "Suggestion decided"}
     status_labels = {"create": "suggesting", "complete": "deciding", "delete": "withdrawing"}
-    data_fields: ClassVar[list[Field]] = [
-        Field(name="decision"),
-    ]
     start_heading = "SUGGESTIONS waiting on the user"
     needs_attention = True
     cleared_by = COMPLETED
     icon = "bulb"
     command_names = {"complete": "decide", "create": "suggest", "delete": "withdraw"}
     labels = {"outcome": "Decision", "brief": "Why"}
-    details: ClassVar[ResourceDetails] = ResourceDetails(
-        title="Suggestion",
-        abstract="A change the agent proposes unasked; the user accepts, adjusts or declines it, and nothing waits",
-        help="Accepting or adjusting files a to-do from it; a decline is a ruling the agent does not propose again.",
-    )
 
 
 class Comment(Shape, Resource):
+    details: ClassVar[ResourceDetails] = ResourceDetails(
+        title="Comment",
+        abstract="What the user or the agent said about another resource",
+        help="A comment is a resource of its own, linked to what it is about.",
+    )
     deduplicates = True
     editors = {USER: (USER, SYSTEM), AGENT: (AGENT, SYSTEM)}
     type = "comment"
@@ -229,19 +234,10 @@ class Comment(Shape, Resource):
     nested = True
     icon = "bubble"
     command_names = {"complete": "done"}
-    details: ClassVar[ResourceDetails] = ResourceDetails(
-        title="Comment",
-        abstract="What the user or the agent said about another resource",
-        help="A comment is a resource of its own, linked to what it is about.",
-    )
     in_sidebar = False
 
 
 class AgentRow(Shape, Resource):
-    type = "agent"
-    takes_comments = False
-    formatted_data = {"cards": ("label", "detail"), "subagent_rows": ("task",)}
-    event_labels = {"reported": "Agent reported", "updated": "Agent updated"}
     data_fields: ClassVar[list[Field]] = [
         Field(default="", name="status"),
         Field(default="", name="event"),
@@ -285,17 +281,26 @@ class AgentRow(Shape, Resource):
         Field(default=0, name="active"),
         Field(name="decided"),
     ]
-    icon = "bot"
     details: ClassVar[ResourceDetails] = ResourceDetails(
         title="Agent",
         abstract="A session of Claude or Codex, and what it is doing right now",
         help="The hooks report activity; the engine distinguishes idle, busy, declared work and compaction.",
     )
+    type = "agent"
+    takes_comments = False
+    formatted_data = {"cards": ("label", "detail"), "subagent_rows": ("task",)}
+    event_labels = {"reported": "Agent reported", "updated": "Agent updated"}
+    icon = "bot"
     in_sidebar = False
     notified = ()
 
 
 class Notification(Shape, Resource):
+    details: ClassVar[ResourceDetails] = ResourceDetails(
+        title="Notification",
+        abstract="Something the user should hear about, told to them once",
+        help="A notification is for the user: an update that landed, a plugin that installed, a setting the agent changed. The agent's own acts are not notifications; they are read in the activity.",
+    )
     type = "notification"
     takes_comments = False
     event_labels = {"completed": "Notification cleared", "updated.read": "Notification read"}
@@ -303,16 +308,16 @@ class Notification(Shape, Resource):
     pruned_when = "seen"
     needs_attention = True
     icon = "bell"
-    details: ClassVar[ResourceDetails] = ResourceDetails(
-        title="Notification",
-        abstract="Something the user should hear about, told to them once",
-        help="A notification is for the user: an update that landed, a plugin that installed, a setting the agent changed. The agent's own acts are not notifications; they are read in the activity.",
-    )
     in_sidebar = False
     notified = ()
 
 
 class Notice(Shape, Resource):
+    details: ClassVar[ResourceDetails] = ResourceDetails(
+        title="Notice",
+        abstract="One line kept over the chat while it matters",
+        help="A notice stays until the user's X or the agent's close; a tone and a link may ride on it.",
+    )
     type = "notice"
     takes_comments = False
     kept = 100
@@ -320,28 +325,23 @@ class Notice(Shape, Resource):
     event_labels = {"created": "Notice", "completed": "Notice closed", "updated.read": "Notice read"}
     icon = "band"
     command_names = {"complete": "close"}
-    details: ClassVar[ResourceDetails] = ResourceDetails(
-        title="Notice",
-        abstract="One line kept over the chat while it matters",
-        help="A notice stays until the user's X or the agent's close; a tone and a link may ride on it.",
-    )
     in_sidebar = False
     notified = (USER,)
 
 
 class Reaction(Shape, Resource):
-    type = "reaction"
-    takes_comments = False
     data_fields: ClassVar[list[Field]] = [
         Field(name="face"),
     ]
-    nested = True
-    icon = "smile"
     details: ClassVar[ResourceDetails] = ResourceDetails(
         title="Reaction",
         abstract="A face on a message",
         help="A reaction is one face by one actor on one message; the same face again takes it off.",
     )
+    type = "reaction"
+    takes_comments = False
+    nested = True
+    icon = "smile"
     in_sidebar = False
     typed_as_title = True
 
@@ -351,10 +351,6 @@ class Reaction(Shape, Resource):
 
 
 class Tool(Shape, Resource):
-    type = "tool"
-    listed_as_cards = True
-    subagent_writable = False
-    icon = "wrench"
     details: ClassVar[ResourceDetails] = ResourceDetails(
         title="Tool",
         abstract="A script kept for a job that comes back, catalogued so the next agent runs it instead of writing it again",
@@ -364,13 +360,14 @@ class Tool(Shape, Resource):
         Field(TEXT, name="entry"),
         Field(TEXT, name="usage"),
     ]
+    type = "tool"
+    listed_as_cards = True
+    subagent_writable = False
+    icon = "wrench"
     scope = PROJECT
 
 
 class Connection(Shape, Resource):
-    type = "connection"
-    subagent_writable = False
-    icon = "plug"
     details: ClassVar[ResourceDetails] = ResourceDetails(
         title="Connection",
         abstract="A service the project can reach, and which variable holds its token",
@@ -379,17 +376,13 @@ class Connection(Shape, Resource):
     data_fields: ClassVar[list[Field]] = [
         Field(TEXT, name="variable"),
     ]
+    type = "connection"
+    subagent_writable = False
+    icon = "plug"
     scope = PROJECT
 
 
 class Plugin(Shape, Resource):
-    type = "plugin"
-    event_labels = {"created": "Plugin installed", "completed": "Plugin removed"}
-    status_labels = {"complete": "removing"}
-    subagent_writable = False
-    in_sidebar = False
-    icon = "plug"
-    command_names = {"complete": "remove"}
     details: ClassVar[ResourceDetails] = ResourceDetails(
         title="Plugin",
         abstract="A repository installed into the journal: it hears the bus, answers, and may run services of its own",
@@ -406,53 +399,56 @@ class Plugin(Shape, Resource):
         Field(name="settings"),
         Field(name="token"),
     ]
+    type = "plugin"
+    event_labels = {"created": "Plugin installed", "completed": "Plugin removed"}
+    status_labels = {"complete": "removing"}
+    subagent_writable = False
+    in_sidebar = False
+    icon = "plug"
+    command_names = {"complete": "remove"}
     scope = PROJECT
 
 
 class Environment(Shape, Resource):
+    details: ClassVar[ResourceDetails] = ResourceDetails(
+        title="Environment",
+        abstract="One line of work with its own record: messages, to-dos, facts, plans, settings",
+        help="A session works one environment at a time; switch takes one that is free, claim takes a held one with a reason.",
+    )
+    data_fields: ClassVar[list[Field]] = [Field(TEXT, "", name="owner")]
     type = "environment"
     event_labels = {"created": "Environment prepared", "completed": "Environment removed"}
     status_labels = {"create": "preparing", "complete": "removing"}
     subagent_writable = False
     icon = "branch"
     command_names = {"create": "prepare", "complete": "remove"}
-    details: ClassVar[ResourceDetails] = ResourceDetails(
-        title="Environment",
-        abstract="One line of work with its own record: messages, to-dos, facts, plans, settings",
-        help="A session works one environment at a time; switch takes one that is free, claim takes a held one with a reason.",
-    )
     scope = PROJECT
     in_sidebar = False
     notified = ()
-    data_fields: ClassVar[list[Field]] = [Field(TEXT, "", name="owner")]
 
 
 class Ask(Shape, Resource):
-    loading = LAZY
-    type = "browser"
-    takes_comments = False
-    kept = 50
-    pruned_when = "closed"
     data_fields: ClassVar[list[Field]] = [
         Field(name="op"),
         Field(default=list, name="args"),
     ]
-    nested = True
-    icon = "open"
     details: ClassVar[ResourceDetails] = ResourceDetails(
         title="Browser ask",
         abstract="What the agent asks of the tab the user is driving — a picture, its text, a click — answered by the extension",
         help="journal browser ask shot|url|text|dom|console|click <selector>|type <selector> <words>|goto <url>|eval <js>|scroll top|bottom|<selector>; the user turns driving on in the chat window's bar.",
     )
+    loading = LAZY
+    type = "browser"
+    takes_comments = False
+    kept = 50
+    pruned_when = "closed"
+    nested = True
+    icon = "open"
     in_sidebar = False
     notified = ()
 
 
 class FeatureRow(Shape, Resource):
-    type = "feature"
-    takes_comments = False
-    icon = "dot"
-    in_sidebar = False
     data_fields: ClassVar[list[Field]] = [
         Field(FLAG, True, name="enabled"),
         Field(FLAG, False, name="missing"),
@@ -462,27 +458,31 @@ class FeatureRow(Shape, Resource):
         abstract="A capability the engine loads, with its switch",
         help="One row per feature the engine finds, carrying whether it is on. A row whose file is gone stays, switched off.",
     )
+    type = "feature"
+    takes_comments = False
+    icon = "dot"
+    in_sidebar = False
     notified = ()
 
 
 class Nudge(Shape, Resource):
+    data_fields: ClassVar[list[Field]] = [
+        Field(name="private"),
+        Field(name="session"),
+    ]
+    details: ClassVar[ResourceDetails] = ResourceDetails(
+        title="Nudge",
+        abstract="A line a feature has the engine type to the agent",
+        help="A nudge is written by a feature and spoken to the agent as it is; the user never hears it.",
+    )
     loading = LAZY
     type = "nudge"
     takes_comments = False
     kept = 100
     notify_actions = ("created",)
     addressed_to_agent = True
-    data_fields: ClassVar[list[Field]] = [
-        Field(name="private"),
-        Field(name="session"),
-    ]
     nested = True
     icon = "arrow"
-    details: ClassVar[ResourceDetails] = ResourceDetails(
-        title="Nudge",
-        abstract="A line a feature has the engine type to the agent",
-        help="A nudge is written by a feature and spoken to the agent as it is; the user never hears it.",
-    )
     in_sidebar = False
     notified = (AGENT,)
     typed_as_title = True
