@@ -1,4 +1,5 @@
 <script setup>
+import Dot from "../kit/Dot.vue";
 import {keepingPlace, useSighted} from "../composables/scrollback.js";
 import {computed, nextTick, onMounted, onUnmounted, ref, watch} from "vue";
 import {api} from "../api/client.js";
@@ -425,12 +426,8 @@ watch(
                         >
                             <template v-if="waiting">
                                 <div class="thread-bubble waiting">
+                                    <Dot kind="started" glow pulsing :size="7" />
                                     <span>Waiting {{ waiting }}</span>
-                                    <span class="thread-dots">
-                                        <span class="thread-dot" />
-                                        <span class="thread-dot" />
-                                        <span class="thread-dot" />
-                                    </span>
                                 </div>
                             </template>
                             <template v-else-if="thought">
@@ -440,12 +437,8 @@ watch(
                                 </div>
                             </template>
                             <template v-else>
-                                <div class="thread-bubble">
-                                    <span class="thread-dot" />
-                                    <span class="thread-dot" />
-                                    <span class="thread-dot" />
-                                </div>
                                 <div class="thread-meta">
+                                    <Dot kind="started" glow pulsing :size="7" />
                                     <span>{{ activity }}</span>
                                     <template v-if="activityOn">
                                         <span class="thread-meta-on">{{ activityOn }}</span>
@@ -555,11 +548,21 @@ watch(
 }
 
 .thread-turn.busy .thread-bubble.waiting {
+    display: flex;
+    align-items: center;
+    gap: 8px;
     font-size: 12.5px;
     color: var(--text-2);
 }
 
+.thread-turn.busy {
+    --tone: var(--accent);
+}
+
 .thread-turn.busy .thread-meta {
+    display: flex;
+    align-items: center;
+    gap: 7px;
     padding: 0 3px;
     font-size: 11px;
     color: var(--text-3);
@@ -573,43 +576,6 @@ watch(
     font-size: 10.5px;
     text-overflow: ellipsis;
     white-space: nowrap;
-}
-
-.thread-dots {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    margin-left: 8px;
-}
-
-.thread-dot {
-    width: 5px;
-    height: 5px;
-    border-radius: 50%;
-    background: var(--text-3);
-    animation: thread-dot 1.3s ease-in-out infinite;
-}
-
-.thread-dot:nth-child(2) {
-    animation-delay: 0.18s;
-}
-
-.thread-dot:nth-child(3) {
-    animation-delay: 0.36s;
-}
-
-@keyframes thread-dot {
-    0%,
-    60%,
-    100% {
-        opacity: 0.35;
-        transform: none;
-    }
-
-    30% {
-        opacity: 1;
-        transform: translateY(-2px);
-    }
 }
 
 .thread-scroll.loading {

@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.103.3 — A pulsing dot on the status line replaces the working dots
+
+While the agent works, the chat shows its status line led by a small pulsing dot instead of a bubble of three bouncing dots; "Waiting …" carries the same dot. Chat marks no longer print their time: the turns around them carry it, and hovering a mark shows it.
+
 ## 2.103.2 — Skills speak to the agent as you
 
 Every skill instruction that talked about "the agent" now addresses its reader directly: "you are told", "you start it with journal plan start", "your terminal". 31 sentences in 21 skills changed person and nothing else (report 31 lists them). The one-line descriptions stay descriptive, since the viewer's Settings and Skills pages show them to the user too.
