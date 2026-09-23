@@ -150,3 +150,22 @@ def test_a_card_dropped_before_another_takes_that_place_and_its_priority():
     assert [t.n for t in todos._standing()][:2] == [third, first], "and the order the board shows is the order the journal hands out"
     todos.complete(second, how="done")
     assert "same column" in refused(lambda: todos.place(first, before=second)), "a card is only placed among the open cards of its column"
+
+
+def test_a_subagents_task_list_stays_off_the_main_list_and_each_agent_holds_its_own_work():
+    from commands.http import Listing, listing
+    features.load()
+    record = fresh()
+    main = Todos(record, actor=AGENT)
+    main.start(main.create("The main agent's own work").n)
+    task = Todos(record, actor=USER).task("x1", "Draw the plan card", brief="the chat card from the design")
+    shared = Todos(record, actor=USER).create("An ordinary to-do handed over")
+    Todos(record, actor=USER).assign(shared.n, to="x1")
+    cards = [card["n"] for lane in board(record)["lanes"] for card in lane["cards"]]
+    listed = [row["n"] for row in listing(Todos(record, actor=USER), record, Listing.from_query({}))["rows"]]
+    assert task.n not in cards and task.n not in listed and shared.n in listed, "a subagent's own task stays off the board and the list; a handed-over to-do stays on them"
+    helper = Todos(record, actor=AGENT, agent="x1")
+    helper.start(task.n)
+    assert [t["state"] for t in main.tasks("x1")] == ["doing", "waiting"], "the subagent takes its task while the main agent has work in hand"
+    helper.complete(task.n, how="drawn")
+    assert [t["state"] for t in main.tasks("x1")] == ["done", "waiting"], "and its inspector sees how far along it is"

@@ -6,6 +6,14 @@ from resources.shapes import LEVELS, rank_before
 from controllers.questions import Questions
 
 
+def task_state(row, works: dict) -> str:
+    if row.completed:
+        return "done"
+    if row.n in works:
+        return "doing"
+    return "waiting"
+
+
 class Todos(Controller):
     resource = types.Todo
 
@@ -13,6 +21,15 @@ class Todos(Controller):
         if not to and not off:
             raise Refused("assign names an agent with --to, or --off to put the row back")
         return self.update(n, assigned="" if off else to)
+
+    def task(self, agent: str, title: str, brief: str = ""):
+        return self.create(title, brief=brief, assigned=agent, hidden=True)
+
+    def tasks(self, agent: str) -> list[dict]:
+        from controllers.works import Works
+        works = {int(w.todo): w for w in Works(self.record, actor=SYSTEM)._standing() if w.todo}
+        rows = [r for r in self._every() if r.assigned == agent]
+        return [{"n": r.n, "title": r.title, "hidden": bool(r.hidden), "state": task_state(r, works)} for r in rows]
 
     def report(self, n: int, how: str):
         if not self.agent:
@@ -115,6 +132,9 @@ class Todos(Controller):
         level = int(target.priority or LEVELS["default"])
         column = [t for t in self._ordered(self._standing()) if t.n != todo.n and int(t.priority or LEVELS["default"]) == level]
         return self.update(todo.n, priority=level, rank=rank_before(column, target.n))
+
+    def _standing(self, closed_since: float = 0, closed_last: int = 0) -> list:
+        return [r for r in super()._standing(closed_since, closed_last) if not r.hidden]
 
     def _ordered(self, rows: list) -> list:
         return sorted(rows, key=lambda t: (-int(t.priority or LEVELS["default"]), t.position, t.n))
