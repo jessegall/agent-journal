@@ -3,15 +3,23 @@ import {computed, inject, ref} from "vue";
 import {useCardDrag} from "../composables/cardDrag.js";
 import Btn from "../kit/Btn.vue";
 import StageDot from "../kit/StageDot.vue";
+import {store} from "../state/store.js";
 import Card from "./Card.vue";
+import {moveEffect, refused} from "./moves.js";
 
 const props = defineProps({lane: Object, loading: Boolean, meaning: {type: String, default: ""}, offers: Boolean});
 const SAYS = {start: "work starts", review: "waits for review"};
 const board = inject("board");
 const drag = useCardDrag();
 const over = ref(false);
-const takes = computed(() => drag.takes(props.lane.key));
-const refuses = computed(() => !!drag.dragged.value && drag.dragged.value.lane !== props.lane.key && !takes.value);
+const dragged = computed(() => drag.dragged.value);
+const takes = computed(() => drag.takes(props.lane.key) && !refused(dragged.value, props.meaning));
+const says = computed(
+    () =>
+        (dragged.value && dragged.value.lane !== props.lane.key && moveEffect(dragged.value, props.meaning, store.board.slots)) ||
+        SAYS[props.meaning]
+);
+const refuses = computed(() => !!dragged.value && dragged.value.lane !== props.lane.key && !takes.value);
 
 function drop() {
     over.value = false;
@@ -32,7 +40,7 @@ function drop() {
         <header class="head">
             <StageDot :meaning="meaning" />
             <span class="title">{{ lane.title }}</span>
-            <span class="says">{{ SAYS[meaning] }}</span>
+            <span class="says">{{ says }}</span>
             <span class="count">{{ loading ? "" : lane.cards.length }}</span>
         </header>
         <div class="cards">
