@@ -16,7 +16,7 @@ from engine.package import data
 READ: dict[str, tuple] = {}
 LISTED: dict[str, tuple] = {}
 CATALOGUED: dict[str, tuple] = {}
-FRESH_FOR = 5.0
+FRESH_FOR = 60.0
 HOMES = (LIBRARY, *(cls.skill_home for cls in PROVIDERS.values() if cls.skill_home))
 
 
