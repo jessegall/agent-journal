@@ -39,9 +39,12 @@ class WorkDetails(FeatureDetails):
 
         Auto mode is off by default: turning it on is the user's word to work the list and
         decide without blocking questions. The next ready row by priority is offered on idle
-        while nothing is open; five minutes quiet with unparked work open earns a direct
-        question, are you still working? A row is ready when it is not blocked, waits on no
-        open row or question, and its plan's phase is current.
+        while nothing is open. Stopping with work open while another row is ready earns the
+        same offer: a row that waits on the user gets its question with todo ask and the next
+        row is taken, so the agent stops only when nothing ready is left. Five minutes quiet
+        with unparked work open earns a direct question, are you still working? A row is
+        ready when it is not blocked, waits on no open row or question, and its plan's phase
+        is current.
     """
 
     aliases = (("auto", "auto"), "work")
@@ -135,6 +138,15 @@ class WorkDetails(FeatureDetails):
         Line(
             name="next",
             title="todo {{n}} next",
+        ),
+        Line(
+            name="next while waiting",
+            title="auto mode is on and work {{work}} stands still while todo {{n}} is ready",
+            brief="""
+                if work {{work}} waits on the user, decide it yourself when you can; otherwise put the question on
+                its row with journal todo ask, end or park the work, and start todo {{n}}. Stop only when nothing
+                ready is left.
+            """,
         ),
         Line(
             name="polling",
