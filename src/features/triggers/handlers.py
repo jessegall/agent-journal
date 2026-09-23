@@ -1,13 +1,14 @@
 from dataclasses import dataclass
 from typing import ClassVar
 
-from engine.events import ResourceEvent
+from engine.events import AgentMessageSent, ResourceEvent
 from features.parts import AgentContext, Context, Handler, ToolInterceptor
-from features.recital import mentioned, searched
+from features.recital import COMMANDS, mentioned, searched
 from features.triggers.resource import DENY, INSTRUCT, MESSAGE, NUDGE
 from resources.base import SYSTEM, USER
 
 WATCHING = "watching"
+CHAT_DENIED = "caught a denied word in the agent's message"
 DONE = {MESSAGE: "sent a message", NUDGE: "nudged the agent", INSTRUCT: "instructed the agent", DENY: "denied the call"}
 
 
@@ -16,8 +17,8 @@ def firing(context, text_of) -> list:
             if mentioned(row.words, text_of(str(row.words_in or "both")))]
 
 
-def fire(context, agent, row) -> None:
-    context.journal.acting(SYSTEM).agents.card(agent.n, label=f"Trigger {row.title} {DONE[row.does]}", icon="flag",
+def fire(context, agent, row, done: str = "") -> None:
+    context.journal.acting(SYSTEM).agents.card(agent.n, label=f"Trigger {row.title} {done or DONE[row.does]}", icon="flag",
                                                tone="danger" if row.does == DENY else "note", title=row.text or row.brief)
     if row.does == MESSAGE:
         context.journal.acting(USER).messages.create(row.title, brief=row.brief or row.text)
@@ -36,6 +37,16 @@ class WatchWhatTheAgentDoes(ToolInterceptor):
         return ""
 
 
+class WatchWhatTheAgentWrites(Handler):
+    behaviour = WATCHING
+
+    def handle(self, context: AgentContext, event: AgentMessageSent) -> None:
+        for row in firing(context, lambda scope: "" if scope == COMMANDS else event.text):
+            fire(context, context.agent.row, row, CHAT_DENIED if row.does == DENY else "")
+            if row.does == DENY:
+                context.agent.whisper("denied", title=row.title, text=row.text or row.brief)
+
+
 @dataclass(frozen=True)
 class MessageArrived(ResourceEvent):
     on: ClassVar[str] = "message.created"
@@ -50,6 +61,6 @@ class WatchWhatTheUserWrites(Handler):
         agent = context.journal.acting(SYSTEM).agents.primary()
         message = context.journal.messages.load(event.n)
         text = f"{message.title} {message.brief}"
-        for row in firing(context, lambda scope: "" if scope == "commands" else text):
+        for row in firing(context, lambda scope: "" if scope == COMMANDS else text):
             if agent and row.does != DENY:
                 fire(context, agent, row)

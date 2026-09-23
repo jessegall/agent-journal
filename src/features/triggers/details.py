@@ -19,7 +19,8 @@ class TriggersDetails(FeatureDetails):
 
         does is one of {', '.join(DOES)}. A message reaches the chat as if the user wrote it, a
         nudge and an instruction are said to you alone, and a deny refuses the tool call
-        with the trigger's text as the reason.
+        with the trigger's text as the reason. In your own chat text a deny cannot unsay the words, so it is
+        marked and you are told.
     """
 
     behaviours = [
@@ -39,6 +40,11 @@ class TriggersDetails(FeatureDetails):
         Line(
             name="instruct",
             title="do this now: {{title}}",
+            brief="{{text}}",
+        ),
+        Line(
+            name="denied",
+            title="your message used words a trigger denies: {{title}}",
             brief="{{text}}",
         ),
     ]
