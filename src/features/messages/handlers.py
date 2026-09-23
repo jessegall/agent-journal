@@ -15,6 +15,7 @@ RECENT = 200
 LINKED = ("message", "comment", "reaction", "nudge", "notification", "agent")
 ANSWERS = {"comment": "answered", "reaction": "acknowledged"}
 RUN_ON, SENTENCES = 400, 3
+INBOX_AFTER = 5
 
 
 @dataclass(frozen=True)
@@ -63,7 +64,8 @@ class ResetCountsOnArrival(Handler):
 
 class NameUnread(Handler):
     def handle(self, context: AgentContext, event: AgentReported) -> None:
-        if not any(AGENT not in row["seen"] and not row["completed"] and not row["deleted"] for row in context.journal.messages.summaries()):
+        unread = [row for row in context.journal.messages.summaries() if AGENT not in row["seen"] and not row["completed"] and not row["deleted"]]
+        if not unread or len(unread) <= INBOX_AFTER and context.agent.row.status != IDLE:
             context.release("unread")
             trigger.write(context.record, context.agent.row, context.feature.keyed("unread"), count=0)
             return

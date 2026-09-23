@@ -64,8 +64,12 @@ def test_unread_messages_are_nudged_with_growing_urgency_until_the_inbox_is_read
     assert inbox() == [], "nothing unread: nothing said"
     Messages(record, actor=USER).create("look at the header")
     use(2)
+    assert inbox() == [], "one unread while the agent works: its own line already told it"
+    for n in range(5):
+        Messages(record, actor=USER).create(f"and this {n}")
+    use(2)
     assert inbox() == ["there are new messages in your inbox"], \
-        "the first tool use after a message arrives: told at once, without numbers"
+        "more than five unread: told at once, without numbers"
     use(3)
     use(4)
     assert len(inbox()) == 1, "then every third use"
@@ -79,17 +83,21 @@ def test_unread_messages_are_nudged_with_growing_urgency_until_the_inbox_is_read
     use(17)
     assert gate() == "your inbox is unread: journal message unread, then journal message read <n> for each, before any other write", \
         "the sixth nudge: the gate holds until the inbox is read"
-    Messages(record, actor=AGENT).read(1)
+    for n in range(1, 7):
+        Messages(record, actor=AGENT).read(n)
     use(18)
     assert (gate(), len(inbox())) == ("", 6), "read: released, and nothing more is said"
     Messages(record, actor=USER).create("another")
     use(19)
-    assert (len(inbox()), gate()) == (7, ""), "a new message: told at once again, the count starting over"
+    assert len(inbox()) == 6, "one new message while working: nothing said"
+    report(record, "idle", "Stop", uses=19)
+    assert (len(inbox()), gate()) == (7, ""), "once the agent is idle it is told"
 
     patient = fresh()
     patient.set_setting("messages", {"unread.patience": 0})
     Works(patient, actor=AGENT).create("open")
-    Messages(patient, actor=USER).create("hi")
+    for n in range(6):
+        Messages(patient, actor=USER).create(f"hi {n}")
     report(patient, "working", "PreToolUse", uses=3)
     report(patient, "working", "PreToolUse", uses=6)
     assert (held(patient, "claude-1") != "") is True, "patience is a setting"

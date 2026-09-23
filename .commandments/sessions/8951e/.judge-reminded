@@ -1,8 +1,6 @@
-/Users/jessegall/projects/agent-journal/src/features/close_from_commits/details.py
-/Users/jessegall/projects/agent-journal/src/features/close_from_commits/handlers.py
-/Users/jessegall/projects/agent-journal/src/features/close_from_commits/test.py
-/Users/jessegall/projects/agent-journal/src/web/src/chat/Turn.vue
-/Users/jessegall/projects/agent-journal/src/web/src/kit/TextDisplay.vue
+/Users/jessegall/projects/agent-journal/src/features/messages/details.py
+/Users/jessegall/projects/agent-journal/src/features/messages/handlers.py
+/Users/jessegall/projects/agent-journal/src/features/messages/test.py
 -----
 Batch marker for the code-commandments judge reminder (`commandments judge-reminder`, wired as
 Stop + PreToolUse hooks). The lines above the separator are the changed-file set it last
