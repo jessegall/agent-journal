@@ -82,7 +82,12 @@ class Options(Shape):
     data_fields: ClassVar[list[Field]] = [
         Field(rows(title=TEXT, description=TEXT, code=TEXT), list, name="options"),
         Field(NUMBER, name="pick"),
+        Field(NUMBER, 0, name="chosen"),
     ]
+
+    def chosen_for(self, answer: str) -> int:
+        titles = [option["title"] if isinstance(option, dict) else str(option) for option in self.options]
+        return titles.index(answer.strip()) + 1 if answer.strip() in titles else 0
 
 
 class Reasoned(Shape):

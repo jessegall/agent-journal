@@ -92,10 +92,14 @@ def test_an_answered_question_leaves_the_notifications_panel():
 def test_a_question_keeps_who_answered_and_the_agent_must_say_why():
     from tests.conftest import refused
     record = fresh()
-    ours = Questions(record, actor=AGENT).create("Which one?", options=[{"title": "blue", "description": "", "code": ""}])
+    ours = Questions(record, actor=AGENT).create("Which one?", options=[{"title": "Finish plan 1, keep to-do 20", "description": "", "code": ""}, {"title": "blue", "description": "", "code": ""}])
     assert "say why" in refused(lambda: Questions(record, actor=AGENT).complete(ours.n, how="blue")), "the agent may not answer silently"
     answered = Questions(record, actor=AGENT).complete(ours.n, how="blue", reason="the user said blue earlier")
-    assert (answered.data["answered_by"], answered.data["reason"]) == (AGENT, "the user said blue earlier")
+    assert (answered.data["answered_by"], answered.data["reason"], answered.data["chosen"]) == (AGENT, "the user said blue earlier", 2), \
+        "who answered, why, and which option by its number"
+    assert Questions(record, actor=USER).set(ours.n, "outcome", "something else").data["chosen"] == 0, "an answer in other words chose no option"
+    assert Questions(record, actor=USER).set(ours.n, "outcome", "Finish plan 1, keep to-do 20").data["chosen"] == 1, \
+        "a title that names rows is still matched, before the chips are added for the viewer"
     theirs = Questions(record, actor=AGENT).create("Ship it?")
     assert Questions(record, actor=USER).complete(theirs.n, how="yes").data["answered_by"] == USER, "the user needs no reason"
 
