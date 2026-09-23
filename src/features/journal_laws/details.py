@@ -57,6 +57,13 @@ class LawDetails(FeatureDetails):
             unit="lines",
         ),
         Setting(
+            name="output_lines",
+            default=200,
+            title="Keep this many lines at each end of a long command's output",
+            abstract="The lines between are cut, with a note on how to see them; 0 keeps every line",
+            unit="lines",
+        ),
+        Setting(
             name="result_floor",
             default=20_000,
             title="Tell the agent about a tool result from",
