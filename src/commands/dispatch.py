@@ -10,6 +10,7 @@ import features
 from features.base import generation
 from controllers.types import CONTROLLERS
 from engine import bus, runtime
+from engine.collecting import collecting
 from engine.markers import plain
 from engine.record import Record
 from engine.watch import threw
@@ -162,7 +163,8 @@ def timed(reply: Reply, root: Path, env: str, method: str, path: str, began: tup
         return reply
     took = (time.perf_counter() - began[0]) * 1000
     working = (time.thread_time() - began[1]) * 1000
-    return later(reply, lambda: faults.reports.spent(root, env, "hook" if "/hook/" in path else "request", f"{method} {path}", took, working, profile))
+    garbage = (collecting() - began[2]) * 1000
+    return later(reply, lambda: faults.reports.spent(root, env, "hook" if "/hook/" in path else "request", f"{method} {path}", took, working, profile, garbage))
 
 
 def dispatch(method: str, path: str, root: Path, query: dict, body: dict) -> Reply:
@@ -172,7 +174,7 @@ def dispatch(method: str, path: str, root: Path, query: dict, body: dict) -> Rep
     r, params = found
     faults = features.FEATURES.get("dev_faults")
     profile = faults.reports.profiler(root) if faults else None
-    began = (time.perf_counter(), time.thread_time())
+    began = (time.perf_counter(), time.thread_time(), collecting())
     req = Request(root, params, query, body)
     try:
         with bus.held() as queued:
