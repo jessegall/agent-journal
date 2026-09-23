@@ -127,6 +127,20 @@
     font-size: 12px;
 }
 
+button.bar-item {
+    width: 100%;
+    border: 0;
+    background: none;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+button.bar-item:hover {
+    background: var(--hover);
+    color: var(--text);
+}
+
 .bar-item .ico {
     width: 13px;
     height: 13px;
