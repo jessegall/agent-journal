@@ -10,7 +10,7 @@ from resources.types import TYPES
 from engine.hooks import CANCELABLE
 
 MANIFEST = Path(".journal-plugin") / "plugin.json"
-KEYS = ("name", "version", "title", "description", "journal", "requires", "env", "setup", "services", "on", "refuse", "reads", "refuse_seconds", "chat", "pages", "settings", "skills", "installed", "events", "cancels")
+KEYS = ("name", "version", "title", "description", "journal", "requires", "env", "setup", "services", "on", "refuse", "reads", "refuse_seconds", "refuse_socket", "chat", "pages", "settings", "skills", "installed", "events", "cancels")
 NAME = re.compile(r"[a-z0-9][a-z0-9-]{1,31}$")
 WORD = re.compile(r"[a-z][a-z0-9_-]*$")
 PLACEHOLDER = re.compile(r"\{([a-z][a-z0-9_.]*)\}")
@@ -54,6 +54,8 @@ def read(folder: Path, version: str = "") -> dict:
     checked["setup"] = steps(name, given.get("setup") or [])
     checked["services"] = services(name, given.get("services") or {})
     checked["on"] = handlers(name, given.get("on") or {})
+    if given.get("refuse_socket") and given["refuse_socket"] not in checked["services"]:
+        raise Refused(f"plugin.json: refuse_socket names one of its services, not {given['refuse_socket']!r}")
     checked["chat"] = chat(name, given.get("chat") or [])
     checked["pages"] = pages(name, given.get("pages") or [], checked["services"])
     checked["settings"] = typed(shaped(name, given.get("settings") or {}, "settings", SETTING, ()))

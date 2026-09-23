@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.119.0 — A plugin can answer the write check from a running service
+
+A plugin's "refuse" command started a new process on every tool call, which is most of the time a hook takes when a plugin checks reads too. A plugin can now name one of its services with "refuse_socket": the service listens on the Unix socket at $JOURNAL_PLUGIN_SOCKET, reads one JSON line and writes its answer, and the command runs only when nothing listens there. Plugins that do not use it are unchanged.
+
 ## 2.118.3 — A hook copies the agent's row once, not dozens of times
 
 Each check on a hook loaded and copied the agent's whole row again, and a plugin's refusal check copied every agent row to find one. The checks of one hook now share a single copy and the plugin looks up its one row, taking the journal's own time per hook from about 25ms to 16ms. The rest of a slow hook is a plugin's own command, such as Code Commandments' check on every tool call. Nothing to do.
