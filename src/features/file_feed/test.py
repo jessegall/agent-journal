@@ -2,7 +2,7 @@ import subprocess
 from dataclasses import dataclass
 from pathlib import Path
 
-from controllers.types import Agents
+from controllers.types import Agents, Works
 from engine.files import announce
 from features.file_feed.feed import edits_since
 from engine.record import Record
@@ -55,3 +55,14 @@ def test_a_deleted_file_is_one_line_with_its_removed_count():
     project.changed()
     card = edits_since(project.record, project.agent, 0).edits[0]
     assert (card.kind, card.removed, card.rows) == ("deleted", 3, ()), "a deleted file carries no diff rows"
+
+
+def test_a_change_made_while_work_is_open_is_counted_on_that_work():
+    project = project_with({"a.py": "one\ntwo\n"})
+    work = Works(project.record, actor="agent").create("change a.py")
+    (project.root / "a.py").write_text("one\nTWO\nthree\n")
+    project.changed()
+    (project.root / "a.py").write_text("one\nTWO\nthree\nfour\n")
+    project.changed()
+    changed = Works(project.record).load(work.n).changed
+    assert [(c["path"], c["added"], c["removed"]) for c in changed] == [("a.py", 3, 1)], "the work counts the file against how it stood when the work began"

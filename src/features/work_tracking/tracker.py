@@ -40,8 +40,8 @@ def record_edit(agent: AgentRow, record, work: Work, edit: FileEdited) -> None:
     if base == edit.after:
         files.pop(edit.path, None)
     else:
-        count = line_counts(project, [(base, edit.after)])[(base, edit.after)]
-        files[edit.path] = {CHANGE.path: edit.path, CHANGE.added: count.added, CHANGE.removed: count.removed, CHANGE.created: created}
+        total = line_counts(project, [(base, edit.after)])[(base, edit.after)]
+        files[edit.path] = {CHANGE.path: edit.path, CHANGE.added: total.added, CHANGE.removed: total.removed, CHANGE.created: created}
     commits = committed(project, work.created)
     if list(files.values()) != work.changed or commits != work.commits:
         Works(record, actor=SYSTEM).update(work.n, changed=list(files.values()), commits=commits)
