@@ -14,6 +14,7 @@ from engine.fields import Loaded  # noqa: E402
 PROTOCOL = "2025-06-18"
 NAME = "journal"
 WAIT = 0.3
+READ_AT = "JOURNAL_CHANNEL_READ_AT"
 
 queue, alive = runtime.channel_queue, runtime.channel_alive
 
@@ -24,7 +25,8 @@ def say(message: dict) -> None:
 
 
 def start(f: Path) -> int:
-    return f.stat().st_size if f.exists() else 0
+    carried = os.environ.pop(READ_AT, "")
+    return int(carried) if carried else f.stat().st_size if f.exists() else 0
 
 
 def fresh_lines(f: Path, at: int) -> tuple[list[str], int]:
@@ -79,6 +81,7 @@ def push(root: Path) -> None:
         time.sleep(WAIT)
         if renewed(root, began):
             sys.stdout.flush()
+            os.environ[READ_AT] = str(at)
             os.execv(sys.executable, sys.orig_argv)
         try:
             alive(root).touch()
