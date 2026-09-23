@@ -6,7 +6,7 @@ from tests.conftest import fresh, refused
 from tests.kit import nudges, report
 
 
-def test_a_command_that_touches_a_rules_keyword_is_whispered_the_rule_once_per_window():
+def test_a_command_that_touches_a_rules_keyword_is_whispered_the_rule_once_per_session():
     claude = PROVIDERS["claude"]()
     record = fresh()
 
@@ -26,16 +26,11 @@ def test_a_command_that_touches_a_rules_keyword_is_whispered_the_rule_once_per_w
     assert (use("Bash", {"command": "ls -la"}), text()) == ({}, ""), "a command with none of the words says nothing"
     assert use("Bash", {"command": "git checkout -b spike"}).get("hookSpecificOutput", {}).get("permissionDecision") is None, \
         "a command carrying a rule's word is not refused"
-    assert text() == f"rule {rule.n} — Never change the git branch", "and the rule is whispered by its title, without its reasoning"
+    assert text() == f"rule {rule.n} — Never change the git branch — A branch change belongs to the user", \
+        "and the rule is whispered, naming it and its reasoning"
 
     use("Bash", {"command": "git checkout main"})
-    assert text() == "", "the same rule is not said twice in one context window"
-    from controllers.types import Agents
-    from resources.base import SYSTEM
-    first = Agents(record, actor=SYSTEM).by_session("claude-1")
-    Agents(record, actor=SYSTEM).update(first.n, compactions=[{"at": 1.0}])
-    use("Bash", {"command": "git checkout main"})
-    assert text() == f"rule {rule.n} — Never change the git branch", "after a compaction, a new context window hears it again"
+    assert text() == "", "the same rule is not said again within 100 tool uses"
     use("Bash", {"command": "git checkout main"}, session="claude-2")
     assert text("claude-2").startswith(f"rule {rule.n} —") is True, "another session hears it once of its own"
 

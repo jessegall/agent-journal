@@ -18,7 +18,7 @@ class LawDetails(FeatureDetails):
         enforced before a subagent dispatch.
 
         Each law carries plain keywords and where they match, declared beside it. When one of
-        them comes up as a whole word, the law is whispered by its title, once per context window.
+        them comes up as a whole word, the law is whispered with its reason.
 
         After a tool call whose result is larger than the floor and larger than any earlier one
         in the session, you are told its size and that the next read can be narrower. It
