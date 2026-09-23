@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.103.15 — Housekeeping features ship no skill
+
+A feature that runs by itself and asks nothing of the agent generates no skill: runtime cleanup, auto-archive, opening the viewer, clean slate, the status bar and thinking. A feature says so with has_skill = False in its details, and the next install removes their skill folders.
+
 ## 2.103.14 — The top bar has three states: Working, Busy, Idle
 
 The top bar's word is only ever Working (running, with work open), Busy (running without work, or compacting) or Idle (its turn has ended, also while it waits on something outside or when no agent is there); what it waits for still shows in the line after the word. The command detail's component moved to the chat, where it is now used, and its styles are named for it.

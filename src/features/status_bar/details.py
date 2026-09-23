@@ -3,6 +3,7 @@ from features.base import Behaviour, FeatureDetails
 
 class StatusLineDetails(FeatureDetails):
     name = "status_bar"
+    has_skill = False
 
     title = "Status bar"
 

@@ -93,6 +93,7 @@ class FeatureDetails:
     runs_for_subagents: ClassVar[bool] = False
     fixed: ClassVar[bool] = False
     primary: ClassVar[bool] = False
+    has_skill: ClassVar[bool] = True   # False for housekeeping that asks nothing of the agent
     default: ClassVar[bool] = True
 
     @classmethod

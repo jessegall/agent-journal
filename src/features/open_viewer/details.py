@@ -3,6 +3,7 @@ from features.base import FeatureDetails
 
 class TabFocusDetails(FeatureDetails):
     name = "open_viewer"
+    has_skill = False
 
     title = "Open the viewer at start"
 

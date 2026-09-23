@@ -178,3 +178,10 @@ def test_the_todos_skill_is_loaded_at_every_start_and_cannot_be_switched_off():
     from features.skill_loading.catalogue import primary
     load()
     assert "journal-todos" in primary(), "marked primary in its own front matter, like a feature's skill"
+
+
+def test_housekeeping_that_asks_nothing_of_the_agent_ships_no_skill():
+    import skills
+    rendered = skills.render()
+    assert "journal-runtime-cleanup/SKILL.md" not in rendered and "journal-open-viewer/SKILL.md" not in rendered, "housekeeping gets no skill"
+    assert "journal-work-tracking/SKILL.md" in rendered, "a feature that asks something of the agent keeps its skill"
