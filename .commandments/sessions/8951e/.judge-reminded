@@ -53,6 +53,9 @@
 /Users/jessegall/projects/agent-journal/src/web/src/board/Card.vue
 /Users/jessegall/projects/agent-journal/src/web/src/board/CardMenu.vue
 /Users/jessegall/projects/agent-journal/src/web/src/board/Lane.vue
+/Users/jessegall/projects/agent-journal/src/web/src/board/NewWork.vue
+/Users/jessegall/projects/agent-journal/src/web/src/board/Suggestion.vue
+/Users/jessegall/projects/agent-journal/src/web/src/kit/FocusStage.vue
 /Users/jessegall/projects/agent-journal/src/web/src/kit/Icon.vue
 /Users/jessegall/projects/agent-journal/src/web/src/kit/MenuPanel.vue
 /Users/jessegall/projects/agent-journal/src/web/src/kit/StageDot.vue

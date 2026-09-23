@@ -7,8 +7,7 @@ import AgentStrip from "../board/AgentStrip.vue";
 import Lane from "../board/Lane.vue";
 import Switch from "../kit/Switch.vue";
 import TabBar from "../kit/TabBar.vue";
-import TextInput from "../kit/TextInput.vue";
-import {sendMessage} from "../chat/outbox.js";
+import NewWork from "../board/NewWork.vue";
 import {rows} from "../sync/rows.js";
 import ShiftPrompt from "../board/ShiftPrompt.vue";
 import NewResource from "../resource/NewResource.vue";
@@ -27,12 +26,14 @@ const TODO_MEANINGS = {doing: "start", asked: "review", done: "done"};
 const current = computed(() => boards.value.find((board) => board.n === store.board.lens.board));
 const meaningOf = (key) => (tickets.value ? current.value && current.value.data.meanings[key] : TODO_MEANINGS[key]) || "";
 const finder = ref(null);
-const focusFind = (e) =>
-    e.key === "/" && !e.target.closest("input,textarea,[contenteditable]") && (e.preventDefault(), finder.value.focus());
-onMounted(() => window.addEventListener("keydown", focusFind));
-onUnmounted(() => window.removeEventListener("keydown", focusFind));
+const writingWork = ref(false);
+const newWork = () => (tickets.value ? (writingWork.value = true) : (adding.value = "todo"));
+const KEYS = {"/": () => finder.value.focus(), n: newWork};
+const onKey = (e) =>
+    KEYS[e.key] && !e.target.closest("input,textarea,[contenteditable]") && !writingWork.value && (e.preventDefault(), KEYS[e.key]());
+onMounted(() => window.addEventListener("keydown", onKey));
+onUnmounted(() => window.removeEventListener("keydown", onKey));
 const chosenPlan = computed(() => store.board.lens.plan);
-const request = ref("");
 
 function made(n) {
     if (adding.value === "board") lens({board: n});
@@ -40,11 +41,6 @@ function made(n) {
     adding.value = "";
 }
 
-async function askForTicket() {
-    if (!request.value.trim()) return;
-    await sendMessage(route.value.env, {brief: request.value.trim(), about: `board:${store.board.lens.board}`});
-    request.value = "";
-}
 const showingDone = computed(() => store.board.lens.done !== false);
 const planHold = computed(() => store.board.planHold);
 const loading = computed(() => !store.board.loaded);
@@ -140,23 +136,12 @@ const ask = usePoll(
                     </template>
                 </div>
             </template>
-            <template v-if="tickets">
-                <form class="ask" @submit.prevent="askForTicket">
-                    <TextInput
-                        class="ask-input"
-                        :value="request"
-                        placeholder="Describe new work for this board"
-                        @input="request = $event.target.value"
-                    />
-                    <Btn kind="primary" small @click="askForTicket">Ask the agent</Btn>
-                </form>
-            </template>
             <span class="grow" />
             <Switch :on="showingDone" word="Show done" @change="(on) => lens({done: on})" />
             <template v-if="tickets">
                 <Btn small @click="peek('board', store.board.lens.board)">Stages</Btn>
             </template>
-            <Btn kind="primary" small @click="adding = tickets ? 'ticket' : 'todo'">New work</Btn>
+            <Btn kind="primary" small title="New work (N)" @click="newWork">New work</Btn>
             <template v-if="refusal">
                 <p class="refusal">{{ refusal }}</p>
             </template>
@@ -187,6 +172,9 @@ const ask = usePoll(
         <template v-if="asking">
             <ShiftPrompt :ask="asking" @send="(words) => shift(asking.card, asking.lane, words)" @close="asking = null" />
         </template>
+        <template v-if="tickets && current">
+            <NewWork :open="writingWork" :board="current" @close="writingWork = false" @added="refresh" />
+        </template>
         <template v-if="adding">
             <NewResource
                 :type="adding"
@@ -199,18 +187,6 @@ const ask = usePoll(
 </template>
 
 <style scoped>
-.ask {
-    display: flex;
-    flex: 1 1 420px;
-    gap: 8px;
-    align-items: center;
-}
-
-.ask-input {
-    flex: 1;
-    min-width: 260px;
-}
-
 .board {
     display: flex;
     flex-direction: column;
