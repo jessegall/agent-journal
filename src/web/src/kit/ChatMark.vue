@@ -24,7 +24,7 @@ const tint = computed(() => (shade.value ? {"--mark": shade.value} : {}));
 
 <template>
     <component :is="tag" :type="tag === 'button' ? 'button' : undefined" :class="['mark', {tinted: shade}]" :style="tint" :title="hover">
-        <Icon :name="icon" :size="9" />
+        <Icon :name="icon" />
         <span class="head">
             {{ label }}
             <template v-if="name">
@@ -67,6 +67,11 @@ button.mark:hover {
 .mark.tinted {
     border-color: color-mix(in srgb, var(--mark) 35%, transparent);
     background: color-mix(in srgb, var(--mark) 7%, transparent);
+}
+
+.mark .ico {
+    width: 10px;
+    height: 10px;
 }
 
 .mark.tinted .ico {
