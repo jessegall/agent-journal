@@ -94,7 +94,8 @@ class Sessions:
         return SessionRecord.from_json(got)
 
     def bind(self, session: str, env: str, pid: int = 0, provider: str = "") -> dict:
-        return self.write(session, environment=env, since=time.time(), **({"pid": pid} if pid else {}), **({"provider": provider} if provider else {}))
+        given = {"pid": pid, "provider": provider}
+        return self.write(session, environment=env, since=time.time(), **{key: value for key, value in given.items() if value})
 
     def choose(self, session: str, provider: str, prefer: str) -> str:
         own = self.environment(session)

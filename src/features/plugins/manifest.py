@@ -139,8 +139,10 @@ def steps(name: str, given) -> list[dict]:
         for field in step:
             if field not in STEP:
                 raise Refused(f"plugin.json: setup step {i} has unknown key {field!r}; known: {', '.join(STEP)}")
-        out.append({"name": str(step.get("name") or f"step {i}"), "run": command(name, f"setup step {i}", step.get("run")),
-                    **({"cwd": str(step["cwd"])} if step.get("cwd") else {})})
+        made = {"name": str(step.get("name") or f"step {i}"), "run": command(name, f"setup step {i}", step.get("run"))}
+        if step.get("cwd"):
+            made["cwd"] = str(step["cwd"])
+        out.append(made)
     return out
 
 

@@ -352,7 +352,8 @@ class CodexDriver(Driver):
 
     def command(self, args: list[str], cwd: Path | None = None) -> list[str]:
         trusted = ["-c", f'projects."{Path(cwd).resolve()}".trust_level="trusted"'] if cwd else []
-        return ["codex", *(() if self.TRUSTS_HOOKS in args else (self.TRUSTS_HOOKS,)), *trusted, *self.carried_on(args)]
+        trust = [] if self.TRUSTS_HOOKS in args else [self.TRUSTS_HOOKS]
+        return ["codex", *trust, *trusted, *self.carried_on(args)]
 
     @classmethod
     def carried_on(cls, args: list[str]) -> list[str]:

@@ -119,7 +119,8 @@ class Dumps(Controller):
         step = options[int(pick)] if int(pick) >= 0 else {"label": "You decide"}
         if step.get("action"):
             controller = CONTROLLERS[step["type"]](self.record, actor=self.actor)
-            controller.action(step["action"])(*([step["n"]] if "n" in step else []), **(step.get("body") or {}))
+            numbers = [step["n"]] if "n" in step else []
+            controller.action(step["action"])(*numbers, **(step.get("body") or {}))
         return self.update(r.n, chosen={"label": step["label"], "pick": int(pick), ENTRY.at: time.time()})
 
     def leave(self, n: int, ref: str):

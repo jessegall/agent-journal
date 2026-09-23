@@ -48,7 +48,7 @@ def add_method(acts, controller: type, name: str) -> None:
         elif p.annotation == list[str]:
             a.add_argument(flag, nargs="+")
         else:
-            a.add_argument(flag, type=int if p.annotation is int else str, **({} if required else {"default": p.default}))
+            a.add_argument(flag, type=int if p.annotation is int else str, default=None if required else p.default)
 
 QUERIES: set[str] = set()
 

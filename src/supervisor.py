@@ -117,7 +117,7 @@ class Supervisor:
         self.printed = (self.folder / "printed").open("ab")
         self.screen = (self.folder / "screen").open("ab")
         self.inbox = self.listen()
-        self.sources = [self.fd, self.inbox, *(() if self.headless else (self.stdin,))]
+        self.sources = [self.fd, self.inbox] if self.headless else [self.fd, self.inbox, self.stdin]
         self.typed_at = 0.0
         self.record_launch()
         self.resize(self.fd)

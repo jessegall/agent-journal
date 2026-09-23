@@ -71,8 +71,10 @@ def counted(group: list[Dissected], found: list[Name]) -> list[dict]:
         if not counts[-1]:
             continue
         value = counts if len(counts) > 1 else counts[0]
-        parts.append({"value": value, "prefix": sign, "increments": True, "color": color,
-                      **({"duration": FLIP_EVERY} if isinstance(value, list) else {})})
+        part = {"value": value, "prefix": sign, "increments": True, "color": color}
+        if isinstance(value, list):
+            part["duration"] = FLIP_EVERY
+        parts.append(part)
     return parts
 
 

@@ -35,7 +35,7 @@ def changed(before, after) -> str:
 
 
 def noted(text: str, change: str) -> str:
-    return "; ".join(dict.fromkeys([*(text.split("; ") if text else []), *([change] if change else [])]))
+    return "; ".join(dict.fromkeys(part for part in [*text.split("; "), change] if part))
 
 
 def revise(docs, head, keep_after: float) -> None:
