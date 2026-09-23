@@ -155,8 +155,14 @@ class Manifest(Loaded):
         return [handler for handler in self.handlers if handler.pattern in known]
 
 
+MANIFESTS: dict[tuple, Manifest] = {}
+
+
 def declared(row) -> Manifest:
-    return Manifest.of(row.manifest)
+    key = (row.title, row.n, row.updated)
+    if key not in MANIFESTS:
+        MANIFESTS[key] = Manifest.of(row.manifest)
+    return MANIFESTS[key]
 
 
 @dataclass(frozen=True)
