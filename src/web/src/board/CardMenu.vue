@@ -1,6 +1,7 @@
 <script setup>
 import MenuItem from "../kit/MenuItem.vue";
 import MenuPanel from "../kit/MenuPanel.vue";
+import StageDot from "../kit/StageDot.vue";
 import {inject, ref} from "vue";
 import {api} from "../api/client.js";
 import {useOutside} from "../composables/outside.js";
@@ -20,12 +21,6 @@ async function assign(body) {
     board.refresh();
 }
 
-async function act(action) {
-    emit("close");
-    await api.act(props.card.type, props.card.n, action);
-    board.refresh();
-}
-
 function move(lane) {
     emit("close");
     board.move(props.card, lane);
@@ -34,13 +29,13 @@ function move(lane) {
 
 <template>
     <MenuPanel ref="menu" class="menu" :anchor="anchor" @click.stop>
-        <template v-for="action in card.actions" :key="action.action">
-            <MenuItem @click="act(action.action)">{{ action.label }}</MenuItem>
-        </template>
         <template v-if="card.targets.length">
             <p class="label">Move to</p>
             <template v-for="lane in card.targets" :key="lane">
-                <MenuItem @click="move(lane)">{{ TITLES[lane] || lane }}</MenuItem>
+                <MenuItem @click="move(lane)">
+                    <StageDot :meaning="board.meaningOf(lane)" />
+                    {{ TITLES[lane] || lane }}
+                </MenuItem>
             </template>
         </template>
         <template v-if="card.type === 'todo' && store.board.agents.length">

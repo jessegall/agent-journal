@@ -1,9 +1,11 @@
 <script setup>
+import Btn from "../kit/Btn.vue";
 import Chip from "../kit/Chip.vue";
-import {inject, ref} from "vue";
+import {computed, inject, ref} from "vue";
 import Icon from "../kit/Icon.vue";
 import PriorityIcon from "../kit/PriorityIcon.vue";
 import {useCardDrag} from "../composables/cardDrag.js";
+import {api} from "../api/client.js";
 import {peek} from "../route.js";
 import {store} from "../state/store.js";
 import CardMenu from "./CardMenu.vue";
@@ -12,10 +14,15 @@ const props = defineProps({card: Object});
 const board = inject("board");
 const drag = useCardDrag();
 const menu = ref(false);
-const open = (link) => window.open(link, "_blank", "noopener");
+const plan = computed(() => props.card.plan);
 const opener = ref(null);
 const titleOf = (name) => (store.board.agents.find((agent) => agent.name === name) || {title: name}).title;
 const people = () => [...new Set([props.card.assigned, props.card.worker && props.card.worker.agent].filter(Boolean))];
+
+async function act(action) {
+    await api.act(props.card.type, props.card.n, action);
+    board.refresh();
+}
 
 function begin(event) {
     event.dataTransfer.effectAllowed = "move";
@@ -35,16 +42,28 @@ function begin(event) {
         @keydown.enter="peek(card.type, card.n)"
     >
         <span class="top">
-            <PriorityIcon :value="card.priority" />
-            <span class="number">#{{ card.n }}</span>
+            <span class="title">{{ card.title }}</span>
             <button ref="opener" type="button" class="more" title="Move, assign or open" @click.stop="menu = !menu">
                 <Icon name="more" />
             </button>
         </span>
-        <span class="title">{{ card.title }}</span>
-        <template v-if="card.reason">
-            <span class="reason">{{ card.reason }}</span>
+        <template v-if="card.actions.length">
+            <span class="actions">
+                <template v-for="(action, i) in card.actions" :key="action.action">
+                    <Btn small :kind="i ? 'ghost' : 'primary'" @click.stop="act(action.action)">{{ action.label }}</Btn>
+                </template>
+            </span>
         </template>
+        <span class="meta">
+            <PriorityIcon :value="card.priority" />
+            <span class="number">#{{ card.n }}</span>
+            <template v-if="card.reason">
+                <span class="reason">{{ card.reason }}</span>
+            </template>
+            <template v-if="card.link">
+                <a class="app" :href="card.link" target="_blank" rel="noopener" @click.stop>Open app ↗</a>
+            </template>
+        </span>
         <span class="chips">
             <template v-for="name in people()" :key="name">
                 <Chip tone="accent">{{ titleOf(name) }}</Chip>
@@ -59,11 +78,8 @@ function begin(event) {
                 <Chip tone="danger" title="A question waits on you" @click.stop="peek('question', card.question)">!</Chip>
             </template>
         </span>
-        <template v-if="card.link">
-            <Chip @click.stop="open(card.link)">Open its app</Chip>
-        </template>
-        <template v-if="card.plan">
-            <Chip @click.stop="peek('plan', card.plan.n)">Plan {{ card.plan.n }} · phase {{ card.plan.phase }}</Chip>
+        <template v-if="plan">
+            <Chip @click.stop="peek('plan', plan.n)">Plan {{ plan.n }} · phase {{ plan.phase }}</Chip>
         </template>
         <template v-if="menu">
             <CardMenu :card="card" :anchor="opener" @close="menu = false" />
@@ -99,10 +115,11 @@ function begin(event) {
 
 .more {
     display: grid;
+    flex: none;
     place-items: center;
     width: 22px;
     height: 22px;
-    margin-left: auto;
+    margin: -2px -4px 0 0;
     border: 0;
     border-radius: 5px;
     background: none;
@@ -122,21 +139,44 @@ function begin(event) {
 
 .top {
     display: flex;
+    align-items: flex-start;
+    gap: 8px;
+}
+
+.title {
+    flex: 1;
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1.45;
+}
+
+.actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.meta {
+    display: flex;
+    flex-wrap: wrap;
     align-items: center;
     gap: 6px;
     color: var(--text-3);
     font-size: 11.5px;
-}
-
-.title {
-    font-size: 13px;
     line-height: 1.4;
 }
 
-.reason {
-    color: var(--text-3);
-    font-size: 11.5px;
-    line-height: 1.4;
+.number {
+    color: var(--text-4);
+}
+
+.app {
+    margin-left: auto;
+    color: var(--text-2);
+}
+
+.app:hover {
+    color: var(--text);
 }
 
 .chips {
