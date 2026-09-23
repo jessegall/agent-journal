@@ -133,9 +133,13 @@ class Controller(Stored, Files, Links):
         with self.record.locked():
             n = (self.numbers() or [0])[-1] + 1
             about, supersedes = data.pop("about", None), data.pop("supersedes", 0)
+            fields = self._shaped(data)
+            if self.agent:
+                fields.update(agent=self.agent, dispatcher=self.session)
+            if self.resource.scope == PROJECT:
+                fields["environment"] = self.record.env
             r = self.resource(n=n, title=check_title(title), abstract=check_abstract(abstract), brief=brief,
-                              data={**self._shaped(data), **({"agent": self.agent, "dispatcher": self.session} if self.agent else {}),
-                                    **({"environment": self.record.env} if self.resource.scope == PROJECT else {})}, created=time.time(), seen=[self.actor], refs=[about] if about else [])
+                              data=fields, created=time.time(), seen=[self.actor], refs=[about] if about else [])
             r = self.save(r, "created")
             if supersedes:
                 self.complete(int(supersedes), how=f"superseded by {self.type} {n}")

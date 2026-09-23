@@ -60,7 +60,12 @@ def shaping(r, record=None, surface: str = "") -> dict:
     parts = [{**s, "body": formatted(s.get("body"), record, surface)} for s in row.get("sections") or []]
     data = {key: [{**item, **{sub: formatted(item.get(sub), record, surface) for sub in subs if item.get(sub)}} for item in row["data"].get(key) or []]
             for key, subs in getattr(r, "formatted_data", {}).items() if row.get("data", {}).get(key)}
-    return {**row, **fields, **({"sections": parts} if parts else {}), **({"data": {**row["data"], **data}} if data else {})}
+    shaped_row = {**row, **fields}
+    if parts:
+        shaped_row["sections"] = parts
+    if data:
+        shaped_row["data"] = {**row["data"], **data}
+    return shaped_row
 
 
 @dataclass(frozen=True)
