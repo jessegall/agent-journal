@@ -217,8 +217,11 @@ def test_an_event_carries_the_command_that_caused_it_so_a_read_is_not_an_update(
     record = fresh()
     n = Messages(record, actor=USER).create("hello").n
     agent = Messages(record, actor=AGENT)
+    Messages(record, actor=USER).create("hello again")
+    agent.read_all([n + 1])
     agent.action("read")(n)
     agent.action("react")(n, "👍")
     heard = [(e.type, e.action, e.data.get("by")) for e in record.events() if e.n == n or e.type == "reaction"]
-    assert ("message", "updated", "read") in heard, heard
+    read = [e.data.get("by") for e in record.events() if e.type == "message" and e.action == "updated" and e.data.get("seen") == AGENT]
+    assert read == ["read", "read"], f"a read from the viewer's read-all and from the command both say read: {read}"
     assert [by for t, _, by in heard if t == "reaction"] == [None], f"a row of another type saved inside the command is not stamped with it: {heard}"

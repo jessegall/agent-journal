@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.100.3 — A message read in the viewer says read in the activity
+
+2.100.2 stamped the cause on commands, but the viewer marks rows read through its own route, so a message read there still showed as updated. Every read now carries by=read, wherever it comes from.
+
 ## 2.100.2 — The activity says a message was read, not updated
 
 Every event now carries the command that caused it, as by in its data (by=read, by=block, and so on), stamped on events of the type the command ran on. The activity reads it: reading a message shows "Message read" instead of "Updated message", and to-dos say blocked, unblocked, assigned, started or given a priority. Listeners of updated hear the same events as before.
