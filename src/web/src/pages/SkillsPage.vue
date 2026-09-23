@@ -24,7 +24,7 @@ async function reload() {
     if (!loaded.value) {
         folded.value = new Set(
             groups(got).flatMap((group) =>
-                group.skill ? [] : [group.key, ...group.items.filter((item) => !item.skill).map((item) => item.key)]
+                group.skill ? [] : [group.key]
             )
         );
     }
@@ -38,7 +38,7 @@ const loadedCount = computed(() => rows.value.filter((s) => s.loaded).length);
 const skillGroups = computed(() => groups(rows.value));
 
 function groups(list) {
-    const under = (prefix) => list.filter((s) => s.name === prefix || s.name.startsWith(`${prefix}-`));
+    const under = (top) => list.filter((s) => s.name === top || s.name.startsWith(`${top}-`));
     const seen = new Set();
     const named = [];
     const individual = [];
@@ -51,18 +51,7 @@ function groups(list) {
             individual.push({key: skill.name, skill});
             continue;
         }
-        const subgroups = new Set();
-        const items = [];
-        for (const member of members) {
-            const parts = member.name.split("-");
-            const subgroup = parts.length > 2 ? parts.slice(0, 2).join("-") : "";
-            if (subgroup && !subgroups.has(subgroup) && under(subgroup).length > 1) {
-                subgroups.add(subgroup);
-                items.push({key: subgroup, name: subgroup, rows: under(subgroup)});
-            } else if (!subgroup || !subgroups.has(subgroup)) {
-                items.push({key: member.name, skill: member});
-            }
-        }
+        const items = members.map((member) => ({key: member.name, skill: member}));
         named.push({key: top, name: top, count: members.length, items});
     }
     return [...named, ...individual];
@@ -142,45 +131,17 @@ async function keywords(s, words) {
                             </button>
                             <template v-if="!folded.has(group.key)">
                                 <template v-for="item in group.items" :key="item.key">
-                                    <template v-if="item.skill">
-                                        <SkillsRow
-                                            :skill="item.skill"
-                                            :busy="busy"
-                                            :opened="opened"
-                                            :text="text"
-                                            :depth="1"
-                                            @open="open"
-                                            @load="loadNow"
-                                            @always="always"
-                                            @keywords="keywords"
-                                        />
-                                    </template>
-                                    <template v-else>
-                                        <button
-                                            type="button"
-                                            :class="['group', 'subgroup', {folded: folded.has(item.key)}]"
-                                            @click="fold(item.key)"
-                                        >
-                                            <span class="group-name">{{ item.name }}</span>
-                                            <span class="group-count">{{ item.rows.length }}</span>
-                                            <Icon name="down" />
-                                        </button>
-                                        <template v-if="!folded.has(item.key)">
-                                            <template v-for="skill in item.rows" :key="skill.name">
-                                                <SkillsRow
-                                                    :skill="skill"
-                                                    :busy="busy"
-                                                    :opened="opened"
-                                                    :text="text"
-                                                    :depth="2"
-                                                    @open="open"
-                                                    @load="loadNow"
-                                                    @always="always"
-                                                    @keywords="keywords"
-                                                />
-                                            </template>
-                                        </template>
-                                    </template>
+                                    <SkillsRow
+                                        :skill="item.skill"
+                                        :busy="busy"
+                                        :opened="opened"
+                                        :text="text"
+                                        :depth="1"
+                                        @open="open"
+                                        @load="loadNow"
+                                        @always="always"
+                                        @keywords="keywords"
+                                    />
                                 </template>
                             </template>
                         </template>
@@ -271,9 +232,4 @@ async function keywords(s, words) {
     color: var(--text-4);
 }
 
-.subgroup {
-    margin-left: 18px;
-    background: transparent;
-    font-weight: 500;
-}
 </style>

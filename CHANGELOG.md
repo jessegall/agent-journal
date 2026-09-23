@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.102.5 — The Skills page groups one level deep
+
+Skills are grouped only by the part of their name before the first dash, so journal-auto-archive and journal-auto-update sit directly under journal, with no journal-auto group inside it.
+
 ## 2.102.4 — Only resources people discuss have a comment section
 
 A resource type says whether it takes comments (takes_comments, carried in the manifest). Agents, notifications, notices, reactions, browser asks, features and nudges do not, so their inspectors no longer end in an empty comment section.
