@@ -1,3 +1,5 @@
+import time
+
 import pytest
 from types import SimpleNamespace
 
@@ -26,6 +28,11 @@ def test_the_update_check_tells_the_agent_of_a_newer_version_once_when_it_does_n
     monkeypatch.setattr(updates, "upstream", lambda root: "98.0.0")
     check.tick()
     assert len(sent) == 1, "a version that would not start here is never offered again"
+    record.set_setting("triggers", {"auto_update": {"every": 5, "unit": "minutes"}})
+    monkeypatch.setattr(updates, "stale", lambda root: True)
+    check.checked_at = 0.0
+    check.tick()
+    assert 5 * 60 - updates.REFETCH_WAIT - 2 < time.time() - check.checked_at, "a stale published version is looked at again once it is fetched, not five minutes later"
 
 
 def test_the_installed_command_runs_quietly_before_any_server_has_started(tmp_path):

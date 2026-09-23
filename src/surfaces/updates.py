@@ -45,6 +45,13 @@ UPSTREAM_FOR = 900
 FETCHING = threading.Lock()
 
 
+def stale(root: Path) -> bool:
+    try:
+        return time.time() - (root / "runtime" / "upstream.cache").stat().st_mtime >= UPSTREAM_FOR
+    except OSError:
+        return True
+
+
 def upstream(root: Path) -> str:
     cache = root / "runtime" / "upstream.cache"
     try:
