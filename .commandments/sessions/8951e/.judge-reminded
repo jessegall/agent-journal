@@ -50,6 +50,7 @@
 /Users/jessegall/projects/agent-journal/src/features/organization/test.py
 /Users/jessegall/projects/agent-journal/src/features/parts.py
 /Users/jessegall/projects/agent-journal/src/features/permission_prompts/feature.py
+/Users/jessegall/projects/agent-journal/src/features/plugins/commands.py
 /Users/jessegall/projects/agent-journal/src/features/plugins/parts.py
 /Users/jessegall/projects/agent-journal/src/features/pull_requests/test.py
 /Users/jessegall/projects/agent-journal/src/features/runtime_cleanup/test.py
@@ -83,6 +84,7 @@
 /Users/jessegall/projects/agent-journal/src/web/src/App.vue
 /Users/jessegall/projects/agent-journal/src/web/src/board/AgentDrawer.vue
 /Users/jessegall/projects/agent-journal/src/web/src/board/AgentSlots.vue
+/Users/jessegall/projects/agent-journal/src/web/src/board/AskedQuestion.vue
 /Users/jessegall/projects/agent-journal/src/web/src/board/BoardMenu.vue
 /Users/jessegall/projects/agent-journal/src/web/src/board/Card.vue
 /Users/jessegall/projects/agent-journal/src/web/src/board/CardMenu.vue
@@ -90,6 +92,7 @@
 /Users/jessegall/projects/agent-journal/src/web/src/board/Lane.vue
 /Users/jessegall/projects/agent-journal/src/web/src/board/NewWork.vue
 /Users/jessegall/projects/agent-journal/src/web/src/board/NotePrompt.vue
+/Users/jessegall/projects/agent-journal/src/web/src/board/QuestionStrip.vue
 /Users/jessegall/projects/agent-journal/src/web/src/board/StopPrompt.vue
 /Users/jessegall/projects/agent-journal/src/web/src/board/Suggestion.vue
 /Users/jessegall/projects/agent-journal/src/web/src/board/TemplateCard.vue

@@ -10,6 +10,7 @@ import {quoted} from "../format/quote.js";
 import {route} from "../route.js";
 import {rows} from "../sync/rows.js";
 import Suggestion from "./Suggestion.vue";
+import AskedQuestion from "./AskedQuestion.vue";
 
 const props = defineProps({open: Boolean, board: Object, stage: {type: String, default: ""}, starts: Boolean});
 const emit = defineEmits(["close", "added"]);
@@ -30,10 +31,17 @@ const replies = computed(() => {
     const refs = asked.value.map((m) => m.ref);
     return rows("comment").filter((c) => c.refs.some((ref) => refs.includes(ref)));
 });
+const boardQuestions = computed(() =>
+    since.value ? rows("question").filter((q) => !q.deleted && q.refs.includes(props.board.ref) && q.created >= since.value) : []
+);
+const asking = computed(() => boardQuestions.value.find((q) => !q.completed));
 const conversation = computed(() =>
     [
         ...lines.value,
         ...replies.value.map((c) => ({id: c.ref, mine: false, typed: true, at: c.created, text: quoted(c.brief || c.title).text})),
+        ...boardQuestions.value
+            .filter((q) => q.completed)
+            .map((q) => ({id: q.ref, record: true, at: q.completed, text: `Asked: ${q.title} → ${q.outcome}`})),
     ].sort((a, b) => a.at - b.at)
 );
 const drafts = computed(() =>
@@ -170,6 +178,7 @@ async function add() {
                     :ticket="card.ticket"
                     :order="card.order"
                     :active="Boolean(card.ticket) && card.ticket === turn"
+                    :paused="Boolean(asking)"
                     :picked="Boolean(card.ticket) && picked.includes(card.ticket.n)"
                     @toggle="toggle(card.ticket.n)"
                     @revealed="reveal(card.ticket.n)"
@@ -179,15 +188,23 @@ async function add() {
         <ChatPanel
             ref="panel"
             v-model="words"
-            :grows="conversation.length + drafts.length"
+            :grows="conversation.length + drafts.length + (asking ? 1 : 0)"
             :locked="adding"
             :placeholder="drafts.length ? 'Say what to change' : 'Describe the work in your own words'"
             @send="send"
         >
             <template v-for="line in conversation" :key="line.id">
-                <ChatLine :text="line.text" :mine="line.mine" :typed="line.typed" />
+                <template v-if="line.record">
+                    <span class="record">{{ line.text }}</span>
+                </template>
+                <template v-else>
+                    <ChatLine :text="line.text" :mine="line.mine" :typed="line.typed" />
+                </template>
             </template>
-            <template v-if="writing">
+            <template v-if="asking">
+                <AskedQuestion :question="asking" />
+            </template>
+            <template v-if="writing && !asking">
                 <ChatLine thinking />
             </template>
             <template v-if="stalled">
@@ -195,7 +212,7 @@ async function add() {
             </template>
             <template #actions>
                 <div :class="['choose', {on: writing}]">
-                    <span class="note">The agent is writing tickets.</span>
+                    <span class="note">{{ asking ? "The agent needs your answer." : "The agent is writing tickets." }}</span>
                     <template v-if="stalled">
                         <Btn small @click="askAgain">Ask again</Btn>
                     </template>
@@ -281,6 +298,19 @@ async function add() {
         opacity 0.25s,
         transform 0.25s cubic-bezier(0.2, 0.9, 0.25, 1),
         visibility 0s;
+}
+
+.record {
+    align-self: flex-start;
+    color: var(--text-3);
+    font-size: 12px;
+    animation: record-in 0.18s both;
+}
+
+@keyframes record-in {
+    from {
+        opacity: 0;
+    }
 }
 
 .note {

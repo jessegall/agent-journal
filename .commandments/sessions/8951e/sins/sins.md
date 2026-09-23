@@ -69,7 +69,7 @@ Work **wave by wave.** ONLY when this list is EMPTY, run `commandments judge` ag
 - `./src/features/organization/commands.py:40`  call  [InventedDefaultDetector]
 - `./src/features/parts.py:212`  call  [InventedDefaultDetector]
 - `./src/features/plans/controller.py:52`  Param when  [BlankStringDefaultDetector]
-- `./src/features/plugins/commands.py:78`  Param ref  [BlankStringDefaultDetector]
+- `./src/features/plugins/commands.py:79`  Param ref  [BlankStringDefaultDetector]
 - `./src/features/plugins/declared.py:15`  AnnAssign  [BlankStringDefaultDetector]
 - `./src/features/plugins/declared.py:53`  AnnAssign  [BlankStringDefaultDetector]
 - `./src/features/plugins/declared.py:82`  AnnAssign  [BlankStringDefaultDetector]
