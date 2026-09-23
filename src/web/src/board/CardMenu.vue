@@ -14,19 +14,18 @@ const emit = defineEmits(["close"]);
 const board = inject("board");
 const menu = ref(null);
 const slots = computed(() => store.board.slots);
-const roles = computed(() => store.board.roles);
+const assignees = computed(() => (props.card.type === "ticket" ? store.board.roles : store.board.agents));
 const TITLES = {todo: "To do", held: "Held", doing: "Doing", asked: "Needs you", done: "Done"};
 useOutside(menu, () => emit("close"));
 
-async function assign(body) {
-    emit("close");
-    await api.act("todo", props.card.n, "assign", body);
-    board.refresh();
-}
+const ASSIGNING = {
+    todo: (name) => ["assign", name ? {to: name} : {off: true}],
+    ticket: (name) => ["update", {owner: name}],
+};
 
-async function own(owner) {
+async function assign(name) {
     emit("close");
-    await api.act("ticket", props.card.n, "update", {owner});
+    await api.act(props.card.type, props.card.n, ...ASSIGNING[props.card.type](name));
     board.refresh();
 }
 
@@ -48,22 +47,13 @@ function move(lane) {
                 </MenuItem>
             </template>
         </template>
-        <template v-if="card.type === 'ticket' && roles.length">
+        <template v-if="assignees.length">
             <p class="label">Assign to</p>
-            <template v-for="role in roles" :key="role.name">
-                <MenuItem @click="own(role.name)">{{ role.title }}</MenuItem>
+            <template v-for="who in assignees" :key="who.name">
+                <MenuItem @click="assign(who.name)">{{ who.title }}</MenuItem>
             </template>
             <template v-if="card.assigned">
-                <MenuItem @click="own('')">Unassign</MenuItem>
-            </template>
-        </template>
-        <template v-if="card.type === 'todo' && store.board.agents.length">
-            <p class="label">Assign to</p>
-            <template v-for="agent in store.board.agents" :key="agent.name">
-                <MenuItem @click="assign({to: agent.name})">{{ agent.title }}</MenuItem>
-            </template>
-            <template v-if="card.assigned">
-                <MenuItem @click="assign({off: true})">Unassign</MenuItem>
+                <MenuItem @click="assign('')">Unassign</MenuItem>
             </template>
         </template>
         <template v-if="card.session">
