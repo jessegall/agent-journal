@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.108.1 — Whispered rules keep their reasoning, and come back after 100 tool uses
+
+A fact, rule or law brought back by one of its keywords is said in full again, reasoning included, so the agent knows why. It is said again only after 100 of the agent's tool uses have passed (it was 50), instead of the once-per-window title that 2.108.0 shipped. Standing facts, rules and reminders stay at every quarter of the context window.
+
 ## 2.108.0 — Reminders come less often and shorter
 
 Standing facts, rules and reminders are said again every quarter of the context window instead of every tenth, so about four times over a full window. A fact, rule or law brought back by one of its keywords is said by its one-line title only, and at most once per context window, until the next compaction. Measured on a long session, repeated rule and fact text was the largest part of what the journal said to the agent; both cadences stay settings.

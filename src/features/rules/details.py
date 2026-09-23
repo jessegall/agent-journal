@@ -20,7 +20,7 @@ class RulesDetails(FeatureDetails):
         keeps a rule in the managed block of both AGENTS.md and CLAUDE.md.
 
         Give it keywords with --set keywords="<word>,<word>": when one comes up as a whole word, the row is whispered to
-        that session by its title, once per context window, and the call is never refused. --set keywords_in says where they match: text
+        that session once, with its reasoning, and the call is never refused. --set keywords_in says where they match: text
         (what you write, in edits and in the chat), commands (shell commands), both (the default), or everything (any tool call,
         file paths, searches and URLs included).
     """
