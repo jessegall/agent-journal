@@ -8,15 +8,15 @@ from engine import runtime
 ONLINE_FOR = 5.0
 
 
-def live(root: Path) -> list[tuple[dict, dict]]:
+def live(root: Path, within: float = ONLINE_FOR) -> list[tuple[dict, dict]]:
     now = time.time()
     sessions = Sessions(root)
     found = {}
-    for seat in seats(root, within=ONLINE_FOR):
+    for seat in seats(root, within=within):
         report = seat.get("report") or {}
         session = str(report.get("title") or "")
         at = float(seat.get("at") or 0)
-        if not session or now - at > ONLINE_FOR:
+        if not session or now - at > within:
             continue
         agent = {
             "session": session,

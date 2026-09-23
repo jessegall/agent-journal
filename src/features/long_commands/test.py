@@ -63,10 +63,16 @@ def test_a_command_from_the_terminal_view_is_typed_into_the_agents_terminal_as_a
     monkeypatch.setattr(engine.agent, "state", lambda: "busy")
     from controllers.types import Agents
     from surfaces import control
-    monkeypatch.setattr(control, "online", lambda root, env, session: {"provider": "claude"})
+    import os, time
+    from engine import runtime
+    from engine.stored import write_json
+    seat = runtime.session_file(record.root, "claude-1", "seat.json")
+    reloading = time.time() - 30
+    write_json(seat, {"at": reloading, "agent": "claude", "env": record.env, "report": {"title": "claude-1", "provider": "claude"}})
+    os.utime(seat, (reloading, reloading))
     control.shell(record.root, record.env, "claude-1", "git status")
     pending = lambda: [c["command"] for c in Agents(record).by_session("claude-1").data.get("queued_commands") or []]
-    assert pending() == ["git status"], "the command shows as pending until it is typed"
+    assert pending() == ["git status"], "queued for a session seen moments ago, as during a reload, and pending until typed"
     assert engine.shelled() == "ran in the terminal: git status"
     assert pending() == [], "typed while the agent works, since Claude queues what is typed; no longer pending"
     Agents(record).update(Agents(record).by_session("claude-1").n, asking={"tool": "Bash"})
