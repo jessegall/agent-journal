@@ -11,3 +11,4 @@ class LookAfterTicketBranches(Handler):
         tickets = Tickets(context.record, actor=SYSTEM)
         tickets.keep_branches()
         tickets.close_merged()
+        tickets.start_queued()

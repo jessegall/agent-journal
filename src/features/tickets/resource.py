@@ -1,7 +1,7 @@
 from typing import ClassVar
 
 from resources.base import PROJECT, USER, Resource, ResourceDetails
-from resources.shapes import NUMBER, TEXT, Field, Shape
+from resources.shapes import FLAG, NUMBER, TEXT, Field, Shape
 
 
 class Ticket(Shape, Resource):
@@ -26,6 +26,7 @@ class Ticket(Shape, Resource):
         Field(TEXT, name="owner"),
         Field(TEXT, name="work_environment"),
         Field(NUMBER, 0, name="plan"),
+        Field(FLAG, False, name="queued"),
     ]
     labels = {"brief": "What is wanted", "outcome": "How it ended", "board": "Board", "stage": "Stage", "source": "Source",
               "source_id": "Id at the source", "owner": "Owner", "work_environment": "Works in", "plan": "Plan"}
