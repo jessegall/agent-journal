@@ -5,6 +5,7 @@ import {api} from "../api/client.js";
 import Icon from "../kit/Icon.vue";
 import SwitchCase from "../kit/SwitchCase.vue";
 import SubagentMark from "./SubagentMark.vue";
+import WhisperMark from "./WhisperMark.vue";
 import Folded from "../kit/Folded.vue";
 import Buttons from "../resource/Buttons.vue";
 import OptionsPicker from "../resource/OptionsPicker.vue";
@@ -177,6 +178,11 @@ async function drop() {
                     The agent compacted its context
                     <span class="thread-compacted-when">{{ clock(turn.created) }}</span>
                 </span>
+            </div>
+        </template>
+        <template #whisper>
+            <div class="thread-turn whisper" :data-ref="turn.ref">
+                <WhisperMark v-bind="turn.data" :title="turn.title" :at="turn.created" />
             </div>
         </template>
         <template #subagent>
