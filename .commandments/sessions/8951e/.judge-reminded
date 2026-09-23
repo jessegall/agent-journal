@@ -1,3 +1,4 @@
+/Users/jessegall/projects/agent-journal/src/engine/inputs.py
 /Users/jessegall/projects/agent-journal/src/engine/version.py
 /Users/jessegall/projects/agent-journal/src/features/boards/__init__.py
 /Users/jessegall/projects/agent-journal/src/features/boards/controller.py
@@ -6,6 +7,7 @@
 /Users/jessegall/projects/agent-journal/src/features/boards/resource.py
 /Users/jessegall/projects/agent-journal/src/features/kanban/board.py
 /Users/jessegall/projects/agent-journal/src/features/skill_loading/catalogue.py
+/Users/jessegall/projects/agent-journal/src/features/status_bar/test.py
 /Users/jessegall/projects/agent-journal/src/features/tickets/__init__.py
 /Users/jessegall/projects/agent-journal/src/features/tickets/controller.py
 /Users/jessegall/projects/agent-journal/src/features/tickets/details.py
