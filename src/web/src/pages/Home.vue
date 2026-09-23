@@ -194,6 +194,16 @@ const shown = computed(() => floats.value.map((f) => ({...f, ...(landing.value[f
 
 const lifted = (key) => (drag.value && drag.value.from === null && drag.value.view === key) || (offer.value && offer.value.view === key);
 
+const presets = computed(() =>
+    PRESETS.filter((p) => shapeViews(p.shape).every((v) => usable.value.includes(v))).map((p) => ({
+        key: p.key,
+        name: p.name,
+        text: p.text,
+        cells: thumbnail(p.shape),
+        current: matches(layout.value, p.shape),
+    }))
+);
+
 provide("views", {
     items: computed(() =>
         usable.value.map((key) => ({
@@ -208,6 +218,8 @@ provide("views", {
     away: computed(() => away.value.map((f) => ({id: f.id, title: views.value[f.view].title, icon: views.value[f.view].icon}))),
     grab: (e, key) => grab(e, {view: key, from: null, click: () => openView(key)}),
     back: bringBack,
+    presets,
+    preset: applyPreset,
 });
 
 function tabsOf(id, pane) {
@@ -267,17 +279,7 @@ const offerText = (id) => {
     return `Put ${views.value[offer.value.view].title} beside ${views.value[pane.active].title} in two panes, or add it here as a tab.`;
 };
 
-const presets = computed(() =>
-    PRESETS.filter((p) => shapeViews(p.shape).every((v) => usable.value.includes(v))).map((p) => ({
-        key: p.key,
-        name: p.name,
-        text: p.text,
-        cells: thumbnail(p.shape),
-        current: matches(layout.value, p.shape),
-    }))
-);
-
-function applyPreset(pane, key) {
+function applyPreset(key) {
     const preset = PRESETS.find((p) => p.key === key);
     if (preset) apply(arranged(layout.value, preset.shape));
 }
@@ -290,16 +292,15 @@ const TOUR = [
         text: "Every view has an icon here. Drag one onto a pane to open it there. The icon comes back when you close that view.",
     },
     {
+        target: ".agent-presets",
+        title: "Pick a preset",
+        text: "Presets opens a list of ready layouts, such as Default, Zen and Hacker, and arranges every pane in one step.",
+    },
+    {
         target: '.menu-panel [data-step="split"]',
         menu: true,
         title: "Split a pane",
         text: "Each pane has this menu. Split right or Split below opens a second view beside this one.",
-    },
-    {
-        target: '.menu-panel [data-step="presets"]',
-        menu: true,
-        title: "Pick a preset",
-        text: "Presets opens a list of ready layouts, such as Default, Zen and Hacker, and arranges every pane in one step.",
     },
     {
         target: '.menu-panel [data-step="detach"]',
@@ -426,7 +427,6 @@ watch(
                     :floating="menu.floating"
                     :title="menuPane && menuPane.active ? views[menuPane.active].title : ''"
                     :others="menuOthers"
-                    :presets="presets"
                     :splittable="!!menuPane && (menuPane.tabs.length > 1 || (menuPane.tabs.length > 0 && !!free()))"
                     :closable="!!menuPane && (leaves(layout.tree).length > 1 || menuPane.tabs.length > 0)"
                     @close="menu = null"
@@ -435,7 +435,6 @@ watch(
                     @float="floatPane"
                     @shut="shutPane"
                     @reset="apply(arranged(layout, DEFAULT_SHAPE))"
-                    @preset="applyPreset"
                     @dock="dockFloat"
                     @away="sendAway"
                     @unfloat="(id) => replace(unfloated(layout, id))"
