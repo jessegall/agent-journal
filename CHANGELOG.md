@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.113.10 — The output cap leaves MCP servers alone
+
+Claude starts its MCP servers through the same shell prefix as its commands, so since 2.110.0 the output cap sat on their message streams: it copied them into a file that kept growing and passed on only their first 200 lines. It now caps only a shell command the agent runs, which Claude wraps in eval, and starts anything else untouched. Restart a session to start its MCP servers without it. Output files left behind for a day are removed by the hourly housekeeping.
+
 ## 2.113.9 — Set-aside hooks come back after any exit and from any environment
 
 The list of hook files set aside at launch was kept in the environment's settings while the files belong to the project, so a launch in another environment after a crash never put them back. It is kept once per project now, and an older per-environment list is read once and moved over. A session ended with SIGTERM puts them back too, as a closed window already did.

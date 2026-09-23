@@ -9,6 +9,7 @@ TAILS = {"sessions/*/printed": 64 * 1024, "sessions/*/screen": 1024 * 1024, "*.l
 EVENTS_KEPT = 100
 READERS_WITHIN = 86400
 STAGING_FOR = 3600
+OUTPUTS_FOR = 86400
 ARCHIVES_FOR = 90 * 86400
 
 
@@ -31,11 +32,12 @@ def leftovers(root: Path) -> int:
     now = time.time()
     staged = [d for d in (root / "plugins").glob(".staging-*") if d.is_dir() and now - d.stat().st_mtime > STAGING_FOR]
     archived = [f for f in (root / "attic").glob("*.tar.gz") if not f.name.startswith("before-") and now - f.stat().st_mtime > ARCHIVES_FOR]
+    unkept = [f for f in (root / "runtime" / "outputs").glob("output-*") if now - f.stat().st_mtime > OUTPUTS_FOR]
     for d in staged:
         shutil.rmtree(d)
-    for f in archived:
+    for f in archived + unkept:
         f.unlink()
-    return len(staged) + len(archived)
+    return len(staged) + len(archived) + len(unkept)
 
 
 def trim(f: Path, keep: int) -> bool:

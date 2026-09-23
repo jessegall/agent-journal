@@ -102,7 +102,12 @@ def test_leftover_plugin_checkouts_and_old_environment_archives_are_removed_and_
         os.utime(f, (old, old))
     (root / "runtime").mkdir(exist_ok=True)
     (root / "runtime" / "channel.jsonl").write_text("x" * (2 * 1024 * 1024))
+    (root / "runtime" / "outputs").mkdir()
+    unkept = root / "runtime" / "outputs" / "output-abc"
+    unkept.write_text("a command's whole output that never became a row")
+    os.utime(unkept, (old, old))
     tidy(root, 2)
+    assert not unkept.exists(), "an output file left behind for a day goes"
     assert (stale.exists(), fresh_one.exists()) == (False, True), "a checkout an install left behind goes after an hour; one being installed stays"
     assert (gone.exists(), snapshot.exists(), recent.exists()) == (False, True, True), "an old environment archive goes; upgrade snapshots are kept by their own count"
     assert (root / "runtime" / "channel.jsonl").stat().st_size == 1024 * 1024, "the channel log is cut to its tail"
