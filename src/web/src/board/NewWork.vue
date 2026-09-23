@@ -24,7 +24,9 @@ const picked = ref([]);
 const adding = ref(false);
 const panel = ref(null);
 const revealed = ref([]);
+const docked = ref(false);
 const SKELETONS = 3;
+const FADED = 400;
 
 const asked = computed(() => rows("message").filter((m) => sent.value.includes(m.data.idempotency)));
 const replies = computed(() => {
@@ -55,10 +57,6 @@ const cards = computed(() => {
     const ahead = writing.value ? Math.max(SKELETONS - drafts.value.length, 1) : 0;
     return [...drafts.value, ...Array(ahead).fill(null)].map((ticket, order) => ({order, ticket}));
 });
-const rowsClass = computed(() => {
-    const count = Math.ceil(cards.value.length / SKELETONS);
-    return `rows-${count > 2 ? "more" : count}`;
-});
 const shownDrafts = computed(() => drafts.value.filter((t) => revealed.value.includes(t.n)));
 const reveal = (n) => (revealed.value = [...revealed.value, n]);
 const STALLED_AFTER = 120000;
@@ -83,6 +81,8 @@ const missing = computed(() =>
         )
 );
 const note = computed(() => {
+    if (asking.value) return "The agent needs your answer in the chat.";
+    if (writing.value && !picked.value.length) return `${drafts.value.length} drafted so far. Click a card to keep it.`;
     if (missing.value.length) return `#${missing.value[0].ticket} waits on #${missing.value[0].waitsOn}, which you did not pick.`;
     if (!picked.value.length) return "Click a card to keep it.";
     return props.starts ? `They go to ${first.value}, and their agents start.` : `They go to ${first.value}, ready to start.`;
@@ -98,6 +98,12 @@ function onKey(e) {
     const shown = shownDrafts.value[Number(e.key) - 1];
     if (shown && !e.target.closest("input,textarea,[contenteditable='true']")) (e.preventDefault(), toggle(shown.n));
 }
+
+watch(
+    () => drafts.value.length,
+    (count) => count && (docked.value = true),
+    {immediate: true}
+);
 
 onMounted(() => window.addEventListener("keydown", onKey));
 onUnmounted(() => window.removeEventListener("keydown", onKey));
@@ -167,58 +173,16 @@ async function add() {
     picked.value = [];
     emit("added", keep.length);
     emit("close");
+    setTimeout(() => (docked.value = false), FADED);
 }
 </script>
 
 <template>
-    <FocusStage :open="open" leave="Back to the board" @close="emit('close')">
-        <TransitionGroup tag="div" name="pick" :class="['picks', rowsClass]">
-            <template v-for="card in cards" :key="card.order">
-                <Suggestion
-                    :ticket="card.ticket"
-                    :order="card.order"
-                    :active="Boolean(card.ticket) && card.ticket === turn"
-                    :paused="Boolean(asking)"
-                    :picked="Boolean(card.ticket) && picked.includes(card.ticket.n)"
-                    @toggle="toggle(card.ticket.n)"
-                    @revealed="reveal(card.ticket.n)"
-                />
-            </template>
-        </TransitionGroup>
-        <ChatPanel
-            ref="panel"
-            v-model="words"
-            :locked="adding"
-            :placeholder="drafts.length ? 'Say what to change' : 'Describe the work in your own words'"
-            @send="send"
-        >
-            <template v-for="line in conversation" :key="line.id">
-                <template v-if="line.record">
-                    <span class="record">{{ line.text }}</span>
-                </template>
-                <template v-else>
-                    <ChatLine :text="line.text" :mine="line.mine" :typed="line.typed" />
-                </template>
-            </template>
-            <template v-if="asking">
-                <AskedQuestion :question="asking" />
-            </template>
-            <template v-if="writing && !asking">
-                <ChatLine thinking />
-            </template>
-            <template v-if="stalled">
-                <ChatLine text="No answer yet. The agent may be busy with other work." />
-            </template>
-            <template #actions>
-                <div :class="['choose', {on: writing}]">
-                    <span class="note">{{ asking ? "The agent needs your answer." : "The agent is writing tickets." }}</span>
-                    <template v-if="stalled">
-                        <Btn small @click="askAgain">Ask again</Btn>
-                    </template>
-                    <Btn small @click="stop">Stop</Btn>
-                </div>
-                <div :class="['choose', {on: drafts.length && !writing}]">
-                    <span class="note">{{ note }}</span>
+    <FocusStage :open="open" leave="Back to the board" glow spread :docked="docked" @close="emit('close')">
+        <div :class="['work', {on: docked}]">
+            <div class="bar">
+                <span class="note">{{ note }}</span>
+                <div :class="['bar-actions', {on: drafts.length && !writing}]">
                     <template v-if="missing.length">
                         <Btn small @click="pickMissing">Pick it too</Btn>
                     </template>
@@ -227,35 +191,211 @@ async function add() {
                         {{ picked.length ? `Add ${picked.length} to ${first}` : `Add to ${first}` }}
                     </Btn>
                 </div>
-            </template>
-        </ChatPanel>
+            </div>
+            <TransitionGroup tag="div" name="pick" class="picks">
+                <template v-for="card in cards" :key="card.order">
+                    <Suggestion
+                        :ticket="card.ticket"
+                        :order="card.order"
+                        :active="Boolean(card.ticket) && card.ticket === turn"
+                        :paused="Boolean(asking)"
+                        :picked="Boolean(card.ticket) && picked.includes(card.ticket.n)"
+                        @toggle="toggle(card.ticket.n)"
+                        @revealed="reveal(card.ticket.n)"
+                    />
+                </template>
+            </TransitionGroup>
+        </div>
+        <div :class="['dock', {docked}]">
+            <ChatPanel
+                ref="panel"
+                v-model="words"
+                fill
+                :locked="adding"
+                :placeholder="drafts.length ? 'Say what to change' : 'Describe the work in your own words'"
+                @send="send"
+            >
+                <template #head>
+                    <div :class="['head', {on: docked}]">
+                        <span class="head-title">
+                            New work
+                            <span class="head-board">{{ board.title }}</span>
+                        </span>
+                        <Btn small @click="emit('close')">
+                            Back to the board
+                            <kbd>Esc</kbd>
+                        </Btn>
+                    </div>
+                </template>
+                <template v-for="line in conversation" :key="line.id">
+                    <template v-if="line.record">
+                        <span class="record">{{ line.text }}</span>
+                    </template>
+                    <template v-else>
+                        <ChatLine :text="line.text" :mine="line.mine" :typed="line.typed" />
+                    </template>
+                </template>
+                <template v-if="asking">
+                    <AskedQuestion :question="asking" />
+                </template>
+                <template v-if="writing && !asking">
+                    <ChatLine thinking />
+                </template>
+                <template v-if="stalled">
+                    <ChatLine text="No answer yet. The agent may be busy with other work." />
+                </template>
+                <template #actions>
+                    <div :class="['choose', {on: writing}]">
+                        <span class="note">{{ asking ? "The agent needs your answer." : "The agent is writing tickets." }}</span>
+                        <template v-if="stalled">
+                            <Btn small @click="askAgain">Ask again</Btn>
+                        </template>
+                        <Btn small @click="stop">Stop</Btn>
+                    </div>
+                </template>
+            </ChatPanel>
+        </div>
     </FocusStage>
 </template>
 
 <style scoped>
+.dock {
+    position: absolute;
+    top: calc(50% - min(200px, 26vh));
+    left: calc(50% - min(340px, 50% - 16px));
+    width: min(680px, calc(100% - 32px));
+    height: min(400px, 52vh);
+    transition:
+        top 0.45s cubic-bezier(0.2, 0.9, 0.25, 1),
+        left 0.45s cubic-bezier(0.2, 0.9, 0.25, 1),
+        width 0.45s cubic-bezier(0.2, 0.9, 0.25, 1),
+        height 0.45s cubic-bezier(0.2, 0.9, 0.25, 1);
+}
+
+.dock.docked {
+    top: 20px;
+    left: 20px;
+    width: 400px;
+    height: calc(100% - 40px);
+}
+
+.head {
+    display: flex;
+    flex: none;
+    align-items: center;
+    gap: 10px;
+    height: 0;
+    overflow: hidden;
+    padding: 0 8px 0 16px;
+    border-bottom: 1px solid transparent;
+    opacity: 0;
+    transition:
+        height 0.45s cubic-bezier(0.2, 0.9, 0.25, 1),
+        opacity 0.2s,
+        border-color 0.2s;
+}
+
+.head.on {
+    height: 48px;
+    border-bottom-color: var(--border);
+    opacity: 1;
+    transition:
+        height 0.45s cubic-bezier(0.2, 0.9, 0.25, 1),
+        opacity 0.3s 0.2s,
+        border-color 0.3s 0.2s;
+}
+
+.head-title {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    font-weight: 500;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.head-board {
+    margin-left: 6px;
+    color: var(--text-4);
+    font-weight: 400;
+}
+
+kbd {
+    padding: 1px 5px;
+    border: 1px solid var(--border-2);
+    border-radius: 4px;
+    font: inherit;
+    font-size: 10.5px;
+}
+
+.work {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    bottom: 20px;
+    left: 440px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateX(16px);
+    transition:
+        opacity 0.3s cubic-bezier(0.2, 0.9, 0.25, 1),
+        transform 0.45s cubic-bezier(0.2, 0.9, 0.25, 1);
+}
+
+.work.on {
+    opacity: 1;
+    pointer-events: auto;
+    transform: none;
+    transition:
+        opacity 0.45s cubic-bezier(0.2, 0.9, 0.25, 1) 0.08s,
+        transform 0.45s cubic-bezier(0.2, 0.9, 0.25, 1) 0.08s;
+}
+
+.bar {
+    display: flex;
+    flex: none;
+    align-items: center;
+    gap: 10px;
+    height: 44px;
+    padding: 0 6px 0 14px;
+    border: 1px solid var(--border-2);
+    border-radius: 10px;
+    background: rgba(24, 25, 28, 0.94);
+    backdrop-filter: blur(20px);
+}
+
+.bar-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(3px);
+    transition:
+        opacity 0.25s,
+        transform 0.25s cubic-bezier(0.2, 0.9, 0.25, 1);
+}
+
+.bar-actions.on {
+    opacity: 1;
+    pointer-events: auto;
+    transform: none;
+}
+
 .picks {
     display: grid;
-    flex: 0 1 auto;
-    grid-template-columns: repeat(3, 1fr);
+    flex: 1 1 auto;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
     grid-auto-rows: 200px;
     align-content: start;
     gap: 14px;
-    height: 0;
     min-height: 0;
-    overflow: hidden;
-    padding: 4px 3px 2px;
-    scrollbar-width: none;
-    transition: height 0.45s cubic-bezier(0.2, 0.9, 0.25, 1);
-}
-
-.picks.rows-1 {
-    height: 206px;
-}
-
-.picks.rows-2,
-.picks.rows-more {
-    height: 420px;
     overflow-y: auto;
+    padding: 2px 2px 8px;
+    scrollbar-width: none;
 }
 
 .pick-move {
@@ -323,15 +463,32 @@ async function add() {
 }
 
 @media (max-width: 760px) {
+    .dock.docked {
+        top: 50%;
+        left: 12px;
+        width: calc(100% - 24px);
+        height: calc(50% - 12px);
+    }
+
+    .work {
+        top: 12px;
+        right: 12px;
+        bottom: calc(50% + 12px);
+        left: 12px;
+    }
+
     .picks {
         grid-template-columns: 1fr;
     }
+}
 
-    .picks.rows-1,
-    .picks.rows-2,
-    .picks.rows-more {
-        height: 206px;
-        overflow-y: auto;
+@media (prefers-reduced-motion: reduce) {
+    .dock,
+    .head,
+    .work,
+    .bar-actions {
+        transition-duration: 0.01ms;
+        transition-delay: 0s;
     }
 }
 </style>

@@ -320,7 +320,7 @@ async function save(field, text) {
 @keyframes rise {
     from {
         opacity: 0;
-        transform: translateY(8px);
+        transform: translateX(18px);
     }
 }
 </style>
