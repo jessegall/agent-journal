@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.103.0 — File names become chips when they point at one project file
+
+A file named in text becomes a chip that opens it: a path as before, a path in backticks that exists, or a bare file name such as CommitPage.vue when exactly one project file has that name (the chip opens that file's full path). A name several project files share stays plain text, and when the agent writes one it is told once to write the path. The project's file list is walked once and refreshed in the background, never inside a request.
+
+Chat marks have smaller icons and colours that tell them apart: a loaded skill is green, a dispatched subagent yellow, a compaction amber, and reminders of rules and facts stay neutral.
+
 ## 2.102.8 — Suggestions have a light bulb icon, the same everywhere
 
 Suggestions show a light bulb in the navigation sidebar and in the chat side panel alike. The side panel's tabs now take each type's icon from the type itself, so a tab and the sidebar can no longer disagree.

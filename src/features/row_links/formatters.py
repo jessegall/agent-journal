@@ -1,7 +1,9 @@
 import re
 from functools import cache
+from pathlib import Path
 
 from engine.markers import MARKER, marked
+from engine.project_files import matching
 from features.format import VIEWER
 from features.parts import Context, TextFormatter
 from resources.types import TYPES
@@ -63,14 +65,41 @@ def a_commit(sha: str) -> bool:
     return bool(re.search(r"\d", sha) and re.search(r"[a-f]", sha))
 
 
-def linked(text: str) -> str:
-    text = PATH.sub(lambda m: m.group(1) + marked("file", m.group(2), m.group(2).split("/")[-1] if m.group(2).startswith("/") else m.group(2))
-                    if a_file(m.group(2)) else m.group(0), text)
+def resolved(project: Path, path: str) -> str:
+    if "/" not in path:
+        found = matching(project, path)
+        return found[0] if len(found) == 1 else ""
+    return path
+
+
+def existing(project: Path, path: str) -> str:
+    if "/" not in path:
+        return resolved(project, path)
+    return path if (project / path).is_file() or Path(path).is_file() else ""
+
+
+def filed(m, project: Path) -> str:
+    path = m.group(2)
+    value = resolved(project, path) if a_file(path) else ""
+    return m.group(1) + marked("file", value, path.split("/")[-1] if path.startswith("/") else path) if value else m.group(0)
+
+
+def linked(text: str, project: Path) -> str:
+    text = PATH.sub(lambda m: filed(m, project), text)
     return SHA.sub(lambda m: m.group(1) + marked("commit", m.group(2), m.group(2)[:7]) if a_commit(m.group(2)) else m.group(0), text)
+
+
+def coded(span: str, project: Path) -> str:
+    path = span.strip("`").strip()
+    value = existing(project, path) if a_file(path) and PATH.fullmatch(path) else ""
+    return marked("file", value, path) if value else span
 
 
 class MarkPaths(TextFormatter):
     surfaces = (VIEWER,)
 
     def format(self, context: Context, text: str) -> str:
-        return outside(CODE, text, lambda part: outside(KEPT, URL.sub(lambda m: marked("url", m.group(0), m.group(0)), part), linked))
+        project = context.record.root.parent
+        return "".join(coded(part, project) if CODE.fullmatch(part) else
+                       outside(KEPT, URL.sub(lambda m: marked("url", m.group(0), m.group(0)), part), lambda rest: linked(rest, project))
+                       for part in re.split(r"(`[^`]*`)", text))

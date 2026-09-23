@@ -2,6 +2,7 @@ from features.base import Feature
 from features.journal import Journal
 from features.row_links.details import RowLinksDetails
 from features.row_links.formatters import MarkPaths, MarkRows
+from features.row_links.handlers import NameAmbiguousFiles
 
 
 class RowLinks(Feature):
@@ -10,3 +11,4 @@ class RowLinks(Feature):
     def register(self, journal: Journal) -> None:
         journal.client.formatter(MarkRows())
         journal.client.formatter(MarkPaths())
+        journal.events.handler(NameAmbiguousFiles())

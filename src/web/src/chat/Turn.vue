@@ -165,7 +165,7 @@ async function drop() {
     <SwitchCase :value="turn.type">
         <template #skill>
             <div class="thread-turn skill" :data-ref="turn.ref">
-                <ChatMark icon="book" label="Loaded skill" :name="turn.title" :at="turn.created" :title="`Read the ${turn.title} skill`" @click="store.skill = turn.title" />
+                <ChatMark icon="book" tone="good" label="Loaded skill" :name="turn.title" :at="turn.created" :title="`Read the ${turn.title} skill`" @click="store.skill = turn.title" />
             </div>
         </template>
         <template #compacted>
