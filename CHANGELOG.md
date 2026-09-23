@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.103.10 — The board's Assign to menu names agents as their chips do
+
+A card's Assign to menu lists each agent by the same name its chip shows, such as Main agent, instead of its session id.
+
 ## 2.103.9 — Reactions and dismissals show at once
 
 A reaction you pick appears on the message the moment you pick it, and a notification you dismiss leaves the side panel the moment you click; the server catches up behind them. The viewer changes its own copy first, sends the change, then refreshes from the server (sync/rows.js optimistic and patched), so a refused change puts the row back as the server has it.

@@ -37,7 +37,7 @@ function move(lane) {
         <template v-if="store.board.agents.length">
             <p class="label">Assign to</p>
             <template v-for="agent in store.board.agents" :key="agent.name">
-                <MenuItem @click="assign({to: agent.name})">{{ agent.name }}</MenuItem>
+                <MenuItem @click="assign({to: agent.name})">{{ agent.title }}</MenuItem>
             </template>
             <template v-if="card.assigned">
                 <MenuItem @click="assign({off: true})">Unassign</MenuItem>
