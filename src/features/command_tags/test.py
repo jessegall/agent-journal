@@ -63,7 +63,7 @@ def test_a_new_message_says_how_to_answer_it_in_the_same_line():
     record = fresh()
     Agents(record, actor=AGENT).by_session("claude-1")
     Messages(record, actor=AGENT).read(Messages(record, actor=USER).create("how is it going?").n)
-    report(record, "working", "PreToolUse")
+    report(record, "idle", "Stop")
     assert any(n.brief.startswith("answer by opening your turn with [!reply:1]") for n in Nudges(record).all() if "before you write" in n.title), \
         "the line naming a read message still to answer says how to answer it, in its brief"
     from engine.wording import APPENDS, appended
