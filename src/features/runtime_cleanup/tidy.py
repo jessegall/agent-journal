@@ -3,6 +3,7 @@ import time
 from pathlib import Path
 
 from engine.record import Record
+from engine.wording import plural
 
 TAILS = {"sessions/*/printed": 64 * 1024, "sessions/*/screen": 1024 * 1024, "*.log": 1024 * 1024}
 EVENTS_KEPT = 100
@@ -33,3 +34,10 @@ def trim(f: Path, keep: int) -> bool:
         held.write(tail)
         held.truncate()
     return True
+
+
+def summary(done: dict) -> str:
+    parts = [f"{plural(done['trimmed'], 'log')} cut to their tail" if done["trimmed"] else "",
+             f"{plural(done['removed'], 'quiet session folder')} removed" if done["removed"] else "",
+             f"{plural(done['events'], 'old event')} dropped" if done["events"] else ""]
+    return "; ".join(part for part in parts if part) or "nothing to tidy"

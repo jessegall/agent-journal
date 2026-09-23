@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.103.11 — journal tidy says what it did in words
+
+journal tidy prints, for example, "2 logs cut to their tail; 21 old events dropped" instead of a raw dictionary, and "nothing to tidy" when there was nothing.
+
 ## 2.103.10 — The board's Assign to menu names agents as their chips do
 
 A card's Assign to menu lists each agent by the same name its chip shows, such as Main agent, instead of its session id.
