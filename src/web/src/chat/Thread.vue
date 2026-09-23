@@ -1,5 +1,6 @@
 <script setup>
 import Dot from "../kit/Dot.vue";
+import RunningCommand from "../layout/RunningCommand.vue";
 import {keepingPlace, useSighted} from "../composables/scrollback.js";
 import {computed, nextTick, onMounted, onUnmounted, ref, watch} from "vue";
 import {api} from "../api/client.js";
@@ -72,12 +73,6 @@ const running = computed(() => {
 });
 const activity = computed(() =>
     agent.value && agent.value.data.status === "compacting" ? "compacting" : (running.value[0] && running.value[0].value) || "working"
-);
-const activityOn = computed(() =>
-    running.value
-        .slice(1)
-        .map((part) => part.value)
-        .join(" ")
 );
 const away = ref(false);
 const missed = ref(0);
@@ -433,11 +428,11 @@ watch(
                                     <span>thinking</span>
                                     <span class="thread-meta-on thought">{{ thought }}</span>
                                 </template>
+                                <template v-else-if="running.length">
+                                    <RunningCommand />
+                                </template>
                                 <template v-else>
                                     <span>{{ activity }}</span>
-                                    <template v-if="activityOn">
-                                        <span class="thread-meta-on">{{ activityOn }}</span>
-                                    </template>
                                 </template>
                             </div>
                         </div>

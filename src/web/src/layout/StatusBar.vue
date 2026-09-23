@@ -5,7 +5,6 @@ import {computed, onMounted, onUnmounted, ref, watch} from "vue";
 import {api} from "../api/client.js";
 import Dot from "../kit/Dot.vue";
 import Icon from "../kit/Icon.vue";
-import RunningCommand from "./RunningCommand.vue";
 import Switch from "../kit/Switch.vue";
 import {go, peek, route} from "../route.js";
 import {agent, autoOn, store} from "../state/store.js";
@@ -21,12 +20,7 @@ usePoll(...polled.agents);
 const current = computed(() => currentWork(rows("work")));
 const state = computed(() => stateOf(agent.value, rows("work")));
 const waiting = computed(() => queued(rows("todo"), autoOn.value, rows("question")));
-const doing = computed(() => {
-    const queue = (store.bar && store.bar.queue) || [];
-    const last = queue[queue.length - 1];
-    return last && !last.done ? last.key : "";
-});
-const line = computed(() => lineOf(agent.value, rows("work"), waiting.value, doing.value));
+const line = computed(() => lineOf(agent.value, rows("work"), waiting.value));
 function inspect() {
     if (current.value) peek("work", current.value.n);
     else go(route.value.env);
@@ -70,7 +64,6 @@ async function runBar(p) {
                 </span>
             </span>
         </button>
-        <RunningCommand />
         <span class="statusbar-tools">
             <Switch
                 :on="autoOn"

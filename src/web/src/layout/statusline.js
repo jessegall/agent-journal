@@ -34,7 +34,7 @@ export function wordOf(state, waiting = false) {
     return capital(state === "idle" && waiting ? "waiting" : state);
 }
 
-export function lineOf(agent, works, auto = false, doing = "") {
+export function lineOf(agent, works, auto = false) {
     const state = stateOf(agent, works);
     if (state === "stopped") return "no agent is on this environment";
     if (state === "compacting") return "compacting its context — it carries on after";
@@ -42,7 +42,7 @@ export function lineOf(agent, works, auto = false, doing = "") {
     const current = currentWork(works);
     if (current) return named(current);
     if (state === "idle") return phrase(auto ? "auto" : "idle", agent.data.at);
-    return doing || phrase("bearings", agent.data.at);
+    return phrase("bearings", agent.data.at);
 }
 
 const SAID = {
