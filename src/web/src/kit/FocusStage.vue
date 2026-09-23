@@ -1,7 +1,7 @@
 <script setup>
 import {onMounted, onUnmounted} from "vue";
 
-const props = defineProps({open: Boolean, leave: {type: String, default: "Back"}});
+const props = defineProps({open: Boolean, leave: {type: String, default: "Back"}, glow: Boolean, spread: Boolean, docked: Boolean});
 const emit = defineEmits(["close"]);
 const onKey = (e) => props.open && e.key === "Escape" && emit("close");
 onMounted(() => window.addEventListener("keydown", onKey));
@@ -11,8 +11,11 @@ onUnmounted(() => window.removeEventListener("keydown", onKey));
 <template>
     <Teleport to="body">
         <Transition name="focus-stage">
-            <div v-show="open" class="focus-stage">
+            <div v-show="open" :class="['focus-stage', {spread, docked}]">
                 <div class="veil" />
+                <template v-if="glow">
+                    <div class="glow" />
+                </template>
                 <button type="button" class="leave" @click="emit('close')">
                     {{ leave }}
                     <kbd>Esc</kbd>
@@ -43,6 +46,25 @@ onUnmounted(() => window.removeEventListener("keydown", onKey));
     backdrop-filter: blur(10px) saturate(0.7);
 }
 
+.glow {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 1100px;
+    height: 760px;
+    margin: -380px 0 0 -550px;
+    background: radial-gradient(ellipse at center, rgba(94, 100, 201, 0.14), transparent 60%);
+    pointer-events: none;
+    transition:
+        opacity 0.45s cubic-bezier(0.2, 0.9, 0.25, 1),
+        transform 0.45s cubic-bezier(0.2, 0.9, 0.25, 1);
+}
+
+.docked .glow {
+    opacity: 0;
+    transform: scale(0.92);
+}
+
 .leave {
     position: absolute;
     top: 14px;
@@ -56,10 +78,18 @@ onUnmounted(() => window.removeEventListener("keydown", onKey));
     font: inherit;
     font-size: 12.5px;
     cursor: pointer;
+    transition:
+        opacity 0.2s,
+        color 0.2s;
 }
 
 .leave:hover {
     color: var(--text);
+}
+
+.docked .leave {
+    opacity: 0;
+    pointer-events: none;
 }
 
 kbd {
@@ -80,6 +110,14 @@ kbd {
     height: 100%;
 }
 
+.spread {
+    padding: 0;
+}
+
+.spread .body {
+    width: 100%;
+}
+
 .focus-stage-enter-active,
 .focus-stage-leave-active {
     transition: opacity 0.35s ease;
@@ -98,5 +136,26 @@ kbd {
 .focus-stage-enter-from .body,
 .focus-stage-leave-to .body {
     transform: translateY(24px);
+}
+
+.focus-stage-enter-from.spread .body,
+.focus-stage-leave-to.spread .body {
+    transform: scale(0.97);
+}
+
+.focus-stage-enter-from .glow,
+.focus-stage-leave-to .glow {
+    transform: scale(0.92);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .glow,
+    .leave,
+    .focus-stage-enter-active,
+    .focus-stage-leave-active,
+    .focus-stage-enter-active .body,
+    .focus-stage-leave-active .body {
+        transition-duration: 0.01ms;
+    }
 }
 </style>

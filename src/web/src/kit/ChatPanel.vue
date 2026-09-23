@@ -2,20 +2,22 @@
 import {nextTick, onMounted, onUnmounted, ref, useSlots} from "vue";
 import Btn from "./Btn.vue";
 
-const props = defineProps({placeholder: String, action: {type: String, default: "Send"}, locked: Boolean});
+const props = defineProps({placeholder: String, action: {type: String, default: "Send"}, locked: Boolean, fill: Boolean});
 const emit = defineEmits(["send"]);
 const words = defineModel({type: String, default: ""});
 const log = ref(null);
 const lines = ref(null);
 const input = ref(null);
-const actions = Boolean(useSlots().actions);
+const slots = useSlots();
+const actions = Boolean(slots.actions);
+const head = Boolean(slots.head);
 const NEAR = 24;
 let pinned = true;
 const follow = () => pinned && (log.value.scrollTop = log.value.scrollHeight);
 const watchScroll = () => (pinned = log.value.scrollHeight - log.value.scrollTop - log.value.clientHeight < NEAR);
 const sized = new ResizeObserver(follow);
 
-onMounted(() => sized.observe(lines.value));
+onMounted(() => (sized.observe(lines.value), sized.observe(log.value)));
 onUnmounted(() => sized.disconnect());
 
 function send() {
@@ -27,7 +29,10 @@ defineExpose({focus: () => nextTick(() => input.value.focus())});
 </script>
 
 <template>
-    <div class="chat">
+    <div :class="['chat', {fill}]">
+        <template v-if="head">
+            <slot name="head" />
+        </template>
         <div ref="log" class="log" @scroll="watchScroll">
             <div ref="lines" class="lines">
                 <slot />
@@ -58,6 +63,13 @@ defineExpose({focus: () => nextTick(() => input.value.focus())});
     background: rgba(24, 25, 28, 0.94);
     backdrop-filter: blur(20px);
     box-shadow: 0 28px 80px rgba(0, 0, 0, 0.55);
+}
+
+.chat.fill {
+    align-self: stretch;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
 }
 
 .log {
