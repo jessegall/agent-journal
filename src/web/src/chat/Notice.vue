@@ -59,13 +59,15 @@ async function close() {
     flex: none;
     display: flex;
     align-items: center;
-    gap: 9px;
-    padding: 7px 14px 7px 11px;
+    gap: 8px;
+    min-height: 30px;
+    padding: 3px 8px 3px 10px;
     border-bottom: 1px solid var(--border);
     border-left: 3px solid var(--tone);
     background: color-mix(in srgb, var(--tone) 14%, var(--bg));
     color: var(--text);
-    font-size: 12px;
+    font-size: 11.5px;
+    line-height: 16px;
 }
 
 .chat-notice-dot {
@@ -79,16 +81,25 @@ async function close() {
 .chat-notice-text {
     flex: 1;
     min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.chat-notice :deep(.btn.small) {
+    height: 22px;
+    padding: 0 8px;
+    font-size: 11px;
 }
 
 .chat-notice-go {
     flex: none;
-    padding: 3px 9px;
+    padding: 1px 8px;
     border: 1px solid color-mix(in srgb, var(--tone) 55%, transparent);
-    border-radius: 6px;
+    border-radius: 5px;
     background: color-mix(in srgb, var(--tone) 22%, transparent);
     color: var(--text);
-    font-size: 11.5px;
+    font-size: 11px;
 }
 
 .chat-notice-go:hover {
