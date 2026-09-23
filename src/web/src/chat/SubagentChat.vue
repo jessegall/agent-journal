@@ -41,7 +41,8 @@ watch(
     display: flex;
     flex-direction: column;
     gap: 10px;
-    height: min(70vh, 720px);
+    flex: 1;
+    min-height: 0;
 }
 
 .log {
@@ -51,6 +52,7 @@ watch(
     gap: 6px;
     min-height: 0;
     overflow-y: auto;
+    overscroll-behavior: contain;
     padding: 4px 2px;
 }
 

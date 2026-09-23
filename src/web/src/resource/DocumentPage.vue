@@ -132,6 +132,10 @@ watch(
     padding: 0 32px 60px;
 }
 
+.document-links:empty {
+    display: none;
+}
+
 .document-body :deep(.body) {
     max-width: 800px;
     margin: 0 auto;
