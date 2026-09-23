@@ -40,7 +40,10 @@ def watched(root: Path) -> tuple:
 
 
 def agent_environment(base: dict | None = None, env: str = "", capped: dict | None = None) -> dict:
-    return {**(base if base is not None else os.environ), ACTIVE_ENV: "1", **({"JOURNAL_ENV": env} if env else {}), **(capped or {})}
+    made = {**(base if base is not None else os.environ), ACTIVE_ENV: "1"}
+    if env:
+        made["JOURNAL_ENV"] = env
+    return {**made, **(capped or {})}
 
 
 def output_cap(root: Path, env: str, provider) -> dict:

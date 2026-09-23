@@ -546,8 +546,10 @@ def get_project_files(req: Request) -> Reply:
         if entry.name.startswith(".") or entry.name in UNLISTED:
             continue
         inside = entry.is_dir()
-        out.append({"path": str(Path(entry.path).relative_to(project)), "name": entry.name, "folder": inside,
-                    **({} if inside else {"size": entry.stat().st_size, "kind": mimetypes.guess_type(entry.name)[0] or ""})})
+        listed = {"path": str(Path(entry.path).relative_to(project)), "name": entry.name, "folder": inside}
+        if not inside:
+            listed["size"] = entry.stat().st_size
+        out.append(listed)
     return Reply(200, sorted(out, key=lambda x: (not x["folder"], x["name"].lower())))
 
 
@@ -840,8 +842,10 @@ def get_dashboard(req: Request) -> Reply:
     wanted = [t for t in asked.types.split(",") if t in CONTROLLERS]
     lists = {t: listing(CONTROLLERS[t](record, actor=USER), record, Listing.from_query(req.query)) for t in wanted}
     whole = "events" in req.query
-    return Reply(200, {"rows": lists, "counts": counted(record, [t for t, c in CONTROLLERS.items() if c.resource.in_sidebar or c.resource.needs_attention or t in wanted] if whole else wanted), **({"events": [asdict(e) for e in record.events(0, asked.events)],
-                                           "settings": settings(record)} if whole else {})})
+    body = {"rows": lists, "counts": counted(record, [t for t, c in CONTROLLERS.items() if c.resource.in_sidebar or c.resource.needs_attention or t in wanted] if whole else wanted)}
+    if whole:
+        body.update(events=[asdict(e) for e in record.events(0, asked.events)], settings=settings(record))
+    return Reply(200, body)
 
 
 @route("GET", "/api/{env}/{type}")
