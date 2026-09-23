@@ -164,7 +164,7 @@ POLLED = 3
 
 class NameRepeatedChecks(Handler):
     def handle(self, context: AgentContext, event: ToolFinished) -> None:
-        shell = [c.get("command") for c in context.agent.row.data.get("commands") or [] if c.get("tool") == "Bash"][-POLLED:]
+        shell = [c["command"] for c in context.agent.row.data.get("commands") or [] if c.get("tool") == "Bash" and c.get("command")][-POLLED:]
         if len(shell) < POLLED or len(set(shell)) > 1 or any(w.awaiting for w in working(context)):
             return
         if context.once("polled", shell[-1]):
