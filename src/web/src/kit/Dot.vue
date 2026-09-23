@@ -76,4 +76,10 @@ const color = computed(() => COLOR[props.kind] || COLOR.open);
         box-shadow: 0 0 0 calc(var(--size) * 2 / 3) color-mix(in srgb, var(--tone) 9%, transparent);
     }
 }
+
+@media (prefers-reduced-motion: reduce) {
+    .glow.pulsing {
+        animation: none;
+    }
+}
 </style>
