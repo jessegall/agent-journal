@@ -196,3 +196,26 @@ def test_a_ticket_waits_on_a_confirmed_dependency_and_starts_when_it_closes(monk
     user.complete(api.n, how="shipped")
     user.start_queued()
     assert (launched, user.load(ui.n).queued) == ([f"ticket-{ui.n}"], False), "once its dependency closes, the sweep starts it"
+
+
+def test_a_plan_waiting_for_approval_is_read_and_approved_from_its_card():
+    from features.plans.controller import APPROVED, Plans
+    from tests.conftest import refused
+    record = fresh()
+    board = Boards(record, actor=USER).create("Features", stages=["Ideas", "Building"])
+    tickets = Tickets(record, actor=USER)
+    ticket = tickets.update(tickets.create("Dark mode", board=board.n).n, work_environment="ticket-1")
+    plans = Plans(Record(record.root, "ticket-1"), actor=AGENT)
+    plan = plans.create("Dark mode plan", goal="a dark theme")
+    plans.phase(plan.n, "Build it", when="it is built")
+    plans.stage(plan.n, "todos")
+    from controllers.types import Todos
+    plans.place(plan.n, 1, [Todos(Record(record.root, "ticket-1"), actor=AGENT).create("Add the theme tokens").n])
+    plans.ready(plan.n)
+    tickets.update(ticket.n, plan=plan.n)
+    card = tickets.board(board.n)["lanes"][0]["cards"][0]
+    assert ([action["label"] for action in card["actions"]], card["state"]) == (["Approve plan", "Read plan"], "you"), \
+        "a plan waiting for approval puts Approve plan and Read plan on its ticket's card, and the card waits on the user"
+    assert "only the user" in refused(lambda: Tickets(record, actor=AGENT).approve_plan(ticket.n)), "only the user approves a ticket's plan"
+    tickets.approve_plan(ticket.n)
+    assert plans.load(plan.n).status == APPROVED, "approving from the card approves the plan in the ticket's own environment"
