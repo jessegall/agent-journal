@@ -1,3 +1,9 @@
+/Users/jessegall/projects/agent-journal/src/features/boards/__init__.py
+/Users/jessegall/projects/agent-journal/src/features/boards/controller.py
+/Users/jessegall/projects/agent-journal/src/features/boards/details.py
+/Users/jessegall/projects/agent-journal/src/features/boards/feature.py
+/Users/jessegall/projects/agent-journal/src/features/boards/resource.py
+/Users/jessegall/projects/agent-journal/src/features/kanban/board.py
 /Users/jessegall/projects/agent-journal/src/features/tickets/__init__.py
 /Users/jessegall/projects/agent-journal/src/features/tickets/controller.py
 /Users/jessegall/projects/agent-journal/src/features/tickets/details.py
