@@ -7,7 +7,7 @@ import ChoiceList from "../kit/ChoiceList.vue";
 import {route} from "../route.js";
 import {label, meta, word} from "../state/store.js";
 
-const props = defineProps({type: String});
+const props = defineProps({type: String, preset: {type: Object, default: () => ({})}});
 const emit = defineEmits(["made", "close"]);
 const title = ref("");
 const abstract = ref("");
@@ -42,7 +42,8 @@ onMounted(async () => {
     }
     const rows = await api.all("template").catch(() => []);
     templates.value = rows.filter(
-        (t) => !t.completed && !t.deleted && !t.data?.purpose && (!(t.data?.applies_to || []).length || t.data.applies_to.includes(props.type))
+        (t) =>
+            !t.completed && !t.deleted && !t.data?.purpose && (!(t.data?.applies_to || []).length || t.data.applies_to.includes(props.type))
     );
 });
 
@@ -50,6 +51,7 @@ async function submit() {
     error.value = "";
     try {
         const resource = await api.create(props.type, {
+            ...props.preset,
             title: title.value,
             abstract: abstract.value,
             brief: brief.value,

@@ -30,6 +30,8 @@ def test_a_board_holds_its_tickets_in_its_own_stages_and_marks_what_they_mean():
     assert (boards.load(board.n).stages, boards.load(board.n).meanings) == (["Ideas", "Building", "Shipped"], {"Shipped": "done", "Building": "start"}), \
         "stages are free, and a stage is marked with what it means"
     assert "not" in refused(lambda: boards.meaning(board.n, "Ideas", "someday")), "a stage means start, review or done, nothing else"
+    plain = boards.create("Bugs")
+    assert (plain.stages, plain.meanings) == (["To do", "Doing", "Review", "Done"], {"Done": "done"}), "a board made without stages starts with four, Done marked"
     ticket = tickets.create("Dark mode", board=board.n)
     assert (ticket.stage, tickets.move(ticket.n, "Shipped").stage) == ("Ideas", "Shipped"), "a ticket starts in its board's first stage and moves between them"
     assert "has no stage" in refused(lambda: tickets.move(ticket.n, "Nowhere")), "a stage the board does not have is refused"
