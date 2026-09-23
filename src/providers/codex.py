@@ -235,14 +235,11 @@ class Codex(Provider):
         return [UsageWindow(limit.key, self.window_label(limit.minutes), limit.used, limit.minutes, limit.resets) for limit in limits]
 
     def token_counts(self, path: Path | None):
-        for line in reversed(self.tail(path)):
+        for line in reversed(tail(path, TAIL_BYTES)):
             raw = parsed(line)
             row = Row.from_payload(raw) if isinstance(raw, dict) else None
             if row and row.type == "event_msg" and row.payload.type == "token_count":
                 yield row.payload
-
-    def tail(self, path: Path | None) -> list[str]:
-        return tail(path, TAIL_BYTES)
 
     def window_label(self, minutes: int) -> str:
         if minutes in WINDOW_LABELS:

@@ -211,6 +211,12 @@ def test_messages_between_agent_sessions_reach_the_chat_marked_with_the_other_se
     rows = [(m.brief, m.data.get("peer"), m.data.get("sent_to")) for m in Messages(record, actor="system").all()]
     assert rows == [("the loop is fixed", "other-project", None), ("thanks, adopted", None, "other-project")], \
         "a message from another session is filed from it, and one sent to it is filed as sent to it, by name"
+    codex = tmp_path / "c.jsonl"
+    codex.write_text(json.dumps({"type": "response_item", "timestamp": "2026-09-23T10:02:00Z",
+                                 "payload": {"type": "message", "role": "user", "content": [{"type": "input_text", "text": "go"}]}}) + "\n")
+    report(record, "working", "PreToolUse", session="codex-1", provider="codex", transcript=str(codex))
+    Engine(record, DRIVERS["codex"](record, "codex-1")).relay_peers()
+    assert all(hasattr(turn, "kind") for turn in PROVIDERS["codex"]().tail(codex)), "Codex's recent turns are parsed turns, as every provider's are"
 
 
 def test_an_event_carries_the_command_that_caused_it_so_a_read_is_not_an_update():
