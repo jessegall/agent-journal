@@ -28,6 +28,10 @@ SCRIPT = "script"
 WORD = re.compile(r"^[a-z][\w-]*$", re.I)
 
 
+def arg_name(arg: str) -> str:
+    return base(arg) if arg.strip(".") == "" else arg
+
+
 @dataclass(frozen=True)
 class Name:
     value: str
@@ -120,10 +124,11 @@ def names_of(one: CommandRun, kind: str) -> list[Name]:
         found = a_path(piece.args)
         return [whole(base(found))] if found else []
     if kind in GIVEN:
-        return [name_part(" ".join(base(x) if x.strip(".") == "" else x for x in piece.args))] if piece.args else []
+        return [name_part(" ".join(arg_name(x) for x in piece.args))] if piece.args else []
     if piece.root in RUNNERS:
         found = a_path(piece.args)
-        label = base(found) if found else SCRIPT if piece.script else ""
+        script = SCRIPT if piece.script else ""
+        label = base(found) if found else script
         return [name_part(f"{piece.root} {label}".strip())]
     given = piece.args[0] if piece.args else ""
     return [name_part(f"{piece.root} {given}" if " " not in piece.root and WORD.match(given) else piece.root)]

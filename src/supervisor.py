@@ -50,6 +50,10 @@ def stop(pid: int, grace: float = GRACE, drain=lambda: None) -> int:
         return 0
 
 
+def as_bytes(value):
+    return bytes.fromhex(value) if isinstance(value, str) else value
+
+
 @dataclass(frozen=True)
 class Adopted:
     pid: int
@@ -60,7 +64,7 @@ class Adopted:
     @classmethod
     def from_json(cls, raw: dict) -> "Adopted":
         kept = raw["saved"]
-        saved = [*kept[:6], [bytes.fromhex(c) if isinstance(c, str) else c for c in kept[6]]] if kept else None
+        saved = [*kept[:6], [as_bytes(c) for c in kept[6]]] if kept else None
         return cls(raw["pid"], raw["fd"], raw["session"], saved)
 
 

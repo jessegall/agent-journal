@@ -63,8 +63,14 @@ def split(line: str, width) -> list[str]:
     return out
 
 
+def separator_width(line: str, at: int) -> int:
+    if line[at:at + 2] in ("&&", "||"):
+        return 2
+    return 1 if line[at] in ";|\n" else 0
+
+
 def pieces(line: str) -> list[str]:
-    return split(line, lambda s, i: 2 if s[i:i + 2] in ("&&", "||") else 1 if s[i] in ";|\n" else 0)
+    return split(line, separator_width)
 
 
 def words(piece: str) -> list[str]:

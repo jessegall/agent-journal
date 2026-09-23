@@ -87,6 +87,22 @@ def effort_choice(effort: str) -> dict:
     return {"value": effort, "label": {"xhigh": "Extra high"}.get(effort, effort.title())}
 
 
+def initial_effort(action: str, current, standard: list, default):
+    if action == "effort" and current in standard:
+        return current
+    if action == "effort" and current:
+        return 0
+    if default:
+        return default
+    return standard[0] if standard else ""
+
+
+def message_kind(payload) -> str:
+    if payload.role == "assistant":
+        return AGENT
+    return INJECTED if payload.text.lstrip().startswith("<") else HUMAN
+
+
 class Codex(Provider):
     name = "codex"
     edit_mark = b'"FileChange"'
@@ -171,13 +187,10 @@ class Codex(Provider):
         supported = list(target.efforts)
         standard = [item for item in supported if item not in ("max", "ultra")]
         advanced = [item for item in supported if item in ("max", "ultra")]
-        fallback = target.default_effort if target.default_effort else standard[0] if standard else advanced[0]
+        first = standard[0] if standard else advanced[0]
+        fallback = target.default_effort if target.default_effort else first
         chosen = value if action == "effort" else fallback
-        initial = (
-            current_effort if action == "effort" and current_effort in standard
-            else 0 if action == "effort" and current_effort
-            else target.default_effort if target.default_effort else standard[0] if standard else ""
-        )
+        initial = initial_effort(action, current_effort, standard, target.default_effort)
         if chosen in standard:
             commands.append(cls.move(standard.index(initial) if initial in standard else 0, standard.index(chosen)))
         else:
@@ -222,7 +235,7 @@ class Codex(Provider):
         if payload.type == "message":
             if not payload.text.strip() or payload.role not in ("user", "assistant"):
                 return None
-            turn_kind = AGENT if payload.role == "assistant" else INJECTED if payload.text.lstrip().startswith("<") else HUMAN
+            turn_kind = message_kind(payload)
             return "agent" if payload.role == "assistant" else "user", payload.text, turn_kind, row.at, []
         if payload.type in ("function_call", "custom_tool_call"):
             return "agent", "", AGENT, row.at, [TOOLS.get(payload.name, payload.name if payload.name else "?")]
