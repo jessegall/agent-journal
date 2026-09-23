@@ -170,7 +170,7 @@ async function drop() {
         </template>
         <template #compacted>
             <div class="thread-turn compacted" :data-ref="turn.ref">
-                <ChatMark icon="activity" color="#d8a94a" label="The agent compacted its context" :at="turn.created" />
+                <ChatMark icon="activity" tone="warn" label="The agent compacted its context" :at="turn.created" />
             </div>
         </template>
         <template #card>

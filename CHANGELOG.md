@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.102.1 — Chat marks take their event's tone, and their second line is formatted
+
+A plugin's chat mark is coloured by its event's tone by default, the same amber (warn) and green (good) the activity uses; a colour in the card overrides it. The second line of every chat mark passes the formatters like any brief, so a file named in it is a file chip, and it is smaller and more muted than the first. The icons are a size smaller. A resource names the data lists that carry words a person reads in said_data.
+
 ## 2.102.0 — Chat marks, and plugins can put their own in the chat
 
 The small one-line cards in the chat — loaded skill, compacted, dispatched subagent, reminded of a rule or fact — are chat marks, one component (kit/ChatMark): smaller text, the icon of what they are about (the reminders icon on a reminder), the time at the right end of the first line, and an optional smaller second line.

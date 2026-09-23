@@ -118,7 +118,7 @@ def test_a_chosen_setting_reaches_the_plugins_commands():
     assert environment(record.root, "linter", row.manifest, row.token, chosen=chosen)["QUIET"] == "SourceReminder", "and a chosen value reaches its env"
     assert "has no setting" in refused(lambda: Configure().run(None, plugins, row.n, "loud", "x"))
     typed = installed(record, "typed", "exit 0", settings={"on": {"type": "flag", "default": "true"}, "level": {"type": "options", "options": ["low", "high"]}},
-                      events={"sin-found": {"title": "Sin found", "tone": "warn", "card": {"color": "#e0707a", "icon": "warn"}}})
+                      events={"sin-found": {"title": "Sin found", "tone": "warn", "card": {"icon": "warn"}}})
     assert "true or false" in refused(lambda: Configure().run(None, plugins, typed.n, "on", "yes")), "a switch takes true or false"
     assert "one of low, high" in refused(lambda: Configure().run(None, plugins, typed.n, "level", "mid")), "options take one of theirs"
     from features.plugins.answer import apply
@@ -135,8 +135,12 @@ def test_a_chosen_setting_reaches_the_plugins_commands():
         "a plugin raises an event it declared, styled from its manifest, and anything listening by its name hears it"
     off()
     card = Agents(record, actor=SYSTEM).primary().data["cards"][-1]
-    assert (card["label"], card["color"], card["icon"], card["detail"]) == ("Sin found", "#e0707a", "warn", "deep-nesting at src/A.php:12"), \
+    assert (card["label"], card["tone"], card["icon"], card["detail"]) == ("Sin found", "warn", "warn", "deep-nesting at src/A.php:12"), \
         f"an event whose declaration carries a card puts it in the chat, looking as the manifest says: {card}"
+    from commands.dispatch import shaped
+    from features.format import VIEWER
+    viewed = shaped(Agents(record, actor=SYSTEM).primary(), record, VIEWER)["data"]["cards"][-1]["detail"]
+    assert "[[file src/A.php|" in viewed, f"its words pass the formatters like any brief, so a file is a chip: {viewed}"
     assert apply(record, FEATURES["plugins"].journal, "typed", "", {"raise": {"event": "made-up"}}) == [], "an event the manifest does not declare is refused"
     from features.plugins.manifest import typed as checked
     shown = checked({"php": {"type": "flag"}, "vue": {"type": "flag"}, "sin": {"type": "flag", "when": {"php": True}},

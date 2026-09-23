@@ -60,7 +60,7 @@ const whispers = (agents) =>
 
 const cards = (agents) =>
     sessions(agents).flatMap((a) =>
-        (a.data.cards || []).map((c) => mark("card", a, c.at, c.label, {icon: c.icon, color: c.color, label: c.label, name: c.plugin, detail: c.detail}))
+        (a.data.cards || []).map((c) => mark("card", a, c.at, c.label, {icon: c.icon, color: c.color, tone: c.tone, label: c.label, name: c.plugin, detail: c.detail}))
     );
 
 const subagents = (agents) =>
