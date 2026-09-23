@@ -22,8 +22,9 @@ def test_the_other_hooks_are_set_aside_and_put_back_and_skills_stay(tmp_path, mo
     assert [p.name for p in (project / ".claude" / "skills").iterdir()] == ["graphify"], "skills are never moved"
     assert others(project, "claude") == [], "nothing else is left to set aside"
 
-    put_back(record)
-    assert settings.read_text() == before, "putting back restores the hook file as it was"
+    from engine.record import Record
+    put_back(Record(record.root, "another"))
+    assert settings.read_text() == before, "putting back restores the hook file as it was, from any environment of the project"
     assert put_back(record) == 0, "a second put back has nothing to do"
 
 
