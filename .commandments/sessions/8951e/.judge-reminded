@@ -33,6 +33,8 @@
 /Users/jessegall/projects/agent-journal/src/features/organization/test.py
 /Users/jessegall/projects/agent-journal/src/features/permission_prompts/feature.py
 /Users/jessegall/projects/agent-journal/src/features/skill_loading/catalogue.py
+/Users/jessegall/projects/agent-journal/src/features/skill_loading/handlers.py
+/Users/jessegall/projects/agent-journal/src/features/skill_loading/test.py
 /Users/jessegall/projects/agent-journal/src/features/status_bar/test.py
 /Users/jessegall/projects/agent-journal/src/features/tickets/__init__.py
 /Users/jessegall/projects/agent-journal/src/features/tickets/controller.py
