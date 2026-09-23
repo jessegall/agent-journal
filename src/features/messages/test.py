@@ -2,13 +2,13 @@ import json
 from datetime import datetime, timezone
 
 from controllers.types import Agents, Messages, Nudges, Works
-from engine.hooks import displayed, gate_file, handle
+from engine.hooks import displayed, handle
 from features.base import held
 from engine.sessions import Sessions
 from features.format import VIEWER, formatted
 from providers import DRIVERS, PROVIDERS
 from resources.base import AGENT, USER
-from tests.conftest import fresh, refused
+from tests.conftest import fresh, holds, refused
 from tests.kit import nudges, report
 
 
@@ -18,10 +18,6 @@ def test_a_read_message_is_named_back_until_the_agent_answers_it():
     m = Messages(record, actor=USER).create("how is it going?")
     Messages(record, actor=AGENT).read(m.n)
 
-    def holds():
-        f = gate_file(record.root, record.env, "claude-1")
-        return json.loads(f.read_text()) if f.is_file() else {}
-
     def text():
         return [n for n in nudges(record) if "before you write" in n]
 
@@ -29,7 +25,7 @@ def test_a_read_message_is_named_back_until_the_agent_answers_it():
     report(record, "working", "PreToolUse")
     assert text() == ["answer message 1 before you write anything"], \
         "the first tool use after reading names the message and says to answer it"
-    assert holds().get("status", "") == "", "nothing is refused over it: it tells, it does not hold"
+    assert holds(record).get("status", "") == "", "nothing is refused over it: it tells, it does not hold"
     from controllers.types import Nudges
     from engine.actors import settled
     from resources.base import Event
@@ -45,7 +41,7 @@ def test_a_read_message_is_named_back_until_the_agent_answers_it():
     record.set_setting("features", {})
     Messages(record, actor=AGENT).reply(m.n, "halfway: the build is green, wiring the last route")
     report(record, "working", "PreToolUse")
-    assert holds().get("status", "") == "", "a reply settles it and lifts the hold"
+    assert holds(record).get("status", "") == "", "a reply settles it and lifts the hold"
     assert settled(record, queued) is True, "a line still queued about a message now answered is dropped, not sent late"
     assert f"todo:{filed.n}" in Messages(record).load(m.n).refs, "a to-do filed after reading the message and linked nowhere is linked to it when it is answered"
 
@@ -54,8 +50,7 @@ def test_unread_messages_are_nudged_with_growing_urgency_until_the_inbox_is_read
     record = fresh()
 
     def gate():
-        f = gate_file(record.root, record.env, "claude-1")
-        return json.loads(f.read_text()).get("messages.unread", "") if f.is_file() else ""
+        return holds(record).get("messages.unread", "")
 
     Works(record, actor=AGENT).create("something open")
 

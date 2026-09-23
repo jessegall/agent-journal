@@ -147,9 +147,10 @@ def pruned(project: Path, names: list[str]) -> list[Path]:
     gone = []
     for home in (LIBRARY, *LINKED.values()):
         for stale in sorted((project / home).glob("journal*")):
-            if stale.name not in names and (stale.is_symlink() or stale.is_dir()):
-                unlink(project, stale.name)
-                gone.append(stale)
+            if stale.name in names or not (stale.is_symlink() or stale.is_dir()):
+                continue
+            unlink(project, stale.name)
+            gone.append(stale)
     return gone
 
 

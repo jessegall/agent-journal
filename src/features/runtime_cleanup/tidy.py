@@ -1,5 +1,6 @@
 import shutil
 import time
+from dataclasses import dataclass, replace
 from pathlib import Path
 
 from engine.record import Record
@@ -13,23 +14,40 @@ OUTPUTS_FOR = 86400
 ARCHIVES_FOR = 90 * 86400
 
 
-def tidy(root: Path, days: float) -> dict:
+@dataclass(frozen=True)
+class Tidied:
+    removed: int = 0
+    trimmed: int = 0
+    events: int = 0
+    leftovers: int = 0
+
+    @property
+    def summary(self) -> str:
+        parts = [f"{plural(self.trimmed, 'log')} cut to their tail" if self.trimmed else "",
+                 f"{plural(self.removed, 'quiet session folder')} removed" if self.removed else "",
+                 f"{plural(self.events, 'old event')} dropped" if self.events else "",
+                 f"{plural(self.leftovers, 'leftover')} removed" if self.leftovers else ""]
+        found = "; ".join(part for part in parts if part)
+        return found if found else "nothing to tidy"
+
+
+def tidy(root: Path, days: float) -> Tidied:
     events = sum(Record(Path(root), env.name).trim_events(EVENTS_KEPT, time.time() - READERS_WITHIN)
                  for env in (Path(root) / "environments").glob("*") if (env / "events.jsonl").is_file())
-    return {**tidy_files(Path(root), days), "events": events}
+    return replace(tidy_files(Path(root), days), events=events)
 
 
-def tidy_files(root: Path, days: float) -> dict:
+def tidy_files(root: Path, days: float) -> Tidied:
     left = leftovers(root)
     runtime = root / "runtime"
     if not runtime.is_dir():
-        return {"removed": 0, "trimmed": 0, "leftovers": left}
+        return Tidied(leftovers=left)
     quiet = time.time() - days * 86400
     removed = [d for d in (runtime / "sessions").glob("*") if d.is_dir() and max((f.stat().st_mtime for f in d.iterdir()), default=0) < quiet]
     for d in removed:
         shutil.rmtree(d, ignore_errors=True)
     trimmed = [f for pattern, keep in TAILS.items() for f in runtime.glob(pattern) if f.is_file() and trim(f, keep)]
-    return {"removed": len(removed), "trimmed": len(trimmed), "leftovers": left}
+    return Tidied(removed=len(removed), trimmed=len(trimmed), leftovers=left)
 
 
 def leftovers(root: Path) -> int:
@@ -56,9 +74,5 @@ def trim(f: Path, keep: int) -> bool:
     return True
 
 
-def summary(done: dict) -> str:
-    parts = [f"{plural(done['trimmed'], 'log')} cut to their tail" if done["trimmed"] else "",
-             f"{plural(done['removed'], 'quiet session folder')} removed" if done["removed"] else "",
-             f"{plural(done['events'], 'old event')} dropped" if done["events"] else "",
-             f"{plural(done['leftovers'], 'leftover')} removed" if done["leftovers"] else ""]
-    return "; ".join(part for part in parts if part) or "nothing to tidy"
+def summary(done: Tidied) -> str:
+    return done.summary

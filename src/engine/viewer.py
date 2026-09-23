@@ -1,4 +1,5 @@
 import json
+from dataclasses import asdict, dataclass
 import os
 import re
 import signal
@@ -16,6 +17,7 @@ from engine.stored import read_json, write_json, write_text
 from engine.sessions import alive
 from engine.version import version
 from engine.package import entry
+from engine.fields import number_of, text_of, whole_of
 
 PORTS = range(8420, 8440)
 HEARTBEAT = 2.0
@@ -34,21 +36,58 @@ def marker(root: Path) -> Path:
     return root / "runtime" / "viewer.json"
 
 
-def known() -> list[dict]:
-    return [j for j in read_json(machine(), []) if isinstance(j, dict) and j.get("root")]
+@dataclass(frozen=True)
+class KnownJournal:
+    root: str
+    project: str
+    url: str
+    at: float
+
+    @classmethod
+    def from_json(cls, raw: dict) -> "KnownJournal":
+        return cls(text_of(raw, "root"), text_of(raw, "project"), text_of(raw, "url"), number_of(raw, "at"))
 
 
-def keep(entries: list[dict]) -> None:
-    write_json(machine(), sorted(entries, key=lambda j: -j["at"]))
+@dataclass(frozen=True)
+class ViewerMark:
+    url: str = ""
+    at: float = 0.0
+    port: int = 0
+    pid: int = 0
+
+    @classmethod
+    def from_json(cls, raw) -> "ViewerMark":
+        raw = raw if isinstance(raw, dict) else {}
+        return cls(text_of(raw, "url"), number_of(raw, "at"), whole_of(raw, "port"), whole_of(raw, "pid"))
+
+
+@dataclass(frozen=True)
+class Identity:
+    root: str
+    project: str
+    version: str
+
+    @classmethod
+    def from_json(cls, raw: dict) -> "Identity":
+        return cls(text_of(raw, "root"), text_of(raw, "project"), text_of(raw, "version"))
+
+
+def known() -> list[KnownJournal]:
+    found = (KnownJournal.from_json(j) for j in read_json(machine(), []) if isinstance(j, dict))
+    return [j for j in found if j.root]
+
+
+def keep(entries: list[KnownJournal]) -> None:
+    write_json(machine(), [asdict(j) for j in sorted(entries, key=lambda j: -j.at)])
 
 
 def note(root: Path, url: str) -> None:
     root = root.resolve()
-    keep([*(j for j in known() if j["root"] != str(root)), {"root": str(root), "project": root.parent.name, "url": url, "at": time.time()}])
+    keep([*(j for j in known() if j.root != str(root)), KnownJournal(str(root), root.parent.name, url, time.time())])
 
 
 def forget(root: str) -> None:
-    keep([j for j in known() if j["root"] != root])
+    keep([j for j in known() if j.root != root])
 
 
 def remember(root: Path, port: int) -> str:
@@ -74,7 +113,7 @@ def heartbeat(root: Path, port: int, every: float = HEARTBEAT) -> None:
 
 def candidates(root: Path) -> list[str]:
     found = []
-    found.append(str(last(root).get("url") or ""))
+    found.append(last(root).url)
     try:
         found.extend(URL.findall((root / "runtime" / "viewer.log").read_text())[-1:])
     except OSError:
@@ -83,17 +122,18 @@ def candidates(root: Path) -> list[str]:
     return list(dict.fromkeys(url for url in found if url))
 
 
-def identity(url: str, timeout: float = 0.05) -> dict | None:
+def identity(url: str, timeout: float = 0.05) -> Identity | None:
     try:
         with urlopen(f"{url}api/identity", timeout=timeout) as response:
-            return json.loads(response.read())
+            raw = json.loads(response.read())
     except (OSError, ValueError):
         return None
+    return Identity.from_json(raw) if isinstance(raw, dict) else None
 
 
 def answers(url: str, root: Path, timeout: float = 0.05) -> bool:
-    reply = identity(url, timeout) or {}
-    return Path(str(reply.get("root") or "")).resolve() == root.resolve() and reply.get("version") == version()
+    reply = identity(url, timeout)
+    return reply is not None and Path(reply.root).resolve() == root.resolve() and reply.version == version()
 
 
 def running(root: Path) -> str:
@@ -135,26 +175,26 @@ def available(prefer: int = 0) -> int:
     raise OSError("no viewer port available from 8420 through 8439")
 
 
-def last(root: Path) -> dict:
-    return read_json(marker(root), {})
+def last(root: Path) -> ViewerMark:
+    return ViewerMark.from_json(read_json(marker(root), {}))
 
 
 def restart(root: Path, project: Path) -> str:
     was = last(root)
-    if was.get("pid") and running(root):
-        os.kill(int(was["pid"]), signal.SIGTERM)
-        waited(int(was.get("port") or 0))
+    if was.pid and running(root):
+        os.kill(was.pid, signal.SIGTERM)
+        waited(was.port)
     return start(root, project)
 
 
 def elsewhere(root: Path) -> str:
     was = last(root)
-    if not was.get("pid") or int(was["pid"]) == os.getpid() or not alive(was["pid"]):
+    if not was.pid or was.pid == os.getpid() or not alive(was.pid):
         return ""
     until = time.time() + RESTARTING
     while time.time() < until:
-        if answers(str(was.get("url") or ""), root, timeout=0.2):
-            return str(was["url"])
+        if answers(was.url, root, timeout=0.2):
+            return was.url
         time.sleep(0.2)
     return ""
 
@@ -167,7 +207,7 @@ def launch(root: Path, project: Path) -> tuple[str, int | None]:
     already = running(root) or elsewhere(root)
     if already:
         return already, None
-    port = available(last(root).get("port", 0))
+    port = available(last(root).port)
     log = root / "runtime" / "viewer.log"
     log.parent.mkdir(parents=True, exist_ok=True)
     command = [*entry("journal"), "--root", str(root), "serve", "--port", str(port)]

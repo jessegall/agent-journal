@@ -22,7 +22,7 @@ class Message:
 
 def waiting(record, agent) -> bool:
     from controllers.types import Works
-    return any(w.awaiting for w in Works(record, actor=SYSTEM)._standing() if str(w.data.get("agent") or "") in ("", agent.title))
+    return any(w.awaiting for w in Works(record, actor=SYSTEM)._standing() if w.agent in ("", agent.title))
 
 
 class BoundJournal:
@@ -109,7 +109,7 @@ class Journal:
         filled = set(self.feature.lines[line].placeholders()) if line in self.feature.lines else set()
         title, brief = self.feature.line(line, {key: value for key, value in values.items() if key in filled})
         kept = {key: value for key, value in values.items() if key not in filled}
-        abstract = str(kept.pop("abstract", "") or "")
+        abstract = str(kept.pop("abstract", ""))
         return Message(kind, title, abstract, brief, self.feature.name, actor, data={**kept, **data})
 
     def send(self, record, message: Message):

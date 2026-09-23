@@ -18,8 +18,9 @@ def test_a_row_named_in_text_is_a_chip_in_the_viewer_and_plain_words_everywhere_
     todos.update(row.n, brief=viewer["brief"])
     assert todos.load(row.n).brief == "answered message 1712, not `todo 5`", "a marker sent back by the viewer is saved as plain words"
     listed = todos.create("reviews", brief="messages 3485, 3494 and 3508")
-    assert shaped(todos.load(listed.n), record, VIEWER)["brief"] == "[[chips message:3485,3494,3508|messages 3485, 3494, 3508]]", \
-        "several numbers after one type name are one chip naming each row"
+    assert shaped(todos.load(listed.n), record, VIEWER)["brief"] == \
+        "[[chip message:3485|message 3485]], [[chip message:3494|message 3494]] and [[chip message:3508|message 3508]]", \
+        "several numbers after one type name are one chip each, each naming its row"
 
 
 def test_files_commits_and_links_are_marked_by_the_server_and_code_is_left_alone():
@@ -66,7 +67,8 @@ def test_a_file_name_is_a_chip_when_one_project_file_has_it_and_the_agent_hears_
     chips = ("[[file a/test.py#L22|a/test.py:22]]", "[[file b/test.py|b/test.py]]", "[[file web/Turn.vue#L8|Turn.vue:8-12]]")
     assert all(chip in twins for chip in chips), f"a chip is the file name, with folders only where names repeat, and keeps its line: {twins}"
     bare = shaped(Todos(record, actor=USER).create("bare", brief="landed (to-dos 1081, 1084) and (see to-do 2)"), record, VIEWER)["brief"]
-    assert bare == "landed [[chips todo:1081,1084|to-dos 1081, 1084]] and (see [[chip todo:2|to-do 2]])", f"parentheses around nothing but chips go: {bare}"
+    assert bare == "landed [[chip todo:1081|to-do 1081]] and [[chip todo:1084|to-do 1084]] and (see [[chip todo:2|to-do 2]])", \
+        f"parentheses around nothing but chips go: {bare}"
     report(record, "working", "PostToolUse")
     chat.send(record, Agents(record, actor=SYSTEM).by_session("claude-1"), "the fix is in test.py")
     told = [n.title for n in Nudges(record).all() if "test.py" in n.title]

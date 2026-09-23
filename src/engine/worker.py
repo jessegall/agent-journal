@@ -11,7 +11,7 @@ from engine import typist  # noqa: E402
 from engine import runtime  # noqa: E402
 from engine.watch import threw  # noqa: E402
 from engine.stop import asked  # noqa: E402
-from engine.terminal import HEAL, RELAUNCH, RELOAD, STOP, seated, watched  # noqa: E402
+from engine.terminal import HEAL, RELAUNCH, RELOAD, STOP, Seat, seated, watched  # noqa: E402
 from engine.actors import Agent  # noqa: E402
 from engine.record import Record  # noqa: E402
 from engine.package import CODE  # noqa: E402
@@ -43,14 +43,14 @@ def crashing(exits: list) -> bool:
     return len(exits) >= SERVER_CRASHES and all(exits[-SERVER_CRASHES:])
 
 
-def checks(root: Path, env: str, agent: str, session: str) -> tuple:
+def checks(seat: Seat) -> tuple:
     try:
         features.load()
-        record = Record(root, env)
-        watcher = Agent(record, DRIVERS[agent](record, session))
+        record = Record(seat.root, seat.env)
+        watcher = Agent(record, DRIVERS[seat.agent](record, seat.session))
         return watcher.driver, (CheckIn(watcher), UpdateCheck(watcher), Relaunch(watcher))
     except Exception:
-        threw(root, env, "starting the worker's checks")
+        threw(seat.root, seat.env, "starting the worker's checks")
         return None, ()
 
 
@@ -96,7 +96,8 @@ class Confirm:
 
 def run(root: Path, cwd: Path, env: str, agent: str, session: str, lifeline: int = -1) -> int:
     hold_build(root, CODE)
-    seated(root, env, session, agent)
+    seat = Seat(root, env, agent, session)
+    seated(seat)
     relaunching = runtime.relaunch_file(root, session)
     stamps = watched(root)
     began = time.time()
@@ -104,7 +105,7 @@ def run(root: Path, cwd: Path, env: str, agent: str, session: str, lifeline: int
     last_check = last_viewer = last_services = last_checks = 0.0
     watching = None
     exits: list = []
-    driver, kept = checks(root, env, agent, session)
+    driver, kept = checks(seat)
     services = Manager(root, lifeline)
     while True:
         time.sleep(TICK)
@@ -125,7 +126,7 @@ def run(root: Path, cwd: Path, env: str, agent: str, session: str, lifeline: int
         if now - last_checks >= CHECKS_EVERY:
             last_checks = now
             if not kept:
-                driver, kept = checks(root, env, agent, session)
+                driver, kept = checks(seat)
             run_checks(root, driver, kept)
         if now - last_check >= RELOAD_EVERY:
             last_check = now

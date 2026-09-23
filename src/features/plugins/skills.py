@@ -31,9 +31,9 @@ def owned(project: Path, plugin: str) -> list[str]:
     return sorted(p.name for p in home.iterdir() if p.is_dir() and owner(p) == plugin) if home.is_dir() else []
 
 
-def shipped(root: Path, plugin: str, manifest: dict) -> dict[str, Path]:
-    source = folder(root, plugin) / str(manifest.get("skills") or "")
-    if not manifest.get("skills") or not source.is_dir():
+def shipped(root: Path, plugin: str, manifest) -> dict[str, Path]:
+    source = folder(root, plugin) / manifest.skills
+    if not manifest.skills or not source.is_dir():
         return {}
     return {p.name: p for p in sorted(source.iterdir()) if (p / SKILL).is_file()}
 
@@ -49,7 +49,7 @@ def ignored(project: Path, names: list[str]) -> None:
         exclude.write_text("\n".join([*known, *missing]) + "\n")
 
 
-def published(root: Path, plugin: str, manifest: dict) -> list[str]:
+def published(root: Path, plugin: str, manifest) -> list[str]:
     project = Path(root).parent
     theirs = shipped(root, plugin, manifest)
     placed = []

@@ -9,7 +9,7 @@ FOREIGN = re.compile(r"[./]\S*\s+$")
 
 class CommandsAsCode(TextFormatter):
     def format(self, context: Context, text: str) -> str:
-        return "`".join(part if at % 2 else CODE.sub(self.command, part) for at, part in enumerate(str(text or "").split("`")))
+        return "`".join(part if at % 2 else CODE.sub(self.command, part) for at, part in enumerate(text.split("`")))
 
     def command(self, found) -> str:
         from commands.parser import QUERIES, parser, words

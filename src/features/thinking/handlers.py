@@ -3,6 +3,7 @@ from pathlib import Path
 from engine.events import AgentMessageSent, AgentReported
 from features.parts import AgentContext, Handler
 from providers import PROVIDERS
+from engine.fields import whole_of
 
 THINKING = "thinking"
 TURN_STARTS = ("UserPromptSubmit", "SessionEnd")
@@ -11,14 +12,14 @@ TURN_STARTS = ("UserPromptSubmit", "SessionEnd")
 class FollowThinking(Handler):
     def handle(self, context: AgentContext, event: AgentReported) -> None:
         row = context.agent.row
-        kind, transcript = PROVIDERS.get(row.provider), Path(row.transcript or "")
+        kind, transcript = PROVIDERS.get(row.provider), Path(row.transcript)
         if not kind or not transcript.is_file():
             return
         held = context.state.get("transcript", {})
         if held.get("path") != str(transcript):
             context.state.set("transcript", {"path": str(transcript), "offset": transcript.stat().st_size})
             return
-        found, offset = kind().thoughts(transcript, int(held.get("offset") or 0))
+        found, offset = kind().thoughts(transcript, whole_of(held, "offset"))
         context.state.set("transcript", {"path": str(transcript), "offset": offset})
         thought = row.data.get(THINKING) or ""
         for what, text in found:

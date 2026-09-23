@@ -1,7 +1,7 @@
 from typing import ClassVar
 
 from resources.base import AGENT, COMPLETED, DOCUMENT, LAZY, OPENED, PROJECT, SYSTEM, USER, Resource, ResourceDetails
-from resources.shapes import FLAG, TEXT, Field, Options, Ranked, Reasoned, Shape, Traced, names
+from resources.shapes import FLAG, TEXT, Field, Options, Ranked, Reasoned, Shape, Traced
 
 
 class Message(Shape, Resource):
@@ -38,7 +38,7 @@ class Todo(Ranked, Resource):
     data_fields: ClassVar[list[Field]] = [
         Field(name="status"),
         Field(name="work"),
-        Field(name="assigned"),
+        Field(default="", name="assigned"),
         Field(name="blocked"),
         Field(name="reported"),
         Field(name="after"),
@@ -61,7 +61,7 @@ class Work(Traced, Resource):
     event_labels = {"created": "Work started", "sectioned": "Work logged", "completed": "Work ended"}
     status_labels = {"create": "starting", "complete": "ending"}
     data_fields: ClassVar[list[Field]] = [
-        Field(name="todo"),
+        Field(default=0, name="todo"),
         Field(name="status"),
         Field(name="parked"),
         Field(default="", name="awaiting"),
@@ -87,6 +87,8 @@ class Doc(Shape, Resource):
     status_labels = {"complete": "settling"}
     data_fields: ClassVar[list[Field]] = [
         Field(name="status"),
+        Field(default=0, name="revisions"),
+        Field(default=0, name="open_until"),
     ]
     start_heading = "docs in the project; none is listed here, so look one up when a question needs it: journal doc search <term>, journal doc all"
     start_as_count = True
@@ -188,6 +190,9 @@ class Question(Options, Resource):
     icon = "help"
     command_names = {"complete": "answer", "create": "ask"}
     labels = {"outcome": "Answer", "abstract": "Context"}
+    data_fields: ClassVar[list[Field]] = [
+        Field(TEXT, "", name="reason"),
+    ]
     details: ClassVar[ResourceDetails] = ResourceDetails(
         title="Question",
         abstract="Something the agent asks the user, with choices to pick",
@@ -238,12 +243,12 @@ class AgentRow(Shape, Resource):
     formatted_data = {"cards": ("label", "detail"), "subagent_rows": ("task",)}
     event_labels = {"reported": "Agent reported", "updated": "Agent updated"}
     data_fields: ClassVar[list[Field]] = [
-        Field(name="status"),
-        Field(name="event"),
-        Field(name="tool"),
-        Field(name="file"),
+        Field(default="", name="status"),
+        Field(default="", name="event"),
+        Field(default="", name="tool"),
+        Field(default="", name="file"),
         Field(name="wrote"),
-        Field(name="cwd"),
+        Field(default="", name="cwd"),
         Field(default=0, name="at"),
         Field(default="", name="provider"),
         Field(default=0, name="uses"),
@@ -277,7 +282,7 @@ class AgentRow(Shape, Resource):
         Field(default=dict, name="subagent_reports"),
         Field(name="branch"),
         Field(name="branch_url"),
-        Field(name="active"),
+        Field(default=0, name="active"),
         Field(name="decided"),
     ]
     icon = "bot"
@@ -482,8 +487,6 @@ class Nudge(Shape, Resource):
     typed_as_title = True
 
 
-RUNNING = names("command", "tool", "at", "done", "changed", "files", "made", "effect", "result", "before")
-COMMAND = names("command", "tool", "at", "effect", "subject", "done", "result", "files", "made", "changed")
 
 def register(*classes) -> None:
     TYPES.update({c.type: c for c in classes})

@@ -2,18 +2,21 @@ import json
 import re
 import shutil
 import time
+from dataclasses import asdict, dataclass, replace
 from datetime import datetime
 from pathlib import Path
 
-from engine.transcript import AGENT, HUMAN, INJECTED, PEER, SENT, SUMMARY, SUPERSEDED, TASK, TOOL, Turn, timestamp
-from providers.payload import DISPLAYED, EVENTS
-from providers.base import Provider, journal_hook
-from providers.payload import Hook
+from engine.transcript import AGENT, HUMAN, INJECTED, PEER, SENT, SUMMARY, SUPERSEDED, TASK, TOOL, Turn
+from providers.payload import DISPLAYED, EVENTS, UsageWindow
+from providers.base import Provider, journal_hook, parsed
+from providers.payload import Dispatch, Hook, ToolCall
+from providers.claude_rows import Block, Row
 from resources.types import AgentRow
 from engine.stored import read_json, tail, write_json, write_text
 from engine import runtime
 from engine.sessions import Sessions
 from engine.drivers import ANSI, CHOICE, Driver
+from engine.fields import list_of, number_of, text_of
 
 ASKS = frozenset({"AskUserQuestion"})
 SENDS = "SendMessage"
@@ -39,6 +42,26 @@ DISPATCHES = ("Agent", "Task")
 QUIET_SUBAGENT = 600
 SETTLE_BYTES = 65536
 
+
+
+@dataclass(frozen=True)
+class HandedLine:
+    line: str
+    at: float
+
+
+@dataclass(frozen=True)
+class Handed:
+    lines: tuple = ()
+    typed_until: float = 0.0
+
+    @classmethod
+    def from_json(cls, raw) -> "Handed":
+        raw = raw if isinstance(raw, dict) else {}
+        return cls(tuple(HandedLine(text_of(h, "line"), number_of(h, "at")) for h in list_of(raw, "lines") if isinstance(h, dict)), number_of(raw, "typed_until"))
+
+    def to_json(self) -> dict:
+        return {"lines": [asdict(h) for h in self.lines], "typed_until": self.typed_until}
 
 class Claude(Provider):
     name = "claude"
@@ -128,7 +151,7 @@ class Claude(Provider):
             self.save(project, {**settings, "permissions": {**permissions, "deny": deny + [r for r in RECORD_FILES if r not in deny]}})
         return wired
 
-    def usage(self, path: Path, now: float | None = None) -> dict | None:
+    def usage(self, path: Path, now: float | None = None) -> list[UsageWindow] | None:
         limits = self.reported(path, "rate_limits")
         if not limits:
             return None
@@ -138,12 +161,10 @@ class Claude(Provider):
             if not isinstance(raw, dict):
                 continue
             try:
-                used = float(raw.get("used_percentage"))
-                resets = self.moment(raw.get("resets_at"))
+                windows.append(UsageWindow(key, label, float(raw.get("used_percentage")), minutes, self.moment(raw.get("resets_at"))))
             except (TypeError, ValueError):
                 continue
-            windows.append({"key": key, "label": label, "used": round(max(0, min(100, used)), 1), "minutes": minutes, "resets": resets})
-        return {"windows": windows}
+        return windows
 
     def moment(self, value) -> int:
         if isinstance(value, (int, float)) or str(value).isdigit():
@@ -166,7 +187,7 @@ class Claude(Provider):
             return
         kept = {event: [b for b in blocks if not journal_hook(json.dumps(b))] for event, blocks in (had.get("hooks") or {}).items()}
         cleaned = {**had, "hooks": {event: blocks for event, blocks in kept.items() if blocks}}
-        if STATUS_SCRIPT in json.dumps(cleaned.get("statusLine") or ""):
+        if STATUS_SCRIPT in json.dumps(cleaned.get("statusLine", "")):
             cleaned.pop("statusLine")
         if not cleaned["hooks"]:
             cleaned.pop("hooks")
@@ -182,104 +203,74 @@ class Claude(Provider):
     def shell_wrapper(self, script: Path) -> dict:
         return {"CLAUDE_CODE_SHELL_PREFIX": str(script), "JOURNAL_SESSION_VARIABLE": "CLAUDE_CODE_SESSION_ID"}
 
+    def row_of(self, raw: dict) -> Row:
+        return Row.from_payload(raw)
+
     def shell_runs(self, path: Path) -> list[tuple[float, str]]:
-        runs = []
-        for row in self.recent(path):
-            content = (row.get("message") or {}).get("content")
-            found = row.get("type") == "user" and isinstance(content, str) and BASH_INPUT.match(content)
-            if found:
-                runs.append((timestamp(row.get("timestamp") or ""), found[1]))
-        return runs
+        found = ((row.at, BASH_INPUT.match(row.text)) for row in self.recent(path) if row.type == "user" and row.text is not None)
+        return [(at, match[1]) for at, match in found if match]
 
     def unwrapped_command(self, command: str) -> str:
         found = EVALED.search(command)
         return found[1].replace("'\"'\"'", "'") if found else command
 
-    def dispatch(self, tool) -> dict:
+    def dispatch(self, tool) -> Dispatch | None:
         if tool.name != "Agent":
-            return {}
+            return None
         kind = tool.subagent_type.strip().lower()
-        return {"kind": kind, "model": tool.model.strip(), "model_supported": kind != "fork"}
+        return Dispatch(kind=kind, model=tool.model.strip(), model_supported=kind != "fork")
 
     def model(self, hook: Hook) -> str:
         path = hook.transcript
         if not path or not path.is_file():
             return hook.model
-        for row in reversed(self.recent(path)):
-            model = (row.get("message") or {}).get("model")
-            if model:
-                return model
-        return hook.model
+        return next((row.model for row in reversed(self.recent(path)) if row.model), hook.model)
 
     def context(self, hook: Hook) -> float | None:
         path = hook.transcript
         if not path or not path.is_file():
             return None
-        for row in reversed(self.recent(path)):
-            usage = (row.get("message") or {}).get("usage")
-            if usage:
-                used = sum(int(usage.get(k) or 0) for k in ("input_tokens", "cache_read_input_tokens", "cache_creation_input_tokens"))
-                return round(100 * used / self.window(hook, used), 1)
-        return None
+        used = next((row.tokens for row in reversed(self.recent(path)) if row.tokens is not None), None)
+        return None if used is None else round(100 * used / self.window(hook, used), 1)
 
-    def turn(self, row: dict) -> tuple | None:
-        queued = row.get("attachment") or {}
-        if row.get("type") == "attachment" and (queued.get("origin") or {}).get("kind") == "peer":
-            row = {**row, "type": "user", "origin": queued["origin"], "message": {"content": str(queued.get("prompt") or "")}}
-        if (row.get("isSidechain") and not row.get("agentId")) or row.get("type") not in ("user", "assistant"):
+    def turn(self, row: Row) -> tuple | None:
+        if row.type == "attachment" and row.queued.kind == "peer":
+            row = replace(row, type="user", origin=row.queued, text=row.prompt, blocks=())
+        if (row.sidechain and not row.agent_id) or row.type not in ("user", "assistant"):
             return None
-        content = (row.get("message") or {}).get("content")
-        blocks = [block for block in (content if isinstance(content, list) else []) if isinstance(block, dict)]
-        text = content if isinstance(content, str) else "\n".join(self.block_text(block) for block in blocks if block.get("type") == "text")
-        results = [b for b in blocks if b.get("type") == "tool_result"]
+        text = row.text if row.text is not None else "\n".join(block.text for block in row.of_type("text"))
+        results = row.of_type("tool_result")
         if results and not text.strip():
-            text = "\n".join(self.result_text(b) for b in results)
-        uses = [block for block in blocks if block.get("type") == "tool_use"]
-        questions = [self.question_text(block.get("input") or {}) for block in uses if block.get("name") in ASKS]
+            text = "\n".join(block.result for block in results)
+        uses = [ToolCall.of(block.id, block.name, row.at, block.input) for block in row.of_type("tool_use")]
+        questions = [self.question_text(use) for use in uses if use.name in ASKS]
         if questions:
             text = "\n".join(part for part in (text, *questions) if part)
-        tools = [f"Skill:{(b.get('input') or {}).get('skill', '')}" if b.get("name") == "Skill" else str(b.get("name") or "") for b in uses]
+        tools = [f"Skill:{use.skill}" if use.name == "Skill" else use.name for use in uses]
         if not text.strip() and not tools:
             return None
         kind = self.kind(row, bool(results))
         who = SUMMARY if kind == SUMMARY else "user" if kind == HUMAN else "agent" if kind == AGENT else kind
-        origin = row.get("origin") or {}
-        if kind == PEER and origin.get("name") and str(origin.get("from") or "").startswith(SESSIONS):
-            who, text = f"{PEER}:{origin['name']}:{origin.get('from') or ''}", str(origin.get("body") or text)
-        sent = next((block.get("input") or {} for block in uses if block.get("name") == SENDS), None)
-        if sent and sent.get("to"):
-            kind, who, text = PEER, f"{SENT}:{sent['to']}", str(sent.get("message") or text)
-        asked = [str(block.get("id") or "") for block in uses if block.get("name") in ASKS]
-        answered = [str(block.get("tool_use_id") or "") for block in results]
-        return who, text, kind, timestamp(str(row.get("timestamp") or "")), tools, str(row.get("parentUuid") or ""), asked, answered
+        if kind == PEER and row.origin.name and row.origin.sender.startswith(SESSIONS):
+            who, text = f"{PEER}:{row.origin.name}:{row.origin.sender}", row.origin.body if row.origin.body else text
+        sent = next((use for use in uses if use.name == SENDS and use.to), None)
+        if sent:
+            kind, who, text = PEER, f"{SENT}:{sent.to}", sent.message if sent.message else text
+        asked = [use.id for use in uses if use.name in ASKS]
+        answered = [block.tool_use_id for block in results]
+        return who, text, kind, row.at, tools, row.parent, asked, answered
 
-    def block_text(self, block: dict) -> str:
-        return str(block.get("text") or "")
+    def question_text(self, use: ToolCall) -> str:
+        lines = (f"{question.text}  [{' / '.join(question.labels)}]" if question.labels else question.text for question in use.questions)
+        return "\n".join(f"asked: {text}" for text in lines if text)
 
-    def result_text(self, block: dict) -> str:
-        got = block.get("content")
-        return got if isinstance(got, str) else "\n".join(self.block_text(b) for b in got or () if isinstance(b, dict))
-
-    def question_text(self, data: dict) -> str:
-        out = []
-        for question in data.get("questions") or []:
-            if not isinstance(question, dict):
-                continue
-            text = str(question.get("question") or "").strip()
-            options = [str(option.get("label") or "") for option in question.get("options") or [] if isinstance(option, dict)]
-            if options:
-                text = f"{text}  [{' / '.join(option for option in options if option)}]"
-            if text:
-                out.append(f"asked: {text}")
-        return "\n".join(out)
-
-    def kind(self, row: dict, has_result: bool) -> str:
-        if row.get("isCompactSummary"):
+    def kind(self, row: Row, has_result: bool) -> str:
+        if row.compact_summary:
             return SUMMARY
-        if row["type"] == "assistant":
+        if row.type == "assistant":
             return AGENT
-        origin = (row.get("origin") or {}).get("kind")
-        return PEER if origin == "peer" else TASK if origin == "task-notification" else TOOL if has_result else INJECTED if row.get("isMeta") else HUMAN
+        origin = row.origin.kind
+        return PEER if origin == "peer" else TASK if origin == "task-notification" else TOOL if has_result else INJECTED if row.meta else HUMAN
 
     def refine(self, turns: list[Turn]) -> list[Turn]:
         asked = set()
@@ -298,57 +289,44 @@ class Claude(Provider):
                     break
         return turns
 
-    def tool_uses(self, row: dict) -> list[dict]:
-        if row.get("type") != "assistant" or row.get("isSidechain"):
-            return []
-        content = (row.get("message") or {}).get("content")
-        at = timestamp(str(row.get("timestamp") or ""))
-        return [{"id": b.get("id", ""), "name": b.get("name", ""), "input": b.get("input") or {}, "at": at} for b in content or () if isinstance(b, dict) and b.get("type") == "tool_use"]
+    def tool_uses(self, row: Row) -> list[ToolCall]:
+        return row.tool_calls
 
-    def task_ids(self, rows: list[dict]) -> dict[str, str]:
-        ids = {}
-        for row in rows:
-            if row.get("type") != "user" or row.get("isSidechain") or not isinstance((row.get("message") or {}).get("content"), list):
-                continue
-            for block in row["message"]["content"]:
-                task = TASK_ID.search(str(block.get("content") or "")) if isinstance(block, dict) and block.get("type") == "tool_result" else None
-                if task:
-                    ids[str(block.get("tool_use_id") or "")] = task.group(1)
-        return ids
+    def results(self, row: Row) -> list[Block]:
+        return row.of_type("tool_result") if row.type == "user" and row.main else []
 
-    def endings(self, rows: list[dict], uses: list[dict], ids: dict[str, str]) -> dict[str, tuple[str, float]]:
+    def task_ids(self, rows: list[Row]) -> dict[str, str]:
+        found = ((block.tool_use_id, TASK_ID.search(block.result)) for row in rows for block in self.results(row))
+        return {used: task.group(1) for used, task in found if task}
+
+    def endings(self, rows: list[Row], uses: list[ToolCall], ids: dict[str, str]) -> dict[str, tuple[str, float]]:
         ended, tasks = {}, {task: used for used, task in ids.items()}
         for row in rows:
-            at = timestamp(str(row.get("timestamp") or ""))
-            if row.get("type") == "queue-operation" and row.get("operation") == "enqueue":
-                for used, status in NOTIFIED.findall(str(row.get("content") or "")):
-                    ended[used] = (status, at)
-            if row.get("type") != "user" or row.get("isSidechain") or not isinstance((row.get("message") or {}).get("content"), list):
-                continue
-            for block in row["message"]["content"]:
-                if isinstance(block, dict) and block.get("type") == "tool_result":
-                    ended.setdefault(str(block.get("tool_use_id") or ""), ("refused" if self.refused_by_hook(block) else "returned", at))
-        for use in (u for u in uses if u["name"] == "TaskStop"):
-            stopped = tasks.get(str(use["input"].get("task_id") or use["input"].get("shell_id") or ""))
+            if row.type == "queue-operation" and row.operation == "enqueue":
+                ended.update({used: (status, row.at) for used, status in NOTIFIED.findall(row.content)})
+            for block in self.results(row):
+                ended.setdefault(block.tool_use_id, ("refused" if self.refused_by_hook(block) else "returned", row.at))
+        for use in (u for u in uses if u.name == "TaskStop"):
+            stopped = tasks.get(use.task)
             if stopped and ended.get(stopped, ("returned",))[0] == "returned":
-                ended[stopped] = ("stopped", use["at"])
+                ended[stopped] = ("stopped", use.at)
         return ended
 
-    def refused_by_hook(self, block: dict) -> bool:
-        return bool(block.get("is_error")) and "hook error" in json.dumps(block.get("content") or "")
+    def refused_by_hook(self, block: Block) -> bool:
+        return block.is_error and "hook error" in block.result
 
-    def loaded(self, uses: list[dict]) -> list[str]:
-        return sorted({str(u["input"].get("skill") or "") for u in uses if u["name"] == "Skill"} - {""})
+    def loaded(self, uses: list[ToolCall]) -> list[str]:
+        return sorted({u.skill for u in uses if u.name == "Skill"} - {""})
 
     def skills(self, session: Path | None) -> list[str]:
         if session is None or not session.is_file():
             return []
         return self.loaded([use for _, row in self.entries(session) for use in self.tool_uses(row)])
 
-    def starts_window(self, row: dict) -> bool:
-        return bool(row.get("isCompactSummary"))
+    def starts_window(self, row: Row) -> bool:
+        return row.compact_summary
 
-    def since_compaction(self, rows: list[dict]) -> list[dict]:
+    def since_compaction(self, rows: list[Row]) -> list[Row]:
         starts = [i for i, row in enumerate(rows) if self.starts_window(row)]
         return rows[starts[-1]:] if starts else rows
 
@@ -365,30 +343,29 @@ class Claude(Provider):
                 continue
         now = time.time()
         subagents = []
-        for use in (u for u in uses if u["name"] in DISPATCHES):
-            given, session = use["input"], sessions.get(use["id"])
-            status, done = ended.get(use["id"], ("", 0.0))
+        for use in (u for u in uses if u.name in DISPATCHES):
+            session = sessions.get(use.id)
+            status, done = ended.get(use.id, ("", 0.0))
             writing = session is not None and session.is_file() and now - session.stat().st_mtime <= QUIET_SUBAGENT
             running = not status or writing
-            subagents.append({"id": use["id"], "task_id": ids.get(use["id"], ""), "task": str(given.get("description") or "subagent"), "type": str(given.get("subagent_type") or ""),
-                              "model": str(given.get("model") or ""), "running": running, "at": use["at"], "ended": 0.0 if running else done,
+            subagents.append({"id": use.id, "task_id": ids.get(use.id, ""), "task": use.description if use.description else "subagent", "type": use.subagent_type,
+                              "model": use.model, "running": running, "at": use.at, "ended": 0.0 if running else done,
                               "status": "" if running else status,
                               "session": session.stem.removeprefix("agent-") if session else "", "skills": self.skills(session)})
         shells = []
-        for use in (u for u in uses if u["name"] == "Bash" and u["input"].get("run_in_background")):
-            status, done = ended.get(use["id"], ("", 0.0))
+        for use in (u for u in uses if u.name == "Bash" and u.background):
+            status, done = ended.get(use.id, ("", 0.0))
             finished = status not in ("", "returned")
-            shells.append({"id": use["id"], "task_id": ids.get(use["id"], ""), "command": str(use["input"].get("command") or "")[:160], "task": str(use["input"].get("description") or ""),
-                           "running": not finished, "at": use["at"], "ended": done if finished else 0.0, "status": status if finished else ""})
+            shells.append({"id": use.id, "task_id": ids.get(use.id, ""), "command": use.command[:160], "task": use.description,
+                           "running": not finished, "at": use.at, "ended": done if finished else 0.0, "status": status if finished else ""})
         monitors = []
-        for use in (u for u in uses if u["name"] == "Monitor"):
-            given = use["input"]
-            status, done = ended.get(use["id"], ("", 0.0))
+        for use in (u for u in uses if u.name == "Monitor"):
+            status, done = ended.get(use.id, ("", 0.0))
             notified = status not in ("", "returned")
-            deadline = use["at"] + min(float(given.get("timeout_ms") or MONITOR_DEFAULT) / 1000, MONITOR_LONGEST)
+            deadline = use.at + min((use.timeout_ms if use.timeout_ms else MONITOR_DEFAULT) / 1000, MONITOR_LONGEST)
             finished = notified or now > deadline
-            monitors.append({"id": use["id"], "task_id": ids.get(use["id"], ""), "command": str(given.get("command") or (given.get("ws") or {}).get("url") or "")[:160],
-                             "task": str(given.get("description") or "monitor"), "running": not finished, "at": use["at"],
+            monitors.append({"id": use.id, "task_id": ids.get(use.id, ""), "command": (use.command if use.command else use.url)[:160],
+                             "task": use.description if use.description else "monitor", "running": not finished, "at": use.at,
                              "ended": (done if notified else deadline) if finished else 0.0,
                              "status": (status if notified else "expired") if finished else ""})
         return {AgentRow.skills: self.loaded([use for row in self.since_compaction(rows) for use in self.tool_uses(row)]), AgentRow.shells: len(shells), AgentRow.subagents: len(subagents),
@@ -404,14 +381,10 @@ class Claude(Provider):
 
     def settling(self, path: Path) -> bool:
         for line in reversed(tail(path, SETTLE_BYTES)):
-            try:
-                row = json.loads(line)
-            except ValueError:
-                continue
-            if row.get("type") in ("user", "assistant") and row.get("message"):
-                parts = row["message"].get("content")
-                thinking = isinstance(parts, list) and parts and all(isinstance(p, dict) and p.get("type") == "thinking" for p in parts)
-                return row.get("type") == "user" or bool(thinking)
+            raw = parsed(line)
+            row = Row.from_payload(raw) if isinstance(raw, dict) and raw.get("message") else None
+            if row and row.type in ("user", "assistant"):
+                return row.type == "user" or (bool(row.blocks) and all(block.type == "thinking" for block in row.blocks))
         return False
 
     def thoughts(self, transcript: Path, offset: int) -> tuple[list[tuple[str, str]], int]:
@@ -421,36 +394,35 @@ class Claude(Provider):
                 lines = f.read().split(b"\n")
         except OSError:
             return [], offset
-        blocks: dict[str, list[dict]] = {}
+        blocks: dict[str, list[Block]] = {}
         ends, at, done = [], offset, offset
         for line in lines[:-1]:
             at += len(line) + 1
-            try:
-                row = json.loads(line)
-            except ValueError:
+            raw = parsed(line.decode(errors="replace"))
+            if not isinstance(raw, dict):
                 continue
-            message = row.get("message") or {}
-            if row.get("type") == "assistant" and isinstance(message.get("content"), list):
-                blocks.setdefault(message.get("id", ""), []).extend(message["content"])
-                if any(part.get("type") == "tool_use" for part in message["content"]):
-                    ends.append(message.get("id", ""))
+            row = Row.from_payload(raw)
+            if row.type == "assistant" and row.blocks:
+                blocks.setdefault(row.message_id, []).extend(row.blocks)
+                if row.of_type("tool_use"):
+                    ends.append(row.message_id)
                     done = at
-            elif row.get("type") == "user":
+            elif row.type == "user":
                 ends.append("")
                 done = at
         found = []
         for key in dict.fromkeys(ends):
             parts = blocks.get(key, [])
-            thought = "\n\n".join(part["thinking"].strip() for part in parts if part.get("type") == "thinking" and (part.get("thinking") or "").strip())
-            if any(part.get("type") == "text" for part in parts):
+            thought = "\n\n".join(part.thinking.strip() for part in parts if part.type == "thinking" and part.thinking.strip())
+            if any(part.type == "text" for part in parts):
                 found.append(("text", ""))
             elif thought:
                 found.append(("thinking", thought))
         return found, done
 
     def is_subagent(self, hook) -> bool:
-        where = Path(getattr(hook, "transcript", "") or "").parts + Path(getattr(hook, "cwd", "") or "").parts
-        return bool(getattr(hook, "agent", "")) or "subagents" in where or "worktrees" in where
+        where = (hook.transcript.parts if hook.transcript else ()) + Path(hook.cwd).parts
+        return bool(hook.agent) or "subagents" in where or "worktrees" in where
 
 
 class ClaudeDriver(Driver):
@@ -479,8 +451,8 @@ class ClaudeDriver(Driver):
         return self._handed(line)
 
     def owns(self, row) -> bool:
-        pid = Sessions(self.record.root).read(self.session).get("pid")
-        return bool(pid) and Path(row.inbox or "").stem == str(pid)
+        pid = Sessions(self.record.root).read(self.session).pid
+        return bool(pid) and Path(row.inbox).stem == str(pid)
 
     def _handed(self, line: str) -> bool:
         root = self.record.root
@@ -492,31 +464,31 @@ class ClaudeDriver(Driver):
             with runtime.channel_queue(root).open("a") as queue:
                 queue.write(json.dumps({"content": line, "meta": {"from": "journal"}}) + "\n")
             handed = runtime.session_file(root, self.session, HANDED)
-            held = read_json(handed, {})
-            write_json(handed, {**held, "lines": [*(held.get("lines") or [])[-HANDED_KEPT:], {"line": line[:HANDED_TEXT], "at": time.time()}]})
+            held = Handed.from_json(read_json(handed, {}))
+            write_json(handed, replace(held, lines=(*held.lines[-HANDED_KEPT:], HandedLine(line[:HANDED_TEXT], time.time()))).to_json())
             return True
         except OSError:
             return False
 
     @staticmethod
-    def _channel_text(row: dict) -> str:
-        if row.get("type") == "attachment":
-            return str((row.get("attachment") or {}).get("prompt") or "")
-        return str((row.get("message") or {}).get("content") or "") if row.get("type") == "user" else ""
+    def _channel_text(row: Row) -> str:
+        if row.type == "attachment":
+            return row.prompt
+        return row.text if row.type == "user" and row.text is not None else ""
 
     def _delivering(self) -> bool:
         handed = runtime.session_file(self.record.root, self.session, HANDED)
-        held = read_json(handed, {})
-        if time.time() < float(held.get("typed_until") or 0):
+        held = Handed.from_json(read_json(handed, {}))
+        if time.time() < held.typed_until:
             return False
         last = self.last_report()
-        waiting = held.get("lines") or []
+        waiting = held.lines
         if not waiting or not last or not last.transcript:
             return True
         rows = Claude().recent(Path(last.transcript))
         arrived = [text for text in map(self._channel_text, rows) if text.startswith(CHANNEL_MARK)]
-        times = [timestamp(str(row.get("timestamp") or "")) for row in rows]
-        lost = [h for h in waiting if not any(h["line"] in text for text in arrived) and sum(1 for at in times if at > h["at"]) >= MOVED_ON]
-        kept = [h for h in waiting if not any(h["line"] in text for text in arrived) and h not in lost]
-        write_json(handed, {"lines": [], "typed_until": time.time() + TYPED_FOR} if lost else {"lines": kept})
+        times = [row.at for row in rows]
+        lost = [h for h in waiting if not any(h.line in text for text in arrived) and sum(1 for at in times if at > h.at) >= MOVED_ON]
+        kept = tuple(h for h in waiting if not any(h.line in text for text in arrived) and h not in lost)
+        write_json(handed, (Handed(typed_until=time.time() + TYPED_FOR) if lost else Handed(lines=kept)).to_json())
         return not lost

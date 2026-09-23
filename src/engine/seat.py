@@ -8,6 +8,8 @@ from engine import runtime
 from controllers.types import Agents
 from resources.base import SYSTEM
 from resources.types import AgentRow
+from engine.fields import number_of, text_of
+from dataclasses import dataclass
 
 DISPATCHED, RETURNED = "dispatched", "returned"
 WEB_HOSTS = ("github.com", "gitlab.com", "bitbucket.org")
@@ -20,6 +22,21 @@ def web_remote(url: str) -> str:
     host = url.split("://", 1)[-1].split("/", 1)[0]
     return url if url.startswith("https://") and host in WEB_HOSTS else ""
 
+
+
+@dataclass(frozen=True)
+class SubagentRow:
+    id: str
+    task: str
+    kind: str
+    model: str
+    ended: float
+    status: str
+
+    @classmethod
+    def from_json(cls, raw: dict) -> "SubagentRow":
+        return cls(text_of(raw, "id", "session", "task"), text_of(raw, "task"), text_of(raw, "type"), text_of(raw, "model"), number_of(raw, "ended"),
+                   text_of(raw, "status"))
 
 class Seat:
     def branch(self) -> str:
@@ -39,7 +56,7 @@ class Seat:
         remote = git(["remote", "get-url", "origin"], cwd, timeout=2).strip()
         url = f"{web}/tree/{self.branch_name}" if self.branch_name and (web := web_remote(remote)) else ""
         if last and last.title and self.branch_name and (last.branch, last.branch_url) != (self.branch_name, url):
-            self.agent.mark(last.status or "", last.event or "", branch=self.branch_name, branch_url=url, at=last.at)
+            self.agent.mark(last.status, last.event, branch=self.branch_name, branch_url=url, at=last.at)
         return self.branch_name
 
     def crew(self) -> None:
@@ -60,22 +77,23 @@ class Seat:
         if facts and any(last.data.get(k) != v for k, v in facts.items()):
             compacting = facts.get("compacting")
             status = COMPACTING if compacting else WORKING if compacting is False and last.status == COMPACTING else last.status or ""
-            self.agent.mark(status, last.event or "", at=last.at, **facts)
+            self.agent.mark(status, last.event, at=last.at, **facts)
 
     def subagents_moved(self, last, subagents: list | None) -> None:
         if subagents is None:
             return
         known = self.subagents_ended
         if known is None:
-            known = {sub["id"]: sub.get("ended") for sub in last.data.get(AgentRow.subagent_rows) or []}
+            known = {sub.id: sub.ended for sub in map(SubagentRow.from_json, last.subagent_rows)}
         agents = Agents(self.record, actor=SYSTEM)
-        for sub in subagents:
-            data = {"id": sub["id"], "task": sub["task"], "kind": sub["type"], "model": sub["model"]}
-            if sub["id"] not in known:
+        rows = [SubagentRow.from_json(sub) for sub in subagents]
+        for sub in rows:
+            data = {"id": sub.id, "task": sub.task, "kind": sub.kind, "model": sub.model}
+            if sub.id not in known:
                 agents.subagent(last.n, DISPATCHED, **data)
-            if sub.get("ended") and not known.get(sub["id"]):
-                agents.subagent(last.n, RETURNED, **data, status=sub.get("status") or "")
-        self.subagents_ended = {sub["id"]: sub.get("ended") for sub in subagents}
+            if sub.ended and not known.get(sub.id):
+                agents.subagent(last.n, RETURNED, **data, status=sub.status)
+        self.subagents_ended = {sub.id: sub.ended for sub in rows}
 
     def seat(self) -> None:
         self.branch()

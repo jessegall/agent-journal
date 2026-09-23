@@ -58,12 +58,12 @@ def notice_stopped(root: Path, env: str, log: str) -> bool:
 
 
 def fault_of(trouble: str) -> str:
-    lines = [line for line in str(trouble or "").strip().splitlines() if line.strip()]
+    lines = [line for line in trouble.strip().splitlines() if line.strip()]
     return lines[-1].strip() if lines else ""
 
 
 def place_of(trouble: str) -> str:
-    frames = FRAME.findall(str(trouble or ""))
+    frames = FRAME.findall(trouble)
     kind = fault_of(trouble).split(":", 1)[0]
     return f"{kind} at {frames[-1][0]}:{frames[-1][1]}" if frames else fault_of(trouble)
 

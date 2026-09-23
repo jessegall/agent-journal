@@ -8,6 +8,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from engine import runtime  # noqa: E402
 from engine.sessions import ACTIVE_ENV  # noqa: E402
+from engine.fields import text_of  # noqa: E402
 
 PROTOCOL = "2025-06-18"
 NAME = "journal"
@@ -44,7 +45,7 @@ def contents(lines: list[str]) -> list[str]:
     texts = []
     for line in lines:
         try:
-            texts.append(str(json.loads(line).get("content") or ""))
+            texts.append(text_of(json.loads(line), "content"))
         except ValueError:
             continue
     return [s for s in texts if s]
@@ -83,7 +84,7 @@ def launched() -> bool:
 
 
 def answer(asked: dict) -> dict | None:
-    method = asked.get("method")
+    method = text_of(asked, "method")
     if method == "initialize" and not launched():
         return {"protocolVersion": PROTOCOL, "serverInfo": {"name": NAME, "version": "1"}, "capabilities": {}}
     if method == "initialize":

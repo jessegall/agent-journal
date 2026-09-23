@@ -7,7 +7,7 @@ import resources.types as resources_module
 from controllers.base import Controller
 from engine.proc import streamed
 from engine.watch import threw
-from features.checks.resource import Check
+from features.checks.resource import Check, CheckRun
 from resources.base import Refused
 
 TIMEOUT = 600
@@ -69,7 +69,7 @@ class Checks(Controller):
 
     def _ran(self, n: int):
         check = self.load(n)
-        began, last_steps = time.time(), int((check.last or {}).get("steps") or 0)
+        began, last_steps = time.time(), check.last_run.steps
         self.stamp(n, running={"at": began, "output": "", "percent": None})
         stamped_at = [began]
 
@@ -80,15 +80,17 @@ class Checks(Controller):
 
         code, output = streamed(["/bin/sh", "-c", check.command], self.record.root.parent, TIMEOUT, on_output)
         check = self.load(n)
-        check.last = {"ok": code == 0, "code": -1 if code is None else code, "at": began, "took": round(time.time() - began, 2),
-                      "steps": steps(output), "output": tail(output) or ("" if code is not None else "the command did not finish")}
-        check.runs = [{k: check.last[k] for k in ("ok", "code", "at", "took")}, *(check.runs or [])][:KEPT_RUNS]
+        kept = tail(output)
+        run = CheckRun(ok=code == 0, code=-1 if code is None else code, at=began, took=round(time.time() - began, 2), steps=steps(output),
+                       output=kept if kept or code is not None else "the command did not finish")
+        check.last = run.to_json()
+        check.runs = [run.summary, *check.runs][:KEPT_RUNS]
         check.running = {}
         return self.save(check, "updated", ran=True)
 
     def _due(self, now: float) -> list:
         return [check for check in self._standing()
-                if check.command and check.every and now - float((check.last or {}).get("at") or check.created) >= float(check.every) * 60]
+                if check.command and check.every and now - (check.last_run.at if check.last_run.at else check.created) >= float(check.every) * 60]
 
 
 resources_module.register(Check)

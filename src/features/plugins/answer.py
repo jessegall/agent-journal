@@ -1,18 +1,45 @@
 import re
-import time
+from dataclasses import dataclass, replace
 from pathlib import Path
 
 from controllers.types import Agents, Plugins, Todos
 from engine.hooks import gate_file
+from engine.fields import text_of
 from engine.stored import read_json, write_json
+from features.plugins.declared import declared, settings_of
 from features.plugins.lifecycle import called
-from features.plugins.source import CHOSEN
 from resources.base import PLUGIN, RAISED, Refused, SYSTEM, check_abstract, check_title
 
 KEYS = ("whisper", "say", "notify", "notice", "todo", "hold", "settings", "raise")
 MOST = 20
 COLOR = re.compile(r"^(#[0-9a-fA-F]{3,8}|[a-z]+)$")
 HELD = "plugin"
+
+
+@dataclass(frozen=True)
+class Posting:
+    title: str
+    abstract: str = ""
+    brief: str = ""
+    about: str = ""
+    tone: str = ""
+    link: str = ""
+    event: str = ""
+
+    @classmethod
+    def of(cls, value, key: str = "title") -> "Posting":
+        if not isinstance(value, dict):
+            return cls(**{"title": "", key: str(value)})
+        return cls(title=text_of(value, "title"), abstract=text_of(value, "abstract"), brief=text_of(value, "brief"), about=text_of(value, "about"),
+                   tone=text_of(value, "tone"), link=text_of(value, "link"), event=text_of(value, "event"))
+
+
+@dataclass(frozen=True)
+class Look:
+    label: str
+    icon: str
+    tone: str
+    color: str
 
 
 def held(root: Path, env: str, session: str, plugin: str, why: str) -> None:
@@ -33,26 +60,26 @@ def nudged(record, journal, plugin: str, session: str, text: str, private: bool)
         journal.say(record, row, "plugin", private=private, actor=PLUGIN, title=plugin, brief=text, plugin=plugin)
 
 
-def raised(record, plugin: str, session: str, fields: dict) -> None:
+def raised(record, plugin: str, session: str, asked: Posting) -> None:
     row = next((r for r in Plugins(record, actor=PLUGIN)._standing() if called(r) == plugin), None)
-    name = str(fields.get("event") or "")
-    declared = ((row.manifest or {}).get("events") or {}).get(name) if row else None
-    if not declared:
+    name = asked.event
+    event = declared(row).event(name) if row else None
+    if not event:
         raise Refused(f"{plugin} declares no event {name}")
-    title, brief = str(declared.get("title") or name), str(fields.get("brief") or "")
-    record.emit("plugin", row.n, RAISED, PLUGIN, event=f"{plugin}.{name}", title=title, tone=str(declared.get("tone") or ""), brief=brief, plugin=plugin)
-    if isinstance(declared.get("card"), dict):
-        carded(record, session, plugin, {"label": title, "tone": str(declared.get("tone") or ""), **declared["card"]}, brief)
+    title = event.title if event.title else name
+    record.emit("plugin", row.n, RAISED, PLUGIN, event=f"{plugin}.{name}", title=title, tone=event.tone, brief=asked.brief, plugin=plugin)
+    if event.card:
+        card = event.card
+        carded(record, session, plugin, Look(card.label if card.label else title, card.icon, card.tone if card.tone else event.tone, card.color), asked.brief)
 
 
-def carded(record, session: str, plugin: str, look: dict, brief: str) -> None:
+def carded(record, session: str, plugin: str, look: Look, brief: str) -> None:
     agents = Agents(record, actor=SYSTEM)
     agent = next((r for r in agents._every() if r.title == session), None) if session else agents.primary()
     if not agent:
         return
-    color = str(look.get("color") or "")
-    agents.card(agent.n, plugin=plugin, label=str(look.get("label") or plugin), icon=str(look.get("icon") or "bell"), tone=str(look.get("tone") or ""),
-                color=color if COLOR.match(color) else "", detail=next((line.strip(" •-") for line in brief.splitlines() if line.strip()), ""))
+    agents.card(agent.n, plugin=plugin, label=look.label if look.label else plugin, icon=look.icon if look.icon else "bell", tone=look.tone,
+                color=look.color if COLOR.match(look.color) else "", detail=next((line.strip(" •-") for line in brief.splitlines() if line.strip()), ""))
 
 
 def settled(record, plugin: str, values: dict) -> None:
@@ -60,12 +87,11 @@ def settled(record, plugin: str, values: dict) -> None:
     row = next((r for r in rows._standing() if called(r) == plugin), None)
     if row is None:
         return
-    known = (row.manifest or {}).get("settings") or {}
-    kept = dict(row.settings or {})
-    chosen = kept.get(CHOSEN) or {}
-    found = {key: str(value) for key, value in values.items() if key in known and chosen.get(key) != str(value)}
+    known = {setting.key for setting in declared(row).settings}
+    settings = settings_of(row)
+    found = {key: str(value) for key, value in values.items() if key in known and settings.chosen.get(key) != str(value)}
     if found:
-        rows.update(row.n, settings={**kept, CHOSEN: {**chosen, **found}})
+        rows.update(row.n, settings=replace(settings, chosen={**settings.chosen, **found}).to_json())
 
 
 def wanted(reply: dict) -> list[tuple[str, object]]:
@@ -87,20 +113,19 @@ def one(record, journal, plugin: str, session: str, key: str, value) -> None:
     if key in ("whisper", "say"):
         nudged(record, journal, plugin, session, str(value), key == "whisper")
     elif key == "notify":
-        notification = value if isinstance(value, dict) else {"title": str(value)}
-        journal.notify(record, "plugin", actor=PLUGIN, title=check_title(str(notification.get("title") or "")), abstract=check_abstract(str(notification.get("abstract") or "")),
-                       brief=str(notification.get("brief") or ""), about=notification.get("about") or None, plugin=plugin)
+        posting = Posting.of(value)
+        journal.notify(record, "plugin", actor=PLUGIN, title=check_title(posting.title), abstract=check_abstract(posting.abstract),
+                       brief=posting.brief, about=posting.about if posting.about else None, plugin=plugin)
     elif key == "notice":
-        fields = value if isinstance(value, dict) else {"title": str(value)}
-        journal.notice(record, "plugin", actor=PLUGIN, title=check_title(str(fields.get("title") or "")), brief=str(fields.get("brief") or ""),
-                       tone=fields.get("tone") or "", link=fields.get("link") or "", plugin=plugin)
+        posting = Posting.of(value)
+        journal.notice(record, "plugin", actor=PLUGIN, title=check_title(posting.title), brief=posting.brief, tone=posting.tone, link=posting.link, plugin=plugin)
     elif key == "raise":
         for fields in value if isinstance(value, list) else [value]:
-            raised(record, plugin, session, fields if isinstance(fields, dict) else {"event": str(fields)})
+            raised(record, plugin, session, Posting.of(fields, "event"))
     elif key == "settings" and isinstance(value, dict):
         settled(record, plugin, value)
     elif key == "todo":
-        asked = value if isinstance(value, dict) else {"title": str(value)}
-        Todos(record, actor=PLUGIN).create(check_title(str(asked.get("title") or "")), brief=str(asked.get("brief") or ""), plugin=plugin)
+        posting = Posting.of(value)
+        Todos(record, actor=PLUGIN).create(check_title(posting.title), brief=posting.brief, plugin=plugin)
     elif key == "hold":
-        held(record.root, record.env, session, plugin, str(value or ""))
+        held(record.root, record.env, session, plugin, str(value) if value else "")

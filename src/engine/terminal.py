@@ -1,5 +1,6 @@
 import json
 import os
+from dataclasses import dataclass
 from pathlib import Path
 
 from engine.sessions import ACTIVE_ENV, hold_build
@@ -7,6 +8,7 @@ from install import code
 from engine import runtime
 from engine.stored import read_json, write_json
 from engine.package import CODE, entry
+from engine.fields import list_of, text_of, whole_of
 
 RELOAD = 75
 STOP = 76
@@ -15,6 +17,21 @@ HEAL = 78
 LAUNCH = 2
 CARRIED = "AGENT_JOURNAL_CARRIED"
 LAUNCHED = "launched.json"
+
+
+@dataclass(frozen=True)
+class Launched:
+    pid: int = 0
+    command: tuple = ()
+    args: tuple = ()
+    cwd: str = ""
+    launch: int = 0
+
+    @classmethod
+    def read(cls, root: Path, session: str) -> "Launched":
+        raw = read_json(runtime.session_file(root, session, LAUNCHED), {})
+        raw = raw if isinstance(raw, dict) else {}
+        return cls(whole_of(raw, "pid"), tuple(list_of(raw, "command")), tuple(list_of(raw, "args")), text_of(raw, "cwd"), whole_of(raw, "launch"))
 
 
 def watched(root: Path) -> tuple:
@@ -43,24 +60,33 @@ def launching(root: Path, cwd: Path, env: str, agent: str, args: list[str], conv
     return {"command": command, "args": args, "launch": LAUNCH, "environ": agent_environment(env=env, capped=output_cap(root, env, PROVIDERS[agent]()))}
 
 
-def seated(root: Path, env: str, session: str, agent: str) -> None:
+@dataclass(frozen=True)
+class Seat:
+    root: Path
+    env: str
+    agent: str
+    session: str
+
+
+def seated(seat: Seat) -> None:
     from controllers.types import Environments
     from engine.record import Record
     from engine.sessions import Sessions
     from resources.base import SYSTEM
-    launched = read_json(runtime.session_file(root, session, LAUNCHED), {})
-    Sessions(root).bind(session, env, pid=launched.get("pid") or 0, provider=agent)
-    Sessions(root).write(session, args=launched.get("command") or [], launch=launched.get("launch") or 0)
-    Environments(Record(root, env), actor=SYSTEM)._seat(env, session)
+    launched = Launched.read(seat.root, seat.session)
+    Sessions(seat.root).bind(seat.session, seat.env, pid=launched.pid, provider=seat.agent)
+    Sessions(seat.root).write(seat.session, args=list(launched.command), launch=launched.launch)
+    Environments(Record(seat.root, seat.env), actor=SYSTEM)._seat(seat.env, seat.session)
 
 
 def relaunch(root: Path, env: str, session: str, conversation: str) -> Path:
     from engine.sessions import Sessions
-    launched = read_json(runtime.session_file(root, session, LAUNCHED), {})
-    agent = Sessions(root).read(session).get("provider") or session.split("-", 1)[0]
-    cwd = Path(launched.get("cwd") or root.parent)
+    launched = Launched.read(root, session)
+    provider = Sessions(root).read(session).provider
+    agent = provider if provider else session.split("-", 1)[0]
+    cwd = Path(launched.cwd) if launched.cwd else root.parent
     asked = runtime.relaunch_file(root, session)
-    write_json(asked, launching(root, cwd, env, agent, launched.get("args") or [], conversation))
+    write_json(asked, launching(root, cwd, env, agent, list(launched.args), conversation))
     return asked
 
 

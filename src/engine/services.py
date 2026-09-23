@@ -3,9 +3,11 @@ import signal
 import socket
 import subprocess
 import time
+from dataclasses import asdict, dataclass, replace
 from pathlib import Path
 
-from engine.keeper import gone, teardown
+from engine.fields import number_of, text_of
+from engine.keeper import ServiceSpec, ServiceState, gone, teardown
 from engine.record import Record
 from engine.stored import read_json, write_json
 from engine.package import entry
@@ -42,24 +44,36 @@ def log_file(root: Path, sid: str) -> Path:
     return runtime(root, f"service-{sid}.log")
 
 
-def status(root: Path, sid: str) -> dict:
-    return read_json(status_file(root, sid), {})
+@dataclass(frozen=True)
+class Wanted:
+    want: str = UP
+    nonce: float = 0.0
+
+    @classmethod
+    def read(cls, root: Path, sid: str) -> "Wanted":
+        raw = read_json(want_file(root, sid), {})
+        raw = raw if isinstance(raw, dict) else {}
+        return cls(text_of(raw, "want") if text_of(raw, "want") else UP, number_of(raw, "nonce"))
 
 
-def states(root: Path) -> dict:
+def status(root: Path, sid: str) -> ServiceState:
+    return ServiceState.read(status_file(root, sid))
+
+
+def states(root: Path) -> dict[str, ServiceState]:
     home = runtime(root, "")
     found = sorted(home.glob("service-*.json")) if home.is_dir() else []
-    return {p.stem.removeprefix("service-"): read_json(p, {}) for p in found}
+    return {p.stem.removeprefix("service-"): ServiceState.read(p) for p in found}
 
 
 def wanted(root: Path, sid: str) -> str:
-    return str(read_json(want_file(root, sid), {}).get("want") or UP)
+    return Wanted.read(root, sid).want
 
 
 def want(root: Path, sid: str, state: str, nonce: float = 0.0) -> dict:
-    wanted = {"want": state if state in (UP, DOWN) else UP, "nonce": nonce or 0.0}
-    write_json(want_file(root, sid), wanted)
-    return wanted
+    asked = {"want": state if state in (UP, DOWN) else UP, "nonce": nonce}
+    write_json(want_file(root, sid), asked)
+    return asked
 
 
 def free(port: int) -> bool:
@@ -74,8 +88,8 @@ def free(port: int) -> bool:
 
 def allocate(root: Path, sid: str, wants, taken: set[int]) -> tuple[int, str]:
     if isinstance(wants, int):
-        return (wants, "") if free(wants) or status(root, sid).get("port") == wants else (wants, f"port {wants} is in use")
-    before = int(status(root, sid).get("port") or 0)
+        return (wants, "") if free(wants) or status(root, sid).port == wants else (wants, f"port {wants} is in use")
+    before = status(root, sid).port
     if before and before not in taken and free(before):
         return before, ""
     for port in PORTS:
@@ -93,35 +107,39 @@ def plugins(root: Path) -> list:
     return [r for r in Plugins(record, actor=SYSTEM)._standing() if r.enabled and r.manifest]
 
 
-def specs(root: Path) -> list[dict]:
+def planned(root: Path, name: str, service, port: int, blocked: str, env: dict, where: Path) -> ServiceSpec:
+    sid = f"{name}.{service.name}"
+    return ServiceSpec(id=sid, plugin=name, service=service.name, port=port, blocked=blocked, run=service.run, cwd=str(where / service.cwd),
+                       env={**env, **service.env}, path=service.ready_path, restart=service.restart, grace=service.grace, show=service.show,
+                       lock=str(lock_file(root, sid)), log=str(log_file(root, sid)), status=str(status_file(root, sid)), spec=str(spec_file(root, sid)))
+
+
+def specs(root: Path) -> list[ServiceSpec]:
+    from features.plugins.declared import declared, settings_of
     from features.plugins.manifest import fill
-    from features.plugins.source import CHOSEN, environment, folder
-    out: list[dict] = []
+    from features.plugins.source import environment, folder
+    out: list[ServiceSpec] = []
     taken: set[int] = set()
     for row in plugins(root):
-        name = str(row.manifest.get("name") or "")
+        manifest = declared(row)
+        name = manifest.name
         where = folder(root, name)
-        kept = (row.settings or {}).get("ports") or {}
-        env = environment(root, name, row.manifest, row.token, kept, (row.settings or {}).get(CHOSEN))
+        settings = settings_of(row)
+        kept = settings.ports
+        env = environment(root, name, manifest, row.token, kept, settings.chosen)
         ports = {f"ports.{service}": port for service, port in kept.items()}
-        for service, given in (row.manifest.get("services") or {}).items():
-            sid = f"{name}.{service}"
-            port, blocked = allocate(root, sid, kept.get(service) or given.get("port"), taken) if given.get("port") is not None else (0, "")
+        made = []
+        for service in manifest.services:
+            asked = kept[service.name] if kept.get(service.name) else service.port
+            port, blocked = allocate(root, f"{name}.{service.name}", asked, taken) if service.port is not None else (0, "")
             if port:
                 taken.add(port)
-                ports[f"ports.{service}"] = port
-            out.append({"id": sid, "plugin": name, "service": service, "port": port, "blocked": blocked,
-                        "run": given["run"], "cwd": str(where / (given.get("cwd") or "")), "env": {**env, **(given.get("env") or {})},
-                        "path": str((given.get("ready") or {}).get("path") or ""), "restart": given.get("restart") or "on-failure",
-                        "grace": float(given.get("grace") or 5.0), "show": given.get("show") or {},
-                        "lock": str(lock_file(root, sid)), "log": str(log_file(root, sid)), "status": str(status_file(root, sid)), "spec": str(spec_file(root, sid))})
-        for spec in out:
-            if spec["plugin"] != name:
-                continue
-            places = {**ports, "port": spec["port"], "dir": str(where)}
-            spec["run"] = fill(spec["run"], places)
-            spec["env"] = {key: str(fill(value, places)) for key, value in spec["env"].items()}
-            spec["url"] = f"http://127.0.0.1:{spec['port']}" if spec["port"] else ""
+                ports[f"ports.{service.name}"] = port
+            made.append(planned(root, name, service, port, blocked, env, where))
+        for spec in made:
+            places = {**ports, "port": spec.port, "dir": str(where)}
+            out.append(replace(spec, run=fill(spec.run, places), env={key: str(fill(value, places)) for key, value in spec.env.items()},
+                               url=f"http://127.0.0.1:{spec.port}" if spec.port else ""))
     return out
 
 
@@ -137,11 +155,11 @@ def alive(pid: int) -> bool:
     return True
 
 
-def spawn(spec: dict, lifeline: int) -> int:
-    write_json(Path(spec["status"]), {**read_json(Path(spec["status"]), {}), **{k: spec[k] for k in ("port", "url")}, "owner": os.getpid()})
-    Path(spec["log"]).parent.mkdir(parents=True, exist_ok=True)
-    with open(spec["log"], "ab", buffering=0) as log:
-        kept = subprocess.Popen([*entry("engine.keeper"), str(lifeline), str(spec["spec"])],
+def spawn(spec: ServiceSpec, lifeline: int) -> int:
+    replace(ServiceState.read(spec.status), port=spec.port, url=spec.url, owner=os.getpid()).write(spec.status)
+    Path(spec.log).parent.mkdir(parents=True, exist_ok=True)
+    with open(spec.log, "ab", buffering=0) as log:
+        kept = subprocess.Popen([*entry("engine.keeper"), str(lifeline), spec.spec],
                                 pass_fds=(lifeline,) if lifeline >= 0 else (), stdin=subprocess.DEVNULL,
                                 stdout=log, stderr=log, start_new_session=True)
     return kept.pid
@@ -164,8 +182,8 @@ class Manager:
         declared = specs(self.root)
         for spec in declared:
             if self.one(spec):
-                started.append(spec["id"])
-        self.retire({spec["id"] for spec in declared})
+                started.append(spec.id)
+        self.retire({spec.id for spec in declared})
         self.sweep()
         return started
 
@@ -174,44 +192,44 @@ class Manager:
         for sid in gone_now:
             current = status(self.root, sid)
             self.stop(sid, current)
-            if int(current.get("pgid") or 0) and not gone(int(current["pgid"])):
-                teardown(int(current["pgid"]), 1.0)
+            if current.pgid and not gone(current.pgid):
+                teardown(current.pgid, 1.0)
             for place in (status_file, spec_file, want_file, lock_file, log_file):
                 place(self.root, sid).unlink(missing_ok=True)
         return gone_now
 
-    def one(self, spec: dict) -> bool:
-        sid = spec["id"]
+    def one(self, spec: ServiceSpec) -> bool:
+        sid = spec.id
         current = status(self.root, sid)
-        asked = read_json(want_file(self.root, sid), {})
+        asked = Wanted.read(self.root, sid)
         now = self.clock()
-        if str(asked.get("want") or UP) == DOWN:
+        if asked.want == DOWN:
             self.stop(sid, current)
             return False
-        if float(asked.get("nonce") or 0) > self.marks.get(sid, 0.0):
-            self.marks[sid] = float(asked.get("nonce") or 0)
+        if asked.nonce > self.marks.get(sid, 0.0):
+            self.marks[sid] = asked.nonce
             self.stop(sid, current)
             self.crashes.pop(sid, None)
             self.waiting.pop(sid, None)
-            current = {}
-        if self.living(current.get("keeper", 0)) and current.get("state") not in RESTING:
+            current = ServiceState()
+        if self.living(current.keeper) and current.state not in RESTING:
             return False
-        if spec["blocked"]:
-            write_json(Path(spec["status"]), {**current, "state": BLOCKED, "why": spec["blocked"], "at": now})
+        if spec.blocked:
+            replace(current, state=BLOCKED, why=spec.blocked, at=now).write(spec.status)
             return False
-        if current.get("state") == "exited" and self.seen.get(sid) != current.get("at"):
-            self.seen[sid] = current.get("at")
+        if current.state == "exited" and self.seen.get(sid) != current.at:
+            self.seen[sid] = current.at
             self.crashed(sid, now)
         if len(self.crashes.get(sid, [])) >= CRASHES:
-            write_json(Path(spec["status"]), {**current, "state": FAILED, "why": f"it stopped {CRASHES} times within {WITHIN:g} seconds", "at": now})
+            replace(current, state=FAILED, why=f"it stopped {CRASHES} times within {WITHIN:g} seconds", at=now).write(spec.status)
             return False
         if self.waiting.get(sid, 0) > now:
             return False
-        if spec["restart"] == "never" and current.get("state") in ("exited", "stopped"):
+        if spec.restart == "never" and current.state in ("exited", "stopped"):
             return False
-        write_json(spec_file(self.root, sid), {**spec, "owner": os.getpid()})
+        write_json(spec_file(self.root, sid), asdict(replace(spec, owner=os.getpid())))
         keeper = self.start(spec, self.lifeline)
-        write_json(Path(spec["status"]), {**current, "state": "starting", "keeper": keeper, "owner": os.getpid(), "port": spec["port"], "url": spec["url"], "at": now})
+        replace(current, state="starting", keeper=keeper, owner=os.getpid(), port=spec.port, url=spec.url, at=now).write(spec.status)
         return True
 
     def crashed(self, sid: str, now: float) -> None:
@@ -219,32 +237,33 @@ class Manager:
         self.crashes[sid] = seen
         self.waiting[sid] = now + BACKOFF[min(len(seen), len(BACKOFF)) - 1]
 
-    def stop(self, sid: str, current: dict) -> None:
-        if self.living(current.get("keeper", 0)):
+    def stop(self, sid: str, current: ServiceState) -> None:
+        if self.living(current.keeper):
             try:
-                os.kill(int(current["keeper"]), signal.SIGTERM)
+                os.kill(current.keeper, signal.SIGTERM)
             except (ProcessLookupError, PermissionError):
                 pass
 
     def sweep(self) -> list[int]:
         killed = []
         for sid, current in states(self.root).items():
-            group = int(current.get("pgid") or 0)
-            if not group or gone(group) or self.living(current.get("keeper", 0)):
+            group = current.pgid
+            if not group or gone(group) or self.living(current.keeper):
                 continue
             teardown(group, 1.0)
             killed.append(group)
-            write_json(status_file(self.root, sid), {**current, "state": "stopped", "why": "its keeper is gone", "at": self.clock()})
+            replace(current, state="stopped", why="its keeper is gone", at=self.clock()).write(status_file(self.root, sid))
         return killed
 
 
 def listed(root: Path) -> list[dict]:
-    known = {spec["id"]: spec for spec in specs(root)}
+    known = {spec.id: spec for spec in specs(root)}
     current = states(root)
     out = []
     for sid in sorted({*known, *current}):
-        spec, state = known.get(sid, {}), current.get(sid, {})
-        out.append({"id": sid, "plugin": spec.get("plugin") or sid.split(".")[0], "service": spec.get("service") or sid.split(".", 1)[-1],
-                    "state": state.get("state") or "not running", "why": state.get("why") or "", "url": spec.get("url") or state.get("url") or "",
-                    "port": spec.get("port") or state.get("port") or 0, "since": state.get("started") or 0, "declared": sid in known})
+        spec, state = known.get(sid), current.get(sid, ServiceState())
+        plugin, _, service = sid.partition(".")
+        out.append({"id": sid, "plugin": spec.plugin if spec else plugin, "service": spec.service if spec else service,
+                    "state": state.state if state.state else "not running", "why": state.why, "url": spec.url if spec and spec.url else state.url,
+                    "port": spec.port if spec and spec.port else state.port, "since": state.started, "declared": spec is not None})
     return out

@@ -9,6 +9,7 @@ from controllers.types import CONTROLLERS, Agents, Plugins
 from engine.hooks import handle
 from engine.services import Manager, status_file
 from features.plugins.commands import ClearLog
+from features.plugins.declared import Manifest
 from features.plugins.manifest import MANIFEST
 from features.plugins.source import alone, folder, home, log, plugin_socket
 from providers import PROVIDERS
@@ -134,10 +135,10 @@ def test_a_chosen_setting_reaches_the_plugins_commands():
     record = alone()
     row = installed(record, "linter", "exit 0", settings={"quiet": {"title": "Quiet", "default": "", "env": "QUIET"}})
     plugins = Plugins(record, actor=SYSTEM)
-    assert environment(record.root, "linter", row.manifest, row.token)["QUIET"] == "", "unchanged, a setting is its default"
+    assert environment(record.root, "linter", Manifest.of(row.manifest), row.token)["QUIET"] == "", "unchanged, a setting is its default"
     Configure().run(None, plugins, row.n, "quiet", "SourceReminder")
     chosen = (plugins.load(row.n).settings or {}).get(CHOSEN)
-    assert environment(record.root, "linter", row.manifest, row.token, chosen=chosen)["QUIET"] == "SourceReminder", "and a chosen value reaches its env"
+    assert environment(record.root, "linter", Manifest.of(row.manifest), row.token, chosen=chosen)["QUIET"] == "SourceReminder", "and a chosen value reaches its env"
     assert "has no setting" in refused(lambda: Configure().run(None, plugins, row.n, "loud", "x"))
     typed = installed(record, "typed", "exit 0", settings={"on": {"type": "flag", "default": "true"}, "level": {"type": "options", "options": ["low", "high"]}},
                       events={"sin-found": {"title": "Sin found", "tone": "warn", "card": {"icon": "warn"}}})
@@ -202,11 +203,11 @@ def test_a_plugins_skills_are_published_marked_as_its_own_and_taken_back():
         (shipped / name / "SKILL.md").write_text(f"---\nname: {name}\n---\n\nbody\n")
     (project / LIBRARY / "teacher-mine").mkdir(parents=True, exist_ok=True)
     (project / LIBRARY / "teacher-mine" / "SKILL.md").write_text("---\nname: teacher-mine\n---\n")
-    published(record.root, "teacher", {"skills": "out"})
+    published(record.root, "teacher", Manifest.of({"name": "teacher", "skills": "out"}))
     assert "plugin: teacher" in (project / LIBRARY / "teacher-one" / "SKILL.md").read_text(), "a published skill says which plugin it came from"
     assert (project / ".claude" / "skills" / "teacher-one").is_symlink(), "and every agent reads it"
     shutil.rmtree(shipped / "teacher-two")
-    published(record.root, "teacher", {"skills": "out"})
+    published(record.root, "teacher", Manifest.of({"name": "teacher", "skills": "out"}))
     assert not (project / LIBRARY / "teacher-two").exists(), "an upgrade that drops a skill takes it back"
     assert withdrawn(record.root, "teacher") == ["teacher-one"], "removing the plugin takes back exactly its own skills"
     assert (project / LIBRARY / "teacher-mine").is_dir(), "a skill it did not publish is left alone"

@@ -9,8 +9,9 @@ from features.work_tracking import tracker
 from engine.transcript import IDLE
 from features.work_tracking.next import next
 from resources.types import Work
+from engine.fields import text_of
+from features.status_bar.runs import command_runs
 
-EDITS = "edits"
 ASKED_AGAIN_AFTER = 600
 
 
@@ -46,7 +47,7 @@ class WorkLogged(ResourceEvent):
 
     @classmethod
     def read(cls, event) -> "WorkLogged":
-        return cls(n=event.n, action=event.action, type=event.type, actor=event.actor, section=str(event.data.get("section") or ""))
+        return cls(n=event.n, action=event.action, type=event.type, actor=event.actor, section=text_of(event.data, "section"))
 
 
 def working(context: Context) -> list:
@@ -104,7 +105,7 @@ def name_parked(context: Context) -> None:
 
 class NameParkedOnTodoDone(Handler):
     def handle(self, context: Context, event: TodoCompleted) -> None:
-        if not any(int(w.todo or 0) == event.n for w in context.journal.works._standing()):
+        if not any(int(w.todo) == event.n for w in context.journal.works._standing()):
             name_parked(context)
 
 
@@ -146,7 +147,7 @@ class EndWorkWithTodo(Handler):
     def handle(self, context: Context, event: TodoCompleted) -> None:
         works = context.journal.works
         for work in works._standing():
-            if int(work.todo or 0) == event.n:
+            if int(work.todo) == event.n:
                 works.complete(work.n, how=context.journal.todos.load(event.n).outcome or f"todo {event.n} done")
 
 
@@ -175,11 +176,13 @@ class ClearWaitOnActivity(Handler):
     def handle(self, context: AgentContext, event: ToolFinished) -> None:
         if not context.agent.row.wrote:
             return
-        started = float(((context.agent.row.data.get("commands") or [{}])[-1]).get("at") or 0)
+        runs = command_runs(context.agent.row)
+        started = runs[-1].at if runs else 0.0
         for w in working(context)[:1]:
-            if w.awaiting and started > float(w.awaiting_since or 0):
-                context.journal.works.update(w.n, awaiting="")
-                context.agent.whisper("wait cleared", awaiting=w.awaiting)
+            if not w.awaiting or started <= float(w.awaiting_since):
+                continue
+            context.journal.works.update(w.n, awaiting="")
+            context.agent.whisper("wait cleared", awaiting=w.awaiting)
 
 
 class AskStillAwaiting(Handler):
@@ -208,8 +211,8 @@ class CountEdits(Handler):
         if not context.agent.row.wrote or not work:
             return
         row, name = context.agent.row, context.feature.name
-        edits = int(trigger.last(context.record, row.title, name).get(EDITS) or 0) + 1
-        trigger.write(context.record, row, name, **{EDITS: edits})
+        edits = trigger.last(context.record, row.title, name).edits + 1
+        trigger.write(context.record, row, name, edits=edits)
         every = context.settings.name_work_every
         if every and edits % every == 0:
             context.agent.whisper("in hand", n=work[0].n, title=work[0].title)
@@ -222,7 +225,7 @@ class ResetEditsOnLog(Handler):
         if not event.section:
             return
         for row in context.feature.live(context.record):
-            trigger.write(context.record, row, context.feature.name, **{EDITS: 0})
+            trigger.write(context.record, row, context.feature.name, edits=0)
         context.release()
 
 

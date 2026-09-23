@@ -46,14 +46,18 @@ class ReportCheckResult(Handler):
         if not event.ran:
             return
         check = context.journal.checks.load(event.n)
-        said = summary((check.last or {}).get("output") or "") or check.title
-        title = (str(check.data.get("failure") or "").replace("{summary}", said) or f"check {check.n} failed - {said}")[:80]
-        if (check.last or {}).get("ok"):
+        last = check.last_run
+        output = last.output
+        found = summary(output)
+        headline = found if found else check.title
+        failure = check.failure.replace("{summary}", headline) if check.failure else ""
+        title = (failure if failure else f"check {check.n} failed - {headline}")[:80]
+        if last.ok:
             for stale in context.journal.notifications.linked_to(check.ref):
                 if not stale.completed:
                     context.journal.clear(stale, "the check passes again")
             return
-        context.journal.notify("failing", title=title, output=(check.last or {}).get("output") or "it said nothing", about=check.ref)
+        context.journal.notify("failing", title=title, output=output if output else "it said nothing", about=check.ref)
         agent = context.journal.agents.primary()
         if agent:
             context.speaking_to(agent).agent.say("failed", title=title, n=check.n)

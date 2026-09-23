@@ -128,15 +128,6 @@ function follow(e) {
     color: var(--accent-text);
 }
 
-.md :deep(.row-pill-n) {
-    color: inherit;
-    text-decoration: none;
-}
-
-.md :deep(.row-pill-n:hover) {
-    text-decoration: underline;
-}
-
 .md :deep(.row-pill) {
     padding: 0 4px;
     border: 1px solid var(--border-2);

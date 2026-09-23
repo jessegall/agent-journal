@@ -36,9 +36,9 @@ def notice_stopped(root: Path, feature) -> list[str]:
     open_ = {n.data.get(TOLD): n for n in feature.standing(record, Notices) if n.data.get(TOLD)}
     stopped = []
     for sid, state in states(root).items():
-        failing = state.get("state") in (FAILED, BLOCKED)
+        failing = state.state in (FAILED, BLOCKED)
         if failing and sid not in open_:
-            feature.journal.notice(record, "stopped", name=sid, why=state.get("why") or "it stopped", log=log_file(root, sid), tone="warn", **{TOLD: sid})
+            feature.journal.notice(record, "stopped", name=sid, why=state.why if state.why else "it stopped", log=log_file(root, sid), tone="warn", **{TOLD: sid})
             stopped.append(sid)
         if not failing and sid in open_:
             feature.journal.clear(record, open_[sid], "it is running again")

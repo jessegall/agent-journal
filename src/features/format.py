@@ -1,3 +1,4 @@
+from engine.watch import threw
 from resources.base import SECTION
 
 FORMATTERS: list = []
@@ -6,14 +7,16 @@ VIEWER = "viewer"
 
 
 def formatted(text: str, record=None, surface: str = "") -> str:
-    text = str(text or "")
+    text = "" if text is None else str(text)
     for fn, where in FORMATTERS:
         if where and surface not in where:
             continue
         try:
             text = str(fn(text, record) or text)
         except Exception:
-            continue
+            if record is None:
+                raise
+            threw(record.root, record.env, f"the formatter {fn.__name__}")
     return text
 
 

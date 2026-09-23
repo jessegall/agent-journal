@@ -10,7 +10,7 @@ APPENDS: dict[str, list] = {}
 
 
 def appended(on: str, values: dict, line: str) -> str:
-    return " - ".join([line, *(append(values) for append in APPENDS.get(on, []))])
+    return " - ".join([line, *(append(**values) for append in APPENDS.get(on, []))])
 
 
 def counted(groups: dict[tuple, dict]) -> list[str]:

@@ -11,13 +11,15 @@ from engine.hooks import default_env
 from engine.record import Record
 from engine.watch import threw
 from features.plugins.answer import apply
+from features.plugins.declared import Handler, Manifest, declared, settings_of
+from features.plugins.lifecycle import called
 from features.plugins.manifest import fill
-from features.plugins.payload import of
+from features.plugins.payload import of, session_of
 from features.plugins.queue import drain
 from features.plugins.run import SECONDS, call
 from features.plugins.skills import published
-from features.plugins.source import CHOSEN, environment, folder, log, logged
-from resources.base import PLUGIN, Refused, SYSTEM
+from features.plugins.source import environment, folder, log, logged
+from resources.base import PLUGIN, SYSTEM
 
 REPLAY = 600
 POST_SECONDS = 10.0
@@ -31,9 +33,8 @@ def patterns(event) -> tuple:
     return (ANY, event.type, event.action, f"{event.type}.{event.action}", event.data.get("event") or "", f"hook.{event.data.get('hook')}" if event.data.get("hook") else "", "hook.*" if event.data.get("hook") else "")
 
 
-def listening(manifest: dict, event) -> list[dict]:
-    known = patterns(event)
-    return [handler for pattern, handler in (manifest.get("on") or {}).items() if pattern in known]
+def listening(manifest: Manifest, event) -> list[Handler]:
+    return manifest.listening(patterns(event))
 
 
 def its_own(event, plugin: str, resource: dict | None) -> bool:
@@ -92,7 +93,7 @@ class Host:
         return [r for r in Plugins(record, actor=SYSTEM)._standing() if r.enabled and r.manifest]
 
     def name(self, row) -> str:
-        return str(row.manifest.get("name") or "")
+        return called(row)
 
     def cursor(self, record, plugin: str) -> str:
         return f"plugin-{plugin}"
@@ -136,35 +137,36 @@ class Host:
 
     def handle(self, record, row, event, now: float = 0.0) -> tuple[bool, int]:
         plugin = self.name(row)
-        handlers = listening(row.manifest, event)
+        manifest = declared(row)
+        handlers = listening(manifest, event)
         if not handlers:
             return True, 0
         where = folder(record.root, plugin)
         payload = of(record, event, plugin, where)
         if its_own(event, plugin, payload.get("resource")):
             return True, 0
-        env = environment(record.root, plugin, row.manifest, row.token, chosen=(row.settings or {}).get(CHOSEN))
+        env = environment(record.root, plugin, manifest, row.token, chosen=settings_of(row).chosen)
         for handler in handlers:
-            if handler.get("post"):
-                ok, reply = post(fill(handler["post"], self.places(record, row)), payload, row.token)
+            if handler.post:
+                ok, reply = post(fill(handler.post, self.places(record, row)), payload, row.token)
                 if not ok:
                     self.failed(record, plugin, reply, now)
                     return False, 0
             else:
-                ok, reply = call(fill(handler["run"], env), where, env, payload, float(row.manifest.get("timeout") or SECONDS))
+                ok, reply = call(fill(handler.run, env), where, env, payload, SECONDS)
                 if not ok:
                     self.failed(record, plugin, reply, now)
                     continue
             if reply:
                 logged(record.root, plugin, f"{payload.get('event')} {json.dumps(reply, ensure_ascii=False)}")
-            apply(record, self.journal, plugin, str(payload.get("agent", {}).get("session") or ""), reply if isinstance(reply, dict) else {})
+            apply(record, self.journal, plugin, session_of(event), reply if isinstance(reply, dict) else {})
             self.cleared(record, plugin)
         if event.type == "plugin":
-            published(record.root, plugin, row.manifest)
+            published(record.root, plugin, manifest)
         return True, 1
 
     def places(self, record, row) -> dict:
-        ports = (row.settings or {}).get("ports") or {}
+        ports = settings_of(row).ports
         return {**{f"ports.{name}": port for name, port in ports.items()}, "dir": str(folder(record.root, self.name(row)))}
 
     def failed(self, record, plugin: str, why, now: float = 0.0) -> None:

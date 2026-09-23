@@ -71,7 +71,7 @@ class Relaunch:
     def tick(self) -> str:
         driver, record = self.agent.driver, self.agent.record
         root = Path(record.root)
-        if int(Sessions(root).read(driver.session).get("launch") or 0) >= LAUNCH or self.agent.state() != IDLE:
+        if Sessions(root).read(driver.session).launch >= LAUNCH or self.agent.state() != IDLE:
             return ""
         last = driver.last_report()
         if not last or not last.title:

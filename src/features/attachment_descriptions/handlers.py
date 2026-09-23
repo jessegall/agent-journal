@@ -9,6 +9,7 @@ from controllers.types import CONTROLLERS
 from engine.events import ResourceEvent, SessionStarted
 from features.attachment_descriptions.video import MAX_FRAMES, probe, spacing
 from features.parts import AgentContext, Context, Handler
+from engine.fields import text_of
 
 MEDIA = ("image/", "video/")
 
@@ -20,7 +21,7 @@ class FileAttached(ResourceEvent):
 
     @classmethod
     def read(cls, event) -> "FileAttached":
-        return cls(n=event.n, action=event.action, type=event.type, actor=event.actor, file=str(event.data.get("file") or ""))
+        return cls(n=event.n, action=event.action, type=event.type, actor=event.actor, file=text_of(event.data, "file"))
 
 
 @dataclass(frozen=True)
@@ -54,11 +55,10 @@ class TagMissingAtStart(Handler):
     behaviour = "tagging"
 
     def handle(self, context: AgentContext, event: SessionStarted) -> None:
-        for type_ in CONTROLLERS:
-            for row in context.journal.of(type_)._every():
-                for name, tags in row.files.items():
-                    if (not tags or str(tags).startswith("video; ")) and media(name):
-                        tell(context, type_, row, name)
+        untagged = ((type_, row, name) for type_ in CONTROLLERS for row in context.journal.of(type_)._every()
+                    for name, tags in row.files.items() if (not tags or str(tags).startswith("video; ")) and media(name))
+        for type_, row, name in untagged:
+            tell(context, type_, row, name)
 
 
 class SampleVideoFrames(Handler):

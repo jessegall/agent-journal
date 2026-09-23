@@ -10,12 +10,12 @@ from resources.base import Refused, SYSTEM
 
 
 def online(root: Path) -> list[dict]:
-    return [agent for _, agent in live(root)]
+    return [agent.to_json() for _, agent in live(root)]
 
 
 def appoint(root: Path, env: str, session: str) -> dict:
     root = Path(root)
-    found = next((pair for pair in live(root) if pair[1]["session"] == session), None)
+    found = next((pair for pair in live(root) if pair[1].session == session), None)
     if not found:
         raise Refused(f"session {session!r} is not online")
     seat, candidate = found
@@ -30,10 +30,9 @@ def appoint(root: Path, env: str, session: str) -> dict:
         row = previous._titled(session)
         if row:
             previous.update(row.n, status=STOPPED, at=time.time())
-    report = seat.get("report") or {}
     agents = Agents(Record(root, env), actor=SYSTEM)
     row = agents.by_session(session)
-    state = {**report, "status": seat.get("state") or report.get("status") or "", "at": time.time()}
+    state = {**seat.report, "status": seat.status, "at": time.time()}
     state.pop("title", None)
     agents.update(row.n, **state)
-    return {**candidate, "before": before, "environment": env}
+    return {**candidate.to_json(), "before": before, "environment": env}

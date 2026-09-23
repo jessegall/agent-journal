@@ -20,7 +20,8 @@ def run(root: Path) -> str:
     moved = []
     for kind in sorted(name for name, cls in TYPES.items() if cls.scope == PROJECT):
         for old in (root / kind, root / "resources" / kind):
-            if old.is_dir():
-                gather(old, root / RESOURCES / kind)
-                moved.append(kind)
+            if not old.is_dir():
+                continue
+            gather(old, root / RESOURCES / kind)
+            moved.append(kind)
     return f"project records moved into {RESOURCES}/: {', '.join(sorted(set(moved)))}" if moved else "project records already in place"

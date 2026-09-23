@@ -88,7 +88,7 @@ def captured(argv: list[str], root: Path) -> tuple[str, int | None]:
     try:
         code = run(["--root", str(root), *argv], out=out, err=err)
     except SystemExit as e:
-        code = int(e.code or 0)
+        code = 0 if e.code is None else int(e.code)
     except Exception as e:
         return f"! {type(e).__name__}: {e}", 1
     output = out.getvalue() or err.getvalue()

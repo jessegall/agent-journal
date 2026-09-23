@@ -1,5 +1,7 @@
+from dataclasses import replace
 from itertools import accumulate
-from features.status_bar.dissect import MADE, TOUCHED
+from features.status_bar.dissect import MADE, TOUCHED, Dissected, Name
+from features.status_bar.runs import Outcome
 from features.status_bar.shell import words
 
 GRAY, MUTED, RED, GREEN = "gray", "muted", "red", "green"
@@ -20,18 +22,18 @@ DRAIN = 10
 DRAINING = 0.25
 
 
-def worked(group: list[dict]) -> list[dict]:
-    found: list[dict] = []
-    running = dict.fromkeys(dict(COUNTS).values(), 0)
+def worked(group: list[Dissected]) -> list[Name]:
+    found: list[Name] = []
+    added = removed = 0
     for one in group:
-        for key in running:
-            running[key] += one["changed"].get(key, 0)
-        for name in one["names"]:
-            if any(name["value"] == was["value"] for was in found):
+        if one.changed:
+            added, removed = added + one.changed.added, removed + one.changed.removed
+        for name in one.names:
+            if any(name.value == was.value for was in found):
                 continue
-            found.append({**name, **running})
+            found.append(replace(name, added=added, removed=removed))
         if found:
-            found[-1] = {**found[-1], **running}
+            found[-1] = replace(found[-1], added=added, removed=removed)
     return found[-MOST:]
 
 
@@ -42,9 +44,9 @@ def shared(rows: list[list[str]]) -> int:
     return min(len(w) for w in rows)
 
 
-def columns(found: list[dict]) -> list[dict]:
-    rows = [[name["value"]] if name["whole"] else words(name["value"]) for name in found]
-    if not all(name.get("columnar") for name in found) or len({len(w) for w in rows}) > 1:
+def columns(found: list[Name]) -> list[dict]:
+    rows = [[name.value] if name.whole else words(name.value) for name in found]
+    if not all(name.columnar for name in found) or len({len(w) for w in rows}) > 1:
         same = shared(rows)
         rows = [[*w[:same], " ".join(w[same:])] for w in rows]
     parts = []
@@ -56,16 +58,16 @@ def columns(found: list[dict]) -> list[dict]:
     return parts
 
 
-def verb_for(group: list[dict], kind: str) -> dict:
-    return {"value": USING if not kind and group[-1]["hand"] else VERBS.get(kind, VERBS[""]), "color": GRAY}
+def verb_for(group: list[Dissected], kind: str) -> dict:
+    return {"value": USING if not kind and group[-1].hand else VERBS.get(kind, VERBS[""]), "color": GRAY}
 
 
-def counted(group: list[dict], found: list[dict]) -> list[dict]:
-    if group[0]["kind"] not in (*TOUCHED, MADE) or not found:
+def counted(group: list[Dissected], found: list[Name]) -> list[dict]:
+    if group[0].kind not in (*TOUCHED, MADE) or not found:
         return []
     parts = []
     for (sign, key), color in zip(COUNTS, (GREEN, RED)):
-        counts = list(accumulate(name.get(key, 0) for name in found))
+        counts = list(accumulate(getattr(name, key) for name in found))
         if not counts[-1]:
             continue
         value = counts if len(counts) > 1 else counts[0]
@@ -74,11 +76,10 @@ def counted(group: list[dict], found: list[dict]) -> list[dict]:
     return parts
 
 
-def outcome(result: dict) -> list[dict]:
-    if "ok" in result:
-        return [{"value": "built", "color": GREEN} if result["ok"] else {"value": "failed", "color": RED}]
-    failed = result.get("failed")
-    return [{"value": f"{failed} failed", "color": RED} if failed else {"value": "passed", "color": GREEN}]
+def outcome(result: Outcome) -> list[dict]:
+    if result.ok is not None:
+        return [{"value": "built", "color": GREEN} if result.ok else {"value": "failed", "color": RED}]
+    return [{"value": f"{result.failed} failed", "color": RED} if result.failed else {"value": "passed", "color": GREEN}]
 
 
 def key_of(parts: list[dict]) -> str:
@@ -90,19 +91,19 @@ def walked(parts: list[dict]) -> float:
     return steps * FLIP_EVERY if steps > 1 else 0.0
 
 
-def message(group: list[dict], closed: bool, now: float, behind: int = 0) -> dict:
-    kind = group[0]["kind"]
+def message(group: list[Dissected], closed: bool, now: float, behind: int = 0) -> dict:
+    kind = group[0].kind
     found = worked(group)
     noun = NOUNS.get(kind)
     parts = [verb_for(group, kind), *(columns(found) if found else [{"value": noun, "color": MUTED}] if noun else [])]
     last = group[-1]
-    over = closed or bool(last["done"])
-    ran = max(0.0, (last["done"] if over else now) - last["at"])
+    over = closed or bool(last.done)
+    ran = max(0.0, (last.done if over else now) - last.at)
     return {
-        "id": group[0]["at"],
+        "id": group[0].at,
         "key": key_of(parts),
-        "parts": [*parts, *counted(group, found), *(outcome(last["result"]) if last["done"] and last["result"] else [])],
-        "at": group[0]["at"],
+        "parts": [*parts, *counted(group, found), *(outcome(last.result) if last.done and last.result else [])],
+        "at": group[0].at,
         "done": over,
         "for": int(ran),
         "clock": ran >= CLOCK_AFTER and not over,
@@ -111,10 +112,10 @@ def message(group: list[dict], closed: bool, now: float, behind: int = 0) -> dic
     }
 
 
-def known(group: list[dict]) -> bool:
-    return group[0]["kind"] not in TOUCHED or bool(worked(group))
+def known(group: list[Dissected]) -> bool:
+    return group[0].kind not in TOUCHED or bool(worked(group))
 
 
-def queue(groups: list[list[dict]], now: float = 0.0) -> list[dict]:
+def queue(groups: list[list[Dissected]], now: float = 0.0) -> list[dict]:
     known_groups = [group for group in groups if known(group)]
     return [message(group, i < len(known_groups) - 1, now, len(known_groups) - 1 - i) for i, group in enumerate(known_groups)]

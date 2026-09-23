@@ -7,12 +7,14 @@ import secrets
 import shutil
 import subprocess
 import time
+from dataclasses import asdict, dataclass
 from pathlib import Path
 
 from engine.proc import streamed
 
 from engine.hooks import default_env
 from engine.viewer import running
+from features.plugins.declared import Manifest, command_text
 from features.plugins.manifest import fill, read
 from install import fetch
 from resources.base import Refused
@@ -73,18 +75,15 @@ def values(root: Path, name: str, token: str, ports: dict | None = None) -> dict
             **{f"ports.{service}": port for service, port in (ports or {}).items()}}
 
 
-def ports_for(root: Path, manifest: dict) -> dict:
+def ports_for(root: Path, manifest: Manifest) -> dict:
     from engine.services import allocate
-    name = manifest["name"]
     taken: set[int] = set()
     given = {}
-    for service, spec in (manifest.get("services") or {}).items():
-        if spec.get("port") is None:
-            continue
-        port, blocked = allocate(root, f"{name}.{service}", spec["port"], taken)
+    for service in (service for service in manifest.services if service.port is not None):
+        port, blocked = allocate(root, f"{manifest.name}.{service.name}", service.port, taken)
         if port:
             taken.add(port)
-            given[service] = port
+            given[service.name] = port
     return given
 
 
@@ -98,19 +97,20 @@ def own_journal(root: Path) -> Path:
     return bin_dir
 
 
-def chosen_values(manifest: dict, chosen: dict | None) -> dict:
-    return {key: str((chosen or {}).get(key, setting.get("default", ""))) for key, setting in (manifest.get("settings") or {}).items()}
+def chosen_values(manifest: Manifest, chosen: dict | None) -> dict:
+    picked = chosen if chosen else {}
+    return {setting.key: str(picked.get(setting.key, setting.default)) for setting in manifest.settings}
 
 
-def chosen_env(manifest: dict, chosen: dict | None) -> dict:
+def chosen_env(manifest: Manifest, chosen: dict | None) -> dict:
     values = chosen_values(manifest, chosen)
-    named = {str(setting["env"]): values[key] for key, setting in (manifest.get("settings") or {}).items() if setting.get("env")}
+    named = {setting.env: values[setting.key] for setting in manifest.settings if setting.env}
     return {**named, "JOURNAL_SETTINGS": json.dumps(values)}
 
 
-def environment(root: Path, name: str, manifest: dict, token: str, ports: dict | None = None, chosen: dict | None = None) -> dict:
+def environment(root: Path, name: str, manifest: Manifest, token: str, ports: dict | None = None, chosen: dict | None = None) -> dict:
     where = values(root, name, token, ports)
-    given = fill(manifest.get("env") or {}, where)
+    given = fill(manifest.env, where)
     path = f"{own_journal(root)}{os.pathsep}{os.environ.get('PATH', '')}"
     return {**os.environ, "PATH": path, **{str(k): str(v) for k, v in given.items()}, **chosen_env(manifest, chosen),
             "JOURNAL_ROOT": where["root"], "JOURNAL_URL": where["journal.url"], "JOURNAL_TOKEN": token,
@@ -129,21 +129,17 @@ def run(command, cwd: Path, env: dict, seconds: int) -> tuple[int, str]:
     return done.returncode, f"{done.stdout}{done.stderr}"
 
 
-def command_text(command) -> str:
-    return command if isinstance(command, str) else " ".join(command)
-
-
-def checked(manifest: dict, where: Path, env: dict) -> None:
-    for tool, wanted in (manifest.get("requires") or {}).items():
-        code, out = run(wanted["check"], where, env, CHECK_SECONDS)
+def checked(manifest: Manifest, where: Path, env: dict) -> None:
+    for wanted in manifest.requires:
+        code, out = run(wanted.check, where, env, CHECK_SECONDS)
         if code:
-            raise Refused(f"{manifest['name']} needs {tool}: {wanted.get('hint') or command_text(wanted['check'])}")
+            raise Refused(f"{manifest.name} needs {wanted.tool}: {wanted.hint_text}")
 
 
-def prepared(manifest: dict, where: Path, env: dict, record_log: Path) -> None:
+def prepared(manifest: Manifest, where: Path, env: dict, record_log: Path) -> None:
     record_log.parent.mkdir(parents=True, exist_ok=True)
-    for step in manifest.get("setup") or []:
-        command = fill(step["run"], {k: v for k, v in env.items()})
+    for step in manifest.setup:
+        command = fill(step.run, {k: v for k, v in env.items()})
         with record_log.open("a") as f:
             f.write(f"$ {command_text(command)}\n")
         written = [0]
@@ -152,40 +148,47 @@ def prepared(manifest: dict, where: Path, env: dict, record_log: Path) -> None:
             with record_log.open("a") as f:
                 f.write(output[written[0]:])
             written[0] = len(output)
-        code, out = streamed(command if not isinstance(command, str) else ["/bin/sh", "-c", command], where / (step["cwd"] or ""),
+        code, out = streamed(command if not isinstance(command, str) else ["/bin/sh", "-c", command], where / step.cwd,
                              SETUP_SECONDS, append, env)
         append(f"{out}\n")
         if code != 0:
             tail = "\n".join(out.strip().splitlines()[-SHOWN_LINES:])
-            raise Refused(f"setup step {step['name']!r} failed ({code}): {command_text(command)}\n{tail}\nthe whole output is in {record_log}")
+            raise Refused(f"setup step {step.name!r} failed ({code}): {command_text(command)}\n{tail}\nthe whole output is in {record_log}")
 
 
-def previewed(manifest: dict, source: str, commit: str) -> dict:
-    name = manifest["name"]
-    rows = [{"kind": "needs", "label": tool, "command": command_text(wanted["check"])} for tool, wanted in (manifest.get("requires") or {}).items()]
-    rows += [{"kind": "setup", "label": step["name"], "command": command_text(step["run"])} for step in manifest.get("setup") or []]
-    rows += [{"kind": "service", "label": service, "command": command_text(spec["run"])} for service, spec in (manifest.get("services") or {}).items()]
-    rows += [{"kind": "on", "label": pattern, "command": handler.get("post") or command_text(handler.get("run"))} for pattern, handler in (manifest.get("on") or {}).items()]
-    rows += [{"kind": "refuse", "label": "may refuse a write", "command": command_text(manifest["refuse"])}] if manifest.get("refuse") else []
-    rows += [{"kind": "page", "label": page["title"], "command": f"{page['service']}{page['path']}"} for page in manifest.get("pages") or []]
-    rows += [{"kind": "setting", "label": key, "command": f"reads {setting['env']}" if setting.get("env") else str(setting.get("title") or key)}
-             for key, setting in (manifest.get("settings") or {}).items()]
-    return {"name": name, "title": f"{manifest.get('title') or name} {manifest.get('version') or ''}".strip(),
-            "source": source, "commit": commit, "description": manifest.get("description") or "", "rows": rows}
+@dataclass(frozen=True)
+class PreviewRow:
+    kind: str
+    label: str
+    command: str
 
 
-def preview(manifest: dict, source: str, commit: str) -> str:
-    shown = previewed(manifest, source, commit)
-    lines = [shown["title"], f"from {source}" + (f" at {commit[:12]}" if commit else ""), shown["description"], "",
+def preview_rows(manifest: Manifest) -> list[PreviewRow]:
+    rows = [PreviewRow("needs", wanted.tool, command_text(wanted.check)) for wanted in manifest.requires]
+    rows += [PreviewRow("setup", step.name, command_text(step.run)) for step in manifest.setup]
+    rows += [PreviewRow("service", service.name, command_text(service.run)) for service in manifest.services]
+    rows += [PreviewRow("on", handler.pattern, handler.command) for handler in manifest.handlers]
+    rows += [PreviewRow("refuse", "may refuse a write", command_text(manifest.refuse))] if manifest.refuse else []
+    rows += [PreviewRow("page", page.title, f"{page.service}{page.path}") for page in manifest.pages]
+    rows += [PreviewRow("setting", setting.key, setting.summary) for setting in manifest.settings]
+    return rows
+
+
+def previewed(manifest: Manifest, source: str, commit: str) -> dict:
+    return {"name": manifest.name, "title": f"{manifest.heading} {manifest.version}".strip(),
+            "source": source, "commit": commit, "description": manifest.description, "rows": [asdict(row) for row in preview_rows(manifest)]}
+
+
+def preview(manifest: Manifest, source: str, commit: str) -> str:
+    lines = [f"{manifest.heading} {manifest.version}".strip(), f"from {source}" + (f" at {commit[:12]}" if commit else ""), manifest.description, "",
              "It runs as you, with your files and your network. These are its commands:"]
-    lines += [f"  {row['kind']} {row['label']}: {row['command']}" for row in shown["rows"]]
+    lines += [f"  {row.kind} {row.label}: {row.command}" for row in preview_rows(manifest)]
     return "\n".join(lines)
 
 
-def said_version(where: Path, manifest: dict) -> str:
-    given = str(manifest.get("version") or "")
-    if given:
-        return given
+def said_version(where: Path, manifest: Manifest) -> str:
+    if manifest.version:
+        return manifest.version
     kept = Path(where) / "VERSION"
     try:
         return kept.read_text().strip()[:32]
@@ -193,7 +196,7 @@ def said_version(where: Path, manifest: dict) -> str:
         return ""
 
 
-def staged(root: Path, source: str, revision: str, version: str) -> tuple[Path, dict, str, bool]:
+def staged(root: Path, source: str, revision: str, version: str) -> tuple[Path, Manifest, str, bool]:
     where = address(source)
     linked = not where.startswith(("http://", "https://", "git@", "file://", "ssh://"))
     if linked:

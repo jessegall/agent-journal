@@ -10,6 +10,6 @@ class Questions(Controller):
     resource = types.Question
 
     def complete(self, n: int, how: str = "", **data):
-        if self.actor == AGENT and not str(data.get(REASON) or "").strip():
+        if self.actor == AGENT and not self.resource(data=self._shaped(data)).reason.strip():
             raise Refused(f'you are answering question {n} yourself: say why with --set reason="<why>"')
         return super().complete(n, how=how, **{**data, "kept": False, ANSWERED_BY: self.actor})

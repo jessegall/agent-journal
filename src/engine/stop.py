@@ -12,7 +12,8 @@ def flag(root: Path) -> Path:
 
 def at(root: Path) -> float:
     try:
-        return float(flag(root).read_text().strip() or 0)
+        text = flag(root).read_text().strip()
+        return float(text) if text else 0.0
     except (OSError, ValueError):
         return 0.0
 

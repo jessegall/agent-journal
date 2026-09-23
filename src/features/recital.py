@@ -54,10 +54,11 @@ KEPT_WHISPERS = 50
 def recite(context: AgentContext, resources: str, text_of) -> None:
     rows = getattr(context.journal, resources)
     for row in rows._standing():
-        if mentioned(row.data.get(KEYWORDS) or [], text_of(row.data.get(KEYWORDS_IN) or BOTH)) and whisper_due(context, row.ref):
-            context.agent.whisper(WHISPER, type=rows.type, n=row.n, title=row.title, brief=row.brief)
-            kept = context.agent.row.data.get("whispers") or []
-            context.journal.agents.update(context.agent.row.n, whispers=[*kept, {"at": time.time(), "ref": row.ref, "title": row.title}][-KEPT_WHISPERS:])
+        if not mentioned(row.data.get(KEYWORDS) or [], text_of(row.data.get(KEYWORDS_IN) or BOTH)) or not whisper_due(context, row.ref):
+            continue
+        context.agent.whisper(WHISPER, type=rows.type, n=row.n, title=row.title, brief=row.brief)
+        kept = context.agent.row.data.get("whispers") or []
+        context.journal.agents.update(context.agent.row.n, whispers=[*kept, {"at": time.time(), "ref": row.ref, "title": row.title}][-KEPT_WHISPERS:])
 
 
 class WhisperOnKeyword(ToolInterceptor):
@@ -80,9 +81,9 @@ class WhisperOnKeywordInChat(Handler):
 
 
 def whisper_due(context: Context, ref: str) -> bool:
-    last_uses, uses = context.state.get("touched", {}), int(context.agent.row.uses or 0)
+    last_uses, uses = context.state.get("touched", {}), int(context.agent.row.uses)
     every = context.feature.cadence(context.record, WHISPER).every
-    if ref in last_uses and uses - int(last_uses[ref] or 0) < float(every):
+    if ref in last_uses and uses - int(last_uses[ref]) < float(every):
         return False
     context.state.set("touched", {**last_uses, ref: uses})
     return True
@@ -100,3 +101,9 @@ class RepeatStanding(Handler):
         if rows:
             context.agent.say("standing", count=context.feature.plural(len(rows), resources.type),
                               rows="; ".join(f"{r.n}. {r.title}" for r in rows))
+
+
+def register_recital(journal, kind: str) -> None:
+    journal.agent.interceptor(WhisperOnKeyword(kind))
+    journal.events.handler(WhisperOnKeywordInChat(kind))
+    journal.events.handler(RepeatStanding(kind))

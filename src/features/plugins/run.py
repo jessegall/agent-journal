@@ -1,18 +1,17 @@
 import json
+from dataclasses import dataclass
 import os
 import signal
 import socket
 import subprocess
 from pathlib import Path
 
+from features.plugins.declared import command_text
+
 CAP = 64 * 1024
 SECONDS = 10.0
 LONGEST = 60.0
 SHOWN = 400
-
-
-def words(command) -> str:
-    return command if isinstance(command, str) else " ".join(command)
 
 
 def call(command, cwd: Path, env: dict, payload: dict, seconds: float = SECONDS) -> tuple[bool, dict | str]:
@@ -27,9 +26,9 @@ def call(command, cwd: Path, env: dict, payload: dict, seconds: float = SECONDS)
         out, err = child.communicate(json.dumps(payload), timeout=seconds)
     except subprocess.TimeoutExpired:
         stop(child)
-        return False, f"{words(command)} was still running after {seconds:g}s"
+        return False, f"{command_text(command)} was still running after {seconds:g}s"
     if child.returncode:
-        return False, (err.strip() or out.strip() or f"{words(command)} exited {child.returncode}")[-SHOWN:]
+        return False, (err.strip() or out.strip() or f"{command_text(command)} exited {child.returncode}")[-SHOWN:]
     return read(out[:CAP])
 
 
@@ -48,6 +47,18 @@ def asked(where: Path, payload: dict, seconds: float = SECONDS) -> tuple[bool, d
     except OSError as error:
         return False, f"{where.name} did not answer: {error}"
     return read(out[:CAP].decode(errors="replace"))
+
+
+@dataclass(frozen=True)
+class PluginReply:
+    refuse: str = ""
+    cancel: str = ""
+
+    @classmethod
+    def from_json(cls, raw) -> "PluginReply":
+        raw = raw if isinstance(raw, dict) else {}
+        refuse, cancel = raw.get("refuse"), raw.get("cancel")
+        return cls(str(refuse).strip() if refuse else "", str(cancel).strip() if cancel else "")
 
 
 def read(out: str) -> tuple[bool, dict | str]:

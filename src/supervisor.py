@@ -13,6 +13,7 @@ import sys
 import termios
 import time
 import tty
+from dataclasses import dataclass, field
 from pathlib import Path
 
 RELOAD, STOP, RELAUNCH, HEAL = 75, 76, 77, 78
@@ -46,17 +47,61 @@ def stop(pid: int, grace: float = GRACE, drain=lambda: None) -> int:
         return 0
 
 
+@dataclass(frozen=True)
+class Adopted:
+    pid: int
+    fd: int
+    session: str
+    saved: list | None
+
+    @classmethod
+    def from_json(cls, raw: dict) -> "Adopted":
+        kept = raw["saved"]
+        saved = [*kept[:6], [bytes.fromhex(c) if isinstance(c, str) else c for c in kept[6]]] if kept else None
+        return cls(raw["pid"], raw["fd"], raw["session"], saved)
+
+
+@dataclass(frozen=True)
+class Start:
+    command: list = field(default_factory=list)
+    environ: dict = field(default_factory=dict)
+    launch: int = 0
+
+    @classmethod
+    def from_json(cls, raw: dict) -> "Start":
+        return cls(**{key: raw[key] for key in ("command", "environ", "launch")}) if "command" in raw else cls()
+
+
+@dataclass(frozen=True)
+class Launch:
+    root: Path
+    cwd: Path
+    env: str
+    agent: str
+    worker: list
+    heal: list
+    ended: list
+    args: list
+    start: Start
+    adopt: Adopted | None
+
+    @classmethod
+    def from_json(cls, raw: dict) -> "Launch":
+        return cls(Path(raw["root"]), Path(raw["cwd"]), raw["env"], raw["agent"], raw["worker"], raw["heal"], raw["ended"], raw["args"],
+                   Start.from_json(raw), Adopted.from_json(raw["adopt"]) if "adopt" in raw else None)
+
+
 class Supervisor:
-    def __init__(self, spec: dict):
-        self.root, self.cwd = Path(spec["root"]), Path(spec["cwd"])
-        self.env, self.agent = spec["env"], spec["agent"]
-        self.worker_command, self.heal_command, self.ended_command = spec["worker"], spec["heal"], spec["ended"]
+    def __init__(self, spec: Launch):
+        self.root, self.cwd = spec.root, spec.cwd
+        self.env, self.agent = spec.env, spec.agent
+        self.worker_command, self.heal_command, self.ended_command = spec.worker, spec.heal, spec.ended
         self.stdin, self.stdout = sys.stdin.fileno(), sys.stdout.fileno()
-        adopted = spec.get("adopt")
-        self.saved = adopted and adopted["saved"] and [*adopted["saved"][:6], [bytes.fromhex(c) if isinstance(c, str) else c for c in adopted["saved"][6]]]
-        self.pid, self.fd = (adopted["pid"], adopted["fd"]) if adopted else self.spawn(spec["command"], spec["environ"])
-        self.session = adopted["session"] if adopted else f"{self.agent}-{self.pid}"
-        self.command, self.args, self.launch = spec.get("command") or [], spec["args"], spec.get("launch", 0)
+        adopted = spec.adopt
+        self.saved = adopted.saved if adopted else None
+        self.pid, self.fd = (adopted.pid, adopted.fd) if adopted else self.spawn(spec.start.command, spec.start.environ)
+        self.session = adopted.session if adopted else f"{self.agent}-{self.pid}"
+        self.command, self.args, self.launch = spec.start.command, spec.args, spec.start.launch
         self.worker = None
         self.worker_began = 0.0
         self.alive, self.lifeline = os.pipe()
@@ -132,12 +177,12 @@ class Supervisor:
 
     def relaunch(self) -> None:
         asked = self.folder / "relaunch.json"
-        spec = json.loads(asked.read_text())
+        start = Start.from_json(json.loads(asked.read_text()))
         asked.unlink()
         self.stop_agent()
         os.close(self.fd)
-        self.pid, self.fd = self.spawn(spec["command"], spec["environ"])
-        self.command, self.launch = spec["command"], spec["launch"]
+        self.pid, self.fd = self.spawn(start.command, start.environ)
+        self.command, self.launch = start.command, start.launch
         self.record_launch()
         self.resize(self.fd)
 
@@ -231,4 +276,4 @@ class Supervisor:
 
 
 if __name__ == "__main__":
-    sys.exit(Supervisor(json.loads(sys.argv[1])).run())
+    sys.exit(Supervisor(Launch.from_json(json.loads(sys.argv[1]))).run())

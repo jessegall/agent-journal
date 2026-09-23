@@ -25,13 +25,13 @@ class RemindUnloaded(Handler):
     def handle(self, context: AgentContext, event: AgentReported) -> None:
         row, name = context.agent.row, context.feature.name
         state = trigger.last(context.record, row.title, name)
-        if row.event in WINDOWS and state.get(AgentRow.event) != row.event:
-            trigger.write(context.record, row, name, notified=False, uses=row.uses or 0, context=row.context or 0, since=time.time())
+        if row.event in WINDOWS and state.event != row.event:
+            trigger.write(context.record, row, name, notified=False, uses=row.uses, context=row.context, since=time.time())
             state = trigger.last(context.record, row.title, name)
-        if "notified" not in state and state.get(AgentRow.at):
+        if state.notified is None and state.at:
             trigger.write(context.record, row, name, notified=True)
             state = trigger.last(context.record, row.title, name)
-        if state.get("notified") or not context.due() or any(journal_skill(s) for s in row.skills):
+        if state.notified or not context.due() or any(journal_skill(s) for s in row.skills):
             return
         context.agent.whisper("unloaded")
         trigger.write(context.record, row, name, notified=True)
@@ -42,7 +42,7 @@ class HoldUntilReloaded(Handler):
 
     def handle(self, context: AgentContext, event: AgentReported) -> None:
         row = context.agent.row
-        since = float(trigger.last(context.record, row.title, context.feature.name).get("since") or 0)
+        since = trigger.last(context.record, row.title, context.feature.name).since
         provider = PROVIDERS.get(row.provider)
         if not since or not provider or not row.transcript:
             return

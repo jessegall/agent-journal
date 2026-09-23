@@ -12,7 +12,8 @@ def run(root: Path) -> str:
         every = rows._every()
         marked = {int(r.updated) for r in every if r.data.get("missing")}
         for r in every:
-            if not r.data.get("enabled") and not r.data.get("missing") and int(r.updated) in marked:
-                rows.update(r.n, enabled=True)
-                switched.append(f"{home.name}:{r.title}")
+            if r.data.get("enabled") or r.data.get("missing") or int(r.updated) not in marked:
+                continue
+            rows.update(r.n, enabled=True)
+            switched.append(f"{home.name}:{r.title}")
     return f"switched back on: {', '.join(switched)}" if switched else "no feature was switched off by an upgrade"

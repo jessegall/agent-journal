@@ -10,7 +10,8 @@ def run(root: Path) -> str:
     for home in sorted(p for p in (Path(root) / "environments").glob("*") if p.is_dir()):
         rows = Questions(Record(root, home.name), actor=SYSTEM)
         for r in rows._every():
-            if r.completed and r.data.get("kept"):
-                rows.stamp(r.n, kept=False)
-                cleared += 1
+            if not r.completed or not r.data.get("kept"):
+                continue
+            rows.stamp(r.n, kept=False)
+            cleared += 1
     return f"{cleared} answered questions taken off the notifications panel"

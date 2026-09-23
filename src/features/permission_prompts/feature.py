@@ -17,10 +17,10 @@ class Permissions(Feature):
 
     def settings_view(self, record) -> dict:
         primary = Agents(record, actor=SYSTEM).primary()
-        seat = next((found for _, found in live(record.root) if primary and found["session"] == primary.title), None)
-        driver = DRIVERS.get(seat["provider"]) if seat else None
-        args = Sessions(record.root).read(seat["terminal"]).get("args") or [] if seat else []
-        return {"skip": skipped(record), "session": seat["session"] if seat else "",
+        seat = next((found for _, found in live(record.root) if primary and found.session == primary.title), None)
+        driver = DRIVERS.get(seat.provider) if seat else None
+        args = list(Sessions(record.root).read(seat.terminal).args) if seat else []
+        return {"skip": skipped(record), "session": seat.session if seat else "",
                 "running": bool(driver and driver.SKIP_ARGS and set(driver.SKIP_ARGS) <= set(args)),
                 "possible": bool(driver and driver.SKIP_ARGS)}
 

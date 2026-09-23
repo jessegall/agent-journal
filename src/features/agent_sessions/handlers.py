@@ -4,8 +4,9 @@ from typing import ClassVar
 
 from engine.events import AgentChanged, AgentReported, ResourceCreated, ResourceEvent
 from engine.sessions import Sessions
-from features.parts import AgentContext, Context, Handler
+from features.parts import AgentContext, Context, Handler, OnAgentUpdated
 from providers import PROVIDERS
+
 
 SUBAGENT = "subagent"
 STOPPED = "stopped"
@@ -30,7 +31,7 @@ class HoldEvicted(Handler):
     def handle(self, context: AgentContext, event: AgentReported) -> None:
         sessions = Sessions(context.record.root)
         session = context.agent.session
-        gone = sessions.read(session).get("evicted")
+        gone = sessions.read(session).evicted
         if gone and not sessions.environment(session):
             context.hold("evicted", "eviction", environment=repr(gone["environment"]), by=gone["by"], why=gone["why"])
         else:
@@ -65,7 +66,7 @@ class MarkSilentStopped(Handler):
         agents = context.journal.agents
         silent = time.time() - context.settings.quiet * MINUTE
         for row in agents._every():
-            if row.status and row.status != STOPPED and float(row.at or 0) < silent:
+            if row.status and row.status != STOPPED and float(row.at) < silent:
                 agents.stamp(row.n, status=STOPPED)
 
 
@@ -78,7 +79,7 @@ class KeepSubagentAlive(Handler):
         made = context.journal.of(event.type).load(event.n)
         if made.agent:
             agents = context.journal.agents
-            agents.update(agents.by_session(made.agent).n, active=time.time(), dispatcher=made.dispatcher or "", status=SUBAGENT)
+            agents.update(agents.by_session(made.agent).n, active=time.time(), dispatcher=made.dispatcher, status=SUBAGENT)
 
 
 class LinkReportToSubagent(Handler):
@@ -121,13 +122,11 @@ class ClearLapsedAssignments(Handler):
         todos = context.journal.todos
         for t in todos._standing():
             who = t.assigned
-            if not who or who not in subagents or time.time() - float(subagents[who].active or 0) < limit:
+            if not who or who not in subagents or time.time() - float(subagents[who].active) < limit:
                 continue
             todos.update(t.n, assigned="", lapsed=who)
             context.agent.say("lapsed", who=who, n=t.n, minutes=limit // MINUTE)
 
 
-class ClearLapsedAssignmentsOnChange(ClearLapsedAssignments):
-    def handle(self, context: AgentContext, event: AgentChanged) -> None:
-        if event.action == "updated":
-            super().handle(context, event)
+class ClearLapsedAssignmentsOnChange(OnAgentUpdated, ClearLapsedAssignments):
+    pass

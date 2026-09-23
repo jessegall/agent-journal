@@ -42,4 +42,4 @@ class Agents(Controller):
 
     def primary(self):
         rows = [row for row in self._standing() if not row.parent]
-        return max(rows, key=lambda row: float(row.at or 0), default=None)
+        return max(rows, key=lambda row: float(row.at), default=None)

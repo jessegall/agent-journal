@@ -1,5 +1,6 @@
 from engine.events import AgentReported
 from features.parts import AgentContext, Handler
+from providers.payload import Asking
 
 PERMISSION = "permission"
 
@@ -10,9 +11,9 @@ class ShowWaitingPermission(Handler):
             return
         session = context.agent.session
         waiting = [n for n in context.journal.notices._standing() if n.data.get("action") == PERMISSION and n.data.get("session") == session]
-        asking = context.agent.row.asking or {}
+        asking = Asking.from_json(context.agent.row.asking)
         if asking and not waiting:
-            context.journal.notice("waiting", tool=asking.get("tool") or "", call=asking.get("call") or "", tone="warn", session=session, action=PERMISSION)
+            context.journal.notice("waiting", tool=asking.tool, call=asking.call, tone="warn", session=session, action=PERMISSION)
         elif not asking:
             for notice in waiting:
                 context.journal.clear(notice, "answered")

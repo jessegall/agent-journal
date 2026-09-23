@@ -60,8 +60,8 @@ QUIET_SUBAGENT = 20 * 60
 
 
 def worker_of(work, main: str) -> dict:
-    agent = str(work.data.get("agent") or "")
-    return {"n": work.n, "agent": agent or main, "subagent": bool(agent), "parked": bool(work.parked)}
+    agent = work.agent
+    return {"n": work.n, "agent": agent if agent else main, "subagent": bool(agent), "parked": bool(work.parked)}
 
 
 def card_of(sources: Sources, todo, main: str = "") -> Card:
@@ -70,8 +70,8 @@ def card_of(sources: Sources, todo, main: str = "") -> Card:
     record = sources.todos.record
     return Card(todo.n, formatted(todo.title, record), int(todo.priority or 100), lane_of(sources, todo), formatted(reason_of(sources, todo), record),
                 {"n": placement.n, "title": placement.title, "phase": placement.phase} if placement else None,
-                str(todo.assigned or ""), worker_of(work, main) if work else None, sources.questions.get(todo.n, 0),
-                bool(todo.reported) and not todo.completed, targets(sources, todo), float(todo.updated or 0), float(todo.completed or 0))
+                todo.assigned, worker_of(work, main) if work else None, sources.questions.get(todo.n, 0),
+                bool(todo.reported) and not todo.completed, targets(sources, todo), todo.updated, todo.completed)
 
 
 def sources_of(journal) -> Sources:
@@ -107,12 +107,12 @@ def main_agent(journal) -> str:
 def agents_of(journal, works: dict, main: str, assigned: set) -> list[AgentChip]:
     chips = []
     for row in journal.agents._standing():
-        name = str(row.data.get("agent") or row.title)
+        name = row.agent if row.agent else row.title
         held = min((w for w in works.values() if worker_of(w, main)["agent"] == name), key=lambda w: bool(w.parked), default=None)
         subagent = row.status == "subagent" or bool(row.parent)
-        quiet = time.time() - float(row.updated or 0) > QUIET_SUBAGENT
+        quiet = time.time() - row.updated > QUIET_SUBAGENT
         if row.status == "stopped" or (name != main and not subagent) or (subagent and quiet and not held and name not in assigned):
             continue
-        chips.append(AgentChip(row.n, name, "Main agent" if name == main else name, "subagent" if subagent else str(row.status or ""),
-                               str(row.parent or ""), held.n if held else 0, int(held.todo) if held else 0, int(row.subagents or 0)))
+        chips.append(AgentChip(row.n, name, "Main agent" if name == main else name, "subagent" if subagent else row.status,
+                               row.parent, held.n if held else 0, int(held.todo) if held else 0, int(row.subagents)))
     return chips

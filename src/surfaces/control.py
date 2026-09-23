@@ -1,8 +1,9 @@
 import re
+from dataclasses import asdict
 from pathlib import Path
 
 from controllers.types import Agents, Notices, Notifications
-from engine.inputs import BACKGROUND, FORCE, PERMIT, SHELL, STALE, queue
+from engine.inputs import BACKGROUND, FORCE, PERMIT, QueuedCommand, SHELL, STALE, queue, waiting_commands
 from engine.record import Record
 from engine.seats import live
 from engine.terminal import relaunch as restart
@@ -47,11 +48,11 @@ CARRY_ON = "Carry on with what you were doing; the model or effort change you we
 
 
 def online(root: Path, env: str, session: str) -> dict:
-    found = next((agent for _, agent in live(Path(root), within=RELOAD_GRACE) if agent["session"] == session), None)
+    found = next((agent for _, agent in live(Path(root), within=RELOAD_GRACE) if agent.session == session), None)
     if not found:
         raise Refused(f"session {session!r} is not online")
-    if found["environment"] != env:
-        raise Refused(f"session {session!r} belongs to environment {found['environment']!r}")
+    if found.environment != env:
+        raise Refused(f"session {session!r} belongs to environment {found.environment!r}")
     return found
 
 
@@ -63,58 +64,60 @@ def delivered(record, sessions: set[str], action: str, label: str) -> None:
     Notifications(record, actor=SYSTEM)._logged(f"{action.capitalize()} set to {label.lower()}", brief=f"The {action} change was typed into the agent.")
 
 
-def force(root: Path, env: str, session: str) -> dict:
+def pressed(root: Path, env: str, session: str, label: str, action: str) -> dict:
     found = online(root, env, session)
-    queued = queue(Path(root), session, "", "Force through", provider=found["provider"], action=FORCE)
-    return {k: v for k, v in queued.items() if k != "line"} | {"queued": True}
+    queued = queue(Path(root), session, "", label, provider=found.provider, action=action)
+    return queued.for_viewer
+
+
+def force(root: Path, env: str, session: str) -> dict:
+    return pressed(root, env, session, "Force through", FORCE)
 
 
 def move_to_background(root: Path, env: str, session: str) -> dict:
-    found = online(root, env, session)
-    queued = queue(Path(root), session, "", "Move to the background", provider=found["provider"], action=BACKGROUND)
-    return {k: v for k, v in queued.items() if k != "line"} | {"queued": True}
+    return pressed(root, env, session, "Move to the background", BACKGROUND)
 
 
 def shell(root: Path, env: str, session: str, command: str) -> dict:
     found = online(root, env, session)
-    if not DRIVERS[found["provider"]].SHELL:
-        raise Refused(f"{found['provider']} has no shell command to type")
+    if not DRIVERS[found.provider].SHELL:
+        raise Refused(f"{found.provider} has no shell command to type")
     if not command.strip():
         raise Refused("type a command to run")
-    queued = queue(Path(root), session, "", f"Run {command.strip()}", provider=found["provider"], action=SHELL, value=command.strip())
+    queued = queue(Path(root), session, "", f"Run {command.strip()}", provider=found.provider, action=SHELL, value=command.strip())
     agents = Agents(Record(Path(root), env), actor=SYSTEM)
     row = agents.by_session(session)
-    waiting = [c for c in row.data.get("queued_commands") or [] if queued["at"] - float(c.get("at") or 0) < STALE]
-    agents.update(row.n, queued_commands=[*waiting, {"at": queued["at"], "command": queued["value"]}])
-    return {k: v for k, v in queued.items() if k != "line"} | {"queued": True}
+    waiting = [c for c in waiting_commands(row) if queued.at - c.at < STALE]
+    agents.update(row.n, queued_commands=[*(asdict(c) for c in waiting), asdict(QueuedCommand(queued.at, queued.value))])
+    return queued.for_viewer
 
 
 def permit(root: Path, env: str, session: str, allow: bool) -> dict:
     found = online(root, env, session)
     answer = "allow" if allow else "deny"
-    queued = queue(Path(root), session, "", answer.capitalize(), provider=found["provider"], action=PERMIT, value=answer)
-    return {k: v for k, v in queued.items() if k != "line"} | {"queued": True}
+    queued = queue(Path(root), session, "", answer.capitalize(), provider=found.provider, action=PERMIT, value=answer)
+    return queued.for_viewer
 
 
 def relaunch(root: Path, env: str, session: str, skip: bool) -> dict:
     found = online(root, env, session)
     record = Record(Path(root), env)
     record.set_setting("permission_prompts", {**record.setting("permission_prompts", {}), "skip": skip})
-    restart(Path(root), env, found["terminal"], session)
+    restart(Path(root), env, found.terminal, session)
     return {"relaunching": True, "skip": skip}
 
 
 def request(root: Path, env: str, session: str, action: str, value: str) -> dict:
     root = Path(root)
     found = online(root, env, session)
-    selected = choice(found["provider"], action, value, found.get("model", ""))
+    selected = choice(found.provider, action, value, found.model)
     commands = selected.get("commands") or [selected["command"]]
     queued = None
     for line in commands:
-        queued = queue(root, session, line, selected["label"], provider=found["provider"], action=action, value=value)
+        queued = queue(root, session, line, selected["label"], provider=found.provider, action=action, value=value)
     record = Record(root, env)
     agents = Agents(record, actor=SYSTEM)
     row = agents.by_session(session)
-    agents.update(row.n, pending={**row.pending, action: {"value": value, "at": queued["at"]}})
+    agents.update(row.n, pending={**row.pending, action: {"value": value, "at": queued.at}})
     Notices(record, actor=SYSTEM).create(f"Setting {action} to {selected['label'].lower()} — waiting for the agent", tone="note", session=session, action=action)
-    return {k: v for k, v in queued.items() if k != "line"} | {"queued": True}
+    return queued.for_viewer

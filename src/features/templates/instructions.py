@@ -17,8 +17,9 @@ def template_of(journal, row):
 
 
 def filled(template, values: dict, text: str) -> str:
-    for field in template.data.get("fields") or []:
-        text = text.replace("{{" + field["name"] + "}}", str(values.get(field["name"]) or field.get("default") or ""))
+    for field in template.declared_fields:
+        given = values.get(field.name)
+        text = text.replace("{{" + field.name + "}}", str(given) if given else field.default)
     return text
 
 

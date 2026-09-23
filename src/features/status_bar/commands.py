@@ -4,7 +4,10 @@ from pathlib import Path
 
 from engine.shell import without_scripts
 from providers.payload import Hook
-from resources.types import AgentRow, COMMAND, RUNNING
+from dataclasses import replace
+
+from features.status_bar.runs import CommandRun, Outcome, command_runs, current_run
+from resources.types import AgentRow
 
 WRITES = ("Edit", "Write", "MultiEdit", "NotebookEdit")
 READS = ("Read", "NotebookRead")
@@ -43,16 +46,13 @@ QUOTED = re.compile(r'"(?:[^"\\]|\\.)*"' + r"|'[^']*'")
 JOURNAL_CALL = re.compile(r"(^|[;&|(]\s*|\$\()\S*journal(?:\.py)?\s(?:\"(?:[^\"\\]|\\.)*\"|'[^']*'|\d*>&\d|[^;&|)\n])*")
 
 
-def stamped(commands: list, running: dict, doing: str = "", at: float = 0.0) -> list:
-    rows = list(commands)
-    ended = {COMMAND.done: running.get(RUNNING.done) or at, COMMAND.result: running.get(RUNNING.result)}
-    ended = {k: v for k, v in ended.items() if v}
-    when = running.get(RUNNING.at)
-    which = next((i for i in reversed(range(len(rows))) if when and rows[i].get(COMMAND.at) == when), None)
+def stamped(runs: list[CommandRun], running: CommandRun, doing: str = "", at: float = 0.0) -> list[dict]:
+    done = running.done if running.done else at
+    which = next((i for i in reversed(range(len(runs))) if running.at and runs[i].at == running.at), None)
     if which is None:
-        which = next((i for i in reversed(range(len(rows)))
-                      if doing and rows[i].get(COMMAND.command) == doing and not rows[i].get(COMMAND.done)), None)
-    return [{**one, **ended} if i == which else one for i, one in enumerate(rows)]
+        which = next((i for i in reversed(range(len(runs))) if doing and runs[i].command == doing and not runs[i].done), None)
+    ended = [replace(one, done=done, result=running.result if running.result else one.result) if i == which else one for i, one in enumerate(runs)]
+    return [one.to_json() for one in ended]
 
 
 def writes(hook: Hook) -> bool:
@@ -71,51 +71,53 @@ def in_project(path: str, cwd: str) -> bool:
 
 def shell(row, hook: Hook) -> dict:
     doing = hook.tool.doing.strip()[:400]
-    running = dict(row.running)
-    before = {k: v for k, v in running.items() if k in (RUNNING.command, RUNNING.tool, RUNNING.at, RUNNING.done, RUNNING.effect, RUNNING.changed, RUNNING.result)}
+    running = current_run(row)
+    before = CommandRun(command=running.command, tool=running.tool, at=running.at, done=running.done, effect=running.effect,
+                        changed=running.changed, result=running.result)
     if hook.event == "UserPromptSubmit":
-        return {AgentRow.running: {RUNNING.before: before} if before.get(RUNNING.done) else {}, AgentRow.commands: list(row.commands)}
+        return {AgentRow.running: CommandRun(before=before).to_json() if before.done else {}, AgentRow.commands: list(row.commands)}
     if hook.event == "PreToolUse" and doing:
         now = time.time()
         kind = effect(hook)
-        running = {RUNNING.command: doing, RUNNING.tool: hook.tool.name, RUNNING.at: now, **({RUNNING.effect: kind} if kind else {}),
-                   **({RUNNING.before: before} if before.get(RUNNING.done) else {})}
-        ran = {COMMAND.command: doing, COMMAND.tool: hook.tool.name, COMMAND.at: now,
-               **({COMMAND.effect: kind} if kind else {}),
-               **({COMMAND.files: [hook.tool.file_path]} if hook.tool.file_path else {}),
-               **({COMMAND.subject: hook.tool.subject} if hook.tool.subject and not hook.tool.file_path else {})}
-        return {AgentRow.running: running, AgentRow.commands: (list(row.commands) + [ran])[-RING:]}
-    if running and not running.get(RUNNING.done):
-        running[RUNNING.done] = time.time()
-        result = outcome_of(hook, running.get(RUNNING.effect) or "")
-        if result:
-            running[RUNNING.result] = result
-    return {AgentRow.running: running, AgentRow.commands: stamped(row.commands, running, doing, time.time())}
+        started = CommandRun(command=doing, tool=hook.tool.name, at=now, effect=kind, before=before if before.done else None)
+        path = hook.tool.file_path
+        ran = CommandRun(command=doing, tool=hook.tool.name, at=now, effect=kind, files=(path,) if path else (),
+                         subject=hook.tool.subject if hook.tool.subject and not path else "")
+        return {AgentRow.running: started.to_json(), AgentRow.commands: (list(row.commands) + [ran.to_json()])[-RING:]}
+    if row.running and not running.done:
+        result = outcome_of(hook, running.effect)
+        running = replace(running, done=time.time(), result=result if result else running.result)
+    return {AgentRow.running: running.to_json(), AgentRow.commands: stamped(command_runs(row), running, doing, time.time())}
 
 
-def outcome_of(hook: Hook, effect: str) -> dict | None:
+def outcome_of(hook: Hook, effect: str) -> Outcome | None:
     if effect == "tests":
         return test_result(hook)
     if effect == "pulls":
         return pull_result(hook)
     if effect != "builds":
         return None
-    output = f"{hook.tool.response.get('stdout') or ''}\n{hook.tool.response.get('stderr') or ''}"
-    return {"ok": not BROKE.search(output)} if output.strip() else None
+    output = printed(hook)
+    return Outcome(ok=not BROKE.search(output)) if output.strip() else None
 
 
-def pull_result(hook: Hook) -> dict | None:
+def printed(hook: Hook) -> str:
+    return f"{hook.tool.stdout}\n{hook.tool.stderr}"
+
+
+def pull_result(hook: Hook) -> Outcome | None:
     asked = PULL.search(hook.command)
     if not asked:
         return None
-    output = f"{hook.tool.response.get('stdout') or ''}\n{hook.tool.response.get('stderr') or ''}"
-    found = PULL_URL.search(output) or PULL_URL.search(asked.group(2) or "")
-    number = found.group(1) if found else (asked.group(2) or "").lstrip("#")
-    return {"pull": asked.group(1), "url": found.group(0) if found else "", "number": number if number.isdigit() else ""}
+    output = printed(hook)
+    given = asked.expand(r"\2")
+    found = PULL_URL.search(output) or PULL_URL.search(given)
+    number = found.group(1) if found else given.lstrip("#")
+    return Outcome(pull=asked.group(1), url=found.group(0) if found else "", number=number if number.isdigit() else "")
 
 
-def test_result(hook: Hook) -> dict | None:
-    output = f"{hook.tool.response.get('stdout') or ''}\n{hook.tool.response.get('stderr') or ''}"
+def test_result(hook: Hook) -> Outcome | None:
+    output = printed(hook)
     tallies = [(int(m.group(1)), sum(int(n) for n in TALLY_FAILED.findall(m.group(0)))) for m in TALLY.finditer(output)]
     dotnet = DOTNET.findall(output)
     examples = EXAMPLES.findall(output)
@@ -132,7 +134,7 @@ def test_result(hook: Hook) -> dict | None:
         failed = sum(int(n) for n in FAILED.findall(output)) or sum(int(n) for n in FAILING.findall(output))
         if not (passed or failed or FAILING.search(output)):
             return None
-    return {"passed": passed, "failed": failed}
+    return Outcome(passed=passed, failed=failed)
 
 
 def effect(hook: Hook) -> str:

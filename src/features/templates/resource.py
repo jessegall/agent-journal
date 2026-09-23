@@ -1,7 +1,26 @@
+from dataclasses import asdict, dataclass
 from typing import ClassVar
+
+from engine.fields import list_of, text_of
 
 from resources.base import DOCUMENT, PROJECT, Resource, ResourceDetails
 from resources.shapes import LIST, TEXT, Field, Shape
+
+
+@dataclass(frozen=True)
+class TemplateField:
+    name: str
+    label: str
+    kind: str
+    options: tuple = ()
+    default: str = ""
+
+    @classmethod
+    def from_json(cls, raw: dict) -> "TemplateField":
+        return cls(text_of(raw, "name"), text_of(raw, "label"), text_of(raw, "kind"), tuple(list_of(raw, "options")), text_of(raw, "default"))
+
+    def to_json(self) -> dict:
+        return {**asdict(self), "options": list(self.options)}
 
 
 class Template(Shape, Resource):
@@ -24,3 +43,7 @@ class Template(Shape, Resource):
               "an empty list means any type. journal template create \"<name>\" --brief \"<instructions>\" --set applies_to=plan writes one."),
     )
     view = DOCUMENT
+
+    @property
+    def declared_fields(self) -> list[TemplateField]:
+        return [TemplateField.from_json(given) for given in self.data.get("fields", []) if isinstance(given, dict)]
