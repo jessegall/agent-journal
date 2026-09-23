@@ -238,10 +238,15 @@ class OfferNextRowOnTheClock(Handler):
 
 
 def offer(context: AgentContext) -> None:
-    if working(context):
+    open_work = working(context)
+    if open_work and context.agent.row.status != IDLE:
         return
     row = next(context.record)
     stretch = f"{row.n}:{context.agent.row.at}" if row else ""
-    if row and context.state.get("offered") != stretch:
-        context.state.set("offered", stretch)
-        context.agent.say("next", n=row.n)
+    if not row or context.state.get("offered") == stretch:
+        return
+    context.state.set("offered", stretch)
+    if open_work:
+        context.agent.say("next while waiting", n=row.n, work=open_work[0].n)
+        return
+    context.agent.say("next", n=row.n)
