@@ -172,6 +172,14 @@ export class ApiClient {
         return this.act("todo", n, "shift", {lane, why: why || "", how: how || ""});
     }
 
+    ticketBoard(n) {
+        return this.act("ticket", n, "board");
+    }
+
+    moveTicket(n, stage) {
+        return this.act("ticket", n, "move", {stage});
+    }
+
     readAll(type, numbers) {
         return this.post(this.here(`/${type}/read-all`), {numbers});
     }

@@ -5,6 +5,7 @@ import Btn from "../kit/Btn.vue";
 import AgentStrip from "../board/AgentStrip.vue";
 import Lane from "../board/Lane.vue";
 import Switch from "../kit/Switch.vue";
+import TabBar from "../kit/TabBar.vue";
 import {rows} from "../sync/rows.js";
 import ShiftPrompt from "../board/ShiftPrompt.vue";
 import NewResource from "../resource/NewResource.vue";
@@ -14,9 +15,17 @@ import {boardOn, store} from "../state/store.js";
 
 const SKELETON = ["To do", "Held", "Doing", "Needs you", "Done"].map((title) => ({key: title, title, cards: []}));
 const adding = ref(false);
-const LIVE = new Set(["todo", "work", "question", "plan", "agent"]);
+const LIVE = new Set(["todo", "work", "question", "plan", "agent", "ticket", "board"]);
 const text = ref("");
 const plans = computed(() => rows("plan").filter((plan) => !plan.completed && !plan.deleted));
+const boards = computed(() => rows("board").filter((board) => !board.completed && !board.deleted));
+const tickets = computed(() => Boolean(store.board.lens.board));
+const chosenPlan = computed(() => store.board.lens.plan);
+const showingDone = computed(() => store.board.lens.done !== false);
+const planHold = computed(() => store.board.planHold);
+const loading = computed(() => !store.board.loaded);
+const tabs = computed(() => [{key: "0", title: "To-dos"}, ...boards.value.map((board) => ({key: String(board.n), title: board.title}))]);
+const shown = computed({get: () => String(store.board.lens.board || 0), set: (key) => lens({board: Number(key)})});
 const matches = (card) => !text.value.trim() || `#${card.n} ${card.title}`.toLowerCase().includes(text.value.trim().toLowerCase());
 const lanes = computed(() =>
     store.board.loaded
@@ -37,12 +46,14 @@ function take(got) {
     Object.assign(store.board, {lanes: got.lanes, agents: got.agents, planHold: got.plan_hold, loaded: true});
 }
 
+const load = () => (tickets.value ? api.ticketBoard(store.board.lens.board) : api.board(store.board.lens));
+
 async function refresh() {
-    take(await api.board(store.board.lens));
+    take(await load());
 }
 
 function move(card, lane) {
-    if (ASKS[lane] || (card.lane === "done" && lane === "todo")) asking.value = {card, lane};
+    if (card.type === "todo" && (ASKS[lane] || (card.lane === "done" && lane === "todo"))) asking.value = {card, lane};
     else shift(card, lane, {});
 }
 
@@ -50,7 +61,7 @@ async function shift(card, lane, words) {
     asking.value = null;
     moving.value = card.n;
     try {
-        await api.shift(card.n, lane, words);
+        await (card.type === "ticket" ? api.moveTicket(card.n, lane) : api.shift(card.n, lane, words));
     } catch (e) {
         refusal.value = e.message;
         clearTimeout(clearing);
@@ -64,7 +75,7 @@ async function shift(card, lane, words) {
 provide("board", {move, moving, refresh});
 
 const lens = (change) => (store.board.lens = {...store.board.lens, ...change});
-watch(() => [store.board.lens.plan, store.board.lens.agent], refresh);
+watch(() => [store.board.lens.plan, store.board.lens.agent, store.board.lens.board], refresh);
 
 let seen = 0;
 let waiting = 0;
@@ -81,7 +92,7 @@ watch(
 
 usePoll(
     "board",
-    () => (boardOn.value ? api.board(store.board.lens) : Promise.resolve(null)),
+    () => (boardOn.value ? load() : Promise.resolve(null)),
     5000,
     (got) => got && take(got)
 );
@@ -91,16 +102,19 @@ usePoll(
     <section class="board">
         <header class="bar">
             <h2>Board</h2>
+            <TabBar v-model="shown" :tabs="tabs" />
             <input v-model="text" class="find" placeholder="Filter by title or #number" />
-            <div class="plans">
-                <button type="button" :class="['plan', {on: !store.board.lens.plan}]" @click="lens({plan: 0})">All to-dos</button>
-                <template v-for="plan in plans" :key="plan.n">
-                    <button type="button" :class="['plan', {on: store.board.lens.plan === plan.n}]" @click="lens({plan: plan.n})">
-                        Plan {{ plan.n }}
-                    </button>
-                </template>
-            </div>
-            <Switch :on="store.board.lens.done !== false" word="Show done" @change="(on) => lens({done: on})" />
+            <template v-if="!tickets">
+                <div class="plans">
+                    <button type="button" :class="['plan', {on: !chosenPlan}]" @click="lens({plan: 0})">All to-dos</button>
+                    <template v-for="plan in plans" :key="plan.n">
+                        <button type="button" :class="['plan', {on: chosenPlan === plan.n}]" @click="lens({plan: plan.n})">
+                            Plan {{ plan.n }}
+                        </button>
+                    </template>
+                </div>
+            </template>
+            <Switch :on="showingDone" word="Show done" @change="(on) => lens({done: on})" />
             <template v-if="refusal">
                 <p class="refusal">{{ refusal }}</p>
             </template>
@@ -113,18 +127,18 @@ usePoll(
         </template>
         <template v-else-if="empty">
             <div class="empty">
-                <p>Nothing is on the list.</p>
-                <Btn kind="primary" small @click="adding = true">New to-do</Btn>
+                <p>{{ tickets ? "No tickets on this board." : "Nothing is on the list." }}</p>
+                <Btn kind="primary" small @click="adding = true">{{ tickets ? "New ticket" : "New to-do" }}</Btn>
             </div>
         </template>
         <template v-else>
             <AgentStrip />
-            <template v-if="store.board.planHold">
-                <p class="hold">{{ store.board.planHold }}</p>
+            <template v-if="planHold">
+                <p class="hold">{{ planHold }}</p>
             </template>
             <div class="lanes">
                 <template v-for="lane in lanes" :key="lane.key">
-                    <Lane :lane="lane" :loading="!store.board.loaded" />
+                    <Lane :lane="lane" :loading="loading" />
                 </template>
             </div>
         </template>
@@ -132,7 +146,7 @@ usePoll(
             <ShiftPrompt :ask="asking" @send="(words) => shift(asking.card, asking.lane, words)" @close="asking = null" />
         </template>
         <template v-if="adding">
-            <NewResource type="todo" @made="(n) => peek('todo', n)" @close="adding = false" />
+            <NewResource :type="tickets ? 'ticket' : 'todo'" @made="(n) => peek(tickets ? 'ticket' : 'todo', n)" @close="adding = false" />
         </template>
     </section>
 </template>

@@ -31,10 +31,10 @@ function move(lane) {
         <template v-if="card.targets.length">
             <p class="label">Move to</p>
             <template v-for="lane in card.targets" :key="lane">
-                <MenuItem @click="move(lane)">{{ TITLES[lane] }}</MenuItem>
+                <MenuItem @click="move(lane)">{{ TITLES[lane] || lane }}</MenuItem>
             </template>
         </template>
-        <template v-if="store.board.agents.length">
+        <template v-if="card.type === 'todo' && store.board.agents.length">
             <p class="label">Assign to</p>
             <template v-for="agent in store.board.agents" :key="agent.name">
                 <MenuItem @click="assign({to: agent.name})">{{ agent.title }}</MenuItem>
@@ -43,7 +43,7 @@ function move(lane) {
                 <MenuItem @click="assign({off: true})">Unassign</MenuItem>
             </template>
         </template>
-        <MenuItem class="open" @click="(emit('close'), peek('todo', card.n))">Open</MenuItem>
+        <MenuItem class="open" @click="(emit('close'), peek(card.type, card.n))">Open</MenuItem>
     </MenuPanel>
 </template>
 
