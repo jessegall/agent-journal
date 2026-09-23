@@ -1,7 +1,7 @@
 from typing import ClassVar
 
 from resources.base import DOCUMENT, PROJECT, Resource, ResourceDetails
-from resources.shapes import LIST, Field, Shape
+from resources.shapes import LIST, TEXT, Field, Shape
 
 
 class Template(Shape, Resource):
@@ -10,6 +10,7 @@ class Template(Shape, Resource):
     data_fields: ClassVar[list[Field]] = [
         Field(LIST, list, name="applies_to"),
         Field(LIST, list, name="fields"),
+        Field(TEXT, name="purpose"),
     ]
     labels = {"brief": "Instructions"}
     icon = "docs"

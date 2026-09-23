@@ -13,10 +13,12 @@ import {holding, rows} from "../sync/rows.js";
 import TextDisplay from "../kit/TextDisplay.vue";
 import Sections from "./Sections.vue";
 import Folded from "../kit/Folded.vue";
+import PlanCritique from "./PlanCritique.vue";
 
 const props = defineProps({resource: Object});
 const emit = defineEmits(["close"]);
 const error = ref("");
+const critiquing = ref(false);
 const talk = inject("talk", null);
 const status = computed(() => props.resource.data.status);
 const current = computed(() => props.resource.data.current || 1);
@@ -83,7 +85,11 @@ async function run(action, body = {}) {
                 <span class="note">The agent is still writing this plan. It can be started once it is ready.</span>
             </template>
             <template v-if="!['done', 'abandoned'].includes(status)">
+                <Btn title="Ask the agent to have other agents critique this plan" @click="critiquing = true">Ask for a critique</Btn>
                 <Btn kind="danger" @click="run('abandon', {why: 'stopped from the viewer'})">Abandon</Btn>
+            </template>
+            <template v-if="critiquing">
+                <PlanCritique :plan="resource" @close="critiquing = false" />
             </template>
             <span class="error">{{ error }}</span>
         </div>
