@@ -1,6 +1,6 @@
 from typing import ClassVar
 
-from resources.base import AGENT, COMPLETED, DOCUMENT, LAZY, OPENED, PROJECT, SYSTEM, USER, Resource, ResourceDetails
+from resources.base import AGENT, COMPLETED, DOCUMENT, LAZY, OPENED, PROJECT, RESULTS, SIDEBAR, SYSTEM, UNLISTED, USER, Resource, ResourceDetails
 from resources.shapes import FLAG, TEXT, Field, Options, Placed, Ranked, Reasoned, Shape, Traced
 
 
@@ -24,6 +24,7 @@ class Message(Shape, Resource):
     event_labels = {"created": "Message", "completed": "Message processed", "updated.read": "Message read", "updated.process": "Message part filed",
                     "updated.edit": "Message edited", "updated.file": "Message file filed"}
     icon = "mail"
+    listed_under = RESULTS
     stamped_when_notified = True
     cleared_by = OPENED
     command_names = {"complete": "processed"}
@@ -55,6 +56,7 @@ class Todo(Ranked, Placed, Resource):
     start_heading = "TO-DOS waiting — delayed work, not an instruction to start any of it"
     start_as_count = True
     icon = "circle"
+    listed_under = SIDEBAR
     command_names = {"complete": "done"}
     labels = {"outcome": "How"}
 
@@ -103,6 +105,7 @@ class Doc(Shape, Resource):
     subagent_writable = False
     needs_attention = True
     icon = "file"
+    listed_under = SIDEBAR
     command_names = {"complete": "final"}
     scope = PROJECT
     view = DOCUMENT
@@ -121,6 +124,7 @@ class Report(Shape, Resource):
     status_labels = {"complete": "archiving"}
     needs_attention = True
     icon = "report"
+    listed_under = RESULTS
     command_names = {"complete": "archive"}
     closed_first = True
     view = DOCUMENT
@@ -140,6 +144,7 @@ class Fact(Reasoned, Resource):
     needs_attention = True
     lists_completed_unread = True
     icon = "pin"
+    listed_under = RESULTS
     command_names = {"complete": "strike"}
 
 
@@ -179,6 +184,7 @@ class Reminder(Shape, Resource):
     start_heading = "REMINDERS, said again at every stop"
     needs_attention = True
     icon = "clock"
+    listed_under = RESULTS
     command_names = {"complete": "retire"}
 
 
@@ -220,6 +226,7 @@ class Suggestion(Options, Resource):
     needs_attention = True
     cleared_by = COMPLETED
     icon = "bulb"
+    listed_under = RESULTS
     command_names = {"complete": "decide", "create": "suggest", "delete": "withdraw"}
     labels = {"outcome": "Decision", "brief": "Why"}
 
@@ -256,6 +263,7 @@ class AgentRow(Shape, Resource):
         Field(default="", name="model"),
         Field(default="", name="effort"),
         Field(default=dict, name="pending"),
+        Field(default=0, name="paused"),
         Field(default=dict, name="asking"),
         Field(default="", name="last_message"),
         Field(name="started"),
@@ -382,6 +390,7 @@ class Connection(Shape, Resource):
     type = "connection"
     subagent_writable = False
     icon = "plug"
+    listed_under = UNLISTED
     scope = PROJECT
 
 

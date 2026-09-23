@@ -10,7 +10,9 @@ FORCE = "force"
 PERMIT = "permit"
 BACKGROUND = "background"
 SHELL = "shell"
-KEYS = (FORCE, PERMIT, BACKGROUND)
+PAUSE = "pause"
+RESUME = "resume"
+KEYS = (FORCE, PERMIT, BACKGROUND, PAUSE, RESUME)
 
 
 @dataclass(frozen=True)
