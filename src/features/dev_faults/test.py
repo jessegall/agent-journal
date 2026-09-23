@@ -17,16 +17,25 @@ def notified(record):
     return [r.title for r in Notifications(record, actor=SYSTEM)._every()]
 
 
+
+def busy(seconds: float) -> None:
+    began = time.thread_time()
+    while time.thread_time() - began < seconds:
+        pass
+
 def test_a_slow_request_is_reported_only_when_the_budget_is_on():
     features.load()
     record = fresh()
     turned(record, False)
     with FEATURES["dev_faults"].reports.watched(record.root, record.env, "request", "GET /api/main/message"):
-        time.sleep(0.08)
+        busy(0.08)
     assert notified(record) == [], "switched off, nothing is filed"
     turned(record, True)
-    with FEATURES["dev_faults"].reports.watched(record.root, record.env, "request", "GET /api/main/message"):
+    with FEATURES["dev_faults"].reports.watched(record.root, record.env, "command", "check run"):
         time.sleep(0.08)
+    assert notified(record) == [], "time spent waiting, as on a check a command runs, is not held against the budget"
+    with FEATURES["dev_faults"].reports.watched(record.root, record.env, "request", "GET /api/main/message"):
+        busy(0.08)
     assert notified(record) == ["request GET /api/main/message is slower than its budget"], notified(record)
 
 
@@ -45,7 +54,7 @@ def test_going_over_again_counts_but_tells_the_agent_once():
     turned(record, True)
     for _ in range(2):
         with FEATURES["dev_faults"].reports.watched(record.root, record.env, "command", "message all"):
-            time.sleep(0.08)
+            busy(0.08)
     rows = Notifications(record, actor=SYSTEM)._every()
     assert len(rows) == 1 and rows[0].data["times"] == 2, "one row per target, counting every overrun"
     assert rows[0].data["notified_at"] > 0
@@ -57,7 +66,7 @@ def test_the_budget_is_tunable_per_environment():
     turned(record, True)
     record.budget = {"request": 0}
     with FEATURES["dev_faults"].reports.watched(record.root, record.env, "request", "GET /api/main/message"):
-        time.sleep(0.08)
+        busy(0.08)
     assert notified(record) == [], "a budget of 0 drops that budget"
     assert Faults().reports.milliseconds(record, "command") == 50
 
