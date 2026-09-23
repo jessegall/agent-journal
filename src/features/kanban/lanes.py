@@ -41,6 +41,10 @@ class Sources:
             return Placement(plan.n, plan.title, number, holds)
         return None
 
+    def holding(self, todo) -> Placement | None:
+        placement = self.placement(todo)
+        return placement if placement and placement.holds else None
+
 
 def lane_of(sources: Sources, todo) -> str:
     if todo.completed:
@@ -49,8 +53,7 @@ def lane_of(sources: Sources, todo) -> str:
         return ASKED
     if todo.n in sources.works and not sources.works[todo.n].parked:
         return DOING
-    placement = sources.placement(todo)
-    if todo.n in sources.works or todo.blocked or sources.todos.waits(todo) or (placement and placement.holds):
+    if todo.n in sources.works or todo.blocked or sources.todos.waits(todo) or sources.holding(todo):
         return HELD
     return TODO
 
@@ -64,7 +67,7 @@ def reason_of(sources: Sources, todo) -> str:
     waits = sources.todos.waits(todo)
     if waits:
         return "waits on " + ", ".join(ref.replace(":", " ") for ref in waits)
-    placement = sources.placement(todo)
-    if placement and placement.holds:
+    placement = sources.holding(todo)
+    if placement:
         return f"plan {placement.n} holds it until phase {placement.phase}"
     return ""

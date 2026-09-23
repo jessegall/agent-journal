@@ -30,8 +30,8 @@ class Unblock(Shift):
         if waits:
             other = waits[0].split(":")[1]
             return f"todo {todo.n} waits on {waits[0].replace(':', ' ')}: journal todo after {todo.n} {other} --off drops the wait"
-        placement = sources.placement(todo)
-        if placement and placement.holds:
+        placement = sources.holding(todo)
+        if placement:
             return f"plan {placement.n} holds todo {todo.n} until its phase {placement.phase}"
         return ""
 
