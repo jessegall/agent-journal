@@ -4,6 +4,7 @@ from dataclasses import dataclass, replace
 from pathlib import Path
 
 from engine.runtime import profiles
+from providers.base import FOLD_CACHE
 from engine.record import Record
 from engine.wording import plural
 
@@ -14,6 +15,7 @@ STAGING_FOR = 3600
 OUTPUTS_FOR = 86400
 ARCHIVES_FOR = 90 * 86400
 PROFILES_KEPT = 50
+FOLDS_FOR = 7 * 86400
 
 
 @dataclass(frozen=True)
@@ -58,11 +60,12 @@ def leftovers(root: Path) -> int:
     archived = [f for f in (root / "attic").glob("*.tar.gz") if not f.name.startswith("before-") and now - f.stat().st_mtime > ARCHIVES_FOR]
     unkept = [f for f in (root / "runtime" / "outputs").glob("output-*") if now - f.stat().st_mtime > OUTPUTS_FOR]
     profiled = sorted(profiles(root).glob("*.txt"), key=lambda f: f.stat().st_mtime, reverse=True)[PROFILES_KEPT:]
+    folds = [f for f in FOLD_CACHE.glob("*.pickle") if now - f.stat().st_mtime > FOLDS_FOR]
     for d in staged:
         shutil.rmtree(d)
-    for f in archived + unkept + profiled:
-        f.unlink()
-    return len(staged) + len(archived) + len(unkept) + len(profiled)
+    for f in archived + unkept + profiled + folds:
+        f.unlink(missing_ok=True)
+    return len(staged) + len(archived) + len(unkept) + len(profiled) + len(folds)
 
 
 def trim(f: Path, keep: int) -> bool:
