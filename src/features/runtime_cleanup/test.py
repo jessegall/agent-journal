@@ -111,3 +111,18 @@ def test_leftover_plugin_checkouts_and_old_environment_archives_are_removed_and_
     assert (stale.exists(), fresh_one.exists()) == (False, True), "a checkout an install left behind goes after an hour; one being installed stays"
     assert (gone.exists(), snapshot.exists(), recent.exists()) == (False, True, True), "an old environment archive goes; upgrade snapshots are kept by their own count"
     assert (root / "runtime" / "channel.jsonl").stat().st_size == 1024 * 1024, "the channel log is cut to its tail"
+
+
+def test_an_installed_update_tidies_at_once():
+    from controllers.types import Notifications
+    from features import load
+    from resources.base import SYSTEM
+    from surfaces.updates import KIND
+    load()
+    record = fresh()
+    left = record.root / "plugins" / ".staging-old"
+    left.mkdir(parents=True)
+    old = time.time() - 2 * 3600
+    os.utime(left, (old, old))
+    Notifications(record, actor=SYSTEM)._logged("Journal updated to 9.9.9", brief="from 9.9.8", kind=KIND, version="9.9.9")
+    assert not left.exists(), "a new version is housekept the moment it is announced, not an hour later"

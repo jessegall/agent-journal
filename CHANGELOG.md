@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.113.12 — An installed update prunes old files at once
+
+When a project sees it was updated, it now removes leftover plugin checkouts, old environment archives, stale output files and quiet session folders, and cuts long logs, right away instead of within the hour. Every project cleans up as each update lands.
+
 ## 2.113.11 — Skills say plainly who does what
 
 Every generated skill ended with a paragraph about the feature's machinery (what it listens to, when it speaks, its switches), which an agent cannot act on; it is gone, and the Settings page still shows the switches. Lines that said things like "named back to you", "whispered", "kept honest" or "minded" now say plainly what happens and who does it: you are told once, you are shown the rule, your writes are held.

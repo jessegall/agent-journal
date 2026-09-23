@@ -16,16 +16,20 @@ ARCHIVES_FOR = 90 * 86400
 def tidy(root: Path, days: float) -> dict:
     events = sum(Record(Path(root), env.name).trim_events(EVENTS_KEPT, time.time() - READERS_WITHIN)
                  for env in (Path(root) / "environments").glob("*") if (env / "events.jsonl").is_file())
-    left = leftovers(Path(root))
-    runtime = Path(root) / "runtime"
+    return {**tidy_files(Path(root), days), "events": events}
+
+
+def tidy_files(root: Path, days: float) -> dict:
+    left = leftovers(root)
+    runtime = root / "runtime"
     if not runtime.is_dir():
-        return {"removed": 0, "trimmed": 0, "events": events, "leftovers": left}
+        return {"removed": 0, "trimmed": 0, "leftovers": left}
     quiet = time.time() - days * 86400
     removed = [d for d in (runtime / "sessions").glob("*") if d.is_dir() and max((f.stat().st_mtime for f in d.iterdir()), default=0) < quiet]
     for d in removed:
         shutil.rmtree(d, ignore_errors=True)
     trimmed = [f for pattern, keep in TAILS.items() for f in runtime.glob(pattern) if f.is_file() and trim(f, keep)]
-    return {"removed": len(removed), "trimmed": len(trimmed), "events": events, "leftovers": left}
+    return {"removed": len(removed), "trimmed": len(trimmed), "leftovers": left}
 
 
 def leftovers(root: Path) -> int:
