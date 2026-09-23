@@ -25,7 +25,7 @@ from surfaces.updates import newer, upstream
 from surfaces.control import force as force_session, options as control_options, permit, relaunch, request as control_session, shell
 from features.skill_loading.catalogue import SKILL, always, catalogue, set_keywords, skills
 from features.skill_loading.required import load_now
-from features.file_feed.feed import edits_since
+from features.file_feed.feed import edits_since, notes
 from controllers.base import LAST, networked
 from controllers.types import Agents, CONTROLLERS, Environments, Features, Nudges, Plugins
 from features.browser_control.controller import Asks
@@ -182,7 +182,7 @@ class TranscriptQuery(Loaded):
 
 @dataclass(frozen=True)
 class EditsQuery(Loaded):
-    since: int = 0
+    since: float = 0.0
 
 
 @dataclass(frozen=True)
@@ -419,8 +419,7 @@ def post_run(req: Request) -> Reply:
 
 @route("GET", "/api/{env}/changes")
 def get_changes(req: Request) -> Reply:
-    from features.work_tracking.tracker import changes
-    return Reply(200, {"changes": list(reversed(changes(req.record())))})
+    return Reply(200, {"changes": [asdict(note) for note in reversed(notes(req.record()))]})
 
 
 @route("GET", "/api/{env}/bar")
@@ -595,8 +594,7 @@ def get_transcript(req: Request) -> Reply:
 
 @route("GET", "/api/{env}/agent/{n}/edits")
 def get_edits(req: Request) -> Reply:
-    row = Agents(req.record(), actor=USER).load(int(req.params["n"]))
-    return Reply(200, asdict(edits_since(row, req.query_as(EditsQuery).since)))
+    return Reply(200, asdict(edits_since(req.record(), int(req.params["n"]), req.query_as(EditsQuery).since)))
 
 
 @route("GET", "/api/{env}/agent/{n}/subagent/{session}/transcript")

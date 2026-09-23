@@ -1,40 +1,57 @@
-import json
+import subprocess
+from dataclasses import dataclass
+from pathlib import Path
 
 from controllers.types import Agents
+from engine.files import announce
 from features.file_feed.feed import edits_since
+from engine.record import Record
 from tests.conftest import fresh
-from tests.kit import report
 
 
-def agent_on(transcript, provider):
+@dataclass(frozen=True)
+class Project:
+    record: Record
+    root: Path
+    agent: int
+
+    def changed(self) -> None:
+        announce(self.record, self.agent)
+
+
+def project_with(files: dict[str, str]) -> Project:
     record = fresh()
-    report(record, "working", "PostToolUse", provider=provider, transcript=str(transcript), cwd=str(transcript.parent))
-    return Agents(record, actor="system").by_session("claude-1")
+    project = record.root.parent
+    for name, text in files.items():
+        (project / name).write_text(text)
+    for command in (["init", "-q"], ["add", "-A"], ["-c", "user.name=t", "-c", "user.email=t@t", "commit", "-qm", "start"]):
+        subprocess.run(["git", *command], cwd=project, capture_output=True, timeout=10)
+    row = Agents(record, actor="system").by_session("claude-1")
+    announce(record, row.n)
+    return Project(record, project, row.n)
 
 
-def test_claude_edits_become_cards_and_the_cursor_reads_only_what_came_after(tmp_path):
-    transcript = tmp_path / "s.jsonl"
-    result = lambda key, at, outcome: json.dumps({"type": "user", "timestamp": at, "toolUseResult": outcome,
-                                                  "message": {"content": [{"type": "tool_result", "tool_use_id": key}]}}) + "\n"
-    patch = [{"oldStart": 3, "newStart": 3, "lines": [" a", "-b", "+B", "+C"]}, {"oldStart": 40, "newStart": 41, "lines": [" x", "-y"]}]
-    transcript.write_text(result("t1", "2026-09-23T10:00:00Z", {"filePath": str(tmp_path / "src/a.py"), "oldString": "b", "structuredPatch": patch})
-                          + json.dumps({"type": "user", "toolUseResult": {"stdout": "structuredPatch"}}) + "\n")
-    row = agent_on(transcript, "claude")
-    first = edits_since(row, 0)
+def test_a_changed_file_becomes_a_card_and_the_cursor_reads_only_what_came_after():
+    lines = [f"line {i}" for i in range(1, 51)]
+    project = project_with({"a.py": "\n".join(lines) + "\n"})
+    lines[3], lines[44] = "LINE 4", "LINE 45"
+    (project.root / "a.py").write_text("\n".join(lines) + "\n")
+    project.changed()
+    first = edits_since(project.record, project.agent, 0)
     card = first.edits[0]
-    assert (card.path, card.added, card.removed, card.first_line, card.last_line) == ("src/a.py", 2, 2, 3, 41), "one card per edit, counted and placed"
-    assert [(r.kind, r.line, r.hidden) for r in card.rows] == [("ctx", 3, 0), ("del", 4, 0), ("add", 4, 0), ("add", 5, 0), ("fold", None, 35),
-                                                              ("ctx", 41, 0), ("del", 41, 0)], "the unchanged lines between hunks fold to one row"
-    with transcript.open("a") as out:
-        out.write(result("t2", "2026-09-23T10:01:00Z", {"type": "create", "filePath": str(tmp_path / "new.py"), "content": "one\ntwo", "structuredPatch": []}))
-    after = edits_since(row, first.cursor)
-    assert [(c.id, c.kind, [r.kind for r in c.rows]) for c in after.edits] == [("t2", "new", ["add", "add"])], "a new file is all added lines"
+    assert (card.path, card.kind, card.added, card.removed, card.first_line, card.last_line) == ("a.py", "edit", 2, 2, 1, 48), \
+        "a shell edit is a card, counted and placed"
+    assert [(r.kind, r.line) for r in card.rows][2:6] == [("ctx", 3), ("del", 4), ("add", 4), ("ctx", 5)], "the change sits between its context"
+    assert "fold" in [r.kind for r in card.rows], "the unchanged lines between changes fold to one row"
+    (project.root / "new.py").write_text("one\ntwo\n")
+    project.changed()
+    after = edits_since(project.record, project.agent, first.cursor)
+    assert [(c.path, c.kind, [r.kind for r in c.rows]) for c in after.edits] == [("new.py", "new", ["add", "add"])], "a new file is all added lines"
 
 
-def test_a_codex_deleted_file_is_one_line_with_its_removed_count(tmp_path):
-    transcript = tmp_path / "rollout.jsonl"
-    changes = {str(tmp_path / "old.md"): {"type": "delete", "content": "a\nb\nc"}}
-    transcript.write_text(json.dumps({"type": "event_msg", "timestamp": "2026-09-23T10:00:00Z", "payload": {
-        "type": "item_completed", "item": {"type": "FileChange", "id": "e1", "status": "completed", "changes": changes}}}) + "\n")
-    card = edits_since(agent_on(transcript, "codex"), 0).edits[0]
+def test_a_deleted_file_is_one_line_with_its_removed_count():
+    project = project_with({"old.md": "a\nb\nc\n"})
+    (project.root / "old.md").unlink()
+    project.changed()
+    card = edits_since(project.record, project.agent, 0).edits[0]
     assert (card.kind, card.removed, card.rows) == ("deleted", 3, ()), "a deleted file carries no diff rows"

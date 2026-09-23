@@ -9,8 +9,8 @@ from pathlib import Path
 from engine.transcript import AGENT, HUMAN, INJECTED, PEER, SENT, SUMMARY, SUPERSEDED, TASK, TOOL, Turn
 from providers.payload import AgentCall, AskCall, DISPLAYED, EVENTS, UsageWindow
 from providers.base import Provider, journal_hook, parsed
-from providers.payload import Dispatch, FileEdit, Hook, ToolCall
-from providers.claude_rows import Block, Edited, Row
+from providers.payload import Dispatch, Hook, ToolCall
+from providers.claude_rows import Block, Row
 from resources.types import AgentRow
 from engine.stored import read_json, tail, write_json, write_text
 from engine import runtime
@@ -85,7 +85,6 @@ def monitor_status(finished: bool, notified: bool, status: str) -> str:
 class Claude(Provider):
     name = "claude"
     sleeping_tools = ("ScheduleWakeup",)
-    edit_mark = b'"structuredPatch"'
     tool_kinds = {**Provider.tool_kinds, "AskUserQuestion": AskCall}
     question_tools = frozenset({"AskUserQuestion"})
     briefing_file = "CLAUDE.md"
@@ -457,13 +456,6 @@ class Claude(Provider):
             elif thought:
                 found.append(("thinking", thought))
         return found, done
-
-    def edits_in(self, raw: dict) -> list[FileEdit]:
-        row, result = Row.from_payload(raw), Edited.from_json(raw).result
-        answered = row.of_type("tool_result")
-        if not result.path or not answered or not row.main:
-            return []
-        return result.edits(answered[0].tool_use_id, row.at)
 
     def is_subagent(self, hook) -> bool:
         return bool(hook.agent) or "subagents" in (hook.transcript.parts if hook.transcript else ())

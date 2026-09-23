@@ -1,14 +1,23 @@
-from dataclasses import dataclass
+import difflib
+from dataclasses import asdict, dataclass
 from enum import StrEnum
 from pathlib import Path
 
-from providers import PROVIDERS
-from providers.payload import EditKind, FileEdit, Hunk
-from resources.types import AgentRow
+from engine.events import FileEdited
+from engine.files import KIND
+from engine.proc import git_objects
 
 KEEP = 3
-MOST_EDITS = 60
+KEPT = 500
 MOST_ROWS = 400
+MOST_DIFFS = 2000
+NOTES = "file_feed"
+
+
+class EditKind(StrEnum):
+    EDIT = "edit"
+    NEW = "new"
+    DELETED = "deleted"
 
 
 class RowKind(StrEnum):
@@ -18,7 +27,7 @@ class RowKind(StrEnum):
     FOLD = "fold"
 
 
-SIGNS = {"+": RowKind.ADD, "-": RowKind.DEL}
+KINDS = {KIND.created: EditKind.NEW, KIND.edited: EditKind.EDIT, KIND.deleted: EditKind.DELETED}
 
 
 @dataclass(frozen=True)
@@ -31,6 +40,28 @@ class DiffRow:
     @classmethod
     def fold(cls, hidden: int) -> "DiffRow":
         return cls(RowKind.FOLD, None, "", hidden)
+
+
+@dataclass(frozen=True)
+class Diff:
+    rows: tuple[DiffRow, ...]
+    added: int
+    removed: int
+    first_line: int
+    last_line: int
+
+    @classmethod
+    def between(cls, old: list[str], new: list[str]) -> "Diff":
+        groups = [group for group in difflib.SequenceMatcher(None, old, new).get_grouped_opcodes(KEEP) if any(op[0] != "equal" for op in group)]
+        rows, old_end = [], 0
+        for group in groups:
+            if rows and group[0][1] > old_end:
+                rows.append(DiffRow.fold(group[0][1] - old_end))
+            rows += _folded([row for op in group for row in _changed(op, old, new)])
+            old_end = group[-1][2]
+        counted = [row.kind for row in rows]
+        first, last = (groups[0][0][3] + 1, groups[-1][-1][4]) if groups else (0, 0)
+        return cls(_capped(rows), counted.count(RowKind.ADD), counted.count(RowKind.DEL), first, last)
 
 
 @dataclass(frozen=True)
@@ -48,42 +79,48 @@ class Card:
 
 @dataclass(frozen=True)
 class Feed:
-    cursor: int
+    cursor: float
     edits: tuple[Card, ...]
 
 
-def edits_since(row: AgentRow, since: int) -> Feed:
-    provider = PROVIDERS.get(row.provider)
-    if not provider or not row.transcript:
-        return Feed(since, ())
-    edits, cursor = provider().file_edits(Path(row.transcript), since)
-    return Feed(cursor, tuple(_card(edit, Path(row.cwd)) for edit in edits[-MOST_EDITS:]))
+DIFFS: dict[tuple[str, str], Diff] = {}
 
 
-def _card(edit: FileEdit, project: Path) -> Card:
-    rows, last_line = _rows(edit.hunks)
-    counted = [row.kind for row in rows]
-    kept = () if edit.kind == EditKind.DELETED else _capped(rows)
-    first_line = edit.hunks[0].new_start if edit.hunks else 0
-    return Card(edit.id, _relative(edit.path, project), edit.kind, edit.at, counted.count(RowKind.ADD), counted.count(RowKind.DEL),
-                first_line, last_line, kept)
+def noted(record, edit: FileEdited) -> None:
+    with record.state(NOTES).changing() as held:
+        held["notes"] = [*held.get("notes", []), asdict(edit)][-KEPT:]
 
 
-def _rows(hunks: tuple[Hunk, ...]) -> tuple[list[DiffRow], int]:
-    rows, old_end, new_end = [], 0, 0
-    for hunk in hunks:
-        if rows and hunk.old_start > old_end:
-            rows.append(DiffRow.fold(hunk.old_start - old_end))
-        old, new = hunk.old_start, hunk.new_start
-        body = []
-        for line in hunk.lines:
-            kind = SIGNS.get(line[:1], RowKind.CTX)
-            body.append(DiffRow(kind, old if kind == RowKind.DEL else new, line[1:]))
-            old += kind != RowKind.ADD
-            new += kind != RowKind.DEL
-        rows += _folded(body)
-        old_end, new_end = old, new
-    return rows, new_end - 1
+def notes(record) -> list[FileEdited]:
+    return [FileEdited.from_json(raw) for raw in record.state(NOTES).get("notes", [])]
+
+
+def edits_since(record, agent: int, since: float) -> Feed:
+    shown = [note for note in notes(record) if note.agent == agent and note.at > since]
+    diffed(record.root.parent, [(note.before, note.after) for note in shown])
+    return Feed(shown[-1].at if shown else since, tuple(_card(note) for note in shown))
+
+
+def diffed(project: Path, pairs: list[tuple[str, str]]) -> None:
+    missing = list(dict.fromkeys(pair for pair in pairs if pair not in DIFFS))
+    texts = git_objects(project, list(dict.fromkeys(sha for pair in missing for sha in pair)))
+    for before, after in missing:
+        DIFFS[(before, after)] = Diff.between(texts.get(before, "").splitlines(), texts.get(after, "").splitlines())
+    for pair in list(DIFFS)[:max(0, len(DIFFS) - MOST_DIFFS)]:
+        del DIFFS[pair]
+
+
+def _card(note: FileEdited) -> Card:
+    diff, kind = DIFFS[(note.before, note.after)], KINDS[note.kind]
+    rows = () if kind == EditKind.DELETED else diff.rows
+    return Card(f"{note.path}@{note.at}", note.path, kind, note.at, diff.added, diff.removed, diff.first_line, diff.last_line, rows)
+
+
+def _changed(op: tuple, old: list[str], new: list[str]) -> list[DiffRow]:
+    tag, i1, i2, j1, j2 = op
+    if tag == "equal":
+        return [DiffRow(RowKind.CTX, j1 + k + 1, old[i1 + k]) for k in range(i2 - i1)]
+    return [*(DiffRow(RowKind.DEL, i + 1, old[i]) for i in range(i1, i2)), *(DiffRow(RowKind.ADD, j + 1, new[j]) for j in range(j1, j2))]
 
 
 def _folded(rows: list[DiffRow]) -> list[DiffRow]:
@@ -102,12 +139,3 @@ def _capped(rows: list[DiffRow]) -> tuple[DiffRow, ...]:
     if len(rows) <= MOST_ROWS:
         return tuple(rows)
     return (*rows[:MOST_ROWS], DiffRow.fold(len(rows) - MOST_ROWS))
-
-
-def _relative(path: str, project: Path) -> str:
-    where = Path(path)
-    if where.is_relative_to(project) and project.is_absolute():
-        return str(where.relative_to(project))
-    if where.is_relative_to(Path.home()):
-        return f"~/{where.relative_to(Path.home())}"
-    return path

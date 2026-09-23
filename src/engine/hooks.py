@@ -9,7 +9,7 @@ from engine.record import Record
 from engine.sessions import Sessions, agent_pid, alive
 from engine.worktree import checkout, environment
 from resources.base import AGENT, SYSTEM
-from engine import bus, chat, runtime
+from engine import bus, chat, files, runtime
 from engine.stored import read_json, write_json
 from providers.payload import PERMISSION, STATUS
 from features.status_bar import commands
@@ -175,9 +175,11 @@ def handle(provider, root: Path, env: str, hook) -> dict:
             return {}
         why = gated(provider, record, hook, row.title)
         return {} if why is None else provider.blocking(why)
+    wrote = hook.event == "PostToolUse" and commands.writes(hook)
     agents.saw(row.n, {"hook": hook.event, "tool": hook.tool.name, "file": hook.tool.paths[0] if hook.tool.paths else "", "session": hook.session, "size": hook.tool.result_size, "skill": hook.tool.loaded_skill, "cause": AGENT},
-               status=provider.status(hook) or row.status or IDLE, **provider.facts(row, hook, root), **commands.shell(row, hook),
-               wrote=hook.event == "PostToolUse" and commands.writes(hook))
+               status=provider.status(hook) or row.status or IDLE, **provider.facts(row, hook, root), **commands.shell(row, hook), wrote=wrote)
+    if wrote:
+        bus.defer(lambda: files.announce(record, row.n))
     if hook.event == "PreToolUse":
         why = gated(provider, record, hook, row.title)
         return {} if why is None else provider.blocking(f"{why}{alongside(hook)}")

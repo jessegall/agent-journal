@@ -7,7 +7,7 @@ from pathlib import Path
 from engine.transcript import AGENT, HUMAN, INJECTED, TOOL
 from providers.payload import AgentCall, AskCall, BashCall, EVENTS, PERMISSION, SKILL_READ, UsageWindow
 from providers.base import Provider, parsed
-from providers.payload import Dispatch, FileEdit, Hook, ToolCall
+from providers.payload import Dispatch, Hook, ToolCall
 from providers.codex_rows import Row
 from engine.fields import Loaded
 from resources.types import AgentRow
@@ -105,7 +105,6 @@ def message_kind(payload) -> str:
 
 class Codex(Provider):
     name = "codex"
-    edit_mark = b'"FileChange"'
     question_tools = frozenset({"request_user_input"})
     tool_kinds = {**Provider.tool_kinds, "exec": CodexShell, "exec_command": CodexShell, "shell": CodexShell, "shell_command": CodexShell, "spawn_agent": AgentCall,
                   "request_user_input": AskCall}
@@ -223,10 +222,6 @@ class Codex(Provider):
 
     def row_of(self, raw: dict) -> Row:
         return Row.from_payload(raw)
-
-    def edits_in(self, raw: dict) -> list[FileEdit]:
-        row = self.row_of(raw)
-        return row.payload.item.edits(row.at)
 
     def turn(self, row: Row) -> tuple[str, str] | None:
         payload = row.payload
