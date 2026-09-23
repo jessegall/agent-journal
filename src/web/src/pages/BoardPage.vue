@@ -49,7 +49,7 @@ function take(got) {
 const load = () => (tickets.value ? api.ticketBoard(store.board.lens.board) : api.board(store.board.lens));
 
 async function refresh() {
-    take(await load());
+    await ask();
 }
 
 function move(card, lane) {
@@ -90,7 +90,7 @@ watch(
     }
 );
 
-usePoll(
+const ask = usePoll(
     "board",
     () => (boardOn.value ? load() : Promise.resolve(null)),
     5000,

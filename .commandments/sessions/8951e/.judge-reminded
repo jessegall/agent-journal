@@ -1,7 +1,9 @@
+/Users/jessegall/projects/agent-journal/src/commands/http.py
 /Users/jessegall/projects/agent-journal/src/commands/parser.py
 /Users/jessegall/projects/agent-journal/src/commands/queries.py
 /Users/jessegall/projects/agent-journal/src/engine/drivers.py
 /Users/jessegall/projects/agent-journal/src/engine/inputs.py
+/Users/jessegall/projects/agent-journal/src/engine/runtime.py
 /Users/jessegall/projects/agent-journal/src/engine/sessions.py
 /Users/jessegall/projects/agent-journal/src/engine/terminal.py
 /Users/jessegall/projects/agent-journal/src/engine/version.py
@@ -31,6 +33,7 @@
 /Users/jessegall/projects/agent-journal/src/features/tickets/resource.py
 /Users/jessegall/projects/agent-journal/src/features/tickets/test.py
 /Users/jessegall/projects/agent-journal/src/resources/types.py
+/Users/jessegall/projects/agent-journal/src/serve.py
 /Users/jessegall/projects/agent-journal/src/supervisor.py
 /Users/jessegall/projects/agent-journal/src/web/src/App.vue
 /Users/jessegall/projects/agent-journal/src/web/src/board/Card.vue
@@ -38,9 +41,11 @@
 /Users/jessegall/projects/agent-journal/src/web/src/kit/Icon.vue
 /Users/jessegall/projects/agent-journal/src/web/src/kit/MenuPanel.vue
 /Users/jessegall/projects/agent-journal/src/web/src/layout/Sidebar.vue
+/Users/jessegall/projects/agent-journal/src/web/src/layout/TopBar.vue
 /Users/jessegall/projects/agent-journal/src/web/src/pages/BoardPage.vue
 /Users/jessegall/projects/agent-journal/src/web/src/resource/ResourceBody.vue
 /Users/jessegall/projects/agent-journal/src/web/src/resource/StageMeanings.vue
+/Users/jessegall/projects/agent-journal/tests/test_the_gate.py
 -----
 Batch marker for the code-commandments judge reminder (`commandments judge-reminder`, wired as
 Stop + PreToolUse hooks). The lines above the separator are the changed-file set it last
