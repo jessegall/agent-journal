@@ -8,7 +8,7 @@ from controllers.base import COMMANDS, HANDLERS
 from controllers.types import Agents
 from engine import bus
 from engine.events import AgentChanged, AgentEvent
-from engine.hooks import CANCELERS, POLICIES
+from engine.hooks import AFTERWARDS, CANCELERS, POLICIES
 from engine.state import State
 from engine.wording import APPENDS
 from features.format import FORMATTERS
@@ -135,6 +135,7 @@ class TextFormatter:
 
 class ToolInterceptor:
     behaviour: ClassVar[str | None] = None
+    refuses: ClassVar[bool] = True
     limit: ClassVar[str] = ""
     steps_aside: ClassVar[str] = ""
 
@@ -242,7 +243,7 @@ class AgentHooks:
             refused = interceptor.intercept(context, hook.tool) or ""
             return limited(context, interceptor, refused) if interceptor.limit else refused
         policy.feature = feature
-        POLICIES.append(policy)
+        (POLICIES if interceptor.refuses else AFTERWARDS).append(policy)
 
     def canceler(self, canceler: Canceler) -> None:
         feature = self.feature
