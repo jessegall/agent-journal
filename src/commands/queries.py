@@ -255,6 +255,22 @@ def asked_prompts(record: Record, agent: str, args: list[str], ask=input, answer
         record.set_setting("permission_prompts", {**record.setting("permission_prompts", {}), "skip": picked == 0})
 
 
+def asked_history(record: Record, agent: str, conversation: str, ask=input, answering=None) -> None:
+    from controllers.types import Agents
+    from engine.sessions import Sessions
+    from features.agent_sessions.history import history
+    answering = sys.stdin.isatty() if answering is None else answering
+    provider = PROVIDERS[agent]()
+    seen = conversation and (Sessions(record.root).known(conversation) or Agents(record, actor=SYSTEM)._titled(conversation))
+    path = provider.conversation_file(conversation) if conversation and not seen else None
+    if not answering or not path:
+        return
+    notes = [f"The journal has never seen conversation {conversation}. Filling it in puts what you and the agent wrote",
+             f"into the chat of {record.env}, already read, so the history is there when you carry on."]
+    if choose("Fill the journal from this conversation", notes, ["Yes, fill it in", "No, start from here"], 0, ask) == 0:
+        print(f"journal: {history(record, provider, path, conversation)} messages brought in from the conversation")
+
+
 def asked_resume(record: Record, agent: str, args: list[str], ask=input, answering=None) -> list[str]:
     from engine.sessions import Sessions
     answering = sys.stdin.isatty() if answering is None else answering
@@ -301,6 +317,7 @@ def supervise(ctx, agent: str) -> str:
     clear(record.root)
     try:
         args = asked_resume(here, agent, args, ask, answering)
+        asked_history(here, agent, driver.conversation(args), ask, answering)
         carrying = driver.resuming(args)
         if not carrying:
             asked_prompts(here, agent, args, ask, answering)

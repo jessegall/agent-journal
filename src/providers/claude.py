@@ -385,6 +385,9 @@ class Claude(Provider):
     def stop_instruction(self, task: str) -> str:
         return f"run TaskStop with task_id {task} now"
 
+    def conversation_file(self, conversation: str) -> Path | None:
+        return next(iter(sorted((Path.home() / ".claude" / "projects").glob(f"*/{conversation}.jsonl"))), None)
+
     def subagent_transcript(self, path: Path, session: str) -> Path | None:
         found = Path(path).with_suffix("").joinpath("subagents", f"agent-{session}.jsonl")
         return found if found.is_file() else None
