@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.103.6 — Chat mark icons a size up
+
+Chat mark icons are 12px, big enough to make out while staying close to the height of their text.
+
 ## 2.103.5 — A smaller status dot, a centred status line, and chat mark icons the height of their words
 
 The pulsing dot on the status line is smaller, and the line sits halfway between the last message and the chat input instead of floating toward the top. Chat mark icons are drawn at the height of their text: the size they were given before never took effect, because the icon component ignores a size passed to it (a to-do fixes that everywhere).
