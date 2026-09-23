@@ -20,6 +20,7 @@
 /Users/jessegall/projects/agent-journal/src/features/boards/resource.py
 /Users/jessegall/projects/agent-journal/src/features/close_from_commits/handlers.py
 /Users/jessegall/projects/agent-journal/src/features/command_tags/test.py
+/Users/jessegall/projects/agent-journal/src/features/dev_faults/reports.py
 /Users/jessegall/projects/agent-journal/src/features/hosting/__init__.py
 /Users/jessegall/projects/agent-journal/src/features/hosting/apps.py
 /Users/jessegall/projects/agent-journal/src/features/hosting/commands.py
@@ -41,6 +42,9 @@
 /Users/jessegall/projects/agent-journal/src/features/organization/test.py
 /Users/jessegall/projects/agent-journal/src/features/permission_prompts/feature.py
 /Users/jessegall/projects/agent-journal/src/features/pull_requests/test.py
+/Users/jessegall/projects/agent-journal/src/features/runtime_cleanup/test.py
+/Users/jessegall/projects/agent-journal/src/features/runtime_cleanup/tidy.py
+/Users/jessegall/projects/agent-journal/src/features/session_briefing/test.py
 /Users/jessegall/projects/agent-journal/src/features/skill_loading/catalogue.py
 /Users/jessegall/projects/agent-journal/src/features/skill_loading/handlers.py
 /Users/jessegall/projects/agent-journal/src/features/skill_loading/test.py
@@ -56,6 +60,7 @@
 /Users/jessegall/projects/agent-journal/src/features/work_tracking/details.py
 /Users/jessegall/projects/agent-journal/src/features/work_tracking/handlers.py
 /Users/jessegall/projects/agent-journal/src/features/work_tracking/test.py
+/Users/jessegall/projects/agent-journal/src/providers/claude.py
 /Users/jessegall/projects/agent-journal/src/resources/types.py
 /Users/jessegall/projects/agent-journal/src/serve.py
 /Users/jessegall/projects/agent-journal/src/supervisor.py

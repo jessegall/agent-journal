@@ -32,6 +32,10 @@ def channel_alive(root: Path) -> Path:
     return folder(root) / "channel.on"
 
 
+def profiles(root: Path) -> Path:
+    return folder(root) / "slow"
+
+
 def sessions(root: Path) -> Path:
     return folder(root) / "sessions"
 

@@ -20,7 +20,6 @@ AGAIN = 300
 BUDGET = {"request": 50, "hook": 50, "command": 50}
 WARMED = ("request", "hook")
 PROFILING = "profile-requests"
-SLOW = "slow"
 
 
 ACTION = re.compile(r"/api/[^/]+/(\w+)(?:/\d+)?/(\w+)(?:\?|$)")
@@ -81,7 +80,7 @@ class FaultReports:
     def kept(self, root, name: str, took: float, profile: cProfile.Profile) -> None:
         out = io.StringIO()
         pstats.Stats(profile, stream=out).sort_stats("cumulative").print_stats(30)
-        folder = runtime.folder(root) / SLOW
+        folder = runtime.profiles(root)
         folder.mkdir(exist_ok=True)
         (folder / f"{time.strftime('%H%M%S')}-{name.replace('/', '_').replace(' ', '-')}-{took:.0f}ms.txt").write_text(out.getvalue())
 
