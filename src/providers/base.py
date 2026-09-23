@@ -326,7 +326,7 @@ class Provider(ABC):
         return loads
 
     def folded(self, path: Path, fold, start):
-        key = (str(path), fold.__name__)
+        key = (str(path), fold.__name__, *getattr(start, "__dataclass_fields__", ()))
         try:
             size = Path(path).stat().st_size
         except (OSError, TypeError):
