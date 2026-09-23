@@ -13,11 +13,11 @@ export function withWhispers(turns, nudges, session) {
     return whispers.length ? [...turns, ...whispers].sort((a, b) => a.at - b.at) : turns;
 }
 
-const spoken = (t) => (t.kind === "agent" || t.kind === "human") && t.text;
+const hasText = (t) => (t.kind === "agent" || t.kind === "human") && t.text;
 
 export function chatTurns(entries) {
     return entries.flatMap((t) => {
-        if (spoken(t)) {
+        if (hasText(t)) {
             const who = t.kind === "human" ? "user" : "agent";
             return [
                 {
