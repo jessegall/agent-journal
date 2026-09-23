@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.117.0 — A running session picks up a new release without a manual restart
+
+The journal's channel restarts itself in place when a new build is installed, keeping its connection to the agent, so a fix to it reaches every running session. When a release changes how the agent itself is launched, the supervisor waits until the agent is idle and restarts it in the same conversation with the same flags it was started with, and the chat shows a mark saying so. Sessions started before this release are restarted once, when idle, to pick up the current way of launching.
+
 ## 2.116.2 — A shell call with no command text no longer crashes the work hook
 
 The nudge that names a check repeated three times in a row read every recorded shell call, including ones kept without command text, and crashed on them. It now counts only calls that carry a command. Nothing to do: the hook stops failing on its own.

@@ -100,6 +100,15 @@ def test_the_channel_passes_on_the_first_line_of_a_queue_it_saw_created(tmp_path
     at = start(f)
     f.write_text(json.dumps({"content": "your last message has no tag"}) + "\n")
     assert contents(fresh_lines(f, at)[0]) == ["your last message has no tag"], "the first line written after the channel started is sent"
+    from channel import build, renewed
+    for name in ("journal-1.0.0-a.pyz", "journal-1.0.1-b.pyz"):
+        (tmp_path / name).write_text("")
+    (tmp_path / "journal.pyz").symlink_to("journal-1.0.0-a.pyz")
+    began = build(tmp_path)
+    assert not renewed(tmp_path, began), "on the build it started from, the channel runs on"
+    (tmp_path / "journal.pyz").unlink()
+    (tmp_path / "journal.pyz").symlink_to("journal-1.0.1-b.pyz")
+    assert renewed(tmp_path, began), "a newly installed build restarts the channel in place, keeping its connection"
 
 
 def test_a_line_goes_out_at_once_and_only_one_inside_the_window_waits():

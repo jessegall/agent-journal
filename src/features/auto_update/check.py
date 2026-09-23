@@ -3,12 +3,19 @@ import threading
 import time
 from pathlib import Path
 
+from controllers.types import Agents
+from engine.actors import IDLE
 from engine.heal import refused
+from engine.runtime import relaunch_file
+from engine.sessions import Sessions
+from engine.stored import write_json
+from engine.terminal import LAUNCH
 from engine.package import entry
 from engine.version import version
 from features import FEATURES
 from features.dev_faults.developing import developing
 from features.trigger import spec
+from resources.base import SYSTEM
 from surfaces.updates import newer, stale, upstream
 
 INSTALL_WAIT = 600
@@ -57,3 +64,20 @@ class UpdateCheck:
     def tell(self, feature, line: str, **values) -> None:
         title, brief = feature.line(line, values)
         self.agent.driver.send(f"{title} - {brief}")
+
+
+class Relaunch:
+    def __init__(self, agent):
+        self.agent = agent
+
+    def tick(self) -> str:
+        driver, record = self.agent.driver, self.agent.record
+        root = Path(record.root)
+        if int(Sessions(root).read(driver.session).get("launch") or 0) >= LAUNCH or self.agent.state() != IDLE:
+            return ""
+        last = driver.last_report()
+        if not last or not last.title:
+            return ""
+        Agents(record, actor=SYSTEM).card(last.n, label=f"Restarted the agent in the same conversation to pick up journal {version()}", icon="agents", tone="good")
+        write_json(relaunch_file(root, driver.session), {"resume": last.title})
+        return "relaunching"

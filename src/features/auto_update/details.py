@@ -22,6 +22,11 @@ class UpdatesDetails(FeatureDetails):
 
         A build that cannot start its supervisor or its server is set aside: the journal goes
         back to the last build that worked and never installs that version again.
+
+        A new build reaches a running session by itself: the server and the supervisor reload,
+        and the channel restarts in place. When a release changes how the agent itself is
+        launched, the supervisor waits until the agent is idle and restarts it in the same
+        conversation, and the chat shows a mark saying so.
     """
 
     trigger = Trigger(every=5, unit=MINUTES)

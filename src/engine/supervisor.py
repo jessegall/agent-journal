@@ -23,7 +23,7 @@ from engine.terminal import HEAL, RELAUNCH, RELOAD, STOP, watched  # noqa: E402
 from engine.actors import Agent  # noqa: E402
 from engine.record import Record  # noqa: E402
 import features  # noqa: E402
-from features.auto_update.check import UpdateCheck  # noqa: E402
+from features.auto_update.check import Relaunch, UpdateCheck  # noqa: E402
 from features.work_tracking.auto import CheckIn  # noqa: E402
 from engine.stored import write_json  # noqa: E402
 
@@ -90,7 +90,7 @@ def checks(root: Path, env: str, agent: str, session: str) -> tuple:
         features.load()
         record = Record(root, env)
         watcher = Agent(record, DRIVERS[agent](record, session))
-        return watcher.driver, (CheckIn(watcher), UpdateCheck(watcher))
+        return watcher.driver, (CheckIn(watcher), UpdateCheck(watcher), Relaunch(watcher))
     except Exception:
         threw(root, env, "starting the supervisor checks")
         return None, ()

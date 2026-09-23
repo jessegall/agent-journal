@@ -1,3 +1,4 @@
+import json
 import time
 
 import pytest
@@ -33,6 +34,22 @@ def test_the_update_check_tells_the_agent_of_a_newer_version_once_when_it_does_n
     check.checked_at = 0.0
     check.tick()
     assert 5 * 60 - updates.REFETCH_WAIT - 2 < time.time() - check.checked_at, "a stale published version is looked at again once it is fetched, not five minutes later"
+    from controllers.types import Agents
+    from engine import runtime
+    from engine.actors import IDLE
+    from engine.sessions import Sessions
+    from engine.terminal import LAUNCH
+    row = Agents(record).by_session("conversation-1")
+    driver = SimpleNamespace(session="claude-1", last_report=lambda: Agents(record).load(row.n))
+    state = {"now": "working"}
+    relaunch = updates.Relaunch(SimpleNamespace(record=record, driver=driver, state=lambda: state["now"]))
+    Sessions(record.root).write("claude-1", launch=LAUNCH - 1)
+    assert relaunch.tick() == "" and not runtime.relaunch_file(record.root, "claude-1").exists(), "a busy agent is never restarted"
+    state["now"] = IDLE
+    assert relaunch.tick() == "relaunching", "an idle agent launched the old way is restarted"
+    assert json.loads(runtime.relaunch_file(record.root, "claude-1").read_text()) == {"resume": "conversation-1"}, "in the same conversation"
+    Sessions(record.root).write("claude-1", launch=LAUNCH)
+    assert relaunch.tick() == "", "one launched the current way is left alone"
 
 
 def test_the_installed_command_runs_quietly_before_any_server_has_started(tmp_path):
