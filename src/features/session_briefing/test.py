@@ -109,6 +109,10 @@ def test_the_channel_passes_on_the_first_line_of_a_queue_it_saw_created(tmp_path
     (tmp_path / "journal.pyz").unlink()
     (tmp_path / "journal.pyz").symlink_to("journal-1.0.1-b.pyz")
     assert renewed(tmp_path, began), "a newly installed build restarts the channel in place, keeping its connection"
+    import os
+    from channel import READ_AT
+    os.environ[READ_AT] = str(at)
+    assert (start(f), READ_AT in os.environ) == (at, False), "the restarted channel reads on from where it stopped, so nothing queued meanwhile is skipped"
 
 
 def test_a_line_goes_out_at_once_and_only_one_inside_the_window_waits():
