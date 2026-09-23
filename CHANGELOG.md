@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.107.4 — A hook during an upgrade waits for the server
+
+A hook call that gets no answer from the server now tries again every half second instead of reporting a failure at once: for up to eight seconds while an upgrade is restarting the server, and for about two otherwise. The one "the hook got no answer from the server" notice every release used to bring no longer appears.
+
 ## 2.107.3 — An icon's size takes effect
 
 The kit's Icon accepts the size it was always being given: size sets the icon's width and height (16px when none is given), while a page that sizes its icons in its own styles keeps doing so. On screen this changes only icons that asked for a size and had none, such as the chat side panel's tab icons.
