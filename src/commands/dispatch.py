@@ -16,7 +16,7 @@ from engine.watch import threw
 from features.format import formatted
 from resources.base import as_dict, USER, Refused
 from engine.package import data
-from engine.fields import text_of, whole_of
+from engine.fields import Loaded
 
 
 WEB = data("web", "dist")
@@ -62,6 +62,11 @@ def shaping(r, record=None, surface: str = "") -> dict:
     return {**row, **fields, **({"sections": parts} if parts else {}), **({"data": {**row["data"], **data}} if data else {})}
 
 
+@dataclass(frozen=True)
+class Named(Loaded):
+    env: str = ""
+
+
 @dataclass
 class Request:
     root: Path
@@ -75,14 +80,16 @@ class Request:
             self.kept = Record(self.root, self.params["env"], memo=True)
         return self.kept
 
-    def query_text(self, key: str) -> str:
-        return text_of(self.query, key)
+    def query_as(self, kind):
+        return kind.from_json(self.query)
 
-    def query_whole(self, key: str) -> int:
-        return whole_of(self.query, key)
+    def body_as(self, kind):
+        return kind.from_json(self.body)
 
-    def body_text(self, key: str) -> str:
-        return text_of(self.body, key)
+    @property
+    def env(self) -> str:
+        named = Named.from_json(self.params).env or Named.from_json(self.query).env
+        return named if named else runtime.env(self.root)
 
     def controller(self):
         type_ = self.params["type"]
@@ -166,6 +173,7 @@ def dispatch(method: str, path: str, root: Path, query: dict, body: dict) -> Rep
     faults = features.FEATURES.get("dev_faults")
     profile = faults.reports.profiler(root) if faults else None
     began = (time.perf_counter(), time.thread_time())
+    req = Request(root, params, query, body)
     try:
         with bus.held() as queued:
             try:
@@ -174,21 +182,21 @@ def dispatch(method: str, path: str, root: Path, query: dict, body: dict) -> Rep
             except ValueError:
                 profile = None
             try:
-                reply = r.handler(Request(root, params, query, body))
+                reply = r.handler(req)
             finally:
                 if profile:
                     profile.disable()
         return guarded(timed(later(reply, lambda: bus.release(queued)), root, params.get("env") or "main", method, path, began, profile),
-                       root, env_of(root, params, query), f"after {method} {path}")
+                       root, req.env, f"after {method} {path}")
     except Missing as e:
         return Reply(404, {"error": str(e)})
     except Refused as e:
         return Reply(400, {"error": str(e)})
     except (TypeError, AttributeError) as e:
-        threw(root, env_of(root, params, query), f"{method} {path}")
+        threw(root, req.env, f"{method} {path}")
         return Reply(400, {"error": f"not an action here: {e}"})
     except Exception as e:
-        threw(root, env_of(root, params, query), f"{method} {path}")
+        threw(root, req.env, f"{method} {path}")
         return Reply(500, {"error": f"{type(e).__name__}: {e}"})
 
 
@@ -204,11 +212,6 @@ def guarded(reply: Reply, root: Path, env: str, where: str) -> Reply:
             threw(root, env, where)
     reply.after = run
     return reply
-
-
-def env_of(root: Path, params: dict, query: dict) -> str:
-    named = text_of(params, "env") if text_of(params, "env") else text_of(query, "env")
-    return named if named else runtime.env(root)
 
 
 def represented(got, record=None):

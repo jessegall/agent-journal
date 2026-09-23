@@ -17,4 +17,4 @@ class ShowViewerTab(Handler):
         if not url:
             return
         trigger.write(context.record, row, context.feature.name, viewer_opened=True)
-        viewer.show(url)
+        viewer.show(url, context.record.env)

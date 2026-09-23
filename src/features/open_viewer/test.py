@@ -39,7 +39,7 @@ def test_a_session_starting_shows_the_viewer_once_a_subagent_never_does():
     visible = []
     up = {"url": "http://127.0.0.1:8422/"}
     viewer.running = lambda root: up["url"]
-    viewer.show = lambda url: visible.append(url)
+    viewer.show = lambda url, env="": visible.append(f"{url}#/{env}")
 
     record = fresh()
     Agents(record, actor=SYSTEM).create("claude-1")
@@ -47,7 +47,7 @@ def test_a_session_starting_shows_the_viewer_once_a_subagent_never_does():
     assert visible == [], "no session start yet: the tab is left alone"
 
     report(record, "idle", "SessionStart")
-    assert visible == ["http://127.0.0.1:8422/"], "the session started: its viewer is shown"
+    assert visible == [f"http://127.0.0.1:8422/#/{record.env}"], "the session started: its viewer is shown on the session's environment"
     report(record, "idle", "SessionStart")
     report(record, "working", "PreToolUse")
     assert len(visible) == 1, "a second start of the same session, a compaction or a clear, shows nothing more"
@@ -59,7 +59,7 @@ def test_a_session_starting_shows_the_viewer_once_a_subagent_never_does():
     report(record, "idle", "SessionStart", session="claude-3")
     up["url"] = "http://127.0.0.1:8424/"
     report(record, "idle", "SessionStart", session="claude-3")
-    assert visible[2:] == ["http://127.0.0.1:8424/"], "no viewer: nothing; once one runs, the next start shows it"
+    assert visible[2:] == [f"http://127.0.0.1:8424/#/{record.env}"], "no viewer: nothing; once one runs, the next start shows it"
 
     Agents(record, actor=SYSTEM).create("child-1", parent="claude-1")
     report(record, "idle", "SessionStart", session="child-1")

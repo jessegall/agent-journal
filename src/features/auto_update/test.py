@@ -9,7 +9,6 @@ from engine.heal import ledger
 from engine.stored import write_json
 from features import load
 from tests.conftest import fresh
-from engine.fields import whole_of
 
 
 def test_the_update_check_tells_the_agent_of_a_newer_version_once_when_it_does_not_install_itself(monkeypatch):
@@ -200,7 +199,7 @@ def test_a_hook_during_an_upgrade_waits_for_the_server_instead_of_failing(tmp_pa
 
     class Answer(http.server.BaseHTTPRequestHandler):
         def do_POST(self):
-            self.rfile.read(whole_of(self.headers, "Content-Length"))
+            self.rfile.read(int(self.headers["Content-Length"]))
             self.send_response(200)
             self.end_headers()
             self.wfile.write(b'{"reason": "served"}')
@@ -220,11 +219,9 @@ def test_a_hook_during_an_upgrade_waits_for_the_server_instead_of_failing(tmp_pa
     assert not (tmp_path / "runtime" / "hook-failures.log").exists(), "no failure is logged for a server that was only restarting"
 
 
-def test_the_update_check_reads_the_version_file_the_repository_publishes():
+def test_the_version_files_older_installs_read_carry_the_release():
     from pathlib import Path
     from engine.version import version
-    from surfaces.updates import UPSTREAM
     repository = Path(__file__).resolve().parents[3]
-    published = repository / UPSTREAM.split("/main/", 1)[1]
-    assert published.is_file() and published.read_text().strip() == version(), UPSTREAM
-    assert (repository / "VERSION").read_text().strip() == version(), "installs before 2.89.0 read the VERSION at the repository root"
+    assert [(repository / name).read_text().strip() for name in ("VERSION", "src/VERSION")] == [version(), version()], \
+        "installs before 2.120.0 find a release through these files; newer ones read the release tags"

@@ -21,7 +21,6 @@ from controllers.types import warm, warm_record  # noqa: E402
 from engine.hooks import default_env, replay  # noqa: E402
 from engine.record import Record  # noqa: E402
 from engine.package import CODE, ZIPPED, entry
-from engine.fields import whole_of
 
 LOOPBACK = re.compile(r"^http://(127\.0\.0\.1|localhost)(:\d+)?$")
 
@@ -43,8 +42,8 @@ class Handler(BaseHTTPRequestHandler):
 
     def handle_one(self, method: str) -> None:
         url = urlparse(self.path)
-        length = whole_of(self.headers, "Content-Length")
-        raw = self.rfile.read(length) if length else b""
+        length = self.headers["Content-Length"]
+        raw = self.rfile.read(int(length)) if length else b""
         kind = self.headers.get("Content-Type") or ""
         body = {"_raw": raw, "_type": kind} if kind.startswith("multipart/") or kind.startswith("text/plain") else json.loads(raw or b"{}")
         reply = dispatch(method, url.path, self.root, dict(parse_qsl(url.query)), body)

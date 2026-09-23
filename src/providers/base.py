@@ -1,9 +1,11 @@
 import json
 import time
 from abc import ABC, abstractmethod
+from dataclasses import dataclass
 from pathlib import Path
 from typing import ClassVar
 
+from engine.fields import Loaded
 from engine.transcript import Turn
 from providers.payload import AgentCall, AskCall, AskedQuestion, BashCall, Dispatch, FetchCall, Hook, PERMISSION, ReadCall, STATUS, SearchCall, SkillCall, UsageWindow, WriteCall
 from resources.base import Refused
@@ -27,6 +29,11 @@ def parsed(line: str):
         return json.loads(line)
     except ValueError:
         return None
+
+
+@dataclass(frozen=True)
+class Decision(Loaded):
+    decision: str = ""
 
 
 class Provider(ABC):
@@ -70,7 +77,7 @@ class Provider(ABC):
         return {"hookSpecificOutput": {"hookEventName": event, "additionalContext": text}} if text else {}
 
     def refused(self, response: dict) -> bool:
-        return response.get("decision") == "block"
+        return Decision.from_json(response).decision == "block"
 
     def context(self, hook: Hook) -> float | None:
         return None

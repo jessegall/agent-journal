@@ -1,12 +1,19 @@
+from dataclasses import dataclass
 from pathlib import Path
 
 from engine.events import AgentMessageSent, AgentReported
 from features.parts import AgentContext, Handler
 from providers import PROVIDERS
-from engine.fields import whole_of
+from engine.fields import Loaded
 
 THINKING = "thinking"
 TURN_STARTS = ("UserPromptSubmit", "SessionEnd")
+
+
+@dataclass(frozen=True)
+class Read(Loaded):
+    path: str = ""
+    offset: int = 0
 
 
 class FollowThinking(Handler):
@@ -15,11 +22,11 @@ class FollowThinking(Handler):
         kind, transcript = PROVIDERS.get(row.provider), Path(row.transcript)
         if not kind or not transcript.is_file():
             return
-        held = context.state.get("transcript", {})
-        if held.get("path") != str(transcript):
+        held = Read.from_json(context.state.get("transcript", {}))
+        if held.path != str(transcript):
             context.state.set("transcript", {"path": str(transcript), "offset": transcript.stat().st_size})
             return
-        found, offset = kind().thoughts(transcript, whole_of(held, "offset"))
+        found, offset = kind().thoughts(transcript, held.offset)
         context.state.set("transcript", {"path": str(transcript), "offset": offset})
         thought = row.data.get(THINKING) or ""
         for what, text in found:

@@ -18,7 +18,6 @@ from features.plugins.skills import withdrawn
 from features.plugins.source import environment, folder, logged
 from features.status_bar import commands
 from resources.base import OWNER, PLUGIN, SYSTEM
-from engine.fields import text_of
 
 EACH = 1.5
 LONGEST_EACH = 3.0
@@ -139,7 +138,7 @@ class KeepPluginRows(ActionInterceptor):
 
 class OneRowPerTitle(ActionInterceptor):
     def intercept(self, context: Context, controller, title: str = "", abstract: str = "", brief: str = "", **data):
-        name = text_of(data, OWNER)
+        name = data.get(OWNER)
         if not name:
             return None
         found = next((row for row in controller.summaries() if row.get(OWNER) == name and row["title"] == title and not row["deleted"]), None)

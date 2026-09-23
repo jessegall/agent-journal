@@ -275,6 +275,7 @@ def supervise(ctx, agent: str) -> str:
     from engine.viewer import start
     from features.clean_slate.slate import put_back, remember, set_aside, slate_of
     from engine.worktree import linked
+    from engine.sessions import Sessions
     from features.auto_update.launch import latest_first
     from engine.stop import clear
     record = ctx["record"]
@@ -292,15 +293,15 @@ def supervise(ctx, agent: str) -> str:
         subprocess.run(["stty", "sane"], stdin=sys.stdin, check=False)
         print(banner(agent, project))
     driver = DRIVERS[agent]
-    env = asked_for(record, driver.worktree(args), ask, answering)
+    resumed = driver.conversation(args)
+    env = (Sessions(record.root).environment(resumed) if resumed else "") or asked_for(record, driver.worktree(args), ask, answering)
     here = Record(record.root, env)
     args = driver.within(args, env) if env in linked(project) else args
     put_back(here)
     clear(record.root)
     try:
-        given = args
         args = asked_resume(here, agent, args, ask, answering)
-        carrying = driver.resuming(args) and not driver.resuming(given)
+        carrying = driver.resuming(args)
         if not carrying:
             asked_prompts(here, agent, args, ask, answering)
         if slate_of(here) if carrying else asked_slate(here, project, agent, ask, answering):

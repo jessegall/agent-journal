@@ -1,7 +1,7 @@
+import subprocess
 import threading
 import time
 from pathlib import Path
-from urllib.request import urlopen
 
 from controllers.types import Notifications
 from engine.hooks import default_env
@@ -9,6 +9,7 @@ from engine.record import Record
 from resources.base import SYSTEM
 from engine.stored import write_text
 from engine.version import version as package_version
+from install import REPOSITORY
 
 PACKAGE = Path(__file__).resolve().parents[1]
 KIND = "update"
@@ -38,7 +39,6 @@ def announce(root: Path, version: str = "") -> str:
     return version
 
 
-UPSTREAM = "https://raw.githubusercontent.com/jessegall/agent-journal/main/src/VERSION"
 
 
 UPSTREAM_FOR = 900
@@ -66,12 +66,13 @@ def upstream(root: Path) -> str:
 
 def fetched(cache: Path) -> None:
     with FETCHING:
+        cache.parent.mkdir(parents=True, exist_ok=True)
         try:
-            with urlopen(UPSTREAM, timeout=3) as r:
-                latest = r.read().decode().strip()
-        except OSError:
-            cache.parent.mkdir(parents=True, exist_ok=True)
+            listed = subprocess.run(["git", "ls-remote", "--tags", "--refs", REPOSITORY, "v*"], capture_output=True, text=True, timeout=10)
+        except (OSError, subprocess.TimeoutExpired):
+            listed = None
+        released = [line.rsplit("/v", 1)[1] for line in listed.stdout.splitlines() if "/v" in line] if listed and not listed.returncode else []
+        if not released:
             cache.touch(exist_ok=True)
             return
-        cache.parent.mkdir(parents=True, exist_ok=True)
-        write_text(cache, latest)
+        write_text(cache, max(released, key=counted))
