@@ -68,8 +68,8 @@ def test_the_verb_is_the_root_and_the_only_unmuted_part():
         "a run of git commands is one message, rooted under git"
     assert [text([{"command": f"reading {f}", "tool": "Read", "at": NOW, "effect": "reads", "files": [f]}])[0][0] for f in ("a.png", "b.mp4")] == \
         ["viewing", "watching"], "a picture and a film have their own words"
-    assert (text([shell("x", effect="writes", files=["a.py"], made=["a.py"])])[0][0],
-            queue([shell("x", effect="writes", files=["a.py"], made=["a.py"])], NOW)[0]["hold"]) == ("creating", HOLD), \
+    created = [shell("x", effect="writes", files=["a.py"], made=["a.py"])]
+    assert (text(created)[0][0], queue(created, NOW)[0]["hold"]) == ("creating", HOLD), \
         "creating has its own word and holds its line like editing"
     assert [text([shell("x", effect=e, files=["a.py"])])[0][0] for e in ("writes", "reads", "deletes", "tests", "installs", "builds", "")] == \
         ["editing", "reading", "deleting", "testing", "installing", "building", "running"], "every kind has its own verb"
