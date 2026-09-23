@@ -24,6 +24,12 @@ def environment(top: Path | None) -> str:
         return ""
 
 
+def linked(project: Path) -> set[str]:
+    listed = git(project, "worktree", "list", "--porcelain")
+    folders = [line.split(" ", 1)[1] for line in listed.stdout.splitlines() if line.startswith("worktree ")] if not listed.returncode else []
+    return {Path(folder).name for folder in folders[1:]}
+
+
 def opened(project: Path, folder: Path, branch: str) -> Path:
     if folder.is_dir():
         return folder
@@ -46,4 +52,7 @@ def included(project: Path, folder: Path) -> None:
 
 
 def git(project: Path, *args: str) -> subprocess.CompletedProcess:
-    return subprocess.run(["git", *args], cwd=project, capture_output=True, text=True, timeout=60)
+    try:
+        return subprocess.run(["git", *args], cwd=project, capture_output=True, text=True, timeout=60)
+    except (OSError, subprocess.TimeoutExpired) as failed:
+        return subprocess.CompletedProcess(["git", *args], 1, "", str(failed))

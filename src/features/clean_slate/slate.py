@@ -95,5 +95,9 @@ def put_back(record: Record) -> int:
     return len(entries)
 
 
+def slate_of(record: Record) -> bool:
+    return bool(state(record).get("last", True))
+
+
 def remember(record: Record, answer: bool) -> None:
     record.set_setting(KEY, {**state(record), "last": answer})

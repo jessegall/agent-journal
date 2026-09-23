@@ -12,6 +12,7 @@ from engine.record import Record
 from engine.transcript import Turn, search as search_transcript
 from features.command_tags.reading import visible
 from providers import DRIVERS, PROVIDERS
+from commands.menu import Choice, choices_of, pick
 from resources.base import Refused, SYSTEM
 from resources.types import AgentRow
 from engine.stored import write_text
@@ -149,6 +150,7 @@ def still_open(record) -> list[str]:
     return works + messages
 
 NO_INTERACTION = "--no-interaction"
+LAUNCHED = "launched"
 SAVED_CURSOR = "\x1b7"
 QUESTION_SCREEN = "\x1b8\x1b[J"
 
@@ -159,11 +161,14 @@ def asked_for(record: Record, worktree: str = "", ask=input, answering=None) -> 
         return record.env
     from controllers.types import Environments
     from engine.sessions import Sessions
+    from engine.worktree import linked
     names = [r["title"] for r in Environments(record, actor=SYSTEM).summaries() if not r["deleted"] and not r["completed"]]
     if not names:
         return record.env
     sessions = Sessions(record.root)
-    choices = [name + ("   (an agent is working here)" if sessions.holder(name) else "") for name in names] + ["A new environment"]
+    worktrees = linked(record.root.parent)
+    choices = [Choice(name, tuple(badge for badge, on in (("worktree", name in worktrees), ("agent working", sessions.holder(name))) if on))
+               for name in names] + [Choice("A new environment")]
     free = [i for i, name in enumerate(names) if not sessions.holder(name)]
     default = names.index(record.env) if record.env in names and names.index(record.env) in free else (free or [len(names)])[0]
     while True:
@@ -192,17 +197,19 @@ def defaults(_: str) -> str:
     return ""
 
 
-def choose(heading: str, notes: list[str], choices: list[str], default: int, ask=input) -> int | None:
+def choose(heading: str, notes: list[str], choices: list, default: int, ask=input) -> int | None:
     if ask is defaults:
         return default
     if sys.stdout.isatty():
         print(QUESTION_SCREEN, end="")
+    if ask is input and sys.stdin.isatty() and sys.stdout.isatty():
+        return pick(heading, notes, choices, default)
     print(f"\n  {heading}\n  {'─' * len(heading)}")
     if notes:
         print("", *(f"    {line}" for line in notes), sep="\n")
     print("")
-    for i, choice in enumerate(choices, 1):
-        print(f"    {i}  {choice}" + ("   ← Enter" if i - 1 == default else ""))
+    for i, choice in enumerate(choices_of(choices), 1):
+        print(f"    {i}  {choice.label}" + "".join(f"  [{badge}]" for badge in choice.badges) + ("   ← Enter" if i - 1 == default else ""))
     while True:
         try:
             picked = ask("\n  > ").strip() or str(default + 1)
@@ -217,7 +224,7 @@ def banner(agent: str, project: Path) -> str:
     width = max(40, shutil.get_terminal_size().columns - 4)
     version = package_version()
     lines = [f"agent-journal {version}", "", f"You're about to start {agent.capitalize()} under the journal,", f"in {project}.", "",
-             "A question or two first. Enter takes the choice marked ← Enter."]
+             "A question or two first: move with ↑ ↓ and pick with Enter."]
     rule = "─" * width
     return "\x1b[2J\x1b[H" + "\n".join([f"┌{rule}┐", *(f"│ {line:<{width - 2}} │" for line in lines), f"└{rule}┘", ""]) + SAVED_CURSOR
 
@@ -256,14 +263,18 @@ def asked_resume(record: Record, agent: str, args: list[str], ask=input, answeri
     earlier = Sessions(record.root).last(worked, agent) if driver else ""
     if not answering or not earlier or driver.resuming(args):
         return args
-    notes = [f"An earlier {agent.capitalize()} session worked {worked}. Carrying on opens that conversation again."]
-    return driver.resumed(args, earlier) if choose("Carry on from the last session", notes, ["Yes, carry on", "No, start a new one"], 0, ask) == 0 else args
+    last = [arg for arg in record.setting(LAUNCHED, {}).get(agent, []) if arg not in args]
+    notes = [f"An earlier {agent.capitalize()} session worked {worked}. Carrying on opens that conversation again,",
+             f"started as before{': ' + ' '.join(last) if last else ''}, without asking the other questions."]
+    picked = choose("Carry on from the last session", notes, ["Yes, carry on", "No, start a new one"], 0, ask)
+    return driver.resumed([*args, *last], earlier) if picked == 0 else args
 
 
 def supervise(ctx, agent: str) -> str:
     from engine.terminal import carried
     from engine.viewer import start
-    from features.clean_slate.slate import put_back, remember, set_aside
+    from features.clean_slate.slate import put_back, remember, set_aside, slate_of
+    from engine.worktree import linked
     from features.auto_update.launch import latest_first
     from engine.stop import clear
     record = ctx["record"]
@@ -280,17 +291,23 @@ def supervise(ctx, agent: str) -> str:
     if sys.stdin.isatty() and not quiet:
         subprocess.run(["stty", "sane"], stdin=sys.stdin, check=False)
         print(banner(agent, project))
-    env = asked_for(record, DRIVERS[agent].worktree(args), ask, answering)
+    driver = DRIVERS[agent]
+    env = asked_for(record, driver.worktree(args), ask, answering)
     here = Record(record.root, env)
+    args = driver.within(args, env) if env in linked(project) else args
     put_back(here)
     clear(record.root)
     try:
+        given = args
         args = asked_resume(here, agent, args, ask, answering)
-        asked_prompts(here, agent, args, ask, answering)
-        if asked_slate(here, project, agent, ask, answering):
+        carrying = driver.resuming(args) and not driver.resuming(given)
+        if not carrying:
+            asked_prompts(here, agent, args, ask, answering)
+        if slate_of(here) if carrying else asked_slate(here, project, agent, ask, answering):
             print(f"journal: {set_aside(here, project, agent)}")
         else:
             remember(here, False)
+        here.set_setting(LAUNCHED, {**here.setting(LAUNCHED, {}), agent: driver.unresumed(args)})
         url = start(record.root, project)
         print(f"journal: viewer {url}" if url else "journal: the viewer did not start; see .journal/runtime/viewer.log")
     except BaseException:
