@@ -1,24 +1,22 @@
 <script setup>
-import {nextTick, ref, useSlots, watch} from "vue";
+import {nextTick, onMounted, onUnmounted, ref, useSlots} from "vue";
 import Btn from "./Btn.vue";
 
-const props = defineProps({placeholder: String, action: {type: String, default: "Send"}, locked: Boolean, grows: Number});
+const props = defineProps({placeholder: String, action: {type: String, default: "Send"}, locked: Boolean});
 const emit = defineEmits(["send"]);
 const words = defineModel({type: String, default: ""});
 const log = ref(null);
+const lines = ref(null);
 const input = ref(null);
 const actions = Boolean(useSlots().actions);
-const still = globalThis.matchMedia("(prefers-reduced-motion: reduce)").matches;
-let height = 0;
+const NEAR = 24;
+let pinned = true;
+const follow = () => pinned && (log.value.scrollTop = log.value.scrollHeight);
+const watchScroll = () => (pinned = log.value.scrollHeight - log.value.scrollTop - log.value.clientHeight < NEAR);
+const sized = new ResizeObserver(follow);
 
-watch(
-    () => props.grows,
-    () =>
-        nextTick(() => {
-            if (log.value.scrollHeight > height) log.value.scrollTo({top: log.value.scrollHeight, behavior: still ? "auto" : "smooth"});
-            height = log.value.scrollHeight;
-        })
-);
+onMounted(() => sized.observe(lines.value));
+onUnmounted(() => sized.disconnect());
 
 function send() {
     if (props.locked || !words.value.trim()) return;
@@ -30,8 +28,10 @@ defineExpose({focus: () => nextTick(() => input.value.focus())});
 
 <template>
     <div class="chat">
-        <div ref="log" class="log">
-            <slot />
+        <div ref="log" class="log" @scroll="watchScroll">
+            <div ref="lines" class="lines">
+                <slot />
+            </div>
         </div>
         <template v-if="actions">
             <div class="actions">
@@ -61,17 +61,19 @@ defineExpose({focus: () => nextTick(() => input.value.focus())});
 }
 
 .log {
-    display: flex;
     flex: 1;
-    flex-direction: column;
-    gap: 10px;
     min-height: 0;
     overflow-y: auto;
-    padding: 16px 16px 6px;
 }
 
-.log > :first-child {
-    margin-top: auto;
+.lines {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    gap: 10px;
+    min-height: 100%;
+    padding: 16px 16px 6px;
+    box-sizing: border-box;
 }
 
 .actions {

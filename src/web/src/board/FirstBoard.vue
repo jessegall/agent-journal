@@ -77,7 +77,6 @@ async function make(title) {
         <ChatPanel
             ref="panel"
             v-model="words"
-            :grows="lines.length"
             :locked="making"
             :action="template ? 'Make it' : 'Send'"
             :placeholder="template ? 'Name the board' : 'Or tell me what the board is for'"
