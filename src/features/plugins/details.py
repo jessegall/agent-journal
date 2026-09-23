@@ -25,6 +25,11 @@ class PluginsDetails(FeatureDetails):
         on the Unix socket at $JOURNAL_PLUGIN_SOCKET, reads one JSON line and writes its answer, and the command runs only
         when nothing listens there.
 
+        "load": {"<event>": ["<skill>", ...]} names the skills the agent must load when one of the plugin's own events, a
+        journal event or a hook.<event> happens: the agent's tool calls wait until they are loaded, as for the journal's own
+        skills. A skill the plugin ships can carry "keywords: <word>, <word>" in its SKILL.md front matter, and the agent is
+        asked to load it when one of those words comes up.
+
         When one of its servers gives up, you are told once; journal services list|start|stop|restart|log <plugin>.<service>
         inspects them. The servers a plugin declares are kept up while the session runs and stop with it. A plugin writes back
         by calling the journal itself, or by appending journal commands to the file at $JOURNAL_QUEUE, one per line, which the

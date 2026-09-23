@@ -11,7 +11,7 @@ from engine.hooks import CANCELABLE
 from features.plugins.declared import Manifest
 
 MANIFEST = Path(".journal-plugin") / "plugin.json"
-KEYS = ("name", "version", "title", "description", "journal", "requires", "env", "setup", "services", "on", "refuse", "reads", "refuse_seconds", "refuse_socket", "chat", "pages", "settings", "skills", "installed", "events", "cancels")
+KEYS = ("name", "version", "title", "description", "journal", "requires", "env", "setup", "services", "on", "refuse", "reads", "refuse_seconds", "refuse_socket", "chat", "pages", "settings", "skills", "load", "installed", "events", "cancels")
 NAME = re.compile(r"[a-z0-9][a-z0-9-]{1,31}$")
 WORD = re.compile(r"[a-z][a-z0-9_-]*$")
 PLACEHOLDER = re.compile(r"\{([a-z][a-z0-9_.]*)\}")
@@ -66,6 +66,7 @@ def read(folder: Path, version: str = "") -> Manifest:
             shaped(name, {event: fields["card"]}, "events.card", ("label", "color", "icon"), ())
         if fields.get("tone", "") not in TONES:
             raise Refused(f"plugin.json: events.{event}.tone is one of {', '.join(t for t in TONES if t)}")
+    checked["load"] = loads(given.get("load") or {}, checked["events"])
     if "cancels" in checked:
         if not isinstance(checked["cancels"], dict) or any(event not in CANCELABLE for event in checked["cancels"]):
             raise Refused(f"plugin.json: cancels names events that can be cancelled: {', '.join(CANCELABLE)}")
@@ -178,6 +179,17 @@ def chat(name: str, given) -> list:
             raise Refused(f"plugin.json: chat find {rule['find']!r} is not a pattern: {broken}") from None
         out.append({"find": rule["find"], "as": rule["as"]})
     return out
+
+
+def loads(given, events: dict) -> dict:
+    if not isinstance(given, dict):
+        raise Refused("plugin.json: load names, for an event or a hook, the skills the agent must load when it happens")
+    for pattern, skills in given.items():
+        if pattern not in PATTERNS and pattern not in events:
+            raise Refused(f"plugin.json: load {pattern!r} matches no event; it is a journal event, a hook.<event> or one of the plugin's own events")
+        if not isinstance(skills, list) or not skills or not all(isinstance(skill, str) and skill for skill in skills):
+            raise Refused(f"plugin.json: load {pattern!r} is a list of skill names")
+    return dict(given)
 
 
 def handlers(name: str, given) -> dict:
