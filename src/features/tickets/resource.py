@@ -3,6 +3,8 @@ from typing import ClassVar
 from resources.base import PROJECT, USER, Resource, ResourceDetails
 from resources.shapes import FLAG, NUMBER, TEXT, Field, Shape
 
+AGENT_CLI = "claude"
+
 
 class Ticket(Shape, Resource):
     type = "ticket"
@@ -26,6 +28,8 @@ class Ticket(Shape, Resource):
         Field(TEXT, name="owner"),
         Field(TEXT, name="work_environment"),
         Field(TEXT, "", name="base"),
+        Field(TEXT, AGENT_CLI, name="agent"),
+        Field(NUMBER, 0.0, name="launched"),
         Field(NUMBER, 0, name="plan"),
         Field(FLAG, False, name="queued"),
         Field(FLAG, False, name="draft"),

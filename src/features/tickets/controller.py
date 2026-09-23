@@ -1,9 +1,11 @@
+import time
 from dataclasses import asdict, dataclass
 
 import controllers.types as types_module
 from controllers.types import Environments
 from engine.record import Record
 from engine.seats import terminal_of
+from engine.state import State
 from engine.stop import ask_session
 from engine.worktree import keep, merged, tip
 from engine.sessions import Sessions, live
@@ -22,8 +24,8 @@ from resources.base import AGENT, SYSTEM, Refused, Resource
 from resources.shapes import LEVELS
 
 
-AGENT_CLI = "claude"
 PROPOSED, CONFIRMED = "proposed", "confirmed"
+LAUNCHING_FOR = 60.0
 CARD_EXTRAS: list = []
 HELD = ("rule", "doc", "tool")
 
@@ -189,7 +191,7 @@ class Tickets(Controller):
 
     def _branch(self, ticket) -> str:
         from providers import DRIVERS
-        return DRIVERS[AGENT_CLI].branch(ticket.work_environment)
+        return DRIVERS[ticket.agent].branch(ticket.work_environment)
 
     def _merged(self, ticket) -> bool:
         return merged(self.record.root.parent, self._branch(ticket), ticket.base)
@@ -256,22 +258,24 @@ class Tickets(Controller):
             self._refuse(f"only the user confirms a drafted {self.type}: they do it with its button or in the viewer")
         return self.update(int(n), draft=False)
 
-    def start(self, n: int, agent: str = AGENT_CLI):
+    def start(self, n: int, agent: str | None = None):
         from engine.terminal import detached
         from providers import DRIVERS
         self._confirmed(self.load(int(n)))
         ticket = self.bind(int(n))
-        if not ticket.base:
-            ticket = self.update(ticket.n, base=tip(self.record.root.parent))
-        if self.agent_session(ticket.n):
-            return ticket
-        if self._waiting_on(ticket) or len(self._running()) >= int(TicketsDetails.values(self.record).running):
-            return self.update(ticket.n, queued=True)
-        driver, place = DRIVERS[agent], ticket.work_environment
-        earlier = Sessions(self.record.root).last(place, agent)
-        args = driver.within([*driver.AUTO_ARGS], place)
-        detached(self.record.root, self.record.root.parent, place, agent, driver.resumed(args, earlier) if earlier else driver.prompted(args, self._kickoff(ticket)))
-        return self.update(ticket.n, queued=False)
+        ticket = self.update(ticket.n, agent=agent or ticket.agent, base=ticket.base or tip(self.record.root.parent))
+        with State(self.record.root / "runtime" / "ticket-starts.json").changing():
+            ticket = self.load(ticket.n)
+            if self._live(ticket):
+                return ticket
+            if self._waiting_on(ticket) or len(self._running()) >= int(TicketsDetails.values(self.record).running):
+                return self.update(ticket.n, queued=True)
+            driver, place = DRIVERS[ticket.agent], ticket.work_environment
+            earlier = Sessions(self.record.root).last(place, ticket.agent)
+            args = driver.within([*driver.AUTO_ARGS], place)
+            detached(self.record.root, self.record.root.parent, place, ticket.agent,
+                     driver.resumed(args, earlier) if earlier else driver.prompted(args, self._kickoff(ticket)))
+            return self.update(ticket.n, queued=False, launched=time.time())
 
     def _kickoff(self, ticket) -> str:
         return (f"You work {ticket.ref}, {ticket.title}, in this environment and its worktree. {ticket.brief}\n"
@@ -286,7 +290,14 @@ class Tickets(Controller):
                 return
 
     def _running(self) -> list:
-        return [r for r in self._standing() if r.work_environment and self.agent_session(r.n)]
+        return [r for r in self._standing() if r.work_environment and self._live(r)]
+
+    def _live(self, ticket) -> bool:
+        if self.agent_session(ticket.n):
+            if ticket.launched:
+                self.update(ticket.n, launched=0.0)
+            return True
+        return time.time() - ticket.launched < LAUNCHING_FOR
 
     def _confirmed(self, ticket) -> None:
         if ticket.draft:

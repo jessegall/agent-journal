@@ -61,7 +61,6 @@ onUnmounted(() => window.removeEventListener("keydown", onKey));
 const chosenPlan = computed(() => store.board.lens.plan);
 
 function made(n) {
-    if (adding.value === "board") lens({board: n});
     peek(adding.value, n);
     adding.value = "";
 }
@@ -245,7 +244,7 @@ const ask = usePoll(
             <NewWork :open="writingWork" :board="current" @close="writingWork = false" @added="refresh" />
         </template>
         <template v-if="adding">
-            <NewResource :type="adding" :preset="adding === 'ticket' ? {board: chosenBoard} : {}" @made="made" @close="adding = ''" />
+            <NewResource :type="adding" @made="made" @close="adding = ''" />
         </template>
     </section>
 </template>

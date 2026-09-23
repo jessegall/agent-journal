@@ -40,16 +40,16 @@ def described(f: Path, root: Path) -> dict:
 def catalogue(root: Path) -> list[dict]:
     marks = tuple(marked(root / home) for home in HOMES)
     held = CATALOGUED.get(str(root))
-    if held and held[1] == marks and time.monotonic() - held[0] < FRESH_FOR:
+    if held and held[1] == marks and held[3] == tuple(map(marked, held[4])) and time.monotonic() - held[0] < FRESH_FOR:
         return held[2]
+    files = [f for home in HOMES for f in skill_files(root / home)]
     out = {}
-    for home in HOMES:
-        for f in skill_files(root / home):
-            try:
-                out.setdefault(f.parent.name, described(f, root))
-            except FileNotFoundError:
-                continue
-    CATALOGUED[str(root)] = (time.monotonic(), marks, list(out.values()))
+    for f in files:
+        try:
+            out.setdefault(f.parent.name, described(f, root))
+        except FileNotFoundError:
+            continue
+    CATALOGUED[str(root)] = (time.monotonic(), marks, list(out.values()), tuple(map(marked, files)), files)
     return CATALOGUED[str(root)][2]
 
 
