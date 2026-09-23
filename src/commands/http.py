@@ -168,7 +168,9 @@ class Keywords(Loaded):
 
     @property
     def words(self) -> list:
-        return self.keywords if isinstance(self.keywords, list) else str(self.keywords).split(",") if self.keywords else []
+        if isinstance(self.keywords, list):
+            return self.keywords
+        return str(self.keywords).split(",") if self.keywords else []
 
 
 @dataclass(frozen=True)

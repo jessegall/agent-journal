@@ -29,7 +29,9 @@ class Setting:
         if obj is None:
             return self.name
         got = obj.setting(self.name)
-        return (self.default() if callable(self.default) else self.default) if got is None else got
+        if got is not None:
+            return got
+        return self.default() if callable(self.default) else self.default
 
     def __set__(self, obj, value) -> None:
         obj.set_setting(self.name, value)

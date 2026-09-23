@@ -24,6 +24,14 @@ def web_remote(url: str) -> str:
 
 
 
+def status_after(compacting, status: str) -> str:
+    if compacting:
+        return COMPACTING
+    if compacting is False and status == COMPACTING:
+        return WORKING
+    return status or ""
+
+
 @dataclass(frozen=True)
 class SubagentRow(Loaded):
     aliases = {"id": ("id", "session", "task"), "kind": ("type",)}
@@ -72,7 +80,7 @@ class Seat:
         self.subagents_moved(last, facts.get(AgentRow.subagent_rows))
         if facts and any(last.data.get(k) != v for k, v in facts.items()):
             compacting = facts.get("compacting")
-            status = COMPACTING if compacting else WORKING if compacting is False and last.status == COMPACTING else last.status or ""
+            status = status_after(compacting, last.status)
             self.agent.mark(status, last.event, at=last.at, **facts)
 
     def subagents_moved(self, last, subagents: list | None) -> None:

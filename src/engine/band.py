@@ -47,7 +47,7 @@ def unfinished(data: bytes) -> int:
         if byte < 0x80:
             return len(data)
         if byte >= 0xC0:
-            needs = 2 if byte < 0xE0 else 3 if byte < 0xF0 else 4
+            needs = utf8_length(byte)
             return len(data) - back if back < needs else len(data)
     return len(data)
 
@@ -68,6 +68,15 @@ def wide(ch: str) -> int:
         return 0
     return 2 if unicodedata.east_asian_width(ch) in ("W", "F") else 1
 
+
+def utf8_length(lead: int) -> int:
+    if lead < 0xE0:
+        return 2
+    return 3 if lead < 0xF0 else 4
+
+
+def implied_count(kind: bytes) -> int:
+    return 0 if kind in b"ABCD" else 1
 
 class Cursor:
     def __init__(self, rows: int, cols: int):
@@ -95,7 +104,7 @@ class Cursor:
 
     def placed(self, m: re.Match) -> None:
         kind, first, second = m.group(3), m.group(1), m.group(2)
-        one = int(first) if first else (0 if kind in b"ABCD" else 1)
+        one = int(first) if first else implied_count(kind)
         if kind in (b"H", b"f"):
             self.row, self.col = one, int(second) if second else 1
         elif kind == b"d":

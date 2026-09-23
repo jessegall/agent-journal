@@ -26,6 +26,11 @@ CONTROLLERS: dict[str, type] = {}
 NAMED: dict[str, type] = {}
 
 
+def checked_field(fields: dict, key: str, value):
+    if key not in fields:
+        return value
+    return check(key, fields[key], normalize_options(value) if key == Options.options else value)
+
 class Controller(Stored, Files, Links):
     resource = Resource
     actor = "user"
@@ -109,7 +114,7 @@ class Controller(Stored, Files, Links):
 
     def _shaped(self, data: dict) -> dict:
         fields = self.resource.fields
-        return {k: check(k, fields[k], normalize_options(v) if k == Options.options else v) if k in fields else v for k, v in data.items()}
+        return {k: checked_field(fields, k, v) for k, v in data.items()}
 
     def _twin(self, title: str, brief: str, about) -> Resource | None:
         if not self.resource.deduplicates:

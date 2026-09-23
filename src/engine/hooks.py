@@ -134,13 +134,17 @@ def default_env(root: Path, prefer: str = "") -> str:
     return prefer or runtime.env(root)
 
 
+def worked_environment(hook) -> str:
+    return environment(checkout(Path(hook.cwd)) if hook.cwd else None)
+
+
 def answer(provider, root: Path, raw: dict, pid: int, prefer: str = "") -> dict:
     from providers.payload import Hook
     sessions = Sessions(root)
     hook = Hook.read(raw, provider.tool_kinds)
     session = hook.session
     env = sessions.environment(session)
-    worked = "" if provider.is_subagent(hook) else environment(checkout(Path(hook.cwd)) if hook.cwd else None)
+    worked = "" if provider.is_subagent(hook) else worked_environment(hook)
     if not env or not sessions.read(session).provider or worked and worked != env:
         env = worked or prefer or sessions.choose(session, provider.name, default_env(root))
         sessions.bind(session, env, pid=agent_pid(pid), provider=provider.name)
