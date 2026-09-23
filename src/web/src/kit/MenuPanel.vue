@@ -1,12 +1,14 @@
 <script setup>
 import {computed, onMounted, ref} from "vue";
 
-const props = defineProps({anchor: {type: Object, default: null}});
+const props = defineProps({anchor: {type: Object, default: null}, align: {type: String, default: "right"}});
 const panel = ref(null);
 const place = computed(() => {
     if (!props.anchor) return {};
     const edge = props.anchor.getBoundingClientRect();
-    return {top: `${edge.bottom + 4}px`, right: `${window.innerWidth - edge.right}px`};
+    const top = `${edge.bottom + 4}px`;
+    if (props.align === "left") return {top, left: `${edge.left}px`};
+    return {top, right: `${window.innerWidth - edge.right}px`};
 });
 const emit = defineEmits(["close"]);
 const items = () => [...panel.value.querySelectorAll("button:not(:disabled)")];
