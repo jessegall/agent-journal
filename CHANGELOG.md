@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.110.2 — Reading a long file whole is refused for Codex too
+
+Codex reads files through its shell tools (exec, exec_command, shell), so a cat of a file over 300 lines through any of them is refused the same way Claude's is, with the line count and a pointer to read a range or grep. Each provider now says which of its tools is a shell command and what the command is. Codex has no shell prefix, so the output cap stays Claude's; Codex caps its own exec output.
+
 ## 2.110.1 — A to-do filed from a message and linked nowhere is linked when the message is answered
 
 When the agent answers a message, every row it created after reading that message that no message links yet (a to-do, a fact, a question) is linked to it, so it shows as a pill on the message and stays traceable. A row another message already claims is left where it is.

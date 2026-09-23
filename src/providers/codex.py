@@ -152,6 +152,13 @@ class Codex(Provider):
         return {"hooks": {event: [{"matcher": "", "hooks": [{"type": "command", "command": command, "timeout": 60}]}]
                           for event in EVENTS if event != PERMISSION}}
 
+    def shell_command(self, tool) -> str:
+        if TOOLS.get(tool.name.rsplit(".", 1)[-1]) != "Bash":
+            return ""
+        given = tool.tool_input
+        command = given.get("cmd") or given.get("input") or given.get("command") or ""
+        return " ".join(command) if isinstance(command, list) else str(command)
+
     def dispatch(self, tool) -> dict:
         if not tool.name.endswith("spawn_agent"):
             return {}

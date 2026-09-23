@@ -120,3 +120,17 @@ def test_a_long_command_output_keeps_its_ends_and_its_exit_code_through_the_pref
     assert launched == {"CLAUDE_CODE_SHELL_PREFIX": str(record.root / "src" / "output_cap.sh"), "JOURNAL_OUTPUT_LINES": "200"}, launched
     record.set_setting("journal_laws", {"output_lines": 0})
     assert output_cap(record.root, record.env) == {}, "0 keeps every line"
+
+
+def test_codex_reading_a_long_file_whole_through_its_shell_is_refused_too():
+    from features import load
+    load()
+    record = fresh()
+    project = record.root.parent
+    (project / "long.py").write_text("x = 1\n" * 400)
+    hook = lambda tool, given: handle(PROVIDERS["codex"](), record.root, record.env, {"hook_event_name": "PreToolUse", "session_id": "codex-read", "tool_name": tool,
+                                                                                       "cwd": str(project), "tool_input": given})
+    for tool, given in (("exec", {"input": "cat long.py"}), ("exec_command", {"cmd": "cat long.py"}), ("shell", {"command": ["cat", "long.py"]})):
+        refused = hook(tool, given)
+        assert refused.get("decision") == "block" and "print a range with sed -n" in refused.get("reason", ""), (tool, refused)
+    assert hook("exec", {"input": "sed -n '1,50p' long.py"}).get("decision") != "block", "a range passes"
