@@ -30,6 +30,7 @@ class Ticket(Shape, Resource):
         Field(TEXT, "", name="base"),
         Field(TEXT, AGENT_CLI, name="agent"),
         Field(NUMBER, 0.0, name="launched"),
+        Field(NUMBER, 0.0, name="queued_at"),
         Field(NUMBER, 0, name="plan"),
         Field(FLAG, False, name="queued"),
         Field(FLAG, False, name="draft"),
