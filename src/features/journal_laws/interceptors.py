@@ -35,13 +35,17 @@ def whisper_laws(context: AgentContext, text_of) -> None:
             context.agent.whisper(WHISPER, type="law", n=law.name, title=law.text, brief=law.reason)
 
 
+PAGED = (".pdf", ".ipynb")
 CAT = re.compile(r"(?:^|[;&|]\s*)cat\s+([^\s|;&<>-][^\s|;&<>]*)\s*(?=$|[;&])")
 
 
 def lines_in(path: Path) -> int:
+    if path.suffix.lower() in PAGED:
+        return 0
     try:
         with path.open("rb") as f:
-            return sum(chunk.count(b"\n") for chunk in iter(lambda: f.read(1 << 16), b""))
+            first = f.read(1 << 16)
+            return 0 if b"\0" in first else first.count(b"\n") + sum(chunk.count(b"\n") for chunk in iter(lambda: f.read(1 << 16), b""))
     except OSError:
         return 0
 

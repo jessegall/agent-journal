@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.112.1 — Reading an image or a PDF is never refused as a long file
+
+The long-read refusal counted line breaks in any file, so a screenshot could be refused as having hundreds of lines. A file with a NUL byte near its start, a PDF or a notebook is not text read line by line, and passes.
+
 ## 2.112.0 — The chat shows when a long output was cut or a long read refused
 
 When the journal cuts a long command output, a mark in the chat says how many lines were held back and links the output row that keeps the whole of it. When it refuses reading a long file whole, a mark names the file, its length and what the agent was told to do instead. An output row now carries the command as the agent wrote it, not Claude's shell wrapping around it. The viewer no longer throws on an event of a type it has not heard of yet: it fetches the types first.

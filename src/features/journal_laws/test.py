@@ -103,6 +103,8 @@ def test_reading_a_long_file_whole_is_refused_and_a_range_or_a_short_file_passes
     assert card["label"] == "Refused reading a long file whole" and "has 400 lines" in card["detail"], card
     assert hook("Read", {"file_path": str(project / "long.py"), "offset": 1, "limit": 50}).get("decision") != "block", "a range passes"
     assert hook("Read", {"file_path": str(project / "short.py")}).get("decision") != "block", "a short file passes whole"
+    (project / "shot.png").write_bytes(b"\x89PNG\r\n\x1a\n\0\0\0\r" + b"\n" * 900)
+    assert hook("Read", {"file_path": str(project / "shot.png")}).get("decision") != "block", "an image is not text and passes"
     cat = hook("Bash", {"command": "cat long.py"})
     assert cat.get("decision") == "block" and "print a range with sed -n" in cat.get("reason", ""), cat
     assert hook("Bash", {"command": "cat long.py | head -20"}).get("decision") != "block", "a cat already cut short passes"
