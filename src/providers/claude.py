@@ -493,7 +493,9 @@ class ClaudeDriver(Driver):
     def _channel_text(row: Row) -> str:
         if row.type == "attachment":
             return row.prompt
-        return row.text if row.type == "user" and row.text is not None else ""
+        if row.type != "user":
+            return ""
+        return row.text if row.text is not None else "\n".join(block.result for block in row.of_type("tool_result"))
 
     def _delivering(self) -> bool:
         handed = runtime.session_file(self.record.root, self.session, HANDED)
@@ -505,7 +507,7 @@ class ClaudeDriver(Driver):
         if not waiting or not last or not last.transcript:
             return True
         rows = Claude().recent(Path(last.transcript))
-        arrived = [text for text in map(self._channel_text, rows) if text.startswith(CHANNEL_MARK)]
+        arrived = [text for text in map(self._channel_text, rows) if CHANNEL_MARK in text]
         times = [row.at for row in rows]
         lost = [h for h in waiting if not any(h.line in text for text in arrived) and sum(1 for at in times if at > h.at) >= MOVED_ON]
         kept = tuple(h for h in waiting if not any(h.line in text for text in arrived) and h not in lost)
