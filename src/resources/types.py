@@ -274,6 +274,7 @@ class AgentRow(Shape, Resource):
         Field(default=dict, name="running"),
         Field(default=list, name="commands"),
         Field(default=list, name="queued_commands"),
+        Field(default=dict, name="subagent_reports"),
         Field(name="branch"),
         Field(name="branch_url"),
         Field(name="active"),
