@@ -19,6 +19,11 @@ class WorktreesDetails(FeatureDetails):
         exclude file.
 
         A worktree that carries a .journal of its own is left alone.
+
+        journal claude -w NAME makes the worktree itself, on the branch worktree-NAME, and starts
+        the agent inside it, so the agent never removes it. Each launch keeps the branch's last
+        commit under refs/journal/worktrees/NAME: a worktree removed later, even with its branch,
+        comes back with that work at the next journal claude -w NAME.
     """
 
     runs_for_subagents = True

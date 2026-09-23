@@ -107,6 +107,14 @@ def test_journal_claude_with_a_worktree_makes_it_itself_and_starts_claude_inside
     assert ((cwd / ".env").read_text(), subprocess.run(["git", "branch", "--show-current"], cwd=cwd, capture_output=True, text=True, timeout=30).stdout.strip()) == \
         ("SECRET=1\n", "worktree-feature-q"), "it is made on Claude's branch name, with the files .worktreeinclude lists"
     assert ClaudeDriver.placed(project, ["-w", "feature-q"]) == (cwd, []), "an existing worktree is reused"
+    git = ["git", "-c", "user.email=t@t", "-c", "user.name=t"]
+    subprocess.run([*git, "commit", "-q", "--allow-empty", "-m", "work in the worktree"], cwd=cwd, check=True, timeout=30)
+    ClaudeDriver.placed(project, ["-w", "feature-q"])
+    subprocess.run(["git", "worktree", "remove", "--force", str(cwd)], cwd=project, check=True, timeout=30)
+    subprocess.run(["git", "branch", "-D", "worktree-feature-q"], cwd=project, check=True, capture_output=True, timeout=30)
+    assert ClaudeDriver.placed(project, ["-w", "feature-q"])[0] == cwd and "work in the worktree" in \
+        subprocess.run(["git", "log", "-1", "--format=%s"], cwd=cwd, capture_output=True, text=True, timeout=30).stdout, \
+        "a worktree removed with its branch comes back with the work its last launch recorded"
     assert ClaudeDriver.placed(project, ["-c"]) == (project, ["-c"]), "without a worktree Claude starts in the project"
     for name in ("a:b", "a/b"):
         with pytest.raises(SystemExit):
