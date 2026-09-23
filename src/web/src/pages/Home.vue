@@ -287,6 +287,7 @@ const tabs = computed(() => [
     max-width: 110px;
     margin-right: 0;
     opacity: 1;
+    transition-delay: 0.22s;
 }
 
 .rail-tab {

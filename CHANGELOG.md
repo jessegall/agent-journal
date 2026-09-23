@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.103.1 — A side panel tab closes its label before the next one opens
+
+Switching tabs in the chat side panel first folds away the old tab's name, and only once that has finished does the new tab's name open: the opening waits exactly as long as the closing takes.
+
 ## 2.103.0 — File names become chips when they point at one project file
 
 A file named in text becomes a chip that opens it: a path as before, a path in backticks that exists, or a bare file name such as CommitPage.vue when exactly one project file has that name (the chip opens that file's full path). A name several project files share stays plain text, and when the agent writes one it is told once to write the path. The project's file list is walked once and refreshed in the background, never inside a request.
