@@ -623,40 +623,6 @@ button.thread-pill:hover {
     text-decoration: underline;
 }
 
-.thread-text :deep(.row-card) {
-    display: flex;
-    flex-direction: column;
-    gap: 3px;
-    max-width: 420px;
-    margin: 8px 0;
-    padding: 10px 12px;
-    border: 1px solid var(--border-2);
-    border-radius: 9px;
-    background: var(--bg);
-    color: var(--text);
-    text-decoration: none;
-}
-
-.thread-text :deep(.row-card:hover) {
-    border-color: var(--accent);
-}
-
-.thread-text :deep(.row-card-kind) {
-    color: var(--text-3);
-    font-size: 11px;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-}
-
-.thread-text :deep(.row-card-title) {
-    font-weight: 500;
-}
-
-.thread-text :deep(.row-card-line) {
-    color: var(--text-2);
-    font-size: 12.5px;
-}
-
 .thread-text :deep(.row-pill) {
     padding: 0 4px;
     border: 1px solid var(--border-2);

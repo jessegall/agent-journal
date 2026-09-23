@@ -68,7 +68,7 @@ const subagents = (agents) =>
         (a.data.subagent_rows || []).flatMap((sub) => [
             mark("subagent", a, sub.at, sub.task, {kind: sub.type, model: sub.model, agent: a.n, session: sub.session}),
             ...(sub.ended
-                ? [mark("subagent", a, sub.ended, sub.task, {kind: sub.type, finished: true, stopped: sub.status === "stopped", agent: a.n, session: sub.session, report: (a.data.subagent_reports || {})[sub.id] || 0})]
+                ? [mark("subagent", a, sub.ended, sub.task, {kind: sub.type, finished: true, stopped: ["stopped", "killed"].includes(sub.status), agent: a.n, session: sub.session, report: (a.data.subagent_reports || {})[sub.id] || 0})]
                 : []),
         ])
     );
