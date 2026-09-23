@@ -14,30 +14,36 @@ import Icon from "../kit/Icon.vue";
 import PaneGrid from "../kit/PaneGrid.vue";
 import PaneTabs from "../kit/PaneTabs.vue";
 import SplitOffer from "../kit/SplitOffer.vue";
+import TourStep from "../kit/TourStep.vue";
 import Toast from "../kit/Toast.vue";
 import {useHomeViews} from "../composables/homeViews.js";
 import {usePaneLayout} from "../composables/paneLayout.js";
 import {usePaneDrag} from "../composables/paneDrag.js";
 import {openViewTab, useViewTabs} from "../composables/viewTabs.js";
+import {clamp} from "../format/number.js";
+import {useTour} from "../composables/tour.js";
 import {
     AGENT_VIEWS,
     DEFAULT_SHAPE,
+    PRESETS,
     activated,
     aimAt,
     arranged,
     broughtBack,
-    clamp,
     floated,
     forgotten,
     fronted,
     holding,
     landed,
     leaves,
+    matches,
     paneClosed,
     placed,
     reshaped,
     sentAway,
+    shapeViews,
     tabClosed,
+    thumbnail,
     unfloated,
 } from "../domain/panes.js";
 
@@ -261,6 +267,67 @@ const offerText = (id) => {
     return `Put ${views.value[offer.value.view].title} beside ${views.value[pane.active].title} in two panes, or add it here as a tab.`;
 };
 
+const presets = computed(() =>
+    PRESETS.filter((p) => shapeViews(p.shape).every((v) => usable.value.includes(v))).map((p) => ({
+        key: p.key,
+        name: p.name,
+        text: p.text,
+        cells: thumbnail(p.shape),
+        current: matches(layout.value, p.shape),
+    }))
+);
+
+function applyPreset(pane, key) {
+    const preset = PRESETS.find((p) => p.key === key);
+    if (preset) apply(arranged(layout.value, preset.shape));
+}
+
+const TOUR = [
+    {
+        target: ".agent-view:not(.gone)",
+        fallback: ".agent-actions",
+        title: "Drag a view onto a pane",
+        text: "Every view has an icon here. Drag one onto a pane to open it there. The icon comes back when you close that view.",
+    },
+    {
+        target: '.menu-panel [data-step="split"]',
+        menu: true,
+        title: "Split a pane",
+        text: "Each pane has this menu. Split right or Split below opens a second view beside this one.",
+    },
+    {
+        target: '.menu-panel [data-step="presets"]',
+        menu: true,
+        title: "Pick a preset",
+        text: "Presets opens a list of ready layouts, such as Default, Zen and Hacker, and arranges every pane in one step.",
+    },
+    {
+        target: '.menu-panel [data-step="detach"]',
+        menu: true,
+        title: "Detach a view",
+        text: "Detach opens this view in a window of its own. Move it, dock it back, or open it in another tab.",
+    },
+];
+
+function tourMenu() {
+    const ids = leaves(layout.value.tree);
+    const id = ids.find((at) => layout.value.panes[at] && layout.value.panes[at].active) ?? ids[0];
+    const button = document.querySelector(`[data-pane-menu="${id}"]`);
+    if (button) menu.value = {id, anchor: button, floating: false};
+}
+
+const {
+    step: tourStep,
+    rect: tourRect,
+    next: tourNext,
+    end: tourEnd,
+} = useTour(TOUR, {
+    isOpen: () => !!menu.value && !menu.value.floating,
+    open: tourMenu,
+    close: () => (menu.value = null),
+});
+const tourNow = computed(() => TOUR[tourStep.value] || null);
+
 const moveTab = (from, to) => {
     const pane = layout.value.panes[from];
     if (pane && pane.active && layout.value.panes[to]) apply(placed(layout.value, pane.active, to, "center", from));
@@ -297,6 +364,7 @@ watch(
                         <button
                             type="button"
                             :class="['pane-menu-btn', {on: menu && !menu.floating && menu.id === id}]"
+                            :data-pane-menu="id"
                             title="Pane menu"
                             @click.stop="toggleMenu($event, id)"
                         >
@@ -358,6 +426,7 @@ watch(
                     :floating="menu.floating"
                     :title="menuPane && menuPane.active ? views[menuPane.active].title : ''"
                     :others="menuOthers"
+                    :presets="presets"
                     :splittable="!!menuPane && (menuPane.tabs.length > 1 || (menuPane.tabs.length > 0 && !!free()))"
                     :closable="!!menuPane && (leaves(layout.tree).length > 1 || menuPane.tabs.length > 0)"
                     @close="menu = null"
@@ -366,6 +435,7 @@ watch(
                     @float="floatPane"
                     @shut="shutPane"
                     @reset="apply(arranged(layout, DEFAULT_SHAPE))"
+                    @preset="applyPreset"
                     @dock="dockFloat"
                     @away="sendAway"
                     @unfloat="(id) => replace(unfloated(layout, id))"
@@ -375,6 +445,18 @@ watch(
                 <DragGhost :x="drag.x" :y="drag.y" :icon="views[drag.view].icon" :title="views[drag.view].title" :hint="ghostHint" />
             </template>
             <Toast :toast="toast" @done="toast = null" />
+            <template v-if="tourNow && tourRect">
+                <TourStep
+                    :rect="tourRect"
+                    :beside="!!tourNow.menu"
+                    :count="`${tourStep + 1} of ${TOUR.length}`"
+                    :title="tourNow.title"
+                    :text="tourNow.text"
+                    :last="tourStep === TOUR.length - 1"
+                    @next="tourNext"
+                    @skip="tourEnd"
+                />
+            </template>
         </template>
     </div>
 </template>
