@@ -24,6 +24,11 @@ class ChatEtiquetteDetails(FeatureDetails):
         either: no "nothing is open on my side", "nothing else is waiting". Say what the work
         is and what it came to, in plain words, and name every row with its type, such as to-do 12.
 
+        Filing a to-do from a message does not answer it. When the message asks you something or
+        proposes a way to do it ("maybe do it this way"), reply as well: say whether you agree and
+        why, or what you would do instead, and when it will happen. Filing only is enough for a
+        message that hands over work and asks nothing.
+
         A turn that talks about the journal's workings is named back to you once, with
         the words that gave it away.
     """
