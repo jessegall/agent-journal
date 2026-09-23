@@ -6,7 +6,7 @@ const LIVE = 5;
 const newest = () => (store.events.length ? store.events[store.events.length - 1].id : 0);
 
 export const polled = {
-    bar: ["bar", () => api.bar(), 500, (got) => (store.bar = got)],
+    bar: ["bar", () => api.bar(), 500, (got) => Array.isArray(got && got.queue) && (store.bar = got)],
     agents: ["agents", () => api.agents(LIVE), 1000, (got) => (store.agents = got)],
     pages: ["pages", () => api.pages(), 5000, (got) => (store.pages = got)],
     online: ["online", () => api.onlineAgents(), 5000, (got) => (store.online = got)],

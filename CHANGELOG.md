@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.114.3 — The chat's status line keeps up and recovers by itself
+
+The status line at the bottom of the chat could sit on "working" while commands ran, or replay a long backlog of old commands after a page load. It now shows the newest running command whenever nothing else is showing, skips ahead when it falls more than three behind, and a status poll caught by a server restart gives up after five seconds instead of twenty, so the line resumes as soon as the server is back.
+
 ## 2.114.2 — Shell commands in chat marks are shown as run, and upgrades take hold sooner
 
 A command shown in a chat mark (a long command moved to the background, a cut output) is shown as code and never passes the text formatters, so file names in it are no longer turned into chips. A running session moves to a newly installed build within a second instead of five. The test suite spreads its long tests across workers, so a release runs its suite in about 17 seconds instead of 23.
