@@ -4,8 +4,7 @@ from enum import StrEnum
 from pathlib import Path
 
 from engine.events import FileEdited
-from engine.files import KIND
-from engine.proc import git_objects
+from engine.files import KIND, blob_texts
 
 KEEP = 3
 KEPT = 500
@@ -98,14 +97,14 @@ def notes(record) -> list[FileEdited]:
 def edits_since(record, agent: int, since: float) -> Feed:
     shown = [note for note in notes(record) if note.agent == agent and note.at > since]
     diffed(record.root.parent, [(note.before, note.after) for note in shown])
-    return Feed(shown[-1].at if shown else since, tuple(_card(note) for note in shown))
+    return Feed(shown[-1].at if shown else since, tuple(_card(note) for note in shown if (note.before, note.after) in DIFFS))
 
 
 def diffed(project: Path, pairs: list[tuple[str, str]]) -> None:
     missing = list(dict.fromkeys(pair for pair in pairs if pair not in DIFFS))
-    texts = git_objects(project, list(dict.fromkeys(sha for pair in missing for sha in pair)))
-    for before, after in missing:
-        DIFFS[(before, after)] = Diff.between(texts.get(before, "").splitlines(), texts.get(after, "").splitlines())
+    texts = blob_texts(project, [sha for pair in missing for sha in pair])
+    for before, after in (pair for pair in missing if pair[0] in texts and pair[1] in texts):
+        DIFFS[(before, after)] = Diff.between(texts[before].splitlines(), texts[after].splitlines())
     for pair in list(DIFFS)[:max(0, len(DIFFS) - MOST_DIFFS)]:
         del DIFFS[pair]
 

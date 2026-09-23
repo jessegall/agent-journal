@@ -3,7 +3,7 @@ from pathlib import Path
 
 from controllers.types import Agents, Works
 from engine.events import FileEdited
-from engine.files import KIND, numstat
+from engine.files import KIND, line_counts
 from engine.proc import git
 from features.status_bar.runs import Delta, command_runs, current_run
 from resources.base import SYSTEM
@@ -40,8 +40,8 @@ def record_edit(agent: AgentRow, record, work: Work, edit: FileEdited) -> None:
     if base == edit.after:
         files.pop(edit.path, None)
     else:
-        added, removed = numstat(project, base, edit.after)
-        files[edit.path] = {CHANGE.path: edit.path, CHANGE.added: added, CHANGE.removed: removed, CHANGE.created: created}
+        count = line_counts(project, [(base, edit.after)])[(base, edit.after)]
+        files[edit.path] = {CHANGE.path: edit.path, CHANGE.added: count.added, CHANGE.removed: count.removed, CHANGE.created: created}
     commits = committed(project, work.created)
     if list(files.values()) != work.changed or commits != work.commits:
         Works(record, actor=SYSTEM).update(work.n, changed=list(files.values()), commits=commits)
