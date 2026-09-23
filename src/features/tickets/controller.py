@@ -113,13 +113,15 @@ class Tickets(Controller):
         proposed = any(stance == PROPOSED for stance in ticket.dependencies.values())
         waits = self._plan_waits(ticket)
         reviewed = bool(session) and self._meaning(ticket) == REVIEW
-        return [*([{"label": "Confirm", "action": "confirm"}] if ticket.draft else []),
-                *([{"label": "Accept", "action": "accept_dependencies"}, {"label": "Decline", "action": "decline_dependencies"}] if proposed else []),
-                *([{"label": "Approve plan", "action": "approve_plan"},
-                   {"label": "Read plan", "href": f"#/{ticket.work_environment}/plan/{ticket.plan}"}] if waits else []),
-                *([{"label": "Ask for changes", "action": "tell", "note": True}] if waits and session else []),
-                *([{"label": "Send back", "action": "send_back", "note": True}] if reviewed else []),
-                *([{"label": "Start next", "action": "start_next"}] if ticket.queued and not self._waiting_on(ticket) else [])]
+        offers = (
+            (ticket.draft, [{"label": "Confirm", "action": "confirm"}]),
+            (proposed, [{"label": "Accept", "action": "accept_dependencies"}, {"label": "Decline", "action": "decline_dependencies"}]),
+            (waits, [{"label": "Approve plan", "action": "approve_plan"}, {"label": "Read plan", "href": f"#/{ticket.work_environment}/plan/{ticket.plan}"}]),
+            (waits and session, [{"label": "Ask for changes", "action": "tell", "note": True}]),
+            (reviewed, [{"label": "Send back", "action": "send_back", "note": True}]),
+            (ticket.queued and not self._waiting_on(ticket), [{"label": "Start next", "action": "start_next"}]),
+        )
+        return [action for applies, actions in offers if applies for action in actions]
 
     def _meaning(self, ticket) -> str:
         return Boards(self.record, actor=self.actor).load(int(ticket.board)).meanings.get(ticket.stage, "") if ticket.board else ""
