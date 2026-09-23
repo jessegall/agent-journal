@@ -1,15 +1,23 @@
 import {stopwatch} from "../format/time.js";
 export const TICK = 250;
 export const MINUTE = 60;
+const BEHIND = 3;
 
 export function visibleQueue(queue, state, now) {
+    const got = playable(queue, state, now);
+    const running = queue.filter((one) => !one.done).at(-1);
+    return got.message || !running ? got : {at: running.at, since: now, message: running};
+}
+
+function playable(queue, state, now) {
     const held = queue.find((one) => one.at === state.at) || null;
     const later = queue.filter((one) => one.at > state.at);
+    const next = later.length > BEHIND ? later.at(-1) : later[0];
     if (!held) {
-        const first = later[0] || (state.at ? null : queue[0]);
+        const first = next || (state.at ? null : queue.at(-1));
         return first ? {at: first.at, since: now, message: first} : {at: state.at, since: state.since, message: null};
     }
-    if (later.length && now - state.since >= (held.hold || 0)) return {at: later[0].at, since: now, message: later[0]};
+    if (next && now - state.since >= (held.hold || 0)) return {at: next.at, since: now, message: next};
     if (!later.length && held.done && now - state.since >= held.lingers) return {at: held.at, since: state.since, message: null};
     return {at: held.at, since: state.since, message: held};
 }
