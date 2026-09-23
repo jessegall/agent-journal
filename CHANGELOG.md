@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.114.2 — Shell commands in chat marks are shown as run, and upgrades take hold sooner
+
+A command shown in a chat mark (a long command moved to the background, a cut output) is shown as code and never passes the text formatters, so file names in it are no longer turned into chips. A running session moves to a newly installed build within a second instead of five. The test suite spreads its long tests across workers, so a release runs its suite in about 17 seconds instead of 23.
+
 ## 2.114.1 — A subagent's report shows as a document card in its mark
 
 When a subagent led to a report, its finished mark in the chat carries the report as a full document card, with its type, number and title, so a returned agent's findings are visible at once and open with a click. A subagent that was killed reads as stopped. Row cards look the same wherever they appear.
