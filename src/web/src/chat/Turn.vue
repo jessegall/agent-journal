@@ -4,6 +4,7 @@ import {computed, nextTick, onMounted, ref, watch} from "vue";
 import {api} from "../api/client.js";
 import Icon from "../kit/Icon.vue";
 import SwitchCase from "../kit/SwitchCase.vue";
+import SubagentMark from "./SubagentMark.vue";
 import Folded from "../kit/Folded.vue";
 import Buttons from "../resource/Buttons.vue";
 import OptionsPicker from "../resource/OptionsPicker.vue";
@@ -176,6 +177,11 @@ async function drop() {
                     The agent compacted its context
                     <span class="thread-compacted-when">{{ clock(turn.created) }}</span>
                 </span>
+            </div>
+        </template>
+        <template #subagent>
+            <div class="thread-turn subagent" :data-ref="turn.ref">
+                <SubagentMark v-bind="turn.data" :task="turn.title" :at="turn.created" />
             </div>
         </template>
         <template #made>
