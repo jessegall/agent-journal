@@ -196,6 +196,10 @@ def test_a_declared_wait_is_asked_about_and_cleared_when_the_work_moves():
     report(record, "working", "PreToolUse")
     works = Works(record, actor=AGENT)
     build = works.create("the release")
+    textless = {"tool": "Bash", "at": 1.0}
+    for i in range(1, 5):
+        report(record, "working", "PostToolUse", commands=[textless] * i)
+    assert not [n for n in nudges(record) if "same check" in n], "a shell call with no command text is nothing to have repeated"
     check = {"tool": "Bash", "command": "tail -3 build.log", "at": 1.0}
     for i in range(1, 5):
         report(record, "working", "PostToolUse", commands=[check] * i)

@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.116.2 — A shell call with no command text no longer crashes the work hook
+
+The nudge that names a check repeated three times in a row read every recorded shell call, including ones kept without command text, and crashed on them. It now counts only calls that carry a command. Nothing to do: the hook stops failing on its own.
+
 ## 2.116.1 — A channel line that arrives mid-turn counts as delivered
 
 The check added in 2.115.2 looked for delivered lines only as messages, but a line Claude takes in while it works is recorded differently, so delivered lines were counted as lost and the journal switched to typing for no reason. Both forms count now.
