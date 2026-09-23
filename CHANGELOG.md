@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.107.3 — An icon's size takes effect
+
+The kit's Icon accepts the size it was always being given: size sets the icon's width and height (16px when none is given), while a page that sizes its icons in its own styles keeps doing so. On screen this changes only icons that asked for a size and had none, such as the chat side panel's tab icons.
+
 ## 2.107.2 — Chips inside chat marks sit on the line, and cleared notifications say so
 
 A chip inside a chat mark's second line, such as a file chip in a sin mark, takes the mark's own font and size, so it no longer stands taller than the line. In the activity, a notification that is cleared reads "Notification cleared" instead of "Notification complete", and reading one or a notice reads "Notification read" / "Notice read".

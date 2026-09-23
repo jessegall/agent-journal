@@ -1,5 +1,5 @@
 <script setup>
-defineProps({name: {type: String, default: "dot"}});
+defineProps({name: {type: String, default: "dot"}, size: {type: Number, default: 0}});
 
 const alias = {
     mail: "inbox",
@@ -86,6 +86,7 @@ const shapes = {
 <template>
     <svg
         class="ico"
+        :style="size ? {'--icon-size': `${size}px`} : null"
         viewBox="0 0 16 16"
         fill="none"
         stroke="currentColor"
