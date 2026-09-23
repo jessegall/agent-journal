@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.108.0 — Reminders come less often and shorter
+
+Standing facts, rules and reminders are said again every quarter of the context window instead of every tenth, so about four times over a full window. A fact, rule or law brought back by one of its keywords is said by its one-line title only, and at most once per context window, until the next compaction. Measured on a long session, repeated rule and fact text was the largest part of what the journal said to the agent; both cadences stay settings.
+
 ## 2.107.5 — Scrolling up the chat loads its history page by page
 
 The chat no longer shows every old chat mark (skill loads, subagents, reminders, plugin marks) above the messages it has loaded so far. While older messages remain, it shows only what happened from the earliest loaded message on; scrolling up asks for the page before that message, and each page brings its own marks with it.

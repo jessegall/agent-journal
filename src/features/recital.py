@@ -2,8 +2,6 @@ import re
 import time
 
 from engine.events import AgentMessageSent, AgentReported
-from features import trigger
-from features.trigger import Trigger
 from features.base import Behaviour, Line
 from features.parts import WHOLE_FEATURE, AgentContext, Context, Handler, ToolInterceptor
 from resources.base import KEYWORDS, KEYWORDS_IN, WHOM
@@ -14,7 +12,6 @@ LINES = [
     Line(
         name=WHISPER,
         title="{{type}} {{n}} — {{title}}",
-        brief="{{brief}}",
         while_waiting=False,
     ),
     Line(
@@ -29,8 +26,7 @@ BEHAVIOURS = [
     Behaviour(
         name=WHISPER,
         title="Whisper a row when one of its keywords appears",
-        abstract="Said again once this many of the agent's tool uses have passed since it last spoke",
-        trigger=Trigger(every=50, unit=trigger.USES),
+        abstract="Its title, at most once per context window",
     ),
 ]
 
@@ -55,7 +51,7 @@ def recite(context: AgentContext, resources: str, text_of) -> None:
     rows = getattr(context.journal, resources)
     for row in rows._standing():
         if mentioned(row.data.get(KEYWORDS) or [], text_of(row.data.get(KEYWORDS_IN) or BOTH)) and whisper_due(context, row.ref):
-            context.agent.whisper(WHISPER, type=rows.type, n=row.n, title=row.title, brief=row.brief)
+            context.agent.whisper(WHISPER, type=rows.type, n=row.n, title=row.title)
             kept = context.agent.row.data.get("whispers") or []
             context.journal.agents.update(context.agent.row.n, whispers=[*kept, {"at": time.time(), "ref": row.ref, "title": row.title}][-KEPT_WHISPERS:])
 
@@ -80,11 +76,13 @@ class WhisperOnKeywordInChat(Handler):
 
 
 def whisper_due(context: Context, ref: str) -> bool:
-    last_uses, uses = context.state.get("touched", {}), int(context.agent.row.uses or 0)
-    every = context.feature.cadence(context.record, WHISPER).every
-    if ref in last_uses and uses - int(last_uses[ref] or 0) < float(every):
+    compactions = context.agent.row.data.get("compactions") or []
+    window = str(compactions[-1]["at"]) if compactions else "start"
+    told = context.state.get("told", {})
+    said = told.get("refs", []) if told.get("window") == window else []
+    if ref in said:
         return False
-    context.state.set("touched", {**last_uses, ref: uses})
+    context.state.set("told", {"window": window, "refs": [*said, ref]})
     return True
 
 

@@ -10,7 +10,7 @@ class RulesDetails(FeatureDetails):
     title = "Rules"
 
     abstract = """
-        The rules said again at every tenth of the context, and the injected ones kept in
+        The rules said again at every quarter of the context, and the injected ones kept in
         AGENTS.md and CLAUDE.md
     """
 
@@ -20,14 +20,14 @@ class RulesDetails(FeatureDetails):
         keeps a rule in the managed block of both AGENTS.md and CLAUDE.md.
 
         Give it keywords with --set keywords="<word>,<word>": when one comes up as a whole word, the row is whispered to
-        that session once, with its reasoning, and the call is never refused. --set keywords_in says where they match: text
+        that session by its title, once per context window, and the call is never refused. --set keywords_in says where they match: text
         (what you write, in edits and in the chat), commands (shell commands), both (the default), or everything (any tool call,
         file paths, searches and URLs included).
     """
 
     runs_for_subagents = True
 
-    trigger = Trigger(every=10, unit=PERCENT)
+    trigger = Trigger(every=25, unit=PERCENT)
 
     lines = [
         *(line for line in LINES if line.name == WHISPER),

@@ -6,7 +6,7 @@ from tests.conftest import fresh, refused
 from tests.kit import nudges, report
 
 
-def test_a_command_that_touches_a_rules_keyword_is_whispered_the_rule_once_per_session():
+def test_a_command_that_touches_a_rules_keyword_is_whispered_the_rule_once_per_window():
     claude = PROVIDERS["claude"]()
     record = fresh()
 
@@ -18,7 +18,7 @@ def test_a_command_that_touches_a_rules_keyword_is_whispered_the_rule_once_per_s
     def text(session="claude-1"):
         fresh_nudges = [n for n in Nudges(record, actor=AGENT)._every() if n.data.get("session") == session and n.n not in received]
         received.update(n.n for n in fresh_nudges)
-        return "\n".join(f"{n.title} — {n.brief}" for n in fresh_nudges)
+        return "\n".join(n.agent_line() for n in fresh_nudges)
 
     rule = Rules(record, actor=USER).create("Never change the git branch", brief="A branch change belongs to the user", keywords=["git checkout", "git switch"])
     pin = Facts(record, actor=USER).create("The viewer is built from web/", brief="web/dist is what the server serves", keywords=["npm run build"])
@@ -26,11 +26,16 @@ def test_a_command_that_touches_a_rules_keyword_is_whispered_the_rule_once_per_s
     assert (use("Bash", {"command": "ls -la"}), text()) == ({}, ""), "a command with none of the words says nothing"
     assert use("Bash", {"command": "git checkout -b spike"}).get("hookSpecificOutput", {}).get("permissionDecision") is None, \
         "a command carrying a rule's word is not refused"
-    assert text() == f"rule {rule.n} — Never change the git branch — A branch change belongs to the user", \
-        "and the rule is whispered, naming it and its reasoning"
+    assert text() == f"rule {rule.n} — Never change the git branch", "and the rule is whispered by its title, without its reasoning"
 
     use("Bash", {"command": "git checkout main"})
-    assert text() == "", "the same rule is not said twice to the same session"
+    assert text() == "", "the same rule is not said twice in one context window"
+    from controllers.types import Agents
+    from resources.base import SYSTEM
+    first = Agents(record, actor=SYSTEM).by_session("claude-1")
+    Agents(record, actor=SYSTEM).update(first.n, compactions=[{"at": 1.0}])
+    use("Bash", {"command": "git checkout main"})
+    assert text() == f"rule {rule.n} — Never change the git branch", "after a compaction, a new context window hears it again"
     use("Bash", {"command": "git checkout main"}, session="claude-2")
     assert text("claude-2").startswith(f"rule {rule.n} —") is True, "another session hears it once of its own"
 
@@ -52,19 +57,19 @@ def test_a_command_that_touches_a_rules_keyword_is_whispered_the_rule_once_per_s
         "something that is no kind of list is refused"
 
 
-def test_standing_rules_are_repeated_at_every_tenth_and_a_struck_rule_drops_out():
+def test_standing_rules_are_repeated_at_every_quarter_and_a_struck_rule_drops_out():
     record = fresh()
     rules = Rules(record, actor=USER)
     rules.create("name the model on every dispatch", keywords="word")
     rules.create("a title never explains with a colon", keywords="word")
-    for pct in (4, 9, 10, 15, 19.5, 20, 33):
+    for pct in (10, 24, 25, 40, 49.5, 50, 80):
         report(record, "working", "PostToolUse", context=pct)
-    assert nudges(record) == ["2 rules in force, read them"] * 3, "said at 10, 20 and 33: the standing rules by number"
+    assert [n for n in nudges(record) if "in force" in n] == ["2 rules in force, read them"] * 3, "said at 25, 50 and 80: the standing rules by number"
     assert Nudges(record).load(1).brief == "1. name the model on every dispatch; 2. a title never explains with a colon", \
         "the words carry the rules"
     rules.complete(2, "retired")
-    report(record, "working", "PostToolUse", context=41)
-    assert nudges(record)[-1] == "1 rule in force, read them", "a struck rule is not said"
+    report(record, "working", "PostToolUse", context=100)
+    assert [n for n in nudges(record) if "in force" in n][-1] == "1 rule in force, read them", "a struck rule is not said"
 
 
 def test_inject_writes_and_uninject_restores_both_instruction_files_and_pin_notices_the_rule():

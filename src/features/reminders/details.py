@@ -13,7 +13,7 @@ class RemindersDetails(FeatureDetails):
 
     help = """
         When you keep forgetting to do something you already know, write a reminder: journal reminder create "<what to do>".
-        It is said again every tenth of the context window, so a long session hears it a handful of times; Settings can change
+        It is said again every quarter of the context window, so a long session hears it about four times; Settings can change
         the cadence to every n percent, uses or minutes, or to idle, worked or start.
 
         To remind only one session, add --set whom=<session>: it is said to that session alone and stays out of the start
@@ -21,7 +21,7 @@ class RemindersDetails(FeatureDetails):
         no longer needed with journal reminder retire <n>.
     """
 
-    trigger = Trigger(every=10, unit=PERCENT)
+    trigger = Trigger(every=25, unit=PERCENT)
 
     lines = LINES
 
