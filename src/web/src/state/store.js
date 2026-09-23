@@ -21,6 +21,7 @@ export const store = reactive({
     booted: false,
     activity: remembered("journal.activity", true),
     wide: remembered("journal.wide", false),
+    sideMini: remembered("journal.side.mini", false),
     board: {
         lanes: [],
         agents: [],
@@ -43,6 +44,7 @@ export const store = reactive({
 
 kept("journal.activity", () => store.activity);
 kept("journal.wide", () => store.wide);
+kept("journal.side.mini", () => store.sideMini);
 kept("journal.board.lens", () => store.board.lens);
 kept("journal.window", () => store.chatWindow);
 
