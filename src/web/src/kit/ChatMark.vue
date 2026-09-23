@@ -70,8 +70,8 @@ button.mark:hover {
 }
 
 .mark .ico {
-    width: 10px;
-    height: 10px;
+    width: 12px;
+    height: 12px;
 }
 
 .mark.tinted .ico {
