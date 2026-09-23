@@ -61,6 +61,7 @@ class Install(Command):
             prepared(manifest, where, env, log(root, name))
             made = place(plugins, where, linked, manifest, source, ref, commit, secret, ports=ports)
             welcomed(context.journal, plugins, manifest, env)
+            restarted(root, manifest)
             kept = True
         finally:
             if held:
@@ -85,7 +86,7 @@ class Upgrade(Command):
             if again:
                 ports = {**ports_for(root, manifest), **settings.ports}
                 prepared(manifest, where, environment(root, manifest.name, manifest, row.token, ports, settings.chosen), log(root, manifest.name))
-                restarted(root, manifest)
+            restarted(root, manifest)
             return plugins.update(n, manifest=manifest.stored, version=said_version(where, manifest), abstract=manifest.description)
         where, manifest, commit, linked = staged(root, row.source, ref or row.revision, VERSION)
         kept = False
