@@ -49,9 +49,15 @@ def keep(project: Path, name: str, branch: str) -> None:
         git(project, "update-ref", f"{KEPT}/{name}", f"refs/heads/{branch}")
 
 
-def merged(project: Path, branch: str) -> bool:
+def merged(project: Path, branch: str, base: str) -> bool:
     ref = f"refs/heads/{branch}"
-    return present(project, ref) and git(project, "merge-base", "--is-ancestor", ref, "HEAD").returncode == 0
+    if not present(project, ref) or tip(project, ref) == base:
+        return False
+    return git(project, "merge-base", "--is-ancestor", ref, "HEAD").returncode == 0
+
+
+def tip(project: Path, ref: str = "HEAD") -> str:
+    return git(project, "rev-parse", ref).stdout.strip()
 
 
 def present(project: Path, ref: str) -> bool:

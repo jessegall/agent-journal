@@ -1,5 +1,6 @@
 import time
 from pathlib import Path
+from engine import runtime
 from engine.stored import write_text
 
 WAIT = 15.0
@@ -20,6 +21,14 @@ def at(root: Path) -> float:
 
 def asked(root: Path, since: float = 0.0) -> bool:
     return at(root) > since
+
+
+def session_flag(root: Path, terminal: str) -> Path:
+    return runtime.session_file(Path(root), terminal, "stop")
+
+
+def ask_session(root: Path, terminal: str) -> None:
+    write_text(session_flag(root, terminal), f"{time.time()}\n")
 
 
 def ask(root: Path) -> None:

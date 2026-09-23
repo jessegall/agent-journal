@@ -125,6 +125,16 @@ class ShellLine(Loaded):
     command: str = ""
 
 
+@dataclass
+class ScreenQuery(Loaded):
+    since: int = -1
+
+
+@dataclass
+class Keys(Loaded):
+    text: str = ""
+
+
 @dataclass(frozen=True)
 class Control(Loaded):
     action: str = ""
@@ -263,6 +273,26 @@ def post_agent_permit(req: Request) -> Reply:
 @route("POST", "/api/{env}/agent/{session}/shell")
 def post_agent_shell(req: Request) -> Reply:
     return Reply(200, shell(req.root, req.params["env"], req.params["session"], req.body_as(ShellLine).command))
+
+
+@route("GET", "/api/{env}/agent/{session}/screen")
+def get_agent_screen(req: Request) -> Reply:
+    from engine.seats import terminal_of
+    from engine.terminal import screen_since
+    terminal = terminal_of(req.root, req.params["session"])
+    if not terminal:
+        return Reply(404, {"error": f"no session {req.params['session']}"})
+    return Reply(200, asdict(screen_since(req.root, terminal, req.query_as(ScreenQuery).since)))
+
+
+@route("POST", "/api/{env}/agent/{session}/keys")
+def post_agent_keys(req: Request) -> Reply:
+    from engine.seats import terminal_of
+    from engine.terminal import type_keys
+    terminal = terminal_of(req.root, req.params["session"])
+    if not terminal:
+        return Reply(404, {"error": f"no session {req.params['session']}"})
+    return Reply(200, {"sent": type_keys(req.root, terminal, req.body_as(Keys).text)})
 
 
 @route("POST", "/api/{env}/agent/{session}/relaunch")

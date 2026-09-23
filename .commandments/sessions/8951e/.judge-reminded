@@ -4,16 +4,20 @@
 /Users/jessegall/projects/agent-journal/src/engine/drivers.py
 /Users/jessegall/projects/agent-journal/src/engine/inputs.py
 /Users/jessegall/projects/agent-journal/src/engine/runtime.py
+/Users/jessegall/projects/agent-journal/src/engine/seats.py
 /Users/jessegall/projects/agent-journal/src/engine/services.py
 /Users/jessegall/projects/agent-journal/src/engine/sessions.py
+/Users/jessegall/projects/agent-journal/src/engine/stop.py
 /Users/jessegall/projects/agent-journal/src/engine/terminal.py
 /Users/jessegall/projects/agent-journal/src/engine/version.py
+/Users/jessegall/projects/agent-journal/src/engine/worker.py
 /Users/jessegall/projects/agent-journal/src/engine/worktree.py
 /Users/jessegall/projects/agent-journal/src/features/boards/__init__.py
 /Users/jessegall/projects/agent-journal/src/features/boards/controller.py
 /Users/jessegall/projects/agent-journal/src/features/boards/details.py
 /Users/jessegall/projects/agent-journal/src/features/boards/feature.py
 /Users/jessegall/projects/agent-journal/src/features/boards/resource.py
+/Users/jessegall/projects/agent-journal/src/features/close_from_commits/handlers.py
 /Users/jessegall/projects/agent-journal/src/features/command_tags/test.py
 /Users/jessegall/projects/agent-journal/src/features/hosting/__init__.py
 /Users/jessegall/projects/agent-journal/src/features/hosting/apps.py
@@ -50,6 +54,7 @@
 /Users/jessegall/projects/agent-journal/src/serve.py
 /Users/jessegall/projects/agent-journal/src/supervisor.py
 /Users/jessegall/projects/agent-journal/src/web/src/App.vue
+/Users/jessegall/projects/agent-journal/src/web/src/board/AgentDrawer.vue
 /Users/jessegall/projects/agent-journal/src/web/src/board/AgentSlots.vue
 /Users/jessegall/projects/agent-journal/src/web/src/board/Card.vue
 /Users/jessegall/projects/agent-journal/src/web/src/board/CardMenu.vue
@@ -59,6 +64,7 @@
 /Users/jessegall/projects/agent-journal/src/web/src/board/StopPrompt.vue
 /Users/jessegall/projects/agent-journal/src/web/src/board/Suggestion.vue
 /Users/jessegall/projects/agent-journal/src/web/src/board/TemplateCard.vue
+/Users/jessegall/projects/agent-journal/src/web/src/chat/AgentScreen.vue
 /Users/jessegall/projects/agent-journal/src/web/src/kit/ChatLine.vue
 /Users/jessegall/projects/agent-journal/src/web/src/kit/ChatPanel.vue
 /Users/jessegall/projects/agent-journal/src/web/src/kit/FocusStage.vue

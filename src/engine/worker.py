@@ -10,7 +10,7 @@ from engine.services import Manager  # noqa: E402
 from engine import typist  # noqa: E402
 from engine import runtime  # noqa: E402
 from engine.watch import threw  # noqa: E402
-from engine.stop import asked  # noqa: E402
+from engine.stop import asked, session_flag  # noqa: E402
 from engine.terminal import HEAL, RELAUNCH, RELOAD, STOP, Seat, seated, watched  # noqa: E402
 from engine.actors import Agent  # noqa: E402
 from engine.record import Record  # noqa: E402
@@ -98,6 +98,7 @@ def run(root: Path, cwd: Path, env: str, agent: str, session: str, lifeline: int
     hold_build(root, CODE)
     seat = seated(Seat(root, env, agent, session))
     relaunching = runtime.relaunch_file(root, session)
+    stopping = session_flag(root, session)
     stamps = watched(root)
     began = time.time()
     confirm = Confirm(root, session, agent)
@@ -109,7 +110,8 @@ def run(root: Path, cwd: Path, env: str, agent: str, session: str, lifeline: int
     while True:
         time.sleep(TICK)
         confirm.tick()
-        if asked(root, began):
+        if asked(root, began) or stopping.is_file():
+            stopping.unlink(missing_ok=True)
             return STOP
         if relaunching.is_file():
             return RELAUNCH
