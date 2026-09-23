@@ -27,11 +27,14 @@ class State:
         with self.changing() as held:
             held.pop(key, None)
 
-    def claim(self, key: str, value) -> bool:
+    def claim(self, key: str, value, keep: int = 0) -> bool:
         with self.changing() as held:
             if key in held:
                 return False
             held[key] = value
+            if keep:
+                for oldest in sorted(held, key=lambda name: float(held[name]))[:max(0, len(held) - keep)]:
+                    del held[oldest]
             return True
 
     def clear(self) -> None:

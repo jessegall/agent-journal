@@ -19,6 +19,8 @@ if TYPE_CHECKING:
 
 from features.settings import Settings
 
+ONCE_KEPT = 1000
+
 
 class Speaker:
     def __init__(self, feature, record, row):
@@ -83,7 +85,7 @@ class Context:
         self.feature.release(self.record, behaviour, self.agent.row if self.agent else None)
 
     def once(self, kind: str, key: str) -> bool:
-        return self.record.state("once", self.agent.session).claim(f"{kind}.{hashlib.sha1(key.strip().encode()).hexdigest()}", time.time())
+        return self.record.state("once", self.agent.session).claim(f"{kind}.{hashlib.sha1(key.strip().encode()).hexdigest()}", time.time(), keep=ONCE_KEPT)
 
     @property
     def state(self) -> "State":
