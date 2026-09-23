@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.103.12 — The rolling command detail lives in the chat's status line
+
+The command the agent is running, with its rolling animation, now shows in the status line above the chat input instead of the top bar. The top bar says only what state the agent is in (working, busy, idle) and what it is working on, so nothing slides along it any more.
+
 ## 2.103.11 — journal tidy says what it did in words
 
 journal tidy prints, for example, "2 logs cut to their tail; 21 old events dropped" instead of a raw dictionary, and "nothing to tidy" when there was nothing.
