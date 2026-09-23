@@ -1,5 +1,6 @@
 <script setup>
-import {computed} from "vue";
+import {computed, ref} from "vue";
+import {api} from "../api/client.js";
 import {useReveal} from "../composables/reveal.js";
 import {store} from "../state/store.js";
 
@@ -17,17 +18,53 @@ const owner = computed(() => {
     const name = props.ticket ? props.ticket.data.owner : "";
     return name ? (store.board.roles.find((role) => role.name === name) || {title: name}).title : "";
 });
+const editing = ref("");
+const edit = (field) => !typing.value && (editing.value = field);
+const toggle = () => !typing.value && !editing.value && emit("toggle");
+
+async function save(field, event) {
+    if (editing.value !== field) return;
+    editing.value = "";
+    const text = event.target.innerText.trim();
+    if (text && text !== props.ticket[field]) await api.act("ticket", props.ticket.n, "update", {[field]: text});
+}
+
 const tag = computed(() => (typing.value ? "Drafting" : props.picked ? "Picked" : "Suggested ticket"));
 </script>
 
 <template>
-    <button type="button" :class="['pick', {picked, writing: typing}]" :aria-pressed="picked" @click="!typing && emit('toggle')">
+    <div
+        :class="['pick', {picked, writing: typing}]"
+        role="button"
+        tabindex="0"
+        :aria-pressed="picked"
+        title="Click to keep it; double-click its title or brief to change them"
+        @click="toggle"
+        @keydown.space.prevent="toggle"
+        @keydown.enter.prevent="toggle"
+    >
         <span class="pick-top">
             <span>{{ tag }}</span>
             <span :class="['check', {on: picked}]">✓</span>
         </span>
-        <span :class="['pick-title', {caret: onTitle}]">{{ shownTitle }}</span>
-        <span :class="['pick-brief', {caret: typing && !onTitle}]">{{ shownBrief }}</span>
+        <span
+            :class="['pick-title', {caret: onTitle, editing: editing === 'title'}]"
+            :contenteditable="editing === 'title'"
+            @dblclick.stop="edit('title')"
+            @click="editing && $event.stopPropagation()"
+            @blur="save('title', $event)"
+        >
+            {{ shownTitle }}
+        </span>
+        <span
+            :class="['pick-brief', {caret: typing && !onTitle, editing: editing === 'brief'}]"
+            :contenteditable="editing === 'brief'"
+            @dblclick.stop="edit('brief')"
+            @click="editing && $event.stopPropagation()"
+            @blur="save('brief', $event)"
+        >
+            {{ shownBrief }}
+        </span>
         <template v-if="owner">
             <span class="owner">For {{ owner }}</span>
         </template>
@@ -37,7 +74,7 @@ const tag = computed(() => (typing.value ? "Drafting" : props.picked ? "Picked" 
                 <b>{{ waits.join(", ") }}</b>
             </span>
         </template>
-    </button>
+    </div>
 </template>
 
 <style scoped>
@@ -106,6 +143,13 @@ const tag = computed(() => (typing.value ? "Drafting" : props.picked ? "Picked" 
     font-size: 14px;
     font-weight: 500;
     line-height: 1.4;
+}
+
+.editing {
+    outline: 1px solid var(--accent);
+    outline-offset: 2px;
+    border-radius: 3px;
+    cursor: text;
 }
 
 .pick-brief {
