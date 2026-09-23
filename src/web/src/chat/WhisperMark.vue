@@ -16,5 +16,5 @@ const named = computed(() => `${(meta(type.value) || {title: type.value}).title.
 </script>
 
 <template>
-    <ChatMark icon="reminders" label="Reminded the agent of" :name="named" :at="at" :detail="title" :title="`Open ${named}`" @click="peek(type, n)" />
+    <ChatMark icon="reminders" label="Reminded the agent of" :name="named" :at="at" :title="`Open ${named}: ${title}`" @click="peek(type, n)" />
 </template>

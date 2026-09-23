@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.102.3 — Reminder chat marks are one line
+
+A chat mark for a rule, fact or reminder said to the agent is a single line, "Reminded the agent of rule 41" and the time; clicking it opens the row, and hovering shows its title. Plugin marks, such as code-commandments' sin marks, keep their second line.
+
 ## 2.102.2 — formatted_data names the data lists that are formatted
 
 The resource attribute that lists the data fields passed through the formatters is called formatted_data, a plain name for what it holds.
