@@ -56,7 +56,9 @@ def shaping(r, record=None, surface: str = "") -> dict:
     fields = {key: formatted(row.get(key), record, surface) for key in SAID if row.get(key)}
     fields = {**fields, **{key: plain(fields[key]) for key in PLAIN_FIELDS if key in fields}}
     parts = [{**s, "body": formatted(s.get("body"), record, surface)} for s in row.get("sections") or []]
-    return {**row, **fields, **({"sections": parts} if parts else {})}
+    data = {key: [{**item, **{sub: formatted(item.get(sub), record, surface) for sub in subs if item.get(sub)}} for item in row["data"].get(key) or []]
+            for key, subs in getattr(r, "said_data", {}).items() if row.get("data", {}).get(key)}
+    return {**row, **fields, **({"sections": parts} if parts else {}), **({"data": {**row["data"], **data}} if data else {})}
 
 
 @dataclass

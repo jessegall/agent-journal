@@ -43,7 +43,7 @@ def raised(record, plugin: str, session: str, fields: dict) -> None:
     title, brief = str(declared.get("title") or name), str(fields.get("brief") or "")
     record.emit("plugin", row.n, RAISED, PLUGIN, event=f"{plugin}.{name}", title=title, tone=str(declared.get("tone") or ""), brief=brief, plugin=plugin)
     if isinstance(declared.get("card"), dict):
-        carded(record, session, plugin, {"label": title, **declared["card"]}, brief)
+        carded(record, session, plugin, {"label": title, "tone": str(declared.get("tone") or ""), **declared["card"]}, brief)
 
 
 def carded(record, session: str, plugin: str, look: dict, brief: str) -> None:
@@ -52,7 +52,7 @@ def carded(record, session: str, plugin: str, look: dict, brief: str) -> None:
     if not agent:
         return
     color = str(look.get("color") or "")
-    card = {"at": time.time(), "plugin": plugin, "label": str(look.get("label") or plugin), "icon": str(look.get("icon") or "bell"),
+    card = {"at": time.time(), "plugin": plugin, "label": str(look.get("label") or plugin), "icon": str(look.get("icon") or "bell"), "tone": str(look.get("tone") or ""),
             "color": color if COLOR.match(color) else "", "detail": next((line.strip(" •-") for line in brief.splitlines() if line.strip()), "")}
     agents.update(agent.n, cards=[*(agent.data.get("cards") or []), card][-KEPT_CARDS:])
 
