@@ -4,6 +4,7 @@ import RunningCommand from "./RunningCommand.vue";
 import {keepingPlace, useSighted} from "../composables/scrollback.js";
 import {computed, nextTick, onMounted, onUnmounted, ref, watch} from "vue";
 import {api} from "../api/client.js";
+import {markSeen} from "../sync/seen.js";
 import {sendMessage, token} from "./outbox.js";
 import Icon from "../kit/Icon.vue";
 import {route} from "../route.js";
@@ -86,19 +87,8 @@ const unseen = computed(() =>
         .filter((m) => !m.deleted && m.seen[0] === "agent" && !m.seen.includes("user"))
         .map((m) => m.n)
 );
-let marking = false;
 
-async function markSeen(numbers) {
-    if (marking || !numbers.length || !ready.value) return;
-    marking = true;
-    try {
-        await api.readAll("message", numbers);
-    } finally {
-        marking = false;
-    }
-}
-
-watch([unseen, ready], ([numbers]) => markSeen(numbers), {immediate: true});
+watch([unseen, ready], ([numbers, isReady]) => isReady && markSeen("message", numbers), {immediate: true});
 const rendering = ref(false);
 const topMark = ref(null);
 const AHEAD = "200px 0px 0px 0px";
