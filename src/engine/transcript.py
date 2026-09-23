@@ -22,6 +22,10 @@ class Turn:
     asked: list[str] = field(default_factory=list)
     answered: list[str] = field(default_factory=list)
 
+    @property
+    def has_agent_text(self) -> bool:
+        return self.who == "agent" and bool(self.text.strip())
+
 
 def timestamp(value: str) -> float:
     try:
@@ -91,7 +95,7 @@ def turns(record, agent) -> list:
         return []
     held = TURNS.get(agent.transcript)
     if not held or held[0] != size:
-        held = TURNS[agent.transcript] = (size, [t for t in provider().transcript(agent.transcript) if t.who == "agent" and t.text.strip()])
+        held = TURNS[agent.transcript] = (size, [t for t in provider().transcript(agent.transcript) if t.has_agent_text])
     return held[1]
 
 
@@ -101,7 +105,7 @@ def last_turn(record, agent):
     if not provider or not agent.transcript:
         return None
     settled(provider(), Path(agent.transcript), agent)
-    recent = [t for t in provider().tail(agent.transcript) if t.who == "agent" and t.text.strip()] or turns(record, agent)
+    recent = [t for t in provider().tail(agent.transcript) if t.has_agent_text] or turns(record, agent)
     return recent[-1] if recent else None
 
 

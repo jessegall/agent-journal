@@ -186,8 +186,8 @@ class Engine(Seat):
         return spoken_data(self.record, e).get("session") in self.names()
 
     def names(self) -> set[str]:
-        last = self.agent.driver.last_report()
-        return {self.agent.driver.session, *([last.title] if last and last.title else [])}
+        title = self.agent.driver.last_title()
+        return {self.agent.driver.session, *([title] if title else [])}
 
     def typing(self) -> str:
         driver = self.agent.driver
@@ -323,8 +323,7 @@ class Engine(Seat):
         if time.time() - self.ticked_at < CLOCK_EVERY:
             return
         self.ticked_at = time.time()
-        last = self.agent.driver.last_report()
-        emit_clock(self.record, last.title if last and last.title else self.agent.driver.session)
+        emit_clock(self.record, self.agent.driver.last_title() or self.agent.driver.session)
 
     def owed(self) -> str:
         waiting = []

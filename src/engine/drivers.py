@@ -268,6 +268,10 @@ class Driver(ABC):
             self.reported = (time.monotonic(), self._report())
         return self.reported[1]
 
+    def last_title(self) -> str:
+        last = self.last_report()
+        return last.title if last and last.title else ""
+
     def _report(self):
         from controllers.types import Agents
         from resources.base import SYSTEM

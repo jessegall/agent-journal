@@ -91,7 +91,7 @@ class Host:
         return [Record(self.root, p.name) for p in sorted(home.iterdir()) if p.is_dir()] if home.is_dir() else []
 
     def installed(self, record) -> list:
-        return [r for r in Plugins(record, actor=SYSTEM)._standing() if r.enabled and r.manifest]
+        return Plugins(record, actor=SYSTEM)._installed()
 
     def name(self, row) -> str:
         return called(row)

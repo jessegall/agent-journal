@@ -102,7 +102,7 @@ def plugins(root: Path) -> list:
     home = Path(root) / "environments"
     first = sorted(p.name for p in home.iterdir() if p.is_dir()) if home.is_dir() else []
     record = Record(Path(root), first[0] if first else "main")
-    return [r for r in Plugins(record, actor=SYSTEM)._standing() if r.enabled and r.manifest]
+    return Plugins(record, actor=SYSTEM)._installed()
 
 
 def planned(root: Path, name: str, service, port: int, blocked: str, env: dict, where: Path) -> ServiceSpec:
