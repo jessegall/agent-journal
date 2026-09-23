@@ -91,9 +91,20 @@ def held():
         _held.queue = None
 
 
+def defer(job: Callable[[], None]) -> None:
+    queue = getattr(_held, "queue", None)
+    if queue is None:
+        job()
+        return
+    queue.append((job, None))
+
+
 def release(queue: list) -> None:
-    for event, record in queue:
-        emit(event, record)
+    for item, record in queue:
+        if callable(item):
+            item()
+            continue
+        emit(item, record)
 
 
 def listening() -> bool:

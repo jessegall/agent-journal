@@ -19,6 +19,7 @@ class EnforceDispatchLaw(Canceler):
 
 class WhisperLawOnKeyword(ToolInterceptor):
     behaviour = WHISPER
+    refuses = False
 
     def intercept(self, context: AgentContext, call) -> str:
         whisper_laws(context, lambda scope: searched(call, scope))

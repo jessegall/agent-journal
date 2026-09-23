@@ -12,6 +12,8 @@ NOUN = re.compile(r"(?:^|[\s;&|(])journal(?:\s+--\S+)*\s+([a-z]+)\b")
 
 
 class RequireCommandSkill(ToolInterceptor):
+    refuses = False
+
     def intercept(self, context: AgentContext, call) -> str:
         found = next((match for match in map(NOUN.search, call.commands) if match), None)
         library = context.record.root.parent / LIBRARY
@@ -28,6 +30,7 @@ class RequireCommandSkill(ToolInterceptor):
 
 class RequireKeywordSkill(ToolInterceptor):
     behaviour = "keywords"
+    refuses = False
 
     def intercept(self, context: AgentContext, call) -> str:
         require_named(context.record, context.agent.row, call.text)

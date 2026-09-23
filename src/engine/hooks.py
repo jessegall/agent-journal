@@ -9,13 +9,14 @@ from engine.record import Record
 from engine.sessions import Sessions, agent_pid, alive
 from engine.worktree import checkout, environment
 from resources.base import AGENT, SYSTEM
-from engine import chat, runtime
+from engine import bus, chat, runtime
 from engine.stored import read_json, write_json
 from providers.payload import PERMISSION, STATUS
 from features.status_bar import commands
 from engine.fields import Loaded
 
 POLICIES: list = []
+AFTERWARDS: list = []
 CANCELERS: dict[str, list] = {}
 DISPATCHING, LONG_COMMAND = "agent.dispatching", "agent.command.long"
 CANCELABLE = (DISPATCHING, LONG_COMMAND)
@@ -29,6 +30,7 @@ def cancelled(name: str, provider, record, hook, session: str, data: dict) -> st
 def gated(provider, record, hook, session: str) -> str:
     dispatch = provider.dispatch(hook.tool)
     reason = cancelled(DISPATCHING, provider, record, hook, session, dispatch) if dispatch else ""
+    bus.defer(lambda: [policy(provider, record, hook, session) for policy in AFTERWARDS if serving(policy, provider, hook)])
     return reason or next((reason for policy in POLICIES if serving(policy, provider, hook) and (reason := policy(provider, record, hook, session))), "")
 
 

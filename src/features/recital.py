@@ -62,6 +62,8 @@ def recite(context: AgentContext, resources: str, text_of) -> None:
 
 
 class WhisperOnKeyword(ToolInterceptor):
+    refuses = False
+
     def __init__(self, resources: str):
         self.resources = resources
 
