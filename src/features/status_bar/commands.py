@@ -14,8 +14,8 @@ WRITING_COMMANDS = re.compile(r"(^|[;&|]\s*)(rm|mv|cp|git (commit|push|rm|mv)|se
 RING = 30
 JOURNAL_DIR = ".journal"
 CHANGING = ("writes", "deletes")
-START = r"(?:^|[;&|(]\s*|\b(?:do|then)\s+)"
-READING = r"(?:^|[;&]\s*|\b(?:do|then)\s+)"
+START = r"(?:^|[;&|(\n]\s*|\b(?:do|then)\s+)"
+READING = r"(?:^|[;&\n]\s*|\b(?:do|then)\s+)"
 EFFECTS = (
     ("pulls", re.compile(START + r"gh pr (?:create|merge|close)\b")),
     ("tests", re.compile(START + r"(?:\S*[Pp]ython[\d.]*\s+(?:-m\s+)?\S*tests?/\S*|pytest|npm (?:run )?test|npx (?:vitest|jest)|vitest|jest|go test|cargo test|phpunit|php artisan test|dotnet test|mvn\b[^;&|]*\btest|\S*gradlew?\b[^;&|]*\btest|(?:bundle exec )?rspec|mix test)\b")),
