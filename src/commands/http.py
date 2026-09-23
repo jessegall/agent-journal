@@ -39,6 +39,7 @@ from resources.base import AGENT, OPENED, USER, Refused, titled
 from resources.types import Ask
 from engine.stored import write_text, last_lines
 from engine.proc import git, ran
+from engine.project_files import UNLISTED, matching
 from commands.dispatch import JSON, KEEP_SHAPED, Missing, PLAIN, Reply, Request, represented, route, settled, shaped
 from features.format import VIEWER
 from commands.dispatch import dispatch  # noqa: F401
@@ -398,28 +399,6 @@ def get_files(req: Request) -> Reply:
     return Reply(200, sorted(out, key=lambda x: -x["at"]))
 
 
-WALKED: dict[str, tuple] = {}
-WALK_FOR = 5.0
-UNLISTED = ("__pycache__", "node_modules")
-
-
-def project_paths(project: Path) -> list[Path]:
-    held = WALKED.get(str(project))
-    if held and time.time() - held[0] < WALK_FOR:
-        return held[1]
-    found = walked(project)
-    WALKED[str(project)] = (time.time(), found)
-    return found
-
-
-def walked(project: Path) -> list[Path]:
-    found = []
-    for folder, dirs, names in os.walk(project):
-        dirs[:] = [name for name in dirs if not name.startswith(".") and name not in UNLISTED]
-        found.extend(path for path in (Path(folder) / name for name in names) if path.is_file())
-    return found
-
-
 @route("GET", "/api/{env}/project-files")
 def get_project_files(req: Request) -> Reply:
     project = req.root.parent.resolve()
@@ -558,8 +537,7 @@ def get_file_text(req: Request) -> Reply:
     candidate = Path(asked).expanduser() if Path(asked).is_absolute() else project / asked
     target = candidate.resolve()
     if asked and not Path(asked).is_absolute() and not target.is_file():
-        tail = f"/{asked.lstrip('./')}"
-        matches = sorted(str(path.relative_to(project)) for path in project_paths(project) if f"/{path.relative_to(project)}".endswith(tail))
+        matches = matching(project, asked)
         if len(matches) > 1:
             return Reply(200, {"matches": matches})
         target = project / matches[0] if matches else target

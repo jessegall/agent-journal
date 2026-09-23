@@ -22,7 +22,7 @@ const tint = computed(() => (shade.value ? {"--mark": shade.value} : {}));
 
 <template>
     <component :is="tag" :type="tag === 'button' ? 'button' : undefined" :class="['mark', {tinted: shade}]" :style="tint">
-        <Icon :name="icon" :size="10" />
+        <Icon :name="icon" :size="9" />
         <span class="head">
             {{ label }}
             <template v-if="name">

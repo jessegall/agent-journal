@@ -14,5 +14,5 @@ const name = computed(() => [props.kind || "subagent", props.model].filter(Boole
 </script>
 
 <template>
-    <ChatMark icon="agents" :label="finished ? 'Subagent finished' : 'Dispatched'" :name="name" :at="at" :detail="task" />
+    <ChatMark icon="agents" color="#e2c55c" :label="finished ? 'Subagent finished' : 'Dispatched'" :name="name" :at="at" :detail="task" />
 </template>
