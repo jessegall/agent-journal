@@ -107,7 +107,7 @@ class Resource:
     details: ClassVar[ResourceDetails] = ResourceDetails()
     command_names: ClassVar[dict] = {}   # what this type calls a controller method: {"complete": "done", "create": "add"}
     status_labels: ClassVar[dict] = {}    # how the bar says a command on it: {"complete": "answering"}
-    said_data: ClassVar[dict] = {}     # data lists whose items carry words a person reads: {"cards": ("detail",)}
+    formatted_data: ClassVar[dict] = {}  # data lists whose items carry words a person reads: {"cards": ("detail",)}
     event_labels: ClassVar[dict] = {}   # how an event on it reads in the viewer: {"created": "Work started"}
     view: ClassVar[str] = SMALL  # how it is read: a small inspector, a wide one, or a document page
     in_sidebar: ClassVar[bool] = True   # whether it sits in the sidebar
