@@ -117,6 +117,10 @@ class Driver(ABC):
         return opened(project, project.joinpath(*cls.WORKTREES, name), cls.branch(name)), cls.unworktreed(args)
 
     @classmethod
+    def prompted(cls, args: list[str], prompt: str) -> list[str]:
+        return [*args, prompt]
+
+    @classmethod
     def branch(cls, name: str) -> str:
         return f"worktree-{name}"
 
