@@ -186,8 +186,7 @@ class Engine(Seat):
         return spoken_data(self.record, e).get("session") in self.names()
 
     def names(self) -> set[str]:
-        title = self.agent.driver.last_title()
-        return {self.agent.driver.session, *([title] if title else [])}
+        return {self.agent.driver.session, self.agent.driver.last_title()} - {""}
 
     def typing(self) -> str:
         driver = self.agent.driver
