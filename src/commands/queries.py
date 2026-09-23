@@ -255,10 +255,11 @@ def asked_resume(record: Record, agent: str, args: list[str], ask=input, answeri
     from providers import DRIVERS
     answering = sys.stdin.isatty() if answering is None else answering
     driver = DRIVERS.get(agent)
-    earlier = Sessions(record.root).last(record.env, agent) if driver else ""
+    worked = (driver and driver.worktree(args)) or record.env
+    earlier = Sessions(record.root).last(worked, agent) if driver else ""
     if not answering or not earlier or driver.resuming(args):
         return args
-    notes = [f"An earlier {agent.capitalize()} session worked {record.env}. Carrying on opens that conversation again."]
+    notes = [f"An earlier {agent.capitalize()} session worked {worked}. Carrying on opens that conversation again."]
     return driver.resumed(args, earlier) if choose("Carry on from the last session", notes, ["Yes, carry on", "No, start a new one"], 0, ask) == 0 else args
 
 

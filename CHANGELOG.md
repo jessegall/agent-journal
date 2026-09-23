@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.118.2 — A named worktree carries on its own last conversation
+
+`journal claude --worktree NAME` offered to carry on the environment's last conversation, not the one that last ran in that worktree. It now offers the worktree's own, so a worktree picks up where it stopped. Nothing to do.
+
 ## 2.118.1 — Carrying on offers the right conversation after a restart
 
 A Claude restarted by the supervisor kept its conversation recorded under the old process, so the journal took the running conversation for an ended one and offered it as "carry on from the last session" to the next launch, a `--worktree` launch included. A restarted Claude now updates its process on its first hook, and the supervisor's own session names are never offered as a conversation. The dashboard also stops re-reading every row file of a type whose folder has not changed. Nothing to do.

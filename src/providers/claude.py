@@ -461,6 +461,7 @@ class ClaudeDriver(Driver):
     APPROVAL_FLAGS = frozenset({"--permission-mode", "--dangerously-skip-permissions"})
     SKIP_ARGS = ("--dangerously-skip-permissions",)
     RESUMING = {"--resume": 1, "-r": 1, "--continue": 0, "-c": 0}
+    WORKTREE = ("--worktree", "-w")
     TAKES_OURS = ("--settings", json.dumps({"crossSessionInbound": "accept"}))
     CHANNEL = ("--dangerously-load-development-channels", "server:journal")
     LISTENING = 15.0

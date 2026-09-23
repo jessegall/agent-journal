@@ -38,6 +38,7 @@ class Driver(ABC):
     CONFIRM_AFTER = 0.0
     SKIP_ARGS = ()
     RESUMING: dict[str, int] = {}
+    WORKTREE: tuple = ()
     ALLOW, DENY = b"1", b"\x1b"
     MOVE_TO_BACKGROUND = b""
     QUIET = 3.0
@@ -73,6 +74,11 @@ class Driver(ABC):
     @classmethod
     def resuming(cls, args: list[str]) -> bool:
         return any(arg in cls.RESUMING for arg in args)
+
+    @classmethod
+    def worktree(cls, args: list[str]) -> str:
+        named = [following for flag, following in zip(args, args[1:]) if flag in cls.WORKTREE]
+        return next((name for name in named if not name.startswith("-")), "")
 
     @classmethod
     def resumed(cls, args: list[str], conversation: str) -> list[str]:
