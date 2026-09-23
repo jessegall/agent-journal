@@ -309,7 +309,7 @@ def supervise(ctx, agent: str) -> str:
         subprocess.run(["stty", "sane"], stdin=sys.stdin, check=False)
         print(banner(agent, project))
     driver = DRIVERS[agent]
-    resumed = driver.conversation(args)
+    resumed = driver.conversation(args) or driver.continued(args, project)
     env = (Sessions(record.root).environment(resumed) if resumed else "") or asked_for(record, driver.worktree(args), ask, answering)
     here = Record(record.root, env)
     args = driver.within(args, env) if env in linked(project) else args

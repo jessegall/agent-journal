@@ -132,3 +132,18 @@ def test_a_command_run_inside_a_worktree_works_the_worktrees_environment(tmp_pat
     (record.root / "environments" / "feature-y").mkdir(parents=True)
     text, code = captured(["--cwd", str(worktree), "todo", "create", "from the worktree"], record.root)
     assert (code, (record.root / "environments" / "feature-y" / "todo").is_dir()) == (0, True), text
+
+
+def test_continuing_names_the_folders_latest_conversation(tmp_path, monkeypatch):
+    import os
+    import re
+    from providers.claude import ClaudeDriver
+    monkeypatch.setenv("HOME", str(tmp_path))
+    project = tmp_path / "my.project"
+    folder = tmp_path / ".claude" / "projects" / re.sub(r"[^A-Za-z0-9]", "-", str(project))
+    folder.mkdir(parents=True)
+    for age, name in ((20, "older"), (10, "newer")):
+        (folder / f"{name}.jsonl").write_text("{}\n")
+        os.utime(folder / f"{name}.jsonl", (0, 1_000_000 - age))
+    assert (ClaudeDriver.continued(["-c"], project), ClaudeDriver.continued(["--resume"], project), ClaudeDriver.continued([], tmp_path / "elsewhere")) == \
+        ("newer", "", ""), "--continue names the folder's latest conversation, so it goes back to that conversation's environment"
