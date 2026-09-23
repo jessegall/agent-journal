@@ -13,6 +13,12 @@
 /Users/jessegall/projects/agent-journal/src/features/boards/resource.py
 /Users/jessegall/projects/agent-journal/src/features/kanban/board.py
 /Users/jessegall/projects/agent-journal/src/features/messages/test.py
+/Users/jessegall/projects/agent-journal/src/features/organization/__init__.py
+/Users/jessegall/projects/agent-journal/src/features/organization/commands.py
+/Users/jessegall/projects/agent-journal/src/features/organization/details.py
+/Users/jessegall/projects/agent-journal/src/features/organization/feature.py
+/Users/jessegall/projects/agent-journal/src/features/organization/files.py
+/Users/jessegall/projects/agent-journal/src/features/organization/test.py
 /Users/jessegall/projects/agent-journal/src/features/permission_prompts/feature.py
 /Users/jessegall/projects/agent-journal/src/features/skill_loading/catalogue.py
 /Users/jessegall/projects/agent-journal/src/features/status_bar/test.py
