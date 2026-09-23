@@ -6,7 +6,7 @@ from engine.worktree import keep, merged
 from engine.sessions import Sessions, live
 from features.permission_prompts.feature import prompted
 import resources.types as resources_module
-from controllers.base import Controller, internal
+from controllers.base import CONTROLLERS, Controller, internal
 from features.boards.controller import Boards
 from features.boards.resource import DONE, START
 from features.kanban.board import BoardLanes, Card
@@ -19,6 +19,7 @@ from resources.shapes import LEVELS
 
 
 AGENT_CLI = "claude"
+HELD = ("rule", "doc", "tool")
 
 
 class Tickets(Controller):
@@ -74,7 +75,13 @@ class Tickets(Controller):
         ticket = self.load(int(n))
         if ticket.work_environment and not yes and not self._merged(ticket):
             raise Refused(f"{self.type} {ticket.n}'s branch {self._branch(ticket)} is not merged: merge its pull request first, or --yes closes it anyway")
+        landed = bool(ticket.work_environment) and self._merged(ticket)
         closed = super().complete(ticket.n, how, **data)
+        for rows, proposal in self._proposals(closed):
+            if landed:
+                rows.reopen(proposal.n, f"{self.type} {closed.n}'s branch was merged")
+            else:
+                rows.delete(proposal.n, f"{self.type} {closed.n} closed without its branch merged")
         self._stop(closed)
         environments = Environments(self.record, actor=self.actor)
         place = environments._titled(closed.work_environment) if closed.work_environment else None
@@ -84,6 +91,16 @@ class Tickets(Controller):
             except Refused:
                 pass
         return closed
+
+    @internal
+    def hold(self, type_: str, n: int) -> None:
+        owner = Environments(self.record, actor=self.actor)._titled(self.record.env)
+        if owner and owner.owner.startswith(f"{self.type}:"):
+            CONTROLLERS[type_](self.record, actor=self.actor).complete(n, how=f"proposed for {owner.owner.replace(':', ' ')}; it counts once that branch is merged",
+                                                                      proposed_for=owner.owner)
+
+    def _proposals(self, ticket) -> list:
+        return [(rows, r) for rows in (CONTROLLERS[t](self.record, actor=self.actor) for t in HELD) for r in rows._every() if r.data.get("proposed_for") == ticket.ref]
 
     @internal
     def keep_branches(self) -> None:
