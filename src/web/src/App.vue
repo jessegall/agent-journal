@@ -47,7 +47,7 @@ usePoll(...polled.events);
 const page = computed(() =>
     !route.value.page
         ? "home"
-        : ["settings", "search", "files", "commit", "skills", "services", "plugins", "page", "hub", "file", "board", "about"].includes(
+        : ["settings", "search", "files", "commit", "skills", "services", "plugins", "page", "hub", "file", "kanban", "about"].includes(
                 route.value.page
             )
           ? route.value.page
@@ -162,7 +162,7 @@ const chatFloats = computed(() => store.detached && !store.extension.holding && 
                                 <template #services><ServicesPage /></template>
                                 <template #about><AboutPage /></template>
                                 <template #plugins><PluginsPage /></template>
-                                <template #board><BoardPage /></template>
+                                <template #kanban><BoardPage /></template>
                                 <template #page><PluginPage /></template>
                                 <template #hub><HubPage /></template>
                                 <template #file><FilePage /></template>
