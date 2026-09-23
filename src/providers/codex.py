@@ -313,7 +313,7 @@ class Codex(Provider):
         if row.type != "response_item" or payload.type not in ("function_call", "custom_tool_call"):
             return []
         given = payload.arguments if isinstance(payload.arguments, dict) else {}
-        uses = [ToolCall.of(payload.key, payload.name, row.at, given)]
+        uses = [ToolCall.from_payload(payload.key, payload.name, row.at, given)]
         text = payload.argument_text
         if "tools.exec_command" not in text:
             return uses

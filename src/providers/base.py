@@ -100,7 +100,7 @@ class Provider(ABC):
         return tool.name in self.question_tools
 
     def asked_questions(self, tool) -> list[AskedQuestion]:
-        return list(tool.questions) if isinstance(tool, AskCall) else []
+        return [question for question in tool.questions if question.text] if isinstance(tool, AskCall) else []
 
     def session(self, path: Path | None) -> dict:
         return {}

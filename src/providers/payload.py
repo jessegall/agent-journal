@@ -1,9 +1,9 @@
 import json
 import re
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from pathlib import Path
 
-from engine.fields import list_of, mapping_of, number_of, text_of
+from engine.fields import Loaded
 
 STATUS = {"SessionStart": "idle", "Stop": "idle", "UserPromptSubmit": "working", "PreToolUse": "working",
           "PostToolUse": "working", "PreCompact": "compacting", "SubagentStart": "",
@@ -17,34 +17,39 @@ SKILL_READ = re.compile(r"(?:^|[\s'\"/=(])(?:\.(?:codex|agents|claude)/)?skills/
 
 
 @dataclass(frozen=True)
-class AskedQuestion:
-    text: str
-    options: list[dict]
-    labels: tuple = ()
-
-    @classmethod
-    def from_payload(cls, raw: dict) -> "AskedQuestion":
-        given = [option for option in list_of(raw, "options") if isinstance(option, dict) and text_of(option, "label")]
-        labels = tuple(text_of(option, "label") for option in given)
-        return cls(text_of(raw, "question").strip(), [{"title": label, "description": text_of(option, "description")} for label, option in zip(labels, given)], labels)
-
-
-def asked_in(given: dict) -> tuple[AskedQuestion, ...]:
-    found = (AskedQuestion.from_payload(q) for q in list_of(given, "questions") if isinstance(q, dict))
-    return tuple(question for question in found if question.text)
+class AskedOption(Loaded):
+    label: str = ""
+    description: str = ""
 
 
 @dataclass(frozen=True)
-class Asking:
+class AskedQuestion(Loaded):
+    aliases = {"choices": ("options",)}
+    question: str = ""
+    choices: tuple[AskedOption, ...] = ()
+
+    @property
+    def text(self) -> str:
+        return self.question.strip()
+
+    @property
+    def labels(self) -> tuple:
+        return tuple(choice.label for choice in self.choices if choice.label)
+
+    @property
+    def options(self) -> list[dict]:
+        return [{"title": choice.label, "description": choice.description} for choice in self.choices if choice.label]
+
+
+@dataclass(frozen=True)
+class Asking(Loaded):
     tool: str = ""
     call: str = ""
     at: float = 0.0
 
     @classmethod
-    def from_json(cls, raw) -> "Asking | None":
-        if not isinstance(raw, dict) or not raw:
-            return None
-        return cls(text_of(raw, "tool"), text_of(raw, "call"), number_of(raw, "at"))
+    def of(cls, raw) -> "Asking | None":
+        return cls.from_json(raw) if isinstance(raw, dict) and raw else None
 
 
 @dataclass(frozen=True)
@@ -68,10 +73,16 @@ class Dispatch:
 
 
 @dataclass(frozen=True)
-class ToolCall:
-    id: str
-    name: str
-    at: float
+class Socket(Loaded):
+    url: str = ""
+
+
+@dataclass(frozen=True)
+class ToolCall(Loaded):
+    aliases = {"task": ("task_id", "shell_id"), "background": ("run_in_background",)}
+    id: str = ""
+    name: str = ""
+    at: float = 0.0
     skill: str = ""
     command: str = ""
     description: str = ""
@@ -80,24 +91,29 @@ class ToolCall:
     task: str = ""
     background: bool = False
     timeout_ms: float = 0.0
-    url: str = ""
+    ws: Socket = Socket()
     to: str = ""
     message: str = ""
-    questions: tuple = ()
+    questions: tuple[AskedQuestion, ...] = ()
 
     @classmethod
-    def of(cls, id: str, name: str, at: float, given: dict) -> "ToolCall":
-        return cls(id=id, name=name, at=at, skill=text_of(given, "skill"), command=text_of(given, "command"), description=text_of(given, "description"),
-                   subagent_type=text_of(given, "subagent_type"), model=text_of(given, "model"), task=text_of(given, "task_id", "shell_id"),
-                   background=bool(given.get("run_in_background")), timeout_ms=number_of(given, "timeout_ms"), url=text_of(mapping_of(given, "ws"), "url"),
-                   to=text_of(given, "to"), message=text_of(given, "message"), questions=asked_in(given))
+    def from_payload(cls, id: str, name: str, at: float, given: dict) -> "ToolCall":
+        return replace(cls.from_json(given), id=id, name=name, at=at)
+
+    @property
+    def url(self) -> str:
+        return self.ws.url
 
 
 @dataclass(frozen=True)
-class ToolUse:
+class ToolUse(Loaded):
     name: str = ""
     tool_input: dict = field(default_factory=dict)
     response: dict = field(default_factory=dict)
+
+    @classmethod
+    def from_payload(cls, name: str, given: dict, response: dict) -> "ToolUse":
+        return replace(cls.from_json(given), name=name, tool_input=given, response=response)
 
     @property
     def paths(self) -> tuple:
@@ -213,12 +229,13 @@ class ReadCall(FileCall):
 
 @dataclass(frozen=True)
 class WriteCall(FileCall):
+    aliases = {"written": ("content", "new_string", "new_source")}
     written: str = ""
 
     @classmethod
     def from_payload(cls, name: str, given: dict, response: dict) -> "WriteCall":
         path = given["file_path"] if "file_path" in given else given["notebook_path"]
-        return cls(name, given, response, file_path=path, written=text_of(given, "content", "new_string", "new_source"))
+        return replace(super().from_payload(name, given, response), file_path=path)
 
     @property
     def words(self) -> tuple:
@@ -308,15 +325,11 @@ class SkillCall(ToolUse):
 
 @dataclass(frozen=True)
 class AgentCall(ToolUse):
+    aliases = {"kind": ("subagent_type", "agent_type"), "task": ("task_name", "description"), "prompt": ("prompt", "message")}
     kind: str = ""
     model: str = ""
     task: str = ""
     prompt: str = ""
-
-    @classmethod
-    def from_payload(cls, name: str, given: dict, response: dict) -> "AgentCall":
-        return cls(name, given, response, kind=text_of(given, "subagent_type", "agent_type"), model=text_of(given, "model"),
-                   task=text_of(given, "task_name", "description"), prompt=text_of(given, "prompt", "message"))
 
     @property
     def words(self) -> tuple:
@@ -341,19 +354,23 @@ class AgentCall(ToolUse):
 
 @dataclass(frozen=True)
 class AskCall(ToolUse):
-    questions: tuple = ()
-
-    @classmethod
-    def from_payload(cls, name: str, given: dict, response: dict) -> "AskCall":
-        return cls(name, given, response, questions=asked_in(given))
+    questions: tuple[AskedQuestion, ...] = ()
 
     @property
     def words(self) -> tuple:
         return tuple(question.text for question in self.questions)
 
 
+@dataclass(frozen=True)
+class Called(Loaded):
+    tool_name: str = ""
+    tool_input: dict = field(default_factory=dict)
+    tool_response: dict = field(default_factory=dict)
+
+
 def call_of(raw: dict, kinds: dict) -> ToolUse:
-    name, given, response = text_of(raw, "tool_name"), mapping_of(raw, "tool_input"), mapping_of(raw, "tool_response")
+    called = Called.from_json(raw)
+    name, given, response = called.tool_name, called.tool_input, called.tool_response
     kind = kinds.get(name.rsplit(".", 1)[-1])
     try:
         return kind.from_payload(name, given, response) if kind else ToolUse(name, given, response)
@@ -363,7 +380,9 @@ def call_of(raw: dict, kinds: dict) -> ToolUse:
 
 
 @dataclass(frozen=True)
-class Hook:
+class Hook(Loaded):
+    aliases = {"event": ("hook_event_name",), "session": ("session_id",), "transcript": ("transcript_path",),
+               "last_message": ("last_assistant_message",), "agent": ("agent_id",)}
     event: str = ""
     session: str = ""
     transcript: Path | None = None
@@ -377,11 +396,8 @@ class Hook:
 
     @classmethod
     def read(cls, raw: dict, kinds: dict) -> "Hook":
-        transcript = text_of(raw, "transcript_path")
-        return cls(event=text_of(raw, "hook_event_name"), session=Path(text_of(raw, "transcript_path", "session_id")).stem,
-                   transcript=Path(transcript) if transcript else None, cwd=text_of(raw, "cwd"), model=text_of(raw, "model"),
-                   source=text_of(raw, "source"), inbox=text_of(raw, "inbox"),
-                   last_message=text_of(raw, "last_assistant_message"), agent=text_of(raw, "agent_id"), tool=call_of(raw, kinds))
+        hook = cls.from_json(raw)
+        return replace(hook, session=hook.transcript.stem if hook.transcript else hook.session, tool=call_of(raw, kinds))
 
     @property
     def shell(self) -> str | None:

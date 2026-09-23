@@ -11,7 +11,7 @@ class ShowWaitingPermission(Handler):
             return
         session = context.agent.session
         waiting = [n for n in context.journal.notices._standing() if n.data.get("action") == PERMISSION and n.data.get("session") == session]
-        asking = Asking.from_json(context.agent.row.asking)
+        asking = Asking.of(context.agent.row.asking)
         if asking and not waiting:
             context.journal.notice("waiting", tool=asking.tool, call=asking.call, tone="warn", session=session, action=PERMISSION)
         elif not asking:
