@@ -29,9 +29,11 @@ usePoll(...polled.agents);
 
 const IDLE = 30000;
 const scroller = ref(null);
-const terminalOpen = computed(() => store.pane === "terminal" && !store.dumping);
-const chatOpen = computed(() => store.pane !== "terminal" && !store.dumping);
-const feeding = computed(() => store.pane === "feed" && feedOn.value && Boolean(agent.value));
+const props = defineProps({view: {type: String, default: ""}});
+const pane = computed(() => props.view || store.pane);
+const terminalOpen = computed(() => pane.value === "terminal" && !store.dumping);
+const chatOpen = computed(() => pane.value !== "terminal" && !store.dumping);
+const feeding = computed(() => pane.value === "feed" && feedOn.value && Boolean(agent.value));
 const feedKey = computed(() => (agent.value ? `${agent.value.n}:${agent.value.data.transcript}` : ""));
 const quote = ref({text: "", ref: ""});
 const editing = ref(null);
@@ -184,7 +186,7 @@ watch(
 );
 
 watch(
-    () => store.dumping || store.pane === "terminal",
+    () => store.dumping || pane.value === "terminal",
     (away) => {
         if (!away) nextTick(() => requestAnimationFrame(toBottom));
     }

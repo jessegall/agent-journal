@@ -1,8 +1,9 @@
 <script setup>
 import {chatOnly, framed} from "../platform/view.js";
-import {computed, ref} from "vue";
+import {computed, inject, ref} from "vue";
 import {modelFamily, pendingChoice, providerName} from "../agents.js";
 import Icon from "../kit/Icon.vue";
+import MenuPanel from "../kit/MenuPanel.vue";
 import Spinner from "../kit/Spinner.vue";
 import CrewList from "./CrewList.vue";
 import AgentAppoint from "./AgentAppoint.vue";
@@ -38,6 +39,13 @@ const PANES = [
     {key: "terminal", icon: "terminal", title: "What the agent ran lately, like a terminal"},
 ];
 const panes = computed(() => PANES.filter((p) => p.key !== "feed" || feedOn.value));
+const views = inject("views", null);
+const viewGroups = computed(() =>
+    ["agent", "panel"].map((key) => {
+        const items = views ? views.items.value.filter((v) => v.group === key) : [];
+        return {key, items, shown: items.some((v) => !v.open)};
+    })
+);
 const counts = computed(() => [
     {
         key: "skills",
@@ -80,28 +88,28 @@ function openSession(row) {
     open.value = "";
     peek("agent", agent.value.n, 0, row.session);
 }
-const anchor = ref({left: 0, top: 0});
+const anchor = ref(null);
+const drop = ref(null);
+const dropHeight = Math.round(window.innerHeight * 0.6);
 function toggle(key, e) {
+    e.stopPropagation();
     open.value = open.value === key ? "" : key;
-    const box = e.currentTarget.getBoundingClientRect();
-    const wrap = bar.value.getBoundingClientRect();
-    anchor.value = {left: Math.max(0, Math.min(box.left - wrap.left, wrap.width - 288)), top: box.bottom - wrap.top + 6};
+    anchor.value = e.currentTarget;
 }
 const CONTROLS = ["model", "effort", "context"];
 const pending = (key) => pendingChoice(data.value, key);
 const appointments = (e) => toggle("appoint", e);
 const modelControls = (e, key) => toggle(key, e);
 const usageDetails = (e) => toggle("usage", e);
-const bar = ref(null);
 function openSkills() {
     open.value = "";
     go(route.value.env, "skills");
 }
-useOutside(bar, () => (open.value = ""));
+useOutside(drop, () => (open.value = ""));
 </script>
 
 <template>
-    <div ref="bar" class="agent-bar">
+    <div class="agent-bar">
         <div class="agent-facts">
             <template v-if="!data">
                 <button type="button" class="agent-fact-lead" :aria-expanded="open === 'appoint'" @click="appointments">
@@ -232,23 +240,45 @@ useOutside(bar, () => (open.value = ""));
                     </button>
                 </template>
                 <span class="agent-divider" />
-                <div class="agent-panes">
-                    <template v-for="p in panes" :key="p.key">
-                        <button
-                            type="button"
-                            :class="['agent-pane', {on: store.pane === p.key}]"
-                            :title="p.title"
-                            :aria-pressed="store.pane === p.key"
-                            @click="((store.dumping = false), (store.pane = p.key))"
-                        >
-                            <Icon :name="p.icon" />
-                        </button>
+                <template v-if="views">
+                    <template v-for="(group, at) in viewGroups" :key="group.key">
+                        <template v-if="at">
+                            <span :class="['agent-divider', 'agent-views-divider', {gone: !group.shown || !viewGroups[0].shown}]" />
+                        </template>
+                        <div class="agent-panes">
+                            <template v-for="v in group.items" :key="v.key">
+                                <button
+                                    type="button"
+                                    :class="['agent-pane', 'agent-view', {gone: v.open, lifting: v.lifting}]"
+                                    :title="`${v.title}: drag it onto a pane, or click to open it`"
+                                    :tabindex="v.open ? -1 : 0"
+                                    @pointerdown="views.grab($event, v.key)"
+                                >
+                                    <Icon :name="v.icon" />
+                                </button>
+                            </template>
+                        </div>
                     </template>
-                </div>
+                </template>
+                <template v-else>
+                    <div class="agent-panes">
+                        <template v-for="p in panes" :key="p.key">
+                            <button
+                                type="button"
+                                :class="['agent-pane', {on: store.pane === p.key}]"
+                                :title="p.title"
+                                :aria-pressed="store.pane === p.key"
+                                @click="((store.dumping = false), (store.pane = p.key))"
+                            >
+                                <Icon :name="p.icon" />
+                            </button>
+                        </template>
+                    </div>
+                </template>
                 <template v-if="!alone">
                     <button
                         type="button"
-                        :class="['agent-fact', 'agent-count', 'agent-detach', {on: store.detached}]"
+                        :class="['agent-pane', 'agent-detach', {on: store.detached}]"
                         :title="store.detached ? 'Put the chat back on the page' : 'Detach the chat into its own window'"
                         :aria-pressed="store.detached"
                         @click="detach(!store.detached)"
@@ -258,8 +288,16 @@ useOutside(bar, () => (open.value = ""));
                 </template>
             </div>
         </template>
-        <Transition name="drop">
-            <div v-if="open && (data || open === 'appoint')" class="bar-drop" :style="{left: `${anchor.left}px`, top: `${anchor.top}px`}">
+        <template v-if="open && anchor && (data || open === 'appoint')">
+            <MenuPanel
+                ref="drop"
+                :anchor="anchor"
+                :min-width="320"
+                :max-width="380"
+                :max-height="dropHeight"
+                @click.stop
+                @close="open = ''"
+            >
                 <SwitchCase :value="CONTROLS.includes(open) ? 'model' : open">
                     <template #appoint>
                         <AgentAppoint @done="open = ''" />
@@ -312,8 +350,8 @@ useOutside(bar, () => (open.value = ""));
                         />
                     </template>
                 </SwitchCase>
-            </div>
-        </Transition>
+            </MenuPanel>
+        </template>
     </div>
 </template>
 
@@ -494,24 +532,56 @@ useOutside(bar, () => (open.value = ""));
     color: var(--text);
 }
 
-.bar-drop {
-    position: absolute;
-    z-index: 30;
-    width: 380px;
-    max-height: 60vh;
-    overflow-y: auto;
-    padding: 5px;
-    border: 1px solid var(--border-2);
-    border-radius: 9px;
-    background: var(--raised);
-    box-shadow: 0 14px 28px rgba(0, 0, 0, 0.35);
+.agent-view {
+    overflow: hidden;
+    cursor: grab;
+    touch-action: none;
+    transition:
+        width 0.24s var(--ease),
+        margin 0.24s var(--ease),
+        opacity 0.2s ease,
+        transform 0.24s var(--ease),
+        background 0.15s,
+        color 0.15s;
+}
+
+.agent-view.gone {
+    width: 0;
+    margin-left: -2px;
+    opacity: 0;
+    transform: scale(0.6);
+    pointer-events: none;
+}
+
+.agent-view.lifting {
+    opacity: 0.35;
+}
+
+.agent-views-divider {
+    transition:
+        opacity 0.2s ease,
+        width 0.24s var(--ease),
+        margin 0.24s var(--ease);
+}
+
+.agent-views-divider.gone {
+    width: 0;
+    margin: 0 -1px;
+    opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .agent-view,
+    .agent-views-divider {
+        transition: none;
+    }
 }
 
 .bar-foot {
     position: sticky;
-    bottom: -5px;
-    margin: 4px -5px -5px;
-    padding: 6px 5px 5px;
+    bottom: -6px;
+    margin: 4px -6px -6px;
+    padding: 6px 6px 6px;
     border-top: 1px solid var(--line);
     background: var(--raised);
 }
