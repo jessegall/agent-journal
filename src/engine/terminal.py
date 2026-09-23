@@ -40,7 +40,7 @@ def output_cap(root: Path, env: str, provider) -> dict:
     from features.journal_laws.details import LawDetails
     lines = int(LawDetails.values(Record(root, env)).output_lines)
     wrapper = provider.shell_wrapper(code(root) / "output_cap.sh") if lines > 0 else {}
-    return {**wrapper, "JOURNAL_OUTPUT_LINES": str(lines), "JOURNAL_OUTPUT_DIR": str(runtime.folder(root) / "outputs")} if wrapper else {}
+    return {**wrapper, "JOURNAL_OUTPUT_LINES": str(lines), "JOURNAL_PROVIDER": provider.name, "JOURNAL_OUTPUT_DIR": str(runtime.folder(root) / "outputs")} if wrapper else {}
 
 
 def session_of(agent: str, pid: int) -> str:

@@ -20,6 +20,7 @@ SENDS = "SendMessage"
 SESSIONS = "uds:"
 WINDOW, LONG_WINDOW, LONG_MARK = 200_000, 1_000_000, "[1m]"
 STATUS_SCRIPT = "claude-status.sh"
+EVALED = re.compile(r"&& eval '(.*)' < /dev/null && pwd -P", re.S)
 RECORD_FILES = ("Read(./.journal/environments/*/*/*.md)", "Read(./.journal/project/*/*.md)")
 STATUS_HOME = (".journal", "claude-status")
 PLAN_WINDOWS = {"five_hour": ("5h", 300), "seven_day": ("7d", 10080)}
@@ -172,7 +173,11 @@ class Claude(Provider):
         return hook.source == "compact"
 
     def shell_wrapper(self, script: Path) -> dict:
-        return {"CLAUDE_CODE_SHELL_PREFIX": str(script)}
+        return {"CLAUDE_CODE_SHELL_PREFIX": str(script), "JOURNAL_SESSION_VARIABLE": "CLAUDE_CODE_SESSION_ID"}
+
+    def unwrapped_command(self, command: str) -> str:
+        found = EVALED.search(command)
+        return found[1].replace("'\"'\"'", "'") if found else command
 
     def dispatch(self, tool) -> dict:
         if tool.name != "Agent":
