@@ -61,11 +61,16 @@ onMounted(() =>
     })
 );
 const mine = computed(() => props.turn.who === "user");
+const subagentTask = (id) =>
+    rows("agent")
+        .flatMap((agent) => agent.data.subagent_rows || [])
+        .find((sub) => sub.task_id === id)?.task;
+const called = (id) => subagentTask(id) ?? `agent ${id}`;
 const between = computed(() =>
     props.turn.data?.peer
-        ? `From agent ${props.turn.data.peer}`
+        ? `From ${called(props.turn.data.peer)}`
         : props.turn.data?.sent_to
-          ? `Sent to agent ${props.turn.data.sent_to}`
+          ? `Sent to ${called(props.turn.data.sent_to)}`
           : ""
 );
 const SAID = {sent: "sent", delivered: "delivered to the agent", read: "read", filed: "processed"};
