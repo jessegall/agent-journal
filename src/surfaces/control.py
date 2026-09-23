@@ -3,7 +3,7 @@ from dataclasses import asdict
 from pathlib import Path
 
 from controllers.types import Agents, Notices, Notifications
-from engine.inputs import BACKGROUND, FORCE, PERMIT, QueuedCommand, SHELL, STALE, queue, waiting_commands
+from engine.inputs import BACKGROUND, FORCE, PAUSE, PERMIT, QueuedCommand, RESUME, SHELL, STALE, queue, waiting_commands
 from engine.record import Record
 from engine.seats import live
 from engine.drivers import AGENT_COMMAND
@@ -46,6 +46,7 @@ def choice(provider: str, action: str, value: str, current_model: str) -> dict:
 
 
 CARRY_ON = "Carry on with what you were doing; the model or effort change you were interrupted for is done."
+RESUMED = "The user paused you and has resumed you now: carry on with what you were doing."
 
 
 def online(root: Path, env: str, session: str) -> dict:
@@ -73,6 +74,14 @@ def pressed(root: Path, env: str, session: str, label: str, action: str) -> dict
 
 def force(root: Path, env: str, session: str) -> dict:
     return pressed(root, env, session, "Force through", FORCE)
+
+
+def pause(root: Path, env: str, session: str) -> dict:
+    return pressed(root, env, session, "Pause", PAUSE)
+
+
+def resume(root: Path, env: str, session: str) -> dict:
+    return pressed(root, env, session, "Resume", RESUME)
 
 
 def move_to_background(root: Path, env: str, session: str) -> dict:

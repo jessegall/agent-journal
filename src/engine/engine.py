@@ -8,8 +8,8 @@ import features
 from engine import bus, chat, runtime
 from engine.actors import Actor, Agent, BUSY, IDLE, STOPPED, System, User, WORKING, spoken_data
 from engine.drivers import AGENT_COMMAND
-from engine.inputs import BACKGROUND, FORCE, PERMIT, SHELL, take, waiting_commands
-from surfaces.control import CARRY_ON, delivered
+from engine.inputs import BACKGROUND, FORCE, PAUSE, PERMIT, RESUME, SHELL, take, waiting_commands
+from surfaces.control import CARRY_ON, RESUMED, delivered
 from engine.record import Record
 from engine.watch import STEADY_AFTER, steady, threw
 from providers import PROVIDERS
@@ -69,11 +69,13 @@ class Engine(Seat):
         self.probed_at = 0.0
         self.controlled_at = 0.0
         self.carry_on = False
+        self.paused = False
         self.why = ""
         self.clean = 0
 
     def start(self) -> None:
         features.load(self.record.root)
+        self.paused = bool(Agents(self.record, actor=SYSTEM).by_session(self.agent.driver.session).paused)
         self.running = True
 
     def stop(self) -> None:
@@ -86,8 +88,8 @@ class Engine(Seat):
         self.ran()
         if not self.agent.driver.DISPLAY_HOOK:
             self.announce_written()
-        self.why = (self.permitted() or self.backgrounded() or self.probe() or self.forced() or self.typing() or self.shelled() or self.control()
-                    or self.deliver() or self.nudge())
+        self.why = (self.permitted() or self.pausing() or self.backgrounded() or self.probe() or self.forced() or self.typing() or self.shelled()
+                    or self.control() or self.deliver() or self.nudge())
         self.seat()
         self.clock()
         return self.why
@@ -236,6 +238,19 @@ class Engine(Seat):
                 left.append(c)
         if len(left) != len(waiting):
             Agents(self.record, actor=SYSTEM).update(row.n, queued_commands=[asdict(c) for c in left])
+
+    def pausing(self) -> str:
+        if take(self.record.root, self.names(), PAUSE):
+            self.agent.driver.stop_turn()
+            self.paused = True
+            self.agent.mark("", "", paused=time.time())
+            return "paused: stopped the turn"
+        if take(self.record.root, self.names(), RESUME):
+            self.paused = False
+            self.agent.mark("", "", paused=0)
+            self.agent.driver.deliver(RESUMED)
+            return "resumed"
+        return "paused" if self.paused else ""
 
     def backgrounded(self) -> str:
         if not take(self.record.root, self.names(), BACKGROUND):

@@ -282,6 +282,14 @@ export class ApiClient {
         return this.post(this.here(`/agent/${encoded(session)}/force`));
     }
 
+    pauseAgent(session) {
+        return this.post(this.here(`/agent/${encoded(session)}/pause`));
+    }
+
+    resumeAgent(session) {
+        return this.post(this.here(`/agent/${encoded(session)}/resume`));
+    }
+
     permitAgent(session, allow) {
         return this.post(this.here(`/agent/${encoded(session)}/permit`), {allow});
     }
