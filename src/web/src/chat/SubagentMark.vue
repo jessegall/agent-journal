@@ -15,18 +15,17 @@ const props = defineProps({
     at: {type: Number, required: true},
 });
 
-const open = () => (props.report ? peek("report", props.report) : peek("agent", props.agent, 0, props.session));
+const open = () => peek("agent", props.agent, 0, props.session);
 const label = computed(() => (!props.finished ? "Dispatched" : props.stopped ? "Subagent stopped" : "Subagent finished"));
-const detail = computed(() => (props.report ? `${props.task} · report ${props.report}` : props.task));
-const hover = computed(() => (props.report ? `Open report ${props.report}, which it left` : "Open the subagent"));
+const card = computed(() => (props.report ? `report ${props.report}` : ""));
 const name = computed(() => [props.kind || "subagent", props.model].filter(Boolean).join(" · "));
 </script>
 
 <template>
-    <template v-if="session || report">
-        <ChatMark icon="agents" :color="stopped ? '' : '#e2c55c'" :tone="stopped ? 'warn' : ''" :label="label" :name="name" :at="at" :detail="detail" :title="hover" @click="open" />
+    <template v-if="session && !report">
+        <ChatMark icon="agents" :color="stopped ? '' : '#e2c55c'" :tone="stopped ? 'warn' : ''" :label="label" :name="name" :at="at" :detail="task" title="Open the subagent" @click="open" />
     </template>
     <template v-else>
-        <ChatMark icon="agents" color="#e2c55c" :label="label" :name="name" :at="at" :detail="detail" />
+        <ChatMark icon="agents" :color="stopped ? '' : '#e2c55c'" :tone="stopped ? 'warn' : ''" :label="label" :name="name" :at="at" :detail="task" :card="card" />
     </template>
 </template>

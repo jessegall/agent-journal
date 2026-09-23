@@ -12,6 +12,7 @@ const props = defineProps({
     name: {type: String, default: ""},
     at: {type: Number, default: 0},
     detail: {type: String, default: ""},
+    card: {type: String, default: ""},
     title: {type: String, default: ""},
 });
 
@@ -33,6 +34,9 @@ const tint = computed(() => (shade.value ? {"--mark": shade.value} : {}));
         </span>
         <template v-if="detail">
             <TextDisplay class="detail" :text="detail" inline />
+        </template>
+        <template v-if="card">
+            <TextDisplay class="card" :text="card" />
         </template>
     </component>
 </template>
@@ -106,6 +110,15 @@ button.mark:hover {
 .mark .detail :deep(.row-pill .ico) {
     width: 10px;
     height: 10px;
+}
+
+.mark .card {
+    grid-column: 1 / -1;
+    font-size: 13px;
+}
+
+.mark .card :deep(.row-card) {
+    margin: 5px 0 2px;
 }
 
 .mark .detail {

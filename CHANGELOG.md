@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.114.1 — A subagent's report shows as a document card in its mark
+
+When a subagent led to a report, its finished mark in the chat carries the report as a full document card, with its type, number and title, so a returned agent's findings are visible at once and open with a click. A subagent that was killed reads as stopped. Row cards look the same wherever they appear.
+
 ## 2.114.0 — A finished subagent's mark carries the report it led to
 
 When a subagent ends, its mark in the chat says whether it finished or was stopped (a stopped one is amber). A report the agent files within half an hour of a subagent ending is tied to that subagent: its mark names the report, and clicking it opens the report. A mark with no report opens the subagent itself.
