@@ -12,8 +12,8 @@ class StatusLineDetails(FeatureDetails):
     """
 
     help = """
-        Four stages, one after the other: the provider records every command that runs on the
-        agent's ring; dissect takes one apart into its kind and the names it worked on; group
+        Four stages, one after the other: the provider records every command that runs on
+        your ring; dissect takes one apart into its kind and the names it worked on; group
         joins consecutive commands of the same kind; queue turns each group into a status
         message with its verb, its rolling parts, its counts and how long it stays.
 

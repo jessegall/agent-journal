@@ -30,11 +30,11 @@ class WorkDetails(FeatureDetails):
         ahead until something happens is blocked, not parked: journal todo after, todo ask or
         todo block on its row. Never park to wait for an answer you could carry on without.
 
-        journal work await "<what>" says the agent is waiting for something outside its hands,
-        such as a long build or a run in Docker, in its own words, and the chat shows it. Say it
+        journal work await "<what>" says you are waiting for something outside your hands,
+        such as a long build or a run in Docker, in your own words, and the chat shows it. Say it
         once instead of writing another line each time nothing has changed. Working again clears
-        it, and the agent is told that it was cleared; parking clears it too. While it stands the
-        agent is told every five minutes (work.ask_awaiting_every) to check the thing it waits
+        it, and you are told that it was cleared; parking clears it too. While it stands you
+        are told every five minutes (work.ask_awaiting_every) to check the thing you wait
         on and carry on or wait again.
 
         Auto mode is off by default: turning it on is the user's word to work the list and

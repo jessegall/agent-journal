@@ -18,7 +18,7 @@ class ChecksDetails(FeatureDetails):
         command="<command>" --set every=<minutes>. It runs as its own process from the project
         root, never inside the server; exit 0 passes.
 
-        A failing run files a notification and tells the agent; the next pass clears it.
+        A failing run files a notification and tells you; the next pass clears it.
     """
 
     lines = [

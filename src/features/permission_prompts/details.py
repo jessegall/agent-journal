@@ -16,12 +16,12 @@ class PermissionsDetails(FeatureDetails):
     """
 
     help = """
-        When the agent's terminal asks for permission, the chat shows which call it is for, and
+        When your terminal asks for permission, the chat shows which call it is for, and
         Allow or Deny answers the prompt in the terminal.
 
-        The agent runs without permission prompts unless the Skip permission prompts switch in
-        Settings is turned off; flipping it restarts the agent in the same conversation, with or
-        without its skip flag.
+        You run without permission prompts unless the Skip permission prompts switch in
+        Settings is turned off; flipping it restarts you in the same conversation, with or
+        without your skip flag.
     """
 
     lines = [

@@ -17,7 +17,7 @@ class UpdatesDetails(FeatureDetails):
         on GitHub with the one installed, so updates keep coming while the server is down.
 
         With install on, a newer version is installed in the background, once per version, and
-        the server reloads itself; with it off, or when installing fails, the agent is told to
+        the server reloads itself; with it off, or when installing fails, you are told to
         run journal upgrade. A journal being developed never installs itself.
 
         A build that cannot start its supervisor or its server is set aside: the journal goes

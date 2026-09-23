@@ -13,7 +13,7 @@ class StartDetails(FeatureDetails):
     help = """
         The hook hands the file over at SessionStart; nothing is computed inside the hook.
 
-        The first time a session starts, the journal types a line into the agent's terminal,
+        The first time a session starts, the journal types a line into your terminal,
         never the channel, asking it to say something in the chat so the journal's messages
         reach it.
     """
