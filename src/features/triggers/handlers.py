@@ -19,7 +19,7 @@ def firing(context, text_of) -> list:
 
 def fire(context, agent, row, done: str = "") -> None:
     context.journal.acting(SYSTEM).agents.card(agent.n, label=f"Trigger {row.title} {done or DONE[row.does]}", icon="flag",
-                                               tone="danger" if row.does == DENY else "note", title=row.text or row.brief)
+                                               tone="danger" if row.does == DENY else "note", title=row.text or row.brief, ref=row.ref)
     if row.does == MESSAGE:
         context.journal.acting(USER).messages.create(row.title, brief=row.brief or row.text)
     elif row.does in (NUDGE, INSTRUCT):

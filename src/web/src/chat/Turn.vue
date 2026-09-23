@@ -13,7 +13,7 @@ import Buttons from "../resource/Buttons.vue";
 import OptionsPicker from "../resource/OptionsPicker.vue";
 import Attachments from "./Attachments.vue";
 import MadeCard from "./MadeCard.vue";
-import {peek, peekChip, route} from "../route.js";
+import {peek, peekChip, peekRef, route} from "../route.js";
 import {quoted} from "../format/quote.js";
 import {clock} from "../format/time.js";
 import {focusTurn, laidOut} from "../platform/view.js";
@@ -196,7 +196,7 @@ async function drop() {
         </template>
         <template #card>
             <div class="thread-turn card" :data-ref="turn.ref">
-                <ChatMark v-bind="turn.data" :at="turn.created" />
+                <ChatMark v-bind="turn.data" :at="turn.created" v-on="turn.data.row ? {click: () => peekRef(turn.data.row)} : {}" />
             </div>
         </template>
         <template #whisper>
