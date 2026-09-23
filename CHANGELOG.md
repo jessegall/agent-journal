@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.99.3 — A file chip into another project opens the file
+
+A file named in the chat by a path outside this project, such as ../code-commandments/composer.json, now opens in the file viewer instead of saying it is not found, with a line naming the other project and its folder. Only files inside another git repository open, and never a hidden file or folder such as .env.
+
 ## 2.99.2 — Messages between agent sessions show in the chat
 
 A message another Claude session sends to this one, and one this session sends to another, now appear in the chat, drawn with a dotted border in muted text and labelled from or to the other session by name. Messages from a session's own subagents stay out. The v2.99.0 and v2.99.1 tags carry the change without its version number.

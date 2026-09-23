@@ -31,3 +31,17 @@ def test_files_commits_and_links_are_marked_by_the_server_and_code_is_left_alone
     assert "[[url https://example.com/a|https://example.com/a]]" in viewed, "a link gets its marker"
     assert "`engine/x.py`" in viewed, "a path in code is left as code"
     assert shaped(row, record)["brief"] == row.brief, "outside the viewer the text stays plain"
+
+
+def test_a_file_chip_into_another_project_opens_the_file_and_names_that_project():
+    from commands.http import dispatch
+    record = fresh()
+    other = record.root.parent.parent / "other-project"
+    (other / ".git").mkdir(parents=True)
+    (other / "composer.json").write_text("{}\n")
+    (other / ".env").write_text("SECRET=1\n")
+    got = dispatch("GET", f"/api/{record.env}/file", record.root, {"path": str(other / "composer.json")}, {})
+    hidden = dispatch("GET", f"/api/{record.env}/file", record.root, {"path": str(other / ".env")}, {})
+    body = got.body
+    assert (got.code, body.get("project"), body.get("path"), body.get("text")) == (200, "other-project", "composer.json", "{}\n"), body
+    assert hidden.code == 404, "a hidden file in another project stays closed"

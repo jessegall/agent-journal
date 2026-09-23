@@ -563,12 +563,21 @@ def get_file_text(req: Request) -> Reply:
         if len(matches) > 1:
             return Reply(200, {"matches": matches})
         target = project / matches[0] if matches else target
-    if not asked or project not in target.parents or not target.is_file():
+    home = project if project in target.parents else other_project(target)
+    if not asked or not home or not target.is_file():
         raise Missing(f"no file {asked} in the project")
     raw = target.read_bytes()[:400000]
     kind = mimetypes.guess_type(target.name)[0] or ""
     text = "" if kind.startswith("image/") else raw.decode("utf-8", errors="replace")
-    return Reply(200, {"path": str(target.relative_to(project)), "size": target.stat().st_size, "kind": kind, "text": text, "lines": len(text.splitlines())})
+    elsewhere = {} if home == project else {"project": home.name, "root": str(home)}
+    return Reply(200, {"path": str(target.relative_to(home)), "size": target.stat().st_size, "kind": kind, "text": text, "lines": len(text.splitlines()), **elsewhere})
+
+
+def other_project(target: Path) -> Path | None:
+    home = next((folder for folder in target.parents if (folder / ".git").exists()), None)
+    if not home or any(part.startswith(".") for part in target.relative_to(home).parts):
+        return None
+    return home
 
 
 @route("GET", "/api/{env}/diff")
