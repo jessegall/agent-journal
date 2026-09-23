@@ -5,7 +5,7 @@ import Icon from "../kit/Icon.vue";
 import {api} from "../api/client.js";
 import {peek, route} from "../route.js";
 import {finishedUnread, happened, open as openRows, unreadByUser} from "../domain/records.js";
-import {rows} from "../sync/rows.js";
+import {patched, rows} from "../sync/rows.js";
 import {age} from "../format/time.js";
 import {focusTurn} from "../platform/view.js";
 import {meta, types} from "../state/store.js";
@@ -45,8 +45,17 @@ async function open(r) {
 }
 
 async function dismiss(r) {
-    await api.act(r.type, r.n, "set", {key: "kept", value: "false"});
-    await api.act(r.type, r.n, "read");
+    await patched(
+        r,
+        (row) => {
+            row.data.kept = false;
+            if (!row.seen.includes("user")) row.seen.push("user");
+        },
+        async () => {
+            await api.act(r.type, r.n, "set", {key: "kept", value: "false"});
+            await api.act(r.type, r.n, "read");
+        }
+    );
 }
 </script>
 

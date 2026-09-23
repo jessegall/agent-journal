@@ -188,6 +188,25 @@ export function refresh(types, because = true) {
     return drain();
 }
 
+export async function optimistic(type, row, send) {
+    store.rows[type] = [...(store.rows[type] || []), row];
+    try {
+        await send();
+        await refresh([type]);
+    } finally {
+        store.rows[type] = (store.rows[type] || []).filter((r) => r !== row);
+    }
+}
+
+export async function patched(row, change, send) {
+    change(row);
+    try {
+        await send();
+    } finally {
+        await refresh([row.type]);
+    }
+}
+
 export function reload() {
     owedWhole = true;
     return drain();

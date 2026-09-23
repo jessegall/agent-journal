@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.103.9 — Reactions and dismissals show at once
+
+A reaction you pick appears on the message the moment you pick it, and a notification you dismiss leaves the side panel the moment you click; the server catches up behind them. The viewer changes its own copy first, sends the change, then refreshes from the server (sync/rows.js optimistic and patched), so a refused change puts the row back as the server has it.
+
 ## 2.103.8 — The status line keeps its width as it comes and goes
 
 The status line above the chat input has its own transition: it fades in sliding up from below and leaves fading and sliding down, at the chat's full width throughout, instead of borrowing the scroll button's sideways-centred slide and shrinking to its words.
