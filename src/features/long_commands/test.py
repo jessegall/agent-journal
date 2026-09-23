@@ -89,6 +89,14 @@ def test_a_command_from_the_terminal_view_is_typed_into_the_agents_terminal_as_a
     control.shell(record.root, record.env, "claude-1", "ls")
     assert engine.shelled() == "" and pending() == ["ls"], "held while a permission prompt would take the keys"
     assert typed[-2:] == [b"!git status", b"\r"], "typed with Claude's shell mark and entered once, with no journal mark in front"
+    Agents(record).update(Agents(record).by_session("claude-1").n, asking={})
+    engine.agent.driver.reported = (float("-inf"), None)
+    control.shell(record.root, record.env, "claude-1", "/effort high")
+    engine.shelled()
+    engine.shelled()
+    lines = [raw for raw in typed if raw.strip(b"\x05\x15\x7f\r")]
+    assert (lines[-1], b"!/effort high" in typed, "/effort high" in pending()) == (b"/effort high", False, False), \
+        "a line starting with / is a command for the agent: typed as it is, and not waited on as a shell command"
     assert DRIVERS["codex"].SHELL == "", "a provider without a shell mark takes no command"
 
 

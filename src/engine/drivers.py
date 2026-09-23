@@ -13,6 +13,7 @@ from engine.worktree import environment, opened
 
 ENTER_AFTER = 0.3
 MARK = "[journal]"
+AGENT_COMMAND = "/"
 RECHECK, RESUBMITS = 1.0, 3
 DRAFT_LINES = 8
 CHOICE = re.compile(rb"1\..+?2\.", re.S)
@@ -185,6 +186,9 @@ class Driver(ABC):
 
     def run_shell(self, command: str) -> bool:
         return bool(self.SHELL) and self._typed(f"{self.SHELL}{command.strip()}", confirmed=False)
+
+    def run_command(self, command: str) -> bool:
+        return self._typed(command.strip(), confirmed=False)
 
     def press(self, keys: tuple) -> bool:
         first, *rest = keys or ("",)
