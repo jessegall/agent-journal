@@ -49,7 +49,7 @@ class MarkRows(TextFormatter):
 
 EXT = ("py|js|mjs|cjs|ts|tsx|jsx|vue|md|json|css|scss|html|txt|log|yml|yaml|toml|ini|sh|zsh|bash|svg|png|jpg|jpeg|gif|webp|csv|lock|php|cs|"
        "java|go|rs|rb|sql|xml|env|gitignore|prettierrc")
-PATH = re.compile(rf"(^|[\s(])((?:/(?:[\w.-]+/)*[\w.-]*\.(?:{EXT}))|(?:\.{{1,2}}/)?(?:[\w.-]+/)*[\w.-]*\.(?:{EXT}))(?=[\s).,;:]|$)")
+PATH = re.compile(rf"(^|[\s(])((?:/(?:[\w.-]+/)*[\w.-]*\.(?:{EXT}))|(?:\.{{1,2}}/)?(?:[\w.-]+/)*[\w.-]*\.(?:{EXT}))(:\d+(?:-\d+)?)?(?=[\s).,;:]|$)")
 SHA = re.compile(r"(^|[\s(])([0-9a-f]{7,40})(?=[\s).,;:]|$)")
 URL = re.compile(r"\bhttps?://[^\s<>\"'|\]*`]+[^\s<>\"'.,;:)|\]*`]")
 DOTFILE = re.compile(r"^\.(gitignore|env|prettierrc)$")
@@ -78,21 +78,43 @@ def existing(project: Path, path: str) -> str:
     return path if (project / path).is_file() or Path(path).is_file() else ""
 
 
-def filed(m, project: Path) -> str:
-    path = m.group(2)
-    value = resolved(project, path) if a_file(path) else ""
-    return m.group(1) + marked("file", value, path.split("/")[-1] if path.startswith("/") else path) if value else m.group(0)
+def labels(paths: list[str]) -> dict[str, str]:
+    unique = list(dict.fromkeys(paths))
+    tail = lambda path, k: "/".join(path.strip("/").split("/")[-k:])
+    out = {}
+    for path in unique:
+        k = next((k for k in range(1, path.count("/") + 2) if not any(tail(other, k) == tail(path, k) for other in unique if other != path)),
+                 path.count("/") + 1)
+        out[path] = tail(path, k)
+    return out
 
 
-def linked(text: str, project: Path) -> str:
-    text = PATH.sub(lambda m: filed(m, project), text)
+def chip(value: str, line: str, names: dict[str, str]) -> str:
+    number = line.lstrip(":").split("-")[0]
+    return marked("file", f"{value}#L{number}" if number else value, f"{names.get(value, value)}{line}")
+
+
+def found(part: str, project: Path) -> list[str]:
+    if CODE.fullmatch(part):
+        m = PATH.fullmatch(part.strip("`").strip())
+        return [value] if m and a_file(m.group(2)) and (value := existing(project, m.group(2))) else []
+    return [value for m in PATH.finditer(part) if a_file(m.group(2)) and (value := resolved(project, m.group(2)))]
+
+
+def filed(m, project: Path, names: dict[str, str]) -> str:
+    value = resolved(project, m.group(2)) if a_file(m.group(2)) else ""
+    return m.group(1) + chip(value, m.group(3) or "", names) if value else m.group(0)
+
+
+def linked(text: str, project: Path, names: dict[str, str]) -> str:
+    text = PATH.sub(lambda m: filed(m, project, names), text)
     return SHA.sub(lambda m: m.group(1) + marked("commit", m.group(2), m.group(2)[:7]) if a_commit(m.group(2)) else m.group(0), text)
 
 
-def coded(span: str, project: Path) -> str:
-    path = span.strip("`").strip()
-    value = existing(project, path) if a_file(path) and PATH.fullmatch(path) else ""
-    return marked("file", value, path) if value else span
+def coded(span: str, project: Path, names: dict[str, str]) -> str:
+    m = PATH.fullmatch(span.strip("`").strip())
+    value = existing(project, m.group(2)) if m and a_file(m.group(2)) else ""
+    return chip(value, m.group(3) or "", names) if value else span
 
 
 class MarkPaths(TextFormatter):
@@ -100,6 +122,19 @@ class MarkPaths(TextFormatter):
 
     def format(self, context: Context, text: str) -> str:
         project = context.record.root.parent
-        return "".join(coded(part, project) if CODE.fullmatch(part) else
-                       outside(KEPT, URL.sub(lambda m: marked("url", m.group(0), m.group(0)), part), lambda rest: linked(rest, project))
-                       for part in re.split(r"(`[^`]*`)", text))
+        parts = re.split(r"(`[^`]*`)", text)
+        names = labels([value for part in parts for value in found(part, project)])
+        return "".join(coded(part, project, names) if CODE.fullmatch(part) else
+                       outside(KEPT, URL.sub(lambda m: marked("url", m.group(0), m.group(0)), part), lambda rest: linked(rest, project, names))
+                       for part in parts)
+
+
+ONE = MARKER.pattern.replace("(", "(?:").replace("(?:?:", "(?:")
+WRAPPED = re.compile(rf"\((\s*{ONE}(?:\s*(?:,|and|,\s*and)\s*{ONE})*\s*)\)")
+
+
+class UnwrapChips(TextFormatter):
+    surfaces = (VIEWER,)
+
+    def format(self, context: Context, text: str) -> str:
+        return WRAPPED.sub(lambda m: m.group(1).strip(), text)

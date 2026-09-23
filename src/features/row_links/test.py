@@ -27,7 +27,7 @@ def test_files_commits_and_links_are_marked_by_the_server_and_code_is_left_alone
     record = fresh()
     row = Todos(record, actor=USER).create("paths", brief="See engine/hooks.py, commit 4b64ddbb7 and https://example.com/a. `engine/x.py` stays")
     viewed = shaped(row, record, VIEWER)["brief"]
-    assert "[[file engine/hooks.py|engine/hooks.py]]" in viewed and "[[commit 4b64ddbb7|4b64ddb]]" in viewed, "a path and a commit get their markers"
+    assert "[[file engine/hooks.py|hooks.py]]" in viewed and "[[commit 4b64ddbb7|4b64ddb]]" in viewed, "a path and a commit get their markers"
     assert "[[url https://example.com/a|https://example.com/a]]" in viewed, "a link gets its marker"
     assert "`engine/x.py`" in viewed, "a path in code is left as code"
     assert shaped(row, record)["brief"] == row.brief, "outside the viewer the text stays plain"
@@ -62,6 +62,11 @@ def test_a_file_name_is_a_chip_when_one_project_file_has_it_and_the_agent_hears_
     viewed = shaped(row, record, VIEWER)["brief"]
     assert viewed.count("[[file web/Turn.vue|") == 2, f"a unique name and an existing path in code both open the file: {viewed}"
     assert "/test.py|" not in viewed and "`web/Gone.vue`" in viewed, f"a shared name and a missing path stay text: {viewed}"
+    twins = shaped(Todos(record, actor=USER).create("twins", brief="a/test.py:22 and b/test.py and web/Turn.vue:8-12"), record, VIEWER)["brief"]
+    chips = ("[[file a/test.py#L22|a/test.py:22]]", "[[file b/test.py|b/test.py]]", "[[file web/Turn.vue#L8|Turn.vue:8-12]]")
+    assert all(chip in twins for chip in chips), f"a chip is the file name, with folders only where names repeat, and keeps its line: {twins}"
+    bare = shaped(Todos(record, actor=USER).create("bare", brief="landed (to-dos 1081, 1084) and (see to-do 2)"), record, VIEWER)["brief"]
+    assert bare == "landed [[chips todo:1081,1084|to-dos 1081, 1084]] and (see [[chip todo:2|to-do 2]])", f"parentheses around nothing but chips go: {bare}"
     report(record, "working", "PostToolUse")
     chat.send(record, Agents(record, actor=SYSTEM).by_session("claude-1"), "the fix is in test.py")
     told = [n.title for n in Nudges(record).all() if "test.py" in n.title]

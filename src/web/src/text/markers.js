@@ -11,8 +11,10 @@ const RENDERERS = {
         const linked = label.replace(/#?(\d+)/g, (whole, n) => `<a class="row-pill-n row-pill-num" href="#" data-peek="${type}:${n}">${whole}</a>`);
         return `<span class="row-pill">${linked}</span>`;
     },
-    file: (value, label, context) =>
-        `<a class="row-pill file-pill" href="#/${context.env}/file?q=${encodeURIComponent(value)}">${FILE_ICON}${label}</a>`,
+    file: (value, label, context) => {
+        const [path, line] = value.split("#L");
+        return `<a class="row-pill file-pill" href="#/${context.env}/file?q=${encodeURIComponent(path)}${line ? `&line=${line}` : ""}">${FILE_ICON}${label}</a>`;
+    },
     commit: (value, label, context) => `<a class="row-pill" href="#/${context.env}/commit/${value}">${label}</a>`,
     url: (value, label) => `<a href="${value}" target="_blank" rel="noopener">${label}</a>`,
 };

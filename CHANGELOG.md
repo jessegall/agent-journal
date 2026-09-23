@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.106.0 — File chips show just the name and open at their line; chips lose their parentheses
+
+A file chip's label is the file name alone, such as hooks.py; only when one text names several files with the same name do their chips add parent folders, one at a time, until each is unique (long_commands/handlers.py, row_links/handlers.py). A reference with a line, src/engine/hooks.py:22 or :22-30, becomes one chip that keeps the line in its label, and opening it scrolls the file page to that line and marks it.
+
+Parentheses that hold nothing but chips are dropped, so "(to-dos 1081, 1084)" reads as the chips alone; parentheses around ordinary words stay.
+
 ## 2.105.1 — Plugin dialogs keep one height
 
 The plugin install and update dialog and the plugin log dialog open at one fixed height, and only their content scrolls, so they no longer jump as output arrives. The kit's Dialog takes a fixed option for any dialog whose content grows.
