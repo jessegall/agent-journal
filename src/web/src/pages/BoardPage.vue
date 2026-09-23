@@ -12,8 +12,9 @@ import Switch from "../kit/Switch.vue";
 import TabBar from "../kit/TabBar.vue";
 import FirstBoard from "../board/FirstBoard.vue";
 import NewWork from "../board/NewWork.vue";
+import BoardMenu from "../board/BoardMenu.vue";
 import {remember, remembered} from "../composables/remembered.js";
-import {load as loadRows, rows} from "../sync/rows.js";
+import {load as loadRows, patched, rows} from "../sync/rows.js";
 import NotePrompt from "../board/NotePrompt.vue";
 import ShiftPrompt from "../board/ShiftPrompt.vue";
 import StopPrompt from "../board/StopPrompt.vue";
@@ -28,6 +29,10 @@ const LIVE = new Set(["todo", "work", "question", "plan", "agent", "ticket", "bo
 const text = ref("");
 const plans = computed(() => rows("plan").filter((plan) => !plan.completed && !plan.deleted));
 const boards = computed(() => rows("board").filter((board) => !board.completed && !board.deleted));
+const archived = computed(() => rows("board").filter((board) => board.completed && !board.deleted));
+const boardMenu = ref(false);
+const boardMenuOpener = ref(null);
+const boardMenuAnchor = computed(() => boardMenuOpener.value && boardMenuOpener.value.$el);
 const tickets = computed(() => Boolean(store.board.lens.board));
 const chosenBoard = computed(() => store.board.lens.board);
 const slots = computed(() => store.board.slots);
@@ -50,8 +55,44 @@ onMounted(async () => {
     window.addEventListener("keydown", onKey);
     const known = (await loadRows("board")).filter((board) => !board.completed && !board.deleted);
     firstBoard.value = !known.length && !remembered(FIRST_BOARD_SEEN, false);
-    if (!known.some((board) => board.n === store.board.lens.board)) lens({board: 0});
+    settle(known);
 });
+
+function settle(open) {
+    if (open.some((board) => board.n === store.board.lens.board)) return;
+    lens({board: open.length ? open[0].n : 0});
+}
+
+async function archive(board) {
+    boardMenu.value = false;
+    const at = boards.value.indexOf(board);
+    const others = boards.value.filter((open) => open !== board);
+    try {
+        await patched(
+            board,
+            (row) => (row.completed = Date.now() / 1000),
+            () => api.act("board", board.n, "complete")
+        );
+        settle([...others.slice(at), ...others.slice(0, at).reverse()]);
+        toast.value = {text: `Archived ${board.title}`, label: "Undo", action: () => restore(board)};
+    } catch (e) {
+        refuse(e);
+    }
+}
+
+async function restore(board) {
+    boardMenu.value = false;
+    try {
+        await patched(
+            board,
+            (row) => (row.completed = 0),
+            () => api.act("board", board.n, "reopen", {why: "Restored from the board menu"})
+        );
+        lens({board: board.n});
+    } catch (e) {
+        refuse(e);
+    }
+}
 
 function leaveFirstBoard() {
     firstBoard.value = false;
@@ -103,6 +144,12 @@ const watchAgent = (card) => (watching.value = card);
 const LIVE_STATES = ["running", "you"];
 const refusal = ref("");
 let clearing = 0;
+
+function refuse(e) {
+    refusal.value = e.message;
+    clearTimeout(clearing);
+    clearing = setTimeout(() => (refusal.value = ""), 5000);
+}
 
 function take(got) {
     Object.assign(store.board, {
@@ -157,9 +204,7 @@ async function shift(card, lane, words) {
         await (card.type === "ticket" ? api.moveTicket(card.n, lane) : api.shift(card.n, lane, words));
         toast.value = {text: `Moved #${card.n} to ${laneTitle(lane)}`, label: "Undo", action: () => move({...card, lane}, card.lane)};
     } catch (e) {
-        refusal.value = e.message;
-        clearTimeout(clearing);
-        clearing = setTimeout(() => (refusal.value = ""), 5000);
+        refuse(e);
     } finally {
         await refresh();
         moving.value = 0;
@@ -199,6 +244,21 @@ const ask = usePoll(
             <TabBar v-model="shown" :tabs="tabs">
                 <button type="button" class="tool" title="New board" @click="firstBoard = true"><Icon name="plus" /></button>
             </TabBar>
+            <template v-if="current || archived.length">
+                <Btn ref="boardMenuOpener" kind="icon" title="Board settings" @click.stop="boardMenu = !boardMenu">
+                    <Icon name="settings" />
+                </Btn>
+            </template>
+            <template v-if="boardMenu">
+                <BoardMenu
+                    :board="current"
+                    :archived="archived"
+                    :anchor="boardMenuAnchor"
+                    @close="boardMenu = false"
+                    @archive="archive"
+                    @restore="restore"
+                />
+            </template>
             <input ref="finder" v-model="text" class="find" placeholder="Filter cards  /" />
             <template v-if="!tickets">
                 <div class="plans">
@@ -212,11 +272,6 @@ const ask = usePoll(
             </template>
             <span class="grow" />
             <Switch :on="showingDone" word="Show done" @change="(on) => lens({done: on})" />
-            <template v-if="tickets">
-                <button type="button" class="tool" title="Stages and what each means" @click="peek('board', chosenBoard)">
-                    <Icon name="settings" />
-                </button>
-            </template>
             <Btn kind="primary" small title="New work (N)" @click="newWork('')">New work</Btn>
             <template v-if="refusal">
                 <p class="refusal">{{ refusal }}</p>

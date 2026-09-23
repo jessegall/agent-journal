@@ -50,12 +50,16 @@
 /Users/jessegall/projects/agent-journal/src/features/tickets/handlers.py
 /Users/jessegall/projects/agent-journal/src/features/tickets/resource.py
 /Users/jessegall/projects/agent-journal/src/features/tickets/test.py
+/Users/jessegall/projects/agent-journal/src/features/work_tracking/details.py
+/Users/jessegall/projects/agent-journal/src/features/work_tracking/handlers.py
+/Users/jessegall/projects/agent-journal/src/features/work_tracking/test.py
 /Users/jessegall/projects/agent-journal/src/resources/types.py
 /Users/jessegall/projects/agent-journal/src/serve.py
 /Users/jessegall/projects/agent-journal/src/supervisor.py
 /Users/jessegall/projects/agent-journal/src/web/src/App.vue
 /Users/jessegall/projects/agent-journal/src/web/src/board/AgentDrawer.vue
 /Users/jessegall/projects/agent-journal/src/web/src/board/AgentSlots.vue
+/Users/jessegall/projects/agent-journal/src/web/src/board/BoardMenu.vue
 /Users/jessegall/projects/agent-journal/src/web/src/board/Card.vue
 /Users/jessegall/projects/agent-journal/src/web/src/board/CardMenu.vue
 /Users/jessegall/projects/agent-journal/src/web/src/board/FirstBoard.vue
