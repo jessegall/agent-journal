@@ -15,7 +15,7 @@ from features.tickets.details import TicketsDetails
 from features.tickets.resource import Ticket
 from controllers.types import Agents
 from features.plans.controller import READY, Plans
-from resources.base import SYSTEM, Refused, Resource
+from resources.base import AGENT, SYSTEM, Refused, Resource
 from resources.shapes import LEVELS
 
 
@@ -51,7 +51,7 @@ class Tickets(Controller):
     def _runtime(self, ticket, sessions: dict) -> str:
         place = ticket.work_environment
         if not place:
-            return ""
+            return "a draft, waiting for your confirmation" if ticket.draft else ""
         session = next((name for name, held in sessions.items() if held.environment == place and live(held)), "")
         row = Agents(Record(self.record.root, place), actor=SYSTEM)._titled(session) if session else None
         state = "waiting for you" if row and row.asking else row.status if row else "queued" if ticket.queued else "stopped"
@@ -133,14 +133,22 @@ class Tickets(Controller):
             typist.send(self.record.root, session, f"{DRIVERS[AGENT_CLI].EXIT}\r".encode())
 
     def move(self, n: int, stage: str):
-        moved = self.update(int(n), stage=stage.strip())
-        if moved.board and Boards(self.record, actor=self.actor).load(int(moved.board)).meanings.get(moved.stage) == START:
-            return self.start(moved.n)
-        return moved
+        ticket = self.load(int(n))
+        starting = bool(ticket.board) and Boards(self.record, actor=self.actor).load(int(ticket.board)).meanings.get(stage.strip()) == START
+        if starting:
+            self._confirmed(ticket)
+        moved = self.update(ticket.n, stage=stage.strip())
+        return self.start(moved.n) if starting else moved
+
+    def confirm(self, n: int):
+        if self.actor == AGENT:
+            self._refuse(f"only the user confirms a drafted {self.type}: they do it with its button or in the viewer")
+        return self.update(int(n), draft=False)
 
     def start(self, n: int, agent: str = AGENT_CLI):
         from engine.terminal import detached
         from providers import DRIVERS
+        self._confirmed(self.load(int(n)))
         ticket = self.bind(int(n))
         if self.agent_session(ticket.n):
             return ticket
@@ -166,6 +174,10 @@ class Tickets(Controller):
 
     def _running(self) -> list:
         return [r for r in self._standing() if r.work_environment and self.agent_session(r.n)]
+
+    def _confirmed(self, ticket) -> None:
+        if ticket.draft:
+            self._refuse(f"{self.type} {ticket.n} is a draft: the user confirms it before it starts")
 
     def _stages(self, board) -> list:
         return Boards(self.record, actor=self.actor).load(int(board)).stages if board else []

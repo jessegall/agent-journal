@@ -6,6 +6,8 @@ import AgentStrip from "../board/AgentStrip.vue";
 import Lane from "../board/Lane.vue";
 import Switch from "../kit/Switch.vue";
 import TabBar from "../kit/TabBar.vue";
+import TextInput from "../kit/TextInput.vue";
+import {sendMessage} from "../chat/outbox.js";
 import {rows} from "../sync/rows.js";
 import ShiftPrompt from "../board/ShiftPrompt.vue";
 import NewResource from "../resource/NewResource.vue";
@@ -21,6 +23,13 @@ const plans = computed(() => rows("plan").filter((plan) => !plan.completed && !p
 const boards = computed(() => rows("board").filter((board) => !board.completed && !board.deleted));
 const tickets = computed(() => Boolean(store.board.lens.board));
 const chosenPlan = computed(() => store.board.lens.plan);
+const request = ref("");
+
+async function askForTicket() {
+    if (!request.value.trim()) return;
+    await sendMessage(route.value.env, {brief: request.value.trim(), about: `board:${store.board.lens.board}`});
+    request.value = "";
+}
 const showingDone = computed(() => store.board.lens.done !== false);
 const planHold = computed(() => store.board.planHold);
 const loading = computed(() => !store.board.loaded);
@@ -114,6 +123,17 @@ const ask = usePoll(
                     </template>
                 </div>
             </template>
+            <template v-if="tickets">
+                <form class="ask" @submit.prevent="askForTicket">
+                    <TextInput
+                        class="ask-input"
+                        :value="request"
+                        placeholder="Describe new work for this board"
+                        @input="request = $event.target.value"
+                    />
+                    <Btn kind="primary" small @click="askForTicket">Ask the agent</Btn>
+                </form>
+            </template>
             <Switch :on="showingDone" word="Show done" @change="(on) => lens({done: on})" />
             <template v-if="refusal">
                 <p class="refusal">{{ refusal }}</p>
@@ -152,6 +172,18 @@ const ask = usePoll(
 </template>
 
 <style scoped>
+.ask {
+    display: flex;
+    flex: 1 1 420px;
+    gap: 8px;
+    align-items: center;
+}
+
+.ask-input {
+    flex: 1;
+    min-width: 260px;
+}
+
 .board {
     display: flex;
     flex-direction: column;
