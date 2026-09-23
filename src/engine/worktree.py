@@ -40,8 +40,13 @@ def opened(project: Path, folder: Path, branch: str) -> Path:
         if made.returncode:
             raise SystemExit(f"journal: the worktree {folder.name} could not be made: {made.stderr.strip()}")
         included(project, folder)
-    git(project, "update-ref", kept, f"refs/heads/{branch}")
+    keep(project, folder.name, branch)
     return folder
+
+
+def keep(project: Path, name: str, branch: str) -> None:
+    if present(project, f"refs/heads/{branch}"):
+        git(project, "update-ref", f"{KEPT}/{name}", f"refs/heads/{branch}")
 
 
 def merged(project: Path, branch: str) -> bool:

@@ -2,7 +2,7 @@ import controllers.types as types_module
 from controllers.types import Environments
 from engine import typist
 from engine.record import Record
-from engine.worktree import merged
+from engine.worktree import keep, merged
 from engine.sessions import Sessions, live
 from features.permission_prompts.feature import prompted
 import resources.types as resources_module
@@ -83,6 +83,11 @@ class Tickets(Controller):
             except Refused:
                 pass
         return closed
+
+    @internal
+    def keep_branches(self) -> None:
+        for ticket in (r for r in self._standing() if r.work_environment):
+            keep(self.record.root.parent, ticket.work_environment, self._branch(ticket))
 
     @internal
     def close_merged(self) -> list:

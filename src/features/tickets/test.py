@@ -135,6 +135,9 @@ def test_a_started_ticket_closes_when_its_branch_is_merged_and_not_before():
     git("switch", "-q", home)
     assert "is not merged" in refused(lambda: tickets.complete(ticket.n)), "a started ticket is not closed while its branch is unmerged"
     assert tickets.close_merged() == [], "nothing unmerged is closed"
+    tickets.keep_branches()
+    assert git("rev-parse", f"refs/journal/worktrees/{ticket.work_environment}").stdout == git("rev-parse", f"worktree-{ticket.work_environment}").stdout, \
+        "the backup ref follows the ticket's branch to its latest commit"
     git("merge", "-q", "--no-edit", f"worktree-{ticket.work_environment}")
     tickets.close_merged()
     closed = tickets.load(ticket.n)

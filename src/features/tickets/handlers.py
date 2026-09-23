@@ -4,8 +4,10 @@ from features.tickets.controller import Tickets
 from resources.base import SYSTEM
 
 
-class CloseMergedTickets(Handler):
+class LookAfterTicketBranches(Handler):
     behaviour = WHOLE_FEATURE
 
     def handle(self, context: AgentContext, event: ClockTicked) -> None:
-        Tickets(context.record, actor=SYSTEM).close_merged()
+        tickets = Tickets(context.record, actor=SYSTEM)
+        tickets.keep_branches()
+        tickets.close_merged()
