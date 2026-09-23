@@ -86,6 +86,9 @@ class Provider(ABC):
     def unwrapped_command(self, command: str) -> str:
         return command
 
+    def shell_runs(self, path: Path) -> list[tuple[float, str]]:
+        return []
+
     def skill_load(self, name: str) -> str:
         return f"Skill: {name}"
 

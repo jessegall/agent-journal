@@ -74,6 +74,7 @@ class Engine(Seat):
         self.agent.driver.pump()
         self.relay()
         self.relay_peers()
+        self.ran()
         if not self.agent.driver.DISPLAY_HOOK:
             self.announce_written()
         self.why = (self.permitted() or self.backgrounded() or self.probe() or self.forced() or self.typing() or self.shelled() or self.control()
@@ -201,8 +202,26 @@ class Engine(Seat):
         typed = self.agent.driver.run_shell(queued["value"])
         agents = Agents(self.record, actor=SYSTEM)
         row = agents.by_session(queued["session"])
-        agents.update(row.n, queued_commands=[c for c in row.data.get("queued_commands") or [] if c.get("at") != queued["at"]])
-        return f"ran in the terminal: {queued['value']}" if typed else ""
+        waiting = row.data.get("queued_commands") or []
+        agents.update(row.n, queued_commands=[{**c, "typed": time.time()} if c.get("at") == queued["at"] else c for c in waiting if typed or c.get("at") != queued["at"]])
+        return f"typed in the terminal: {queued['value']}" if typed else ""
+
+    def ran(self) -> None:
+        row = self.agent.driver.last_report()
+        waiting = (row and row.data.get("queued_commands")) or []
+        provider = PROVIDERS.get(row.provider) if row else None
+        if not any(c.get("typed") for c in waiting) or not provider or not row.transcript:
+            return
+        runs = provider().shell_runs(Path(row.transcript))
+        left = []
+        for c in waiting:
+            run = next((r for r in runs if c.get("typed") and r[1] == c["command"] and r[0] >= c["typed"] - 1), None)
+            if run:
+                runs.remove(run)
+            else:
+                left.append(c)
+        if len(left) != len(waiting):
+            Agents(self.record, actor=SYSTEM).update(row.n, queued_commands=left)
 
     def backgrounded(self) -> str:
         if not take(self.record.root, self.names(), BACKGROUND):
