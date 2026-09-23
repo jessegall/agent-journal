@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.107.1 — Chat etiquette: a filed message that asks something still gets an answer
+
+The chat etiquette skill now says that filing a to-do from a message does not answer it: when the message asks something or proposes an approach, the agent replies too, saying whether it agrees and why, or what it would do instead, and when it will happen.
+
 ## 2.107.0 — The viewer passes the newer code-commandments check
 
 The 13 findings the newer Check for sins reported are fixed where they start: the two check panels share one run (useCheckRun); the revision strip reads plain counts from its composable instead of reaching into nested objects; and markup that was written twice is one component each — the usage meter (UsageMeter), a dump's file list (DumpFiles), the chat window's journal and environment pickers (ShellPicker), the quick menu's command and file rows (QuickRow), and every Settings section (SettingsGroup), with the two single-switch sections drawn from one list. The check now finds no sins in 131 files.
