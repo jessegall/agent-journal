@@ -65,6 +65,7 @@ class Crew:
     window: list = field(default_factory=list)
     ids: dict = field(default_factory=dict)
     ended: dict = field(default_factory=dict)
+    errors: dict = field(default_factory=dict)
 
 SPEAKERS = {SUMMARY: SUMMARY, HUMAN: "user", AGENT: "agent"}
 ORIGINS = {"peer": PEER, "task-notification": TASK}
@@ -356,6 +357,8 @@ class Claude(Provider):
             if task:
                 crew.ids[block.tool_use_id] = task.group(1)
             crew.ended.setdefault(block.tool_use_id, ("refused" if self.refused_by_hook(block) else "returned", row.at))
+            if block.is_error:
+                crew.errors.setdefault(block.tool_use_id, block.result.rpartition("hook error:")[2].strip())
         return crew
 
     def starts_window(self, row: Row) -> bool:
@@ -378,13 +381,13 @@ class Claude(Provider):
         subagents = []
         for use in (u for u in uses if u.name in DISPATCHES):
             session = sessions.get(use.id)
-            status, done = ended.get(use.id, ("", 0.0))
+            status, done = ("refused", ended[use.id][1]) if use.id in held.errors else ended.get(use.id, ("", 0.0))
             written = session.stat().st_mtime if session is not None and session.is_file() else 0.0
             writing = now - written <= QUIET_SUBAGENT
             running = not status or writing and (status == "returned" or written > done)
             subagents.append({"id": use.id, "task_id": ids.get(use.id, ""), "task": use.description if use.description else "subagent", "type": use.subagent_type,
                               "model": use.model, "running": running, "at": use.at, "ended": 0.0 if running else done,
-                              "status": "" if running else status,
+                              "status": "" if running else status, "refusal": held.errors.get(use.id),
                               "session": session.stem.removeprefix("agent-") if session else "", "skills": self.skills(session)})
         shells = []
         for use in (u for u in uses if u.name == "Bash" and u.background):
