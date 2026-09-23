@@ -4,6 +4,7 @@
 /Users/jessegall/projects/agent-journal/src/engine/drivers.py
 /Users/jessegall/projects/agent-journal/src/engine/inputs.py
 /Users/jessegall/projects/agent-journal/src/engine/runtime.py
+/Users/jessegall/projects/agent-journal/src/engine/services.py
 /Users/jessegall/projects/agent-journal/src/engine/sessions.py
 /Users/jessegall/projects/agent-journal/src/engine/terminal.py
 /Users/jessegall/projects/agent-journal/src/engine/version.py
@@ -13,6 +14,14 @@
 /Users/jessegall/projects/agent-journal/src/features/boards/details.py
 /Users/jessegall/projects/agent-journal/src/features/boards/feature.py
 /Users/jessegall/projects/agent-journal/src/features/boards/resource.py
+/Users/jessegall/projects/agent-journal/src/features/hosting/__init__.py
+/Users/jessegall/projects/agent-journal/src/features/hosting/apps.py
+/Users/jessegall/projects/agent-journal/src/features/hosting/commands.py
+/Users/jessegall/projects/agent-journal/src/features/hosting/details.py
+/Users/jessegall/projects/agent-journal/src/features/hosting/feature.py
+/Users/jessegall/projects/agent-journal/src/features/hosting/files.py
+/Users/jessegall/projects/agent-journal/src/features/hosting/handlers.py
+/Users/jessegall/projects/agent-journal/src/features/hosting/test.py
 /Users/jessegall/projects/agent-journal/src/features/kanban/board.py
 /Users/jessegall/projects/agent-journal/src/features/messages/test.py
 /Users/jessegall/projects/agent-journal/src/features/organization/__init__.py

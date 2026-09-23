@@ -50,3 +50,12 @@ def test_a_task_is_delegated_to_a_role_queues_behind_its_own_and_is_reported_aga
     reporter = Todos(record, actor=AGENT, agent="a1")
     assert "does not mention tests" in refused(lambda: reporter.report(first["todo"], "built it")), "a report must cover the role's outputs"
     assert reporter.report(first["todo"], "built it; tests pass").data["reported"]["how"] == "built it; tests pass"
+
+
+def test_a_role_with_a_browser_is_pointed_at_its_tickets_app():
+    from features.organization.delegation import brief
+    from features.organization.files import Domain, Role
+    domain, role = Domain(name="engineering", title="Engineering"), Role(name="checker", title="Checker", tools=["browser"])
+    assert "Open the ticket's app at http://127.0.0.1:8441" in brief(domain, role, 3, "Check the toggle", "", "http://127.0.0.1:8441"), \
+        "a role granted a browser is told where the ticket's app runs"
+    assert "Open the ticket's app" not in brief(domain, Role(name="writer"), 3, "Write the docs", "", "http://127.0.0.1:8441"), "a role without one is not"
