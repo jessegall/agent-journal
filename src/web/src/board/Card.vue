@@ -35,6 +35,20 @@ function onKey(e) {
     if (target) (e.preventDefault(), target.focus());
 }
 
+const over = ref(false);
+const reorders = computed(() => {
+    const moved = drag.dragged.value;
+    return Boolean(moved) && moved.n !== props.card.n && moved.state === "queued" && props.card.state === "queued";
+});
+
+async function dropBefore() {
+    over.value = false;
+    const moved = drag.dragged.value;
+    drag.end();
+    await api.act("ticket", moved.n, "queue_before", {other: props.card.n});
+    board.refresh();
+}
+
 function closeMenu() {
     menu.value = false;
     self.value.focus();
@@ -58,7 +72,10 @@ function begin(event) {
 
 <template>
     <div
-        :class="['card', {moving: board.moving.value === card.n, dragged: drag.dragged.value && drag.dragged.value.n === card.n}]"
+        :class="[
+            'card',
+            {moving: board.moving.value === card.n, dragged: drag.dragged.value && drag.dragged.value.n === card.n, before: over},
+        ]"
         ref="self"
         role="button"
         tabindex="0"
@@ -68,6 +85,9 @@ function begin(event) {
         @click="peek(card.type, card.n)"
         @keydown.enter="peek(card.type, card.n)"
         @keydown="onKey"
+        @dragover="reorders && ($event.preventDefault(), $event.stopPropagation(), (over = true))"
+        @dragleave="over = false"
+        @drop="reorders && ($event.preventDefault(), $event.stopPropagation(), dropBefore())"
     >
         <span class="top">
             <span class="title">{{ card.title }}</span>
@@ -153,6 +173,10 @@ function begin(event) {
 .card.moving {
     opacity: 0.55;
     pointer-events: none;
+}
+
+.card.before {
+    box-shadow: 0 -2px 0 var(--accent);
 }
 
 .card.dragged {

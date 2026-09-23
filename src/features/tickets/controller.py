@@ -351,6 +351,15 @@ class Tickets(Controller):
     def _queue(self) -> list:
         return [r.n for r in sorted((r for r in self._standing() if r.queued and not self._waiting_on(r)), key=lambda r: r.queued_at)]
 
+    def queue_before(self, n: int, other: int):
+        ticket, target = self.load(int(n)), self.load(int(other))
+        queue = [queued for queued in self._queue() if queued != ticket.n]
+        if not ticket.queued or target.n not in queue:
+            self._refuse(f"only a queued {self.type} moves before another queued one")
+        at = queue.index(target.n)
+        before = self.load(queue[at - 1]).queued_at if at else target.queued_at - 1
+        return self.update(ticket.n, queued_at=(before + target.queued_at) / 2)
+
     def start_next(self, n: int):
         ticket = self.load(int(n))
         if not ticket.queued:
