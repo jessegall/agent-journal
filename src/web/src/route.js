@@ -22,6 +22,7 @@ export const route = computed(() => {
         n: n ? (/^\d+$/.test(n) ? Number(n) : n) : 0,
         q: params.get("q") || "",
         sub: params.get("sub") || "",
+        line: Number(params.get("line") || 0),
         at: params.get("at") || "",
         stack,
         open: stack[stack.length - 1] || null,

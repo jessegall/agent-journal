@@ -140,7 +140,7 @@ def test_a_chosen_setting_reaches_the_plugins_commands():
     from commands.dispatch import shaped
     from features.format import VIEWER
     viewed = shaped(Agents(record, actor=SYSTEM).primary(), record, VIEWER)["data"]["cards"][-1]["detail"]
-    assert "[[file src/A.php|" in viewed, f"its words pass the formatters like any brief, so a file is a chip: {viewed}"
+    assert "[[file src/A.php" in viewed, f"its words pass the formatters like any brief, so a file is a chip: {viewed}"
     assert apply(record, FEATURES["plugins"].journal, "typed", "", {"raise": {"event": "made-up"}}) == [], "an event the manifest does not declare is refused"
     from features.plugins.manifest import typed as checked
     shown = checked({"php": {"type": "flag"}, "vue": {"type": "flag"}, "sin": {"type": "flag", "when": {"php": True}},

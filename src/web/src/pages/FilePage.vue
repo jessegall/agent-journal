@@ -1,6 +1,6 @@
 <script setup>
 import EmptyState from "../kit/EmptyState.vue";
-import {computed, onMounted, ref, watch} from "vue";
+import {computed, nextTick, onMounted, ref, watch} from "vue";
 import {api} from "../api/client.js";
 import {highlight, languageOf} from "../text/highlight.js";
 import Icon from "../kit/Icon.vue";
@@ -67,8 +67,15 @@ async function send() {
     sent.value = true;
 }
 
-onMounted(load);
-watch(() => [route.value.q, route.value.sub], load);
+async function reveal() {
+    await nextTick();
+    const at = route.value.line && document.querySelector(`.filepage [data-line="${route.value.line}"]`);
+    if (at) at.scrollIntoView({block: "center"});
+}
+
+onMounted(() => load().then(reveal));
+watch(() => [route.value.q, route.value.sub], () => load().then(reveal));
+watch(() => route.value.line, reveal);
 </script>
 
 <template>
@@ -140,7 +147,7 @@ watch(() => [route.value.q, route.value.sub], load);
                 <Highlight @quote="pick">
                     <pre
                         class="text"
-                    ><template v-for="(line, i) in lines" :key="i"><span class="line" :data-line="i + 1"><span class="n">{{ i + 1 }}</span><span v-html="line" /></span>
+                    ><template v-for="(line, i) in lines" :key="i"><span :class="['line', {target: i + 1 === route.line}]" :data-line="i + 1"><span class="n">{{ i + 1 }}</span><span v-html="line" /></span>
 </template></pre>
                 </Highlight>
             </template>
@@ -277,5 +284,9 @@ watch(() => [route.value.q, route.value.sub], load);
 
 .matches a:hover {
     color: var(--accent-text);
+}
+
+.line.target {
+    background: color-mix(in srgb, var(--accent) 14%, transparent);
 }
 </style>
