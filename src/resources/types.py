@@ -273,6 +273,7 @@ class AgentRow(Shape, Resource):
         Field(FLAG, False, name="compacting"),
         Field(default=dict, name="running"),
         Field(default=list, name="commands"),
+        Field(default=list, name="queued_commands"),
         Field(name="branch"),
         Field(name="branch_url"),
         Field(name="active"),

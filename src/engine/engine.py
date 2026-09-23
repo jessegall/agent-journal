@@ -197,7 +197,11 @@ class Engine(Seat):
         queued = take(self.record.root, self.names(), SHELL)
         if not queued:
             return ""
-        return f"ran in the terminal: {queued['value']}" if self.agent.driver.run_shell(queued["value"]) else ""
+        typed = self.agent.driver.run_shell(queued["value"])
+        agents = Agents(self.record, actor=SYSTEM)
+        row = agents.by_session(queued["session"])
+        agents.update(row.n, queued_commands=[c for c in row.data.get("queued_commands") or [] if c.get("at") != queued["at"]])
+        return f"ran in the terminal: {queued['value']}" if typed else ""
 
     def backgrounded(self) -> str:
         if not take(self.record.root, self.names(), BACKGROUND):

@@ -2,7 +2,7 @@ import re
 from pathlib import Path
 
 from controllers.types import Agents, Notices, Notifications
-from engine.inputs import BACKGROUND, FORCE, PERMIT, SHELL, queue
+from engine.inputs import BACKGROUND, FORCE, PERMIT, SHELL, STALE, queue
 from engine.record import Record
 from engine.seats import live
 from engine import runtime
@@ -81,6 +81,10 @@ def shell(root: Path, env: str, session: str, command: str) -> dict:
     if not command.strip():
         raise Refused("type a command to run")
     queued = queue(Path(root), session, "", f"Run {command.strip()}", provider=found["provider"], action=SHELL, value=command.strip())
+    agents = Agents(Record(Path(root), env), actor=SYSTEM)
+    row = agents.by_session(session)
+    waiting = [c for c in row.data.get("queued_commands") or [] if queued["at"] - float(c.get("at") or 0) < STALE]
+    agents.update(row.n, queued_commands=[*waiting, {"at": queued["at"], "command": queued["value"]}])
     return {k: v for k, v in queued.items() if k != "line"} | {"queued": True}
 
 

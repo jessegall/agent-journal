@@ -1,7 +1,7 @@
 <script setup>
 import Console from "../kit/Console.vue";
 
-defineProps({commands: {type: Array, default: () => []}});
+defineProps({commands: {type: Array, default: () => []}, queued: {type: Array, default: () => []}});
 
 const line = (c) =>
     c.tool === "Bash"
@@ -17,6 +17,13 @@ const line = (c) =>
                 <span class="log-text">{{ line(c) }}</span>
             </div>
         </template>
+        <template v-for="q in queued" :key="q.at">
+            <div class="log-line shell queued" title="Typed into the agent's terminal when it next comes to rest">
+                <span class="log-mark">$</span>
+                <span class="log-text">{{ q.command }}</span>
+                <span class="log-state">pending</span>
+            </div>
+        </template>
     </Console>
 </template>
 
@@ -29,6 +36,15 @@ const line = (c) =>
 
 .log-line.shell {
     color: var(--text-2);
+}
+
+.log-line.queued {
+    color: var(--text-4);
+}
+
+.log-state {
+    margin-left: auto;
+    font-style: italic;
 }
 
 .log-line.running {
