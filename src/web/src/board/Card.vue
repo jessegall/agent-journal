@@ -12,6 +12,7 @@ const props = defineProps({card: Object});
 const board = inject("board");
 const drag = useCardDrag();
 const menu = ref(false);
+const open = (link) => window.open(link, "_blank", "noopener");
 const opener = ref(null);
 const titleOf = (name) => (store.board.agents.find((agent) => agent.name === name) || {title: name}).title;
 const people = () => [...new Set([props.card.assigned, props.card.worker && props.card.worker.agent].filter(Boolean))];
@@ -58,6 +59,9 @@ function begin(event) {
                 <Chip tone="danger" title="A question waits on you" @click.stop="peek('question', card.question)">!</Chip>
             </template>
         </span>
+        <template v-if="card.link">
+            <Chip @click.stop="open(card.link)">Open its app</Chip>
+        </template>
         <template v-if="card.plan">
             <Chip @click.stop="peek('plan', card.plan.n)">Plan {{ card.plan.n }} · phase {{ card.plan.phase }}</Chip>
         </template>

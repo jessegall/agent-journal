@@ -25,6 +25,8 @@ class Card:
     updated: float = 0.0
     completed: float = 0.0
     type: str = "todo"
+    actions: list = field(default_factory=list)
+    link: str = ""
 
 
 @dataclass
