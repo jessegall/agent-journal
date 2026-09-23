@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.112.2 — A refused read is one red line with its file
+
+The mark for a refused whole read is tinted red and fits on one line: the refusal with the file as a chip beside it, and the line count in its hover text. A mark's title passes the formatters like its second line, so a file or a row named in it becomes a chip. The viewer no longer throws when events arrive before it has loaded the types.
+
 ## 2.112.1 — Reading an image or a PDF is never refused as a long file
 
 The long-read refusal counted line breaks in any file, so a screenshot could be refused as having hundreds of lines. A file with a NUL byte near its start, a PDF or a notebook is not text read line by line, and passes.
