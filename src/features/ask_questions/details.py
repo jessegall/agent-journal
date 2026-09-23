@@ -23,7 +23,9 @@ class QuestionsDetails(FeatureDetails):
         questions.hold sets the moment in seconds, three by default. The card marks the answer
         as the user's; when you answer a question yourself, journal question answer <n>
         "<choice>" --set reason="<why>" is required, and the card shows your answer with
-        that reason beneath it.
+        that reason beneath it. Elaborate on an open question sends you a message about it:
+        reply with more context on each option and which you would pick, and leave the choice
+        to the user.
 
         A message with two or more listed options and a question, or the language of putting a
         decision to the user, tells you to use journal question ask --set options=…; your
