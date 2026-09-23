@@ -2,7 +2,6 @@ import {reactive, ref, watch} from "vue";
 import {api, onWrite} from "../api/client.js";
 import {remember, remembered} from "../composables/remembered.js";
 import {onOutboxChange} from "../chat/outbox.js";
-import {report} from "../faults.js";
 import {route} from "../route.js";
 import {store} from "../state/store.js";
 
@@ -141,15 +140,8 @@ export async function earlier(...types) {
     return growing.length > 0;
 }
 
-function unasked(types) {
-    types
-        .filter((type) => loaded.has(type) && !changed.has(type))
-        .forEach((type) => report("refetch", `${type} was fetched again with nothing changed`, type));
-    types.forEach((type) => changed.delete(type));
-}
-
 async function fetched(types, whole = false) {
-    if (!whole) unasked(types);
+    types.forEach((type) => changed.delete(type));
     types.forEach((type) => fetching.add(type));
     try {
         await pull(types, whole);
@@ -180,7 +172,9 @@ async function drain() {
         await new Promise((settle) => setTimeout(settle, 30));
         while (owed.size || owedWhole) {
             const whole = owedWhole;
-            const types = [...(whole ? Object.keys(store.rows) : owed)].filter((type) => watchedTypes.has(type));
+            const types = [...(whole ? Object.keys(store.rows) : owed)]
+                .filter((type) => watchedTypes.has(type))
+                .filter((type) => whole || changed.has(type) || !loaded.has(type));
             owed.clear();
             owedWhole = false;
             await fetched(types, whole);
