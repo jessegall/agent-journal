@@ -78,7 +78,8 @@ class Driver(ABC):
     @classmethod
     def worktree(cls, args: list[str]) -> str:
         named = [following for flag, following in zip(args, args[1:]) if flag in cls.WORKTREE]
-        return next((name for name in named if not name.startswith("-")), "")
+        joined = [arg.split("=", 1)[1] for arg in args if "=" in arg and arg.split("=", 1)[0] in cls.WORKTREE]
+        return next((name for name in (*named, *joined) if name and not name.startswith("-")), "")
 
     @classmethod
     def resumed(cls, args: list[str], conversation: str) -> list[str]:

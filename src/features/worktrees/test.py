@@ -58,3 +58,18 @@ def test_a_command_run_inside_a_worktree_works_the_worktrees_environment(tmp_pat
     (record.root / "environments" / "feature-y").mkdir(parents=True)
     text, code = captured(["--cwd", str(worktree), "todo", "create", "from the worktree"], record.root)
     assert (code, (record.root / "environments" / "feature-y" / "todo").is_dir()) == (0, True), text
+
+
+def test_a_terminal_restarted_on_a_resumed_worktree_conversation_is_seated_in_the_worktrees_environment():
+    from engine.sessions import Sessions
+    from engine.stored import write_json
+    from engine.terminal import LAUNCHED, Seat, seated
+    from engine import runtime
+    record = fresh()
+    Sessions(record.root).bind("resumed-in-the-worktree", "feature-z", pid=999999, provider="claude")
+    for session, args in (("claude-5151", ["-w", "feature-z", "--resume", "resumed-in-the-worktree"]), ("claude-5252", ["--worktree=feature-w"])):
+        write_json(runtime.session_file(record.root, session, LAUNCHED), {"pid": 5151, "args": args})
+        seated(Seat.of(record.root, record.env, "claude", session))
+    sessions = Sessions(record.root)
+    assert (sessions.environment("claude-5151"), sessions.environment("claude-5252")) == ("feature-z", "feature-w"), \
+        "a terminal launched on a worktree works that worktree's environment, whichever way the flag is written"
