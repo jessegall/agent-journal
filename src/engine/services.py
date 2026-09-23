@@ -110,7 +110,7 @@ def plugins(root: Path) -> list:
 def planned(root: Path, name: str, service, port: int, blocked: str, env: dict, where: Path) -> ServiceSpec:
     sid = f"{name}.{service.name}"
     return ServiceSpec(id=sid, plugin=name, service=service.name, port=port, blocked=blocked, run=service.run, cwd=str(where / service.cwd),
-                       env={**env, **service.env}, path=service.ready_path, restart=service.restart, grace=service.grace, show=service.show,
+                       env={**env, **service.env}, path=service.ready.path, restart=service.restart, grace=service.grace, show=service.show,
                        lock=str(lock_file(root, sid)), log=str(log_file(root, sid)), status=str(status_file(root, sid)), spec=str(spec_file(root, sid)))
 
 
