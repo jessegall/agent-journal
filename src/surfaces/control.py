@@ -88,7 +88,7 @@ def move_to_background(root: Path, env: str, session: str) -> dict:
     return pressed(root, env, session, "Move to the background", BACKGROUND)
 
 
-def shell(root: Path, env: str, session: str, command: str) -> dict:
+def shell(root: Path, env: str, session: str, command: str, now: bool = False) -> dict:
     found = online(root, env, session)
     if not command.strip():
         raise Refused("type a command to run")
@@ -102,6 +102,8 @@ def shell(root: Path, env: str, session: str, command: str) -> dict:
     row = agents.by_session(session)
     waiting = [c for c in waiting_commands(row) if queued.at - c.at < STALE]
     agents.update(row.n, queued_commands=[*(asdict(c) for c in waiting), asdict(QueuedCommand(queued.at, queued.value))])
+    if now:
+        queue(Path(root), session, (), "Run now", provider=found.provider, action=FORCE)
     return queued.for_viewer
 
 

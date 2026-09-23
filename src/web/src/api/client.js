@@ -254,6 +254,10 @@ export class ApiClient {
         return this.post(this.here(`/plugins/${n}/upgrade-preview`), {});
     }
 
+    findFiles(q) {
+        return this.get(this.here(`/project-files/find${query({q})}`));
+    }
+
     projectFiles(folder = "") {
         return this.get(this.here(`/project-files${query({folder})}`));
     }
@@ -306,8 +310,8 @@ export class ApiClient {
         return this.post(this.here(`/agent/${encoded(session)}/keys`), {text});
     }
 
-    runShell(session, command) {
-        return this.post(this.here(`/agent/${encoded(session)}/shell`), {command});
+    runShell(session, command, now = false) {
+        return this.post(this.here(`/agent/${encoded(session)}/shell`), {command, now});
     }
 
     relaunchAgent(session, skip) {
