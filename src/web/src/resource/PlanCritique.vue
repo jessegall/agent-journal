@@ -12,11 +12,9 @@ const emit = defineEmits(["close"]);
 
 const AGENTS = [1, 2, 3, 5];
 const SIZES = ["a quick look", "a normal read", "a thorough review"];
-const FOCUSES = ["finding mistakes", "adding what is missing", "both"];
 
 const agents = ref(2);
 const size = ref(SIZES[1]);
-const focus = ref(FOCUSES[2]);
 const template = ref(0);
 const templates = ref([]);
 const sending = ref(false);
@@ -37,8 +35,8 @@ async function send() {
     sending.value = true;
     const guide = picked.value ? `, following template ${picked.value.n} (${picked.value.title})` : "";
     const brief =
-        `Please have ${agents.value === 1 ? "one agent" : `${agents.value} agents`} critique plan ${props.plan.n}: ${size.value}, ` +
-        `focused on ${focus.value}${guide}. Compile what they find into a report linked to the plan.`;
+        `Please have ${agents.value === 1 ? "one agent" : `${agents.value} agents`} give plan ${props.plan.n} ${size.value}${guide}, ` +
+        `and compile what they find into a report linked to the plan.`;
     await sendMessage(route.value.env, {brief, about: props.plan.ref});
     emit("close");
 }
@@ -51,8 +49,6 @@ async function send() {
         <ChoiceList :choices="choices(AGENTS, agents)" @pick="(v) => (agents = v)" />
         <p class="label">How big</p>
         <ChoiceList :choices="choices(SIZES, size)" @pick="(v) => (size = v)" />
-        <p class="label">Focused on</p>
-        <ChoiceList :choices="choices(FOCUSES, focus)" @pick="(v) => (focus = v)" />
         <p class="label">Template</p>
         <ChoiceList :choices="templateChoices" @pick="(v) => (template = v)" />
         <template v-if="picked">
