@@ -3,6 +3,8 @@ import time
 from controllers.base import Controller, internal
 from resources import types
 
+KEPT_CARDS = 50
+
 
 class Agents(Controller):
     resource = types.AgentRow
@@ -19,6 +21,11 @@ class Agents(Controller):
     @internal
     def subagent(self, n: int, action: str, **data):
         return self.record.emit(self.type, int(n), action, self.actor, **data)
+
+    @internal
+    def card(self, n: int, **card):
+        row = self.load(int(n))
+        return self.update(row.n, cards=[*(row.data.get("cards") or []), {"at": time.time(), **card}][-KEPT_CARDS:])
 
     def stop_task(self, n: int, task: str, what: str = ""):
         if not task.strip():
