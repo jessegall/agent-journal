@@ -11,7 +11,7 @@ from surfaces.control import CARRY_ON, delivered
 from engine.record import Record
 from engine.watch import STEADY_AFTER, steady, threw
 from providers import PROVIDERS
-from resources.base import AGENT, SYSTEM, USER, Event, titled
+from resources.base import AGENT, SYSTEM, USER, VIEW_ONLY, Event, titled
 from resources.types import TYPES, priority
 from engine.seat import Seat
 from engine.wording import plural
@@ -252,7 +252,8 @@ class Engine(Seat):
                     continue
                 caused = e.data.get("cause") == AGENT and not TYPES[e.type].addressed_to_agent
                 mine = actor is self.agent and ((e.actor != USER and e.action not in TYPES[e.type].notify_actions) or caused)
-                if e.action == STAMPED or e.actor == actor.name or actor.name not in TYPES[e.type].notified or self.elsewhere(e) or "seen" in e.data or mine:
+                viewed = e.actor == USER and bool(e.data.get("fields")) and set(e.data["fields"]) <= set(VIEW_ONLY)
+                if e.action == STAMPED or viewed or e.actor == actor.name or actor.name not in TYPES[e.type].notified or self.elsewhere(e) or "seen" in e.data or mine:
                     actor.notified(e)
                     continue
                 actor.notify(e)

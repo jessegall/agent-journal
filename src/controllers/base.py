@@ -155,7 +155,8 @@ class Controller(Stored, Files, Links):
         if outcome is not None:
             r.outcome = outcome
         r.data.update(self._shaped(data))
-        return self.save(r, "updated")
+        given = {"title": title, "abstract": abstract, "brief": brief, "outcome": outcome}
+        return self.save(r, "updated", fields=[*(k for k, v in given.items() if v is not None), *data])
 
     def stamp(self, n: int, **data) -> Resource:
         r = self.load(n)

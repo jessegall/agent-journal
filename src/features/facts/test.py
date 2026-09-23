@@ -47,3 +47,24 @@ def test_a_keyword_matches_as_a_whole_word_only_where_its_row_says():
     assert whispered == [f"fact {ran.n}", f"fact {wrote.n}"], "a whole word in a command, then in chat; not inside 'unsaid', not in a file path"
     shown = [(w["ref"], w["title"]) for w in Agents(record, actor=SYSTEM).by_session("claude-1").data.get("whispers") or []]
     assert shown == [(ran.ref, "in commands"), (wrote.ref, "in text")], f"each reminder is kept on the agent for the chat to show: {shown}"
+
+
+def test_dismissing_a_fact_from_the_rail_is_not_told_to_the_agent_but_editing_it_is():
+    from engine.engine import Engine
+    from providers import DRIVERS
+    load()
+    record = fresh()
+    report(record, "working", "PostToolUse")
+    engine = Engine(record, DRIVERS["claude"](record, "claude-1"))
+    n = Facts(record, actor=AGENT).create("the server reloads itself", keywords="server").n
+    engine.deliver()
+    told, notify = [], engine.agent.notify
+    engine.agent.notify = lambda event: (told.append(event.data.get("fields")), notify(event))
+    user = Facts(record, actor=USER)
+    user.set(n, "kept", "false")
+    user.read(n)
+    engine.deliver()
+    assert told == [], f"a dismissal only shapes the user's own rail: {told}"
+    user.update(n, brief="it re-execs on a .py change")
+    engine.deliver()
+    assert told == [["brief"]], f"a real edit by the user still reaches the agent: {told}"
