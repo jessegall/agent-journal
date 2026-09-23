@@ -9,6 +9,7 @@ import {useNow} from "../composables/now.js";
 import {checkState, seconds, VERDICTS} from "../domain/checks.js";
 import CheckProgress from "./CheckProgress.vue";
 import CheckRuns from "./CheckRuns.vue";
+import CheckFindings from "./CheckFindings.vue";
 
 const props = defineProps({resource: Object});
 const now = useNow();
@@ -89,6 +90,9 @@ async function save(key, value) {
             <span class="unit">minutes</span>
         </label>
     </section>
+    <template v-if="state.verdict !== 'running' && last.report">
+        <CheckFindings :report="last.report" />
+    </template>
     <template v-if="state.output">
         <section class="block">
             <h3>{{ state.verdict === "running" ? "Output so far" : "What it said last" }}</h3>

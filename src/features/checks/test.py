@@ -53,3 +53,15 @@ def test_a_running_check_counts_its_steps_against_what_it_knows_of_the_total():
     assert progress("bringing up nodes...\n\n" + "." * 30, 60) == {"done": 30, "total": 60, "percent": 50.0}, "the last run's count when none is printed"
     assert progress("downloading 45%") == {"percent": 45}, "a printed percentage"
     assert progress("working") == {"percent": None}, "nothing to count: the viewer estimates from time"
+
+
+def test_a_check_can_leave_a_report_of_findings_that_is_kept_with_its_run():
+    record = fresh()
+    report = '{"title": "Sins", "summary": "1 sin", "findings": [{"name": "python-dict-bag", "file": "src/x.py", "line": "12", "group": "python/value-objects", "text": "A dict read by keys"}, "junk"]}'
+    check = Checks(record, actor=USER).create("Sins", command=f"printf '%s' '{report}' > \"$JOURNAL_REPORT\"; exit 1")
+    last = Checks(record, actor=USER).run(check.n, wait=True).last
+    assert (last["ok"], last["report"]["summary"], list(last["report"]["findings"])) == (False, "1 sin", [
+        {"name": "python-dict-bag", "file": "src/x.py", "line": 12, "where": "", "text": "A dict read by keys", "group": "python/value-objects"}]), \
+        "the report written to $JOURNAL_REPORT is read into typed findings and kept with the run"
+    plain = Checks(record, actor=USER).create("Plain", command="true")
+    assert Checks(record, actor=USER).run(plain.n, wait=True).last["report"] is None, "a check that writes no report has none"

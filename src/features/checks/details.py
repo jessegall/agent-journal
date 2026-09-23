@@ -19,6 +19,10 @@ class ChecksDetails(FeatureDetails):
         root, never inside the server; exit 0 passes.
 
         A failing run files a notification and tells you; the next pass clears it.
+
+        A check may also write a report to the file named by $JOURNAL_REPORT: {"title": ...,
+        "summary": ..., "findings": [{"name", "file", "line", "where", "text", "group"}]}. The
+        viewer shows its findings under the check, grouped, each opening its file at its line.
     """
 
     lines = [
