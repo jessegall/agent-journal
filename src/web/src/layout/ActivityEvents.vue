@@ -59,7 +59,8 @@ function heading(e) {
     if (raised(e)) return e.data.title;
     if (announced(e)) return "Journal updated";
     if (written(e)) return logged(e).title;
-    const own = (meta(e.type).event_labels || {})[did(e)];
+    const labels = meta(e.type).event_labels || {};
+    const own = labels[`${e.action}.${e.data?.by}`] || labels[did(e)];
     if (own) return own;
     if (e.action === "completed") return `${meta(e.type).title} ${word(e.type, "complete")}`;
     return `${WORDS[e.action]} ${meta(e.type).title.toLowerCase()}`;

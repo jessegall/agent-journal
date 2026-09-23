@@ -91,6 +91,8 @@ class Record:
             raise ValueError(f"not an event: {action} by {actor}")
         if bus.cause() and "cause" not in data:
             data = {**data, "cause": bus.cause()}
+        if bus.command(type) and "by" not in data:
+            data = {**data, "by": bus.command(type)}
         def release() -> Event:
             with self.locked():
                 e = Event(id=self.last_event() + 1, at=time.time(), type=type, n=n, action=action, actor=actor, data=data, pid=os.getpid(), handled=quiet or bus.listening())

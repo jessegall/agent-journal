@@ -211,3 +211,14 @@ def test_messages_between_agent_sessions_reach_the_chat_marked_with_the_other_se
     rows = [(m.brief, m.data.get("peer"), m.data.get("sent_to")) for m in Messages(record, actor="system").all()]
     assert rows == [("the loop is fixed", "other-project", None), ("thanks, adopted", None, "other-project")], \
         "a message from another session is filed from it, and one sent to it is filed as sent to it, by name"
+
+
+def test_an_event_carries_the_command_that_caused_it_so_a_read_is_not_an_update():
+    record = fresh()
+    n = Messages(record, actor=USER).create("hello").n
+    agent = Messages(record, actor=AGENT)
+    agent.action("read")(n)
+    agent.action("react")(n, "👍")
+    heard = [(e.type, e.action, e.data.get("by")) for e in record.events() if e.n == n or e.type == "reaction"]
+    assert ("message", "updated", "read") in heard, heard
+    assert [by for t, _, by in heard if t == "reaction"] == [None], f"a row of another type saved inside the command is not stamped with it: {heard}"
