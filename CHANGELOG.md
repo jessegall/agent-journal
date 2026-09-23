@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.101.2 — The reminder card puts the row's title on a smaller second line
+
+"Reminded the agent of rule 41" and the time stay on one line that never wraps, and the rule's or fact's title sits under it in smaller text, cut short with an ellipsis when it is long.
+
 ## 2.101.1 — journal-todos is loaded at every start and cannot be switched off
 
 The to-do rules moved out of the journal skill into journal-todos, which is now mandatory like the journal and chat-etiquette skills: a subject skill is marked primary in its own front matter. The journal skill keeps a line pointing to it.

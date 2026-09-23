@@ -1,0 +1,7 @@
+/Users/jessegall/projects/agent-journal/src/web/src/chat/WhisperMark.vue
+-----
+Batch marker for the code-commandments judge reminder (`commandments judge-reminder`, wired as
+Stop + PreToolUse hooks). The lines above the separator are the changed-file set it last
+reminded at; the hook nudges once per set to run `judge`, staying silent until a new file is
+touched, and clears itself when the tree is clean. Safe to delete — it regenerates, at most
+costing you one extra nudge.

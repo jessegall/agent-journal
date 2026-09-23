@@ -19,26 +19,31 @@ const named = computed(() => `${(meta(type.value) || {title: type.value}).title.
 <template>
     <button type="button" class="whisper" :title="`Open ${named}`" @click="peek(type, n)">
         <Icon name="book" :size="12" />
-        Reminded the agent of
-        <strong>{{ named }}</strong>
+        <span class="head">
+            Reminded the agent of
+            <strong>{{ named }}</strong>
+            <span class="when">{{ clock(at) }}</span>
+        </span>
         <span class="title">{{ title }}</span>
-        <span class="when">{{ clock(at) }}</span>
     </button>
 </template>
 
 <style scoped>
 .whisper {
-    display: inline-flex;
+    display: inline-grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    column-gap: 7px;
+    row-gap: 1px;
     align-items: center;
-    gap: 7px;
     max-width: 100%;
-    padding: 4px 10px;
+    padding: 5px 10px;
     border: 1px solid var(--border-2);
     border-radius: 7px;
     background: none;
     color: var(--text-3);
     font: inherit;
     font-size: 12px;
+    text-align: left;
     cursor: pointer;
 }
 
@@ -46,14 +51,22 @@ const named = computed(() => `${(meta(type.value) || {title: type.value}).title.
     color: var(--text-2);
 }
 
-.whisper strong {
+.head {
+    display: flex;
+    gap: 6px;
+    white-space: nowrap;
+}
+
+.head strong {
     color: var(--text-2);
     font-weight: 500;
 }
 
 .title {
+    grid-column: 2;
     overflow: hidden;
-    color: var(--text-2);
+    color: var(--text-3);
+    font-size: 11px;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
