@@ -31,16 +31,16 @@ onUnmounted(() => window.removeEventListener("keydown", onKey));
     inset: 0;
     z-index: 60;
     display: flex;
-    align-items: center;
+    align-items: flex-end;
     justify-content: center;
-    padding: 48px 16px;
+    padding: 28px 16px 40px;
 }
 
 .veil {
     position: absolute;
     inset: 0;
-    background: color-mix(in srgb, var(--side) 70%, transparent);
-    backdrop-filter: blur(10px);
+    background: rgba(8, 9, 11, 0.45);
+    backdrop-filter: blur(10px) saturate(0.7);
 }
 
 .leave {
@@ -74,9 +74,10 @@ kbd {
     position: relative;
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    justify-content: flex-end;
+    gap: 18px;
     width: min(940px, 100%);
-    height: min(680px, 100%);
+    height: 100%;
 }
 
 .focus-stage-enter-active,

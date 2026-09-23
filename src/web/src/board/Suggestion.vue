@@ -1,111 +1,143 @@
 <script setup>
 import {computed} from "vue";
-import Icon from "../kit/Icon.vue";
 import {useReveal} from "../composables/reveal.js";
 
-const props = defineProps({ticket: Object, picked: Boolean});
+const props = defineProps({ticket: {type: Object, default: null}, picked: Boolean});
 const emit = defineEmits(["toggle"]);
-const count = useReveal(props.ticket.title.length + props.ticket.brief.length);
-const done = computed(() => count.value >= props.ticket.title.length + props.ticket.brief.length);
-const title = computed(() => (done.value ? props.ticket.title : props.ticket.title.slice(0, count.value)));
-const brief = computed(() =>
-    done.value ? props.ticket.brief : props.ticket.brief.slice(0, Math.max(0, count.value - props.ticket.title.length))
-);
-const waits = computed(() => Object.keys(props.ticket.data.dependencies || {}).map((ref) => `#${ref.split(":")[1]}`));
+const title = computed(() => (props.ticket ? props.ticket.title : ""));
+const brief = computed(() => (props.ticket ? props.ticket.brief : ""));
+const count = useReveal(title.value.length + brief.value.length);
+const typing = computed(() => !props.ticket || count.value < title.value.length + brief.value.length);
+const shownTitle = computed(() => (typing.value ? title.value.slice(0, count.value) : title.value));
+const shownBrief = computed(() => (typing.value ? brief.value.slice(0, Math.max(0, count.value - title.value.length)) : brief.value));
+const onTitle = computed(() => typing.value && count.value <= title.value.length);
+const waits = computed(() => Object.keys((props.ticket && props.ticket.data.dependencies) || {}).map((ref) => `#${ref.split(":")[1]}`));
+const tag = computed(() => (typing.value ? "Drafting" : props.picked ? "Picked" : "Suggested ticket"));
 </script>
 
 <template>
-    <button type="button" :class="['suggestion', {picked}]" :aria-pressed="picked" @click="emit('toggle')">
-        <span class="top">
-            <span class="title">{{ title }}</span>
-            <span :class="['check', {on: picked}]">
-                <template v-if="picked">
-                    <Icon name="check" />
-                </template>
-            </span>
+    <button type="button" :class="['pick', {picked, writing: typing}]" :aria-pressed="picked" @click="!typing && emit('toggle')">
+        <span class="pick-top">
+            <span>{{ tag }}</span>
+            <span :class="['check', {on: picked}]">✓</span>
         </span>
-        <span class="brief">{{ brief }}</span>
+        <span :class="['pick-title', {caret: onTitle}]">{{ shownTitle }}</span>
+        <span :class="['pick-brief', {caret: typing && !onTitle}]">{{ shownBrief }}</span>
         <template v-if="waits.length">
-            <span class="waits">Waits on {{ waits.join(", ") }}</span>
+            <span class="waits">
+                Waits on
+                <b>{{ waits.join(", ") }}</b>
+            </span>
         </template>
     </button>
 </template>
 
 <style scoped>
-.suggestion {
+.pick {
     display: flex;
     flex-direction: column;
     gap: 8px;
-    min-height: 140px;
+    min-height: 150px;
     padding: 16px;
     border: 1px solid var(--border-2);
     border-radius: 12px;
     background: var(--raised);
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4);
     color: var(--text);
     font: inherit;
+    font-size: 13px;
     text-align: left;
     cursor: pointer;
-    animation: rise 0.45s cubic-bezier(0.2, 0.9, 0.25, 1) both;
-    transition:
-        border-color 0.15s,
-        background 0.15s;
+    animation: rise 0.5s cubic-bezier(0.2, 0.9, 0.25, 1) both;
+    transition: border-color 0.2s;
 }
 
-.suggestion:hover {
+.pick:hover {
     border-color: var(--border-3);
 }
 
-.suggestion.picked {
-    border-color: var(--border-3);
-    background: var(--sel);
+.pick.picked {
+    border-color: var(--accent);
 }
 
-.top {
+.pick.writing {
+    cursor: default;
+}
+
+.pick-top {
     display: flex;
-    align-items: flex-start;
-    gap: 10px;
-}
-
-.title {
-    flex: 1;
-    font-size: 14px;
-    font-weight: 500;
-    line-height: 1.4;
+    align-items: center;
+    justify-content: space-between;
+    color: var(--text-3);
+    font-size: 11px;
 }
 
 .check {
     display: grid;
-    flex: none;
     place-items: center;
     width: 18px;
     height: 18px;
     border: 1.5px solid var(--border-3);
     border-radius: 50%;
     color: transparent;
+    font-size: 11px;
+    transition:
+        background 0.15s,
+        border-color 0.15s,
+        color 0.15s;
 }
 
 .check.on {
-    border-color: var(--text);
-    background: var(--text);
-    color: var(--bg);
+    border-color: var(--accent);
+    background: var(--accent);
+    color: #fff;
 }
 
-.brief {
+.pick-title {
+    min-height: 20px;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1.4;
+}
+
+.pick-brief {
     color: var(--text-2);
-    font-size: 13px;
     line-height: 1.5;
 }
 
 .waits {
     margin-top: auto;
+    padding-top: 6px;
     color: var(--text-3);
     font-size: 12px;
+}
+
+.waits b {
+    color: var(--text-2);
+    font-weight: 500;
+}
+
+.caret::after {
+    content: "";
+    display: inline-block;
+    width: 2px;
+    height: 1.05em;
+    margin-left: 2px;
+    vertical-align: -3px;
+    background: var(--text-2);
+    animation: blink 0.9s steps(1) infinite;
+}
+
+@keyframes blink {
+    50% {
+        opacity: 0;
+    }
 }
 
 @keyframes rise {
     from {
         opacity: 0;
-        transform: translateY(12px);
+        transform: translateY(14px);
     }
 }
 </style>

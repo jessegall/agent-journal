@@ -83,9 +83,9 @@ async function make(title) {
             :placeholder="template ? 'Name the board' : 'Or tell me what the board is for'"
             @send="send"
         >
-            <ChatLine>{{ greeting }}</ChatLine>
+            <ChatLine :text="greeting" typed />
             <template v-for="line in lines" :key="line.id">
-                <ChatLine :mine="line.mine">{{ line.text }}</ChatLine>
+                <ChatLine :text="line.text" :mine="line.mine" :typed="!line.mine" />
             </template>
         </ChatPanel>
     </FocusStage>

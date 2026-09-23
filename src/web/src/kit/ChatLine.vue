@@ -1,53 +1,126 @@
 <script setup>
-defineProps({mine: Boolean, quiet: Boolean});
+import {computed} from "vue";
+import {useReveal} from "../composables/reveal.js";
+
+const props = defineProps({text: {type: String, default: ""}, mine: Boolean, typed: Boolean, thinking: Boolean});
+const count = useReveal(props.typed ? props.text.length : 0);
+const shown = computed(() => (props.typed && count.value < props.text.length ? props.text.slice(0, count.value) : props.text));
+const writing = computed(() => props.typed && count.value < props.text.length);
 </script>
 
 <template>
     <template v-if="mine">
-        <p class="chat-line mine"><slot /></p>
+        <div class="msg me">{{ text }}</div>
     </template>
     <template v-else>
-        <p :class="['chat-line', {quiet}]">
-            <span class="badge">A</span>
-            <span><slot /></span>
-        </p>
+        <div class="msg agent">
+            <div class="speaker">
+                <span class="avatar" />
+                Agent
+            </div>
+            <template v-if="thinking">
+                <div class="thinking">
+                    <i />
+                    <i />
+                    <i />
+                </div>
+            </template>
+            <template v-else>
+                <span :class="{caret: writing}">{{ shown }}</span>
+            </template>
+        </div>
     </template>
 </template>
 
 <style scoped>
-.chat-line {
-    display: flex;
-    align-items: flex-start;
-    gap: 8px;
-    margin: 0;
+.msg {
+    max-width: 86%;
     font-size: 13px;
     line-height: 1.5;
+    white-space: pre-wrap;
+    animation: fadein 0.3s both;
 }
 
-.chat-line.quiet {
-    color: var(--text-3);
+.msg.agent {
+    align-self: flex-start;
 }
 
-.chat-line.mine {
+.msg.me {
     align-self: flex-end;
-    max-width: 86%;
-    padding: 7px 11px;
+    padding: 8px 12px;
     border-radius: 10px;
     background: var(--sel);
 }
 
-.badge {
-    display: grid;
-    flex: none;
-    place-items: center;
-    width: 18px;
-    height: 18px;
-    margin-top: 1px;
-    border: 1px solid var(--border-2);
-    border-radius: 5px;
-    background: var(--sel);
-    color: var(--text-2);
-    font-size: 10px;
-    font-weight: 600;
+.speaker {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 3px;
+    color: var(--text-3);
+    font-size: 12px;
+}
+
+.avatar {
+    width: 14px;
+    height: 14px;
+    border-radius: 4px;
+    background: var(--accent);
+}
+
+.thinking {
+    display: flex;
+    gap: 4px;
+    padding: 6px 0;
+}
+
+.thinking i {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--text-3);
+    animation: dim 1.2s infinite ease-in-out;
+}
+
+.thinking i:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.thinking i:nth-child(3) {
+    animation-delay: 0.4s;
+}
+
+.caret::after {
+    content: "";
+    display: inline-block;
+    width: 2px;
+    height: 1.05em;
+    margin-left: 2px;
+    vertical-align: -3px;
+    background: var(--text-2);
+    animation: blink 0.9s steps(1) infinite;
+}
+
+@keyframes dim {
+    0%,
+    100% {
+        opacity: 0.25;
+    }
+
+    50% {
+        opacity: 1;
+    }
+}
+
+@keyframes blink {
+    50% {
+        opacity: 0;
+    }
+}
+
+@keyframes fadein {
+    from {
+        opacity: 0;
+    }
 }
 </style>

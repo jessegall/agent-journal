@@ -142,7 +142,13 @@ async function enqueue(record) {
 
 async function deliver(record, queue) {
     const server = api.at(record.origin, record.env);
-    const message = await server.create("message", {title: record.title, brief: record.brief, about: record.about, idempotency: record.id});
+    const message = await server.create("message", {
+        title: record.title,
+        brief: record.brief,
+        about: record.about,
+        idempotency: record.id,
+        ...(record.newWork ? {new_work: true} : {}),
+    });
     record.message = message.n;
     record.uploaded = Array.isArray(record.uploaded) ? record.uploaded : [];
     await writeQueue(queue);
@@ -208,6 +214,7 @@ export async function sendMessage(env, body, files = [], id = token()) {
         title: body.title,
         brief: body.brief,
         about: body.about,
+        newWork: body.newWork,
         files: await Promise.all(files.map(fileRecord)),
         uploaded: [],
     };

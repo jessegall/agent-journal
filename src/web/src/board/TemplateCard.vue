@@ -1,30 +1,24 @@
 <script setup>
-import {computed} from "vue";
-import Icon from "../kit/Icon.vue";
+import StageDot from "../kit/StageDot.vue";
 import {effects, hasReview} from "./templates.js";
 
 const props = defineProps({template: Object, chosen: Boolean, dimmed: Boolean});
 const emit = defineEmits(["choose", "review"]);
-const line = computed(() => props.template.stages.map(([stage]) => stage));
 </script>
 
 <template>
     <div :class="['template', {chosen, dimmed}]" role="button" tabindex="0" @click="emit('choose')" @keydown.enter="emit('choose')">
         <span class="top">
             <span class="name">{{ template.title }}</span>
-            <span :class="['check', {on: chosen}]">
-                <template v-if="chosen">
-                    <Icon name="check" />
-                </template>
-            </span>
+            <span :class="['check', {on: chosen}]">✓</span>
         </span>
         <span class="purpose">{{ template.purpose }}</span>
         <span class="stages">
-            <template v-for="(stage, i) in line" :key="stage">
-                <template v-if="i">
-                    <span class="arrow">→</span>
-                </template>
-                {{ stage }}
+            <template v-for="[stage, meaning] in template.stages" :key="stage">
+                <span class="stage">
+                    <StageDot :meaning="meaning" />
+                    {{ stage }}
+                </span>
             </template>
         </span>
         <span class="effects">{{ effects(template).join(" · ") }}</span>
@@ -46,6 +40,7 @@ const line = computed(() => props.template.stages.map(([stage]) => stage));
     border: 1px solid var(--border-2);
     border-radius: 12px;
     background: var(--raised);
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4);
     cursor: pointer;
     animation: rise 0.45s cubic-bezier(0.2, 0.9, 0.25, 1) both;
     transition:
@@ -59,12 +54,11 @@ const line = computed(() => props.template.stages.map(([stage]) => stage));
 }
 
 .template.chosen {
-    border-color: var(--border-3);
-    background: var(--sel);
+    border-color: var(--accent);
 }
 
 .template.dimmed {
-    opacity: 0.5;
+    opacity: 0.4;
 }
 
 .top {
@@ -87,10 +81,15 @@ const line = computed(() => props.template.stages.map(([stage]) => stage));
     border-radius: 50%;
 }
 
+.check {
+    color: transparent;
+    font-size: 11px;
+}
+
 .check.on {
-    border-color: var(--text);
-    background: var(--text);
-    color: var(--bg);
+    border-color: var(--accent);
+    background: var(--accent);
+    color: #fff;
 }
 
 .purpose {
@@ -100,13 +99,23 @@ const line = computed(() => props.template.stages.map(([stage]) => stage));
 }
 
 .stages {
-    color: var(--text-3);
-    font-size: 12px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    padding-top: 2px;
 }
 
-.arrow {
-    margin: 0 4px;
-    color: var(--text-4);
+.stage {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 22px;
+    padding: 0 8px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--bg);
+    color: var(--text-2);
+    font-size: 12px;
 }
 
 .effects,
