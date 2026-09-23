@@ -52,9 +52,13 @@
 /Users/jessegall/projects/agent-journal/src/web/src/App.vue
 /Users/jessegall/projects/agent-journal/src/web/src/board/Card.vue
 /Users/jessegall/projects/agent-journal/src/web/src/board/CardMenu.vue
+/Users/jessegall/projects/agent-journal/src/web/src/board/FirstBoard.vue
 /Users/jessegall/projects/agent-journal/src/web/src/board/Lane.vue
 /Users/jessegall/projects/agent-journal/src/web/src/board/NewWork.vue
 /Users/jessegall/projects/agent-journal/src/web/src/board/Suggestion.vue
+/Users/jessegall/projects/agent-journal/src/web/src/board/TemplateCard.vue
+/Users/jessegall/projects/agent-journal/src/web/src/kit/ChatLine.vue
+/Users/jessegall/projects/agent-journal/src/web/src/kit/ChatPanel.vue
 /Users/jessegall/projects/agent-journal/src/web/src/kit/FocusStage.vue
 /Users/jessegall/projects/agent-journal/src/web/src/kit/Icon.vue
 /Users/jessegall/projects/agent-journal/src/web/src/kit/MenuPanel.vue

@@ -1,10 +1,11 @@
 <script setup>
 import {computed, inject, ref} from "vue";
 import {useCardDrag} from "../composables/cardDrag.js";
+import Btn from "../kit/Btn.vue";
 import StageDot from "../kit/StageDot.vue";
 import Card from "./Card.vue";
 
-const props = defineProps({lane: Object, loading: Boolean, meaning: {type: String, default: ""}});
+const props = defineProps({lane: Object, loading: Boolean, meaning: {type: String, default: ""}, offers: Boolean});
 const SAYS = {start: "work starts", review: "waits for review"};
 const board = inject("board");
 const drag = useCardDrag();
@@ -50,6 +51,9 @@ function drop() {
             </template>
             <template v-else>
                 <p class="none">No cards</p>
+                <template v-if="offers">
+                    <Btn kind="primary" small class="first-work" @click="board.newWork">New work</Btn>
+                </template>
             </template>
         </div>
     </section>
@@ -59,11 +63,24 @@ function drop() {
 .lane {
     display: flex;
     flex: 1 0 264px;
+    animation: lane-in 0.45s cubic-bezier(0.2, 0.9, 0.25, 1) both;
+    animation-delay: calc(var(--order) * 60ms);
     flex-direction: column;
     min-height: 0;
     border: 1px solid var(--border);
     border-radius: 12px;
     background: var(--side);
+}
+
+.first-work {
+    align-self: flex-start;
+}
+
+@keyframes lane-in {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
 }
 
 .lane.over {

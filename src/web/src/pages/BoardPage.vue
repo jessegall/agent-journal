@@ -7,8 +7,10 @@ import AgentStrip from "../board/AgentStrip.vue";
 import Lane from "../board/Lane.vue";
 import Switch from "../kit/Switch.vue";
 import TabBar from "../kit/TabBar.vue";
+import FirstBoard from "../board/FirstBoard.vue";
 import NewWork from "../board/NewWork.vue";
-import {rows} from "../sync/rows.js";
+import {remember, remembered} from "../composables/remembered.js";
+import {load as loadRows, rows} from "../sync/rows.js";
 import ShiftPrompt from "../board/ShiftPrompt.vue";
 import NewResource from "../resource/NewResource.vue";
 import {usePoll} from "../poll.js";
@@ -27,11 +29,28 @@ const current = computed(() => boards.value.find((board) => board.n === store.bo
 const meaningOf = (key) => (tickets.value ? current.value && current.value.data.meanings[key] : TODO_MEANINGS[key]) || "";
 const finder = ref(null);
 const writingWork = ref(false);
+const firstBoard = ref(false);
+const FIRST_BOARD_SEEN = "board.first-board-seen";
 const newWork = () => (tickets.value ? (writingWork.value = true) : (adding.value = "todo"));
 const KEYS = {"/": () => finder.value.focus(), n: newWork};
+const openFlow = () => writingWork.value || firstBoard.value;
 const onKey = (e) =>
-    KEYS[e.key] && !e.target.closest("input,textarea,[contenteditable]") && !writingWork.value && (e.preventDefault(), KEYS[e.key]());
-onMounted(() => window.addEventListener("keydown", onKey));
+    KEYS[e.key] && !e.target.closest("input,textarea,[contenteditable]") && !openFlow() && (e.preventDefault(), KEYS[e.key]());
+onMounted(async () => {
+    window.addEventListener("keydown", onKey);
+    const known = await loadRows("board");
+    firstBoard.value = !known.some((board) => !board.completed && !board.deleted) && !remembered(FIRST_BOARD_SEEN, false);
+});
+
+function leaveFirstBoard() {
+    firstBoard.value = false;
+    remember(FIRST_BOARD_SEEN, true);
+}
+
+function boardMade(n) {
+    leaveFirstBoard();
+    lens({board: n});
+}
 onUnmounted(() => window.removeEventListener("keydown", onKey));
 const chosenPlan = computed(() => store.board.lens.plan);
 
@@ -92,7 +111,7 @@ async function shift(card, lane, words) {
     }
 }
 
-provide("board", {move, moving, refresh, meaningOf});
+provide("board", {move, moving, refresh, meaningOf, newWork});
 
 const lens = (change) => (store.board.lens = {...store.board.lens, ...change});
 watch(() => [store.board.lens.plan, store.board.lens.agent, store.board.lens.board], refresh);
@@ -123,7 +142,7 @@ const ask = usePoll(
         <header class="bar">
             <h2>Board</h2>
             <TabBar v-model="shown" :tabs="tabs">
-                <button type="button" class="add-board" title="New board" @click="adding = 'board'"><Icon name="plus" /></button>
+                <button type="button" class="add-board" title="New board" @click="firstBoard = true"><Icon name="plus" /></button>
             </TabBar>
             <input ref="finder" v-model="text" class="find" placeholder="Filter cards  /" />
             <template v-if="!tickets">
@@ -152,10 +171,10 @@ const ask = usePoll(
                 <a :href="`#/${route.env}/settings`">Turn it on in Settings</a>
             </p>
         </template>
-        <template v-else-if="empty">
+        <template v-else-if="empty && !tickets">
             <div class="empty">
-                <p>{{ tickets ? "No tickets on this board." : "Nothing is on the list." }}</p>
-                <Btn kind="primary" small @click="adding = tickets ? 'ticket' : 'todo'">{{ tickets ? "New ticket" : "New to-do" }}</Btn>
+                <p>Nothing is on the list.</p>
+                <Btn kind="primary" small @click="newWork">New to-do</Btn>
             </div>
         </template>
         <template v-else>
@@ -163,15 +182,22 @@ const ask = usePoll(
             <template v-if="planHold">
                 <p class="hold">{{ planHold }}</p>
             </template>
-            <div class="lanes">
-                <template v-for="lane in lanes" :key="lane.key">
-                    <Lane :lane="lane" :loading="loading" :meaning="meaningOf(lane.key)" />
+            <div :key="store.board.lens.board || 0" class="lanes">
+                <template v-for="(lane, i) in lanes" :key="lane.key">
+                    <Lane
+                        :lane="lane"
+                        :loading="loading"
+                        :meaning="meaningOf(lane.key)"
+                        :offers="tickets && !i && !lane.cards.length"
+                        :style="{'--order': i}"
+                    />
                 </template>
             </div>
         </template>
         <template v-if="asking">
             <ShiftPrompt :ask="asking" @send="(words) => shift(asking.card, asking.lane, words)" @close="asking = null" />
         </template>
+        <FirstBoard :open="firstBoard" :first="!boards.length" @close="leaveFirstBoard" @made="boardMade" />
         <template v-if="tickets && current">
             <NewWork :open="writingWork" :board="current" @close="writingWork = false" @added="refresh" />
         </template>
