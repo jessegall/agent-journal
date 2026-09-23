@@ -44,7 +44,7 @@ onUnmounted(() => document.removeEventListener("click", away, true));
             <Icon name="chevron" :size="11" />
         </button>
         <template v-if="open">
-            <MenuPanel class="drop-list">
+            <MenuPanel :min-width="260" :max-height="320">
                 <template v-for="item in items" :key="item.key">
                     <MenuItem :on="item.key === picked" @click="choose(item)">
                         <template v-if="item.running !== undefined">
@@ -97,14 +97,6 @@ onUnmounted(() => document.removeEventListener("click", away, true));
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-}
-
-.drop-list {
-    top: 30px;
-    left: 0;
-    min-width: 260px;
-    max-height: 320px;
-    overflow-y: auto;
 }
 
 .drop-item-text {

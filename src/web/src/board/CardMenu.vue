@@ -36,7 +36,7 @@ function move(lane) {
 </script>
 
 <template>
-    <MenuPanel ref="menu" class="menu" :anchor="anchor" @click.stop @close="emit('close')">
+    <MenuPanel ref="menu" :anchor="anchor" :min-width="170" :max-width="240" @click.stop @close="emit('close')">
         <template v-if="card.targets.length">
             <p class="label">Move to</p>
             <template v-for="lane in card.targets" :key="lane">
@@ -64,13 +64,6 @@ function move(lane) {
 </template>
 
 <style scoped>
-.menu {
-    top: 30px;
-    right: 6px;
-    min-width: 170px;
-    max-width: 240px;
-}
-
 .effect {
     margin-left: auto;
     padding-left: 12px;
