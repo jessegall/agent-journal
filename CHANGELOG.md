@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.96.6 — The agent bar's branch is a button like the others
+
+The branch in the agent bar looks and reacts like the bar's other buttons: on hover it gets their background and its icon lights up, as every button in the bar's icon now does.
+
 ## 2.96.5 — The skills dropdown's footer stays at the bottom
 
 In the agent bar's skills dropdown, the Browse every skill footer stays pinned at the bottom while the list of loaded skills scrolls under it.
