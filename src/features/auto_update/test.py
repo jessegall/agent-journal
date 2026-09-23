@@ -50,6 +50,12 @@ def test_the_update_check_tells_the_agent_of_a_newer_version_once_when_it_does_n
     assert json.loads(runtime.relaunch_file(record.root, "claude-1").read_text()) == {"resume": "conversation-1"}, "in the same conversation"
     Sessions(record.root).write("claude-1", launch=LAUNCH)
     assert relaunch.tick() == "", "one launched the current way is left alone"
+    import subprocess
+    from engine.terminal import stop
+    stubborn = subprocess.Popen(["sh", "-c", "trap '' HUP TERM; sleep 30"])
+    began = time.time()
+    stop(stubborn.pid, grace=0.2)
+    assert stubborn.poll() is not None and time.time() - began < 5, "an agent that ignores the polite signals is still stopped, so a restart never hangs"
 
 
 def test_the_installed_command_runs_quietly_before_any_server_has_started(tmp_path):

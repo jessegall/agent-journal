@@ -20,6 +20,8 @@ from engine.package import CODE, ZIPPED, entry
 RELOAD = 75
 STOP = 76
 RELAUNCH = 77
+STOP_GRACE = 3.0
+STOP_STEP = 0.05
 LAUNCH = 1
 HEAL = 78
 QUICK = 30.0
@@ -80,11 +82,18 @@ def child(pid: int, block: bool = False) -> tuple[int, int]:
         return pid, 0
 
 
-def stop(pid: int) -> int:
-    try:
-        os.kill(pid, signal.SIGHUP)
-    except ProcessLookupError:
-        pass
+def stop(pid: int, grace: float = STOP_GRACE) -> int:
+    for sent in (signal.SIGHUP, signal.SIGTERM, signal.SIGKILL):
+        try:
+            os.kill(pid, sent)
+        except ProcessLookupError:
+            return child(pid, block=True)[1]
+        until = time.time() + grace
+        while time.time() < until:
+            ended, status = child(pid)
+            if ended:
+                return status
+            time.sleep(STOP_STEP)
     return child(pid, block=True)[1]
 
 
