@@ -19,6 +19,8 @@ from pathlib import Path
 RELOAD, STOP, RELAUNCH, HEAL = 75, 76, 77, 78
 QUICK = 30.0
 GRACE, STEP = 3.0, 0.05
+EXITING = 8.0
+CLEAR_LINE = b"\x05\x15"
 LONGEST = 65536
 TYPED_EVERY = 1.0
 ESCAPES = re.compile(rb"\x1b(?:\[[\x30-\x3f]*[\x20-\x2f]*[\x40-\x7e]|\][^\x07\x1b]*(?:\x07|\x1b\\)|[P_^X][^\x1b]*\x1b\\|O[\x40-\x7e]|[@-_])")
@@ -66,10 +68,11 @@ class Start:
     command: list = field(default_factory=list)
     environ: dict = field(default_factory=dict)
     launch: int = 0
+    exit: str = ""
 
     @classmethod
     def from_json(cls, raw: dict) -> "Start":
-        return cls(**{key: raw[key] for key in ("command", "environ", "launch")}) if "command" in raw else cls()
+        return cls(**{key: raw[key] for key in ("command", "environ", "launch", "exit") if key in raw}) if "command" in raw else cls()
 
 
 @dataclass(frozen=True)
@@ -101,7 +104,7 @@ class Supervisor:
         self.saved = adopted.saved if adopted else None
         self.pid, self.fd = (adopted.pid, adopted.fd) if adopted else self.spawn(spec.start.command, spec.start.environ)
         self.session = adopted.session if adopted else f"{self.agent}-{self.pid}"
-        self.command, self.args, self.launch = spec.start.command, spec.args, spec.start.launch
+        self.command, self.args, self.launch, self.exit = spec.start.command, spec.args, spec.start.launch, spec.start.exit
         self.worker = None
         self.worker_began = 0.0
         self.alive, self.lifeline = os.pipe()
@@ -163,7 +166,28 @@ class Supervisor:
         return self.worker.poll() if self.worker else None
 
     def stop_agent(self) -> int:
-        return stop(self.pid, drain=self.drain)
+        status = self.exited()
+        return stop(self.pid, drain=self.drain) if status is None else status
+
+    def exited(self) -> int | None:
+        if not self.exit:
+            return None
+        try:
+            os.write(self.fd, CLEAR_LINE)
+            time.sleep(STEP)
+            os.write(self.fd, self.exit.encode())
+            time.sleep(STEP * 6)
+            os.write(self.fd, b"\r")
+        except OSError:
+            return None
+        until = time.time() + EXITING
+        while time.time() < until:
+            self.drain()
+            ended, status = os.waitpid(self.pid, os.WNOHANG)
+            if ended:
+                return status
+            time.sleep(STEP)
+        return None
 
     def drain(self) -> None:
         while select.select([self.fd], [], [], 0)[0]:
@@ -182,7 +206,7 @@ class Supervisor:
         self.stop_agent()
         os.close(self.fd)
         self.pid, self.fd = self.spawn(start.command, start.environ)
-        self.command, self.launch = start.command, start.launch
+        self.command, self.launch, self.exit = start.command, start.launch, start.exit
         self.record_launch()
         self.resize(self.fd)
 
