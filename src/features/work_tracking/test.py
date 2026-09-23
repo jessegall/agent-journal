@@ -206,8 +206,10 @@ def test_a_declared_wait_is_asked_about_and_cleared_when_the_work_moves():
     polling = [n for n in nudges(record) if "same check" in n]
     assert polling == ["you ran the same check 3 times in a row - tail -3 build.log"], "the third identical check in a row is named once, pointing at await"
     works.action("await")("the CI run on main")
+    Todos(record, actor=USER).create("next up")
+    record.features = {**record.features, "work_tracking.auto": True}
     idle(record)
-    assert not [n for n in nudges(record) if "still open" in n], "a declared wait holds the end-or-park line"
+    assert not [n for n in nudges(record) if "still open" in n or "stands still" in n], "a declared wait holds the end-or-park line and the auto offer"
     works.update(build.n, awaiting_since=works.load(build.n).awaiting_since - 60)
     tick(record)
     assert not [n for n in nudges(record) if n.startswith("check the CI run")], "a minute in, the wait is left alone"

@@ -239,7 +239,7 @@ class OfferNextRowOnTheClock(Handler):
 
 def offer(context: AgentContext) -> None:
     open_work = working(context)
-    if open_work and context.agent.row.status != IDLE:
+    if open_work and (context.agent.row.status != IDLE or open_work[0].awaiting):
         return
     row = next(context.record)
     stretch = f"{row.n}:{context.agent.row.at}" if row else ""
