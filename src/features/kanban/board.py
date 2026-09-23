@@ -39,7 +39,7 @@ class AgentChip:
 
 
 @dataclass
-class Board:
+class TodoBoard:
     lanes: list[tuple[Lane, list[Card]]]
     agents: list[AgentChip]
     plan_hold: str = ""
@@ -80,7 +80,7 @@ def sources_of(journal) -> Sources:
     return Sources(journal.todos, works, questions, journal.plans._every())
 
 
-def build(journal, done_days: float, plan: int = 0, agent: str = "") -> Board:
+def build(journal, done_days: float, plan: int = 0, agent: str = "") -> TodoBoard:
     sources = sources_of(journal)
     works, plans = sources.works, sources.plans
     since = time.time() - float(done_days) * 86400
@@ -96,7 +96,7 @@ def build(journal, done_days: float, plan: int = 0, agent: str = "") -> Board:
     lanes = [(lane, sorted(found, key=lambda c: -c.completed) if lane.key == DONE else found) for lane, found in lanes]
     active = next((p for p in plans if p.status == ACTIVE), None)
     hold = f"Plan {active.n} is active: rows outside it wait unless they are critical" if active else ""
-    return Board(lanes, agents_of(journal, works, main, {c.assigned for c in cards if c.assigned}), hold)
+    return TodoBoard(lanes, agents_of(journal, works, main, {c.assigned for c in cards if c.assigned}), hold)
 
 
 def main_agent(journal) -> str:
