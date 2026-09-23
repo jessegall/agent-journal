@@ -92,3 +92,8 @@ def test_a_hook_that_crashes_is_told_to_the_agent_for_every_provider(monkeypatch
     dispatch("POST", "/api/hook/claude", record.root, {"root": str(record.root), "env": record.env}, body)
     assert len([n for n in Nudges(record, actor=SYSTEM)._every() if "no answer from the server" in n.brief]) == 1, \
         "a hook missed while the server was restarting is not an error"
+    runtime.restarting(record.root).write_text("1790000060")
+    (runtime.folder(record.root) / "hook-failures.log").write_text("1790000070 000 claude\n")
+    dispatch("POST", "/api/hook/claude", record.root, {"root": str(record.root), "env": record.env}, body)
+    assert len([n for n in Nudges(record, actor=SYSTEM)._every() if "no answer from the server" in n.brief]) == 1, \
+        "however long a restart the journal began itself takes, the hooks it missed are not an error"

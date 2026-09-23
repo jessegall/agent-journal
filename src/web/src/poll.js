@@ -10,11 +10,23 @@ function next(held) {
 
 async function round(held) {
     if (polls.get(held.key) !== held) return;
+    if (held.asking) {
+        held.again = true;
+        return;
+    }
     clearTimeout(held.timer);
+    held.asking = true;
     try {
         const got = await held.ask();
         held.takers.forEach((take) => take(got));
-    } catch (e) {}
+    } catch (e) {
+    } finally {
+        held.asking = false;
+    }
+    if (held.again) {
+        held.again = false;
+        return round(held);
+    }
     next(held);
 }
 
