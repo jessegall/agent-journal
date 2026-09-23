@@ -13,7 +13,7 @@ import {threadTurns} from "../domain/thread.js";
 import {agent, store} from "../state/store.js";
 import {waitsFor} from "../layout/statusline.js";
 import {polled} from "../sync/polled.js";
-import {earlier, rows} from "../sync/rows.js";
+import {earlier, paging, rows} from "../sync/rows.js";
 import DumpWindow from "./DumpWindow.vue";
 import TerminalWindow from "./TerminalWindow.vue";
 import Compose from "./Compose.vue";
@@ -147,7 +147,8 @@ const thread = computed(() => {
             doc: rows("doc"),
             agent: store.agents,
         },
-        pending.value
+        pending.value,
+        !!paging.more.message
     );
     made.keys.forEach((placeholder, ref) => linked.set(ref, placeholder));
     return made;
