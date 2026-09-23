@@ -50,6 +50,13 @@ class LawDetails(FeatureDetails):
 
     settings = [
         Setting(
+            name="whole_read_lines",
+            default=300,
+            title="Refuse reading a whole file longer than",
+            abstract="A file this long is read by range or searched, not read whole",
+            unit="lines",
+        ),
+        Setting(
             name="result_floor",
             default=20_000,
             title="Tell the agent about a tool result from",

@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.109.0 — Reading a long file whole is refused
+
+Law L3 (read narrowly) is now enforced: reading a file longer than 300 lines without a range, or printing one whole with cat, is refused with the file's length and a pointer to read a range or grep first. A read with a range, a short file, and a cat already cut short all pass. The limit is a setting of the laws feature.
+
 ## 2.108.1 — Whispered rules keep their reasoning, and come back after 100 tool uses
 
 A fact, rule or law brought back by one of its keywords is said in full again, reasoning included, so the agent knows why. It is said again only after 100 of the agent's tool uses have passed (it was 50), instead of the once-per-window title that 2.108.0 shipped. Standing facts, rules and reminders stay at every quarter of the context window.
