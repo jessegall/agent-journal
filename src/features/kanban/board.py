@@ -48,14 +48,14 @@ class AgentChip:
 class BoardLanes:
     lanes: list[tuple[Lane, list[Card]]]
     agents: list[AgentChip]
-    plan_hold: str = ""
+    plan_hold: str | None = None
 
     def shaped(self) -> dict:
         return {"lanes": [{**asdict(lane), "cards": [asdict(card) for card in cards]} for lane, cards in self.lanes],
                 "agents": [asdict(agent) for agent in self.agents], "plan_hold": self.plan_hold, "out": self.text()}
 
     def text(self) -> str:
-        blocks = [self.plan_hold] if self.plan_hold else []
+        blocks = [] if self.plan_hold is None else [self.plan_hold]
         for lane, cards in self.lanes:
             lines = [f"  {card.n:>4}  {card.title}" + (f"  [{card.reason}]" if card.reason else "") for card in cards]
             blocks.append("\n".join([f"{lane.title} ({len(cards)})", *(lines or ["  none"])]))
@@ -86,7 +86,7 @@ def sources_of(journal) -> Sources:
     return Sources(journal.todos, works, questions, journal.plans._every())
 
 
-def build(journal, done_days: float, plan: int = 0, agent: str = "") -> BoardLanes:
+def build(journal, done_days: float, plan: int, agent: str) -> BoardLanes:
     sources = sources_of(journal)
     works, plans = sources.works, sources.plans
     since = time.time() - float(done_days) * 86400
@@ -101,7 +101,7 @@ def build(journal, done_days: float, plan: int = 0, agent: str = "") -> BoardLan
     lanes = [(lane, [c for c in cards if c.lane == lane.key]) for lane in LANES]
     lanes = [(lane, sorted(found, key=lambda c: -c.completed) if lane.key == DONE else found) for lane, found in lanes]
     active = next((p for p in plans if p.status == ACTIVE), None)
-    hold = f"Plan {active.n} is active: rows outside it wait unless they are critical" if active else ""
+    hold = f"Plan {active.n} is active: rows outside it wait unless they are critical" if active else None
     return BoardLanes(lanes, agents_of(journal, works, main, {c.assigned for c in cards if c.assigned}), hold)
 
 

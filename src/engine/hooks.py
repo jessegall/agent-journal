@@ -27,11 +27,11 @@ def cancelled(name: str, provider, record, hook, session: str, data: dict) -> st
     return "; ".join(reasons)
 
 
-def gated(provider, record, hook, session: str) -> str:
+def gated(provider, record, hook, session: str) -> str | None:
     dispatch = provider.dispatch(hook.tool)
-    reason = cancelled(DISPATCHING, provider, record, hook, session, dispatch) if dispatch else ""
+    reason = cancelled(DISPATCHING, provider, record, hook, session, dispatch) if dispatch else None
     bus.defer(lambda: [policy(provider, record, hook, session) for policy in AFTERWARDS if serving(policy, provider, hook)])
-    return reason or next((reason for policy in POLICIES if serving(policy, provider, hook) and (reason := policy(provider, record, hook, session))), "")
+    return reason or next((reason for policy in POLICIES if serving(policy, provider, hook) and (reason := policy(provider, record, hook, session))), None)
 
 
 def start_file(root: Path, env: str, compacted: bool = False) -> Path:
@@ -171,13 +171,16 @@ def handle(provider, root: Path, env: str, hook) -> dict:
     if provider.is_subagent(hook):
         if hook.event == PERMISSION or row.asking:
             agents.update(row.n, asking=provider.asking(hook))
-        return provider.response(blocked=gated(provider, record, hook, row.title)) if hook.event == "PreToolUse" else {}
+        if hook.event != "PreToolUse":
+            return {}
+        why = gated(provider, record, hook, row.title)
+        return {} if why is None else provider.blocking(why)
     agents.saw(row.n, {"hook": hook.event, "tool": hook.tool.name, "file": hook.tool.paths[0] if hook.tool.paths else "", "session": hook.session, "size": hook.tool.result_size, "skill": hook.tool.loaded_skill, "cause": AGENT},
                status=provider.status(hook) or row.status or IDLE, **provider.facts(row, hook, root), **commands.shell(row, hook),
                wrote=hook.event == "PostToolUse" and commands.writes(hook))
     if hook.event == "PreToolUse":
         why = gated(provider, record, hook, row.title)
-        return provider.response(blocked=f"{why}{alongside(hook)}" if why else "")
+        return {} if why is None else provider.blocking(f"{why}{alongside(hook)}")
     if hook.event == "SessionStart":
         return provider.response(hook.event, start(root, env, provider.compacted(hook)))
     if hook.event == "Stop" and hook.last_message:

@@ -117,11 +117,11 @@ class Codex(Provider):
         return f"read {self.skill_home}/{name}/SKILL.md"
 
     @classmethod
-    def control_options(cls, current_model: str = "") -> dict:
+    def control_options(cls, current_model: str) -> dict:
         return cls.controls_for(cls.catalog(), current_model if current_model else cls.configuration().model)
 
     @classmethod
-    def control_choice(cls, action: str, value: str, current_model: str = "") -> dict:
+    def control_choice(cls, action: str, value: str, current_model: str) -> dict:
         config = cls.configuration()
         model = current_model if current_model else config.model
         controls = cls.controls_for(cls.catalog(), model)
