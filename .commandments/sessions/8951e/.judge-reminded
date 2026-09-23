@@ -1,5 +1,4 @@
-/Users/jessegall/projects/agent-journal/src/channel.py
-/Users/jessegall/projects/agent-journal/src/features/session_briefing/test.py
+/Users/jessegall/projects/agent-journal/src/web/src/resource/CollectionPage.vue
 -----
 Batch marker for the code-commandments judge reminder (`commandments judge-reminder`, wired as
 Stop + PreToolUse hooks). The lines above the separator are the changed-file set it last

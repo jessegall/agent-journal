@@ -1,6 +1,6 @@
 <script setup>
 import EmptyState from "../kit/EmptyState.vue";
-import {computed, reactive, watchEffect} from "vue";
+import {computed, reactive, ref, watchEffect} from "vue";
 import {api} from "../api/client.js";
 import Icon from "../kit/Icon.vue";
 import {peek} from "../route.js";
@@ -8,6 +8,8 @@ import {meta} from "../state/store.js";
 import {byRef} from "../domain/records.js";
 import {age} from "../format/time.js";
 import ResourceBody from "./ResourceBody.vue";
+import ResourceRow from "./ResourceRow.vue";
+import TabBar from "../kit/TabBar.vue";
 
 const props = defineProps({resource: Object});
 const emit = defineEmits(["close"]);
@@ -37,6 +39,14 @@ const members = computed(() =>
         .sort((a, b) => (b.updated || b.created) - (a.updated || a.created))
 );
 
+const cards = computed(() => members.value.filter((r) => r.type !== "todo"));
+const todos = computed(() => members.value.filter((r) => r.type === "todo"));
+const tab = ref("cards");
+const tabs = computed(() => [
+    {key: "cards", title: "Cards", count: cards.value.length},
+    {key: "todos", title: "To-dos", count: todos.value.length},
+]);
+
 const firstLine = (r) =>
     String(r.abstract || r.brief || "")
         .split("\n")
@@ -46,34 +56,56 @@ const picture = (r) => Object.keys(r.data?.pictures || {})[0] || "";
 
 <template>
     <ResourceBody :resource="resource" :comments="false" :links="false" @close="emit('close')">
-        <section class="cards" aria-label="In this collection">
-            <template v-if="!members.length">
-                <EmptyState class="empty">
-                    Nothing in this collection yet. Add a row from its actions, or with journal collection add {{ resource.n }} &lt;ref&gt;.
-                </EmptyState>
-            </template>
-            <template v-for="r in members" :key="r.ref">
-                <button type="button" class="card" @click="peek(r.type, r.n)">
-                    <template v-if="picture(r)">
-                        <img class="thumb" :src="api.fileUrl(r.type, r.n, picture(r))" :alt="picture(r)" loading="lazy" />
-                    </template>
-                    <span class="kind">
-                        <Icon :name="meta(r.type).icon" :size="12" />
-                        {{ meta(r.type).title }} {{ r.n }}
-                        <span class="grow" />
-                        <span class="when">{{ age(r.updated || r.created) }}</span>
-                    </span>
-                    <span class="title">{{ r.title }}</span>
-                    <template v-if="firstLine(r)">
-                        <span class="line">{{ firstLine(r) }}</span>
-                    </template>
-                </button>
-            </template>
-        </section>
+        <template v-if="todos.length">
+            <TabBar v-model="tab" class="tabs" :tabs="tabs" />
+        </template>
+        <template v-if="todos.length && tab === 'todos'">
+            <section class="todos" aria-label="To-dos in this collection">
+                <template v-for="r in todos" :key="r.ref">
+                    <ResourceRow :resource="r" @click="peek(r.type, r.n)" />
+                </template>
+            </section>
+        </template>
+        <template v-else>
+            <section class="cards" aria-label="In this collection">
+                <template v-if="!members.length">
+                    <EmptyState class="empty">
+                        Nothing in this collection yet. Add a row from its actions, or with journal collection add
+                        {{ resource.n }} &lt;ref&gt;.
+                    </EmptyState>
+                </template>
+                <template v-for="r in cards" :key="r.ref">
+                    <button type="button" class="card" @click="peek(r.type, r.n)">
+                        <template v-if="picture(r)">
+                            <img class="thumb" :src="api.fileUrl(r.type, r.n, picture(r))" :alt="picture(r)" loading="lazy" />
+                        </template>
+                        <span class="kind">
+                            <Icon :name="meta(r.type).icon" :size="12" />
+                            {{ meta(r.type).title }} {{ r.n }}
+                            <span class="grow" />
+                            <span class="when">{{ age(r.updated || r.created) }}</span>
+                        </span>
+                        <span class="title">{{ r.title }}</span>
+                        <template v-if="firstLine(r)">
+                            <span class="line">{{ firstLine(r) }}</span>
+                        </template>
+                    </button>
+                </template>
+            </section>
+        </template>
     </ResourceBody>
 </template>
 
 <style scoped>
+.tabs {
+    margin-bottom: 12px;
+}
+
+.todos {
+    display: flex;
+    flex-direction: column;
+}
+
 .cards {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
