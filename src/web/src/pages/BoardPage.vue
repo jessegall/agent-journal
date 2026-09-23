@@ -3,6 +3,7 @@ import {computed, onMounted, onUnmounted, provide, ref, watch} from "vue";
 import {api} from "../api/client.js";
 import Btn from "../kit/Btn.vue";
 import Icon from "../kit/Icon.vue";
+import AgentSlots from "../board/AgentSlots.vue";
 import AgentStrip from "../board/AgentStrip.vue";
 import Lane from "../board/Lane.vue";
 import Switch from "../kit/Switch.vue";
@@ -24,6 +25,8 @@ const text = ref("");
 const plans = computed(() => rows("plan").filter((plan) => !plan.completed && !plan.deleted));
 const boards = computed(() => rows("board").filter((board) => !board.completed && !board.deleted));
 const tickets = computed(() => Boolean(store.board.lens.board));
+const chosenBoard = computed(() => store.board.lens.board);
+const slots = computed(() => store.board.slots);
 const TODO_MEANINGS = {doing: "start", asked: "review", done: "done"};
 const current = computed(() => boards.value.find((board) => board.n === store.board.lens.board));
 const meaningOf = (key) => (tickets.value ? current.value && current.value.data.meanings[key] : TODO_MEANINGS[key]) || "";
@@ -66,7 +69,14 @@ const planHold = computed(() => store.board.planHold);
 const loading = computed(() => !store.board.loaded);
 const tabs = computed(() => [{key: "0", title: "To-dos"}, ...boards.value.map((board) => ({key: String(board.n), title: board.title}))]);
 const shown = computed({get: () => String(store.board.lens.board || 0), set: (key) => lens({board: Number(key)})});
-const matches = (card) => !text.value.trim() || `#${card.n} ${card.title}`.toLowerCase().includes(text.value.trim().toLowerCase());
+const only = ref("");
+watch(
+    () => store.board.lens.board,
+    () => (only.value = "")
+);
+const matches = (card) =>
+    (!only.value || card.state === only.value) &&
+    (!text.value.trim() || `#${card.n} ${card.title}`.toLowerCase().includes(text.value.trim().toLowerCase()));
 const lanes = computed(() =>
     store.board.loaded
         ? store.board.lanes
@@ -83,7 +93,7 @@ const refusal = ref("");
 let clearing = 0;
 
 function take(got) {
-    Object.assign(store.board, {lanes: got.lanes, agents: got.agents, planHold: got.plan_hold, loaded: true});
+    Object.assign(store.board, {lanes: got.lanes, agents: got.agents, slots: got.slots, planHold: got.plan_hold, loaded: true});
 }
 
 const load = () => (tickets.value ? api.ticketBoard(store.board.lens.board) : api.board(store.board.lens));
@@ -159,7 +169,7 @@ const ask = usePoll(
             <span class="grow" />
             <Switch :on="showingDone" word="Show done" @change="(on) => lens({done: on})" />
             <template v-if="tickets">
-                <button type="button" class="tool" title="Stages and what each means" @click="peek('board', store.board.lens.board)">
+                <button type="button" class="tool" title="Stages and what each means" @click="peek('board', chosenBoard)">
                     <Icon name="settings" />
                 </button>
             </template>
@@ -182,10 +192,13 @@ const ask = usePoll(
         </template>
         <template v-else>
             <AgentStrip />
+            <template v-if="tickets && slots">
+                <AgentSlots :slots="slots" :only="only" @only="(state) => (only = only === state ? '' : state)" />
+            </template>
             <template v-if="planHold">
                 <p class="hold">{{ planHold }}</p>
             </template>
-            <div :key="store.board.lens.board || 0" class="lanes">
+            <div :key="chosenBoard || 0" class="lanes">
                 <template v-for="(lane, i) in lanes" :key="lane.key">
                     <Lane
                         :lane="lane"
@@ -205,12 +218,7 @@ const ask = usePoll(
             <NewWork :open="writingWork" :board="current" @close="writingWork = false" @added="refresh" />
         </template>
         <template v-if="adding">
-            <NewResource
-                :type="adding"
-                :preset="adding === 'ticket' ? {board: store.board.lens.board} : {}"
-                @made="made"
-                @close="adding = ''"
-            />
+            <NewResource :type="adding" :preset="adding === 'ticket' ? {board: chosenBoard} : {}" @made="made" @close="adding = ''" />
         </template>
     </section>
 </template>
