@@ -1,0 +1,32 @@
+from typing import ClassVar
+
+from resources.base import PROJECT, USER, Resource, ResourceDetails
+from resources.shapes import NUMBER, TEXT, Field, Shape
+
+
+class Ticket(Shape, Resource):
+    type = "ticket"
+    icon = "ticket"
+    scope = PROJECT
+    created_in_viewer = True
+    listed_open = True
+    details: ClassVar[ResourceDetails] = ResourceDetails(
+        title="Ticket",
+        abstract="A piece of work on a board, from the user, an agent or an outside source, run in an environment of its own",
+        help="A ticket is the anchor for one piece of work: where it came from, which board and stage it sits in, who owns it, "
+             "and the environment and plan it runs in once started. A ticket from an outside source carries that source's id, "
+             "so the same event arriving again updates its ticket instead of making another.",
+    )
+    notified = (USER,)
+    data_fields: ClassVar[list[Field]] = [
+        Field(NUMBER, 0, name="board"),
+        Field(TEXT, name="stage"),
+        Field(TEXT, name="source"),
+        Field(TEXT, name="source_id"),
+        Field(TEXT, name="owner"),
+        Field(TEXT, name="work_environment"),
+        Field(NUMBER, 0, name="plan"),
+    ]
+    labels = {"brief": "What is wanted", "outcome": "How it ended", "board": "Board", "stage": "Stage", "source": "Source",
+              "source_id": "Id at the source", "owner": "Owner", "work_environment": "Works in", "plan": "Plan"}
+    shown_fields = ("board", "stage", "source", "owner", "work_environment", "plan")
