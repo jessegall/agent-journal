@@ -4,6 +4,7 @@ import {computed} from "vue";
 const props = defineProps({items: {type: Array, required: true}, unit: {type: String, default: ""}});
 const emit = defineEmits(["open"]);
 const most = computed(() => Math.max(1, ...props.items.map((item) => Number(item.value) || 0)));
+const unitText = computed(() => (/^[a-z]/i.test(props.unit) ? ` ${props.unit}` : props.unit));
 const width = (item) => `${Math.max(2, (100 * (Number(item.value) || 0)) / most.value)}%`;
 </script>
 
@@ -16,11 +17,11 @@ const width = (item) => `${Math.max(2, (100 * (Number(item.value) || 0)) / most.
                 :class="['bar-row', item.tone, {opens: item.open}]"
                 @click="item.open && emit('open', item.open)"
             >
-                <span class="bar-label">{{ item.label }}</span>
+                <span class="bar-name">{{ item.label }}</span>
                 <span class="bar-track">
                     <span class="bar-fill" :style="{width: width(item)}" />
                 </span>
-                <span class="bar-value">{{ item.value }}{{ unit }}</span>
+                <span class="bar-value">{{ item.value }}{{ unitText }}</span>
             </component>
         </template>
     </div>
@@ -56,7 +57,7 @@ const width = (item) => `${Math.max(2, (100 * (Number(item.value) || 0)) / most.
     background: var(--hover);
 }
 
-.bar-label {
+.bar-name {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
