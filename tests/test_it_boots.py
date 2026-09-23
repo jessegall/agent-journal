@@ -34,6 +34,25 @@ def test_every_agent_launches_under_the_journal_and_exits_cleanly(tmp_path):
         launches(tmp_path / name, CODE / "journal.py", name)
 
 
+def test_a_restart_brings_the_agent_back_under_the_same_supervisor(tmp_path):
+    from engine import runtime
+    from engine.terminal import relaunch
+    root = tmp_path / "project" / ".journal"
+    moved = []
+
+    def restarted():
+        folder = next((root / "runtime" / "sessions").glob("claude-*"))
+        before = json.loads((folder / "launched.json").read_text())["pid"]
+        relaunch(root, runtime.env(root), folder.name, "")
+        began = time.time()
+        while time.time() - began < WAIT and json.loads((folder / "launched.json").read_text())["pid"] == before:
+            time.sleep(0.2)
+        moved.append(json.loads((folder / "launched.json").read_text())["pid"] != before)
+
+    launches(tmp_path, CODE / "journal.py", "claude", during=restarted)
+    assert moved == [True], "the supervisor stops the agent and starts it again in the same session, and nothing is left running after"
+
+
 def test_every_agent_launches_from_an_installed_zip(tmp_path):
     place = tmp_path
     (place / "project").mkdir()
@@ -117,9 +136,9 @@ def test_a_build_whose_supervisor_dies_on_start_goes_back_to_the_last_good_one(t
     bad = root / "journal-99.0.0-broken0000.pyz"
     with zipfile.ZipFile(good) as source, zipfile.ZipFile(bad, "w") as target:
         for item in source.infolist():
-            if not item.filename.startswith("engine/supervisor."):
+            if not item.filename.startswith("engine/worker."):
                 target.writestr(item, source.read(item))
-        target.writestr("engine/supervisor.py", "raise SystemExit(1)\n")
+        target.writestr("engine/worker.py", "raise SystemExit(1)\n")
     point(root, bad)
     launches(place, root / "journal.py", "codex")
     assert ((root / "journal.pyz").resolve(), broken(root)) == (good, [bad.name]), "the journal went back to the build that works and remembers the broken one"

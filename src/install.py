@@ -16,7 +16,7 @@ from pathlib import Path
 
 PACKAGE = Path(__file__).resolve().parent
 PACKAGE_DIRS = ("commands", "controllers", "engine", "extension", "features", "migrations", "providers", "resources", "skills", "surfaces")
-PACKAGE_FILES = ("VERSION", "__main__.py", "channel.py", "claude-status.sh", "hook.sh", "install.py", "output_cap.sh", "journal.py", "serve.py", "skills.py")
+PACKAGE_FILES = ("VERSION", "__main__.py", "channel.py", "claude-status.sh", "hook.sh", "install.py", "output_cap.sh", "journal.py", "serve.py", "supervisor.py", "skills.py")
 PACKAGE_TREES = (*PACKAGE_DIRS, "web/dist")
 LEFT_BEHIND = (".DS_Store", "test.py")
 RETIRED = ("hook.py", "support")
@@ -26,7 +26,7 @@ ARCHIVE = "journal.pyz"
 KEPT_BUILDS = 2
 KEPT_COPIES = 2
 NOT_RECORD = ("src", "runtime", "attic", "plugins", "plugin-data")
-STUBS = {"journal.py": "journal", "channel.py": "channel", "serve.py": "serve", "engine/supervisor.py": "engine.supervisor", "engine/keeper.py": "engine.keeper"}
+STUBS = {"journal.py": "journal", "channel.py": "channel", "serve.py": "serve", "supervisor.py": "supervisor", "engine/worker.py": "engine.worker", "engine/keeper.py": "engine.keeper"}
 STUB = ("import runpy\nimport sys\nfrom pathlib import Path\n\n"
         "sys.path.insert(0, str((Path(__file__).resolve().parents[{up}] / \"{archive}\").resolve()))\nrunpy.run_module(\"{module}\", run_name=\"__main__\", alter_sys=True)\n")
 PACKED_DIRS = ("commands", "controllers", "engine", "features", "migrations", "providers", "resources", "surfaces")

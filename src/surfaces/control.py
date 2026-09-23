@@ -5,8 +5,7 @@ from controllers.types import Agents, Notices, Notifications
 from engine.inputs import BACKGROUND, FORCE, PERMIT, SHELL, STALE, queue
 from engine.record import Record
 from engine.seats import live
-from engine import runtime
-from engine.stored import write_json
+from engine.terminal import relaunch as restart
 from providers import DRIVERS, PROVIDERS
 from resources.base import SYSTEM, Refused
 
@@ -101,7 +100,7 @@ def relaunch(root: Path, env: str, session: str, skip: bool) -> dict:
     found = online(root, env, session)
     record = Record(Path(root), env)
     record.set_setting("permission_prompts", {**record.setting("permission_prompts", {}), "skip": skip})
-    write_json(runtime.relaunch_file(Path(root), found["terminal"]), {"resume": session})
+    restart(Path(root), env, found["terminal"], session)
     return {"relaunching": True, "skip": skip}
 
 

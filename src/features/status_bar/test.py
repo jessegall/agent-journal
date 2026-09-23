@@ -105,7 +105,7 @@ def test_the_header_names_the_installed_version(tmp_path):
 
 
 def test_a_terminal_answering_a_query_is_not_the_user_typing():
-    from engine.supervisor import typing
+    from supervisor import typing
     assert (typing(b"\x1bP>|iTerm2 3.5\x1b\\"), typing(b"\x1b]11;rgb:1616/1818/1d1d\x07"), typing(b"a")) == (False, False, True), \
         "a version or colour reply comes in on the keyboard but holds nothing"
 
