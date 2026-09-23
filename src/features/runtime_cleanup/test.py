@@ -43,7 +43,7 @@ def test_captures_are_cut_to_their_tail_and_quiet_sessions_are_removed_whole():
     assert (log.stat().st_size, log.read_bytes().endswith(b"last line\n")) == (1024 * 1024, True), "a log keeps its last megabyte"
     assert (gone.exists(), small.exists()) == (False, True), "a session's folder quiet past the days goes whole, a live one stays"
     assert kept.read_text() == "main", "files that are not per-session stay, however old"
-    assert text == {"removed": 1, "trimmed": 2, "events": 0}, "it says what it did"
+    assert text == {"removed": 1, "trimmed": 2, "events": 0, "leftovers": 0}, "it says what it did"
 
     with big.open("ab") as out:
         out.write(b"+more")
@@ -84,3 +84,25 @@ def test_the_event_log_keeps_the_last_hundred_and_whatever_a_live_reader_has_not
     kept = [e.id for e in record.events()]
     assert (kept[0], len(kept)) == (first + 20, 130), "the last 100 stay, and everything after a live reader's place; a reader gone for days holds nothing"
     assert record.emit("todo", 1, "updated", "system", quiet=True).id == first + 150, "ids keep counting up"
+
+
+def test_leftover_plugin_checkouts_and_old_environment_archives_are_removed_and_snapshots_kept():
+    record = fresh()
+    root = record.root
+    old = time.time() - 100 * 86400
+    stale, fresh_one = root / "plugins" / ".staging-a", root / "plugins" / ".staging-b"
+    for d in (stale, fresh_one):
+        (d / ".git").mkdir(parents=True)
+    os.utime(stale, (old, old))
+    (root / "attic").mkdir()
+    gone, snapshot, recent = root / "attic" / "old-env.tar.gz", root / "attic" / "before-1.0.0-1.tar.gz", root / "attic" / "new-env.tar.gz"
+    for f in (gone, snapshot, recent):
+        f.write_bytes(b"")
+    for f in (gone, snapshot):
+        os.utime(f, (old, old))
+    (root / "runtime").mkdir(exist_ok=True)
+    (root / "runtime" / "channel.jsonl").write_text("x" * (2 * 1024 * 1024))
+    tidy(root, 2)
+    assert (stale.exists(), fresh_one.exists()) == (False, True), "a checkout an install left behind goes after an hour; one being installed stays"
+    assert (gone.exists(), snapshot.exists(), recent.exists()) == (False, True, True), "an old environment archive goes; upgrade snapshots are kept by their own count"
+    assert (root / "runtime" / "channel.jsonl").stat().st_size == 1024 * 1024, "the channel log is cut to its tail"
