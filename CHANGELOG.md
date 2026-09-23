@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.113.8 — The journal prunes what it leaves behind
+
+A journal folder grew with things nobody reads. Upgrade snapshots keep the last two instead of five, and leave out the plugins, which install again from their repositories, so each is a fraction of its old size. Every hour the housekeeping also removes plugin checkouts an interrupted install left behind, archives of removed environments older than 90 days, and cuts the channel log to its last megabyte.
+
 ## 2.113.7 — A new release is installed within minutes, not twenty
 
 The update check ran every five minutes but read the published version from a cache refreshed every fifteen, and a check that found the cache stale compared against the old value while it fetched the new one. A project could take twenty minutes to see a release. A check that finds the cache stale now looks again ten seconds later, once the fresh version is in.
