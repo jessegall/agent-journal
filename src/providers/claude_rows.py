@@ -86,4 +86,4 @@ class Row:
     def tool_calls(self) -> list[ToolCall]:
         if self.type != "assistant" or self.sidechain:
             return []
-        return [ToolCall.of(block.id, block.name, self.at, block.input) for block in self.of_type("tool_use")]
+        return [ToolCall.from_payload(block.id, block.name, self.at, block.input) for block in self.of_type("tool_use")]

@@ -243,7 +243,7 @@ class Claude(Provider):
         results = row.of_type("tool_result")
         if results and not text.strip():
             text = "\n".join(block.result for block in results)
-        uses = [ToolCall.of(block.id, block.name, row.at, block.input) for block in row.of_type("tool_use")]
+        uses = [ToolCall.from_payload(block.id, block.name, row.at, block.input) for block in row.of_type("tool_use")]
         questions = [self.question_text(use) for use in uses if use.name in ASKS]
         if questions:
             text = "\n".join(part for part in (text, *questions) if part)
