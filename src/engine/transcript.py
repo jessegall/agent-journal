@@ -4,7 +4,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 
 HUMAN, AGENT, TOOL = "human", "agent", "tool"
-INJECTED, TASK, PEER = "injected", "task", "peer"
+INJECTED, TASK, PEER, SENT = "injected", "task", "peer", "sent"
 SUMMARY, SUPERSEDED = "summary", "superseded"
 IDLE = "idle"
 SETTLE, SETTLE_STEP = 1.5, 0.05

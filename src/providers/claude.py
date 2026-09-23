@@ -5,7 +5,7 @@ import time
 from datetime import datetime
 from pathlib import Path
 
-from engine.transcript import AGENT, HUMAN, INJECTED, PEER, SUMMARY, SUPERSEDED, TASK, TOOL, Turn, timestamp
+from engine.transcript import AGENT, HUMAN, INJECTED, PEER, SENT, SUMMARY, SUPERSEDED, TASK, TOOL, Turn, timestamp
 from providers.payload import DISPLAYED, EVENTS
 from providers.base import Provider, journal_hook
 from providers.payload import Hook
@@ -16,6 +16,8 @@ from engine.sessions import Sessions
 from engine.drivers import ANSI, CHOICE, Driver
 
 ASKS = frozenset({"AskUserQuestion"})
+SENDS = "SendMessage"
+SESSIONS = "uds:"
 WINDOW, LONG_WINDOW, LONG_MARK = 200_000, 1_000_000, "[1m]"
 STATUS_SCRIPT = "claude-status.sh"
 RECORD_FILES = ("Read(./.journal/environments/*/*/*.md)", "Read(./.journal/project/*/*.md)")
@@ -197,6 +199,9 @@ class Claude(Provider):
         return None
 
     def turn(self, row: dict) -> tuple | None:
+        queued = row.get("attachment") or {}
+        if row.get("type") == "attachment" and (queued.get("origin") or {}).get("kind") == "peer":
+            row = {**row, "type": "user", "origin": queued["origin"], "message": {"content": str(queued.get("prompt") or "")}}
         if (row.get("isSidechain") and not row.get("agentId")) or row.get("type") not in ("user", "assistant"):
             return None
         content = (row.get("message") or {}).get("content")
@@ -214,6 +219,12 @@ class Claude(Provider):
             return None
         kind = self.kind(row, bool(results))
         who = SUMMARY if kind == SUMMARY else "user" if kind == HUMAN else "agent" if kind == AGENT else kind
+        origin = row.get("origin") or {}
+        if kind == PEER and origin.get("name") and str(origin.get("from") or "").startswith(SESSIONS):
+            who, text = f"{PEER}:{origin['name']}:{origin.get('from') or ''}", str(origin.get("body") or text)
+        sent = next((block.get("input") or {} for block in uses if block.get("name") == SENDS), None)
+        if sent and sent.get("to"):
+            kind, who, text = PEER, f"{SENT}:{sent['to']}", str(sent.get("message") or text)
         asked = [str(block.get("id") or "") for block in uses if block.get("name") in ASKS]
         answered = [str(block.get("tool_use_id") or "") for block in results]
         return who, text, kind, timestamp(str(row.get("timestamp") or "")), tools, str(row.get("parentUuid") or ""), asked, answered
