@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.99.2 — Messages between agent sessions show in the chat
+
+A message another Claude session sends to this one, and one this session sends to another, now appear in the chat, drawn with a dotted border in muted text and labelled from or to the other session by name. Messages from a session's own subagents stay out. The v2.99.0 and v2.99.1 tags carry the change without its version number.
+
 ## 2.98.0 — A damaged row opens with a notice instead of nothing
 
 Opening a row whose file cannot be read, such as an emptied doc, opens the inspector anyway with a notice naming the file that could not be read and a button that asks the agent to review and repair it. A list that includes such a row now leaves it out instead of failing whole.
