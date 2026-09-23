@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 
 import controllers.types as types_module
 from controllers.types import Environments
@@ -33,6 +33,14 @@ class CardState:
     text: str
 
 
+@dataclass(frozen=True)
+class Slots:
+    running: list
+    limit: int
+    queued: int
+    waiting: int
+
+
 class Tickets(Controller):
     resource = Ticket
 
@@ -54,9 +62,15 @@ class Tickets(Controller):
         stages = self._stages(n)
         tickets = [r for r in self._standing() if int(r.board) == int(n)]
         sessions = Sessions(self.record.root).all()
-        running = len(self._running())
-        return BoardLanes([(Lane(stage, stage), [self._card(r, stage, stages, sessions, running) for r in tickets if r.stage == stage])
-                           for stage in stages], []).shaped()
+        running = self._running()
+        lanes = BoardLanes([(Lane(stage, stage), [self._card(r, stage, stages, sessions, len(running)) for r in tickets if r.stage == stage])
+                            for stage in stages], [])
+        return {**lanes.shaped(), "slots": asdict(self._slots(running, sessions))}
+
+    def _slots(self, running: list, sessions: dict) -> Slots:
+        kinds = [self._runtime(ticket, sessions, len(running)).kind for ticket in self._standing()]
+        return Slots([{"n": ticket.n, "title": ticket.title, "board": int(ticket.board)} for ticket in running],
+                     int(TicketsDetails.values(self.record).running), kinds.count("queued"), kinds.count("you"))
 
     def _card(self, ticket, stage: str, stages: list, sessions: dict, running: int) -> Card:
         extras = [extra(self.record, ticket) for extra in CARD_EXTRAS]
