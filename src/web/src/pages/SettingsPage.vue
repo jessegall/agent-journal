@@ -1,4 +1,5 @@
 <script setup>
+import SettingsGroup from "./SettingsGroup.vue";
 import FeaturePanel from "./FeaturePanel.vue";
 import {features, flip, on} from "./featureSettings.js";
 
@@ -76,16 +77,34 @@ async function sweep(e) {
     const reply = await api.act("environment", e.n, "sweep", sweeping.value[e.n] ? {yes: true} : {});
     sweeping.value = {...sweeping.value, [e.n]: sweeping.value[e.n] ? "" : reply};
 }
+
+const switches = [
+    {
+        key: "delivery",
+        title: "Delivery",
+        lead: "How the engine gets a line to the agent. With the channel off it types into the terminal.",
+        label: "Use the channel",
+        help: "The agent reads it mid-turn, with nothing wrapped around it",
+        on: () => delivers("channel"),
+        set: (v) => setDelivery("channel", v),
+    },
+    {
+        key: "viewer",
+        title: "Viewer",
+        lead: "What this page does on its own.",
+        label: "Show While you were away",
+        help: "After a minute or more away from this tab, a card lists what the agent did meanwhile",
+        on: () => viewerOn("away"),
+        set: (v) => setViewer("away", v),
+    },
+];
 </script>
 
 <template>
     <section class="settings">
-        <section class="group" :class="{shut: !open('project-identity')}">
-            <header class="group-head" role="button" tabindex="0" @click="fold('project-identity')">
-                <span class="fold" />
-                <h2>Project identity</h2>
-                <p class="lead">The band across the viewer distinguishes this project from other open journals.</p>
-            </header>
+        <SettingsGroup :shut="!open('project-identity')" @fold="fold('project-identity')">
+            <template #title>Project identity</template>
+            <template #lead>The band across the viewer distinguishes this project from other open journals.</template>
             <div class="row">
                 <span class="text">
                     <span class="title">Color</span>
@@ -93,13 +112,10 @@ async function sweep(e) {
                 </span>
                 <Section @save-color="saveColor" />
             </div>
-        </section>
-        <section class="group" :class="{shut: !open('chrome-extension')}">
-            <header class="group-head" role="button" tabindex="0" @click="fold('chrome-extension')">
-                <span class="fold" />
-                <h2>Chrome extension</h2>
-                <p class="lead">Float the chat over any page, point at elements, send pictures, and let the agent drive the tab.</p>
-            </header>
+        </SettingsGroup>
+        <SettingsGroup :shut="!open('chrome-extension')" @fold="fold('chrome-extension')">
+            <template #title>Chrome extension</template>
+            <template #lead>Float the chat over any page, point at elements, send pictures, and let the agent drive the tab.</template>
             <div class="row">
                 <span class="text">
                     <span class="title">Agent journal for Chrome</span>
@@ -114,13 +130,10 @@ async function sweep(e) {
                     </span>
                 </template>
             </div>
-        </section>
-        <section class="group" :class="{shut: !open('features-on')}">
-            <header class="group-head" role="button" tabindex="0" @click="fold('features-on')">
-                <span class="fold" />
-                <h2>Features on {{ route.env }}</h2>
-                <p class="lead">Open a feature to see what it does, when it speaks and what it says.</p>
-            </header>
+        </SettingsGroup>
+        <SettingsGroup :shut="!open('features-on')" @fold="fold('features-on')">
+            <template #title>Features on {{ route.env }}</template>
+            <template #lead>Open a feature to see what it does, when it speaks and what it says.</template>
             <div class="features">
                 <template v-for="f in features" :key="f.name">
                     <div class="feature" role="button" tabindex="0" @click="chosen = f.name" @keydown.enter="chosen = f.name">
@@ -139,48 +152,26 @@ async function sweep(e) {
                     </div>
                 </template>
             </div>
-        </section>
-        <section class="group" :class="{shut: !open('delivery')}">
-            <header class="group-head" role="button" tabindex="0" @click="fold('delivery')">
-                <span class="fold" />
-                <h2>Delivery</h2>
-                <p class="lead">How the engine gets a line to the agent. With the channel off it types into the terminal.</p>
-            </header>
-            <div class="row">
-                <span class="text">
-                    <span class="title">Use the channel</span>
-                    <span class="help">The agent reads it mid-turn, with nothing wrapped around it</span>
-                </span>
-                <span class="control">
-                    <Switch :on="delivers('channel')" @change="(v) => setDelivery('channel', v)" />
-                </span>
-            </div>
-        </section>
-        <section class="group" :class="{shut: !open('viewer')}">
-            <header class="group-head" role="button" tabindex="0" @click="fold('viewer')">
-                <span class="fold" />
-                <h2>Viewer</h2>
-                <p class="lead">What this page does on its own.</p>
-            </header>
-            <div class="row">
-                <span class="text">
-                    <span class="title">Show While you were away</span>
-                    <span class="help">After a minute or more away from this tab, a card lists what the agent did meanwhile</span>
-                </span>
-                <span class="control">
-                    <Switch :on="viewerOn('away')" @change="(v) => setViewer('away', v)" />
-                </span>
-            </div>
-        </section>
-        <section class="group" :class="{shut: !open('environments')}">
-            <header class="group-head" role="button" tabindex="0" @click="fold('environments')">
-                <span class="fold" />
-                <h2>Environments</h2>
-                <p class="lead">
-                    Removing one packs its record into the attic, and journal environment unarchive with its name brings it back. Sweeping
-                    one packs its messages, comments, reactions, notifications and closed rows into the attic and keeps what is still true.
-                </p>
-            </header>
+        </SettingsGroup>
+        <template v-for="group in switches" :key="group.key">
+            <SettingsGroup :shut="!open(group.key)" @fold="fold(group.key)">
+                <template #title>{{ group.title }}</template>
+                <template #lead>{{ group.lead }}</template>
+                <div class="row">
+                    <span class="text">
+                        <span class="title">{{ group.label }}</span>
+                        <span class="help">{{ group.help }}</span>
+                    </span>
+                    <span class="control">
+                        <Switch :on="group.on()" @change="group.set" />
+                    </span>
+                </div>
+            </SettingsGroup>
+        </template>
+        <SettingsGroup :shut="!open('environments')" @fold="fold('environments')">
+            <template #title>Environments</template>
+            <template #lead>Removing one packs its record into the attic, and journal environment unarchive with its name brings it back. Sweeping
+                    one packs its messages, comments, reactions, notifications and closed rows into the attic and keeps what is still true.</template>
             <template v-for="e in envs" :key="e.n">
                 <div class="row">
                     <span class="text">
@@ -200,16 +191,11 @@ async function sweep(e) {
                     <p class="lead">{{ removing[e.n] }}</p>
                 </template>
             </template>
-        </section>
-        <section class="group" :class="{shut: !open('stop')}">
-            <header class="group-head" role="button" tabindex="0" @click="fold('stop')">
-                <span class="fold" />
-                <h2>Stop</h2>
-                <p class="lead">
-                    This closes the viewer, ends the engine and takes down every service a plugin runs. The agent's terminal stops with
-                    them. Nothing on the record is touched; start it again with journal claude.
-                </p>
-            </header>
+        </SettingsGroup>
+        <SettingsGroup :shut="!open('stop')" @fold="fold('stop')">
+            <template #title>Stop</template>
+            <template #lead>This closes the viewer, ends the engine and takes down every service a plugin runs. The agent's terminal stops with
+                    them. Nothing on the record is touched; start it again with journal claude.</template>
             <div class="row">
                 <span class="text">
                     <span class="title">Stop the journal</span>
@@ -218,7 +204,7 @@ async function sweep(e) {
                     <Btn kind="danger" small :disabled="stopping" @click="stop">{{ stopping ? "Stopping…" : "Stop" }}</Btn>
                 </span>
             </div>
-        </section>
+        </SettingsGroup>
         <template v-if="feature">
             <FeaturePanel :feature="feature" @close="chosen = ''" />
         </template>
@@ -229,64 +215,6 @@ async function sweep(e) {
 .settings {
     max-width: 720px;
     padding: 22px 28px 60px;
-}
-
-.group + .group {
-    margin-top: 32px;
-}
-
-.group-head {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 8px;
-    margin-bottom: 4px;
-    padding: 6px 8px 6px 4px;
-    border-radius: 8px;
-    cursor: pointer;
-    user-select: none;
-}
-
-.group-head:hover {
-    background: var(--hover);
-}
-
-.fold {
-    flex: none;
-    width: 0;
-    height: 0;
-    border-top: 5px solid transparent;
-    border-bottom: 5px solid transparent;
-    border-left: 7px solid var(--text-3);
-    transform: rotate(90deg);
-    transition: transform 0.15s ease;
-}
-
-.group.shut .fold {
-    transform: rotate(0deg);
-}
-
-.group-head:hover .fold {
-    border-left-color: var(--text);
-}
-
-.group.shut > :not(.group-head) {
-    display: none;
-}
-
-.group.shut .lead {
-    display: none;
-}
-
-.group-head .lead {
-    flex-basis: 100%;
-    padding-left: 19px;
-}
-
-h2 {
-    margin: 0 0 3px;
-    font-size: 15px;
-    font-weight: 600;
 }
 
 .lead {

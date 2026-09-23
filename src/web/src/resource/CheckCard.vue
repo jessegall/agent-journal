@@ -1,8 +1,8 @@
 <script setup>
+import {useCheckRun} from "../composables/checkRun.js";
 import Btn from "../kit/Btn.vue";
 import Dot from "../kit/Dot.vue";
-import {computed, ref} from "vue";
-import {api} from "../api/client.js";
+import {computed} from "vue";
 import {age} from "../format/time.js";
 import {useNow} from "../composables/now.js";
 import {checkState, seconds, VERDICTS} from "../domain/checks.js";
@@ -13,16 +13,8 @@ const props = defineProps({resource: Object});
 const now = useNow();
 const state = computed(() => checkState(props.resource, now.value));
 const every = computed(() => Number(props.resource.data.every || 0));
-const asked = ref(false);
+const {asked, run} = useCheckRun(() => props.resource);
 
-async function run() {
-    asked.value = true;
-    try {
-        await api.act("check", props.resource.n, "run");
-    } finally {
-        asked.value = false;
-    }
-}
 </script>
 
 <template>

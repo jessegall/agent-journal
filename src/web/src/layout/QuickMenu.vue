@@ -1,4 +1,5 @@
 <script setup>
+import QuickRow from "./QuickRow.vue";
 import {computed, nextTick, onMounted, ref, watch} from "vue";
 import Compose from "../chat/Compose.vue";
 import {api} from "../api/client.js";
@@ -214,7 +215,7 @@ function inView(selector) {
     });
 }
 watch(cursor, () => inView(".quick-row.on"));
-watch(fileIndex, () => inView(".quick-file.on"));
+watch(fileIndex, () => inView(".quick-row.on"));
 
 function onInput(e) {
     q.value = e.target.value;
@@ -274,13 +275,11 @@ function onFileKey(e) {
                     </div>
                     <div class="quick-rows">
                         <template v-for="(r, n) in rows" :key="r.label">
-                            <button type="button" :class="['quick-row', {on: n === cursor}]" @click="r.run" @mouseenter="i = n">
-                                <Icon :name="r.icon" />
-                                <span class="quick-label">{{ r.label }}</span>
+                            <QuickRow :icon="r.icon" :label="r.label" :on="n === cursor" @click="r.run" @mouseenter="i = n">
                                 <template v-if="r.hk">
                                     <span class="quick-cap">{{ r.hk }}</span>
                                 </template>
-                            </button>
+                            </QuickRow>
                         </template>
                     </div>
                     <div class="quick-foot">
@@ -317,18 +316,17 @@ function onFileKey(e) {
                         </template>
                         <template v-else>
                             <template v-for="(file, n) in matchingFiles" :key="file.path">
-                                <button
-                                    type="button"
-                                    :class="['quick-file', {on: n === fileIndex}]"
+                                <QuickRow
+                                    :icon="file.folder ? 'folder' : 'file'"
+                                    :label="file.name"
+                                    :on="n === fileIndex"
                                     @click="openFile(file)"
                                     @mouseenter="fileIndex = n"
                                 >
-                                    <Icon :name="file.folder ? 'folder' : 'file'" />
-                                    <span class="quick-file-path">{{ file.name }}</span>
                                     <template v-if="!file.folder">
                                         <span class="quick-file-size">{{ size(file.size) }}</span>
                                     </template>
-                                </button>
+                                </QuickRow>
                             </template>
                         </template>
                     </div>
@@ -458,47 +456,6 @@ function onFileKey(e) {
     padding: 6px;
 }
 
-.quick-file {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    width: 100%;
-    min-height: 36px;
-    padding: 0 10px;
-    border: none;
-    border-radius: 8px;
-    background: transparent;
-    color: var(--text-2);
-    font: inherit;
-    font-size: 12.5px;
-    text-align: left;
-    cursor: pointer;
-}
-
-.quick-file.on {
-    background: var(--sel);
-    color: var(--text);
-}
-
-.quick-file .ico {
-    flex: none;
-    width: 14px;
-    height: 14px;
-    color: var(--text-3);
-}
-
-.quick-file.on .ico {
-    color: var(--accent-text);
-}
-
-.quick-file-path {
-    flex: 1;
-    min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
 .quick-file-size {
     flex: none;
     color: var(--text-4);
@@ -510,47 +467,6 @@ function onFileKey(e) {
     padding: 28px 12px;
     color: var(--text-3);
     text-align: center;
-}
-
-.quick-row {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    width: 100%;
-    height: 38px;
-    padding: 0 10px;
-    border: none;
-    border-radius: 8px;
-    background: transparent;
-    color: var(--text-2);
-    font: inherit;
-    font-size: 13px;
-    text-align: left;
-    cursor: pointer;
-}
-
-.quick-row.on {
-    background: var(--sel);
-    color: var(--text);
-}
-
-.quick-row .ico {
-    flex: none;
-    width: 14px;
-    height: 14px;
-    color: var(--text-3);
-}
-
-.quick-row.on .ico {
-    color: var(--accent-text);
-}
-
-.quick-label {
-    flex: 1;
-    min-width: 0;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
 }
 
 .quick-cap {
@@ -593,8 +509,5 @@ function onFileKey(e) {
     text-overflow: ellipsis;
 }
 
-.quick-row,
-.quick-file {
-    scroll-margin-block: 40px;
-}
+
 </style>

@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.107.0 — The viewer passes the newer code-commandments check
+
+The 13 findings the newer Check for sins reported are fixed where they start: the two check panels share one run (useCheckRun); the revision strip reads plain counts from its composable instead of reaching into nested objects; and markup that was written twice is one component each — the usage meter (UsageMeter), a dump's file list (DumpFiles), the chat window's journal and environment pickers (ShellPicker), the quick menu's command and file rows (QuickRow), and every Settings section (SettingsGroup), with the two single-switch sections drawn from one list. The check now finds no sins in 131 files.
+
 ## 2.106.2 — A plugin dialog's console fills the dialog
 
 In the plugin install, update and log dialogs, the dark console area fills the rest of the dialog, edge to edge down to the footer, with its padding only inside around the text. The kit's Console takes a fill option for this.
