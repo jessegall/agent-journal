@@ -58,7 +58,7 @@ def test_a_functional_design_is_a_doc_whose_approval_makes_the_plan():
     from features.templates.shipped import ship
     features.load()
     record = fresh()
-    assert (ship(record), ship(record)) == (["Functional design"], []), "shipped once, never twice"
+    assert (ship(record), ship(record)) == (["Functional design", "Find what is wrong", "Find what is missing", "Challenge the approach"], []), "shipped once, never twice"
     functional = next(r for r in Templates(record, actor=USER).summaries() if r["title"] == "Functional design")
     design = Docs(record, actor=AGENT).create("Queue autoscaler", abstract="Scale workers from queue depth", template=functional["n"])
     assert [s["title"] for s in Docs(record, actor=AGENT).load(design.n).sections][:3] == ["What it is for", "What the user sees and does", "Must have"], \

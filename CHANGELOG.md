@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.116.0 — A plan can be sent for critique from its page
+
+A plan's page has Ask for a critique. It asks how many agents, how big a critique, whether they look for mistakes, for what is missing or both, and which critique template to follow, then sends the request to the agent as your message about the plan. Three critique templates ship with the journal (find what is wrong, find what is missing, challenge the approach); a template of your own joins them with --set applies_to=plan --set purpose=critique.
+
 ## 2.115.2 — Journal lines are typed when the channel stops delivering
 
 The journal handed its lines to the channel as long as the channel's process was alive, even when nothing it sent reached the agent. It now checks that they arrive: when the agent keeps working and a line handed to the channel never shows up in its conversation, the journal types its lines into the terminal instead for five minutes, then tries the channel again.

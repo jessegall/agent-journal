@@ -42,7 +42,7 @@ onMounted(async () => {
     }
     const rows = await api.all("template").catch(() => []);
     templates.value = rows.filter(
-        (t) => !t.completed && !t.deleted && (!(t.data?.applies_to || []).length || t.data.applies_to.includes(props.type))
+        (t) => !t.completed && !t.deleted && !t.data?.purpose && (!(t.data?.applies_to || []).length || t.data.applies_to.includes(props.type))
     );
 });
 
