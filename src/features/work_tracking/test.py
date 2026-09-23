@@ -196,6 +196,11 @@ def test_a_declared_wait_is_asked_about_and_cleared_when_the_work_moves():
     report(record, "working", "PreToolUse")
     works = Works(record, actor=AGENT)
     build = works.create("the release")
+    check = {"tool": "Bash", "what": "tail -3 build.log", "at": 1.0}
+    for i in range(1, 5):
+        report(record, "working", "PostToolUse", commands=[check] * i)
+    polling = [n for n in nudges(record) if "same check" in n]
+    assert polling == ["you ran the same check 3 times in a row - tail -3 build.log"], "the third identical check in a row is named once, pointing at await"
     works.action("await")("the CI run on main")
     idle(record)
     assert not [n for n in nudges(record) if "still open" in n], "a declared wait holds the end-or-park line"

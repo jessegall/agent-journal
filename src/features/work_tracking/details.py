@@ -137,6 +137,15 @@ class WorkDetails(FeatureDetails):
             title="todo {{n}} next",
         ),
         Line(
+            name="polling",
+            title="you ran the same check {{times}} times in a row - {{command}}",
+            brief="""
+                if you are waiting for something to change, say journal work await "<what you wait for>" and end
+                your turn: you are asked to look again every five minutes, and a background command tells you
+                itself when it ends. Keep checking only if each look moves the work on.
+            """,
+        ),
+        Line(
             name="wait cleared",
             title="your wait for {{what}} is over, because you are working again",
             brief='say journal work await "<what you wait for>" again if you are still only waiting',
