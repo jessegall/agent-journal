@@ -2,15 +2,151 @@ import {computed, onUnmounted, reactive, ref, watch} from "vue";
 import {api} from "../api/client.js";
 import {store} from "../state/store.js";
 import {usePoll} from "../poll.js";
+import {age} from "../format/time.js";
+import {stateOf} from "../layout/statusline.js";
 
 const LINGER = 60000;
 const SCAN_EVERY = 2000;
 const REFRESH_EVERY = 1000;
+const STALE_AFTER = 10000;
+const STREAMS_PER_JOURNAL = 3;
+const RANK = {working: 0, busy: 1, waiting: 1, compacting: 1, idle: 2, stopped: 3};
+const ACTIVE = ["working", "busy", "waiting", "compacting"];
+
+export const STATE_WORDS = {
+    working: "Working",
+    busy: "Busy",
+    waiting: "Waiting",
+    compacting: "Compacting",
+    idle: "Idle",
+    stopped: "No agent",
+};
+
+export const COUNTS = [
+    {key: "questions", page: "question", icon: "help", one: "question waiting", many: "questions waiting", hot: true},
+    {key: "messages", page: "message", icon: "mail", one: "unread message", many: "unread messages", hot: true},
+    {key: "suggestions", page: "suggestion", icon: "bulb", one: "suggestion to review", many: "suggestions to review", hot: true},
+    {key: "todos", page: "todo", icon: "todos", one: "open to-do", many: "open to-dos", hot: false},
+];
+
+const PLAN_ASKS = {
+    ready: "waits for your approval",
+    waiting: "waits for you to continue",
+    done: "is finished and waits for you to close it",
+};
+
+export const counted = (n, one, many) => `${n} ${n === 1 ? one : many}`;
+
+export const ago = (at) => (age(at) === "now" ? "just now" : `${age(at)} ago`);
+
+export const environmentsOf = (j) => (j.summary && j.summary.environments) || [];
+
+export function worksOf(e) {
+    const row = (w, completed) => ({...w, completed, data: {todo: w.todo}});
+    const works = [];
+    if (e.last && (!e.work || e.last.n !== e.work.n)) works.push(row(e.last, 1));
+    if (e.work) works.push(row(e.work, 0));
+    return works;
+}
+
+export const envState = (e) => stateOf(e.agent ? {data: e.agent} : null, worksOf(e));
+
+export const isActive = (state) => ACTIVE.includes(state);
+
+export function leadOf(j) {
+    const envs = environmentsOf(j);
+    const ranked = [...envs].sort((a, b) => RANK[envState(a)] - RANK[envState(b)] || (b.agent?.at || 0) - (a.agent?.at || 0));
+    if (ranked.length && envState(ranked[0]) !== "stopped") return ranked[0];
+    return envs.find((e) => e.name === j.summary.start) || envs[0] || null;
+}
+
+export function journalState(j) {
+    const lead = j.gone || !j.summary ? null : leadOf(j);
+    return lead ? envState(lead) : "stopped";
+}
+
+export function focusOf(e) {
+    if (e.work)
+        return {title: e.work.title, caption: e.work.todo ? `to-do ${e.work.todo}` : "work without a to-do", current: true, known: true};
+    if (e.last)
+        return {
+            title: e.last.title,
+            caption: e.last.todo ? `last finished · to-do ${e.last.todo}` : "last finished",
+            current: false,
+            known: true,
+        };
+    return {title: "Nothing worked on yet", caption: "", current: false, known: false};
+}
+
+export function agentLine(e) {
+    if (!e.agent || envState(e) === "stopped") return "";
+    return `${e.agent.model || e.agent.provider} · context ${Math.round(e.agent.context || 0)}%`;
+}
+
+export const countsOf = (counts) =>
+    COUNTS.filter((c) => counts[c.key]).map((c) => ({...c, n: counts[c.key], text: counted(counts[c.key], c.one, c.many)}));
+
+export function asksOf(j, e) {
+    const server = api.journal(j);
+    const counts = countsOf(e.counts)
+        .filter((c) => c.hot)
+        .map((c) => ({key: c.key, n: c.n, count: c.n, icon: c.icon, text: c.n === 1 ? c.one : c.many, href: server.page(e.name, c.page)}));
+    const plans = e.plans
+        .filter((p) => p.status in PLAN_ASKS)
+        .map((p) => ({
+            key: `plan-${p.n}`,
+            n: 1,
+            count: "",
+            icon: "plan",
+            text: `Plan “${p.title}” ${PLAN_ASKS[p.status]}`,
+            href: server.page(e.name, "plan"),
+        }));
+    return [...counts, ...plans];
+}
+
+export function totalsOf(j) {
+    return environmentsOf(j).reduce(
+        (sum, e) => ({
+            questions: sum.questions + e.counts.questions,
+            messages: sum.messages + e.counts.messages,
+            suggestions: sum.suggestions + e.counts.suggestions,
+            todos: sum.todos + e.counts.todos,
+        }),
+        {questions: 0, messages: 0, suggestions: 0, todos: 0}
+    );
+}
+
+export const projectPath = (j) => j.root.replace(/\/\.journal$/, "");
+
+export const stoppedNote = (j) => (j.running ? "its viewer stopped answering" : `last seen ${ago(j.at)}`);
 
 export function useHub() {
     const journals = ref([]);
     const loaded = ref(false);
     const running = computed(() => journals.value.filter((j) => j.running));
+    const online = computed(() =>
+        journals.value
+            .filter((j) => j.running && !j.gone && (j.summary || j.unreadable))
+            .sort((a, b) => RANK[journalState(a)] - RANK[journalState(b)] || a.project.localeCompare(b.project))
+    );
+    const stopped = computed(() => journals.value.filter((j) => !j.running || j.gone));
+    const needs = computed(() =>
+        online.value
+            .flatMap((j) => environmentsOf(j).map((e) => ({key: `${j.root}:${e.name}`, journal: j, env: e, asks: asksOf(j, e)})))
+            .filter((item) => item.asks.length)
+    );
+    const tally = computed(() => {
+        const states = online.value.flatMap(environmentsOf).map(envState);
+        return {
+            journals: online.value.length,
+            stopped: stopped.value.length,
+            agents: states.filter((s) => s !== "stopped").length,
+            working: states.filter(isActive).length,
+            idle: states.filter((s) => s === "idle").length,
+            needs: needs.value.reduce((sum, item) => sum + item.asks.reduce((n, ask) => n + ask.n, 0), 0),
+            todos: online.value.reduce((sum, j) => sum + totalsOf(j).todos, 0),
+        };
+    });
     const streams = new Map();
     const waiting = new Map();
     let scanning = false;
@@ -24,6 +160,7 @@ export function useHub() {
         try {
             j.summary = await api.journal(j).summary();
             j.gone = 0;
+            j.fresh = Date.now();
             j.unreadable = false;
         } catch (e) {
             j.unreadable = true;
@@ -42,7 +179,9 @@ export function useHub() {
     }
 
     function listenTo(j) {
-        const envs = j.running ? ((j.summary || {}).environments || []).map((e) => e.name) : [];
+        const watched =
+            j.running && !j.current ? environmentsOf(j).filter((e) => e.name === j.summary.start || envState(e) !== "stopped") : [];
+        const envs = watched.slice(0, STREAMS_PER_JOURNAL).map((e) => e.name);
         const have = streams.get(j.root) || new Map();
         for (const name of envs) {
             if (have.has(name)) continue;
@@ -85,7 +224,7 @@ export function useHub() {
             } else {
                 const changed = got.version !== j.version;
                 Object.assign(j, got);
-                if (j.gone || (j.unreadable && changed)) await refresh(j);
+                if (j.gone || (j.unreadable && changed) || Date.now() - (j.fresh || 0) > STALE_AFTER) await refresh(j);
             }
             listenTo(j);
         }
@@ -121,5 +260,5 @@ export function useHub() {
         for (const j of [...journals.value]) drop(j.root);
     });
 
-    return {journals, loaded, running, refresh, forget};
+    return {journals, loaded, running, online, stopped, needs, tally, refresh, forget};
 }
