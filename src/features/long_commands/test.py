@@ -53,7 +53,6 @@ def test_a_background_command_the_hook_refused_is_not_counted_as_running(tmp_pat
 def test_a_command_from_the_terminal_view_is_typed_into_the_agents_terminal_as_a_shell_command(monkeypatch):
     from engine import engine as engine_module
     from engine.engine import Engine
-    from engine.inputs import SHELL, queue
     from providers import DRIVERS
     record = fresh()
     report(record, "idle", "Stop")
@@ -62,8 +61,14 @@ def test_a_command_from_the_terminal_view_is_typed_into_the_agents_terminal_as_a
     monkeypatch.setattr(engine.agent.driver, "_wrote", lambda raw: typed.append(raw) or True)
     monkeypatch.setattr(engine_module.time, "sleep", lambda seconds: None)
     monkeypatch.setattr(engine.agent, "state", lambda: engine_module.IDLE)
-    queue(record.root, "claude-1", "", "Run git status", provider="claude", action=SHELL, value="git status")
+    from controllers.types import Agents
+    from surfaces import control
+    monkeypatch.setattr(control, "online", lambda root, env, session: {"provider": "claude"})
+    control.shell(record.root, record.env, "claude-1", "git status")
+    pending = lambda: [c["command"] for c in Agents(record).by_session("claude-1").data.get("queued_commands") or []]
+    assert pending() == ["git status"], "the command shows as pending until it is typed"
     assert engine.shelled() == "ran in the terminal: git status"
+    assert pending() == [], "typed, it is no longer pending"
     assert typed[-2:] == [b"!git status", b"\r"], "typed with Claude's shell mark and entered once, with no journal mark in front"
     assert DRIVERS["codex"].SHELL == "", "a provider without a shell mark takes no command"
 

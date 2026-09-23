@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.113.0 — A command typed in the terminal view shows as pending until it runs
+
+A command typed in the terminal view is typed into the agent's terminal as a shell command (!command for Claude) once the agent comes to rest. Until then it stands at the bottom of the terminal log as pending, so a queued command is visible instead of running unseen later.
+
 ## 2.112.2 — A refused read is one red line with its file
 
 The mark for a refused whole read is tinted red and fits on one line: the refusal with the file as a chip beside it, and the line count in its hover text. A mark's title passes the formatters like its second line, so a file or a row named in it becomes a chip. The viewer no longer throws when events arrive before it has loaded the types.
