@@ -16,6 +16,13 @@ KEPT = 200
 EMPTY_BLOB = "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
 
 
+
+def change_kind(path: str, last: dict, now: dict) -> str:
+    if path not in last:
+        return DELTA.created
+    return DELTA.deleted if path not in now else DELTA.edited
+
+
 def git(project: Path, *args: str, stdin: str | None = None) -> str:
     return run(["git", *args], project, stdin=stdin)
 
@@ -100,7 +107,7 @@ def record_files(agent, record, work) -> None:
     for path in sorted(p for p in set(last) | set(now) if last.get(p) != now.get(p)):
         touched.append(path)
         added, removed = numstat(project, last.get(path, EMPTY_BLOB), now.get(path, EMPTY_BLOB))
-        kind = DELTA.created if path not in last else DELTA.deleted if path not in now else DELTA.edited
+        kind = change_kind(path, last, now)
         entries.append({NOTE.at: at, NOTE.path: path, NOTE.kind: kind, NOTE.added: added, NOTE.removed: removed})
         delta[kind] += 1
         delta[DELTA.added] += added

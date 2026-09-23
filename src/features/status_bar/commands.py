@@ -48,7 +48,8 @@ def stamped(runs: list[CommandRun], running: CommandRun, doing: str = "", at: fl
     which = next((i for i in reversed(range(len(runs))) if running.at and runs[i].at == running.at), None)
     if which is None:
         which = next((i for i in reversed(range(len(runs))) if doing and runs[i].command == doing and not runs[i].done), None)
-    ended = [replace(one, done=done, result=running.result if running.result else one.result) if i == which else one for i, one in enumerate(runs)]
+    finished = lambda one: replace(one, done=done, result=running.result if running.result else one.result)
+    ended = [finished(one) if i == which else one for i, one in enumerate(runs)]
     return [one.to_json() for one in ended]
 
 

@@ -6,6 +6,11 @@ ACCEPT, ADJUST, DECLINE = "Accept", "Adjust", "Decline"
 OPEN_SUGGESTIONS = 5
 
 
+
+def adjusted(how: str) -> str:
+    return ADJUST.lower() if how.strip() else ""
+
+
 class Suggestions(Controller):
     resource = types.Suggestion
 
@@ -24,7 +29,7 @@ class Suggestions(Controller):
 
     def complete(self, n: int, how: str = "", **data):
         word = how.strip().split(":", 1)[0].strip().lower()
-        decision = word if word in (ACCEPT.lower(), DECLINE.lower()) else ADJUST.lower() if how.strip() else ""
+        decision = word if word in (ACCEPT.lower(), DECLINE.lower()) else adjusted(how)
         self.update(n, decision=decision)
         return super().complete(n, how, **data)
 

@@ -6,7 +6,11 @@ class Setting:
         self.name, self.default, self.title, self.abstract, self.unit = name, default, paragraphs(title), paragraphs(abstract), unit
 
     def kind(self) -> str:
-        return "switch" if isinstance(self.default, bool) else "number" if isinstance(self.default, (int, float)) else "map" if isinstance(self.default, dict) else "text"
+        if isinstance(self.default, bool):
+            return "switch"
+        if isinstance(self.default, (int, float)):
+            return "number"
+        return "map" if isinstance(self.default, dict) else "text"
 
     def describe(self) -> dict:
         return {"name": self.name, "title": self.title, "abstract": self.abstract, "default": self.default, "unit": self.unit, "kind": self.kind()}

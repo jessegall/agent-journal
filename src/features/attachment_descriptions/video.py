@@ -5,7 +5,9 @@ MAX_FRAMES = 60
 
 
 def spacing(seconds: float) -> float:
-    return 0.5 if seconds <= 30 else 2 if seconds <= 120 else max(2, seconds / MAX_FRAMES)
+    if seconds <= 30:
+        return 0.5
+    return 2 if seconds <= 120 else max(2, seconds / MAX_FRAMES)
 
 
 def probe(source: Path) -> float:
