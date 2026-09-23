@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.110.0 — Long command output is cut to its two ends
+
+The journal launches Claude with a shell prefix (CLAUDE_CODE_SHELL_PREFIX) that runs every shell command through a small wrapper: output longer than 400 lines keeps its first and last 200, with a line in between saying how many were cut and how to see them (a range with sed -n, or grep). The command's exit code is kept. The number of lines is a setting of the laws feature, and 0 keeps every line. It takes effect for agents launched after the upgrade.
+
 ## 2.109.0 — Reading a long file whole is refused
 
 Law L3 (read narrowly) is now enforced: reading a file longer than 300 lines without a range, or printing one whole with cat, is refused with the file's length and a pointer to read a range or grep first. A read with a range, a short file, and a cat already cut short all pass. The limit is a setting of the laws feature.

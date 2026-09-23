@@ -103,3 +103,20 @@ def test_reading_a_long_file_whole_is_refused_and_a_range_or_a_short_file_passes
     cat = hook("Bash", {"command": "cat long.py"})
     assert cat.get("decision") == "block" and "print a range with sed -n" in cat.get("reason", ""), cat
     assert hook("Bash", {"command": "cat long.py | head -20"}).get("decision") != "block", "a cat already cut short passes"
+
+
+def test_a_long_command_output_keeps_its_ends_and_its_exit_code_through_the_prefix_claude_is_launched_with():
+    import subprocess
+    from pathlib import Path
+    from engine.terminal import output_cap
+    record = fresh()
+    cap = Path(__file__).resolve().parents[2] / "output_cap.sh"
+    ran = subprocess.run([str(cap), "seq 1 1000; exit 3"], capture_output=True, text=True, env={"PATH": "/usr/bin:/bin", "JOURNAL_OUTPUT_LINES": "3"}, timeout=20)
+    assert (ran.returncode, ran.stdout.splitlines()[:3], ran.stdout.splitlines()[-3:]) == (3, ["1", "2", "3"], ["998", "999", "1000"]), ran.stdout
+    assert "994 lines cut here" in ran.stdout, "the cut is said, with how to see the rest"
+    short = subprocess.run([str(cap), "seq 1 5"], capture_output=True, text=True, env={"PATH": "/usr/bin:/bin", "JOURNAL_OUTPUT_LINES": "3"}, timeout=20)
+    assert short.stdout.split() == ["1", "2", "3", "4", "5"], "short output passes whole"
+    launched = output_cap(record.root, record.env)
+    assert launched == {"CLAUDE_CODE_SHELL_PREFIX": str(record.root / "src" / "output_cap.sh"), "JOURNAL_OUTPUT_LINES": "200"}, launched
+    record.set_setting("journal_laws", {"output_lines": 0})
+    assert output_cap(record.root, record.env) == {}, "0 keeps every line"

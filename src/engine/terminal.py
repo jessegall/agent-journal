@@ -31,8 +31,15 @@ def watched(root: Path) -> tuple:
     return (str((root / "journal.pyz").resolve()), *((str(f), f.stat().st_mtime_ns) for f in files if f.is_file()))
 
 
-def agent_environment(base: dict | None = None, env: str = "") -> dict:
-    return {**(base if base is not None else os.environ), ACTIVE_ENV: "1", **({"JOURNAL_ENV": env} if env else {})}
+def agent_environment(base: dict | None = None, env: str = "", capped: dict | None = None) -> dict:
+    return {**(base if base is not None else os.environ), ACTIVE_ENV: "1", **({"JOURNAL_ENV": env} if env else {}), **(capped or {})}
+
+
+def output_cap(root: Path, env: str) -> dict:
+    from engine.record import Record
+    from features.journal_laws.details import LawDetails
+    lines = int(LawDetails.values(Record(root, env)).output_lines)
+    return {"CLAUDE_CODE_SHELL_PREFIX": str(code(root) / "output_cap.sh"), "JOURNAL_OUTPUT_LINES": str(lines)} if lines > 0 else {}
 
 
 def session_of(agent: str, pid: int) -> str:
@@ -44,11 +51,11 @@ def pid_of(session: str) -> int:
     return int(tail) if tail.isdigit() else 0
 
 
-def spawn_agent(command: list[str], cwd: Path, env: str = "") -> tuple[int, int]:
+def spawn_agent(command: list[str], cwd: Path, env: str = "", capped: dict | None = None) -> tuple[int, int]:
     pid, fd = pty.fork()
     if pid == 0:
         os.chdir(cwd)
-        os.execvpe(command[0], command, agent_environment(env=env))
+        os.execvpe(command[0], command, agent_environment(env=env, capped=capped))
     return pid, fd
 
 
@@ -96,7 +103,7 @@ def launch(root: Path, cwd: Path, env: str, agent: str, args: list[str], convers
 
     driver = DRIVERS[agent]
     command = driver.command(driver, driver.resumed(launch_args(Record(root, env), agent, args), conversation), cwd)
-    pid, fd = spawn_agent(command, cwd, env)
+    pid, fd = spawn_agent(command, cwd, env, output_cap(root, env))
     session = session_of(agent, pid)
     seat(root, env, session, pid, agent, command)
     return pid, fd, session
