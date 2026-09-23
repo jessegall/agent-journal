@@ -14,6 +14,7 @@ from features.kanban.lanes import Lane
 from features.tickets.details import TicketsDetails
 from features.tickets.resource import Ticket
 from controllers.types import Agents
+from features.plans.controller import READY, Plans
 from resources.base import SYSTEM, Refused, Resource
 from resources.shapes import LEVELS
 
@@ -54,7 +55,8 @@ class Tickets(Controller):
         session = next((name for name, held in sessions.items() if held.environment == place and live(held)), "")
         row = Agents(Record(self.record.root, place), actor=SYSTEM)._titled(session) if session else None
         state = "waiting for you" if row and row.asking else row.status if row else "queued" if ticket.queued else "stopped"
-        return f"{state} in {place}"
+        waiting = ticket.plan and Plans(Record(self.record.root, place), actor=SYSTEM).load(int(ticket.plan)).status == READY
+        return f"{state} in {place}" + ("; its plan waits for your approval" if waiting else "")
 
     def bind(self, n: int):
         ticket = self.load(int(n))
@@ -145,9 +147,16 @@ class Tickets(Controller):
         if len(self._running()) >= int(TicketsDetails.values(self.record).running):
             return self.update(ticket.n, queued=True)
         driver, place = DRIVERS[agent], ticket.work_environment
-        args = driver.resumed(driver.within([*driver.AUTO_ARGS], place), Sessions(self.record.root).last(place, agent))
-        detached(self.record.root, self.record.root.parent, place, agent, args)
+        earlier = Sessions(self.record.root).last(place, agent)
+        args = driver.within([*driver.AUTO_ARGS], place)
+        detached(self.record.root, self.record.root.parent, place, agent, driver.resumed(args, earlier) if earlier else driver.prompted(args, self._kickoff(ticket)))
         return self.update(ticket.n, queued=False)
+
+    def _kickoff(self, ticket) -> str:
+        return (f"You work {ticket.ref}, {ticket.title}, in this environment and its worktree. {ticket.brief}\n"
+                f"Draft a plan for it with journal plan create and link it with journal ticket update {ticket.n} --set plan=<n>. "
+                f"Decide whether it waits for the user's approval: work that is risky, reaches outside the project or touches production "
+                f"waits (journal plan ready and say so in the chat); other work starts at once. Hand domain work out with journal todo delegate.")
 
     @internal
     def start_queued(self) -> None:
