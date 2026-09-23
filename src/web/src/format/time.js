@@ -7,6 +7,13 @@ export function age(at) {
     return `${Math.floor(s / 86400)}d`;
 }
 
+export function fresh(at, now) {
+    const s = Math.max(0, now - at);
+    if (s < 5) return "now";
+    if (s < 60) return `${Math.floor(s)}s`;
+    return age(at);
+}
+
 export function clock(at) {
     if (!at) return "";
     const d = new Date(at * 1000);

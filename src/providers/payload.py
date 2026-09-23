@@ -1,6 +1,7 @@
 import json
 import re
 from dataclasses import dataclass, field, replace
+from enum import StrEnum
 from typing import ClassVar
 from pathlib import Path
 
@@ -12,6 +13,9 @@ STATUS = {"SessionStart": "idle", "Stop": "idle", "UserPromptSubmit": "working",
 PERMISSION = "PermissionRequest"
 DISPLAYED = "MessageDisplay"
 EVENTS = tuple(STATUS)
+
+
+HUNK_HEAD = re.compile(r"^@@ -(\d+)(?:,\d+)? \+(\d+)(?:,\d+)? @@")
 
 
 SKILL_READ = re.compile(r"(?:^|[\s'\"/=(])(?:\.(?:codex|agents|claude)/)?skills/(journal(?:-[\w-]+)?)/SKILL\.md")
@@ -404,3 +408,40 @@ class Hook(Loaded):
     @property
     def shell(self) -> str | None:
         return self.tool.command if isinstance(self.tool, BashCall) else None
+
+
+class EditKind(StrEnum):
+    EDIT = "edit"
+    NEW = "new"
+    DELETED = "deleted"
+
+
+@dataclass(frozen=True)
+class Hunk:
+    old_start: int
+    new_start: int
+    lines: tuple[str, ...]
+
+    @classmethod
+    def added(cls, text: str) -> "Hunk":
+        return cls(0, 1, tuple(f"+{line}" for line in text.splitlines()))
+
+    @classmethod
+    def removed(cls, text: str) -> "Hunk":
+        return cls(1, 0, tuple(f"-{line}" for line in text.splitlines()))
+
+    @classmethod
+    def parsed(cls, diff: str) -> tuple["Hunk", ...]:
+        lines = diff.splitlines()
+        starts = [i for i, line in enumerate(lines) if HUNK_HEAD.match(line)]
+        return tuple(cls(*map(int, HUNK_HEAD.match(lines[start]).groups()), tuple(line for line in lines[start + 1:end] if not line.startswith("\\")))
+                     for start, end in zip(starts, [*starts[1:], len(lines)]))
+
+
+@dataclass(frozen=True)
+class FileEdit:
+    id: str
+    path: str
+    at: float
+    kind: EditKind
+    hunks: tuple[Hunk, ...]

@@ -2,8 +2,11 @@ from dataclasses import dataclass, field
 
 from engine.fields import Loaded
 from engine.transcript import timestamp
+from providers.payload import EditKind, FileEdit, Hunk
 
 TEXT_PARTS = ("input_text", "output_text", "text")
+ADDED, DELETED = "add", "delete"
+FILE_CHANGE, COMPLETED = "FileChange", "completed"
 
 
 @dataclass(frozen=True)
@@ -80,6 +83,35 @@ class Source(Loaded):
 
 
 @dataclass(frozen=True)
+class Change(Loaded):
+    keyed_by = "path"
+    path: str = ""
+    type: str = ""
+    unified_diff: str = ""
+    content: str = ""
+
+    def edit(self, key: str, at: float) -> FileEdit:
+        if self.type == ADDED:
+            return FileEdit(key, self.path, at, EditKind.NEW, (Hunk.added(self.content),))
+        if self.type == DELETED:
+            return FileEdit(key, self.path, at, EditKind.DELETED, (Hunk.removed(self.content),))
+        return FileEdit(key, self.path, at, EditKind.EDIT, Hunk.parsed(self.unified_diff))
+
+
+@dataclass(frozen=True)
+class Item(Loaded):
+    type: str = ""
+    id: str = ""
+    status: str = ""
+    changes: tuple[Change, ...] = ()
+
+    def edits(self, at: float) -> list[FileEdit]:
+        if self.type != FILE_CHANGE or self.status != COMPLETED:
+            return []
+        return [change.edit(f"{self.id}:{change.path}", at) for change in self.changes]
+
+
+@dataclass(frozen=True)
 class Payload(Loaded):
     aliases = {"call": ("name",), "key": ("call_id", "id"), "arguments": ("arguments", "input"), "output_parts": ("output",),
                "rate_limits": ("rate_limits", "rateLimits")}
@@ -95,6 +127,7 @@ class Payload(Loaded):
     info: TokenInfo = TokenInfo()
     rate_limits: RateLimits | None = None
     source: Source = Source()
+    item: Item = Item()
 
     @property
     def name(self) -> str:

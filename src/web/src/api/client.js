@@ -298,6 +298,10 @@ export class ApiClient {
         return this.get(this.here(`/agent/${agent}${session ? `/subagent/${session}` : ""}/transcript${query(fields)}`));
     }
 
+    edits(agent, since) {
+        return this.get(this.here(`/agent/${agent}/edits${query({since})}`));
+    }
+
     stream() {
         return new EventSource(this.url(this.here("/stream")));
     }

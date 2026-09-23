@@ -7,7 +7,7 @@ from typing import ClassVar
 
 from engine.fields import Loaded
 from engine.transcript import Turn
-from providers.payload import AgentCall, AskCall, AskedQuestion, BashCall, Dispatch, FetchCall, Hook, PERMISSION, ReadCall, STATUS, SearchCall, SkillCall, UsageWindow, WriteCall
+from providers.payload import AgentCall, AskCall, AskedQuestion, BashCall, Dispatch, FetchCall, Hook, PERMISSION, ReadCall, STATUS, SearchCall, SkillCall, UsageWindow, WriteCall, FileEdit
 from resources.base import Refused
 from engine.stored import read_json, tail, write_text
 
@@ -17,6 +17,7 @@ TRANSCRIPTS: dict[str, tuple] = {}
 SEAM = 256
 RECENT_BYTES = 1_000_000
 RECENT_ROWS = 1000
+EDITS_BYTES = 8_000_000
 LEGACY = ".journal/hook.py"
 
 
@@ -47,6 +48,7 @@ class Provider(ABC):
     link_skills = False
     retired_skill_homes = ()
     sleeping_tools = ()
+    edit_mark = b""
     controls = {"groups": [], "note": "This CLI does not expose model controls."}
 
     @classmethod
@@ -233,6 +235,24 @@ class Provider(ABC):
 
     def thoughts(self, transcript: Path, offset: int) -> tuple[list[tuple[str, str]], int]:
         return [], offset
+
+    def file_edits(self, transcript: Path, offset: int) -> tuple[list[FileEdit], int]:
+        try:
+            with Path(transcript).open("rb") as source:
+                size = source.seek(0, 2)
+                start = offset if 0 < offset <= size else max(0, size - EDITS_BYTES)
+                source.seek(start)
+                raw = source.read(size - start)
+        except (OSError, TypeError):
+            return [], offset
+        whole = raw[:raw.rfind(b"\n") + 1]
+        lines = whole.split(b"\n")[:-1]
+        cut = lines[1:] if start and start != offset else lines
+        rows = (parsed(line.decode(errors="replace")) for line in cut if self.edit_mark in line)
+        return [edit for row in rows if isinstance(row, dict) for edit in self.edits_in(row)], start + len(whole)
+
+    def edits_in(self, raw: dict) -> list[FileEdit]:
+        return []
 
     def status(self, hook) -> str:
         return "idle" if hook.tool.name in self.sleeping_tools else STATUS[hook.event]
