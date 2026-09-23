@@ -4,6 +4,16 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.121.0 — Worktree sessions resume and continue in place, and dumps read whole
+
+journal claude --continue goes back to the environment and worktree of the conversation it continues, without asking, as --resume already did. Resuming a conversation the journal never saw offers to fill the chat from its transcript. A worktree removed even with its branch comes back with the work its last launch recorded.
+
+A file dropped in a dump is read whole however long, and a new dump is titled by its number until the agent names it. The dump window's lines reach its sides. A collection shows its to-dos in their own tab and everything else as cards. The critique dialog asks for a critique in one plain sentence, without a separate focus choice. Clicking a question scrolls the chat to it. The Subagents list shows row references as chips, and a background subagent stops showing as running once it finishes.
+
+A check can leave a JSON report whose findings the viewer shows under the check. A plugin can name the skills its events and hooks require, and its skills can carry keywords. A question that repeats its options in its text is refused, and a picked option is recorded by its number.
+
+Fixed: relaying messages between agent sessions failed on a Codex session, and a channel restarted by a new build skipped the lines queued meanwhile, so the journal typed them into the terminal for five minutes. The engine reads only new transcript rows for a session's helpers, which keeps its CPU near zero. Nothing to do.
+
 ## 2.120.1 — Resuming a conversation goes back to its environment, and updates arrive at once
 
 journal claude --resume <id> for a conversation the journal knows starts in that conversation's environment, inside its worktree when it has one, and asks nothing: the flags and answers of that environment's last start are used again. The viewer tab opens on the session's environment, and an open tab is switched to it. Starting the journal reads the release tags straight from the repository, so a release is installed the moment it is out, not minutes later when GitHub's cached version file catches up.
