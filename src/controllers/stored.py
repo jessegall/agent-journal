@@ -292,7 +292,7 @@ class Stored:
     def _every(self, deleted: bool = False) -> list[Resource]:
         memo = self.record.memo
         if memo is None or (self.type, deleted) not in memo:
-            rows = [self.load(row["n"]) for row in self.summaries()]
+            rows = [(self.load if memo is None else self._peek)(row["n"]) for row in self.summaries()]
             rows = wholes([r for r in rows if deleted or not r.deleted], lambda r: r.data.get(PART_OF))
             if memo is None:
                 return rows
