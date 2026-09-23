@@ -395,7 +395,8 @@ def package() -> dict:
     from features.journal_laws.policy import brief
     from migrations import run as migrate
     from providers import PROVIDERS
-    from skills import LIBRARY, LINKED, publish
+    from providers.base import LIBRARY
+    from skills import LINKED, publish
     return {"served": served, "point": point, "held_builds": held_builds, "brief": brief, "migrate": migrate, "PROVIDERS": PROVIDERS,
             "LIBRARY": LIBRARY, "LINKED": LINKED, "publish": publish}
 

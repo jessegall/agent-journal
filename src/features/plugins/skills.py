@@ -2,7 +2,8 @@ import shutil
 from pathlib import Path
 
 from features.plugins.source import folder
-from skills import LIBRARY, LINKED, link, unlink
+from providers.base import LIBRARY
+from skills import LINKED, link, unlink
 
 MARK = "plugin"
 SKILL = "SKILL.md"

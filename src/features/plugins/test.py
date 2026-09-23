@@ -210,7 +210,7 @@ def test_stopping_a_service_stops_every_process_it_forked():
 
 def test_a_plugins_skills_and_dashboards_are_published_as_its_own():
     from features.plugins.skills import published, withdrawn
-    from skills import LIBRARY
+    from providers.base import LIBRARY
     record = alone()
     project = record.root.parent
     shipped = folder(record.root, "teacher") / "out"

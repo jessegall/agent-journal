@@ -9,10 +9,10 @@ from commands.parser import actions
 from controllers.base import COMMANDS
 from controllers.types import CONTROLLERS
 from providers import PROVIDERS
+from providers.base import LIBRARY
 from engine.package import data
 
 HERE = data()
-LIBRARY = ".agents/skills"
 
 
 def skill_name(name: str) -> str:
