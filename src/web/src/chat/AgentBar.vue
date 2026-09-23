@@ -189,7 +189,7 @@ useOutside(bar, () => (open.value = ""));
                 </span>
                 <template v-if="data.branch && data.branch_url">
                     <a
-                        class="agent-fact agent-link"
+                        class="agent-fact agent-count"
                         :href="data.branch_url"
                         target="_blank"
                         title="the branch it works on — open it in the repository"
@@ -381,17 +381,6 @@ useOutside(bar, () => (open.value = ""));
     color: var(--text);
 }
 
-.agent-link {
-    color: inherit;
-    text-decoration: none;
-}
-
-.agent-link:hover {
-    color: var(--text);
-    text-decoration: underline;
-    text-underline-offset: 3px;
-}
-
 .agent-context {
     gap: 7px;
     font-variant-numeric: tabular-nums;
@@ -428,6 +417,11 @@ useOutside(bar, () => (open.value = ""));
 .agent-count.open {
     background: var(--hover);
     color: var(--text);
+}
+
+.agent-count:hover .ico,
+.agent-count.open .ico {
+    opacity: 1;
 }
 
 .agent-count.none {
