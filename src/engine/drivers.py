@@ -41,6 +41,7 @@ class Driver(ABC):
     RESUMING: dict[str, int] = {}
     WORKTREE: tuple = ()
     WORKTREES: tuple = ()
+    EXIT = ""
     ALLOW, DENY = b"1", b"\x1b"
     MOVE_TO_BACKGROUND = b""
     QUIET = 3.0

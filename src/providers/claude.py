@@ -435,6 +435,7 @@ class ClaudeDriver(Driver):
     RESUMING = {"--resume": 1, "-r": 1, "--continue": 0, "-c": 0}
     WORKTREE = ("--worktree", "-w")
     WORKTREES = (".claude", "worktrees")
+    EXIT = "/exit"
     TAKES_OURS = ("--settings", json.dumps({"crossSessionInbound": "accept"}))
     CHANNEL = ("--dangerously-load-development-channels", "server:journal")
     LISTENING = 15.0
