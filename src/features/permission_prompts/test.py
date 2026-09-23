@@ -87,6 +87,9 @@ def test_the_start_offers_to_carry_on_the_environments_last_session():
     from engine.hooks import answer
     answer(PROVIDERS["claude"](), record.root, {"hook_event_name": "UserPromptSubmit", "session_id": "5e3c0a1f-conversation", "cwd": str(record.root.parent)}, os.getpid())
     assert asked_resume(record, "claude", [], ask=lambda _: "1", answering=True) == [], "a conversation restarted under a new process is still running"
+    Sessions(record.root).bind("7a1d-in-the-worktree", "0922-disposal-date", pid=999999, provider="claude")
+    assert asked_resume(record, "claude", ["--worktree", "0922-disposal-date"], ask=lambda _: "1", answering=True) == [
+        "--worktree", "0922-disposal-date", "--resume", "7a1d-in-the-worktree"], "a named worktree carries on its own last conversation"
 
 
 def test_claude_is_kept_out_of_the_record_files_but_not_their_attachments(tmp_path):
