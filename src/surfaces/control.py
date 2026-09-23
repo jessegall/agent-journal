@@ -6,6 +6,7 @@ from controllers.types import Agents, Notices, Notifications
 from engine.inputs import BACKGROUND, FORCE, PERMIT, QueuedCommand, SHELL, STALE, queue, waiting_commands
 from engine.record import Record
 from engine.seats import live
+from engine.drivers import AGENT_COMMAND
 from engine.terminal import relaunch as restart
 from providers import DRIVERS, PROVIDERS
 from resources.base import SYSTEM, Refused
@@ -80,11 +81,14 @@ def move_to_background(root: Path, env: str, session: str) -> dict:
 
 def shell(root: Path, env: str, session: str, command: str) -> dict:
     found = online(root, env, session)
-    if not DRIVERS[found.provider].SHELL:
-        raise Refused(f"{found.provider} has no shell command to type")
     if not command.strip():
         raise Refused("type a command to run")
+    for_agent = command.strip().startswith(AGENT_COMMAND)
+    if not for_agent and not DRIVERS[found.provider].SHELL:
+        raise Refused(f"{found.provider} has no shell command to type")
     queued = queue(Path(root), session, (), f"Run {command.strip()}", provider=found.provider, action=SHELL, value=command.strip())
+    if for_agent:
+        return queued.for_viewer
     agents = Agents(Record(Path(root), env), actor=SYSTEM)
     row = agents.by_session(session)
     waiting = [c for c in waiting_commands(row) if queued.at - c.at < STALE]

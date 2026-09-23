@@ -7,6 +7,7 @@ from controllers.types import CONTROLLERS, Agents, Messages
 import features
 from engine import bus, chat, runtime
 from engine.actors import Actor, Agent, BUSY, IDLE, STOPPED, System, User, WORKING, spoken_data
+from engine.drivers import AGENT_COMMAND
 from engine.inputs import BACKGROUND, FORCE, PERMIT, SHELL, take, waiting_commands
 from surfaces.control import CARRY_ON, delivered
 from engine.record import Record
@@ -211,7 +212,8 @@ class Engine(Seat):
         queued = take(self.record.root, self.names(), SHELL)
         if not queued:
             return ""
-        typed = self.agent.driver.run_shell(queued.value)
+        driver = self.agent.driver
+        typed = driver.run_command(queued.value) if queued.value.startswith(AGENT_COMMAND) else driver.run_shell(queued.value)
         agents = Agents(self.record, actor=SYSTEM)
         row = agents.by_session(queued.session)
         waiting = waiting_commands(row)
