@@ -226,7 +226,7 @@ export function recallEvents() {
 }
 
 export async function heardEvents(events) {
-    if (events.some((e) => !store.spec.types[e.type])) store.spec = await api.manifest();
+    if (!store.spec || events.some((e) => !store.spec.types[e.type])) store.spec = await api.manifest();
     keepEvents([...store.events, ...events]);
     refresh([...new Set(events.map((e) => e.type))].filter((type) => type !== "agent"));
 }

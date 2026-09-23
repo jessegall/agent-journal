@@ -100,7 +100,7 @@ def test_reading_a_long_file_whole_is_refused_and_a_range_or_a_short_file_passes
     assert whole.get("decision") == "block" and "has 400 lines: read a range (offset and limit)" in whole.get("reason", ""), whole
     from controllers.types import Agents
     card = Agents(record).by_session("claude-read").data["cards"][-1]
-    assert card["label"] == "Refused reading a long file whole" and "has 400 lines" in card["detail"], card
+    assert card["label"].startswith("Refused reading a long file whole `") and card["tone"] == "danger" and card["title"].startswith("400 lines"), card
     assert hook("Read", {"file_path": str(project / "long.py"), "offset": 1, "limit": 50}).get("decision") != "block", "a range passes"
     assert hook("Read", {"file_path": str(project / "short.py")}).get("decision") != "block", "a short file passes whole"
     (project / "shot.png").write_bytes(b"\x89PNG\r\n\x1a\n\0\0\0\r" + b"\n" * 900)
