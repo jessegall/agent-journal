@@ -56,6 +56,7 @@ onUnmounted(() => window.removeEventListener("scroll", place, {capture: true}));
 <style scoped>
 .highlight {
     position: relative;
+    height: 100%;
 }
 
 .highlight-go {

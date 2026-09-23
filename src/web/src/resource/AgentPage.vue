@@ -210,7 +210,7 @@ useSighted(topMark, earlier, {root: scroller, margin: "400px 0px"});
             </section>
         </template>
         <template v-if="tab === 'chat' && picked">
-            <section class="block">
+            <section class="block chat-block">
                 <SubagentChat :turns="turns" :session="picked.session" :task="picked.task" />
             </section>
         </template>
@@ -292,7 +292,16 @@ useSighted(topMark, earlier, {root: scroller, margin: "400px 0px"});
     display: flex;
     flex-direction: column;
     gap: 10px;
+    box-sizing: border-box;
+    height: 100%;
     padding-top: 0;
+}
+
+.chat-block {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-height: 320px;
 }
 
 .agent-head {
@@ -303,19 +312,16 @@ useSighted(topMark, earlier, {root: scroller, margin: "400px 0px"});
     flex-direction: column;
     gap: 8px;
     margin: 0 -24px;
-    padding: 8px 24px 0;
+    padding: 18px 24px 0;
     background: var(--bg);
 }
 
 .top {
-    position: sticky;
-    z-index: 20;
-    top: 0;
     display: flex;
     align-items: center;
     gap: 10px;
-    margin: -16px -20px 0;
-    padding: 12px 20px;
+    margin: 0 -24px;
+    padding: 0 24px 12px;
     border-bottom: 1px solid var(--border);
     background: var(--bg);
 }
