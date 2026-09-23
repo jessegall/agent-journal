@@ -137,7 +137,7 @@ def test_a_long_command_output_keeps_its_ends_and_the_whole_of_it_as_an_output_r
     kept = Path(cut.split(" at ", 1)[1].split(": grep", 1)[0])
     assert (row.title, row.data["lines"], kept.read_text().split()) == ("seq 1 1000; echo 'done' >/dev/null; exit 3", 1000, [str(i) for i in range(1, 1001)]), row
     card = Agents(record).load(agent.n).data["cards"][-1]
-    assert card["label"] == "Cut 994 of 1,000 lines from a long output, kept whole as output 1" and card["detail"] == row.title, card
+    assert card["label"] == "Cut 994 of 1,000 lines from a long output, kept whole as output 1" and card["command"] == row.title, card
     short = subprocess.run([str(src / "output_cap.sh"), wrapped.replace("seq 1 1000", "seq 1 5")], capture_output=True, text=True, env=env, timeout=20)
     assert short.stdout.split() == ["1", "2", "3", "4", "5"] and Outputs(record).numbers() == [1], "short output passes whole and keeps no row"
     server = subprocess.run([str(src / "output_cap.sh"), "seq 1 1000"], capture_output=True, text=True, env=env, timeout=20)

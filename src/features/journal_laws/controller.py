@@ -30,7 +30,7 @@ class Outputs(Controller):
         agent = Agents(self.record, actor=self.actor)._titled(session_id) if session_id else None
         if agent:
             Agents(self.record, actor=self.actor).card(agent.n, label=f"Cut {lines - shown:,} of {lines:,} lines from a long output, kept whole as output {made.n}",
-                                                       icon="terminal", detail=command_line)
+                                                       icon="terminal", command=command_line)
         return f"{made.n} {(self.folder(made.n) / source.name).resolve()}"
 
 

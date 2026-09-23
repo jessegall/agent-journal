@@ -19,7 +19,7 @@ class MoveLongCommands(Handler):
         if last.get("done"):
             if context.state.get("moved") == started and context.state.get("ended") != started:
                 context.state.set("ended", started)
-                context.journal.agents.card(row.n, label="The command moved to the background ended", icon="terminal", detail=str(last.get("command") or ""))
+                context.journal.agents.card(row.n, label="The command moved to the background ended", icon="terminal", command=str(last.get("command") or ""))
             return
         provider = row.data.get("provider") or ""
         driver = DRIVERS.get(provider)
@@ -35,4 +35,4 @@ class MoveLongCommands(Handler):
         context.state.set("moved", started)
         context.agent.move_to_background()
         context.agent.say(MOVED, seconds=seconds)
-        context.journal.agents.card(row.n, label="Moved a long command to the background", icon="terminal", detail=str(last.get("command") or ""))
+        context.journal.agents.card(row.n, label="Moved a long command to the background", icon="terminal", command=str(last.get("command") or ""))
