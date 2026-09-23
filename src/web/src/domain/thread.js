@@ -34,43 +34,34 @@ const receipt = (m) => {
     };
 };
 
-const loads = (agents) =>
-    agents
-        .filter((a) => !a.data.parent)
-        .flatMap((a) =>
-            (a.data.skill_loads || []).map((load) => ({
-                ref: `skill:${a.n}:${load.at}`,
-                type: "skill",
-                n: a.n,
-                who: "agent",
-                created: load.at,
-                seen: ["agent"],
-                refs: [],
-                data: {},
-                sections: [],
-                title: load.skill,
-                brief: "",
-            }))
-        );
+const mark = (type, a, at, title, data = {}) => ({
+    ref: `${type}:${a.n}:${at}`,
+    type,
+    n: a.n,
+    who: "agent",
+    created: at,
+    seen: ["agent"],
+    refs: [],
+    data,
+    sections: [],
+    title,
+    brief: "",
+});
+
+const sessions = (agents) => agents.filter((a) => !a.data.parent);
+
+const loads = (agents) => sessions(agents).flatMap((a) => (a.data.skill_loads || []).map((load) => mark("skill", a, load.at, load.skill)));
 
 const compactions = (agents) =>
-    agents
-        .filter((a) => !a.data.parent)
-        .flatMap((a) =>
-            (a.data.compactions || []).map((mark) => ({
-                ref: `compacted:${a.n}:${mark.at}`,
-                type: "compacted",
-                n: a.n,
-                who: "agent",
-                created: mark.at,
-                seen: ["agent"],
-                refs: [],
-                data: {},
-                sections: [],
-                title: "Context compacted",
-                brief: "",
-            }))
-        );
+    sessions(agents).flatMap((a) => (a.data.compactions || []).map((m) => mark("compacted", a, m.at, "Context compacted")));
+
+const subagents = (agents) =>
+    sessions(agents).flatMap((a) =>
+        (a.data.subagent_rows || []).flatMap((sub) => [
+            mark("subagent", a, sub.at, sub.task, {kind: sub.type, model: sub.model}),
+            ...(sub.ended ? [mark("subagent", a, sub.ended, sub.task, {kind: sub.type, finished: true})] : []),
+        ])
+    );
 
 const madeByAgent = (docs) =>
     docs
@@ -95,6 +86,7 @@ export function threadTurns(rows, pending) {
         ...rows.question.filter((q) => !q.deleted).map((q) => ({...q, who: "agent"})),
         ...loads(rows.agent || []),
         ...compactions(rows.agent || []),
+        ...subagents(rows.agent || []),
         ...madeByAgent(rows.doc || []),
         ...pending.filter((p) => !live.some((m) => promisedFor(p, m) && delivered(p, m))),
     ].sort((a, b) => a.created - b.created);
