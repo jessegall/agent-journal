@@ -18,7 +18,7 @@ function toggle(at) {
 }
 
 const line = (c) =>
-    c.tool === "Bash" || c.tool === "Typed"
+    ["Bash", "Typed", "Journal"].includes(c.tool)
         ? c.command
         : `${c.tool.replace(/^mcp__/, "").replaceAll("__", " · ")} ${c.subject && c.subject !== c.command ? c.subject : ""}`.trim();
 </script>
@@ -26,8 +26,8 @@ const line = (c) =>
 <template>
     <Console>
         <template v-for="c in commands" :key="c.at">
-            <div :class="['log-line', {running: !c.done, shell: c.tool === 'Bash'}]">
-                <span class="log-mark">{{ c.tool === "Bash" ? "$" : "›" }}</span>
+            <div :class="['log-line', {running: !c.done, shell: c.tool === 'Bash', noted: c.tool === 'Journal'}]">
+                <span class="log-mark">{{ c.tool === "Bash" ? "$" : c.tool === "Journal" ? "#" : "›" }}</span>
                 <span class="log-text">{{ line(c) }}</span>
             </div>
             <template v-if="outputs[String(c.at)]">
@@ -60,6 +60,11 @@ const line = (c) =>
 
 .log-line.shell {
     color: var(--text-2);
+}
+
+.log-line.noted {
+    color: var(--accent-text);
+    font-style: italic;
 }
 
 .log-line.queued {
