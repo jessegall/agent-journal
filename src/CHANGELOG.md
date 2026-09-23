@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.121.3 — The terminal view runs agent commands as they are
+
+A line sent from the terminal view that starts with / is a command for the agent, such as /effort high, and is typed as it is; only other lines are run as shell commands with the provider's ! mark. Codex takes / commands from the terminal view too. Nothing to do.
+
 ## 2.121.2 — Codex takes model changes from the viewer, and commits show in the chat
 
 Changing the model or reasoning effort from the viewer now works for Codex: every step of its model picker is typed into the terminal in order, as raw keys. Before, only the last step reached it, as a chat line.
