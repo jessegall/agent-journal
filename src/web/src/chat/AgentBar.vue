@@ -4,6 +4,7 @@ import {computed, inject, ref} from "vue";
 import {modelFamily, pendingChoice, providerName} from "../agents.js";
 import Icon from "../kit/Icon.vue";
 import MenuPanel from "../kit/MenuPanel.vue";
+import PresetList from "../kit/PresetList.vue";
 import Spinner from "../kit/Spinner.vue";
 import CrewList from "./CrewList.vue";
 import AgentAppoint from "./AgentAppoint.vue";
@@ -97,6 +98,10 @@ function toggle(key, e) {
     anchor.value = e.currentTarget;
 }
 const CONTROLS = ["model", "effort", "context"];
+function pickPreset(key) {
+    open.value = "";
+    views.preset(key);
+}
 const pending = (key) => pendingChoice(data.value, key);
 const appointments = (e) => toggle("appoint", e);
 const modelControls = (e, key) => toggle(key, e);
@@ -270,6 +275,18 @@ useOutside(drop, () => (open.value = ""));
                             </template>
                         </div>
                     </template>
+                    <span class="agent-divider" />
+                    <button
+                        type="button"
+                        :class="['agent-fact', 'agent-count', 'agent-presets', {open: open === 'presets'}]"
+                        title="Layout presets"
+                        :aria-expanded="open === 'presets'"
+                        @click="toggle('presets', $event)"
+                    >
+                        <Icon name="layout" />
+                        Presets
+                        <Icon name="caret" />
+                    </button>
                 </template>
                 <template v-else>
                     <div class="agent-panes">
@@ -330,6 +347,9 @@ useOutside(drop, () => (open.value = ""));
                     </template>
                     <template #model>
                         <AgentControls :control="open" :agent="agent" @done="open = ''" />
+                    </template>
+                    <template #presets>
+                        <PresetList :presets="views.presets.value" @pick="pickPreset" />
                     </template>
                     <template #usage>
                         <AgentUsage :usage="usage" />
@@ -496,6 +516,11 @@ useOutside(drop, () => (open.value = ""));
     height: 24px;
     margin: 0;
     padding: 0 7px;
+}
+
+.agent-actions .agent-presets {
+    gap: 5px;
+    margin-right: 2px;
 }
 
 .agent-detach.on {
