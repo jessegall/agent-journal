@@ -20,6 +20,7 @@ function follow(e) {
     const pill = e.target.closest("[data-peek]");
     if (!pill) return;
     e.preventDefault();
+    e.stopPropagation();
     const [type, n] = pill.dataset.peek.split(":");
     peek(type, Number(n));
 }
