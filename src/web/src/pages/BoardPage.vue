@@ -16,7 +16,7 @@ import {peek, route} from "../route.js";
 import {boardOn, store} from "../state/store.js";
 
 const SKELETON = ["To do", "Held", "Doing", "Needs you", "Done"].map((title) => ({key: title, title, cards: []}));
-const adding = ref(false);
+const adding = ref("");
 const LIVE = new Set(["todo", "work", "question", "plan", "agent", "ticket", "board"]);
 const text = ref("");
 const plans = computed(() => rows("plan").filter((plan) => !plan.completed && !plan.deleted));
@@ -24,6 +24,12 @@ const boards = computed(() => rows("board").filter((board) => !board.completed &
 const tickets = computed(() => Boolean(store.board.lens.board));
 const chosenPlan = computed(() => store.board.lens.plan);
 const request = ref("");
+
+function made(n) {
+    if (adding.value === "board") lens({board: n});
+    peek(adding.value, n);
+    adding.value = "";
+}
 
 async function askForTicket() {
     if (!request.value.trim()) return;
@@ -111,7 +117,9 @@ const ask = usePoll(
     <section class="board">
         <header class="bar">
             <h2>Board</h2>
-            <TabBar v-model="shown" :tabs="tabs" />
+            <TabBar v-model="shown" :tabs="tabs">
+                <Btn small @click="adding = 'board'">New board</Btn>
+            </TabBar>
             <input v-model="text" class="find" placeholder="Filter by title or #number" />
             <template v-if="!tickets">
                 <div class="plans">
@@ -148,7 +156,7 @@ const ask = usePoll(
         <template v-else-if="empty">
             <div class="empty">
                 <p>{{ tickets ? "No tickets on this board." : "Nothing is on the list." }}</p>
-                <Btn kind="primary" small @click="adding = true">{{ tickets ? "New ticket" : "New to-do" }}</Btn>
+                <Btn kind="primary" small @click="adding = tickets ? 'ticket' : 'todo'">{{ tickets ? "New ticket" : "New to-do" }}</Btn>
             </div>
         </template>
         <template v-else>
@@ -166,7 +174,12 @@ const ask = usePoll(
             <ShiftPrompt :ask="asking" @send="(words) => shift(asking.card, asking.lane, words)" @close="asking = null" />
         </template>
         <template v-if="adding">
-            <NewResource :type="tickets ? 'ticket' : 'todo'" @made="(n) => peek(tickets ? 'ticket' : 'todo', n)" @close="adding = false" />
+            <NewResource
+                :type="adding"
+                :preset="adding === 'ticket' ? {board: store.board.lens.board} : {}"
+                @made="made"
+                @close="adding = ''"
+            />
         </template>
     </section>
 </template>
