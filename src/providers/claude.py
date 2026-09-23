@@ -422,8 +422,7 @@ class Claude(Provider):
         return found, done
 
     def is_subagent(self, hook) -> bool:
-        where = (hook.transcript.parts if hook.transcript else ()) + Path(hook.cwd).parts
-        return bool(hook.agent) or "subagents" in where or "worktrees" in where
+        return bool(hook.agent) or "subagents" in (hook.transcript.parts if hook.transcript else ())
 
 
 class ClaudeDriver(Driver):
@@ -435,6 +434,7 @@ class ClaudeDriver(Driver):
     SKIP_ARGS = ("--dangerously-skip-permissions",)
     RESUMING = {"--resume": 1, "-r": 1, "--continue": 0, "-c": 0}
     WORKTREE = ("--worktree", "-w")
+    WORKTREES = (".claude", "worktrees")
     TAKES_OURS = ("--settings", json.dumps({"crossSessionInbound": "accept"}))
     CHANNEL = ("--dangerously-load-development-channels", "server:journal")
     LISTENING = 15.0

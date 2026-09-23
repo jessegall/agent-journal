@@ -149,6 +149,7 @@ class Resource:
         Field(default="", name="agent"),
         Field(default="", name="dispatcher"),
         Field(default="", name="plugin"),
+        Field(default="", name="environment"),
     ]
     n: int = 0
     title: str = ""

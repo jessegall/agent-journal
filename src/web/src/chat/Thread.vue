@@ -142,6 +142,7 @@ const thread = computed(() => {
             agent: store.agents,
         },
         pending.value,
+        route.value.env,
         !!paging.more.message
     );
     made.keys.forEach((placeholder, ref) => linked.set(ref, placeholder));

@@ -73,9 +73,9 @@ const subagents = (agents) =>
         ])
     );
 
-const madeByAgent = (docs) =>
+const madeByAgent = (docs, env) =>
     docs
-        .filter((d) => !d.deleted && d.seen[0] === "agent")
+        .filter((d) => !d.deleted && d.seen[0] === "agent" && d.data.environment === env)
         .map((d) => ({...d, ref: `made:${d.ref}`, type: "made", made: d, who: "agent", seen: ["agent"], refs: [d.ref]}));
 
 const promisedFor = (p, m) =>
@@ -85,7 +85,7 @@ const promisedFor = (p, m) =>
 
 const delivered = (p, m) => Object.keys(m.data.files || {}).length >= Object.keys(p.data.files).length;
 
-export function threadTurns(rows, pending, older = false) {
+export function threadTurns(rows, pending, env, older = false) {
     const keys = new Map();
     const live = rows.message.filter((m) => !m.deleted);
     const floor = older && live.length ? Math.min(...live.map((m) => m.created)) : 0;
@@ -100,7 +100,7 @@ export function threadTurns(rows, pending, older = false) {
         ...subagents(rows.agent || []),
         ...whispers(rows.agent || []),
         ...cards(rows.agent || []),
-        ...madeByAgent(rows.doc || []),
+        ...madeByAgent(rows.doc || [], env),
         ...pending.filter((p) => !live.some((m) => promisedFor(p, m) && delivered(p, m))),
     ]
         .filter((t) => t.created >= floor)

@@ -96,8 +96,7 @@ class Confirm:
 
 def run(root: Path, cwd: Path, env: str, agent: str, session: str, lifeline: int = -1) -> int:
     hold_build(root, CODE)
-    seat = Seat.of(root, env, agent, session)
-    seated(seat)
+    seat = seated(Seat(root, env, agent, session))
     relaunching = runtime.relaunch_file(root, session)
     stamps = watched(root)
     began = time.time()

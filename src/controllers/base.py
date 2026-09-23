@@ -6,7 +6,7 @@ from functools import partial
 from engine import bus
 from engine.markers import plain
 from engine.record import Record
-from resources.base import SYSTEM, USER, Refused, Resource, SECTION, check_abstract, check_title
+from resources.base import PROJECT, SYSTEM, USER, Refused, Resource, SECTION, check_abstract, check_title
 from resources.shapes import Options, check, normalize_options, typed
 from controllers.files import Files
 from controllers.links import Links
@@ -134,7 +134,8 @@ class Controller(Stored, Files, Links):
             n = (self.numbers() or [0])[-1] + 1
             about, supersedes = data.pop("about", None), data.pop("supersedes", 0)
             r = self.resource(n=n, title=check_title(title), abstract=check_abstract(abstract), brief=brief,
-                              data={**self._shaped(data), **({"agent": self.agent, "dispatcher": self.session} if self.agent else {})}, created=time.time(), seen=[self.actor], refs=[about] if about else [])
+                              data={**self._shaped(data), **({"agent": self.agent, "dispatcher": self.session} if self.agent else {}),
+                                    **({"environment": self.record.env} if self.resource.scope == PROJECT else {})}, created=time.time(), seen=[self.actor], refs=[about] if about else [])
             r = self.save(r, "created")
             if supersedes:
                 self.complete(int(supersedes), how=f"superseded by {self.type} {n}")
