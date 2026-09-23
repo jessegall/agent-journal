@@ -7,7 +7,7 @@ class Works(Controller):
     resource = types.Work
 
     def active(self):
-        return next((w for w in self._standing() if not w.parked), None)
+        return next((w for w in self._standing() if not w.parked and w.data.get("agent", "") == self.agent), None)
 
     def create(self, title: str, abstract: str = "", brief: str = "", **data):
         self._gate(int(self.resource(data=self._shaped(data)).todo))

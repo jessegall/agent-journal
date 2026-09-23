@@ -788,6 +788,7 @@ class Listing:
 def listing(controller, record, wanted: Listing) -> dict:
     since, only, last = wanted.since, wanted.only, wanted.last
     rows = [row for row in controller.summaries() if (since or only or not row["deleted"]) and (wanted.completed or not row["completed"])
+            and (only or controller.resource.hidden_listed or not row.get("hidden"))
             and (not wanted.before or row["n"] < wanted.before) and row["updated"] > since and (not only or row["n"] in only)]
     if wanted.by_updated:
         rows.sort(key=lambda row: row["updated"])

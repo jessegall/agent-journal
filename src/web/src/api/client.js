@@ -164,6 +164,10 @@ export class ApiClient {
         return this.post(this.here(`/${type}/${action}`), body);
     }
 
+    tasks(agent) {
+        return this.command("todo", "tasks", {agent});
+    }
+
     board({plan, agent} = {}) {
         return this.command("todo", "board", {plan: plan || 0, agent: agent || ""});
     }

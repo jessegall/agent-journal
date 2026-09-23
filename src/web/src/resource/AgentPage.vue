@@ -17,6 +17,8 @@ import {render} from "../text/index.js";
 import "../text/all.js";
 import Trace from "./Trace.vue";
 import AgentHooks from "./AgentHooks.vue";
+import TaskList from "./TaskList.vue";
+import {usePoll} from "../poll.js";
 import {stamp} from "../format/time.js";
 
 const props = defineProps({resource: Object});
@@ -59,6 +61,15 @@ const TABS = [
     {key: "work", title: "Work"},
     {key: "hooks", title: "Hooks"},
 ];
+const tabs = computed(() => (picked.value ? [TABS[0], {key: "tasks", title: "Tasks"}, ...TABS.slice(1)] : TABS));
+const TASKS_EVERY = 4000;
+const tasks = ref([]);
+usePoll(
+    "subagent-tasks",
+    () => (picked.value ? api.tasks(picked.value.session) : Promise.resolve([])),
+    TASKS_EVERY,
+    (got) => (tasks.value = got || [])
+);
 const tab = ref("transcript");
 const scroller = ref(null);
 const topMark = ref(null);
@@ -167,7 +178,7 @@ useSighted(topMark, earlier, {root: scroller, margin: "400px 0px"});
                 @pick="() => go(route.env, 'skills')"
             />
         </div>
-        <TabBar v-model="tab" class="agent-tabs" :tabs="TABS">
+        <TabBar v-model="tab" class="agent-tabs" :tabs="tabs">
             <template v-if="tab === 'transcript'">
                 <span class="tab-note">
                     {{ turns.length ? `${turns.length} of ${total} lines · live` : "live" }}
@@ -187,6 +198,11 @@ useSighted(topMark, earlier, {root: scroller, margin: "400px 0px"});
                 <template v-if="!works.length">
                     <p class="none">{{ picked ? "No work filed by this subagent." : "No work on this agent yet." }}</p>
                 </template>
+            </section>
+        </template>
+        <template v-if="tab === 'tasks' && picked">
+            <section class="block">
+                <TaskList :tasks="tasks" />
             </section>
         </template>
         <template v-if="tab === 'hooks'">

@@ -38,12 +38,15 @@ class Todo(Ranked, Placed, Resource):
         Field(name="reported"),
         Field(name="after"),
         Field(name="struck"),
+        Field(FLAG, False, name="hidden"),
     ]
     details: ClassVar[ResourceDetails] = ResourceDetails(
         title="To-do",
         abstract="One thing to do later, with a brief that says why and where to start",
         help="A to-do waits on the list until it is started as work and closed; auto mode works the list in order.",
     )
+    indexed = ("hidden",)
+    hidden_listed = False
     listed_open = True
     type = "todo"
     event_labels = {"created": "To-do created", "completed": "To-do done", "updated.read": "To-do read", "updated.assign": "To-do assigned",
