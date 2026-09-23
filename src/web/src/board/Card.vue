@@ -17,7 +17,7 @@ const drag = useCardDrag();
 const menu = ref(false);
 const plan = computed(() => props.card.plan);
 const opener = ref(null);
-const titleOf = (name) => (store.board.agents.find((agent) => agent.name === name) || {title: name}).title;
+const titleOf = (name) => ([...store.board.agents, ...store.board.roles].find((who) => who.name === name) || {title: name}).title;
 const people = () => [...new Set([props.card.assigned, props.card.worker && props.card.worker.agent].filter(Boolean))];
 
 async function act(action) {
