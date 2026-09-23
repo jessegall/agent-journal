@@ -3,6 +3,7 @@ import time
 from dataclasses import asdict
 from functools import partial
 
+from engine import bus
 from engine.markers import plain
 from engine.record import Record
 from resources.base import SYSTEM, USER, Refused, Resource, SECTION, check_abstract, check_title
@@ -226,11 +227,9 @@ class Controller(Stored, Files, Links):
     def action(self, name: str):
         command = COMMANDS.get(self.type, {}).get(name)
         if command:
-            return partial(command, self)
-        for method, alias in self.resource.command_names.items():
-            if alias == name:
-                return getattr(self, method)
-        return getattr(self, name)
+            return bus.commanded(self.type, name, partial(command, self))
+        method = next((method for method, alias in self.resource.command_names.items() if alias == name), name)
+        return bus.commanded(self.type, method, getattr(self, method))
 
     def restore(self, n: int) -> Resource:
         r = self.load(n)

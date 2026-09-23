@@ -1,4 +1,5 @@
 import threading
+from functools import wraps
 from collections import defaultdict
 from contextlib import contextmanager
 from typing import Callable
@@ -12,6 +13,7 @@ _listeners: dict[str, list[tuple[str, Listener]]] = defaultdict(list)
 _watchers: list[Listener] = []
 _held = threading.local()
 _cause = threading.local()
+_command = threading.local()
 
 
 def always(record) -> bool:
@@ -43,6 +45,24 @@ def emit(event: Event, record=None) -> None:
         queue.append((event, record))
         return
     run(event, record)
+
+
+def commanded(type_: str, name: str, fn):
+    @wraps(fn)
+    def run_command(*args, **kwargs):
+        if getattr(_command, "word", None):
+            return fn(*args, **kwargs)
+        _command.word = (type_, name)
+        try:
+            return fn(*args, **kwargs)
+        finally:
+            _command.word = None
+    return run_command
+
+
+def command(type_: str) -> str:
+    word = getattr(_command, "word", None)
+    return word[1] if word and word[0] == type_ else ""
 
 
 def cause() -> str:

@@ -12,7 +12,8 @@ class Message(Shape, Resource):
     answer_command = "reply"
     editors = {USER: (USER, SYSTEM), AGENT: (AGENT, SYSTEM)}
     type = "message"
-    event_labels = {"created": "Message", "completed": "Message processed"}
+    event_labels = {"created": "Message", "completed": "Message processed", "updated.read": "Message read", "updated.process": "Message part filed",
+                    "updated.edit": "Message edited", "updated.file": "Message file filed"}
     icon = "mail"
     data_fields: ClassVar[list[Field]] = [
         Field(TEXT, name="idempotency"),
@@ -31,7 +32,9 @@ class Message(Shape, Resource):
 class Todo(Ranked, Resource):
     listed_open = True
     type = "todo"
-    event_labels = {"created": "To-do created", "completed": "To-do done"}
+    event_labels = {"created": "To-do created", "completed": "To-do done", "updated.read": "To-do read", "updated.assign": "To-do assigned",
+                    "updated.report": "To-do reported", "updated.block": "To-do blocked", "updated.unblock": "To-do unblocked",
+                    "updated.after": "To-do waits on another", "updated.priority": "To-do priority set", "updated.start": "To-do started"}
     data_fields: ClassVar[list[Field]] = [
         Field(name="status"),
         Field(name="work"),
