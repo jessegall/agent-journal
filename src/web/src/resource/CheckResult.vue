@@ -1,4 +1,5 @@
 <script setup>
+import {useCheckRun} from "../composables/checkRun.js";
 import Btn from "../kit/Btn.vue";
 import Dot from "../kit/Dot.vue";
 import {computed, nextTick, ref, watch} from "vue";
@@ -15,7 +16,7 @@ const state = computed(() => checkState(props.resource, now.value));
 const last = computed(() => state.value.last);
 const command = ref(props.resource.data.command || "");
 const every = ref(Number(props.resource.data.every || 0));
-const asked = ref(false);
+const {asked, run} = useCheckRun(() => props.resource);
 const output = ref(null);
 const passes = computed(() => state.value.runs.filter((r) => r.ok).length);
 
@@ -35,14 +36,6 @@ watch(
     }
 );
 
-async function run() {
-    asked.value = true;
-    try {
-        await api.act("check", props.resource.n, "run");
-    } finally {
-        asked.value = false;
-    }
-}
 
 async function save(key, value) {
     if (String(value) === String(props.resource.data[key] ?? "")) return;

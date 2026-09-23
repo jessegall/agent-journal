@@ -1,4 +1,5 @@
 <script setup>
+import UsageMeter from "./UsageMeter.vue";
 import {computed, onMounted, ref} from "vue";
 import {api} from "../api/client.js";
 import ChoiceList from "../kit/ChoiceList.vue";
@@ -50,12 +51,7 @@ async function control(action, value) {
     </template>
     <template v-if="control === 'context'">
         <p class="bar-current">Context window</p>
-        <div class="bar-usage">
-            <span>Used</span>
-            <strong>{{ filled }}%</strong>
-            <span class="bar-usage-track"><span :style="{width: `${filled}%`}" /></span>
-            <small>{{ compacted }}</small>
-        </div>
+        <UsageMeter label="Used" :percent="filled" :note="compacted" />
     </template>
     <template v-else>
         <p class="bar-current">{{ current }}</p>

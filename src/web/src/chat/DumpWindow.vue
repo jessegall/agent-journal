@@ -1,4 +1,5 @@
 <script setup>
+import DumpFiles from "./DumpFiles.vue";
 import TextDisplay from "../kit/TextDisplay.vue";
 import DumpMadeRow from "./DumpMadeRow.vue";
 import {computed, reactive, ref, watch} from "vue";
@@ -412,17 +413,7 @@ function leave(m) {
                         @paste="pastedInto(draft, $event)"
                     />
                     <template v-if="draft.files.length">
-                        <div class="dump-files">
-                            <template v-for="(file, i) in draft.files" :key="file.name + i">
-                                <span class="dump-file">
-                                    <Icon name="paperclip" :size="12" />
-                                    {{ file.name }}
-                                    <button type="button" class="dump-x" title="Leave this file out" @click="draft.files.splice(i, 1)">
-                                        ×
-                                    </button>
-                                </span>
-                            </template>
-                        </div>
+                        <DumpFiles :files="draft.files" @remove="draft.files.splice($event, 1)" />
                     </template>
                     <div class="dump-row">
                         <label class="dump-quiet">
@@ -630,17 +621,7 @@ function leave(m) {
                             @paste="pastedInto(more, $event)"
                         />
                         <template v-if="more.files.length">
-                            <div class="dump-files">
-                                <template v-for="(file, i) in more.files" :key="file.name + i">
-                                    <span class="dump-file">
-                                        <Icon name="paperclip" :size="12" />
-                                        {{ file.name }}
-                                        <button type="button" class="dump-x" title="Leave this file out" @click="more.files.splice(i, 1)">
-                                            ×
-                                        </button>
-                                    </span>
-                                </template>
-                            </div>
+                            <DumpFiles :files="more.files" @remove="more.files.splice($event, 1)" />
                         </template>
                         <div class="dump-row">
                             <label class="dump-quiet">
@@ -891,35 +872,6 @@ textarea {
     color: var(--text-4);
     font-size: 12px;
     line-height: 1.5;
-}
-
-.dump-files {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-}
-
-.dump-file {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    padding: 3px 8px;
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    color: var(--text-2);
-    font-size: 12px;
-}
-
-.dump-x {
-    padding: 0;
-    border: none;
-    background: none;
-    color: var(--text-4);
-    cursor: pointer;
-}
-
-.dump-x:hover {
-    color: var(--danger);
 }
 
 .dump-row {

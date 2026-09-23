@@ -1,4 +1,5 @@
 <script setup>
+import ShellPicker from "./ShellPicker.vue";
 import {framed} from "../platform/view.js";
 import {computed, onMounted, onUnmounted, reactive, ref} from "vue";
 import {api} from "../api/client.js";
@@ -124,51 +125,23 @@ function close() {
             <div class="shell-bar" @pointerdown="drag">
                 <span class="shell-dot" />
                 <span class="shell-name">
-                    <span class="shell-pick-wrap">
-                        <button
-                            type="button"
-                            class="shell-pick"
-                            title="Switch journal"
-                            @click="
-                                shell.journals = !shell.journals;
-                                shell.envs = false;
-                            "
-                        >
-                            {{ project }}
-                        </button>
-                        <Transition name="drop">
-                            <div v-if="shell.journals" class="shell-menu">
-                                <template v-for="journal in journals" :key="journal.port">
-                                    <button type="button" :class="['shell-row', {on: journal.current}]" @click="pickJournal(journal)">
-                                        {{ journal.project }}
-                                    </button>
-                                </template>
-                            </div>
-                        </Transition>
-                    </span>
+                    <ShellPicker
+                        :label="project"
+                        title="Switch journal"
+                        :open="shell.journals"
+                        :options="journals.map((journal) => ({key: journal.port, label: journal.project, on: journal.current, journal}))"
+                        @toggle="(shell.journals = !shell.journals), (shell.envs = false)"
+                        @pick="pickJournal($event.journal)"
+                    />
                     <span class="shell-sep">·</span>
-                    <span class="shell-pick-wrap">
-                        <button
-                            type="button"
-                            class="shell-pick"
-                            title="Switch environment"
-                            @click="
-                                shell.envs = !shell.envs;
-                                shell.journals = false;
-                            "
-                        >
-                            {{ route.env }}
-                        </button>
-                        <Transition name="drop">
-                            <div v-if="shell.envs" class="shell-menu">
-                                <template v-for="name in environments" :key="name">
-                                    <button type="button" :class="['shell-row', {on: name === route.env}]" @click="pick(name)">
-                                        {{ name }}
-                                    </button>
-                                </template>
-                            </div>
-                        </Transition>
-                    </span>
+                    <ShellPicker
+                        :label="route.env"
+                        title="Switch environment"
+                        :open="shell.envs"
+                        :options="environments.map((name) => ({key: name, label: name, on: name === route.env}))"
+                        @toggle="(shell.envs = !shell.envs), (shell.journals = false)"
+                        @pick="pick($event.key)"
+                    />
                 </span>
                 <template v-if="!shell.driving">
                     <button
@@ -284,73 +257,6 @@ function close() {
 
 .shell-sep {
     color: var(--text-3);
-}
-
-.shell-pick-wrap {
-    position: relative;
-}
-
-.shell-pick {
-    padding: 2px 6px;
-    border: 0;
-    border-radius: 6px;
-    background: transparent;
-    color: var(--text);
-    font: inherit;
-    font-size: 11.5px;
-    font-weight: 500;
-    white-space: nowrap;
-    cursor: pointer;
-}
-
-.shell-pick:hover {
-    background: var(--hover);
-}
-
-.shell-pick::after {
-    content: " ▾";
-    color: var(--text-3);
-}
-
-.shell-menu {
-    position: absolute;
-    top: 26px;
-    left: 0;
-    z-index: 70;
-    min-width: 160px;
-    max-height: 260px;
-    overflow-y: auto;
-    padding: 4px;
-    border: 1px solid var(--border-2);
-    border-radius: 9px;
-    background: var(--raised);
-    box-shadow: 0 14px 40px rgba(0, 0, 0, 0.5);
-}
-
-.shell-row {
-    display: flex;
-    align-items: center;
-    gap: 7px;
-    width: 100%;
-    padding: 6px 9px;
-    border: 0;
-    border-radius: 6px;
-    background: transparent;
-    color: var(--text-2);
-    font: inherit;
-    font-size: 12px;
-    text-align: left;
-    white-space: nowrap;
-    cursor: pointer;
-}
-
-.shell-row:hover {
-    background: var(--hover);
-    color: var(--text);
-}
-
-.shell-row.on {
-    color: var(--accent-text);
 }
 
 .shell-btn {

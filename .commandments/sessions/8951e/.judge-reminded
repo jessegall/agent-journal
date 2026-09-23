@@ -1,6 +1,17 @@
-/Users/jessegall/projects/agent-journal/src/web/src/kit/Console.vue
-/Users/jessegall/projects/agent-journal/src/web/src/kit/Dialog.vue
-/Users/jessegall/projects/agent-journal/src/web/src/pages/PluginsPage.vue
+/Users/jessegall/projects/agent-journal/src/web/src/chat/AgentControls.vue
+/Users/jessegall/projects/agent-journal/src/web/src/chat/AgentUsage.vue
+/Users/jessegall/projects/agent-journal/src/web/src/chat/DumpFiles.vue
+/Users/jessegall/projects/agent-journal/src/web/src/chat/DumpWindow.vue
+/Users/jessegall/projects/agent-journal/src/web/src/chat/UsageMeter.vue
+/Users/jessegall/projects/agent-journal/src/web/src/layout/ChatWindow.vue
+/Users/jessegall/projects/agent-journal/src/web/src/layout/QuickMenu.vue
+/Users/jessegall/projects/agent-journal/src/web/src/layout/QuickRow.vue
+/Users/jessegall/projects/agent-journal/src/web/src/layout/ShellPicker.vue
+/Users/jessegall/projects/agent-journal/src/web/src/pages/SettingsGroup.vue
+/Users/jessegall/projects/agent-journal/src/web/src/pages/SettingsPage.vue
+/Users/jessegall/projects/agent-journal/src/web/src/resource/CheckCard.vue
+/Users/jessegall/projects/agent-journal/src/web/src/resource/CheckResult.vue
+/Users/jessegall/projects/agent-journal/src/web/src/resource/RevisionStrip.vue
 -----
 Batch marker for the code-commandments judge reminder (`commandments judge-reminder`, wired as
 Stop + PreToolUse hooks). The lines above the separator are the changed-file set it last

@@ -1,4 +1,5 @@
 <script setup>
+import UsageMeter from "./UsageMeter.vue";
 import {span} from "../format/time.js";
 
 defineProps({usage: Array});
@@ -13,12 +14,7 @@ function resetLabel(window) {
 <template>
     <p class="bar-current">Plan allowance used</p>
     <template v-for="window in usage" :key="window.key">
-        <div class="bar-usage">
-            <span>{{ window.label }}</span>
-            <strong>{{ Math.round(used(window)) }}%</strong>
-            <span class="bar-usage-track"><span :style="{width: `${used(window)}%`}" /></span>
-            <small>{{ resetLabel(window) }}</small>
-        </div>
+        <UsageMeter :label="window.label" :percent="used(window)" :note="resetLabel(window)" />
     </template>
     <template v-if="!usage.length">
         <p class="bar-none">No current plan window has been reported here.</p>

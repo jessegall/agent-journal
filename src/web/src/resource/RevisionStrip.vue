@@ -8,19 +8,19 @@ defineProps({revisions: Object});
 <template>
     <nav class="revisions" aria-label="Revisions">
         <div class="steps">
-            <template v-if="revisions.numbers.length > 1">
+            <template v-if="revisions.count > 1">
                 <Btn kind="icon" small :disabled="revisions.at <= 0" title="Earlier revision" @click="revisions.go(revisions.at - 1)">
                     <Icon name="chevron" class="back" />
                 </Btn>
-                <template v-if="revisions.ticks.from > 0">
-                    <span class="earlier">+{{ revisions.ticks.from }}</span>
+                <template v-if="revisions.hidden > 0">
+                    <span class="earlier">+{{ revisions.hidden }}</span>
                 </template>
-                <template v-for="i in revisions.ticks.revision" :key="revisions.numbers[i]">
+                <template v-for="i in revisions.shown" :key="i">
                     <button
                         type="button"
-                        :class="['tick', {current: i === revisions.at, open: revisions.open && i === revisions.numbers.length - 1}]"
+                        :class="['tick', {current: i === revisions.at, open: revisions.open && i === revisions.count - 1}]"
                         :title="
-                            revisions.open && i === revisions.numbers.length - 1 ? `Revision ${i + 1}, open for edits` : `Revision ${i + 1}`
+                            revisions.open && i === revisions.count - 1 ? `Revision ${i + 1}, open for edits` : `Revision ${i + 1}`
                         "
                         :aria-current="i === revisions.at ? 'true' : undefined"
                         @click="revisions.go(i)"
@@ -29,7 +29,7 @@ defineProps({revisions: Object});
                 <Btn kind="icon" small :disabled="revisions.latest" title="Later revision" @click="revisions.go(revisions.at + 1)">
                     <Icon name="chevron" />
                 </Btn>
-                <span class="count">Revision {{ revisions.at + 1 }} of {{ revisions.numbers.length }}</span>
+                <span class="count">Revision {{ revisions.at + 1 }} of {{ revisions.count }}</span>
             </template>
             <template v-else>
                 <span class="count">{{ revisions.status || "Kept" }}</span>
@@ -51,10 +51,10 @@ defineProps({revisions: Object});
                 </button>
             </template>
             <template v-if="!revisions.latest">
-                <Btn small @click="revisions.go(revisions.numbers.length - 1)">Latest</Btn>
+                <Btn small @click="revisions.go(revisions.count - 1)">Latest</Btn>
             </template>
         </div>
-        <template v-if="revisions.numbers.length > 1">
+        <template v-if="revisions.count > 1">
             <p class="where">{{ revisions.note }}</p>
         </template>
         <span class="error">{{ revisions.error }}</span>

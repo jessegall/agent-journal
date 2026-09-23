@@ -78,12 +78,11 @@ export function useRevisions(resource) {
             .filter(Boolean)
             .join(" · ")
     );
-    const ticks = computed(() => {
-        const from = Math.max(0, Math.min(at.value - WINDOW + 2, numbers.value.length - WINDOW));
-        return {from, revision: Array.from({length: Math.min(WINDOW, numbers.value.length)}, (_, k) => from + k)};
-    });
+    const count = computed(() => numbers.value.length);
+    const hidden = computed(() => Math.max(0, Math.min(at.value - WINDOW + 2, count.value - WINDOW)));
+    const shown = computed(() => Array.from({length: Math.min(WINDOW, count.value)}, (_, k) => hidden.value + k));
 
-    const go = (i) => (at.value = Math.max(0, Math.min(numbers.value.length - 1, i)));
+    const go = (i) => (at.value = Math.max(0, Math.min(count.value - 1, i)));
 
     async function keep() {
         error.value = "";
@@ -94,5 +93,5 @@ export function useRevisions(resource) {
         }
     }
 
-    return reactive({numbers, at, changes, error, open, latest, comparing, page, parts, topChanged, status, note, ticks, go, keep});
+    return reactive({count, hidden, shown, at, changes, error, open, latest, comparing, page, parts, topChanged, status, note, go, keep});
 }
