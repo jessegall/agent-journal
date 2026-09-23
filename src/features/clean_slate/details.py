@@ -3,6 +3,7 @@ from features.base import FeatureDetails
 
 class CleanSlateDetails(FeatureDetails):
     name = "clean_slate"
+    has_skill = False
 
     title = "Clean slate"
 

@@ -3,6 +3,7 @@ from features.base import FeatureDetails
 
 class ThinkingDetails(FeatureDetails):
     name = "thinking"
+    has_skill = False
 
     title = "Thinking"
 

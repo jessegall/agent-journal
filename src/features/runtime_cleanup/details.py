@@ -5,6 +5,7 @@ from features.settings import Setting
 
 class HousekeepingDetails(FeatureDetails):
     name = "runtime_cleanup"
+    has_skill = False
 
     title = "Runtime cleanup"
 

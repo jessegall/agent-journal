@@ -100,7 +100,8 @@ def render() -> dict[str, str]:
         if source.name != "journal.md" and source.stem not in features.FEATURES:
             out[f"{skill_name(source.stem)}/SKILL.md"] = source.read_text()
     for name, f in features.FEATURES.items():
-        out[f"{skill_name(name)}/SKILL.md"] = feature_skill(f)
+        if f.details.has_skill:
+            out[f"{skill_name(name)}/SKILL.md"] = feature_skill(f)
     return out
 
 

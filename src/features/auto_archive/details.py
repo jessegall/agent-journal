@@ -4,6 +4,7 @@ from features.base import FeatureDetails
 
 class RetentionDetails(FeatureDetails):
     name = "auto_archive"
+    has_skill = False
 
     title = "Auto-archive"
 
