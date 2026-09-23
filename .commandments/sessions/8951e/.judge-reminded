@@ -78,7 +78,9 @@
 /Users/jessegall/projects/agent-journal/src/web/src/layout/PSection.vue
 /Users/jessegall/projects/agent-journal/src/web/src/layout/Sidebar.vue
 /Users/jessegall/projects/agent-journal/src/web/src/layout/TopBar.vue
+/Users/jessegall/projects/agent-journal/src/web/src/organization/RoleCard.vue
 /Users/jessegall/projects/agent-journal/src/web/src/pages/BoardPage.vue
+/Users/jessegall/projects/agent-journal/src/web/src/pages/OrganizationPage.vue
 /Users/jessegall/projects/agent-journal/src/web/src/resource/NewResource.vue
 /Users/jessegall/projects/agent-journal/src/web/src/resource/ResourceBody.vue
 /Users/jessegall/projects/agent-journal/src/web/src/resource/StageMeanings.vue

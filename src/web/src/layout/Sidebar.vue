@@ -77,6 +77,10 @@ async function makeEnv() {
                     <span class="count">{{ counted(t.name) || "" }}</span>
                 </a>
             </template>
+            <a :class="['item', {on: route.page === 'organization'}]" :href="`#/${route.env}/organization`">
+                <Icon name="agents" />
+                Organization
+            </a>
             <a :class="['item', {on: route.page === 'skills'}]" :href="`#/${route.env}/skills`">
                 <Icon name="book" />
                 Skills

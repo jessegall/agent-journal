@@ -274,6 +274,10 @@ export class ApiClient {
         return this.post(this.here(`/agent/${encoded(session)}/permit`), {allow});
     }
 
+    organization() {
+        return this.post(this.here("/ticket/organization"), {});
+    }
+
     agentScreen(session, since) {
         return this.get(this.here(`/agent/${encoded(session)}/screen${query({since})}`));
     }
