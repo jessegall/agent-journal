@@ -96,41 +96,54 @@ class ToolCall:
 @dataclass(frozen=True)
 class ToolUse:
     name: str = ""
-    command: str = ""
-    file_path: str = ""
-    subagent_type: str = ""
-    model: str = ""
-    task_name: str = ""
-    pattern: str = ""
-    url: str = ""
-    skill: str = ""
-    written: str = ""
-    agent_type: str = ""
-    stdout: str = ""
-    stderr: str = ""
-    response: dict = field(default_factory=dict)
     tool_input: dict = field(default_factory=dict)
-
-    @classmethod
-    def read(cls, raw: dict) -> "ToolUse":
-        given = mapping_of(raw, "tool_input")
-        return cls(name=text_of(raw, "tool_name"), command=text_of(given, "command"), file_path=text_of(given, "file_path"),
-                   subagent_type=text_of(given, "subagent_type"), model=text_of(given, "model"), task_name=text_of(given, "task_name"),
-                   pattern=text_of(given, "pattern", "query"), url=text_of(given, "url"), skill=text_of(given, "skill"),
-                   written=text_of(given, "content", "new_string", "prompt"), agent_type=text_of(given, "agent_type"),
-                   stdout=text_of(mapping_of(raw, "tool_response"), "stdout"), stderr=text_of(mapping_of(raw, "tool_response"), "stderr"),
-                   response=mapping_of(raw, "tool_response"), tool_input=given)
+    response: dict = field(default_factory=dict)
 
     @property
-    def loaded_skill(self) -> str:
-        if self.name == "Skill":
-            return self.skill
+    def paths(self) -> tuple:
+        return ()
+
+    @property
+    def words(self) -> tuple:
+        return ()
+
+    @property
+    def commands(self) -> tuple:
+        return ()
+
+    @property
+    def writings(self) -> tuple:
+        return ()
+
+    @property
+    def text(self) -> str:
+        return " ".join(word for word in self.words if word)
+
+    @property
+    def server_tool(self) -> tuple[str, str] | None:
+        if not self.name.startswith("mcp__"):
+            return None
+        server, _, tool = self.name[5:].partition("__")
+        return server, tool.replace("_", " ")
+
+    @property
+    def doing(self) -> str:
+        found = self.server_tool
+        return f"{found[0]} · {found[1]}" if found else self.name.lower()
+
+    @property
+    def subject(self) -> str:
+        found = self.server_tool
+        return f"{found[0]} · {found[1]}" if found else ""
+
+    @property
+    def loaded_skill(self) -> str | None:
         found = SKILL_READ.search(json.dumps(self.tool_input))
-        return found.group(1) if found else ""
+        return found.group(1) if found else None
 
     @property
     def loads_skill(self) -> bool:
-        return bool(self.loaded_skill)
+        return self.loaded_skill is not None
 
     @property
     def plans(self) -> bool:
@@ -140,48 +153,213 @@ class ToolUse:
     def result_size(self) -> int:
         return len(json.dumps(self.response)) if self.response and self.response.get("type") != "image" else 0
 
+
+@dataclass(frozen=True)
+class BashCall(ToolUse):
+    command: str = ""
+    printed: str = ""
+
+    @classmethod
+    def from_payload(cls, name: str, given: dict, response: dict) -> "BashCall":
+        printed = "\n".join(str(response[key]) for key in ("stdout", "stderr") if response.get(key))
+        return cls(name, given, response, command=given["command"], printed=printed)
+
     @property
-    def text(self) -> str:
-        return " ".join(part for part in (self.command, self.file_path, self.pattern, self.url, self.skill, self.subagent_type, self.task_name, self.written) if part)
+    def words(self) -> tuple:
+        return (self.command,)
+
+    @property
+    def commands(self) -> tuple:
+        return (self.command,)
 
     @property
     def doing(self) -> str:
-        name = Path(self.file_path).name
-        if self.name == "Bash":
-            return self.command
-        if self.name == "Read":
-            return f"reading {name}"
-        if self.name in ("Edit", "MultiEdit", "NotebookEdit"):
-            return f"editing {name}"
-        if self.name == "Write":
-            return f"writing {name}"
-        if self.name in ("Glob", "Grep"):
-            return f"searching {self.pattern}".strip()
-        if self.name == "WebFetch":
-            return f"fetching {self.url.split('/')[2] if self.url.count('/') > 2 else self.url}".strip()
-        if self.name == "WebSearch":
-            return f"searching the web for {self.pattern}".strip()
-        if self.name in ("Agent", "Task"):
-            return f"dispatching {self.subagent_type or self.task_name or 'an agent'}"
-        if self.name == "Skill":
-            return f"loading skill {self.skill}".strip()
-        if self.name.startswith("mcp__"):
-            server, _, tool = self.name[5:].partition("__")
-            return f"{server} · {tool.replace('_', ' ')}"
-        return self.name.lower()
+        return self.command
 
     @property
     def subject(self) -> str:
-        if self.name == "Bash":
-            return ""
-        if self.file_path:
-            return Path(self.file_path).name
-        if self.name.startswith("mcp__"):
-            server, _, tool = self.name[5:].partition("__")
-            return f"{server} · {tool.replace('_', ' ')}"
-        if self.url:
-            return self.url.split("/")[2] if self.url.count("/") > 2 else self.url
-        return self.pattern or self.skill or self.subagent_type or self.task_name
+        return ""
+
+
+@dataclass(frozen=True)
+class FileCall(ToolUse):
+    file_path: str = ""
+
+    @property
+    def paths(self) -> tuple:
+        return (self.file_path,)
+
+    @property
+    def words(self) -> tuple:
+        return (self.file_path,)
+
+    @property
+    def subject(self) -> str:
+        return Path(self.file_path).name
+
+
+@dataclass(frozen=True)
+class ReadCall(FileCall):
+    whole: bool = True
+
+    @classmethod
+    def from_payload(cls, name: str, given: dict, response: dict) -> "ReadCall":
+        return cls(name, given, response, file_path=given["file_path"], whole="offset" not in given and "limit" not in given)
+
+    @property
+    def doing(self) -> str:
+        return f"reading {self.subject}"
+
+
+@dataclass(frozen=True)
+class WriteCall(FileCall):
+    written: str = ""
+
+    @classmethod
+    def from_payload(cls, name: str, given: dict, response: dict) -> "WriteCall":
+        path = given["file_path"] if "file_path" in given else given["notebook_path"]
+        return cls(name, given, response, file_path=path, written=text_of(given, "content", "new_string", "new_source"))
+
+    @property
+    def words(self) -> tuple:
+        return (self.file_path, self.written)
+
+    @property
+    def writings(self) -> tuple:
+        return (self.written,)
+
+    @property
+    def doing(self) -> str:
+        return f"{'writing' if self.name == 'Write' else 'editing'} {self.subject}"
+
+
+@dataclass(frozen=True)
+class SearchCall(ToolUse):
+    pattern: str = ""
+    web: bool = False
+
+    @classmethod
+    def from_payload(cls, name: str, given: dict, response: dict) -> "SearchCall":
+        web = "query" in given
+        return cls(name, given, response, pattern=given["query"] if web else given["pattern"], web=web)
+
+    @property
+    def words(self) -> tuple:
+        return (self.pattern,)
+
+    @property
+    def doing(self) -> str:
+        return f"searching the web for {self.pattern}" if self.web else f"searching {self.pattern}"
+
+    @property
+    def subject(self) -> str:
+        return self.pattern
+
+
+@dataclass(frozen=True)
+class FetchCall(ToolUse):
+    url: str = ""
+
+    @classmethod
+    def from_payload(cls, name: str, given: dict, response: dict) -> "FetchCall":
+        return cls(name, given, response, url=given["url"])
+
+    @property
+    def host(self) -> str:
+        return self.url.split("/")[2] if self.url.count("/") > 2 else self.url
+
+    @property
+    def words(self) -> tuple:
+        return (self.url,)
+
+    @property
+    def doing(self) -> str:
+        return f"fetching {self.host}"
+
+    @property
+    def subject(self) -> str:
+        return self.host
+
+
+@dataclass(frozen=True)
+class SkillCall(ToolUse):
+    skill: str = ""
+
+    @classmethod
+    def from_payload(cls, name: str, given: dict, response: dict) -> "SkillCall":
+        return cls(name, given, response, skill=given["skill"])
+
+    @property
+    def words(self) -> tuple:
+        return (self.skill,)
+
+    @property
+    def doing(self) -> str:
+        return f"loading skill {self.skill}"
+
+    @property
+    def subject(self) -> str:
+        return self.skill
+
+    @property
+    def loaded_skill(self) -> str | None:
+        return self.skill
+
+
+@dataclass(frozen=True)
+class AgentCall(ToolUse):
+    kind: str = ""
+    model: str = ""
+    task: str = ""
+    prompt: str = ""
+
+    @classmethod
+    def from_payload(cls, name: str, given: dict, response: dict) -> "AgentCall":
+        return cls(name, given, response, kind=text_of(given, "subagent_type", "agent_type"), model=text_of(given, "model"),
+                   task=text_of(given, "task_name", "description"), prompt=text_of(given, "prompt", "message"))
+
+    @property
+    def words(self) -> tuple:
+        return (self.kind, self.task, self.prompt)
+
+    @property
+    def writings(self) -> tuple:
+        return (self.prompt,)
+
+    @property
+    def named(self) -> str:
+        return self.kind if self.kind else self.task
+
+    @property
+    def doing(self) -> str:
+        return f"dispatching {self.named if self.named else 'an agent'}"
+
+    @property
+    def subject(self) -> str:
+        return self.named
+
+
+@dataclass(frozen=True)
+class AskCall(ToolUse):
+    questions: tuple = ()
+
+    @classmethod
+    def from_payload(cls, name: str, given: dict, response: dict) -> "AskCall":
+        return cls(name, given, response, questions=asked_in(given))
+
+    @property
+    def words(self) -> tuple:
+        return tuple(question.text for question in self.questions)
+
+
+def call_of(raw: dict, kinds: dict) -> ToolUse:
+    name, given, response = text_of(raw, "tool_name"), mapping_of(raw, "tool_input"), mapping_of(raw, "tool_response")
+    kind = kinds.get(name.rsplit(".", 1)[-1])
+    try:
+        return kind.from_payload(name, given, response) if kind else ToolUse(name, given, response)
+    except (KeyError, TypeError, ValueError):
+        return ToolUse(name, given, response)
+
 
 
 @dataclass(frozen=True)
@@ -198,13 +376,13 @@ class Hook:
     tool: ToolUse = field(default_factory=ToolUse)
 
     @classmethod
-    def read(cls, raw: dict) -> "Hook":
+    def read(cls, raw: dict, kinds: dict) -> "Hook":
         transcript = text_of(raw, "transcript_path")
         return cls(event=text_of(raw, "hook_event_name"), session=Path(text_of(raw, "transcript_path", "session_id")).stem,
                    transcript=Path(transcript) if transcript else None, cwd=text_of(raw, "cwd"), model=text_of(raw, "model"),
                    source=text_of(raw, "source"), inbox=text_of(raw, "inbox"),
-                   last_message=text_of(raw, "last_assistant_message"), agent=text_of(raw, "agent_id"), tool=ToolUse.read(raw))
+                   last_message=text_of(raw, "last_assistant_message"), agent=text_of(raw, "agent_id"), tool=call_of(raw, kinds))
 
     @property
-    def command(self) -> str:
-        return self.tool.command
+    def shell(self) -> str | None:
+        return self.tool.command if isinstance(self.tool, BashCall) else None

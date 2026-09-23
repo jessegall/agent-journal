@@ -6,7 +6,7 @@ from tests.conftest import fresh
 
 
 def linked(feature, record, cwd: str) -> None:
-    hook = Hook.read({"hook_event_name": "PreToolUse", "cwd": cwd})
+    hook = Hook.read({"hook_event_name": "PreToolUse", "cwd": cwd}, {})
     LinkWorktreeJournal().intercept(Context.of(feature, record, hook=hook), hook.tool)
 
 

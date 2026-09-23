@@ -44,5 +44,5 @@ def of(record, event, plugin: str, where: Path) -> dict:
 def refusal(record, hook, plugin: str, where: Path, writes: bool) -> dict:
     return {"v": VERSION, "event": f"{HOOK}.{hook.event}", "env": record.env, "project": str(record.root.parent),
             "agent": agent(record, hook.session),
-            "tool": {"name": hook.tool.name, "file": hook.tool.file_path, "command": hook.command, "writes": writes},
+            "tool": {"name": hook.tool.name, "file": hook.tool.paths[0] if hook.tool.paths else None, "command": hook.shell, "writes": writes},
             "plugin": {"name": plugin, "dir": str(where)}}

@@ -40,7 +40,7 @@ SCOPES = (TEXT, COMMANDS, BOTH, EVERYTHING)
 
 
 def searched(call, scope: str) -> str:
-    parts = {TEXT: (call.written,), COMMANDS: (call.command,), BOTH: (call.command, call.written)}.get(scope)
+    parts = {TEXT: call.writings, COMMANDS: call.commands, BOTH: (*call.commands, *call.writings)}.get(scope)
     return call.text if parts is None else " ".join(part for part in parts if part)
 
 

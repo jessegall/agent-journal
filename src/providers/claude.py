@@ -7,7 +7,7 @@ from datetime import datetime
 from pathlib import Path
 
 from engine.transcript import AGENT, HUMAN, INJECTED, PEER, SENT, SUMMARY, SUPERSEDED, TASK, TOOL, Turn
-from providers.payload import DISPLAYED, EVENTS, UsageWindow
+from providers.payload import AgentCall, AskCall, DISPLAYED, EVENTS, UsageWindow
 from providers.base import Provider, journal_hook, parsed
 from providers.payload import Dispatch, Hook, ToolCall
 from providers.claude_rows import Block, Row
@@ -66,6 +66,7 @@ class Handed:
 class Claude(Provider):
     name = "claude"
     sleeping_tools = ("ScheduleWakeup",)
+    tool_kinds = {**Provider.tool_kinds, "AskUserQuestion": AskCall}
     question_tools = frozenset({"AskUserQuestion"})
     briefing_file = "CLAUDE.md"
     skill_home = ".claude/skills"
@@ -215,9 +216,9 @@ class Claude(Provider):
         return found[1].replace("'\"'\"'", "'") if found else command
 
     def dispatch(self, tool) -> Dispatch | None:
-        if tool.name != "Agent":
+        if not isinstance(tool, AgentCall) or tool.name != "Agent":
             return None
-        kind = tool.subagent_type.strip().lower()
+        kind = tool.kind.strip().lower()
         return Dispatch(kind=kind, model=tool.model.strip(), model_supported=kind != "fork")
 
     def model(self, hook: Hook) -> str:

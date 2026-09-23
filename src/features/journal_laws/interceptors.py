@@ -6,6 +6,7 @@ from engine.events import AgentMessageSent
 from engine.hooks import DISPATCHING
 from features.parts import AgentContext, Canceler, Handler, ToolInterceptor
 from features.recital import COMMANDS, WHISPER, mentioned, searched, whisper_due
+from providers.payload import ReadCall
 
 
 class EnforceDispatchLaw(Canceler):
@@ -52,8 +53,9 @@ def lines_in(path: Path) -> int:
 
 class RefuseWholeLongReads(ToolInterceptor):
     def intercept(self, context: AgentContext, call) -> str:
-        whole = call.name == "Read" and not call.tool_input.get("offset") and not call.tool_input.get("limit")
-        cat = CAT.search(context.provider.shell_command(call))
+        shell = context.provider.shell_command(call)
+        cat = CAT.search(shell) if shell else None
+        whole = isinstance(call, ReadCall) and call.whole
         named = call.file_path if whole else cat.group(1) if cat else ""
         if not named:
             return ""

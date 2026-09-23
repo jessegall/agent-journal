@@ -13,7 +13,7 @@ NOUN = re.compile(r"(?:^|[\s;&|(])journal(?:\s+--\S+)*\s+([a-z]+)\b")
 
 class RequireCommandSkill(ToolInterceptor):
     def intercept(self, context: AgentContext, call) -> str:
-        found = NOUN.search(call.command) if call.command else None
+        found = next((match for match in map(NOUN.search, call.commands) if match), None)
         library = context.record.root.parent / LIBRARY
         skill = next((f"journal-{name}" for name in (found.group(1), f"{found.group(1)}s") if (library / f"journal-{name}" / "SKILL.md").is_file()), "") if found else ""
         if not skill:
