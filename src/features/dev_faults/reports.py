@@ -69,11 +69,11 @@ class FaultReports:
 
     @contextmanager
     def watched(self, root, env: str, kind: str, name: str):
-        began = time.perf_counter()
+        began, working = time.perf_counter(), time.thread_time()
         try:
             yield
         finally:
-            self.spent(root, env, kind, name, (time.perf_counter() - began) * 1000)
+            self.spent(root, env, kind, name, (time.perf_counter() - began) * 1000, (time.thread_time() - working) * 1000)
 
     def profiler(self, root) -> cProfile.Profile | None:
         return cProfile.Profile() if (runtime.folder(root) / PROFILING).exists() else None

@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.114.4 — A command that waits is not reported as slow
+
+The developer budget for commands counted every second a command took, so journal check run --wait and check sweep --wait were reported as many seconds over while they only waited for the check to finish. A command is now held to its working time, as requests already were.
+
 ## 2.114.3 — The chat's status line keeps up and recovers by itself
 
 The status line at the bottom of the chat could sit on "working" while commands ran, or replay a long backlog of old commands after a page load. It now shows the newest running command whenever nothing else is showing, skips ahead when it falls more than three behind, and a status poll caught by a server restart gives up after five seconds instead of twenty, so the line resumes as soon as the server is back.
