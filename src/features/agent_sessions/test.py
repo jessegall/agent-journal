@@ -217,3 +217,24 @@ def test_a_conversation_the_journal_never_saw_can_fill_the_chat_from_its_transcr
     assert brought == [("please fix the login", USER, True), ("Fixed: the token expired early.", AGENT, True)], \
         "what the user and the agent wrote reaches the chat once, as theirs and already dealt with"
     assert Sessions(record.root).environment("conv-7") == record.env, "the conversation now belongs to the environment, so it is not asked again"
+
+
+def test_a_background_subagent_stops_running_when_its_completion_arrives(tmp_path):
+    import json
+    from providers.claude import Claude
+    dispatched = {"type": "assistant", "timestamp": "2026-09-23T00:00:00Z", "message": {"content": [
+        {"type": "tool_use", "id": "a1", "name": "Agent", "input": {"description": "review", "prompt": "p", "subagent_type": "reviewer"}}]}}
+    launched = {"type": "user", "timestamp": "2026-09-23T00:00:01Z", "message": {"content": [
+        {"type": "tool_result", "tool_use_id": "a1", "content": "Async agent launched successfully. agentId: x1"}]}}
+    completed = {"type": "queue-operation", "operation": "enqueue", "timestamp": "2026-09-23T00:05:00Z",
+                 "content": "<task-notification><tool-use-id>a1</tool-use-id><status>completed</status></task-notification>"}
+    transcript = tmp_path / "s.jsonl"
+    folder = transcript.with_suffix("").joinpath("subagents")
+    folder.mkdir(parents=True)
+    (folder / "agent-x1.meta.json").write_text(json.dumps({"toolUseId": "a1"}))
+    (folder / "agent-x1.jsonl").write_text("{}\n")
+    transcript.write_text("\n".join(json.dumps(row) for row in (dispatched, launched)) + "\n")
+    assert Claude().crew(transcript)["subagent_rows"][0]["running"], "a launched subagent still writing runs"
+    with transcript.open("a") as f:
+        f.write(json.dumps(completed) + "\n")
+    assert not Claude().crew(transcript)["subagent_rows"][0]["running"], "its completion ends it, though its transcript was written just now"
