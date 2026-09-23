@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.116.1 — A channel line that arrives mid-turn counts as delivered
+
+The check added in 2.115.2 looked for delivered lines only as messages, but a line Claude takes in while it works is recorded differently, so delivered lines were counted as lost and the journal switched to typing for no reason. Both forms count now.
+
 ## 2.116.0 — A plan can be sent for critique from its page
 
 A plan's page has Ask for a critique. It asks how many agents, how big a critique, whether they look for mistakes, for what is missing or both, and which critique template to follow, then sends the request to the agent as your message about the plan. Three critique templates ship with the journal (find what is wrong, find what is missing, challenge the approach); a template of your own joins them with --set applies_to=plan --set purpose=critique.

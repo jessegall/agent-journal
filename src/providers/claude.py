@@ -497,6 +497,12 @@ class ClaudeDriver(Driver):
         except OSError:
             return False
 
+    @staticmethod
+    def _channel_text(row: dict) -> str:
+        if row.get("type") == "attachment":
+            return str((row.get("attachment") or {}).get("prompt") or "")
+        return str((row.get("message") or {}).get("content") or "") if row.get("type") == "user" else ""
+
     def _delivering(self) -> bool:
         handed = runtime.session_file(self.record.root, self.session, HANDED)
         held = read_json(handed, {})
@@ -507,8 +513,7 @@ class ClaudeDriver(Driver):
         if not waiting or not last or not last.transcript:
             return True
         rows = Claude().recent(Path(last.transcript))
-        arrived = [str((row.get("message") or {}).get("content") or "") for row in rows if row.get("type") == "user"]
-        arrived = [text for text in arrived if text.startswith(CHANNEL_MARK)]
+        arrived = [text for text in map(self._channel_text, rows) if text.startswith(CHANNEL_MARK)]
         times = [timestamp(str(row.get("timestamp") or "")) for row in rows]
         lost = [h for h in waiting if not any(h["line"] in text for text in arrived) and sum(1 for at in times if at > h["at"]) >= MOVED_ON]
         kept = [h for h in waiting if not any(h["line"] in text for text in arrived) and h not in lost]

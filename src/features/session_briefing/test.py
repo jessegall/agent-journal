@@ -150,9 +150,9 @@ def test_lines_are_typed_once_the_channel_stops_delivering_them(tmp_path):
     written = lambda *rows: transcript.write_text(transcript.read_text() + "".join(json.dumps(r) + "\n" for r in rows))
     assert driver._handed("todo 5 next") is True, "a live channel takes the line"
     time.sleep(0.01)
-    written({"type": "user", "timestamp": stamp(), "message": {"role": "user", "content": '<channel source="journal" from="journal">\ntodo 5 next'}},
+    written({"type": "attachment", "timestamp": stamp(), "attachment": {"type": "queued_command", "prompt": '<channel source="journal" from="journal">\ntodo 5 next'}},
             *({"type": "assistant", "timestamp": stamp(), "message": {"content": "working"}} for _ in range(4)))
-    assert driver._handed("2 new messages 7, 8") is True, "a line that reached the agent keeps the channel in use"
+    assert driver._handed("2 new messages 7, 8") is True, "a line that reached the agent mid-turn, as a queued attachment, keeps the channel in use"
     time.sleep(0.01)
     written(*({"type": "assistant", "timestamp": stamp(), "message": {"content": "working"}} for _ in range(4)))
     assert driver._handed("work 1 open") is False, "a line the agent never received, while it kept working, sends the next lines to the terminal"
