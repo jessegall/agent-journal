@@ -92,6 +92,12 @@ export function phrase(kind, seed) {
 }
 
 export const SHOWN = ["building", "ready", "approved", "active", "waiting", "done"];
+export const NOT_STARTED = {
+    building: "being written",
+    draft: "a draft",
+    ready: "waiting for your approval",
+    approved: "approved, not started yet",
+};
 
 export function shownPlans(plans) {
     return plans.filter((p) => SHOWN.includes(p.data.status) && !p.completed);
