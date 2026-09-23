@@ -20,6 +20,8 @@ SUMMARIES: dict[str, tuple] = {}
 HELD: dict[str, tuple] = {}
 PACKS: dict[str, tuple] = {}
 INDEXED: dict[str, dict] = {}
+STAMPED: dict[str, tuple] = {}
+STAMPS_FRESH = 5.0
 WRITTEN: dict[str, float] = {}
 FLUSH_ROWS, FLUSH_SECONDS = 50, 30.0
 OPEN: dict[str, tuple] = {}
@@ -119,7 +121,13 @@ class Stored:
 
     def _stamps(self, folder: Path) -> dict[int, str]:
         if not self.resource.own_folder:
-            return {int(e.name[:-3]): f"{e.stat().st_mtime_ns}-{e.stat().st_size}" for e in os.scandir(folder) if e.name.endswith(".md") and e.name[:-3].isdigit()}
+            mark = os.stat(folder).st_mtime_ns
+            held = STAMPED.get(str(folder))
+            if held and held[0] == mark and time.monotonic() - held[1] < STAMPS_FRESH:
+                return held[2]
+            stamps = {int(e.name[:-3]): f"{e.stat().st_mtime_ns}-{e.stat().st_size}" for e in os.scandir(folder) if e.name.endswith(".md") and e.name[:-3].isdigit()}
+            STAMPED[str(folder)] = (mark, time.monotonic(), stamps)
+            return stamps
         stamps = {}
         for e in os.scandir(folder):
             if e.is_dir() and e.name.isdigit():
