@@ -20,6 +20,11 @@ class TicketsDetails(FeatureDetails):
         every ticket whose branch is merged, in its board's done stage, and stops its agent with /exit. Its worktree stays.
         journal ticket complete <n> --yes closes one anyway.
 
+        A message about a board asks for a ticket on it: draft it with journal ticket create "<the work>" --brief "<what is
+        wanted>" --set board=<n> --set draft=true, after asking what is unclear and naming any ticket it depends on, then answer
+        the message with a Confirm button (journal message create "<the draft, in a line>" --set buttons='[{"label": "Confirm",
+        "type": "ticket", "n": <ticket>, "action": "confirm"}]'). A draft cannot start; only the user confirms it.
+
         At most tickets.running tickets have an agent running at once; a ticket started beyond that waits queued, and the
         minute sweep starts it when one finishes.
 

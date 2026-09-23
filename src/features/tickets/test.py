@@ -158,3 +158,15 @@ def test_a_started_ticket_closes_when_its_branch_is_merged_and_not_before():
     closed = tickets.load(ticket.n)
     assert (bool(closed.completed), closed.stage) == (True, "Shipped"), "once merged it closes by itself, in its board's done stage"
     assert Docs(record).load(written.n).completed == 0.0, "and what it proposed counts from the merge on"
+
+
+def test_a_drafted_ticket_waits_for_the_user_to_confirm_it_before_it_can_start():
+    from resources.base import AGENT
+    from tests.conftest import refused
+    record = fresh()
+    board = Boards(record, actor=USER).create("Features", stages=["Ideas", "Building"], meanings={"Building": "start"})
+    drafted = Tickets(record, actor=AGENT).create("Dark mode", board=board.n, draft=True)
+    assert ("is a draft" in refused(lambda: Tickets(record, actor=USER).move(drafted.n, "Building")), Tickets(record).load(drafted.n).stage) == \
+        (True, "Ideas"), "a draft cannot start, and stays where it was"
+    assert "only the user confirms" in refused(lambda: Tickets(record, actor=AGENT).confirm(drafted.n)), "the agent cannot confirm its own draft"
+    assert Tickets(record, actor=USER).confirm(drafted.n).draft is False, "the user confirms it"

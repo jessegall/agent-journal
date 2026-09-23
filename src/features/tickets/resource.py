@@ -27,6 +27,7 @@ class Ticket(Shape, Resource):
         Field(TEXT, name="work_environment"),
         Field(NUMBER, 0, name="plan"),
         Field(FLAG, False, name="queued"),
+        Field(FLAG, False, name="draft"),
     ]
     labels = {"brief": "What is wanted", "outcome": "How it ended", "board": "Board", "stage": "Stage", "source": "Source",
               "source_id": "Id at the source", "owner": "Owner", "work_environment": "Works in", "plan": "Plan"}
