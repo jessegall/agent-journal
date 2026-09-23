@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.113.13 — Subagent marks and loaded skills open what they name
+
+A chat mark for a dispatched or finished subagent opens that subagent in the inspector. Each skill listed in the agent bar's skills dropdown opens its skill panel, as a loaded-skill mark in the chat does.
+
 ## 2.113.12 — An installed update prunes old files at once
 
 When a project sees it was updated, it now removes leftover plugin checkouts, old environment archives, stale output files and quiet session folders, and cuts long logs, right away instead of within the hour. Every project cleans up as each update lands.

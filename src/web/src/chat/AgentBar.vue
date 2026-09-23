@@ -63,6 +63,11 @@ const counts = computed(() => [
     },
 ]);
 const skillCount = computed(() => counts.value[0]);
+
+function readSkill(name) {
+    store.skill = name;
+    open.value = "";
+}
 const activityCounts = computed(() => counts.value.slice(1));
 
 function openSession(row) {
@@ -255,10 +260,10 @@ useOutside(bar, () => (open.value = ""));
                             <p class="bar-none">None — the agent is working from memory.</p>
                         </template>
                         <template v-for="s in skills" :key="s">
-                            <span class="bar-item">
+                            <button type="button" class="bar-item" :title="`Read the ${s} skill`" @click="readSkill(s)">
                                 <Icon name="book" />
                                 {{ s }}
-                            </span>
+                            </button>
                         </template>
                         <div class="bar-foot">
                             <button type="button" class="bar-act" @click="openSkills">Browse every skill</button>
