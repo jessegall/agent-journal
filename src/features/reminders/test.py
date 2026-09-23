@@ -10,15 +10,15 @@ def nudges(record):
     return [(n.title, n.brief) for n in Nudges(record).all()]
 
 
-def test_by_default_standing_reminders_are_said_at_every_tenth_of_context_not_on_idle():
+def test_by_default_standing_reminders_are_said_at_every_quarter_of_context_not_on_idle():
     record = fresh()
     Reminders(record, actor=USER).create("run the suites first")
     report(record, "working", "PreToolUse")
     report(record, "idle", "Stop")
     assert nudges(record) == [], "the default is a context cadence, not the idle"
-    report(record, "working", "PostToolUse", context=11)
+    report(record, "working", "PostToolUse", context=26)
     assert nudges(record) == [("1 reminder standing, read them", "1. run the suites first")], \
-        "crossing a tenth says the standing reminders"
+        "crossing a quarter says the standing reminders"
 
 
 def test_on_worked_the_standing_reminders_are_said_once_per_idle_stretch_after_tool_use():
