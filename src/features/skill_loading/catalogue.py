@@ -1,3 +1,4 @@
+from dataclasses import dataclass, replace
 from functools import cache
 import re
 import time
@@ -15,7 +16,24 @@ from engine.package import data
 
 READ: dict[str, tuple] = {}
 LISTED: dict[str, tuple] = {}
-CATALOGUED: dict[str, tuple] = {}
+
+
+@dataclass(frozen=True)
+class Catalogued:
+    at: float
+    marks: tuple
+    skills: list
+    file_marks: tuple
+    files: list
+
+    def fresh(self, marks: tuple) -> bool:
+        return self.marks == marks and time.monotonic() - self.at < FRESH_FOR
+
+    def unchanged(self, marks: tuple) -> bool:
+        return self.marks == marks and self.file_marks == tuple(map(marked, self.files))
+
+
+CATALOGUED: dict[str, Catalogued] = {}
 FRESH_FOR = 60.0
 HOMES = (LIBRARY, *(cls.skill_home for cls in PROVIDERS.values() if cls.skill_home))
 
@@ -40,8 +58,11 @@ def described(f: Path, root: Path) -> dict:
 def catalogue(root: Path) -> list[dict]:
     marks = tuple(marked(root / home) for home in HOMES)
     held = CATALOGUED.get(str(root))
-    if held and held[1] == marks and held[3] == tuple(map(marked, held[4])) and time.monotonic() - held[0] < FRESH_FOR:
-        return held[2]
+    if held and held.fresh(marks):
+        return held.skills
+    if held and held.unchanged(marks):
+        CATALOGUED[str(root)] = replace(held, at=time.monotonic())
+        return held.skills
     files = [f for home in HOMES for f in skill_files(root / home)]
     out = {}
     for f in files:
@@ -49,8 +70,8 @@ def catalogue(root: Path) -> list[dict]:
             out.setdefault(f.parent.name, described(f, root))
         except FileNotFoundError:
             continue
-    CATALOGUED[str(root)] = (time.monotonic(), marks, list(out.values()), tuple(map(marked, files)), files)
-    return CATALOGUED[str(root)][2]
+    CATALOGUED[str(root)] = Catalogued(time.monotonic(), marks, list(out.values()), tuple(map(marked, files)), files)
+    return CATALOGUED[str(root)].skills
 
 
 def marked(home: Path) -> int:
