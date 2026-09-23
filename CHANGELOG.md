@@ -4,9 +4,13 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.102.2 — formatted_data names the data lists that are formatted
+
+The resource attribute that lists the data fields passed through the formatters is called formatted_data, a plain name for what it holds.
+
 ## 2.102.1 — Chat marks take their event's tone, and their second line is formatted
 
-A plugin's chat mark is coloured by its event's tone by default, the same amber (warn) and green (good) the activity uses; a colour in the card overrides it. The second line of every chat mark passes the formatters like any brief, so a file named in it is a file chip, and it is smaller and more muted than the first. The icons are a size smaller. A resource names the data lists that carry words a person reads in said_data.
+A plugin's chat mark is coloured by its event's tone by default, the same amber (warn) and green (good) the activity uses; a colour in the card overrides it. The second line of every chat mark passes the formatters like any brief, so a file named in it is a file chip, and it is smaller and more muted than the first. The icons are a size smaller. A resource names the data lists that carry words a person reads in formatted_data.
 
 ## 2.102.0 — Chat marks, and plugins can put their own in the chat
 
