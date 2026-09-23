@@ -67,6 +67,15 @@ class Seat:
     agent: str
     session: str
 
+    @classmethod
+    def of(cls, root: Path, env: str, agent: str, session: str) -> "Seat":
+        return cls(root, environment_of(agent, Launched.read(root, session).args, env), agent, session)
+
+
+def environment_of(agent: str, args, env: str) -> str:
+    from providers import DRIVERS
+    return DRIVERS[agent].worktree(list(args)) or env
+
 
 def seated(seat: Seat) -> None:
     from controllers.types import Environments
