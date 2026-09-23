@@ -6,7 +6,6 @@ import time
 from contextlib import contextmanager
 from pathlib import Path
 
-from controllers.base import networked
 from controllers.types import Agents, Notifications
 from engine import runtime
 from engine.record import Record
@@ -16,19 +15,13 @@ OVER = "is slower than its budget"
 THREW = "the viewer threw"
 SAID = 300
 TOLD_EVERY = 25
+RETIRED = "slow"
 BUDGET = {"request": 50, "hook": 50, "command": 50}
 WARMED = ("request", "hook")
 PROFILING = "profile-requests"
 
 
-ACTION = re.compile(r"/api/[^/]+/(\w+)(?:/\d+)?/(\w+)(?:\?|$)")
-PREVIEWS = ("/plugins/preview", "/upgrade-preview")
 
-
-def untimed(where: str) -> bool:
-    path = where.split(" ", 1)[-1]
-    found = ACTION.search(path)
-    return path.split("?")[0].endswith(PREVIEWS) or bool(found and networked(found.group(1), found.group(2)))
 
 class FaultReports:
     def __init__(self, feature):
@@ -67,7 +60,7 @@ class FaultReports:
                   kind=kind, target=name, worst=took)
 
     def threw(self, record, message: str, where: str, stack: str, kind: str = "threw") -> None:
-        title = {"slow": f"the viewer's {where} {OVER}", "overlap": f"the viewer sent {where} twice at once",
+        title = {"overlap": f"the viewer sent {where} twice at once",
                  "page": f"the viewer asked {where} for more than a page", "refetch": f"the viewer refetched {where} with nothing changed"}.get(kind, f"{THREW} {message}")
         self.file(record, title[:80], f"{message}\n\n{where}\n\n{stack}"[:SAID], kind=kind, target=where, stack=stack)
 
@@ -102,10 +95,10 @@ class FaultReports:
             return
 
     def report_console(self, root, env: str, message: str, where: str, stack: str, kind: str = "threw") -> bool:
-        if kind == "slow" and (runtime.warming() or untimed(where)):
+        if kind == RETIRED:
             return True
         record = Record(Path(root), env)
-        if not self.feature.on(record, "budget" if kind in ("slow", "overlap", "page", "refetch") else "console"):
+        if not self.feature.on(record, "budget" if kind in ("overlap", "page", "refetch") else "console"):
             return False
         self.threw(record, message, where, stack, kind)
         return True

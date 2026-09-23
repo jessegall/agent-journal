@@ -2,12 +2,8 @@ import {api} from "./api/client.js";
 import {transport} from "./api/transport.js";
 import {route} from "./route.js";
 
-const BUDGET = 50;
-const REPORTED_AFTER = BUDGET * 4;
 const PAGE = 25;
 const QUIET = 60000;
-const SETTLE = 1000;
-const KEPT = 200;
 const reported = new Map();
 const flying = new Map();
 const CONSOLE = "/console";
@@ -31,7 +27,6 @@ function watched(phase, method, url, body) {
     const same = body instanceof FormData ? where : `${where} ${JSON.stringify(body ?? null)}`;
     if (phase === "answered") {
         flying.set(same, flying.get(same) - 1);
-        setTimeout(() => timed(href.href, where), SETTLE);
         return;
     }
     if (flying.get(same)) report("overlap", `two requests to ${where} were in flight at once`, where);
@@ -39,14 +34,6 @@ function watched(phase, method, url, body) {
     if (asked !== null && (Number(asked) === 0 || Number(asked) > PAGE))
         report("page", `${where} asked for ${asked === "0" ? "every row" : `${asked} rows`}`, where);
     flying.set(same, (flying.get(same) || 0) + 1);
-}
-
-function timed(href, where) {
-    const entry = performance.getEntriesByName(href).pop();
-    if (performance.getEntriesByType("resource").length > KEPT) performance.clearResourceTimings();
-    if (!entry || !entry.responseStart) return;
-    const took = Math.round(entry.responseStart - entry.requestStart);
-    if (took > REPORTED_AFTER) report("slow", `${where} took ${took}ms`, where);
 }
 
 export function watchConsole() {
