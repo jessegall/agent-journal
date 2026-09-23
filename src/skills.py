@@ -81,16 +81,11 @@ def plain_description(text: str) -> str:
 
 def feature_skill(f) -> str:
     d = f.describe()
-    trigger = d["trigger"]
-    when = (f"on {trigger['on']}" if trigger.get("on") else f"at {', '.join(map(str, trigger['at']))} percent of the context" if trigger.get("at")
-            else f"every {trigger['every']} {trigger['unit']}" if trigger else "on the events it listens to")
     subject_text = subject(d["name"])
     loaded = f"Load it when {d['when']}. {d['abstract']}." if d["when"] else f"{d['abstract']}. It runs by itself; load it to read how it works."
     return (f"---\nname: {skill_name(d['name'])}\ndescription: {plain_description(loaded)}\n"
-            f"{'keywords: ' + ', '.join(d['keywords']) + chr(10) if d['keywords'] else ''}---\n\n# {d['title']}\n\n{d['abstract']}.\n\n{d['help']}\n\n{subject_text + chr(10) + chr(10) if subject_text else ''}"
-            f"{f'It listens to: ' + ', '.join(d['listens']) + f'. It speaks {when}. ' if d['listens'] else ''}"
-            f"{'On' if d['default'] else 'Off'} by default. Settings switches it per environment and sets how often it speaks; "
-            f"{'each of its behaviours — ' + ', '.join(d['behaviours']) + ' — carries its own switch and cadence beside it' if d['behaviours'] else 'it has one switch'}.\n")
+            f"{'keywords: ' + ', '.join(d['keywords']) + chr(10) if d['keywords'] else ''}---\n\n# {d['title']}\n\n{d['abstract']}.\n\n{d['help']}\n"
+            f"{chr(10) + subject_text + chr(10) if subject_text else ''}")
 
 
 def render() -> dict[str, str]:

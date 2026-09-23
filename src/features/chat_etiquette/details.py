@@ -34,8 +34,8 @@ class ChatEtiquetteDetails(FeatureDetails):
         reaction can sit beside a reply or a filed to-do when both fit; write words only when
         there is something to say.
 
-        A turn that talks about the journal's workings is named back to you once, with
-        the words that gave it away.
+        If you describe the journal's workings in the chat anyway, the journal tells you once,
+        quoting the words that did it.
     """
 
     primary = True

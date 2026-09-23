@@ -19,8 +19,8 @@ class RulesDetails(FeatureDetails):
         --brief "<the user's reason, and the message it came from>". Only the user strikes a rule. journal rule inject <n>
         keeps a rule in the managed block of both AGENTS.md and CLAUDE.md.
 
-        Give it keywords with --set keywords="<word>,<word>": when one comes up as a whole word, the row is whispered to
-        that session once, with its reasoning, and the call is never refused. --set keywords_in says where they match: text
+        Give it keywords with --set keywords="<word>,<word>": when one appears as a whole word, you are shown the
+        row once, with its reasoning, and the tool call still goes through. --set keywords_in says where they match: text
         (what you write, in edits and in the chat), commands (shell commands), both (the default), or everything (any tool call,
         file paths, searches and URLs included).
     """
