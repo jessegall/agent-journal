@@ -9,9 +9,10 @@ from engine.version import version
 from features import FEATURES
 from features.dev_faults.developing import developing
 from features.trigger import spec
-from surfaces.updates import newer, upstream
+from surfaces.updates import newer, stale, upstream
 
 INSTALL_WAIT = 600
+REFETCH_WAIT = 10
 
 
 class UpdateCheck:
@@ -22,10 +23,11 @@ class UpdateCheck:
 
     def tick(self) -> str:
         record, feature = self.agent.record, FEATURES.get("auto_update")
-        if not feature or time.time() - self.checked_at < spec(record, feature.name, feature.trigger).every * 60:
+        every = spec(record, feature.name, feature.trigger).every * 60 if feature else 0
+        if not feature or time.time() - self.checked_at < every:
             return ""
-        self.checked_at = time.time()
         root = Path(record.root)
+        self.checked_at = time.time() - (every - REFETCH_WAIT if stale(root) else 0)
         installed, latest = version(), upstream(root)
         if not feature.on(record) or not newer(latest, installed) or refused(root, latest):
             return ""

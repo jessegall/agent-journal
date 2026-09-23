@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.113.7 — A new release is installed within minutes, not twenty
+
+The update check ran every five minutes but read the published version from a cache refreshed every fifteen, and a check that found the cache stale compared against the old value while it fetched the new one. A project could take twenty minutes to see a release. A check that finds the cache stale now looks again ten seconds later, once the fresh version is in.
+
 ## 2.113.6 — A terminal-view command stays pending until it has run
 
 A command typed in the terminal view stays pending after it is typed into the agent's terminal, since Claude may hold it in its queue while it works. It clears once the agent's transcript shows the command ran.
