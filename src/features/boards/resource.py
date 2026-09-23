@@ -1,6 +1,6 @@
 from typing import ClassVar
 
-from resources.base import PROJECT, USER, Resource, ResourceDetails
+from resources.base import PROJECT, USER, WIDE, Resource, ResourceDetails
 from resources.shapes import LIST, Field, Shape
 
 START, REVIEW, DONE = "start", "review", "done"
@@ -11,6 +11,7 @@ class Board(Shape, Resource):
     type = "board"
     icon = "board"
     scope = PROJECT
+    view = WIDE
     created_in_viewer = True
     details: ClassVar[ResourceDetails] = ResourceDetails(
         title="Board",

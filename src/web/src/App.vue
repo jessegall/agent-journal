@@ -55,6 +55,7 @@ const page = computed(() =>
             ? "index"
             : "home"
 );
+const full = computed(() => page.value === "kanban");
 const opened = computed(() =>
     route.value.stack.length
         ? route.value.stack
@@ -144,7 +145,7 @@ const chatFloats = computed(() => store.detached && !store.extension.holding && 
     <template v-else-if="store.spec">
         <div class="viewer">
             <IdentityBand />
-            <div :class="['app', {wide: store.wide}]">
+            <div :class="['app', {wide: store.wide, full}]">
                 <div class="rail"><Sidebar /></div>
                 <div class="main">
                     <div class="bar"><TopBar /></div>
@@ -172,7 +173,7 @@ const chatFloats = computed(() => store.detached && !store.extension.holding && 
                     </Transition>
                 </div>
                 <Transition name="column">
-                    <Activity v-if="store.activity && !store.wide" />
+                    <Activity v-if="store.activity && !store.wide && !full" />
                 </Transition>
                 <template v-for="layer in layers" :key="layer.key">
                     <Reader
@@ -240,6 +241,10 @@ const chatFloats = computed(() => store.detached && !store.extension.holding && 
     margin-left: -236px;
     opacity: 0;
     pointer-events: none;
+}
+
+.app.full .rail {
+    display: none;
 }
 
 .app.wide .bar {
