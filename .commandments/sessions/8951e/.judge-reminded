@@ -1,7 +1,33 @@
+/Users/jessegall/projects/agent-journal/src/commands/http.py
+/Users/jessegall/projects/agent-journal/src/engine/band.py
+/Users/jessegall/projects/agent-journal/src/engine/engine.py
+/Users/jessegall/projects/agent-journal/src/engine/events.py
 /Users/jessegall/projects/agent-journal/src/engine/fields.py
-/Users/jessegall/projects/agent-journal/src/features/status_bar/runs.py
-/Users/jessegall/projects/agent-journal/src/providers/claude_rows.py
-/Users/jessegall/projects/agent-journal/src/providers/codex_rows.py
+/Users/jessegall/projects/agent-journal/src/engine/hooks.py
+/Users/jessegall/projects/agent-journal/src/engine/inputs.py
+/Users/jessegall/projects/agent-journal/src/engine/seat.py
+/Users/jessegall/projects/agent-journal/src/engine/seats.py
+/Users/jessegall/projects/agent-journal/src/engine/services.py
+/Users/jessegall/projects/agent-journal/src/engine/sessions.py
+/Users/jessegall/projects/agent-journal/src/engine/terminal.py
+/Users/jessegall/projects/agent-journal/src/engine/viewer.py
+/Users/jessegall/projects/agent-journal/src/features/attachment_descriptions/handlers.py
+/Users/jessegall/projects/agent-journal/src/features/checks/resource.py
+/Users/jessegall/projects/agent-journal/src/features/message_buttons/shaping.py
+/Users/jessegall/projects/agent-journal/src/features/plugins/answer.py
+/Users/jessegall/projects/agent-journal/src/features/plugins/manifest.py
+/Users/jessegall/projects/agent-journal/src/features/templates/resource.py
+/Users/jessegall/projects/agent-journal/src/features/trigger.py
+/Users/jessegall/projects/agent-journal/src/features/work_tracking/handlers.py
+/Users/jessegall/projects/agent-journal/src/install.py
+/Users/jessegall/projects/agent-journal/src/migrations/__init__.py
+/Users/jessegall/projects/agent-journal/src/migrations/m0001_the_old_record.py
+/Users/jessegall/projects/agent-journal/src/providers/claude.py
+/Users/jessegall/projects/agent-journal/src/providers/codex.py
+/Users/jessegall/projects/agent-journal/src/web/src/App.vue
+/Users/jessegall/projects/agent-journal/src/web/src/layout/Sidebar.vue
+/Users/jessegall/projects/agent-journal/src/web/src/layout/TopBar.vue
+/Users/jessegall/projects/agent-journal/src/web/src/pages/AboutPage.vue
 -----
 Batch marker for the code-commandments judge reminder (`commandments judge-reminder`, wired as
 Stop + PreToolUse hooks). The lines above the separator are the changed-file set it last

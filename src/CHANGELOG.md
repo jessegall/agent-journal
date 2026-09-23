@@ -4,6 +4,16 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.120.0 — Worktree sessions keep their worktree, their chat and their agent
+
+A session started with journal claude -w NAME was taken for a subagent, because it runs under .claude/worktrees, so the journal never showed its status, never briefed it and never put its replies in the chat. The journal now tells a subagent apart only by Claude's own markers, so a worktree session works like any other.
+
+The journal now makes the worktree itself, on Claude's branch name worktree-NAME, copying what .worktreeinclude lists, and starts Claude inside it without -w. Claude therefore never has a worktree of its own to remove on /exit, exit or Ctrl+C. An existing worktree is reused, and a name with a colon or a slash is refused at launch. A session's environment follows the worktree it runs in, also after a restart or when carrying on, and a restart of the journal's worker no longer undoes a switch, claim or eviction. The journal stops and restarts Claude by typing /exit, and uses a signal only when Claude has not left after a few seconds.
+
+The boot menu moves with the arrow keys, marks worktree environments and busy ones, and picking a worktree environment starts Claude inside it. Carrying on in an environment asks one question and starts the way that environment last started. The viewer's tab shows the project and environment, and a document's card shows only in the chat of the environment that made it. The version at the foot of the sidebar opens an About page with the whole changelog again; the changelog now ships with every install.
+
+Sessions already running keep the old way of stopping until their next restart. Nothing to do: journal claude installs this before it starts.
+
 ## 2.119.1 — A plugin's socket check no longer drops out half the time
 
 On macOS the journal's half-close after sending a hook to a plugin's service failed whenever the service had already answered, about 60% of calls, and a failed answer skipped the plugin's check instead of running its command. The journal no longer half-closes, and a service that fails or answers nonsense is passed over for the command. Nothing to do.

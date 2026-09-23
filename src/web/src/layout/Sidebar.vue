@@ -122,7 +122,7 @@ async function makeEnv() {
         </FoldGroup>
         <div class="side-bottom">
             <div class="side-foot side-foot-row">
-                <span class="side-foot-version">Agent journal {{ store.spec.version || "" }}</span>
+                <a class="side-foot-version" :href="`#/${route.env}/about`" title="Version and changelog">Agent journal {{ store.spec.version || "" }}</a>
             </div>
         </div>
     </aside>
@@ -334,7 +334,12 @@ async function makeEnv() {
     align-items: center;
     font-size: 10.5px;
     color: var(--text-3);
+    text-decoration: none;
     overflow: hidden;
     text-overflow: ellipsis;
+}
+
+.side-foot-version:hover {
+    color: var(--text);
 }
 </style>

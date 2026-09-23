@@ -1,43 +1,38 @@
 import time
-from dataclasses import asdict, dataclass, field
+from dataclasses import asdict, dataclass, field, replace
 from pathlib import Path
 
 from engine.sessions import Sessions
 from engine.stored import read_json
 from engine import runtime
-from engine.fields import mapping_of, number_of, text_of
+from engine.fields import Loaded
 
 ONLINE_FOR = 5.0
 
 
 @dataclass(frozen=True)
-class SeatReport:
+class SeatReport(Loaded):
     title: str = ""
     provider: str = ""
     model: str = ""
     status: str = ""
     context: float = 0.0
 
-    @classmethod
-    def from_json(cls, raw: dict) -> "SeatReport":
-        return cls(text_of(raw, "title"), text_of(raw, "provider"), text_of(raw, "model"), text_of(raw, "status"), number_of(raw, "context"))
-
 
 @dataclass(frozen=True)
-class Seat:
-    at: float
-    agent: str
-    state: str
-    env: str
-    terminal: str
+class Seat(Loaded):
+    aliases = {"reported": ("report",)}
+    at: float = 0.0
+    agent: str = ""
+    state: str = ""
+    env: str = ""
+    terminal: str = ""
     report: dict = field(default_factory=dict)
     reported: SeatReport = field(default_factory=SeatReport)
 
     @classmethod
-    def from_json(cls, raw, terminal: str = "") -> "Seat":
-        raw = raw if isinstance(raw, dict) else {}
-        report = mapping_of(raw, "report")
-        return cls(number_of(raw, "at"), text_of(raw, "agent"), text_of(raw, "state"), text_of(raw, "env"), terminal, report, SeatReport.from_json(report))
+    def of(cls, raw, terminal: str) -> "Seat":
+        return replace(cls.from_json(raw), terminal=terminal)
 
     @property
     def session(self) -> str:
@@ -96,5 +91,5 @@ def seats(root: Path, within: float | None = None) -> list[Seat]:
             continue
         seat = read_json(path)
         if seat is not None:
-            found.append(Seat.from_json(seat, path.parent.name))
+            found.append(Seat.of(seat, path.parent.name))
     return found

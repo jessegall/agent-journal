@@ -3,7 +3,7 @@ import time
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from engine.fields import list_of, mapping_of, number_of, text_of
+from engine.fields import Loaded
 
 from resources.types import TYPES
 from engine.stored import read_json, write_json, write_text
@@ -40,7 +40,7 @@ def held_builds(root: Path) -> set[str]:
 
 
 @dataclass(frozen=True)
-class SessionRecord:
+class SessionRecord(Loaded):
     environment: str = ""
     provider: str = ""
     pid: int = 0
@@ -50,13 +50,6 @@ class SessionRecord:
     launch: int = 0
     evicted: dict = field(default_factory=dict)
     grants: tuple = ()
-
-    @classmethod
-    def from_json(cls, raw) -> "SessionRecord":
-        raw = raw if isinstance(raw, dict) else {}
-        return cls(environment=text_of(raw, "environment"), provider=text_of(raw, "provider"), pid=int(number_of(raw, "pid")),
-                   since=number_of(raw, "since"), seen=number_of(raw, "seen"), args=tuple(list_of(raw, "args")), launch=int(number_of(raw, "launch")),
-                   evicted=mapping_of(raw, "evicted"), grants=tuple(list_of(raw, "grants")))
 
     @property
     def last_heard(self) -> float:

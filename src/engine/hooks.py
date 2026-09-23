@@ -13,7 +13,7 @@ from engine import chat, runtime
 from engine.stored import read_json, write_json
 from providers.payload import PERMISSION, STATUS
 from features.status_bar import commands
-from engine.fields import text_of, whole_of
+from engine.fields import Loaded
 
 POLICIES: list = []
 CANCELERS: dict[str, list] = {}
@@ -83,20 +83,17 @@ def displayed(root: Path, raw: dict) -> None:
 
 
 @dataclass(frozen=True)
-class Chunk:
-    session: str
-    message: str
-    index: int
-    delta: str
-    final: bool
-
-    @classmethod
-    def from_payload(cls, raw: dict) -> "Chunk":
-        return cls(text_of(raw, "session_id"), text_of(raw, "message_id"), whole_of(raw, "index"), text_of(raw, "delta"), bool(raw.get("final")))
+class Chunk(Loaded):
+    aliases = {"session": ("session_id",), "message": ("message_id",)}
+    session: str = ""
+    message: str = ""
+    index: int = 0
+    delta: str = ""
+    final: bool = False
 
 
 def display_chunk(root: Path, raw: dict) -> None:
-    chunk = Chunk.from_payload(raw)
+    chunk = Chunk.from_json(raw)
     session, message = chunk.session, chunk.message
     f = runtime.session_file(root, session, "displayed.json")
     with SHOWING:

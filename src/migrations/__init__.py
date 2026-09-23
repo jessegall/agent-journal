@@ -7,7 +7,7 @@ import time
 from pathlib import Path
 from engine.package import modules
 from engine.stored import read_json, write_text
-from engine.fields import number_of, text_of
+from engine.fields import Loaded
 from dataclasses import dataclass
 
 
@@ -32,13 +32,13 @@ def applied(root: Path) -> dict:
 
 
 @dataclass(frozen=True)
-class MigrationRun:
-    at: float
-    result: str
+class MigrationRun(Loaded):
+    at: float = 0.0
+    result: str = ""
 
 
 def ran(root: Path) -> dict[str, MigrationRun]:
-    return {name: MigrationRun(number_of(entry, "at"), text_of(entry, "result")) for name, entry in applied(root).items() if isinstance(entry, dict)}
+    return {name: MigrationRun.from_json(entry) for name, entry in applied(root).items() if isinstance(entry, dict)}
 
 
 RECORD = ("environments", "project", "plugin-data", "migrations.json", "record.json", "settings.json")

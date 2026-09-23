@@ -17,7 +17,7 @@ from engine.stored import read_json, write_json, write_text
 from engine.sessions import alive
 from engine.version import version
 from engine.package import entry
-from engine.fields import number_of, text_of, whole_of
+from engine.fields import Loaded
 
 PORTS = range(8420, 8440)
 HEARTBEAT = 2.0
@@ -37,39 +37,26 @@ def marker(root: Path) -> Path:
 
 
 @dataclass(frozen=True)
-class KnownJournal:
-    root: str
-    project: str
-    url: str
-    at: float
-
-    @classmethod
-    def from_json(cls, raw: dict) -> "KnownJournal":
-        return cls(text_of(raw, "root"), text_of(raw, "project"), text_of(raw, "url"), number_of(raw, "at"))
+class KnownJournal(Loaded):
+    root: str = ""
+    project: str = ""
+    url: str = ""
+    at: float = 0.0
 
 
 @dataclass(frozen=True)
-class ViewerMark:
+class ViewerMark(Loaded):
     url: str = ""
     at: float = 0.0
     port: int = 0
     pid: int = 0
 
-    @classmethod
-    def from_json(cls, raw) -> "ViewerMark":
-        raw = raw if isinstance(raw, dict) else {}
-        return cls(text_of(raw, "url"), number_of(raw, "at"), whole_of(raw, "port"), whole_of(raw, "pid"))
-
 
 @dataclass(frozen=True)
-class Identity:
-    root: str
-    project: str
-    version: str
-
-    @classmethod
-    def from_json(cls, raw: dict) -> "Identity":
-        return cls(text_of(raw, "root"), text_of(raw, "project"), text_of(raw, "version"))
+class Identity(Loaded):
+    root: str = ""
+    project: str = ""
+    version: str = ""
 
 
 def known() -> list[KnownJournal]:

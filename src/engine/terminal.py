@@ -8,7 +8,7 @@ from install import code
 from engine import runtime
 from engine.stored import read_json, write_json
 from engine.package import CODE, entry
-from engine.fields import list_of, text_of, whole_of
+from engine.fields import Loaded
 from engine.worktree import checkout, environment
 
 RELOAD = 75
@@ -21,7 +21,7 @@ LAUNCHED = "launched.json"
 
 
 @dataclass(frozen=True)
-class Launched:
+class Launched(Loaded):
     pid: int = 0
     command: tuple = ()
     args: tuple = ()
@@ -30,9 +30,7 @@ class Launched:
 
     @classmethod
     def read(cls, root: Path, session: str) -> "Launched":
-        raw = read_json(runtime.session_file(root, session, LAUNCHED), {})
-        raw = raw if isinstance(raw, dict) else {}
-        return cls(whole_of(raw, "pid"), tuple(list_of(raw, "command")), tuple(list_of(raw, "args")), text_of(raw, "cwd"), whole_of(raw, "launch"))
+        return cls.from_json(read_json(runtime.session_file(root, session, LAUNCHED), {}))
 
 
 def watched(root: Path) -> tuple:

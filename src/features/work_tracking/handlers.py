@@ -9,7 +9,6 @@ from features.work_tracking import tracker
 from engine.transcript import IDLE
 from features.work_tracking.next import next
 from resources.types import Work
-from engine.fields import text_of
 from features.status_bar.runs import command_runs
 
 ASKED_AGAIN_AFTER = 600
@@ -44,10 +43,6 @@ class PlanCompleted(ResourceEvent):
 class WorkLogged(ResourceEvent):
     on: ClassVar[str] = "work.updated"
     section: str = ""
-
-    @classmethod
-    def read(cls, event) -> "WorkLogged":
-        return cls(n=event.n, action=event.action, type=event.type, actor=event.actor, section=text_of(event.data, "section"))
 
 
 def working(context: Context) -> list:

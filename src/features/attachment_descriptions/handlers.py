@@ -9,7 +9,6 @@ from controllers.types import CONTROLLERS
 from engine.events import ResourceEvent, SessionStarted
 from features.attachment_descriptions.video import MAX_FRAMES, probe, spacing
 from features.parts import AgentContext, Context, Handler
-from engine.fields import text_of
 
 MEDIA = ("image/", "video/")
 
@@ -18,10 +17,6 @@ MEDIA = ("image/", "video/")
 class FileAttached(ResourceEvent):
     on: ClassVar[str] = "updated"
     file: str = ""
-
-    @classmethod
-    def read(cls, event) -> "FileAttached":
-        return cls(n=event.n, action=event.action, type=event.type, actor=event.actor, file=text_of(event.data, "file"))
 
 
 @dataclass(frozen=True)

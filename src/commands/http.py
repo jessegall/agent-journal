@@ -114,6 +114,14 @@ def get_manifest(req: Request) -> Reply:
     return Reply(200, manifest(req.root))
 
 
+@route("GET", "/api/changelog")
+def get_changelog(req: Request) -> Reply:
+    from engine.version import version
+    from install import code
+    log = code(req.root) / "CHANGELOG.md"
+    return Reply(200, {"version": version(), "changelog": log.read_text()}) if log.is_file() else Reply(404, {"error": "this install carries no changelog"})
+
+
 @route("GET", "/api/identity")
 def get_identity(req: Request) -> Reply:
     names = [row["title"] for row in Environments(Record(req.root, runtime.env(req.root)), actor=USER).summaries() if not row["deleted"]]

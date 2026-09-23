@@ -27,6 +27,7 @@ import PluginsPage from "./pages/PluginsPage.vue";
 import BoardPage from "./pages/BoardPage.vue";
 import ServicesPage from "./pages/ServicesPage.vue";
 import SkillsPage from "./pages/SkillsPage.vue";
+import AboutPage from "./pages/AboutPage.vue";
 import HubPage from "./pages/HubPage.vue";
 import FilePage from "./pages/FilePage.vue";
 import Reader from "./resource/Reader.vue";
@@ -46,7 +47,7 @@ usePoll(...polled.events);
 const page = computed(() =>
     !route.value.page
         ? "home"
-        : ["settings", "search", "files", "commit", "skills", "services", "plugins", "page", "hub", "file", "board"].includes(
+        : ["settings", "search", "files", "commit", "skills", "services", "plugins", "page", "hub", "file", "board", "about"].includes(
                 route.value.page
             )
           ? route.value.page
@@ -159,6 +160,7 @@ const chatFloats = computed(() => store.detached && !store.extension.holding && 
                                 <template #commit><CommitPage /></template>
                                 <template #skills><SkillsPage /></template>
                                 <template #services><ServicesPage /></template>
+                                <template #about><AboutPage /></template>
                                 <template #plugins><PluginsPage /></template>
                                 <template #board><BoardPage /></template>
                                 <template #page><PluginPage /></template>

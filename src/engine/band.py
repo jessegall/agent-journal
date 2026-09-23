@@ -198,7 +198,7 @@ class Band:
             raw = json.loads(runtime.session_file(self.root, self.session, "seat.json").read_text())
         except (OSError, ValueError):
             raw = {}
-        return Seat.from_json(raw, self.session)
+        return Seat.of(raw, self.session)
 
     def context(self, seat: Seat) -> float:
         if seat.report:

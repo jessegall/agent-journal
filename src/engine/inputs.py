@@ -3,7 +3,7 @@ import uuid
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from engine.stored import read_json, write_json
-from engine.fields import number_of, text_of
+from engine.fields import Loaded
 
 STALE = 600.0
 FORCE = "force"
@@ -14,19 +14,14 @@ KEYS = (FORCE, PERMIT, BACKGROUND)
 
 
 @dataclass(frozen=True)
-class Input:
-    session: str
-    line: str
-    label: str
-    at: float
+class Input(Loaded):
+    session: str = ""
+    line: str = ""
+    label: str = ""
+    at: float = 0.0
     action: str = ""
     provider: str = ""
     value: str = ""
-
-    @classmethod
-    def from_json(cls, raw: dict) -> "Input":
-        return cls(text_of(raw, "session"), text_of(raw, "line"), text_of(raw, "label"), number_of(raw, "at"), text_of(raw, "action"),
-                   text_of(raw, "provider"), text_of(raw, "value"))
 
     @property
     def lasting(self) -> bool:
@@ -38,14 +33,10 @@ class Input:
 
 
 @dataclass(frozen=True)
-class QueuedCommand:
-    at: float
-    command: str
+class QueuedCommand(Loaded):
+    at: float = 0.0
+    command: str = ""
     typed: float = 0.0
-
-    @classmethod
-    def from_json(cls, raw: dict) -> "QueuedCommand":
-        return cls(number_of(raw, "at"), text_of(raw, "command"), number_of(raw, "typed"))
 
 
 def waiting_commands(row) -> list[QueuedCommand]:

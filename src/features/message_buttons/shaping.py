@@ -1,8 +1,8 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 
 from controllers.types import CONTROLLERS
 from resources.base import Refused, SYSTEM
-from engine.fields import text_of
+from engine.fields import Loaded
 
 MOST = 5
 LABEL = 40
@@ -18,8 +18,9 @@ def runs(record, type_: str, action: str) -> bool:
 
 
 @dataclass(frozen=True)
-class Button:
-    label: str
+class Button(Loaded):
+    aliases = {"action": ("action", "method")}
+    label: str = ""
     type: str = ""
     action: str = ""
     n: int | None = None
@@ -32,9 +33,8 @@ class Button:
             n = int(given["n"])
         except (KeyError, TypeError, ValueError):
             n = None
-        body = given.get("body")
-        return cls(text_of(given, "label").strip()[:LABEL], text_of(given, "type"), text_of(given, "action", "method"), n,
-                   body if isinstance(body, dict) else None, bool(given.get("again")))
+        button = cls.from_json({key: value for key, value in given.items() if key != "n"})
+        return replace(button, label=button.label.strip()[:LABEL], n=n)
 
     def to_json(self) -> dict:
         kept = {"label": self.label, "type": self.type, "action": self.action, "n": self.n, "body": self.body, "again": self.again}
