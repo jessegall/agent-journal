@@ -6,6 +6,7 @@ const props = defineProps({
     label: {type: String, required: true},
     tone: {type: String, default: "agent"},
     clickable: {type: Boolean, default: false},
+    small: {type: Boolean, default: false},
 });
 const emit = defineEmits(["click"]);
 </script>
@@ -14,10 +15,10 @@ const emit = defineEmits(["click"]);
     <component
         :is="props.clickable ? 'button' : 'div'"
         :type="props.clickable ? 'button' : undefined"
-        :class="['bubble-header', props.tone, {clickable: props.clickable}]"
+        :class="['bubble-header', props.tone, {clickable: props.clickable, small: props.small}]"
         @click.stop="props.clickable && emit('click')"
     >
-        <Icon :name="props.icon" :size="12" />
+        <Icon :name="props.icon" :size="props.small ? 10 : 12" />
         <span>{{ props.label }}</span>
     </component>
 </template>
@@ -43,6 +44,18 @@ const emit = defineEmits(["click"]);
     border-bottom: 0;
     padding: 0;
     cursor: pointer;
+}
+
+.bubble-header.small {
+    gap: 4px;
+    padding: 0 0 4px;
+    margin: 0 0 5px;
+    font-size: 9.5px;
+}
+
+.bubble-header.muted {
+    border-bottom-color: #1d1e22;
+    color: var(--text-4);
 }
 
 .bubble-header.agent {

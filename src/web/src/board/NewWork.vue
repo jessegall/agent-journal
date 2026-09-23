@@ -22,6 +22,8 @@ const lastSent = ref(0);
 const picked = ref([]);
 const adding = ref(false);
 const panel = ref(null);
+const revealed = ref([]);
+const SKELETONS = 3;
 
 const asked = computed(() => rows("message").filter((m) => sent.value.includes(m.data.idempotency)));
 const replies = computed(() => {
@@ -40,6 +42,17 @@ const drafts = computed(() =>
     )
 );
 const writing = computed(() => Boolean(lastSent.value) && !replies.value.some((c) => c.created >= lastSent.value));
+const turn = computed(() => drafts.value.find((t) => !revealed.value.includes(t.n)));
+const cards = computed(() => {
+    const ahead = writing.value ? Math.max(SKELETONS - drafts.value.length, 1) : 0;
+    return [...drafts.value, ...Array(ahead).fill(null)].map((ticket, order) => ({order, ticket}));
+});
+const rowsClass = computed(() => {
+    const count = Math.ceil(cards.value.length / SKELETONS);
+    return `rows-${count > 2 ? "more" : count}`;
+});
+const shownDrafts = computed(() => drafts.value.filter((t) => revealed.value.includes(t.n)));
+const reveal = (n) => (revealed.value = [...revealed.value, n]);
 const STALLED_AFTER = 120000;
 const stalled = ref(false);
 const lastAsked = ref("");
@@ -74,7 +87,7 @@ const say = (mine, text) => (lines.value = [...lines.value, {id: `${now()}-${lin
 function onKey(e) {
     if (!props.open) return;
     if (e.key === "Enter" && (e.metaKey || e.ctrlKey) && picked.value.length) return (e.preventDefault(), add());
-    const shown = drafts.value[Number(e.key) - 1];
+    const shown = shownDrafts.value[Number(e.key) - 1];
     if (shown && !e.target.closest("input,textarea,[contenteditable='true']")) (e.preventDefault(), toggle(shown.n));
 }
 
@@ -151,14 +164,18 @@ async function add() {
 
 <template>
     <FocusStage :open="open" leave="Back to the board" @close="emit('close')">
-        <div class="picks">
-            <template v-for="ticket in drafts" :key="ticket.n">
-                <Suggestion :ticket="ticket" :picked="picked.includes(ticket.n)" @toggle="toggle(ticket.n)" />
+        <TransitionGroup tag="div" name="pick" :class="['picks', rowsClass]">
+            <template v-for="card in cards" :key="card.order">
+                <Suggestion
+                    :ticket="card.ticket"
+                    :order="card.order"
+                    :active="Boolean(card.ticket) && card.ticket === turn"
+                    :picked="Boolean(card.ticket) && picked.includes(card.ticket.n)"
+                    @toggle="toggle(card.ticket.n)"
+                    @revealed="reveal(card.ticket.n)"
+                />
             </template>
-            <template v-if="writing">
-                <Suggestion />
-            </template>
-        </div>
+        </TransitionGroup>
         <ChatPanel
             ref="panel"
             v-model="words"
@@ -177,27 +194,23 @@ async function add() {
                 <ChatLine text="No answer yet. The agent may be busy with other work." />
             </template>
             <template #actions>
-                <template v-if="writing">
-                    <div class="choose">
-                        <span class="note">The agent is writing tickets.</span>
-                        <template v-if="stalled">
-                            <Btn small @click="askAgain">Ask again</Btn>
-                        </template>
-                        <Btn small @click="stop">Stop</Btn>
-                    </div>
-                </template>
-                <template v-if="drafts.length && !writing">
-                    <div class="choose">
-                        <span class="note">{{ note }}</span>
-                        <template v-if="missing.length">
-                            <Btn small @click="pickMissing">Pick it too</Btn>
-                        </template>
-                        <Btn small @click="again">Try another split</Btn>
-                        <Btn kind="primary" small :busy="adding" :disabled="!picked.length" @click="add">
-                            {{ picked.length ? `Add ${picked.length} to ${first}` : `Add to ${first}` }}
-                        </Btn>
-                    </div>
-                </template>
+                <div :class="['choose', {on: writing}]">
+                    <span class="note">The agent is writing tickets.</span>
+                    <template v-if="stalled">
+                        <Btn small @click="askAgain">Ask again</Btn>
+                    </template>
+                    <Btn small @click="stop">Stop</Btn>
+                </div>
+                <div :class="['choose', {on: drafts.length && !writing}]">
+                    <span class="note">{{ note }}</span>
+                    <template v-if="missing.length">
+                        <Btn small @click="pickMissing">Pick it too</Btn>
+                    </template>
+                    <Btn small @click="again">Try another split</Btn>
+                    <Btn kind="primary" small :busy="adding" :disabled="!picked.length" @click="add">
+                        {{ picked.length ? `Add ${picked.length} to ${first}` : `Add to ${first}` }}
+                    </Btn>
+                </div>
             </template>
         </ChatPanel>
     </FocusStage>
@@ -206,27 +219,90 @@ async function add() {
 <style scoped>
 .picks {
     display: grid;
-    flex: 1;
-    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-    align-content: end;
-    gap: 12px;
+    flex: 0 1 auto;
+    grid-template-columns: repeat(3, 1fr);
+    grid-auto-rows: 200px;
+    align-content: start;
+    gap: 14px;
+    height: 0;
     min-height: 0;
+    overflow: hidden;
+    padding: 4px 3px 2px;
+    scrollbar-width: none;
+    transition: height 0.45s cubic-bezier(0.2, 0.9, 0.25, 1);
+}
+
+.picks.rows-1 {
+    height: 206px;
+}
+
+.picks.rows-2,
+.picks.rows-more {
+    height: 420px;
     overflow-y: auto;
-    padding-bottom: 2px;
+}
+
+.pick-move {
+    transition: transform 0.35s cubic-bezier(0.2, 0.9, 0.25, 1);
+}
+
+.pick-leave-active {
+    transition:
+        opacity 0.2s cubic-bezier(0.4, 0, 1, 1),
+        transform 0.2s cubic-bezier(0.4, 0, 1, 1);
+}
+
+.pick-leave-to {
+    opacity: 0;
+    transform: scale(0.98);
 }
 
 .choose {
+    position: absolute;
+    inset: 0;
     display: flex;
-    flex-wrap: wrap;
     align-items: center;
     gap: 10px;
-    padding: 4px 8px 10px 16px;
+    padding: 0 8px 0 16px;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(4px);
+    transition:
+        opacity 0.25s,
+        transform 0.25s cubic-bezier(0.2, 0.9, 0.25, 1),
+        visibility 0s 0.25s;
+}
+
+.choose.on {
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+    transition:
+        opacity 0.25s,
+        transform 0.25s cubic-bezier(0.2, 0.9, 0.25, 1),
+        visibility 0s;
 }
 
 .note {
     flex: 1;
-    min-width: 160px;
+    min-width: 0;
+    overflow: hidden;
     color: var(--text-3);
     font-size: 13px;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+@media (max-width: 760px) {
+    .picks {
+        grid-template-columns: 1fr;
+    }
+
+    .picks.rows-1,
+    .picks.rows-2,
+    .picks.rows-more {
+        height: 206px;
+        overflow-y: auto;
+    }
 }
 </style>
