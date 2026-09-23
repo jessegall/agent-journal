@@ -132,3 +132,29 @@ def test_a_slow_request_waits_while_the_agent_waits():
     Works(record, actor=AGENT).update(work.n, awaiting="")
     reports.spent(record.root, record.env, "request", "GET /api/agents", 400)
     assert [n for n in nudges(record) if "GET /api/agents" in n], "once the wait is over it is told again"
+
+
+def test_a_request_a_hook_and_an_agent_report_stay_inside_their_work_budget():
+    import os
+    from commands.http import dispatch
+    from controllers.types import Messages
+    from engine.hooks import answer
+    from features.dev_faults.counting import counted
+    from providers import PROVIDERS
+    from resources.base import USER
+    from tests.kit import report
+    features.load()
+    record = fresh()
+    for i in range(40):
+        Messages(record, actor=USER).create(f"message {i}")
+    asked = {"types": "todo,message,question", "events": "50"}
+    hook = {"hook_event_name": "PreToolUse", "session_id": "claude-1", "tool_name": "Read", "tool_input": {"file_path": "x.py"}, "cwd": str(record.root.parent)}
+    calls = {"the dashboard": (lambda: dispatch("GET", f"/api/{record.env}/dashboard", record.root, asked, {}), 1, 1),
+             "a PreToolUse hook": (lambda: answer(PROVIDERS["claude"](), record.root, hook, os.getpid()), 23, 0),
+             "an agent report through every handler": (lambda: report(record, "working", "PostToolUse"), 10, 0)}
+    for name, (call, opened, scanned) in calls.items():
+        call()
+        with counted() as work:
+            call()
+        assert (len(work.opened) <= opened, len(work.scanned) <= scanned) == (True, True), \
+            f"{name} opens at most {opened} files and scans at most {scanned} folders once warm; it opened {work.opened} and scanned {work.scanned}"

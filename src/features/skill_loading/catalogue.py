@@ -13,6 +13,7 @@ from skills import LIBRARY, skill_name
 from engine.package import data
 
 READ: dict[str, tuple] = {}
+LISTED: dict[str, tuple] = {}
 HOMES = (LIBRARY, *(cls.skill_home for cls in PROVIDERS.values() if cls.skill_home))
 
 
@@ -36,7 +37,7 @@ def described(f: Path, root: Path) -> dict:
 def catalogue(root: Path) -> list[dict]:
     out = {}
     for home in HOMES:
-        for f in sorted((root / home).glob("*/SKILL.md")):
+        for f in skill_files(root / home):
             try:
                 out.setdefault(f.parent.name, described(f, root))
             except FileNotFoundError:
@@ -44,6 +45,18 @@ def catalogue(root: Path) -> list[dict]:
     return list(out.values())
 
 
+def skill_files(home: Path) -> list[Path]:
+    try:
+        mark = home.stat().st_mtime_ns
+    except OSError:
+        return []
+    held = LISTED.get(str(home))
+    if not held or held[0] != mark:
+        held = LISTED[str(home)] = (mark, sorted(p for p in home.iterdir() if p.is_dir()))
+    return [folder / "SKILL.md" for folder in held[1] if (folder / "SKILL.md").is_file()]
+
+
+@cache
 def subjects() -> set[str]:
     folder = data("skills")
     return {"journal", *(skill_name(path.stem) for path in folder.glob("*.md") if path.name != "journal.md")}
@@ -67,7 +80,7 @@ def managed() -> set[str]:
 
 
 def available(root: Path) -> set[str]:
-    return {f.parent.name for f in (root / LIBRARY).glob("*/SKILL.md")}
+    return {f.parent.name for f in skill_files(root / LIBRARY)}
 
 
 def loaded_at(agent) -> dict[str, float]:
