@@ -43,6 +43,7 @@ import UpgradeBand from "./layout/UpgradeBand.vue";
 import ThreadSkeleton from "./chat/ThreadSkeleton.vue";
 import IdentityBand from "./layout/IdentityBand.vue";
 import {usePoll} from "./poll.js";
+import {followFullscreen} from "./platform/fullscreen.js";
 
 usePoll(...polled.events);
 
@@ -70,6 +71,7 @@ const page = computed(() =>
             : "home"
 );
 const full = computed(() => page.value === "kanban");
+followFullscreen();
 const opened = computed(() =>
     route.value.stack.length
         ? route.value.stack
@@ -162,7 +164,7 @@ const chatFloats = computed(() => store.detached && !store.extension.holding && 
     <template v-else-if="store.spec">
         <div class="viewer">
             <IdentityBand />
-            <div :class="['app', {wide: store.wide, full}]">
+            <div :class="['app', {wide: store.wide, mini: store.sideMini, full}]">
                 <div class="rail"><Sidebar /></div>
                 <div class="main">
                     <div class="bar"><TopBar /></div>
@@ -244,6 +246,8 @@ const chatFloats = computed(() => store.detached && !store.extension.holding && 
 }
 
 .rail {
+    position: relative;
+    z-index: 5;
     display: flex;
     transition:
         margin-left 0.26s cubic-bezier(0.2, 0.8, 0.2, 1),
@@ -263,6 +267,10 @@ const chatFloats = computed(() => store.detached && !store.extension.holding && 
     pointer-events: none;
 }
 
+.app.wide.mini .rail {
+    margin-left: -56px;
+}
+
 .app.full .rail {
     display: none;
 }
@@ -274,11 +282,6 @@ const chatFloats = computed(() => store.detached && !store.extension.holding && 
     pointer-events: none;
 }
 
-.app.wide .page {
-    margin: 0 6px 6px;
-    border: 1px solid var(--border-2);
-    border-radius: 8px;
-}
 .main {
     flex: 1;
     min-width: 0;
