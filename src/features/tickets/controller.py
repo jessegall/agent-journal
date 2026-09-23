@@ -2,8 +2,9 @@ import time
 from dataclasses import asdict, dataclass
 
 import controllers.types as types_module
-from controllers.types import Environments
+from controllers.types import Environments, Features
 from engine.record import Record
+from engine import typist
 from engine.seats import terminal_of
 from engine.state import State
 from engine.stop import ask_session
@@ -13,7 +14,7 @@ from features.permission_prompts.feature import prompted
 import resources.types as resources_module
 from controllers.base import CONTROLLERS, Controller, internal
 from features.boards.controller import Boards
-from features.boards.resource import DONE, START
+from features.boards.resource import DONE, REVIEW, START
 from features.kanban.board import BoardLanes, Card
 from features.kanban.lanes import Lane
 from features.tickets.details import TicketsDetails
@@ -28,6 +29,7 @@ PROPOSED, CONFIRMED = "proposed", "confirmed"
 LAUNCHING_FOR = 60.0
 CARD_EXTRAS: list = []
 HELD = ("rule", "doc", "tool")
+QUIET_IN_TICKETS = ("dev_faults",)
 
 
 @dataclass(frozen=True)
@@ -81,15 +83,35 @@ class Tickets(Controller):
         state = self._runtime(ticket, sessions, running)
         return Card(ticket.n, ticket.title, LEVELS["default"], stage, reason=state.text, state=state.kind, session=state.session, targets=[s for s in stages if s != stage],
                     updated=ticket.updated, completed=ticket.completed, type=self.type,
-                    actions=[*self._actions(ticket), *(action for more in extras for action in more.actions)],
+                    actions=[*self._actions(ticket, state.session), *(action for more in extras for action in more.actions)],
                     link=next((more.link for more in extras if more.link), ""))
 
-    def _actions(self, ticket) -> list:
+    def _actions(self, ticket, session: str) -> list:
         proposed = any(stance == PROPOSED for stance in ticket.dependencies.values())
+        waits = self._plan_waits(ticket)
+        reviewed = bool(session) and self._meaning(ticket) == REVIEW
         return [*([{"label": "Confirm", "action": "confirm"}] if ticket.draft else []),
                 *([{"label": "Accept", "action": "accept_dependencies"}, {"label": "Decline", "action": "decline_dependencies"}] if proposed else []),
                 *([{"label": "Approve plan", "action": "approve_plan"},
-                   {"label": "Read plan", "href": f"#/{ticket.work_environment}/plan/{ticket.plan}"}] if self._plan_waits(ticket) else [])]
+                   {"label": "Read plan", "href": f"#/{ticket.work_environment}/plan/{ticket.plan}"}] if waits else []),
+                *([{"label": "Ask for changes", "action": "tell", "note": True}] if waits and session else []),
+                *([{"label": "Send back", "action": "send_back", "note": True}] if reviewed else [])]
+
+    def _meaning(self, ticket) -> str:
+        return Boards(self.record, actor=self.actor).load(int(ticket.board)).meanings.get(ticket.stage, "") if ticket.board else ""
+
+    def tell(self, n: int, note: str):
+        ticket = self.load(int(n))
+        session = self.agent_session(ticket.n)
+        if not session:
+            self._refuse(f"{self.type} {ticket.n} has no agent running to tell")
+        typist.send(self.record.root, terminal_of(self.record.root, session), f"{note.strip()}\r".encode())
+        return ticket
+
+    def send_back(self, n: int, note: str):
+        ticket = self.tell(n, note)
+        started = [stage for stage, meaning in Boards(self.record, actor=self.actor).load(int(ticket.board)).meanings.items() if meaning == START]
+        return self.update(ticket.n, stage=started[0]) if started else ticket
 
     def _plan_waits(self, ticket) -> bool:
         return bool(ticket.plan) and self._plans(ticket).load(int(ticket.plan)).status == READY
@@ -136,7 +158,10 @@ class Tickets(Controller):
         environments = Environments(self.record, actor=self.actor)
         if not environments._titled(name):
             environments.create(name, abstract=f"Where {self.type} {ticket.n} runs", owner=ticket.ref)
-        prompted(Record(self.record.root, name))
+        place = Record(self.record.root, name)
+        prompted(place)
+        for feature in QUIET_IN_TICKETS:
+            Features(place, actor=SYSTEM).switch(feature, False)
         return self.update(ticket.n, work_environment=name)
 
     def agent_session(self, n: int) -> str:

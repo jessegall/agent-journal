@@ -51,6 +51,8 @@ def test_a_ticket_is_bound_to_one_environment_its_worktree_and_session_share():
     assert (bound.work_environment, Environments(record)._titled(bound.work_environment) is not None, tickets.bind(ticket.n).work_environment) == \
         (f"ticket-{ticket.n}", True, f"ticket-{ticket.n}"), "binding makes the ticket's environment once, named for the ticket, which its worktree takes too"
     assert tickets.agent_session(ticket.n) == "", "no session holds it until its agent starts"
+    from features.dev_faults.feature import Faults
+    assert Faults.on_for(Record(record.root, bound.work_environment)) is False, "a ticket's agent is not told the journal's own developer faults"
     Sessions(record.root).write("claude-old", environment=bound.work_environment, provider="claude", pid=999999)
     assert Sessions(record.root).choose("claude-new", "claude", "main") == "main", "a plain session never lands in a ticket's environment"
     Sessions(record.root).bind("claude-7", bound.work_environment, provider="claude")
