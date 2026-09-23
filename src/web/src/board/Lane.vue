@@ -8,16 +8,16 @@ import Card from "./Card.vue";
 import {moveEffect, refused} from "./moves.js";
 
 const props = defineProps({lane: Object, loading: Boolean, meaning: {type: String, default: ""}, offers: Boolean});
-const SAYS = {start: "work starts", review: "waits for review"};
+const MEANING_LABELS = {start: "work starts", review: "waits for review"};
 const board = inject("board");
 const drag = useCardDrag();
 const over = ref(false);
 const dragged = computed(() => drag.dragged.value);
 const takes = computed(() => drag.takes(props.lane.key) && !refused(dragged.value, props.meaning));
-const says = computed(
+const meaningLabel = computed(
     () =>
         (dragged.value && dragged.value.lane !== props.lane.key && moveEffect(dragged.value, props.meaning, store.board.slots)) ||
-        SAYS[props.meaning]
+        MEANING_LABELS[props.meaning]
 );
 const refuses = computed(() => !!dragged.value && dragged.value.lane !== props.lane.key && !takes.value);
 
@@ -40,7 +40,7 @@ function drop() {
         <header class="head">
             <StageDot :meaning="meaning" />
             <span class="title">{{ lane.title }}</span>
-            <span class="says">{{ says }}</span>
+            <span class="meaning">{{ meaningLabel }}</span>
             <span class="count">{{ loading ? "" : lane.cards.length }}</span>
         </header>
         <div class="cards">
@@ -113,7 +113,7 @@ function drop() {
     font-weight: 600;
 }
 
-.says {
+.meaning {
     color: var(--text-4);
     font-size: 12px;
 }

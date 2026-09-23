@@ -13,6 +13,7 @@ import NewWork from "../board/NewWork.vue";
 import {remember, remembered} from "../composables/remembered.js";
 import {load as loadRows, rows} from "../sync/rows.js";
 import ShiftPrompt from "../board/ShiftPrompt.vue";
+import StopPrompt from "../board/StopPrompt.vue";
 import NewResource from "../resource/NewResource.vue";
 import {usePoll} from "../poll.js";
 import {peek, route} from "../route.js";
@@ -89,6 +90,8 @@ const empty = computed(() => store.board.loaded && lanes.value.every((lane) => !
 const ASKS = {held: true, done: true};
 const moving = ref(0);
 const asking = ref(null);
+const stopping = ref(null);
+const LIVE_STATES = ["running", "you"];
 const refusal = ref("");
 let clearing = 0;
 
@@ -102,9 +105,24 @@ async function refresh() {
     await ask();
 }
 
+const leavesItsAgent = (card, lane) =>
+    card.type === "ticket" && LIVE_STATES.includes(card.state) && meaningOf(card.lane) === "start" && meaningOf(lane) !== "start";
+
 function move(card, lane) {
-    if (card.type === "todo" && (ASKS[lane] || (card.lane === "done" && lane === "todo"))) asking.value = {card, lane};
+    if (leavesItsAgent(card, lane)) stopping.value = {card, lane};
+    else if (card.type === "todo" && (ASKS[lane] || (card.lane === "done" && lane === "todo"))) asking.value = {card, lane};
     else shift(card, lane, {});
+}
+
+async function stopAndMove({card, lane}) {
+    stopping.value = null;
+    await api.act("ticket", card.n, "stop");
+    shift(card, lane, {});
+}
+
+function keepAndMove({card, lane}) {
+    stopping.value = null;
+    shift(card, lane, {});
 }
 
 async function shift(card, lane, words) {
@@ -209,6 +227,9 @@ const ask = usePoll(
                     />
                 </template>
             </div>
+        </template>
+        <template v-if="stopping">
+            <StopPrompt :move="stopping" @stop="stopAndMove(stopping)" @keep="keepAndMove(stopping)" @close="stopping = null" />
         </template>
         <template v-if="asking">
             <ShiftPrompt :ask="asking" @send="(words) => shift(asking.card, asking.lane, words)" @close="asking = null" />
