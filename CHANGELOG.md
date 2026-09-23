@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.98.0 — A damaged row opens with a notice instead of nothing
+
+Opening a row whose file cannot be read, such as an emptied doc, opens the inspector anyway with a notice naming the file that could not be read and a button that asks the agent to review and repair it. A list that includes such a row now leaves it out instead of failing whole.
+
 ## 2.97.0 — An agent that keeps checking the same thing is pointed at work await
 
 When the agent runs the same shell command three times in a row with no wait declared (tailing a log, checking a process), it is told once for that command: if it is waiting for something to change, say journal work await and end the turn, since it is asked to look again every five minutes and a background command reports its own end.

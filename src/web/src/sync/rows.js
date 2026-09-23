@@ -45,6 +45,16 @@ function forget() {
     seen.value += 1;
 }
 
+export const damaged = reactive({});
+
+async function damage(type, n) {
+    try {
+        await api.show(type, n);
+    } catch (e) {
+        if (/ is damaged: /.test(e.message)) damaged[`${type}:${n}`] = e.message.split(" is damaged: ").pop();
+    }
+}
+
 export async function holding(type, numbers) {
     const have = new Set((store.rows[type] || []).map((r) => r.n));
     const pending = asked.get(type) || new Set();
@@ -54,9 +64,14 @@ export async function holding(type, numbers) {
     missing.forEach((n) => pending.add(n));
     asked.set(type, pending);
     try {
-        const got = await api.list(type, {completed: true, only: missing});
+        const got = await api.list(type, {completed: true, only: missing}).catch(() => ({rows: []}));
         const found = new Set(got.rows.map((r) => r.n));
-        missing.filter((n) => !found.has(n)).forEach((n) => none.add(n));
+        missing
+            .filter((n) => !found.has(n))
+            .forEach((n) => {
+                none.add(n);
+                damage(type, n);
+            });
         absent.set(type, none);
         if (!got.rows.length) return;
         const known = new Set((store.rows[type] || []).map((r) => r.n));

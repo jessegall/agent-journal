@@ -636,7 +636,14 @@ def listing(controller, record, query: dict) -> dict:
         standing = [row for row in rows if not row["completed"]][None if controller.resource.listed_open else -last:]
         kept = sorted({row["n"]: row for row in (*standing, *kept)}.values(), key=lambda row: row["n"])
     stamp = settled(record)
-    return {"rows": [viewed(controller, record, row, stamp) for row in kept], "more": len(rows) > len(kept)}
+    return {"rows": [shown for row in kept if (shown := readable(controller, record, row, stamp))], "more": len(rows) > len(kept)}
+
+
+def readable(controller, record, row: dict, settings: tuple) -> dict | None:
+    try:
+        return viewed(controller, record, row, settings)
+    except Refused:
+        return None
 
 
 VIEWED: dict[tuple, tuple] = {}
