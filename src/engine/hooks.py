@@ -15,12 +15,13 @@ from features.status_bar import commands
 
 POLICIES: list = []
 CANCELERS: dict[str, list] = {}
-DISPATCHING = "agent.dispatching"
-CANCELABLE = (DISPATCHING,)
+DISPATCHING, LONG_COMMAND = "agent.dispatching", "agent.command.long"
+CANCELABLE = (DISPATCHING, LONG_COMMAND)
 
 
 def cancelled(name: str, provider, record, hook, session: str, data: dict) -> str:
-    return next((reason for cancel in CANCELERS.get(name, []) if (reason := cancel(provider, record, hook, session, data))), "")
+    reasons = [reason for cancel in CANCELERS.get(name, []) if (reason := cancel(provider, record, hook, session, data))]
+    return "; ".join(reasons)
 
 
 def gated(provider, record, hook, session: str) -> str:

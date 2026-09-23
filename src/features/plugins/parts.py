@@ -45,6 +45,11 @@ class PluginChatRules(TextFormatter):
         return found
 
 
+def placed(record, row) -> tuple:
+    name = called(row)
+    return name, folder(record.root, name), environment(record.root, name, row.manifest, row.token, chosen=(row.settings or {}).get(CHOSEN))
+
+
 class AskPluginsToRefuse(ToolInterceptor):
     def intercept(self, context: Context, call_) -> str:
         record, hook = context.record, context.hook
@@ -56,9 +61,7 @@ class AskPluginsToRefuse(ToolInterceptor):
                 continue
             if not writes and not (row.manifest or {}).get("reads"):
                 continue
-            name = called(row)
-            where = folder(record.root, name)
-            env = environment(record.root, name, row.manifest, row.token, chosen=(row.settings or {}).get(CHOSEN))
+            name, where, env = placed(record, row)
             seconds = min(float(row.manifest.get("refuse_seconds") or EACH), LONGEST_EACH, left)
             started = time.monotonic()
             ok, reply = call(fill(asking, env), where, env, refusal(record, hook, name, where, writes), seconds)
@@ -80,9 +83,7 @@ class AskPluginsToCancel(Canceler):
             asking = ((row.manifest or {}).get("cancels") or {}).get(self.event)
             if not row.enabled or row.completed or not asking:
                 continue
-            name = called(row)
-            where = folder(record.root, name)
-            env = environment(record.root, name, row.manifest, row.token, chosen=(row.settings or {}).get(CHOSEN))
+            name, where, env = placed(record, row)
             ok, reply = call(fill(asking, env), where, env, {"event": self.event, "data": data}, min(float(row.manifest.get("refuse_seconds") or EACH), LONGEST_EACH))
             if ok and isinstance(reply, dict) and str(reply.get("cancel") or "").strip():
                 logged(record.root, name, f"cancelled {self.event}: {reply['cancel']}")

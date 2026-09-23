@@ -11,7 +11,6 @@ from resources.base import PLUGIN, RAISED, Refused, SYSTEM, check_abstract, chec
 
 KEYS = ("whisper", "say", "notify", "notice", "todo", "hold", "settings", "raise")
 MOST = 20
-KEPT_CARDS = 50
 COLOR = re.compile(r"^(#[0-9a-fA-F]{3,8}|[a-z]+)$")
 HELD = "plugin"
 
@@ -52,9 +51,8 @@ def carded(record, session: str, plugin: str, look: dict, brief: str) -> None:
     if not agent:
         return
     color = str(look.get("color") or "")
-    card = {"at": time.time(), "plugin": plugin, "label": str(look.get("label") or plugin), "icon": str(look.get("icon") or "bell"), "tone": str(look.get("tone") or ""),
-            "color": color if COLOR.match(color) else "", "detail": next((line.strip(" •-") for line in brief.splitlines() if line.strip()), "")}
-    agents.update(agent.n, cards=[*(agent.data.get("cards") or []), card][-KEPT_CARDS:])
+    agents.card(agent.n, plugin=plugin, label=str(look.get("label") or plugin), icon=str(look.get("icon") or "bell"), tone=str(look.get("tone") or ""),
+                color=color if COLOR.match(color) else "", detail=next((line.strip(" •-") for line in brief.splitlines() if line.strip()), ""))
 
 
 def settled(record, plugin: str, values: dict) -> None:

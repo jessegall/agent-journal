@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.105.0 — A long foreground command is an event anything can cancel, and moving it shows in the chat
+
+Before a foreground command that runs too long is moved to the background, the journal raises agent.command.long; any feature or plugin can cancel it with a reason, and then the command stays in the foreground and the agent is told why. Otherwise it is moved, and the chat shows a mark, "Moved a long command to the background", and another when that command ends. Every cancelable event now collects every canceler's reason instead of only the first, and the owner of the effect acts only after all were asked. Chat marks the journal adds go through one method on the agents controller, which plugin marks use too.
+
 ## 2.104.0 — A subagent dispatch is an event anything can cancel
 
 Before a subagent is dispatched, the journal raises agent.dispatching, and any feature or plugin can cancel it with a reason; the first reason is what the agent is told. The journal's laws now enforce the model and generic-agent rules this way instead of through a tool interceptor of their own. A plugin cancels through "cancels": {"agent.dispatching": "<command>"} in its manifest: the command reads the event as JSON and answers {"cancel": "<reason>"}. Features register a Canceler with journal.agent.canceler. The tool gate's two copies of its policy loop are now one function.

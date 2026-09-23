@@ -66,3 +66,25 @@ def test_a_command_from_the_terminal_view_is_typed_into_the_agents_terminal_as_a
     assert engine.shelled() == "ran in the terminal: git status"
     assert typed[-2:] == [b"!git status", b"\r"], "typed with Claude's shell mark and entered once, with no journal mark in front"
     assert DRIVERS["codex"].SHELL == "", "a provider without a shell mark takes no command"
+
+
+def test_a_long_command_is_an_event_a_feature_can_cancel_and_a_move_shows_in_the_chat(monkeypatch):
+    from controllers.types import Agents
+    from engine.hooks import CANCELERS, LONG_COMMAND
+    from resources.base import SYSTEM
+    record = fresh()
+    moved = []
+    monkeypatch.setattr(surfaces.control, "move_to_background", lambda root, env, session: moved.append(session) or {"queued": True})
+    report(record, "working", "PreToolUse", provider="claude", commands=[{"what": "npm run build", "tool": "Bash", "at": time.time() - 45}])
+    CANCELERS.setdefault(LONG_COMMAND, []).append(lambda provider, record, hook, session, data: "the build must stay in view")
+    try:
+        tick(record)
+    finally:
+        CANCELERS[LONG_COMMAND].pop()
+    from controllers.types import Nudges
+    kept = [n.brief for n in Nudges(record).all() if n.title == "your long command stays in the foreground"]
+    assert moved == [] and kept == ["it was not moved to the background because: the build must stay in view"], (moved, kept)
+    report(record, "working", "PreToolUse", provider="claude", commands=[{"what": "npm test", "tool": "Bash", "at": time.time() - 45}])
+    tick(record)
+    cards = [c["label"] for c in Agents(record, actor=SYSTEM).by_session("claude-1").data.get("cards") or []]
+    assert moved == ["claude-1"] and cards == ["Moved a long command to the background"], (moved, cards)
