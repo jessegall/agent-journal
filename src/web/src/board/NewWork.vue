@@ -1,9 +1,10 @@
 <script setup>
-import {computed, nextTick, ref, watch} from "vue";
+import {computed, ref, watch} from "vue";
 import {api} from "../api/client.js";
+import ChatLine from "../kit/ChatLine.vue";
 import Btn from "../kit/Btn.vue";
+import ChatPanel from "../kit/ChatPanel.vue";
 import FocusStage from "../kit/FocusStage.vue";
-import TextInput from "../kit/TextInput.vue";
 import Turn from "../chat/Turn.vue";
 import {sendMessage} from "../chat/outbox.js";
 import {route} from "../route.js";
@@ -17,8 +18,7 @@ const sent = ref([]);
 const since = ref(0);
 const picked = ref([]);
 const adding = ref(false);
-const log = ref(null);
-const input = ref(null);
+const panel = ref(null);
 
 const asked = computed(() => rows("message").filter((m) => sent.value.includes(m.data.idempotency)));
 const refs = computed(() => asked.value.map((m) => m.ref));
@@ -34,19 +34,14 @@ const first = computed(() => props.board.data.stages[0]);
 const writing = computed(() => sent.value.length && !drafts.value.length);
 const unpicked = () => drafts.value.filter((t) => !picked.value.includes(t.n));
 const toggle = (n) => (picked.value = picked.value.includes(n) ? picked.value.filter((p) => p !== n) : [...picked.value, n]);
-watch(
-    () => props.open,
-    (open) => open && nextTick(() => input.value.$el.focus())
-);
-watch(
-    () => turns.value.length + drafts.value.length,
-    () => nextTick(() => log.value && (log.value.scrollTop = log.value.scrollHeight))
-);
 const drop = (tickets) => Promise.all(tickets.map((t) => api.act("ticket", t.n, "delete", {why: "not picked in New work"})));
 
-async function send() {
-    const text = words.value.trim();
-    if (!text) return;
+watch(
+    () => props.open,
+    (open) => open && panel.value.focus()
+);
+
+async function send(text) {
     words.value = "";
     since.value = since.value || Date.now() / 1000 - 5;
     await drop(unpicked());
@@ -84,39 +79,32 @@ async function add() {
                 <Suggestion :ticket="ticket" :picked="picked.includes(ticket.n)" @toggle="toggle(ticket.n)" />
             </template>
         </div>
-        <div class="chat">
-            <div ref="log" class="log">
-                <p class="agent">
-                    <span class="badge">A</span>
-                    What do you want to get done on {{ board.title }}?
-                </p>
-                <template v-for="turn in turns" :key="turn.ref">
-                    <Turn :turn="turn" />
-                </template>
-                <template v-if="writing">
-                    <p class="writing">Writing tickets…</p>
-                </template>
-            </div>
-            <template v-if="drafts.length">
-                <div class="choose">
-                    <span class="note">{{ picked.length ? `They go to ${first}, ready to start.` : "Pick the ones you want." }}</span>
-                    <Btn small @click="startOver">Start over</Btn>
-                    <Btn kind="primary" small :busy="adding" :disabled="!picked.length" @click="add">
-                        {{ picked.length ? `Add ${picked.length} to ${first}` : `Add to ${first}` }}
-                    </Btn>
-                </div>
+        <ChatPanel
+            ref="panel"
+            v-model="words"
+            :grows="turns.length + drafts.length"
+            :placeholder="drafts.length ? 'Say what to change, and the agent tries again' : 'Describe the work in your own words'"
+            @send="send"
+        >
+            <ChatLine>What do you want to get done on {{ board.title }}?</ChatLine>
+            <template v-for="turn in turns" :key="turn.ref">
+                <Turn :turn="turn" />
             </template>
-            <form class="compose" @submit.prevent="send">
-                <TextInput
-                    ref="input"
-                    class="words"
-                    :value="words"
-                    :placeholder="drafts.length ? 'Say what to change, and the agent tries again' : 'Describe the work in your own words'"
-                    @input="words = $event.target.value"
-                />
-                <Btn kind="primary" small :disabled="!words.trim()" @click="send">Send</Btn>
-            </form>
-        </div>
+            <template v-if="writing">
+                <ChatLine quiet>Writing tickets…</ChatLine>
+            </template>
+            <template #actions>
+                <template v-if="drafts.length">
+                    <div class="choose">
+                        <span class="note">{{ picked.length ? `They go to ${first}, ready to start.` : "Pick the ones you want." }}</span>
+                        <Btn small @click="startOver">Start over</Btn>
+                        <Btn kind="primary" small :busy="adding" :disabled="!picked.length" @click="add">
+                            {{ picked.length ? `Add ${picked.length} to ${first}` : `Add to ${first}` }}
+                        </Btn>
+                    </div>
+                </template>
+            </template>
+        </ChatPanel>
     </FocusStage>
 </template>
 
@@ -129,56 +117,6 @@ async function add() {
     gap: 12px;
     min-height: 0;
     overflow-y: auto;
-}
-
-.chat {
-    display: flex;
-    flex: none;
-    flex-direction: column;
-    align-self: center;
-    width: min(680px, 100%);
-    height: 300px;
-    border: 1px solid var(--border-2);
-    border-radius: 14px;
-    background: var(--raised);
-}
-
-.log {
-    display: flex;
-    flex: 1;
-    flex-direction: column;
-    gap: 10px;
-    min-height: 0;
-    overflow-y: auto;
-    padding: 14px 16px 6px;
-}
-
-.agent,
-.writing {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin: 0;
-    font-size: 13px;
-    line-height: 1.5;
-}
-
-.writing {
-    color: var(--text-3);
-}
-
-.badge {
-    display: grid;
-    flex: none;
-    place-items: center;
-    width: 18px;
-    height: 18px;
-    border: 1px solid var(--border-2);
-    border-radius: 5px;
-    background: var(--sel);
-    color: var(--text-2);
-    font-size: 10px;
-    font-weight: 600;
 }
 
 .choose {
@@ -194,16 +132,5 @@ async function add() {
     min-width: 160px;
     color: var(--text-3);
     font-size: 12.5px;
-}
-
-.compose {
-    display: flex;
-    gap: 8px;
-    padding: 8px;
-    border-top: 1px solid var(--line);
-}
-
-.words {
-    flex: 1;
 }
 </style>
