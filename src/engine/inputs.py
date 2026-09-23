@@ -76,4 +76,4 @@ def take(root: Path, sessions: set[str], action: str = "") -> Input | None:
 
 
 def pressed(action) -> str:
-    return action if action in KEYS else ""
+    return action if action in (*KEYS, SHELL) else ""
