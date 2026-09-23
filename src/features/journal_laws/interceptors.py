@@ -49,7 +49,7 @@ def lines_in(path: Path) -> int:
 class RefuseWholeLongReads(ToolInterceptor):
     def intercept(self, context: AgentContext, call) -> str:
         whole = call.name == "Read" and not call.tool_input.get("offset") and not call.tool_input.get("limit")
-        cat = CAT.search(call.command) if call.name == "Bash" else None
+        cat = CAT.search(context.provider.shell_command(call))
         named = call.file_path if whole else cat.group(1) if cat else ""
         if not named:
             return ""

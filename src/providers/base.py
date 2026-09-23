@@ -77,6 +77,9 @@ class Provider(ABC):
     def dispatch(self, tool) -> dict:
         return {}
 
+    def shell_command(self, tool) -> str:
+        return tool.command if tool.name == "Bash" else ""
+
     def skill_load(self, name: str) -> str:
         return f"Skill: {name}"
 
