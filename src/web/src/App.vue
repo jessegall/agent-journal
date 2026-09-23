@@ -2,8 +2,9 @@
 import {chatOnly} from "./platform/view.js";
 import ExtensionSection from "./ExtensionSection.vue";
 
-import {computed, onMounted, onUnmounted, ref, watch} from "vue";
+import {computed, onMounted, onUnmounted, ref, watch, watchEffect} from "vue";
 import {route} from "./route.js";
+import {project} from "./identity.js";
 import {away} from "./platform/visibility.js";
 import {store} from "./state/store.js";
 import {boot} from "./sync/boot.js";
@@ -58,6 +59,9 @@ const opened = computed(() =>
         ? route.value.stack
         : [route.value.n && page.value === "index" ? {type: route.value.page, n: route.value.n} : {type: "", n: 0}]
 );
+watchEffect(() => {
+    document.title = route.value.env ? `${project.value} · ${route.value.env}` : project.value;
+});
 const keyOf = (open) => `${open.type}:${open.n}`;
 const layers = ref([]);
 watch(
