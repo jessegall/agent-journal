@@ -102,10 +102,9 @@ class Engine(Seat):
                 bus.emit(e, self.record)
 
     def relay_peers(self) -> None:
-        last = self.agent.driver.last_report()
-        if not last or not last.title:
+        row = self.agent.driver.last_report()
+        if not row or not row.title:
             return
-        row = Agents(self.record, actor=SYSTEM).by_session(last.title)
         provider = PROVIDERS.get(row.provider)
         try:
             size = Path(row.transcript).stat().st_size if provider and row.transcript else -1
@@ -133,10 +132,9 @@ class Engine(Seat):
         write_json(f, asdict(PeerLog(newest, names)))
 
     def announce_written(self) -> None:
-        last = self.agent.driver.last_report()
-        if not last or not last.title:
+        row = self.agent.driver.last_report()
+        if not row or not row.title:
             return
-        row = Agents(self.record, actor=SYSTEM).by_session(last.title)
         written = turns(self.record, row)
         f = runtime.announced_file(self.record.root, row.title)
         announced = read_json(f, None)
