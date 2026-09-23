@@ -37,7 +37,8 @@ const finder = ref(null);
 const writingWork = ref(false);
 const firstBoard = ref(false);
 const FIRST_BOARD_SEEN = "board.first-board-seen";
-const newWork = () => (tickets.value ? (writingWork.value = true) : (adding.value = "todo"));
+const workStage = ref("");
+const newWork = (stage = "") => (tickets.value ? ((workStage.value = stage), (writingWork.value = true)) : (adding.value = "todo"));
 const KEYS = {"/": () => finder.value.focus(), n: newWork};
 const openFlow = () => writingWork.value || firstBoard.value;
 const onKey = (e) =>
@@ -210,7 +211,7 @@ const ask = usePoll(
                     <Icon name="settings" />
                 </button>
             </template>
-            <Btn kind="primary" small title="New work (N)" @click="newWork">New work</Btn>
+            <Btn kind="primary" small title="New work (N)" @click="newWork('')">New work</Btn>
             <template v-if="refusal">
                 <p class="refusal">{{ refusal }}</p>
             </template>
@@ -224,7 +225,7 @@ const ask = usePoll(
         <template v-else-if="empty && !tickets">
             <div class="empty">
                 <p>Nothing is on the list.</p>
-                <Btn kind="primary" small @click="newWork">New to-do</Btn>
+                <Btn kind="primary" small @click="newWork('')">New to-do</Btn>
             </div>
         </template>
         <template v-else>
@@ -242,6 +243,7 @@ const ask = usePoll(
                         :loading="loading"
                         :meaning="meaningOf(lane.key)"
                         :offers="tickets && !i && !lane.cards.length"
+                        :adds="tickets"
                         :style="{'--order': i}"
                     />
                 </template>
@@ -261,7 +263,14 @@ const ask = usePoll(
         </template>
         <FirstBoard :open="firstBoard" :first="!boards.length" @close="leaveFirstBoard" @made="boardMade" />
         <template v-if="tickets && current">
-            <NewWork :open="writingWork" :board="current" @close="writingWork = false" @added="refresh" />
+            <NewWork
+                :open="writingWork"
+                :board="current"
+                :stage="workStage"
+                :starts="meaningOf(workStage) === 'start'"
+                @close="writingWork = false"
+                @added="refresh"
+            />
         </template>
         <template v-if="adding">
             <NewResource :type="adding" @made="made" @close="adding = ''" />

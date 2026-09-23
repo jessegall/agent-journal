@@ -7,7 +7,7 @@ import {store} from "../state/store.js";
 import Card from "./Card.vue";
 import {moveEffect, refused} from "./moves.js";
 
-const props = defineProps({lane: Object, loading: Boolean, meaning: {type: String, default: ""}, offers: Boolean});
+const props = defineProps({lane: Object, loading: Boolean, meaning: {type: String, default: ""}, offers: Boolean, adds: Boolean});
 const MEANING_LABELS = {start: "work starts", review: "waits for review"};
 const board = inject("board");
 const drag = useCardDrag();
@@ -42,6 +42,9 @@ function drop() {
             <span class="title">{{ lane.title }}</span>
             <span class="meaning">{{ meaningLabel }}</span>
             <span class="count">{{ loading ? "" : lane.cards.length }}</span>
+            <template v-if="adds">
+                <button type="button" class="add" :title="`New work in ${lane.title}`" @click="board.newWork(lane.key)">+</button>
+            </template>
         </header>
         <div class="cards">
             <template v-if="loading">
@@ -60,7 +63,7 @@ function drop() {
             <template v-else>
                 <p class="none">No cards</p>
                 <template v-if="offers">
-                    <Btn kind="primary" small class="first-work" @click="board.newWork">New work</Btn>
+                    <Btn kind="primary" small class="first-work" @click="board.newWork('')">New work</Btn>
                 </template>
             </template>
         </div>
@@ -116,6 +119,26 @@ function drop() {
 .meaning {
     color: var(--text-4);
     font-size: 12px;
+}
+
+.add {
+    width: 22px;
+    height: 22px;
+    border: 0;
+    border-radius: 6px;
+    background: none;
+    color: var(--text-4);
+    cursor: pointer;
+    opacity: 0;
+}
+
+.lane:hover .add {
+    opacity: 1;
+}
+
+.add:hover {
+    background: var(--hover);
+    color: var(--text);
 }
 
 .count {

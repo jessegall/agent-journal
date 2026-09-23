@@ -11,7 +11,7 @@ import {route} from "../route.js";
 import {rows} from "../sync/rows.js";
 import Suggestion from "./Suggestion.vue";
 
-const props = defineProps({open: Boolean, board: Object});
+const props = defineProps({open: Boolean, board: Object, stage: {type: String, default: ""}, starts: Boolean});
 const emit = defineEmits(["close", "added"]);
 const now = () => Date.now() / 1000;
 const words = ref("");
@@ -40,8 +40,24 @@ const drafts = computed(() =>
     )
 );
 const writing = computed(() => Boolean(lastSent.value) && !replies.value.some((c) => c.created >= lastSent.value));
-const first = computed(() => props.board.data.stages[0]);
+const first = computed(() => props.stage || props.board.data.stages[0]);
 const unpicked = () => drafts.value.filter((t) => !picked.value.includes(t.n));
+const waitsOn = (ticket) => Object.keys(ticket.data.dependencies || {}).map((ref) => Number(ref.split(":")[1]));
+const missing = computed(() =>
+    drafts.value
+        .filter((t) => picked.value.includes(t.n))
+        .flatMap((t) =>
+            waitsOn(t)
+                .filter((n) => drafts.value.some((d) => d.n === n) && !picked.value.includes(n))
+                .map((n) => ({ticket: t.n, waitsOn: n}))
+        )
+);
+const note = computed(() => {
+    if (missing.value.length) return `#${missing.value[0].ticket} waits on #${missing.value[0].waitsOn}, which you did not pick.`;
+    if (!picked.value.length) return "Click a card to keep it.";
+    return props.starts ? `They go to ${first.value}, and their agents start.` : `They go to ${first.value}, ready to start.`;
+});
+const pickMissing = () => (picked.value = [...new Set([...picked.value, ...missing.value.map((m) => m.waitsOn)])]);
 const toggle = (n) => (picked.value = picked.value.includes(n) ? picked.value.filter((p) => p !== n) : [...picked.value, n]);
 const drop = (tickets) => Promise.all(tickets.map((t) => api.act("ticket", t.n, "delete", {why: "not picked in New work"})));
 const say = (mine, text) => (lines.value = [...lines.value, {id: `${now()}-${lines.value.length}`, mine, text, typed: !mine, at: now()}]);
@@ -74,7 +90,16 @@ async function again() {
 async function add() {
     adding.value = true;
     const keep = picked.value;
+    const dropped = unpicked().map((t) => t.n);
     await Promise.all(keep.map((n) => api.act("ticket", n, "confirm")));
+    if (first.value !== props.board.data.stages[0]) await Promise.all(keep.map((n) => api.moveTicket(n, first.value)));
+    await Promise.all(
+        drafts.value
+            .filter((t) => keep.includes(t.n) && waitsOn(t).length)
+            .map((t) =>
+                api.act("ticket", t.n, waitsOn(t).some((n) => dropped.includes(n)) ? "decline_dependencies" : "accept_dependencies")
+            )
+    );
     await drop(unpicked());
     adding.value = false;
     lines.value = [];
@@ -114,7 +139,10 @@ async function add() {
             <template #actions>
                 <template v-if="drafts.length && !writing">
                     <div class="choose">
-                        <span class="note">{{ picked.length ? `They go to ${first}, ready to start.` : "Click a card to keep it." }}</span>
+                        <span class="note">{{ note }}</span>
+                        <template v-if="missing.length">
+                            <Btn small @click="pickMissing">Pick it too</Btn>
+                        </template>
                         <Btn small @click="again">Try another split</Btn>
                         <Btn kind="primary" small :busy="adding" :disabled="!picked.length" @click="add">
                             {{ picked.length ? `Add ${picked.length} to ${first}` : `Add to ${first}` }}
