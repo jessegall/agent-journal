@@ -1,7 +1,7 @@
 import controllers.types as types_module
 from controllers.types import Environments
 from engine.record import Record
-from engine.sessions import Sessions
+from engine.sessions import Sessions, live
 from features.permission_prompts.feature import prompted
 import resources.types as resources_module
 from controllers.base import Controller, internal
@@ -10,7 +10,8 @@ from features.boards.resource import START
 from features.kanban.board import BoardLanes, Card
 from features.kanban.lanes import Lane
 from features.tickets.resource import Ticket
-from resources.base import Refused, Resource
+from controllers.types import Agents
+from resources.base import SYSTEM, Refused, Resource
 from resources.shapes import LEVELS
 
 
@@ -37,8 +38,19 @@ class Tickets(Controller):
     def board(self, n: int) -> dict:
         stages = self._stages(n)
         tickets = [r for r in self._standing() if int(r.board) == int(n)]
-        return BoardLanes([(Lane(stage, stage), [Card(r.n, r.title, LEVELS["default"], stage, targets=[s for s in stages if s != stage], updated=r.updated,
-                                                     completed=r.completed, type=self.type) for r in tickets if r.stage == stage]) for stage in stages], []).shaped()
+        sessions = Sessions(self.record.root).all()
+        return BoardLanes([(Lane(stage, stage), [Card(r.n, r.title, LEVELS["default"], stage, reason=self._runtime(r, sessions),
+                                                     targets=[s for s in stages if s != stage], updated=r.updated, completed=r.completed, type=self.type)
+                                                for r in tickets if r.stage == stage]) for stage in stages], []).shaped()
+
+    def _runtime(self, ticket, sessions: dict) -> str:
+        place = ticket.work_environment
+        if not place:
+            return ""
+        session = next((name for name, held in sessions.items() if held.environment == place and live(held)), "")
+        row = Agents(Record(self.record.root, place), actor=SYSTEM)._titled(session) if session else None
+        state = "waiting for you" if row and row.asking else row.status if row else "stopped"
+        return f"{state} in {place}"
 
     def bind(self, n: int):
         ticket = self.load(int(n))

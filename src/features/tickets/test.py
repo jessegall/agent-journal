@@ -109,3 +109,7 @@ def test_moving_a_ticket_to_its_start_stage_launches_its_agent_once_in_its_workt
     Sessions(record.root).bind("claude-9", f"ticket-{ticket.n}", provider="claude")
     tickets.start(ticket.n)
     assert len(launched) == 1, "a ticket whose agent runs is not started twice"
+    from tests.kit import report
+    report(Record(record.root, f"ticket-{ticket.n}"), "working", "PreToolUse", session="claude-9")
+    card = next(card for lane in tickets.board(board.n)["lanes"] for card in lane["cards"] if card["n"] == ticket.n)
+    assert card["reason"] == f"working in ticket-{ticket.n}", "the card says what its agent is doing and where"
