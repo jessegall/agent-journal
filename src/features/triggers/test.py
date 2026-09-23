@@ -1,13 +1,13 @@
 import features
 from controllers.types import Agents, Messages
 from features.triggers.controller import Triggers
-from providers.payload import ToolUse
+from providers.payload import BashCall
 from tests.conftest import fresh
 from tests.kit import nudges, report
 
 
-def call(command: str) -> ToolUse:
-    return ToolUse.read({"tool_name": "Bash", "tool_input": {"command": command}})
+def call(command: str) -> BashCall:
+    return BashCall("Bash", {"command": command}, {}, command=command)
 
 
 def fired(record, command: str) -> str:

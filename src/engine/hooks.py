@@ -49,7 +49,7 @@ def serving(policy, provider, hook) -> bool:
 
 
 def alongside(hook) -> str:
-    ran = [found.group(1).strip() for found in JOURNAL.finditer(hook.command)]
+    ran = [found.group(1).strip() for shell in hook.tool.commands for found in JOURNAL.finditer(shell)]
     return f" — and these were on the same line, so they did not run either: {'; '.join(ran)}" if ran else ""
 
 
@@ -138,7 +138,7 @@ def default_env(root: Path, prefer: str = "") -> str:
 def answer(provider, root: Path, raw: dict, pid: int, prefer: str = "") -> dict:
     from providers.payload import Hook
     sessions = Sessions(root)
-    hook = Hook.read(raw)
+    hook = Hook.read(raw, provider.tool_kinds)
     session = hook.session
     env = sessions.environment(session)
     if not env or not sessions.read(session).provider:
@@ -158,7 +158,7 @@ def answer(provider, root: Path, raw: dict, pid: int, prefer: str = "") -> dict:
 
 def handle(provider, root: Path, env: str, hook) -> dict:
     from providers.payload import Hook
-    hook = Hook.read(hook) if isinstance(hook, dict) else hook
+    hook = Hook.read(hook, provider.tool_kinds) if isinstance(hook, dict) else hook
     if hook.event not in STATUS or runtime.off(root):
         return {}
     record = Record(root, env, memo=True)
@@ -168,7 +168,7 @@ def handle(provider, root: Path, env: str, hook) -> dict:
         if hook.event == PERMISSION or row.asking:
             agents.update(row.n, asking=provider.asking(hook))
         return provider.response(blocked=gated(provider, record, hook, row.title)) if hook.event == "PreToolUse" else {}
-    agents.saw(row.n, {"hook": hook.event, "tool": hook.tool.name, "file": hook.tool.file_path, "session": hook.session, "size": hook.tool.result_size, "skill": hook.tool.loaded_skill, "cause": AGENT},
+    agents.saw(row.n, {"hook": hook.event, "tool": hook.tool.name, "file": hook.tool.paths[0] if hook.tool.paths else "", "session": hook.session, "size": hook.tool.result_size, "skill": hook.tool.loaded_skill, "cause": AGENT},
                status=provider.status(hook) or row.status or IDLE, **provider.facts(row, hook, root), **commands.shell(row, hook),
                wrote=hook.event == "PostToolUse" and commands.writes(hook))
     if hook.event == "PreToolUse":

@@ -5,7 +5,7 @@ import shutil
 from pathlib import Path
 
 from engine.transcript import AGENT, HUMAN, INJECTED, TOOL
-from providers.payload import EVENTS, PERMISSION, SKILL_READ, UsageWindow
+from providers.payload import AgentCall, AskCall, BashCall, EVENTS, PERMISSION, SKILL_READ, UsageWindow
 from providers.base import Provider, parsed
 from providers.payload import Dispatch, Hook, ToolCall
 from providers.codex_rows import Row
@@ -22,6 +22,15 @@ SPAWN_IN_SCRIPT = re.compile(r"tools\.\w*spawn_agent\(")
 SCRIPT_FIELD = r"{}:\s*\"([^\"]*)\""
 SPAWNED = re.compile(r'"agent_id":"([^"]+)"')
 TASK_EVENTS = re.compile(r'"type":"(task_started|task_complete)"')
+
+
+@dataclass(frozen=True)
+class CodexShell(BashCall):
+    @classmethod
+    def from_payload(cls, name: str, given: dict, response: dict) -> "CodexShell":
+        command = next(given[key] for key in ("cmd", "input", "command") if key in given)
+        printed = "\n".join(str(response[key]) for key in ("stdout", "stderr") if response.get(key))
+        return cls(name, given, response, command=" ".join(command) if isinstance(command, list) else str(command), printed=printed)
 
 
 def script_field(text: str, key: str, missing: str) -> str:
@@ -75,6 +84,8 @@ def effort_choice(effort: str) -> dict:
 class Codex(Provider):
     name = "codex"
     question_tools = frozenset({"request_user_input"})
+    tool_kinds = {**Provider.tool_kinds, "exec": CodexShell, "exec_command": CodexShell, "shell": CodexShell, "shell_command": CodexShell, "spawn_agent": AgentCall,
+                  "request_user_input": AskCall}
     briefing_file = "AGENTS.md"
     skill_home = ".agents/skills"
 
@@ -185,18 +196,10 @@ class Codex(Provider):
         return {"hooks": {event: [{"matcher": "", "hooks": [{"type": "command", "command": command, "timeout": 60}]}]
                           for event in EVENTS if event != PERMISSION}}
 
-    def shell_command(self, tool) -> str:
-        if TOOLS.get(tool.name.rsplit(".", 1)[-1]) != "Bash":
-            return ""
-        given = tool.tool_input
-        command = next((given[key] for key in ("cmd", "input", "command") if given.get(key)), "")
-        return " ".join(command) if isinstance(command, list) else str(command)
-
     def dispatch(self, tool) -> Dispatch | None:
-        if not tool.name.endswith("spawn_agent"):
+        if not isinstance(tool, AgentCall):
             return None
-        kind = tool.agent_type.strip().lower()
-        return Dispatch(kind=kind, task=tool.task_name.strip().lower(), model=tool.model.strip(), model_supported=True)
+        return Dispatch(kind=tool.kind.strip().lower(), task=tool.task.strip().lower(), model=tool.model.strip(), model_supported=True)
 
     def row_of(self, raw: dict) -> Row:
         return Row.from_payload(raw)

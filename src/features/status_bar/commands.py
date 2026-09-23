@@ -3,16 +3,13 @@ import time
 from pathlib import Path
 
 from engine.shell import without_scripts
-from providers.payload import Hook
+from providers.payload import AgentCall, BashCall, FetchCall, Hook, ReadCall, SearchCall, SkillCall, WriteCall
 from dataclasses import replace
 
 from features.status_bar.runs import CommandRun, Outcome, command_runs, current_run
 from resources.types import AgentRow
 
-WRITES = ("Edit", "Write", "MultiEdit", "NotebookEdit")
-READS = ("Read", "NotebookRead")
-TOOLS = {"Grep": "searches", "Glob": "searches", "WebSearch": "searches", "WebFetch": "fetches",
-         "Agent": "dispatches", "Task": "dispatches", "Skill": "loads"}
+KINDS = ((ReadCall, "reads"), (SearchCall, "searches"), (FetchCall, "fetches"), (AgentCall, "dispatches"), (SkillCall, "loads"))
 WRITING_COMMANDS = re.compile(r"(^|[;&|]\s*)(rm|mv|cp|git (commit|push|rm|mv)|sed -i|tee|touch|mkdir|npm install|pip install)\b|(?<![\d&])>>?\s*(?!/dev/null|&)\S")
 RING = 30
 JOURNAL_DIR = ".journal"
@@ -56,9 +53,9 @@ def stamped(runs: list[CommandRun], running: CommandRun, doing: str = "", at: fl
 
 
 def writes(hook: Hook) -> bool:
-    if hook.tool.name in WRITES:
+    if isinstance(hook.tool, WriteCall):
         return in_project(hook.tool.file_path, hook.cwd)
-    return hook.tool.name == "Bash" and any(name in CHANGING for name in effects(hook.command))
+    return any(name in CHANGING for shell in hook.tool.commands for name in effects(shell))
 
 
 def in_project(path: str, cwd: str) -> bool:
@@ -80,9 +77,8 @@ def shell(row, hook: Hook) -> dict:
         now = time.time()
         kind = effect(hook)
         started = CommandRun(command=doing, tool=hook.tool.name, at=now, effect=kind, before=before if before.done else None)
-        path = hook.tool.file_path
-        ran = CommandRun(command=doing, tool=hook.tool.name, at=now, effect=kind, files=(path,) if path else (),
-                         subject=hook.tool.subject if hook.tool.subject and not path else "")
+        paths = hook.tool.paths
+        ran = CommandRun(command=doing, tool=hook.tool.name, at=now, effect=kind, files=paths, subject="" if paths else hook.tool.subject)
         return {AgentRow.running: started.to_json(), AgentRow.commands: (list(row.commands) + [ran.to_json()])[-RING:]}
     if row.running and not running.done:
         result = outcome_of(hook, running.effect)
@@ -102,11 +98,11 @@ def outcome_of(hook: Hook, effect: str) -> Outcome | None:
 
 
 def printed(hook: Hook) -> str:
-    return f"{hook.tool.stdout}\n{hook.tool.stderr}"
+    return hook.tool.printed if isinstance(hook.tool, BashCall) else ""
 
 
 def pull_result(hook: Hook) -> Outcome | None:
-    asked = PULL.search(hook.command)
+    asked = next((found for found in map(PULL.search, hook.tool.commands) if found), None)
     if not asked:
         return None
     output = printed(hook)
@@ -138,13 +134,12 @@ def test_result(hook: Hook) -> Outcome | None:
 
 
 def effect(hook: Hook) -> str:
-    if hook.tool.name in READS:
-        return "reads"
-    if hook.tool.name in WRITES:
-        return "writes" if in_project(hook.tool.file_path, hook.cwd) else ""
-    if hook.tool.name in TOOLS:
-        return TOOLS[hook.tool.name]
-    return effect_of(hook.command) if hook.tool.name == "Bash" else ""
+    call = hook.tool
+    if isinstance(call, WriteCall):
+        return "writes" if in_project(call.file_path, hook.cwd) else ""
+    if isinstance(call, BashCall):
+        return effect_of(call.command)
+    return next((name for kind, name in KINDS if isinstance(call, kind)), "")
 
 
 def effect_of(command: str) -> str:

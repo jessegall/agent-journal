@@ -1,3 +1,4 @@
+/Users/jessegall/projects/agent-journal/scripts/boot_guard.py
 /Users/jessegall/projects/agent-journal/src/channel.py
 /Users/jessegall/projects/agent-journal/src/commands/cli.py
 /Users/jessegall/projects/agent-journal/src/commands/dispatch.py
@@ -100,9 +101,11 @@
 /Users/jessegall/projects/agent-journal/src/features/templates/resource.py
 /Users/jessegall/projects/agent-journal/src/features/thinking/handlers.py
 /Users/jessegall/projects/agent-journal/src/features/trigger.py
+/Users/jessegall/projects/agent-journal/src/features/triggers/test.py
 /Users/jessegall/projects/agent-journal/src/features/work_tracking/commands.py
 /Users/jessegall/projects/agent-journal/src/features/work_tracking/handlers.py
 /Users/jessegall/projects/agent-journal/src/features/work_tracking/tracker.py
+/Users/jessegall/projects/agent-journal/src/features/worktrees/test.py
 /Users/jessegall/projects/agent-journal/src/migrations/__init__.py
 /Users/jessegall/projects/agent-journal/src/migrations/m0001_the_old_record.py
 /Users/jessegall/projects/agent-journal/src/migrations/m0007_pins_become_facts.py

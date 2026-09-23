@@ -2,9 +2,10 @@ import json
 import time
 from abc import ABC, abstractmethod
 from pathlib import Path
+from typing import ClassVar
 
 from engine.transcript import Turn
-from providers.payload import AskedQuestion, Dispatch, Hook, PERMISSION, STATUS, UsageWindow, asked_in
+from providers.payload import AgentCall, AskCall, AskedQuestion, BashCall, Dispatch, FetchCall, Hook, PERMISSION, ReadCall, STATUS, SearchCall, SkillCall, UsageWindow, WriteCall
 from resources.base import Refused
 from engine.stored import read_json, tail, write_text
 
@@ -31,6 +32,9 @@ def parsed(line: str):
 class Provider(ABC):
     name = ""
     question_tools = frozenset()
+    tool_kinds: ClassVar[dict] = {"Bash": BashCall, "Read": ReadCall, "NotebookRead": ReadCall, "Edit": WriteCall, "MultiEdit": WriteCall, "Write": WriteCall,
+                                  "NotebookEdit": WriteCall, "Grep": SearchCall, "Glob": SearchCall, "WebSearch": SearchCall, "WebFetch": FetchCall,
+                                  "Skill": SkillCall, "Agent": AgentCall, "Task": AgentCall}
     briefing_file = ""
     skill_home = ""
     link_skills = False
@@ -77,8 +81,8 @@ class Provider(ABC):
     def dispatch(self, tool) -> Dispatch | None:
         return None
 
-    def shell_command(self, tool) -> str:
-        return tool.command if tool.name == "Bash" else ""
+    def shell_command(self, tool) -> str | None:
+        return tool.command if isinstance(tool, BashCall) else None
 
     def shell_wrapper(self, script: Path) -> dict:
         return {}
@@ -96,7 +100,7 @@ class Provider(ABC):
         return tool.name in self.question_tools
 
     def asked_questions(self, tool) -> list[AskedQuestion]:
-        return list(asked_in(tool.tool_input))
+        return list(tool.questions) if isinstance(tool, AskCall) else []
 
     def session(self, path: Path | None) -> dict:
         return {}
@@ -225,7 +229,7 @@ class Provider(ABC):
 
     def facts(self, row, hook, root: Path) -> dict:
         context = self.context(hook)
-        return {"event": hook.event, "tool": hook.tool.name, **self.session(hook.transcript), "file": hook.tool.file_path,
+        return {"event": hook.event, "tool": hook.tool.name, **self.session(hook.transcript), "file": hook.tool.paths[0] if hook.tool.paths else "",
                 "cwd": hook.cwd or row.cwd or "", "at": time.time(),
                 "provider": self.name, "uses": int(row.uses) + (hook.event == "PreToolUse"), "transcript": str(hook.transcript) if hook.transcript else row.transcript,
                 "inbox": self.inbox(hook) or row.inbox or "", "model": self.model(hook) or row.model or "",
