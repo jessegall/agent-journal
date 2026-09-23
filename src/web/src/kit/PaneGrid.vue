@@ -1,6 +1,7 @@
 <script setup>
 import {ref} from "vue";
 import ResizeHandle from "./ResizeHandle.vue";
+import {percent, percentBox} from "../format/number.js";
 
 defineProps({panes: {type: Array, required: true}, splits: {type: Array, required: true}});
 const emit = defineEmits(["resize"]);
@@ -10,14 +11,11 @@ const SNAP = 14;
 const LEAST = 140;
 const EDGE = 0.0005;
 
-const pct = (n) => `${n * 100}%`;
-const place = (r) => ({left: pct(r.x), top: pct(r.y), width: pct(r.w), height: pct(r.h)});
-
 function border(s) {
     const at = s.dir === "row" ? s.box.x + s.box.w * s.r : s.box.y + s.box.h * s.r;
     return s.dir === "row"
-        ? {left: `calc(${pct(at)} - 3px)`, top: pct(s.box.y), height: pct(s.box.h)}
-        : {top: `calc(${pct(at)} - 3px)`, left: pct(s.box.x), width: pct(s.box.w)};
+        ? {left: `calc(${percent(at)} - 3px)`, top: percent(s.box.y), height: percent(s.box.h)}
+        : {top: `calc(${percent(at)} - 3px)`, left: percent(s.box.x), width: percent(s.box.w)};
 }
 
 function ratio(s) {
@@ -39,7 +37,7 @@ defineExpose({element: area});
 <template>
     <div ref="area" :class="['pane-grid', {live}]">
         <template v-for="p in panes" :key="p.id">
-            <section :class="['pane', p.state, {after: p.rect.x > EDGE, below: p.rect.y > EDGE}]" :style="place(p.rect)">
+            <section :class="['pane', p.state, {after: p.rect.x > EDGE, below: p.rect.y > EDGE}]" :style="percentBox(p.rect)">
                 <slot name="pane" v-bind="p" />
             </section>
         </template>

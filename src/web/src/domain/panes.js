@@ -19,6 +19,44 @@ const shaped = (tabs, active = tabs[0]) => ({tabs, active});
 
 export const DEFAULT_SHAPE = split("row", 0.7, shaped(["chat"]), shaped(PANEL_VIEWS));
 
+export const PRESETS = [
+    {key: "default", name: "Default", text: "Chat, with the side panels beside it", shape: DEFAULT_SHAPE},
+    {key: "zen", name: "Zen", text: "Only the chat, nothing else", shape: shaped(["chat"])},
+    {
+        key: "hacker",
+        name: "Hacker",
+        text: "A big terminal with a small chat",
+        shape: split("row", 0.72, shaped(["terminal"]), shaped(["chat"])),
+    },
+    {key: "review", name: "Review", text: "File feed and chat side by side", shape: split("row", 0.5, shaped(["feed"]), shaped(["chat"]))},
+    {
+        key: "watch",
+        name: "Watch",
+        text: "Terminal, with the file feed and notifications beside it",
+        shape: split("row", 0.62, shaped(["terminal"]), split("col", 0.55, shaped(["feed"]), shaped(["waiting"]))),
+    },
+    {
+        key: "triage",
+        name: "Triage",
+        text: "Chat, with questions and to-dos stacked beside it",
+        shape: split("row", 0.6, shaped(["chat"]), split("col", 0.5, shaped(["question", "waiting"]), shaped(["todos", "suggestion"]))),
+    },
+];
+
+export function thumbnail(shape, box = {x: 0, y: 0, w: 1, h: 1}) {
+    if (!shape.dir) return [{box, view: shape.active}];
+    const [a, b] = halves(shape, box);
+    return [...thumbnail(shape.a, a), ...thumbnail(shape.b, b)];
+}
+
+export const shapeViews = (shape) => (shape.dir ? [...shapeViews(shape.a), ...shapeViews(shape.b)] : shape.tabs);
+
+const signed = (node, tabsOf) =>
+    node.dir ? `${node.dir}${Math.round(node.r * 100)}(${signed(node.a, tabsOf)}|${signed(node.b, tabsOf)})` : tabsOf(node).join(",");
+
+export const matches = (layout, shape) =>
+    signed(layout.tree, (node) => (layout.panes[node.id] ? layout.panes[node.id].tabs : [])) === signed(shape, (node) => node.tabs);
+
 export const leaves = (node) => (node.dir ? [...leaves(node.a), ...leaves(node.b)] : [node.id]);
 
 function halves(node, box) {
@@ -187,8 +225,6 @@ export function landed(layout, id) {
     change.target = at ?? lone ?? change.layout.next - 1;
     return change;
 }
-
-export const clamp = (value, low, high) => Math.max(low, Math.min(high, value));
 
 function takeOut(change, id, view) {
     const {layout} = change;

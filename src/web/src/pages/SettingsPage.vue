@@ -9,6 +9,7 @@ import {computed, onMounted, ref} from "vue";
 import {api} from "../api/client.js";
 import Btn from "../kit/Btn.vue";
 import Switch from "../kit/Switch.vue";
+import {saveViewerSetting, viewerSetting} from "../composables/viewerSetting.js";
 import {route} from "../route.js";
 import {remember, remembered} from "../composables/remembered.js";
 import {store} from "../state/store.js";
@@ -97,6 +98,15 @@ const switches = [
         on: () => viewerOn("away"),
         set: (v) => setViewer("away", v),
     },
+    {
+        key: "tour",
+        title: "Home tour",
+        lead: "A few short steps on Home that point at the view icons, the pane menu, presets and detaching.",
+        label: "Show the Home tour",
+        help: "It shows the next time Home opens, and turns itself off once you finish or skip it",
+        on: () => !viewerSetting("tour_seen", false),
+        set: (v) => saveViewerSetting("tour_seen", !v),
+    },
 ];
 </script>
 
@@ -170,8 +180,10 @@ const switches = [
         </template>
         <SettingsGroup :shut="!open('environments')" @fold="fold('environments')">
             <template #title>Environments</template>
-            <template #lead>Removing one packs its record into the attic, and journal environment unarchive with its name brings it back. Sweeping
-                    one packs its messages, comments, reactions, notifications and closed rows into the attic and keeps what is still true.</template>
+            <template #lead>
+                Removing one packs its record into the attic, and journal environment unarchive with its name brings it back. Sweeping one
+                packs its messages, comments, reactions, notifications and closed rows into the attic and keeps what is still true.
+            </template>
             <template v-for="e in envs" :key="e.n">
                 <div class="row">
                     <span class="text">
@@ -194,8 +206,10 @@ const switches = [
         </SettingsGroup>
         <SettingsGroup :shut="!open('stop')" @fold="fold('stop')">
             <template #title>Stop</template>
-            <template #lead>This closes the viewer, ends the engine and takes down every service a plugin runs. The agent's terminal stops with
-                    them. Nothing on the record is touched; start it again with journal claude.</template>
+            <template #lead>
+                This closes the viewer, ends the engine and takes down every service a plugin runs. The agent's terminal stops with them.
+                Nothing on the record is touched; start it again with journal claude.
+            </template>
             <div class="row">
                 <span class="text">
                     <span class="title">Stop the journal</span>
