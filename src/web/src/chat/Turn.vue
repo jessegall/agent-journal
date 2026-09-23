@@ -55,6 +55,9 @@ onMounted(() =>
     })
 );
 const mine = computed(() => props.turn.who === "user");
+const between = computed(() =>
+    props.turn.data?.peer ? `from ${props.turn.data.peer}` : props.turn.data?.sent_to ? `to ${props.turn.data.sent_to}` : ""
+);
 const SAID = {sent: "sent", delivered: "delivered to the agent", read: "read", filed: "processed"};
 const state = computed(() => {
     const turn = props.turn;
@@ -189,13 +192,22 @@ async function drop() {
             <div
                 :class="[
                     'thread-turn',
-                    {mine, ask: turn.type === 'question', lit: store.focus === turn.ref, 'comment-origin': resourceComment},
+                    {
+                        mine,
+                        peer: !!between,
+                        ask: turn.type === 'question',
+                        lit: store.focus === turn.ref,
+                        'comment-origin': resourceComment,
+                    },
                 ]"
                 :data-ref="turn.ref"
                 @mouseleave="picking = false"
             >
                 <template v-if="turn.who === 'system'">
                     <span class="thread-from">journal</span>
+                </template>
+                <template v-else-if="between">
+                    <span class="thread-from">{{ between }}</span>
                 </template>
                 <div ref="bubble" class="thread-bubble md" @click="resourceComment && openComment()">
                     <template v-if="resourceComment">
@@ -342,6 +354,12 @@ async function drop() {
     align-self: flex-start;
     gap: 3px;
     max-width: 78%;
+}
+
+.thread-turn.peer .thread-bubble {
+    border: 1px dotted var(--border-2);
+    background: none;
+    color: var(--text-3);
 }
 
 .thread-turn.mine {

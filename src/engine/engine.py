@@ -1,6 +1,8 @@
 import time
 
-from controllers.types import CONTROLLERS, Agents
+from pathlib import Path
+
+from controllers.types import CONTROLLERS, Agents, Messages
 import features
 from engine import bus, chat, runtime
 from engine.actors import Actor, Agent, BUSY, IDLE, STOPPED, System, User, WORKING, spoken_data
@@ -8,11 +10,12 @@ from engine.inputs import BACKGROUND, FORCE, PERMIT, SHELL, take
 from surfaces.control import CARRY_ON, delivered
 from engine.record import Record
 from engine.watch import STEADY_AFTER, steady, threw
-from resources.base import AGENT, SYSTEM, USER, Event
+from providers import PROVIDERS
+from resources.base import AGENT, SYSTEM, USER, Event, titled
 from resources.types import TYPES, priority
 from engine.seat import Seat
 from engine.wording import plural
-from engine.transcript import turns
+from engine.transcript import PEER, SENT, turns
 from engine.stored import read_json, write_json
 
 CLOCK_EVERY = 5.0
@@ -50,6 +53,7 @@ class Engine(Seat):
         self.crewed_at = 0.0
         self.crewed_size = -1
         self.relayed = None
+        self.peer_size = -1
         self.typed_at = 0.0
         self.ticked_at = 0.0
         self.probed_at = 0.0
@@ -68,6 +72,7 @@ class Engine(Seat):
     def tick(self) -> str:
         self.agent.driver.pump()
         self.relay()
+        self.relay_peers()
         if not self.agent.driver.DISPLAY_HOOK:
             self.announce_written()
         self.why = (self.permitted() or self.backgrounded() or self.probe() or self.forced() or self.typing() or self.shelled() or self.control()
@@ -85,6 +90,36 @@ class Engine(Seat):
             features.passed(e, self.record)
             if not e.handled:
                 bus.emit(e, self.record)
+
+    def relay_peers(self) -> None:
+        last = self.agent.driver.last_report()
+        if not last or not last.title:
+            return
+        row = Agents(self.record, actor=SYSTEM).by_session(last.title)
+        provider = PROVIDERS.get(row.provider)
+        try:
+            size = Path(row.transcript).stat().st_size if provider and row.transcript else -1
+        except OSError:
+            return
+        if size < 0 or size == self.peer_size:
+            return
+        self.peer_size = size
+        f = runtime.session_file(self.record.root, row.title, "peers.json")
+        seen = read_json(f, None)
+        recent = sorted((t for t in provider().tail(row.transcript) if t.kind == PEER and t.who.startswith((f"{PEER}:", f"{SENT}:"))), key=lambda t: t.at)
+        newest = max([t.at for t in recent] + [float((seen or {}).get("at") or 0)])
+        names = dict((seen or {}).get("names") or {})
+        for t in recent if seen is not None else []:
+            if t.at <= float(seen.get("at") or 0):
+                continue
+            kind, _, rest = t.who.partition(":")
+            if kind == PEER:
+                name, _, address = rest.partition(":")
+                names[address] = name
+                Messages(self.record, actor=AGENT).create(titled(t.text), brief=t.text, peer=name)
+            else:
+                Messages(self.record, actor=AGENT).create(titled(t.text), brief=t.text, sent_to=names.get(rest, rest))
+        write_json(f, {"at": newest, "names": names})
 
     def announce_written(self) -> None:
         last = self.agent.driver.last_report()

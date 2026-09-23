@@ -193,3 +193,21 @@ def test_a_line_about_a_message_waits_for_the_driver_and_is_dropped_once_the_mes
     driver.pump()
     engine.deliver()
     assert not any("before you write" in line for line in delivered), "answered in the meantime: the waiting line is dropped, not sent late"
+
+
+def test_messages_between_agent_sessions_reach_the_chat_marked_with_the_other_session(tmp_path):
+    from engine.engine import Engine
+    record, transcript = fresh(), tmp_path / "s.jsonl"
+    peer = {"type": "attachment", "timestamp": "2026-09-23T10:00:00Z", "attachment": {"type": "queued_command", "prompt": "<agent-message>the loop is fixed</agent-message>",
+            "origin": {"kind": "peer", "from": "uds:/tmp/a.sock", "name": "other-project", "body": "the loop is fixed"}}}
+    sent = {"type": "assistant", "timestamp": "2026-09-23T10:01:00Z",
+            "message": {"content": [{"type": "tool_use", "id": "t1", "name": "SendMessage", "input": {"to": "uds:/tmp/a.sock", "message": "thanks, adopted"}}]}}
+    transcript.write_text(json.dumps({"type": "user", "timestamp": "2026-09-23T09:00:00Z", "message": {"content": "go"}}) + "\n")
+    report(record, "working", "PreToolUse", provider="claude", transcript=str(transcript))
+    engine = Engine(record, DRIVERS["claude"](record, "claude-1"))
+    engine.relay_peers()
+    transcript.write_text(transcript.read_text() + json.dumps(peer) + "\n" + json.dumps(sent) + "\n")
+    engine.relay_peers()
+    rows = [(m.brief, m.data.get("peer"), m.data.get("sent_to")) for m in Messages(record, actor="system").all()]
+    assert rows == [("the loop is fixed", "other-project", None), ("thanks, adopted", None, "other-project")], \
+        "a message from another session is filed from it, and one sent to it is filed as sent to it, by name"
