@@ -16,6 +16,10 @@ class Agents(Controller):
         r.data.update(self._shaped(data))
         return self.save(r, "reported", **fact)
 
+    @internal
+    def subagent(self, n: int, action: str, **data):
+        return self.record.emit(self.type, int(n), action, self.actor, **data)
+
     def stop_task(self, n: int, task: str, what: str = ""):
         if not task.strip():
             self._refuse("name the task to stop")

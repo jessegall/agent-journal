@@ -52,6 +52,7 @@ class Engine(Seat):
         self.branch_stamp = None
         self.crewed_at = 0.0
         self.crewed_size = -1
+        self.subagents_ended: dict | None = None
         self.relayed = None
         self.peer_size = -1
         self.typed_at = 0.0
