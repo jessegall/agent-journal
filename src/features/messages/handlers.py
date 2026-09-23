@@ -11,6 +11,7 @@ from features.parts import AgentContext, Context, Handler
 from resources.base import AGENT, ENVIRONMENT, SECTION, USER, titled
 from resources.types import TYPES
 
+RECENT = 200
 LINKED = ("message", "comment", "reaction", "nudge", "notification", "agent")
 ANSWERS = {"comment": "answered", "reaction": "acknowledged"}
 RUN_ON, SENTENCES = 400, 3
@@ -120,7 +121,18 @@ class CloseAnswered(Handler):
                 continue
             message = messages.load(int(n))
             if not message.completed and theirs(message):
+                filed(context, message)
                 messages.complete(message.n, how=f"{ANSWERS[event.type]} by the agent")
+
+
+def filed(context: Context, message) -> None:
+    events = context.record.events(last=RECENT)
+    read = max((e.at for e in events if e.type == "message" and e.data.get("seen") == AGENT and message.n in (e.data.get("numbers") or [e.n])), default=0.0)
+    claimed = {e.data.get("to") for e in events if e.type == "message" and e.action == "linked" and not e.data.get("off")}
+    for e in events:
+        ref = f"{e.type}:{e.n}"
+        if read and e.at >= read and e.action == "created" and e.actor == AGENT and e.type not in LINKED and ref not in claimed | set(message.refs):
+            context.journal.messages.link(message.n, ref)
 
 
 class LinkToMessageInHand(Handler):
