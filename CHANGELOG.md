@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.106.2 — A plugin dialog's console fills the dialog
+
+In the plugin install, update and log dialogs, the dark console area fills the rest of the dialog, edge to edge down to the footer, with its padding only inside around the text. The kit's Console takes a fill option for this.
+
 ## 2.106.1 — Fields named what get plain names
 
 Every field and argument called "what" is named for what it holds: a command entry's text is command, a file's words are its description (journal <type> attach <n> <path> <description>, and the files listing), a stopped task's words are its description (agent stop_task --description), the wait's text is awaiting (journal work await <awaiting>), and journal services takes an action (list, start, stop, restart, log). Recent command lists carry the new name from their next command on.

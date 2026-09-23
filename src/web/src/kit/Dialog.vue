@@ -69,7 +69,9 @@ onUnmounted(() => watcher.disconnect());
 }
 
 .dialog-panel.fixed .dialog-body {
+    display: flex;
     flex: 1;
+    flex-direction: column;
 }
 
 .dialog-enter-active,
