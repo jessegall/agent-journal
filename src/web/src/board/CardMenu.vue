@@ -7,7 +7,7 @@ import {useOutside} from "../composables/outside.js";
 import {peek} from "../route.js";
 import {store} from "../state/store.js";
 
-const props = defineProps({card: Object});
+const props = defineProps({card: Object, anchor: {type: Object, default: null}});
 const emit = defineEmits(["close"]);
 const board = inject("board");
 const menu = ref(null);
@@ -27,7 +27,7 @@ function move(lane) {
 </script>
 
 <template>
-    <MenuPanel ref="menu" class="menu" @click.stop>
+    <MenuPanel ref="menu" class="menu" :anchor="anchor" @click.stop>
         <template v-if="card.targets.length">
             <p class="label">Move to</p>
             <template v-for="lane in card.targets" :key="lane">
