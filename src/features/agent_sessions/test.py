@@ -31,9 +31,10 @@ def env(tmp_path_factory):
 
 
 def cli(root, *argv, agent=""):
+    naming = ["--agent", agent] if agent else []
     p = subprocess.run(
         [sys.executable, str(HERE / "journal.py"), "--root", str(root), "--env", "main", "--session", "claude-1",
-         *(("--agent", agent) if agent else ()), *argv],
+         *naming, *argv],
         capture_output=True, text=True, timeout=30, cwd=root.parent)
     return p.returncode, (p.stdout + p.stderr).strip()
 

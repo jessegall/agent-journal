@@ -27,7 +27,7 @@ def test_a_read_message_is_named_back_until_the_agent_answers_it():
     report(record, "working", "PreToolUse")
     assert text() == ["answer message 1 before you write anything"], \
         "the tenth tool use names the message and says to answer it"
-    assert holds(record).get("status", "") == "", "nothing is refused over it: it tells, it does not hold"
+    assert not holds(record).get("status"), "nothing is refused over it: it tells, it does not hold"
     from controllers.types import Nudges
     from engine.actors import settled
     from resources.base import Event
@@ -45,7 +45,7 @@ def test_a_read_message_is_named_back_until_the_agent_answers_it():
     record.set_setting("features", {})
     Messages(record, actor=AGENT).reply(m.n, "halfway: the build is green, wiring the last route")
     report(record, "working", "PreToolUse")
-    assert holds(record).get("status", "") == "", "a reply settles it and lifts the hold"
+    assert not holds(record).get("status"), "a reply settles it and lifts the hold"
     assert settled(record, queued) is True, "a line still queued about a message now answered is dropped, not sent late"
     assert f"todo:{filed.n}" in Messages(record).load(m.n).refs, "a to-do filed after reading the message and linked nowhere is linked to it when it is answered"
 

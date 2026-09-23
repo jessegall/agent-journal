@@ -46,11 +46,11 @@ def test_choices_offered_in_prose_hold_writes_until_a_question_is_asked_properly
     assert ([n for n in nudges(record) if "choices in prose" in n], bool(holds(record).get("ask_questions.asking"))) == \
         (["your last message offers choices in prose"], True), "choices in prose: the agent is told once, and its writes are held"
     Questions(record, actor=AGENT).create("Which one?", options=[{"title": "the blue one", "description": "", "code": ""}, {"title": "the red one", "description": "", "code": ""}], pick=1)
-    assert holds(record).get("ask_questions.asking", "") == "", "a question asked properly lifts the hold"
+    assert not holds(record).get("ask_questions.asking"), "a question asked properly lifts the hold"
     text("[!reply] Which do you want?\n1. the blue one\n2. the red one")
     idle(record, provider="claude", transcript=str(transcript))
     Messages(record, actor=USER).create("the blue one, thanks")
-    assert holds(record).get("ask_questions.asking", "") == "", "an answer by message lifts it too"
+    assert not holds(record).get("ask_questions.asking"), "an answer by message lifts it too"
 
 
 def test_a_picked_answer_is_held_for_a_configurable_duration():
