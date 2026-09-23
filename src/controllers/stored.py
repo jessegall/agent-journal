@@ -286,6 +286,9 @@ class Stored:
             if self.resource.loading == MEMORY:
                 self.load(row["n"])
 
+    def _viewed(self) -> list[Resource]:
+        return [self._peek(row["n"]) for row in self.summaries() if not row["deleted"]]
+
     def _every(self, deleted: bool = False) -> list[Resource]:
         memo = self.record.memo
         if memo is None or (self.type, deleted) not in memo:

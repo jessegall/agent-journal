@@ -240,9 +240,9 @@ class Driver(ABC):
     def _report(self):
         from controllers.types import Agents
         from resources.base import SYSTEM
-        rows = [r for r in Agents(self.record, actor=SYSTEM)._every()
+        rows = [r for r in Agents(self.record, actor=SYSTEM)._viewed()
                 if r.event and (r.title == self.session or self.owns(r) or (r.provider == self.name and float(r.at) >= self.born - 1))]
-        return max(rows, key=lambda r: float(r.at)) if rows else None
+        return max(rows, key=lambda r: float(r.at)).fork() if rows else None
 
     def owns(self, row) -> bool:
         return False

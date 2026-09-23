@@ -11,14 +11,13 @@ from tests.conftest import fresh
 
 
 def watching(record, transcript):
-    from types import SimpleNamespace
     from controllers.types import Agents
     from engine.engine import Engine
     from providers import DRIVERS
     agents = Agents(record, actor="system")
     agents.update(agents.by_session("claude-1").n, provider="claude", transcript=str(transcript), status="working")
     engine = Engine(record, DRIVERS["claude"](record, "claude-99"))
-    engine.agent.driver.last_report = lambda: SimpleNamespace(title="claude-1")
+    engine.agent.driver.last_report = lambda: agents.by_session("claude-1")
     engine.announce_written()
     return engine
 

@@ -2,7 +2,7 @@ import json
 import re
 import shutil
 import time
-from dataclasses import asdict, dataclass, replace
+from dataclasses import asdict, dataclass, field, replace
 from datetime import datetime
 from pathlib import Path
 
@@ -57,6 +57,14 @@ class Handed(Loaded):
 
     def to_json(self) -> dict:
         return {"lines": [asdict(h) for h in self.lines], "typed_until": self.typed_until}
+
+
+@dataclass
+class Crew:
+    uses: list = field(default_factory=list)
+    window: list = field(default_factory=list)
+    ids: dict = field(default_factory=dict)
+    ended: dict = field(default_factory=dict)
 
 class Claude(Provider):
     name = "claude"
@@ -291,17 +299,8 @@ class Claude(Provider):
     def results(self, row: Row) -> list[Block]:
         return row.of_type("tool_result") if row.type == "user" and row.main else []
 
-    def task_ids(self, rows: list[Row]) -> dict[str, str]:
-        found = ((block.tool_use_id, TASK_ID.search(block.result)) for row in rows for block in self.results(row))
-        return {used: task.group(1) for used, task in found if task}
-
-    def endings(self, rows: list[Row], uses: list[ToolCall], ids: dict[str, str]) -> dict[str, tuple[str, float]]:
-        ended, tasks = {}, {task: used for used, task in ids.items()}
-        for row in rows:
-            if row.type == "queue-operation" and row.operation == "enqueue":
-                ended.update({used: (status, row.at) for used, status in NOTIFIED.findall(row.content)})
-            for block in self.results(row):
-                ended.setdefault(block.tool_use_id, ("refused" if self.refused_by_hook(block) else "returned", row.at))
+    def stopped(self, ended: dict, uses: list[ToolCall], ids: dict[str, str]) -> dict[str, tuple[str, float]]:
+        tasks = {task: used for used, task in ids.items()}
         for use in (u for u in uses if u.name == "TaskStop"):
             stopped = tasks.get(use.task)
             if stopped and ended.get(stopped, ("returned",))[0] == "returned":
@@ -317,20 +316,35 @@ class Claude(Provider):
     def skills(self, session: Path | None) -> list[str]:
         if session is None or not session.is_file():
             return []
-        return self.loaded([use for _, row in self.entries(session) for use in self.tool_uses(row)])
+        return sorted(self.folded(session, self.skill_names, set))
+
+    def skill_names(self, names: set, row: Row) -> set:
+        names.update(use.skill for use in self.tool_uses(row) if use.name == "Skill" and use.skill)
+        return names
+
+    def crew_rows(self, crew: "Crew", row: Row) -> "Crew":
+        if self.starts_window(row):
+            crew.window.clear()
+        for use in self.tool_uses(row):
+            crew.window.append(use)
+            if use.name in (*DISPATCHES, "Monitor", "TaskStop") or use.name == "Bash" and use.background:
+                crew.uses.append(use)
+        if row.type == "queue-operation" and row.operation == "enqueue":
+            crew.ended.update({used: (status, row.at) for used, status in NOTIFIED.findall(row.content)})
+        for block in self.results(row):
+            task = TASK_ID.search(block.result)
+            if task:
+                crew.ids[block.tool_use_id] = task.group(1)
+            crew.ended.setdefault(block.tool_use_id, ("refused" if self.refused_by_hook(block) else "returned", row.at))
+        return crew
 
     def starts_window(self, row: Row) -> bool:
         return row.compact_summary
 
-    def since_compaction(self, rows: list[Row]) -> list[Row]:
-        starts = [i for i, row in enumerate(rows) if self.starts_window(row)]
-        return rows[starts[-1]:] if starts else rows
-
     def crew(self, path: Path) -> dict:
-        rows = [row for _, row in self.entries(path)]
-        uses = [use for row in rows for use in self.tool_uses(row)]
-        ids = self.task_ids(rows)
-        ended = self.endings(rows, uses, ids)
+        held = self.folded(path, self.crew_rows, Crew)
+        uses, ids = held.uses, held.ids
+        ended = self.stopped(dict(held.ended), uses, ids)
         sessions = {}
         for meta in Path(path).with_suffix("").joinpath("subagents").glob("*.meta.json"):
             try:
@@ -364,7 +378,7 @@ class Claude(Provider):
                              "task": use.description if use.description else "monitor", "running": not finished, "at": use.at,
                              "ended": (done if notified else deadline) if finished else 0.0,
                              "status": (status if notified else "expired") if finished else ""})
-        return {AgentRow.skills: self.loaded([use for row in self.since_compaction(rows) for use in self.tool_uses(row)]), AgentRow.shells: len(shells), AgentRow.subagents: len(subagents),
+        return {AgentRow.skills: self.loaded(held.window), AgentRow.shells: len(shells), AgentRow.subagents: len(subagents),
                 AgentRow.monitors: len(monitors), AgentRow.shell_rows: shells, AgentRow.subagent_rows: subagents,
                 AgentRow.monitor_rows: monitors}
 
