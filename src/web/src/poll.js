@@ -8,25 +8,25 @@ function next(held) {
     held.timer = setTimeout(() => round(held), typeof held.every === "function" ? held.every() : held.every);
 }
 
-async function round(held) {
-    if (polls.get(held.key) !== held) return;
-    if (held.asking) {
+function round(held) {
+    if (polls.get(held.key) !== held) return Promise.resolve();
+    if (held.running) {
         held.again = true;
-        return;
+        return held.running;
     }
-    clearTimeout(held.timer);
-    held.asking = true;
-    try {
-        const got = await held.ask();
-        held.takers.forEach((take) => take(got));
-    } catch (e) {
-    } finally {
-        held.asking = false;
-    }
-    if (held.again) {
+    held.running = rounds(held).finally(() => (held.running = null));
+    return held.running;
+}
+
+async function rounds(held) {
+    do {
         held.again = false;
-        return round(held);
-    }
+        clearTimeout(held.timer);
+        try {
+            const got = await held.ask();
+            held.takers.forEach((take) => take(got));
+        } catch (e) {}
+    } while (held.again && polls.get(held.key) === held);
     next(held);
 }
 

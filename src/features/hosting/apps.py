@@ -8,7 +8,7 @@ from engine.record import Record
 from engine.services import allocate, files_for, status
 from features.hosting.files import hosting_of
 from features.plugins.manifest import fill
-from features.tickets.controller import AGENT_CLI, Tickets
+from features.tickets.controller import Tickets
 from resources.base import SYSTEM
 
 APP = "app"
@@ -20,7 +20,7 @@ def service_of(ticket) -> str:
 
 def worktree_of(project: Path, ticket) -> Path:
     from providers import DRIVERS
-    return project.joinpath(*DRIVERS[AGENT_CLI].WORKTREES, ticket.work_environment)
+    return project.joinpath(*DRIVERS[ticket.agent].WORKTREES, ticket.work_environment)
 
 
 def hosted(root: Path) -> list:
