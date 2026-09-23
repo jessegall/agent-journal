@@ -14,6 +14,7 @@ import {label, meta, word} from "../state/store.js";
 import ResourceActions from "./ResourceActions.vue";
 import Sections from "./Sections.vue";
 import OptionsPicker from "./OptionsPicker.vue";
+import StageMeanings from "./StageMeanings.vue";
 import Priority from "./Priority.vue";
 import DataFields from "./DataFields.vue";
 import Trace from "./Trace.vue";
@@ -190,6 +191,9 @@ const docs = computed(() =>
         </template>
         <template v-if="optioned">
             <OptionsPicker :resource="resource" />
+        </template>
+        <template v-if="resource.type === 'board'">
+            <StageMeanings :board="resource" />
         </template>
         <template v-if="madeFor">
             <section class="block">

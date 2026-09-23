@@ -51,7 +51,7 @@ async function makeEnv() {
                 Home
             </a>
             <template v-if="boardOn">
-                <a :class="['item', {on: route.page === 'board'}]" :href="`#/${route.env}/board`">
+                <a :class="['item', {on: route.page === 'kanban'}]" :href="`#/${route.env}/kanban`">
                     <Icon name="board" />
                     Board
                     <span class="count">{{ counted("todo") || "" }}</span>
@@ -122,7 +122,9 @@ async function makeEnv() {
         </FoldGroup>
         <div class="side-bottom">
             <div class="side-foot side-foot-row">
-                <a class="side-foot-version" :href="`#/${route.env}/about`" title="Version and changelog">Agent journal {{ store.spec.version || "" }}</a>
+                <a class="side-foot-version" :href="`#/${route.env}/about`" title="Version and changelog">
+                    Agent journal {{ store.spec.version || "" }}
+                </a>
             </div>
         </div>
     </aside>
