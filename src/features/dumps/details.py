@@ -11,11 +11,11 @@ class DumpsDetails(FeatureDetails):
     abstract = "Drop anything in one place and the agent reads every item and files it into the record"
 
     help = """
-        A dump holds pasted text and dropped files; each is an item. The agent decides what
-        every item becomes and files it, recording journal dump note <n> <item> "<what it is>",
+        A dump holds pasted text and dropped files; each is an item. You decide what
+        every item becomes and file it, recording journal dump note <n> <item> "<what it is>",
         then journal dump filed <n> <item> "<what it did>" "<ref, ref>" or journal dump failed
         <n> <item> "<why>". journal dump name <n> "<name>" names its collection for what the
-        items are about, and journal dump log <n> "<status>" tells the user what the agent is doing;
+        items are about, and journal dump log <n> "<status>" tells the user what you are doing;
         journal dump ask <n> "<question>" asks the user in the dump window, and they answer there.
         One dump is worked at a time; the next waits until it closes. journal dump items <n> lists where every item stands, and the dump
         closes by itself once every item is filed or failed.

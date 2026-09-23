@@ -21,18 +21,18 @@ class QuestionsDetails(FeatureDetails):
         A question or a suggestion is answered by clicking a choice; the choice is held for a
         moment before it is saved, and clicking it again in that moment takes it back.
         questions.hold sets the moment in seconds, three by default. The card marks the answer
-        as the user's; when the agent answers a question itself, journal question answer <n>
-        "<choice>" --set reason="<why>" is required, and the card shows the agent's answer with
+        as the user's; when you answer a question yourself, journal question answer <n>
+        "<choice>" --set reason="<why>" is required, and the card shows your answer with
         that reason beneath it.
 
         A message with two or more listed options and a question, or the language of putting a
-        decision to the user, tells the agent to use journal question ask --set options=…; its
+        decision to the user, tells you to use journal question ask --set options=…; your
         writes wait until a question is created. A line naming a question by number points at
         one already asked and does not count.
 
         A question tool the provider offers, such as Claude Code's AskUserQuestion, never opens
         in the terminal: each question in the call is filed as a journal question with its
-        options, and the call is refused with the numbers, so the agent carries on and hears the
+        options, and the call is refused with the numbers, so you carry on and hear the
         answer as an event.
     """
 

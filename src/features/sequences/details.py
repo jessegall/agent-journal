@@ -13,15 +13,15 @@ class SequencesDetails(FeatureDetails):
 
     help = """
         A template says how to do something or where to start; a sequence is a way of
-        executing: steps in order, handed to the agent one at a time. Its parts are its steps,
+        executing: steps in order, handed to you one at a time. Its parts are its steps,
         the title naming the step and the body saying what to do.
 
         journal sequence create "<name>" --brief "<what it is for>" writes one, and journal
         sequence section <n> "<step>" "<what to do>" adds each step. journal sequence run <n>
-        --about <ref> hands the agent the first step; journal sequence next <n> --about <ref>
+        --about <ref> hands you the first step; journal sequence next <n> --about <ref>
         marks the step in hand done and hands the next, and the last one ends it.
         --set starts_on=<type.action>, such as dump.created, starts it by itself when that
-        happens, about the row it happened to. One run is in the agent's hands at a time; one
+        happens, about the row it happened to. One run is in your hands at a time; one
         that starts meanwhile waits its turn. Stopping with a run unfinished earns a reminder, and
         journal sequence abandon <n> --about <ref> --why "<why>" gives one up. Some sequences ship
         with the journal; they are system sequences and cannot be changed or removed.

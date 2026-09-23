@@ -23,7 +23,7 @@ class PlansDetails(FeatureDetails):
         journal plan todos <n> <phase> <rows...>. When every phase has rows, journal plan ready
         <n> hands it to the user.
 
-        Only the user approves a plan, and then the agent starts it with journal plan start <n>; only the user continues it past a checkpoint; with the auto
+        Only the user approves a plan, and then you start it with journal plan start <n>; only the user continues it past a checkpoint; with the auto
         feature on, checkpoints are passed without waiting.
     """
 

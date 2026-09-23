@@ -21,7 +21,7 @@ class LawDetails(FeatureDetails):
         them comes up as a whole word, the law is whispered with its reason.
 
         After a tool call whose result is larger than the floor and larger than any earlier one
-        in the session, the agent is told its size and that the next read can be narrower. It
+        in the session, you are told its size and that the next read can be narrower. It
         is said only on a new largest result, so a session hears it once or twice.
     """
 

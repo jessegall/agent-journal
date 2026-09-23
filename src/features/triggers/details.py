@@ -18,7 +18,7 @@ class TriggersDetails(FeatureDetails):
         matched: text, commands, both (the default) or everything.
 
         does is one of {', '.join(DOES)}. A message reaches the chat as if the user wrote it, a
-        nudge and an instruction are said to the agent alone, and a deny refuses the tool call
+        nudge and an instruction are said to you alone, and a deny refuses the tool call
         with the trigger's text as the reason.
     """
 

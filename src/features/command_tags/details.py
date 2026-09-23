@@ -22,7 +22,7 @@ class TagsDetails(FeatureDetails):
         A message without a tag is a plain message in the chat.
 
         [!internal] at the start of a message keeps it out of the chat. Use it only for a
-        message that narrates what the agent does next, like "Checking the build next";
+        message that narrates what you do next, like "Checking the build next";
         anything the user should read goes out without it.
 
         tags.runs maps a tag to the command it stands for, so [!reply:12] runs

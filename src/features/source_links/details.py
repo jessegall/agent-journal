@@ -10,7 +10,7 @@ class TrackingDetails(FeatureDetails):
     abstract = "A plan, doc or report that cites nothing it was built on is named back to the agent"
 
     help = """
-        A plan, doc or report created soon after the agent read a report or doc, and citing none
+        A plan, doc or report created soon after you read a report or doc, and citing none
         of them, earns a private nudge naming the link to make.
     """
 

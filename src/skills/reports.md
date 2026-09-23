@@ -7,4 +7,4 @@ description: Turn requested investigation into a concise report with the answer,
 
 Research, audits, measurements and delegated investigation end in `journal report create`. Lead with the answer, then the evidence, what was already sound, and what remains uncertain. A report describes what was found now; promote enduring knowledge into a doc rather than treating a temporary result as permanent.
 
-When subagents researched, the main agent compiles their findings into the report for the user.
+When subagents researched, you compile their findings into the report for the user.

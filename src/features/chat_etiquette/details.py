@@ -24,7 +24,7 @@ class ChatEtiquetteDetails(FeatureDetails):
         either: no "nothing is open on my side", "nothing else is waiting". Say what the work
         is and what it came to, in plain words, and name every row with its type, such as to-do 12.
 
-        A turn that talks about the journal's workings is named back to the agent once, with
+        A turn that talks about the journal's workings is named back to you once, with
         the words that gave it away.
     """
 

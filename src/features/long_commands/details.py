@@ -12,10 +12,9 @@ class LongCommandsDetails(FeatureDetails):
     abstract = "A command that holds the agent's terminal too long is moved to the background, so the agent can carry on"
 
     help = """
-        When the agent runs a command in the foreground and it is still running after
-        long_commands.after_seconds (30), the journal moves it to the background the way the
-        agent's own terminal does (Claude's Ctrl+B) and tells the agent, which is told again when
-        it ends. A provider without a way to do that is left alone.
+        When you run a command in the foreground and it is still running after
+        long_commands.after_seconds (30), the journal moves it to the background the way your
+        own terminal does (Claude's Ctrl+B) and tells you, and tells you again when it ends. A provider without a way to do that is left alone.
     """
 
     settings = [

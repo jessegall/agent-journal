@@ -12,7 +12,7 @@ class TemplatesDetails(FeatureDetails):
 
     help = """
         A template is written once and used for many resources. Its brief holds the
-        instructions the agent reads before working on anything made from it, and its parts are
+        instructions you read before working on anything made from it, and its parts are
         the skeleton a new resource starts with. applies_to says which types it is for; an empty
         list means any type.
 

@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.103.2 — Skills speak to the agent as you
+
+Every skill instruction that talked about "the agent" now addresses its reader directly: "you are told", "you start it with journal plan start", "your terminal". 31 sentences in 21 skills changed person and nothing else (report 31 lists them). The one-line descriptions stay descriptive, since the viewer's Settings and Skills pages show them to the user too.
+
 ## 2.103.1 — A side panel tab closes its label before the next one opens
 
 Switching tabs in the chat side panel first folds away the old tab's name, and only once that has finished does the new tab's name open: the opening waits exactly as long as the closing takes.
