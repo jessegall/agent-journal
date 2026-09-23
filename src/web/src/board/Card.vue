@@ -4,6 +4,7 @@ import Chip from "../kit/Chip.vue";
 import {computed, inject, ref} from "vue";
 import Icon from "../kit/Icon.vue";
 import PriorityIcon from "../kit/PriorityIcon.vue";
+import StateDot from "../kit/StateDot.vue";
 import {useCardDrag} from "../composables/cardDrag.js";
 import {api} from "../api/client.js";
 import {peek} from "../route.js";
@@ -43,27 +44,27 @@ function begin(event) {
     >
         <span class="top">
             <span class="title">{{ card.title }}</span>
-            <button ref="opener" type="button" class="more" title="Move, assign or open" @click.stop="menu = !menu">
-                <Icon name="more" />
-            </button>
+            <span :class="['corner', {open: menu}]">
+                <span class="number">
+                    <PriorityIcon :value="card.priority" />
+                    #{{ card.n }}
+                </span>
+                <button ref="opener" type="button" class="more" title="Move, assign or open" @click.stop="menu = !menu">
+                    <Icon name="more" />
+                </button>
+            </span>
         </span>
-        <template v-if="card.actions.length">
-            <span class="actions">
-                <template v-for="(action, i) in card.actions" :key="action.action">
-                    <Btn small :kind="i ? 'ghost' : 'primary'" @click.stop="act(action.action)">{{ action.label }}</Btn>
+        <template v-if="card.reason || card.link">
+            <span class="meta">
+                <template v-if="card.reason">
+                    <StateDot :state="card.state" />
+                    <span class="reason">{{ card.reason }}</span>
+                </template>
+                <template v-if="card.link">
+                    <a class="app" :href="card.link" target="_blank" rel="noopener" @click.stop>Open app ↗</a>
                 </template>
             </span>
         </template>
-        <span class="meta">
-            <PriorityIcon :value="card.priority" />
-            <span class="number">#{{ card.n }}</span>
-            <template v-if="card.reason">
-                <span class="reason">{{ card.reason }}</span>
-            </template>
-            <template v-if="card.link">
-                <a class="app" :href="card.link" target="_blank" rel="noopener" @click.stop>Open app ↗</a>
-            </template>
-        </span>
         <span class="chips">
             <template v-for="name in people()" :key="name">
                 <Chip tone="accent">{{ titleOf(name) }}</Chip>
@@ -78,6 +79,13 @@ function begin(event) {
                 <Chip tone="danger" title="A question waits on you" @click.stop="peek('question', card.question)">!</Chip>
             </template>
         </span>
+        <template v-if="card.actions.length">
+            <span class="actions">
+                <template v-for="(action, i) in card.actions" :key="action.action">
+                    <Btn small :kind="i ? 'ghost' : 'primary'" @click.stop="act(action.action)">{{ action.label }}</Btn>
+                </template>
+            </span>
+        </template>
         <template v-if="plan">
             <Chip @click.stop="peek('plan', plan.n)">Plan {{ plan.n }} · phase {{ plan.phase }}</Chip>
         </template>
@@ -146,8 +154,33 @@ function begin(event) {
 .title {
     flex: 1;
     font-size: 13px;
-    font-weight: 500;
     line-height: 1.45;
+}
+
+.corner {
+    display: grid;
+    flex: none;
+    justify-items: end;
+}
+
+.corner > * {
+    grid-area: 1 / 1;
+}
+
+.corner .more {
+    visibility: hidden;
+}
+
+.card:hover .corner .number,
+.card:focus-within .corner .number,
+.corner.open .number {
+    visibility: hidden;
+}
+
+.card:hover .corner .more,
+.card:focus-within .corner .more,
+.corner.open .more {
+    visibility: visible;
 }
 
 .actions {
@@ -167,7 +200,13 @@ function begin(event) {
 }
 
 .number {
+    display: flex;
+    align-items: center;
+    gap: 4px;
     color: var(--text-4);
+    font-size: 11.5px;
+    font-variant-numeric: tabular-nums;
+    line-height: 20px;
 }
 
 .app {

@@ -38,8 +38,9 @@ const onKey = (e) =>
     KEYS[e.key] && !e.target.closest("input,textarea,[contenteditable]") && !openFlow() && (e.preventDefault(), KEYS[e.key]());
 onMounted(async () => {
     window.addEventListener("keydown", onKey);
-    const known = await loadRows("board");
-    firstBoard.value = !known.some((board) => !board.completed && !board.deleted) && !remembered(FIRST_BOARD_SEEN, false);
+    const known = (await loadRows("board")).filter((board) => !board.completed && !board.deleted);
+    firstBoard.value = !known.length && !remembered(FIRST_BOARD_SEEN, false);
+    if (!known.some((board) => board.n === store.board.lens.board)) lens({board: 0});
 });
 
 function leaveFirstBoard() {
@@ -142,7 +143,7 @@ const ask = usePoll(
         <header class="bar">
             <h2>Board</h2>
             <TabBar v-model="shown" :tabs="tabs">
-                <button type="button" class="add-board" title="New board" @click="firstBoard = true"><Icon name="plus" /></button>
+                <button type="button" class="tool" title="New board" @click="firstBoard = true"><Icon name="plus" /></button>
             </TabBar>
             <input ref="finder" v-model="text" class="find" placeholder="Filter cards  /" />
             <template v-if="!tickets">
@@ -158,7 +159,9 @@ const ask = usePoll(
             <span class="grow" />
             <Switch :on="showingDone" word="Show done" @change="(on) => lens({done: on})" />
             <template v-if="tickets">
-                <Btn small @click="peek('board', store.board.lens.board)">Stages</Btn>
+                <button type="button" class="tool" title="Stages and what each means" @click="peek('board', store.board.lens.board)">
+                    <Icon name="settings" />
+                </button>
             </template>
             <Btn kind="primary" small title="New work (N)" @click="newWork">New work</Btn>
             <template v-if="refusal">
@@ -233,7 +236,7 @@ const ask = usePoll(
     flex: 1;
 }
 
-.add-board {
+.tool {
     display: grid;
     place-items: center;
     width: 26px;
@@ -245,7 +248,7 @@ const ask = usePoll(
     cursor: pointer;
 }
 
-.add-board:hover {
+.tool:hover {
     background: var(--hover);
     color: var(--text);
 }
