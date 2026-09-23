@@ -222,6 +222,9 @@ class Provider(ABC):
     def stop_instruction(self, task: str) -> str:
         return f"stop task {task} now"
 
+    def conversation_file(self, conversation: str) -> Path | None:
+        return None
+
     def subagent_transcript(self, path: Path, session: str) -> Path | None:
         return None
 
