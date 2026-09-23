@@ -862,7 +862,7 @@ def get_one(req: Request) -> Reply:
         n = int(req.params["n"])
         return Reply(200, shaped(controller.show(n) if controller.resource.cleared_by == OPENED else controller.load(n), req.record(), VIEWER))
     except Refused as e:
-        raise Missing(str(e))
+        raise Missing(str(e)) from e
 
 
 @route("GET", "/api/{env}/{type}/{n}/markdown")

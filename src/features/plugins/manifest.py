@@ -29,10 +29,10 @@ def read(folder: Path, version: str = "") -> Manifest:
     path = Path(folder) / MANIFEST
     try:
         given = json.loads(path.read_text())
-    except OSError:
-        raise Refused(f"no {MANIFEST.as_posix()} in {folder}: not a journal plugin")
+    except OSError as error:
+        raise Refused(f"no {MANIFEST.as_posix()} in {folder}: not a journal plugin") from error
     except ValueError as error:
-        raise Refused(f"plugin.json is not JSON: {error}")
+        raise Refused(f"plugin.json is not JSON: {error}") from error
     if not isinstance(given, dict):
         raise Refused("plugin.json holds one object, with a name and what the plugin listens to")
     for key in given:

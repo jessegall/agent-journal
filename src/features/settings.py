@@ -20,5 +20,5 @@ class Settings(dict):
     def __getattr__(self, name: str):
         try:
             return self[name]
-        except KeyError:
-            raise AttributeError(f"no setting called {name}")
+        except KeyError as error:
+            raise AttributeError(f"no setting called {name}") from error
