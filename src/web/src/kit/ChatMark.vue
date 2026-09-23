@@ -1,0 +1,97 @@
+<script setup>
+import {computed, useAttrs} from "vue";
+import Icon from "./Icon.vue";
+import {clock} from "../format/time.js";
+
+const props = defineProps({
+    icon: {type: String, default: "dot"},
+    color: {type: String, default: ""},
+    label: {type: String, required: true},
+    name: {type: String, default: ""},
+    at: {type: Number, default: 0},
+    detail: {type: String, default: ""},
+});
+
+const attrs = useAttrs();
+const tag = computed(() => (attrs.onClick ? "button" : "span"));
+const tint = computed(() => (props.color ? {"--mark": props.color} : {}));
+</script>
+
+<template>
+    <component :is="tag" :type="tag === 'button' ? 'button' : undefined" :class="['mark', {tinted: color}]" :style="tint">
+        <Icon :name="icon" :size="11" />
+        <span class="head">
+            {{ label }}
+            <template v-if="name">
+                <strong>{{ name }}</strong>
+            </template>
+            <template v-if="at">
+                <span class="when">{{ clock(at) }}</span>
+            </template>
+        </span>
+        <template v-if="detail">
+            <span class="detail">{{ detail }}</span>
+        </template>
+    </component>
+</template>
+
+<style scoped>
+.mark {
+    display: inline-grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    column-gap: 6px;
+    row-gap: 1px;
+    align-items: center;
+    max-width: 100%;
+    padding: 3px 9px;
+    border: 1px solid var(--border-2);
+    border-radius: 6px;
+    background: none;
+    color: var(--text-3);
+    font: inherit;
+    font-size: 11px;
+    line-height: 1.4;
+    text-align: left;
+}
+
+button.mark {
+    cursor: pointer;
+}
+
+button.mark:hover {
+    color: var(--text-2);
+}
+
+.mark.tinted {
+    border-color: color-mix(in srgb, var(--mark) 35%, transparent);
+    background: color-mix(in srgb, var(--mark) 7%, transparent);
+}
+
+.mark.tinted .ico {
+    color: var(--mark);
+}
+
+.head {
+    display: flex;
+    gap: 5px;
+    white-space: nowrap;
+}
+
+.when {
+    margin-left: auto;
+    padding-left: 10px;
+}
+
+.head strong {
+    color: var(--text-2);
+    font-weight: 500;
+}
+
+.detail {
+    grid-column: 2;
+    overflow: hidden;
+    font-size: 10.5px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+</style>

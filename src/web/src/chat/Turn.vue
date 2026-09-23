@@ -5,6 +5,7 @@ import {api} from "../api/client.js";
 import Icon from "../kit/Icon.vue";
 import SwitchCase from "../kit/SwitchCase.vue";
 import SubagentMark from "./SubagentMark.vue";
+import ChatMark from "../kit/ChatMark.vue";
 import WhisperMark from "./WhisperMark.vue";
 import Folded from "../kit/Folded.vue";
 import Buttons from "../resource/Buttons.vue";
@@ -164,20 +165,17 @@ async function drop() {
     <SwitchCase :value="turn.type">
         <template #skill>
             <div class="thread-turn skill" :data-ref="turn.ref">
-                <button type="button" class="thread-skill" :title="`Read the ${turn.title} skill`" @click="store.skill = turn.title">
-                    <Icon name="book" :size="12" />
-                    Loaded skill
-                    <strong>{{ turn.title }}</strong>
-                </button>
+                <ChatMark icon="book" label="Loaded skill" :name="turn.title" :at="turn.created" :title="`Read the ${turn.title} skill`" @click="store.skill = turn.title" />
             </div>
         </template>
         <template #compacted>
             <div class="thread-turn compacted" :data-ref="turn.ref">
-                <span class="thread-compacted">
-                    <Icon name="activity" :size="12" />
-                    The agent compacted its context
-                    <span class="thread-compacted-when">{{ clock(turn.created) }}</span>
-                </span>
+                <ChatMark icon="activity" color="#d8a94a" label="The agent compacted its context" :at="turn.created" />
+            </div>
+        </template>
+        <template #card>
+            <div class="thread-turn card" :data-ref="turn.ref">
+                <ChatMark v-bind="turn.data" :at="turn.created" />
             </div>
         </template>
         <template #whisper>
@@ -382,48 +380,8 @@ async function drop() {
     max-width: 100%;
 }
 
-.thread-skill {
-    display: inline-flex;
-    align-items: center;
-    gap: 7px;
-    padding: 4px 10px;
-    border: 1px solid color-mix(in srgb, var(--created) 28%, transparent);
-    border-radius: 7px;
-    background: color-mix(in srgb, var(--created) 8%, transparent);
-    color: color-mix(in srgb, var(--created) 75%, var(--text-3));
-    font: inherit;
-    font-size: 12px;
-    cursor: pointer;
-}
-
-.thread-skill:hover {
-    border-color: color-mix(in srgb, var(--created) 55%, transparent);
-    color: var(--created);
-}
-
-.thread-skill strong {
-    font-family: ui-monospace, "SF Mono", Menlo, monospace;
-    font-weight: 500;
-}
-
 .thread-turn.compacted {
     align-items: center;
-}
-
-.thread-compacted {
-    display: inline-flex;
-    align-items: center;
-    gap: 7px;
-    padding: 4px 12px;
-    border: 1px dashed color-mix(in srgb, #d8a94a 45%, transparent);
-    border-radius: 99px;
-    background: color-mix(in srgb, #d8a94a 8%, transparent);
-    color: color-mix(in srgb, #d8a94a 80%, var(--text-3));
-    font-size: 12px;
-}
-
-.thread-compacted-when {
-    color: var(--text-3);
 }
 
 .thread-receipt {
