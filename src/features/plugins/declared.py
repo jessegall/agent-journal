@@ -131,6 +131,7 @@ class Manifest(Loaded):
     installed: str = ""
     events: tuple[DeclaredEvent, ...] = ()
     cancels: dict = field(default_factory=dict)
+    load: dict = field(default_factory=dict)
 
     @classmethod
     def of(cls, raw) -> "Manifest":
@@ -146,6 +147,9 @@ class Manifest(Loaded):
 
     def setting(self, key: str) -> Setting | None:
         return next((setting for setting in self.settings if setting.key == key), None)
+
+    def skills_for(self, known) -> list[str]:
+        return list(dict.fromkeys(skill for pattern in known if pattern in self.load for skill in self.load[pattern]))
 
     def listening(self, known) -> list[Handler]:
         return [handler for handler in self.handlers if handler.pattern in known]

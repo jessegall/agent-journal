@@ -15,6 +15,7 @@ from features.plugins.declared import Handler, Manifest, declared, settings_of
 from features.plugins.lifecycle import called
 from features.plugins.manifest import fill
 from features.plugins.payload import of, session_of
+from features.skill_loading.required import require_primary
 from features.plugins.queue import drain
 from features.plugins.run import SECONDS, call
 from features.plugins.skills import published
@@ -138,6 +139,9 @@ class Host:
     def handle(self, record, row, event, now: float = 0.0) -> tuple[bool, int]:
         plugin = self.name(row)
         manifest = declared(row)
+        skills = manifest.skills_for(patterns(event))
+        if skills:
+            require_primary(record, skills, event.at)
         handlers = listening(manifest, event)
         if not handlers:
             return True, 0

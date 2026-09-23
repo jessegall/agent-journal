@@ -1,7 +1,7 @@
 import time
 
 from controllers.types import Agents, Messages
-from features.skill_loading.catalogue import loaded_at
+from features.skill_loading.catalogue import available, loaded_at
 from resources.base import SYSTEM, USER
 
 
@@ -33,9 +33,14 @@ def outstanding(record, row) -> list[str]:
     return sorted(left)
 
 
-def load_now(record, name: str) -> str:
+def require_primary(record, names: list[str], at: float) -> None:
     agent = Agents(record, actor=SYSTEM).primary()
-    if agent:
-        require(record, agent.title, {name: time.time()})
+    present = [name for name in names if name in available(record.root.parent)]
+    if agent and present:
+        require(record, agent.title, dict.fromkeys(present, at))
+
+
+def load_now(record, name: str) -> str:
+    require_primary(record, [name], time.time())
     Messages(record, actor=USER).create(f"Please load the {name} skill now", brief=f"Skill: {name} — every tool call waits until it is loaded.")
     return "the agent is asked, and its tool calls wait until the skill is loaded"

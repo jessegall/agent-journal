@@ -185,3 +185,31 @@ def test_housekeeping_that_asks_nothing_of_the_agent_ships_no_skill():
     rendered = skills.render()
     assert "journal-runtime-cleanup/SKILL.md" not in rendered and "journal-open-viewer/SKILL.md" not in rendered, "housekeeping gets no skill"
     assert "journal-work-tracking/SKILL.md" in rendered, "a feature that asks something of the agent keeps its skill"
+
+
+def test_a_plugin_names_the_skills_its_events_require_and_its_skills_carry_keywords(tmp_path):
+    import json
+    import pytest
+    from features.plugins.manifest import MANIFEST, read
+    from features.skill_loading.catalogue import keywords
+    from features.skill_loading.required import outstanding, require_primary
+    from resources.base import Refused
+    record = fresh()
+    report(record, "working", "PreToolUse")
+    skill = record.root.parent / ".agents" / "skills" / "lint-rules"
+    skill.mkdir(parents=True)
+    (skill / "SKILL.md").write_text("---\nname: lint-rules\nplugin: linter\nkeywords: sinful, lint\n---\n")
+    assert keywords(record)["lint-rules"] == ["sinful", "lint"], "a plugin's skill carries its own keywords, like a shipped one"
+
+    def manifest(**given):
+        (tmp_path / MANIFEST).parent.mkdir(parents=True, exist_ok=True)
+        (tmp_path / MANIFEST).write_text(json.dumps({"name": "linter", "events": {"sin-found": {"title": "A sin"}}, **given}))
+        return read(tmp_path)
+
+    loaded = manifest(load={"sin-found": ["lint-rules", "not-installed"], "hook.Stop": ["lint-rules"]})
+    assert loaded.skills_for(("*", "sin-found")) == ["lint-rules", "not-installed"], "an event names the skills it requires"
+    require_primary(record, loaded.skills_for(("sin-found",)), 1.0)
+    assert outstanding(record, Agents(record, actor="system").by_session("claude-1")) == ["lint-rules"], \
+        "the agent owes the installed ones; a skill that is not installed is never owed"
+    with pytest.raises(Refused):
+        manifest(load={"no-such-event": ["lint-rules"]})
