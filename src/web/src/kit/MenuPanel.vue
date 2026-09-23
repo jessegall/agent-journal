@@ -1,5 +1,5 @@
 <script setup>
-import {computed, ref} from "vue";
+import {computed, onMounted, ref} from "vue";
 
 const props = defineProps({anchor: {type: Object, default: null}});
 const panel = ref(null);
@@ -8,12 +8,24 @@ const place = computed(() => {
     const edge = props.anchor.getBoundingClientRect();
     return {top: `${edge.bottom + 4}px`, right: `${window.innerWidth - edge.right}px`};
 });
+const emit = defineEmits(["close"]);
+const items = () => [...panel.value.querySelectorAll("button:not(:disabled)")];
+
+function step(by) {
+    const all = items();
+    const at = all.indexOf(document.activeElement);
+    all[(at + by + all.length) % all.length].focus();
+}
+
+const KEYS = {ArrowDown: () => step(1), ArrowUp: () => step(-1), Escape: () => emit("close")};
+const onKey = (e) => KEYS[e.key] && (e.preventDefault(), KEYS[e.key]());
+onMounted(() => items()[0] && items()[0].focus());
 defineExpose({element: panel});
 </script>
 
 <template>
     <Teleport to="body" :disabled="!anchor">
-        <div ref="panel" :class="['menu-panel', {anchored: anchor}]" :style="place"><slot /></div>
+        <div ref="panel" :class="['menu-panel', {anchored: anchor}]" :style="place" @keydown="onKey"><slot /></div>
     </Teleport>
 </template>
 

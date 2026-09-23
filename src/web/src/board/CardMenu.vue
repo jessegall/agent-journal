@@ -36,7 +36,7 @@ function move(lane) {
 </script>
 
 <template>
-    <MenuPanel ref="menu" class="menu" :anchor="anchor" @click.stop>
+    <MenuPanel ref="menu" class="menu" :anchor="anchor" @click.stop @close="emit('close')">
         <template v-if="card.targets.length">
             <p class="label">Move to</p>
             <template v-for="lane in card.targets" :key="lane">

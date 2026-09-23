@@ -15,6 +15,30 @@ const props = defineProps({card: Object});
 const board = inject("board");
 const drag = useCardDrag();
 const menu = ref(false);
+const self = ref(null);
+const cardsIn = (lane) => [...lane.querySelectorAll(".card")];
+const beside = (by) => {
+    const lanes = [...document.querySelectorAll(".lanes .lane")];
+    const next = lanes[lanes.indexOf(self.value.closest(".lane")) + by];
+    return next && cardsIn(next)[0];
+};
+const within = (by) => {
+    const cards = cardsIn(self.value.closest(".lane"));
+    return cards[cards.indexOf(self.value) + by];
+};
+const STEPS = {ArrowDown: () => within(1), ArrowUp: () => within(-1), ArrowRight: () => beside(1), ArrowLeft: () => beside(-1)};
+
+function onKey(e) {
+    if (e.target !== self.value) return;
+    if (e.key === "m") return (e.preventDefault(), (menu.value = !menu.value));
+    const target = STEPS[e.key] && STEPS[e.key]();
+    if (target) (e.preventDefault(), target.focus());
+}
+
+function closeMenu() {
+    menu.value = false;
+    self.value.focus();
+}
 const plan = computed(() => props.card.plan);
 const opener = ref(null);
 const titleOf = (name) => ([...store.board.agents, ...store.board.roles].find((who) => who.name === name) || {title: name}).title;
@@ -35,6 +59,7 @@ function begin(event) {
 <template>
     <div
         :class="['card', {moving: board.moving.value === card.n, dragged: drag.dragged.value && drag.dragged.value.n === card.n}]"
+        ref="self"
         role="button"
         tabindex="0"
         :draggable="card.targets.length > 0"
@@ -42,6 +67,7 @@ function begin(event) {
         @dragend="drag.end"
         @click="peek(card.type, card.n)"
         @keydown.enter="peek(card.type, card.n)"
+        @keydown="onKey"
     >
         <span class="top">
             <span class="title">{{ card.title }}</span>
@@ -102,7 +128,7 @@ function begin(event) {
             <Chip @click.stop="peek('plan', plan.n)">Plan {{ plan.n }} · phase {{ plan.phase }}</Chip>
         </template>
         <template v-if="menu">
-            <CardMenu :card="card" :anchor="opener" @close="menu = false" />
+            <CardMenu :card="card" :anchor="opener" @close="closeMenu" />
         </template>
     </div>
 </template>
