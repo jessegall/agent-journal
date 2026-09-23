@@ -156,7 +156,6 @@ def test_a_chosen_setting_reaches_the_plugins_commands():
     raised = [e for e in record.events() if e.action == "raised"][-1]
     assert (raised.data["title"], raised.data["tone"], raised.data["brief"], heard) == ("Sin found", "warn", "deep-nesting at src/A.php:12", ["deep-nesting at src/A.php:12"]), \
         "a plugin raises an event it declared, styled from its manifest, and anything listening by its name hears it"
-    off()
     card = Agents(record, actor=SYSTEM).primary().data["cards"][-1]
     assert (card["label"], card["tone"], card["icon"], card["detail"]) == ("Sin found", "warn", "warn", "deep-nesting at src/A.php:12"), \
         f"an event whose declaration carries a card puts it in the chat, looking as the manifest says: {card}"
@@ -164,6 +163,11 @@ def test_a_chosen_setting_reaches_the_plugins_commands():
     from features.format import VIEWER
     viewed = shaped(Agents(record, actor=SYSTEM).primary(), record, VIEWER)["data"]["cards"][-1]["detail"]
     assert "[[file src/A.php" in viewed, f"its words pass the formatters like any brief, so a file is a chip: {viewed}"
+    from features.plugins.commands import Raise
+    Raise().run(None, plugins, "typed", "sin-found", "again at src/B.php:3")
+    assert heard[-1] == "again at src/B.php:3", "journal plugin raise, from the queue, raises the same declared event"
+    assert "declares no event" in refused(lambda: Raise().run(None, plugins, "typed", "made-up", "")), "and refuses one it does not declare"
+    off()
     assert apply(record, FEATURES["plugins"].journal, "typed", "", {"raise": {"event": "made-up"}}) == [], "an event the manifest does not declare is refused"
     from features.plugins.manifest import typed as checked
     shown = checked({"php": {"type": "flag"}, "vue": {"type": "flag"}, "sin": {"type": "flag", "when": {"php": True}},
