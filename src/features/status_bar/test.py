@@ -120,3 +120,29 @@ def test_every_viewer_is_handed_the_whole_queue_and_keeps_its_own_place():
     queue = [{"at": 1.0, "done": True}, {"at": 2.0, "done": True}, {"at": time.time(), "done": False}]
     record.state("status_bar").set("bar", {"queue": queue})
     assert current(record)["queue"] == current(record)["queue"] == queue, "no tab's reading moves another tab's place in the queue"
+
+
+def test_a_model_change_is_typed_into_the_terminal_whole_and_raw(monkeypatch):
+    import os
+    from engine import engine as engine_module, runtime
+    from engine.drivers import MARK
+    from engine.engine import Engine
+    from engine.stored import write_json
+    from providers import DRIVERS
+    from surfaces import control
+    from tests.kit import report
+    record = fresh()
+    report(record, "idle", "Stop")
+    engine = Engine(record, DRIVERS["claude"](record, "claude-1"))
+    typed = []
+    monkeypatch.setattr(engine.agent.driver, "_wrote", lambda raw: typed.append(raw) or True)
+    monkeypatch.setattr(engine_module.time, "sleep", lambda seconds: None)
+    seat = runtime.session_file(record.root, "claude-1", "seat.json")
+    write_json(seat, {"at": time.time(), "agent": "claude", "env": record.env, "report": {"title": "claude-1", "provider": "claude"}})
+    os.utime(seat, None)
+    monkeypatch.setattr(control, "choice", lambda provider, action, value, model: {"label": "Luna", "commands": ["/model", "\x1b[B\x1b[B", ""]})
+    control.request(record.root, record.env, "claude-1", "model", "luna")
+    assert engine.control(stopped=True) == "controlled: Luna"
+    entered = [raw for raw in typed if raw.strip(b"\x05\x15\x7f")]
+    assert entered == [b"/model", b"\r", b"\x1b[B\x1b[B", b"\r", b"\r"] and not any(MARK.encode() in raw for raw in typed), \
+        "every step of a picker is typed in order, raw, with no journal mark, and none is dropped"

@@ -186,14 +186,25 @@ class Driver(ABC):
     def run_shell(self, command: str) -> bool:
         return bool(self.SHELL) and self._typed(f"{self.SHELL}{command.strip()}", confirmed=False)
 
+    def press(self, keys: tuple) -> bool:
+        first, *rest = keys or ("",)
+        if not self._typed(first, confirmed=False):
+            return False
+        for line in rest:
+            time.sleep(ENTER_AFTER)
+            if not ((not line or self._wrote(line.encode())) and self._entered()):
+                return False
+        return True
+
+    def _entered(self) -> bool:
+        time.sleep(ENTER_AFTER)
+        return self._wrote(b"\r")
+
     def _typed(self, line: str, confirmed: bool) -> bool:
         started = time.time()
         self.clear_input()
         time.sleep(ENTER_AFTER)
-        if not self._wrote(line.encode()):
-            return False
-        time.sleep(ENTER_AFTER)
-        if not self._wrote(b"\r"):
+        if not self._wrote(line.encode()) or not self._entered():
             return False
         if not confirmed:
             return True

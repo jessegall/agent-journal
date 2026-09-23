@@ -66,7 +66,7 @@ def delivered(record, sessions: set[str], action: str, label: str) -> None:
 
 def pressed(root: Path, env: str, session: str, label: str, action: str) -> dict:
     found = online(root, env, session)
-    queued = queue(Path(root), session, "", label, provider=found.provider, action=action)
+    queued = queue(Path(root), session, (), label, provider=found.provider, action=action)
     return queued.for_viewer
 
 
@@ -84,7 +84,7 @@ def shell(root: Path, env: str, session: str, command: str) -> dict:
         raise Refused(f"{found.provider} has no shell command to type")
     if not command.strip():
         raise Refused("type a command to run")
-    queued = queue(Path(root), session, "", f"Run {command.strip()}", provider=found.provider, action=SHELL, value=command.strip())
+    queued = queue(Path(root), session, (), f"Run {command.strip()}", provider=found.provider, action=SHELL, value=command.strip())
     agents = Agents(Record(Path(root), env), actor=SYSTEM)
     row = agents.by_session(session)
     waiting = [c for c in waiting_commands(row) if queued.at - c.at < STALE]
@@ -95,7 +95,7 @@ def shell(root: Path, env: str, session: str, command: str) -> dict:
 def permit(root: Path, env: str, session: str, allow: bool) -> dict:
     found = online(root, env, session)
     answer = "allow" if allow else "deny"
-    queued = queue(Path(root), session, "", answer.capitalize(), provider=found.provider, action=PERMIT, value=answer)
+    queued = queue(Path(root), session, (), answer.capitalize(), provider=found.provider, action=PERMIT, value=answer)
     return queued.for_viewer
 
 
@@ -111,10 +111,7 @@ def request(root: Path, env: str, session: str, action: str, value: str) -> dict
     root = Path(root)
     found = online(root, env, session)
     selected = choice(found.provider, action, value, found.model)
-    commands = selected.get("commands") or [selected["command"]]
-    queued = None
-    for line in commands:
-        queued = queue(root, session, line, selected["label"], provider=found.provider, action=action, value=value)
+    queued = queue(root, session, selected.get("commands") or [selected["command"]], selected["label"], provider=found.provider, action=action, value=value)
     record = Record(root, env)
     agents = Agents(record, actor=SYSTEM)
     row = agents.by_session(session)

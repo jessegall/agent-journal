@@ -260,7 +260,7 @@ class Engine(Seat):
         queued = take(self.record.root, self.names())
         if not queued:
             return ""
-        self.agent.driver.deliver(queued.line)
+        self.agent.driver.press(queued.keys)
         self.controlled_at = time.time()
         if self.carry_on:
             self.carry_on = False
