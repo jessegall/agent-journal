@@ -302,8 +302,8 @@ useSighted(topMark, earlier, {root: scroller, margin: "400px 0px"});
     display: flex;
     flex-direction: column;
     gap: 10px;
-    margin: 0 -22px;
-    padding: 12px 22px 0;
+    margin: 0 -24px;
+    padding: 12px 24px 0;
     background: var(--bg);
 }
 
