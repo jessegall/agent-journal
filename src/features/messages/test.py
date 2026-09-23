@@ -21,10 +21,12 @@ def test_a_read_message_is_named_back_until_the_agent_answers_it():
     def text():
         return [n for n in nudges(record) if "before you write" in n]
 
-    assert text() == [], "before the next tool use nothing is said"
+    for i in range(9):
+        report(record, "working", "PreToolUse")
+    assert text() == [], "nothing is said while the message has waited fewer than ten tool uses"
     report(record, "working", "PreToolUse")
     assert text() == ["answer message 1 before you write anything"], \
-        "the first tool use after reading names the message and says to answer it"
+        "the tenth tool use names the message and says to answer it"
     assert holds(record).get("status", "") == "", "nothing is refused over it: it tells, it does not hold"
     from controllers.types import Nudges
     from engine.actors import settled
@@ -32,7 +34,9 @@ def test_a_read_message_is_named_back_until_the_agent_answers_it():
     line = [n for n in Nudges(record).all() if "before you write" in n.title][-1]
     queued = Event(id=0, type="nudge", n=line.n, action="created", actor="system", at=0.0, data={})
     assert settled(record, queued) is False, "while the message is open, the line still goes out"
-    for i in range(5):
+    report(record, "idle", "Stop")
+    assert len(text()) == 2, "an idle agent is told at once"
+    for i in range(30):
         report(record, "working", "PreToolUse")
     assert len(text()) == 3, "said three times in all and then it lets the agent be"
     from controllers.types import Todos

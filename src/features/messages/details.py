@@ -21,8 +21,8 @@ class MessagesDetails(FeatureDetails):
         card they can open.
 
         Each new message is named to you as it arrives. The inbox reminder follows only while more than five wait unread, or once
-        you are idle: at your next tool use and at every third one after; after five reminders your writes are held. A message you have read but not answered is mentioned again before your next writes, a
-        few times, without holding them.
+        you are idle: at your next tool use and at every third one after; after five reminders your writes are held. A message you have not answered is mentioned again once it has waited ten tool uses, or
+        once you are idle, a few times, without holding your writes.
         A reply, a reaction, or processing every part closes it; a message you wrote closes as soon as the user has seen it,
         and every row you file while a message is in your hands is linked to it.
     """
@@ -39,8 +39,8 @@ class MessagesDetails(FeatureDetails):
         Behaviour(
             name="answering",
             title="Answer a message before writing",
-            abstract="Said before the next write while a message sits read and unanswered",
-            trigger=Trigger(every=1, unit=USES),
+            abstract="Said once a message has waited ten tool uses unanswered, or once the agent is idle",
+            trigger=Trigger(every=10, unit=USES),
         ),
         Behaviour(
             name="closing",

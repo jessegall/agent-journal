@@ -82,7 +82,7 @@ class NameUnanswered(Handler):
         if not held:
             trigger.write(context.record, context.agent.row, context.feature.keyed("answering"), count=0)
             return
-        if context.due("answering") and counted(context, "answering") <= patient(context, "answering"):
+        if (context.agent.row.status == IDLE or context.due("answering")) and counted(context, "answering") <= patient(context, "answering"):
             context.agent.whisper("answer", messages=", ".join(f"message {m.n}" for m in held[-3:]), numbers=[m.n for m in held[-3:]],
                                   rows=[m.ref for m in held[-3:]])
 
