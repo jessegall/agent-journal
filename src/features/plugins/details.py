@@ -45,7 +45,8 @@ class PluginsDetails(FeatureDetails):
         {"type": ..., props, "children": [nodes]}: stack (gap), row (gap, wrap), grid (columns, gap) and card (title, note,
         open) hold children; heading (text, level), divider, stat (label, value, note, tone, open), bars (title, unit, items of
         label, value, note, tone, open), table (columns, rows of cells, tone, open), list (items of label, note, badge, tone,
-        open), text (body, with the chat's formatting), badge (text, tone), code (text, language) and file (path, line, label)
+        open), text (body, with the chat's formatting), fact (label, body: a small heading with its text below, for
+        explanations such as what it is and how to fix it), badge (text, tone), code (text, language) and file (path, line, label)
         draw. tone is note, good, warn, danger or muted; open names another page of the same dashboard, and the panel keeps a
         trail back. A file that does not fit is shown with the place that is wrong, such as pages.overview.view.children[1].
     """

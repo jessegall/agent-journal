@@ -25,6 +25,7 @@ NODES = {
     "table": NodeSpec(("columns", "rows"), ("columns", "rows"), items=("cells", "open", "tone")),
     "list": NodeSpec(("items",), ("items",), items=("label", "note", "badge", "tone", "open")),
     "text": NodeSpec(("body",), ("body",)),
+    "fact": NodeSpec(("label", "body"), ("label", "body")),
     "badge": NodeSpec(("text", "tone"), ("text",)),
     "code": NodeSpec(("text", "language"), ("text",)),
     "file": NodeSpec(("path", "line", "label"), ("path",)),
