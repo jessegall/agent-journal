@@ -31,7 +31,9 @@ class PluginsDetails(FeatureDetails):
         asked to load it when one of those words comes up.
 
         When one of its servers gives up, you are told once; journal services list|start|stop|restart|log <plugin>.<service>
-        inspects them. The servers a plugin declares are kept up while the session runs and stop with it. A plugin writes back
+        inspects them. The servers a plugin declares are kept up while the session runs and stop with it; an upgrade removes
+        each one and starts it again from the new code. A service keeps what it writes in $JOURNAL_PLUGIN_DATA, which
+        outlives upgrades, never in the plugin's own folder or the project. A plugin writes back
         by calling the journal itself, or by appending journal commands to the file at $JOURNAL_QUEUE, one per line, which the
         host drains a few at a time. journal plugin raise <plugin> <event> "<brief>" in that file raises one of the events its
         manifest declares, with the same card and activity item as an answer that raises it.
