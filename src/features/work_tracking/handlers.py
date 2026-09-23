@@ -159,6 +159,18 @@ class TrackFiles(Handler):
             tracker.record_files(row, context.record, work)
 
 
+POLLED = 3
+
+
+class NameRepeatedChecks(Handler):
+    def handle(self, context: AgentContext, event: ToolFinished) -> None:
+        shell = [c.get("what") for c in context.agent.row.data.get("commands") or [] if c.get("tool") == "Bash"][-POLLED:]
+        if len(shell) < POLLED or len(set(shell)) > 1 or any(w.awaiting for w in working(context)):
+            return
+        if context.once("polled", shell[-1]):
+            context.agent.whisper("polling", times=POLLED, command=shell[-1][:80])
+
+
 class ClearWaitOnActivity(Handler):
     def handle(self, context: AgentContext, event: ToolFinished) -> None:
         if not context.agent.row.wrote:

@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.97.0 — An agent that keeps checking the same thing is pointed at work await
+
+When the agent runs the same shell command three times in a row with no wait declared (tailing a log, checking a process), it is told once for that command: if it is waiting for something to change, say journal work await and end the turn, since it is asked to look again every five minutes and a background command reports its own end.
+
 ## 2.96.6 — The agent bar's branch is a button like the others
 
 The branch in the agent bar looks and reacts like the bar's other buttons: on hover it gets their background and its icon lights up, as every button in the bar's icon now does.
