@@ -160,6 +160,15 @@ class ActionInterceptor:
         raise NotImplementedError
 
 
+def agent_row(record, n: int):
+    if record.memo is None:
+        return Agents(record, actor=SYSTEM).load(n)
+    key = ("agent row", n)
+    if key not in record.memo:
+        record.memo[key] = Agents(record, actor=SYSTEM).load(n)
+    return record.memo[key]
+
+
 class Events:
     def __init__(self, feature):
         self.feature = feature
@@ -174,7 +183,7 @@ class Events:
                 return
             if isinstance(typed, AgentEvent) and not typed.agent:
                 return
-            row = Agents(record, actor=SYSTEM).load(typed.agent) if isinstance(typed, AgentEvent) else None
+            row = agent_row(record, typed.agent) if isinstance(typed, AgentEvent) else None
             if wanted(handler, feature, record, row):
                 handler.handle(AgentContext.of(feature, record, row) if row else Context.of(feature, record), typed)
         self.names.append(kind.event_name or kind.on)

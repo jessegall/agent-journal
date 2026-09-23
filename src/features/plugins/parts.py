@@ -2,7 +2,6 @@ import json
 import re
 import time
 from dataclasses import asdict, dataclass
-from pathlib import Path
 from typing import ClassVar
 
 from controllers.types import CONTROLLERS, Plugins
@@ -15,7 +14,7 @@ from features.plugins.manifest import fill
 from features.plugins.payload import refusal
 from features.plugins.run import PluginReply, asked, call
 from features.plugins.skills import withdrawn
-from features.plugins.source import environment, folder, logged
+from features.plugins.source import environment, folder, logged, plugin_socket
 from features.status_bar import commands
 from resources.base import OWNER, PLUGIN, SYSTEM
 
@@ -64,12 +63,12 @@ class AskPluginsToRefuse(ToolInterceptor):
                 continue
             if not writes and not manifest.reads:
                 continue
-            name, where, env = placed(record, row)
+            name = called(row)
             seconds = min(manifest.refuse_seconds if manifest.refuse_seconds else EACH, LONGEST_EACH, left)
             started = time.monotonic()
-            payload = refusal(record, hook, name, where, writes)
-            served = manifest.refuse_socket and asked(Path(env["JOURNAL_PLUGIN_SOCKET"]), payload, seconds)
-            ok, reply = served if served and served[0] else call(fill(asking, env), where, env, payload, seconds)
+            payload = refusal(record, hook, name, folder(record.root, name), writes)
+            served = manifest.refuse_socket and asked(plugin_socket(record.root, name), payload, seconds)
+            ok, reply = served if served and served[0] else self._spawned(record, row, payload, seconds)
             left -= time.monotonic() - started
             if ok and reply:
                 logged(record.root, name, f"refuse? {hook.tool.name} {json.dumps(reply, ensure_ascii=False)}")
@@ -77,6 +76,11 @@ class AskPluginsToRefuse(ToolInterceptor):
             if refused:
                 return f"{name}: {refused}"
         return ""
+
+    @staticmethod
+    def _spawned(record, row, payload: dict, seconds: float) -> tuple:
+        _, where, env = placed(record, row)
+        return call(fill(declared(row).refuse, env), where, env, payload, seconds)
 
 
 class AskPluginsToCancel(Canceler):
