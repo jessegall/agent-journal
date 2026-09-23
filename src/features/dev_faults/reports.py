@@ -52,11 +52,13 @@ class FaultReports:
         told = standing.data.get("told_uses")
         return bool(agent) and (told is None or agent.uses - int(told) >= TOLD_EVERY)
 
-    def slow(self, record, kind: str, name: str, took: float, working: float | None = None) -> None:
+    def slow(self, record, kind: str, name: str, took: float, working: float | None = None, garbage: float = 0.0) -> None:
         if working is not None and working <= self.milliseconds(record, kind):
             return
+        parts = [f"{working:.0f}ms of it working" if working is not None else "", f"{garbage:.0f}ms collecting garbage" if garbage >= 1 else ""]
+        spent = ", ".join(part for part in parts if part)
         self.file(record, f"{kind} {name} {OVER}"[:80],
-                  f"{took:.0f}ms last{'' if working is None else f' ({working:.0f}ms of it working)'}, against a budget of {self.milliseconds(record, kind)}ms.",
+                  f"{took:.0f}ms last{f' ({spent})' if spent else ''}, against a budget of {self.milliseconds(record, kind)}ms.",
                   kind=kind, target=name, worst=took)
 
     def threw(self, record, message: str, where: str, stack: str, kind: str = "threw") -> None:
@@ -82,13 +84,13 @@ class FaultReports:
         folder.mkdir(exist_ok=True)
         (folder / f"{time.strftime('%H%M%S')}-{name.replace('/', '_').replace(' ', '-')}-{took:.0f}ms.txt").write_text(out.getvalue())
 
-    def spent(self, root, env: str, kind: str, name: str, took: float, working: float | None = None, profile=None) -> None:
+    def spent(self, root, env: str, kind: str, name: str, took: float, working: float | None = None, profile=None, garbage: float = 0.0) -> None:
         if took < min(BUDGET.values() or [0]) or (kind in WARMED and runtime.warming()):
             return
         try:
             record = Record(Path(root), env)
             if self.feature.on(record, "budget") and 0 < self.milliseconds(record, kind) < took:
-                self.slow(record, kind, name, took, working)
+                self.slow(record, kind, name, took, working, garbage)
                 if profile:
                     self.kept(root, name, took, profile)
         except (OSError, ValueError, KeyError):
