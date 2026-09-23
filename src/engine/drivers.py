@@ -79,6 +79,11 @@ class Driver(ABC):
         return any(arg in cls.RESUMING for arg in args)
 
     @classmethod
+    def conversation(cls, args: list[str]) -> str:
+        named = [following for flag, following in zip(args, args[1:]) if cls.RESUMING.get(flag) == 1]
+        return next((name for name in named if not name.startswith("-")), "")
+
+    @classmethod
     def worktree(cls, args: list[str]) -> str:
         named = [following for flag, following in zip(args, args[1:]) if flag in cls.WORKTREE]
         joined = [value for flag, _, value in (arg.partition("=") for arg in args) if flag in cls.WORKTREE]

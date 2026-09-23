@@ -3,12 +3,13 @@ import os
 import sys
 import threading
 import time
+from dataclasses import dataclass
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from engine import runtime  # noqa: E402
 from engine.sessions import ACTIVE_ENV  # noqa: E402
-from engine.fields import text_of  # noqa: E402
+from engine.fields import Loaded  # noqa: E402
 
 PROTOCOL = "2025-06-18"
 NAME = "journal"
@@ -41,11 +42,22 @@ def fresh_lines(f: Path, at: int) -> tuple[list[str], int]:
         return read.splitlines(), lines.tell()
 
 
+@dataclass(frozen=True)
+class Queued(Loaded):
+    content: str = ""
+
+
+@dataclass(frozen=True)
+class Asked(Loaded):
+    method: str = ""
+    id: object = None
+
+
 def contents(lines: list[str]) -> list[str]:
     texts = []
     for line in lines:
         try:
-            texts.append(text_of(json.loads(line), "content"))
+            texts.append(Queued.from_json(json.loads(line)).content)
         except ValueError:
             continue
     return [s for s in texts if s]
@@ -83,8 +95,8 @@ def launched() -> bool:
     return os.environ.get(ACTIVE_ENV) == "1"
 
 
-def answer(asked: dict) -> dict | None:
-    method = text_of(asked, "method")
+def answer(asked: Asked) -> dict | None:
+    method = asked.method
     if method == "initialize" and not launched():
         return {"protocolVersion": PROTOCOL, "serverInfo": {"name": NAME, "version": "1"}, "capabilities": {}}
     if method == "initialize":
@@ -103,12 +115,12 @@ def main(argv: list[str]) -> int:
         threading.Thread(target=push, args=(root,), daemon=True).start()
     for line in sys.stdin:
         try:
-            asked = json.loads(line)
+            asked = Asked.from_json(json.loads(line))
         except ValueError:
             continue
         reply = answer(asked)
-        if reply is not None and asked.get("id") is not None:
-            say({"jsonrpc": "2.0", "id": asked["id"], "result": reply})
+        if reply is not None and asked.id is not None:
+            say({"jsonrpc": "2.0", "id": asked.id, "result": reply})
     return 0
 
 

@@ -14,7 +14,8 @@ BROWSERS = (
 
 SCRIPT = f"""
 function run(argv) {{
-    const target = argv[0]
+    const destination = argv[0]
+    const target = destination.split("#")[0]
     const browsers = {json.dumps(BROWSERS)}
     for (const [id, kind] of browsers) {{
         try {{
@@ -25,6 +26,7 @@ function run(argv) {{
                 const tabs = windows[wi].tabs()
                 for (let ti = 0; ti < tabs.length; ti++) {{
                     if (!String(tabs[ti].url() || "").startsWith(target)) continue
+                    if (String(tabs[ti].url()) !== destination) tabs[ti].url = destination
                     if (kind === "safari") windows[wi].currentTab = tabs[ti]
                     else windows[wi].activeTabIndex = ti + 1
                     windows[wi].index = 1

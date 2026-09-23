@@ -1,6 +1,7 @@
 import json
 import re
 from dataclasses import dataclass, field, replace
+from typing import ClassVar
 from pathlib import Path
 
 from engine.fields import Loaded
@@ -107,13 +108,18 @@ class ToolCall(Loaded):
 
 @dataclass(frozen=True)
 class ToolUse(Loaded):
+    needs: ClassVar[tuple] = ()
     name: str = ""
     tool_input: dict = field(default_factory=dict)
     response: dict = field(default_factory=dict)
 
     @classmethod
     def from_payload(cls, name: str, given: dict, response: dict) -> "ToolUse":
-        return replace(cls.from_json(given), name=name, tool_input=given, response=response)
+        call = replace(cls.from_json(given), name=name, tool_input=given, response=response)
+        missing = [field for field in cls.needs if not getattr(call, field)]
+        if missing:
+            raise KeyError(f"{name} carries no {', '.join(missing)}")
+        return call
 
     @property
     def paths(self) -> tuple:
@@ -229,13 +235,9 @@ class ReadCall(FileCall):
 
 @dataclass(frozen=True)
 class WriteCall(FileCall):
-    aliases = {"written": ("content", "new_string", "new_source")}
+    aliases = {"file_path": ("file_path", "notebook_path"), "written": ("content", "new_string", "new_source")}
+    needs = ("file_path",)
     written: str = ""
-
-    @classmethod
-    def from_payload(cls, name: str, given: dict, response: dict) -> "WriteCall":
-        path = given["file_path"] if "file_path" in given else given["notebook_path"]
-        return replace(super().from_payload(name, given, response), file_path=path)
 
     @property
     def words(self) -> tuple:

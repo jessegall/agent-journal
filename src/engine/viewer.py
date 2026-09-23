@@ -210,11 +210,12 @@ def launch(root: Path, project: Path) -> tuple[str, int | None]:
     return "", None
 
 
-def show(url: str, opener=webbrowser.open, focuser=existing_tab) -> str:
-    if url and not focuser(url):
-        opener(url)
-    return url
+def show(url: str, env: str = "", opener=webbrowser.open, focuser=existing_tab) -> str:
+    destination = f"{url}#/{env}" if url and env else url
+    if destination and not focuser(destination):
+        opener(destination)
+    return destination
 
 
 def ensure(root: Path, project: Path, opener=webbrowser.open, focuser=existing_tab) -> str:
-    return show(start(root, project), opener, focuser)
+    return show(start(root, project), opener=opener, focuser=focuser)

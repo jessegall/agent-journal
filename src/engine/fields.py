@@ -14,14 +14,18 @@ class Loaded:
     def from_json(cls, raw):
         given = {}
         for name, keys, convert in plan(cls) if isinstance(raw, dict) else ():
-            for key in keys:
-                value = raw.get(key)
-                if value is not None and value != "":
-                    value = convert(value)
-                    if value is not SKIPPED:
-                        given[name] = value
-                    break
+            value = found(raw, keys, convert)
+            if value is not SKIPPED:
+                given[name] = value
         return cls(**given)
+
+
+def found(raw: dict, keys: tuple, convert):
+    for key in keys:
+        value = raw.get(key)
+        if value is not None and value != "":
+            return convert(value)
+    return SKIPPED
 
 
 @cache
@@ -56,39 +60,3 @@ def items(kind):
             if isinstance(value, dict) and value else SKIPPED
     one = converter(kind)
     return lambda value: tuple(item for item in map(one, value) if item is not SKIPPED) if isinstance(value, (list, tuple)) and value else SKIPPED
-
-
-def text_of(raw: dict, *keys: str) -> str:
-    for key in keys:
-        value = raw.get(key)
-        if value is None or value == "":
-            continue
-        return value if isinstance(value, str) else str(value)
-    return ""
-
-
-def number_of(raw: dict, *keys: str) -> float:
-    for key in keys:
-        value = raw.get(key)
-        if value is None or value == "":
-            continue
-        return float(value)
-    return 0.0
-
-
-def whole_of(raw: dict, *keys: str) -> int:
-    return int(number_of(raw, *keys))
-
-
-def flag_of(raw: dict, key: str) -> bool:
-    return bool(raw.get(key))
-
-
-def mapping_of(raw: dict, key: str) -> dict:
-    value = raw.get(key)
-    return value if isinstance(value, dict) else {}
-
-
-def list_of(raw: dict, key: str) -> list:
-    value = raw.get(key)
-    return value if isinstance(value, list) else []

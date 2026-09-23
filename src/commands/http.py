@@ -11,7 +11,7 @@ from email.parser import BytesParser
 from dataclasses import asdict, dataclass
 from pathlib import Path
 
-from engine.fields import number_of, text_of, whole_of
+from engine.fields import Loaded
 from queue import Empty, Queue
 from typing import Iterator
 from urllib.parse import quote
@@ -88,24 +88,119 @@ def unanswered(root: Path, env: str) -> None:
     broke(Record(root, env or runtime.env(root)), trouble, where="the hook")
 
 
+
+TRANSCRIPT_PAGE = 300
+
+@dataclass(frozen=True)
+class HookQuery(Loaded):
+    root: str = ""
+    env: str = ""
+    inbox: str = ""
+    pid: int = 0
+
+
+@dataclass(frozen=True)
+class ConsoleFault(Loaded):
+    message: str = ""
+    where: str = ""
+    stack: str = ""
+    kind: str = "threw"
+
+
+@dataclass(frozen=True)
+class Appointed(Loaded):
+    session: str = ""
+
+
+@dataclass(frozen=True)
+class ControlsQuery(Loaded):
+    model: str = ""
+    effort: str = ""
+
+
+@dataclass(frozen=True)
+class ShellLine(Loaded):
+    command: str = ""
+
+
+@dataclass(frozen=True)
+class Control(Loaded):
+    action: str = ""
+    value: str = ""
+
+
+@dataclass(frozen=True)
+class EventsQuery(Loaded):
+    since: int = 0
+    last: int = LAST
+
+
+@dataclass(frozen=True)
+class Forgotten(Loaded):
+    root: str = ""
+
+
+@dataclass(frozen=True)
+class SkillsQuery(Loaded):
+    agent: int = 0
+
+
+@dataclass(frozen=True)
+class Keywords(Loaded):
+    keywords: object = None
+
+    @property
+    def words(self) -> list:
+        return self.keywords if isinstance(self.keywords, list) else str(self.keywords).split(",") if self.keywords else []
+
+
+@dataclass(frozen=True)
+class TranscriptQuery(Loaded):
+    since: int = 0
+    before: int = 0
+    last: int = TRANSCRIPT_PAGE
+
+
+@dataclass(frozen=True)
+class PluginSource(Loaded):
+    source: str = ""
+    ref: str = ""
+
+
+@dataclass(frozen=True)
+class ServiceWant(Loaded):
+    want: str = ""
+
+
+@dataclass(frozen=True)
+class FileQuery(Loaded):
+    path: str = ""
+
+
+@dataclass(frozen=True)
+class DashboardQuery(Loaded):
+    types: str = ""
+    events: int = 0
+
 @route("POST", "/api/hook/{provider}")
 def post_hook(req: Request) -> Reply:
-    if Path(req.query_text("root")).resolve() != req.root.resolve() or req.params["provider"] not in PROVIDERS:
+    asked = req.query_as(HookQuery)
+    if Path(asked.root).resolve() != req.root.resolve() or req.params["provider"] not in PROVIDERS:
         return Reply(409, {})
     if req.body.get("hook_event_name") == DISPLAYED:
         return Reply(200, {}, after=lambda: displayed(req.root, req.body))
-    unanswered(req.root, req.query_text("env"))
+    unanswered(req.root, asked.env)
     provider = PROVIDERS[req.params["provider"]]()
-    out = answer(provider, req.root, {**req.body, "inbox": req.query_text("inbox")}, req.query_whole("pid"), req.query_text("env"))
+    out = answer(provider, req.root, {**req.body, "inbox": asked.inbox}, asked.pid, asked.env)
     return Reply(403 if provider.refused(out) else 200, out)
 
 
 @route("POST", "/api/{env}/console")
 def post_console(req: Request) -> Reply:
     faults = features.FEATURES.get("dev_faults")
-    message = req.body_text("message")[:200]
-    where, stack, kind = req.body_text("where")[:200], req.body_text("stack")[:2000], str(req.body.get("kind") or "threw")
-    report = (lambda: faults.reports.report_console(req.root, req.params["env"], message, where, stack, kind)) if faults and message else None
+    fault = req.body_as(ConsoleFault)
+    message, where, stack = fault.message[:200], fault.where[:200], fault.stack[:2000]
+    report = (lambda: faults.reports.report_console(req.root, req.params["env"], message, where, stack, fault.kind)) if faults and message else None
     return Reply(200, {"queued": bool(report)}, after=report)
 
 
@@ -149,12 +244,13 @@ def get_agents(req: Request) -> Reply:
 
 @route("POST", "/api/{env}/appoint")
 def post_appoint(req: Request) -> Reply:
-    return Reply(200, appoint(req.root, req.params["env"], req.body_text("session")))
+    return Reply(200, appoint(req.root, req.params["env"], req.body_as(Appointed).session))
 
 
 @route("GET", "/api/agent-controls/{provider}")
 def get_agent_controls(req: Request) -> Reply:
-    return Reply(200, control_options(req.params["provider"], req.query_text("model"), req.query_text("effort")))
+    asked = req.query_as(ControlsQuery)
+    return Reply(200, control_options(req.params["provider"], asked.model, asked.effort))
 
 
 @route("POST", "/api/{env}/agent/{session}/permit")
@@ -164,7 +260,7 @@ def post_agent_permit(req: Request) -> Reply:
 
 @route("POST", "/api/{env}/agent/{session}/shell")
 def post_agent_shell(req: Request) -> Reply:
-    return Reply(200, shell(req.root, req.params["env"], req.params["session"], req.body_text("command")))
+    return Reply(200, shell(req.root, req.params["env"], req.params["session"], req.body_as(ShellLine).command))
 
 
 @route("POST", "/api/{env}/agent/{session}/relaunch")
@@ -179,8 +275,8 @@ def post_agent_force(req: Request) -> Reply:
 
 @route("POST", "/api/{env}/agent/{session}/control")
 def post_agent_control(req: Request) -> Reply:
-    return Reply(200, control_session(req.root, req.params["env"], req.params["session"],
-                                      req.body_text("action"), req.body_text("value")))
+    asked = req.body_as(Control)
+    return Reply(200, control_session(req.root, req.params["env"], req.params["session"], asked.action, asked.value))
 
 
 def provider_of(req: Request):
@@ -218,7 +314,8 @@ def get_extension_zip(req: Request) -> Reply:
 
 @route("GET", "/api/{env}/events")
 def get_events(req: Request) -> Reply:
-    return Reply(200, [asdict(e) for e in req.record().events(req.query_whole("since"), int(req.query.get("last") or LAST))])
+    asked = req.query_as(EventsQuery)
+    return Reply(200, [asdict(e) for e in req.record().events(asked.since, asked.last)])
 
 
 @route("GET", "/api/{env}/settings")
@@ -327,7 +424,7 @@ def get_journals(req: Request) -> Reply:
 
 @route("POST", "/api/journals/forget")
 def post_forget(req: Request) -> Reply:
-    viewer.forget(req.body_text("root"))
+    viewer.forget(req.body_as(Forgotten).root)
     return Reply(200, {"ok": True})
 
 
@@ -351,7 +448,7 @@ def post_result(req: Request) -> Reply:
 
 @route("GET", "/api/{env}/skills")
 def get_skills(req: Request) -> Reply:
-    return Reply(200, skills(req.record(), req.query_whole("agent")))
+    return Reply(200, skills(req.record(), req.query_as(SkillsQuery).agent))
 
 
 @route("GET", "/api/{env}/skills/{name}")
@@ -376,8 +473,7 @@ def post_skill_always(req: Request) -> Reply:
 
 @route("POST", "/api/{env}/skills/{name}/keywords")
 def post_skill_keywords(req: Request) -> Reply:
-    given = req.body.get("keywords")
-    words = given if isinstance(given, list) else req.body_text("keywords").split(",")
+    words = req.body_as(Keywords).words
     return Reply(200, {"keywords": set_keywords(req.record(), req.params["name"], [w.strip() for w in words if w.strip()])})
 
 
@@ -427,7 +523,8 @@ def transcript_of(req: Request, session: str = "") -> Reply:
         if not path:
             raise Missing("no such subagent session")
     turns = provider.transcript(path) if path else []
-    return Reply(200, page(turns, req.query_whole("since"), req.query_whole("before"), int(req.query.get("last") or 300)))
+    asked = req.query_as(TranscriptQuery)
+    return Reply(200, page(turns, asked.since, asked.before, asked.last))
 
 
 @route("GET", "/api/{env}/agent/{n}/transcript")
@@ -481,8 +578,9 @@ def post_plugins_preview(req: Request) -> Reply:
     from features.plugins.commands import VERSION
     from features.plugins.lifecycle import drop
     from features.plugins.source import previewed, staged
-    source = req.body_text("source")
-    where, manifest, commit, linked = staged(req.root, source, req.body_text("ref"), VERSION)
+    asked = req.body_as(PluginSource)
+    source = asked.source
+    where, manifest, commit, linked = staged(req.root, source, asked.ref, VERSION)
     try:
         return Reply(200, previewed(manifest, source, commit), timed=False)
     finally:
@@ -513,7 +611,7 @@ def get_plugin_log(req: Request) -> Reply:
 @route("POST", "/api/services/{id}")
 def post_service(req: Request) -> Reply:
     from engine.services import DOWN, UP, want
-    asked = req.body_text("want").lower()
+    asked = req.body_as(ServiceWant).want.lower()
     if asked not in (UP, DOWN, "restart"):
         raise Missing("a service is asked to be up, down or restart")
     wanted = want(req.root, req.params["id"], DOWN if asked == DOWN else UP, nonce=time.time() if asked == "restart" else 0.0)
@@ -539,7 +637,7 @@ def get_commit(req: Request) -> Reply:
 @route("GET", "/api/{env}/file")
 def get_file_text(req: Request) -> Reply:
     project = req.root.parent.resolve()
-    asked = req.query_text("path")
+    asked = req.query_as(FileQuery).path
     candidate = Path(asked).expanduser() if Path(asked).is_absolute() else project / asked
     target = candidate.resolve()
     if asked and not Path(asked).is_absolute() and not target.is_file():
@@ -567,7 +665,7 @@ def other_project(target: Path) -> Path | None:
 @route("GET", "/api/{env}/diff")
 def get_file_diff(req: Request) -> Reply:
     project = req.root.parent.resolve()
-    asked = req.query_text("path")
+    asked = req.query_as(FileQuery).path
     target = (project / asked).resolve()
     if not asked or project not in target.parents:
         raise Missing(f"no file {asked} in the project")
@@ -615,6 +713,16 @@ def get_stream(req: Request) -> Reply:
 
 
 @dataclass(frozen=True)
+class ListingQuery(Loaded):
+    n: str = ""
+    last: int = LAST
+    completed: str = ""
+    before: int = 0
+    since: float = 0.0
+    by: str = ""
+
+
+@dataclass(frozen=True)
 class Listing:
     only: frozenset
     last: int
@@ -625,10 +733,10 @@ class Listing:
 
     @classmethod
     def from_query(cls, query: dict) -> "Listing":
-        only = frozenset(int(n) for n in text_of(query, "n").split(",") if n)
-        return cls(only=only, last=0 if only else whole_of(query, "last") if "last" in query else LAST,
-                   completed=text_of(query, "completed") in ("1", "true"), before=whole_of(query, "before"), since=number_of(query, "since"),
-                   by_updated=text_of(query, "by") == "updated")
+        asked = ListingQuery.from_json(query)
+        only = frozenset(int(n) for n in asked.n.split(",") if n)
+        return cls(only=only, last=0 if only else asked.last, completed=asked.completed in ("1", "true"), before=asked.before,
+                   since=asked.since, by_updated=asked.by == "updated")
 
 
 def listing(controller, record, wanted: Listing) -> dict:
@@ -684,10 +792,11 @@ def counted(record, types) -> dict:
 @route("GET", "/api/{env}/dashboard")
 def get_dashboard(req: Request) -> Reply:
     record = req.record()
-    wanted = [t for t in (req.query_text("types")).split(",") if t in CONTROLLERS]
+    asked = req.query_as(DashboardQuery)
+    wanted = [t for t in asked.types.split(",") if t in CONTROLLERS]
     lists = {t: listing(CONTROLLERS[t](record, actor=USER), record, Listing.from_query(req.query)) for t in wanted}
     whole = "events" in req.query
-    return Reply(200, {"rows": lists, "counts": counted(record, [t for t, c in CONTROLLERS.items() if c.resource.in_sidebar or c.resource.needs_attention or t in wanted] if whole else wanted), **({"events": [asdict(e) for e in record.events(0, req.query_whole("events"))],
+    return Reply(200, {"rows": lists, "counts": counted(record, [t for t, c in CONTROLLERS.items() if c.resource.in_sidebar or c.resource.needs_attention or t in wanted] if whole else wanted), **({"events": [asdict(e) for e in record.events(0, asked.events)],
                                            "settings": settings(record)} if whole else {})})
 
 
