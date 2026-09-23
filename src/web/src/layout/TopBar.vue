@@ -29,11 +29,15 @@ const waiting = computed(() => types.value.filter((t) => t.needs_attention).flat
 const drop = ref(false);
 const wrap = ref(null);
 useOutside(wrap, () => (drop.value = false));
+const full = computed(() => route.value.page === "kanban");
 </script>
 
 <template>
     <div class="top">
         <div class="crumb">
+            <template v-if="full">
+                <a class="icon-btn back" :href="`#/${route.env}`" title="Back to Home"><Icon name="back" /></a>
+            </template>
             <a class="crumb-link" :href="`#/${route.env}`">{{ route.env }}</a>
             <span class="sep">/</span>
             <b>{{ title }}</b>
@@ -57,14 +61,16 @@ useOutside(wrap, () => (drop.value = false));
                     </div>
                 </Transition>
             </div>
-            <button
-                type="button"
-                :class="['icon-btn', {on: store.activity}]"
-                :title="store.activity ? 'Hide Activity' : 'Show Activity'"
-                @click="store.activity = !store.activity"
-            >
-                <Icon name="activity" />
-            </button>
+            <template v-if="!full">
+                <button
+                    type="button"
+                    :class="['icon-btn', {on: store.activity}]"
+                    :title="store.activity ? 'Hide Activity' : 'Show Activity'"
+                    @click="store.activity = !store.activity"
+                >
+                    <Icon name="activity" />
+                </button>
+            </template>
         </div>
     </div>
 </template>

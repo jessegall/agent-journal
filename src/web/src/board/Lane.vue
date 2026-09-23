@@ -54,7 +54,7 @@ function drop() {
 <style scoped>
 .lane {
     display: flex;
-    flex: 0 0 264px;
+    flex: 1 0 264px;
     flex-direction: column;
     min-height: 0;
     border: 1px solid var(--border);
