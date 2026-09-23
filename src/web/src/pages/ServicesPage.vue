@@ -23,7 +23,8 @@ const look = usePoll(
     EVERY,
     (got) => (rows.value = got)
 );
-const {error, set: runServiceAction} = useServiceAction(() => look());
+const {error, set: runServiceAction, busy, working} = useServiceAction(() => look());
+const toggle = (row) => (RUNNING.includes(row.state) ? "down" : "up");
 const {reading, log, read} = useServiceLog();
 </script>
 
@@ -48,10 +49,12 @@ const {reading, log, read} = useServiceLog();
                 </template>
                 <span class="since">{{ row.since ? `up ${span(now - row.since)}` : "" }}</span>
                 <span class="acts">
-                    <Btn small @click="runServiceAction(row.id, RUNNING.includes(row.state) ? 'down' : 'up')">
+                    <Btn small :busy="busy(row.id, toggle(row))" :disabled="working(row.id)" @click="runServiceAction(row.id, toggle(row))">
                         {{ RUNNING.includes(row.state) ? "Stop" : "Start" }}
                     </Btn>
-                    <Btn small @click="runServiceAction(row.id, 'restart')">Restart</Btn>
+                    <Btn small :busy="busy(row.id, 'restart')" :disabled="working(row.id)" @click="runServiceAction(row.id, 'restart')">
+                        Restart
+                    </Btn>
                     <Btn small @click="read(row.id)">{{ reading === row.id ? "Hide log" : "Log" }}</Btn>
                 </span>
             </div>

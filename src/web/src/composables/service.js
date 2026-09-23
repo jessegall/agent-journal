@@ -6,8 +6,13 @@ const LOG_EVERY = 2000;
 
 export function useServiceAction(after = () => {}) {
     const error = ref("");
+    const acting = ref(null);
+    const working = (id) => Boolean(acting.value) && acting.value.id === id;
+    const busy = (id, want) => working(id) && acting.value.want === want;
 
     async function set(id, want) {
+        if (working(id)) return;
+        acting.value = {id, want};
         try {
             await api.setService(id, want);
             error.value = "";
@@ -15,9 +20,10 @@ export function useServiceAction(after = () => {}) {
             error.value = e.message;
         }
         await after();
+        acting.value = null;
     }
 
-    return {error, set};
+    return {error, set, busy, working};
 }
 
 export function useServiceLog() {
