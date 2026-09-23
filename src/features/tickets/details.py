@@ -20,10 +20,11 @@ class TicketsDetails(FeatureDetails):
         every ticket whose branch is merged, in its board's done stage, and stops its agent with /exit. Its worktree stays.
         journal ticket complete <n> --yes closes one anyway.
 
-        A message about a board asks for a ticket on it: draft it with journal ticket create "<the work>" --brief "<what is
-        wanted>" --set board=<n> --set draft=true, after asking what is unclear and naming any ticket it depends on, then answer
-        the message with a Confirm button (journal message create "<the draft, in a line>" --set buttons='[{"label": "Confirm",
-        "type": "ticket", "n": <ticket>, "action": "confirm"}]'). A draft cannot start; only the user confirms it.
+        A message about a board comes from the board's New work panel and asks for tickets on it: split the work into a few
+        tickets and draft each with journal ticket create "<the work>" --brief "<what is wanted>" --set board=<n> --set
+        draft=true, naming any ticket one waits on with journal ticket depend. Then reply to the message in one short line,
+        or ask there what is unclear: the panel shows the reply and the drafts as cards, and the user picks the ones to keep.
+        A draft cannot start; only the user confirms it.
 
         journal ticket depend <n> <other> says ticket n waits on ticket other. From the agent it is only a proposal, shown on
         the card until the user accepts or declines it (journal ticket accept_dependencies <n> / decline_dependencies <n>, or a

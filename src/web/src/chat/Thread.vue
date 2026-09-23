@@ -131,11 +131,19 @@ async function loaded() {
 const reading = ref({inside: false, moved: 0});
 const pending = ref([]);
 const linked = new Map();
+const boardRequests = computed(
+    () =>
+        new Set(
+            rows("message")
+                .filter((m) => m.data.new_work)
+                .map((m) => m.ref)
+        )
+);
 const thread = computed(() => {
     const made = threadTurns(
         {
-            message: rows("message"),
-            comment: rows("comment"),
+            message: rows("message").filter((m) => !boardRequests.value.has(m.ref)),
+            comment: rows("comment").filter((c) => !c.refs.some((ref) => boardRequests.value.has(ref))),
             question: rows("question"),
             reaction: rows("reaction"),
             doc: rows("doc"),
