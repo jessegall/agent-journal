@@ -2,6 +2,7 @@ import json
 import re
 import time
 from dataclasses import dataclass
+from pathlib import Path
 from typing import ClassVar
 
 from controllers.types import CONTROLLERS, Plugins
@@ -11,7 +12,7 @@ from features.parts import ActionInterceptor, Canceler, Context, Handler, TextFo
 from features.plugins.lifecycle import called, clear
 from features.plugins.manifest import fill
 from features.plugins.payload import refusal
-from features.plugins.run import call
+from features.plugins.run import asked, call
 from features.plugins.skills import withdrawn
 from features.plugins.source import CHOSEN, environment, folder, logged
 from features.status_bar import commands
@@ -64,7 +65,9 @@ class AskPluginsToRefuse(ToolInterceptor):
             name, where, env = placed(record, row)
             seconds = min(float(row.manifest.get("refuse_seconds") or EACH), LONGEST_EACH, left)
             started = time.monotonic()
-            ok, reply = call(fill(asking, env), where, env, refusal(record, hook, name, where, writes), seconds)
+            payload = refusal(record, hook, name, where, writes)
+            served = (row.manifest or {}).get("refuse_socket") and asked(Path(env["JOURNAL_PLUGIN_SOCKET"]), payload, seconds)
+            ok, reply = served or call(fill(asking, env), where, env, payload, seconds)
             left -= time.monotonic() - started
             if ok and reply:
                 logged(record.root, name, f"refuse? {hook.tool.name} {json.dumps(reply, ensure_ascii=False)}")

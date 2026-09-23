@@ -1,6 +1,8 @@
 import json
 import shutil
+import socket
 import subprocess
+import threading
 import time
 
 from controllers.types import CONTROLLERS, Agents, Plugins
@@ -8,7 +10,7 @@ from engine.hooks import handle
 from engine.services import Manager, status_file
 from features.plugins.commands import ClearLog
 from features.plugins.manifest import MANIFEST
-from features.plugins.source import alone, folder, home, log
+from features.plugins.source import alone, folder, home, log, plugin_socket
 from providers import PROVIDERS
 from resources.base import AGENT, SYSTEM, USER
 from tests.conftest import fresh, refused
@@ -30,6 +32,13 @@ def installed(record, name, guard, **manifest):
     (where / "guard.sh").write_text(guard)
     return Plugins(record, actor=SYSTEM).create(name, enabled=True, token="t0ken", settings={},
                                                 manifest={"name": name, "refuse": "sh guard.sh", **manifest})
+
+
+def answer_once(listening):
+    taken, _ = listening.accept()
+    with taken:
+        json.loads(taken.makefile().readline())
+        taken.sendall(b'{"refuse": "from its service"}\n')
 
 
 def writing(record, file="a.py"):
@@ -72,6 +81,17 @@ def test_a_plugin_may_refuse_a_write_and_its_words_reach_the_agent():
     assert "src/Generated is generated" in log(record.root, "guardian").read_text(), "every answer the plugin gives is written to its log"
     ClearLog().run(None, Plugins(record, actor=SYSTEM), guardian.n)
     assert not log(record.root, "guardian").exists(), "and the log can be emptied"
+    served = alone("served")
+    installed(served, "served", "read x; echo '{\"refuse\": \"from the command\"}'\n", refuse_socket="hooks", services={"hooks": {"run": "true"}})
+    assert writing(served) == {"decision": "block", "reason": "served: from the command"}, "with nothing listening on its socket the command is run"
+    with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as listening:
+        path = plugin_socket(served.root, "served")
+        path.unlink(missing_ok=True)
+        listening.bind(str(path))
+        listening.listen()
+        threading.Thread(target=lambda: answer_once(listening), daemon=True).start()
+        assert writing(served) == {"decision": "block", "reason": "served: from its service"}, "a plugin's running service answers without a process started"
+        path.unlink()
 
 
 def test_a_guard_that_fails_or_hangs_never_stops_the_agent():

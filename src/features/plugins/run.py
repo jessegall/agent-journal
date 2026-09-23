@@ -1,6 +1,7 @@
 import json
 import os
 import signal
+import socket
 import subprocess
 from pathlib import Path
 
@@ -30,6 +31,24 @@ def call(command, cwd: Path, env: dict, payload: dict, seconds: float = SECONDS)
     if child.returncode:
         return False, (err.strip() or out.strip() or f"{words(command)} exited {child.returncode}")[-SHOWN:]
     return read(out[:CAP])
+
+
+def asked(where: Path, payload: dict, seconds: float = SECONDS) -> tuple[bool, dict | str] | None:
+    try:
+        with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as line:
+            line.settimeout(max(0.1, min(float(seconds), LONGEST)))
+            try:
+                line.connect(str(where))
+            except OSError:
+                return None
+            line.sendall(json.dumps(payload).encode() + b"\n")
+            line.shutdown(socket.SHUT_WR)
+            out = b""
+            while len(out) < CAP and (chunk := line.recv(CAP)):
+                out += chunk
+    except OSError as error:
+        return False, f"{where.name} did not answer: {error}"
+    return read(out[:CAP].decode(errors="replace"))
 
 
 def read(out: str) -> tuple[bool, dict | str]:

@@ -1,4 +1,5 @@
 import fcntl
+import hashlib
 import json
 import os
 import re
@@ -36,6 +37,10 @@ def folder(root: Path, name: str) -> Path:
 
 def data(root: Path, name: str) -> Path:
     return Path(root) / DATA / name
+
+
+def plugin_socket(root: Path, name: str) -> Path:
+    return Path("/tmp") / f"journal-{hashlib.sha1(str(data(root, name).resolve()).encode()).hexdigest()[:12]}.sock"
 
 
 def log(root: Path, name: str) -> Path:
@@ -110,7 +115,8 @@ def environment(root: Path, name: str, manifest: dict, token: str, ports: dict |
     return {**os.environ, "PATH": path, **{str(k): str(v) for k, v in given.items()}, **chosen_env(manifest, chosen),
             "JOURNAL_ROOT": where["root"], "JOURNAL_URL": where["journal.url"], "JOURNAL_TOKEN": token,
             "JOURNAL": str(Path(root) / "journal"), "JOURNAL_ENV": where["journal.env"], "JOURNAL_PLUGIN": name,
-            "JOURNAL_PLUGIN_DIR": where["dir"], "JOURNAL_PLUGIN_DATA": where["data"], "JOURNAL_QUEUE": where["queue"]}
+            "JOURNAL_PLUGIN_DIR": where["dir"], "JOURNAL_PLUGIN_DATA": where["data"], "JOURNAL_QUEUE": where["queue"],
+            "JOURNAL_PLUGIN_SOCKET": str(plugin_socket(root, name))}
 
 
 def run(command, cwd: Path, env: dict, seconds: int) -> tuple[int, str]:
