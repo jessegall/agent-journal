@@ -42,7 +42,6 @@ def asked(where: Path, payload: dict, seconds: float = SECONDS) -> tuple[bool, d
             except OSError:
                 return None
             line.sendall(json.dumps(payload).encode() + b"\n")
-            line.shutdown(socket.SHUT_WR)
             out = b""
             while len(out) < CAP and (chunk := line.recv(CAP)):
                 out += chunk
