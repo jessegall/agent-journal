@@ -20,6 +20,7 @@ from resources.shapes import LEVELS
 
 
 AGENT_CLI = "claude"
+PROPOSED, CONFIRMED = "proposed", "confirmed"
 HELD = ("rule", "doc", "tool")
 
 
@@ -50,11 +51,16 @@ class Tickets(Controller):
 
     def _runtime(self, ticket, sessions: dict) -> str:
         place = ticket.work_environment
+        proposed = [ref for ref, stance in ticket.dependencies.items() if stance == PROPOSED]
+        if proposed:
+            return f"proposed to wait on {', '.join(proposed)}; accept or decline it"
         if not place:
             return "a draft, waiting for your confirmation" if ticket.draft else ""
         session = next((name for name, held in sessions.items() if held.environment == place and live(held)), "")
         row = Agents(Record(self.record.root, place), actor=SYSTEM)._titled(session) if session else None
-        state = "waiting for you" if row and row.asking else row.status if row else "queued" if ticket.queued else "stopped"
+        waits = self._waiting_on(ticket)
+        state = ("waiting for you" if row and row.asking else row.status if row else f"waiting on {', '.join(waits)}" if waits
+                 else "queued" if ticket.queued else "stopped")
         waiting = ticket.plan and Plans(Record(self.record.root, place), actor=SYSTEM).load(int(ticket.plan)).status == READY
         return f"{state} in {place}" + ("; its plan waits for your approval" if waiting else "")
 
@@ -140,6 +146,45 @@ class Tickets(Controller):
         moved = self.update(ticket.n, stage=stage.strip())
         return self.start(moved.n) if starting else moved
 
+    def depend(self, n: int, on: int):
+        ticket, other = self.load(int(n)), self.load(int(on))
+        if ticket.ref in self._reached(other) or other.n == ticket.n:
+            self._refuse(f"{ticket.ref} waiting on {other.ref} would wait on itself")
+        stance = PROPOSED if self.actor == AGENT else CONFIRMED
+        return self.update(ticket.n, dependencies={**ticket.dependencies, other.ref: stance})
+
+    def accept_dependencies(self, n: int):
+        return self._decide_dependencies(n, keep=True)
+
+    def decline_dependencies(self, n: int):
+        return self._decide_dependencies(n, keep=False)
+
+    def _decide_dependencies(self, n: int, keep: bool):
+        if self.actor == AGENT:
+            self._refuse(f"only the user accepts or declines a {self.type}'s proposed dependencies")
+        ticket = self.load(int(n))
+        decided = {ref: CONFIRMED for ref, stance in ticket.dependencies.items() if stance == CONFIRMED or keep}
+        return self.update(ticket.n, dependencies=decided)
+
+    def _reached(self, ticket) -> set:
+        seen, waiting = set(), [ticket]
+        while waiting:
+            for ref in self._confirmed_refs(waiting.pop()):
+                if ref in seen:
+                    continue
+                seen.add(ref)
+                waiting.append(self._at(ref))
+        return seen
+
+    def _waiting_on(self, ticket) -> list:
+        return [ref for ref in self._confirmed_refs(ticket) if not self._at(ref).completed]
+
+    def _confirmed_refs(self, ticket) -> list:
+        return [ref for ref, stance in ticket.dependencies.items() if stance == CONFIRMED]
+
+    def _at(self, ref: str):
+        return self.load(int(ref.split(":")[1]))
+
     def confirm(self, n: int):
         if self.actor == AGENT:
             self._refuse(f"only the user confirms a drafted {self.type}: they do it with its button or in the viewer")
@@ -152,7 +197,7 @@ class Tickets(Controller):
         ticket = self.bind(int(n))
         if self.agent_session(ticket.n):
             return ticket
-        if len(self._running()) >= int(TicketsDetails.values(self.record).running):
+        if self._waiting_on(ticket) or len(self._running()) >= int(TicketsDetails.values(self.record).running):
             return self.update(ticket.n, queued=True)
         driver, place = DRIVERS[agent], ticket.work_environment
         earlier = Sessions(self.record.root).last(place, agent)
@@ -168,7 +213,7 @@ class Tickets(Controller):
 
     @internal
     def start_queued(self) -> None:
-        for ticket in sorted((r for r in self._standing() if r.queued), key=lambda r: r.updated):
+        for ticket in sorted((r for r in self._standing() if r.queued and not self._waiting_on(r)), key=lambda r: r.updated):
             if self.start(ticket.n).queued:
                 return
 
