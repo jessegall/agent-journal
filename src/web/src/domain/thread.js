@@ -83,9 +83,10 @@ const promisedFor = (p, m) =>
 
 const delivered = (p, m) => Object.keys(m.data.files || {}).length >= Object.keys(p.data.files).length;
 
-export function threadTurns(rows, pending) {
+export function threadTurns(rows, pending, older = false) {
     const keys = new Map();
     const live = rows.message.filter((m) => !m.deleted);
+    const floor = older && live.length ? Math.min(...live.map((m) => m.created)) : 0;
     live.forEach((m) => pending.filter((p) => promisedFor(p, m)).forEach((p) => keys.set(m.ref, p.ref)));
     const turns = [
         ...live.filter((m) => !pending.some((p) => promisedFor(p, m) && !delivered(p, m))).map((m) => ({...m, who: m.seen[0]})),
@@ -99,6 +100,8 @@ export function threadTurns(rows, pending) {
         ...cards(rows.agent || []),
         ...madeByAgent(rows.doc || []),
         ...pending.filter((p) => !live.some((m) => promisedFor(p, m) && delivered(p, m))),
-    ].sort((a, b) => a.created - b.created);
+    ]
+        .filter((t) => t.created >= floor)
+        .sort((a, b) => a.created - b.created);
     return {turns, keys};
 }

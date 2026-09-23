@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.107.5 — Scrolling up the chat loads its history page by page
+
+The chat no longer shows every old chat mark (skill loads, subagents, reminders, plugin marks) above the messages it has loaded so far. While older messages remain, it shows only what happened from the earliest loaded message on; scrolling up asks for the page before that message, and each page brings its own marks with it.
+
 ## 2.107.4 — A hook during an upgrade waits for the server
 
 A hook call that gets no answer from the server now tries again every half second instead of reporting a failure at once: for up to eight seconds while an upgrade is restarting the server, and for about two otherwise. The one "the hook got no answer from the server" notice every release used to bring no longer appears.
