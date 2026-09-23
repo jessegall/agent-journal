@@ -63,6 +63,7 @@
 /Users/jessegall/projects/agent-journal/src/features/work_tracking/details.py
 /Users/jessegall/projects/agent-journal/src/features/work_tracking/handlers.py
 /Users/jessegall/projects/agent-journal/src/features/work_tracking/test.py
+/Users/jessegall/projects/agent-journal/src/migrations/m0026_stopping_description.py
 /Users/jessegall/projects/agent-journal/src/providers/claude.py
 /Users/jessegall/projects/agent-journal/src/resources/types.py
 /Users/jessegall/projects/agent-journal/src/serve.py
