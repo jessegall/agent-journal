@@ -12,6 +12,7 @@ const props = defineProps({card: Object});
 const board = inject("board");
 const drag = useCardDrag();
 const menu = ref(false);
+const opener = ref(null);
 const titleOf = (name) => (store.board.agents.find((agent) => agent.name === name) || {title: name}).title;
 const people = () => [...new Set([props.card.assigned, props.card.worker && props.card.worker.agent].filter(Boolean))];
 
@@ -35,7 +36,9 @@ function begin(event) {
         <span class="top">
             <PriorityIcon :value="card.priority" />
             <span class="number">#{{ card.n }}</span>
-            <button type="button" class="more" title="Move, assign or open" @click.stop="menu = !menu"><Icon name="more" /></button>
+            <button ref="opener" type="button" class="more" title="Move, assign or open" @click.stop="menu = !menu">
+                <Icon name="more" />
+            </button>
         </span>
         <span class="title">{{ card.title }}</span>
         <template v-if="card.reason">
@@ -59,7 +62,7 @@ function begin(event) {
             <Chip @click.stop="peek('plan', card.plan.n)">Plan {{ card.plan.n }} · phase {{ card.plan.phase }}</Chip>
         </template>
         <template v-if="menu">
-            <CardMenu :card="card" @close="menu = false" />
+            <CardMenu :card="card" :anchor="opener" @close="menu = false" />
         </template>
     </div>
 </template>

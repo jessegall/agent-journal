@@ -177,6 +177,7 @@ def run(root: Path, port: int = 8430) -> None:
         return
     if changed.is_set():
         print("journal: Python code changed; restarting on the same port", flush=True)
+        runtime.restarting(root).write_text(str(time.time()))
         command = [*entry("journal"), "--root", str(root), "serve", "--port", str(server.server_port)]
         os.execv(sys.executable, command)
 

@@ -20,6 +20,10 @@ def off_file(root: Path) -> Path:
     return folder(root) / "off"
 
 
+def restarting(root: Path) -> Path:
+    return folder(root) / "restarting"
+
+
 def channel_queue(root: Path) -> Path:
     return folder(root) / "channel.jsonl"
 
