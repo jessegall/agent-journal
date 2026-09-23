@@ -187,3 +187,13 @@ def test_a_hook_during_an_upgrade_waits_for_the_server_instead_of_failing(tmp_pa
                          env={"PATH": "/usr/bin:/bin:/usr/local/bin:/opt/homebrew/bin", "AGENT_JOURNAL_ACTIVE": "1"}, timeout=20)
     assert ran.stdout.strip() == '{"reason": "served"}', (ran.stdout, ran.stderr)
     assert not (tmp_path / "runtime" / "hook-failures.log").exists(), "no failure is logged for a server that was only restarting"
+
+
+def test_the_update_check_reads_the_version_file_the_repository_publishes():
+    from pathlib import Path
+    from engine.version import version
+    from surfaces.updates import UPSTREAM
+    repository = Path(__file__).resolve().parents[3]
+    published = repository / UPSTREAM.split("/main/", 1)[1]
+    assert published.is_file() and published.read_text().strip() == version(), UPSTREAM
+    assert (repository / "VERSION").read_text().strip() == version(), "installs before 2.89.0 read the VERSION at the repository root"

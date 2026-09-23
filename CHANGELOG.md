@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.110.4 — Projects update themselves again
+
+The update check read the version from VERSION at the root of the repository, which moved to src/VERSION in 2.89.0; since then every check found nothing newer and projects stayed on the version they had. It reads src/VERSION now, and a copy of VERSION is back at the root so a project still on 2.89.0 to 2.110.3 sees this release and installs it by itself.
+
 ## 2.110.3 — Code in small text is sized to the text around it
 
 A command or a name in code inside a chat mark, a card or any small text was drawn at a fixed 12px and stood out above the words beside it. Code now takes its size from the text it sits in.
