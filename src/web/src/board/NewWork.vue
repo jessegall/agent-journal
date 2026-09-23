@@ -188,7 +188,6 @@ async function add() {
         <ChatPanel
             ref="panel"
             v-model="words"
-            :grows="conversation.length + drafts.length + (asking ? 1 : 0)"
             :locked="adding"
             :placeholder="drafts.length ? 'Say what to change' : 'Describe the work in your own words'"
             @send="send"
