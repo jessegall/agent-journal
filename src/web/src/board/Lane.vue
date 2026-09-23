@@ -1,9 +1,11 @@
 <script setup>
 import {computed, inject, ref} from "vue";
 import {useCardDrag} from "../composables/cardDrag.js";
+import StageDot from "../kit/StageDot.vue";
 import Card from "./Card.vue";
 
-const props = defineProps({lane: Object, loading: Boolean});
+const props = defineProps({lane: Object, loading: Boolean, meaning: {type: String, default: ""}});
+const SAYS = {start: "work starts", review: "waits for review"};
 const board = inject("board");
 const drag = useCardDrag();
 const over = ref(false);
@@ -27,7 +29,9 @@ function drop() {
         @drop.prevent="drop"
     >
         <header class="head">
+            <StageDot :meaning="meaning" />
             <span class="title">{{ lane.title }}</span>
+            <span class="says">{{ SAYS[meaning] }}</span>
             <span class="count">{{ loading ? "" : lane.cards.length }}</span>
         </header>
         <div class="cards">
@@ -74,7 +78,7 @@ function drop() {
 .head {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    gap: 8px;
     padding: 10px 12px;
     border-bottom: 1px solid var(--line);
 }
@@ -84,7 +88,13 @@ function drop() {
     font-weight: 600;
 }
 
+.says {
+    color: var(--text-4);
+    font-size: 12px;
+}
+
 .count {
+    margin-left: auto;
     color: var(--text-3);
     font-size: 12px;
 }

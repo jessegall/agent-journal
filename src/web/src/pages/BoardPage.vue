@@ -1,7 +1,8 @@
 <script setup>
-import {computed, provide, ref, watch} from "vue";
+import {computed, onMounted, onUnmounted, provide, ref, watch} from "vue";
 import {api} from "../api/client.js";
 import Btn from "../kit/Btn.vue";
+import Icon from "../kit/Icon.vue";
 import AgentStrip from "../board/AgentStrip.vue";
 import Lane from "../board/Lane.vue";
 import Switch from "../kit/Switch.vue";
@@ -22,6 +23,14 @@ const text = ref("");
 const plans = computed(() => rows("plan").filter((plan) => !plan.completed && !plan.deleted));
 const boards = computed(() => rows("board").filter((board) => !board.completed && !board.deleted));
 const tickets = computed(() => Boolean(store.board.lens.board));
+const TODO_MEANINGS = {doing: "start", asked: "review", done: "done"};
+const current = computed(() => boards.value.find((board) => board.n === store.board.lens.board));
+const meaningOf = (key) => (tickets.value ? current.value && current.value.data.meanings[key] : TODO_MEANINGS[key]) || "";
+const finder = ref(null);
+const focusFind = (e) =>
+    e.key === "/" && !e.target.closest("input,textarea,[contenteditable]") && (e.preventDefault(), finder.value.focus());
+onMounted(() => window.addEventListener("keydown", focusFind));
+onUnmounted(() => window.removeEventListener("keydown", focusFind));
 const chosenPlan = computed(() => store.board.lens.plan);
 const request = ref("");
 
@@ -87,7 +96,7 @@ async function shift(card, lane, words) {
     }
 }
 
-provide("board", {move, moving, refresh});
+provide("board", {move, moving, refresh, meaningOf});
 
 const lens = (change) => (store.board.lens = {...store.board.lens, ...change});
 watch(() => [store.board.lens.plan, store.board.lens.agent, store.board.lens.board], refresh);
@@ -118,9 +127,9 @@ const ask = usePoll(
         <header class="bar">
             <h2>Board</h2>
             <TabBar v-model="shown" :tabs="tabs">
-                <Btn small @click="adding = 'board'">New board</Btn>
+                <button type="button" class="add-board" title="New board" @click="adding = 'board'"><Icon name="plus" /></button>
             </TabBar>
-            <input v-model="text" class="find" placeholder="Filter by title or #number" />
+            <input ref="finder" v-model="text" class="find" placeholder="Filter cards  /" />
             <template v-if="!tickets">
                 <div class="plans">
                     <button type="button" :class="['plan', {on: !chosenPlan}]" @click="lens({plan: 0})">All to-dos</button>
@@ -142,7 +151,12 @@ const ask = usePoll(
                     <Btn kind="primary" small @click="askForTicket">Ask the agent</Btn>
                 </form>
             </template>
+            <span class="grow" />
             <Switch :on="showingDone" word="Show done" @change="(on) => lens({done: on})" />
+            <template v-if="tickets">
+                <Btn small @click="peek('board', store.board.lens.board)">Stages</Btn>
+            </template>
+            <Btn kind="primary" small @click="adding = tickets ? 'ticket' : 'todo'">New work</Btn>
             <template v-if="refusal">
                 <p class="refusal">{{ refusal }}</p>
             </template>
@@ -166,7 +180,7 @@ const ask = usePoll(
             </template>
             <div class="lanes">
                 <template v-for="lane in lanes" :key="lane.key">
-                    <Lane :lane="lane" :loading="loading" />
+                    <Lane :lane="lane" :loading="loading" :meaning="meaningOf(lane.key)" />
                 </template>
             </div>
         </template>
@@ -211,6 +225,27 @@ const ask = usePoll(
     flex-wrap: wrap;
     align-items: center;
     gap: 14px;
+}
+
+.grow {
+    flex: 1;
+}
+
+.add-board {
+    display: grid;
+    place-items: center;
+    width: 26px;
+    height: 26px;
+    border: 0;
+    border-radius: 7px;
+    background: none;
+    color: var(--text-3);
+    cursor: pointer;
+}
+
+.add-board:hover {
+    background: var(--hover);
+    color: var(--text);
 }
 
 .find {
