@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.121.2 — Codex takes model changes from the viewer, and commits show in the chat
+
+Changing the model or reasoning effort from the viewer now works for Codex: every step of its model picker is typed into the terminal in order, as raw keys. Before, only the last step reached it, as a chat line.
+
+Every commit shows in the chat as a mark with its hash and branch. A trigger now also fires on the agent's own chat text; a denied word there is marked and the agent is told. The inbox reminder waits until more than five messages are unread or the agent is idle, since each new message is already named as it arrives. Nothing to do.
+
 ## 2.121.1 — A fired trigger shows in the chat
 
 Whenever a trigger fires, the chat shows a mark naming it and what it did: sent a message, nudged the agent, instructed it, or denied the call. A deny is marked in the danger tone. Nothing to do.
