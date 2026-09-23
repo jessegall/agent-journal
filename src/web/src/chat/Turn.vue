@@ -30,6 +30,8 @@ const picking = ref(false);
 const bubble = ref(null);
 const LONG = 6;
 const FOLD_AT = 420;
+const PEER_FOLD_AT = 140;
+const PEER_KEEP = 96;
 const text = ref(null);
 
 function shaped() {
@@ -266,7 +268,7 @@ async function drop() {
                     <template v-if="turn.type === 'question' && turn.title && turn.title !== words.text">
                         <p class="thread-ask">{{ turn.title }}</p>
                     </template>
-                    <Folded :at="FOLD_AT">
+                    <Folded :at="between ? PEER_FOLD_AT : FOLD_AT" :keep="between ? PEER_KEEP : 320">
                         <div ref="text" class="thread-text" @click="peekChip" v-html="html" />
                     </Folded>
                     <template v-if="turn.type === 'question'">

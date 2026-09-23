@@ -60,7 +60,18 @@ const whispers = (agents) =>
 
 const cards = (agents) =>
     sessions(agents).flatMap((a) =>
-        (a.data.cards || []).map((c) => mark("card", a, c.at, c.label, {icon: c.icon, color: c.color, tone: c.tone, label: c.label, name: c.plugin, detail: c.detail, command: c.command, title: c.title}))
+        (a.data.cards || []).map((c) =>
+            mark("card", a, c.at, c.label, {
+                icon: c.icon,
+                color: c.color,
+                tone: c.tone,
+                label: c.label,
+                name: c.plugin,
+                detail: c.detail,
+                command: c.command,
+                title: c.title,
+            })
+        )
     );
 
 const subagents = (agents) =>
@@ -68,7 +79,16 @@ const subagents = (agents) =>
         (a.data.subagent_rows || []).flatMap((sub) => [
             mark("subagent", a, sub.at, sub.task, {kind: sub.type, model: sub.model, agent: a.n, session: sub.session}),
             ...(sub.ended
-                ? [mark("subagent", a, sub.ended, sub.task, {kind: sub.type, finished: true, stopped: ["stopped", "killed"].includes(sub.status), agent: a.n, session: sub.session, report: (a.data.subagent_reports || {})[sub.id] || 0})]
+                ? [
+                      mark("subagent", a, sub.ended, sub.task, {
+                          kind: sub.type,
+                          finished: true,
+                          stopped: ["stopped", "killed"].includes(sub.status),
+                          agent: a.n,
+                          session: sub.session,
+                          report: (a.data.subagent_reports || {})[sub.id] || 0,
+                      }),
+                  ]
                 : []),
         ])
     );
@@ -94,7 +114,7 @@ export function threadTurns(rows, pending, env, older = false) {
         ...live.filter((m) => !pending.some((p) => promisedFor(p, m) && !delivered(p, m))).map((m) => ({...m, who: m.seen[0]})),
         ...live.filter((m) => m.seen[0] === "user" && m.completed && filed(m).length && !acknowledged(m, rows)).map(receipt),
         ...rows.comment.filter((c) => !c.deleted && hasParent(c)).map((c) => ({...c, who: c.seen[0]})),
-        ...rows.question.filter((q) => !q.deleted).map((q) => ({...q, who: "agent"})),
+        ...rows.question.filter((q) => !q.deleted && !q.refs.some((ref) => ref.startsWith("board:"))).map((q) => ({...q, who: "agent"})),
         ...loads(rows.agent || []),
         ...compactions(rows.agent || []),
         ...subagents(rows.agent || []),
