@@ -26,6 +26,9 @@ LAWS = (
     Law("L3", "Read narrowly: grep for the line, sed a range, head the file; never print a whole file or long output you do not need.",
         "Everything a tool returns stays in the context for good and is paid for on every turn after it. Search before you read, read the range you need, and cap output with grep, head or tail. Read a whole file only when you need all of it.",
         ("cat", "less", "git show", "git diff", "journal carry"), "commands"),
+    Law("L4", "Follow-up work goes back to the subagent that did the first part; never start a fresh one on work another already holds.",
+        "A subagent that drew a design, wrote the code or ran the research keeps what it learned. When the user asks for a change to its work, continue that subagent with a message rather than dispatching a new one that has to rediscover everything; start fresh only when the earlier one is gone or the new work is unrelated.",
+        ("subagent", "spawn_agent", "designer", "SendMessage"), "everything"),
 )
 BEGIN = "<!-- BEGIN: agent-journal law (auto-generated, run `journal upgrade`) -->"
 END = "<!-- END: agent-journal law -->"

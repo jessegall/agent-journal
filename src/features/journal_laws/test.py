@@ -16,7 +16,7 @@ def test_the_law_is_fixed_on_and_carried_by_every_start():
     assert (law.enabled(record), law.describe()["fixed"]) == (True, True), "the law is fixed on"
     record.features = {"journal_laws": False}
     assert law.enabled(record) is True, "a setting cannot switch the law off"
-    assert all(name in start_block(record) for name in ("L1", "L2", "L3")) is True, "every start carries every law"
+    assert all(name in start_block(record) for name in ("L1", "L2", "L3", "L4")) is True, "every start carries every law"
 
 
 def test_the_briefing_writes_both_agent_files_preserving_project_text(tmp_path):

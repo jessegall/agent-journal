@@ -24,4 +24,8 @@ Use the most specific available agent type whose declared purpose matches the as
 
 Everything a tool returns stays in the context for good and is paid for on every turn after it. Search before you read, read the range you need, and cap output with grep, head or tail. Read a whole file only when you need all of it.
 
+**L4 — Follow-up work goes back to the subagent that did the first part; never start a fresh one on work another already holds.**
+
+A subagent that drew a design, wrote the code or ran the research keeps what it learned. When the user asks for a change to its work, continue that subagent with a message rather than dispatching a new one that has to rediscover everything; start fresh only when the earlier one is gone or the new work is unrelated.
+
 <!-- END: agent-journal law -->
