@@ -1,4 +1,4 @@
-# Code Commandments — 331 sins to fix
+# Code Commandments — 330 sins to fix
 
 > 🔱 **The rule above all — `fix-at-the-source`.** Every sin below is a SYMPTOM. Before you change a line, trace the value to where it is BORN and fix it there; the symptom (and often others) then disappears on its own. Never silence it with a `?? default`, a cast, or a null-check.
 
@@ -36,7 +36,7 @@ Work **wave by wave.** ONLY when this list is EMPTY, run `commandments judge` ag
 - `./src/controllers/messages.py:55`  Param file  [BlankStringDefaultDetector]
 - `./src/controllers/todos.py:12`  Param to  [BlankStringDefaultDetector]
 - `./src/engine/engine.py:190`  starred  [ConditionalSpreadDetector]
-- `./src/engine/record.py:185`  Param session  [BlankStringDefaultDetector]
+- `./src/engine/record.py:184`  Param session  [BlankStringDefaultDetector]
 - `./src/engine/seats.py:27`  AnnAssign  [BlankStringDefaultDetector]
 - `./src/engine/sessions.py:96`  Param provider  [BlankStringDefaultDetector]
 - `./src/engine/sessions.py:97`  starred  [ConditionalSpreadDetector]
@@ -55,7 +55,6 @@ Work **wave by wave.** ONLY when this list is EMPTY, run `commandments judge` ag
 - `./src/features/boards/controller.py:30`  starred  [ConditionalSpreadDetector]
 - `./src/features/boards/controller.py:32`  Param meaning  [BlankStringDefaultDetector]
 - `./src/features/boards/controller.py:35`  starred  [ConditionalSpreadDetector]
-- `./src/features/dev_faults/reports.py:39`  call  [InventedDefaultDetector]
 - `./src/features/dev_faults/reports.py:44`  call  [InventedDefaultDetector]
 - `./src/features/dev_faults/reports.py:45`  call  [InventedDefaultDetector]
 - `./src/features/dumps/controller.py:122`  starred  [ConditionalSpreadDetector]
@@ -135,7 +134,7 @@ Work **wave by wave.** ONLY when this list is EMPTY, run `commandments judge` ag
 - `./src/engine/drivers.py:47`  Assign  [MemberOutOfOrderDetector]
 - `./src/engine/drivers.py:48`  Assign  [MemberOutOfOrderDetector]
 - `./src/engine/drivers.py:49`  Assign  [MemberOutOfOrderDetector]
-- `./src/engine/record.py:51`  Assign  [MemberOutOfOrderDetector]
+- `./src/engine/record.py:50`  Assign  [MemberOutOfOrderDetector]
 - `./src/features/boards/resource.py:17`  AnnAssign  [MemberOutOfOrderDetector]
 - `./src/features/boards/resource.py:24`  AnnAssign  [MemberOutOfOrderDetector]
 - `./src/features/checks/resource.py:49`  AnnAssign  [MemberOutOfOrderDetector]

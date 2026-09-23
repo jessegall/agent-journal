@@ -64,7 +64,7 @@ def test_the_budget_is_tunable_per_environment():
     features.load()
     record = fresh()
     turned(record, True)
-    record.budget = {"request": 0}
+    record.set_setting("dev_faults", {"budget.request": 0})
     with FEATURES["dev_faults"].reports.watched(record.root, record.env, "request", "GET /api/main/message"):
         busy(0.08)
     assert notified(record) == [], "a budget of 0 drops that budget"

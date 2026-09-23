@@ -36,7 +36,7 @@ class FaultReports:
         self.feature = feature
 
     def milliseconds(self, record, kind: str) -> int:
-        return int(record.budget.get(kind, BUDGET.get(kind, 0)))
+        return int(self.feature.setting(record, f"budget.{kind}", BUDGET[kind]))
 
     def file(self, record, title: str, brief: str, **data) -> None:
         rows = Notifications(record, actor=SYSTEM)
