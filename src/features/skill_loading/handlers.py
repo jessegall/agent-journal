@@ -6,7 +6,7 @@ from typing import ClassVar
 from engine.events import AgentReported, ResourceEvent, SessionStarted, ToolFinished
 from features import trigger
 from features.parts import AgentContext, Context, Handler, refusals
-from features.skill_loading.catalogue import SKILL, chosen, skills
+from features.skill_loading.catalogue import SKILL, catalogue, chosen, loaded_at, skills
 from features.skill_loading.interceptors import RefuseUntilLoaded, require_named
 from features.skill_loading.required import require, require_only
 from providers import PROVIDERS
@@ -68,7 +68,9 @@ class RequireAlwaysSkills(Handler):
 
     def handle(self, context: AgentContext, event: SessionStarted) -> None:
         now = time.time()
-        require_only(context.record, context.agent.session, {name: now for name in chosen(context.record)})
+        present = {skill[SKILL.name] for skill in catalogue(context.record.root.parent)}
+        earlier = present & set(loaded_at(context.agent.row))
+        require_only(context.record, context.agent.session, {name: now for name in {*chosen(context.record), *earlier}})
         context.state.set(refusals(RefuseUntilLoaded), 0)
 
 

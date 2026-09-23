@@ -154,6 +154,20 @@ def test_a_session_start_holds_every_tool_call_until_the_always_on_skills_are_lo
     from controllers.types import Agents
     assert [load["skill"] for load in Agents(record, actor="system").by_session("codex-1").data["skill_loads"]] == ["journal-work-tracking"], \
         "the load is kept on the agent, for the chat to show"
+    plans = record.root.parent / ".agents" / "skills" / "journal-plans"
+    plans.mkdir(parents=True)
+    (plans / "SKILL.md").write_text('---\nname: journal-plans\ndescription: "Plans"\n---\n')
+    import json
+    from datetime import datetime, timezone
+    transcript = record.root.parent / "claude-1.jsonl"
+    stamp = datetime.now(timezone.utc).isoformat()
+    transcript.write_text("".join(json.dumps({"type": "assistant", "timestamp": stamp, "message": {"content": [
+        {"type": "tool_use", "name": "Skill", "input": {"skill": name}}]}}) + "\n" for name in ("journal-plans", "journal-gone")))
+    report(record, "working", "PreToolUse", provider="claude", transcript=str(transcript))
+    handle(PROVIDERS["claude"](), record.root, record.env, {"session_id": "claude-1", "hook_event_name": "SessionStart", "source": "compact",
+                                                              "transcript_path": str(transcript)})
+    assert sorted(required(record, "claude-1").get("required")) == ["journal-plans", "journal-work-tracking"], \
+        "after a compaction every skill the session had loaded and that still exists is owed again, all at once"
 
 
 def test_a_skills_keyword_makes_the_agent_load_it():
