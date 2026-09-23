@@ -27,6 +27,13 @@ const revealed = ref([]);
 const docked = ref(false);
 const SKELETONS = 3;
 const FADED = 400;
+const THINKING = [
+    "Reading the board",
+    "Looking at what is already there",
+    "Splitting the work",
+    "Weighing what comes first",
+    "Writing the tickets",
+];
 
 const asked = computed(() => rows("message").filter((m) => sent.value.includes(m.data.idempotency)));
 const replies = computed(() => {
@@ -239,7 +246,7 @@ async function add() {
                     <AskedQuestion :question="asking" />
                 </template>
                 <template v-if="writing && !asking">
-                    <ChatLine thinking />
+                    <ChatLine thinking :notes="THINKING" />
                 </template>
                 <template v-if="stalled">
                     <ChatLine text="No answer yet. The agent may be busy with other work." />
