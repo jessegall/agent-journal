@@ -12,6 +12,7 @@ class Board(Shape, Resource):
     icon = "board"
     scope = PROJECT
     view = WIDE
+    in_sidebar = False
     created_in_viewer = True
     details: ClassVar[ResourceDetails] = ResourceDetails(
         title="Board",

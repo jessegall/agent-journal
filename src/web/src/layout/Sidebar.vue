@@ -50,13 +50,6 @@ async function makeEnv() {
                 <Icon name="home" />
                 Home
             </a>
-            <template v-if="boardOn">
-                <a :class="['item', {on: route.page === 'kanban'}]" :href="`#/${route.env}/kanban`">
-                    <Icon name="board" />
-                    Board
-                    <span class="count">{{ counted("todo") || "" }}</span>
-                </a>
-            </template>
             <template v-for="t in navTypes('environment')" :key="t.name">
                 <a :class="['item', {on: route.page === t.name}]" :href="`#/${route.env}/${t.name}`">
                     <Icon :name="t.icon" />
@@ -70,6 +63,13 @@ async function makeEnv() {
             </a>
         </FoldGroup>
         <FoldGroup class="group" label="Project" :open="!folded.project" @toggle="fold('project')">
+            <template v-if="boardOn">
+                <a :class="['item', {on: route.page === 'kanban'}]" :href="`#/${route.env}/kanban`">
+                    <Icon name="board" />
+                    Board
+                    <span class="count">{{ counted("todo") || "" }}</span>
+                </a>
+            </template>
             <template v-for="t in navTypes('project')" :key="t.name">
                 <a :class="['item', {on: route.page === t.name}]" :href="`#/${route.env}/${t.name}`">
                     <Icon :name="t.icon" />
