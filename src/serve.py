@@ -1,3 +1,4 @@
+import gc
 import json
 import os
 import re
@@ -101,6 +102,7 @@ def serve(root: Path, port: int = 8430) -> ThreadingHTTPServer:
 WATCH_SECONDS = 1.0
 SETTLE_SECONDS = 1.5
 STOP_SECONDS = 0.2
+FREEZE_SECONDS = 60.0
 LATE_STOP = 5.0
 IGNORED_CODE_FOLDERS = {"__pycache__", "environments", "runtime", "tests"}
 
@@ -142,6 +144,11 @@ def watch_stop(root: Path, server: ThreadingHTTPServer, halting: threading.Event
             server.shutdown()
 
 
+def freeze_caches(halting: threading.Event) -> None:
+    while not halting.wait(FREEZE_SECONDS):
+        gc.freeze()
+
+
 def warm_viewer(root: Path, env: str) -> None:
     from commands.parser import parser
     from controllers.types import CONTROLLERS
@@ -159,6 +166,8 @@ def run(root: Path, port: int = 8430) -> None:
     threading.Thread(target=watch_stop, args=(root, server, halting, time.time() - LATE_STOP), daemon=True).start()
     warm_record(Record(root, default_env(root)))
     warm_viewer(root, default_env(root))
+    gc.freeze()
+    threading.Thread(target=freeze_caches, args=(halting,), daemon=True).start()
     threading.Thread(target=replay, args=(root,), daemon=True).start()
     threading.Thread(target=warm, args=(root,), daemon=True).start()
     engines = threading.Event()
