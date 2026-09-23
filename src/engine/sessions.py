@@ -101,12 +101,18 @@ class Sessions:
         if own and self.holder(own) in ("", session):
             return own
         others = self.all()
-        ended = sorted((s for name, s in others.items() if name != session and s.provider == provider and s.environment and not live(s)),
-                       key=lambda s: s.last_heard)
+        owned = self.owned()
+        ended = sorted((s for name, s in others.items() if name != session and s.provider == provider and s.environment and not live(s)
+                        and s.environment not in owned), key=lambda s: s.last_heard)
         for s in reversed(ended):
             if not self.holder(s.environment):
                 return s.environment
         return prefer
+
+    def owned(self) -> set[str]:
+        from controllers.types import Environments
+        from engine.record import Record
+        return {r.title for r in Environments(Record(self.root, runtime.env(self.root))).all() if r.owner}
 
     def last(self, env: str, provider: str) -> str:
         ended = [(s.last_heard, name) for name, s in self.all().items()
