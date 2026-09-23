@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.120.1 — Resuming a conversation goes back to its environment, and updates arrive at once
+
+journal claude --resume <id> for a conversation the journal knows starts in that conversation's environment, inside its worktree when it has one, and asks nothing: the flags and answers of that environment's last start are used again. The viewer tab opens on the session's environment, and an open tab is switched to it. Starting the journal reads the release tags straight from the repository, so a release is installed the moment it is out, not minutes later when GitHub's cached version file catches up.
+
+The dashboard stays well inside its budget: a folder of rows is checked by the inode of each file, so only rewritten rows are looked at again, instead of every row file every few seconds. Under the hood, every record the journal reads from JSON is a typed record built by one loader, and no Code Commandments sin is left. Nothing to do.
+
 ## 2.120.0 — Worktree sessions keep their worktree, their chat and their agent
 
 A session started with journal claude -w NAME was taken for a subagent, because it runs under .claude/worktrees, so the journal never showed its status, never briefed it and never put its replies in the chat. The journal now tells a subagent apart only by Claude's own markers, so a worktree session works like any other.

@@ -1,21 +1,4 @@
-/Users/jessegall/projects/agent-journal/src/channel.py
-/Users/jessegall/projects/agent-journal/src/commands/dispatch.py
-/Users/jessegall/projects/agent-journal/src/commands/http.py
-/Users/jessegall/projects/agent-journal/src/commands/queries.py
-/Users/jessegall/projects/agent-journal/src/engine/drivers.py
-/Users/jessegall/projects/agent-journal/src/engine/fields.py
-/Users/jessegall/projects/agent-journal/src/engine/viewer.py
-/Users/jessegall/projects/agent-journal/src/features/auto_update/test.py
-/Users/jessegall/projects/agent-journal/src/features/message_buttons/shaping.py
-/Users/jessegall/projects/agent-journal/src/features/open_viewer/focus.py
-/Users/jessegall/projects/agent-journal/src/features/open_viewer/handlers.py
-/Users/jessegall/projects/agent-journal/src/features/open_viewer/test.py
-/Users/jessegall/projects/agent-journal/src/features/plugins/parts.py
-/Users/jessegall/projects/agent-journal/src/features/thinking/handlers.py
-/Users/jessegall/projects/agent-journal/src/providers/base.py
-/Users/jessegall/projects/agent-journal/src/providers/payload.py
-/Users/jessegall/projects/agent-journal/src/serve.py
-/Users/jessegall/projects/agent-journal/src/surfaces/updates.py
+/Users/jessegall/projects/agent-journal/src/controllers/stored.py
 -----
 Batch marker for the code-commandments judge reminder (`commandments judge-reminder`, wired as
 Stop + PreToolUse hooks). The lines above the separator are the changed-file set it last
