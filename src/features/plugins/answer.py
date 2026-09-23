@@ -1,3 +1,5 @@
+import re
+import time
 from pathlib import Path
 
 from controllers.types import Agents, Plugins, Todos
@@ -9,6 +11,8 @@ from resources.base import PLUGIN, RAISED, Refused, SYSTEM, check_abstract, chec
 
 KEYS = ("whisper", "say", "notify", "notice", "todo", "hold", "settings", "raise")
 MOST = 20
+KEPT_CARDS = 50
+COLOR = re.compile(r"^(#[0-9a-fA-F]{3,8}|[a-z]+)$")
 HELD = "plugin"
 
 
@@ -30,14 +34,27 @@ def nudged(record, journal, plugin: str, session: str, text: str, private: bool)
         journal.say(record, row, "plugin", private=private, actor=PLUGIN, title=plugin, brief=text, plugin=plugin)
 
 
-def raised(record, plugin: str, fields: dict) -> None:
+def raised(record, plugin: str, session: str, fields: dict) -> None:
     row = next((r for r in Plugins(record, actor=PLUGIN)._standing() if called(r) == plugin), None)
     name = str(fields.get("event") or "")
     declared = ((row.manifest or {}).get("events") or {}).get(name) if row else None
     if not declared:
         raise Refused(f"{plugin} declares no event {name}")
-    record.emit("plugin", row.n, RAISED, PLUGIN, event=f"{plugin}.{name}", title=str(declared.get("title") or name), tone=str(declared.get("tone") or ""),
-                brief=str(fields.get("brief") or ""), plugin=plugin)
+    title, brief = str(declared.get("title") or name), str(fields.get("brief") or "")
+    record.emit("plugin", row.n, RAISED, PLUGIN, event=f"{plugin}.{name}", title=title, tone=str(declared.get("tone") or ""), brief=brief, plugin=plugin)
+    if isinstance(declared.get("card"), dict):
+        carded(record, session, plugin, {"label": title, **declared["card"]}, brief)
+
+
+def carded(record, session: str, plugin: str, look: dict, brief: str) -> None:
+    agents = Agents(record, actor=SYSTEM)
+    agent = next((r for r in agents._every() if r.title == session), None) if session else agents.primary()
+    if not agent:
+        return
+    color = str(look.get("color") or "")
+    card = {"at": time.time(), "plugin": plugin, "label": str(look.get("label") or plugin), "icon": str(look.get("icon") or "bell"),
+            "color": color if COLOR.match(color) else "", "detail": next((line.strip(" •-") for line in brief.splitlines() if line.strip()), "")}
+    agents.update(agent.n, cards=[*(agent.data.get("cards") or []), card][-KEPT_CARDS:])
 
 
 def settled(record, plugin: str, values: dict) -> None:
@@ -81,7 +98,7 @@ def one(record, journal, plugin: str, session: str, key: str, value) -> None:
                        tone=fields.get("tone") or "", link=fields.get("link") or "", plugin=plugin)
     elif key == "raise":
         for fields in value if isinstance(value, list) else [value]:
-            raised(record, plugin, fields if isinstance(fields, dict) else {"event": str(fields)})
+            raised(record, plugin, session, fields if isinstance(fields, dict) else {"event": str(fields)})
     elif key == "settings" and isinstance(value, dict):
         settled(record, plugin, value)
     elif key == "todo":

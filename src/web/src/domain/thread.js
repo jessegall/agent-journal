@@ -58,6 +58,11 @@ const compactions = (agents) =>
 const whispers = (agents) =>
     sessions(agents).flatMap((a) => (a.data.whispers || []).map((w) => mark("whisper", a, w.at, w.title, {row: w.ref})));
 
+const cards = (agents) =>
+    sessions(agents).flatMap((a) =>
+        (a.data.cards || []).map((c) => mark("card", a, c.at, c.label, {icon: c.icon, color: c.color, label: c.label, name: c.plugin, detail: c.detail}))
+    );
+
 const subagents = (agents) =>
     sessions(agents).flatMap((a) =>
         (a.data.subagent_rows || []).flatMap((sub) => [
@@ -91,6 +96,7 @@ export function threadTurns(rows, pending) {
         ...compactions(rows.agent || []),
         ...subagents(rows.agent || []),
         ...whispers(rows.agent || []),
+        ...cards(rows.agent || []),
         ...madeByAgent(rows.doc || []),
         ...pending.filter((p) => !live.some((m) => promisedFor(p, m) && delivered(p, m))),
     ].sort((a, b) => a.created - b.created);

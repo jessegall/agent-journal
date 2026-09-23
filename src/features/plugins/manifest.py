@@ -56,8 +56,10 @@ def read(folder: Path, version: str = "") -> dict:
     checked["chat"] = chat(name, given.get("chat") or [])
     checked["pages"] = pages(name, given.get("pages") or [], checked["services"])
     checked["settings"] = typed(shaped(name, given.get("settings") or {}, "settings", SETTING, ()))
-    checked["events"] = shaped(name, given.get("events") or {}, "events", ("title", "tone"), ("title",))
+    checked["events"] = shaped(name, given.get("events") or {}, "events", ("title", "tone", "card"), ("title",))
     for event, fields in checked["events"].items():
+        if "card" in fields:
+            shaped(name, {event: fields["card"]}, "events.card", ("label", "color", "icon"), ())
         if fields.get("tone", "") not in TONES:
             raise Refused(f"plugin.json: events.{event}.tone is one of {', '.join(t for t in TONES if t)}")
     if "refuse" in checked:

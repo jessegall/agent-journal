@@ -4,6 +4,12 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.102.0 — Chat marks, and plugins can put their own in the chat
+
+The small one-line cards in the chat — loaded skill, compacted, dispatched subagent, reminded of a rule or fact — are chat marks, one component (kit/ChatMark): smaller text, the icon of what they are about (the reminders icon on a reminder), the time at the right end of the first line, and an optional smaller second line.
+
+A plugin puts its own chat mark in the chat by giving an event in its manifest a card: "events": {"sin-found": {"title": "Sin found", "card": {"color": "#e0707a", "icon": "warn", "label": "Sin found"}}}. Raising that event shows the mark, labelled and coloured as declared, with the first line of the event's brief under it.
+
 ## 2.101.2 — The reminder card puts the row's title on a smaller second line
 
 "Reminded the agent of rule 41" and the time stay on one line that never wraps, and the rule's or fact's title sits under it in smaller text, cut short with an ellipsis when it is long.
