@@ -12,6 +12,14 @@ class Agents(Controller):
     def by_session(self, session: str):
         return self._titled(session) or self.create(session, status="stopped")
 
+    def _shared(self, session: str):
+        memo = self.record.memo
+        if memo is None:
+            return self.by_session(session)
+        if (self.type, session) not in memo:
+            memo[self.type, session] = self.by_session(session)
+        return memo[self.type, session]
+
     @internal
     def saw(self, n: int, fact: dict, **data):
         r = self.load(n)

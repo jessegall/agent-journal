@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.118.3 — A hook copies the agent's row once, not dozens of times
+
+Each check on a hook loaded and copied the agent's whole row again, and a plugin's refusal check copied every agent row to find one. The checks of one hook now share a single copy and the plugin looks up its one row, taking the journal's own time per hook from about 25ms to 16ms. The rest of a slow hook is a plugin's own command, such as Code Commandments' check on every tool call. Nothing to do.
+
 ## 2.118.2 — A named worktree carries on its own last conversation
 
 `journal claude --worktree NAME` offered to carry on the environment's last conversation, not the one that last ran in that worktree. It now offers the worktree's own, so a worktree picks up where it stopped. Nothing to do.

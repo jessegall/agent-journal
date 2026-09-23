@@ -218,7 +218,7 @@ class AgentHooks:
         def policy(provider, record, hook, session) -> str:
             if hook.tool.loads_skill:
                 return ""
-            row = Agents(record, actor=SYSTEM).by_session(session)
+            row = Agents(record, actor=SYSTEM)._shared(session)
             if not feature.enabled(record) or not wanted(interceptor, feature, record, row, timed=False):
                 return ""
             context = AgentContext.of(feature, record, row, provider, hook)
@@ -233,7 +233,7 @@ class AgentHooks:
         def cancel(provider, record, hook, session, data) -> str:
             if not feature.enabled(record):
                 return ""
-            row = Agents(record, actor=SYSTEM).by_session(session)
+            row = Agents(record, actor=SYSTEM)._shared(session)
             return canceler.cancel(AgentContext.of(feature, record, row, provider, hook), data) or ""
         CANCELERS.setdefault(canceler.event, []).append(cancel)
 
