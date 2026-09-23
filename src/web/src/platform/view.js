@@ -6,6 +6,8 @@ const SETTLE = 120;
 
 export const framed = window.parent !== window;
 export const chatOnly = new URLSearchParams(location.search).has("chat");
+export const soloView = new URLSearchParams(location.search).get("view") || "";
+export const soloFloat = Number(new URLSearchParams(location.search).get("float")) || 0;
 
 export const laidOut = ref(0);
 let resizing = 0;

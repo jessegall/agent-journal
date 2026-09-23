@@ -1,0 +1,122 @@
+<script setup>
+import {computed} from "vue";
+import SwitchCase from "../kit/SwitchCase.vue";
+import Btn from "../kit/Btn.vue";
+import EmptyState from "../kit/EmptyState.vue";
+import {open} from "../domain/records.js";
+import {detach} from "../platform/extension.js";
+import {agent, store} from "../state/store.js";
+import Thread from "../chat/Thread.vue";
+import Notice from "../chat/Notice.vue";
+import FileFeed from "../chat/FileFeed.vue";
+import TerminalWindow from "../chat/TerminalWindow.vue";
+import RailWaiting from "./RailWaiting.vue";
+import RailTodos from "./RailTodos.vue";
+
+defineProps({view: {type: String, required: true}});
+const notices = computed(() => open("notice"));
+const feedKey = computed(() => (agent.value ? `${agent.value.n}:${agent.value.data.transcript}` : ""));
+</script>
+
+<template>
+    <div :class="['home-view', view]">
+        <SwitchCase :value="view">
+            <template #chat>
+                <TransitionGroup name="act">
+                    <template v-for="x in notices" :key="x.n">
+                        <Notice :notice="x" />
+                    </template>
+                </TransitionGroup>
+                <template v-if="store.detached">
+                    <div class="home-away">
+                        <p>
+                            {{
+                                store.extension.holding
+                                    ? "The chat is following you through the extension."
+                                    : "The chat is floating over this page."
+                            }}
+                        </p>
+                        <Btn @click="detach(false)">Put it back here</Btn>
+                    </div>
+                </template>
+                <template v-else>
+                    <Thread view="chat" />
+                </template>
+            </template>
+            <template #feed>
+                <template v-if="agent">
+                    <FileFeed :key="feedKey" :agent="agent.n" />
+                </template>
+                <template v-else>
+                    <EmptyState title="No agent yet">The file feed shows an agent's edits as it makes them.</EmptyState>
+                </template>
+            </template>
+            <template #terminal><TerminalWindow /></template>
+            <template #question><RailWaiting type="question" /></template>
+            <template #suggestion><RailWaiting type="suggestion" /></template>
+            <template #todos><RailTodos /></template>
+            <template #default><RailWaiting /></template>
+        </SwitchCase>
+    </div>
+</template>
+
+<style scoped>
+.act-enter-active {
+    transition:
+        opacity 0.24s ease-out,
+        transform 0.24s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.act-enter-from {
+    opacity: 0;
+    transform: translateY(-8px);
+}
+
+.act-leave-active {
+    transition: opacity 0.18s ease-in;
+}
+
+.act-leave-to {
+    opacity: 0;
+}
+
+.act-move {
+    transition: transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.home-view {
+    --home-gutter: 24px;
+    --rail-gutter: 14px;
+    position: relative;
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.home-view > :deep(.thread) {
+    padding: 0 var(--home-gutter);
+}
+
+.home-view > :deep(.thread) > :is(.dump, .terminal) {
+    margin: 0 calc(-1 * var(--home-gutter));
+}
+
+.home-view:is(.waiting, .question, .suggestion, .todos) {
+    overflow-y: auto;
+}
+
+.home-away {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    color: var(--text-3);
+}
+
+.home-away p {
+    margin: 0;
+}
+</style>

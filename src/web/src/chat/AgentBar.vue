@@ -241,6 +241,17 @@ useOutside(drop, () => (open.value = ""));
                 </template>
                 <span class="agent-divider" />
                 <template v-if="views">
+                    <template v-for="x in views.away.value" :key="x.id">
+                        <button
+                            type="button"
+                            class="agent-away"
+                            title="Open in another tab; click to bring it back here"
+                            @click="views.back(x.id)"
+                        >
+                            <Icon name="open" :size="12" />
+                            {{ x.title }} in another tab
+                        </button>
+                    </template>
                     <template v-for="(group, at) in viewGroups" :key="group.key">
                         <template v-if="at">
                             <span :class="['agent-divider', 'agent-views-divider', {gone: !group.shown || !viewGroups[0].shown}]" />
@@ -555,6 +566,34 @@ useOutside(drop, () => (open.value = ""));
 
 .agent-view.lifting {
     opacity: 0.35;
+}
+
+.agent-away {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 24px;
+    margin-right: 4px;
+    padding: 0 8px;
+    border: 1px solid var(--border-2);
+    border-radius: 6px;
+    background: none;
+    color: var(--text-2);
+    font: inherit;
+    white-space: nowrap;
+    cursor: pointer;
+    transition:
+        background 0.15s,
+        color 0.15s;
+}
+
+.agent-away :deep(.ico) {
+    color: inherit;
+}
+
+.agent-away:hover {
+    background: var(--hover);
+    color: var(--text);
 }
 
 .agent-views-divider {

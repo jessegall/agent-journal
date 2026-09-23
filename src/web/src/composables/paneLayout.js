@@ -1,5 +1,5 @@
 import {computed, onUnmounted, ref, watch} from "vue";
-import {docked, fresh, leaves, measure, resized, valid} from "../domain/panes.js";
+import {fresh, leaves, measure, opened, resized, valid} from "../domain/panes.js";
 import {saveViewerSetting, settingsLoaded, viewerSetting} from "./viewerSetting.js";
 
 const KEY = "layout";
@@ -59,6 +59,11 @@ export function usePaneLayout() {
         keep();
     }
 
+    function replace(next) {
+        layout.value = next;
+        keep();
+    }
+
     function resize(path, r) {
         layout.value = {...layout.value, tree: resized(layout.value.tree, path, r)};
         keep();
@@ -78,11 +83,11 @@ export function usePaneLayout() {
             .map(([id, d]) => ({id: Number(id), pane: d.pane, rect: d.rect, state: "dying"}));
         return [...live, ...gone].sort((a, b) => a.id - b.id);
     });
-    const open = computed(() => docked(layout.value));
+    const open = computed(() => opened(layout.value));
 
     onUnmounted(() => {
         timers.forEach(clearTimeout);
         clearTimeout(saving);
     });
-    return {layout, measured, panes, open, apply, resize};
+    return {layout, measured, panes, open, apply, replace, resize};
 }

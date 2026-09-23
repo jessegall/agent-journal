@@ -102,17 +102,93 @@ export function docked(layout) {
     return new Set(leaves(layout.tree).flatMap((id) => (layout.panes[id] ? layout.panes[id].tabs : [])));
 }
 
+const floating = (layout) => layout.floats || [];
+const elsewhere = (layout) => layout.away || [];
+
+export function opened(layout) {
+    return new Set([...docked(layout), ...floating(layout).map((f) => f.view), ...elsewhere(layout).map((f) => f.view)]);
+}
+
 export function valid(layout) {
     if (!layout || !layout.tree || !layout.panes || !Number.isInteger(layout.next)) return false;
     const ids = leaves(layout.tree);
     const views = ids.flatMap((id) => (layout.panes[id] ? layout.panes[id].tabs : [null]));
-    return views.every((v) => VIEWS.includes(v)) && new Set(views).size === views.length;
+    const loose = [...floating(layout), ...elsewhere(layout)].map((f) => f.view);
+    return [...views, ...loose].every((v) => VIEWS.includes(v)) && new Set(views).size === views.length;
 }
+
+const kept = (layout, tree, panes, next) => ({tree, panes, next, floats: [...floating(layout)], away: [...elsewhere(layout)]});
 
 function draft(layout) {
     const panes = Object.fromEntries(Object.entries(layout.panes).map(([id, p]) => [id, {tabs: [...p.tabs], active: p.active}]));
-    return {layout: {tree: layout.tree, panes, next: layout.next}, born: {}, dying: {}};
+    return {layout: kept(layout, layout.tree, panes, layout.next), born: {}, dying: {}};
 }
+
+export function floated(layout, view, box) {
+    const next = kept(layout, layout.tree, layout.panes, layout.next + 1);
+    next.floats.push({id: layout.next, view, ...box});
+    return next;
+}
+
+export function unfloated(layout, id) {
+    return {...kept(layout, layout.tree, layout.panes, layout.next), floats: floating(layout).filter((f) => f.id !== id)};
+}
+
+export function fronted(layout, id) {
+    const f = floating(layout).find((x) => x.id === id);
+    return f ? {...unfloated(layout, id), floats: [...floating(layout).filter((x) => x.id !== id), f]} : layout;
+}
+
+export function reshaped(layout, id, box) {
+    return {
+        ...kept(layout, layout.tree, layout.panes, layout.next),
+        floats: floating(layout).map((f) => (f.id === id ? {...f, ...box} : f)),
+    };
+}
+
+export function sentAway(layout, id) {
+    const f = floating(layout).find((x) => x.id === id);
+    if (!f) return layout;
+    const next = unfloated(layout, id);
+    next.away = [...elsewhere(layout).filter((x) => x.id !== id), f];
+    return next;
+}
+
+export function broughtBack(layout, id) {
+    const f = elsewhere(layout).find((x) => x.id === id);
+    if (!f) return layout;
+    const next = kept(layout, layout.tree, layout.panes, layout.next);
+    next.away = elsewhere(layout).filter((x) => x.id !== id);
+    next.floats.push(f);
+    return next;
+}
+
+export function forgotten(layout, id) {
+    return {...kept(layout, layout.tree, layout.panes, layout.next), away: elsewhere(layout).filter((x) => x.id !== id)};
+}
+
+function appended(layout, view) {
+    const change = draft(layout);
+    const id = change.layout.next++;
+    change.layout.panes[id] = {tabs: [view], active: view};
+    change.layout.tree = split("row", 0.7, layout.tree, leaf(id));
+    change.born[id] = EDGES.right(WHOLE);
+    return change;
+}
+
+export function landed(layout, id) {
+    const f = floating(layout).find((x) => x.id === id);
+    if (!f) return null;
+    const at = holding(layout, f.view);
+    const ids = leaves(layout.tree);
+    const lone = ids.length === 1 && !layout.panes[ids[0]].tabs.length ? ids[0] : null;
+    const change =
+        at !== null ? activated(layout, at, f.view) : lone !== null ? placed(layout, f.view, lone, "center") : appended(layout, f.view);
+    change.target = at ?? lone ?? change.layout.next - 1;
+    return change;
+}
+
+export const clamp = (value, low, high) => Math.max(low, Math.min(high, value));
 
 function takeOut(change, id, view) {
     const {layout} = change;
@@ -166,7 +242,7 @@ export function paneClosed(layout, id) {
 }
 
 export function arranged(layout, shape) {
-    const change = {layout: {tree: null, panes: {}, next: layout.next}, born: {}, dying: {}};
+    const change = {layout: kept(layout, null, {}, layout.next), born: {}, dying: {}};
     const alive = leaves(layout.tree);
     const used = new Set();
     const added = [];
