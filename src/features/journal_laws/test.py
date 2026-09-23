@@ -16,7 +16,7 @@ def test_the_law_is_fixed_on_and_carried_by_every_start():
     assert (law.enabled(record), law.describe()["fixed"]) == (True, True), "the law is fixed on"
     record.features = {"journal_laws": False}
     assert law.enabled(record) is True, "a setting cannot switch the law off"
-    assert all(name in start_block(record) for name in ("L1", "L2", "L3", "L4")) is True, "every start carries every law"
+    assert all(name in start_block(record) for name in ("L1", "L2", "L3", "L4", "L5")) is True, "every start carries every law"
 
 
 def test_the_briefing_writes_both_agent_files_preserving_project_text(tmp_path):
@@ -40,6 +40,7 @@ def test_the_law_refuses_an_unbounded_dispatch_and_allows_a_bounded_one():
     record = fresh()
     cases = (("claude", "Agent", {"subagent_type": "general-purpose", "model": "sonnet"}),
              ("claude", "Agent", {"subagent_type": "Explore"}),
+             ("claude", "Agent", {"subagent_type": "Explore", "model": "haiku", "description": "find the slow hook"}),
              ("codex", "collaboration.spawn_agent", {"task_name": "general", "model": "gpt-5.6-luna"}),
              ("codex", "collaboration.spawn_agent", {"task_name": "search_history"}),
              ("codex", "collaboration.spawn_agent", {"agent_type": "default", "model": "gpt-5.6-luna"}),
@@ -48,7 +49,7 @@ def test_the_law_refuses_an_unbounded_dispatch_and_allows_a_bounded_one():
         result = handle(PROVIDERS[name](), record.root, record.env, {"hook_event_name": "PreToolUse", "session_id": f"{name}-law", "tool_name": tool, "tool_input": given})
         assert result.get("decision") == "block", f"{name}: the law refuses an invalid dispatch"
 
-    allowed = (("claude", "Agent", {"subagent_type": "Explore", "model": "haiku"}),
+    allowed = (("claude", "Agent", {"subagent_type": "Explore", "model": "haiku", "description": "Dr. Einstein: find the slow hook"}),
                ("codex", "collaboration.spawn_agent", {"task_name": "search_history", "model": "gpt-5.6-luna"}),
                ("codex", "collaboration.spawn_agent", {"agent_type": "risk_reviewer", "model": "gpt-5.6-luna"}))
     for name, tool, given in allowed:
@@ -82,7 +83,7 @@ def test_a_dispatch_is_an_event_a_plugin_can_cancel_even_when_the_laws_allow_it(
     (where / "cancel.sh").write_text("cat > /dev/null; echo '{\"cancel\": \"no subagents during the demo\"}'")
     Plugins(record, actor=SYSTEM).create("quiet", enabled=True, token="t0ken", settings={}, manifest={"name": "quiet", "cancels": {"agent.dispatching": "sh cancel.sh"}})
     hook = lambda tool, given: handle(PROVIDERS["claude"](), record.root, record.env, {"hook_event_name": "PreToolUse", "session_id": "claude-cancel", "tool_name": tool, "tool_input": given})
-    refused = hook("Agent", {"subagent_type": "Explore", "model": "haiku"})
+    refused = hook("Agent", {"subagent_type": "Explore", "model": "haiku", "description": "Nikola Tesla: map the hooks"})
     assert refused.get("decision") == "block" and "no subagents during the demo" in refused.get("reason", ""), refused
     assert hook("Read", {"file_path": "a.py"}).get("decision") != "block", "only the dispatch is asked about"
 

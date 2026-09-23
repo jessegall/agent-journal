@@ -29,6 +29,9 @@ LAWS = (
     Law("L4", "Follow-up work goes back to the subagent that did the first part; never start a fresh one on work another already holds.",
         "A subagent that drew a design, wrote the code or ran the research keeps what it learned. When the user asks for a change to its work, continue that subagent with a message rather than dispatching a new one that has to rediscover everything; start fresh only when the earlier one is gone or the new work is unrelated.",
         ("subagent", "spawn_agent", "designer", "SendMessage"), "everything"),
+    Law("L5", "Every subagent dispatch names the agent: a human name, a little quirky, that fits its role.",
+        "A name is how the user and the chat tell subagents apart and how they are messaged later; an id or a task line is not a name. Start the dispatch's description with the name, a colon, then the task, such as \"Dr. Einstein: profile the slow hooks\" or \"Coco Rams: draw the plan card\". A designer can borrow from famous designers, a researcher from famous scientists, mixed up for fun.",
+        ("subagent", "spawn_agent", "dispatch"), "everything"),
 )
 BEGIN = "<!-- BEGIN: agent-journal law (auto-generated, run `journal upgrade`) -->"
 END = "<!-- END: agent-journal law -->"
@@ -64,9 +67,14 @@ def brief(project: Path) -> list[Path]:
     return written
 
 
+NAMED = re.compile(r"^(?:[A-Z][\w.'-]*\s+){0,3}[A-Z][\w.'-]*\s*:\s*\S")
+
+
 def refusal(dispatch) -> str:
     if dispatch.kind in GENERIC and dispatch.task in GENERIC:
         return "Journal law L2 refuses generic subagents. Choose a specific agent type or give the dispatch a concrete task name and bounded assignment."
     if dispatch.model_supported and not dispatch.model:
         return "Journal law L1 requires an explicit model on every subagent dispatch. Choose the least expensive model that reliably fits the work."
+    if dispatch.name_supported and not NAMED.match(dispatch.description):
+        return "Journal law L5 requires a name on every subagent dispatch. Start the description with a human name, a little quirky and fitting the role, then a colon and the task, like \"Dr. Einstein: profile the slow hooks\"."
     return ""
