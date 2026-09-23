@@ -8,6 +8,7 @@ from engine.files import KIND, blob_texts
 
 KEEP = 3
 KEPT = 500
+MOST_SHOWN = 100
 MOST_ROWS = 400
 MOST_DIFFS = 2000
 NOTES = "file_feed"
@@ -95,7 +96,7 @@ def notes(record) -> list[FileEdited]:
 
 
 def edits_since(record, agent: int, since: float) -> Feed:
-    shown = [note for note in notes(record) if note.agent == agent and note.at > since]
+    shown = [note for note in notes(record) if note.agent == agent and note.at > since][-MOST_SHOWN:]
     diffed(record.root.parent, [(note.before, note.after) for note in shown])
     return Feed(shown[-1].at if shown else since, tuple(_card(note) for note in shown if (note.before, note.after) in DIFFS))
 

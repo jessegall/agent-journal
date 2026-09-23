@@ -13,7 +13,7 @@ from surfaces.control import CARRY_ON, RESUMED, delivered
 from engine.record import Record
 from engine.watch import STEADY_AFTER, steady, threw
 from features.status_bar.commands import RING
-from features.status_bar.runs import TYPED, CommandRun
+from features.status_bar.runs import NOTED, TYPED, CommandRun
 from providers import PROVIDERS
 from resources.base import AGENT, SYSTEM, USER, VIEW_ONLY, Event, titled
 from resources.types import TYPES, priority
@@ -72,6 +72,7 @@ class Engine(Seat):
         self.controlled_at = 0.0
         self.carry_on = False
         self.paused = False
+        self.held_at = 0.0
         self.why = ""
         self.clean = 0
 
@@ -226,12 +227,21 @@ class Engine(Seat):
             self.typed(row, [queued.value])
         return f"typed in the terminal: {queued.value}" if typed else ""
 
-    def typed(self, row, commands: list[str]) -> None:
+    def typed(self, row, commands: list[str], tool: str = TYPED) -> None:
         if not commands:
             return
         now = time.time()
-        runs = [CommandRun(command=command, tool=TYPED, at=now, done=now).to_json() for command in commands]
+        runs = [CommandRun(command=command, tool=tool, at=now, done=now).to_json() for command in commands]
         Agents(self.record, actor=SYSTEM).update(row.n, commands=[*row.commands, *runs][-RING:])
+
+    def noted(self, line: str) -> None:
+        self.typed(Agents(self.record, actor=SYSTEM).by_session(self.agent.driver.session), [line], NOTED)
+
+    def held(self, line: str) -> str:
+        self.agent.driver.stop_turn()
+        self.held_at = time.time()
+        self.noted(line)
+        return line
 
     def ran(self) -> None:
         row = self.agent.driver.last_report()
@@ -252,16 +262,20 @@ class Engine(Seat):
 
     def pausing(self) -> str:
         if take(self.record.root, self.names(), PAUSE):
-            self.agent.driver.stop_turn()
             self.paused = True
             self.agent.mark("", "", paused=time.time())
-            return "paused: stopped the turn"
+            return self.held("Paused")
         if take(self.record.root, self.names(), RESUME):
             self.paused = False
             self.agent.mark("", "", paused=0)
+            self.noted("Continued")
             self.agent.driver.deliver(RESUMED)
             return "resumed"
-        return "paused" if self.paused else ""
+        if not self.paused:
+            return ""
+        if self.agent.state() in (BUSY, WORKING) and time.time() - self.held_at > SETTLE:
+            return self.held("Interrupted: the agent is paused")
+        return "paused"
 
     def backgrounded(self) -> str:
         if not take(self.record.root, self.names(), BACKGROUND):
@@ -272,6 +286,7 @@ class Engine(Seat):
         if not take(self.record.root, self.names(), FORCE) or self.agent.state() == IDLE:
             return ""
         self.agent.driver.stop_turn()
+        self.noted("Interrupted")
         for _ in range(int(SETTLE / STEP)):
             if self.agent.driver.at_prompt():
                 break
