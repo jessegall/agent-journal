@@ -1,3 +1,4 @@
+import os
 import re
 import threading
 import time
@@ -7,13 +8,17 @@ import resources.types as resources_module
 from controllers.base import Controller
 from engine.proc import streamed
 from engine.watch import threw
-from features.checks.resource import Check, CheckRun
+from engine import runtime
+from engine.stored import read_json
+from features.checks.resource import Check, CheckReport, CheckRun
 from resources.base import Refused
 
 TIMEOUT = 600
 SAID_LINES = 40
 KEPT_RUNS = 20
 STAMP_EVERY = 1.0
+REPORTS = "check-reports"
+REPORT = "JOURNAL_REPORT"
 PERCENT = re.compile(r"(\d{1,3})%")
 COUNTED = re.compile(r"\b(\d+)\s*/\s*(\d+)\b")
 ITEMS = re.compile(r"\[(\d+) items?\]|collected (\d+) items?")
@@ -78,11 +83,16 @@ class Checks(Controller):
                 stamped_at[0] = time.time()
                 self.stamp(n, running={"at": began, "output": tail(output), **progress(output, last_steps)})
 
-        code, output = streamed(["/bin/sh", "-c", check.command], self.record.root.parent, TIMEOUT, on_output)
+        report = runtime.folder(self.record.root) / REPORTS / f"{n}.json"
+        report.parent.mkdir(parents=True, exist_ok=True)
+        report.unlink(missing_ok=True)
+        code, output = streamed(["/bin/sh", "-c", check.command], self.record.root.parent, TIMEOUT, on_output, env={**os.environ, REPORT: str(report)})
         check = self.load(n)
         kept = tail(output)
+        written = read_json(report, None)
         run = CheckRun(ok=code == 0, code=-1 if code is None else code, at=began, took=round(time.time() - began, 2), steps=steps(output),
-                       output=kept if kept or code is not None else "the command did not finish")
+                       output=kept if kept or code is not None else "the command did not finish",
+                       report=CheckReport.from_json(written) if isinstance(written, dict) else None)
         check.last = run.to_json()
         check.runs = [run.summary, *check.runs][:KEPT_RUNS]
         check.running = {}

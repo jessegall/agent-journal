@@ -8,6 +8,23 @@ from resources.shapes import NUMBER, TEXT, Field, Shape
 
 
 @dataclass(frozen=True)
+class Finding(Loaded):
+    name: str = ""
+    file: str = ""
+    line: int = 0
+    where: str = ""
+    text: str = ""
+    group: str = ""
+
+
+@dataclass(frozen=True)
+class CheckReport(Loaded):
+    title: str = ""
+    summary: str = ""
+    findings: tuple[Finding, ...] = ()
+
+
+@dataclass(frozen=True)
 class CheckRun(Loaded):
     ok: bool | None = None
     code: int = 0
@@ -15,6 +32,7 @@ class CheckRun(Loaded):
     took: float = 0.0
     steps: int = 0
     output: str = ""
+    report: CheckReport | None = None
 
     def to_json(self) -> dict:
         return asdict(self)
