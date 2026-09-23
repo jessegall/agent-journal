@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.96.5 — The skills dropdown's footer stays at the bottom
+
+In the agent bar's skills dropdown, the Browse every skill footer stays pinned at the bottom while the list of loaded skills scrolls under it.
+
 ## 2.96.4 — The working dots say what is running
 
 Under the working dots the chat names the command or tool beside its verb, in smaller muted text ("reading Thread.vue", "running git status"), taken from the status bar's queue.

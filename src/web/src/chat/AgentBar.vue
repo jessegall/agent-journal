@@ -464,6 +464,15 @@ useOutside(bar, () => (open.value = ""));
     box-shadow: 0 14px 28px rgba(0, 0, 0, 0.35);
 }
 
+.bar-foot {
+    position: sticky;
+    bottom: -5px;
+    margin: 4px -5px -5px;
+    padding: 6px 5px 5px;
+    border-top: 1px solid var(--line);
+    background: var(--raised);
+}
+
 .agent-usage {
     font-variant-numeric: tabular-nums;
 }
