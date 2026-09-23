@@ -13,10 +13,10 @@ const props = defineProps({
 });
 const log = ref(null);
 const sent = computed(() => rows("message").filter((m) => m.data.sent_to === props.session && m.seen[0] === "user"));
-const shown = computed(() => [...chatTurns(props.turns), ...sent.value].sort((a, b) => a.created - b.created));
+const lines = computed(() => [...chatTurns(props.turns), ...sent.value].sort((a, b) => a.created - b.created));
 const send = (text) => api.create("message", {brief: text, sent_to: props.session});
 watch(
-    () => shown.value.length,
+    () => lines.value.length,
     () => nextTick(() => log.value && (log.value.scrollTop = log.value.scrollHeight)),
     {immediate: true}
 );
@@ -25,10 +25,10 @@ watch(
 <template>
     <div class="subagent-chat">
         <div ref="log" class="log">
-            <template v-for="turn in shown" :key="turn.ref">
+            <template v-for="turn in lines" :key="turn.ref">
                 <Turn :turn="turn" />
             </template>
-            <template v-if="!shown.length">
+            <template v-if="!lines.length">
                 <p class="none">Nothing said yet.</p>
             </template>
         </div>
