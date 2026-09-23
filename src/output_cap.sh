@@ -1,6 +1,7 @@
 #!/bin/bash
-# Claude Code runs every shell command as: output_cap.sh '<command>'. Long output keeps its head and tail; the whole of it is kept as an output row.
+# Claude Code runs its shell commands and its MCP servers as: output_cap.sh '<command>'. Only a shell command, which Claude wraps in eval, is capped: long output keeps its head and tail, and the whole of it is kept as an output row.
 [ $# -eq 1 ] || exec "$@"
+case "$1" in *"&& eval '"*"' < /dev/null && pwd -P"*) ;; *) exec bash -c "$1" ;; esac
 keep=${JOURNAL_OUTPUT_LINES:-200}
 [ "$keep" -gt 0 ] 2>/dev/null || exec bash -c "$1"
 folder=${JOURNAL_OUTPUT_DIR:-${TMPDIR:-/tmp}}

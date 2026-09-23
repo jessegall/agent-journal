@@ -138,8 +138,10 @@ def test_a_long_command_output_keeps_its_ends_and_the_whole_of_it_as_an_output_r
     assert (row.title, row.data["lines"], kept.read_text().split()) == ("seq 1 1000; echo 'done' >/dev/null; exit 3", 1000, [str(i) for i in range(1, 1001)]), row
     card = Agents(record).load(agent.n).data["cards"][-1]
     assert card["label"] == "Cut 994 of 1,000 lines from a long output, kept whole as output 1" and card["detail"] == row.title, card
-    short = subprocess.run([str(src / "output_cap.sh"), "seq 1 5"], capture_output=True, text=True, env=env, timeout=20)
+    short = subprocess.run([str(src / "output_cap.sh"), wrapped.replace("seq 1 1000", "seq 1 5")], capture_output=True, text=True, env=env, timeout=20)
     assert short.stdout.split() == ["1", "2", "3", "4", "5"] and Outputs(record).numbers() == [1], "short output passes whole and keeps no row"
+    server = subprocess.run([str(src / "output_cap.sh"), "seq 1 1000"], capture_output=True, text=True, env=env, timeout=20)
+    assert len(server.stdout.splitlines()) == 1000 and Outputs(record).numbers() == [1], "an MCP server Claude starts through the prefix is never capped"
     Outputs(record).force_delete(1)
     assert not kept.exists(), "a pruned output takes its file with it"
     launched = output_cap(record.root, record.env, PROVIDERS["claude"]())
