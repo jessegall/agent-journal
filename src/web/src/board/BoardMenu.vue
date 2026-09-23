@@ -14,7 +14,7 @@ useOutside(menu, () => emit("close"));
 </script>
 
 <template>
-    <MenuPanel ref="menu" class="menu" :anchor="anchor" align="left" @click.stop @close="emit('close')">
+    <MenuPanel ref="menu" :anchor="anchor" align="left" :min-width="210" :max-width="280" @click.stop @close="emit('close')">
         <template v-if="board">
             <SectionHeading class="heading">{{ board.title }}</SectionHeading>
             <MenuItem @click="(emit('close'), peek('board', board.n))">Stages and what each means</MenuItem>
@@ -36,11 +36,6 @@ useOutside(menu, () => emit("close"));
 </template>
 
 <style scoped>
-.menu {
-    min-width: 210px;
-    max-width: 280px;
-}
-
 .heading {
     margin: 6px 8px 2px;
     font-size: 11px;
