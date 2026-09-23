@@ -5,7 +5,7 @@ defineProps({kind: {type: String, default: "ghost"}, small: Boolean, busy: Boole
 </script>
 
 <template>
-    <button type="button" :class="['btn', kind, {small, busy}]" :aria-busy="busy">
+    <button type="button" :class="['btn', kind, {small, busy}]" :aria-busy="busy" :disabled="busy">
         <span :class="['btn-label', {hidden: busy}]"><slot /></span>
         <template v-if="busy">
             <Spinner class="btn-spinner" />

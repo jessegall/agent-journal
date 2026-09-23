@@ -23,8 +23,9 @@ const src = computed(() => {
     return api.pluginUrl(page.value, route.value.at || page.value.path);
 });
 
-const {error, set} = useServiceAction(() => refreshPages());
+const {error, set, busy} = useServiceAction(() => refreshPages());
 const runPluginAction = (want) => page.value && set(page.value.service, want);
+const starting = computed(() => Boolean(page.value) && busy(page.value.service, "up"));
 
 async function read() {
     if (!page.value) return;
@@ -55,7 +56,7 @@ watch(
                     {{ page.title }} is not running: its service {{ page.service }} is {{ page.state }}.
                 </p>
                 <span class="acts">
-                    <Btn kind="primary" small @click="runPluginAction('up')">Start it</Btn>
+                    <Btn kind="primary" small :busy="starting" @click="runPluginAction('up')">Start it</Btn>
                     <Btn small @click="read">Read the log</Btn>
                     <template v-if="page.url">
                         <a class="out" :href="page.url" target="_blank">Open in a new tab</a>
