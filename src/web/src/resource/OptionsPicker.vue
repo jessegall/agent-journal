@@ -19,7 +19,10 @@ const options = computed(() =>
 );
 const pick = computed(() => props.resource.data.pick || 0);
 const settled = computed(() => !!props.resource.completed && !changing.value);
-const ownWords = computed(() => settled.value && !options.value.some((o) => o.title === props.resource.outcome));
+const chosen = computed(() =>
+    props.resource.data.chosen ? props.resource.data.chosen - 1 : options.value.findIndex((o) => o.title === props.resource.outcome)
+);
+const ownWords = computed(() => settled.value && chosen.value < 0);
 
 async function submit(text) {
     const choice = String(text || "").trim();
@@ -34,7 +37,7 @@ async function submit(text) {
     <section class="options">
         <OptionList
             :options="options"
-            :chosen="resource.completed ? resource.outcome : ''"
+            :chosen="resource.completed && chosen >= 0 ? options[chosen].title : ''"
             :chosen-by="resource.data.answered_by || ''"
             :reason="resource.data.reason || ''"
             :suggested="pick - 1"

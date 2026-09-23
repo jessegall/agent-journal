@@ -1,8 +1,7 @@
-/Users/jessegall/projects/agent-journal/src/features/ask_questions/choices.py
-/Users/jessegall/projects/agent-journal/src/features/ask_questions/details.py
-/Users/jessegall/projects/agent-journal/src/features/ask_questions/feature.py
-/Users/jessegall/projects/agent-journal/src/features/ask_questions/interceptors.py
+/Users/jessegall/projects/agent-journal/src/controllers/questions.py
 /Users/jessegall/projects/agent-journal/src/features/ask_questions/test.py
+/Users/jessegall/projects/agent-journal/src/resources/shapes.py
+/Users/jessegall/projects/agent-journal/src/web/src/resource/OptionsPicker.vue
 -----
 Batch marker for the code-commandments judge reminder (`commandments judge-reminder`, wired as
 Stop + PreToolUse hooks). The lines above the separator are the changed-file set it last
