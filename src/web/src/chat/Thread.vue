@@ -418,7 +418,7 @@ watch(
                             @grew="settled"
                         />
                     </TransitionGroup>
-                    <Transition name="rise">
+                    <Transition name="status">
                         <div
                             v-if="busy || waiting"
                             class="thread-turn busy"
@@ -503,7 +503,8 @@ watch(
     display: flex;
     flex-direction: column;
     gap: 3px;
-    max-width: 100%;
+    align-self: stretch;
+    width: 100%;
 }
 
 .thread-turn.busy .thread-bubble {
@@ -592,6 +593,24 @@ watch(
 
 .thread-write :deep(.compose-box) {
     margin-right: 2px;
+}
+
+.status-enter-active {
+    transition:
+        opacity 0.22s ease-out,
+        transform 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.status-leave-active {
+    transition:
+        opacity 0.16s ease-in,
+        transform 0.16s ease-in;
+}
+
+.status-enter-from,
+.status-leave-to {
+    opacity: 0;
+    transform: translateY(8px);
 }
 
 .rise-enter-active {

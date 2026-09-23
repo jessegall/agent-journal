@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.103.8 — The status line keeps its width as it comes and goes
+
+The status line above the chat input has its own transition: it fades in sliding up from below and leaves fading and sliding down, at the chat's full width throughout, instead of borrowing the scroll button's sideways-centred slide and shrinking to its words.
+
 ## 2.103.7 — The status line ends in an ellipsis, and its dot holds still
 
 The status line above the chat input stays on one line and is cut off with an ellipsis when it is wider than the chat; its first word always shows. Its dot no longer pulses: it is the same steady coloured dot as the top bar's, now one kit component (Dot solid) used by both.
