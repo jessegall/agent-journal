@@ -177,6 +177,11 @@ class Tickets(Controller):
     def _merged(self, ticket) -> bool:
         return merged(self.record.root.parent, self._branch(ticket))
 
+    def stop(self, n: int):
+        ticket = self.load(int(n))
+        self._stop(ticket)
+        return ticket
+
     def _stop(self, ticket) -> None:
         from providers import DRIVERS
         session = self.agent_session(ticket.n)
