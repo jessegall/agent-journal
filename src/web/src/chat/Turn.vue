@@ -3,6 +3,7 @@ import TextDisplay from "../kit/TextDisplay.vue";
 import {computed, nextTick, onMounted, ref, watch} from "vue";
 import {api} from "../api/client.js";
 import Icon from "../kit/Icon.vue";
+import BubbleHeader from "../kit/BubbleHeader.vue";
 import SwitchCase from "../kit/SwitchCase.vue";
 import SubagentMark from "./SubagentMark.vue";
 import ChatMark from "../kit/ChatMark.vue";
@@ -59,7 +60,11 @@ onMounted(() =>
 );
 const mine = computed(() => props.turn.who === "user");
 const between = computed(() =>
-    props.turn.data?.peer ? `from ${props.turn.data.peer}` : props.turn.data?.sent_to ? `to ${props.turn.data.sent_to}` : ""
+    props.turn.data?.peer
+        ? `From agent ${props.turn.data.peer}`
+        : props.turn.data?.sent_to
+          ? `Sent to agent ${props.turn.data.sent_to}`
+          : ""
 );
 const SAID = {sent: "sent", delivered: "delivered to the agent", read: "read", filed: "processed"};
 const state = computed(() => {
@@ -153,7 +158,15 @@ function refOf(word) {
 
 async function react(face) {
     picking.value = false;
-    const pending = {ref: `reaction:pending-${Date.now()}`, type: "reaction", n: 0, refs: [props.turn.ref], seen: ["user"], data: {face}, deleted: 0};
+    const pending = {
+        ref: `reaction:pending-${Date.now()}`,
+        type: "reaction",
+        n: 0,
+        refs: [props.turn.ref],
+        seen: ["user"],
+        data: {face},
+        deleted: 0,
+    };
     await optimistic("reaction", pending, () => api.act(props.turn.type, props.turn.n, "react", {face}));
 }
 
@@ -166,7 +179,15 @@ async function drop() {
     <SwitchCase :value="turn.type">
         <template #skill>
             <div class="thread-turn skill" :data-ref="turn.ref">
-                <ChatMark icon="book" tone="good" label="Loaded skill" :name="turn.title" :at="turn.created" :title="`Read the ${turn.title} skill`" @click="store.skill = turn.title" />
+                <ChatMark
+                    icon="book"
+                    tone="good"
+                    label="Loaded skill"
+                    :name="turn.title"
+                    :at="turn.created"
+                    :title="`Read the ${turn.title} skill`"
+                    @click="store.skill = turn.title"
+                />
             </div>
         </template>
         <template #compacted>
@@ -217,15 +238,18 @@ async function drop() {
                 <template v-if="turn.who === 'system'">
                     <span class="thread-from">journal</span>
                 </template>
-                <template v-else-if="between">
-                    <span class="thread-from">{{ between }}</span>
-                </template>
                 <div ref="bubble" class="thread-bubble md" @click="resourceComment && openComment()">
                     <template v-if="resourceComment">
-                        <button type="button" class="thread-comment-context" @click.stop="openComment">
-                            <Icon name="bubble" :size="12" />
-                            Comment on {{ commentParent.label }}
-                        </button>
+                        <BubbleHeader
+                            icon="bubble"
+                            :label="`Comment on ${commentParent.label}`"
+                            tone="blocking"
+                            clickable
+                            @click="openComment"
+                        />
+                    </template>
+                    <template v-if="between">
+                        <BubbleHeader icon="agents" :label="between" />
                     </template>
                     <template v-if="results.length || turn.type === 'question'">
                         <div :class="['thread-results', {live: !turn.completed}]">
@@ -368,9 +392,8 @@ async function drop() {
 }
 
 .thread-turn.peer .thread-bubble {
-    border: 1px dotted var(--border-2);
+    border: 1px solid var(--accent-text);
     background: none;
-    color: var(--text-3);
 }
 
 .thread-turn.mine {
@@ -431,26 +454,6 @@ async function drop() {
     background: #161719;
     overflow-wrap: anywhere;
     transition: opacity 0.12s ease;
-}
-
-.thread-comment-context {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    padding: 0 6px;
-    margin: -2px -12px 6px;
-    border: 0;
-    background: none;
-    color: var(--blocking);
-    font: inherit;
-    font-size: 10.5px;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    cursor: pointer;
-}
-
-.thread-comment-context:hover {
-    color: var(--text);
 }
 
 .thread-turn.mine .thread-bubble {

@@ -127,6 +127,7 @@
 /Users/jessegall/projects/agent-journal/src/surfaces/appoint.py
 /Users/jessegall/projects/agent-journal/src/surfaces/control.py
 /Users/jessegall/projects/agent-journal/src/web/src/chat/Turn.vue
+/Users/jessegall/projects/agent-journal/src/web/src/kit/BubbleHeader.vue
 /Users/jessegall/projects/agent-journal/src/web/src/kit/TextDisplay.vue
 /Users/jessegall/projects/agent-journal/tests/conftest.py
 -----
