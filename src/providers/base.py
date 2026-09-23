@@ -45,6 +45,7 @@ SEAM = 256
 RECENT_BYTES = 1_000_000
 RECENT_ROWS = 1000
 LEGACY = ".journal/hook.py"
+LIBRARY = ".agents/skills"
 
 
 def journal_hook(text: str) -> bool:

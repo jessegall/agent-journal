@@ -6,7 +6,7 @@ from features.parts import AgentContext, ToolInterceptor
 from features.recital import mentioned
 from features.skill_loading.catalogue import keywords, loaded_at
 from features.skill_loading.required import outstanding, require
-from skills import LIBRARY
+from providers.base import LIBRARY
 
 NOUN = re.compile(r"(?:^|[\s;&|(])journal(?:\s+--\S+)*\s+([a-z]+)\b")
 

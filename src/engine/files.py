@@ -3,6 +3,8 @@ from pathlib import Path
 
 from engine import bus
 from engine.proc import git
+from providers import PROVIDERS
+from providers.base import LIBRARY
 from resources.base import SYSTEM, Event, names
 
 KIND = names("edited", "created", "deleted")
@@ -17,8 +19,6 @@ def change_kind(path: str, last: dict, now: dict) -> str:
 
 
 def internal(record, project: Path) -> tuple[str, ...]:
-    from providers import PROVIDERS
-    from skills import LIBRARY
     roots = []
     for root in (record.root, record.root.resolve()):
         try:
