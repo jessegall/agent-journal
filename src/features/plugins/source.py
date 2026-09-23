@@ -223,9 +223,9 @@ def alone(root: Path, name: str):
     held = lock.open("w")
     try:
         fcntl.flock(held, fcntl.LOCK_EX | fcntl.LOCK_NB)
-    except BlockingIOError:
+    except BlockingIOError as error:
         held.close()
-        raise Refused(f"{name} is being installed already; wait for that to finish")
+        raise Refused(f"{name} is being installed already; wait for that to finish") from error
     return held
 
 

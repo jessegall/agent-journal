@@ -199,10 +199,10 @@ class Stored:
         try:
             found = p.stat()
             stamp, where = (found.st_mtime_ns, found.st_size), str(p)
-        except OSError:
+        except OSError as error:
             entry = self._packed().get(n)
             if not entry:
-                raise Refused(f"no {self.type} {n}")
+                raise Refused(f"no {self.type} {n}") from error
             archive = self._folder() / PACKED / entry[ARCHIVE]
             stamp, where = (mtime(archive), 0), f"{archive}:{n}"
         if self.resource.loading != MEMORY:
@@ -222,14 +222,14 @@ class Stored:
         archive = self._folder() / PACKED / entry[ARCHIVE]
         try:
             return opened(archive).read(member(n)).decode()
-        except (OSError, KeyError, zipfile.BadZipFile):
-            raise Refused(f"{self.type} {n} is missing from {archive}")
+        except (OSError, KeyError, zipfile.BadZipFile) as error:
+            raise Refused(f"{self.type} {n} is missing from {archive}") from error
 
     def _parsed(self, n: int) -> Resource:
         try:
             return self.resource.load(self._text(n))
-        except (ValueError, TypeError):
-            raise Refused(f"{self.type} {n} is damaged: {self.path(n)}")
+        except (ValueError, TypeError) as error:
+            raise Refused(f"{self.type} {n} is damaged: {self.path(n)}") from error
 
     def _exists(self, n: int) -> bool:
         return self.path(n).is_file() or n in self._packed()

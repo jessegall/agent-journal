@@ -69,7 +69,7 @@ def parsed(path: Path) -> dict:
     try:
         return tomllib.loads(path.read_text())
     except (OSError, tomllib.TOMLDecodeError) as broken:
-        raise Refused(f"{path} cannot be read: {broken}")
+        raise Refused(f"{path} cannot be read: {broken}") from broken
 
 
 def role_of(path: Path) -> Role:
