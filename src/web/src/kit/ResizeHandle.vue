@@ -1,8 +1,14 @@
 <script setup>
 import {ref} from "vue";
 
-const props = defineProps({min: {type: Number, default: 240}, max: {type: Number, default: 720}, snap: {type: Number, default: 16}});
-const emit = defineEmits(["resize", "reset"]);
+const props = defineProps({
+    min: {type: Number, default: 240},
+    max: {type: Number, default: 720},
+    snap: {type: Number, default: 16},
+    axis: {type: String, default: "x"},
+    measure: {type: Function, default: null},
+});
+const emit = defineEmits(["resize", "reset", "start", "stop"]);
 const snapped = ref(false);
 
 function natural(panel) {
@@ -13,35 +19,46 @@ function natural(panel) {
     return width;
 }
 
-function start(event) {
-    const panel = event.currentTarget.nextElementSibling;
-    const from = event.clientX;
-    const began = panel.getBoundingClientRect().width;
-    const home = natural(panel);
+function track(event, sized) {
     const move = (moved) => {
-        const width = Math.min(props.max, Math.max(props.min, began + from - moved.clientX));
-        snapped.value = Math.abs(width - home) <= props.snap;
-        emit("resize", snapped.value ? home : width);
+        const got = sized(moved);
+        snapped.value = got.snapped;
+        emit("resize", got.value);
     };
     const stop = () => {
         window.removeEventListener("pointermove", move);
         window.removeEventListener("pointerup", stop);
-        document.body.classList.remove("resizing");
+        document.body.classList.remove("resizing", `resizing-${props.axis}`);
+        emit("stop");
         if (snapped.value) emit("reset");
         snapped.value = false;
     };
     window.addEventListener("pointermove", move);
     window.addEventListener("pointerup", stop);
-    document.body.classList.add("resizing");
+    document.body.classList.add("resizing", `resizing-${props.axis}`);
+    emit("start");
     event.preventDefault();
+}
+
+function start(event) {
+    if (props.measure) return track(event, props.measure);
+    const panel = event.currentTarget.nextElementSibling;
+    const from = event.clientX;
+    const began = panel.getBoundingClientRect().width;
+    const home = natural(panel);
+    track(event, (moved) => {
+        const width = Math.min(props.max, Math.max(props.min, began + from - moved.clientX));
+        const near = Math.abs(width - home) <= props.snap;
+        return {value: near ? home : width, snapped: near};
+    });
 }
 </script>
 
 <template>
     <div
-        :class="['resize-handle', {snapped}]"
+        :class="['resize-handle', axis, {snapped}]"
         role="separator"
-        aria-orientation="vertical"
+        :aria-orientation="axis === 'y' ? 'horizontal' : 'vertical'"
         title="Drag to resize; double-click to reset"
         @pointerdown="start"
         @dblclick="emit('reset')"
@@ -74,11 +91,26 @@ function start(event) {
 .resize-handle.snapped::after {
     background: var(--accent);
 }
+
+.resize-handle.y {
+    width: auto;
+    height: 7px;
+    margin: -3px 0;
+    cursor: row-resize;
+}
+
+.resize-handle.y::after {
+    inset: 3px 0;
+}
 </style>
 
 <style>
 body.resizing {
     cursor: col-resize;
     user-select: none;
+}
+
+body.resizing-y {
+    cursor: row-resize;
 }
 </style>

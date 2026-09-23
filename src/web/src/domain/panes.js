@@ -1,0 +1,223 @@
+export const AGENT_VIEWS = ["chat", "feed", "terminal"];
+export const PANEL_VIEWS = ["waiting", "question", "suggestion", "todos"];
+export const VIEWS = [...AGENT_VIEWS, ...PANEL_VIEWS];
+export const HEADER = 34;
+
+const WHOLE = {x: 0, y: 0, w: 1, h: 1};
+const EDGE_BAND = 0.25;
+
+const leaf = (id) => ({id});
+const split = (dir, r, a, b) => ({dir, r, a, b});
+
+export const fresh = () => ({
+    tree: split("row", 0.7, leaf(1), leaf(2)),
+    panes: {1: {tabs: ["chat"], active: "chat"}, 2: {tabs: [...PANEL_VIEWS], active: "waiting"}},
+    next: 3,
+});
+
+const shaped = (tabs, active = tabs[0]) => ({tabs, active});
+
+export const DEFAULT_SHAPE = split("row", 0.7, shaped(["chat"]), shaped(PANEL_VIEWS));
+
+export const leaves = (node) => (node.dir ? [...leaves(node.a), ...leaves(node.b)] : [node.id]);
+
+function halves(node, box) {
+    const row = node.dir === "row";
+    const cut = row ? box.w * node.r : box.h * node.r;
+    return row
+        ? [
+              {x: box.x, y: box.y, w: cut, h: box.h},
+              {x: box.x + cut, y: box.y, w: box.w - cut, h: box.h},
+          ]
+        : [
+              {x: box.x, y: box.y, w: box.w, h: cut},
+              {x: box.x, y: box.y + cut, w: box.w, h: box.h - cut},
+          ];
+}
+
+export function measure(tree) {
+    const rects = {};
+    const splits = [];
+    const walk = (node, box, path) => {
+        if (!node.dir) {
+            rects[node.id] = box;
+            return;
+        }
+        const [a, b] = halves(node, box);
+        splits.push({path, dir: node.dir, box, r: node.r});
+        walk(node.a, a, `${path}a`);
+        walk(node.b, b, `${path}b`);
+    };
+    walk(tree, WHOLE, "");
+    return {rects, splits};
+}
+
+const without = (node, id) => {
+    if (!node.dir) return node.id === id ? null : node;
+    const a = without(node.a, id);
+    const b = without(node.b, id);
+    return !a ? b : !b ? a : {...node, a, b};
+};
+
+const replaced = (node, id, change) =>
+    node.dir ? {...node, a: replaced(node.a, id, change), b: replaced(node.b, id, change)} : node.id === id ? change(node) : node;
+
+export const resized = (node, path, r) => (path ? {...node, [path[0]]: resized(node[path[0]], path.slice(1), r)} : {...node, r});
+
+function sideOf(node, id) {
+    if (!node.dir) return null;
+    if (!node.a.dir && node.a.id === id) return {dir: node.dir, first: true};
+    if (!node.b.dir && node.b.id === id) return {dir: node.dir, first: false};
+    return sideOf(node.a, id) || sideOf(node.b, id);
+}
+
+function folded(tree, id) {
+    const box = measure(tree).rects[id];
+    const side = sideOf(tree, id);
+    if (!side) return box;
+    if (side.dir === "row") return {...box, x: side.first ? box.x : box.x + box.w, w: 0};
+    return {...box, y: side.first ? box.y : box.y + box.h, h: 0};
+}
+
+export const centre = (box) => ({x: box.x + box.w / 2, y: box.y + box.h / 2, w: 0, h: 0});
+
+const EDGES = {
+    right: (box) => ({...box, x: box.x + box.w, w: 0}),
+    left: (box) => ({...box, w: 0}),
+    bottom: (box) => ({...box, y: box.y + box.h, h: 0}),
+    top: (box) => ({...box, h: 0}),
+};
+
+function wrapped(node, added, zone) {
+    const dir = zone === "left" || zone === "right" ? "row" : "col";
+    const first = zone === "left" || zone === "top";
+    return split(dir, 0.5, first ? added : node, first ? node : added);
+}
+
+export function holding(layout, view) {
+    return leaves(layout.tree).find((id) => layout.panes[id] && layout.panes[id].tabs.includes(view)) ?? null;
+}
+
+export function docked(layout) {
+    return new Set(leaves(layout.tree).flatMap((id) => (layout.panes[id] ? layout.panes[id].tabs : [])));
+}
+
+export function valid(layout) {
+    if (!layout || !layout.tree || !layout.panes || !Number.isInteger(layout.next)) return false;
+    const ids = leaves(layout.tree);
+    const views = ids.flatMap((id) => (layout.panes[id] ? layout.panes[id].tabs : [null]));
+    return views.every((v) => VIEWS.includes(v)) && new Set(views).size === views.length;
+}
+
+function draft(layout) {
+    const panes = Object.fromEntries(Object.entries(layout.panes).map(([id, p]) => [id, {tabs: [...p.tabs], active: p.active}]));
+    return {layout: {tree: layout.tree, panes, next: layout.next}, born: {}, dying: {}};
+}
+
+function takeOut(change, id, view) {
+    const {layout} = change;
+    const pane = layout.panes[id];
+    const at = pane.tabs.indexOf(view);
+    if (at < 0) return;
+    pane.tabs.splice(at, 1);
+    if (pane.active === view) pane.active = pane.tabs[Math.max(0, at - 1)] || null;
+    if (pane.tabs.length || leaves(layout.tree).length < 2) return;
+    change.dying[id] = {rect: folded(layout.tree, id), pane: {tabs: [view], active: view}};
+    layout.tree = without(layout.tree, id);
+    delete layout.panes[id];
+}
+
+export function placed(layout, view, target, zone, from = null) {
+    const change = draft(layout);
+    const source = from ?? holding(layout, view);
+    if (source === target && (zone === "center" || layout.panes[source].tabs.length === 1)) return null;
+    const before = measure(layout.tree).rects[target];
+    if (source !== null) takeOut(change, source, view);
+    const pane = change.layout.panes[target];
+    if (!pane) return null;
+    if (zone === "center" || !pane.tabs.length) {
+        pane.tabs.push(view);
+        pane.active = view;
+        return change;
+    }
+    const id = change.layout.next++;
+    change.layout.panes[id] = {tabs: [view], active: view};
+    change.born[id] = EDGES[zone](before);
+    change.layout.tree = replaced(change.layout.tree, target, (node) => wrapped(node, leaf(id), zone));
+    return change;
+}
+
+export function tabClosed(layout, id, view) {
+    const change = draft(layout);
+    takeOut(change, id, view);
+    return change;
+}
+
+export function paneClosed(layout, id) {
+    const change = draft(layout);
+    if (leaves(layout.tree).length < 2) {
+        change.layout.panes[id] = {tabs: [], active: null};
+        return change;
+    }
+    change.dying[id] = {rect: folded(layout.tree, id), pane: layout.panes[id]};
+    change.layout.tree = without(layout.tree, id);
+    delete change.layout.panes[id];
+    return change;
+}
+
+export function arranged(layout, shape) {
+    const change = {layout: {tree: null, panes: {}, next: layout.next}, born: {}, dying: {}};
+    const alive = leaves(layout.tree);
+    const used = new Set();
+    const added = [];
+    const build = (node) => {
+        if (node.dir) return split(node.dir, node.r, build(node.a), build(node.b));
+        let id = alive.find((a) => !used.has(a) && layout.panes[a] && layout.panes[a].tabs.includes(node.active));
+        if (id === undefined) {
+            id = change.layout.next++;
+            added.push(id);
+        } else used.add(id);
+        change.layout.panes[id] = {tabs: [...node.tabs], active: node.active};
+        return leaf(id);
+    };
+    change.layout.tree = build(shape);
+    const before = measure(layout.tree).rects;
+    const after = measure(change.layout.tree).rects;
+    added.forEach((id) => (change.born[id] = centre(after[id])));
+    alive.filter((id) => !used.has(id)).forEach((id) => (change.dying[id] = {rect: centre(before[id]), pane: layout.panes[id]}));
+    return change;
+}
+
+export function activated(layout, id, view) {
+    const change = draft(layout);
+    change.layout.panes[id].active = view;
+    return change;
+}
+
+export function aimAt(layout, area, x, y, from) {
+    const {rects} = measure(layout.tree);
+    for (const id of leaves(layout.tree)) {
+        const r = rects[id];
+        const box = {
+            left: area.left + r.x * area.width,
+            top: area.top + r.y * area.height,
+            width: r.w * area.width,
+            height: r.h * area.height,
+        };
+        if (x < box.left || x > box.left + box.width || y < box.top || y > box.top + box.height) continue;
+        const pane = layout.panes[id];
+        const zone = zoneAt(box, x, y, pane.tabs.length > 0);
+        if (from === id && (zone === "center" || pane.tabs.length === 1)) return null;
+        return {id, zone};
+    }
+    return null;
+}
+
+function zoneAt(box, x, y, filled) {
+    if (y - box.top <= HEADER || !filled) return "center";
+    const across = (x - box.left) / box.width;
+    const down = (y - box.top - HEADER) / Math.max(1, box.height - HEADER);
+    const near = {left: across, right: 1 - across, top: down, bottom: 1 - down};
+    const [side, gap] = Object.entries(near).sort((m, n) => m[1] - n[1])[0];
+    return gap < EDGE_BAND ? side : "center";
+}
