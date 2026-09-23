@@ -277,7 +277,7 @@ class Controller(Stored, Files, Links):
                 self._write_file(r)
                 changed.append(r)
             if changed:
-                self.record.emit(self.type, changed[0].n, "updated", self.actor, numbers=[r.n for r in changed], seen=self.actor)
+                self.record.emit(self.type, changed[0].n, "updated", self.actor, numbers=[r.n for r in changed], seen=self.actor, by="read")
         return rows
 
     def unread(self, actor: str | None = None) -> list[Resource]:
