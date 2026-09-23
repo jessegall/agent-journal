@@ -64,15 +64,9 @@ function unedit() {
 const busy = computed(() => !!agent.value && ["working", "compacting"].includes(agent.value.data.status));
 const waiting = computed(() => waitsFor(rows("work")));
 const thought = computed(() => (agent.value && agent.value.data.thinking) || "");
-const running = computed(() => {
-    if (agent.value && agent.value.data.status === "compacting") return [];
-    const queue = (store.bar && store.bar.queue) || [];
-    const last = queue[queue.length - 1];
-    const fresh = last && (!last.done || Date.now() / 1000 - last.at < last.lingers);
-    return (fresh && last.parts) || [];
-});
+const helping = computed(() => ((agent.value && agent.value.data.subagent_rows) || []).filter((sub) => sub.running).at(-1));
 const activity = computed(() =>
-    agent.value && agent.value.data.status === "compacting" ? "compacting" : (running.value[0] && running.value[0].value) || "working"
+    agent.value && agent.value.data.status === "compacting" ? "compacting" : helping.value ? `subagent: ${helping.value.task}` : "working"
 );
 const away = ref(false);
 const missed = ref(0);
@@ -429,11 +423,8 @@ watch(
                                     <span>thinking</span>
                                     <span class="thread-meta-on thought">{{ thought }}</span>
                                 </template>
-                                <template v-else-if="running.length">
-                                    <RunningCommand />
-                                </template>
                                 <template v-else>
-                                    <span>{{ activity }}</span>
+                                    <RunningCommand :idle="activity" />
                                 </template>
                             </div>
                         </div>

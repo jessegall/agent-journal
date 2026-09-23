@@ -279,13 +279,6 @@ def get_bar(req: Request) -> Reply:
     return Reply(200, current(req.record()))
 
 
-@route("POST", "/api/{env}/bar")
-def post_bar(req: Request) -> Reply:
-    from features.status_bar.bar import played
-    played(req.record(), float(req.body.get("at") or 0))
-    return Reply(200, {})
-
-
 @route("POST", "/api/stop")
 def post_stop(req: Request) -> Reply:
     from engine.stop import ask

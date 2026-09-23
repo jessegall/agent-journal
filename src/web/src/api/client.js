@@ -242,10 +242,6 @@ export class ApiClient {
         return this.get(this.here("/bar"));
     }
 
-    played(at) {
-        return this.post(this.here("/bar"), {at});
-    }
-
     agents(last) {
         return this.list("agent", {completed: true, last, by: "updated"}).then((got) => got.rows);
     }
