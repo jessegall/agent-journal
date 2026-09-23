@@ -81,8 +81,13 @@ function begin(event) {
         </span>
         <template v-if="card.actions.length">
             <span class="actions">
-                <template v-for="(action, i) in card.actions" :key="action.action">
-                    <Btn small :kind="i ? 'ghost' : 'primary'" @click.stop="act(action.action)">{{ action.label }}</Btn>
+                <template v-for="(action, i) in card.actions" :key="action.label">
+                    <template v-if="action.href">
+                        <a class="action-link" :href="action.href" target="_blank" rel="noopener" @click.stop>{{ action.label }} ↗</a>
+                    </template>
+                    <template v-else>
+                        <Btn small :kind="i ? 'ghost' : 'primary'" @click.stop="act(action.action)">{{ action.label }}</Btn>
+                    </template>
                 </template>
             </span>
         </template>
@@ -181,6 +186,16 @@ function begin(event) {
 .card:focus-within .corner .more,
 .corner.open .more {
     visibility: visible;
+}
+
+.action-link {
+    align-self: center;
+    color: var(--text-2);
+    font-size: 12px;
+}
+
+.action-link:hover {
+    color: var(--text);
 }
 
 .actions {

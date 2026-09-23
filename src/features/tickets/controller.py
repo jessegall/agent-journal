@@ -83,7 +83,22 @@ class Tickets(Controller):
     def _actions(self, ticket) -> list:
         proposed = any(stance == PROPOSED for stance in ticket.dependencies.values())
         return [*([{"label": "Confirm", "action": "confirm"}] if ticket.draft else []),
-                *([{"label": "Accept", "action": "accept_dependencies"}, {"label": "Decline", "action": "decline_dependencies"}] if proposed else [])]
+                *([{"label": "Accept", "action": "accept_dependencies"}, {"label": "Decline", "action": "decline_dependencies"}] if proposed else []),
+                *([{"label": "Approve plan", "action": "approve_plan"},
+                   {"label": "Read plan", "href": f"#/{ticket.work_environment}/plan/{ticket.plan}"}] if self._plan_waits(ticket) else [])]
+
+    def _plan_waits(self, ticket) -> bool:
+        return bool(ticket.plan) and self._plans(ticket).load(int(ticket.plan)).status == READY
+
+    def _plans(self, ticket) -> Plans:
+        return Plans(Record(self.record.root, ticket.work_environment), actor=self.actor)
+
+    def approve_plan(self, n: int):
+        ticket = self.load(int(n))
+        if not self._plan_waits(ticket):
+            self._refuse(f"{self.type} {ticket.n} has no plan waiting for approval")
+        self._plans(ticket).approve(int(ticket.plan))
+        return ticket
 
     def _runtime(self, ticket, sessions: dict, running: int) -> CardState:
         place = ticket.work_environment
@@ -95,7 +110,7 @@ class Tickets(Controller):
         session = next((name for name, held in sessions.items() if held.environment == place and live(held)), "")
         row = Agents(Record(self.record.root, place), actor=SYSTEM)._titled(session) if session else None
         state = self._agent_state(ticket, row, running)
-        if ticket.plan and Plans(Record(self.record.root, place), actor=SYSTEM).load(int(ticket.plan)).status == READY:
+        if self._plan_waits(ticket):
             return CardState("you", f"{state.text} in {place}; its plan waits for your approval")
         return CardState(state.kind, f"{state.text} in {place}")
 
