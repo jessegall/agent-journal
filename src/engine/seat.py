@@ -5,7 +5,11 @@ from providers import PROVIDERS
 from engine.stored import write_json
 from engine.proc import git
 from engine import runtime
+from controllers.types import Agents
+from resources.base import SYSTEM
+from resources.types import AgentRow
 
+DISPATCHED, RETURNED = "dispatched", "returned"
 WEB_HOSTS = ("github.com", "gitlab.com", "bitbucket.org")
 
 
@@ -52,10 +56,26 @@ class Seat:
             return
         self.crewed_size = size
         facts = PROVIDERS[last.provider]().crew(Path(path)) if last.provider in PROVIDERS else {}
+        self.subagents_moved(last, facts.get(AgentRow.subagent_rows))
         if facts and any(last.data.get(k) != v for k, v in facts.items()):
             compacting = facts.get("compacting")
             status = COMPACTING if compacting else WORKING if compacting is False and last.status == COMPACTING else last.status or ""
             self.agent.mark(status, last.event or "", at=last.at, **facts)
+
+    def subagents_moved(self, last, subagents: list | None) -> None:
+        if subagents is None:
+            return
+        known = self.subagents_ended
+        if known is None:
+            known = {sub["id"]: sub.get("ended") for sub in last.data.get(AgentRow.subagent_rows) or []}
+        agents = Agents(self.record, actor=SYSTEM)
+        for sub in subagents:
+            data = {"id": sub["id"], "task": sub["task"], "kind": sub["type"], "model": sub["model"]}
+            if sub["id"] not in known:
+                agents.subagent(last.n, DISPATCHED, **data)
+            if sub.get("ended") and not known.get(sub["id"]):
+                agents.subagent(last.n, RETURNED, **data, status=sub.get("status") or "")
+        self.subagents_ended = {sub["id"]: sub.get("ended") for sub in subagents}
 
     def seat(self) -> None:
         self.branch()

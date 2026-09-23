@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.100.0 — A dispatched subagent is an event and a card in the chat
+
+When the agent dispatches a subagent, the engine raises agent.dispatched, and agent.returned when it comes back, each carrying the task, the agent type and the model; features and plugins can listen for both. The chat shows a small card at each: which type was dispatched, on which model, for which task, and later that it finished.
+
 ## 2.99.3 — A file chip into another project opens the file
 
 A file named in the chat by a path outside this project, such as ../code-commandments/composer.json, now opens in the file viewer instead of saying it is not found, with a line naming the other project and its folder. Only files inside another git repository open, and never a hidden file or folder such as .env.

@@ -8,7 +8,7 @@ from engine.text import paragraphs
 
 TITLE_MAX = 80
 ABSTRACT_MAX = 200
-ACTIONS = ("created", "updated", "deleted", "linked", "commented", "completed", "reopened", "stamped", "reported", "raised")
+ACTIONS = ("created", "updated", "deleted", "linked", "commented", "completed", "reopened", "stamped", "reported", "raised", "dispatched", "returned")
 RAISED = "raised"
 SMALL, WIDE, DOCUMENT = "small", "wide", "document"
 VIEWS = (SMALL, WIDE, DOCUMENT)

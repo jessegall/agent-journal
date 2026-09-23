@@ -165,3 +165,17 @@ def test_a_compaction_is_recorded_once_on_the_agent():
     report(record, "compacting", "PreCompact")
     agent = Agents(record, actor="system").by_session("claude-1")
     assert len(agent.data.get("compactions") or []) == 1, "one compaction, one mark for the chat"
+
+
+def test_a_subagent_dispatched_and_returned_is_an_event_on_the_agent_heard_once():
+    from types import SimpleNamespace
+    from engine.seat import Seat
+    record = fresh()
+    row = Agents(record, actor=AGENT).create("s-1", subagent_rows=[{"id": "old", "task": "earlier", "type": "Explore", "model": "haiku", "ended": 5.0}])
+    seat = SimpleNamespace(record=record, subagents_ended=None)
+    last = Agents(record, actor=AGENT).load(row.n)
+    running = {"id": "t1", "task": "audit the hooks", "type": "auditor", "model": "sonnet", "ended": 0.0}
+    for subagents in ([last.data["subagent_rows"][0], running], [last.data["subagent_rows"][0], running], [last.data["subagent_rows"][0], {**running, "ended": 9.0, "status": "completed"}]):
+        Seat.subagents_moved(seat, last, subagents)
+    heard = [(e.action, e.data.get("task"), e.data.get("kind"), e.data.get("model")) for e in record.events() if e.type == "agent" and e.action in ("dispatched", "returned")]
+    assert heard == [("dispatched", "audit the hooks", "auditor", "sonnet"), ("returned", "audit the hooks", "auditor", "sonnet")], heard
