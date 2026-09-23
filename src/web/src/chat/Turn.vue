@@ -384,8 +384,14 @@ async function drop() {
 }
 
 .thread-turn.peer .thread-bubble {
-    border: 1px solid var(--accent-text);
+    padding: 1px 0 1px 10px;
+    border: 0;
+    border-left: 2px solid var(--border-2);
+    border-radius: 0;
     background: none;
+    color: var(--text-3);
+    font-size: 12px;
+    line-height: 1.5;
 }
 
 .thread-turn.mine {
