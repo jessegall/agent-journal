@@ -13,7 +13,7 @@ from engine.transcript import conversation, user
 from resources.base import AGENT
 from engine.version import version
 from features.runtime_cleanup.tidy import summary, tidy
-from commands.queries import decided, ended, halt, healed, help_text, say, search_text, serve_forever, services, settings_text, speed, supervise, switched, transcript, upgrade_here, verify
+from commands.queries import attached, decided, ended, halt, healed, help_text, say, search_text, serve_forever, services, settings_text, speed, supervise, switched, transcript, upgrade_here, verify
 
 
 def actions(controller: type) -> list[str]:
@@ -122,6 +122,8 @@ def built(only: str) -> argparse.ArgumentParser:
     for name in DRIVERS:
         add_query(cmds, name, f"start {name} supervised, on this environment; everything after the word is forwarded to {name}", lambda ctx, name=name: supervise(ctx, name))
     add_query(cmds, "serve", "the web viewer", lambda ctx: serve_forever(ctx), ("--port", {"type": int, "default": 8430}))
+    add_query(cmds, "attach", "watch a session that runs without a terminal and type into it; Ctrl+] leaves it running",
+              lambda ctx: attached(ctx), ("target", {}))
     add_query(cmds, "upgrade", "pull the package, wire the hooks, write the skills, run the migrations", lambda ctx: upgrade_here(ctx))
     add_query(cmds, "stop", "stop this journal: its viewer, its engine and every service a plugin runs", lambda ctx: halt(ctx))
     add_query(cmds, "ended", "a session's agent has exited: put back what was set aside, and stop the journal when no session is left", lambda ctx: ended(ctx))

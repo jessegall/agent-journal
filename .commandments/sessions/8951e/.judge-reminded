@@ -1,4 +1,8 @@
+/Users/jessegall/projects/agent-journal/src/commands/parser.py
+/Users/jessegall/projects/agent-journal/src/commands/queries.py
 /Users/jessegall/projects/agent-journal/src/engine/inputs.py
+/Users/jessegall/projects/agent-journal/src/engine/sessions.py
+/Users/jessegall/projects/agent-journal/src/engine/terminal.py
 /Users/jessegall/projects/agent-journal/src/engine/version.py
 /Users/jessegall/projects/agent-journal/src/features/boards/__init__.py
 /Users/jessegall/projects/agent-journal/src/features/boards/controller.py
@@ -14,6 +18,7 @@
 /Users/jessegall/projects/agent-journal/src/features/tickets/feature.py
 /Users/jessegall/projects/agent-journal/src/features/tickets/resource.py
 /Users/jessegall/projects/agent-journal/src/features/tickets/test.py
+/Users/jessegall/projects/agent-journal/src/supervisor.py
 /Users/jessegall/projects/agent-journal/src/web/src/App.vue
 /Users/jessegall/projects/agent-journal/src/web/src/board/Card.vue
 /Users/jessegall/projects/agent-journal/src/web/src/board/CardMenu.vue

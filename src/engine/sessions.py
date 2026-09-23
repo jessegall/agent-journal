@@ -24,9 +24,9 @@ def alive(pid: int) -> bool:
         return False
 
 
-def hold_build(root: Path, build: Path) -> None:
+def hold_build(root: Path, build: Path, pid: int | None = None) -> None:
     if build.suffix == ".pyz":
-        write_text(runtime.builds(root) / str(os.getpid()), build.name)
+        write_text(runtime.builds(root) / str(pid or os.getpid()), build.name)
 
 
 def held_builds(root: Path) -> set[str]:

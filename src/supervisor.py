@@ -23,6 +23,7 @@ EXITING = 8.0
 CLEAR_LINE = b"\x05\x15"
 LONGEST = 65536
 TYPED_EVERY = 1.0
+HEADLESS_SIZE = (40, 120)
 ESCAPES = re.compile(rb"\x1b(?:\[[\x30-\x3f]*[\x20-\x2f]*[\x40-\x7e]|\][^\x07\x1b]*(?:\x07|\x1b\\)|[P_^X][^\x1b]*\x1b\\|O[\x40-\x7e]|[@-_])")
 
 
@@ -87,11 +88,12 @@ class Launch:
     args: list
     start: Start
     adopt: Adopted | None
+    headless: bool = False
 
     @classmethod
     def from_json(cls, raw: dict) -> "Launch":
         return cls(Path(raw["root"]), Path(raw["cwd"]), raw["env"], raw["agent"], raw["worker"], raw["heal"], raw["ended"], raw["args"],
-                   Start.from_json(raw), Adopted.from_json(raw["adopt"]) if "adopt" in raw else None)
+                   Start.from_json(raw), Adopted.from_json(raw["adopt"]) if "adopt" in raw else None, bool(raw.get("headless")))
 
 
 class Supervisor:
@@ -100,6 +102,7 @@ class Supervisor:
         self.env, self.agent = spec.env, spec.agent
         self.worker_command, self.heal_command, self.ended_command = spec.worker, spec.heal, spec.ended
         self.stdin, self.stdout = sys.stdin.fileno(), sys.stdout.fileno()
+        self.headless = spec.headless
         adopted = spec.adopt
         self.saved = adopted.saved if adopted else None
         self.pid, self.fd = (adopted.pid, adopted.fd) if adopted else self.spawn(spec.start.command, spec.start.environ)
@@ -114,6 +117,7 @@ class Supervisor:
         self.printed = (self.folder / "printed").open("ab")
         self.screen = (self.folder / "screen").open("ab")
         self.inbox = self.listen()
+        self.sources = [self.fd, self.inbox, *(() if self.headless else (self.stdin,))]
         self.typed_at = 0.0
         self.record_launch()
         self.resize(self.fd)
@@ -150,7 +154,7 @@ class Supervisor:
 
     def resize(self, fd: int) -> None:
         try:
-            size = fcntl.ioctl(self.stdout, termios.TIOCGWINSZ, b"\0" * 8)
+            size = struct.pack("HHHH", *HEADLESS_SIZE, 0, 0) if self.headless else fcntl.ioctl(self.stdout, termios.TIOCGWINSZ, b"\0" * 8)
             fcntl.ioctl(fd, termios.TIOCSWINSZ, size)
             rows, cols = struct.unpack("HHHH", size)[:2]
         except OSError:
@@ -216,7 +220,7 @@ class Supervisor:
             self.worker.wait()
 
     def relay(self) -> int | None:
-        ready, _, _ = select.select([self.fd, self.stdin, self.inbox], [], [], 0.5)
+        ready, _, _ = select.select(self.sources, [], [], 0.5)
         if self.inbox in ready:
             for raw in self.received():
                 os.write(self.fd, raw)
