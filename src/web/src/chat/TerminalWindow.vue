@@ -3,10 +3,12 @@ import {computed, ref} from "vue";
 import {api} from "../api/client.js";
 import TextInput from "../kit/TextInput.vue";
 import {agent} from "../state/store.js";
+import {useCommandOutputs} from "../composables/commandOutputs.js";
 import CommandLog from "./CommandLog.vue";
 
 const commands = computed(() => (agent.value && agent.value.data.commands) || []);
 const queued = computed(() => (agent.value && agent.value.data.queued_commands) || []);
+const outputs = useCommandOutputs();
 const command = ref("");
 const refusal = ref("");
 
@@ -25,7 +27,7 @@ async function run() {
 <template>
     <section class="terminal">
         <div class="terminal-body">
-            <CommandLog :commands="commands" :queued="queued" />
+            <CommandLog :commands="commands" :queued="queued" :outputs="outputs" />
         </div>
         <template v-if="agent">
             <form class="terminal-run" @submit.prevent="run">
