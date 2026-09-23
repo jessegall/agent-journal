@@ -98,7 +98,8 @@ class Tickets(Controller):
         return Card(ticket.n, ticket.title, LEVELS["default"], stage, reason=state.text, state=state.kind, session=state.session, targets=[s for s in stages if s != stage],
                     updated=ticket.updated, completed=ticket.completed, type=self.type,
                     actions=[*self._actions(ticket, state.session), *(action for more in extras for action in more.actions)],
-                    link=next((more.link for more in extras if more.link), ""))
+                    link=next((more.link for more in extras if more.link), ""),
+                    link_label=next((more.link_label for more in extras if more.link_label), ""))
 
     def _actions(self, ticket, session: str) -> list:
         proposed = any(stance == PROPOSED for stance in ticket.dependencies.values())

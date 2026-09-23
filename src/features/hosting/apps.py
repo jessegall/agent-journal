@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from engine import runtime
-from engine.keeper import ServiceSpec
+from engine.keeper import READY, ServiceSpec
 from engine.record import Record
 from engine.services import allocate, files_for, status
 from features.hosting.files import hosting_of
@@ -63,10 +63,14 @@ def app_here(record) -> str:
     return address(record.root, ticket)["url"] if ticket else ""
 
 
+APP_STATES = {"starting": "App starting", "not started": "App starting"}
+
+
 @dataclass(frozen=True)
 class CardExtra:
     actions: list
     link: str = ""
+    link_label: str = ""
 
 
 def app_on_card(record, ticket) -> CardExtra:
@@ -74,4 +78,8 @@ def app_on_card(record, ticket) -> CardExtra:
         return CardExtra([])
     if not ticket.hosted:
         return CardExtra([{"label": "Run its app", "action": "host"}])
-    return CardExtra([{"label": "Stop its app", "action": "unhost"}], address(record.root, ticket)["url"])
+    app = address(record.root, ticket)
+    stop = [{"label": "Stop its app", "action": "unhost"}]
+    if app["state"] == READY:
+        return CardExtra(stop, app["url"], "Open app")
+    return CardExtra(stop, "", APP_STATES.get(app["state"], f"App stopped: {app['why'] or app['state']}"))

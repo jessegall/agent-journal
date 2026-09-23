@@ -55,7 +55,7 @@ function begin(event) {
                 </button>
             </span>
         </span>
-        <template v-if="card.reason || card.link || card.session">
+        <template v-if="card.reason || card.link_label || card.session">
             <span class="meta">
                 <template v-if="card.reason">
                     <StateDot :state="card.state" />
@@ -65,7 +65,10 @@ function begin(event) {
                     <button type="button" class="watch" @click.stop="board.watchAgent(card)">Watch agent</button>
                 </template>
                 <template v-if="card.link">
-                    <a class="app" :href="card.link" target="_blank" rel="noopener" @click.stop>Open app ↗</a>
+                    <a class="app" :href="card.link" target="_blank" rel="noopener" @click.stop>{{ card.link_label }} ↗</a>
+                </template>
+                <template v-else-if="card.link_label">
+                    <span class="app">{{ card.link_label }}</span>
                 </template>
             </span>
         </template>
