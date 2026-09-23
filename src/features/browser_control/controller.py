@@ -39,9 +39,9 @@ class Asks(Controller):
     def pending(self) -> list:
         return self._standing()
 
-    def answer(self, n: int, text: str, ok: bool = True, files: list | None = None):
+    def answer(self, n: int, text: str, ok: bool = True, files: tuple = ()):
         self.complete(n, text, ok=ok)
-        for f in files or []:
+        for f in files:
             with tempfile.TemporaryDirectory() as folder:
                 path = Path(folder) / Path(f[UPLOAD.name]).name
                 path.write_bytes(base64.b64decode(f[UPLOAD.data].split(",", 1)[-1]))

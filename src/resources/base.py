@@ -51,7 +51,9 @@ class Field:
 
 
 def declare(cls) -> None:
-    for field_ in cls.__dict__.get("data_fields", []):
+    if "data_fields" not in cls.__dict__:
+        return
+    for field_ in cls.__dict__["data_fields"]:
         setattr(cls, field_.name, field_)
 
 

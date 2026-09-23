@@ -152,13 +152,17 @@ class ScreenPart:
     rows: int
     cols: int
 
+    @classmethod
+    def blank(cls, rows: int, cols: int) -> "ScreenPart":
+        return cls("", 0, rows, cols)
+
 
 def screen_since(root: Path, terminal: str, since: int) -> ScreenPart:
     import base64
     screen = runtime.session_file(root, terminal, "screen")
     shape = read_json(runtime.session_file(root, terminal, "screen.json"), {"rows": 40, "cols": 120})
     if not screen.is_file():
-        return ScreenPart("", 0, int(shape["rows"]), int(shape["cols"]))
+        return ScreenPart.blank(int(shape["rows"]), int(shape["cols"]))
     size = screen.stat().st_size
     at = max(0, size - SHOWN_BACK) if since < 0 or since > size else since
     with screen.open("rb") as shown:
