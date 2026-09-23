@@ -66,6 +66,22 @@ class Crew:
     ids: dict = field(default_factory=dict)
     ended: dict = field(default_factory=dict)
 
+SPEAKERS = {SUMMARY: SUMMARY, HUMAN: "user", AGENT: "agent"}
+ORIGINS = {"peer": PEER, "task-notification": TASK}
+
+
+def monitor_end(finished: bool, notified: bool, done: float, deadline: float) -> float:
+    if not finished:
+        return 0.0
+    return done if notified else deadline
+
+
+def monitor_status(finished: bool, notified: bool, status: str) -> str:
+    if not finished:
+        return ""
+    return status if notified else "expired"
+
+
 class Claude(Provider):
     name = "claude"
     sleeping_tools = ("ScheduleWakeup",)
@@ -255,7 +271,7 @@ class Claude(Provider):
         if not text.strip() and not tools:
             return None
         kind = self.kind(row, bool(results))
-        who = SUMMARY if kind == SUMMARY else "user" if kind == HUMAN else "agent" if kind == AGENT else kind
+        who = SPEAKERS.get(kind, kind)
         if kind == PEER and row.origin.name and row.origin.sender.startswith(SESSIONS):
             who, text = f"{PEER}:{row.origin.name}:{row.origin.sender}", row.origin.body if row.origin.body else text
         sent = next((use for use in uses if use.name == SENDS and use.to), None)
@@ -275,7 +291,11 @@ class Claude(Provider):
         if row.type == "assistant":
             return AGENT
         origin = row.origin.kind
-        return PEER if origin == "peer" else TASK if origin == "task-notification" else TOOL if has_result else INJECTED if row.meta else HUMAN
+        if origin in ORIGINS:
+            return ORIGINS[origin]
+        if has_result:
+            return TOOL
+        return INJECTED if row.meta else HUMAN
 
     def refine(self, turns: list[Turn]) -> list[Turn]:
         asked = set()
@@ -381,8 +401,8 @@ class Claude(Provider):
             finished = notified or now > deadline
             monitors.append({"id": use.id, "task_id": ids.get(use.id, ""), "command": (use.command if use.command else use.url)[:160],
                              "task": use.description if use.description else "monitor", "running": not finished, "at": use.at,
-                             "ended": (done if notified else deadline) if finished else 0.0,
-                             "status": (status if notified else "expired") if finished else ""})
+                             "ended": monitor_end(finished, notified, done, deadline),
+                             "status": monitor_status(finished, notified, status)})
         return {AgentRow.skills: self.loaded(held.window), AgentRow.shells: len(shells), AgentRow.subagents: len(subagents),
                 AgentRow.monitors: len(monitors), AgentRow.shell_rows: shells, AgentRow.subagent_rows: subagents,
                 AgentRow.monitor_rows: monitors}

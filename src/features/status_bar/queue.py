@@ -85,7 +85,7 @@ def outcome(result: Outcome) -> list[dict]:
 
 
 def key_of(parts: list[dict]) -> str:
-    return " ".join(p["value"] if isinstance(p["value"], str) else (p["value"][0] if p["value"] else "") for p in parts)
+    return " ".join(part_text(p) for p in parts)
 
 
 def walked(parts: list[dict]) -> float:
@@ -93,11 +93,28 @@ def walked(parts: list[dict]) -> float:
     return steps * FLIP_EVERY if steps > 1 else 0.0
 
 
+def part_text(part: dict) -> str:
+    value = part["value"]
+    if isinstance(value, str):
+        return value
+    return value[0] if value else ""
+
+
+def named_parts(found: list, noun: str) -> list:
+    if found:
+        return columns(found)
+    return [{"value": noun, "color": MUTED}] if noun else []
+
+
+def held_for(kind: str) -> float:
+    return HOLD if kind in HELD else 0.0
+
+
 def message(group: list[Dissected], closed: bool, now: float, behind: int = 0) -> dict:
     kind = group[0].kind
     found = worked(group)
     noun = NOUNS.get(kind)
-    parts = [verb_for(group, kind), *(columns(found) if found else [{"value": noun, "color": MUTED}] if noun else [])]
+    parts = [verb_for(group, kind), *named_parts(found, noun)]
     last = group[-1]
     over = closed or bool(last.done)
     ran = max(0.0, (last.done if over else now) - last.at)
@@ -109,7 +126,7 @@ def message(group: list[Dissected], closed: bool, now: float, behind: int = 0) -
         "done": over,
         "for": int(ran),
         "clock": ran >= CLOCK_AFTER and not over,
-        "hold": DRAINING if behind >= DRAIN else max(HOLD if kind in HELD else 0.0, walked(parts)),
+        "hold": DRAINING if behind >= DRAIN else max(held_for(kind), walked(parts)),
         "lingers": LINGERS,
     }
 
