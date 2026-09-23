@@ -23,6 +23,7 @@ class Role(Loaded):
     inputs: list = field(default_factory=list)
     outputs: list = field(default_factory=list)
     cardinality: str = WORKTREE
+    model: str = ""
 
 
 @dataclass(frozen=True)

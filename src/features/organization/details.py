@@ -13,8 +13,14 @@ class OrganizationDetails(FeatureDetails):
     help = f"""
         The organization lives in {FOLDER}/ at the project root: domains/<domain>/domain.toml names a domain (title, icon,
         description, responsible, not_responsible, lead), and domains/<domain>/roles/<role>/role.toml a role under it (title,
-        icon, description, responsible, not_responsible, skills, tools, inputs, outputs, cardinality). Cardinality is one of
+        icon, description, responsible, not_responsible, skills, tools, inputs, outputs, cardinality, model). Cardinality is one of
         {', '.join(CARDINALITIES)}: worktree means one running instance per ticket, plural any number. journal ticket
         organization shows what is read; a lead that is not one of its domain's roles, or an unknown cardinality, is refused
         with the file that says it.
+
+        A ticket's agent hands work to a domain with journal todo delegate "<task>" <domain> [--role <role>] [--given
+        "<context>"]: the task becomes a to-do in the ticket's environment, tagged with its domain and role (the domain's lead
+        when no role is named), and the command returns the brief to dispatch one subagent with. A role that is worktree
+        queues its tasks one after another; a plural role takes them side by side. A task must name the role's inputs, and a
+        report on it must mention every one of the role's outputs.
     """
