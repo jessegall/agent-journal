@@ -11,7 +11,7 @@ import {quoted, withQuote} from "../format/quote.js";
 import {chatOnly, laidOut} from "../platform/view.js";
 import {threadTurns} from "../domain/thread.js";
 import {agent, feedOn, store} from "../state/store.js";
-import {waitsFor} from "../layout/statusline.js";
+import {cardPlan, waitsFor} from "../layout/statusline.js";
 import {polled} from "../sync/polled.js";
 import {earlier, paging, rows} from "../sync/rows.js";
 import DumpWindow from "./DumpWindow.vue";
@@ -19,6 +19,7 @@ import TerminalWindow from "./TerminalWindow.vue";
 import FileFeed from "./FileFeed.vue";
 import Compose from "./Compose.vue";
 import Turn from "./Turn.vue";
+import PlanCard from "./PlanCard.vue";
 import ThreadSkeleton from "./ThreadSkeleton.vue";
 import {usePoll} from "../poll.js";
 import {tellExtension} from "../platform/extension.js";
@@ -68,6 +69,7 @@ function unedit() {
 }
 const busy = computed(() => !!agent.value && ["working", "compacting"].includes(agent.value.data.status));
 const waiting = computed(() => waitsFor(rows("work")));
+const planCard = computed(() => cardPlan(rows("plan")));
 const thought = computed(() => (agent.value && agent.value.data.thinking) || "");
 const helping = computed(() => ((agent.value && agent.value.data.subagent_rows) || []).filter((sub) => sub.running).at(-1));
 const activity = computed(() =>
@@ -423,6 +425,9 @@ watch(
                                 @grew="settled"
                             />
                         </TransitionGroup>
+                        <Transition name="plancard">
+                            <PlanCard v-if="planCard" :key="planCard.n" :plan="planCard" />
+                        </Transition>
                         <Transition name="status">
                             <div
                                 v-if="busy || waiting"

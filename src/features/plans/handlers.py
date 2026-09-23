@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from typing import ClassVar
 
 from engine.events import AgentReported, AnyEvent, ResourceEvent
-from features.plans.controller import APPROVED, BUILDING, DEPTHS, DRAFT, PHASES, READY, WAITING
+from features.plans.controller import ACTIVE, APPROVED, BUILDING, DEPTHS, DRAFT, PARKED, PHASES, READY, WAITING
 from features.plans.progress import catch_up
 from features.plans.resource import PHASE
 from features.work_tracking.auto import automatic
@@ -16,6 +16,8 @@ ADVANCES = {("todo", "completed"), ("plan", "updated"), ("agent", "reported")}
 @dataclass(frozen=True)
 class PlanChanged(ResourceEvent):
     on: ClassVar[str] = "plan"
+    status: str = ""
+    parked_for: int = 0
 
 
 class StartBuilding(Handler):
@@ -35,6 +37,16 @@ class StartApproved(Handler):
         speaking = context.speaking_to(agent)
         if plan.status == APPROVED and speaking.once("approved", str(plan.n)):
             speaking.agent.say("approved", n=plan.n, title=plan.title)
+
+
+class TellParkedAndPickedUp(Handler):
+    def handle(self, context: Context, event: PlanChanged) -> None:
+        agent = context.journal.agents.primary()
+        if event.action != "updated" or event.actor != USER or event.status not in (ACTIVE, PARKED) or event.parked_for or not agent:
+            return
+        plan = context.journal.plans.load(event.n)
+        line = "picked up" if event.status == ACTIVE else "parked"
+        context.speaking_to(agent).agent.say(line, n=plan.n, title=plan.title, phase=plan.current)
 
 
 class GuideBuilding(Handler):

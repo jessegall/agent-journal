@@ -84,6 +84,7 @@ const shapes = {
     smile: '<circle cx="8" cy="8" r="5.5"/><path d="M5.8 9.5c1.2 1.2 3.2 1.2 4.4 0M6.2 6.5h.01M9.8 6.5h.01"/>',
     dots: '<path d="M4 8h.01M8 8h.01M12 8h.01"/>',
     dot: '<circle cx="8" cy="8" r="2.5"/>',
+    start: '<path d="M5.5 3.8v8.4L12 8z" stroke-linejoin="round"/>',
 };
 </script>
 

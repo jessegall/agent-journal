@@ -1,5 +1,5 @@
 from controllers.types import Todos
-from features.plans.controller import ACTIVE, DONE, ENDED, Plans, WAITING
+from features.plans.controller import ACTIVE, DONE, ENDED, Plans, RUNNING, WAITING
 from features.work_tracking.auto import automatic
 from resources.base import SYSTEM
 from resources.shapes import LEVELS
@@ -7,7 +7,7 @@ from features.plans.resource import PHASE
 
 
 def running(record) -> list:
-    return [p for p in Plans(record, actor=SYSTEM)._every() if p.status in (ACTIVE, WAITING)]
+    return [p for p in Plans(record, actor=SYSTEM)._every() if p.status in RUNNING]
 
 
 def current_phase(plan) -> dict | None:
@@ -26,6 +26,14 @@ def held(record, todo) -> bool:
     return any(p.status == ACTIVE for p in plans) and int(todo.priority or LEVELS["default"]) < LEVELS["critical"]
 
 
+def status_after(last: bool, waits: bool) -> str:
+    if last:
+        return DONE
+    if waits:
+        return WAITING
+    return ACTIVE
+
+
 def phase_complete(record, phase: dict) -> bool:
     todos = Todos(record, actor=SYSTEM)
     return all(todos.load(n).completed for n in phase[PHASE.todos])
@@ -38,7 +46,7 @@ def step(record, plan) -> bool:
     i = plan.current
     last = i == len(plan.phases)
     waits = bool(phase[PHASE.checkpoint]) and not automatic(record)
-    plan.status = DONE if last else WAITING if waits else ACTIVE
+    plan.status = status_after(last, waits)
     plan.current = i if last or waits else i + 1
     plans = Plans(record, actor=SYSTEM)
     plans.save(plan, "updated", phase=i, complete=True, status=plan.status, passed=bool(phase[PHASE.checkpoint]) and not waits)

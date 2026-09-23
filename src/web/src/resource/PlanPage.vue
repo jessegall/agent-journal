@@ -43,6 +43,7 @@ const button = computed(
             draft: ["approve", "Approve"],
             ready: ["approve", "Approve"],
             waiting: ["continue", "Continue"],
+            parked: ["start", "Resume"],
             done: ["finish", "Finish"],
         })[status.value] || null
 );
@@ -66,7 +67,7 @@ async function run(action, body = {}) {
             </span>
             <span :class="['status', status]">
                 {{ status }}
-                <template v-if="status === 'active' || status === 'waiting'">· phase {{ current }} of {{ phases.length }}</template>
+                <template v-if="['active', 'waiting', 'parked'].includes(status)">· phase {{ current }} of {{ phases.length }}</template>
             </span>
             <span class="grow" />
             <DownloadLink :resource="resource" />
@@ -182,6 +183,9 @@ async function run(action, body = {}) {
 }
 .status.approved {
     color: var(--created);
+}
+.status.parked {
+    color: var(--parked);
 }
 .phase.skeleton {
     opacity: 0.4;

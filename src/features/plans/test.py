@@ -1,3 +1,5 @@
+from dataclasses import dataclass
+
 import pytest
 
 from features.plans.controller import Plans  # noqa: E402
@@ -9,6 +11,15 @@ from tests.conftest import fresh, refused
 from tests.kit import idle
 
 
+@dataclass(frozen=True)
+class Env:
+    record: Record
+    todos: Todos
+    rows: list
+    by_agent: Plans
+    by_user: Plans
+
+
 @pytest.fixture(scope="module")
 def env(tmp_path_factory):
     root = tmp_path_factory.mktemp("advance") / ".journal"
@@ -17,11 +28,11 @@ def env(tmp_path_factory):
     rows = [todos.create(t).n for t in ("one", "two", "three", "four", "five")]
     by_agent = Plans(record, actor=AGENT)
     by_user = Plans(record, actor=USER)
-    return record, todos, rows, by_agent, by_user
+    return Env(record, todos, rows, by_agent, by_user)
 
 
 def test_writing_a_plan_lays_out_phases_and_advances_through_them_to_done(env):
-    record, todos, rows, by_agent, by_user = env
+    record, todos, rows, by_agent, by_user = env.record, env.todos, env.rows, env.by_agent, env.by_user
     plan = by_agent.create("Port everything", goal="it all runs on v2")
     assert (plan.data["status"], plan.data["phases"]) == ("building", []), "a plan the agent creates is building, with no phases"
     assert refused(lambda: by_user.approve(plan.n)) == f"plan {plan.n} is building, not one that can become approved", "still building"
@@ -56,7 +67,7 @@ def test_writing_a_plan_lays_out_phases_and_advances_through_them_to_done(env):
     assert [t.n for t in ready(record)] == [1, 2], "active: rows of the current phase are ready, in order; the others wait"
     assert refused(lambda: Works(record, actor=AGENT).create("a quick fix")).startswith("a plan is active"), "free work waits for the plan"
     second = by_agent.create("Another")
-    assert refused(lambda: by_agent.start(second.n)) == "one plan is active at a time on an environment", "one plan at a time"
+    assert refused(lambda: by_agent.start(second.n)) == f"plan {second.n} is building, not one that can become active", "a plan still building cannot start"
 
     todos.complete(1, "done")
     assert by_agent.load(plan.n).data["current"] == 1, "one row done: the phase is not complete"
@@ -115,7 +126,7 @@ def test_under_auto_a_checkpoint_is_passed_not_waited_at():
 
 
 def test_a_plan_started_with_its_rows_already_closed_completes_itself(env):
-    record, todos, rows, by_agent, by_user = env
+    record, todos, rows, by_agent, by_user = env.record, env.todos, env.rows, env.by_agent, env.by_user
     late = by_agent.create("already done", goal="nothing left to do")
     by_agent.phase(late.n, "only phase", when="its row is closed")
     row = todos.create("a row that is already closed")
@@ -140,6 +151,39 @@ def test_an_agent_building_a_plan_is_told_each_next_step():
     Plans(record, actor="user").approve(plans.ready(n).n)
     assert nudges(record)[-1] == f"the user approved plan {n}, ship it - start it", "approving tells the agent to start it"
     assert (Plans(record, actor="user").create("a digest").status, nudges(record)[-1]) == ("building", f"the user started plan {n + 1}, a digest - build it with them")
+
+
+def test_starting_a_plan_parks_the_one_that_runs_and_a_parked_plan_picks_up_where_it_stopped():
+    from tests.kit import nudges, report
+    record = fresh()
+    report(record, "working", "PreToolUse")
+    todos = Todos(record, actor=USER)
+    by_agent, by_user = Plans(record, actor=AGENT), Plans(record, actor=USER)
+
+    def approved(title, *rows):
+        n = by_agent.create(title).n
+        for row in rows:
+            by_agent.phase(n, row, when=f"{row} is done")
+            by_agent.place(n, len(by_agent.phases(n)), [todos.create(row).n])
+        by_agent.ready(n)
+        return by_user.approve(n).n
+
+    def status(n):
+        return by_agent.load(n).data["status"], by_agent.load(n).data["current"]
+
+    first, second = approved("first", "one", "two"), approved("second", "three")
+    by_agent.start(first)
+    todos.complete(1, "done")
+    by_agent.start(second)
+    assert (status(first), status(second)) == (("parked", 2), ("active", 1)), "starting a second plan parks the one that runs"
+    assert [t.n for t in ready(record)] == [3], "the parked plan's rows wait; the running plan's are offered"
+    by_user.park(second)
+    assert nudges(record)[-1] == f"the user parked plan {second}, second", "parking tells the agent"
+    assert refused(lambda: by_user.park(second)) == f"plan {second} is parked, not one that can become parked", "a parked plan is parked once"
+    by_user.start(first)
+    assert (status(first), status(second)) == (("active", 2), ("parked", 1)), "a parked plan picks up at the phase it stopped at"
+    assert (nudges(record)[-1], [t.n for t in ready(record)]) == (f"the user started plan {first}, first - it is active now", [2]), \
+        "and the agent is told to work it"
 
 
 def test_claude_plan_mode_is_refused_for_a_journal_plan():

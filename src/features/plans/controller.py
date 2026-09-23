@@ -5,7 +5,10 @@ from controllers.types import Docs
 from features.plans.resource import PHASE, Plan
 from resources.base import AGENT, SECTION, Refused, check_title
 
-BUILDING, DRAFT, READY, APPROVED, ACTIVE, WAITING, DONE, ABANDONED = "building", "draft", "ready", "approved", "active", "waiting", "done", "abandoned"
+BUILDING, DRAFT, READY, APPROVED, ACTIVE, WAITING, PARKED, DONE, ABANDONED = (
+    "building", "draft", "ready", "approved", "active", "waiting", "parked", "done", "abandoned"
+)
+RUNNING = (ACTIVE, WAITING)
 ENDED = (DONE, ABANDONED)
 PHASES, TODOS = "phases", "todos"
 STAGES = (PHASES, TODOS)
@@ -49,9 +52,9 @@ class Plans(Controller):
     def phases(self, n: int) -> list[dict]:
         return self.load(n).phases
 
-    def phase(self, n: int, title: str, when: str = "", checkpoint: bool = False, brief: str = "", before: int = 0):
+    def phase(self, n: int, title: str, when: str | None = None, checkpoint: bool = False, brief: str = "", before: int = 0):
         r = self.load(n)
-        made = {PHASE.title: check_title(title), PHASE.when: check_title(when) if when else "", PHASE.checkpoint: bool(checkpoint), PHASE.brief: brief, PHASE.todos: []}
+        made = {PHASE.title: check_title(title), PHASE.when: check_title(when) if when is not None else "", PHASE.checkpoint: bool(checkpoint), PHASE.brief: brief, PHASE.todos: []}
         r.phases.insert(int(before) - 1 if before else len(r.phases), made)
         return self.save(r, "updated", phase=r.phases.index(made) + 1)
 
@@ -97,11 +100,16 @@ class Plans(Controller):
 
     def start(self, n: int):
         r = self.load(n)
-        if any(x.status in (ACTIVE, WAITING) for x in self._every() if x.n != n):
-            self._refuse("one plan is active at a time on an environment")
         if r.status in (DRAFT, READY):
             self._refuse(f"plan {n} waits for the user to approve it")
-        return self._status(r, ACTIVE, APPROVED)
+        self._allowed(r, ACTIVE, APPROVED, PARKED)
+        for other in self._every():
+            if other.n != r.n and other.status in RUNNING:
+                self._status(other, PARKED, *RUNNING, parked_for=r.n)
+        return self._status(r, ACTIVE, APPROVED, PARKED)
+
+    def park(self, n: int):
+        return self._status(self.load(n), PARKED, APPROVED, *RUNNING)
 
     def resume(self, n: int):
         self._user_only("continue")
@@ -110,19 +118,22 @@ class Plans(Controller):
         return self._status(r, ACTIVE, WAITING)
 
     def abandon(self, n: int, why: str = ""):
-        return self._status(self.load(n), ABANDONED, BUILDING, DRAFT, READY, APPROVED, ACTIVE, WAITING, why=why)
+        return self._status(self.load(n), ABANDONED, BUILDING, DRAFT, READY, APPROVED, ACTIVE, WAITING, PARKED, why=why)
 
     def _status(self, r, to: str, *allowed: str, **event):
-        if r.status not in allowed:
-            raise Refused(f"plan {r.n} is {r.status}, not one that can become {to}")
+        self._allowed(r, to, *allowed)
         r.status = to
         return self.save(r, "updated", status=to, **event)
+
+    def _allowed(self, r, to: str, *allowed: str) -> None:
+        if r.status not in allowed:
+            raise Refused(f"plan {r.n} is {r.status}, not one that can become {to}")
 
     def _phase(self, r, p: int) -> dict:
         try:
             return r.phases[int(p) - 1]
-        except IndexError:
-            raise Refused(f"plan {r.n} has no phase {p}")
+        except IndexError as error:
+            raise Refused(f"plan {r.n} has no phase {p}") from error
 
     def _user_only(self, word: str) -> None:
         if self.actor == AGENT:
