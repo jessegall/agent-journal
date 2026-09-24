@@ -1,6 +1,7 @@
-from features.base import FeatureDetails, Line
+from features.base import Behaviour, FeatureDetails, Line
 from features.command_tags.reading import RUNS
 from features.settings import Setting
+from features.trigger import MINUTES, Trigger
 
 
 class TagsDetails(FeatureDetails):
@@ -40,6 +41,10 @@ class TagsDetails(FeatureDetails):
         A tag runs once, keyed to the turn it came from; two tags in one turn run in the order
         they appear; and a refusal comes back as a nudge on the next turn rather than at the
         moment of acting.
+
+        Running a command a tag stands for, such as journal message reply, shows you its tag
+        once in a while, with the reminder that a tag runs only when it opens the last text of
+        your turn.
     """
 
     settings = [
@@ -51,7 +56,21 @@ class TagsDetails(FeatureDetails):
         ),
     ]
 
+    behaviours = [
+        Behaviour(
+            name="hint",
+            title="Show the tag for a command",
+            abstract="When the agent runs a command a tag stands for, it is shown the tag once in a while",
+            trigger=Trigger(every=30, unit=MINUTES),
+        ),
+    ]
+
     lines = [
+        Line(
+            name="hint",
+            title="the {{tag}} tag does this in one step",
+            brief="{{hint}}; it runs only when it opens the last text of your turn",
+        ),
         Line(
             name="refused",
             title="the {{tag}} tag on {{on}} did not run",

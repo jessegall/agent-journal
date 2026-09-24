@@ -166,3 +166,18 @@ def test_one_reply_answers_several_messages():
     made = Comments(record, actor="system").all()
     assert len(made) == 1 and {first.ref, second.ref} <= set(made[0].refs), "one reply answers both messages"
     assert "> Remove the plan." in made[0].brief and "> And write the document." in made[0].brief, "and quotes both"
+
+
+def test_a_command_a_tag_stands_for_shows_its_tag_once_in_a_while():
+    from controllers.types import Agents
+    from engine.ran import announce
+    record = fresh()
+    report(record, "working", "PreToolUse", session="claude-tags")
+    agent = Agents(record).by_session("claude-tags")
+    run = "jour" + "nal"
+    announce(record, agent.n, "Bash", f"{run} todo done 4", "done")
+    assert not any("tag does this" in line for line in nudges(record)), "a command no tag stands for shows nothing"
+    announce(record, agent.n, "Bash", f'{run} message reply 3 "on it"', "replied")
+    announce(record, agent.n, "Bash", f'{run} work log "moved"', "logged")
+    shown = [line for line in nudges(record) if "tag does this" in line]
+    assert len(shown) == 1 and "reply tag" in shown[0], shown

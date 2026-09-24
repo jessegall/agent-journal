@@ -1,8 +1,8 @@
 import io
 
-from engine.events import AgentMessageSending
+from engine.events import AgentMessageSending, CommandRan
 from features.parts import AgentContext, Context, Handler
-from features.command_tags.reading import CARRIED, internal, named, reader, replies, runs, stripped, tag_spelling, waits
+from features.command_tags.reading import CARRIED, internal, named, reader, replies, runs, stripped, tag_spelling, tag_for, waits
 from resources.base import AGENT
 
 
@@ -33,3 +33,10 @@ class RunTagCommands(Handler):
 
     def argv(self, template: str, n: str, name: str, text: str) -> list[str]:
         return [{"{text}": text, "{n}": n, "{name}": name}.get(word, word) for word in template.split()]
+
+
+class TeachTheTag(Handler):
+    def handle(self, context: AgentContext, event: CommandRan) -> None:
+        tag = tag_for(event.command)
+        if tag and "--file" not in event.command and context.due("hint"):
+            context.agent.whisper("hint", tag=tag.name, hint=tag.hint)

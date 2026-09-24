@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.154.0 — A worktree gets every journal skill
+
+A worktree now links every skill the project does not track in git, not only the ones git ignores. A project that keeps the journal's skills untracked, as code-commandments does, got none of them in its worktrees, so an agent there could not load journal-boards and the rest; every launch now links them, and the regression test covers it. Running a command a tag stands for, such as message reply, now shows its tag once in a while. The New work dialog grows to fit a long question instead of pressing its title against the top. Nothing to do.
+
 ## 2.153.0 — A worktree always gets the project's journal
 
 A worktree now always shares the project's journal. A project that once committed journal files to git no longer gets those stale files in each worktree instead: they are hidden from git there and the project's journal is linked in their place, and a regression test covers it, including links run twice, dangling old links and files checked out again. journal claude --worktree without a name now names the worktree after the environment you chose. journal plan progress <n> says where a plan stands, for the environment's agent to answer how it is going. Nothing to do.

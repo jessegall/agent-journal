@@ -124,10 +124,9 @@ def share_journal(top: Path, root: Path) -> None:
     project = root.resolve().parent
     if top.resolve() == project or not belongs(top, project):
         return
-    wanted = [Path(path) for path in SHARED] + ignored(project, [
-        *(Path(path) for path in SHARED_IF_IGNORED if (project / path).exists()),
-        *(Path(folder) / entry.name for folder in SHARED_IN if (project / folder).is_dir() for entry in sorted((project / folder).iterdir())),
-    ])
+    skills = [Path(folder) / entry.name for folder in SHARED_IN if (project / folder).is_dir() for entry in sorted((project / folder).iterdir())]
+    hooks = [Path(path) for path in SHARED_IF_IGNORED if (project / path).exists()]
+    wanted = [Path(path) for path in SHARED] + ignored(project, hooks) + untracked(project, skills)
     excluded(top, [f"/{path}" for path in wanted])
     cleared(top, Path(SHARED[0]))
     for path in wanted:
@@ -164,6 +163,13 @@ def ignored(project: Path, paths: list[Path]) -> list[Path]:
     named = {path for source, path in (line.split("\t", 1) for line in asked.stdout.splitlines() if "\t" in line)
              if not (source.split(":", 2)[0].endswith("info/exclude") and source.split(":", 2)[2].startswith(managed))}
     return [path for path in paths if str(path) in named]
+
+
+def untracked(project: Path, paths: list[Path]) -> list[Path]:
+    if not paths:
+        return []
+    tracked = [Path(name) for name in git(project, "ls-files", "-z", "--", *map(str, paths)).stdout.split("\0") if name]
+    return [path for path in paths if not any(name == path or path in name.parents for name in tracked)]
 
 
 def linked_to(place: Path, target: Path) -> None:

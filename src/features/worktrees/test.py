@@ -36,9 +36,8 @@ def test_a_worktree_shares_the_projects_journal_skills_and_hooks_without_git_see
     linked = [worktree / ".journal", worktree / ".claude" / "skills" / "journal", worktree / ".claude" / "settings.local.json"]
     assert all(path.is_symlink() for path in linked) and (worktree / ".journal").resolve() == record.root.resolve(), \
         "the worktree's agent gets the project's journal, its skills and its hooks, even when four hooks link at once"
-    assert (git("status", "--porcelain", where=worktree), "?? .claude/skills/mine/SKILL.md" in git("status", "--porcelain", "--untracked-files=all")) == ("", True), \
-        "git sees none of the links, and a skill of the project's own that git tracks stays visible in the main checkout"
-    assert not (worktree / ".claude" / "skills" / "mine").exists(), "only what the main checkout ignores is shared"
+    assert git("status", "--porcelain", where=worktree) == "", "git sees none of the links"
+    assert (worktree / ".claude" / "skills" / "mine").is_symlink(), "a skill git does not track is shared too, not only the ignored ones"
     other = tmp_path / "other"
     other.mkdir()
     git("init", "-q", where=other)
@@ -217,13 +216,20 @@ def test_a_worktree_links_the_projects_journal_even_when_git_brings_old_journal_
     (record.root / "README.md").write_text("an old journal, committed long ago")
     git("add", ".gitignore")
     git("add", "-f", ".journal/README.md")
+    (project / ".claude" / "skills" / "mine").mkdir(parents=True)
+    (project / ".claude" / "skills" / "mine" / "SKILL.md").write_text("the project's own skill")
+    git("add", ".claude/skills/mine/SKILL.md")
     git("commit", "-q", "-m", "start")
     worktree = project / ".claude" / "worktrees" / "wt"
     git("worktree", "add", "-q", str(worktree))
+    (project / ".claude" / "skills" / "journal-boards").mkdir()
+    (project / ".claude" / "skills" / "journal-boards" / "SKILL.md").write_text("never committed nor ignored")
     assert (worktree / ".journal" / "README.md").is_file(), "the checkout brings the committed journal files"
     share_journal(worktree, record.root)
     assert (worktree / ".journal").is_symlink() and (worktree / ".journal").resolve() == record.root.resolve(), \
         "committed journal files are not a journal: the worktree still gets the project's own"
+    assert (worktree / ".claude" / "skills" / "journal-boards").is_symlink(), "a skill git neither tracks nor ignores is linked"
+    assert not (worktree / ".claude" / "skills" / "mine").is_symlink(), "a skill the branch carries stays its own"
     assert git("status", "--porcelain", where=worktree) == "", "and git sees no change in the worktree"
     share_journal(worktree, record.root)
     assert (worktree / ".journal").resolve() == record.root.resolve(), "linking again changes nothing"
