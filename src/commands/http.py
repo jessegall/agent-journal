@@ -40,6 +40,7 @@ from providers.payload import DISPLAYED
 from engine.record import Record
 from engine.transcript import page
 from providers import PROVIDERS
+from providers.base import Provider
 from resources.base import AGENT, OPENED, USER, Refused, titled
 from resources.types import Ask
 from engine.stored import read_json, write_text, last_lines
@@ -613,7 +614,13 @@ def get_project_files_found(req: Request) -> Reply:
     return Reply(200, [asdict(found) for found in found_files(req.root.parent.resolve(), req.query_as(FindQuery).q)])
 
 
-def transcript_of(req: Request, session: str | None = None) -> Reply:
+@dataclass(frozen=True)
+class Transcript:
+    provider: Provider | None
+    path: Path | None
+
+
+def transcript_at(req: Request, session: str | None) -> Transcript:
     row = Agents(req.record(), actor=USER).load(int(req.params["n"]))
     provider = PROVIDERS[row.provider]() if row.provider in PROVIDERS and row.transcript else None
     path = Path(row.transcript) if provider else None
@@ -622,9 +629,26 @@ def transcript_of(req: Request, session: str | None = None) -> Reply:
         path = provider.subagent_transcript(path, session) if provider and known else None
         if not path:
             raise Missing("no such subagent session")
-    turns = provider.transcript(path) if path else []
+    return Transcript(provider, path)
+
+
+def transcript_of(req: Request, session: str | None = None) -> Reply:
+    found = transcript_at(req, session)
+    turns = found.provider.transcript(found.path) if found.path else []
     asked = req.query_as(TranscriptQuery)
     return Reply(200, page(turns, asked.since, asked.before, asked.last))
+
+
+@route("GET", "/api/{env}/agent/{n}/links")
+def get_agent_links(req: Request) -> Reply:
+    found = transcript_at(req, None)
+    return Reply(200, {"links": found.provider.work_links(found.path) if found.path else []})
+
+
+@route("GET", "/api/{env}/agent/{n}/subagent/{session}/links")
+def get_subagent_links(req: Request) -> Reply:
+    found = transcript_at(req, req.params["session"])
+    return Reply(200, {"links": found.provider.work_links(found.path)})
 
 
 @route("GET", "/api/{env}/agent/{n}/transcript")

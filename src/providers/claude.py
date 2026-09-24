@@ -8,7 +8,7 @@ from pathlib import Path
 
 from engine.transcript import AGENT, HUMAN, INJECTED, PEER, SENT, SUMMARY, SUPERSEDED, TASK, TOOL, Turn
 from providers.payload import AgentCall, AskCall, DISPLAYED, EVENTS, UsageWindow
-from providers.base import Provider, TypedRun, TypedRuns, journal_hook, parsed
+from providers.base import Provider, TypedRun, TypedRuns, WorkLinks, journal_hook, parsed
 from providers.payload import Dispatch, Hook, ToolCall
 from providers.claude_rows import Block, Row
 from resources.types import AgentRow
@@ -34,6 +34,8 @@ COMMAND_NAME = re.compile(r"<command-name>(.*?)</command-name>", re.S)
 COMMAND_ARGS = re.compile(r"<command-args>(.*?)</command-args>", re.S)
 TYPED_OUTPUT = re.compile(r"<(bash-stdout|bash-stderr|local-command-stdout)>(.*?)</\1>", re.S)
 KEPT_TYPED = 50
+WORK_LINK = re.compile(r"https://(?:claude\.ai/(?:design|code/artifact|artifact)/|github\.com/[\w.-]+/[\w.-]+/pull/\d+|www\.figma\.com/)[^\s\"'<>)\]]*")
+KEPT_LINKS = 10
 EVALED = re.compile(r"&& eval '(.*)' < /dev/null && pwd -P", re.S)
 RECORD_FILES = ("Read(./.journal/environments/*/*/*.md)", "Read(./.journal/project/*/*.md)")
 STATUS_HOME = (".journal", "claude-status")
@@ -73,6 +75,11 @@ class Crew:
 
 SPEAKERS = {SUMMARY: SUMMARY, HUMAN: "user", AGENT: "agent"}
 ORIGINS = {"peer": PEER, "task-notification": TASK}
+
+
+def worth_opening(link: str) -> bool:
+    _, _, file = link.partition("?file=")
+    return not file or file.endswith(".html")
 
 
 def typed_command(text: str) -> str | None:
@@ -242,6 +249,18 @@ class Claude(Provider):
 
     def row_of(self, raw: dict) -> Row:
         return Row.from_payload(raw)
+
+    def work_links(self, path: Path) -> list[str]:
+        newest = [link for link in reversed(self.folded(path, self.link_rows, WorkLinks).links) if worth_opening(link)]
+        return list({link.partition("?")[0]: link for link in reversed(newest)}.values())[::-1]
+
+    def link_rows(self, found: WorkLinks, row: Row) -> WorkLinks:
+        if row.type != "user":
+            return found
+        for block in row.of_type("tool_result"):
+            fresh = [link.rstrip(".,;") for link in WORK_LINK.findall(block.result)]
+            found.links = [*(link for link in found.links if link not in fresh), *dict.fromkeys(fresh)][-KEPT_LINKS:]
+        return found
 
     def typed_runs(self, path: Path) -> list[TypedRun]:
         return list(self.folded(path, self.typed_rows, TypedRuns).runs)
