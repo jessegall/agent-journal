@@ -79,9 +79,11 @@ const feedKey = computed(() => (agent.value ? `${agent.value.n}:${agent.value.da
     min-height: 0;
     display: flex;
     flex-direction: column;
+    container-type: inline-size;
 }
 
 .home-view > :deep(.thread) {
+    --home-gutter: clamp(10px, 4cqi, 24px);
     padding: 0 var(--home-gutter);
 }
 
