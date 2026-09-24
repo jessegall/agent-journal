@@ -1,7 +1,7 @@
 <script setup>
 import {computed, inject, ref} from "vue";
 import {useCardDrag} from "../composables/cardDrag.js";
-import Btn from "../kit/Btn.vue";
+import PlaceholderCard from "../kit/PlaceholderCard.vue";
 import StageDot from "../kit/StageDot.vue";
 import {store} from "../state/store.js";
 import Card from "./Card.vue";
@@ -42,9 +42,6 @@ function drop() {
             <span class="title">{{ lane.title }}</span>
             <span class="meaning">{{ meaningLabel }}</span>
             <span class="count">{{ loading ? "" : lane.cards.length }}</span>
-            <template v-if="adds">
-                <button type="button" class="add" :title="`New work in ${lane.title}`" @click="board.newWork(lane.key)">+</button>
-            </template>
         </header>
         <div class="cards">
             <template v-if="loading">
@@ -55,15 +52,17 @@ function drop() {
                     </div>
                 </template>
             </template>
-            <template v-else-if="lane.cards.length">
+            <template v-else>
                 <template v-for="card in lane.cards" :key="card.n">
                     <Card :card="card" />
                 </template>
-            </template>
-            <template v-else>
-                <p class="none">No cards</p>
-                <template v-if="offers">
-                    <Btn kind="primary" small class="first-work" @click="board.newWork('')">New work</Btn>
+                <template v-if="adds || offers">
+                    <PlaceholderCard :title="`New work in ${lane.title}`" @click="board.newWork(adds ? lane.key : '')">
+                        + New work
+                    </PlaceholderCard>
+                </template>
+                <template v-else-if="!lane.cards.length">
+                    <p class="none">No cards</p>
                 </template>
             </template>
         </div>
@@ -74,6 +73,7 @@ function drop() {
 .lane {
     display: flex;
     flex: 1 0 264px;
+    max-width: 340px;
     animation: lane-in 0.45s cubic-bezier(0.2, 0.9, 0.25, 1) both;
     animation-delay: calc(var(--order) * 60ms);
     flex-direction: column;
@@ -81,10 +81,6 @@ function drop() {
     border: 1px solid var(--border);
     border-radius: 12px;
     background: var(--side);
-}
-
-.first-work {
-    align-self: flex-start;
 }
 
 @keyframes lane-in {
@@ -119,26 +115,6 @@ function drop() {
 .meaning {
     color: var(--text-4);
     font-size: 12px;
-}
-
-.add {
-    width: 22px;
-    height: 22px;
-    border: 0;
-    border-radius: 6px;
-    background: none;
-    color: var(--text-4);
-    cursor: pointer;
-    opacity: 0;
-}
-
-.lane:hover .add {
-    opacity: 1;
-}
-
-.add:hover {
-    background: var(--hover);
-    color: var(--text);
 }
 
 .count {
