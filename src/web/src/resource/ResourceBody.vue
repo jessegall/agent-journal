@@ -321,12 +321,10 @@ const docs = computed(() =>
 .body {
     display: flex;
     flex-direction: column;
+    min-width: 0;
     min-height: 100%;
     padding: 16px 20px 0;
-}
-
-.body > :deep(.comments) {
-    flex: 1;
+    overflow-wrap: anywhere;
 }
 .head {
     position: sticky;

@@ -181,7 +181,7 @@ function toBottom(smooth = false) {
 
 watch(
     () => flash.at,
-    () => nextTick(toBottom)
+    () => nextTick(() => toBottom(settledOnce.value))
 );
 
 watch(
@@ -268,7 +268,7 @@ async function post(text, files) {
     const id = token();
     const placeholder = await promised(body, files, id);
     await nextTick();
-    toBottom();
+    toBottom(true);
     try {
         await sendMessage(route.value.env, {brief: body, about}, files, id);
     } catch (e) {
@@ -277,7 +277,7 @@ async function post(text, files) {
         throw e;
     }
     await nextTick();
-    toBottom();
+    toBottom(true);
 }
 
 function keyOf(t) {

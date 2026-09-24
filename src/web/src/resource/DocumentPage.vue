@@ -104,6 +104,7 @@ watch(
     position: relative;
     height: 100%;
     min-width: 0;
+    overflow-x: hidden;
     overflow-y: auto;
     overscroll-behavior: contain;
     animation: curtain-left 0.32s cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
