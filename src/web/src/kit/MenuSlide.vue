@@ -1,12 +1,27 @@
 <script setup>
-defineProps({second: Boolean});
+import {onMounted, onUnmounted, ref, watch} from "vue";
+
+const props = defineProps({second: Boolean});
+const firstPanel = ref(null);
+const secondPanel = ref(null);
+const height = ref(null);
+const activePanel = () => (props.second ? secondPanel.value : firstPanel.value);
+const measure = () => activePanel() && (height.value = activePanel().scrollHeight);
+const watcher = new ResizeObserver(measure);
+
+watch(() => props.second, measure);
+onMounted(() => {
+    [firstPanel.value, secondPanel.value].forEach((panel) => panel && watcher.observe(panel));
+    measure();
+});
+onUnmounted(() => watcher.disconnect());
 </script>
 
 <template>
-    <div :class="['menu-slide', {second}]">
+    <div :class="['menu-slide', {second}]" :style="height === null ? {} : {height: `${height}px`}">
         <div class="menu-slide-track">
-            <div class="menu-slide-panel" :inert="second"><slot name="first" /></div>
-            <div class="menu-slide-panel" :inert="!second"><slot name="second" /></div>
+            <div ref="firstPanel" class="menu-slide-panel" :inert="second"><slot name="first" /></div>
+            <div ref="secondPanel" class="menu-slide-panel" :inert="!second"><slot name="second" /></div>
         </div>
     </div>
 </template>
@@ -14,11 +29,13 @@ defineProps({second: Boolean});
 <style scoped>
 .menu-slide {
     overflow: hidden;
+    transition: height 0.22s var(--ease);
 }
 
 .menu-slide-track {
     display: grid;
     grid-template-columns: 100% 100%;
+    align-items: start;
     transition: transform 0.22s var(--ease);
 }
 
@@ -34,15 +51,11 @@ defineProps({second: Boolean});
 }
 
 .menu-slide-panel[inert] {
-    max-height: 0;
     opacity: 0;
-    transition:
-        opacity 0.18s ease,
-        max-height 0s 0.22s;
-    transition-behavior: allow-discrete;
 }
 
 @media (prefers-reduced-motion: reduce) {
+    .menu-slide,
     .menu-slide-track,
     .menu-slide-panel {
         transition: none;
