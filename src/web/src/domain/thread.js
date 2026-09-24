@@ -158,11 +158,18 @@ export function threadTurns(rows, pending, env, older = false, hidden = []) {
 }
 
 const GROUP_FROM = 4;
+export const SUBAGENT_COLOR = "#e2c55c";
 const GROUPS = {
-    skill: () => ({key: "skill", icon: "book", label: (n) => `${n} skills loaded`}),
+    skill: () => ({key: "skill", icon: "book", tone: "good", label: (n) => `${n} skills loaded`}),
     whisper: () => ({key: "whisper", icon: "rules", label: (n) => `${n} rules and facts recalled`}),
-    subagent: () => ({key: "subagent", icon: "agents", label: (n) => `${n} subagent updates`}),
-    card: (t) => ({key: `card:${t.data.icon}:${t.data.label}`, icon: t.data.icon, label: (n) => `${n} × ${t.data.label}`}),
+    subagent: () => ({key: "subagent", icon: "agents", color: SUBAGENT_COLOR, label: (n) => `${n} subagent updates`}),
+    card: (t) => ({
+        key: `card:${t.data.icon}:${t.data.label}`,
+        icon: t.data.icon,
+        tone: t.data.tone,
+        color: t.data.color,
+        label: (n) => `${n} × ${t.data.label}`,
+    }),
 };
 const groupOf = (t) => (GROUPS[t.type] ? GROUPS[t.type](t) : null);
 
@@ -176,7 +183,7 @@ function folded(run) {
         created: last.created,
         seen: ["agent"],
         refs: [],
-        data: {},
+        data: {tone: group.tone || "", color: group.color || ""},
         sections: [],
         title: group.label(run.length),
         brief: "",

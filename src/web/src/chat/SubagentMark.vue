@@ -1,6 +1,7 @@
 <script setup>
 import {computed} from "vue";
 import ChatMark from "../kit/ChatMark.vue";
+import {SUBAGENT_COLOR} from "../domain/thread.js";
 import {peek} from "../route.js";
 
 const props = defineProps({
@@ -23,7 +24,7 @@ const label = computed(() => {
     return props.stopped ? "Subagent stopped" : "Subagent finished";
 });
 const tone = computed(() => (props.refusal ? "danger" : props.stopped ? "warn" : ""));
-const color = computed(() => (tone.value ? "" : "#e2c55c"));
+const color = computed(() => (tone.value ? "" : SUBAGENT_COLOR));
 const detail = computed(() => (props.refusal ? `${props.task}: ${props.refusal}` : props.task));
 const card = computed(() => (props.report ? `report ${props.report}` : ""));
 const name = computed(() => [props.kind || "subagent", props.model].filter(Boolean).join(" · "));
