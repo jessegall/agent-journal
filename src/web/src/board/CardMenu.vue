@@ -14,18 +14,13 @@ const emit = defineEmits(["close"]);
 const board = inject("board");
 const menu = ref(null);
 const slots = computed(() => store.board.slots);
-const assignees = computed(() => (props.card.type === "ticket" ? store.board.roles : store.board.agents));
+const assignees = computed(() => (props.card.type === "todo" ? store.board.agents : []));
 const TITLES = {todo: "To do", held: "Held", doing: "Doing", asked: "Needs you", done: "Done"};
 useOutside(menu, () => emit("close"));
 
-const ASSIGNING = {
-    todo: (name) => ["assign", name ? {to: name} : {off: true}],
-    ticket: (name) => ["update", {owner: name}],
-};
-
 async function assign(name) {
     emit("close");
-    await api.act(props.card.type, props.card.n, ...ASSIGNING[props.card.type](name));
+    await api.act(props.card.type, props.card.n, "assign", name ? {to: name} : {off: true});
     board.refresh();
 }
 

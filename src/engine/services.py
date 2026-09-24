@@ -13,6 +13,7 @@ from engine.stored import read_json, write_json
 from engine.package import entry
 
 PORTS = range(8440, 8500)
+BUILD = "JOURNAL_BUILD"
 UP, DOWN = "up", "down"
 BLOCKED, FAILED = "blocked", "failed"
 RESTING = (BLOCKED, FAILED, "stopped", "exited")
@@ -31,6 +32,14 @@ def status_file(root: Path, sid: str) -> Path:
 
 def lock_file(root: Path, sid: str) -> Path:
     return runtime(root, f"service-{sid}.lock")
+
+
+def built_from(spec: dict) -> str:
+    return (spec.get("env") or {}).get(BUILD, "")
+
+
+def current_build(root: Path) -> str:
+    return (Path(root) / "journal.pyz").resolve().name
 
 
 def spec_file(root: Path, sid: str) -> Path:
@@ -218,6 +227,9 @@ class Manager:
     def one(self, spec: ServiceSpec) -> bool:
         sid = spec.id
         current = status(self.root, sid)
+        if self.living(current.keeper) and built_from(read_json(spec_file(self.root, sid), {})) != built_from(asdict(spec)):
+            self.remove(sid)
+            current = status(self.root, sid)
         asked = Wanted.read(self.root, sid)
         now = self.clock()
         if asked.want == DOWN:

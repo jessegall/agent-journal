@@ -39,6 +39,13 @@ def start_file(root: Path, env: str, compacted: bool = False) -> Path:
     return root / "runtime" / f"{'compact' if compacted else 'start'}-{env}.md"
 
 
+def relaunched(sessions: Sessions, session: str, provider: str, pid: int) -> None:
+    terminal = sessions.terminal(provider, sessions.read(session).pid)
+    sessions.write(session, pid=pid)
+    if terminal:
+        sessions.write(terminal, pid=pid)
+
+
 def gate_file(root: Path, env: str, session: str) -> Path:
     return runtime.session_file(root, session, f"gate-{env}.json")
 
@@ -161,7 +168,7 @@ def answer(provider, root: Path, raw: dict, pid: int, prefer: str = "") -> dict:
             sessions.bind(terminal, env)
             environments._seat(env, terminal)
     elif not alive(sessions.read(session).pid):
-        sessions.write(session, pid=agent_pid(pid))
+        relaunched(sessions, session, provider.name, agent_pid(pid))
     sessions.touch(session)
     return handle(provider, root, env, hook)
 
