@@ -120,8 +120,8 @@ const proposed = (ticket) =>
         .map(([ref]) => Number(ref.split(":")[1]));
 const note = computed(() => {
     if (asking.value) return "Pick one above, or type your own.";
-    if (writing.value && !picked.value.length) return `${drafts.value.length} drafted so far. Click a card to keep it.`;
-    if (!picked.value.length) return "Click a card to keep it.";
+    if (writing.value && !picked.value.length) return `${drafts.value.length} drafted so far. Click a card to pick it.`;
+    if (!picked.value.length) return "Click a card to pick it.";
     return props.starts ? `They go to ${first.value}; their agents start as room frees up.` : `They go to ${first.value}, ready to start.`;
 });
 const cardRect = (n) => document.querySelector(`.pick[data-ticket="${n}"]`)?.getBoundingClientRect();

@@ -52,8 +52,15 @@ onUnmounted(() => {
         <div :class="['flip-scrim', {shown: centred}]" @click.self="close">
             <div class="flip" :style="px(box)">
                 <div :class="['flip-inner', {flipped}]">
-                    <div class="flip-face front"><slot name="front" /></div>
-                    <div class="flip-face back"><slot name="back" /></div>
+                    <div class="flip-face front">
+                        <div class="flip-body"><slot name="front" /></div>
+                    </div>
+                    <div class="flip-face back">
+                        <div class="flip-body"><slot name="back" /></div>
+                        <template v-if="$slots.foot">
+                            <div class="flip-foot"><slot name="foot" /></div>
+                        </template>
+                    </div>
                 </div>
             </div>
         </div>
@@ -98,8 +105,9 @@ onUnmounted(() => {
 .flip-face {
     position: absolute;
     inset: 0;
-    overflow-y: auto;
-    padding: 22px 24px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
     border: 1px solid var(--border-2);
     border-radius: 13px;
     background: rgba(28, 29, 33, 0.98);
@@ -109,6 +117,23 @@ onUnmounted(() => {
 
 .back {
     transform: rotateY(180deg);
+}
+
+.flip-body {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    padding: 22px 24px;
+}
+
+.flip-foot {
+    flex: none;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+    padding: 12px 24px;
+    border-top: 1px solid var(--border);
 }
 
 @media (prefers-reduced-motion: reduce) {

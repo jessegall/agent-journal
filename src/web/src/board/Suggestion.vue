@@ -93,7 +93,7 @@ async function save(field, text) {
         tabindex="0"
         :aria-pressed="picked"
         :data-ticket="ticket ? ticket.n : null"
-        :title="shown.done ? 'Click to keep it; double-click its title or line to change them' : ''"
+        :title="shown.done ? 'Click to pick it; double-click its title or line to change them' : ''"
         @click="toggle"
         @keydown.space.prevent="toggle"
         @keydown.enter.prevent="toggle"
