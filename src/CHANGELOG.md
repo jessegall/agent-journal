@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.155.0 — A sequence already running is never started over
+
+A trigger or a moment that fires again while its sequence is running about the same row no longer starts it over at step 1; the run carries on where it is, and starting it again by hand is refused with the step it is at. Only the Sequence started mark in the chat names what the run is about; the marks after it leave the chip out. Nothing to do.
+
 ## 2.154.0 — A worktree gets every journal skill
 
 A worktree now links every skill the project does not track in git, not only the ones git ignores. A project that keeps the journal's skills untracked, as code-commandments does, got none of them in its worktrees, so an agent there could not load journal-boards and the rest; every launch now links them, and the regression test covers it. Running a command a tag stands for, such as message reply, now shows its tag once in a while. The New work dialog grows to fit a long question instead of pressing its title against the top. Nothing to do.

@@ -63,7 +63,9 @@ class StartOnMoment(Handler):
                 continue
             if row.get("only_when_idle") and sequences._in_hand():
                 continue
-            sequences.run(row["n"], about=f"{event.type}:{event.n}")
+            about = f"{event.type}:{event.n}"
+            if not sequences._running(sequences.load(row["n"]), about):
+                sequences.run(row["n"], about=about)
 
 
 class EndWithItsRow(Handler):

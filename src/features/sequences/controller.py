@@ -97,8 +97,14 @@ class Sequences(Controller):
         r = self.load(int(n))
         if not self._steps(r):
             self._refuse(f"sequence {r.n} has no steps: journal sequence section {r.n} \"<step>\" \"<what to do>\"")
-        self._mark(r, "Sequence started", about, 1)
+        if self._running(r, about):
+            self._refuse(f"sequence {r.n} is already running, at step {r.runs[self._key(about)]['step']}: "
+                         f"journal sequence next {r.n} moves it on")
+        self._mark(r, "Sequence started", 1, about=about)
         return self.update(r.n, runs={**r.runs, self._key(about): {"step": 1, "at": time.time(), "titles": self._titles(r)}})
+
+    def _running(self, r, about: str) -> bool:
+        return self._key(about) in r.runs
 
     def next(self, n: int, about: str = ""):
         r = self.load(int(n))
@@ -109,7 +115,7 @@ class Sequences(Controller):
         run = {**r.runs[key], "step": r.runs[key]["step"] + 1, "stepped": time.time(), "titles": titles}
         runs = {k: v for k, v in r.runs.items() if k != key}
         going = run["step"] <= len(titles)
-        self._mark(r, "Sequence moved on" if going else "Sequence finished", about, run["step"] if going else 0)
+        self._mark(r, "Sequence moved on" if going else "Sequence finished", run["step"] if going else 0)
         return self.update(r.n, runs={**runs, key: run} if going else runs)
 
     def _jump(self, n: int, about: str, step: int):
@@ -117,7 +123,7 @@ class Sequences(Controller):
         key = self._key(about)
         if key not in r.runs:
             self._refuse(f"sequence {r.n} is not running{' about ' + about if about else ''}")
-        self._mark(r, "Sequence moved on", about, step)
+        self._mark(r, "Sequence moved on", step)
         return self.update(r.n, runs={**r.runs, key: {**r.runs[key], "step": step, "stepped": time.time(), "titles": self._titles(r)}})
 
     def _finish(self, n: int, about: str):
@@ -125,7 +131,7 @@ class Sequences(Controller):
         key = self._key(about)
         if key not in r.runs:
             return r
-        self._mark(r, "Sequence finished", about, 0)
+        self._mark(r, "Sequence finished", 0)
         return self.update(r.n, runs={k: v for k, v in r.runs.items() if k != key})
 
     def _in_hand(self):
@@ -143,7 +149,7 @@ class Sequences(Controller):
             self._refuse("say why it is abandoned: --why \"<why>\"")
         runs = {k: v for k, v in r.runs.items() if k != key}
         left = {"about": key, "step": r.runs[key]["step"], "why": why.strip(), "at": time.time()}
-        self._mark(r, "Sequence abandoned", about, 0, why.strip())
+        self._mark(r, "Sequence abandoned", 0, why.strip())
         return self.update(r.n, runs=runs, abandoned=[*(r.data.get("abandoned") or []), left])
 
     @internal
@@ -152,7 +158,7 @@ class Sequences(Controller):
             if self._key(about) in sequence.runs:
                 self.abandon(sequence.n, about=about, why=why)
 
-    def _mark(self, r, label: str, about: str, step: int, why: str = "") -> None:
+    def _mark(self, r, label: str, step: int, why: str = "", about: str = "") -> None:
         agents = Agents(self.record, actor=SYSTEM)
         row = agents.primary()
         if not row:
