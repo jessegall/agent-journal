@@ -10,7 +10,7 @@ import Icon from "../kit/Icon.vue";
 import Switch from "../kit/Switch.vue";
 import Toast from "../kit/Toast.vue";
 import Spinner from "../kit/Spinner.vue";
-import {peek, route} from "../route.js";
+import {peek} from "../route.js";
 import {agent, autoOn, store} from "../state/store.js";
 import {polled} from "../sync/polled.js";
 import {rows} from "../sync/rows.js";
@@ -54,7 +54,7 @@ const sentence = computed(() => {
     return {head: now.slice(0, cut), tail: now.slice(cut)};
 });
 watch(line, (now, before) => (was.value = before || ""));
-const bar = computed(() => barPlan(rows("plan"), !route.value.page));
+const bar = computed(() => barPlan(rows("plan")));
 const others = computed(() => otherPlans(rows("plan")));
 const error = ref("");
 

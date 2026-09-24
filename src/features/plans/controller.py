@@ -108,6 +108,9 @@ class Plans(Controller):
                 self._status(other, PARKED, *RUNNING, parked_for=r.n)
         return self._status(r, ACTIVE, APPROVED, PARKED)
 
+    def dismiss(self, n: int):
+        return self.update(int(n), dismissed=True)
+
     def park(self, n: int):
         return self._status(self.load(n), PARKED, APPROVED, *RUNNING)
 

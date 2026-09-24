@@ -1,7 +1,7 @@
 from typing import ClassVar
 
 from resources.base import DOCUMENT, SIDEBAR, Resource, ResourceDetails
-from resources.shapes import Field, Shape, names
+from resources.shapes import FLAG, Field, Shape, names
 
 PHASE = names("title", "when", "checkpoint", "brief", "todos")
 
@@ -13,6 +13,7 @@ class Plan(Shape, Resource):
         Field(default=list, name="phases"),
         Field(default=1, name="current"),
         Field(default="normal", name="depth"),
+        Field(FLAG, False, name="dismissed"),
     ]
     details: ClassVar[ResourceDetails] = ResourceDetails(
         title="Plan",

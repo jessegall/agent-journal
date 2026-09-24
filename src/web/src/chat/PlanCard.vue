@@ -2,6 +2,8 @@
 import {computed, ref} from "vue";
 import Btn from "../kit/Btn.vue";
 import Chip from "../kit/Chip.vue";
+import CloseButton from "../kit/CloseButton.vue";
+import {api} from "../api/client.js";
 import Icon from "../kit/Icon.vue";
 import PlanList from "../layout/PlanList.vue";
 import {approvePlan, startPlan} from "../actions/plans.js";
@@ -75,6 +77,10 @@ async function start() {
                             {{ parked ? "Resume" : "Start" }}
                         </Btn>
                     </span>
+                    <CloseButton
+                        title="Take this plan out of the chat; it stays on the Plans page"
+                        @click="api.act('plan', plan.n, 'dismiss')"
+                    />
                 </header>
                 <div :class="['plan-card-body', {folded}]">
                     <div class="plan-card-inner">
