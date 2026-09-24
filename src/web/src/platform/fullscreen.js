@@ -23,7 +23,6 @@ if (byBrowser) store.wide = true;
 export const FULLSCREEN_KEYS = onMac ? "⌘⇧Enter" : "Ctrl+Shift+Enter";
 export const switching = ref(false);
 export const drawnWide = ref(store.wide);
-export const armed = ref(false);
 
 function settle() {
     clearTimeout(settling);
@@ -49,22 +48,8 @@ function followBrowser() {
     const now = browserFull();
     if (now === byBrowser) return;
     byBrowser = now;
-    armed.value = armed.value && !now;
     following = store.wide !== now;
     store.wide = now;
-}
-
-function rearm() {
-    if (!store.wide || byBrowser || document.fullscreenElement || !document.documentElement.requestFullscreen) return;
-    armed.value = true;
-    const once = () => {
-        armed.value = false;
-        window.removeEventListener("pointerdown", once, true);
-        window.removeEventListener("keydown", once, true);
-        if (store.wide) enter();
-    };
-    window.addEventListener("pointerdown", once, true);
-    window.addEventListener("keydown", once, true);
 }
 
 export function followFullscreen() {
@@ -79,7 +64,6 @@ export function followFullscreen() {
             fading = setTimeout(() => resize(on), FADE);
         }
     );
-    rearm();
     window.addEventListener("resize", () => {
         followBrowser();
         if (switching.value) settle();
