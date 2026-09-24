@@ -276,8 +276,8 @@ async function leave() {
                             New work
                             <span class="head-board">{{ board.title }}</span>
                         </span>
-                        <Btn small @click="emit('close')">
-                            Back to the board
+                        <Btn small title="Stop and drop the drafts you did not keep" @click="leave">
+                            Cancel
                             <kbd>Esc</kbd>
                         </Btn>
                     </div>
