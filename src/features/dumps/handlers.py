@@ -3,6 +3,7 @@ from typing import ClassVar
 
 from engine.events import ClockTicked, ResourceEvent
 from engine.transcript import IDLE
+from features.dumps.controller import OWN_WORDS
 from features.dumps.resource import ITEM
 from features.parts import AgentContext, Context, Handler
 from resources.base import USER
@@ -26,7 +27,9 @@ class PromptFiling(Handler):
         speaking = context.speaking_to(agent) if agent else None
         chosen = dump.data.get("chosen") or {}
         if speaking and chosen and speaking.once("dump choice", f"{dump.n}:{chosen.get('at')}"):
-            if int(chosen.get("pick", -1)) < 0:
+            if int(chosen.get("pick", -1)) == OWN_WORDS:
+                speaking.agent.say("directed", n=dump.n, how=chosen["label"])
+            elif int(chosen.get("pick", -1)) < 0:
                 speaking.agent.say("decide", n=dump.n)
             else:
                 speaking.agent.say("chose", n=dump.n, label=chosen["label"])
