@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.127.0 — The latest update is pinned at the bottom of the chat, and a window's menu is pointed out once
+
+The newest update report sits in a bar at the bottom of the chat, above the plan card, with a short summary; it folds when you scroll up, opens the report over the chat, and a × puts it away. The report over the chat keeps its header at the top while you scroll and has a button that moves it to the side panel. The first time you click into a window whose menu you have never opened, its menu button is pointed out once. System sequences show as one line in the chat, and the trigger that starts Writing an update is locked like the sequence, with its words shown on the sequence's page. The journal no longer interrupts a Codex agent while an approval question is on its screen. Nothing to do.
+
 ## 2.126.0 — Messages reach an idle Codex agent, and asking for an update writes an update report
 
 A Codex agent that sat idle through a restart or an upgrade no longer holds every chat message until someone types in its terminal: each agent is found by its process, a message waiting for an agent idle at its prompt is typed in after half a minute, a live idle agent is no longer marked stopped after an hour, and a message whose typing fails stays waiting instead of being marked delivered. Asking the agent for an update or a TLDR writes an update report of what happened since you last opened one, shown in the chat as a card that opens over the chat window; earlier updates are under Updates on the Reports page. Sequence steps name the board they are about, so board work lands on the board you opened; while a board is being worked the agent makes no plan or chat question of its own; every upgrade brings the system sequences in line. A subagent's links show as pins over its chat, and it can pin its own. Nothing to do.

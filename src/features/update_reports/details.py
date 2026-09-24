@@ -21,5 +21,5 @@ class UpdateReportsDetails(FeatureDetails):
         what waits on them. Then journal report note <n> <ref> "<line>" gives a row a short note,
         journal report item <n> <section> <ref> "<title>" adds one the list missed, and journal
         report drop <n> <ref> takes out noise. Answer with the report's reference on a line of its
-        own, like report 98: the chat shows it as a card that opens over the chat.
+        own, like `report 98`: the chat shows it as a card that opens over the chat.
     """

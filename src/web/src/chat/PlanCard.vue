@@ -2,6 +2,7 @@
 import {computed, ref} from "vue";
 import Btn from "../kit/Btn.vue";
 import Chip from "../kit/Chip.vue";
+import ChatDock from "../kit/ChatDock.vue";
 import CloseButton from "../kit/CloseButton.vue";
 import {api} from "../api/client.js";
 import Icon from "../kit/Icon.vue";
@@ -15,7 +16,7 @@ import {otherPlans, othersLine, PLAN_STATES, sizeOf, stoppedOf} from "../layout/
 
 const SHOWN_PHASES = 5;
 const props = defineProps({plan: Object, folded: Boolean});
-const card = ref(null);
+const dock = ref(null);
 const listing = ref(false);
 const lifted = ref(false);
 const error = ref("");
@@ -32,7 +33,7 @@ async function start() {
     error.value = "";
     lifted.value = true;
     try {
-        await flyToBar(card.value, () => (parked.value ? startPlan : approvePlan)(props.plan));
+        await flyToBar(dock.value.card, () => (parked.value ? startPlan : approvePlan)(props.plan));
     } catch (e) {
         lifted.value = false;
         error.value = e.message;
@@ -41,161 +42,76 @@ async function start() {
 </script>
 
 <template>
-    <div :class="['plan-dock', {lifted}]">
-        <div class="plan-fold">
-            <section ref="card" :class="['plan-card', status]" aria-label="Plan">
-                <header class="plan-card-head">
-                    <Icon name="plan" class="plan-card-icon" />
-                    <button type="button" class="plan-card-title" title="Open plan" @click="peek('plan', plan.n)">
-                        {{ plan.title }}
-                    </button>
-                    <Chip class="plan-card-chip" :tone="status === 'ready' ? 'accent' : ''">{{ PLAN_STATES[status] }}</Chip>
-                    <span class="plan-card-size" data-fades>
-                        {{ parked ? stoppedOf(plan, rows("todo")) : sizeOf(plan) }}
+    <ChatDock ref="dock" label="Plan" :kind="status" :folded="folded" :lifted="lifted">
+        <template #head>
+            <Icon name="plan" class="plan-card-icon" />
+            <button type="button" class="plan-card-title" title="Open plan" @click="peek('plan', plan.n)">
+                {{ plan.title }}
+            </button>
+            <Chip class="plan-card-chip" :tone="status === 'ready' ? 'accent' : ''">{{ PLAN_STATES[status] }}</Chip>
+            <span class="plan-card-size" data-fades>
+                {{ parked ? stoppedOf(plan, rows("todo")) : sizeOf(plan) }}
+            </span>
+            <span class="plan-card-acts" data-fades>
+                <template v-if="othersLine(others)">
+                    <span class="plan-card-more">
+                        <button type="button" :class="['plan-card-others', {on: listing}]" @click.stop="listing = !listing">
+                            {{ othersLine(others) }}
+                        </button>
+                        <template v-if="listing">
+                            <PlanList up :plans="others" @close="listing = false" />
+                        </template>
                     </span>
-                    <span class="plan-card-acts" data-fades>
-                        <template v-if="othersLine(others)">
-                            <span class="plan-card-more">
-                                <button type="button" :class="['plan-card-others', {on: listing}]" @click.stop="listing = !listing">
-                                    {{ othersLine(others) }}
-                                </button>
-                                <template v-if="listing">
-                                    <PlanList up :plans="others" @close="listing = false" />
-                                </template>
-                            </span>
-                        </template>
-                        <Btn small @click="peek('plan', plan.n)">Open plan</Btn>
-                        <Btn
-                            kind="primary"
-                            small
-                            class="plan-card-start"
-                            :disabled="building"
-                            :title="building ? 'Start waits until the plan is ready' : 'Approve the plan and start it'"
-                            @click="start"
-                        >
-                            <Icon name="start" />
-                            {{ parked ? "Resume" : "Start" }}
-                        </Btn>
-                    </span>
-                    <CloseButton
-                        title="Take this plan out of the chat; it stays on the Plans page"
-                        @click="api.act('plan', plan.n, 'dismiss')"
-                    />
-                </header>
-                <div :class="['plan-card-body', {folded}]">
-                    <div class="plan-card-inner">
-                        <template v-if="!parked && (phases.length || building)">
-                            <ol class="plan-card-phases" data-fades>
-                                <template v-for="ph in phases.slice(0, SHOWN_PHASES)" :key="ph.n">
-                                    <li class="plan-card-phase">
-                                        <span class="plan-card-n">{{ ph.n }}</span>
-                                        <span class="plan-card-name">{{ ph.title }}</span>
-                                        <span class="plan-card-rows">
-                                            {{ ph.rows ? `${ph.rows} to-do${ph.rows === 1 ? "" : "s"}` : "" }}
-                                        </span>
-                                    </li>
-                                </template>
-                                <template v-if="hidden">
-                                    <li class="plan-card-phase quiet">
-                                        <span />
-                                        <span class="plan-card-name">and {{ hidden }} more phase{{ hidden === 1 ? "" : "s" }}</span>
-                                        <span />
-                                    </li>
-                                </template>
-                                <template v-if="building">
-                                    <li class="plan-card-phase quiet">
-                                        <span />
-                                        <span class="plan-card-name">{{ adding }}</span>
-                                        <span />
-                                    </li>
-                                </template>
-                            </ol>
-                        </template>
-                        <template v-if="error">
-                            <p class="plan-card-error">{{ error }}</p>
-                        </template>
-                    </div>
-                </div>
-            </section>
-        </div>
-    </div>
+                </template>
+                <Btn small @click="peek('plan', plan.n)">Open plan</Btn>
+                <Btn
+                    kind="primary"
+                    small
+                    class="plan-card-start"
+                    :disabled="building"
+                    :title="building ? 'Start waits until the plan is ready' : 'Approve the plan and start it'"
+                    @click="start"
+                >
+                    <Icon name="start" />
+                    {{ parked ? "Resume" : "Start" }}
+                </Btn>
+            </span>
+            <CloseButton title="Take this plan out of the chat; it stays on the Plans page" @click="api.act('plan', plan.n, 'dismiss')" />
+        </template>
+        <template v-if="!parked && (phases.length || building)">
+            <ol class="plan-card-phases" data-fades>
+                <template v-for="ph in phases.slice(0, SHOWN_PHASES)" :key="ph.n">
+                    <li class="plan-card-phase">
+                        <span class="plan-card-n">{{ ph.n }}</span>
+                        <span class="plan-card-name">{{ ph.title }}</span>
+                        <span class="plan-card-rows">
+                            {{ ph.rows ? `${ph.rows} to-do${ph.rows === 1 ? "" : "s"}` : "" }}
+                        </span>
+                    </li>
+                </template>
+                <template v-if="hidden">
+                    <li class="plan-card-phase quiet">
+                        <span />
+                        <span class="plan-card-name">and {{ hidden }} more phase{{ hidden === 1 ? "" : "s" }}</span>
+                        <span />
+                    </li>
+                </template>
+                <template v-if="building">
+                    <li class="plan-card-phase quiet">
+                        <span />
+                        <span class="plan-card-name">{{ adding }}</span>
+                        <span />
+                    </li>
+                </template>
+            </ol>
+        </template>
+        <template v-if="error">
+            <p class="plan-card-error">{{ error }}</p>
+        </template>
+    </ChatDock>
 </template>
 
 <style scoped>
-.plan-dock {
-    position: sticky;
-    bottom: 0;
-    z-index: 2;
-    display: grid;
-    grid-template-rows: 1fr;
-    grid-template-columns: minmax(0, 1fr);
-    flex: none;
-    width: 100%;
-    margin-top: auto;
-}
-
-.plan-card-body {
-    display: grid;
-    grid-template-rows: 1fr;
-    transition:
-        grid-template-rows var(--move),
-        opacity var(--fade);
-}
-
-.plan-card-body.folded {
-    grid-template-rows: 0fr;
-    opacity: 0;
-}
-
-.plan-card-inner {
-    min-height: 0;
-    overflow: hidden;
-}
-
-.plan-fold {
-    min-width: 0;
-    min-height: 0;
-}
-
-.plan-dock.plancard-enter-active,
-.plan-dock.plancard-leave-active {
-    transition:
-        grid-template-rows 0.32s var(--ease),
-        opacity 0.24s ease;
-}
-
-.plan-dock.plancard-enter-active .plan-fold,
-.plan-dock.plancard-leave-active .plan-fold {
-    overflow: hidden;
-}
-
-.plan-dock.plancard-enter-from,
-.plan-dock.plancard-leave-to {
-    grid-template-rows: 0fr;
-    opacity: 0;
-}
-
-.plan-dock.lifted .plan-card {
-    visibility: hidden;
-}
-
-.plan-card {
-    container-type: inline-size;
-    border: 1px solid var(--border-2);
-    border-radius: 10px;
-    background: var(--raised);
-}
-
-.plan-card-head {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    min-width: 0;
-    height: 36px;
-    padding: 0 6px 0 15px;
-    white-space: nowrap;
-}
-
 .plan-card-icon {
     flex: none;
     color: var(--text-3);
@@ -333,10 +249,7 @@ async function start() {
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .plan-dock.plancard-enter-active,
-    .plan-dock.plancard-leave-active,
     .plan-card-phase {
-        transition: none;
         animation: none;
     }
 }
