@@ -85,7 +85,7 @@ class FaultReports:
         (folder / f"{time.strftime('%H%M%S')}-{name.replace('/', '_').replace(' ', '-')}-{took:.0f}ms.txt").write_text(out.getvalue())
 
     def spent(self, root, env: str, kind: str, name: str, took: float, working: float | None = None, profile=None, garbage: float = 0.0) -> None:
-        if took < min(BUDGET.values() or [0]) or (kind in WARMED and runtime.warming()):
+        if took < min(BUDGET.values() or [0]) or (kind in WARMED and runtime.warming()) or runtime.tests_running(Path(root)):
             return
         try:
             record = Record(Path(root), env)
