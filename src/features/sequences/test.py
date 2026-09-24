@@ -65,3 +65,21 @@ def test_a_sequence_starts_when_its_trigger_fires_and_an_unknown_start_is_refuse
     call = {"session_id": "claude-1", "tool_name": "Bash", "tool_input": {"command": "make deploy"}, "hook_event_name": "PreToolUse"}
     handle(PROVIDERS["claude"](), record.root, record.env, call)
     assert f"sequence {deploying.n}, After a deploy, step 1 of 1 - Check the site" in nudges(record), "the trigger's words start the sequence"
+
+
+def test_a_step_goes_to_the_agent_holding_the_environment_not_the_newest():
+    import os
+    from engine.sessions import Sessions
+    from features.sequences.shipped import ship
+    features.load()
+    record = fresh()
+    ship(record)
+    Sessions(record.root).bind("holder", record.env, pid=os.getpid(), provider="claude")
+    agents = CONTROLLERS["agent"](record)
+    agents.by_session("holder")
+    agents.by_session("newer")
+    sequences = CONTROLLERS["sequence"](record, actor=AGENT)
+    filing = next(r for r in sequences.summaries() if r["title"] == "Filing a dump")
+    CONTROLLERS["dump"](record, actor=USER).create("Standup", brief="notes")
+    handed = [n.data.get("session") for n in CONTROLLERS["nudge"](record).all() if n.title.startswith(f"sequence {filing['n']}")]
+    assert handed and set(handed) == {"holder"}, f"the step goes to the agent holding the environment, not the newest agent row: {handed}"
