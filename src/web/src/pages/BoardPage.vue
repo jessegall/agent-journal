@@ -217,6 +217,11 @@ provide("board", {move, moving, refresh, meaningOf, newWork, watchAgent, askNote
 
 const lens = (change) => (store.board.lens = {...store.board.lens, ...change});
 watch(() => [store.board.lens.plan, store.board.lens.agent, store.board.lens.board], refresh);
+watch(
+    () => current.value && current.value.data.drafting && current.value.data.drafting.since,
+    (drafting) => drafting && tickets.value && (writingWork.value = true),
+    {immediate: true}
+);
 
 let seen = 0;
 let waiting = 0;

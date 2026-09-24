@@ -18,6 +18,7 @@ class Board(Shape, Resource):
         Field(LIST, list, name="stages"),
         Field(default=dict, name="meanings"),
         Field(NUMBER, 0, name="expected"),
+        Field(default=dict, name="drafting"),
     ]
     type = "board"
     icon = "board"
