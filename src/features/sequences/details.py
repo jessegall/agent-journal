@@ -24,7 +24,10 @@ class SequencesDetails(FeatureDetails):
         they can change it; a sequence that only you know about helps no one.
 
         journal sequence create "<name>" --brief "<what it is for>" writes one, and journal
-        sequence section <n> "<step>" "<what to do>" adds each step. journal sequence run <n>
+        sequence section <n> "<step>" "<what to do>" adds each step. Steps another sequence
+        already has are not written twice: journal sequence include <n> <other> [--steps 2-3]
+        adds a step that hands out that sequence's steps, or only the ones named, in its place.
+        journal sequence run <n>
         --about <ref> hands you the first step; journal sequence next <n> --about <ref>
         marks the step in hand done and hands the next, and the last one ends it.
         --set starts_on starts it by itself, about the row it started on: <type>.created or

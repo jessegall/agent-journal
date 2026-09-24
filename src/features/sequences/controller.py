@@ -1,4 +1,5 @@
 import json
+import re
 import time
 
 import controllers.types as types_module
@@ -11,6 +12,7 @@ from resources.base import SECTION, SYSTEM
 BY_HAND = "by hand"
 VIOLET = "#a78bfa"
 TRIGGER = "trigger"
+INCLUDED = re.compile(r"^sequence:(\d+)(?: steps (\d+)(?:-(\d+))?)?$")
 
 
 class Sequences(Controller):
@@ -41,6 +43,40 @@ class Sequences(Controller):
         r.sections = [{SECTION.title: title, SECTION.body: str(step.get("body", ""))} for title, step in zip(titles, given)]
         return self.save(r, "updated")
 
+    def include(self, n: int, other: int, steps: str = ""):
+        r, included = self.load(int(n)), self.load(int(other))
+        span = steps.strip()
+        if span and not re.fullmatch(r"\d+(?:-\d+)?", span):
+            self._refuse('steps is one step or a range, like 2 or 2-4')
+        body = f"sequence:{included.n}{f' steps {span}' if span else ''}"
+        if r.n == included.n or r.n in self._reached(included, (included.n,)):
+            self._refuse(f"sequence {included.n} already includes sequence {r.n}: including it back would never end")
+        title = f"{included.title}{f', steps {span}' if span else ''}"
+        return self.section(r.n, title, body)
+
+    def _reached(self, r, seen: tuple) -> set[int]:
+        found = set()
+        for part in r.sections:
+            match = INCLUDED.match(part[SECTION.body].strip())
+            if not match:
+                continue
+            found.add(int(match[1]))
+            if int(match[1]) not in seen:
+                found |= self._reached(self.load(int(match[1])), (*seen, int(match[1])))
+        return found
+
+    def _steps(self, r, seen: tuple = ()) -> list[dict]:
+        steps = []
+        for part in r.sections:
+            match = INCLUDED.match(part[SECTION.body].strip())
+            if not match or int(match[1]) in (*seen, r.n):
+                steps.append(part)
+                continue
+            inner = self._steps(self.load(int(match[1])), (*seen, r.n))
+            first, last = int(match[2] or 1), int(match[3] or match[2] or len(inner))
+            steps += inner[first - 1:last]
+        return steps
+
     def _check_start(self, starts_on: str) -> None:
         start = starts_on.strip()
         if not start or start in self._moments():
@@ -56,7 +92,7 @@ class Sequences(Controller):
 
     def run(self, n: int, about: str = ""):
         r = self.load(int(n))
-        if not r.sections:
+        if not self._steps(r):
             self._refuse(f"sequence {r.n} has no steps: journal sequence section {r.n} \"<step>\" \"<what to do>\"")
         self._mark(r, "Sequence started", about, 1)
         return self.update(r.n, runs={**r.runs, self._key(about): {"step": 1, "at": time.time()}})
@@ -68,7 +104,7 @@ class Sequences(Controller):
             self._refuse(f"sequence {r.n} is not running{' about ' + about if about else ''}: journal sequence run {r.n} starts it")
         run = {**r.runs[key], "step": r.runs[key]["step"] + 1, "stepped": time.time()}
         runs = {k: v for k, v in r.runs.items() if k != key}
-        going = run["step"] <= len(r.sections)
+        going = run["step"] <= len(self._steps(r))
         self._mark(r, "Sequence moved on" if going else "Sequence finished", about, run["step"] if going else 0)
         return self.update(r.n, runs={**runs, key: run} if going else runs)
 
@@ -104,7 +140,7 @@ class Sequences(Controller):
         if r.system:
             agents.card(row.n, label=f"{label} sequence {r.n}", icon=self.resource.icon, color=VIOLET)
             return
-        parts = [f"sequence {r.n} {r.title}", f"step {step}, {r.sections[step - 1][SECTION.title]}" if step else "", f"about {about.replace(':', ' ')}" if about.strip() else "", why]
+        parts = [f"sequence {r.n} {r.title}", f"step {step}, {self._steps(r)[step - 1][SECTION.title]}" if step else "", f"about {about.replace(':', ' ')}" if about.strip() else "", why]
         agents.card(row.n, label=label, icon=self.resource.icon, color=VIOLET, detail=" · ".join(p for p in parts if p))
 
     def _key(self, about: str) -> str:
