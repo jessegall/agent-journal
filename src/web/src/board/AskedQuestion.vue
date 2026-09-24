@@ -1,11 +1,14 @@
 <script setup>
 import OptionsPicker from "../resource/OptionsPicker.vue";
 
-defineProps({question: {type: Object, required: true}});
+defineProps({question: {type: Object, required: true}, chat: Boolean});
 </script>
 
 <template>
-    <div class="asked">
+    <div :class="['asked', {chat}]">
+        <template v-if="chat">
+            <span class="tag">Question</span>
+        </template>
         <p class="title">{{ question.title }}</p>
         <template v-if="question.abstract">
             <p class="context">{{ question.abstract }}</p>
@@ -20,6 +23,17 @@ defineProps({question: {type: Object, required: true}});
     flex-direction: column;
     gap: 2px;
     animation: asked-in 0.25s both;
+}
+
+.tag {
+    color: var(--accent-text);
+    font-size: 11px;
+    letter-spacing: 0.02em;
+}
+
+.chat .title {
+    font-size: 14px;
+    line-height: 20px;
 }
 
 .title {

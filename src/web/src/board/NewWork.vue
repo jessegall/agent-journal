@@ -306,7 +306,7 @@ async function leave() {
                     </div>
                 </template>
                 <template v-if="asking">
-                    <AskedQuestion :question="asking" />
+                    <AskedQuestion :question="asking" :chat="docked" />
                 </template>
                 <template v-if="writing && !asking">
                     <ChatLine thinking :notes="thinking" />
