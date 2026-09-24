@@ -3,9 +3,9 @@ import {computed, ref, watch} from "vue";
 import DashboardNode from "./DashboardNode.vue";
 import EmptyState from "./EmptyState.vue";
 
-const props = defineProps({document: {type: Object, required: true}});
+const props = defineProps({document: {type: Object, required: true}, page: {type: String, default: ""}});
 const emit = defineEmits(["file"]);
-const trail = ref([]);
+const trail = ref(props.page ? [props.page] : []);
 const here = computed(() => trail.value.at(-1) || props.document.start);
 const page = computed(() => (props.document.pages || {})[here.value] || null);
 const title = (id) => ((props.document.pages || {})[id] || {}).title || id;

@@ -38,6 +38,7 @@ import ChatWindow from "./layout/ChatWindow.vue";
 import ViewWindow from "./layout/ViewWindow.vue";
 import AwayCard from "./layout/AwayCard.vue";
 import SkillPanel from "./layout/SkillPanel.vue";
+import PluginPagePanel from "./layout/PluginPagePanel.vue";
 import ProjectFlash from "./layout/ProjectFlash.vue";
 import UpgradeBand from "./layout/UpgradeBand.vue";
 import ThreadSkeleton from "./chat/ThreadSkeleton.vue";
@@ -232,6 +233,9 @@ watch(
                 </template>
                 <template v-if="store.skill">
                     <SkillPanel />
+                </template>
+                <template v-if="store.pluginPage">
+                    <PluginPagePanel />
                 </template>
                 <ProjectFlash />
                 <DetachedWindows />

@@ -195,7 +195,7 @@ async function stop(share) {
                             <span class="ref">{{ summary.ref }}</span>
                             <span>{{ summary.tail }}</span>
                             <template v-if="opens.length > 1">
-                                <Btn kind="icon" small class="show" @click="listed = !listed">{{ listed ? "Hide them" : "Show them" }}</Btn>
+                                <Btn kind="icon" small class="show" @click="listed = !listed">{{ listed ? "Hide" : "Show" }}</Btn>
                             </template>
                         </p>
                         <template v-if="listed">

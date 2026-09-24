@@ -152,8 +152,8 @@ class Configure(Command):
 class Raise(Command):
     name = "raise"
 
-    def run(self, context: Context, plugins, plugin: str, event: str, brief: str):
-        raised(plugins.record, plugin, "", Posting(event=event, brief=brief))
+    def run(self, context: Context, plugins, plugin: str, event: str, brief: str, open: str = ""):
+        raised(plugins.record, plugin, "", Posting(event=event, brief=brief, open=open))
         return f"{plugin}.{event} raised"
 
 
