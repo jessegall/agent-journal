@@ -28,9 +28,10 @@ let pinned = true;
 const follow = () => pinned && (log.value.scrollTop = log.value.scrollHeight);
 const watchScroll = () => (pinned = log.value.scrollHeight - log.value.scrollTop - log.value.clientHeight < NEAR);
 const sized = new ResizeObserver(follow);
+const added = new MutationObserver(() => ((pinned = true), follow()));
 
-onMounted(() => (sized.observe(lines.value), sized.observe(log.value)));
-onUnmounted(() => sized.disconnect());
+onMounted(() => (sized.observe(lines.value), sized.observe(log.value), added.observe(lines.value, {childList: true})));
+onUnmounted(() => (sized.disconnect(), added.disconnect()));
 
 function send() {
     if (props.locked || !words.value.trim()) return;

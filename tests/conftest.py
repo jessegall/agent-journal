@@ -14,6 +14,7 @@ isolation.settle()
 import pytest  # noqa: E402
 
 from engine.record import Record  # noqa: E402
+from engine.runtime import TESTS_RUNNING  # noqa: E402
 
 
 def fresh(env: str = "t") -> Record:
@@ -45,8 +46,18 @@ def pytest_collection_modifyitems(config, items):
             item.add_marker(pytest.mark.xdist_group(name))
 
 
+LIVE_RUNTIME = isolation.REPO / ".journal" / "runtime"
+
+
+def pytest_sessionstart(session):
+    if isolation.worker() == "master" and LIVE_RUNTIME.is_dir():
+        (LIVE_RUNTIME / TESTS_RUNNING).write_text(str(os.getpid()))
+
+
 def pytest_sessionfinish(session, exitstatus):
     isolation.sweep()
+    if isolation.worker() == "master":
+        (LIVE_RUNTIME / TESTS_RUNNING).unlink(missing_ok=True)
 
 
 @pytest.fixture

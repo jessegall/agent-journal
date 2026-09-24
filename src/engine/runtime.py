@@ -85,3 +85,14 @@ def upgrading(root: Path) -> bool:
         return time.time() - mark.stat().st_mtime < UPGRADE_LONGEST
     except OSError:
         return False
+
+
+TESTS_RUNNING = "tests-running"
+
+
+def tests_running(root: Path) -> bool:
+    from engine.sessions import alive
+    try:
+        return alive(int((folder(root) / TESTS_RUNNING).read_text()))
+    except (OSError, ValueError):
+        return False
