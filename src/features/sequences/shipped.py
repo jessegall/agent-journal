@@ -1,10 +1,11 @@
 from features.sequences.controller import Sequences
-from resources.base import SECTION, SYSTEM
+from resources.base import SECTION, SYSTEM, USER
 
 FILING_A_DUMP = {
     "title": "Filing a dump",
     "brief": "What the agent does with everything a user drops in a dump, from reading it to offering what comes next.",
     "starts_on": "dump.created",
+    "started_by": "",
     "steps": [
         ("Read everything", "journal dump items <n> lists what was dropped; read every item in full. When the pasted text holds "
                             "several things, such as a summary, a transcript and a link, split it with journal dump split <n> "
@@ -26,6 +27,7 @@ BUILDING_A_PLAN = {
     "title": "Building a plan",
     "brief": "How a plan is built with the user, in order, from its goal to the moment it is ready for them to approve.",
     "starts_on": "plan.created",
+    "started_by": "",
     "steps": [
         ("Name the goal", "Settle with the user what is true when the plan is done, and set it as the plan's goal."),
         ("Add the phases", "Add every phase in order with journal plan phase <n> \"<title>\" --when \"<complete when>\", and "
@@ -42,9 +44,9 @@ WORKING_A_BOARD_CARD = {
              "pick, drafts the tickets, and says one line. It talks only about the tickets, never about rows, chips, commands "
              "or the journal.",
     "starts_on": "ticket.created",
+    "started_by": USER,
     "steps": [
-        ("Read the card", "journal ticket show <n>: its board, stage and brief. If you drafted this card yourself, give the run "
-                          "up with journal sequence abandon <this sequence> --about <ref> --why \"my own draft\"."),
+        ("Read the card", "journal ticket show <n>: its board, stage and brief."),
         ("Clarify in two turns", "Only when you are unsure what the user means, ask on the board in a few words, like \"Which "
                                  "login first?\", with two to four options of a few words each: journal board ask <board n> "
                                  "\"<question>\" --set options='[...]'. You have two turns at most: after the first answer you may "
@@ -73,8 +75,9 @@ def ship(record) -> list[str]:
 def in_step(sequences: Sequences, shipped: dict, n: int | None) -> bool:
     steps = [{SECTION.title: title, SECTION.body: body} for title, body in shipped["steps"]]
     row = sequences.load(n) if n else sequences.create(shipped["title"], starts_on=shipped["starts_on"], system=True)
-    if n and (not row.system or (row.brief, row.starts_on, row.sections) == (shipped["brief"], shipped["starts_on"], steps)):
+    shape = (shipped["brief"], shipped["starts_on"], shipped["started_by"], steps)
+    if n and (not row.system or (row.brief, row.starts_on, row.started_by, row.sections) == shape):
         return False
-    row.brief, row.starts_on, row.sections = shipped["brief"], shipped["starts_on"], steps
+    row.brief, row.starts_on, row.started_by, row.sections = shape
     sequences.save(row, "updated")
     return True

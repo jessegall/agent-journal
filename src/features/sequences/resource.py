@@ -7,6 +7,7 @@ from resources.shapes import FLAG, Field, Shape
 class Sequence(Shape, Resource):
     data_fields: ClassVar[list[Field]] = [
         Field(default="", name="starts_on"),
+        Field(default="", name="started_by"),
         Field(FLAG, False, name="system"),
         Field(default=dict, name="runs"),
     ]
@@ -16,13 +17,13 @@ class Sequence(Shape, Resource):
         help=("A sequence's parts are its steps, in order: the title names the step and the body says what to do. "
               "journal sequence run <n> --about <ref> hands the agent the first step, and journal sequence next <n> --about <ref> "
               "marks the step in hand done and hands the next. --set starts_on=<type>.created, <type>.completed or trigger:<n> starts it "
-              "by itself, about the row it started on; a trigger with does=start starts it on words or a command. "
+              "by itself, about the row it started on, and --set started_by=user only when the user made that row; a trigger with does=start starts it on words or a command. "
               "A system sequence ships with the journal and cannot be removed."),
     )
     type = "sequence"
     listed_under = SIDEBAR
     event_labels = {"created": "Sequence written", "updated": "Sequence moved on", "completed": "Sequence retired"}
-    indexed = ("starts_on",)
+    indexed = ("starts_on", "started_by")
     progress = ("runs", "abandoned")
     labels = {"brief": "What it is for"}
     icon = "list"

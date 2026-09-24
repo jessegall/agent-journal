@@ -110,7 +110,7 @@ function onKey(e) {
 }
 
 watch(
-    () => drafts.value.length >= 1 || replies.value.length + boardQuestions.value.length >= OPEN_TURNS,
+    () => drafts.value.length >= 1 || replies.value.length >= OPEN_TURNS,
     (dock) => dock && (docked.value = true),
     {immediate: true}
 );

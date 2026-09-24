@@ -30,8 +30,10 @@ class StartOnMoment(Handler):
         sequences = context.journal.sequences
         moment = f"{event.type}:{event.n}" if event.action == FIRED else f"{event.type}.{event.action}"
         for row in sequences.summaries():
-            if not row["completed"] and not row["deleted"] and row.get("starts_on") == moment:
-                sequences.run(row["n"], about=f"{event.type}:{event.n}")
+            if row["completed"] or row["deleted"] or row.get("starts_on") != moment:
+                continue
+            if not row.get("started_by") or row["started_by"] == event.actor:
+                    sequences.run(row["n"], about=f"{event.type}:{event.n}")
 
 
 class EndWithItsRow(Handler):
