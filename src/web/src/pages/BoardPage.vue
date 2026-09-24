@@ -6,7 +6,6 @@ import Icon from "../kit/Icon.vue";
 import Toast from "../kit/Toast.vue";
 import AgentDrawer from "../board/AgentDrawer.vue";
 import AgentSlots from "../board/AgentSlots.vue";
-import QuestionStrip from "../board/QuestionStrip.vue";
 import AgentStrip from "../board/AgentStrip.vue";
 import Lane from "../board/Lane.vue";
 import Switch from "../kit/Switch.vue";
@@ -39,7 +38,6 @@ const chosenBoard = computed(() => store.board.lens.board);
 const slots = computed(() => store.board.slots);
 const TODO_MEANINGS = {doing: "start", asked: "review", done: "done"};
 const current = computed(() => boards.value.find((board) => board.n === store.board.lens.board));
-const boardQuestion = computed(() => store.board.questions.find((q) => !q.completed));
 const meaningOf = (key) => (tickets.value ? current.value && current.value.data.meanings[key] : TODO_MEANINGS[key]) || "";
 const finder = ref(null);
 const writingWork = ref(false);
@@ -295,9 +293,6 @@ const ask = usePoll(
         </template>
         <template v-else>
             <AgentStrip />
-            <template v-if="boardQuestion && !writingWork">
-                <QuestionStrip :question="boardQuestion" @continue="newWork()" />
-            </template>
             <template v-if="tickets && slots">
                 <AgentSlots :slots="slots" :only="only" @only="(state) => (only = only === state ? '' : state)" />
             </template>
