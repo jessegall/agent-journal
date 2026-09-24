@@ -53,27 +53,29 @@ defineExpose({focus: () => nextTick(() => input.value.focus())});
         </template>
         <Transition name="echo">
             <template v-if="echo">
-                <p class="echo">{{ echo }}</p>
+                <p :key="echo" class="echo">{{ echo }}</p>
             </template>
         </Transition>
-        <Transition name="input-step">
-            <template v-if="!withoutInput">
-                <form :class="['compose', {locked}]" @submit.prevent="send">
-                    <input
-                        ref="input"
-                        v-model="words"
-                        :placeholder="placeholder"
-                        :disabled="locked"
-                        :maxlength="limit"
-                        spellcheck="false"
-                    />
-                    <template v-if="limit">
-                        <span class="left">{{ limit - words.length }}</span>
-                    </template>
-                    <Btn kind="primary" small :disabled="locked || !words.trim()" @click="send">{{ action }}</Btn>
-                </form>
-            </template>
-        </Transition>
+        <div class="compose-slot">
+            <Transition name="input-step">
+                <template v-if="!withoutInput">
+                    <form :class="['compose', {locked}]" @submit.prevent="send">
+                        <input
+                            ref="input"
+                            v-model="words"
+                            :placeholder="placeholder"
+                            :disabled="locked"
+                            :maxlength="limit"
+                            spellcheck="false"
+                        />
+                        <template v-if="limit">
+                            <span class="left">{{ limit - words.length }}</span>
+                        </template>
+                        <Btn kind="primary" small :disabled="locked || !words.trim()" @click="send">{{ action }}</Btn>
+                    </form>
+                </template>
+            </Transition>
+        </div>
     </div>
 </template>
 
@@ -151,14 +153,36 @@ defineExpose({focus: () => nextTick(() => input.value.focus())});
     overflow-wrap: anywhere;
 }
 
-.echo-enter-active,
-.echo-leave-active {
-    transition: opacity 0.3s ease;
+.echo-enter-active {
+    transition:
+        transform 0.42s cubic-bezier(0.2, 0.9, 0.25, 1),
+        opacity 0.3s ease;
 }
 
-.echo-enter-from,
+.echo-leave-active {
+    transition: opacity 0.25s ease;
+}
+
+.echo-enter-from {
+    opacity: 0.3;
+    transform: translateY(52px);
+}
+
 .echo-leave-to {
     opacity: 0;
+}
+
+.compose-slot {
+    position: relative;
+    flex: none;
+    height: 60px;
+}
+
+.compose-slot > .compose {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
 }
 
 .input-step-enter-active,
@@ -171,7 +195,7 @@ defineExpose({focus: () => nextTick(() => input.value.focus())});
 .input-step-enter-from,
 .input-step-leave-to {
     opacity: 0;
-    transform: translateY(10px);
+    transform: translateY(14px);
 }
 
 .compose.locked {

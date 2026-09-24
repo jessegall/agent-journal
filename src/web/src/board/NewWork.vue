@@ -281,6 +281,11 @@ async function leave() {
                         <p class="prompt">{{ line.text }}</p>
                     </template>
                 </template>
+                <template v-if="!since">
+                    <p class="context">
+                        Say it in a sentence. I say back what I think you mean, you confirm, and then I draft the tickets.
+                    </p>
+                </template>
                 <template v-if="asking">
                     <AskedQuestion :question="asking" />
                 </template>
@@ -452,6 +457,13 @@ kbd {
 .pick-leave-to {
     opacity: 0;
     transform: scale(0.98);
+}
+
+.context {
+    margin: 0;
+    color: var(--text-3);
+    font-size: 13px;
+    line-height: 20px;
 }
 
 .prompt {
