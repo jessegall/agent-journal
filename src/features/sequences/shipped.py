@@ -42,7 +42,8 @@ WORKING_A_BOARD_CARD = {
     "title": "Working a card from the board",
     "brief": "A request from a board's New work panel becomes tickets by clicking, not reading: the agent first makes sure what "
              "the user means, then drafts, and says one line each turn. It talks only about the work, never about rows, chips, "
-             "commands or the journal.",
+             "commands or the journal. Use judgment at every step: the board's name and the cards already on it carry "
+             "meaning, and each step is done the way that fits this request, not to the letter.",
     "starts_on": "message.requested",
     "started_by": USER,
     "steps": [
