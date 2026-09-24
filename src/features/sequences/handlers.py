@@ -4,13 +4,13 @@ from typing import ClassVar
 from engine.events import AgentReported, AnyEvent, ResourceEvent
 from engine.transcript import IDLE
 from features.parts import AgentContext, Context, Handler
-from features.sequences.controller import BY_HAND, MOMENTS
+from features.sequences.controller import BY_HAND
 from features.triggers.resource import FIRED
 from resources.base import SECTION
+from resources.types import TYPES
 
 STEP = "step"
 UNFINISHED = "unfinished"
-STARTS = (*MOMENTS, FIRED)
 
 
 @dataclass(frozen=True)
@@ -25,15 +25,18 @@ def about_flag(key: str) -> str:
 
 class StartOnMoment(Handler):
     def handle(self, context: Context, event: AnyEvent) -> None:
-        if event.type == "sequence" or event.action not in STARTS:
+        if event.type == "sequence" or event.type not in TYPES:
+            return
+        if event.action not in TYPES[event.type].moments and event.action != FIRED:
             return
         sequences = context.journal.sequences
         moment = f"{event.type}:{event.n}" if event.action == FIRED else f"{event.type}.{event.action}"
         for row in sequences.summaries():
             if row["completed"] or row["deleted"] or row.get("starts_on") != moment:
                 continue
-            if not row.get("started_by") or row["started_by"] == event.actor:
-                    sequences.run(row["n"], about=f"{event.type}:{event.n}")
+            if row.get("started_by") and row["started_by"] != event.actor:
+                continue
+            sequences.run(row["n"], about=f"{event.type}:{event.n}")
 
 
 class EndWithItsRow(Handler):

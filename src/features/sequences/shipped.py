@@ -40,27 +40,29 @@ BUILDING_A_PLAN = {
 }
 WORKING_A_BOARD_CARD = {
     "title": "Working a card from the board",
-    "brief": "A card on a Kanban board is worked by clicking, not reading: the agent asks one short question with options to "
-             "pick, drafts the tickets, and says one line. It talks only about the tickets, never about rows, chips, commands "
-             "or the journal.",
-    "starts_on": "ticket.created",
+    "brief": "A request from a board's New work panel becomes tickets by clicking, not reading: the agent first makes sure what "
+             "the user means, then drafts, and says one line each turn. It talks only about the work, never about rows, chips, "
+             "commands or the journal.",
+    "starts_on": "message.requested",
     "started_by": USER,
     "steps": [
-        ("Read the card", "journal ticket show <n>: its board, stage and brief."),
-        ("Clarify in two turns", "Only when you are unsure what the user means, ask on the board in a few words, like \"Which "
-                                 "login first?\", with two to four options of a few words each: journal board ask <board n> "
-                                 "\"<question>\" --set options='[...]'. You have two turns at most: after the first answer you may "
-                                 "suggest one or two directions. Still unsure after two turns, ask once more with exactly three "
-                                 "options, each a meaning you think they have (\"Did you mean…?\"), and draft from their pick. One "
-                                 "question at a time, no paragraphs."),
+        ("Say what they mean", "Your first turn never drafts. Say in a few words what you think they want and ask on the "
+                               "board whether that is it: journal board ask <board n> \"Do you mean <the work>?\" --set "
+                               "options='[{\"title\": \"Yes\"}, {\"title\": \"No\"}]', then reply to their message in one "
+                               "short line. Yes goes on to Draft the tickets. No or new words: say your better guess the "
+                               "same way once more, and a yes then goes on to Draft the tickets."),
+        ("Offer choices", "Only when two guesses did not land: ask once with three or four concise options, each a meaning "
+                          "they might have, in a few words, and Start over as the last: journal board ask <board n> \"Which "
+                          "one?\" --set options='[...]'. The input closes while the options show, so they pick one; draft "
+                          "from their pick. Start over clears the panel: give the run up with journal sequence abandon."),
         ("Draft the tickets", "Draft each ticket on the same board: journal ticket create \"<the work>\" --abstract \"<one "
                               "line>\" --brief \"<the deeper explanation>\" --set board=<n> --set draft=true. A title is a few "
                               "words, the abstract one line of at most 140 characters shown on the card, and the brief a few "
-                              "plain sentences shown under More info. Name what waits on what with journal ticket depend, and the role that should "
-                              "take it with --set owner=<domain>/<role> when the project has one."),
-        ("Say one line", "Reply on the card in one short line of at most 200 characters about the tickets, like \"Three tickets drafted, pick the ones to "
-                         "keep.\" No paragraphs, no lists, and no mention of rows, chips, numbers, commands or the journal. The "
-                         "user picks, clicks or says what to change; take their answer back to Clarify in two turns."),
+                              "plain sentences shown under More info. Name what waits on what with journal ticket depend, and "
+                              "the role that should take it with --set owner=<domain>/<role> when the project has one."),
+        ("Say one line", "Reply to their message in one short line of at most 200 characters about the tickets, like \"Three "
+                         "tickets drafted, pick the ones to keep.\" No paragraphs, no lists, and no mention of rows, chips, "
+                         "numbers, commands or the journal. The user picks the ones to keep."),
     ],
 }
 SHIPPED = (FILING_A_DUMP, BUILDING_A_PLAN, WORKING_A_BOARD_CARD)

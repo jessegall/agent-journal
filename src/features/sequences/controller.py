@@ -9,7 +9,6 @@ from resources.base import SECTION, SYSTEM
 
 BY_HAND = "by hand"
 VIOLET = "#a78bfa"
-MOMENTS = ("created", "completed")
 TRIGGER = "trigger"
 
 
@@ -38,7 +37,7 @@ class Sequences(Controller):
                      f"({', '.join(sorted(t for t in resources_module.TYPES if t != 'sequence'))}), or trigger:<n> to start when trigger n fires")
 
     def _moments(self) -> set[str]:
-        return {f"{kind}.{moment}" for kind in resources_module.TYPES if kind != "sequence" for moment in MOMENTS}
+        return {f"{kind}.{moment}" for kind, resource in resources_module.TYPES.items() if kind != "sequence" for moment in resource.moments}
 
     def run(self, n: int, about: str = ""):
         r = self.load(int(n))

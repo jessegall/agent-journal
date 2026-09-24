@@ -30,6 +30,8 @@ const docked = ref(false);
 const SKELETONS = 3;
 const INPUT_LIMIT = 280;
 const OPEN_TURNS = 2;
+const CHOICES = 3;
+const START_OVER = "Start over";
 const shownDraft = ref(null);
 const FADED = 400;
 const THINKING = [
@@ -47,6 +49,8 @@ const replies = computed(() => {
 });
 const boardQuestions = computed(() => (since.value ? store.board.questions.filter((q) => q.created >= since.value) : []));
 const asking = computed(() => boardQuestions.value.find((q) => !q.completed));
+const choosing = computed(() => Boolean(asking.value) && (asking.value.data.options || []).length >= CHOICES);
+const startedOver = computed(() => boardQuestions.value.find((q) => q.completed && q.outcome === START_OVER));
 const conversation = computed(() =>
     [
         ...lines.value,
@@ -138,8 +142,14 @@ async function send(text) {
 }
 
 async function ask(text) {
-    const message = await sendMessage(route.value.env, {brief: text, about: props.board.ref, newWork: true});
-    sent.value = [...sent.value, message.id];
+    if (sent.value.length) {
+        const message = await sendMessage(route.value.env, {brief: text, about: props.board.ref, newWork: true});
+        sent.value = [...sent.value, message.id];
+        return;
+    }
+    const id = crypto.randomUUID();
+    sent.value = [id];
+    await api.requestWork(props.board.n, text, id);
 }
 
 function askAgain() {
@@ -174,6 +184,14 @@ async function add() {
     emit("close");
     setTimeout(() => (docked.value = false), FADED);
 }
+
+watch(startedOver, async (q) => {
+    if (!q) return;
+    await drop(unpicked());
+    startAnew();
+    docked.value = false;
+    say(false, `What do you want to get done on ${props.board.title}?`);
+});
 
 function startAnew() {
     words.value = "";
@@ -228,6 +246,7 @@ async function leave() {
                 fill
                 :locked="adding"
                 :limit="INPUT_LIMIT"
+                :without-input="choosing"
                 :placeholder="drafts.length ? 'Say what to change' : 'Describe the work in your own words'"
                 @send="send"
             >

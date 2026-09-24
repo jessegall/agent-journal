@@ -2,7 +2,14 @@
 import {nextTick, onMounted, onUnmounted, ref, useSlots} from "vue";
 import Btn from "./Btn.vue";
 
-const props = defineProps({placeholder: String, action: {type: String, default: "Send"}, locked: Boolean, fill: Boolean, limit: Number});
+const props = defineProps({
+    placeholder: String,
+    action: {type: String, default: "Send"},
+    locked: Boolean,
+    fill: Boolean,
+    limit: Number,
+    withoutInput: Boolean,
+});
 const emit = defineEmits(["send"]);
 const words = defineModel({type: String, default: ""});
 const log = ref(null);
@@ -43,13 +50,15 @@ defineExpose({focus: () => nextTick(() => input.value.focus())});
                 <slot name="actions" />
             </div>
         </template>
-        <form :class="['compose', {locked}]" @submit.prevent="send">
-            <input ref="input" v-model="words" :placeholder="placeholder" :disabled="locked" :maxlength="limit" spellcheck="false" />
-            <template v-if="limit">
-                <span class="left">{{ limit - words.length }}</span>
-            </template>
-            <Btn kind="primary" small :disabled="locked || !words.trim()" @click="send">{{ action }}</Btn>
-        </form>
+        <template v-if="!withoutInput">
+            <form :class="['compose', {locked}]" @submit.prevent="send">
+                <input ref="input" v-model="words" :placeholder="placeholder" :disabled="locked" :maxlength="limit" spellcheck="false" />
+                <template v-if="limit">
+                    <span class="left">{{ limit - words.length }}</span>
+                </template>
+                <Btn kind="primary" small :disabled="locked || !words.trim()" @click="send">{{ action }}</Btn>
+            </form>
+        </template>
     </div>
 </template>
 
