@@ -348,6 +348,7 @@ class CodexDriver(Driver):
     TRUSTS_HOOKS = "--dangerously-bypass-hook-trust"
     READY = b"AskCodextodoanything"
     BUSY = b"esctointerrupt"
+    ASKING = (b"Wouldyouliketorun", b"Yes,proceed", b"Allowcommand", b"Approve")
     SCREEN_TAIL = 8192
     OPENING = f"{MARK} The journal started this session."
     CONFIRM_AFTER = 3.0
@@ -361,12 +362,19 @@ class CodexDriver(Driver):
         return f"{cls.OPENING}\r".encode() if cls.READY in plain else b""
 
     def at_prompt(self) -> bool:
+        plain = self._screen()
+        return plain.rfind(self.READY) > plain.rfind(self.BUSY) and self.quiet_for() >= self.QUIET
+
+    def asking(self) -> bool:
+        plain = self._screen()
+        return max(plain.rfind(phrase) for phrase in self.ASKING) > max(plain.rfind(self.READY), plain.rfind(self.BUSY))
+
+    def _screen(self) -> bytes:
         try:
             tail = self.printed.read_bytes()[-self.SCREEN_TAIL:]
         except OSError:
-            return False
-        plain = b"".join(ANSI.sub(b"", tail).split())
-        return plain.rfind(self.READY) > plain.rfind(self.BUSY) and self.quiet_for() >= self.QUIET
+            return b""
+        return b"".join(ANSI.sub(b"", tail).split())
 
     def command(self, args: list[str], cwd: Path | None = None) -> list[str]:
         trusted = ["-c", f'projects."{Path(cwd).resolve()}".trust_level="trusted"'] if cwd else []

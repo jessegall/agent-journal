@@ -268,6 +268,9 @@ class Driver(ABC):
     def at_prompt(self) -> bool:
         return bool(self.PROMPT.search(self.last_printed().rstrip()))
 
+    def asking(self) -> bool:
+        return False
+
     def last_report(self):
         if time.monotonic() - self.reported[0] >= REPORT_FOR:
             self.reported = (time.monotonic(), self._report())
