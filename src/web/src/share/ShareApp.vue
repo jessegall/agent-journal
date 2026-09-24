@@ -16,7 +16,7 @@ const KINDS = {
     collection: {title: "Collection", icon: "folder", view: "small", labels: {abstract: "What belongs in it"}},
     report: {title: "Report", icon: "report", view: "document", labels: {}},
     plan: {title: "Plan", icon: "flag", view: "document", labels: {}},
-    todo: {title: "To-do", icon: "circle", view: "small", labels: {}},
+    todo: {title: "To-do", icon: "ring", view: "small", labels: {}},
     dump: {title: "Dump", icon: "inbox", view: "document", labels: {}},
 };
 const kindOf = (type, given = {}) => ({

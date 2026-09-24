@@ -68,9 +68,9 @@ def address(source: str) -> str:
     raise Refused(f"{given!r} is neither a repository URL, an owner/repo, nor a folder on this machine")
 
 
-def values(root: Path, name: str, token: str, ports: dict | None = None) -> dict:
+def values(root: Path, name: str, token: str, ports: dict | None = None, env: str = "") -> dict:
     return {"dir": str(folder(root, name)), "data": str(data(root, name)), "root": str(Path(root)), "project": str(Path(root).parent),
-            "journal.url": running(Path(root)) or "", "journal.env": default_env(Path(root)), "token": token,
+            "journal.url": running(Path(root)) or "", "journal.env": env or default_env(Path(root)), "token": token,
             "queue": str(Path(root) / "runtime" / "plugins" / f"{name}.queue"),
             **{f"ports.{service}": port for service, port in (ports or {}).items()}}
 
@@ -108,8 +108,8 @@ def chosen_env(manifest: Manifest, chosen: dict | None) -> dict:
     return {**named, "JOURNAL_SETTINGS": json.dumps(values)}
 
 
-def environment(root: Path, name: str, manifest: Manifest, token: str, ports: dict | None = None, chosen: dict | None = None) -> dict:
-    where = values(root, name, token, ports)
+def environment(root: Path, name: str, manifest: Manifest, token: str, ports: dict | None = None, chosen: dict | None = None, env: str = "") -> dict:
+    where = values(root, name, token, ports, env)
     given = fill(manifest.env, where)
     path = f"{own_journal(root)}{os.pathsep}{os.environ.get('PATH', '')}"
     return {**os.environ, "PATH": path, **{str(k): str(v) for k, v in given.items()}, **chosen_env(manifest, chosen),
