@@ -248,7 +248,16 @@ textarea {
     position: sticky;
     bottom: 0;
     margin: 12px -20px 0;
-    padding: 10px 20px 14px;
+    padding: 8px 20px 10px;
     background: var(--bg);
+}
+
+.comment-write :deep(textarea) {
+    min-height: 34px;
+    transition: min-height 0.15s ease-out;
+}
+
+.comment-write :deep(textarea:focus) {
+    min-height: 74px;
 }
 </style>

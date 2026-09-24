@@ -88,7 +88,8 @@ const {shown, close, closed} = closing(emit, props);
 
 .panel.page {
     width: min(1180px, 68%);
-    overflow: auto;
+    overflow-x: hidden;
+    overflow-y: auto;
 }
 
 .side-enter-active,

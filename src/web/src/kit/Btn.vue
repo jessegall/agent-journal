@@ -72,6 +72,10 @@ defineProps({kind: {type: String, default: "ghost"}, small: Boolean, busy: Boole
     padding: 5px;
     border-color: transparent;
 }
+.btn.icon:hover {
+    background: color-mix(in srgb, var(--border-3) 70%, transparent);
+    color: var(--text);
+}
 .btn.small {
     height: 24px;
     padding: 0 9px;

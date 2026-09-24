@@ -97,9 +97,11 @@ async function runBar(p) {
                 :title="paused ? 'Resume: tell the agent to carry on' : 'Pause: stop the agent\'s turn and hold the journal\'s nudges'"
                 @click="pauseOrResume"
             >
-                <Icon :name="paused ? 'resume' : 'pause'" />
                 <template v-if="wanted !== null">
-                    <Spinner class="statusbar-pause-spin" />
+                    <Spinner />
+                </template>
+                <template v-else>
+                    <Icon :name="paused ? 'resume' : 'pause'" />
                 </template>
             </Btn>
         </template>
@@ -285,12 +287,6 @@ async function runBar(p) {
 
 .statusbar-pause.paused {
     color: var(--accent-text);
-}
-
-.statusbar-pause-spin {
-    position: absolute;
-    right: -2px;
-    bottom: -2px;
 }
 
 .statusbar-tools {
