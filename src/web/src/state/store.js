@@ -5,6 +5,8 @@ export const store = reactive({
     spec: null,
     drafting: 0,
     dumping: false,
+    dumpShown: 0,
+    dumpFiles: [],
     pane: "chat",
     skill: "",
     identity: null,

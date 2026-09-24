@@ -3,24 +3,30 @@ from resources.base import SECTION, SYSTEM, USER
 
 FILING_A_DUMP = {
     "title": "Filing a dump",
-    "brief": "What the agent does with everything a user drops in a dump, from reading it to offering what comes next.",
+    "brief": "What the agent does with a pile a user drops in a dump: sort it by subject, file each subject straight into the "
+             "dump's collection, then sum up and suggest.",
     "starts_on": "dump.created",
     "started_by": "",
     "steps": [
         ("Read everything", "journal dump items <n> lists what was dropped; read every item in full. When the pasted text holds "
                             "several things, such as a summary, a transcript and a link, split it with journal dump split <n> "
-                            "\"Summary, Transcript, Link\". Name its collection for what the items are about with journal dump name "
+                            "\"Summary, Transcript, Link\". Name its collection for what the pile is about with journal dump name "
                             "<n> \"<name>\"."),
-        ("File every item", "Decide what each item becomes and file it: a transcript or meeting notes become a doc with a summary at "
-                            "the top, the decisions and the open points; an image is tagged and filed with the doc it belongs to; a "
-                            "document becomes a doc or is attached to the doc it extends; a stated goal becomes a plan. Log each "
-                            "step with journal dump log <n> \"<short title>\" --detail \"<what and why>\", with --making \"<type>, "
-                            "<title>\" before a row exists and --on <type:n> once it does. Record journal dump note, then journal "
-                            "dump filed or journal dump failed. Ask only what you cannot tell, with journal dump ask <n> "
-                            "\"<question>\" --guesses \"<one>|<two>\"."),
-        ("Offer what comes next", "Once every item is filed the dump closes. Offer two to four next steps with journal dump offer <n> "
-                                  "'[{\"label\": \"...\"}]'; the user also has You decide. Nothing it made is in the journal until "
-                                  "the user picks one."),
+        ("File by subject", "Sort the pile by concern: one document per subject, never one big document, even when a single "
+                            "transcript or note covers several. Name each for what it is about, never after the file it came "
+                            "in. Decide the shape yourself: where a summary, meeting notes, the decisions or the action items "
+                            "would help, write them without being asked and list them with --added; action items become to-dos. "
+                            "An image goes with the document it belongs to. Never make a plan or start work: that is a "
+                            "suggestion for the end. Everything you file is in the journal at once, in the dump's collection. "
+                            "Log each step with journal dump log <n> \"<short title>\" --detail \"<what and why>\", with "
+                            "--making \"<type>, <title>\" before a row exists and --on <type:n> once it does. Record journal "
+                            "dump note, then journal dump filed <n> <item> \"<what you did>\" \"<ref, ref>\" --added \"<ref>\" or "
+                            "journal dump failed. Ask only what you cannot tell, with journal dump ask <n> \"<question>\" "
+                            "--guesses \"<one>|<two>\"."),
+        ("Sum up and suggest", "Once every item is filed the dump closes. Sum up what you filed and where with journal dump "
+                               "offer <n> '[...]' --summary \"<two or three plain lines>\". Suggest up to four next steps only "
+                               "where one is worth taking, each a question with a button: {\"ask\": \"<question>\", \"label\": "
+                               "\"<button>\"}; use '[]' when there is nothing to suggest. The user takes or leaves each one."),
     ],
 }
 BUILDING_A_PLAN = {
@@ -104,7 +110,7 @@ WORKING_A_BOARD_CARD = {
                               "When the project has an organization (journal ticket organization), name the domain that "
                               "answers for it with --set owner=<domain>; its lead picks the roles. Do not reply to their "
                               "message until every ticket is drafted: your one-line reply is what tells the panel drafting is "
-                              "done. When every ticket is drafted: journal sequence next <this sequence> --about <ref>."),
+                              "done. Then offer two to four groups they can pick at once, such as what the first release needs or one subject: journal board group <board n> \"<name>\" \"<ticket>, <ticket>\". When every ticket is drafted: journal sequence next <this sequence> --about <ref>."),
         ("Say one line", "Reply to their message in one short line of at most 200 characters about the tickets, like "
                          "\"Five tickets drafted. Pick the ones to keep.\" No paragraphs, no lists, and no ticket numbers "
                          "such as #12, rows, chips, commands or the journal. The reply tells the panel you are done, and the "
@@ -125,7 +131,7 @@ REVISING_THE_DRAFTS = {
         ("Change the drafts", "Change only the cards they named: journal ticket update <n> with a new title, --abstract or "
                               "--brief, or delete a card they dropped (journal ticket delete <n> --why \"<their words>\"). "
                               "For a card they asked to add, first raise the count to the total the panel should show: journal "
-                              "board expect <board n> <count>, then journal ticket create as in drafting. When every change is "
+                              "board expect <board n> <count>, then journal ticket create as in drafting. When they ask you to choose cards for them, check the ones you would keep: journal board pick <board n> \"<ticket>, <ticket>\". When every change is "
                               "made: journal sequence next <this sequence> --about <ref>."),
         ("Say one line", "Reply to their message in one short line of at most 200 characters about what changed, like \"Made the "
                          "sign-in card smaller and added one for invites.\" No paragraphs and no ticket numbers. Finish with "
@@ -159,7 +165,38 @@ BUILDING_A_BOARD = {
                    "The user keeps the board or removes it. Finish with journal sequence next <this sequence> --about <ref>."),
     ],
 }
-SHIPPED = (FILING_A_DUMP, BUILDING_A_PLAN, WORKING_A_BOARD_CARD, REVISING_THE_DRAFTS, BUILDING_A_BOARD)
+DRAFTING_FROM_A_DOCUMENT = {
+    "title": "Drafting tickets from a document",
+    "brief": "The user handed a document to a board's New work panel. Read it whole and draft one ticket per piece of work "
+             "it describes, each saying where in the document it came from, for the user to pick. There are no rounds of "
+             "questions first: the document is the answer to them. Ask only what the document leaves open, on the board. "
+             "You talk only about the work and its tickets, never about rows, commands or the journal. An answer of Start "
+             "over means they closed the panel: the run is given up for you, so write nothing more to the board.",
+    "starts_on": "message.commissioned",
+    "started_by": USER,
+    "steps": [
+        ("Read the document", "journal message show <ref> names the file under document and gives the user's note as its "
+                              "text; journal board paths <board n> gives the file's path. Read all of it, and the board's "
+                              "cards (journal ticket board <board n>), before you write anything. Then show its sections "
+                              "in order, which the panel lists while you work: journal board outline <board n> "
+                              "\"<section>|<section>|...\". Then journal sequence next <this sequence> --about <ref>."),
+        ("Draft the tickets", "Say how many you will draft, on the low side: journal board expect <board n> <count>. Then, "
+                              "section by section, one ticket per piece that can be built, reviewed and merged on its own: "
+                              "journal ticket create \"<the work>\" --abstract \"<one line>\" --brief \"<What, Why, Touches, Done "
+                              "when, Risk>\" --about <ref> --set board=<board n> --set draft=true --set source=\"<document>\" "
+                              "--set source_id=\"<section and page, like §4 · p.4>\". Before each section, journal board progress "
+                              "<board n> \"<section>\" now; after it, journal board progress <board n> \"<section>\" read "
+                              "--drafts <how many it gave>, or out when it holds no work. Leave out background and context, and "
+                              "follow the user's note. When the document leaves a choice open that changes a ticket, ask "
+                              "it on the board with journal board ask <board n> \"<question>\" --set options='[...]' and "
+                              "change the draft when it is answered. Then offer two to four groups they can pick at once, such as what the first release needs or one subject: journal board group <board n> \"<name>\" \"<ticket>, <ticket>\". When every ticket is drafted: journal sequence next "
+                              "<this sequence> --about <ref>."),
+        ("Say one line", "Reply to their message in one short line of at most 200 characters, like \"7 drafts from 6 "
+                         "sections; I left out the background.\" No lists and no ticket numbers. Finish with journal "
+                         "sequence next <this sequence> --about <ref>."),
+    ],
+}
+SHIPPED = (FILING_A_DUMP, BUILDING_A_PLAN, WORKING_A_BOARD_CARD, REVISING_THE_DRAFTS, BUILDING_A_BOARD, DRAFTING_FROM_A_DOCUMENT)
 
 
 def ship(record) -> list[str]:

@@ -2,7 +2,6 @@
 import {chatOnly, narrow, soloView} from "./platform/view.js";
 import DetachedWindows from "./layout/DetachedWindows.vue";
 import WindowBar from "./layout/WindowBar.vue";
-import TakenOver from "./layout/TakenOver.vue";
 import {activityShown, closeOverlays} from "./actions/panels.js";
 
 import {computed, onMounted, onUnmounted, ref, watch, watchEffect} from "vue";
@@ -179,7 +178,6 @@ watch(
     </template>
     <template v-else-if="store.spec">
         <div class="viewer">
-            <TakenOver />
             <WindowBar />
             <div :class="['app', {wide: drawnWide, mini: store.sideMini, full, switching, narrow, 'side-open': narrow && store.sideOpen}]">
                 <div class="rail"><Sidebar /></div>

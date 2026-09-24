@@ -1,11 +1,11 @@
 from typing import ClassVar
 
-from resources.base import AGENT, COMPLETED, DOCUMENT, LAZY, OPENED, PROJECT, REQUESTED, RESULTS, REVISED, SIDEBAR, SYSTEM, UNLISTED, USER, Resource, ResourceDetails
+from resources.base import AGENT, COMMISSIONED, COMPLETED, DOCUMENT, LAZY, OPENED, PROJECT, REQUESTED, RESULTS, REVISED, SIDEBAR, SYSTEM, UNLISTED, USER, Resource, ResourceDetails
 from resources.shapes import FLAG, NUMBER, TEXT, Field, Options, Placed, Ranked, Reasoned, Shape, Traced
 
 
 class Message(Shape, Resource):
-    moments = ("created", "completed", REQUESTED, REVISED)
+    moments = ("created", "completed", REQUESTED, REVISED, COMMISSIONED)
     data_fields: ClassVar[list[Field]] = [
         Field(TEXT, name="idempotency"),
         Field(name="delivered"),

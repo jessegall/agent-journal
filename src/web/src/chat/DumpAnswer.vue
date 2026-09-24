@@ -1,6 +1,7 @@
 <script setup>
 import {ref} from "vue";
-import Btn from "../kit/Btn.vue";
+import Icon from "../kit/Icon.vue";
+import TextInput from "../kit/TextInput.vue";
 
 const props = defineProps({
     placeholder: {type: String, default: ""},
@@ -23,26 +24,47 @@ async function go() {
 </script>
 
 <template>
-    <div class="dump-answer">
-        <textarea v-model="text" rows="1" :placeholder="placeholder" @keydown.enter.exact.prevent="go" />
-        <Btn kind="primary" small :disabled="sending || !text.trim()" @click="go">{{ action }}</Btn>
-    </div>
+    <form class="dump-answer" @submit.prevent="go">
+        <TextInput class="dump-answer-field" :value="text" :placeholder="placeholder" @input="text = $event.target.value">
+            <template #end>
+                <button type="submit" class="dump-answer-send" :title="action" :aria-label="action" :disabled="sending || !text.trim()">
+                    <Icon name="send" :size="13" />
+                </button>
+            </template>
+        </TextInput>
+    </form>
 </template>
 
 <style scoped>
 .dump-answer {
     display: flex;
-    align-items: flex-end;
-    gap: 8px;
+    width: 100%;
 }
 
-.dump-answer textarea {
+.dump-answer-field {
     flex: 1;
-    min-height: 34px;
-    padding: 8px 10px;
-    border: 1px solid var(--border-2);
-    border-radius: 8px;
-    background: var(--bg);
-    font-size: 12.5px;
+    height: 36px;
+}
+
+.dump-answer-send {
+    display: grid;
+    place-items: center;
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    border: 0;
+    border-radius: 6px;
+    background: var(--accent);
+    color: #fff;
+    cursor: pointer;
+    transition:
+        opacity 0.15s,
+        background 0.15s;
+}
+
+.dump-answer-send:disabled {
+    background: var(--sel);
+    color: var(--text-4);
+    cursor: default;
 }
 </style>

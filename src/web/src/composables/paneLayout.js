@@ -1,32 +1,50 @@
 import {computed, effectScope, ref, watch} from "vue";
 import {fresh, leaves, measure, opened, resized, valid} from "../domain/panes.js";
 import {saveViewerSetting, settingsLoaded, viewerSetting} from "./viewerSetting.js";
+import {route} from "../route.js";
 
 const KEY = "layout";
 const SAVE_AFTER = 500;
 const FOLD = 380;
+const tabKey = () => `journal.layout.${route.value.env}`;
+
+function tabLayout() {
+    try {
+        return JSON.parse(sessionStorage.getItem(tabKey()));
+    } catch (e) {
+        return null;
+    }
+}
+
+function keepInTab(layout) {
+    try {
+        sessionStorage.setItem(tabKey(), JSON.stringify(layout));
+    } catch (e) {
+        return;
+    }
+}
 
 function shared() {
     const stored = () => viewerSetting(KEY, null);
-    const layout = ref(valid(stored()) ? stored() : fresh());
+    const own = tabLayout();
+    const layout = ref(valid(own) ? own : valid(stored()) ? stored() : fresh());
     const born = ref({});
     const dying = ref({});
     let loaded = settingsLoaded();
-    let mine = JSON.stringify(layout.value);
     let saving = 0;
 
-    watch([settingsLoaded, stored], ([ready, got]) => {
-        if (!ready) return;
-        const first = !loaded;
-        loaded = true;
-        const text = JSON.stringify(got);
-        if ((!first && (saving || text === mine)) || !valid(got)) return;
-        layout.value = got;
-        mine = text;
-    });
+    watch(
+        [settingsLoaded, stored],
+        ([ready, got]) => {
+            if (!ready || loaded) return;
+            loaded = true;
+            if (!valid(own) && valid(got)) layout.value = got;
+        },
+        {immediate: true}
+    );
 
     function keep() {
-        mine = JSON.stringify(layout.value);
+        keepInTab(layout.value);
         if (!loaded) return;
         clearTimeout(saving);
         saving = setTimeout(() => {

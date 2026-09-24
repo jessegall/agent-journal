@@ -92,6 +92,11 @@ const focusEntered = (el) => el === input.value && focusInput();
                 </template>
             </Transition>
         </div>
+        <template v-if="$slots.attached">
+            <div class="attached">
+                <slot name="attached" />
+            </div>
+        </template>
         <div class="compose-slot">
             <Transition name="input-step" @after-enter="() => typing() && focusInput()">
                 <template v-if="!withoutInput">
@@ -163,6 +168,14 @@ const focusEntered = (el) => el === input.value && focusInput();
     min-height: 100%;
     padding: 16px 16px 6px;
     box-sizing: border-box;
+}
+
+.attached {
+    display: flex;
+    flex: none;
+    flex-direction: column;
+    gap: 8px;
+    padding: 0 16px 10px;
 }
 
 .actions {

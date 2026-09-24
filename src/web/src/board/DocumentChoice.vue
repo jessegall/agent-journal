@@ -1,21 +1,14 @@
 <script setup>
-import {computed, ref} from "vue";
+import {ref} from "vue";
 import Btn from "../kit/Btn.vue";
-import CloseButton from "../kit/CloseButton.vue";
-import FileName from "../kit/FileName.vue";
+import FileSlip from "../kit/FileSlip.vue";
 import Icon from "../kit/Icon.vue";
-import PageThumb from "../kit/PageThumb.vue";
 import TextInput from "../kit/TextInput.vue";
 
 const props = defineProps({chosen: Boolean, file: {type: Object, default: null}, shortcut: {type: String, default: ""}});
 const steer = defineModel("steer", {type: String, default: ""});
 const emit = defineEmits(["choose", "file", "clear"]);
 const picker = ref(null);
-const KB = 1024;
-const size = computed(() =>
-    props.file.size < KB * KB ? `${Math.max(1, Math.round(props.file.size / KB))} KB` : `${(props.file.size / KB / KB).toFixed(1)} MB`
-);
-const extension = computed(() => props.file.name.split(".").pop());
 const browse = () => picker.value.click();
 const picked = (e) => e.target.files[0] && emit("file", e.target.files[0]);
 const pressed = () => (props.file ? emit("choose") : browse());
@@ -51,14 +44,7 @@ defineExpose({browse});
             </template>
         </div>
         <template v-if="file">
-            <div class="document-choice-file">
-                <PageThumb :lines="3" :label="extension" />
-                <span class="document-choice-file-words">
-                    <FileName :name="file.name" class="document-choice-file-name" />
-                    <span class="document-choice-meta">{{ size }}</span>
-                </span>
-                <CloseButton title="Take the document away" @click.stop="emit('clear')" />
-            </div>
+            <FileSlip :file="file" removable @remove="emit('clear')" />
             <TextInput
                 label="Anything to know?"
                 placeholder="Keep stages simple, five at most"
@@ -134,8 +120,7 @@ defineExpose({browse});
 }
 
 .document-choice-line,
-.document-choice-hint,
-.document-choice-meta {
+.document-choice-hint {
     color: var(--text-3);
     font-size: 12.5px;
 }
@@ -163,29 +148,6 @@ defineExpose({browse});
     background: var(--accent);
     color: var(--text);
     font-size: 11px;
-}
-
-.document-choice-file {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    min-width: 0;
-    padding: 8px 10px;
-    border: 1px solid var(--border-2);
-    border-radius: 9px;
-    background: var(--bg);
-}
-
-.document-choice-file-words {
-    display: flex;
-    flex: 1;
-    flex-direction: column;
-    gap: 2px;
-    min-width: 0;
-}
-
-.document-choice-file-name {
-    color: var(--text);
 }
 
 @media (max-width: 560px) {

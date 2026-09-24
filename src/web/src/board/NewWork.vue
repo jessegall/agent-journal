@@ -4,13 +4,17 @@ import {api} from "../api/client.js";
 import Btn from "../kit/Btn.vue";
 import ChatLine from "../kit/ChatLine.vue";
 import ChatPanel from "../kit/ChatPanel.vue";
+import FileSlip from "../kit/FileSlip.vue";
 import FocusStage from "../kit/FocusStage.vue";
+import Icon from "../kit/Icon.vue";
+import Segmented from "../kit/Segmented.vue";
 import {quoted} from "../format/quote.js";
 import {store, word} from "../state/store.js";
 import {rows} from "../sync/rows.js";
 import Suggestion from "./Suggestion.vue";
 import AskedQuestion from "./AskedQuestion.vue";
 import DraftDetail from "./DraftDetail.vue";
+import ReadingRail from "./ReadingRail.vue";
 
 const props = defineProps({open: Boolean, board: Object, stage: {type: String, default: ""}, starts: Boolean});
 const emit = defineEmits(["close", "added"]);
@@ -193,6 +197,20 @@ const drafts = computed(() =>
             since.value && t.data.draft && Number(t.data.board) === props.board.n && t.created >= since.value && !t.deleted && !t.completed
     )
 );
+const outline = computed(() => (since.value && store.board.drafting.outline) || []);
+const reading = computed(() => outline.value.length > 0);
+const documentName = computed(
+    () =>
+        asked.value.find((m) => m.data.document)?.data.document ||
+        drafts.value.find((t) => t.data.source && t.data.source !== "user")?.data.source ||
+        ""
+);
+const pointed = ref(null);
+const view = ref("drafts");
+const views = computed(() => [
+    {key: "drafts", label: `Drafts ${drafts.value.length}`},
+    {key: "document", label: "Document"},
+]);
 const answered = (at) => replies.value.some((c) => c.created >= at) || boardQuestions.value.some((q) => q.created >= at);
 const writing = computed(() => Boolean(lastSent.value) && !answered(lastSent.value));
 const spoken = computed(() => conversation.value.filter((line) => line.text));
@@ -203,7 +221,9 @@ const latest = computed(() => ((asking.value && grown.value) || held.value || !a
 const agentAnswered = computed(() => Boolean(asking.value) || replies.value.length > 0);
 const dockedAt = ref(0);
 const echo = computed(() =>
-    docked.value || (words.value && !writing.value) || lastMine.value < 0 ? "" : conversation.value[lastMine.value].text
+    docked.value || drafts.value.length || (words.value && !writing.value) || lastMine.value < 0
+        ? ""
+        : conversation.value[lastMine.value].text
 );
 const turn = computed(() => drafts.value.find((t) => !revealed.value.includes(t.n)));
 const cards = computed(() => {
@@ -236,6 +256,25 @@ const note = computed(() => {
     return props.starts ? `They go to ${first.value}; their agents start as room frees up.` : `They go to ${first.value}, ready to start.`;
 });
 const cardRect = (n) => document.querySelector(`.pick[data-ticket="${n}"]`)?.getBoundingClientRect();
+const sameSet = (a, b) => a.length === b.length && a.every((n) => b.includes(n));
+const presets = computed(() => {
+    const shown = shownDrafts.value.map((t) => t.n);
+    const groups = Object.entries(store.board.drafting.groups || {}).map(([name, tickets]) => ({
+        key: `group:${name}`,
+        name,
+        tickets: tickets.map(Number).filter((n) => shown.includes(n)),
+    }));
+    return [{key: "all", name: "All", tickets: shown}, ...groups.filter((g) => g.tickets.length)].map((g) => ({
+        ...g,
+        label: `${g.name} ${g.tickets.length}`,
+    }));
+});
+const preset = computed(() => presets.value.find((p) => picked.value.length && sameSet(p.tickets, picked.value))?.key || "");
+const choose = (key) => (picked.value = [...presets.value.find((p) => p.key === key).tickets]);
+const FLASH_MS = 1600;
+const flashed = ref([]);
+let appliedPicks = 0;
+let flashTimer = 0;
 const toggle = (n) => (picked.value = picked.value.includes(n) ? picked.value.filter((p) => p !== n) : [...picked.value, n]);
 const drop = (tickets) => Promise.all(tickets.map((t) => api.act("ticket", t.n, "delete", {why: "not picked in New work"})));
 const say = (mine, text, id = `line-${lines.value.length}`) =>
@@ -248,18 +287,30 @@ function onKey(e) {
     if (shown && !e.target.closest("input,textarea,[contenteditable='true']")) (e.preventDefault(), toggle(shown.n));
 }
 
+watch([() => store.board.drafting.picks?.at || 0, since], ([at]) => {
+    if (!since.value || at <= appliedPicks || at < since.value) return;
+    appliedPicks = at;
+    const chosen = (store.board.drafting.picks.tickets || []).map(Number).filter((n) => drafts.value.some((t) => t.n === n));
+    flashed.value = drafts.value.map((t) => t.n).filter((n) => chosen.includes(n) !== picked.value.includes(n));
+    picked.value = chosen;
+    clearTimeout(flashTimer);
+    flashTimer = setTimeout(() => (flashed.value = []), FLASH_MS);
+});
+
 watch(
-    () => drafts.value.length >= 1 || replies.value.length >= OPEN_TURNS,
+    () => drafts.value.length >= 1 || replies.value.length >= OPEN_TURNS || reading.value,
     (dock) => dock && ((dockedAt.value = conversation.value.at(-1)?.at || 0), (docked.value = true)),
     {immediate: true}
 );
 
-onMounted(() => window.addEventListener("keydown", onKey));
+const LISTENERS = {keydown: onKey, dragover: (e) => hovering(e), drop: (e) => dropped(e), paste: (e) => pastedFile(e)};
+onMounted(() => Object.entries(LISTENERS).forEach(([event, listener]) => window.addEventListener(event, listener)));
 onUnmounted(() => {
-    window.removeEventListener("keydown", onKey);
+    Object.entries(LISTENERS).forEach(([event, listener]) => window.removeEventListener(event, listener));
     clearInterval(exampleTimer);
     clearTimeout(growTimer);
     clearTimeout(resetTimer);
+    clearTimeout(flashTimer);
 });
 
 const greet = () => say(false, `What do you want to get done on ${props.board.title}?`);
@@ -297,6 +348,52 @@ async function send(text) {
     lastAsked.value = text;
     await ask(text, id);
 }
+
+const handed = ref(null);
+const picker = ref(null);
+const handing = computed(() => Boolean(handed.value) && !since.value);
+
+function take(file) {
+    if (since.value || !file) return;
+    handed.value = file;
+}
+
+async function hand() {
+    const text = words.value.trim();
+    const file = handed.value;
+    words.value = "";
+    say(true, text || `Draft tickets from ${file.name}`);
+    clearInterval(exampleTimer);
+    lastSent.value = PENDING;
+    since.value = PENDING;
+    const id = crypto.randomUUID();
+    const session = sessions;
+    sent.value = [...sent.value, id];
+    await api.upload("board", props.board.n, file);
+    inFlight = api.handWork(props.board.n, file.name, text, id);
+    const made = await inFlight;
+    inFlight = null;
+    handed.value = null;
+    if (session !== sessions) return;
+    if (since.value === PENDING) since.value = made.created;
+    lastSent.value = made.created;
+}
+
+function dropped(e) {
+    const file = e.dataTransfer && e.dataTransfer.files[0];
+    if (!props.open || !file || since.value) return;
+    e.preventDefault();
+    take(file);
+}
+
+function pastedFile(e) {
+    const file = props.open && e.clipboardData && e.clipboardData.files[0];
+    if (!file || since.value) return;
+    e.preventDefault();
+    take(file);
+}
+
+const hovering = (e) => props.open && !since.value && e.preventDefault();
 
 function filed(text, id) {
     if (drafts.value.length) return api.reviseWork(props.board.n, text, id);
@@ -387,24 +484,42 @@ function startAnew() {
     docked.value = false;
     dockedAt.value = 0;
     revealed.value = [];
+    pointed.value = null;
+    view.value = "drafts";
     stalled.value = false;
     tall.value = false;
     grown.value = false;
     words.value = "";
+    handed.value = null;
     lines.value = [];
     sent.value = [];
     since.value = 0;
     lastSent.value = 0;
     picked.value = [];
+    flashed.value = [];
+    appliedPicks = 0;
 }
 </script>
 
 <template>
     <FocusStage :open="open" glow spread :docked="docked" :escapes="false">
-        <div :class="['work', {on: docked}]">
+        <Transition name="rail">
+            <template v-if="reading">
+                <div :class="['rail', {shown: view === 'document'}]">
+                    <ReadingRail :name="documentName" :sections="outline" :drafted="drafts.length" :pointed="pointed" />
+                </div>
+            </template>
+        </Transition>
+        <div :class="['work', {on: docked, reading, document: view === 'document'}]">
+            <template v-if="reading">
+                <div class="views">
+                    <Segmented :options="views" :value="view" @pick="(key) => (view = key)" />
+                </div>
+            </template>
             <div class="bar">
                 <span class="note">{{ note }}</span>
                 <div :class="['bar-actions', {on: shownDrafts.length}]">
+                    <Segmented class="presets" :options="presets" :value="preset" @pick="choose" />
                     <Btn small @click="again">Ask for a different set</Btn>
                     <Btn kind="primary" small :busy="adding" :disabled="!picked.length" @click="add">
                         {{ picked.length ? `Add ${picked.length} to ${first}` : `Add to ${first}` }}
@@ -422,11 +537,14 @@ function startAnew() {
                         @toggle="toggle(card.ticket.n)"
                         @revealed="reveal(card.ticket.n)"
                         @more="(from) => (shownDraft = {ticket: card.ticket, from})"
+                        :class="{flash: Boolean(card.ticket) && flashed.includes(card.ticket.n)}"
+                        @mouseenter="pointed = card.ticket"
+                        @mouseleave="pointed = null"
                     />
                 </template>
             </TransitionGroup>
         </div>
-        <div :class="['dock', {docked, short: !tall}]">
+        <div :class="['dock', {docked, short: !tall, reading}]">
             <ChatPanel
                 ref="panel"
                 v-model="words"
@@ -439,9 +557,36 @@ function startAnew() {
                 :waiting="writing"
                 :echo="echo"
                 :hint="since ? '' : `“${EXAMPLES[example]}”`"
-                :placeholder="drafts.length ? 'Say what to change' : 'Describe the work in your own words'"
+                :placeholder="
+                    handing
+                        ? 'Anything I should know? Optional'
+                        : drafts.length
+                          ? 'Say what to change'
+                          : 'Describe the work in your own words'
+                "
                 @send="send"
             >
+                <template v-if="!since" #attached>
+                    <template v-if="handed">
+                        <FileSlip :file="handed" removable @remove="handed = null" />
+                        <div class="hand-row">
+                            <span class="hand-note">
+                                I read all of it, then draft one ticket per piece of work. Nothing goes on the board until you pick it.
+                            </span>
+                            <Btn kind="primary" small @click="hand">Read it and draft tickets</Btn>
+                        </div>
+                    </template>
+                    <template v-else>
+                        <span class="hand-offer">
+                            <Btn small @click="picker.click()">
+                                <Icon name="paperclip" />
+                                From a document
+                            </Btn>
+                            <span class="hand-note">or drop or paste one here</span>
+                        </span>
+                    </template>
+                    <input ref="picker" type="file" hidden @change="take($event.target.files[0])" />
+                </template>
                 <template #head>
                     <div :class="['head', {on: docked}]">
                         <span class="head-title">
@@ -503,6 +648,24 @@ function startAnew() {
 </template>
 
 <style scoped>
+.hand-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.hand-note {
+    flex: 1;
+    color: var(--text-3);
+    font-size: 12.5px;
+}
+
+.hand-offer {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
 .dock {
     position: absolute;
     top: calc(50% - min(200px, 26vh));
@@ -525,6 +688,51 @@ function startAnew() {
     left: 20px;
     width: 400px;
     height: calc(100% - 40px);
+}
+
+.dock.docked.reading {
+    left: calc(100% - 360px);
+    width: 340px;
+}
+
+.rail {
+    position: absolute;
+    top: 20px;
+    bottom: 20px;
+    left: 20px;
+    display: flex;
+    flex-direction: column;
+    width: 284px;
+    padding: 16px 12px;
+    border: 1px solid var(--border-2);
+    border-radius: 16px;
+    background: rgba(24, 25, 28, 0.94);
+    backdrop-filter: blur(20px);
+    box-shadow: 0 28px 80px rgba(0, 0, 0, 0.55);
+    box-sizing: border-box;
+}
+
+.rail-enter-active {
+    transition:
+        opacity var(--fade) 0.08s,
+        transform var(--move) 0.08s;
+}
+
+.rail-leave-active {
+    transition: opacity var(--fade);
+}
+
+.rail-enter-from {
+    opacity: 0;
+    transform: translateX(-16px);
+}
+
+.rail-leave-to {
+    opacity: 0;
+}
+
+.views {
+    display: none;
 }
 
 .head {
@@ -582,7 +790,9 @@ function startAnew() {
     transform: translateX(16px);
     transition:
         opacity var(--fade),
-        transform var(--move);
+        transform var(--move),
+        left var(--move),
+        right var(--move);
 }
 
 .work.on {
@@ -591,7 +801,14 @@ function startAnew() {
     transform: none;
     transition:
         opacity var(--fade) 0.08s,
-        transform var(--move) 0.08s;
+        transform var(--move) 0.08s,
+        left var(--move),
+        right var(--move);
+}
+
+.work.reading {
+    right: 380px;
+    left: 324px;
 }
 
 .bar {
@@ -609,6 +826,7 @@ function startAnew() {
 
 .bar-actions {
     display: flex;
+    min-width: 0;
     align-items: center;
     gap: 8px;
     opacity: 0;
@@ -623,6 +841,29 @@ function startAnew() {
     opacity: 1;
     pointer-events: auto;
     transform: none;
+}
+
+.presets {
+    flex: 0 1 auto;
+    min-width: 0;
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+
+.presets :deep(.segmented-option) {
+    white-space: nowrap;
+}
+
+.picks > .flash {
+    animation: pick-flash 1.6s ease-out;
+}
+
+@keyframes pick-flash {
+    20% {
+        box-shadow:
+            0 0 0 2px var(--accent),
+            0 0 32px -6px var(--accent);
+    }
 }
 
 .picks {
@@ -759,11 +1000,50 @@ function startAnew() {
     .picks {
         grid-template-columns: 1fr;
     }
+
+    .dock.docked.reading {
+        left: 12px;
+        width: calc(100% - 24px);
+    }
+
+    .work.reading {
+        right: 12px;
+        left: 12px;
+    }
+
+    .views {
+        display: flex;
+        flex: none;
+        height: 32px;
+    }
+
+    .work.document .bar,
+    .work.document .picks {
+        visibility: hidden;
+    }
+
+    .rail {
+        top: 56px;
+        right: 12px;
+        bottom: calc(50% + 12px);
+        left: 12px;
+        width: auto;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity var(--fade);
+    }
+
+    .rail.shown {
+        opacity: 1;
+        pointer-events: auto;
+    }
 }
 
 @media (prefers-reduced-motion: reduce) {
     .dock,
     .head,
+    .rail,
+    .rail-enter-active,
     .work,
     .bar-actions,
     .asked-enter-active,

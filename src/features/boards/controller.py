@@ -12,6 +12,7 @@ STAGES = ("To do", "Doing", "Review", "Done")
 START_OVER = "Start over"
 CANCEL_HOLDS = 600
 BUILD_LOG = 40
+SECTION_STATES = ("now", "read", "out", "asked")
 
 
 
@@ -72,11 +73,60 @@ class Boards(Controller):
             tickets.delete(left.n, why="The request on the board was cancelled")
 
     def request(self, n: int, text: str, idempotency: str = ""):
+        return self._opened(self.load(int(n)), REQUESTED, text, idempotency)
+
+    def hand(self, n: int, document: str, text: str = "", idempotency: str = ""):
         board = self.load(int(n))
+        if document not in board.files:
+            raise Refused(f"board {board.n} holds no file {document!r}; attach it first")
+        return self._opened(board, COMMISSIONED, text.strip() or f"Draft tickets from {document}", idempotency, document=document)
+
+    def outline(self, n: int, sections: str):
+        board = self._drafting(n)
+        titles = [title.strip() for title in sections.split("|") if title.strip()]
+        if not titles:
+            raise Refused("name the document's sections in order, split by |, like Background|Who can invite|Roles")
+        return self.update(board.n, drafting={**board.drafting, "outline": [{"title": title, "state": "", "drafts": 0} for title in titles]})
+
+    def progress(self, n: int, section: str, state: str, drafts: str = ""):
+        board = self._drafting(n)
+        if state not in SECTION_STATES:
+            raise Refused(f"a section is marked {', '.join(SECTION_STATES)}; not {state!r}")
+        outline = board.drafting.get("outline") or []
+        if section not in [part["title"] for part in outline]:
+            raise Refused(f"the outline has no section {section!r}; it has {', '.join(part['title'] for part in outline)}")
+        marked = [{**part, "state": state, "drafts": int(drafts or part["drafts"])} if part["title"] == section else part for part in outline]
+        return self.update(board.n, drafting={**board.drafting, "outline": marked})
+
+    def group(self, n: int, name: str, tickets: str):
+        board = self._drafting(n)
+        groups = {**(board.drafting.get("groups") or {}), name.strip(): self._drafted(board, tickets)}
+        return self.update(board.n, drafting={**board.drafting, "groups": groups})
+
+    def pick(self, n: int, tickets: str):
+        board = self._drafting(n)
+        return self.update(board.n, drafting={**board.drafting, "picks": {"tickets": self._drafted(board, tickets), "at": time.time()}})
+
+    def _drafted(self, board, tickets: str) -> list[int]:
+        from features.tickets.controller import Tickets
+        numbers = [int(t.lstrip("#")) for t in tickets.replace(",", " ").split() if t.lstrip("#").isdigit()]
+        drafts = {t.n for t in Tickets(self.record, actor=self.actor)._standing() if t.draft and int(t.board) == board.n}
+        stray = [n for n in numbers if n not in drafts]
+        if not numbers or stray:
+            raise Refused(f"name drafts on board {board.n}, like \"12, 13\"; not {stray or tickets!r}")
+        return numbers
+
+    def _drafting(self, n: int):
+        board = self.load(int(n))
+        if not board.drafting.get("since"):
+            raise Refused(f"nothing is being drafted on board {board.n}")
+        return board
+
+    def _opened(self, board, moment: str, text: str, idempotency: str, **data):
         self.cancel(board.n)
-        made = self._filed(board, text, idempotency)
+        made = self._filed(board, text, idempotency, **data)
         self.update(board.n, expected=0, drafting={"since": made.created, "idempotency": made.idempotency, "asked": [made.ref]})
-        self.record.emit("message", made.n, REQUESTED, self.actor)
+        self.record.emit("message", made.n, moment, self.actor)
         return made
 
     def expect(self, n: int, count: str):
@@ -100,9 +150,9 @@ class Boards(Controller):
             self.update(board.n, drafting={**board.drafting, "asked": [*(board.drafting.get("asked") or []), made.ref]})
         return made
 
-    def _filed(self, board, text: str, idempotency: str):
+    def _filed(self, board, text: str, idempotency: str, **data):
         return Messages(self.record, actor=self.actor, session=self.session, agent=self.agent).create(
-            titled(text), brief=text.strip(), about=board.ref, new_work=True, idempotency=idempotency)
+            titled(text), brief=text.strip(), about=board.ref, new_work=True, idempotency=idempotency, **data)
 
     def build(self, n: int, name: str = "", steer: str = ""):
         board = self.load(int(n))

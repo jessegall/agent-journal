@@ -196,6 +196,10 @@ export class ApiClient {
         return this.act("board", board, "request", {text, idempotency});
     }
 
+    handWork(board, document, text, idempotency) {
+        return this.act("board", board, "hand", {document, text, idempotency});
+    }
+
     ticketBoard(n) {
         return this.act("ticket", n, "board");
     }

@@ -8,14 +8,16 @@ class DumpsDetails(FeatureDetails):
     title = "Dumps"
 
 
-    abstract = "Drop anything in one place and the agent reads every item and files it into the record"
+    abstract = "Drop a whole pile in one place and the agent sorts it by subject and files it straight into a collection"
 
     help = """
-        A dump holds pasted text and dropped files; each is an item. You decide what
-        every item becomes and file it, recording journal dump note <n> <item> "<what it is>",
-        then journal dump filed <n> <item> "<what it did>" "<ref, ref>" or journal dump failed
-        <n> <item> "<why>". journal dump name <n> "<name>" names its collection for what the
-        items are about, and journal dump log <n> "<status>" tells the user what you are doing;
+        A dump holds pasted text and dropped files; each is an item. Sort the pile by subject:
+        one document per subject, named for what it is about, never after the file it came in.
+        Record journal dump note <n> <item> "<what it is>", then journal dump filed <n> <item>
+        "<what it did>" "<ref, ref>" --added "<ref>" for what you wrote unasked, or journal dump
+        failed <n> <item> "<why>". What you file is in the journal at once, in the dump's
+        collection. journal dump name <n> "<name>" names that collection for what the items are
+        about, and journal dump log <n> "<status>" tells the user what you are doing;
         journal dump ask <n> "<question>" asks the user in the dump window, and they answer there.
         One dump is worked at a time; the next waits until it closes. journal dump items <n> lists where every item stands, and the dump
         closes by itself once every item is filed or failed.
@@ -49,34 +51,36 @@ class DumpsDetails(FeatureDetails):
         ),
         Line(
             name="filed",
-            title="dump {{n}} is filed ({{outcome}}) - offer the user what to do next",
+            title="dump {{n}} is filed ({{outcome}}) - sum it up for the user",
             brief="""
-                Offer two to four next steps as buttons on the dump itself, never as a suggestion
-                elsewhere: journal dump offer {{n}} '[{"label": "Approve the design plan", "type":
-                "plan", "n": 3, "action": "approve"}, {"label": "Leave it for now"}]'. A step that is
-                a journal action carries its type, n and action and runs as the user when pressed.
-                The user also has You decide, which hands the rest to you.
+                Everything it made is already in the journal, in the dump's collection. Sum up what
+                you filed and where in two or three plain lines, and suggest a next step only where
+                one is worth taking, as a question with a button on the dump itself, never elsewhere:
+                journal dump offer {{n}} '[{"ask": "The notes say you want to start on the mobile
+                layout. Want me to plan it?", "label": "Plan it"}]' --summary "<what you filed and
+                where>". Use '[]' when nothing is worth suggesting. A step that is a journal action
+                carries its type, n and action and runs as the user when pressed. Never start or
+                plan anything yourself: a suggestion is how you propose it.
             """,
         ),
         Line(
             name="chose",
             title="the user chose {{label}} for dump {{n}}",
-            brief="what the dump made is now in the journal. Carry that step out, and log it on the dump.",
+            brief="carry that step out, and log it on the dump.",
         ),
         Line(
             name="directed",
             title="the user said what to do with dump {{n}}",
             brief="""
-                in their words: {{how}}. What the dump made is now in the journal. Do that, and log each
-                step on the dump.
+                in their words: {{how}}. Answer it or do it, and log each step on the dump.
             """,
         ),
         Line(
             name="decide",
             title="the user left dump {{n}} to you - finish it",
             brief="""
-                what the dump made is now in the journal. Take the next step you think best and file
-                anything still open yourself, logging each step on the dump. Nothing waits for the user.
+                take the next step you think best and file anything still open yourself, logging each
+                step on the dump. Nothing waits for the user.
             """,
         ),
     ]

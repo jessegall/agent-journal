@@ -574,11 +574,17 @@ def attached_file(record, type_: str, r, name: str, f: Path) -> dict:
 @route("GET", "/api/{env}/files")
 def get_files(req: Request) -> Reply:
     record = req.record()
+    controllers = [(type_, CONTROLLERS[type_](record, actor=USER)) for type_ in listed_types()]
+    summaries = [c.summaries() for _, c in controllers]
+    held = ATTACHED.get(str(record.home))
+    if held and all(a is b for a, b in zip(held[0], summaries, strict=True)):
+        return Reply(200, held[1])
     out = []
-    for type_ in listed_types():
-        c = CONTROLLERS[type_](record, actor=USER)
+    for type_, c in controllers:
         out += [attached_file(record, type_, r, name, c.folder(r.n) / name) for r in c._attached() for name in r.files if (c.folder(r.n) / name).is_file()]
-    return Reply(200, sorted(out, key=lambda x: -x["at"]))
+    files = sorted(out, key=lambda x: -x["at"])
+    ATTACHED[str(record.home)] = (summaries, files)
+    return Reply(200, files)
 
 
 @route("GET", "/api/{env}/plugin/{n}/dashboard/{name}")
@@ -900,9 +906,28 @@ class Listing:
                    since=asked.since, by_updated=asked.by == "updated")
 
 
+LISTED: dict[tuple, tuple] = {}
+ATTACHED: dict[str, tuple] = {}
+TALLIED: dict[tuple, tuple] = {}
+
+
 def listing(controller, record, wanted: Listing) -> dict:
+    summaries, stamp = controller.summaries(), settled(record)
+    key = (str(record.home), controller.type, wanted)
+    held = LISTED.get(key)
+    if held and held[0] is summaries and held[1] == stamp:
+        return held[2]
+    listed = _listed(controller, record, wanted, summaries, stamp)
+    if not wanted.since:
+        if len(LISTED) >= KEEP_SHAPED:
+            LISTED.clear()
+        LISTED[key] = (summaries, stamp, listed)
+    return listed
+
+
+def _listed(controller, record, wanted: Listing, summaries: list, stamp: tuple) -> dict:
     since, only, last = wanted.since, wanted.only, wanted.last
-    rows = [row for row in controller.summaries() if (since or only or not row["deleted"]) and (wanted.completed or not row["completed"])
+    rows = [row for row in summaries if (since or only or not row["deleted"]) and (wanted.completed or not row["completed"])
             and (only or controller.resource.hidden_listed or not row.get("hidden"))
             and (not wanted.before or row["n"] < wanted.before) and row["updated"] > since and (not only or row["n"] in only)]
     if wanted.by_updated:
@@ -911,7 +936,6 @@ def listing(controller, record, wanted: Listing) -> dict:
     if wanted.completed and last:
         standing = [row for row in rows if not row["completed"]][None if controller.resource.listed_open else -last:]
         kept = sorted({row["n"]: row for row in (*standing, *kept)}.values(), key=lambda row: row["n"])
-    stamp = settled(record)
     return {"rows": [view for row in kept if (view := readable(controller, record, row["n"], row.get("stamp"), stamp))], "more": len(rows) > len(kept)}
 
 
@@ -937,18 +961,25 @@ def viewed(controller, record, n: int, row_stamp, settings: tuple) -> dict:
 
 
 def counted(record, types) -> dict:
-    out = {}
-    for type_, controller in ((t, CONTROLLERS[t]) for t in types):
-        tally = {"all": 0, "open": 0, "unread": 0}
-        for row in controller(record, actor=USER).summaries():
-            if row["deleted"] or row.get("hidden"):
-                continue
-            tally["all"] += 1
-            if not row["completed"]:
-                tally["open"] += 1
-                tally["unread"] += USER not in (row.get("seen") or [])
-        out[type_] = tally
-    return out
+    return {type_: _tally(record, type_) for type_ in types}
+
+
+def _tally(record, type_: str) -> dict:
+    summaries = CONTROLLERS[type_](record, actor=USER).summaries()
+    key = (str(record.home), type_)
+    held = TALLIED.get(key)
+    if held and held[0] is summaries:
+        return held[1]
+    tally = {"all": 0, "open": 0, "unread": 0}
+    for row in summaries:
+        if row["deleted"] or row.get("hidden"):
+            continue
+        tally["all"] += 1
+        if not row["completed"]:
+            tally["open"] += 1
+            tally["unread"] += USER not in (row.get("seen") or [])
+    TALLIED[key] = (summaries, tally)
+    return tally
 
 
 @route("GET", "/api/{env}/dashboard")
