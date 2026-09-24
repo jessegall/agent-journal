@@ -12,7 +12,6 @@ import {
     envState,
     environmentsOf,
     focusOf,
-    isActive,
     journalState,
     leadOf,
     totalsOf,
@@ -22,7 +21,6 @@ import Chip from "../kit/Chip.vue";
 import Icon from "../kit/Icon.vue";
 import IconCount from "../kit/IconCount.vue";
 import Meter from "../kit/Meter.vue";
-import Monogram from "../kit/Monogram.vue";
 import StatusLabel from "../kit/StatusLabel.vue";
 import Switch from "../kit/Switch.vue";
 import SwitchCase from "../kit/SwitchCase.vue";
@@ -50,6 +48,7 @@ const meterOf = (p) => ({
     value: p.done,
     max: Math.max(1, p.rows),
     busy: building(p),
+    tone: "muted",
 });
 const wordFor = (p) => (planButton({data: p}) || [])[1];
 
@@ -68,20 +67,17 @@ const runStep = (e, p) => manage(() => runPlan({data: p, n: p.n}, server.value.i
 </script>
 
 <template>
-    <Tile :href="home" :label="`Open ${journal.project}`" :tone="isActive(state) ? 'live' : ''" :wide="open && !!lead">
-        <div class="jt-head">
-            <Monogram :text="journal.project" :tint="journal.summary ? journal.summary.color : ''" :size="34" />
-            <div class="jt-names">
-                <h3 class="jt-project">{{ journal.project }}</h3>
-                <span class="jt-where">{{ lead ? lead.name : `port ${journal.port}` }}</span>
-            </div>
+    <Tile :href="home" :label="`Open ${journal.project}`" :wide="open && !!lead">
+        <template #head>
+            <h3 class="jt-project">{{ journal.project }}</h3>
+            <span class="jt-where">{{ lead ? lead.name : `port ${journal.port}` }}</span>
             <template v-if="journal.current">
                 <Chip class="jt-here">this one</Chip>
             </template>
             <a class="jt-newtab" :href="home" target="_blank" title="Open this journal in a new tab">
                 <Icon name="open" :size="13" />
             </a>
-        </div>
+        </template>
         <SwitchCase :value="shape">
             <template #live>
                 <div class="jt-now">
@@ -94,27 +90,27 @@ const runStep = (e, p) => manage(() => runPlan({data: p, n: p.n}, server.value.i
                 <template v-if="plan">
                     <Meter v-bind="meterOf(plan)">
                         <template v-if="wordFor(plan)">
-                            <Btn kind="primary" small @click="runStep(lead, plan)">{{ wordFor(plan) }}</Btn>
+                            <Btn small @click="runStep(lead, plan)">{{ wordFor(plan) }}</Btn>
                         </template>
                     </Meter>
                 </template>
-                <div class="jt-foot">
-                    <template v-for="c in countsOf(totalsOf(journal))" :key="c.key">
-                        <IconCount :icon="c.icon" :count="c.n" :title="c.text" :hot="c.hot" />
-                    </template>
-                    <template v-if="lead.auto">
-                        <Chip>auto</Chip>
-                    </template>
-                    <button type="button" :class="['jt-fold', {open}]" :aria-expanded="open" @click="emit('toggle')">
-                        {{ counted(environments.length, "environment", "environments") }}
-                        <Icon name="down" :size="12" />
-                    </button>
-                </div>
             </template>
             <template #unreadable>
                 <p class="jt-focus past">This journal runs {{ journal.version || "an older version" }}; the hub reads 2.3.0 and up.</p>
             </template>
         </SwitchCase>
+        <template v-if="lead" #foot>
+            <template v-for="c in countsOf(totalsOf(journal))" :key="c.key">
+                <IconCount :icon="c.icon" :count="c.n" :title="c.text" :hot="c.hot" />
+            </template>
+            <template v-if="lead.auto">
+                <Chip>auto</Chip>
+            </template>
+            <button type="button" :class="['jt-fold', {open}]" :aria-expanded="open" @click="emit('toggle')">
+                {{ counted(environments.length, "environment", "environments") }}
+                <Icon name="down" :size="12" />
+            </button>
+        </template>
         <template v-if="open && lead" #more>
             <div class="jt-tools">
                 <a class="jt-tool" :href="`${server.origin()}/?chat`" target="_blank" title="Open this journal's chat in its own window">
@@ -128,7 +124,7 @@ const runStep = (e, p) => manage(() => runPlan({data: p, n: p.n}, server.value.i
             <template v-for="e in environments" :key="e.name">
                 <div :class="['jt-env', envState(e)]">
                     <div class="jt-env-line">
-                        <StatusLabel class="jt-env-state" :state="envState(e)" :size="7">{{ STATE_WORDS[envState(e)] }}</StatusLabel>
+                        <StatusLabel class="jt-env-state" :state="envState(e)">{{ STATE_WORDS[envState(e)] }}</StatusLabel>
                         <a class="jt-env-name" :href="server.page(e.name)">{{ e.name }}</a>
                         <span class="jt-env-work">{{ focusOf(e).known ? focusOf(e).title : "" }}</span>
                         <span class="jt-env-counts">
@@ -151,7 +147,7 @@ const runStep = (e, p) => manage(() => runPlan({data: p, n: p.n}, server.value.i
                     <template v-for="p in e.plans" :key="p.n">
                         <Meter class="jt-env-plan" v-bind="meterOf(p)">
                             <template v-if="wordFor(p)">
-                                <Btn kind="primary" small @click="runStep(e, p)">{{ wordFor(p) }}</Btn>
+                                <Btn small @click="runStep(e, p)">{{ wordFor(p) }}</Btn>
                             </template>
                         </Meter>
                     </template>
@@ -162,33 +158,20 @@ const runStep = (e, p) => manage(() => runPlan({data: p, n: p.n}, server.value.i
 </template>
 
 <style scoped>
-.jt-head {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    min-width: 0;
-}
-
-.jt-names {
-    display: flex;
-    flex: 1;
-    flex-direction: column;
-    gap: 2px;
-    min-width: 0;
-}
-
 .jt-project {
+    min-width: 0;
     margin: 0;
     overflow: hidden;
     color: var(--text);
-    font-size: 16px;
-    font-weight: 600;
-    letter-spacing: -0.01em;
+    font-size: 13px;
+    font-weight: 500;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
 
 .jt-where {
+    flex: 1;
+    min-width: 0;
     overflow: hidden;
     color: var(--text-3);
     font-size: 12px;
@@ -204,15 +187,14 @@ const runStep = (e, p) => manage(() => runPlan({data: p, n: p.n}, server.value.i
     flex: none;
     display: grid;
     place-items: center;
-    width: 28px;
-    height: 28px;
-    margin-right: -6px;
+    width: 26px;
+    height: 24px;
     border-radius: 6px;
     color: var(--text-3);
 }
 
 .jt-newtab:hover {
-    background: var(--sel);
+    background: var(--hover);
     color: var(--text);
 }
 
@@ -221,14 +203,15 @@ const runStep = (e, p) => manage(() => runPlan({data: p, n: p.n}, server.value.i
     flex-direction: column;
     gap: 6px;
     min-width: 0;
+    font-size: 12.5px;
 }
 
 .jt-focus {
     display: -webkit-box;
-    margin: 2px 0 0;
+    margin: 0;
     overflow: hidden;
     color: var(--text);
-    font-size: 14px;
+    font-size: 13px;
     line-height: 1.45;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 2;
@@ -240,41 +223,32 @@ const runStep = (e, p) => manage(() => runPlan({data: p, n: p.n}, server.value.i
 
 .jt-caption {
     color: var(--text-3);
-    font-size: 11.5px;
+    font-size: 11px;
     font-variant-numeric: tabular-nums;
-}
-
-.jt-foot {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 8px 16px;
-    margin-top: auto;
-    padding-top: 12px;
-    border-top: 1px solid var(--line);
 }
 
 .jt-fold {
     display: inline-flex;
     align-items: center;
     gap: 5px;
-    margin: -4px -8px -4px auto;
-    padding: 4px 8px;
+    height: 24px;
+    margin-left: auto;
+    padding: 0 7px;
     border: 0;
     border-radius: 6px;
     background: none;
     color: var(--text-3);
     font: inherit;
-    font-size: 12px;
     cursor: pointer;
 }
 
 .jt-fold:hover {
-    background: var(--sel);
+    background: var(--hover);
     color: var(--text);
 }
 
 .jt-fold .ico {
+    opacity: 0.65;
     transition: transform 0.18s var(--ease);
 }
 
@@ -286,16 +260,16 @@ const runStep = (e, p) => manage(() => runPlan({data: p, n: p.n}, server.value.i
     display: flex;
     align-items: center;
     gap: 14px;
-    min-height: 38px;
-    padding: 0 18px;
-    font-size: 12px;
+    min-height: 34px;
+    padding: 0 16px;
+    font-size: 11.5px;
 }
 
 .jt-tool {
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    color: var(--text-2);
+    color: var(--text-3);
 }
 
 .jt-tool:hover {
@@ -312,13 +286,14 @@ const runStep = (e, p) => manage(() => runPlan({data: p, n: p.n}, server.value.i
     display: flex;
     flex-direction: column;
     gap: 10px;
-    padding: 10px 18px;
+    padding: 8px 16px;
     border-top: 1px solid var(--line);
+    font-size: 12px;
 }
 
 .jt-env-line {
     display: grid;
-    grid-template-columns: 110px minmax(80px, 170px) minmax(0, 1fr) auto auto auto;
+    grid-template-columns: 100px minmax(80px, 170px) minmax(0, 1fr) auto auto auto;
     align-items: center;
     gap: 16px;
     min-height: 28px;
@@ -331,7 +306,7 @@ const runStep = (e, p) => manage(() => runPlan({data: p, n: p.n}, server.value.i
 .jt-env-name {
     overflow: hidden;
     color: var(--text);
-    font-size: 13px;
+    font-size: 12.5px;
     font-weight: 500;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -344,7 +319,6 @@ const runStep = (e, p) => manage(() => runPlan({data: p, n: p.n}, server.value.i
 .jt-env-work {
     overflow: hidden;
     color: var(--text-2);
-    font-size: 12.5px;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
@@ -352,6 +326,7 @@ const runStep = (e, p) => manage(() => runPlan({data: p, n: p.n}, server.value.i
 .jt-env-counts {
     display: inline-flex;
     gap: 12px;
+    font-size: 11.5px;
 }
 
 .jt-env-agent {
@@ -363,7 +338,7 @@ const runStep = (e, p) => manage(() => runPlan({data: p, n: p.n}, server.value.i
 
 .jt-env-plan {
     max-width: 560px;
-    padding: 2px 0 4px 126px;
+    padding: 2px 0 4px 116px;
 }
 
 @container (max-width: 720px) {
@@ -374,7 +349,7 @@ const runStep = (e, p) => manage(() => runPlan({data: p, n: p.n}, server.value.i
     }
 
     .jt-env-state {
-        width: 84px;
+        width: 76px;
     }
 
     .jt-env-name {
