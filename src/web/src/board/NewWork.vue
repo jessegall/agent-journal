@@ -55,7 +55,7 @@ const replies = computed(() => {
     return rows("comment").filter((c) => c.refs.some((ref) => refs.includes(ref)));
 });
 const boardQuestions = computed(() => (since.value ? store.board.questions.filter((q) => q.created >= since.value) : []));
-const asking = computed(() => boardQuestions.value.find((q) => !q.completed));
+const asking = computed(() => boardQuestions.value.findLast((q) => !q.completed));
 const choosing = computed(() => Boolean(asking.value && asking.value.data.final));
 const confirmed = computed(() => drafts.value.length > 0 || boardQuestions.value.some((q) => q.outcome === "Yes"));
 const thinking = computed(() => (confirmed.value ? DRAFTING : UNDERSTANDING));
@@ -246,9 +246,11 @@ function startAnew() {
 
 function leave() {
     const dropped = unpicked();
+    const open = asking.value;
     emit("close");
     startAnew();
     drop(dropped);
+    if (open) api.cancelWork(props.board.n);
 }
 </script>
 
