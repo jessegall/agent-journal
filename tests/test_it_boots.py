@@ -130,6 +130,14 @@ def test_an_upgrade_keeps_a_build_a_live_session_runs_from(tmp_path):
     assert [build.is_file() for build in old] == [True, False, True], "the build a live process runs from is kept; the other old ones go"
 
 
+def heals(root: Path, good: Path):
+    def healed() -> None:
+        began = time.time()
+        while (root / "journal.pyz").resolve() != good and time.time() - began < WAIT:
+            time.sleep(0.2)
+    return healed
+
+
 def test_a_build_whose_supervisor_dies_on_start_goes_back_to_the_last_good_one(tmp_path):
     place, root = tmp_path, installed(tmp_path)
     good = (root / "journal.pyz").resolve()
@@ -140,7 +148,7 @@ def test_a_build_whose_supervisor_dies_on_start_goes_back_to_the_last_good_one(t
                 target.writestr(item, source.read(item))
         target.writestr("engine/worker.py", "raise SystemExit(1)\n")
     point(root, bad)
-    launches(place, root / "journal.py", "codex")
+    launches(place, root / "journal.py", "codex", during=heals(root, good))
     assert ((root / "journal.pyz").resolve(), broken(root)) == (good, [bad.name]), "the journal went back to the build that works and remembers the broken one"
 
 
@@ -154,12 +162,7 @@ def test_a_build_whose_server_dies_on_start_goes_back_to_the_last_good_one(tmp_p
                 target.writestr(item, source.read(item))
         target.writestr("serve.py", source.read("serve.py").decode().replace("def run(", "def run(*_, **__):\n    raise SystemExit(3)\n\n\ndef unused(", 1))
     point(root, bad)
-    def healed():
-        began = time.time()
-        while (root / "journal.pyz").resolve() != good and time.time() - began < WAIT:
-            time.sleep(0.2)
-
-    launches(place, root / "journal.py", "codex", during=healed)
+    launches(place, root / "journal.py", "codex", during=heals(root, good))
     assert ((root / "journal.pyz").resolve(), broken(root)) == (good, [bad.name]), "the journal went back to the build that works and remembers the broken one"
 
 
