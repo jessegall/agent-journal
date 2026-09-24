@@ -186,7 +186,7 @@ defineExpose({focus: () => nextTick(() => props.withoutInput || focusInput())});
     flex: none;
     min-height: 0;
     margin: 0 20px;
-    animation: hint-in 0.6s 1.1s ease both;
+    animation: hint-in 0.8s 2s ease both;
 }
 
 .hint {
