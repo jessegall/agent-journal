@@ -146,6 +146,8 @@ class Provider(ABC):
     def shell_command(self, tool) -> str | None:
         return tool.command if isinstance(tool, BashCall) else None
 
+    session_variable: ClassVar[str] = ""
+
     def shell_wrapper(self, script: Path) -> dict:
         return {}
 

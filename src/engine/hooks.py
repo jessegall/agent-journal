@@ -139,6 +139,10 @@ def worked_environment(hook) -> str:
     return environment(checkout(Path(hook.cwd)) if hook.cwd else None)
 
 
+def held_elsewhere(sessions: Sessions, env: str, own: set[str]) -> bool:
+    return bool(set(sessions.holders(env)) - own)
+
+
 def answer(provider, root: Path, raw: dict, pid: int, prefer: str = "") -> dict:
     from providers.payload import Hook
     sessions = Sessions(root)
@@ -146,7 +150,8 @@ def answer(provider, root: Path, raw: dict, pid: int, prefer: str = "") -> dict:
     session = hook.session
     env = sessions.environment(session)
     worked = "" if provider.is_subagent(hook) else worked_environment(hook)
-    if not env or not sessions.read(session).provider or worked and worked != env:
+    moving = bool(worked and worked != env) and not held_elsewhere(sessions, worked, {session, sessions.terminal(provider.name, agent_pid(pid))})
+    if not env or not sessions.read(session).provider or moving:
         env = worked or prefer or sessions.choose(session, provider.name, default_env(root))
         sessions.bind(session, env, pid=agent_pid(pid), provider=provider.name)
         environments = Environments(Record(root, env), actor=SYSTEM)

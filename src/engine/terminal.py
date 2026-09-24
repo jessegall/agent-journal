@@ -46,6 +46,10 @@ def agent_environment(base: dict | None = None, env: str | None = None, capped: 
     return {**made, **(capped or {})}
 
 
+def session_named(provider) -> dict:
+    return {"JOURNAL_SESSION_VARIABLE": provider.session_variable} if provider.session_variable else {}
+
+
 def output_cap(root: Path, env: str, provider) -> dict:
     from engine.record import Record
     from features.journal_laws.details import LawDetails
@@ -61,7 +65,7 @@ def launching(root: Path, cwd: Path, env: str, agent: str, args: list[str], conv
     driver = DRIVERS[agent]
     command = driver.command(driver, driver.resumed(launch_args(Record(root, env), agent, args), conversation), cwd)
     return {"command": command, "args": args, "launch": LAUNCH, "exit": "" if driver.worktree(args) else driver.EXIT,
-            "environ": agent_environment(env=env, capped=output_cap(root, env, PROVIDERS[agent]()))}
+            "environ": agent_environment(env=env, capped={**output_cap(root, env, PROVIDERS[agent]()), **session_named(PROVIDERS[agent]())})}
 
 
 @dataclass(frozen=True)

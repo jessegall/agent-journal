@@ -70,6 +70,12 @@ def test_a_session_started_in_a_worktree_works_the_environment_named_after_it(tm
     sessions = Sessions(record.root)
     assert (sessions.environment("in-the-worktree"), sessions.environment("claude-4242")) == ("feature-x", "feature-x"), \
         "the session and the terminal it runs in both work the worktree's environment"
+    import os
+    sessions.bind("holder", "feature-y", pid=os.getpid(), provider="claude")
+    sessions.bind("wanderer", record.env, pid=5252, provider="claude")
+    hooked(record, "wanderer", worktree_of(tmp_path, "feature-y"), 5252)
+    assert (Sessions(record.root).environment("wanderer"), Sessions(record.root).environment("holder")) == (record.env, "feature-y"), \
+        "a session that only looks into a worktree another agent holds stays where it was, and the holder keeps it"
 
 
 def test_a_resumed_conversation_in_a_worktree_moves_there_with_its_terminal(tmp_path):
