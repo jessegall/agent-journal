@@ -30,14 +30,14 @@ def context(args: dict) -> dict:
         MIGRATED.add(root)
     features.load(root)
     sessions = Sessions(root)
-    session = args.pop("session")
+    session = args.pop("as_session")
     fallback = args.pop("fallback")
     top = checkout(Path(args.pop("cwd") or os.getcwd()))
     worked = top.name if top and (root / "environments" / top.name).is_dir() else ""
     env = args.pop("bound") or (sessions.environment(session) if session else "") or worked or fallback or runtime.env(root)
     session = session or sessions.holder(env)
-    return {"record": Record(root, env, memo=True), "session": session, "actor": args.pop("as_actor"), "agent": args.pop("agent"),
-            "plugin": args.pop("plugin"), "force": "", "sessions": sessions}
+    return {"record": Record(root, env, memo=True), "session": session, "actor": args.pop("as_actor"), "agent": args.pop("as_agent"),
+            "plugin": args.pop("as_plugin"), "force": "", "sessions": sessions}
 
 
 READS = {"all", "show", "find", "search", "files", "folder", "comments", "linked_to", "unread", "read", "board"}
