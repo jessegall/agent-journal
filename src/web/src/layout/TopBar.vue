@@ -11,12 +11,14 @@ import {activityShown, toggleActivity} from "../actions/panels.js";
 import {narrow} from "../platform/view.js";
 import {project, tint} from "../identity.js";
 import {pageTitle as title} from "../composables/pageTitle.js";
+import {useFloatingChat} from "../composables/floatingChat.js";
 
 const waiting = computed(() => types.value.filter((t) => t.needs_attention).flatMap((t) => unreadByUser(t.name)).length);
 const drop = ref(false);
 const wrap = ref(null);
 useOutside(wrap, () => (drop.value = false));
 const full = computed(() => route.value.page === "kanban");
+const {floatingChat, toggleChat} = useFloatingChat();
 </script>
 
 <template>
@@ -43,6 +45,16 @@ const full = computed(() => route.value.page === "kanban");
             </template>
         </div>
         <div class="top-tools">
+            <template v-if="route.page">
+                <button
+                    type="button"
+                    :class="['icon-btn', {on: floatingChat}]"
+                    :title="floatingChat ? 'Close the floating chat' : 'Open the chat in a floating window'"
+                    @click="toggleChat"
+                >
+                    <Icon name="chat" />
+                </button>
+            </template>
             <a class="icon-btn" :href="`#/${route.env}/search`" title="Search"><Icon name="search" /></a>
             <div ref="wrap" class="drop-wrap">
                 <button type="button" :class="['icon-btn', {on: drop}]" title="Notifications" :aria-expanded="drop" @click="drop = !drop">
