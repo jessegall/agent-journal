@@ -89,7 +89,10 @@ const writing = computed(() => Boolean(lastSent.value) && !answered(lastSent.val
 const spoken = computed(() => conversation.value.filter((line) => line.text));
 const lastMine = computed(() => conversation.value.findLastIndex((line) => line.mine));
 const agentLine = computed(() => conversation.value.findLast((line) => !line.mine && !line.record && line.text));
-const latest = computed(() => (asking.value || !agentLine.value ? [] : [agentLine.value]));
+const held = computed(() => replies.value.length > 0 && !grown.value);
+const latest = computed(() => (asking.value || held.value || !agentLine.value ? [] : [agentLine.value]));
+const agentAnswered = computed(() => Boolean(asking.value) || replies.value.length > 0);
+const dockedAt = ref(0);
 const echo = computed(() => (docked.value || words.value || lastMine.value < 0 ? "" : conversation.value[lastMine.value].text));
 const turn = computed(() => drafts.value.find((t) => !revealed.value.includes(t.n)));
 const cards = computed(() => {
@@ -173,7 +176,7 @@ function onKey(e) {
 
 watch(
     () => drafts.value.length >= 1 || replies.value.length >= OPEN_TURNS,
-    (dock) => dock && (docked.value = true),
+    (dock) => dock && ((dockedAt.value = conversation.value.at(-1)?.at || 0), (docked.value = true)),
     {immediate: true}
 );
 
@@ -274,11 +277,13 @@ function finish() {
     resetTimer = setTimeout(() => ((resetTimer = 0), startAnew()), FADED);
 }
 
+watch(agentAnswered, (on) => {
+    if (!on || tall.value) return;
+    tall.value = true;
+    growTimer = setTimeout(() => (grown.value = true), GROW_MS);
+});
+
 watch(asking, (current, before) => {
-    if (current && !tall.value) {
-        tall.value = true;
-        growTimer = setTimeout(() => (grown.value = true), GROW_MS);
-    }
     if (!before || current || startedOver.value) return;
     if (!typedAnswer) say(true, "");
     typedAnswer = false;
@@ -308,6 +313,7 @@ function startAnew() {
     typedAnswer = false;
     resumed.value = false;
     docked.value = false;
+    dockedAt.value = 0;
     revealed.value = [];
     stalled.value = false;
     tall.value = false;
@@ -384,7 +390,7 @@ function startAnew() {
                         <span class="record">{{ line.text }}</span>
                     </template>
                     <template v-else-if="docked">
-                        <ChatLine :text="line.text" :mine="line.mine" :typed="line.typed" />
+                        <ChatLine :text="line.text" :mine="line.mine" :typed="line.typed && line.at > dockedAt" />
                     </template>
                     <template v-else>
                         <p class="prompt">{{ line.text }}</p>
