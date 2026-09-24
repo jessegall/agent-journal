@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.147.0 — A shared plan shows its timeline
+
+A shared plan's page shows the same timeline beside the plan, what was started, logged, ended and done on each to-do, and it refreshes with the page. On a narrow screen it sits under the plan. Nothing to do.
+
 ## 2.146.0 — A plan's timeline, and a share button on plans
 
 A plan page has a Share button, so a plan can be shared from the viewer like a document. Its new Timeline button swaps the side panel from comments to a timeline of the plan: every to-do's work started, each work log entry, work ended and to-do done, newest first with their times, so you can follow a plan without opening its to-dos; journal plan timeline <n> gives the same list. Nothing to do.

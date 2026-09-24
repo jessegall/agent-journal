@@ -7,8 +7,9 @@ import CollectionPage from "../resource/CollectionPage.vue";
 import DocumentPage from "../resource/DocumentPage.vue";
 import PlanPage from "../resource/PlanPage.vue";
 import ShareComments from "./ShareComments.vue";
+import PlanTimeline from "../resource/PlanTimeline.vue";
 import ResourceBody from "../resource/ResourceBody.vue";
-import {route} from "../route.js";
+import {peek, route} from "../route.js";
 import {store} from "../state/store.js";
 
 const KINDS = {
@@ -86,6 +87,7 @@ const shown = computed(() => {
     const [type, n] = (shownRef.value || ":").split(":");
     return (store.rows[type] || []).find((r) => r.n === Number(n)) || null;
 });
+const timeline = computed(() => (shown.value?.type === "plan" ? data.value?.timeline || [] : []));
 const away = computed(() => shownRef.value !== data.value?.share.target);
 const home = computed(() => data.value?.rows[data.value.share.target]);
 const ends = computed(() => {
@@ -121,7 +123,7 @@ watch(shown, (item) => item && (document.title = item.title));
                     {{ ends }}
                 </span>
             </div>
-            <div class="view">
+            <div :class="['view', {aside: timeline.length}]">
                 <DocumentPage :key="shownRef" :resource="shown" read-only>
                     <template v-if="shown.type === 'collection'">
                         <CollectionPage :resource="shown" read-only />
@@ -139,6 +141,12 @@ watch(shown, (item) => item && (document.title = item.title));
                         <footer class="foot">Shared from an agent journal</footer>
                     </template>
                 </DocumentPage>
+                <template v-if="timeline.length">
+                    <aside class="share-timeline">
+                        <h2 class="timeline-heading">Timeline</h2>
+                        <PlanTimeline :items="timeline" @open="(n) => peek('todo', n)" />
+                    </aside>
+                </template>
             </div>
         </template>
         <template v-else>
@@ -197,6 +205,34 @@ watch(shown, (item) => item && (document.title = item.title));
 .view {
     flex: 1;
     min-height: 0;
+}
+
+.view.aside {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 340px;
+}
+
+.share-timeline {
+    padding: 36px 24px 40px;
+    border-left: 1px solid var(--border);
+    background: var(--side);
+}
+
+.timeline-heading {
+    margin: 0 0 6px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+@media (max-width: 900px) {
+    .view.aside {
+        display: block;
+    }
+
+    .share-timeline {
+        border-top: 1px solid var(--border);
+        border-left: 0;
+    }
 }
 
 .foot {
