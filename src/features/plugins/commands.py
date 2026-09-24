@@ -5,7 +5,7 @@ from engine.version import version
 from features.parts import Command, Context
 from features.plugins.answer import Posting, apply, raised
 from features.plugins.declared import Manifest, Setting, declared, settings_of
-from features.plugins.lifecycle import called, difference, drop, place, restarted
+from features.plugins.lifecycle import called, difference, drop, place, reread, restarted
 from features.plugins.manifest import fill, read
 from features.plugins.run import SECONDS, call
 from features.plugins.source import alone, checked, data, environment, folder, log, logged, ports_for, prepared, preview, said_version, staged, token
@@ -86,8 +86,7 @@ class Upgrade(Command):
             if again:
                 ports = {**ports_for(root, manifest), **settings.ports}
                 prepared(manifest, where, environment(root, manifest.name, manifest, row.token, ports, settings.chosen), log(root, manifest.name))
-            restarted(root, manifest)
-            return plugins.update(n, manifest=manifest.stored, version=said_version(where, manifest), abstract=manifest.description)
+            return reread(plugins, row)
         where, manifest, commit, linked = staged(root, row.source, ref or row.revision, VERSION)
         kept = False
         try:

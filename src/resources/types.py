@@ -1,7 +1,7 @@
 from typing import ClassVar
 
 from resources.base import AGENT, COMPLETED, DOCUMENT, LAZY, OPENED, PROJECT, REQUESTED, RESULTS, REVISED, SIDEBAR, SYSTEM, UNLISTED, USER, Resource, ResourceDetails
-from resources.shapes import FLAG, TEXT, Field, Options, Placed, Ranked, Reasoned, Shape, Traced
+from resources.shapes import FLAG, NUMBER, TEXT, Field, Options, Placed, Ranked, Reasoned, Shape, Traced
 
 
 class Message(Shape, Resource):
@@ -415,6 +415,7 @@ class Plugin(Shape, Resource):
         Field(name="manifest"),
         Field(name="settings"),
         Field(name="token"),
+        Field(NUMBER, 0.0, name="read_at"),
     ]
     type = "plugin"
     event_labels = {"created": "Plugin installed", "completed": "Plugin removed"}

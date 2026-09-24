@@ -253,6 +253,18 @@ def test_a_plugins_skills_and_dashboards_are_published_as_its_own():
     written["pages"]["overview"]["view"]["children"].append({"type": "chart"})
     (data(record.root, "teacher") / "dashboards" / "sins.json").write_text(json.dumps(written))
     assert "pages.overview.view.children[1]" in ask()["broken"], "a node that does not fit the format is named by its place"
+    import os
+    import time
+    from features.plugins.lifecycle import changed_on_disk, reread
+    plugins = Plugins(record, actor=SYSTEM)
+    plugins.update(row.n, linked=True, read_at=time.time())
+    given = folder(record.root, "teacher") / MANIFEST
+    given.parent.mkdir(parents=True, exist_ok=True)
+    given.write_text(json.dumps({"name": "teacher", "dashboards": [{"name": "sins", "title": "Sins"}, {"name": "trend", "title": "Trend"}]}))
+    os.utime(given, (time.time() + 5, time.time() + 5))
+    assert changed_on_disk(plugins, plugins.load(row.n)), "a linked plugin's manifest changed in place is noticed"
+    reread(plugins, plugins.load(row.n))
+    assert [d["name"] for d in plugins.load(row.n).manifest["dashboards"]] == ["sins", "trend"], "and read again without an upgrade"
 
 
 def test_a_row_a_plugin_creates_is_its_own_locked_and_goes_with_it():

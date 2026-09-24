@@ -5,10 +5,10 @@ from dataclasses import asdict, dataclass
 from typing import ClassVar
 
 from controllers.types import CONTROLLERS, Plugins
-from engine.events import ResourceEvent
+from engine.events import ClockTicked, ResourceEvent
 from engine.services import DOWN, want
 from features.parts import ActionInterceptor, Canceler, Context, Handler, TextFormatter, ToolInterceptor
-from features.plugins.lifecycle import called, clear
+from features.plugins.lifecycle import called, changed_on_disk, clear, reread
 from features.plugins.declared import declared, settings_of
 from features.plugins.manifest import fill
 from features.plugins.payload import refusal
@@ -149,3 +149,11 @@ class OneRowPerTitle(ActionInterceptor):
         if found is None:
             return None
         return controller.update(found["n"], abstract=abstract or None, brief=brief or None, **data)
+
+
+class ReadLinkedManifests(Handler):
+    def handle(self, context: Context, event: ClockTicked) -> None:
+        plugins = Plugins(context.record, actor=SYSTEM)
+        for row in plugins._standing():
+            if changed_on_disk(plugins, row):
+                reread(plugins, row)

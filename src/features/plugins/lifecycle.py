@@ -3,7 +3,9 @@ import time
 from pathlib import Path
 
 from engine.services import UP, want
+from engine.version import version
 from features.plugins.declared import Manifest, declared, settings_of
+from features.plugins.manifest import MANIFEST, read
 from features.plugins.skills import published
 from features.plugins.source import folder, home, said_version
 from dataclasses import replace
@@ -65,3 +67,16 @@ def place(plugins, where: Path, linked: bool, manifest: Manifest, source: str, r
     if row:
         return plugins.update(row.n, abstract=manifest.description, settings=replace(settings_of(row), ports=held).to_json(), **kept)
     return plugins.create(manifest.heading, abstract=manifest.description, enabled=True, settings={"ports": held}, token=secret, **kept)
+
+
+def reread(plugins, row):
+    where = folder(plugins.record.root, called(row))
+    manifest = read(where, version())
+    restarted(plugins.record.root, manifest)
+    return plugins.update(row.n, manifest=manifest.stored, version=said_version(where, manifest), abstract=manifest.description,
+                          read_at=time.time())
+
+
+def changed_on_disk(plugins, row) -> bool:
+    path = folder(plugins.record.root, called(row)) / MANIFEST
+    return row.linked and path.is_file() and path.stat().st_mtime > (row.read_at or row.updated)
