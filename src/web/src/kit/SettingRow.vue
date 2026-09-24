@@ -7,13 +7,15 @@ defineProps({
     text: {type: String, default: ""},
     tag: {type: String, default: ""},
     opens: Boolean,
+    compact: Boolean,
+    alert: Boolean,
 });
 const emit = defineEmits(["open"]);
 </script>
 
 <template>
     <div
-        :class="['setting-row', {opens}]"
+        :class="['setting-row', {opens, compact}]"
         :role="opens ? 'button' : undefined"
         :tabindex="opens ? 0 : undefined"
         @click="opens && emit('open')"
@@ -25,11 +27,17 @@ const emit = defineEmits(["open"]);
                 <template v-if="tag">
                     <Chip class="setting-row-tag">{{ tag }}</Chip>
                 </template>
+                <template v-if="compact && $slots.default">
+                    <span class="setting-row-meta"><slot /></span>
+                </template>
             </span>
-            <template v-if="text">
-                <span class="setting-row-help">{{ text }}</span>
+            <template v-if="$slots.sub">
+                <span class="setting-row-sub"><slot name="sub" /></span>
             </template>
-            <template v-if="$slots.default">
+            <template v-if="text">
+                <span :class="['setting-row-help', {alert}]">{{ text }}</span>
+            </template>
+            <template v-if="!compact && $slots.default">
                 <span class="setting-row-meta"><slot /></span>
             </template>
         </div>
@@ -107,6 +115,34 @@ const emit = defineEmits(["open"]);
     -webkit-line-clamp: 2;
 }
 
+.setting-row-help.alert {
+    display: block;
+    color: var(--tone-warn);
+}
+
+.setting-row.compact {
+    min-height: 44px;
+    padding: 8px 16px;
+}
+
+.setting-row.compact .setting-row-top {
+    flex-wrap: wrap;
+    row-gap: 2px;
+}
+
+.setting-row.compact .setting-row-help,
+.setting-row.compact .setting-row-meta {
+    -webkit-line-clamp: 1;
+}
+
+.setting-row-sub {
+    display: flex;
+    align-items: center;
+    min-width: 0;
+    overflow: hidden;
+    font-size: 12px;
+}
+
 .setting-row-meta {
     display: flex;
     flex-wrap: wrap;
@@ -139,6 +175,10 @@ const emit = defineEmits(["open"]);
 @media (max-width: 560px) {
     .setting-row-help {
         -webkit-line-clamp: 4;
+    }
+
+    .setting-row.compact .setting-row-help {
+        -webkit-line-clamp: 1;
     }
 }
 </style>

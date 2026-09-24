@@ -13,7 +13,7 @@ defineProps({question: {type: Object, required: true}, chat: Boolean});
         <template v-if="question.abstract">
             <p class="context">{{ question.abstract }}</p>
         </template>
-        <OptionsPicker class="choices" :resource="question" buttons-only immediate />
+        <OptionsPicker class="choices" :resource="question" buttons-only immediate :tiles="!chat" />
     </div>
 </template>
 
@@ -26,10 +26,17 @@ defineProps({question: {type: Object, required: true}, chat: Boolean});
 
 .asked:not(.chat) {
     flex: 1;
+    justify-content: center;
+    margin-right: -32px;
+    padding-bottom: 6px;
+}
+
+.asked:not(.chat) .title {
+    padding-right: 32px;
 }
 
 .asked:not(.chat) .choices {
-    margin-top: auto;
+    margin-top: 14px;
 }
 
 .tag {

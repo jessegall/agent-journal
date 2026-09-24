@@ -63,9 +63,9 @@ export function whenWords(when) {
     if (!when) return "";
     if (when.on) return EVENT_WORDS[when.on] || when.on;
     if (when.at) return `at ${listed(when.at)}${UNIT_WORDS.percent}`;
-    return when.unit === "percent"
-        ? `every ${when.every}${UNIT_WORDS.percent}`
-        : `every ${when.every} ${UNIT_WORDS[when.unit] || when.unit}`;
+    if (when.unit === "percent") return `every ${when.every}${UNIT_WORDS.percent}`;
+    const unit = UNIT_WORDS[when.unit] || when.unit;
+    return when.every === 1 ? `every ${unit.replace(/s$/, "")}` : `every ${when.every} ${unit}`;
 }
 
 const sameTrigger = (a, b) => JSON.stringify(a, Object.keys(a).sort()) === JSON.stringify(b, Object.keys(b).sort());

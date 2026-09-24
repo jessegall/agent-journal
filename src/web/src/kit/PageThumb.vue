@@ -1,9 +1,18 @@
 <script setup>
 import {computed} from "vue";
 
-const props = defineProps({lines: {type: Number, default: 0}, draft: Boolean, clipped: Boolean, fresh: Boolean});
+const props = defineProps({
+    lines: {type: Number, default: 0},
+    draft: Boolean,
+    clipped: Boolean,
+    fresh: Boolean,
+    label: {type: String, default: ""},
+});
+const LABEL_AT_MOST = 4;
 const WIDTHS = [16, 12, 15, 9, 14, 11, 13];
-const shown = computed(() => WIDTHS.slice(0, Math.min(Math.max(props.lines, 1), WIDTHS.length)));
+const room = computed(() => (props.label ? 3 : WIDTHS.length));
+const shown = computed(() => WIDTHS.slice(0, Math.min(Math.max(props.lines, 1), room.value)));
+const tag = computed(() => props.label.slice(0, LABEL_AT_MOST).toUpperCase());
 </script>
 
 <template>
@@ -12,6 +21,10 @@ const shown = computed(() => WIDTHS.slice(0, Math.min(Math.max(props.lines, 1), 
         <path class="page-thumb-fold" d="M21 1v7a2 2 0 0 0 2 2h7z" />
         <template v-for="(w, i) in shown" :key="i">
             <rect class="page-thumb-line" x="8" :y="14 + i * 3.4" :width="w" height="1.5" rx="0.75" />
+        </template>
+        <template v-if="tag">
+            <rect class="page-thumb-tag" x="0" y="26" :width="tag.length * 5 + 6" height="9" rx="2" />
+            <text class="page-thumb-tag-text" x="3" y="32.9">{{ tag }}</text>
         </template>
         <template v-if="clipped">
             <path class="page-thumb-clip" d="M9.5 -1.5v9a2.3 2.3 0 0 0 4.6 0v-7.2a1.5 1.5 0 0 0-3 0v6.4" />
@@ -48,6 +61,18 @@ const shown = computed(() => WIDTHS.slice(0, Math.min(Math.max(props.lines, 1), 
 
 .page-thumb-line {
     fill: var(--text-4);
+}
+
+.page-thumb-tag {
+    fill: var(--accent);
+}
+
+.page-thumb-tag-text {
+    fill: var(--bg);
+    font-family: var(--mono);
+    font-size: 7px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
 }
 
 .page-thumb-clip {

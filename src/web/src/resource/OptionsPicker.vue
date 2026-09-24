@@ -9,7 +9,7 @@ import {word} from "../state/store.js";
 import {sendMessage} from "../chat/outbox.js";
 import {route} from "../route.js";
 
-const props = defineProps({resource: Object, buttonsOnly: Boolean, immediate: Boolean});
+const props = defineProps({resource: Object, buttonsOnly: Boolean, immediate: Boolean, tiles: Boolean});
 const own = ref("");
 const changing = ref(false);
 const elaborating = ref(false);
@@ -20,7 +20,12 @@ const optionText = (option = {}) => String(option.title || option.label || optio
 const options = computed(() =>
     (Array.isArray(props.resource.data.options) ? props.resource.data.options : []).map((option) => {
         const value = option && typeof option === "object" ? option : {};
-        return {...value, title: optionText(value), code: value.code ?? value.value ?? ""};
+        return {
+            ...value,
+            title: optionText(value),
+            description: value.description ?? value.text ?? "",
+            code: value.code ?? value.value ?? "",
+        };
     })
 );
 const pick = computed(() => props.resource.data.pick || 0);
@@ -59,6 +64,7 @@ async function elaborate() {
             :suggested="pick - 1"
             :disabled="settled"
             :immediate="immediate"
+            :tiles="tiles"
             @pick="(i) => submit(options[i].title)"
         />
         <template v-if="settled">

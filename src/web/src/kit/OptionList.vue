@@ -12,6 +12,7 @@ const props = defineProps({
     chosenBy: {type: String, default: ""},
     reason: {type: String, default: ""},
     immediate: Boolean,
+    tiles: Boolean,
 });
 const emit = defineEmits(["pick"]);
 const holding = ref(-1);
@@ -45,7 +46,7 @@ onUnmounted(save);
 </script>
 
 <template>
-    <div class="options" :style="{'--tone': color}">
+    <div :class="['options', {tiles}]" :style="{'--tone': color}">
         <template v-for="(o, i) in options" :key="i">
             <button
                 type="button"
@@ -58,9 +59,13 @@ onUnmounted(save);
                         pressed: pressed === i,
                     },
                 ]"
+                :style="{'--i': i}"
                 :disabled="disabled"
                 @click="choose(i)"
             >
+                <template v-if="tiles">
+                    <span class="mark" />
+                </template>
                 <template v-if="i === suggested && !disabled">
                     <span class="pick">The agent's pick</span>
                 </template>
@@ -210,5 +215,109 @@ onUnmounted(save);
     font-family: ui-monospace, monospace;
     font-size: 12px;
     white-space: pre-wrap;
+}
+
+.options.tiles {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+    gap: 10px;
+    padding-top: 8px;
+}
+
+.tiles .option {
+    overflow: visible;
+    gap: 6px;
+    padding: 14px 40px 14px 14px;
+    border-color: var(--border);
+    border-radius: 12px;
+    background: linear-gradient(180deg, color-mix(in srgb, var(--tone) 6%, var(--raised)), var(--raised) 70%);
+    animation:
+        tile-fade var(--fade) backwards,
+        tile-rise var(--move) backwards;
+    animation-delay: calc(var(--i) * 70ms + 0.1s);
+    transition:
+        transform var(--move),
+        opacity var(--fade),
+        border-color 0.2s ease,
+        background 0.2s ease,
+        box-shadow var(--move);
+}
+
+.tiles .option:hover:not(:disabled) {
+    box-shadow: 0 12px 28px -14px color-mix(in srgb, var(--tone) 70%, transparent);
+    transform: translateY(-2px);
+}
+
+.tiles .option:active:not(:disabled) {
+    transform: translateY(0) scale(0.99);
+}
+
+.tiles .label {
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 20px;
+}
+
+.tiles .desc {
+    color: var(--text-3);
+    font-size: 12.5px;
+    line-height: 18px;
+}
+
+.tiles .pick {
+    position: absolute;
+    top: -9px;
+    left: 12px;
+    margin: 0;
+    padding: 2px 8px;
+    border: 1px solid color-mix(in srgb, var(--tone) 40%, var(--border-2));
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--tone) 22%, var(--raised));
+    font-size: 10px;
+    line-height: 14px;
+}
+
+.mark {
+    position: absolute;
+    top: 15px;
+    right: 14px;
+    width: 14px;
+    height: 14px;
+    border: 1.5px solid var(--border-2);
+    border-radius: 50%;
+    box-sizing: border-box;
+    transition:
+        border-color 0.2s ease,
+        border-width 0.2s ease,
+        background 0.2s ease;
+}
+
+.option:hover:not(:disabled) .mark {
+    border-color: var(--tone);
+}
+
+.pressed .mark,
+.chosen .mark {
+    border-width: 4px;
+    border-color: var(--tone);
+}
+
+@keyframes tile-fade {
+    from {
+        opacity: 0;
+    }
+}
+
+@keyframes tile-rise {
+    from {
+        transform: translateY(8px);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .tiles .option {
+        animation: none;
+        transition-duration: 0.01ms;
+    }
 }
 </style>

@@ -55,3 +55,29 @@ def test_the_agent_says_how_many_drafts_are_coming():
     assert "whole number" in refused(lambda: boards.expect(board.n, "a few")), "a count that is no number is refused in words"
     Boards(record, actor=USER).request(board.n, "Something else")
     assert boards.load(board.n).expected == 0, "a new request starts with no placeholders"
+
+
+def test_a_board_is_built_from_a_document_and_removed_whole(tmp_path):
+    features.load()
+    record = fresh()
+    ship(record)
+    report(record, "working", "PreToolUse")
+    boards = Boards(record, actor=USER)
+    board = boards.create("roadmap", stages=[])
+    assert "no document" in refused(lambda: boards.build(board.n)), "a board is built only from a document it holds"
+    document = tmp_path / "roadmap.md"
+    document.write_text("# Q4\n")
+    boards.attach(board.n, str(document))
+    building = boards.build(board.n, steer="five stages at most").building
+    assert (building["document"], building["steer"], building["name_it"]) == ("roadmap.md", "five stages at most", True), \
+        "the board remembers the document and the note, and that the agent names it"
+    assert any(n.startswith("sequence ") and "Read the document" in n for n in nudges(record)), "the build starts its sequence"
+    agent = Boards(record, actor=AGENT)
+    agent.stage(board.n, "Shipped", "done")
+    agent.log(board.n, "Made the stages from section 1")
+    Tickets(record, actor=AGENT).create("CSV export", abstract="CSV export", board=board.n, stage="Shipped")
+    assert agent.built(board.n, "1 stage, 1 ticket").building["log"][0]["text"] == "Made the stages from section 1"
+    assert "not being built" in refused(lambda: agent.log(board.n, "Late")), "a finished build takes no more lines"
+    boards.discard(board.n)
+    assert not [t for t in Tickets(record, actor=USER)._standing() if t.board == board.n], "removing the board removes its tickets"
+    assert not any(board.ref in key for s in Sequences(record, actor=USER).all(last=0) for key in s.runs), "and gives up the build"

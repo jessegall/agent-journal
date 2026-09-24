@@ -3,7 +3,7 @@ import {ref} from "vue";
 import {api} from "../api/client.js";
 import {route} from "../route.js";
 
-const props = defineProps({file: {type: Object, required: true}});
+const props = defineProps({file: {type: Object, required: true}, lines: {type: Number, default: 1}});
 const editing = ref(false);
 const draft = ref("");
 
@@ -39,7 +39,15 @@ async function save() {
         />
     </template>
     <template v-else>
-        <button type="button" class="tags" :class="{empty: !file.description}" @click="edit">{{ file.description || "Add tags" }}</button>
+        <button
+            type="button"
+            :class="['tags', {empty: !file.description, clamped: lines > 1}]"
+            :style="{'--lines': lines}"
+            :title="file.description ? 'Click to change the description' : ''"
+            @click="edit"
+        >
+            {{ file.description || "Add a description" }}
+        </button>
     </template>
 </template>
 
@@ -62,6 +70,13 @@ async function save() {
     text-overflow: ellipsis;
     white-space: nowrap;
     cursor: text;
+}
+
+.tags.clamped {
+    display: -webkit-box;
+    white-space: normal;
+    -webkit-line-clamp: var(--lines);
+    -webkit-box-orient: vertical;
 }
 
 .tags.empty {
