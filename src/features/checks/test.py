@@ -67,3 +67,13 @@ def test_a_check_can_leave_a_report_of_findings_that_is_kept_with_its_run():
         "the report written to $JOURNAL_REPORT is read into typed findings and kept with the run"
     plain = Checks(record, actor=USER).create("Plain", command="true")
     assert Checks(record, actor=USER).run(plain.n, wait=True).last["report"] is None, "a check that writes no report has none"
+
+
+def test_a_due_check_runs_in_one_engine_while_another_holds_it():
+    from features.checks.handlers import claim
+    from tests.conftest import fresh
+    record = fresh()
+    first = claim(record.root, 3)
+    assert (first is not None, claim(record.root, 3)) == (True, None), "a second engine finds the check already claimed and leaves it"
+    first.close()
+    assert claim(record.root, 3) is not None, "once the run ends, the check can be claimed again"

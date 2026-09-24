@@ -354,10 +354,18 @@ def ended(ctx) -> str:
     from engine.stop import ask
     from engine.typist import live
     put_back(ctx["record"])
+    kept_work(Path.cwd())
     root = ctx["record"].root
     if not live(root) and not Sessions(root).running():
         ask(root)
     return ""
+
+
+def kept_work(cwd: Path) -> None:
+    from engine.worktree import checkout, git, keep, main_checkout
+    top = checkout(cwd)
+    if top:
+        keep(main_checkout(top), top.name, git(top, "branch", "--show-current").stdout.strip())
 
 
 def healed(ctx) -> str:

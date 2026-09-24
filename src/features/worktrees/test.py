@@ -145,7 +145,8 @@ def test_journal_claude_with_a_worktree_makes_it_itself_and_starts_claude_inside
     assert ClaudeDriver.placed(project, ["-w", "feature-q"]) == (cwd, []), "an existing worktree is reused"
     git = ["git", "-c", "user.email=t@t", "-c", "user.name=t"]
     subprocess.run([*git, "commit", "-q", "--allow-empty", "-m", "work in the worktree"], cwd=cwd, check=True, timeout=30)
-    ClaudeDriver.placed(project, ["-w", "feature-q"])
+    from commands.queries import kept_work
+    kept_work(cwd)
     subprocess.run(["git", "worktree", "remove", "--force", str(cwd)], cwd=project, check=True, timeout=30)
     subprocess.run(["git", "branch", "-D", "worktree-feature-q"], cwd=project, check=True, capture_output=True, timeout=30)
     assert ClaudeDriver.placed(project, ["-w", "feature-q"])[0] == cwd and "work in the worktree" in \

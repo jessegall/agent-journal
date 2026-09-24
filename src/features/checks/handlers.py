@@ -1,9 +1,11 @@
+import fcntl
 import re
 import threading
 import time
 from dataclasses import dataclass
 from typing import ClassVar
 
+from engine import runtime
 from engine.events import AgentReported, ResourceEvent
 from features.parts import AgentContext, Context, Handler
 
@@ -32,13 +34,28 @@ class RunDueChecks(Handler):
             if key in self.running:
                 continue
             self.running.add(key)
-            threading.Thread(target=self.run, args=(checks, check.n, key), daemon=True).start()
+            threading.Thread(target=self.run, args=(checks, check.n, key, claim(context.record.root, check.n)), daemon=True).start()
 
-    def run(self, checks, n: int, key: str) -> None:
+    def run(self, checks, n: int, key: str, claimed) -> None:
         try:
-            checks.run(n, wait=True)
+            if claimed:
+                checks.run(n, wait=True)
         finally:
             self.running.discard(key)
+            if claimed:
+                claimed.close()
+
+
+def claim(root, n: int):
+    lock = runtime.folder(root) / "check-reports" / f"{n}.lock"
+    lock.parent.mkdir(parents=True, exist_ok=True)
+    held = lock.open("w")
+    try:
+        fcntl.flock(held, fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except BlockingIOError:
+        held.close()
+        return None
+    return held
 
 
 class ReportCheckResult(Handler):
