@@ -31,7 +31,7 @@ onMounted(async () => {
     }
 });
 
-async function control(action, value) {
+async function applyChoice(action, value) {
     controlling.value = `${action}:${value}`;
     error.value = "";
     try {
@@ -69,7 +69,7 @@ async function control(action, value) {
             :choices="group.choices"
             :busy="(value) => waiting(group.key, value)"
             :disabled="Boolean(controlling)"
-            @pick="(value) => control(group.key, value)"
+            @pick="(value) => applyChoice(group.key, value)"
         />
     </template>
     <template v-if="control !== 'context'">

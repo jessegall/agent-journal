@@ -10,12 +10,13 @@ import {sendMessage} from "../chat/outbox.js";
 import {route} from "../route.js";
 
 const props = defineProps({resource: Object, buttonsOnly: Boolean, immediate: Boolean, tiles: Boolean});
+const emit = defineEmits(["elaborated"]);
 const own = ref("");
 const changing = ref(false);
 const elaborating = ref(false);
 const elaborated = ref(false);
 const capitalised = (text) => text.charAt(0).toUpperCase() + text.slice(1);
-const ELABORATE = "Elaborate on this question: say more about what each option means here and which you would pick, and I will choose.";
+const ELABORATE = "Elaborate on this question: ask it again with more context on each option and which you would pick, and I will choose.";
 const optionText = (option = {}) => String(option.title || option.label || option.value || "");
 const options = computed(() =>
     (Array.isArray(props.resource.data.options) ? props.resource.data.options : []).map((option) => {
@@ -48,6 +49,7 @@ async function elaborate() {
     try {
         await sendMessage(route.value.env, {brief: ELABORATE, about: props.resource.ref});
         elaborated.value = true;
+        emit("elaborated");
     } finally {
         elaborating.value = false;
     }

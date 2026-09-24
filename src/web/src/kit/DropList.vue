@@ -50,6 +50,9 @@ onUnmounted(() => document.removeEventListener("click", away, true));
                         <template v-if="item.running !== undefined">
                             <span :class="['drop-dot', {live: item.running}]" />
                         </template>
+                        <template v-if="item.lead">
+                            <span class="drop-lead">{{ item.lead }}</span>
+                        </template>
                         <span class="drop-item-text">{{ item.label }}</span>
                         <template v-if="item.note">
                             <span class="drop-note">{{ item.note }}</span>
@@ -105,6 +108,14 @@ onUnmounted(() => document.removeEventListener("click", away, true));
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+}
+
+.drop-lead {
+    flex: none;
+    min-width: 1.2em;
+    color: var(--text-4);
+    font-variant-numeric: tabular-nums;
+    text-align: right;
 }
 
 .drop-note {

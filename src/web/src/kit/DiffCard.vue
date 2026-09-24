@@ -50,6 +50,7 @@ onMounted(() => {
     if (!body.value) return;
     let first = true;
     sized = new ResizeObserver(() => {
+        if (!grow.value || !body.value) return;
         grow.value.style.transition = first ? "none" : "";
         grow.value.style.height = `${body.value.offsetHeight}px`;
         first = false;

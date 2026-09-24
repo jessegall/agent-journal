@@ -16,7 +16,12 @@ onUnmounted(() => watcher.disconnect());
 </script>
 
 <template>
-    <div ref="body" :class="['folded-body', {folded: tall && !open}]" :style="tall && !open ? {maxHeight: `${keep}px`} : {}">
+    <div
+        ref="body"
+        :class="['folded-body', {folded: tall && !open}]"
+        :style="tall && !open ? {maxHeight: `${keep}px`} : {}"
+        @reveal="open = true"
+    >
         <slot />
     </div>
     <template v-if="tall">

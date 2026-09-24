@@ -189,6 +189,9 @@ useSighted(topMark, earlier, {root: scroller, margin: "400px 0px"});
                     empty="No skill loaded in this window"
                     @pick="() => go(route.env, 'skills')"
                 />
+                <template v-if="picked">
+                    <AgentLinks :agent="resource.n" :session="picked.session" compact />
+                </template>
             </div>
             <TabBar v-model="tab" class="agent-tabs" :tabs="tabs">
                 <template v-if="tab === 'transcript'">
@@ -215,7 +218,7 @@ useSighted(topMark, earlier, {root: scroller, margin: "400px 0px"});
         </template>
         <template v-if="tab === 'chat' && picked">
             <section class="block chat-block">
-                <SubagentChat :turns="turns" :agent="resource.n" :session="picked.session" :task="picked.task" />
+                <SubagentChat :turns="turns" :session="picked.session" :task="picked.task" />
             </section>
         </template>
         <template v-if="tab === 'tasks' && picked">
@@ -301,11 +304,12 @@ useSighted(topMark, earlier, {root: scroller, margin: "400px 0px"});
     padding-top: 0;
 }
 
-.chat-block {
+.block.chat-block {
     display: flex;
     flex: 1;
     flex-direction: column;
     min-height: 320px;
+    margin: -10px -24px -24px;
 }
 
 .agent-head {

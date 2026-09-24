@@ -21,6 +21,8 @@ WINDOW_LABELS = {300: "5h", 1440: "1d", 10080: "7d"}
 SPAWN_IN_SCRIPT = re.compile(r"tools\.\w*spawn_agent\(")
 SCRIPT_FIELD = r"\b{}:\s*\"([^\"]*)\""
 SPAWNED = re.compile(r'"agent_id":"([^"]+)"(?:,"nickname":"([^"]*)")?')
+CONTEXT_CONTROLS = {"key": "context", "label": "Context window", "choices": [{"value": "compact", "label": "Compact context", "command": "/compact"},
+                                                                             {"value": "clear", "label": "New conversation", "command": "/new"}]}
 TASK_EVENTS = re.compile(r'"type":"(task_started|task_complete)"')
 
 
@@ -148,6 +150,7 @@ class Codex(Provider):
         groups = [{"key": "model", "label": "Model", "choices": [item.choice for item in models]}]
         if model:
             groups.append({"key": "effort", "label": "Reasoning effort", "choices": [effort_choice(effort) for effort in model.efforts]})
+        groups.append(CONTEXT_CONTROLS)
         note = "Changes apply immediately through the Codex model picker."
         if not models:
             note = "Codex model catalog unavailable; use /model in the Codex terminal."
