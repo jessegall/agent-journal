@@ -19,7 +19,7 @@ from engine.version import version
 from engine.package import entry
 from engine.fields import Loaded
 
-PORTS = range(8420, 8440)
+PORTS = [int(port) for port in os.environ["JOURNAL_VIEWER_PORTS"].split(",")] if os.environ.get("JOURNAL_VIEWER_PORTS") else range(8420, 8440)
 HEARTBEAT = 2.0
 PORT_WAIT = 30.0
 URL = re.compile(r"http://127\.0\.0\.1:\d+/")

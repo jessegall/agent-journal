@@ -65,12 +65,10 @@ def free_port():
 
 @pytest.fixture(autouse=True)
 def viewer_ports(monkeypatch):
-    viewer = sys.modules.get("engine.viewer")
-    if viewer is None:
-        yield
-        return
+    import engine.viewer as viewer
     ours = isolation.band()
     monkeypatch.setattr(viewer, "PORTS", ours)
+    monkeypatch.setenv("JOURNAL_VIEWER_PORTS", ",".join(map(str, ours)))
     yield
     for port in ours:
         isolation.release(port)
