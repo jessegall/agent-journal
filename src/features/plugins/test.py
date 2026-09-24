@@ -206,6 +206,15 @@ def test_stopping_a_service_stops_every_process_it_forked():
     assert restarted.wait(timeout=5) is not None, "a restart first stops the old run"
     assert [place(record.root, "fresh.web").exists() for place in (status_file, lock_file, log_file)] == [False, False, False], \
         "and removes what it left, so the new run starts from nothing of the old one's"
+    from engine.keeper import ServiceSpec
+    from engine.services import files_for
+    kept = subprocess.Popen(["/bin/sh", "-c", "sleep 30 & wait"], start_new_session=True)
+    asked = time.time()
+    want(record.root, "kept.web", "up", nonce=asked)
+    status_file(record.root, "kept.web").write_text(json.dumps({"state": "ready", "keeper": kept.pid, "pgid": kept.pid, "nonce": asked}))
+    Manager(record.root).one(ServiceSpec(id="kept.web", plugin="kept", service="web", run=["true"], **files_for(record.root, "kept.web")))
+    assert kept.poll() is None, "a restart already carried out is never carried out again by the next agent's manager"
+    kept.kill()
 
 
 def test_a_plugins_skills_and_dashboards_are_published_as_its_own():
