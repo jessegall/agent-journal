@@ -67,8 +67,9 @@ WORKING_A_BOARD_CARD = {
                               "expect <board n> <count>. The panel shows that many placeholders; more fade in if you write "
                               "more, and none is ever taken away. Then draft each ticket on the same board: journal ticket create \"<the work>\" --abstract \"<one "
                               "line>\" --brief \"<the deeper explanation>\" --set board=<n> --set draft=true. A title is a few "
-                              "words, the abstract one line of at most 140 characters shown on the card, and the brief a few "
-                              "plain sentences shown under More info. Name what waits on what with journal ticket depend, and "
+                              "words, the abstract one line of at most 140 characters shown on the card, and the brief the "
+                              "fuller story on the card's back, under More info: what it does, why it matters, what it "
+                              "touches and what done looks like, in a few short paragraphs. Name what waits on what with journal ticket depend, and "
                               "the role that should take it with --set owner=<domain>/<role> when the project has one."),
         ("Say one line", "Reply to their message in one short line of at most 200 characters about the tickets, like \"Three "
                          "tickets drafted, pick the ones to keep.\" No paragraphs, no lists, and no mention of rows, chips, "
