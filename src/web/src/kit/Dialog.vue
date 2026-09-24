@@ -8,9 +8,10 @@ const props = defineProps({
     follow: {type: Boolean, default: false},
     fixed: {type: Boolean, default: false},
     small: Boolean,
+    closable: {type: Boolean, default: true},
 });
 const emit = defineEmits(["close", "dismiss"]);
-const {shown, close, closed} = closing(emit);
+const {shown, close, closed} = closing(emit, props);
 const body = ref(null);
 const toBottom = () => body.value && (body.value.scrollTop = body.value.scrollHeight);
 const watcher = new MutationObserver(toBottom);
@@ -27,11 +28,13 @@ onUnmounted(() => watcher.disconnect());
 
 <template>
     <Transition name="dialog" appear @after-leave="closed">
-        <div v-if="shown" class="dialog" @click.self="close">
+        <div v-if="shown" class="dialog" @click.self="closable && close()">
             <section :class="['dialog-panel', {fixed, small}]">
                 <header class="dialog-head">
                     <h3>{{ title }}</h3>
-                    <CloseButton @click="close" />
+                    <template v-if="closable">
+                        <CloseButton @click="close" />
+                    </template>
                 </header>
                 <div ref="body" class="dialog-body">
                     <slot />

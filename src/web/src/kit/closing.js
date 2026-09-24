@@ -8,7 +8,7 @@ export function closing(emit, props = {}) {
         if (!led()) dismissed.value = true;
         emit("dismiss");
     };
-    const onEscape = (e) => e.key === "Escape" && !led() && close();
+    const onEscape = (e) => e.key === "Escape" && !led() && props.closable !== false && close();
     onMounted(() => window.addEventListener("keydown", onEscape));
     onUnmounted(() => window.removeEventListener("keydown", onEscape));
     return {shown, close, closed: () => emit("close")};
