@@ -64,11 +64,17 @@ def test_a_sequence_starts_when_its_trigger_fires_and_an_unknown_start_is_refuse
     sequences = CONTROLLERS["sequence"](record, actor=USER)
     deploying = sequences.create("After a deploy", brief="check it")
     sequences.section(deploying.n, "Check the site", "open it")
+    sequences.section(deploying.n, "Watch the logs", "tail them")
     assert "is no moment" in refused(lambda: sequences.set(deploying.n, "starts_on", "trigger.fired")), "an unknown start is refused in words"
     sequences.set(deploying.n, "starts_on", trigger.ref)
     call = {"session_id": "claude-1", "tool_name": "Bash", "tool_input": {"command": "make deploy"}, "hook_event_name": "PreToolUse"}
     handle(PROVIDERS["claude"](), record.root, record.env, call)
-    assert f"sequence {deploying.n}, After a deploy, step 1 of 1 - Check the site" in nudges(record), "the trigger's words start the sequence"
+    assert f"sequence {deploying.n}, After a deploy, step 1 of 2 - Check the site" in nudges(record), "the trigger's words start the sequence"
+    about = f"trigger:{trigger.n}"
+    sequences.next(deploying.n, about=about)
+    handle(PROVIDERS["claude"](), record.root, record.env, call)
+    assert [run["step"] for run in sequences.load(deploying.n).runs.values()] == [2], "firing again while it runs never starts it over"
+    assert "already running, at step 2" in refused(lambda: sequences.run(deploying.n, about=about)), "nor does starting it by hand"
 
 
 def test_a_step_goes_to_the_agent_holding_the_environment_not_the_newest():
