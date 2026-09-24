@@ -322,6 +322,10 @@ export class ApiClient {
         return this.get(this.here(`/agent/${agent}${session ? `/subagent/${session}` : ""}/transcript${query(fields)}`));
     }
 
+    agentLinks(agent, session) {
+        return this.get(this.here(`/agent/${agent}${session ? `/subagent/${encoded(session)}` : ""}/links`));
+    }
+
     edits(agent, since, last) {
         return this.get(this.here(`/agent/${agent}/edits${query({since, last})}`));
     }

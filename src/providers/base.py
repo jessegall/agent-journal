@@ -84,6 +84,11 @@ class TypedRuns:
     runs: list[TypedRun] = field(default_factory=list)
 
 
+@dataclass
+class WorkLinks:
+    links: list[str] = field(default_factory=list)
+
+
 class Provider(ABC):
     tool_kinds: ClassVar[dict] = {"Bash": BashCall, "Read": ReadCall, "NotebookRead": ReadCall, "Edit": WriteCall, "MultiEdit": WriteCall, "Write": WriteCall,
                                   "NotebookEdit": WriteCall, "Grep": SearchCall, "Glob": SearchCall, "WebSearch": SearchCall, "WebFetch": FetchCall,
@@ -151,6 +156,9 @@ class Provider(ABC):
         return []
 
     def typed_runs(self, path: Path) -> list[TypedRun]:
+        return []
+
+    def work_links(self, path: Path) -> list[str]:
         return []
 
     def skill_load(self, name: str) -> str:

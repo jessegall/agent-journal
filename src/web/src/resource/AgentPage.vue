@@ -18,6 +18,7 @@ import "../text/all.js";
 import Trace from "./Trace.vue";
 import AgentHooks from "./AgentHooks.vue";
 import TaskList from "./TaskList.vue";
+import AgentLinks from "./AgentLinks.vue";
 import SubagentChat from "../chat/SubagentChat.vue";
 import {usePoll} from "../poll.js";
 import {stamp} from "../format/time.js";
@@ -115,6 +116,7 @@ useSighted(topMark, earlier, {root: scroller, margin: "400px 0px"});
                 <CommentToggle :resource="resource" />
                 <CloseButton @click="emit('close')" />
             </header>
+            <AgentLinks :agent="resource.n" :session="session || ''" />
             <template v-if="picked">
                 <h2 class="title">{{ picked.task }}</h2>
                 <p class="session">subagent {{ picked.session }} of session {{ resource.title }}</p>
