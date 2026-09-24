@@ -3,6 +3,7 @@ import Icon from "../kit/Icon.vue";
 import PageJump from "./PageJump.vue";
 import {drawnWide, switching} from "../platform/fullscreen.js";
 import JournalTabs from "./JournalTabs.vue";
+import {canGoBack, canGoForward} from "../platform/history.js";
 
 const back = () => history.back();
 const forward = () => history.forward();
@@ -10,10 +11,17 @@ const forward = () => history.forward();
 
 <template>
     <nav :class="['window-bar', {open: drawnWide, fading: switching}]" :aria-hidden="!drawnWide">
-        <button type="button" class="window-bar-btn" title="Back" :tabindex="drawnWide ? 0 : -1" @click="back">
+        <button type="button" class="window-bar-btn" title="Back" :tabindex="drawnWide ? 0 : -1" :disabled="!canGoBack" @click="back">
             <Icon name="back" :size="13" />
         </button>
-        <button type="button" class="window-bar-btn" title="Forward" :tabindex="drawnWide ? 0 : -1" @click="forward">
+        <button
+            type="button"
+            class="window-bar-btn"
+            title="Forward"
+            :tabindex="drawnWide ? 0 : -1"
+            :disabled="!canGoForward"
+            @click="forward"
+        >
             <Icon name="arrow" :size="13" />
         </button>
         <PageJump />
@@ -54,9 +62,14 @@ const forward = () => history.forward();
     cursor: pointer;
 }
 
-.window-bar-btn:hover {
+.window-bar-btn:hover:not(:disabled) {
     background: var(--hover);
     color: var(--text);
+}
+
+.window-bar-btn:disabled {
+    opacity: 0.35;
+    cursor: default;
 }
 
 @media (prefers-reduced-motion: no-preference) {

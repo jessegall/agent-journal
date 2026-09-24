@@ -145,7 +145,13 @@ async function stop(shares) {
                                 >
                                     {{ itemOf(share).title }}
                                 </button>
-                                <span class="meta">{{ viewsOf(share) }} · {{ endsOf(share) }}</span>
+                                <CopyButton :text="share.abstract" hint="Copy the link" />
+                                <CopyButton
+                                    :text="`Here's the link to ${itemOf(share).title}: ${share.abstract}`"
+                                    icon="chat"
+                                    hint="Copy it with a line saying what it is"
+                                />
+                                <Btn small kind="danger" :busy="stopping === share.n" @click="stop([share])">Stop sharing</Btn>
                             </div>
                             <div class="tunnel-share-row">
                                 <span class="tunnel-link" :title="share.abstract">
@@ -154,13 +160,7 @@ async function stop(shares) {
                                     </template>
                                     {{ share.abstract.replace(/^https:\/\/[^/]+/, "") }}
                                 </span>
-                                <CopyButton :text="share.abstract" hint="Copy the link" />
-                                <CopyButton
-                                    :text="`Here's the link to ${itemOf(share).title}: ${share.abstract}`"
-                                    icon="chat"
-                                    hint="Copy it with a line saying what it is"
-                                />
-                                <Btn small kind="danger" :busy="stopping === share.n" @click="stop([share])">Stop sharing</Btn>
+                                <span class="meta">{{ viewsOf(share) }} · {{ endsOf(share) }}</span>
                             </div>
                         </div>
                     </template>
@@ -330,7 +330,7 @@ async function stop(shares) {
 
 .tunnel-share-head {
     display: flex;
-    align-items: baseline;
+    align-items: center;
     gap: 8px;
     min-width: 0;
 }

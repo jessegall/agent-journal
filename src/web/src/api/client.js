@@ -168,6 +168,10 @@ export class ApiClient {
         return this.post(this.here(`/${type}/${n}/${action}`), body);
     }
 
+    hidePreview(type, n) {
+        return this.act(type, n, "set", {key: "hide_preview", value: "true"});
+    }
+
     revision(n, number) {
         return this.act("doc", n, "revision", {number});
     }

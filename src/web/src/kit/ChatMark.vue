@@ -59,7 +59,7 @@ const took = computed(() => {
                         <span class="took">{{ took }}</span>
                     </template>
                     <template v-if="state">
-                        <StateDot :state="state" :title="{done: 'Ended', failed: 'Failed'}[state] || 'Still running'" />
+                        <StateDot class="mark-dot" :state="state" :title="{done: 'Ended', failed: 'Failed'}[state] || 'Still running'" />
                     </template>
                 </span>
             </template>
@@ -77,6 +77,12 @@ const took = computed(() => {
 </template>
 
 <style scoped>
+.status .mark-dot {
+    width: 5px;
+    height: 5px;
+    border-width: 1px;
+}
+
 .mark {
     display: inline-grid;
     grid-template-columns: auto minmax(0, 1fr);

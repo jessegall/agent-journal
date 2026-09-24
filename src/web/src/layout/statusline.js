@@ -42,9 +42,9 @@ export function lineOf(agent, works, auto = false) {
     if (state === "stopped") return "no agent is on this environment";
     if (state === "compacting") return "compacting its context — it carries on after";
     if (state === "waiting") return waitsFor(works);
+    if (state === "paused") return "held until you resume it";
     const current = currentWork(works);
     if (current) return named(current);
-    if (state === "paused") return "held until you resume it";
     if (state === "idle") return phrase(auto ? "auto" : "idle", agent.data.at);
     return phrase("bearings", agent.data.at);
 }

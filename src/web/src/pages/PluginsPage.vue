@@ -1,27 +1,34 @@
 <script setup>
-import Console from "../kit/Console.vue";
-import {computed, onMounted, onUnmounted, ref, watch} from "vue";
+import {computed, ref, watch} from "vue";
 import {api} from "../api/client.js";
 import Btn from "../kit/Btn.vue";
+import Console from "../kit/Console.vue";
 import Dialog from "../kit/Dialog.vue";
-import PluginSettings from "./PluginSettings.vue";
-import PluginDashboard from "./PluginDashboard.vue";
+import EmptyState from "../kit/EmptyState.vue";
 import Icon from "../kit/Icon.vue";
-import Switch from "../kit/Switch.vue";
+import PageBar from "../kit/PageBar.vue";
+import PlaceholderCard from "../kit/PlaceholderCard.vue";
+import StateDot from "../kit/StateDot.vue";
+import TextInput from "../kit/TextInput.vue";
+import PluginCard from "./PluginCard.vue";
+import PluginDashboard from "./PluginDashboard.vue";
+import PluginGuide from "./PluginGuide.vue";
+import PluginSettings from "./PluginSettings.vue";
+import ServicesPanel from "./ServicesPanel.vue";
 import {route} from "../route.js";
 import {store} from "../state/store.js";
 import {polled} from "../sync/polled.js";
 import {rows} from "../sync/rows.js";
 import {usePoll} from "../poll.js";
 import {sendMessage} from "../chat/outbox.js";
-import PluginGuide from "./PluginGuide.vue";
-import {stateWord} from "../domain/services.js";
+import {isFailing, isRunning} from "../domain/services.js";
 
 usePoll(...polled.pages);
 
 const source = ref("");
 const guide = ref(false);
-const asking = ref(false);
+const making = ref(false);
+const servicesFor = ref(null);
 const repository = ref("");
 const wish = ref("");
 const asked = ref(false);
@@ -62,6 +69,9 @@ const plugins = computed(() =>
         }))
 );
 const services = ref([]);
+const running = computed(() => services.value.filter(isRunning).length);
+const failing = computed(() => services.value.filter(isFailing).length);
+const tally = computed(() => (failing.value ? "failed" : running.value ? "done" : ""));
 const reading = ref("");
 const logged = ref("");
 const EVERY = 3000;
@@ -194,14 +204,15 @@ async function readLog() {
     }
 }
 
-function readingOf(p) {
-    return reading.value === p.name;
-}
-
 function toggleLog(p) {
-    reading.value = readingOf(p) ? "" : p.name;
+    reading.value = reading.value === p.name ? "" : p.name;
     logged.value = "";
     readLog();
+}
+
+function readGuide() {
+    making.value = false;
+    guide.value = true;
 }
 
 async function askAgent() {
@@ -209,7 +220,7 @@ async function askAgent() {
         ? `Please make a journal plugin for ${repository.value.trim()}. First check that you can reach the repository and tell me whether you can build the integration there, then build it.${wish.value.trim() ? ` It should: ${wish.value.trim()}` : ""}`
         : `Please make a new journal plugin: ${wish.value.trim()}`;
     await sendMessage(route.value.env, {brief: text});
-    asking.value = false;
+    making.value = false;
     repository.value = "";
     wish.value = "";
     asked.value = true;
@@ -218,39 +229,89 @@ async function askAgent() {
 
 <template>
     <section class="plugins">
-        <header class="head">
-            <h2>Plugins</h2>
-            <p class="lead">
-                Paste a repository. You see every command it would run before anything runs, and it installs at that exact commit. A plugin
-                runs as you, with your files and your network.
-            </p>
-            <div class="make">
-                <Btn small @click="guide = true">How to make a plugin</Btn>
-                <Btn small @click="((asking = !asking), (asked = false))">Ask the agent to make one</Btn>
-                <template v-if="asked">
-                    <span class="note">Sent to the agent; its answer comes in the chat.</span>
+        <PageBar>
+            <TextInput
+                class="install"
+                icon="download"
+                :value="source"
+                placeholder="Install a plugin from owner/repo, a GitHub link or a folder"
+                aria-label="Install a plugin from"
+                @input="source = $event.target.value"
+                @keydown.enter="preview"
+            >
+                <template #end>
+                    <Btn kind="primary" small :busy="busy === 'preview'" :disabled="!source || busy === 'preview'" @click="preview">
+                        Scan
+                    </Btn>
                 </template>
-            </div>
-            <template v-if="asking">
-                <div class="ask">
-                    <input v-model="repository" class="source" placeholder="A GitHub repository to build it in (optional)" />
-                    <textarea v-model="wish" class="wish" rows="2" placeholder="What should the plugin do?" />
-                    <Btn kind="primary" small :disabled="!repository.trim() && !wish.trim()" @click="askAgent">Send to the agent</Btn>
-                </div>
-            </template>
-            <div class="add">
-                <input
-                    v-model="source"
-                    class="source"
-                    placeholder="https://github.com/owner/repo, owner/repo, or a folder"
-                    @keydown.enter="preview"
-                />
-                <Btn :busy="busy === 'preview'" :disabled="!source || busy === 'preview'" @click="preview">Scan</Btn>
-            </div>
+            </TextInput>
+            <Btn class="services-open" @click="servicesFor = ''">
+                <StateDot :state="tally" />
+                Services
+                <span class="services-count">{{ running }} of {{ services.length }} running</span>
+            </Btn>
+        </PageBar>
+
+        <div class="body">
+            <p class="lead">
+                A plugin runs as you, with your files and your network. Scan shows every command it would run before anything runs, and it
+                installs at that exact commit.
+            </p>
             <template v-if="previewText">
                 <Console :text="previewText" />
             </template>
-        </header>
+            <template v-if="asked">
+                <p class="note">Sent to the agent; its answer comes in the chat.</p>
+            </template>
+            <template v-if="!plugins.length">
+                <EmptyState title="No plugin is installed">Paste a repository above to see what it would run.</EmptyState>
+            </template>
+            <div class="cards">
+                <template v-for="p in plugins" :key="p.n">
+                    <PluginCard
+                        :plugin="p"
+                        :services="servicesOf(p)"
+                        :pages="pagesOf(p)"
+                        :busy="busy === `${p.n}`"
+                        :reading="reading === p.name"
+                        @toggle="(on) => plugin(p, on ? 'enable' : 'disable')"
+                        @upgrade="upgrade(p)"
+                        @setup="plugin(p, 'upgrade', {yes: true, again: true})"
+                        @settings="configuring = p.n"
+                        @dashboard="(board) => (viewing = {plugin: p, board})"
+                        @log="toggleLog(p)"
+                        @remove="removing = p"
+                        @services="servicesFor = p.name"
+                    />
+                </template>
+                <PlaceholderCard class="make" @click="((making = true), (asked = false))">
+                    <span class="make-mark"><Icon name="plus" :size="16" /></span>
+                    <span class="make-title">Make a new plugin</span>
+                    <span class="make-text">Ask the agent to build one for you, or read how plugins are made.</span>
+                </PlaceholderCard>
+            </div>
+        </div>
+
+        <template v-if="servicesFor !== null">
+            <ServicesPanel :services="services" :plugins="plugins" :focus="servicesFor" @refresh="look()" @close="servicesFor = null" />
+        </template>
+        <template v-if="making">
+            <Dialog title="Make a new plugin" small @close="making = false">
+                <div class="ask">
+                    <p class="ask-lead">The agent builds it for you and answers in the chat.</p>
+                    <TextInput
+                        :value="repository"
+                        placeholder="A GitHub repository to build it in (optional)"
+                        @input="repository = $event.target.value"
+                    />
+                    <textarea v-model="wish" class="wish" rows="4" placeholder="What should the plugin do?" />
+                </div>
+                <template #foot>
+                    <Btn @click="readGuide">Read how to make one</Btn>
+                    <Btn kind="primary" :disabled="!repository.trim() && !wish.trim()" @click="askAgent">Send to the agent</Btn>
+                </template>
+            </Dialog>
+        </template>
         <template v-if="shown">
             <Dialog :title="shown.title" fixed @close="closeShown">
                 <template v-if="outcome">
@@ -336,61 +397,6 @@ async function askAgent() {
                 </template>
             </Dialog>
         </template>
-        <div class="cards">
-            <template v-for="p in plugins" :key="p.n">
-                <article class="card">
-                    <header class="card-head">
-                        <Icon name="plug" />
-                        <span class="name">
-                            {{ p.title }}
-                            <small>{{ p.version }}</small>
-                        </span>
-                        <Switch :on="p.enabled" @change="(v) => plugin(p, v ? 'enable' : 'disable')" />
-                    </header>
-                    <p class="description">{{ p.description }}</p>
-                    <p class="from">
-                        {{ p.source }}
-                        <small>{{ p.commit }}</small>
-                    </p>
-                    <template v-if="servicesOf(p).length">
-                        <div class="services">
-                            <template v-for="s in servicesOf(p)" :key="s.id">
-                                <span :class="['service', s.state]" :title="s.why || stateWord(s)">
-                                    <span class="dot" />
-                                    {{ s.service }}
-                                    <small class="service-state">{{ stateWord(s) }}</small>
-                                </span>
-                            </template>
-                            <a class="link" :href="`#/${route.env}/services?q=${encodeURIComponent(p.name)}`">Services</a>
-                        </div>
-                    </template>
-                    <template v-if="pagesOf(p).length">
-                        <div class="links">
-                            <template v-for="page in pagesOf(p)" :key="page.name">
-                                <a class="link" :href="`#/${route.env}/page/${page.plugin}.${page.name}`">{{ page.title }}</a>
-                            </template>
-                        </div>
-                    </template>
-                    <footer class="acts">
-                        <Btn small :busy="busy === `${p.n}`" :disabled="busy === `${p.n}`" @click="upgrade(p)">Upgrade</Btn>
-                        <Btn small :disabled="busy === `${p.n}`" @click="plugin(p, 'upgrade', {yes: true, again: true})">
-                            Run setup again
-                        </Btn>
-                        <template v-for="board in p.dashboards" :key="board.name">
-                            <Btn small @click="viewing = {plugin: p, board}">{{ board.title }}</Btn>
-                        </template>
-                        <template v-if="p.settings.length">
-                            <Btn small @click="configuring = p.n">Settings</Btn>
-                        </template>
-                        <Btn small @click="toggleLog(p)">{{ readingOf(p) ? "Hide log" : "Log" }}</Btn>
-                        <Btn kind="danger" small :disabled="busy === `${p.n}`" @click="removing = p">Remove</Btn>
-                    </footer>
-                </article>
-            </template>
-            <template v-if="!plugins.length">
-                <p class="none">No plugin is installed on this project.</p>
-            </template>
-        </div>
         <template v-if="reading">
             <Dialog :title="`${reading} log`" follow fixed @close="reading = ''">
                 <Console fill :text="logged || (busy ? 'Starting…' : 'Nothing is logged yet.')" />
@@ -407,141 +413,131 @@ async function askAgent() {
 
 <style scoped>
 .plugins {
-    padding: 20px 24px;
     display: flex;
     flex-direction: column;
-    gap: 18px;
+    height: 100%;
     overflow: auto;
 }
 
-.head {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    max-width: 760px;
+.install {
+    flex: 1 1 360px;
+    max-width: 640px;
 }
 
-h2 {
-    margin: 0;
-    font-size: 16px;
-    font-weight: 600;
+.services-open {
+    gap: 8px;
+    margin-left: auto;
+}
+
+.services-count {
+    color: var(--text-3);
+    font-variant-numeric: tabular-nums;
+}
+
+.body {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    width: 100%;
+    max-width: 1180px;
+    padding: 22px 24px 40px;
+    box-sizing: border-box;
 }
 
 .lead {
+    max-width: 640px;
     margin: 0;
     color: var(--text-3);
     font-size: 12.5px;
-    line-height: 1.5;
-}
-
-.make {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-bottom: 10px;
+    line-height: 1.55;
 }
 
 .note {
-    color: var(--text-3);
+    margin: 0;
+    color: var(--accent-text);
+    font-size: 12.5px;
+}
+
+.cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 16px;
+}
+
+.make {
+    flex-direction: column;
+    gap: 4px;
+    min-height: 160px;
+    border-radius: 14px;
+}
+
+.make-mark {
+    display: grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    margin-bottom: 8px;
+    border: 1px solid var(--border-2);
+    border-radius: 50%;
+    transition:
+        border-color 0.2s,
+        color 0.2s;
+}
+
+.make:hover .make-mark {
+    border-color: var(--accent);
+    color: var(--accent-text);
+}
+
+.make-title {
+    color: var(--text-2);
+    font-weight: 500;
+}
+
+.make-text {
+    max-width: 240px;
+    color: var(--text-4);
     font-size: 12px;
+    line-height: 1.45;
+    text-align: center;
 }
 
 .ask {
     display: flex;
     flex-direction: column;
-    gap: 6px;
-    margin-bottom: 12px;
+    gap: 8px;
+}
+
+.ask-lead {
+    margin: 0 0 4px;
+    color: var(--text-3);
+    font-size: 12.5px;
 }
 
 .wish {
-    padding: 7px 10px;
+    padding: 7px 9px;
     border: 1px solid var(--border-2);
     border-radius: 7px;
-    background: var(--raised);
+    background: var(--bg);
     color: var(--text);
     font: inherit;
     font-size: 12.5px;
     resize: vertical;
 }
 
-.ask :deep(button) {
-    align-self: flex-start;
-}
-
-.add {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.source {
-    flex: 1;
-    padding: 8px 11px;
-    border: 1px solid var(--border-2);
-    border-radius: 8px;
-    background: var(--bg);
-    color: inherit;
-    font: inherit;
-}
-
-.shown-result {
-    margin: 0 0 10px;
-    color: #63b37c;
-    font-size: 13px;
-}
-
-.shown-result.failed {
-    color: #e0795f;
-}
-
-.shown-result {
-    margin: 0 0 10px;
-    color: #63b37c;
-    font-size: 13px;
-}
-
-.shown-result.failed {
-    color: #e0795f;
-}
-
-.settings {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    padding: 10px 0 4px;
-    border-top: 1px solid var(--border);
-}
-
-.setting {
-    display: flex;
-    flex-direction: column;
-    gap: 3px;
-}
-
-.setting-title {
-    color: var(--text);
-    font-size: 12.5px;
-}
-
-.setting-help {
-    color: var(--text-3);
-    font-size: 11.5px;
-}
-
-.setting-value {
-    margin-top: 3px;
-    padding: 6px 9px;
-    border: 1px solid var(--border-2);
-    border-radius: 7px;
-    background: var(--bg);
-    color: var(--text);
-    font: inherit;
-    font-size: 12.5px;
-}
-
-.setting-value:focus {
+.wish:focus {
     outline: none;
     border-color: var(--accent);
+}
+
+.shown-result {
+    margin: 0 0 10px;
+    color: var(--tone-good);
+    font-size: 13px;
+}
+
+.shown-result.failed {
+    color: var(--danger);
 }
 
 .shown-from,
@@ -566,14 +562,6 @@ h2 {
     margin-bottom: 14px;
 }
 
-.shown-kind.new {
-    color: #63b37c;
-}
-
-.shown-kind.gone {
-    color: #e0795f;
-}
-
 .shown-row {
     display: grid;
     grid-template-columns: 92px 1fr;
@@ -592,8 +580,16 @@ h2 {
     text-transform: uppercase;
 }
 
+.shown-kind.new {
+    color: var(--tone-good);
+}
+
+.shown-kind.gone {
+    color: var(--danger);
+}
+
 .shown-kind.refuse {
-    color: #d8a94a;
+    color: var(--tone-warn);
 }
 
 .shown-label {
@@ -603,124 +599,27 @@ h2 {
 .shown-command {
     grid-column: 2;
     color: var(--text-2);
-    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    font-family: var(--mono);
     font-size: 11.5px;
     word-break: break-all;
 }
 
-.cards {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-    gap: 14px;
-}
+@media (max-width: 640px) {
+    .install {
+        flex-basis: 100%;
+        max-width: none;
+    }
 
-.card {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    padding: 16px;
-    border: 1px solid var(--border-2);
-    border-radius: 12px;
-    background: var(--raised);
-}
+    .services-open {
+        margin-left: 0;
+    }
 
-.card-head {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
+    .body {
+        padding: 16px 16px 32px;
+    }
 
-.name {
-    flex: 1;
-    min-width: 0;
-    display: flex;
-    flex-direction: column;
-    font-weight: 600;
-}
-
-.name small {
-    color: var(--text-3);
-    font-size: 11.5px;
-    font-weight: 400;
-}
-
-.description {
-    margin: 0;
-    color: var(--text-2);
-    font-size: 12.5px;
-    line-height: 1.5;
-}
-
-.from {
-    margin: 0;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    color: var(--text-3);
-    font-size: 11.5px;
-    word-break: break-all;
-}
-
-.services {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-}
-
-.service {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 3px 8px;
-    border: 1px solid var(--border-2);
-    border-radius: 99px;
-    color: var(--text-3);
-    font-size: 11.5px;
-}
-
-.service .dot {
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: var(--text-3);
-}
-
-.service.ready .dot,
-.service.starting .dot {
-    background: var(--created);
-}
-
-.service.failed .dot,
-.service.blocked .dot {
-    background: var(--danger);
-}
-
-.links {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-}
-
-.link {
-    color: var(--accent-text);
-    font-size: 12.5px;
-}
-
-.acts {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin-top: auto;
-}
-
-.none {
-    margin: 0;
-    color: var(--text-3);
-}
-
-.service-state {
-    margin-left: 4px;
-    color: var(--text-4);
-    font-size: 11px;
+    .cards {
+        grid-template-columns: 1fr;
+    }
 }
 </style>

@@ -7,6 +7,7 @@ import Dialog from "../kit/Dialog.vue";
 import Icon from "../kit/Icon.vue";
 import Segmented from "../kit/Segmented.vue";
 import Spinner from "../kit/Spinner.vue";
+import Switch from "../kit/Switch.vue";
 import TextInput from "../kit/TextInput.vue";
 import {
     KINDS,
@@ -33,6 +34,7 @@ const EXPIRES = [
 ];
 const expires = ref("7d");
 const password = ref("");
+const comments = ref(false);
 const waiting = waitingOf(ref_.value);
 const kind = computed(() => KINDS[props.resource.type] || props.resource.type);
 const opens = ref(null);
@@ -81,7 +83,12 @@ async function create() {
     making.value = true;
     error.value = "";
     try {
-        made.value = await api.create("share", {title: ref_.value, expires: expires.value, password: password.value});
+        made.value = await api.create("share", {
+            title: ref_.value,
+            expires: expires.value,
+            password: password.value,
+            comments: comments.value,
+        });
         password.value = "";
         awaitLink(made.value);
     } catch (e) {
@@ -197,6 +204,15 @@ async function stop(share) {
                         <p class="quiet">Visitors get their browser's login prompt: any name, this password.</p>
                     </template>
                 </section>
+                <section class="part comments-part">
+                    <span class="label">Visitors can comment</span>
+                    <Switch :on="comments" title="Let visitors comment under a name of their own" @change="comments = $event" />
+                </section>
+                <template v-if="comments">
+                    <p class="quiet">
+                        Their comments show up here under the name they give. The agent treats them as someone else's words, never yours.
+                    </p>
+                </template>
                 <div class="actions">
                     <Btn kind="primary" :busy="making" :disabled="!opens || !opens.length || blocked" @click="create">
                         <Icon name="share" :size="12" />
@@ -394,6 +410,12 @@ async function stop(share) {
 .optional {
     color: var(--text-4);
     font-weight: 400;
+}
+
+.comments-part {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
 }
 
 .password {

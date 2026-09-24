@@ -1,9 +1,12 @@
 <script setup>
 import {sharedData} from "../api/shared.js";
-import {computed, onMounted, provide, ref, watch} from "vue";
+import {computed, provide, ref, watch} from "vue";
+import {usePoll} from "../poll.js";
 import Icon from "../kit/Icon.vue";
 import CollectionPage from "../resource/CollectionPage.vue";
 import DocumentPage from "../resource/DocumentPage.vue";
+import PlanPage from "../resource/PlanPage.vue";
+import ShareComments from "./ShareComments.vue";
 import ResourceBody from "../resource/ResourceBody.vue";
 import {route} from "../route.js";
 import {store} from "../state/store.js";
@@ -12,6 +15,7 @@ const KINDS = {
     doc: {title: "Document", icon: "file", view: "document", labels: {}},
     collection: {title: "Collection", icon: "folder", view: "small", labels: {abstract: "What belongs in it"}},
     report: {title: "Report", icon: "report", view: "document", labels: {}},
+    plan: {title: "Plan", icon: "flag", view: "document", labels: {}},
     todo: {title: "To-do", icon: "circle", view: "small", labels: {}},
     dump: {title: "Dump", icon: "inbox", view: "document", labels: {}},
 };
@@ -28,6 +32,7 @@ const kindOf = (type, given = {}) => ({
     takes_comments: false,
     choices: {},
 });
+const REFRESH_MS = 20000;
 const data = ref(null);
 const failed = ref(false);
 
@@ -43,8 +48,8 @@ function row(ref, given) {
         ref,
         refs: given.members || [],
         seen: [],
-        data: {files, pictures: given.pictures || {}},
-        completed: 0,
+        data: {...given.data, files, pictures: given.pictures || {}},
+        completed: given.completed || 0,
         deleted: 0,
         outcome: "",
     };
@@ -58,15 +63,19 @@ function stock(rows, types = {}) {
     store.rows = grouped;
 }
 
-onMounted(async () => {
-    try {
-        const read = await sharedData();
-        stock(read.rows || {}, read.types || {});
-        data.value = read;
-    } catch (e) {
-        failed.value = true;
-    }
-});
+function take(got) {
+    stock(got.rows || {}, got.types || {});
+    data.value = got;
+}
+
+function ask() {
+    return sharedData().catch((e) => {
+        if (!data.value) failed.value = true;
+        throw e;
+    });
+}
+
+usePoll("shared", ask, REFRESH_MS, take);
 
 const shownRef = computed(() => {
     const open = route.value.open;
@@ -81,9 +90,10 @@ const away = computed(() => shownRef.value !== data.value?.share.target);
 const home = computed(() => data.value?.rows[data.value.share.target]);
 const ends = computed(() => {
     const at = data.value?.share.expires;
-    if (!at) return "View only";
+    const kind = data.value?.share.comments ? "Read and comment" : "View only";
+    if (!at) return kind;
     const day = new Date(at * 1000).toLocaleDateString(undefined, {day: "numeric", month: "long", year: "numeric"});
-    return `View only · this link ends ${day}`;
+    return `${kind} · this link ends ${day}`;
 });
 
 watch(shown, (item) => item && (document.title = item.title));
@@ -116,8 +126,14 @@ watch(shown, (item) => item && (document.title = item.title));
                     <template v-if="shown.type === 'collection'">
                         <CollectionPage :resource="shown" read-only />
                     </template>
+                    <template v-else-if="shown.type === 'plan'">
+                        <PlanPage :resource="shown" read-only />
+                    </template>
                     <template v-else>
                         <ResourceBody :resource="shown" :comments="false" :links="false" read-only />
+                    </template>
+                    <template v-if="data.share.comments">
+                        <ShareComments :about="shownRef" :comments="data.comments" />
                     </template>
                     <template #foot>
                         <footer class="foot">Shared from an agent journal</footer>

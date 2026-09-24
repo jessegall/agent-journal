@@ -52,7 +52,13 @@ const firstLine = (r) =>
     String(r.abstract || r.brief || "")
         .split("\n")
         .find((line) => line.trim()) || "";
-const picture = (r) => Object.keys(r.data?.pictures || {})[0] || "";
+const hidden = reactive(new Set());
+const picture = (r) => (r.data?.hide_preview || hidden.has(r.ref) ? "" : Object.keys(r.data?.pictures || {})[0] || "");
+
+function hidePreview(r) {
+    hidden.add(r.ref);
+    api.hidePreview(r.type, r.n).catch(() => hidden.delete(r.ref));
+}
 </script>
 
 <template>
@@ -76,21 +82,28 @@ const picture = (r) => Object.keys(r.data?.pictures || {})[0] || "";
                     </EmptyState>
                 </template>
                 <template v-for="r in cards" :key="r.ref">
-                    <button type="button" class="card" @click="peek(r.type, r.n)">
-                        <template v-if="picture(r)">
-                            <img class="thumb" :src="fileUrl(r.type, r.n, picture(r))" :alt="picture(r)" loading="lazy" />
+                    <div class="card-wrap">
+                        <button type="button" class="card" @click="peek(r.type, r.n)">
+                            <template v-if="picture(r)">
+                                <img class="thumb" :src="fileUrl(r.type, r.n, picture(r))" :alt="picture(r)" loading="lazy" />
+                            </template>
+                            <span class="kind">
+                                <Icon :name="meta(r.type).icon" :size="12" />
+                                {{ meta(r.type).title }} {{ r.n }}
+                                <span class="grow" />
+                                <span class="when">{{ age(r.updated || r.created) }}</span>
+                            </span>
+                            <span class="title">{{ r.title }}</span>
+                            <template v-if="firstLine(r)">
+                                <span class="line">{{ firstLine(r) }}</span>
+                            </template>
+                        </button>
+                        <template v-if="picture(r) && !readOnly">
+                            <button type="button" class="unpreview" title="Stop showing this preview image" @click="hidePreview(r)">
+                                <Icon name="x" :size="12" />
+                            </button>
                         </template>
-                        <span class="kind">
-                            <Icon :name="meta(r.type).icon" :size="12" />
-                            {{ meta(r.type).title }} {{ r.n }}
-                            <span class="grow" />
-                            <span class="when">{{ age(r.updated || r.created) }}</span>
-                        </span>
-                        <span class="title">{{ r.title }}</span>
-                        <template v-if="firstLine(r)">
-                            <span class="line">{{ firstLine(r) }}</span>
-                        </template>
-                    </button>
+                    </div>
                 </template>
             </section>
         </template>
@@ -117,6 +130,47 @@ const picture = (r) => Object.keys(r.data?.pictures || {})[0] || "";
 .empty {
     grid-column: 1 / -1;
     font-size: 13px;
+}
+
+.card-wrap {
+    position: relative;
+    display: flex;
+    min-width: 0;
+}
+
+.card-wrap > .card {
+    flex: 1;
+}
+
+.unpreview {
+    position: absolute;
+    top: 18px;
+    right: 18px;
+    display: grid;
+    place-items: center;
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    border: 1px solid var(--border-2);
+    border-radius: 6px;
+    background: var(--raised);
+    color: var(--text-2);
+    opacity: 0;
+    pointer-events: none;
+    cursor: pointer;
+    transition: opacity 0.15s;
+}
+
+.card-wrap:has(.thumb:hover) .unpreview,
+.unpreview:hover {
+    opacity: 1;
+    pointer-events: auto;
+    transition-delay: 1s;
+}
+
+.unpreview:hover {
+    transition-delay: 0s;
+    color: var(--text);
 }
 
 .card {

@@ -48,6 +48,17 @@ const mark = (type, a, at, title, data = {}) => ({
     brief: "",
 });
 
+const visitorComments = (comments) =>
+    comments
+        .filter((c) => !c.deleted && c.data.visitor)
+        .map((c) =>
+            mark("card", c, c.created, `${c.data.visitor} commented on ${c.refs[0].replace(":", " ")}`, {
+                icon: "bubble",
+                label: `${c.data.visitor} commented on ${c.refs[0].replace(":", " ")}`,
+                row: c.refs[0],
+            })
+        );
+
 const sessions = (agents) => agents.filter((a) => !a.data.parent);
 
 const loads = (agents) => sessions(agents).flatMap((a) => (a.data.skill_loads || []).map((load) => mark("skill", a, load.at, load.skill)));
@@ -125,7 +136,8 @@ export function threadTurns(rows, pending, env, older = false) {
     const turns = [
         ...live.filter((m) => !pending.some((p) => promisedFor(p, m) && !delivered(p, m))).map((m) => ({...m, who: m.seen[0]})),
         ...live.filter((m) => m.seen[0] === "user" && m.completed && filed(m).length && !acknowledged(m, rows)).map(receipt),
-        ...rows.comment.filter((c) => !c.deleted && hasParent(c)).map((c) => ({...c, who: c.seen[0]})),
+        ...rows.comment.filter((c) => !c.deleted && hasParent(c) && !c.data.visitor).map((c) => ({...c, who: c.seen[0]})),
+        ...visitorComments(rows.comment),
         ...rows.question.filter((q) => !q.deleted).map((q) => ({...q, who: "agent"})),
         ...loads(rows.agent || []),
         ...compactions(rows.agent || []),
