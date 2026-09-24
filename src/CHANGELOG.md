@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.133.2 — The presets menu changes height smoothly
+
+Opening Colour schemes in the Presets menu shrinks the menu smoothly to the shorter list as it slides in, and going back grows it the same way, instead of snapping. Nothing to do.
+
 ## 2.133.1 — Triggers have their own icon
 
 A trigger shows a lightning bolt, in its chat mark and in lists, instead of the flag plans use. Nothing to do.
