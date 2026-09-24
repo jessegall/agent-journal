@@ -119,7 +119,7 @@ def test_a_long_command_output_keeps_its_ends_and_the_whole_of_it_as_an_output_r
     import subprocess
     import sys
     from pathlib import Path
-    from engine.terminal import output_cap
+    from engine.terminal import output_cap, session_named
     from features import load
     from features.journal_laws.controller import Outputs
     from providers import PROVIDERS
@@ -132,7 +132,8 @@ def test_a_long_command_output_keeps_its_ends_and_the_whole_of_it_as_an_output_r
     from controllers.types import Agents
     agent = Agents(record).by_session("session-1")
     env = {"PATH": f"{tmp_path}:/usr/bin:/bin", "JOURNAL_OUTPUT_LINES": "3", "JOURNAL_OUTPUT_DIR": str(tmp_path / "outputs"),
-           **PROVIDERS["claude"]().shell_wrapper(src / "output_cap.sh"), "JOURNAL_PROVIDER": "claude", "CLAUDE_CODE_SESSION_ID": "session-1"}
+           **PROVIDERS["claude"]().shell_wrapper(src / "output_cap.sh"), **session_named(PROVIDERS["claude"]()), "JOURNAL_PROVIDER": "claude",
+           "CLAUDE_CODE_SESSION_ID": "session-1"}
     wrapped = "source /dev/null 2>/dev/null || true && eval 'seq 1 1000; echo '\"'\"'done'\"'\"' >/dev/null; exit 3' < /dev/null && pwd -P >| /dev/null"
     ran = subprocess.run([str(src / "output_cap.sh"), wrapped], capture_output=True, text=True, env=env, timeout=30)
     assert (ran.returncode, ran.stdout.splitlines()[:3], ran.stdout.splitlines()[-3:]) == (3, ["1", "2", "3"], ["998", "999", "1000"]), ran.stdout + ran.stderr

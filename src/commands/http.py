@@ -448,7 +448,7 @@ def post_run(req: Request) -> Reply:
     from commands.cli import captured
     raw = req.body.get("_raw") or b""
     args = [a for a in raw.decode().split("\0") if a]
-    for flag, given in (("--as", req.query.get("actor")), ("--default-env", req.query.get("env")), ("--cwd", req.query.get("cwd")), ("--plugin", req.query.get("plugin"))):
+    for flag, given in (("--as", req.query.get("actor")), ("--default-env", req.query.get("env")), ("--cwd", req.query.get("cwd")), ("--plugin", req.query.get("plugin")), ("--session", req.query.get("session"))):
         if given and flag not in args:
             args = [flag, given, *args]
     output, code = captured(args, req.root)

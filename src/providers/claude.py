@@ -244,8 +244,10 @@ class Claude(Provider):
     def compacted(self, hook: Hook) -> bool:
         return hook.source == "compact"
 
+    session_variable = "CLAUDE_CODE_SESSION_ID"
+
     def shell_wrapper(self, script: Path) -> dict:
-        return {"CLAUDE_CODE_SHELL_PREFIX": str(script), "JOURNAL_SESSION_VARIABLE": "CLAUDE_CODE_SESSION_ID"}
+        return {"CLAUDE_CODE_SHELL_PREFIX": str(script)}
 
     def row_of(self, raw: dict) -> Row:
         return Row.from_payload(raw)

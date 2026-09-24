@@ -144,10 +144,10 @@ class Sessions:
         return {p.parent.name: SessionRecord.from_json(read_json(p, {})) for p in sorted(runtime.sessions(self.root).glob("*/session.json"))}
 
     def holder(self, env: str) -> str:
-        for session, s in self.all().items():
-            if s.environment == env and live(s):
-                return session
-        return ""
+        return next(iter(self.holders(env)), "")
+
+    def holders(self, env: str) -> list[str]:
+        return [session for session, s in self.all().items() if s.environment == env and live(s)]
 
     def evict(self, session: str, by: str, env: str, why: str) -> None:
         self.write(session, environment="", evicted={"by": by, "environment": env, "why": why, "at": time.time()})

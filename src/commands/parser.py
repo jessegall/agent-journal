@@ -92,7 +92,7 @@ def built(only: str) -> argparse.ArgumentParser:
     top.add_argument("--env", dest="bound", default="")
     top.add_argument("--default-env", dest="fallback", default=os.environ.get("JOURNAL_ENV", ""), help=argparse.SUPPRESS)
     top.add_argument("--as", dest="as_actor", default=os.environ.get("JOURNAL_ACTOR", AGENT))
-    top.add_argument("--session", dest="as_session", default=os.environ.get("JOURNAL_SESSION", ""))
+    top.add_argument("--session", dest="as_session", default=os.environ.get("JOURNAL_SESSION") or os.environ.get(os.environ.get("JOURNAL_SESSION_VARIABLE", ""), ""))
     top.add_argument("--cwd", default="", help=argparse.SUPPRESS)
     top.add_argument("--agent", dest="as_agent", default=os.environ.get("JOURNAL_AGENT", ""))
     top.add_argument("--plugin", dest="as_plugin", default=os.environ.get("JOURNAL_PLUGIN", ""), help=argparse.SUPPRESS)

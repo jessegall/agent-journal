@@ -97,3 +97,23 @@ def test_a_hook_that_crashes_is_told_to_the_agent_for_every_provider(monkeypatch
     dispatch("POST", "/api/hook/claude", record.root, {"root": str(record.root), "env": record.env}, body)
     assert len([n for n in Nudges(record, actor=SYSTEM)._every() if "no answer from the server" in n.brief]) == 1, \
         "however long a restart the journal began itself takes, the hooks it missed are not an error"
+
+
+def test_a_command_runs_as_the_session_its_own_shell_names_for_every_provider(monkeypatch):
+    import os
+    from commands.cli import context
+    from commands.parser import parser
+    from engine.sessions import Sessions
+    record = fresh()
+    sessions = Sessions(record.root)
+    for session in ("first-agent", "second-agent"):
+        sessions.bind(session, record.env, pid=os.getpid(), provider="claude")
+    for provider in PROVIDERS.values():
+        if not provider.session_variable:
+            continue
+        monkeypatch.setenv("JOURNAL_SESSION_VARIABLE", provider.session_variable)
+        monkeypatch.setenv(provider.session_variable, "second-agent")
+        monkeypatch.delenv("JOURNAL_SESSION", raising=False)
+        args = vars(parser("todo").parse_args(["--root", str(record.root), "todo", "all"]))
+        assert context(args)["session"] == "second-agent", \
+            f"{provider.name}: with two agents in one environment, a command runs as the agent whose shell ran it"
