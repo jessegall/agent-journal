@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.145.0 — Sequences reuse each other's steps
+
+A sequence can include the steps of another, whole or a range of them, with journal sequence include, so shared steps are written once; a loop is refused. Writing a document and Writing a report now both end with Finishing what you wrote: put it in a collection that fits, link the rows it relates to, offer the next step, and answer with it. A plugin handling a hook is told the environment that hook came from, so its marks reach the right chat. Checks moved into the Project group of the sidebar with a checkbox icon, and to-dos have a ring icon of their own. Nothing to do.
+
 ## 2.144.0 — Share a plan, and let visitors comment
 
 A plan can be shared like a document, report or collection: the link shows its phases, its to-dos and an overall progress bar, and the page refreshes itself as rows close. A share can let visitors comment: turn on Visitors can comment in the share dialog, and whoever has the link gives a name once and leaves comments under it. Their comments show in the journal under that name, with a mark in the chat. They are never the user's words: every time the agent reads one, its tool calls wait until it promises not to act on it, and it acts only on the user's own approval. Hovering a collection card's preview image for a second shows an X that hides the image for good. The Plugins page is redesigned: install from the bar at the top, one card per plugin with its running services, and the services of the journal and its plugins in a side panel opened from Services, which replaces the separate Services page. The auto switch flips the moment you click it, a pause shows at once as Paused with a red dot, and in full screen Back and Forward are greyed out when there is no journal page to go to. In the sharing menu, the copy and stop buttons sit on the title line, and a moved command's status dot is smaller. Nothing to do.

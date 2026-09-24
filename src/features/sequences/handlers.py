@@ -34,7 +34,7 @@ def filled(context: Context, n: int, key: str, body: str) -> str:
         return text
     kind, _, number = about.partition(":")
     board = board_of(context, about)
-    text = text.replace("<ref>", about).replace(f"<{kind} n>", number)
+    text = text.replace("<ref>", about).replace(f"<{kind} n>", number).replace("<ref n>", number).replace("<type>", kind)
     return text.replace("<board n>", str(board)) if board else text
 
 
@@ -87,7 +87,7 @@ class RemindUnfinished(Handler):
             return
         sequence, key, run = found
         if context.once(UNFINISHED, f"{sequence.n}|{key}|{run['step']}|{run['at']}"):
-            context.agent.say(UNFINISHED, n=sequence.n, title=sequence.title, step=run["step"], count=len(sequence.sections), about=about_flag(key))
+            context.agent.say(UNFINISHED, n=sequence.n, title=sequence.title, step=run["step"], count=len(context.journal.sequences._steps(sequence)), about=about_flag(key))
 
 
 def working_agent(context: Context):
@@ -104,8 +104,9 @@ class HandStepToAgent(Handler):
         sequence, key, run = found
         speaking = context.speaking_to(agent)
         if speaking.once(STEP, f"{sequence.n}|{key}|{run['step']}|{run['at']}"):
-            part = sequence.sections[run["step"] - 1]
-            speaking.agent.say(STEP, n=sequence.n, title=sequence.title, step=run["step"], count=len(sequence.sections),
+            steps = context.journal.sequences._steps(sequence)
+            part = steps[run["step"] - 1]
+            speaking.agent.say(STEP, n=sequence.n, title=sequence.title, step=run["step"], count=len(steps),
                                name=part[SECTION.title], body=filled(context, sequence.n, key, part[SECTION.body]), about=about_flag(key))
 
 
@@ -123,6 +124,7 @@ class NudgeWaitingStep(Handler):
         waited = int((time.time() - handed) // NUDGE_EVERY)
         if waited < 1 or asked_since(context, handed) or not context.once(WAITING, f"{sequence.n}|{key}|{run['step']}|{handed}|{waited}"):
             return
-        step = sequence.sections[run["step"] - 1]
-        context.agent.say(WAITING, n=sequence.n, title=sequence.title, step=run["step"], count=len(sequence.sections),
+        steps = context.journal.sequences._steps(sequence)
+        step = steps[run["step"] - 1]
+        context.agent.say(WAITING, n=sequence.n, title=sequence.title, step=run["step"], count=len(steps),
                           name=step[SECTION.title], body=filled(context, sequence.n, key, step[SECTION.body]), about=about_flag(key))

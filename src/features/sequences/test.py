@@ -108,3 +108,30 @@ def test_a_step_is_called_late_only_once_it_has_waited_since_it_was_handed():
     sequences.next(made.n)
     tick(record)
     assert len(late()) == 1, "the next step, handed just now, is not called late though the run began long ago"
+
+
+def test_a_sequence_includes_the_steps_of_another_and_a_loop_is_refused():
+    from features.sequences.shipped import ship
+    features.load()
+    record = fresh()
+    report(record, "working", "PreToolUse")
+    ship(record)
+    sequences = CONTROLLERS["sequence"](record, actor=AGENT)
+    titled = lambda title: sequences.load(next(r["n"] for r in sequences.summaries() if r["title"] == title))
+    closing = [s["title"] for s in sequences._steps(titled("Finishing what you wrote"))]
+    assert [s["title"] for s in sequences._steps(titled("Writing a report"))] == ["Write the findings", *closing], \
+        "a shipped sequence reuses the closing steps it shares"
+    base = sequences.create("Base")
+    for step in ("one", "two", "three"):
+        sequences.section(base.n, step, f"do {step}")
+    outer = sequences.create("Outer")
+    sequences.section(outer.n, "start", "begin")
+    sequences.include(outer.n, base.n, steps="2-3")
+    assert [s["title"] for s in sequences._steps(sequences.load(outer.n))] == ["start", "two", "three"], "a range includes those steps"
+    assert "never end" in refused(lambda: sequences.include(base.n, outer.n)), "including back would loop"
+    sequences.run(outer.n)
+    sequences.next(outer.n)
+    sequences.next(outer.n)
+    assert sequences.load(outer.n).runs, "the run counts the included steps"
+    sequences.next(outer.n)
+    assert not sequences.load(outer.n).runs, "and ends after the last of them"

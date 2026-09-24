@@ -1,7 +1,16 @@
+import re
+
 from features.sequences.controller import Sequences
 from features.triggers.controller import Triggers
 from features.triggers.resource import FROM_USER, START
 from resources.base import AGENT, SECTION, SYSTEM, USER
+
+TITLED = re.compile(r"^sequence:\{(.+)\}$")
+
+
+def included(shipped: dict) -> tuple[str, str]:
+    return shipped["title"], f"sequence:{{{shipped['title']}}}"
+
 
 FILING_A_DUMP = {
     "title": "Filing a dump",
@@ -226,10 +235,33 @@ WRITING_AN_UPDATE = {
                            "sequence next <this sequence> --about <ref>."),
     ],
 }
+FINISHING_WHAT_YOU_WROTE = {
+    "title": "Finishing what you wrote",
+    "brief": "The closing steps of a document or report: file it where it belongs, link what it relates to, offer the user a "
+             "next step where one fits, then answer with it.",
+    "starts_on": "",
+    "started_by": "",
+    "steps": [
+        ("Put it in a collection", "If a collection the user keeps fits what you wrote, add it: journal collection add "
+                                   "<collection n> <ref>. Look with journal collection all first; skip this when none fits, and "
+                                   "never make a collection just for it. Then journal sequence next <this sequence> --about <ref>."),
+        ("Link what it relates to", "Link the rows it answers or was built on, such as the to-dos, plans, documents, reports or "
+                                    "messages it is about, with journal <type> link <ref n> \"<row>\" for each. Leave out rows "
+                                    "it only mentions in passing. Then journal sequence next <this sequence> --about <ref>."),
+        ("Offer the next step", "If it asks the user to decide or approve something, give it buttons: journal <type> update "
+                                "<ref n> --set buttons='[{\"label\": \"Accept this proposal\", \"say\": \"I accept this "
+                                "proposal\"}, {\"label\": \"Change it first\", \"say\": \"I want changes first\"}]'. A "
+                                "button with say sends those words to you as the user's message; one naming a type, n and "
+                                "action runs that command. Skip this when nothing waits on the user. Then journal sequence next "
+                                "<this sequence> --about <ref>."),
+        ("Answer with it", "Say in one or two plain lines what it concludes, then its reference on a line of its own, like "
+                           "`doc 41` or `report 98`. Finish with journal sequence next <this sequence> --about <ref>."),
+    ],
+}
 WRITING_A_DOCUMENT = {
     "title": "Writing a document",
     "brief": "You started a document. Lay out its chapters first, write them one at a time so the user can follow along in "
-             "its inspector, offer the user a next step as buttons where one fits, then answer with it.",
+             "its inspector, then file it, link it and answer with it.",
     "starts_on": "doc.created",
     "started_by": AGENT,
     "only_when_idle": True,
@@ -242,20 +274,12 @@ WRITING_A_DOCUMENT = {
                                "\"<body>\"; the user sees each one appear where you are. Cut a chapter that turned out "
                                "empty with journal doc cut <doc n> \"<chapter>\". Then journal sequence next <this sequence> "
                                "--about <ref>."),
-        ("Offer the next step", "If the document asks the user to decide or approve something, give it buttons: journal doc "
-                                "update <doc n> --set buttons='[{\"label\": \"Accept this proposal\", \"say\": \"I accept "
-                                "this proposal\"}, {\"label\": \"Change it first\", \"say\": \"I want changes first\"}]'. "
-                                "A button with say sends those words to you as the user's message; one naming a type, n "
-                                "and action runs that command. Skip this when nothing waits on the user. Then journal "
-                                "sequence next <this sequence> --about <ref>."),
-        ("Answer with it", "Say in one or two plain lines what the document concludes, then its reference on a line of its "
-                           "own, like `doc 41`. Finish with journal sequence next <this sequence> --about <ref>."),
+        included(FINISHING_WHAT_YOU_WROTE),
     ],
 }
 WRITING_A_REPORT = {
     "title": "Writing a report",
-    "brief": "You started a report. Write its findings part by part, offer the user a next step as buttons where one fits, "
-             "then answer with it.",
+    "brief": "You started a report. Write its findings part by part, then file it, link it and answer with it.",
     "starts_on": "report.created",
     "started_by": AGENT,
     "only_when_idle": True,
@@ -263,16 +287,11 @@ WRITING_A_REPORT = {
         ("Write the findings", "Lead with the answer in the report's brief, then write each part with journal report section "
                                "<report n> \"<part>\" \"<body>\": the evidence, what was already sound, what remains "
                                "uncertain. Then journal sequence next <this sequence> --about <ref>."),
-        ("Offer the next step", "If the report leads to something the user should decide, give it buttons: journal report "
-                                "update <report n> --set buttons='[{\"label\": \"<the step>\", \"say\": \"<the words it "
-                                "sends>\"}]'. Skip this when nothing waits on the user. Then journal sequence next <this "
-                                "sequence> --about <ref>."),
-        ("Answer with it", "Say in one or two plain lines what the report found, then its reference on a line of its own, "
-                           "like `report 98`. Finish with journal sequence next <this sequence> --about <ref>."),
+        included(FINISHING_WHAT_YOU_WROTE),
     ],
 }
 SHIPPED = (FILING_A_DUMP, BUILDING_A_PLAN, WORKING_A_BOARD_CARD, REVISING_THE_DRAFTS, BUILDING_A_BOARD, DRAFTING_FROM_A_DOCUMENT,
-           WRITING_AN_UPDATE, WRITING_A_DOCUMENT, WRITING_A_REPORT)
+           WRITING_AN_UPDATE, FINISHING_WHAT_YOU_WROTE, WRITING_A_DOCUMENT, WRITING_A_REPORT)
 
 
 def ship(record) -> list[str]:
@@ -302,7 +321,8 @@ def in_step(sequences: Sequences, shipped: dict, n: int | None) -> bool:
     if not shipped.get("words"):
         unwatched(sequences.record, shipped)
     shipped = {**shipped, "starts_on": watched(sequences.record, shipped)} if shipped.get("words") else shipped
-    steps = [{SECTION.title: title, SECTION.body: body} for title, body in shipped["steps"]]
+    numbers = {row["title"]: row["n"] for row in sequences.summaries() if not row["deleted"]}
+    steps = [{SECTION.title: title, SECTION.body: TITLED.sub(lambda named: f"sequence:{numbers[named[1]]}", body)} for title, body in shipped["steps"]]
     idle = shipped.get("only_when_idle", False)
     row = sequences.load(n) if n else sequences.create(shipped["title"], starts_on=shipped["starts_on"], system=True)
     shape = (shipped["brief"], shipped["starts_on"], shipped["started_by"], idle, steps)
