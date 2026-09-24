@@ -80,6 +80,10 @@ class HandStepToAgent(Handler):
                                name=part[SECTION.title], body=part[SECTION.body], about=about_flag(key))
 
 
+def asked_since(context: AgentContext, at: float) -> bool:
+    return any(not row["completed"] and not row["deleted"] and row["created"] >= at for row in context.journal.questions.summaries())
+
+
 class NudgeWaitingStep(Handler):
     def handle(self, context: AgentContext, event: ClockTicked) -> None:
         found = context.journal.sequences._in_hand()
@@ -87,7 +91,7 @@ class NudgeWaitingStep(Handler):
             return
         sequence, key, run = found
         waited = int((time.time() - run["at"]) // NUDGE_EVERY)
-        if waited < 1 or not context.once(WAITING, f"{sequence.n}|{key}|{run['step']}|{run['at']}|{waited}"):
+        if waited < 1 or asked_since(context, run["at"]) or not context.once(WAITING, f"{sequence.n}|{key}|{run['step']}|{run['at']}|{waited}"):
             return
         step = sequence.sections[run["step"] - 1]
         context.agent.say(WAITING, n=sequence.n, title=sequence.title, step=run["step"], count=len(sequence.sections),
