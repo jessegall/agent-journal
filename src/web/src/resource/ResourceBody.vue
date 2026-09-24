@@ -1,4 +1,5 @@
 <script setup>
+import Folded from "../kit/Folded.vue";
 import SectionHeading from "../kit/SectionHeading.vue";
 import SwitchCase from "../kit/SwitchCase.vue";
 import CloseButton from "../kit/CloseButton.vue";
@@ -96,6 +97,7 @@ const docs = computed(() =>
               .map(byRef)
               .filter((d) => d && !d.deleted)
 );
+const PAGE = Math.round(window.innerHeight * 0.9);
 </script>
 
 <template>
@@ -265,8 +267,13 @@ const docs = computed(() =>
                 <TextDisplay :text="resource.brief" />
             </section>
         </template>
-        <template v-if="resource.type !== 'message'">
-            <Sections :sections="resource.sections" :document="kind.view === 'document'" />
+        <template v-if="resource.type !== 'message' && kind.view === 'document'">
+            <Folded :at="PAGE" :keep="PAGE">
+                <Sections :sections="resource.sections" document />
+            </Folded>
+        </template>
+        <template v-else-if="resource.type !== 'message'">
+            <Sections :sections="resource.sections" />
         </template>
         <template v-if="traced">
             <Trace :resource="resource" />

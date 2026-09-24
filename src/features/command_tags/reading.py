@@ -9,7 +9,7 @@ VALUE = r'(?:"[^"]*"|\([^)]*\)|[^,\]\s]+)'
 EXTRA = r'\s*,\s*[a-z_]+=' + VALUE
 ARGUMENT = r'(?::[0-9]+|="[^"]*")?(?:' + EXTRA + r')*'
 REPLIED = re.compile(r"\bjournal\s+message\s+reply\s+(\d+)")
-CARRIED = re.compile(r'^[ \t]*(?:>\s?)?(?:\*\*)?\[!([a-z]+)(?::([0-9]+)|="([^"]*)")((?:' + EXTRA + r')*)\]', re.M)
+CARRIED = re.compile(r'^[ \t]*(?:>\s?)?(?:\*\*)?\[!([a-z]+)(?::([0-9]+(?:,[0-9]+)*)|="([^"]*)")((?:' + EXTRA + r')*)\]', re.M)
 NAMED = re.compile(r'([a-z_]+)=(' + VALUE + r')')
 SETTING = re.compile(r"--set ([a-z_]+)=")
 INTERNAL = re.compile(r"^[ \t]*(?:\*\*)?\[!internal\]", re.M)

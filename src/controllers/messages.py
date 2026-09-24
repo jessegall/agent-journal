@@ -52,17 +52,28 @@ class Messages(Controller):
                 self.link(n, f"{kind}:{int(num)}")
         return self.section(n, part, result)
 
-    def reply(self, n: int, text: str, file: str = ""):
+    def reply(self, n: str, text: str, file: str = ""):
+        numbers = [int(part) for part in str(n).replace(",", " ").split()]
+        if not numbers:
+            self._refuse("name the message to reply to: journal message reply <n> \"<text>\", or several as 12,13")
         if only_emoji(text):
-            self._refuse(f"a reply that is only {text.strip()} is a reaction: journal message react {n} \"{text.strip()}\"")
-        lines = (self.load(n).brief or self.load(n).title).strip().split("\n")
-        while lines and (lines[0].startswith(">") or not lines[0].strip()):
-            lines.pop(0)
-        quoted = "\n".join(lines).strip()
-        made = self.comment(n, f"> {quoted.replace(chr(10), chr(10) + '> ')}\n\n{text}" if quoted and not text.startswith(">") else text)
+            self._refuse(f"a reply that is only {text.strip()} is a reaction: journal message react {numbers[0]} \"{text.strip()}\"")
+        quotes = [self._quoted(number) for number in numbers]
+        quoted = "\n>\n".join(quote for quote in quotes if quote)
+        made = self.comment(numbers[0], f"{quoted}\n\n{text}" if quoted and not text.startswith(">") else text)
+        for number in numbers[1:]:
+            Comments(self.record, actor=self.actor).link(made.n, f"message:{number}")
+            self.save(self.load(number), "commented", comment=made.n)
         if file:
             Comments(self.record, actor=self.actor).attach(made.n, file)
         return made
+
+    def _quoted(self, n: int) -> str:
+        lines = (self.load(n).brief or self.load(n).title).strip().split("\n")
+        while lines and (lines[0].startswith(">") or not lines[0].strip()):
+            lines.pop(0)
+        body = "\n".join(lines).strip()
+        return f"> {body.replace(chr(10), chr(10) + '> ')}" if body else ""
 
     def edit(self, n: int, text: str):
         r = self.load(n)

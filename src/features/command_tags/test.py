@@ -152,3 +152,17 @@ def test_a_tag_passes_its_named_arguments_to_the_command_in_any_order(tmp_path):
         engine.announce_written()
     assert [n for n in Nudges(record).all() if 'keywords="' in n.brief and "--set" not in n.brief], "a refusal is said in the tag's own spelling"
     assert Rules(record, actor="system").all()[-1].data["keywords"] == ["git switch"], "a rule is filed by its tag"
+
+
+def test_one_reply_answers_several_messages():
+    from engine import chat
+    import features
+    from controllers.types import Agents
+    features.load()
+    record = fresh()
+    report(record, "working", "PreToolUse")
+    first, second = (Messages(record, actor="user").create(text, brief=text) for text in ("Remove the plan.", "And write the document."))
+    chat.send(record, Agents(record, actor="system").by_session("claude-1"), f"[!reply:{first.n},{second.n}]\nYes, the plan goes and the document follows.")
+    made = Comments(record, actor="system").all()
+    assert len(made) == 1 and {first.ref, second.ref} <= set(made[0].refs), "one reply answers both messages"
+    assert "> Remove the plan." in made[0].brief and "> And write the document." in made[0].brief, "and quotes both"
