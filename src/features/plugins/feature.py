@@ -8,7 +8,7 @@ from features.plugins.commands import ClearLog, Configure, Disable, Enable, Inst
 from features.plugins.details import PluginsDetails
 from features.plugins.host import watch
 from engine.hooks import CANCELABLE
-from features.plugins.parts import AskPluginsToCancel, AskPluginsToRefuse, ClearRemovedPlugin, KeepPluginRows, OneRowPerTitle, PluginChatRules
+from features.plugins.parts import AskPluginsToCancel, AskPluginsToRefuse, ClearRemovedPlugin, KeepPluginRows, ReadLinkedManifests, OneRowPerTitle, PluginChatRules
 
 
 class Plugins(Feature):
@@ -22,6 +22,7 @@ class Plugins(Feature):
         for event in CANCELABLE:
             journal.agent.canceler(AskPluginsToCancel(event))
         journal.events.handler(ClearRemovedPlugin())
+        journal.events.handler(ReadLinkedManifests())
         for action in ("delete", "complete"):
             journal.commands.intercept(action, KeepPluginRows())
         journal.commands.intercept("create", OneRowPerTitle())
