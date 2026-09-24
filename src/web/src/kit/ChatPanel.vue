@@ -162,8 +162,8 @@ const focusEntered = (el) => el === input.value && focusInput();
     border-radius: 10px;
     background: var(--side);
     transition:
-        background 0.5s ease,
-        border-color 0.5s ease;
+        background var(--fade),
+        border-color var(--fade);
 }
 
 .compose:focus-within {
@@ -202,7 +202,7 @@ const focusEntered = (el) => el === input.value && focusInput();
     flex: none;
     min-height: 0;
     margin: 0 20px;
-    animation: hint-in 0.8s 2s ease both;
+    animation: fade-in var(--fade) 2s both;
 }
 
 .hint {
@@ -216,8 +216,8 @@ const focusEntered = (el) => el === input.value && focusInput();
 .hint-enter-active,
 .hint-leave-active {
     transition:
-        opacity 0.35s ease,
-        transform 0.35s ease;
+        opacity var(--fade),
+        transform var(--move);
 }
 
 .hint-enter-from {
@@ -228,12 +228,6 @@ const focusEntered = (el) => el === input.value && focusInput();
 .hint-leave-to {
     opacity: 0;
     transform: translateY(-4px);
-}
-
-@keyframes hint-in {
-    from {
-        opacity: 0;
-    }
 }
 
 .echo-slot {
@@ -259,11 +253,11 @@ const focusEntered = (el) => el === input.value && focusInput();
 }
 
 .echo-enter-active {
-    transition: opacity 0.7s ease 0.5s;
+    transition: opacity var(--fade) 0.5s;
 }
 
 .echo-leave-active {
-    transition: opacity 0.45s ease;
+    transition: opacity var(--fade);
 }
 
 .echo-enter-from {
@@ -289,12 +283,12 @@ const focusEntered = (el) => el === input.value && focusInput();
 
 .input-step-enter-active {
     transition:
-        opacity 0.4s ease,
-        transform 0.45s var(--ease);
+        opacity var(--fade),
+        transform var(--move);
 }
 
 .input-step-leave-active {
-    transition: opacity 0.4s ease 0.15s;
+    transition: opacity var(--fade) 0.15s;
 }
 
 .input-step-enter-from {
@@ -308,7 +302,7 @@ const focusEntered = (el) => el === input.value && focusInput();
 
 .compose .left,
 .compose > :deep(.btn) {
-    transition: opacity 0.5s ease;
+    transition: opacity var(--fade);
 }
 
 .compose.waiting {
@@ -336,7 +330,7 @@ const focusEntered = (el) => el === input.value && focusInput();
 
 .swap-enter-active,
 .swap-leave-active {
-    transition: opacity 0.5s ease;
+    transition: opacity var(--fade);
 }
 
 .swap-enter-from,

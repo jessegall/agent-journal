@@ -53,7 +53,7 @@ const writing = computed(() => props.typed && count.value < props.text.length);
     font-size: 13px;
     line-height: 1.5;
     white-space: pre-wrap;
-    animation: fadein 0.3s both;
+    animation: fade-in var(--fade) both;
 }
 
 .msg.agent {
@@ -99,8 +99,8 @@ const writing = computed(() => props.typed && count.value < props.text.length);
 .note-enter-active,
 .note-leave-active {
     transition:
-        opacity 0.28s,
-        transform 0.28s;
+        opacity var(--fade),
+        transform var(--move);
 }
 
 .note-enter-from {
@@ -153,12 +153,6 @@ const writing = computed(() => props.typed && count.value < props.text.length);
 
 @keyframes blink {
     50% {
-        opacity: 0;
-    }
-}
-
-@keyframes fadein {
-    from {
         opacity: 0;
     }
 }

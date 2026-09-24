@@ -188,6 +188,10 @@ export class ApiClient {
         return this.act("board", board, "revise", {text, idempotency});
     }
 
+    followUpWork(board, text, idempotency) {
+        return this.act("board", board, "follow_up", {text, idempotency});
+    }
+
     requestWork(board, text, idempotency) {
         return this.act("board", board, "request", {text, idempotency});
     }

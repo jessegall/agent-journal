@@ -11,14 +11,14 @@ const props = defineProps({
     escapes: {type: Boolean, default: true},
 });
 const emit = defineEmits(["close"]);
-const onKey = (e) => props.open && props.escapes && e.key === "Escape" && emit("close");
-onMounted(() => window.addEventListener("keydown", onKey));
+const onKey = (e) => props.open && e.key === "Escape" && emit("close");
+onMounted(() => props.escapes && window.addEventListener("keydown", onKey));
 onUnmounted(() => window.removeEventListener("keydown", onKey));
 </script>
 
 <template>
     <Teleport to="body">
-        <Transition name="focus-stage">
+        <Transition name="focus-stage" appear>
             <div v-show="open" :class="['focus-stage', {spread, docked, page}]">
                 <div class="veil" />
                 <template v-if="glow">
@@ -66,8 +66,8 @@ onUnmounted(() => window.removeEventListener("keydown", onKey));
     background: radial-gradient(ellipse at center, rgba(94, 100, 201, 0.14), transparent 60%);
     pointer-events: none;
     transition:
-        opacity 0.45s var(--ease),
-        transform 0.45s var(--ease);
+        opacity var(--fade),
+        transform var(--move);
 }
 
 .docked .glow {
@@ -154,12 +154,12 @@ kbd {
 
 .focus-stage-enter-active,
 .focus-stage-leave-active {
-    transition: opacity 0.35s ease;
+    transition: opacity var(--fade);
 }
 
 .focus-stage-enter-active .body,
 .focus-stage-leave-active .body {
-    transition: transform 0.45s var(--ease);
+    transition: transform var(--move);
 }
 
 .focus-stage-enter-from,

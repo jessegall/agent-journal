@@ -35,6 +35,8 @@ def test_a_request_opens_a_session_that_cancel_closes():
         "the request is a message about the board, and the board remembers the session so the panel can resume it"
     assert any(n.startswith("sequence ") and "Understand the request" in n for n in nudges(record)), \
         "the request starts the board card sequence at its first step"
+    more = boards.follow_up(board.n, "Also by mail")
+    assert boards.load(board.n).drafting["asked"] == [made.ref, more.ref], "a follow-up joins the request, so a cancel covers it too"
     drafter = Tickets(record, actor=AGENT)
     kept, stray = (drafter.create(t, abstract=t, board=board.n, draft=True) for t in ("Share a link", "Invite by mail"))
     Tickets(record, actor=USER).confirm(kept.n)
