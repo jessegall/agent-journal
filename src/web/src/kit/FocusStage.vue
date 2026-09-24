@@ -1,9 +1,16 @@
 <script setup>
 import {onMounted, onUnmounted} from "vue";
 
-const props = defineProps({open: Boolean, leave: {type: String, default: "Back"}, glow: Boolean, spread: Boolean, docked: Boolean});
+const props = defineProps({
+    open: Boolean,
+    leave: {type: String, default: "Back"},
+    glow: Boolean,
+    spread: Boolean,
+    docked: Boolean,
+    escapes: {type: Boolean, default: true},
+});
 const emit = defineEmits(["close"]);
-const onKey = (e) => props.open && e.key === "Escape" && emit("close");
+const onKey = (e) => props.open && props.escapes && e.key === "Escape" && emit("close");
 onMounted(() => window.addEventListener("keydown", onKey));
 onUnmounted(() => window.removeEventListener("keydown", onKey));
 </script>
@@ -16,10 +23,12 @@ onUnmounted(() => window.removeEventListener("keydown", onKey));
                 <template v-if="glow">
                     <div class="glow" />
                 </template>
-                <button type="button" class="leave" @click="emit('close')">
-                    {{ leave }}
-                    <kbd>Esc</kbd>
-                </button>
+                <template v-if="escapes">
+                    <button type="button" class="leave" @click="emit('close')">
+                        {{ leave }}
+                        <kbd>Esc</kbd>
+                    </button>
+                </template>
                 <div class="body">
                     <slot />
                 </div>
