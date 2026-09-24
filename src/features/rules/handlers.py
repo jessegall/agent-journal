@@ -3,9 +3,10 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import ClassVar
 
-from engine.events import ResourceEvent
+from engine.events import ResourceCreated, ResourceEvent
 from engine.stored import write_text
 from features.parts import Context, Handler
+from resources.base import AGENT
 
 BLOCK = re.compile(r"\n?<!-- journal rules -->.*?<!-- /journal rules -->\n?", re.DOTALL)
 INSTRUCTION_FILES = ("AGENTS.md", "CLAUDE.md")
@@ -32,3 +33,12 @@ class InjectRules(Handler):
         lines = "\n".join(f"- {r.title}" for r in injected)
         block = f"<!-- journal rules -->\n# Rules\n\n{lines}\n<!-- /journal rules -->"
         write_text(target, f"{stripped}\n\n{block}\n" if stripped else f"{block}\n")
+
+
+class ReviewNewRule(Handler):
+    def handle(self, context: Context, event: ResourceCreated) -> None:
+        if event.actor != AGENT or event.type != "rule":
+            return
+        agent = context.journal.agents.primary()
+        if agent:
+            context.speaking_to(agent).agent.whisper("review", n=event.n, title=context.journal.rules.load(event.n).title)

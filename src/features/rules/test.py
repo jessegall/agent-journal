@@ -98,3 +98,12 @@ def test_inject_writes_and_uninject_restores_both_instruction_files_and_pin_noti
     assert [(empty.root.parent / name).read_text() for name in ("AGENTS.md", "CLAUDE.md")] == \
         ["<!-- journal rules -->\n# Rules\n\n- only rule\n<!-- /journal rules -->\n"] * 2, \
         "no instruction files yet: both get the block"
+
+
+def test_a_rule_the_agent_makes_is_sent_back_to_be_read_as_a_ruling_for_the_whole_project():
+    record = fresh()
+    report(record, "working", "PreToolUse")
+    made = Rules(record, actor=AGENT).create("Run the dashboard warm-up in this worktree", keywords=["dashboard"])
+    assert f"Is rule {made.n} a ruling for the whole project?" in nudges(record), "the agent is asked whether its rule binds every environment"
+    Rules(record, actor=USER).create("Never change the git branch", keywords=["git switch"])
+    assert len([n for n in nudges(record) if n.startswith("Is rule")]) == 1, "a rule the user makes is not sent back"

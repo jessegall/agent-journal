@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.122.1 — Channel lines queued mid-turn stay on the channel, new rules are read again as rulings, and Settings is searchable
+
+A line the channel hands an agent while it works is queued by Claude Code; the journal now counts it as delivered instead of switching that session to typing into its terminal. A rule an agent makes is sent back to it once to check that it binds the whole project, and the rules, facts and reminders skills say that rules belong to the project and facts and reminders to their environment. The Settings page is one searchable page with All, Changed and Off filters, and it is the last link under Project. journal claude -w with no name gets a name from the journal, so its skills are there when Claude starts, and switching environments reloads the viewer. Nothing to do.
+
 ## 2.122.0 — New work drafts tickets from a short conversation, and worktrees and tabs keep their environments apart
 
 New work on a board asks what you want in a few turns, drafts one ticket per piece that ships on its own, shows each proposed wait on its card with a way to drop it, and adds only what you keep; Cancel stops the drafting and deletes the drafts you did not add. A second agent started in a worktree another agent works gets an environment of its own, and one browser tab works an environment at a time. The Hub shows permission prompts, waiting and parked work and when the last work finished; long agent turns read as a card; the floating chat carries its pins button. A reload loads a long transcript from its saved parse instead of parsing it again, the agent row keeps only recent background commands, and plugin chat rules are kept between requests, so the dashboard stays well inside its budget. A linked plugin's changed manifest is read again within a minute, and a plugin setting can sit under the switch that turns its group on. Nothing to do.
