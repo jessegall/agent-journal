@@ -5,7 +5,7 @@ import ChatDock from "../kit/ChatDock.vue";
 import CloseButton from "../kit/CloseButton.vue";
 import Icon from "../kit/Icon.vue";
 import {api} from "../api/client.js";
-import {go, route} from "../route.js";
+import {peek} from "../route.js";
 import {rows} from "../sync/rows.js";
 import {dumpCollection} from "../domain/docks.js";
 
@@ -19,7 +19,7 @@ const line = computed(() => {
 
 function open() {
     const n = dumpCollection(props.dump);
-    if (n) go(route.value.env, "collection", n);
+    if (n) peek("collection", n);
 }
 </script>
 
