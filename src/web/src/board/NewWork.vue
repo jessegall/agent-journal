@@ -373,6 +373,41 @@ watch(
 );
 
 const {openChat} = useFloatingChat();
+const need = ref(0);
+const partsOf = () => {
+    const chat = panel.value?.$el;
+    const log = chat?.querySelector(".log");
+    return {chat, log, lines: log?.firstElementChild};
+};
+
+function measure() {
+    const {chat, log, lines} = partsOf();
+    if (!lines) return;
+    const hidden = [...lines.querySelectorAll(".choices")].reduce((sum, el) => sum + el.scrollHeight - el.clientHeight, 0);
+    need.value = chat.offsetHeight - log.offsetHeight + lines.offsetHeight + hidden;
+}
+
+const sizes = new ResizeObserver(() => requestAnimationFrame(measure));
+function watchSizes() {
+    const {chat, lines} = partsOf();
+    sizes.disconnect();
+    [chat, lines, ...(lines ? lines.querySelectorAll(".choices > *") : [])].forEach((el) => el && sizes.observe(el));
+    requestAnimationFrame(measure);
+}
+const changes = new MutationObserver(watchSizes);
+watch(
+    () => panel.value?.$el,
+    (chat) => {
+        changes.disconnect();
+        const {lines} = partsOf();
+        if (!chat || !lines) return;
+        changes.observe(lines, {childList: true, subtree: true, characterData: true});
+        watchSizes();
+    },
+    {flush: "post"}
+);
+onUnmounted(() => (sizes.disconnect(), changes.disconnect()));
+
 const LISTENERS = {keydown: onKey, dragover: (e) => hovering(e), drop: (e) => dropped(e), paste: (e) => pastedFile(e)};
 onMounted(() => Object.entries(LISTENERS).forEach(([event, listener]) => window.addEventListener(event, listener)));
 onUnmounted(() => {
@@ -629,11 +664,12 @@ function startAnew() {
                 </template>
             </TransitionGroup>
         </div>
-        <div :class="['dock', {docked, short: !tall && !lost, reading, thinking: agentsTurn}]">
+        <div :class="['dock', {docked, short: !tall && !lost, reading, thinking: agentsTurn}]" :style="{'--need': `${need}px`}">
             <ChatPanel
                 ref="panel"
                 v-model="words"
                 fill
+                :snug="!docked"
                 :closable="!docked"
                 @close="finish"
                 :locked="adding"
@@ -762,11 +798,14 @@ function startAnew() {
 }
 
 .dock {
+    --least: min(400px, 52vh);
+    --height: min(max(var(--least), var(--need, 0px)), calc(100% - 64px));
+
     position: absolute;
-    top: calc(50% - min(200px, 26vh));
+    top: min(calc(50% - min(200px, 26vh)), calc(50% - var(--height) / 2));
     left: calc(50% - min(340px, 50% - 16px));
     width: min(680px, calc(100% - 32px));
-    height: min(400px, 52vh);
+    height: var(--height);
     transition:
         top var(--move),
         left var(--move),
@@ -775,7 +814,21 @@ function startAnew() {
 }
 
 .dock.short:not(.docked) {
-    height: min(260px, 40vh);
+    --least: min(260px, 40vh);
+}
+
+.dock:not(.docked) :deep(.lines > *) {
+    flex-shrink: 0;
+}
+
+.dock:not(.docked) :deep(.asked:not(.chat)) {
+    flex: 0 1 auto;
+    min-height: 0;
+}
+
+.dock:not(.docked) :deep(.asked:not(.chat) .choices) {
+    min-height: 0;
+    overflow-y: auto;
 }
 
 .dock:not(.docked) {
@@ -1090,8 +1143,9 @@ function startAnew() {
 
 @media (max-width: 760px) {
     .dock:not(.docked, .short) {
-        top: calc(50% - min(280px, 36vh));
-        height: min(560px, 72vh);
+        --least: min(560px, 72vh);
+
+        top: min(calc(50% - min(280px, 36vh)), calc(50% - var(--height) / 2));
     }
 
     .dock.docked {

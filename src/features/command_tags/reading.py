@@ -1,15 +1,35 @@
 import re
+from dataclasses import dataclass
 
 REPLY = "reply"
 AWAIT = "await"
-RUNS = {REPLY: "message reply {n} {text}", "log": "work log {text} --n {n}", "end": "work end {n} --how {text}",
-        "todo": "todo create {name} --brief {text}", "fact": "fact create {name} --brief {text}",
-        "rule": "rule create {name} --brief {text}", AWAIT: "work await {text}"}
+
+
+@dataclass(frozen=True)
+class Tag:
+    name: str
+    runs: str
+    hint: str
+
+    @property
+    def command(self) -> re.Pattern:
+        return re.compile(r"\bjournal\s+" + r"\s+".join(self.runs.split("{")[0].split()) + r"\b")
+
+
+TAGS = (
+    Tag(REPLY, "message reply {n} {text}", "[!reply:N] makes the turn itself the reply"),
+    Tag("log", "work log {text} --n {n}", "[!log:N] makes the turn itself the log entry"),
+    Tag("end", "work end {n} --how {text}", "[!end:N] makes the turn itself what landed"),
+    Tag("todo", "todo create {name} --brief {text}", '[!todo="the title"] files it with the turn as its brief'),
+    Tag("fact", "fact create {name} --brief {text}", '[!fact="the claim", keywords=(...)] files it with the turn as its brief'),
+    Tag("rule", "rule create {name} --brief {text}", '[!rule="the ruling", keywords=(...)] files it with the turn as its brief'),
+    Tag(AWAIT, "work await {text}", "[!await] makes the rest of the turn what you wait for"),
+)
+RUNS = {tag.name: tag.runs for tag in TAGS}
 RETIRED = ("discovery", "correction", "blocked", "info")
 VALUE = r'(?:"[^"]*"|\([^)]*\)|[^,\]\s]+)'
 EXTRA = r'\s*,\s*[a-z_]+=' + VALUE
 ARGUMENT = r'(?::[0-9]+|="[^"]*")?(?:' + EXTRA + r')*'
-REPLIED = re.compile(r"\bjournal\s+message\s+reply\s+(\d+)")
 CARRIED = re.compile(r'^[ \t]*(?:>\s?)?(?:\*\*)?\[!([a-z]+)(?::([0-9]+(?:,[0-9]+)*)|="([^"]*)")?((?:' + EXTRA + r')*)\]', re.M)
 NAMED = re.compile(r'([a-z_]+)=(' + VALUE + r')')
 SETTING = re.compile(r"--set ([a-z_]+)=")
@@ -64,3 +84,7 @@ def tag_spelling(text: str) -> str:
 
 def answered(numbers: list, **_) -> str:
     return f"answer by opening your turn with [!reply:{numbers[0]}]" if len(numbers) == 1 else "answer each by opening a turn with [!reply:<n>]"
+
+
+def tag_for(command: str) -> Tag | None:
+    return next((tag for tag in TAGS if tag.command.search(command)), None)

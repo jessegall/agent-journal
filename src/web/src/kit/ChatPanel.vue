@@ -14,6 +14,7 @@ const props = defineProps({
     echo: String,
     closable: Boolean,
     hint: String,
+    snug: Boolean,
 });
 const emit = defineEmits(["send", "close"]);
 const words = defineModel({type: String, default: ""});
@@ -57,7 +58,7 @@ const focusEntered = (el) => el === input.value && focusInput();
 </script>
 
 <template>
-    <div :class="['chat', {fill}]">
+    <div :class="['chat', {fill, snug}]">
         <Transition name="close-fade">
             <template v-if="closable">
                 <button type="button" class="close" title="Cancel" @click="emit('close')">
@@ -168,6 +169,16 @@ const focusEntered = (el) => el === input.value && focusInput();
     min-height: 100%;
     padding: 16px 16px 6px;
     box-sizing: border-box;
+}
+
+.chat.snug .log {
+    display: flex;
+    flex-direction: column;
+}
+
+.chat.snug .lines {
+    flex: 0 1 auto;
+    min-height: 0;
 }
 
 .attached {
