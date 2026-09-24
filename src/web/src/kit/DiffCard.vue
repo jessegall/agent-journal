@@ -21,7 +21,14 @@ const props = defineProps({
     fresh: {type: String, default: ""},
 });
 
-const emit = defineEmits(["fold", "whole"]);
+const emit = defineEmits(["fold", "whole", "open"]);
+const OPEN_KEY = navigator.platform.startsWith("Mac") ? "⌘" : "Ctrl";
+
+function openWithKey(e) {
+    if (!(e.metaKey || e.ctrlKey)) return;
+    e.stopPropagation();
+    emit("open", props.path);
+}
 const BADGES = {new: "created", deleted: "deleted"};
 const SIGNS = {add: "+", del: "−"};
 
@@ -70,7 +77,7 @@ onUnmounted(() => sized && sized.disconnect());
 <template>
     <section :class="['diff-card', {half, gone, entering, flush, folded, capped}]">
         <header class="diff-card-head" :title="gone ? null : folded ? 'Show the changes' : 'Fold this card'" @click="!gone && emit('fold')">
-            <span class="diff-card-path" :title="path">
+            <span class="diff-card-path" :title="`${path} · ${OPEN_KEY}-click to open it`" @click="openWithKey">
                 <span class="diff-card-dir">{{ dir }}</span>
                 <span class="diff-card-name">{{ name }}</span>
                 <template v-if="badge">
@@ -166,6 +173,7 @@ onUnmounted(() => sized && sized.disconnect());
 .diff-card-path {
     display: flex;
     flex: 1;
+    align-items: center;
     min-width: 0;
     white-space: nowrap;
 }

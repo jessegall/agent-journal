@@ -1,5 +1,6 @@
 <script setup>
 import {computed, nextTick, ref} from "vue";
+import {route, showFile} from "../route.js";
 import {api} from "../api/client.js";
 import FeedBar from "./FeedBar.vue";
 import DiffCard from "../kit/DiffCard.vue";
@@ -95,6 +96,7 @@ function onScroll(e) {
                         :whole="wholes[c.id] || null"
                         @fold="fold(c)"
                         @whole="whole(c)"
+                        @open="(path) => showFile(route.env, path)"
                         :path="c.path"
                         :kind="c.kind"
                         :added="c.added"

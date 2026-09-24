@@ -1,6 +1,7 @@
 import html
 import re
 import time
+from urllib.parse import quote
 
 from features.row_links.formatters import named
 
@@ -24,7 +25,7 @@ class Page:
 
     def file_href(self, ref: str, name: str) -> str:
         kind, _, n = ref.partition(":")
-        return f"/s/{self.token}/files/{kind}/{n}/{html.escape(name, quote=True)}"
+        return f"/s/{self.token}/files/{kind}/{n}/{quote(name, safe='')}"
 
     def refs(self, text: str) -> str:
         names, pattern = named()
