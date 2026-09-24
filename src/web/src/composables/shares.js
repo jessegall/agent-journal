@@ -16,7 +16,7 @@ export const waitingOf = (ref) => computed(() => waitingShares.value.filter((sha
 
 export const locked = (share) => Boolean(share.data.password);
 
-export const KINDS = {doc: "document", collection: "collection", report: "report"};
+export const KINDS = {doc: "document", collection: "collection", report: "report", plan: "plan"};
 
 export function itemOf(share) {
     const first = (share.brief || "").split("\n")[0];

@@ -1,9 +1,15 @@
+import re
+import time
+from dataclasses import asdict, dataclass
+
 import controllers.types as types_module
 import resources.types as resources_module
 from controllers.base import Controller
 from controllers.types import Docs
 from features.plans.resource import PHASE, Plan
 from resources.base import AGENT, SECTION, Refused, check_title
+
+LOGGED = re.compile(r"\d{4}-\d{2}-\d{2} \d{2}:\d{2}")
 
 BUILDING, DRAFT, READY, APPROVED, ACTIVE, WAITING, PARKED, DONE, ABANDONED = (
     "building", "draft", "ready", "approved", "active", "waiting", "parked", "done", "abandoned"
@@ -17,6 +23,24 @@ DEPTHS = {
     "thorough": "The user asked for a thorough plan: research every part before you write it and file a to-do for every "
                 "small thing, down to the details, so nothing is left to the imagination.",
 }
+
+
+@dataclass(frozen=True)
+class Moment:
+    at: float
+    kind: str
+    todo: int
+    title: str
+    text: str
+
+    @classmethod
+    def of(cls, todo, at: float, kind: str, text: str) -> "Moment":
+        return cls(at, kind, todo.n, todo.title, text)
+
+
+def logged_at(part: dict, fallback: float) -> float:
+    stamp = LOGGED.search(part[SECTION.title])
+    return time.mktime(time.strptime(stamp[0], "%Y-%m-%d %H:%M")) if stamp else fallback
 
 
 class Plans(Controller):
@@ -122,6 +146,22 @@ class Plans(Controller):
 
     def abandon(self, n: int, why: str = ""):
         return self._status(self.load(n), ABANDONED, BUILDING, DRAFT, READY, APPROVED, ACTIVE, WAITING, PARKED, why=why)
+
+    def timeline(self, n: int) -> list[dict]:
+        from controllers.types import Todos, Works
+        r = self.load(int(n))
+        numbers = {t for phase in r.phases for t in phase[PHASE.todos]}
+        todos = {t.n: t for t in map(Todos(self.record, actor=self.actor).load, numbers)}
+        works = [Works(self.record, actor=self.actor).load(row["n"]) for row in Works(self.record, actor=self.actor).summaries()
+                 if not row["deleted"] and row.get("todo") in numbers]
+        items = [Moment.of(t, t.completed, "done", t.outcome) for t in todos.values() if t.completed]
+        for work in works:
+            todo = todos[work.data["todo"]]
+            items.append(Moment.of(todo, work.created, "started", work.title))
+            items += [Moment.of(todo, logged_at(part, work.created), "log", part[SECTION.body]) for part in work.sections]
+            if work.completed:
+                items.append(Moment.of(todo, work.completed, "ended", work.outcome))
+        return [asdict(item) for item in sorted(items, key=lambda item: item.at)]
 
     def _status(self, r, to: str, *allowed: str, **event):
         self._allowed(r, to, *allowed)

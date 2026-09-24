@@ -76,6 +76,7 @@ class Work(Traced, Resource):
         help="Work is opened by the agent, updated as it moves and ended when done; the agent that opened it has seen it.",
     )
     type = "work"
+    indexed = ("todo",)
     event_labels = {"created": "Work started", "sectioned": "Work logged", "completed": "Work ended"}
     status_labels = {"create": "starting", "complete": "ending"}
     start_heading = "STILL OPEN, from this or an earlier session"

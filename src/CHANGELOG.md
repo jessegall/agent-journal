@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.146.0 — A plan's timeline, and a share button on plans
+
+A plan page has a Share button, so a plan can be shared from the viewer like a document. Its new Timeline button swaps the side panel from comments to a timeline of the plan: every to-do's work started, each work log entry, work ended and to-do done, newest first with their times, so you can follow a plan without opening its to-dos; journal plan timeline <n> gives the same list. Nothing to do.
+
 ## 2.145.0 — Sequences reuse each other's steps
 
 A sequence can include the steps of another, whole or a range of them, with journal sequence include, so shared steps are written once; a loop is refused. Writing a document and Writing a report now both end with Finishing what you wrote: put it in a collection that fits, link the rows it relates to, offer the next step, and answer with it. A plugin handling a hook is told the environment that hook came from, so its marks reach the right chat. Checks moved into the Project group of the sidebar with a checkbox icon, and to-dos have a ring icon of their own. Nothing to do.

@@ -4,6 +4,7 @@ import {route} from "../route.js";
 import {rows} from "../sync/rows.js";
 import ResourceBody from "./ResourceBody.vue";
 import Comments from "./Comments.vue";
+import PlanTimelinePanel from "./PlanTimelinePanel.vue";
 import Links from "./Links.vue";
 import Highlight from "./Highlight.vue";
 
@@ -45,7 +46,18 @@ function panelLeft() {
     else shifted.value = false;
 }
 
-provide("talk", {talking, count, toggle: () => (talking.value = !talking.value), say: (text) => (quote.value = text)});
+const aside = ref("comments");
+
+function toggle(mode = "comments") {
+    if (talking.value && aside.value === mode) {
+        talking.value = false;
+        return;
+    }
+    aside.value = mode;
+    talking.value = true;
+}
+
+provide("talk", {talking, count, aside, toggle, say: (text) => (quote.value = text)});
 const body = ref(null);
 const LIT_FOR = 2500;
 
@@ -93,7 +105,12 @@ watch(
         </div>
         <Transition name="aside" @after-leave="panelLeft">
             <aside v-if="panel && !readOnly" class="document-aside">
-                <Comments :resource="resource" :quote="quote" :focus="props.focus" @sent="quote = ''" />
+                <template v-if="aside === 'timeline'">
+                    <PlanTimelinePanel :plan="resource" />
+                </template>
+                <template v-else>
+                    <Comments :resource="resource" :quote="quote" :focus="props.focus" @sent="quote = ''" />
+                </template>
             </aside>
         </Transition>
     </div>
