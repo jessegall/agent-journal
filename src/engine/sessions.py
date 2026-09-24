@@ -1,3 +1,4 @@
+import fcntl
 import os
 import time
 from dataclasses import dataclass, field
@@ -88,9 +89,12 @@ class Sessions:
         return self.path(session).is_file()
 
     def write(self, session: str, **fields) -> SessionRecord:
-        raw = read_json(self.path(session), {})
-        got = {**(raw if isinstance(raw, dict) else {}), **fields}
-        write_json(self.path(session), got)
+        self.path(session).parent.mkdir(parents=True, exist_ok=True)
+        with (self.path(session).parent / "session.lock").open("w") as lock:
+            fcntl.flock(lock, fcntl.LOCK_EX)
+            raw = read_json(self.path(session), {})
+            got = {**(raw if isinstance(raw, dict) else {}), **fields}
+            write_json(self.path(session), got)
         return SessionRecord.from_json(got)
 
     def bind(self, session: str, env: str, pid: int = 0, provider: str = "") -> dict:

@@ -8,7 +8,7 @@ from providers.base import FOLD_CACHE
 from engine.record import Record
 from engine.wording import plural
 
-TAILS = {"sessions/*/printed": 64 * 1024, "sessions/*/screen": 1024 * 1024, "*.log": 1024 * 1024, "channel.jsonl": 1024 * 1024}
+TAILS = {"sessions/*/printed": 64 * 1024, "sessions/*/screen": 1024 * 1024, "*.log": 1024 * 1024, "channels/*.jsonl": 1024 * 1024}
 EVENTS_KEPT = 100
 READERS_WITHIN = 86400
 STAGING_FOR = 3600

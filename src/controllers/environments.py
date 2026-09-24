@@ -67,6 +67,10 @@ class Environments(Controller):
             self._refuse(f"environment {env.title!r} is taken by session {holder}: claim it with a reason, or work another")
         before = self.sessions().environment(who)
         self.sessions().bind(who, env.title)
+        running = self.sessions().read(who)
+        terminal = self.sessions().terminal(running.provider, running.pid) if running.pid else ""
+        if terminal and terminal != who:
+            self.sessions().bind(terminal, env.title)
         if before and before != env.title:
             self.sessions().write(who, before=before)
         if project:

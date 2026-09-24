@@ -140,7 +140,7 @@ def test_a_request_a_hook_and_an_agent_report_stay_inside_their_work_budget():
     asked = {"types": "todo,message,question", "events": "50"}
     hook = {"hook_event_name": "PreToolUse", "session_id": "claude-1", "tool_name": "Read", "tool_input": {"file_path": "x.py"}, "cwd": str(record.root.parent)}
     calls = {"the dashboard": (lambda: dispatch("GET", f"/api/{record.env}/dashboard", record.root, asked, {}), 1, 1),
-             "a PreToolUse hook": (lambda: answer(PROVIDERS["claude"](), record.root, hook, os.getpid()), 24, 0),
+             "a PreToolUse hook": (lambda: answer(PROVIDERS["claude"](), record.root, hook, os.getpid()), 25, 0),
              "an agent report through every handler": (lambda: report(record, "working", "PostToolUse"), 10, 0)}
     for name, (call, opened, scanned) in calls.items():
         call()

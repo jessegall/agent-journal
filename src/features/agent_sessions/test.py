@@ -68,6 +68,12 @@ def test_a_session_evicted_from_its_environment_is_held_until_it_claims_it_back(
     assert allowed(sessions, "claude-1", "t", "agent-7", "fact") == \
         "a subagent never writes a fact: report it, and the main conversation files it", "granted: a pin is still refused"
     assert allowed(sessions, "claude-1", "t", "", "fact") == "", "no subagent named: nothing to check"
+    sessions.bind("conversation-9", record.env, pid=7272, provider="claude")
+    sessions.bind("claude-7272", record.env, pid=7272, provider="claude")
+    moved = Environments(record, actor=AGENT, session="conversation-9")
+    moved.switch(moved.create("u").n)
+    assert (sessions.environment("conversation-9"), sessions.environment("claude-7272")) == ("u", "u"), \
+        "a switch moves the agent's terminal session with it, so the new environment's engine drives it"
 
 
 def test_a_subagent_writes_only_once_the_environment_is_lent_and_is_bound_by_the_same_law(env):
