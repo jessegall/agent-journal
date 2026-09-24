@@ -47,3 +47,25 @@ def test_skills_an_earlier_version_set_aside_come_back_and_a_failure_puts_everyt
     monkeypatch.setattr(slate, "kept", lambda settings: (_ for _ in ()).throw(OSError("disk full")))
     assert set_aside(record, project, "claude").startswith("nothing set aside"), "a failure part way says so instead of crashing the launch"
     assert settings.read_text() == before, "and the hook file is as it was"
+
+
+def test_an_agent_ending_stops_the_journal_only_when_no_other_agent_still_runs():
+    import os
+    from commands.queries import ended
+    from engine import stop
+    from engine.sessions import Sessions
+    from tests.conftest import fresh
+    record = fresh()
+    Sessions(record.root).bind("claude-starting", record.env, pid=os.getpid(), provider="claude")
+    ended({"record": record})
+    assert stop.at(record.root) == 0.0, "an agent still starting, before its terminal socket answers, keeps the journal running"
+    from features.clean_slate.slate import keep_moved, place
+    kept, home = place(record) / "hooks.json", record.root.parent / "hooks.json"
+    kept.parent.mkdir(parents=True, exist_ok=True)
+    kept.write_text("{}")
+    keep_moved(record, [{"to": str(kept), "from": str(home)}])
+    ended({"record": record})
+    assert (kept.exists(), home.exists()) == (True, False), "the user's hooks stay set aside while another clean-slate agent still runs"
+    Sessions(record.root).write("claude-starting", pid=2 ** 22 + 7)
+    ended({"record": record})
+    assert (stop.at(record.root) > 0.0, home.exists()) == (True, True), "the last agent ending stops the journal and puts the hooks back"
