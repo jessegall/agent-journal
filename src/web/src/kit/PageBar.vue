@@ -1,5 +1,18 @@
+<script setup>
+import {onMounted, onUnmounted, ref} from "vue";
+
+const bar = ref(null);
+const watcher = new ResizeObserver(([entry]) => {
+    const parent = entry.target.parentElement;
+    if (parent) parent.style.setProperty("--page-bar-height", `${entry.target.offsetHeight}px`);
+});
+
+onMounted(() => bar.value && watcher.observe(bar.value));
+onUnmounted(() => watcher.disconnect());
+</script>
+
 <template>
-    <div class="page-bar">
+    <div ref="bar" class="page-bar">
         <slot />
     </div>
 </template>
