@@ -322,8 +322,16 @@ export class ApiClient {
         return this.get(this.here(`/agent/${agent}${session ? `/subagent/${session}` : ""}/transcript${query(fields)}`));
     }
 
-    edits(agent, since) {
-        return this.get(this.here(`/agent/${agent}/edits${query({since})}`));
+    edits(agent, since, last) {
+        return this.get(this.here(`/agent/${agent}/edits${query({since, last})}`));
+    }
+
+    olderEdits(agent, before, last) {
+        return this.get(this.here(`/agent/${agent}/edits/older${query({before, last})}`));
+    }
+
+    editedFile(agent, id, side) {
+        return this.get(this.here(`/agent/${agent}/edits/file${query({id, side})}`));
     }
 
     terminal(agent) {

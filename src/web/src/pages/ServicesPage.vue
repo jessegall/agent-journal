@@ -15,7 +15,9 @@ const EVERY = 2000;
 const rows = ref([]);
 const now = useNow();
 
-const running = computed(() => rows.value.filter((r) => RUNNING.includes(r.state)).length);
+const only = computed(() => route.value.q);
+const listed = computed(() => (only.value ? rows.value.filter((r) => r.plugin === only.value) : rows.value));
+const running = computed(() => listed.value.filter((r) => RUNNING.includes(r.state)).length);
 
 const look = usePoll(
     "services",
@@ -30,14 +32,20 @@ const {reading, log, read} = useServiceLog();
 
 <template>
     <section class="services">
-        <p class="count">{{ running }} running of {{ rows.length }}</p>
+        <p class="count">
+            {{ running }} running of {{ listed.length }}
+            <template v-if="only">
+                from {{ only }} ·
+                <a class="count-all" :href="`#/${route.env}/services`">show every plugin's</a>
+            </template>
+        </p>
         <template v-if="error">
             <p class="error">{{ error }}</p>
         </template>
-        <template v-if="!rows.length">
+        <template v-if="!listed.length">
             <p class="none">No plugin on this project declares a service.</p>
         </template>
-        <template v-for="row in rows" :key="row.id">
+        <template v-for="row in listed" :key="row.id">
             <div class="service">
                 <span :class="['dot', row.state]" />
                 <span class="who">
@@ -150,5 +158,13 @@ const {reading, log, read} = useServiceLog();
     flex: none;
     display: flex;
     gap: 6px;
+}
+
+.count-all {
+    color: var(--text-2);
+}
+
+.count-all:hover {
+    color: var(--text);
 }
 </style>

@@ -412,7 +412,7 @@ useOutside(drop, () => (open.value = ""));
     align-items: center;
     gap: 10px;
     height: 34px;
-    padding: 0 16px 0 14px;
+    padding: 0 14px 0 8px;
     font-size: 11.5px;
     color: var(--text-3);
     border-bottom: 1px solid var(--border);
@@ -434,8 +434,6 @@ useOutside(drop, () => (open.value = ""));
     align-items: center;
     gap: 2px;
     margin-left: auto;
-    padding-left: 8px;
-    border-left: 1px solid var(--border);
 }
 
 .agent-facts > * {

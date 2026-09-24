@@ -115,25 +115,25 @@ export const PLAN_STATES = {
 
 const openPlans = (plans) => plans.filter((p) => !p.completed && !p.deleted && p.data.status in PLAN_STATES).sort((a, b) => a.n - b.n);
 
-export function shownPlan(plans) {
+export function leadingPlan(plans) {
     const open = openPlans(plans);
     const first = (...statuses) => open.find((p) => statuses.includes(p.data.status));
     return first("active", "waiting", "done") || first("approved") || first(...PLANNED) || first("parked") || null;
 }
 
 export function cardPlan(plans) {
-    const shown = shownPlan(plans);
-    return shown && !RUNNING.includes(shown.data.status) ? shown : null;
+    const lead = leadingPlan(plans);
+    return lead && !RUNNING.includes(lead.data.status) ? lead : null;
 }
 
 export function barPlan(plans, home) {
-    const shown = shownPlan(plans);
-    return shown && (RUNNING.includes(shown.data.status) || !home) ? shown : null;
+    const lead = leadingPlan(plans);
+    return lead && (RUNNING.includes(lead.data.status) || !home) ? lead : null;
 }
 
 export function otherPlans(plans) {
-    const shown = shownPlan(plans);
-    return openPlans(plans).filter((p) => p !== shown);
+    const lead = leadingPlan(plans);
+    return openPlans(plans).filter((p) => p !== lead);
 }
 
 export function othersLine(others) {

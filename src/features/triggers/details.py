@@ -20,7 +20,8 @@ class TriggersDetails(FeatureDetails):
         does is one of {', '.join(DOES)}. A message reaches the chat as if the user wrote it, a
         nudge and an instruction are said to you alone, and a deny refuses the tool call
         with the trigger's text as the reason. In your own chat text a deny cannot unsay the words, so it is
-        marked and you are told.
+        marked and you are told. A start does nothing of its own: it starts the sequences whose starts_on
+        names it (trigger:<n>), which is how a sequence starts on words or a command.
     """
 
     behaviours = [

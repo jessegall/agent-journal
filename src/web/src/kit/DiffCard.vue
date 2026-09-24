@@ -1,5 +1,6 @@
 <script setup>
 import {computed, onMounted, onUnmounted, ref} from "vue";
+import Icon from "./Icon.vue";
 
 const props = defineProps({
     path: {type: String, required: true},
@@ -10,10 +11,16 @@ const props = defineProps({
     rows: {type: Array, required: true},
     flush: Boolean,
     half: Boolean,
+    folded: Boolean,
+    editsOnly: Boolean,
+    hideRemovals: Boolean,
+    capped: Boolean,
+    whole: {type: Object, default: null},
     entering: Boolean,
     fresh: {type: String, default: ""},
 });
 
+const emit = defineEmits(["fold", "whole"]);
 const BADGES = {new: "new file", deleted: "deleted"};
 const SIGNS = {add: "+", del: "−"};
 
@@ -22,6 +29,15 @@ const dir = computed(() => props.path.slice(0, cut.value));
 const name = computed(() => props.path.slice(cut.value));
 const gone = computed(() => props.kind === "deleted");
 const badge = computed(() => BADGES[props.kind]);
+
+const changed = computed(() => new Set(props.rows.filter((row) => row.kind === "add").map((row) => row.line)));
+const drawn = computed(() => {
+    if (props.whole && props.whole.text !== undefined)
+        return props.whole.text.split("\n").map((text, i) => ({kind: changed.value.has(i + 1) ? "add" : "ctx", line: i + 1, text}));
+    return props.rows.filter(
+        (row) => !(props.editsOnly && ["ctx", "fold"].includes(row.kind)) && !(props.hideRemovals && row.kind === "del")
+    );
+});
 
 const numberOf = (row) => (row.line === null || row.kind === "del" ? "" : row.line);
 const textOf = (row) => (row.kind === "fold" ? (row.hidden ? `⋯ ${row.hidden} lines` : "⋯") : row.text);
@@ -45,8 +61,8 @@ onUnmounted(() => sized && sized.disconnect());
 </script>
 
 <template>
-    <section :class="['diff-card', {half, gone, entering, flush}]">
-        <header class="diff-card-head">
+    <section :class="['diff-card', {half, gone, entering, flush, folded, capped}]">
+        <header class="diff-card-head" :title="gone ? null : folded ? 'Show the changes' : 'Fold this card'" @click="!gone && emit('fold')">
             <span class="diff-card-path" :title="path">
                 <span class="diff-card-dir">{{ dir }}</span>
                 <span class="diff-card-name">{{ name }}</span>
@@ -57,12 +73,25 @@ onUnmounted(() => sized && sized.disconnect());
             <span :class="['diff-card-count', 'add', {zero: !added}]">+{{ added }}</span>
             <span :class="['diff-card-count', 'del', {zero: !removed}]">−{{ removed }}</span>
             <span class="diff-card-ago">{{ ago }}</span>
+            <template v-if="!gone">
+                <button
+                    type="button"
+                    :class="['diff-card-whole', {on: whole}]"
+                    :title="whole ? 'Show only the changes' : 'Show the whole file'"
+                    @click.stop="emit('whole')"
+                >
+                    <Icon name="file" :size="12" />
+                </button>
+            </template>
         </header>
-        <template v-if="!gone">
+        <template v-if="whole && whole.error">
+            <p class="diff-card-note">{{ whole.error }}</p>
+        </template>
+        <template v-if="!gone && !folded">
             <div ref="grow" class="diff-card-grow">
                 <div ref="body" class="diff-card-diff">
                     <div class="diff-card-rows">
-                        <template v-for="(row, i) in rows" :key="i">
+                        <template v-for="(row, i) in drawn" :key="i">
                             <div :class="['diff-row', row.kind, {fresh: fresh && row.edit === fresh}]">
                                 <span class="diff-row-num">{{ numberOf(row) }}</span>
                                 <span class="diff-row-sign">{{ SIGNS[row.kind] }}</span>
@@ -189,6 +218,41 @@ onUnmounted(() => sized && sized.disconnect());
     transition: height 0.4s var(--ease);
 }
 
+.diff-card.capped .diff-card-diff {
+    max-height: 360px;
+    overflow-y: auto;
+}
+
+.diff-card-whole {
+    display: grid;
+    place-items: center;
+    width: 22px;
+    height: 20px;
+    margin-left: 2px;
+    border: 0;
+    border-radius: 5px;
+    background: none;
+    color: var(--text-4);
+    cursor: pointer;
+}
+
+.diff-card-whole:hover,
+.diff-card-whole.on {
+    background: var(--hover);
+    color: var(--text);
+}
+
+.diff-card-note {
+    margin: 0;
+    padding: 8px 12px;
+    color: var(--text-3);
+    font-size: 12px;
+}
+
+.diff-card:not(.gone) .diff-card-head {
+    cursor: pointer;
+}
+
 .diff-card-diff {
     overflow-x: auto;
     padding: 4px 0;
@@ -204,10 +268,10 @@ onUnmounted(() => sized && sized.disconnect());
 .diff-row {
     display: grid;
     grid-template-columns: 40px 16px auto;
-    height: 19px;
+    height: var(--diff-line, 19px);
     font-family: var(--mono);
-    font-size: 11.5px;
-    line-height: 19px;
+    font-size: var(--diff-size, 11.5px);
+    line-height: var(--diff-line, 19px);
 }
 
 .diff-row-num {

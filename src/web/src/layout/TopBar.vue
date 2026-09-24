@@ -9,6 +9,7 @@ import {meta, store, types} from "../state/store.js";
 import {useOutside} from "../composables/outside.js";
 import {activityShown, toggleActivity} from "../actions/panels.js";
 import {narrow} from "../platform/view.js";
+import {project, tint} from "../identity.js";
 import {pageTitle as title} from "../composables/pageTitle.js";
 
 const waiting = computed(() => types.value.filter((t) => t.needs_attention).flatMap((t) => unreadByUser(t.name)).length);
@@ -29,6 +30,11 @@ const full = computed(() => route.value.page === "kanban");
             <template v-if="full">
                 <a class="icon-btn back" :href="`#/${route.env}`" title="Back to Home"><Icon name="back" /></a>
             </template>
+            <a class="crumb-link crumb-project" :href="`#/${route.env}/hub`" title="The journals running on this machine">
+                <span class="crumb-tint" :style="{background: tint}" />
+                {{ project }}
+            </a>
+            <span class="sep">/</span>
             <a class="crumb-link" :href="`#/${route.env}`">{{ route.env }}</a>
             <span class="sep">/</span>
             <b>{{ title }}</b>
@@ -100,6 +106,19 @@ const full = computed(() => route.value.page === "kanban");
 .crumb-link {
     color: var(--text-2);
 }
+.crumb-project {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.crumb-tint {
+    flex: none;
+    width: 8px;
+    height: 8px;
+    border-radius: 2px;
+}
+
 .crumb-link:hover {
     color: var(--text);
 }

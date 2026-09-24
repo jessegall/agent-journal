@@ -10,6 +10,7 @@ KEPT = 200
 MOST_LINES = 60
 MOST_CHARS = 4000
 CHANGED_FOLDER = re.compile(r"^cd\s+\S+\s*&&\s*")
+JOURNAL_FOLDER = re.compile(r"(^|[\s'\"=/])\.journal(/|\s|$)")
 
 
 def capped(text: str) -> str:
@@ -19,12 +20,13 @@ def capped(text: str) -> str:
     return f"{kept}\n… {hidden} more lines" if hidden > 0 else kept
 
 
-def journal_call(line: CommandRan) -> bool:
-    return line.tool == SHELL and bool(JOURNAL_CALL.match(CHANGED_FOLDER.sub("", line.command.strip())))
+def journals_own(line: CommandRan) -> bool:
+    command = line.command.strip()
+    return line.tool == SHELL and bool(JOURNAL_CALL.match(CHANGED_FOLDER.sub("", command)) or JOURNAL_FOLDER.search(command))
 
 
 def kept(record, session: str, line: CommandRan) -> None:
-    if journal_call(line):
+    if journals_own(line):
         return
     with record.state(LOG, session).changing() as held:
         held["lines"] = [*held.get("lines", []), {**asdict(line), "output": capped(line.output.strip())}][-KEPT:]

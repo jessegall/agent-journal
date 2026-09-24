@@ -4,6 +4,7 @@ import {route} from "../route.js";
 import {usePoll} from "../poll.js";
 
 const EVERY = 2000;
+const PAGE = 25;
 const SMALL_ROWS = 6;
 const SMALL_CHARS = 44;
 
@@ -22,6 +23,7 @@ function merged(card, edit) {
         added: card.added + edit.added,
         removed: card.removed + edit.removed,
         at: edit.at,
+        latest: edit.id,
     };
 }
 
@@ -33,7 +35,7 @@ function land(cards, edit) {
         const card = merged(last, edit);
         return [...before, waiting && !small(card) ? {...card, half: false, alone: false} : card];
     }
-    const card = {...edit, rows: tagged(edit)};
+    const card = {...edit, rows: tagged(edit), latest: edit.id};
     const fits = small(card);
     const kept = last ? [waiting ? {...last, half: fits, alone: false} : last] : [];
     return [...before, ...kept, {...card, half: fits, alone: fits && !waiting}];
@@ -43,16 +45,21 @@ export function useFileFeed(agent, follow) {
     const cards = ref([]);
     const ready = ref(false);
     const latest = ref("");
+    const older = ref(false);
+    const loading = ref(false);
     let cursor = 0;
+    let oldest = null;
 
     usePoll(
         `edits:${route.value.env}:${agent}`,
-        () => api.edits(agent, cursor),
+        () => api.edits(agent, cursor, ready.value ? undefined : PAGE),
         EVERY,
         (got) => {
             cursor = got.cursor;
             const live = ready.value;
             ready.value = true;
+            if (!live) older.value = !!got.older;
+            if (oldest === null && got.edits.length) oldest = got.edits[0].at;
             if (!got.edits.length) return;
             cards.value = got.edits.reduce(land, cards.value);
             latest.value = live ? got.edits[got.edits.length - 1].id : "";
@@ -60,5 +67,20 @@ export function useFileFeed(agent, follow) {
         }
     );
 
-    return {cards, ready, latest};
+    async function loadOlder() {
+        if (loading.value || !older.value || oldest === null) return false;
+        loading.value = true;
+        try {
+            const got = await api.olderEdits(agent, oldest, PAGE);
+            older.value = !!got.older;
+            if (!got.edits.length) return false;
+            oldest = got.edits[0].at;
+            cards.value = [...got.edits.reduce(land, []), ...cards.value];
+            return true;
+        } finally {
+            loading.value = false;
+        }
+    }
+
+    return {cards, ready, latest, older, loading, loadOlder};
 }

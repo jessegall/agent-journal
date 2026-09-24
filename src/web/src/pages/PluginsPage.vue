@@ -15,6 +15,7 @@ import {rows} from "../sync/rows.js";
 import {usePoll} from "../poll.js";
 import {sendMessage} from "../chat/outbox.js";
 import PluginGuide from "./PluginGuide.vue";
+import {stateWord} from "../domain/services.js";
 
 usePoll(...polled.pages);
 
@@ -353,11 +354,13 @@ async function askAgent() {
                     <template v-if="servicesOf(p).length">
                         <div class="services">
                             <template v-for="s in servicesOf(p)" :key="s.id">
-                                <span :class="['service', s.state]" :title="s.why || s.state">
+                                <span :class="['service', s.state]" :title="s.why || stateWord(s)">
                                     <span class="dot" />
                                     {{ s.service }}
+                                    <small class="service-state">{{ stateWord(s) }}</small>
                                 </span>
                             </template>
+                            <a class="link" :href="`#/${route.env}/services?q=${encodeURIComponent(p.name)}`">Services</a>
                         </div>
                     </template>
                     <template v-if="pagesOf(p).length">
@@ -712,5 +715,11 @@ h2 {
 .none {
     margin: 0;
     color: var(--text-3);
+}
+
+.service-state {
+    margin-left: 4px;
+    color: var(--text-4);
+    font-size: 11px;
 }
 </style>

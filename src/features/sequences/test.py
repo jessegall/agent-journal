@@ -48,3 +48,20 @@ def test_a_sequence_hands_its_steps_one_at_a_time_and_starts_on_its_moment():
     collection = CONTROLLERS["collection"](record, actor=USER).create("Keep")
     assert refused(lambda: CONTROLLERS["collection"](record, actor=USER).add(collection.n, [f"sequence:{filing['n']}"])) == \
         f"sequence:{filing['n']} ships with the journal and cannot be put in a collection", "nor collected"
+
+
+def test_a_sequence_starts_when_its_trigger_fires_and_an_unknown_start_is_refused():
+    from engine.hooks import handle
+    from providers import PROVIDERS
+    features.load()
+    record = fresh()
+    report(record, "working", "PreToolUse")
+    trigger = CONTROLLERS["trigger"](record, actor=USER).create("Deploys", words="deploy", words_in="commands", does="start")
+    sequences = CONTROLLERS["sequence"](record, actor=USER)
+    deploying = sequences.create("After a deploy", brief="check it")
+    sequences.section(deploying.n, "Check the site", "open it")
+    assert "is no moment" in refused(lambda: sequences.set(deploying.n, "starts_on", "trigger.fired")), "an unknown start is refused in words"
+    sequences.set(deploying.n, "starts_on", trigger.ref)
+    call = {"session_id": "claude-1", "tool_name": "Bash", "tool_input": {"command": "make deploy"}, "hook_event_name": "PreToolUse"}
+    handle(PROVIDERS["claude"](), record.root, record.env, call)
+    assert f"sequence {deploying.n}, After a deploy, step 1 of 1 - Check the site" in nudges(record), "the trigger's words start the sequence"

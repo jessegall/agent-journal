@@ -4,12 +4,12 @@ from typing import ClassVar
 from engine.events import AgentMessageSent, ResourceEvent
 from features.parts import AgentContext, Context, Handler, ToolInterceptor
 from features.recital import COMMANDS, mentioned, searched
-from features.triggers.resource import DENY, INSTRUCT, MESSAGE, NUDGE
+from features.triggers.resource import DENY, FIRED, INSTRUCT, MESSAGE, NUDGE, START
 from resources.base import SYSTEM, USER
 
 WATCHING = "watching"
 CHAT_DENIED = "caught a denied word in the agent's message"
-DONE = {MESSAGE: "sent a message", NUDGE: "nudged the agent", INSTRUCT: "instructed the agent", DENY: "denied the call"}
+DONE = {MESSAGE: "sent a message", NUDGE: "nudged the agent", INSTRUCT: "instructed the agent", DENY: "denied the call", START: "started its sequence"}
 
 
 def firing(context, text_of) -> list:
@@ -24,6 +24,7 @@ def fire(context, agent, row, done: str = "") -> None:
         context.journal.acting(USER).messages.create(row.title, brief=row.brief or row.text)
     elif row.does in (NUDGE, INSTRUCT):
         context.feature.journal.whisper(context.record, agent, row.does, title=row.title, text=row.text or row.brief)
+    context.record.emit("trigger", row.n, FIRED, SYSTEM)
 
 
 class WatchWhatTheAgentDoes(ToolInterceptor):

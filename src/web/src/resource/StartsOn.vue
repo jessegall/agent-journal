@@ -8,22 +8,33 @@ import {meta, types} from "../state/store.js";
 const props = defineProps({resource: Object});
 const BY_HAND = "";
 const MOMENTS = {created: "is created", completed: "is finished"};
+const TRIGGERED = /^trigger:(\d+)$/;
 const changing = ref(false);
+const triggers = ref([]);
 
 const moment = computed(() => props.resource.data.starts_on || BY_HAND);
-const chosenType = computed(() => moment.value.split(".")[0]);
+const fired = computed(() => TRIGGERED.exec(moment.value));
+const chosenType = computed(() => (fired.value ? "" : moment.value.split(".")[0]));
 const chosenAction = computed(() => moment.value.split(".")[1] || "created");
-const sentence = computed(() =>
-    moment.value === BY_HAND
-        ? "Runs only when you or the agent start it."
-        : `Starts by itself when a ${(meta(chosenType.value).title || chosenType.value).toLowerCase()} ${MOMENTS[chosenAction.value]}.`
-);
+const sentence = computed(() => {
+    if (moment.value === BY_HAND) return "Runs only when you or the agent start it.";
+    if (fired.value) return `Starts by itself when trigger ${fired.value[1]} fires.`;
+    return `Starts by itself when a ${(meta(chosenType.value).title || chosenType.value).toLowerCase()} ${MOMENTS[chosenAction.value]}.`;
+});
 const kinds = computed(() => [
     {value: BY_HAND, label: "Nothing, only by hand", current: moment.value === BY_HAND},
     ...types.value
-        .filter((t) => (t.in_sidebar || t.needs_attention) && t.name !== "sequence")
+        .filter((t) => (t.in_sidebar || t.needs_attention) && !["sequence", "trigger"].includes(t.name))
         .map((t) => ({value: t.name, label: t.title, current: chosenType.value === t.name})),
 ]);
+const firing = computed(() =>
+    triggers.value.map((t) => ({value: `trigger:${t.n}`, label: `${t.title} (trigger ${t.n})`, current: moment.value === `trigger:${t.n}`}))
+);
+
+async function change() {
+    changing.value = !changing.value;
+    if (changing.value) triggers.value = (await api.all("trigger")).filter((t) => !t.completed && !t.deleted);
+}
 const actions = computed(() => Object.entries(MOMENTS).map(([value, label]) => ({value, label, current: chosenAction.value === value})));
 
 function save(value) {
@@ -37,13 +48,17 @@ function save(value) {
         <div class="starts-line">
             <span>{{ sentence }}</span>
             <template v-if="!resource.data.system">
-                <Btn small @click="changing = !changing">{{ changing ? "Done" : "Change" }}</Btn>
+                <Btn small @click="change">{{ changing ? "Done" : "Change" }}</Btn>
             </template>
         </div>
         <template v-if="changing">
             <span class="starts-label">What starts it</span>
             <ChoiceList :choices="kinds" @pick="(type) => save(type === BY_HAND ? BY_HAND : `${type}.${chosenAction}`)" />
-            <template v-if="moment !== BY_HAND">
+            <template v-if="firing.length">
+                <span class="starts-label">Or when a trigger fires</span>
+                <ChoiceList :choices="firing" @pick="save" />
+            </template>
+            <template v-if="moment !== BY_HAND && !fired">
                 <span class="starts-label">When that kind of row</span>
                 <ChoiceList :choices="actions" @pick="(action) => save(`${chosenType}.${action}`)" />
             </template>
