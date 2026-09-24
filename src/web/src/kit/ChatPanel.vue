@@ -159,6 +159,9 @@ const focusEntered = (el) => el === input.value && focusInput();
     border: 1px solid var(--border);
     border-radius: 10px;
     background: var(--side);
+    transition:
+        background 0.5s ease,
+        border-color 0.5s ease;
 }
 
 .compose:focus-within {
@@ -287,12 +290,6 @@ const focusEntered = (el) => el === input.value && focusInput();
 
 .input-step-leave-to {
     opacity: 0;
-}
-
-.compose {
-    transition:
-        background 0.5s ease,
-        border-color 0.5s ease;
 }
 
 .compose .left,
