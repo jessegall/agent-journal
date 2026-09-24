@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.122.0 — New work drafts tickets from a short conversation, and worktrees and tabs keep their environments apart
+
+New work on a board asks what you want in a few turns, drafts one ticket per piece that ships on its own, shows each proposed wait on its card with a way to drop it, and adds only what you keep; Cancel stops the drafting and deletes the drafts you did not add. A second agent started in a worktree another agent works gets an environment of its own, and one browser tab works an environment at a time. The Hub shows permission prompts, waiting and parked work and when the last work finished; long agent turns read as a card; the floating chat carries its pins button. A reload loads a long transcript from its saved parse instead of parsing it again, the agent row keeps only recent background commands, and plugin chat rules are kept between requests, so the dashboard stays well inside its budget. A linked plugin's changed manifest is read again within a minute, and a plugin setting can sit under the switch that turns its group on. Nothing to do.
+
 ## 2.121.3 — The terminal view runs agent commands as they are
 
 A line sent from the terminal view that starts with / is a command for the agent, such as /effort high, and is typed as it is; only other lines are run as shell commands with the provider's ! mark. Codex takes / commands from the terminal view too. Nothing to do.
