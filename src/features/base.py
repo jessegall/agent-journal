@@ -3,7 +3,7 @@ from abc import ABC
 from functools import cached_property
 from typing import ClassVar
 
-from controllers.types import Agents, Features
+from controllers.types import Agents, Environments, Features
 from features import trigger
 from features.trigger import NEVER, Trigger
 from engine.hooks import gate_file
@@ -71,6 +71,18 @@ def rebooted(event=None, record=None) -> None:
         SWITCHES.clear()
     else:
         booted(record)
+
+
+ENVIRONMENT_NAMES: dict[str, tuple] = {}
+
+
+def environments_changed(event=None, record=None) -> None:
+    if record is None:
+        return rebooted(event, record)
+    names = tuple(sorted(row["title"] for row in Environments(record, actor=SYSTEM).summaries() if not row["deleted"] and not row["completed"]))
+    if ENVIRONMENT_NAMES.get(str(record.root)) != names:
+        ENVIRONMENT_NAMES[str(record.root)] = names
+        rebooted(event, record)
 
 
 def generation() -> int:
