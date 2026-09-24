@@ -128,7 +128,7 @@ onUnmounted(save);
 .options:has(.pressed) .option:not(.pressed) {
     opacity: 0;
     pointer-events: none;
-    transition: opacity 0.5s ease;
+    transition: opacity var(--fade);
 }
 
 .option.pressed {

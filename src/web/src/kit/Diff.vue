@@ -25,7 +25,9 @@ const opens = (path) => `#/${route.value.env}/file?q=${encodeURIComponent(path)}
 </script>
 
 <template>
-    <pre class="diff"><template v-for="(l, i) in lines" :key="i"><template v-if="l.path"><a :class="['line', l.kind]" :href="opens(l.path)" :title="`Open ${l.path}`">{{ l.line }}
+    <pre
+        class="diff"
+    ><template v-for="(l, i) in lines" :key="i"><template v-if="l.path"><a :class="['line', l.kind]" :href="opens(l.path)" :title="`Open ${l.path}`">{{ l.line }}
 </a></template><template v-else><span :class="['line', l.kind]">{{ l.line }}
 </span></template></template></pre>
 </template>

@@ -5,9 +5,7 @@ import Btn from "../kit/Btn.vue";
 import ChatLine from "../kit/ChatLine.vue";
 import ChatPanel from "../kit/ChatPanel.vue";
 import FocusStage from "../kit/FocusStage.vue";
-import {sendMessage} from "../chat/outbox.js";
 import {quoted} from "../format/quote.js";
-import {route} from "../route.js";
 import {store, word} from "../state/store.js";
 import {rows} from "../sync/rows.js";
 import Suggestion from "./Suggestion.vue";
@@ -16,7 +14,6 @@ import DraftDetail from "./DraftDetail.vue";
 
 const props = defineProps({open: Boolean, board: Object, stage: {type: String, default: ""}, starts: Boolean});
 const emit = defineEmits(["close", "added"]);
-const now = () => Date.now() / 1000;
 const words = ref("");
 const lines = ref([]);
 const sent = ref([]);
@@ -35,6 +32,9 @@ const resumed = ref(false);
 const grown = ref(false);
 let growTimer = 0;
 let resetTimer = 0;
+let inFlight = null;
+let sessions = 0;
+const PENDING = Infinity;
 let typedAnswer = false;
 const START_OVER = "Start over";
 const shownDraft = ref(null);
@@ -158,7 +158,11 @@ const pickMissing = () => (picked.value = [...new Set([...picked.value, ...missi
 const cardRect = (n) => document.querySelector(`.pick[data-ticket="${n}"]`)?.getBoundingClientRect();
 const toggle = (n) => (picked.value = picked.value.includes(n) ? picked.value.filter((p) => p !== n) : [...picked.value, n]);
 const drop = (tickets) => Promise.all(tickets.map((t) => api.act("ticket", t.n, "delete", {why: "not picked in New work"})));
-const say = (mine, text) => (lines.value = [...lines.value, {id: `${now()}-${lines.value.length}`, mine, text, typed: !mine, at: now()}]);
+const say = (mine, text) =>
+    (lines.value = [
+        ...lines.value,
+        {id: `line-${lines.value.length}`, mine, text, typed: !mine, at: (conversation.value.at(-1)?.at || 0) + 0.001},
+    ]);
 
 function onKey(e) {
     if (!props.open || shownDraft.value) return;
@@ -205,35 +209,39 @@ watch(
 async function send(text) {
     say(true, text);
     clearInterval(exampleTimer);
-    since.value = since.value || now() - 5;
-    lastSent.value = now() - 1;
+    lastSent.value = PENDING;
     if (asking.value) {
         typedAnswer = true;
-        return api.act("question", asking.value.n, word("question", "complete"), {how: text});
+        const done = await api.act("question", asking.value.n, word("question", "complete"), {how: text});
+        lastSent.value = done.completed;
+        return;
     }
     lastAsked.value = text;
     await ask(text);
 }
 
+function filed(text, id) {
+    if (drafts.value.length) return api.reviseWork(props.board.n, text, id);
+    if (sent.value.length) return api.followUpWork(props.board.n, text, id);
+    since.value = PENDING;
+    return api.requestWork(props.board.n, text, id);
+}
+
 async function ask(text) {
-    if (drafts.value.length) {
-        const id = crypto.randomUUID();
-        sent.value = [...sent.value, id];
-        return api.reviseWork(props.board.n, text, id);
-    }
-    if (sent.value.length) {
-        const message = await sendMessage(route.value.env, {brief: text, about: props.board.ref, newWork: true});
-        sent.value = [...sent.value, message.id];
-        return;
-    }
     const id = crypto.randomUUID();
-    sent.value = [id];
-    await api.requestWork(props.board.n, text, id);
+    const session = sessions;
+    inFlight = filed(text, id);
+    sent.value = [...sent.value, id];
+    const made = await inFlight;
+    inFlight = null;
+    if (session !== sessions) return;
+    if (since.value === PENDING) since.value = made.created;
+    lastSent.value = made.created;
 }
 
 function askAgain() {
     stalled.value = false;
-    lastSent.value = now() - 1;
+    lastSent.value = PENDING;
     ask(lastAsked.value);
 }
 
@@ -262,7 +270,7 @@ async function add() {
 
 function finish() {
     emit("close");
-    api.cancelWork(props.board.n);
+    Promise.resolve(inFlight).finally(() => api.cancelWork(props.board.n));
     resetTimer = setTimeout(() => ((resetTimer = 0), startAnew()), FADED);
 }
 
@@ -274,7 +282,7 @@ watch(asking, (current, before) => {
     if (!before || current || startedOver.value) return;
     if (!typedAnswer) say(true, "");
     typedAnswer = false;
-    lastSent.value = now() - 1;
+    lastSent.value = boardQuestions.value.find((q) => q.n === before.n)?.completed || lastSent.value;
 });
 
 watch(choosing, (final) => final && (words.value = ""));
@@ -289,12 +297,13 @@ watch(startedOver, async (q) => {
 
 function resume(drafting) {
     resumed.value = true;
-    since.value = drafting.since - 5;
+    since.value = drafting.since;
     sent.value = [drafting.idempotency];
-    lastSent.value = drafting.since;
+    lastSent.value = Math.max(drafting.since, ...store.board.questions.map((q) => q.completed || 0));
 }
 
 function startAnew() {
+    sessions += 1;
     clearTimeout(growTimer);
     typedAnswer = false;
     resumed.value = false;
@@ -423,10 +432,10 @@ function startAnew() {
     width: min(680px, calc(100% - 32px));
     height: min(400px, 52vh);
     transition:
-        top 0.45s var(--ease),
-        left 0.45s var(--ease),
-        width 0.45s var(--ease),
-        height 0.45s var(--ease);
+        top var(--move),
+        left var(--move),
+        width var(--move),
+        height var(--move);
 }
 
 .dock.short:not(.docked) {
@@ -451,7 +460,7 @@ function startAnew() {
     border-bottom: 1px solid transparent;
     opacity: 0;
     transition:
-        height 0.45s var(--ease),
+        height var(--move),
         opacity 0.2s,
         border-color 0.2s;
 }
@@ -461,9 +470,9 @@ function startAnew() {
     border-bottom-color: var(--border);
     opacity: 1;
     transition:
-        height 0.45s var(--ease),
-        opacity 0.3s 0.2s,
-        border-color 0.3s 0.2s;
+        height var(--move),
+        opacity var(--fade) 0.2s,
+        border-color var(--fade) 0.2s;
 }
 
 .head-title {
@@ -494,8 +503,8 @@ function startAnew() {
     pointer-events: none;
     transform: translateX(16px);
     transition:
-        opacity 0.3s var(--ease),
-        transform 0.45s var(--ease);
+        opacity var(--fade),
+        transform var(--move);
 }
 
 .work.on {
@@ -503,8 +512,8 @@ function startAnew() {
     pointer-events: auto;
     transform: none;
     transition:
-        opacity 0.45s var(--ease) 0.08s,
-        transform 0.45s var(--ease) 0.08s;
+        opacity var(--fade) 0.08s,
+        transform var(--move) 0.08s;
 }
 
 .bar {
@@ -528,8 +537,8 @@ function startAnew() {
     pointer-events: none;
     transform: translateY(3px);
     transition:
-        opacity 0.25s,
-        transform 0.25s var(--ease);
+        opacity var(--fade),
+        transform var(--move);
 }
 
 .bar-actions.on {
@@ -552,7 +561,7 @@ function startAnew() {
 }
 
 .pick-move {
-    transition: transform 0.35s var(--ease);
+    transition: transform var(--move);
 }
 
 .pick-leave-active {
@@ -568,7 +577,7 @@ function startAnew() {
 
 .context {
     margin: 0;
-    animation: stage-in 0.5s 0.55s ease both;
+    animation: stage-in var(--fade) 0.55s both;
     color: var(--text-3);
     font-size: 13px;
     line-height: 20px;
@@ -582,11 +591,11 @@ function startAnew() {
 }
 
 .asked-leave-active {
-    transition: opacity 0.6s ease 0.5s;
+    transition: opacity var(--fade) 0.5s;
 }
 
 .asked-enter-active {
-    transition: opacity 0.6s ease;
+    transition: opacity var(--fade);
 }
 
 .asked-enter-from {
@@ -599,7 +608,7 @@ function startAnew() {
 
 .prompt {
     margin: 0;
-    animation: stage-in 0.5s 0.2s ease both;
+    animation: stage-in var(--fade) 0.2s both;
     color: var(--text);
     font-size: 17px;
     font-weight: 500;
@@ -610,13 +619,7 @@ function startAnew() {
     align-self: flex-start;
     color: var(--text-3);
     font-size: 12px;
-    animation: record-in 0.18s both;
-}
-
-@keyframes record-in {
-    from {
-        opacity: 0;
-    }
+    animation: fade-in var(--fade) both;
 }
 
 .note {

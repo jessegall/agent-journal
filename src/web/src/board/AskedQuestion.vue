@@ -22,7 +22,7 @@ defineProps({question: {type: Object, required: true}, chat: Boolean});
     display: flex;
     flex-direction: column;
     gap: 2px;
-    animation: asked-in 0.25s both;
+    animation: fade-in var(--fade) both;
 }
 
 .tag {
@@ -49,11 +49,5 @@ defineProps({question: {type: Object, required: true}, chat: Boolean});
     color: var(--text-2);
     font-size: 13px;
     line-height: 1.5;
-}
-
-@keyframes asked-in {
-    from {
-        opacity: 0;
-    }
 }
 </style>

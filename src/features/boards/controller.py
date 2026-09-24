@@ -88,10 +88,15 @@ class Boards(Controller):
 
     def revise(self, n: int, text: str, idempotency: str = ""):
         board = self.load(int(n))
-        made = self._filed(board, text, idempotency)
-        if board.drafting:
-            self.update(board.n, drafting={**board.drafting, "asked": [*(board.drafting.get("asked") or []), made.ref]})
+        made = self.follow_up(board.n, text, idempotency)
         self.record.emit("message", made.n, REVISED, self.actor)
+        return made
+
+    def follow_up(self, n: int, text: str, idempotency: str = ""):
+        board = self.load(int(n))
+        made = self._filed(board, text, idempotency)
+        if board.drafting.get("since"):
+            self.update(board.n, drafting={**board.drafting, "asked": [*(board.drafting.get("asked") or []), made.ref]})
         return made
 
     def _filed(self, board, text: str, idempotency: str):
