@@ -56,7 +56,7 @@ class Record:
         self.env = env
         self.home = self.root / "environments" / env
         self.home.mkdir(parents=True, exist_ok=True)
-        self._held = 0
+        self._held: dict[Path, int] = {}
         self._threads = threading.RLock()
         self.memo = {} if memo else None
         self._made: set[Path] = set()
@@ -69,22 +69,24 @@ class Record:
         return f
 
     @contextmanager
-    def locked(self):
+    def locked(self, scope: str = ""):
+        path = (self.root / RESOURCES if scope == PROJECT else self.home) / ".lock"
         with self._threads:
-            if self._held:
-                self._held += 1
+            if self._held.get(path):
+                self._held[path] += 1
                 try:
                     yield
                 finally:
-                    self._held -= 1
+                    self._held[path] -= 1
                 return
-            with (self.home / ".lock").open("a+") as fh:
+            path.parent.mkdir(parents=True, exist_ok=True)
+            with path.open("a+") as fh:
                 fcntl.flock(fh, fcntl.LOCK_EX)
-                self._held = 1
+                self._held[path] = 1
                 try:
                     yield
                 finally:
-                    self._held = 0
+                    self._held[path] = 0
                     fcntl.flock(fh, fcntl.LOCK_UN)
 
     def emit(self, type: str, n: int, action: str, actor: str, quiet: bool = False, **data) -> Event:

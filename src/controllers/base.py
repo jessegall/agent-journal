@@ -135,7 +135,7 @@ class Controller(Stored, Files, Links):
         for name in self.resource.required:
             if not data.get(name):
                 self._refuse(f"a {self.type} needs {name}: --set {name}=\"<word>,<word>\"")
-        with self.record.locked():
+        with self.record.locked(self.resource.scope):
             n = (self.numbers() or [0])[-1] + 1
             about, supersedes = data.pop("about", None), data.pop("supersedes", 0)
             fields = self._shaped(data)
@@ -155,18 +155,19 @@ class Controller(Stored, Files, Links):
         taken = self._handled("update", n=n, title=title, abstract=abstract, brief=brief, outcome=outcome, **data)
         if taken is not None:
             return taken
-        r = self.load(n)
-        if title is not None:
-            r.title = check_title(title)
-        if abstract is not None:
-            r.abstract = check_abstract(abstract)
-        if brief is not None:
-            r.brief = brief
-        if outcome is not None:
-            r.outcome = outcome
-        r.data.update(self._shaped(data))
-        given = {"title": title, "abstract": abstract, "brief": brief, "outcome": outcome}
-        return self.save(r, "updated", fields=[*(k for k, v in given.items() if v is not None), *data])
+        with self.record.locked(self.resource.scope):
+            r = self.load(n)
+            if title is not None:
+                r.title = check_title(title)
+            if abstract is not None:
+                r.abstract = check_abstract(abstract)
+            if brief is not None:
+                r.brief = brief
+            if outcome is not None:
+                r.outcome = outcome
+            r.data.update(self._shaped(data))
+            given = {"title": title, "abstract": abstract, "brief": brief, "outcome": outcome}
+            return self.save(r, "updated", fields=[*(k for k, v in given.items() if v is not None), *data])
 
     def stamp(self, n: int, **data) -> Resource:
         r = self.load(n)
@@ -280,7 +281,7 @@ class Controller(Stored, Files, Links):
         rows = []
         changed = []
         wanted = list(dict.fromkeys(int(n) for n in numbers))
-        with self.record.locked():
+        with self.record.locked(self.resource.scope):
             for n in wanted:
                 r = self.load(n)
                 rows.append(r)
