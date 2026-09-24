@@ -24,8 +24,8 @@ class PanelRepliesStayShort(ActionInterceptor):
         message = context.journal.messages.load(int(about.split(":")[1]))
         if not any(ref.startswith("board:") for ref in message.refs):
             return None
-        said = "\n".join(line for line in (args.get("brief") or "").split("\n") if not line.startswith(">")).strip()
-        if len(said) > PANEL_REPLY:
-            raise Refused(f"your reply to the board is {len(said)} characters, and the New work panel shows one short line of at most "
+        text = "\n".join(line for line in (args.get("brief") or "").split("\n") if not line.startswith(">")).strip()
+        if len(text) > PANEL_REPLY:
+            raise Refused(f"your reply to the board is {len(text)} characters, and the New work panel shows one short line of at most "
                           f"{PANEL_REPLY}: say it again, shorter, about the tickets only")
         return None
