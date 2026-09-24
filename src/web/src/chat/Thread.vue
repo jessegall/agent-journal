@@ -368,7 +368,7 @@ watch(
                     <button
                         v-if="away"
                         type="button"
-                        class="thread-down"
+                        :class="['thread-down', {'over-plan': planCard}]"
                         :title="missed ? `${missed} arrived while you were reading` : 'Back to the newest'"
                         @click="toBottom"
                     >
@@ -427,7 +427,7 @@ watch(
                             />
                         </TransitionGroup>
                         <Transition name="plancard">
-                            <PlanCard v-if="planCard" :key="planCard.n" :plan="planCard" />
+                            <PlanCard v-if="planCard" :key="planCard.n" :plan="planCard" :folded="away" />
                         </Transition>
                         <Transition name="status">
                             <div
@@ -697,6 +697,10 @@ watch(
     font-weight: 500;
     cursor: pointer;
     box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
+}
+
+.thread-down.over-plan {
+    bottom: calc(100% + 50px);
 }
 
 .thread-down:hover {

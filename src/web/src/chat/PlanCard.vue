@@ -12,7 +12,7 @@ import {rows} from "../sync/rows.js";
 import {otherPlans, othersLine, PLAN_STATES, sizeOf, stoppedOf} from "../layout/statusline.js";
 
 const SHOWN_PHASES = 5;
-const props = defineProps({plan: Object});
+const props = defineProps({plan: Object, folded: Boolean});
 const card = ref(null);
 const listing = ref(false);
 const lifted = ref(false);
@@ -76,34 +76,40 @@ async function start() {
                         </Btn>
                     </span>
                 </header>
-                <template v-if="!parked && (phases.length || building)">
-                    <ol class="plan-card-phases" data-fades>
-                        <template v-for="ph in phases.slice(0, SHOWN_PHASES)" :key="ph.n">
-                            <li class="plan-card-phase">
-                                <span class="plan-card-n">{{ ph.n }}</span>
-                                <span class="plan-card-name">{{ ph.title }}</span>
-                                <span class="plan-card-rows">{{ ph.rows ? `${ph.rows} to-do${ph.rows === 1 ? "" : "s"}` : "" }}</span>
-                            </li>
+                <div :class="['plan-card-body', {folded}]">
+                    <div class="plan-card-inner">
+                        <template v-if="!parked && (phases.length || building)">
+                            <ol class="plan-card-phases" data-fades>
+                                <template v-for="ph in phases.slice(0, SHOWN_PHASES)" :key="ph.n">
+                                    <li class="plan-card-phase">
+                                        <span class="plan-card-n">{{ ph.n }}</span>
+                                        <span class="plan-card-name">{{ ph.title }}</span>
+                                        <span class="plan-card-rows">
+                                            {{ ph.rows ? `${ph.rows} to-do${ph.rows === 1 ? "" : "s"}` : "" }}
+                                        </span>
+                                    </li>
+                                </template>
+                                <template v-if="hidden">
+                                    <li class="plan-card-phase quiet">
+                                        <span />
+                                        <span class="plan-card-name">and {{ hidden }} more phase{{ hidden === 1 ? "" : "s" }}</span>
+                                        <span />
+                                    </li>
+                                </template>
+                                <template v-if="building">
+                                    <li class="plan-card-phase quiet">
+                                        <span />
+                                        <span class="plan-card-name">{{ adding }}</span>
+                                        <span />
+                                    </li>
+                                </template>
+                            </ol>
                         </template>
-                        <template v-if="hidden">
-                            <li class="plan-card-phase quiet">
-                                <span />
-                                <span class="plan-card-name">and {{ hidden }} more phase{{ hidden === 1 ? "" : "s" }}</span>
-                                <span />
-                            </li>
+                        <template v-if="error">
+                            <p class="plan-card-error">{{ error }}</p>
                         </template>
-                        <template v-if="building">
-                            <li class="plan-card-phase quiet">
-                                <span />
-                                <span class="plan-card-name">{{ adding }}</span>
-                                <span />
-                            </li>
-                        </template>
-                    </ol>
-                </template>
-                <template v-if="error">
-                    <p class="plan-card-error">{{ error }}</p>
-                </template>
+                    </div>
+                </div>
             </section>
         </div>
     </div>
@@ -111,12 +117,33 @@ async function start() {
 
 <style scoped>
 .plan-dock {
+    position: sticky;
+    bottom: 0;
+    z-index: 2;
     display: grid;
     grid-template-rows: 1fr;
     grid-template-columns: minmax(0, 1fr);
     flex: none;
     width: 100%;
     margin-top: auto;
+}
+
+.plan-card-body {
+    display: grid;
+    grid-template-rows: 1fr;
+    transition:
+        grid-template-rows var(--move),
+        opacity var(--fade);
+}
+
+.plan-card-body.folded {
+    grid-template-rows: 0fr;
+    opacity: 0;
+}
+
+.plan-card-inner {
+    min-height: 0;
+    overflow: hidden;
 }
 
 .plan-fold {
