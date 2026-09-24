@@ -446,7 +446,8 @@ async function drop() {
 }
 
 .thread-turn.ask {
-    max-width: 88%;
+    width: 100%;
+    max-width: 100%;
 }
 
 .thread-bubble {
@@ -488,6 +489,8 @@ async function drop() {
 }
 
 .thread-turn.ask .thread-bubble {
+    width: 100%;
+    box-sizing: border-box;
     border-color: color-mix(in srgb, var(--blocking) 40%, transparent);
 }
 

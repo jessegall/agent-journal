@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.125.0 — One quiet chat button, accept every proposed wait at once, and the subagent chat shows the whole conversation
+
+The chat composer has one button in Send's place: a quiet Dump files while the field is empty, turning into Send once you type, with the paperclip back at the bottom left. Adding cards from New work now also takes the waits between the cards you added, and a board column with several proposed waits has Accept all waits in its header. Question cards in the chat take the full width. A subagent's chat shows what it wrote and every message sent to it, with each run of tool calls folded into one line. The hint beside From a document is gone. Nothing to do.
+
 ## 2.124.0 — The dump files a pile straight into a collection, New work reads documents, and tabs keep their own layout
 
 The dump starts from the chat with Dump files, or from the offer when you attach several files, and fills the pane area: the agent sorts the pile by subject, files each document into a collection it names the moment it is written, says what it added unasked, and ends with a summary and suggestions you take or leave; nothing is planned by itself, and Remove the collection takes out everything the dump made. New work takes a document: choose, drop or paste it, add a note, and the agent reads it section by section while an outline ticks off beside the drafts, each draft saying where in the document it came from. Presets in the drafts bar pick a whole group of drafts at once, and the agent picks cards for you when you ask. Several tabs of one environment each keep their own window layout, and the one-tab warning is gone. Lists and counts on the dashboard and the Files page are kept between requests, so they answer in a few milliseconds. Nothing to do.

@@ -1,6 +1,8 @@
 <script setup>
 import {computed, inject, ref} from "vue";
+import {api} from "../api/client.js";
 import {useCardDrag} from "../composables/cardDrag.js";
+import Btn from "../kit/Btn.vue";
 import PlaceholderCard from "../kit/PlaceholderCard.vue";
 import StageDot from "../kit/StageDot.vue";
 import {store} from "../state/store.js";
@@ -20,6 +22,15 @@ const meaningLabel = computed(
         MEANING_LABELS[props.meaning]
 );
 const refuses = computed(() => !!dragged.value && dragged.value.lane !== props.lane.key && !takes.value);
+const proposing = computed(() => props.lane.cards.filter((card) => (card.actions || []).some((a) => a.action === "accept_dependencies")));
+const accepting = ref(false);
+
+async function acceptAll() {
+    accepting.value = true;
+    for (const card of proposing.value) await api.act("ticket", card.n, "accept_dependencies");
+    accepting.value = false;
+    board.refresh();
+}
 
 function drop() {
     over.value = false;
@@ -41,6 +52,11 @@ function drop() {
             <StageDot :meaning="meaning" />
             <span class="title">{{ lane.title }}</span>
             <span class="meaning">{{ meaningLabel }}</span>
+            <template v-if="proposing.length > 1">
+                <Btn small :busy="accepting" title="Take every wait the agent proposed in this column" @click="acceptAll">
+                    Accept all waits
+                </Btn>
+            </template>
             <span class="count">{{ loading ? "" : lane.cards.length }}</span>
         </header>
         <div class="cards">

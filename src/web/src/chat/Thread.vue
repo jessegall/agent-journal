@@ -54,15 +54,13 @@ function openDump(n = 0) {
     store.dumping = true;
 }
 
-const composeTools = computed(() => [
-    ...pageTools,
-    {
-        icon: "inbox",
-        label: dumpFiling.value ? `Dump ${dumpFiling.value.n} · filing` : "Dump files",
-        title: "Throw in a pile of files and notes: the agent sorts them by subject and files them into a collection",
-        go: () => openDump(dumpFiling.value?.n || 0),
-    },
-]);
+const composeTools = pageTools;
+const dumpIdle = computed(() => ({
+    icon: "inbox",
+    label: dumpFiling.value ? `Dump ${dumpFiling.value.n} · filing` : "Dump files",
+    title: "Throw in a pile of files and notes: the agent sorts them by subject and files them into a collection",
+    go: () => openDump(dumpFiling.value?.n || 0),
+}));
 const dumpOffer = {
     icon: "inbox",
     title: (n) => `${n} files. Dump them instead?`,
@@ -476,6 +474,7 @@ watch(
                     :down="unedit"
                     :tools="composeTools"
                     :many="dumpOffer"
+                    :idle="dumpIdle"
                 />
             </div>
             <template v-if="!ready">
