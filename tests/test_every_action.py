@@ -75,6 +75,18 @@ def test_every_action_is_reachable_as_a_command():
     assert missing == [], "every public action on a controller is a journal command"
 
 
+def test_no_command_argument_shares_a_name_with_a_global_option():
+    features.load()
+    from commands.parser import parser
+    top = parser()
+    globals_ = {action.dest for action in top._actions if action.dest not in ("help", "command")}
+    clashes = [f"{noun} {verb}: {action.dest}"
+               for noun, nouns in top._subparsers._group_actions[0].choices.items() if nouns._subparsers
+               for verb, command in nouns._subparsers._group_actions[0].choices.items()
+               for action in command._actions if action.dest in globals_]
+    assert clashes == [], "a command's own argument never shares its name with a global option, which would swallow it"
+
+
 BUDGET, PAGE, MANY = 50, 25, 150
 
 
