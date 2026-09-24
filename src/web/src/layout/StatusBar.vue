@@ -22,13 +22,14 @@ usePoll(...polled.bar);
 usePoll(...polled.agents);
 
 const current = computed(() => currentWork(rows("work")));
-const state = computed(() => stateOf(agent.value, rows("work")));
+const reported = computed(() => stateOf(agent.value, rows("work")));
 const toast = ref(null);
 
 const wanted = ref(null);
-const paused = computed(() => wanted.value ?? state.value === "paused");
+const paused = computed(() => wanted.value ?? reported.value === "paused");
+const state = computed(() => (paused.value ? "paused" : reported.value === "paused" ? "idle" : reported.value));
 watch(
-    () => state.value === "paused",
+    () => reported.value === "paused",
     (now) => wanted.value === now && (wanted.value = null)
 );
 
@@ -43,7 +44,7 @@ async function pauseOrResume() {
     }
 }
 const waiting = computed(() => queued(rows("todo"), autoOn.value, rows("question")));
-const line = computed(() => lineOf(agent.value, rows("work"), waiting.value));
+const line = computed(() => (paused.value ? "held until you resume it" : lineOf(agent.value, rows("work"), waiting.value)));
 const inspect = () => peek("work", current.value.n);
 const was = ref("");
 const sentence = computed(() => {
@@ -70,7 +71,7 @@ async function runBar(p) {
 
 <template>
     <div class="statusbar">
-        <Dot :class="['statusbar-dot', {live: state !== 'stopped'}]" kind="started" solid :size="8" />
+        <Dot :class="['statusbar-dot', {live: state !== 'stopped', paused}]" kind="started" solid :size="8" />
         <span class="statusbar-text">
             <b>{{ wordOf(state) }}</b>
             <component
@@ -165,6 +166,10 @@ async function runBar(p) {
 
 .statusbar-dot.live {
     --tone: var(--accent);
+}
+
+.statusbar-dot.paused {
+    --tone: var(--danger);
 }
 
 .statusbar-text {

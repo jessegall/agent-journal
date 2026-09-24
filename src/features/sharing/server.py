@@ -10,8 +10,11 @@ from urllib.parse import quote, unquote
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from engine.package import data  # noqa: E402
 from features.sharing.page import PICTURES, Page, document, ended, missing  # noqa: E402
+from resources.base import Refused  # noqa: E402
 
 APP_DIR = data("web", "dist")
+BODY_LIMIT = 8192
+COMMENT_HEADER = "X-Shared-Comment"
 APP_PAGE = "share.html"
 APP_HEADERS = {"Content-Security-Policy": "default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; "
                                           "font-src 'self'; connect-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'"}
@@ -69,6 +72,33 @@ class ShareHandler(BaseHTTPRequestHandler):
             return self.shown(share, f"{rest[0]}:{rest[1]}")
         return self.page(404, missing())
 
+    def do_POST(self) -> None:
+        parts = [unquote(p) for p in self.path.split("?", 1)[0].split("/") if p]
+        if len(parts) != 3 or parts[0] != "s" or parts[2] != "comment":
+            return self.refused()
+        share = self.shares._by_token(parts[1])
+        if share is None or not share.approved or share.completed or (share.expires and share.expires < time.time()):
+            return self.page(404, missing())
+        if not self.shares._unlocked(share, self.password()):
+            return self.send(401, b"", {"WWW-Authenticate": 'Basic realm="Shared page", charset="UTF-8"'})
+        if self.headers.get(COMMENT_HEADER) != "1" or not self.headers.get("Content-Type", "").startswith("application/json"):
+            return self.answer(403, "refused")
+        size = int(self.headers.get("Content-Length") or 0)
+        if not 0 < size <= BODY_LIMIT:
+            return self.answer(413, "too large")
+        try:
+            given = json.loads(self.rfile.read(size))
+            made = self.shares._visitor_comment(share, str(given["about"]), str(given["name"]), str(given["text"]))
+        except (ValueError, KeyError, TypeError):
+            return self.answer(400, "a comment needs about, name and text")
+        except Refused as refused:
+            return self.answer(422, str(refused))
+        body = json.dumps({"n": made.n, "about": given["about"], "name": made.data["visitor"], "text": made.brief, "created": made.created}).encode()
+        self.send(201, body, {"Content-Type": "application/json", **APP_HEADERS})
+
+    def answer(self, code: int, text: str) -> None:
+        self.send(code, json.dumps({"error": text}).encode(), {"Content-Type": "application/json", **APP_HEADERS})
+
     def password(self) -> str:
         given = self.headers.get("Authorization", "")
         if not given.startswith("Basic "):
@@ -84,8 +114,8 @@ class ShareHandler(BaseHTTPRequestHandler):
             return self.page(404, missing())
         page = Page(share.token, scope)
         row = self.shares._shared_row(share, ref)
-        members = [m for m in self.shares._members(share, row) if f"{m.type}:{m.n}" in scope] if row.type == "collection" else []
-        body = page.collection(row, members) if row.type == "collection" else page.row(row)
+        members = [m for m in self.shares._members(share, row) if f"{m.type}:{m.n}" in scope]
+        body = page.collection(row, members) if members else page.row(row)
         back = "" if ref == share.target else f"/s/{share.token}"
         self.page(200, document(row.title, body, share.expires, back))
 
@@ -119,9 +149,9 @@ class ShareHandler(BaseHTTPRequestHandler):
             self.wfile.write(body)
 
     def refused(self) -> None:
-        self.send(405, b"", {"Allow": "GET, HEAD"})
+        self.send(405, b"", {"Allow": "GET, HEAD, POST"})
 
-    do_POST = do_PUT = do_PATCH = do_DELETE = do_OPTIONS = refused
+    do_PUT = do_PATCH = do_DELETE = do_OPTIONS = refused
 
 
 def serve(shares, port: int) -> None:

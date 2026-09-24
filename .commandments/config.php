@@ -28,9 +28,9 @@ return function (Config $config): void {
 
     $config->disable(
         // \JesseGall\CodeCommandments\Sins\Backend\SwallowCatch::class,
+        \JesseGall\CodeCommandments\Language::Php,
         \JesseGall\CodeCommandments\Language::TypeScript,
         \JesseGall\CodeCommandments\Language::CSharp,
-        \JesseGall\CodeCommandments\Language::Php,
     );
 
     $config->exclude(

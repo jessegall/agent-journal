@@ -8,7 +8,6 @@ const PAGES = {
     files: "Files",
     commit: "Commit",
     skills: "Skills",
-    services: "Services",
     about: "About",
     plugins: "Plugins",
     page: "Plugin",

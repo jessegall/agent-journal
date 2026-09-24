@@ -14,8 +14,9 @@ import TextDisplay from "../kit/TextDisplay.vue";
 import Sections from "./Sections.vue";
 import Folded from "../kit/Folded.vue";
 import PlanCritique from "./PlanCritique.vue";
+import ProgressBar from "../kit/ProgressBar.vue";
 
-const props = defineProps({resource: Object});
+const props = defineProps({resource: Object, readOnly: Boolean});
 const emit = defineEmits(["close"]);
 const error = ref("");
 const critiquing = ref(false);
@@ -30,11 +31,14 @@ const phases = computed(() =>
     }))
 );
 watchEffect(() => {
+    if (props.readOnly) return;
     const known = new Set(rows("todo").map((t) => t.n));
     const missing = props.resource.data.phases.flatMap((p) => p.todos).filter((n) => !known.has(n));
     if (missing.length) holding("todo", missing).catch((e) => (error.value = e.message));
 });
 const done = (p) => p.rows.length > 0 && p.rows.every((t) => t.completed);
+const planned = computed(() => phases.value.flatMap((p) => p.rows));
+const finished = computed(() => planned.value.filter((t) => t.completed).length);
 const building = computed(() => status.value === "building");
 const stage = computed(() => props.resource.data.stage || (phases.value.length ? "todos" : "phases"));
 const button = computed(
@@ -70,30 +74,40 @@ async function run(action, body = {}) {
                 <template v-if="['active', 'waiting', 'parked'].includes(status)">· phase {{ current }} of {{ phases.length }}</template>
             </span>
             <span class="grow" />
-            <DownloadLink :resource="resource" />
-            <CommentToggle :resource="resource" />
-            <CloseButton @click="emit('close')" />
+            <template v-if="!readOnly">
+                <DownloadLink :resource="resource" />
+                <CommentToggle :resource="resource" />
+                <CloseButton @click="emit('close')" />
+            </template>
         </header>
         <h2 class="title">{{ resource.title }}</h2>
         <template v-if="resource.data.goal">
             <TextDisplay class="goal" :text="resource.data.goal" />
         </template>
-        <div class="actions">
-            <template v-if="button">
-                <Btn kind="primary" @click="run(button[0])">{{ button[1] }}</Btn>
-            </template>
-            <template v-else-if="status === 'building'">
-                <span class="note">The agent is still writing this plan. It can be started once it is ready.</span>
-            </template>
-            <template v-if="!['done', 'abandoned'].includes(status)">
-                <Btn title="Ask the agent to have other agents critique this plan" @click="critiquing = true">Ask for a critique</Btn>
-                <Btn kind="danger" @click="run('abandon', {why: 'stopped from the viewer'})">Abandon</Btn>
-            </template>
-            <template v-if="critiquing">
-                <PlanCritique :plan="resource" @close="critiquing = false" />
-            </template>
-            <span class="error">{{ error }}</span>
-        </div>
+        <template v-if="planned.length">
+            <div class="overall">
+                <ProgressBar :value="finished" :max="planned.length" :busy="building" />
+                <span class="overall-figure">{{ finished }} of {{ planned.length }} done</span>
+            </div>
+        </template>
+        <template v-if="!readOnly">
+            <div class="actions">
+                <template v-if="button">
+                    <Btn kind="primary" @click="run(button[0])">{{ button[1] }}</Btn>
+                </template>
+                <template v-else-if="status === 'building'">
+                    <span class="note">The agent is still writing this plan. It can be started once it is ready.</span>
+                </template>
+                <template v-if="!['done', 'abandoned'].includes(status)">
+                    <Btn title="Ask the agent to have other agents critique this plan" @click="critiquing = true">Ask for a critique</Btn>
+                    <Btn kind="danger" @click="run('abandon', {why: 'stopped from the viewer'})">Abandon</Btn>
+                </template>
+                <template v-if="critiquing">
+                    <PlanCritique :plan="resource" @close="critiquing = false" />
+                </template>
+                <span class="error">{{ error }}</span>
+            </div>
+        </template>
         <template v-if="resource.brief">
             <div class="brief">
                 <Folded :at="220" :keep="160">
@@ -247,6 +261,23 @@ async function run(action, body = {}) {
     margin: 0 0 10px;
     color: var(--text-2);
 }
+.overall {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 6px 0 14px;
+}
+
+.overall .track {
+    flex: 1;
+}
+
+.overall-figure {
+    flex: none;
+    color: var(--text-3);
+    font-size: 12px;
+}
+
 .actions {
     display: flex;
     align-items: center;

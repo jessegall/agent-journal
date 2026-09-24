@@ -27,7 +27,6 @@ import PluginsPage from "./pages/PluginsPage.vue";
 import BoardPage from "./pages/BoardPage.vue";
 import OrganizationPage from "./pages/OrganizationPage.vue";
 import ResourcesPage from "./pages/ResourcesPage.vue";
-import ServicesPage from "./pages/ServicesPage.vue";
 import SkillsPage from "./pages/SkillsPage.vue";
 import AboutPage from "./pages/AboutPage.vue";
 import HubPage from "./pages/HubPage.vue";
@@ -56,7 +55,6 @@ const page = computed(() =>
                 "files",
                 "commit",
                 "skills",
-                "services",
                 "plugins",
                 "page",
                 "hub",
@@ -196,7 +194,6 @@ watch(
                                 <template #files><FilesPage /></template>
                                 <template #commit><CommitPage /></template>
                                 <template #skills><SkillsPage /></template>
-                                <template #services><ServicesPage /></template>
                                 <template #about><AboutPage /></template>
                                 <template #plugins><PluginsPage /></template>
                                 <template #kanban><BoardPage /></template>

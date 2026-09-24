@@ -7,12 +7,11 @@ export const PAGES = {
     skills: {title: "Skills", icon: "book", text: "The instructions the agent loads for each kind of work"},
     organization: {title: "Organization", icon: "agents", text: "The project's domains and the roles under them"},
     plugins: {title: "Plugins", icon: "plug", text: "Repositories installed into the journal, with their pages and settings"},
-    services: {title: "Services", icon: "terminal", text: "The processes the journal and its plugins keep running"},
     settings: {title: "Settings", icon: "settings", text: "Features, notifications and how the viewer behaves"},
 };
 
 export const RESOURCE_GROUPS = [
     {key: "results", title: "Conversation and results", pages: []},
     {key: "workings", title: "How the agent works", pages: ["skills"]},
-    {key: "setup", title: "Setup", pages: ["organization", "services"]},
+    {key: "setup", title: "Setup", pages: ["organization"]},
 ];
