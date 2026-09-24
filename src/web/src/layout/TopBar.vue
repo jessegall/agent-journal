@@ -132,6 +132,10 @@ const full = computed(() => route.value.page === "kanban");
     width: 14px;
     height: 14px;
 }
+.icon-btn.back {
+    margin-left: -7px;
+}
+
 .icon-btn {
     position: relative;
     width: 28px;

@@ -1,0 +1,43 @@
+<script setup>
+import FlipCard from "../kit/FlipCard.vue";
+import TextDisplay from "../kit/TextDisplay.vue";
+
+defineProps({ticket: {type: Object, required: true}, from: {type: Object, required: true}});
+const emit = defineEmits(["close"]);
+</script>
+
+<template>
+    <FlipCard :from="from" @close="emit('close')">
+        <template #front>
+            <h3 class="title">{{ ticket.title }}</h3>
+            <p class="line">{{ ticket.abstract }}</p>
+        </template>
+        <template #back>
+            <h3 class="title">{{ ticket.title }}</h3>
+            <TextDisplay class="brief" :text="ticket.brief" />
+        </template>
+    </FlipCard>
+</template>
+
+<style scoped>
+.title {
+    margin: 0 0 12px;
+    color: var(--text);
+    font-size: 17px;
+    font-weight: 500;
+    line-height: 24px;
+}
+
+.line {
+    margin: 0;
+    color: var(--text-2);
+    font-size: 15px;
+    line-height: 23px;
+}
+
+.brief {
+    color: var(--text-2);
+    font-size: 14px;
+    line-height: 22px;
+}
+</style>

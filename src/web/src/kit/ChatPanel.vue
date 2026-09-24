@@ -2,7 +2,7 @@
 import {nextTick, onMounted, onUnmounted, ref, useSlots} from "vue";
 import Btn from "./Btn.vue";
 
-const props = defineProps({placeholder: String, action: {type: String, default: "Send"}, locked: Boolean, fill: Boolean});
+const props = defineProps({placeholder: String, action: {type: String, default: "Send"}, locked: Boolean, fill: Boolean, limit: Number});
 const emit = defineEmits(["send"]);
 const words = defineModel({type: String, default: ""});
 const log = ref(null);
@@ -44,7 +44,10 @@ defineExpose({focus: () => nextTick(() => input.value.focus())});
             </div>
         </template>
         <form :class="['compose', {locked}]" @submit.prevent="send">
-            <input ref="input" v-model="words" :placeholder="placeholder" :disabled="locked" spellcheck="false" />
+            <input ref="input" v-model="words" :placeholder="placeholder" :disabled="locked" :maxlength="limit" spellcheck="false" />
+            <template v-if="limit">
+                <span class="left">{{ limit - words.length }}</span>
+            </template>
             <Btn kind="primary" small :disabled="locked || !words.trim()" @click="send">{{ action }}</Btn>
         </form>
     </div>
@@ -106,6 +109,12 @@ defineExpose({focus: () => nextTick(() => input.value.focus())});
 
 .compose:focus-within {
     border-color: var(--accent);
+}
+
+.left {
+    color: var(--text-4);
+    font-size: 11px;
+    font-variant-numeric: tabular-nums;
 }
 
 .compose.locked {
