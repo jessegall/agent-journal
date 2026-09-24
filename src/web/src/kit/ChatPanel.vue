@@ -232,13 +232,13 @@ defineExpose({focus: () => nextTick(() => props.withoutInput || focusInput())});
 }
 
 .echo.low {
-    transform: translateY(60px);
+    transform: translateY(40px);
 }
 
 .echo-enter-active {
     transition:
-        opacity 0.5s ease 0.35s,
-        transform 0.6s cubic-bezier(0.2, 0.9, 0.25, 1) 0.35s;
+        opacity 0.45s ease,
+        transform 0.6s cubic-bezier(0.2, 0.9, 0.25, 1);
 }
 
 .echo-leave-active {
@@ -247,7 +247,7 @@ defineExpose({focus: () => nextTick(() => props.withoutInput || focusInput())});
 
 .echo-enter-from {
     opacity: 0;
-    transform: translateY(80px);
+    transform: translateY(78px);
 }
 
 .echo-leave-to {
@@ -274,15 +274,16 @@ defineExpose({focus: () => nextTick(() => props.withoutInput || focusInput())});
 }
 
 .input-step-leave-active {
-    transition:
-        opacity 0.35s ease,
-        transform 0.4s ease;
+    transition: opacity 0.4s ease 0.15s;
 }
 
-.input-step-enter-from,
-.input-step-leave-to {
+.input-step-enter-from {
     opacity: 0;
     transform: translateY(20px);
+}
+
+.input-step-leave-to {
+    opacity: 0;
 }
 
 .compose.locked {
