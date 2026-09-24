@@ -1,3 +1,5 @@
+import threading
+import time
 from pathlib import Path
 
 from controllers.types import Agents, Environments, Messages, Questions, Todos, Works
@@ -10,6 +12,10 @@ from resources.base import SYSTEM, USER
 from surfaces.color import identity
 
 SHOWN = ("building", "ready", "active", "waiting", "done")
+
+KEPT_FOR = 1.0
+KEPT: dict[Path, tuple[float, dict]] = {}
+BUILDING = threading.Lock()
 
 
 def rows_of(p) -> list[int]:
@@ -46,6 +52,15 @@ def environment(record: Record) -> dict:
             "suggestions": len(Suggestions(record, actor=SYSTEM)._standing()),
         },
     }
+
+
+def lately_summarized(root: Path) -> dict:
+    with BUILDING:
+        at, made = KEPT.get(root, (0.0, {}))
+        if time.monotonic() - at >= KEPT_FOR:
+            made = summarize(root)
+            KEPT[root] = (time.monotonic(), made)
+        return made
 
 
 def summarize(root: Path) -> dict:

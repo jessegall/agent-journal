@@ -6,7 +6,7 @@ from pathlib import Path
 
 from engine.transcript import AGENT, HUMAN, INJECTED, TOOL
 from providers.payload import AgentCall, AskCall, BashCall, EVENTS, PERMISSION, SKILL_READ, UsageWindow
-from providers.base import Provider, parsed
+from providers.base import Provider, parsed, recent
 from providers.payload import Dispatch, Hook, ToolCall
 from providers.codex_rows import Row
 from engine.fields import Loaded
@@ -308,7 +308,7 @@ class Codex(Provider):
             elif row.type == "response_item" and (payload.role == "assistant" or payload.type in ("reasoning", "function_call", "custom_tool_call")):
                 compacting = False
         return {AgentRow.skills: skills, AgentRow.shells: shells, AgentRow.subagents: len(subagent_rows),
-                AgentRow.shell_rows: shell_rows, AgentRow.subagent_rows: subagent_rows, AgentRow.compacting: compacting}
+                AgentRow.shell_rows: recent(shell_rows), AgentRow.subagent_rows: recent(subagent_rows), AgentRow.compacting: compacting}
 
     def effort(self, project: Path, transcript: Path | None = None) -> str:
         return self.configuration().effort
