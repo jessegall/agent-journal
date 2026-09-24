@@ -1,5 +1,5 @@
 <script setup>
-defineProps({on: Boolean, word: {type: String, default: ""}, title: {type: String, default: ""}, framed: Boolean});
+defineProps({on: Boolean, word: {type: String, default: ""}, title: {type: String, default: ""}, framed: Boolean, labelled: Boolean});
 const emit = defineEmits(["change"]);
 </script>
 
@@ -12,8 +12,13 @@ const emit = defineEmits(["change"]);
         :title="title"
         @click="emit('change', !on)"
     >
-        <span :class="['switch', {on}]"><span class="knob" /></span>
-        <template v-if="word">
+        <span :class="['switch', {on, labelled}]">
+            <template v-if="labelled">
+                <span class="switch-inner">{{ word }}</span>
+            </template>
+            <span class="knob" />
+        </span>
+        <template v-if="word && !labelled">
             <span class="switch-word">{{ word }}</span>
         </template>
     </button>
@@ -75,6 +80,50 @@ const emit = defineEmits(["change"]);
 .switch.on .knob {
     transform: translateX(12px);
     background: #fff;
+}
+
+.switch.labelled {
+    display: inline-flex;
+    align-items: center;
+    width: auto;
+    height: 18px;
+    padding: 0 8px 0 20px;
+    border-radius: 9px;
+    color: var(--text-3);
+    font-size: 11px;
+    line-height: 18px;
+    transition:
+        background 0.18s,
+        color 0.18s,
+        padding 0.18s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.switch.labelled .knob {
+    top: 3px;
+    left: 3px;
+    transition:
+        left 0.18s cubic-bezier(0.2, 0.8, 0.2, 1),
+        background 0.15s;
+}
+
+.switch.labelled.on {
+    padding: 0 20px 0 8px;
+    background: color-mix(in srgb, var(--accent) 55%, white);
+    color: #17152a;
+    font-weight: 600;
+}
+
+.switch.labelled.on .knob {
+    left: calc(100% - 15px);
+    transform: none;
+    background: #17152a;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .switch.labelled,
+    .switch.labelled .knob {
+        transition: none;
+    }
 }
 
 .switch-word {

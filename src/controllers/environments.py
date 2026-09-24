@@ -6,7 +6,7 @@ from engine import attic
 from engine.record import Record
 from engine.sessions import Sessions
 from resources import types
-from resources.base import AGENT, ENVIRONMENT, SYSTEM, Refused, check_title
+from resources.base import AGENT, ENVIRONMENT, SYSTEM, UNTITLED, Refused, check_title
 from engine import runtime
 from engine.wording import plural
 from controllers.facts import Facts
@@ -41,6 +41,8 @@ class Environments(Controller):
             self._refuse(f"environment {title!r} is held by session {holder}; it leaves first")
 
     def create(self, title: str, abstract: str = "", brief: str = "", **data):
+        if title.strip() in ("", UNTITLED):
+            self._refuse("an environment needs a name")
         name = self.unused(check_title(title), ": switch to it")
         made = super().create(name, abstract, brief, **data)
         Record(self.record.root, name)
