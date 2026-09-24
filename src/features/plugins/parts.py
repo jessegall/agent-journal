@@ -21,12 +21,14 @@ from resources.base import OWNER, PLUGIN, SYSTEM
 EACH = 1.5
 LONGEST_EACH = 3.0
 ALTOGETHER = 5.0
-CHAT_RULES = ("chat rules",)
 
 
 @dataclass(frozen=True)
 class PluginRemoved(ResourceEvent):
     on: ClassVar[str] = "plugin.completed"
+
+
+KEPT_RULES: dict[str, tuple] = {}
 
 
 class PluginChatRules(TextFormatter):
@@ -37,12 +39,13 @@ class PluginChatRules(TextFormatter):
         return result
 
     def rules(self, context: Context) -> list:
-        memo = getattr(context.record, "memo", None)
-        if memo is not None and CHAT_RULES in memo:
-            return memo[CHAT_RULES]
-        found = [(rule.find, rule.replacement) for row in context.journal.plugins._standing() if row.enabled for rule in declared(row).chat]
-        if memo is not None:
-            memo[CHAT_RULES] = found
+        plugins = context.journal.plugins
+        stamp = tuple((row["n"], row["stamp"]) for row in plugins.summaries())
+        kept = KEPT_RULES.get(str(context.record.home))
+        if kept and kept[0] == stamp:
+            return kept[1]
+        found = [(rule.find, rule.replacement) for row in plugins._standing() if row.enabled for rule in declared(row).chat]
+        KEPT_RULES[str(context.record.home)] = (stamp, found)
         return found
 
 
