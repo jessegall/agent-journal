@@ -179,7 +179,7 @@ class Engine(Seat):
                 return "probe: nothing came back, stopped"
             self.probed_at = 0.0
             return "probe: working"
-        if silent and self.agent.state() in (BUSY, WORKING):
+        if silent and self.agent.state() in (BUSY, WORKING) and not driver.asking():
             driver.interrupt()
             self.probed_at = time.time()
             return "silent for two minutes: probing with Ctrl-C"
