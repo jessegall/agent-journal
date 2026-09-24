@@ -21,7 +21,7 @@ SERVICE = ("run", "cwd", "env", "port", "ready", "restart", "grace", "show")
 PAGE = ("name", "title", "icon", "service", "path", "status")
 DASHBOARD = ("name", "title", "icon")
 TONES = ("", "warn", "good")
-SETTING = ("title", "default", "help", "env", "type", "options", "group", "when", "detail")
+SETTING = ("title", "default", "help", "env", "type", "options", "group", "when", "detail", "parent")
 KINDS = ("text", "textarea", "list", "number", "flag", "options")
 RESTARTS = ("always", "on-failure", "never")
 
@@ -126,6 +126,9 @@ def typed(settings: dict) -> dict:
         if not all(isinstance(c, dict) and all(other in settings for other in c) for c in choices):
             raise Refused(f"plugin.json: settings.{key}.when names settings and the value each must have, as in {{\"language_php\": true}}, or a list of those where any one is enough")
         setting["when"] = choices
+        parent = setting.get("parent")
+        if parent and (settings.get(parent) or {}).get("type") != "flag":
+            raise Refused(f"plugin.json: settings.{key}.parent names the flag setting it sits under, and {parent!r} is no flag setting")
     return settings
 
 
