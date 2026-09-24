@@ -221,15 +221,16 @@ function startAnew() {
     picked.value = [];
 }
 
-async function leave() {
-    await drop(unpicked());
-    startAnew();
+function leave() {
+    const dropped = unpicked();
     emit("close");
+    startAnew();
+    drop(dropped);
 }
 </script>
 
 <template>
-    <FocusStage :open="open" leave="Back to the board" glow spread :docked="docked" @close="leave">
+    <FocusStage :open="open" glow spread :docked="docked" :escapes="false">
         <div :class="['work', {on: docked}]">
             <div class="bar">
                 <span class="note">{{ note }}</span>
@@ -263,6 +264,8 @@ async function leave() {
                 ref="panel"
                 v-model="words"
                 fill
+                :closable="!docked"
+                @close="leave"
                 :locked="adding"
                 :limit="INPUT_LIMIT"
                 :without-input="choosing || writing"
@@ -276,10 +279,7 @@ async function leave() {
                             New work
                             <span class="head-board">{{ board.title }}</span>
                         </span>
-                        <Btn small title="Stop and drop the drafts you did not keep" @click="leave">
-                            Cancel
-                            <kbd>Esc</kbd>
-                        </Btn>
+                        <Btn small title="Stop and drop the drafts you did not keep" @click="leave">Cancel</Btn>
                     </div>
                 </template>
                 <template v-for="line in docked ? conversation : latest" :key="line.id">

@@ -1,6 +1,7 @@
 <script setup>
 import {nextTick, onMounted, onUnmounted, ref, useSlots} from "vue";
 import Btn from "./Btn.vue";
+import Icon from "./Icon.vue";
 
 const props = defineProps({
     placeholder: String,
@@ -10,8 +11,9 @@ const props = defineProps({
     limit: Number,
     withoutInput: Boolean,
     echo: String,
+    closable: Boolean,
 });
-const emit = defineEmits(["send"]);
+const emit = defineEmits(["send", "close"]);
 const words = defineModel({type: String, default: ""});
 const log = ref(null);
 const lines = ref(null);
@@ -39,6 +41,11 @@ defineExpose({focus: () => nextTick(() => props.withoutInput || focusInput())});
 
 <template>
     <div :class="['chat', {fill}]">
+        <template v-if="closable">
+            <button type="button" class="close" title="Cancel and start over" @click="emit('close')">
+                <Icon name="close" />
+            </button>
+        </template>
         <template v-if="head">
             <slot name="head" />
         </template>
@@ -82,6 +89,7 @@ defineExpose({focus: () => nextTick(() => props.withoutInput || focusInput())});
 
 <style scoped>
 .chat {
+    position: relative;
     display: flex;
     flex: none;
     flex-direction: column;
@@ -142,6 +150,28 @@ defineExpose({focus: () => nextTick(() => props.withoutInput || focusInput())});
     color: var(--text-4);
     font-size: 11px;
     font-variant-numeric: tabular-nums;
+}
+
+.close {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border: 0;
+    border-radius: 7px;
+    background: none;
+    color: var(--text-3);
+    cursor: pointer;
+}
+
+.close:hover {
+    background: var(--hover);
+    color: var(--text);
 }
 
 .echo {
