@@ -37,6 +37,7 @@ export function useNavigation() {
                 ...daily("project"),
                 pageLink("plugins"),
                 pageLink("resources"),
+                pageLink("settings"),
             ],
         },
     ]);

@@ -14,5 +14,5 @@ export const PAGES = {
 export const RESOURCE_GROUPS = [
     {key: "results", title: "Conversation and results", pages: []},
     {key: "workings", title: "How the agent works", pages: ["skills"]},
-    {key: "setup", title: "Setup", pages: ["organization", "services", "settings"]},
+    {key: "setup", title: "Setup", pages: ["organization", "services"]},
 ];
