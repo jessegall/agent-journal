@@ -1,5 +1,5 @@
 <script setup>
-import {nextTick, onMounted, onUnmounted, ref, useSlots} from "vue";
+import {nextTick, onMounted, onUnmounted, ref, useSlots, watch} from "vue";
 import Btn from "./Btn.vue";
 import Icon from "./Icon.vue";
 
@@ -10,6 +10,7 @@ const props = defineProps({
     fill: Boolean,
     limit: Number,
     withoutInput: Boolean,
+    waiting: Boolean,
     echo: String,
     closable: Boolean,
     hint: String,
@@ -36,8 +37,24 @@ function send() {
     emit("send", words.value.trim());
 }
 
+const sent = ref(null);
+const SLIDE_MS = 450;
 const focusInput = () => input.value.focus();
-defineExpose({focus: () => nextTick(() => props.withoutInput || focusInput())});
+const typing = () => !props.withoutInput && !props.waiting;
+defineExpose({focus: () => nextTick(() => typing() && focusInput())});
+
+watch(sent, (words) => {
+    if (!words) return;
+    const shift = words.getBoundingClientRect().left - words.parentElement.getBoundingClientRect().left;
+    words.animate([{transform: `translateX(${-shift}px)`}, {transform: "none"}], {
+        duration: SLIDE_MS,
+        easing: "cubic-bezier(0.2, 0.9, 0.25, 1)",
+    });
+});
+watch(
+    () => props.waiting,
+    (waiting) => waiting || nextTick(() => typing() && focusInput())
+);
 </script>
 
 <template>
@@ -68,22 +85,29 @@ defineExpose({focus: () => nextTick(() => props.withoutInput || focusInput())});
             </Transition>
         </div>
         <Transition name="echo">
-            <template v-if="echo">
-                <p :key="echo" :class="['echo', {low: withoutInput}]">{{ echo }}</p>
+            <template v-if="echo && !waiting">
+                <p :key="echo" class="echo">{{ echo }}</p>
             </template>
         </Transition>
         <div class="compose-slot">
             <Transition name="input-step" @after-enter="focusInput">
                 <template v-if="!withoutInput">
-                    <form :class="['compose', {locked}]" @submit.prevent="send">
-                        <input
-                            ref="input"
-                            v-model="words"
-                            :placeholder="placeholder"
-                            :disabled="locked"
-                            :maxlength="limit"
-                            spellcheck="false"
-                        />
+                    <form :class="['compose', {locked, waiting}]" @submit.prevent="send">
+                        <template v-if="waiting">
+                            <span class="sent-line">
+                                <span ref="sent" class="sent-words">{{ echo }}</span>
+                            </span>
+                        </template>
+                        <template v-else>
+                            <input
+                                ref="input"
+                                v-model="words"
+                                :placeholder="placeholder"
+                                :disabled="locked"
+                                :maxlength="limit"
+                                spellcheck="false"
+                            />
+                        </template>
                         <template v-if="limit">
                             <span class="left">{{ limit - words.length }}</span>
                         </template>
@@ -228,11 +252,6 @@ defineExpose({focus: () => nextTick(() => props.withoutInput || focusInput())});
     font-size: 14px;
     line-height: 20px;
     overflow-wrap: anywhere;
-    transition: transform 0.45s cubic-bezier(0.2, 0.9, 0.25, 1);
-}
-
-.echo.low {
-    transform: translateY(40px);
 }
 
 .echo-enter-active {
@@ -247,7 +266,7 @@ defineExpose({focus: () => nextTick(() => props.withoutInput || focusInput())});
 
 .echo-enter-from {
     opacity: 0;
-    transform: translateY(78px);
+    transform: translateY(48px);
 }
 
 .echo-leave-to {
@@ -284,6 +303,58 @@ defineExpose({focus: () => nextTick(() => props.withoutInput || focusInput())});
 
 .input-step-leave-to {
     opacity: 0;
+}
+
+.compose {
+    transition:
+        background 0.35s ease,
+        border-color 0.35s ease;
+}
+
+.compose .left,
+.compose > :deep(.btn) {
+    transition: opacity 0.3s ease;
+}
+
+.compose.waiting {
+    border-color: transparent;
+    background: transparent;
+}
+
+.compose.waiting .left,
+.compose.waiting > :deep(.btn) {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.compose input {
+    animation: input-in 0.35s ease both;
+}
+
+.sent-line {
+    flex: 1;
+    min-width: 0;
+    height: 32px;
+    overflow: hidden;
+    color: var(--text-2);
+    font-size: 14px;
+    line-height: 32px;
+    text-align: right;
+    white-space: nowrap;
+}
+
+.sent-words {
+    display: inline-block;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    vertical-align: top;
+}
+
+@keyframes input-in {
+    from {
+        opacity: 0;
+    }
 }
 
 .compose.locked {
