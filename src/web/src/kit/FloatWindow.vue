@@ -40,7 +40,6 @@ function grow(e) {
         <div class="float-bar" @pointerdown="drag">
             <Icon :name="icon" :size="13" />
             <span class="float-title">{{ title }}</span>
-            <span class="float-tag">floating</span>
             <span class="float-space" />
             <button
                 type="button"
@@ -107,11 +106,6 @@ function grow(e) {
 
 .float-window.minimized .float-bar {
     border-bottom: none;
-}
-
-.float-tag {
-    font-size: 11px;
-    color: var(--text-4);
 }
 
 .float-space {
