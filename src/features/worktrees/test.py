@@ -117,12 +117,25 @@ def test_journal_claude_with_a_worktree_makes_it_itself_and_starts_claude_inside
     for command in (["git", "init", "-q"], ["git", "-c", "user.email=t@t", "-c", "user.name=t", "commit", "-q", "--allow-empty", "-m", "start"]):
         subprocess.run(command, cwd=project, check=True, timeout=30)
     (project / ".env").write_text("SECRET=1\n")
-    (project / ".worktreeinclude").write_text(".env\n")
+    (project / ".worktreeinclude").write_text("/.env\nconfig/\n")
+    (project / "config").mkdir()
+    (project / "config" / "local.toml").write_text("x = 1\n")
     cwd, args = ClaudeDriver.placed(project, ["--dangerously-skip-permissions", "--worktree=feature-q", "--resume", "c1"])
     assert (cwd, args) == (project / ".claude" / "worktrees" / "feature-q", ["--dangerously-skip-permissions", "--resume", "c1"]), \
         "Claude starts inside the worktree without a worktree of its own to clean up"
     assert ((cwd / ".env").read_text(), subprocess.run(["git", "branch", "--show-current"], cwd=cwd, capture_output=True, text=True, timeout=30).stdout.strip()) == \
         ("SECRET=1\n", "worktree-feature-q"), "it is made on Claude's branch name, with the files .worktreeinclude lists"
+    assert (cwd / "config" / "local.toml").is_file(), ".worktreeinclude reads like a gitignore: a leading slash and a folder both work"
+    inner, _ = ClaudeDriver.placed(cwd, ["-w", "other"])
+    assert inner == project / ".claude" / "worktrees" / "other", "launched from inside a worktree, a new one is still made beside it in the project"
+    import shutil
+    shutil.rmtree(inner)
+    assert ClaudeDriver.placed(project, ["-w", "other"])[0].is_dir(), "a worktree folder deleted by hand is made again on the next launch"
+    (project / ".claude" / "worktrees" / "stray").mkdir()
+    with pytest.raises(SystemExit):
+        ClaudeDriver.placed(project, ["-w", "stray"])
+    subprocess.run(["git", "worktree", "add", "-q", "-b", "hotfix", str(tmp_path / "hotfix")], cwd=project, check=True, timeout=30)
+    assert ClaudeDriver.placed(project, ["-w", "hotfix"])[0] == tmp_path / "hotfix", "a worktree made by hand is launched where it is"
     assert ClaudeDriver.placed(project, ["-w", "feature-q"]) == (cwd, []), "an existing worktree is reused"
     git = ["git", "-c", "user.email=t@t", "-c", "user.name=t"]
     subprocess.run([*git, "commit", "-q", "--allow-empty", "-m", "work in the worktree"], cwd=cwd, check=True, timeout=30)
