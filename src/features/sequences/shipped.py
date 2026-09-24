@@ -105,7 +105,28 @@ WORKING_A_BOARD_CARD = {
                          "user picks the ones to keep. Finish with journal sequence next <this sequence> --about <ref>."),
     ],
 }
-SHIPPED = (FILING_A_DUMP, BUILDING_A_PLAN, WORKING_A_BOARD_CARD)
+REVISING_THE_DRAFTS = {
+    "title": "Revising the board's drafts",
+    "brief": "The user typed a change in a board's New work panel while its drafts show. Change only what they asked for, "
+             "keep every other draft as it is, and say one line. Never start over and never ask round one again.",
+    "starts_on": "message.revised",
+    "started_by": USER,
+    "steps": [
+        ("Read the change", "Read their words and the drafts made for this request on the board. Work out which cards the "
+                            "change is about. When it is unclear, ask one short question on the board with the cards it might "
+                            "mean as options: journal board ask <board n> \"<question>\" --set options='[...]'. When it is "
+                            "answered, or clear from the start: journal sequence next <this sequence> --about <ref>."),
+        ("Change the drafts", "Change only the cards they named: journal ticket update <n> with a new title, --abstract or "
+                              "--brief, or delete a card they dropped (journal ticket delete <n> --why \"<their words>\"). "
+                              "For a card they asked to add, first raise the count to the total the panel should show: journal "
+                              "board expect <board n> <count>, then journal ticket create as in drafting. When every change is "
+                              "made: journal sequence next <this sequence> --about <ref>."),
+        ("Say one line", "Reply to their message in one short line of at most 200 characters about what changed, like \"Made the "
+                         "sign-in card smaller and added one for invites.\" No paragraphs and no ticket numbers. Finish with "
+                         "journal sequence next <this sequence> --about <ref>."),
+    ],
+}
+SHIPPED = (FILING_A_DUMP, BUILDING_A_PLAN, WORKING_A_BOARD_CARD, REVISING_THE_DRAFTS)
 
 
 def ship(record) -> list[str]:

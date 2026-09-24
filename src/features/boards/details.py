@@ -19,6 +19,9 @@ class BoardsDetails(FeatureDetails):
         journal board request <n> "<what is wanted>" asks for tickets on the board, as the New work panel does: it files the words
         as a message and starts the sequence Working a card from the board, whose steps say how to answer it.
 
+        journal board revise <n> "<the change>" is what the panel sends once drafts show: it files the words as a message and
+        starts the sequence Revising the board's drafts, which changes only the cards they named.
+
         journal board cancel <n> answers every open question on the board with Start over, as the panel's X does; a
         request on the board does the same before it is filed.
 
