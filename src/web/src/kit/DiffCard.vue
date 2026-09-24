@@ -15,13 +15,14 @@ const props = defineProps({
     editsOnly: Boolean,
     hideRemovals: Boolean,
     capped: Boolean,
+    lines: {type: Number, default: 0},
     whole: {type: Object, default: null},
     entering: Boolean,
     fresh: {type: String, default: ""},
 });
 
 const emit = defineEmits(["fold", "whole"]);
-const BADGES = {new: "new file", deleted: "deleted"};
+const BADGES = {new: "created", deleted: "deleted"};
 const SIGNS = {add: "+", del: "−"};
 
 const cut = computed(() => props.path.lastIndexOf("/") + 1);
@@ -38,6 +39,11 @@ const drawn = computed(() => {
         (row) => !(props.editsOnly && ["ctx", "fold"].includes(row.kind)) && !(props.hideRemovals && row.kind === "del")
     );
 });
+
+const opened = ref(false);
+const limited = computed(() => props.lines && !opened.value && !props.whole);
+const listed = computed(() => (limited.value ? drawn.value.slice(0, props.lines) : drawn.value));
+const beyond = computed(() => drawn.value.length - listed.value.length);
 
 const numberOf = (row) => (row.line === null || row.kind === "del" ? "" : row.line);
 const textOf = (row) => (row.kind === "fold" ? (row.hidden ? `⋯ ${row.hidden} lines` : "⋯") : row.text);
@@ -67,10 +73,10 @@ onUnmounted(() => sized && sized.disconnect());
             <span class="diff-card-path" :title="path">
                 <span class="diff-card-dir">{{ dir }}</span>
                 <span class="diff-card-name">{{ name }}</span>
+                <template v-if="badge">
+                    <span :class="['diff-card-badge', kind]">{{ badge }}</span>
+                </template>
             </span>
-            <template v-if="badge">
-                <span class="diff-card-badge">{{ badge }}</span>
-            </template>
             <span :class="['diff-card-count', 'add', {zero: !added}]">+{{ added }}</span>
             <span :class="['diff-card-count', 'del', {zero: !removed}]">−{{ removed }}</span>
             <span class="diff-card-ago">{{ ago }}</span>
@@ -92,12 +98,17 @@ onUnmounted(() => sized && sized.disconnect());
             <div ref="grow" class="diff-card-grow">
                 <div ref="body" class="diff-card-diff">
                     <div class="diff-card-rows">
-                        <template v-for="(row, i) in drawn" :key="i">
+                        <template v-for="(row, i) in listed" :key="i">
                             <div :class="['diff-row', row.kind, {fresh: fresh && row.edit === fresh}]">
                                 <span class="diff-row-num">{{ numberOf(row) }}</span>
                                 <span class="diff-row-sign">{{ SIGNS[row.kind] }}</span>
                                 <span class="diff-row-code">{{ textOf(row) }}</span>
                             </div>
+                        </template>
+                        <template v-if="beyond > 0">
+                            <button type="button" class="diff-card-more" @click.stop="opened = true">
+                                {{ beyond }} more {{ beyond === 1 ? "line" : "lines" }}
+                            </button>
                         </template>
                     </div>
                 </div>
@@ -178,18 +189,48 @@ onUnmounted(() => sized && sized.disconnect());
     text-decoration-color: var(--text-4);
 }
 
-.diff-card-badge {
-    padding: 1px 6px;
-    border: 1px solid var(--border-2);
-    border-radius: 4px;
-    color: var(--text-3);
+.diff-card-more {
+    display: block;
+    width: 100%;
+    padding: 4px 12px;
+    border: 0;
+    background: none;
+    color: var(--text-4);
     font-family: var(--font);
-    font-size: 11px;
+    font-size: 11.5px;
+    text-align: left;
+    cursor: pointer;
+}
+
+.diff-card-more:hover {
+    color: var(--text-2);
+}
+
+.diff-card-badge {
+    flex: none;
+    margin-left: 7px;
+    color: var(--text-4);
+    font-family: var(--font);
+    font-size: 8.5px;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
     white-space: nowrap;
 }
 
+.diff-card-badge.new {
+    color: var(--add-fg);
+}
+
+.diff-card-badge.deleted {
+    color: var(--del-fg);
+}
+
 .diff-card-count {
+    min-width: 4.5ch;
     font-size: 11.5px;
+    font-variant-numeric: tabular-nums;
+    text-align: right;
     white-space: nowrap;
 }
 

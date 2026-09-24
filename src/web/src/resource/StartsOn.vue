@@ -5,7 +5,7 @@ import Btn from "../kit/Btn.vue";
 import ChoiceList from "../kit/ChoiceList.vue";
 import {meta, types} from "../state/store.js";
 
-const props = defineProps({resource: Object});
+const props = defineProps({resource: Object, bare: Boolean});
 const BY_HAND = "";
 const MOMENTS = {created: "is created", completed: "is finished"};
 const TRIGGERED = /^trigger:(\d+)$/;
@@ -51,8 +51,10 @@ function save(value) {
 </script>
 
 <template>
-    <section class="starts">
-        <h3>When it starts</h3>
+    <section :class="['starts', {bare}]">
+        <template v-if="!bare">
+            <h3>When it starts</h3>
+        </template>
         <div class="starts-line">
             <span>{{ sentence }}</span>
             <template v-if="!resource.data.system">
@@ -89,6 +91,10 @@ h3 {
     font-weight: 600;
     letter-spacing: 0.04em;
     text-transform: uppercase;
+}
+
+.starts.bare {
+    margin-top: 0;
 }
 
 .starts-line {

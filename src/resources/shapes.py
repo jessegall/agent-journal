@@ -20,11 +20,13 @@ def typed(value):
 LEVELS = {"low": 50, "default": 100, "high": 150, "critical": 200}
 
 
-def priority_level(value) -> int | None:
+def priority_level(value) -> int:
     level = str(value).lower()
     if level in LEVELS:
         return LEVELS[level]
-    return int(level) if level.lstrip("-").isdigit() else None
+    if not level.lstrip("-").isdigit():
+        raise Refused(f"a priority is a number or one of {', '.join(LEVELS)}")
+    return int(level)
 
 
 def rows(**columns: str) -> dict:

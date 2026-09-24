@@ -3,6 +3,7 @@ import {ref} from "vue";
 import Icon from "../kit/Icon.vue";
 import MenuItem from "../kit/MenuItem.vue";
 import MenuPanel from "../kit/MenuPanel.vue";
+import Segmented from "../kit/Segmented.vue";
 import TextInput from "../kit/TextInput.vue";
 import ToggleItem from "../kit/ToggleItem.vue";
 
@@ -10,15 +11,23 @@ const props = defineProps({options: {type: Object, required: true}, filter: {typ
 const emit = defineEmits(["options", "filter", "expand"]);
 const anchor = ref(null);
 const TOGGLES = [
-    {key: "flush", label: "Flush, as lines"},
     {key: "headers", label: "Headers only"},
     {key: "collapse", label: "Collapse big files"},
     {key: "editsOnly", label: "Hide unchanged lines"},
     {key: "removals", label: "Show removals"},
-    {key: "capped", label: "Limit card height"},
-    {key: "columns", label: "Always two columns"},
+];
+const LAYOUT = [
+    {key: "flush", label: "Flush", icon: "list"},
+    {key: "columns", label: "Always two columns", icon: "columns"},
+    {key: "capped", label: "Limit card height", icon: "minimize"},
 ];
 const SIZES = [-1, 0, 1];
+const LINES = [
+    {key: "0", label: "All"},
+    {key: "5", label: "5"},
+    {key: "10", label: "10"},
+    {key: "20", label: "20"},
+];
 
 const set = (patch) => emit("options", {...props.options, ...patch});
 const sized = (by) => set({size: Math.max(SIZES[0], Math.min(SIZES[SIZES.length - 1], props.options.size + by))});
@@ -45,7 +54,18 @@ function expand() {
                 <template v-for="t in TOGGLES" :key="t.key">
                     <ToggleItem :on="!!options[t.key]" @click="set({[t.key]: !options[t.key]})">{{ t.label }}</ToggleItem>
                 </template>
+                <div class="feed-bar-lines">
+                    <span>Show up to</span>
+                    <Segmented :options="LINES" :value="String(options.lines || 0)" @pick="(key) => set({lines: Number(key)})" />
+                    <span>lines</span>
+                </div>
                 <span class="feed-bar-line" />
+                <template v-for="t in LAYOUT" :key="t.key">
+                    <ToggleItem :on="!!options[t.key]" @click="set({[t.key]: !options[t.key]})">
+                        <Icon :name="t.icon" :size="14" />
+                        {{ t.label }}
+                    </ToggleItem>
+                </template>
                 <MenuItem @click="expand">
                     <Icon name="rows" :size="14" />
                     Expand everything
@@ -64,6 +84,15 @@ function expand() {
 </template>
 
 <style scoped>
+.feed-bar-lines {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 8px;
+    color: var(--text-3);
+    font-size: 12.5px;
+}
+
 .feed-bar {
     flex: none;
     display: flex;

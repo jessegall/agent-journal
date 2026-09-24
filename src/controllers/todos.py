@@ -122,10 +122,7 @@ class Todos(Controller):
         return gone
 
     def priority(self, n: int, value: str):
-        level = priority_level(value)
-        if level is None:
-            self._refuse(f"a priority is a number or one of {', '.join(LEVELS)}")
-        return self.update(int(n), priority=level)
+        return self.update(int(n), priority=priority_level(value))
 
     def place(self, n: int, before: int):
         todo, target = self.load(int(n)), self.load(int(before))

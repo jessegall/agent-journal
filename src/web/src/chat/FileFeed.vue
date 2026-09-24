@@ -12,7 +12,17 @@ import {fresh} from "../format/time.js";
 
 const props = defineProps({agent: {type: Number, required: true}, flush: Boolean, options: {type: Object, default: null}});
 const emit = defineEmits(["options"]);
-const DEFAULTS = {flush: false, headers: false, collapse: true, editsOnly: false, removals: true, capped: false, columns: false, size: 0};
+const DEFAULTS = {
+    lines: 0,
+    flush: false,
+    headers: false,
+    collapse: true,
+    editsOnly: false,
+    removals: true,
+    capped: false,
+    columns: false,
+    size: 0,
+};
 const BIG = 40;
 const TOP = 80;
 const SIZES = {"-1": ["10.5px", "17px"], 0: ["11.5px", "19px"], 1: ["13px", "21px"]};
@@ -81,6 +91,7 @@ function onScroll(e) {
                         :edits-only="view.editsOnly"
                         :hide-removals="!view.removals"
                         :capped="view.capped"
+                        :lines="Number(view.lines) || 0"
                         :whole="wholes[c.id] || null"
                         @fold="fold(c)"
                         @whole="whole(c)"
