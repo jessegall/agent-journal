@@ -153,6 +153,9 @@ class Sessions:
     def holder(self, env: str) -> str:
         return next(iter(self.holders(env)), "")
 
+    def free(self, env: str) -> str:
+        return next(name for name in (env, *(f"{env}-{i}" for i in range(2, 100))) if not self.holder(name))
+
     def holders(self, env: str) -> list[str]:
         return [session for session, s in self.all().items() if s.environment == env and live(s)]
 

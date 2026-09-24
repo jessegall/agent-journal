@@ -76,6 +76,11 @@ def test_a_session_started_in_a_worktree_works_the_environment_named_after_it(tm
     hooked(record, "wanderer", worktree_of(tmp_path, "feature-y"), 5252)
     assert (Sessions(record.root).environment("wanderer"), Sessions(record.root).environment("holder")) == (record.env, "feature-y"), \
         "a session that only looks into a worktree another agent holds stays where it was, and the holder keeps it"
+    from engine.terminal import launch_spec
+    from unittest import mock
+    with mock.patch("providers.claude.ClaudeDriver.placed", lambda cwd, args: (cwd, args)), mock.patch("engine.terminal.share_journal"):
+        spec = launch_spec(record.root, tmp_path / "feature-y", record.env, "claude", [])
+    assert spec["env"] == "feature-y-2", "a second agent started in a worktree another agent works gets an environment of its own"
 
 
 def test_a_resumed_conversation_in_a_worktree_moves_there_with_its_terminal(tmp_path):
