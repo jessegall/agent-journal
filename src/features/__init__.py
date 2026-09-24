@@ -10,7 +10,7 @@ FEATURES: dict[str, object] = {}
 SWITCHED: list = []
 RENAMED: set[str] = set()
 SEATED: dict[str, int] = {}
-CHANGE_SWITCHES = ("feature", "plugin", "environment")
+CHANGE_SWITCHES = ("feature", "plugin")
 
 
 @cache
@@ -29,14 +29,14 @@ def load(root: Path | None = None) -> list[str]:
             for alias in cls.aliases:
                 old, key = alias if isinstance(alias, tuple) else (alias, "")
                 rename(root, old, f"{name}.{key}" if key else name)
-    from features.base import rebooted
+    from features.base import environments_changed, rebooted
     for name, cls in REGISTRY.items():
         if name in FEATURES:
             continue
         FEATURES[name] = cls()
         FEATURES[name].wire()
     if not SWITCHED:
-        SWITCHED.extend(bus.on(kind, rebooted) for kind in CHANGE_SWITCHES)
+        SWITCHED.extend([*(bus.on(kind, rebooted) for kind in CHANGE_SWITCHES), bus.on("environment", environments_changed)])
     from features.base import generation
     if root and SEATED.get(str(root)) != generation():
         seat(root)
