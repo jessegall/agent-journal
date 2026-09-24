@@ -1,7 +1,7 @@
 <script setup>
 import Icon from "../kit/Icon.vue";
 import PageJump from "./PageJump.vue";
-import {armed, drawnWide, switching} from "../platform/fullscreen.js";
+import {drawnWide, switching} from "../platform/fullscreen.js";
 import JournalTabs from "./JournalTabs.vue";
 
 const back = () => history.back();
@@ -17,9 +17,6 @@ const forward = () => history.forward();
             <Icon name="arrow" :size="13" />
         </button>
         <PageJump />
-        <template v-if="armed">
-            <span class="window-bar-hint">Click anywhere to go full screen again</span>
-        </template>
         <template v-if="drawnWide">
             <JournalTabs />
         </template>
@@ -60,17 +57,6 @@ const forward = () => history.forward();
 .window-bar-btn:hover {
     background: var(--hover);
     color: var(--text);
-}
-
-.window-bar-hint {
-    margin-left: auto;
-    padding: 0 8px;
-    color: var(--text-4);
-    font-size: 11px;
-}
-
-.window-bar-hint + .journal-tabs {
-    margin-left: 0;
 }
 
 @media (prefers-reduced-motion: no-preference) {

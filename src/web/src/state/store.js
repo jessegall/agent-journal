@@ -20,7 +20,7 @@ export const store = reactive({
     stream: null,
     booted: false,
     activity: remembered("journal.activity", true),
-    wide: remembered("journal.wide", false),
+    wide: false,
     sideMini: remembered("journal.side.mini", false),
     board: {
         lanes: [],
@@ -39,7 +39,6 @@ export const store = reactive({
 });
 
 kept("journal.activity", () => store.activity);
-kept("journal.wide", () => store.wide);
 kept("journal.side.mini", () => store.sideMini);
 kept("journal.board.lens", () => store.board.lens);
 
