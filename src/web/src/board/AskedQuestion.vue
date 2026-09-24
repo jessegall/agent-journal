@@ -6,7 +6,6 @@ defineProps({question: {type: Object, required: true}});
 
 <template>
     <div class="asked">
-        <span class="tag">Question</span>
         <p class="title">{{ question.title }}</p>
         <template v-if="question.abstract">
             <p class="context">{{ question.abstract }}</p>
@@ -23,17 +22,12 @@ defineProps({question: {type: Object, required: true}});
     animation: asked-in 0.25s both;
 }
 
-.tag {
-    color: var(--accent-text);
-    font-size: 11px;
-    letter-spacing: 0.02em;
-}
-
 .title {
     margin: 0;
     color: var(--text);
-    font-size: 14px;
+    font-size: 17px;
     font-weight: 500;
+    line-height: 26px;
 }
 
 .context {
