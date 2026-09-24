@@ -454,7 +454,7 @@ kbd {
     display: grid;
     flex: 1 1 auto;
     grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-    grid-auto-rows: 320px;
+    grid-auto-rows: 220px;
     align-content: start;
     gap: 14px;
     min-height: 0;
