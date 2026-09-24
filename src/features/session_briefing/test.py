@@ -181,3 +181,30 @@ def test_lines_are_typed_once_the_channel_stops_delivering_them(tmp_path):
     written(*({"type": "assistant", "timestamp": stamp(), "message": {"content": "working"}} for _ in range(4)))
     assert driver._handed("work 1 open") is False, "a line the agent never received, while it kept working, sends the next lines to the terminal"
     assert driver._handed("todo 6 next") is False, "and keeps typing them for a while rather than losing more"
+
+
+def test_a_model_switch_is_confirmed_when_claude_asks(monkeypatch):
+    import providers.claude as claude
+    from engine import runtime
+    from providers import DRIVERS
+    record = fresh()
+    driver = DRIVERS["claude"](record, "claude-1")
+    screen = runtime.session_file(record.root, "claude-1", "screen")
+    screen.parent.mkdir(parents=True, exist_ok=True)
+    screen.write_bytes(b"Enter to confirm, from an older prompt\r\n")
+    monkeypatch.setattr(claude, "CONFIRM_POLL", 0.01)
+    monkeypatch.setattr(claude, "CONFIRM_WAIT", 0.2)
+    monkeypatch.setattr("engine.drivers.ENTER_AFTER", 0)
+    sent = []
+
+    def wrote(raw):
+        sent.append(raw)
+        if raw.startswith(b"/model"):
+            screen.write_bytes(screen.read_bytes() + b"\x1b[1mSwitch to Sonnet?\x1b[0m\r\n Enter to confirm \xc2\xb7 Esc to cancel")
+        return True
+
+    driver._wrote, driver.clear_input = wrote, lambda: None
+    assert driver.run_command("/model sonnet") and sent.count(b"\r") == 2, "the switch is typed and Claude's confirmation is answered with Enter"
+    sent.clear()
+    driver.run_command("/effort high")
+    assert sent.count(b"\r") == 1, "a command that asks nothing gets no second Enter, even with an old prompt on screen"

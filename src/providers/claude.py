@@ -516,6 +516,12 @@ class Claude(Provider):
         return bool(hook.agent) or "subagents" in (hook.transcript.parts if hook.transcript else ())
 
 
+ASKS_BEFORE = ("/model",)
+CONFIRM_PROMPT = b"Entertoconfirm"
+CONFIRM_WAIT = 4.0
+CONFIRM_POLL = 0.25
+
+
 class ClaudeDriver(Driver):
     DISPLAY_HOOK = True
     SHELL = "!"
@@ -544,6 +550,25 @@ class ClaudeDriver(Driver):
     def confirm(cls, printed: bytes) -> bytes:
         plain = b"".join(ANSI.sub(b"", printed).split())
         return b"\r" if cls.CHANNEL[0].encode() in plain and CHOICE.search(plain) else b""
+
+    def run_command(self, command: str) -> bool:
+        screen = runtime.session_file(self.record.root, self.session, "screen")
+        start = screen.stat().st_size if screen.is_file() else 0
+        typed = super().run_command(command)
+        if typed and command.strip().startswith(ASKS_BEFORE):
+            self._confirm_after(screen, start)
+        return typed
+
+    def _confirm_after(self, screen: Path, start: int) -> None:
+        until = time.time() + CONFIRM_WAIT
+        while time.time() < until:
+            time.sleep(CONFIRM_POLL)
+            with screen.open("rb") as shown:
+                shown.seek(start)
+                plain = b"".join(ANSI.sub(b"", shown.read()).split())
+            if CONFIRM_PROMPT in plain:
+                self._entered()
+                return
 
     def _post(self, line: str) -> bool:
         return self._handed(line)

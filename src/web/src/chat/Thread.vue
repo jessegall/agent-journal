@@ -79,6 +79,9 @@ const activity = computed(() =>
     agent.value && agent.value.data.status === "compacting" ? "compacting" : helping.value ? `subagent: ${helping.value.task}` : "working"
 );
 const away = ref(false);
+const planOpen = ref(true);
+const AT_BOTTOM = 2;
+const FOLD_AT = 8;
 const missed = ref(0);
 const settledOnce = ref(false);
 const ready = ref(false);
@@ -176,6 +179,7 @@ function toBottom(smooth = false) {
         s.scrollTop = s.scrollHeight;
     }
     away.value = false;
+    planOpen.value = true;
     missed.value = 0;
 }
 
@@ -235,7 +239,10 @@ function wheeled() {
 function watchScroll() {
     const s = scroller.value;
     if (!s || Date.now() - glidedAt < GLIDE) return;
-    const far = s.scrollHeight - s.scrollTop - s.clientHeight > 40;
+    const gap = s.scrollHeight - s.scrollTop - s.clientHeight;
+    if (gap <= AT_BOTTOM) planOpen.value = true;
+    else if (gap > FOLD_AT) planOpen.value = false;
+    const far = gap > 40;
     if (far && !away.value && !store.focus && Date.now() - scrolledAt > BY_HAND) {
         toBottom();
         return;
@@ -427,7 +434,7 @@ watch(
                             />
                         </TransitionGroup>
                         <Transition name="plancard">
-                            <PlanCard v-if="planCard" :key="planCard.n" :plan="planCard" :folded="away" />
+                            <PlanCard v-if="planCard" :key="planCard.n" :plan="planCard" :folded="!planOpen" />
                         </Transition>
                         <Transition name="status">
                             <div
@@ -700,7 +707,7 @@ watch(
 }
 
 .thread-down.over-plan {
-    bottom: calc(100% + 50px);
+    bottom: calc(100% + 62px);
 }
 
 .thread-down:hover {
