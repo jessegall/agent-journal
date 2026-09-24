@@ -2,6 +2,7 @@
 import Icon from "../kit/Icon.vue";
 import {pageTitle} from "../composables/pageTitle.js";
 import {armed, drawnWide, switching} from "../platform/fullscreen.js";
+import JournalTabs from "./JournalTabs.vue";
 
 const back = () => history.back();
 const forward = () => history.forward();
@@ -18,6 +19,9 @@ const forward = () => history.forward();
         <span class="window-bar-title">{{ pageTitle }}</span>
         <template v-if="armed">
             <span class="window-bar-hint">Click anywhere to go full screen again</span>
+        </template>
+        <template v-if="drawnWide">
+            <JournalTabs />
         </template>
     </nav>
 </template>
@@ -66,9 +70,13 @@ const forward = () => history.forward();
 
 .window-bar-hint {
     margin-left: auto;
-    padding-right: 4px;
+    padding: 0 8px;
     color: var(--text-4);
     font-size: 11px;
+}
+
+.window-bar-hint + .journal-tabs {
+    margin-left: 0;
 }
 
 @media (prefers-reduced-motion: no-preference) {

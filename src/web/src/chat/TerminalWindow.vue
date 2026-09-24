@@ -55,7 +55,6 @@ async function send(line, now) {
                     </span>
                 </span>
             </form>
-            <p class="terminal-hint">↵ queue · ⌃↵ run now</p>
             <template v-if="refusal">
                 <p class="terminal-refusal">{{ refusal }}</p>
             </template>
@@ -158,12 +157,6 @@ async function send(line, now) {
 
 .terminal-run .terminal-input:focus {
     border: 0;
-}
-
-.terminal-hint {
-    margin: -8px 18px 10px;
-    color: var(--text-4);
-    font-size: 10.5px;
 }
 
 .terminal-refusal {
