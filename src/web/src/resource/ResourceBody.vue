@@ -15,6 +15,7 @@ import {age} from "../format/time.js";
 import {label, meta, word} from "../state/store.js";
 import ResourceActions from "./ResourceActions.vue";
 import Sections from "./Sections.vue";
+import Chapters from "./Chapters.vue";
 import {isUpdate, updateLabel} from "../domain/updates.js";
 import OptionsPicker from "./OptionsPicker.vue";
 import StageMeanings from "./StageMeanings.vue";
@@ -98,10 +99,14 @@ const docs = computed(() =>
               .filter((d) => d && !d.deleted)
 );
 const PAGE = Math.round(window.innerHeight * 0.9);
+const page = ref(null);
+const chaptered = computed(
+    () => kind.value.view === "document" && props.resource.type !== "message" && props.resource.sections.length >= 2
+);
 </script>
 
 <template>
-    <article class="body">
+    <article ref="page" class="body">
         <header class="head">
             <div class="top">
                 <span class="kind">
@@ -150,6 +155,9 @@ const PAGE = Math.round(window.innerHeight * 0.9);
             </template>
             <template v-else>
                 <h2 class="title">{{ resource.title }}</h2>
+                <template v-if="chaptered">
+                    <Chapters :sections="resource.sections" :body="page" />
+                </template>
             </template>
         </header>
         <slot name="head" />

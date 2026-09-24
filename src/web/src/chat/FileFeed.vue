@@ -12,7 +12,7 @@ import {fresh} from "../format/time.js";
 
 const props = defineProps({agent: {type: Number, required: true}, flush: Boolean, options: {type: Object, default: null}});
 const emit = defineEmits(["options"]);
-const DEFAULTS = {collapse: true, editsOnly: false, removals: true, capped: false, columns: false, size: 0};
+const DEFAULTS = {headers: false, collapse: true, editsOnly: false, removals: true, capped: false, columns: false, size: 0};
 const BIG = 40;
 const TOP = 80;
 const SIZES = {"-1": ["10.5px", "17px"], 0: ["11.5px", "19px"], 1: ["13px", "21px"]};
@@ -33,7 +33,7 @@ const listed = computed(() => {
 });
 const sizing = computed(() => ({"--diff-size": SIZES[view.value.size][0], "--diff-line": SIZES[view.value.size][1]}));
 
-const foldedOf = (c) => folds.value[c.id] ?? (view.value.collapse && c.added + c.removed > BIG);
+const foldedOf = (c) => folds.value[c.id] ?? (view.value.headers || (view.value.collapse && c.added + c.removed > BIG));
 const fold = (c) => (folds.value = {...folds.value, [c.id]: !foldedOf(c)});
 const expand = () => (folds.value = Object.fromEntries(cards.value.map((c) => [c.id, false])));
 

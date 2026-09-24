@@ -72,11 +72,11 @@ class Stored:
         p = self.path(r.n)
         if self.resource.own_folder:
             p.parent.mkdir(parents=True, exist_ok=True)
+        if not self.resource.own_folder:
+            self._note(r.n)
         write_text(p, r.dump())
         if self.resource.own_folder:
             os.utime(self._folder())
-        else:
-            self._note(r.n)
 
     def _note(self, n: int) -> None:
         with (self._folder() / CHANGES).open("a") as changes:
@@ -106,9 +106,7 @@ class Stored:
     @internal
     def numbers(self) -> list[int]:
         folder = self.record.folder(self.type, self.resource.scope)
-        if folder.is_dir():
-            self.summaries()
-        return sorted(set(INDEXED.get(str(folder), {})) | set(self._packed()))
+        return sorted(set(self._stamps(folder)) | set(self._packed()))
 
     @internal
     def summaries(self) -> list[dict]:
@@ -117,8 +115,7 @@ class Stored:
         held = SUMMARIES.get(str(folder))
         if held and held[0] == moved:
             return held[1]
-        loose, wrote = self._indexed(folder)
-        return self._summarised(folder, self._moved(folder) if wrote else moved, loose)
+        return self._summarised(folder, moved, self._indexed(folder))
 
     def _moved(self, folder: Path) -> tuple:
         return (folder.stat().st_mtime_ns, mtime(folder / PACKED / INDEX))
@@ -206,7 +203,7 @@ class Stored:
         STAMPED[str(folder)] = Stamped(mark, held.checked, stamps, inodes, noted)
         return stamps
 
-    def _indexed(self, folder: Path) -> tuple[list[dict], bool]:
+    def _indexed(self, folder: Path) -> list[dict]:
         stamps = self._stamps(folder)
         known = INDEXED.get(str(folder)) or {int(n): row for n, row in (read_json(folder / INDEX) or {}).items()}
         needed = {"files", PART_OF, DRAFT_OF, OWNER, *self.resource.indexed}
@@ -227,12 +224,11 @@ class Stored:
             rows[n] = self._row(r, stamp)
         changed = sum(1 for n, row in rows.items() if known.get(n) is not row) + len(known.keys() - rows.keys())
         due = changed >= FLUSH_ROWS or time.time() - WRITTEN.get(str(folder), 0.0) >= FLUSH_SECONDS or not (folder / INDEX).is_file()
-        wrote = bool(changed) and due
-        if wrote:
+        if changed and due:
             write_json(folder / INDEX, rows)
             WRITTEN[str(folder)] = time.time()
         INDEXED[str(folder)] = rows
-        return [rows[n] for n in sorted(rows) if not rows[n].get(DAMAGED)], wrote
+        return [rows[n] for n in sorted(rows) if not rows[n].get(DAMAGED)]
 
     def _titled(self, title: str, standing: bool = False) -> Resource | None:
         found = next((row["n"] for row in self.summaries() if row["title"] == title and not row["deleted"] and not (standing and row["completed"])), None)
@@ -298,7 +294,7 @@ class Stored:
 
     def _pack(self, before: float) -> int:
         folder = self.record.folder(self.type, self.resource.scope)
-        chosen = [row for row in self._indexed(folder)[0] if (row["completed"] or row["deleted"]) and row["updated"] < before]
+        chosen = [row for row in self._indexed(folder) if (row["completed"] or row["deleted"]) and row["updated"] < before]
         months: dict[str, list[dict]] = {}
         for row in chosen:
             months.setdefault(time.strftime("%Y-%m", time.localtime(row["updated"])), []).append(row)

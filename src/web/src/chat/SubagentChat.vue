@@ -1,7 +1,7 @@
 <script setup>
 import {computed, nextTick, ref, watch} from "vue";
 import {api} from "../api/client.js";
-import {kindOf, useAgentLinks} from "../composables/agentLinks.js";
+import {standing} from "../composables/agentLinks.js";
 import {chatTurns} from "../domain/transcript.js";
 import {rows} from "../sync/rows.js";
 import Compose from "./Compose.vue";
@@ -10,7 +10,6 @@ import Turn from "./Turn.vue";
 
 const props = defineProps({
     turns: {type: Array, required: true},
-    agent: {type: Number, required: true},
     session: {type: String, required: true},
     task: {type: String, default: ""},
 });
@@ -19,15 +18,9 @@ const sent = computed(() => rows("message").filter((m) => m.data.sent_to === pro
 const sentTexts = computed(() => new Set(sent.value.map((m) => m.brief.trim())));
 const transcriptLines = computed(() => chatTurns(props.turns).filter((t) => !(t.who === "user" && sentTexts.value.has(t.brief.trim()))));
 const lines = computed(() => [...transcriptLines.value, ...sent.value].sort((a, b) => a.created - b.created));
-const links = useAgentLinks(() => [props.agent, props.session]);
-const linkPins = computed(() =>
-    links.value.map((href) => ({
-        n: href,
-        title: `${kindOf(href)} · ${href.replace(/^https?:\/\//, "")}`,
-        data: {link: href, label: "Open", tone: "note"},
-    }))
+const pins = computed(() =>
+    rows("notice").filter((notice) => notice.data.agent === props.session && !notice.completed && !standing(notice))
 );
-const ownPins = computed(() => rows("notice").filter((notice) => notice.data.agent === props.session && !notice.completed));
 const send = (text) => api.create("message", {brief: text, sent_to: props.session});
 watch(
     () => lines.value.length,
@@ -38,12 +31,9 @@ watch(
 
 <template>
     <div class="subagent-chat">
-        <template v-if="linkPins.length || ownPins.length">
+        <template v-if="pins.length">
             <div class="pins">
-                <template v-for="pin in linkPins" :key="pin.n">
-                    <Notice :notice="pin" fixed />
-                </template>
-                <template v-for="pin in ownPins" :key="pin.n">
+                <template v-for="pin in pins" :key="pin.n">
                     <Notice :notice="pin" />
                 </template>
             </div>
@@ -56,7 +46,9 @@ watch(
                 <p class="none">Nothing said yet.</p>
             </template>
         </div>
-        <Compose :send="send" :placeholder="task ? `Message ${task}` : 'Message the subagent'" />
+        <div class="composer">
+            <Compose :send="send" :placeholder="task ? `Message ${task}` : 'Message the subagent'" />
+        </div>
     </div>
 </template>
 
@@ -64,9 +56,13 @@ watch(
 .subagent-chat {
     display: flex;
     flex-direction: column;
-    gap: 8px;
     flex: 1;
     min-height: 0;
+}
+
+.composer {
+    flex: none;
+    padding: 0 24px 16px;
 }
 
 .log {
@@ -77,14 +73,13 @@ watch(
     min-height: 0;
     overflow-y: auto;
     overscroll-behavior: contain;
-    padding: 0 2px;
+    padding: 12px 24px;
 }
 
 .pins {
     display: flex;
     flex: none;
     flex-direction: column;
-    gap: 6px;
 }
 
 .none {

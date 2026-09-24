@@ -415,8 +415,10 @@ async function drop() {
     flex-direction: column;
     align-items: flex-start;
     align-self: flex-start;
+    --turn-gutter: 48px;
+
     gap: 3px;
-    max-width: 78%;
+    max-width: min(78%, calc(100% - var(--turn-gutter)));
 }
 
 .thread-turn.peer .thread-bubble {
@@ -430,10 +432,6 @@ async function drop() {
     color: var(--text-3);
     font-size: 12px;
     line-height: 1.5;
-}
-
-.thread-turn.mine {
-    align-items: flex-end;
 }
 
 .thread-turn.receipt {
@@ -472,8 +470,8 @@ async function drop() {
 }
 
 .thread-turn.ask {
-    width: 100%;
-    max-width: 100%;
+    width: calc(100% - var(--turn-gutter));
+    max-width: calc(100% - var(--turn-gutter));
 }
 
 .thread-bubble {
@@ -486,8 +484,8 @@ async function drop() {
 }
 
 .thread-turn.long {
-    width: 100%;
-    max-width: 100%;
+    width: calc(100% - var(--turn-gutter));
+    max-width: calc(100% - var(--turn-gutter));
 }
 
 .thread-turn.long .thread-bubble {

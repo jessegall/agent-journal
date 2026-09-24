@@ -10,8 +10,9 @@ const props = defineProps({options: {type: Object, required: true}, filter: {typ
 const emit = defineEmits(["options", "filter", "expand"]);
 const anchor = ref(null);
 const TOGGLES = [
+    {key: "headers", label: "Headers only"},
     {key: "collapse", label: "Collapse big files"},
-    {key: "editsOnly", label: "Edits only"},
+    {key: "editsOnly", label: "Hide unchanged lines"},
     {key: "removals", label: "Show removals"},
     {key: "capped", label: "Limit card height"},
     {key: "columns", label: "Always two columns"},

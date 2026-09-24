@@ -226,8 +226,30 @@ WRITING_AN_UPDATE = {
                            "sequence next <this sequence> --about <ref>."),
     ],
 }
+WRITING_A_DOCUMENT = {
+    "title": "Writing a document",
+    "brief": "The user asked for a document. Open it first and fill it chapter by chapter, so the user can watch it being "
+             "written in its inspector, then answer with it.",
+    "starts_on": "",
+    "started_by": "",
+    "words": ("write a document", "write a doc", "write it up", "write up a", "write a proposal", "document this",
+              "put it in a document"),
+    "steps": [
+        ("Open the document", "Before any research, journal doc create \"<what it is about>\" --brief \"<one line on what "
+                              "it answers>\", then journal doc section <doc n> \"<chapter>\" \"Being written.\" for every "
+                              "chapter you plan, in order. Put the document's reference on a line of its own in the chat, "
+                              "like `doc 41`, so the user can open it and watch. Then journal sequence next <this sequence> "
+                              "--about <ref>."),
+        ("Write each chapter", "Read what a chapter needs, then write it with journal doc section <doc n> \"<chapter>\" "
+                               "\"<body>\", one chapter at a time and in order, so the user sees each one appear. Cut a "
+                               "chapter that turned out empty with journal doc cut <doc n> \"<chapter>\". Then journal "
+                               "sequence next <this sequence> --about <ref>."),
+        ("Answer with it", "Say in one or two plain lines what the document concludes, then its reference on a line of its "
+                           "own, like `doc 41`. Finish with journal sequence next <this sequence> --about <ref>."),
+    ],
+}
 SHIPPED = (FILING_A_DUMP, BUILDING_A_PLAN, WORKING_A_BOARD_CARD, REVISING_THE_DRAFTS, BUILDING_A_BOARD, DRAFTING_FROM_A_DOCUMENT,
-           WRITING_AN_UPDATE)
+           WRITING_AN_UPDATE, WRITING_A_DOCUMENT)
 
 
 def ship(record) -> list[str]:

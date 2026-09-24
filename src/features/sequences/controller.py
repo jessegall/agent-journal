@@ -1,3 +1,4 @@
+import json
 import time
 
 import controllers.types as types_module
@@ -25,6 +26,20 @@ class Sequences(Controller):
             return super().update(n, title, abstract, brief, outcome, **data)
         self._check_start(starts_on)
         return super().update(n, title, abstract, brief, outcome, starts_on=starts_on, **data)
+
+    def steps(self, n: int, steps: str):
+        try:
+            given = json.loads(steps) if isinstance(steps, str) else steps
+        except ValueError:
+            given = None
+        if not isinstance(given, list) or not all(isinstance(step, dict) and str(step.get("title", "")).strip() for step in given):
+            self._refuse('steps is a JSON list of {"title": "<step>", "body": "<what to do>"}, every step with a title')
+        titles = [step["title"].strip() for step in given]
+        if len(set(titles)) != len(titles):
+            self._refuse("two steps share a title: give each step its own")
+        r = self.load(int(n))
+        r.sections = [{SECTION.title: title, SECTION.body: str(step.get("body", ""))} for title, step in zip(titles, given)]
+        return self.save(r, "updated")
 
     def _check_start(self, starts_on: str) -> None:
         start = starts_on.strip()

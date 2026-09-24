@@ -65,12 +65,29 @@ const KEYS = {ArrowDown: () => step(1), ArrowUp: () => step(-1), Escape: () => e
 const onKey = (e) => KEYS[e.key] && (e.preventDefault(), KEYS[e.key]());
 const measure = () => panel.value && (drawn.value = {w: panel.value.offsetWidth, h: panel.value.scrollHeight});
 const watcher = new ResizeObserver(measure);
+const moved = (a, b) => Math.abs(a.left - b.left) > 1 || Math.abs(a.top - b.top) > 1;
+let frame = 0;
+let opened = null;
+
+function follow() {
+    if (props.anchor) {
+        const edge = props.anchor.getBoundingClientRect();
+        if (!props.anchor.isConnected || (opened && moved(edge, opened))) return emit("close");
+        opened = opened || edge;
+    }
+    frame = requestAnimationFrame(follow);
+}
+
 onMounted(() => {
     measure();
     if (panel.value) watcher.observe(panel.value);
     if (items()[0]) items()[0].focus();
+    follow();
 });
-onUnmounted(() => watcher.disconnect());
+onUnmounted(() => {
+    watcher.disconnect();
+    cancelAnimationFrame(frame);
+});
 defineExpose({element: panel});
 </script>
 
