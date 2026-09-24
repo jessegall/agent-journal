@@ -1,12 +1,8 @@
 <script setup>
 import {computed, reactive} from "vue";
 import FoldGroup from "../kit/FoldGroup.vue";
-import LineList from "../kit/LineList.vue";
-import ChoiceList from "../kit/ChoiceList.vue";
 import SidePanel from "../kit/SidePanel.vue";
-import Switch from "../kit/Switch.vue";
-import SwitchCase from "../kit/SwitchCase.vue";
-import TextInput from "../kit/TextInput.vue";
+import PluginSetting from "./PluginSetting.vue";
 
 const props = defineProps({plugin: {type: Object, required: true}});
 const emit = defineEmits(["close", "change"]);
@@ -22,7 +18,7 @@ const toggled = reactive({});
 
 const groups = computed(() => {
     const out = new Map();
-    for (const s of shown.value) {
+    for (const s of shown.value.filter((setting) => !setting.parent)) {
         const group = s.group || UNGROUPED;
         if (!out.has(group)) out.set(group, []);
         out.get(group).push(s);
@@ -33,7 +29,7 @@ const groups = computed(() => {
     });
 });
 
-const choices = (s) => s.options.map((option) => ({value: String(option), label: String(option), current: s.value === String(option)}));
+const childrenOf = (s) => shown.value.filter((child) => child.parent === s.key);
 </script>
 
 <template>
@@ -48,41 +44,7 @@ const choices = (s) => s.options.map((option) => ({value: String(option), label:
                 @toggle="toggled[group.name] = !group.folded"
             >
                 <template v-for="s in group.settings" :key="s.key">
-                    <div :class="['setting', s.type]">
-                        <div class="setting-names">
-                            <span class="setting-title">{{ s.title }}</span>
-                            <template v-if="s.help">
-                                <span class="setting-help">{{ s.help }}</span>
-                            </template>
-                        </div>
-                        <SwitchCase :value="s.type">
-                            <template #flag>
-                                <Switch :on="s.value === 'true'" :title="s.title" @change="(on) => emit('change', s.key, String(on))" />
-                            </template>
-                            <template #options>
-                                <ChoiceList :choices="choices(s)" @pick="(value) => emit('change', s.key, value)" />
-                            </template>
-                            <template #list>
-                                <LineList :value="s.value" @change="(value) => emit('change', s.key, value)" />
-                            </template>
-                            <template #textarea>
-                                <textarea
-                                    class="setting-value"
-                                    rows="4"
-                                    :value="s.value"
-                                    spellcheck="false"
-                                    @change="emit('change', s.key, $event.target.value)"
-                                />
-                            </template>
-                            <template #default>
-                                <TextInput
-                                    :type="s.type === 'number' ? 'number' : 'text'"
-                                    :value="s.value"
-                                    @change="emit('change', s.key, $event.target.value)"
-                                />
-                            </template>
-                        </SwitchCase>
-                    </div>
+                    <PluginSetting :setting="s" :children="childrenOf(s)" @change="(key, value) => emit('change', key, value)" />
                 </template>
             </FoldGroup>
         </template>
@@ -92,54 +54,5 @@ const choices = (s) => s.options.map((option) => ({value: String(option), label:
 <style scoped>
 .group {
     margin-bottom: 8px;
-}
-
-.setting {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    padding: 10px 0;
-    border-bottom: 1px solid var(--border);
-}
-
-.setting.flag {
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
-    gap: 16px;
-}
-
-.setting-names {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-    min-width: 0;
-}
-
-.setting-title {
-    color: var(--text);
-    font-size: 12.5px;
-}
-
-.setting-help {
-    color: var(--text-3);
-    font-size: 11.5px;
-    line-height: 1.45;
-}
-
-.setting-value {
-    padding: 6px 9px;
-    border: 1px solid var(--border-2);
-    border-radius: 7px;
-    background: var(--bg);
-    color: var(--text);
-    font: inherit;
-    font-size: 12.5px;
-    resize: vertical;
-}
-
-.setting-value:focus {
-    outline: none;
-    border-color: var(--accent);
 }
 </style>

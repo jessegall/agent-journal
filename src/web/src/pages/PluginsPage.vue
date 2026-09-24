@@ -54,6 +54,7 @@ const plugins = computed(() =>
                 type: s.type || "text",
                 options: s.options || [],
                 group: s.group || "",
+                parent: s.parent || "",
                 when: [s.when || []].flat().map((choice) => Object.entries(choice).map(([other, value]) => [other, String(value)])),
                 detail: !!s.detail,
                 value: String(((p.data.settings || {}).chosen || {})[key] ?? s.default ?? ""),

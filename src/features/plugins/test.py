@@ -140,6 +140,9 @@ def test_a_chosen_setting_reaches_the_plugins_commands():
     chosen = (plugins.load(row.n).settings or {}).get(CHOSEN)
     assert environment(record.root, "linter", Manifest.of(row.manifest), row.token, chosen=chosen)["QUIET"] == "SourceReminder", "and a chosen value reaches its env"
     assert "has no setting" in refused(lambda: Configure().run(None, plugins, row.n, "loud", "x"))
+    from features.plugins.manifest import typed
+    assert typed({"php": {"type": "flag"}, "strict": {"parent": "php"}})["strict"]["parent"] == "php", "a setting sits under the switch that turns it on"
+    assert "no flag setting" in refused(lambda: typed({"php": {"type": "text"}, "strict": {"parent": "php"}})), "only under a switch"
     typed = installed(record, "typed", "exit 0", settings={"on": {"type": "flag", "default": "true"}, "level": {"type": "options", "options": ["low", "high"]}},
                       events={"sin-found": {"title": "Sin found", "tone": "warn", "card": {"icon": "warn"}}})
     assert "true or false" in refused(lambda: Configure().run(None, plugins, typed.n, "on", "yes")), "a switch takes true or false"
