@@ -18,7 +18,8 @@ async function press(button, i) {
     running.value = i;
     error.value = "";
     try {
-        if (button.n) await api.act(button.type, button.n, button.action, button.body || {});
+        if (button.say) await api.create("message", {brief: button.say, about: `${props.resource.type}:${props.resource.n}`});
+        else if (button.n) await api.act(button.type, button.n, button.action, button.body || {});
         else await api.command(button.type, button.action, button.body || {});
         await api.act(props.resource.type, props.resource.n, "set", {
             key: "pressed",

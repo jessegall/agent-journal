@@ -21,4 +21,10 @@ class ButtonsDetails(FeatureDetails):
 
         A button goes once it is pressed, and the message says which one; "again": true keeps it
         there to be pressed as often as the user likes.
+
+        A document or a report you write can carry buttons too, with --set buttons when you create it.
+        A button with "say" instead of a command sends that text to you as the user's message about
+        the row, a shortcut for typing it: give a proposal {"label": "Accept this proposal", "say":
+        "I accept this proposal"} and {"label": "Change it first", "say": "I want changes first"} when
+        a choice from the user is what comes next.
     """

@@ -33,6 +33,7 @@ class Button(Loaded):
     n: object = None
     body: dict | None = None
     again: bool = False
+    say: str = ""
 
     @classmethod
     def from_payload(cls, given: dict) -> "Button":
@@ -40,14 +41,17 @@ class Button(Loaded):
         return replace(button, label=button.label.strip()[:LABEL], n=whole(button.n))
 
     def to_json(self) -> dict:
-        kept = {"label": self.label, "type": self.type, "action": self.action, "n": self.n, "body": self.body, "again": self.again}
-        return {key: value for key, value in kept.items() if value is not None and value is not False}
+        kept = {"label": self.label, "type": self.type, "action": self.action, "n": self.n, "body": self.body, "again": self.again,
+                "say": self.say}
+        return {key: value for key, value in kept.items() if value not in (None, False, "")}
 
 
 def one(record, given) -> dict:
     if not isinstance(given, dict):
         return {}
     button = Button.from_payload(given)
+    if button.label and button.say.strip():
+        return Button(label=button.label, say=button.say.strip(), again=button.again).to_json()
     if not button.label or not button.action or not runs(record, button.type, button.action):
         return {}
     return button.to_json()
