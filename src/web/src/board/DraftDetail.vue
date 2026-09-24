@@ -27,9 +27,11 @@ const emit = defineEmits(["close", "keep"]);
                 <p class="approval">Waits for your approval before it starts</p>
             </template>
             <TextDisplay class="brief" :text="ticket.brief" />
-            <div class="back-actions">
-                <Btn :kind="picked ? 'ghost' : 'primary'" small @click="emit('keep')">{{ picked ? "Kept" : "Keep" }}</Btn>
-            </div>
+        </template>
+        <template #foot>
+            <Btn :kind="picked ? 'ghost' : 'primary'" small :title="picked ? 'Click to unpick it' : ''" @click="emit('keep')">
+                {{ picked ? "✓ Picked" : "Pick this ticket" }}
+            </Btn>
         </template>
     </FlipCard>
 </template>
@@ -54,12 +56,6 @@ const emit = defineEmits(["close", "keep"]);
     margin: 0 0 12px;
     color: var(--warn, #e0b060);
     font-size: 13px;
-}
-
-.back-actions {
-    display: flex;
-    justify-content: flex-end;
-    margin-top: 16px;
 }
 
 .brief {
