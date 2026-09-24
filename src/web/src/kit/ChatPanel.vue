@@ -9,6 +9,7 @@ const props = defineProps({
     fill: Boolean,
     limit: Number,
     withoutInput: Boolean,
+    echo: String,
 });
 const emit = defineEmits(["send"]);
 const words = defineModel({type: String, default: ""});
@@ -50,6 +51,11 @@ defineExpose({focus: () => nextTick(() => input.value.focus())});
                 <slot name="actions" />
             </div>
         </template>
+        <Transition name="echo">
+            <template v-if="echo">
+                <p class="echo">{{ echo }}</p>
+            </template>
+        </Transition>
         <Transition name="input-step">
             <template v-if="!withoutInput">
                 <form :class="['compose', {locked}]" @submit.prevent="send">
@@ -133,6 +139,26 @@ defineExpose({focus: () => nextTick(() => input.value.focus())});
     color: var(--text-4);
     font-size: 11px;
     font-variant-numeric: tabular-nums;
+}
+
+.echo {
+    align-self: flex-end;
+    max-width: 80%;
+    margin: 0 12px 6px;
+    color: var(--text-2);
+    font-size: 14px;
+    line-height: 20px;
+    overflow-wrap: anywhere;
+}
+
+.echo-enter-active,
+.echo-leave-active {
+    transition: opacity 0.3s ease;
+}
+
+.echo-enter-from,
+.echo-leave-to {
+    opacity: 0;
 }
 
 .input-step-enter-active,
