@@ -172,6 +172,12 @@ const updatePreset = (key) =>
     keepPresets(
         savedPresets.value.map((p) => (p.key === key ? {...p, shape: snapshot(layout.value), scheme: layout.value.scheme || ""} : p))
     );
+const sharePreset = (key) => {
+    const preset = savedPresets.value.find((p) => p.key === key);
+    if (preset) navigator.clipboard.writeText(JSON.stringify({name: preset.name, shape: preset.shape, scheme: preset.scheme || ""}));
+};
+const importPreset = (preset) =>
+    keepPresets([...savedPresets.value, {key: `saved-${Date.now()}`, name: preset.name, shape: preset.shape, scheme: preset.scheme || ""}]);
 const renamePreset = (key, name) => keepPresets(savedPresets.value.map((p) => (p.key === key ? {...p, name} : p)));
 const removePreset = (key) => keepPresets(savedPresets.value.filter((p) => p.key !== key));
 
@@ -208,6 +214,8 @@ provide("views", {
     renamePreset,
     updatePreset,
     removePreset,
+    sharePreset,
+    importPreset,
     schemes: computed(() => schemeChoices(layout.value.scheme)),
     scheme: (key) => replace(schemed(layout.value, key)),
 });

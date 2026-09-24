@@ -11,15 +11,13 @@ const props = defineProps({options: {type: Object, required: true}, filter: {typ
 const emit = defineEmits(["options", "filter", "expand"]);
 const anchor = ref(null);
 const TOGGLES = [
-    {key: "headers", label: "Headers only"},
-    {key: "collapse", label: "Collapse big files"},
-    {key: "editsOnly", label: "Hide unchanged lines"},
-    {key: "removals", label: "Show removals"},
-];
-const LAYOUT = [
+    {key: "headers", label: "Headers only", icon: "file"},
+    {key: "collapse", label: "Collapse big files", icon: "minimize"},
+    {key: "editsOnly", label: "Hide unchanged lines", icon: "edits"},
+    {key: "removals", label: "Show removals", icon: "x"},
     {key: "flush", label: "Flush", icon: "list"},
     {key: "columns", label: "Always two columns", icon: "columns"},
-    {key: "capped", label: "Limit card height", icon: "minimize"},
+    {key: "capped", label: "Limit card height", icon: "layout"},
 ];
 const SIZES = [-1, 0, 1];
 const LINES = [
@@ -50,22 +48,11 @@ function expand() {
             <Icon name="caret" :size="12" />
         </button>
         <template v-if="anchor">
-            <MenuPanel :anchor="anchor" :min-width="220" :max-width="260" @click.stop @close="anchor = null">
+            <MenuPanel :anchor="anchor" :min-width="250" :max-width="300" @click.stop @close="anchor = null">
                 <template v-for="t in TOGGLES" :key="t.key">
-                    <ToggleItem :on="!!options[t.key]" @click="set({[t.key]: !options[t.key]})">{{ t.label }}</ToggleItem>
+                    <ToggleItem :on="!!options[t.key]" :icon="t.icon" @click="set({[t.key]: !options[t.key]})">{{ t.label }}</ToggleItem>
                 </template>
-                <div class="feed-bar-lines">
-                    <span>Show up to</span>
-                    <Segmented :options="LINES" :value="String(options.lines || 0)" @pick="(key) => set({lines: Number(key)})" />
-                    <span>lines</span>
-                </div>
                 <span class="feed-bar-line" />
-                <template v-for="t in LAYOUT" :key="t.key">
-                    <ToggleItem :on="!!options[t.key]" @click="set({[t.key]: !options[t.key]})">
-                        <Icon :name="t.icon" :size="14" />
-                        {{ t.label }}
-                    </ToggleItem>
-                </template>
                 <MenuItem @click="expand">
                     <Icon name="rows" :size="14" />
                     Expand everything
@@ -78,19 +65,29 @@ function expand() {
                     <Icon name="wide" :size="14" />
                     Larger text
                 </MenuItem>
+                <div class="feed-bar-lines">
+                    <Icon name="chapters" :size="14" />
+                    <span>Lines</span>
+                    <Segmented :options="LINES" :value="String(options.lines || 0)" @pick="(key) => set({lines: Number(key)})" />
+                </div>
             </MenuPanel>
         </template>
     </div>
 </template>
 
 <style scoped>
+.feed-bar-lines .segmented {
+    margin-left: auto;
+}
+
 .feed-bar-lines {
     display: flex;
     align-items: center;
     gap: 8px;
-    padding: 6px 8px;
-    color: var(--text-3);
-    font-size: 12.5px;
+    padding: 4px 8px;
+    color: var(--text-2);
+    font-size: 13px;
+    white-space: nowrap;
 }
 
 .feed-bar {

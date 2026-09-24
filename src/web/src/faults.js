@@ -7,6 +7,7 @@ const QUIET = 60000;
 const reported = new Map();
 const flying = new Map();
 const CONSOLE = "/console";
+const NOTICE_ONLY = /^ResizeObserver loop/;
 
 export function report(kind, words, where, stack = "") {
     const key = `${kind}|${where || words}`;
@@ -38,7 +39,10 @@ function watched(phase, method, url, body) {
 
 export function watchConsole() {
     transport.watch(watched);
-    window.addEventListener("error", (e) => report("threw", e.message, `${e.filename}:${e.lineno}`, e.error && e.error.stack));
+    window.addEventListener("error", (e) => {
+        if (!e.error && NOTICE_ONLY.test(e.message)) return;
+        report("threw", e.message, `${e.filename}:${e.lineno}`, e.error && e.error.stack);
+    });
     window.addEventListener("unhandledrejection", (e) =>
         report("threw", e.reason && (e.reason.message || e.reason), "", e.reason && e.reason.stack)
     );

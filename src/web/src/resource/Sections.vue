@@ -1,11 +1,19 @@
 <script setup>
 import {onBeforeUpdate, onUpdated, ref} from "vue";
+import SkeletonLine from "../kit/SkeletonLine.vue";
 import TextDisplay from "../kit/TextDisplay.vue";
 
 defineProps({sections: Array, document: Boolean, writing: {type: String, default: ""}});
 const root = ref(null);
 const BLOCKS = "h3, p, li, pre, blockquote, table";
 const FADE_FOR = 2600;
+const PLACEHOLDER = /^being written\.?$/i;
+const pending = (section) => PLACEHOLDER.test((section.body || "").trim());
+const WIDTHS = ["97%", "91%", "94%", "86%", "62%", "48%"];
+const barsFor = (title) => {
+    const seed = [...title].reduce((sum, ch) => sum + ch.charCodeAt(0), 0);
+    return [0, 1, 2, 3].map((i) => ({width: WIDTHS[(seed + i * 5) % (i === 3 ? 6 : 4)], height: 9}));
+};
 let before = new Set();
 const blocks = () => [...(root.value?.querySelectorAll(BLOCKS) || [])];
 
@@ -23,7 +31,16 @@ onUpdated(() => {
         <template v-for="s in sections" :key="s.title">
             <section :class="['section', {reading: document, writing: writing && writing === s.title}]">
                 <h3>{{ s.title }}</h3>
-                <TextDisplay :text="s.body" />
+                <Transition name="written" mode="out-in">
+                    <template v-if="pending(s)">
+                        <SkeletonLine class="being-written" :bars="barsFor(s.title)" role="img" aria-label="Being written">
+                            <span class="being-written-room" />
+                        </SkeletonLine>
+                    </template>
+                    <template v-else>
+                        <TextDisplay :text="s.body" />
+                    </template>
+                </Transition>
             </section>
         </template>
     </div>
@@ -93,7 +110,42 @@ h3 {
     }
 }
 
+.being-written {
+    margin: 6px 0 4px;
+}
+
+.being-written-room {
+    display: block;
+    height: 76px;
+}
+
+.written-leave-active {
+    transition: opacity 0.22s ease;
+}
+
+.written-leave-to {
+    opacity: 0;
+}
+
+.written-enter-active {
+    transition:
+        opacity 0.5s ease,
+        filter 0.5s ease,
+        transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.written-enter-from {
+    opacity: 0;
+    filter: blur(3px);
+    transform: translateY(4px);
+}
+
 @media (prefers-reduced-motion: reduce) {
+    .written-enter-active,
+    .written-leave-active {
+        transition: none;
+    }
+
     .sections :deep(.fresh),
     .section.writing :deep(.md > :last-child)::after {
         animation: none;
