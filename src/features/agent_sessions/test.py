@@ -74,6 +74,11 @@ def test_a_session_evicted_from_its_environment_is_held_until_it_claims_it_back(
     moved.switch(moved.create("u").n)
     assert (sessions.environment("conversation-9"), sessions.environment("claude-7272")) == ("u", "u"), \
         "a switch moves the agent's terminal session with it, so the new environment's engine drives it"
+    import os
+    from commands.queries import asked_for
+    from engine.record import Record
+    sessions.bind("busy", "t", pid=os.getpid(), provider="claude")
+    assert asked_for(Record(record.root, "t"), answering=False) == "u", "a quiet start never lands in an environment another live agent holds"
 
 
 def test_a_subagent_writes_only_once_the_environment_is_lent_and_is_bound_by_the_same_law(env):

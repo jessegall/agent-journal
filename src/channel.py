@@ -93,7 +93,7 @@ def push(root: Path, pid: int) -> None:
                 say({"jsonrpc": "2.0", "method": "notifications/claude/channel", "params": {"content": "; ".join(texts), "meta": {"from": "journal"}}})
         except Exception:
             from engine.watch import threw
-            threw(root, runtime.env(root), "the channel that carries lines to the agent")
+            threw(root, os.environ.get("JOURNAL_ENV") or runtime.env(root), "the channel that carries lines to the agent")
 
 
 def launched() -> bool:

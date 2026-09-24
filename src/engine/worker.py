@@ -54,14 +54,14 @@ def checks(seat: Seat) -> tuple:
         return None, ()
 
 
-def run_checks(root: Path, driver, kept: tuple) -> None:
+def run_checks(seat: Seat, driver, kept: tuple) -> None:
     try:
         if driver:
             driver.pump()
         for check in kept:
             check.tick()
     except Exception:
-        threw(root, runtime.env(root), "a worker check")
+        threw(seat.root, seat.env, "a worker check")
 
 
 def press(root: Path, session: str, keys: bytes) -> None:
@@ -128,7 +128,7 @@ def run(root: Path, cwd: Path, env: str, agent: str, session: str, lifeline: int
             last_checks = now
             if not kept:
                 driver, kept = checks(seat)
-            run_checks(root, driver, kept)
+            run_checks(seat, driver, kept)
         if now - last_check >= RELOAD_EVERY:
             last_check = now
             if watched(root) != stamps and not runtime.upgrading(root):

@@ -130,7 +130,6 @@ def launch_spec(root: Path, cwd: Path, env: str, agent: str, args: list[str], ta
 
 def supervise(root: Path, cwd: Path, env: str, agent: str, args: list[str], taken: dict | None = None) -> None:
     hold_build(root, CODE)
-    runtime.set_env(root, env)
     spec = launch_spec(root, cwd, env, agent, args, taken)
     if taken:
         os.set_inheritable(taken["fd"], True)
