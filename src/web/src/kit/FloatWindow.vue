@@ -41,6 +41,7 @@ function grow(e) {
             <Icon :name="icon" :size="13" />
             <span class="float-title">{{ title }}</span>
             <span class="float-space" />
+            <slot name="head" />
             <button
                 type="button"
                 class="float-btn"

@@ -17,6 +17,7 @@ defineProps({
     flush: Boolean,
     feed: {type: Object, default: null},
     level: {type: String, default: DEFAULT_LEVEL},
+    floating: Boolean,
 });
 const emit = defineEmits(["feed"]);
 const notices = computed(() => open("notice"));
@@ -27,7 +28,7 @@ const feedKey = computed(() => (agent.value ? `${agent.value.n}:${agent.value.da
     <div :class="['home-view', view]">
         <SwitchCase :value="view">
             <template #chat>
-                <PinnedNotices :notices="notices" />
+                <PinnedNotices :notices="notices" :without-toggle="floating" />
                 <Thread view="chat" />
             </template>
             <template #feed>

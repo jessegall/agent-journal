@@ -82,6 +82,8 @@ const state = computed(() => {
 });
 const words = computed(() => quoted(props.turn.brief || props.turn.title));
 const html = computed(() => render(words.value.text, {types: types.value, env: route.value.env}));
+const LONG_TEXT = 600;
+const long = computed(() => props.turn.who === "agent" && words.value.text.length > LONG_TEXT);
 const quoteHtml = computed(() => render(words.value.quote, {types: types.value, env: route.value.env}));
 const commentParent = computed(() => {
     if (props.turn.type !== "comment") return null;
@@ -227,6 +229,7 @@ async function drop() {
                         mine,
                         peer: !!between,
                         ask: turn.type === 'question',
+                        long,
                         lit: store.focus === turn.ref,
                         'comment-origin': resourceComment,
                     },
@@ -453,6 +456,20 @@ async function drop() {
     background: #161719;
     overflow-wrap: anywhere;
     transition: opacity 0.12s ease;
+}
+
+.thread-turn.long {
+    width: 100%;
+    max-width: 100%;
+}
+
+.thread-turn.long .thread-bubble {
+    width: 100%;
+    padding: 14px 18px;
+    border-color: var(--border);
+    border-radius: 12px;
+    background: var(--raised);
+    line-height: 1.65;
 }
 
 .thread-turn.mine .thread-bubble {

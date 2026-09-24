@@ -54,7 +54,7 @@ const onKey = (e) =>
 onMounted(async () => {
     window.addEventListener("keydown", onKey);
     const known = (await loadRows("board")).filter((board) => !board.completed && !board.deleted);
-    newBoard.value = !known.length && !remembered(FIRST_BOARD_SEEN, false);
+    newBoard.value = route.value.q === "new" || (!known.length && !remembered(FIRST_BOARD_SEEN, false));
     settle(known);
 });
 
