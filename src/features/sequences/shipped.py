@@ -40,45 +40,65 @@ BUILDING_A_PLAN = {
 }
 WORKING_A_BOARD_CARD = {
     "title": "Working a card from the board",
-    "brief": "A request from a board's New work panel becomes tickets by clicking, not reading: the agent first makes sure what "
-             "the user means, then drafts, and says one line each turn. It talks only about the work, never about rows, chips, "
-             "commands or the journal. Use judgment at every step: the board's name and the cards already on it carry "
-             "meaning, and each step is done the way that fits this request, not to the letter.",
+    "brief": "A request typed into a board's New work panel becomes draft tickets for one feature. The panel is a place of "
+             "clicking, not reading: you say in a few words what you think they want to build, they click the reading that "
+             "fits or type their own, and after two such rounds you draft. Every turn is one question or one short line, "
+             "never a paragraph. You talk only about the feature and its tickets, never about rows, chips, numbers, commands "
+             "or the journal. Use judgment at every step: the board's name, its brief and the cards already on it carry "
+             "meaning, and each step is done the way that fits this request rather than to the letter.",
     "starts_on": "message.requested",
     "started_by": USER,
     "steps": [
-        ("Say what they mean", "The goal of this step is to find out which feature they want to build, as concisely and "
-                               "accurately as you can, in at most two rounds; the first turn never drafts. Read the context "
-                               "first: the board's name, its brief and the cards already on it (journal ticket board <board n>) "
-                               "usually say what the feature is about, so on a board called Shared Journal, \"I want to share\" "
-                               "means a shareable journal feature. From the very first question, offer three likely readings "
-                               "of the feature as options, each a few words with a short line under it, so they can click the "
-                               "right one or type their own words in the input, which stays open on every turn but the final "
-                               "choices: journal board ask <board n> \"You want to build <the feature>?\" --abstract \"<one "
-                               "line of why you think so, in plain words, never naming the board or its cards>\" --set "
-                               "options='[{\"title\": \"<reading>\", \"text\": \"<what that means>\"}, ...]'. Never "
-                               "filler like Yes / Yes, but / No, and never an open question with no options when you can guess. "
-                               "When their words make no sense, say so in the question, like \"I couldn't read that. Do you "
-                               "mean <your guess>?\" The question is your whole turn: do not reply to their message as well. "
-                               "Always take two rounds before drafting, never start after the first answer: the second turn "
-                               "narrows the chosen reading further the same way, three options that each carry a short line. "
-                               "After their second answer, go on to Draft the tickets when it is clear; when it is not, go on "
-                               "to Offer choices."),
-        ("Offer choices", "Only when two guesses did not land: ask once with three or four concise options, each a meaning "
-                          "they might have, in a few words, and Start over as the last: journal board ask <board n> \"Which "
-                          "one?\" --set options='[...]' --set final=true. The input closes while the options show, so they pick one; draft "
-                          "from their pick; the question is your whole turn, with no reply beside it. Start over clears the panel: give the run up with journal sequence abandon."),
+        ("Understand the request", "Goal: find out which feature they want to build, as concisely and accurately as you can. "
+                                   "This turn never drafts. Read the context before you write anything: the board's name and "
+                                   "brief (journal board show <board n>) and the cards already on it (journal ticket board "
+                                   "<board n>). They usually say what the feature is about: on a board called Shared Journal, "
+                                   "\"I want to share\" means a shareable journal. Then ask one question that names the "
+                                   "feature you think they mean, with three readings of it as options: journal board ask "
+                                   "<board n> \"You want to build <the feature>?\" --abstract \"<one plain line on why you "
+                                   "think so>\" --set options='[{\"title\": \"<reading>\", \"text\": \"<what that "
+                                   "means>\"}, ...]'. Each option title is a few words; its text is one short line saying what "
+                                   "that reading would give them. The abstract never names the board or its cards; it says "
+                                   "the reasoning in plain words, like \"Sharing here most likely means the journal itself\". "
+                                   "Never offer filler such as Yes / Yes, but / No, and never ask an open question with no "
+                                   "options when you can guess. When their words cannot be read, say so in the question: "
+                                   "\"I couldn't read that. Do you mean <your guess>?\", still with three readings. The "
+                                   "question is your whole turn: do not reply to their message as well. Their input stays "
+                                   "open, so they may type instead of clicking; treat typed words as their answer. When it "
+                                   "is answered: journal sequence next <this sequence> --about <ref>."),
+        ("Narrow it down", "Goal: turn the reading they chose into something concrete enough to draft. Always take this "
+                           "second round, even when the first answer felt clear; never draft after one answer. Ask one "
+                           "question about the part of the feature that most decides the tickets, with three options: "
+                           "journal board ask <board n> \"<the question>\" --abstract \"<why this decides it>\" --set "
+                           "options='[{\"title\": \"<direction>\", \"text\": \"For example, <a short description of "
+                           "the feature this would give>\"}, ...]'. From this round on, every option carries an example in "
+                           "its text: a short, muted line under the title that describes the feature they would get, such as "
+                           "\"For example, one server everyone connects to, changes show at once\"; several options may "
+                           "each describe a different feature. Their input stays open here too. When it is answered and you "
+                           "know enough to write the tickets, go on to Draft the tickets; when you still cannot tell, go on "
+                           "to Offer choices. Either way: journal sequence next <this sequence> --about <ref>."),
+        ("Offer choices", "Only when the two rounds left it unclear. Skip this step when it is clear: journal sequence next "
+                          "<this sequence> --about <ref>. Otherwise ask once more with three or four concise choices, each "
+                          "a meaning they might have with an example in its text, and Start over as the last: journal board "
+                          "ask <board n> \"Which one?\" --abstract \"<what is still open>\" --set options='[{\"title\": "
+                          "\"<meaning>\", \"text\": \"For example, <the feature>\"}, ..., {\"title\": \"Start "
+                          "over\"}]' --set final=true. final=true closes their input, so they can only click. Draft from "
+                          "their pick; Start over clears the panel, so give the run up with journal sequence abandon <this "
+                          "sequence> --about <ref> --why \"start over\"."),
         ("Draft the tickets", "First say how many tickets you will write, an educated guess on the low side: journal board "
                               "expect <board n> <count>. The panel shows that many placeholders; more fade in if you write "
-                              "more, and none is ever taken away. Then draft each ticket on the same board: journal ticket create \"<the work>\" --abstract \"<one "
-                              "line>\" --brief \"<the deeper explanation>\" --set board=<n> --set draft=true. A title is a few "
-                              "words, the abstract one line of at most 140 characters shown on the card, and the brief the "
-                              "fuller story on the card's back, under More info: what it does, why it matters, what it "
-                              "touches and what done looks like, in a few short paragraphs. Name what waits on what with journal ticket depend, and "
-                              "the role that should take it with --set owner=<domain>/<role> when the project has one."),
-        ("Say one line", "Reply to their message in one short line of at most 200 characters about the tickets, like \"Three "
-                         "tickets drafted, pick the ones to keep.\" No paragraphs, no lists, and no mention of rows, chips, "
-                         "numbers, commands or the journal. The user picks the ones to keep."),
+                              "more, and none is ever taken away. Then draft each ticket on the same board: journal ticket "
+                              "create \"<the work>\" --abstract \"<one line>\" --brief \"<the fuller story>\" --set "
+                              "board=<n> --set draft=true. The title is a few words naming the work. The abstract is one "
+                              "line of at most 140 characters, shown whole on the card. The brief is the card's back, under "
+                              "More info: what it does, why it matters, what it touches and what done looks like, in a few "
+                              "short paragraphs. Name what waits on what with journal ticket depend <n> <other>, and the "
+                              "role that should take it with --set owner=<domain>/<role> when the project has one. When "
+                              "every ticket is drafted: journal sequence next <this sequence> --about <ref>."),
+        ("Say one line", "Reply to their message in one short line of at most 200 characters about the tickets, like "
+                         "\"Five tickets drafted, in order. Pick the ones to keep.\" No paragraphs, no lists, and no mention "
+                         "of rows, chips, numbers, commands or the journal. The user then picks the ones to keep. Finish "
+                         "with journal sequence next <this sequence> --about <ref>."),
     ],
 }
 SHIPPED = (FILING_A_DUMP, BUILDING_A_PLAN, WORKING_A_BOARD_CARD)
