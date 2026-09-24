@@ -4,12 +4,13 @@ from typing import ClassVar
 from engine.events import AgentReported, AnyEvent, ResourceEvent
 from engine.transcript import IDLE
 from features.parts import AgentContext, Context, Handler
-from features.sequences.controller import BY_HAND
+from features.sequences.controller import BY_HAND, MOMENTS
+from features.triggers.resource import FIRED
 from resources.base import SECTION
 
 STEP = "step"
 UNFINISHED = "unfinished"
-MOMENTS = ("created", "completed")
+STARTS = (*MOMENTS, FIRED)
 
 
 @dataclass(frozen=True)
@@ -24,10 +25,10 @@ def about_flag(key: str) -> str:
 
 class StartOnMoment(Handler):
     def handle(self, context: Context, event: AnyEvent) -> None:
-        if event.type == "sequence" or event.action not in MOMENTS:
+        if event.type == "sequence" or event.action not in STARTS:
             return
         sequences = context.journal.sequences
-        moment = f"{event.type}.{event.action}"
+        moment = f"{event.type}:{event.n}" if event.action == FIRED else f"{event.type}.{event.action}"
         for row in sequences.summaries():
             if not row["completed"] and not row["deleted"] and row.get("starts_on") == moment:
                 sequences.run(row["n"], about=f"{event.type}:{event.n}")

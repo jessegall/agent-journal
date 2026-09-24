@@ -44,7 +44,6 @@ import SkillPanel from "./layout/SkillPanel.vue";
 import ProjectFlash from "./layout/ProjectFlash.vue";
 import UpgradeBand from "./layout/UpgradeBand.vue";
 import ThreadSkeleton from "./chat/ThreadSkeleton.vue";
-import IdentityBand from "./layout/IdentityBand.vue";
 import {usePoll} from "./poll.js";
 import {drawnWide, followFullscreen, switching} from "./platform/fullscreen.js";
 
@@ -184,7 +183,6 @@ watch(
     </template>
     <template v-else-if="store.spec">
         <div class="viewer">
-            <IdentityBand />
             <WindowBar />
             <div :class="['app', {wide: drawnWide, mini: store.sideMini, full, switching, narrow, 'side-open': narrow && store.sideOpen}]">
                 <div class="rail"><Sidebar /></div>

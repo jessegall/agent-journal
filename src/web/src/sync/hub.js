@@ -154,7 +154,18 @@ const streams = new Map();
 const waiting = new Map();
 let scanning = false;
 
-async function refresh(j) {
+const asking = new Map();
+
+function refresh(j) {
+    if (!asking.has(j.root))
+        asking.set(
+            j.root,
+            reread(j).finally(() => asking.delete(j.root))
+        );
+    return asking.get(j.root);
+}
+
+async function reread(j) {
     if (!j.running) {
         j.summary = null;
         j.unreadable = false;

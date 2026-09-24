@@ -26,6 +26,11 @@ export function useNavigation() {
             links: [...listed.value.filter((t) => t.listed_under === g.key).map(typeLink), ...g.pages.map(pageLink)],
         })).filter((g) => g.links.length)
     );
-    const everywhere = computed(() => [...sidebar.value, pageLink("resources"), ...groups.value.flatMap((g) => g.links)]);
+    const everywhere = computed(() => [
+        ...sidebar.value,
+        pageLink("plugins"),
+        pageLink("resources"),
+        ...groups.value.flatMap((g) => g.links),
+    ]);
     return {sidebar, groups, everywhere};
 }

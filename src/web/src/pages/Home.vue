@@ -362,7 +362,12 @@ watch(
                     </PaneTabs>
                     <div :class="['pane-body', widthOf(pane)]">
                         <template v-if="pane.active">
-                            <HomeView :view="pane.active" :flush="!!pane.flush" />
+                            <HomeView
+                                :view="pane.active"
+                                :flush="!!pane.flush"
+                                :feed="pane.feed || null"
+                                @feed="(feed) => replace(tuned(layout, id, {feed}))"
+                            />
                         </template>
                         <template v-else>
                             <div class="pane-empty">

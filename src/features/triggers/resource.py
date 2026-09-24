@@ -3,8 +3,9 @@ from typing import ClassVar
 from resources.base import PROJECT, USER, Resource, ResourceDetails
 from resources.shapes import LIST, TEXT, Field, Shape
 
-MESSAGE, NUDGE, INSTRUCT, DENY = "message", "nudge", "instruct", "deny"
-DOES = (MESSAGE, NUDGE, INSTRUCT, DENY)
+MESSAGE, NUDGE, INSTRUCT, DENY, START = "message", "nudge", "instruct", "deny", "start"
+DOES = (MESSAGE, NUDGE, INSTRUCT, DENY, START)
+FIRED = "fired"
 
 
 class Trigger(Shape, Resource):

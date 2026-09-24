@@ -1,6 +1,7 @@
 <script setup>
 import {ref} from "vue";
 import Console from "../kit/Console.vue";
+import {MOD} from "../platform/keys.js";
 
 defineProps({
     lines: {type: Array, default: () => []},
@@ -38,9 +39,9 @@ const MARKS = {Bash: "$", Journal: "#"};
             <div class="log-line shell queued" title="Waiting to be typed into the agent's terminal">
                 <span class="log-mark">$</span>
                 <span class="log-text">{{ q.command }}</span>
-                <span class="log-state">pending · ⌃↵ or</span>
+                <span class="log-state">pending</span>
                 <button type="button" class="log-now" title="Interrupt the agent and run this command now" @click="emit('now', q.command)">
-                    Run now
+                    Run now · {{ MOD }} Enter
                 </button>
             </div>
         </template>

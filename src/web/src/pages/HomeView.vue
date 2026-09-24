@@ -11,7 +11,8 @@ import TerminalWindow from "../chat/TerminalWindow.vue";
 import RailWaiting from "./RailWaiting.vue";
 import RailTodos from "./RailTodos.vue";
 
-defineProps({view: {type: String, required: true}, flush: Boolean});
+defineProps({view: {type: String, required: true}, flush: Boolean, feed: {type: Object, default: null}});
+const emit = defineEmits(["feed"]);
 const notices = computed(() => open("notice"));
 const feedKey = computed(() => (agent.value ? `${agent.value.n}:${agent.value.data.transcript}` : ""));
 </script>
@@ -25,7 +26,7 @@ const feedKey = computed(() => (agent.value ? `${agent.value.n}:${agent.value.da
             </template>
             <template #feed>
                 <template v-if="agent">
-                    <FileFeed :key="feedKey" :agent="agent.n" :flush="flush" />
+                    <FileFeed :key="feedKey" :agent="agent.n" :flush="flush" :options="feed" @options="emit('feed', $event)" />
                 </template>
                 <template v-else>
                     <EmptyState title="No agent yet">The file feed shows an agent's edits as it makes them.</EmptyState>

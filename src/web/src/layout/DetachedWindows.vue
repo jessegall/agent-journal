@@ -51,7 +51,7 @@ function away(id) {
                 @dock="dock(f.id)"
                 @menu="(e) => toggleMenu(e, f.id)"
             >
-                <HomeView :view="f.view" :flush="!!f.flush" />
+                <HomeView :view="f.view" :flush="!!f.flush" :feed="f.feed || null" @feed="(feed) => tune(f.id, {feed})" />
             </FloatWindow>
         </template>
     </TransitionGroup>

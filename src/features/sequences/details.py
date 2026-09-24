@@ -20,8 +20,12 @@ class SequencesDetails(FeatureDetails):
         sequence section <n> "<step>" "<what to do>" adds each step. journal sequence run <n>
         --about <ref> hands you the first step; journal sequence next <n> --about <ref>
         marks the step in hand done and hands the next, and the last one ends it.
-        --set starts_on=<type.action>, such as dump.created, starts it by itself when that
-        happens, about the row it happened to. One run is in your hands at a time; one
+        --set starts_on starts it by itself, about the row it started on: <type>.created or
+        <type>.completed for any row type (dump.created, plan.completed), or trigger:<n> to start
+        when trigger n fires. Any other value is refused. To start on words or a command, such as a
+        deploy, make a trigger that only starts it: journal trigger create "<what it watches for>"
+        --set words="<word>,<word>" --set words_in=commands --set does=start, then set the
+        sequence's starts_on=trigger:<its n>. One run is in your hands at a time; one
         that starts meanwhile waits its turn. Stopping with a run unfinished earns a reminder, and
         journal sequence abandon <n> --about <ref> --why "<why>" gives one up. Some sequences ship
         with the journal; they are system sequences and cannot be changed or removed.

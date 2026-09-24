@@ -144,7 +144,7 @@ async function runBar(p) {
     display: flex;
     align-items: center;
     gap: 12px;
-    padding: 0 16px 0 20px;
+    padding: 0 14px;
     position: relative;
     border-bottom: 1px solid var(--border);
     background: #17181b;

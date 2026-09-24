@@ -34,6 +34,7 @@ const groups = computed(() => [
         links: [
             ...(boardOn.value ? [plain("kanban", "Board", "board", counted("todo"))] : []),
             ...daily("project"),
+            plain("plugins", "Plugins", "plug"),
             plain("resources", "Resources", "tiles"),
         ],
     },
@@ -109,7 +110,8 @@ function point(e) {
             <div class="side-bottom">
                 <div class="side-foot side-foot-row">
                     <a class="side-foot-version" :href="`#/${route.env}/about`" title="Version and changelog">
-                        <span class="label">Agent journal {{ store.spec.version || "" }}</span>
+                        <span class="label side-foot-name">Agent journal</span>
+                        <span class="side-foot-number">{{ store.spec.version || "" }}</span>
                     </a>
                 </div>
             </div>
@@ -353,6 +355,26 @@ function point(e) {
     text-decoration: none;
     overflow: hidden;
     text-overflow: ellipsis;
+}
+
+.side-foot-name {
+    margin-right: 4px;
+}
+
+.side-wrap.mini .side-foot-name {
+    display: none;
+}
+
+.side-wrap.mini .side-foot-version {
+    justify-content: center;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+.side-wrap.mini .side-foot {
+    justify-content: center;
+    padding: 8px 0;
 }
 
 .side-foot-version:hover {

@@ -15,8 +15,9 @@ class Sequence(Shape, Resource):
         abstract="Steps the agent follows in order, one at a time, started by hand or by a moment",
         help=("A sequence's parts are its steps, in order: the title names the step and the body says what to do. "
               "journal sequence run <n> --about <ref> hands the agent the first step, and journal sequence next <n> --about <ref> "
-              "marks the step in hand done and hands the next. --set starts_on=<type.action>, such as dump.created, starts it by itself "
-              "when that happens, about the row it happened to. A system sequence ships with the journal and cannot be removed."),
+              "marks the step in hand done and hands the next. --set starts_on=<type>.created, <type>.completed or trigger:<n> starts it "
+              "by itself, about the row it started on; a trigger with does=start starts it on words or a command. "
+              "A system sequence ships with the journal and cannot be removed."),
     )
     type = "sequence"
     event_labels = {"created": "Sequence written", "updated": "Sequence moved on", "completed": "Sequence retired"}

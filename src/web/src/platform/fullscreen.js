@@ -1,5 +1,6 @@
 import {ref, watch} from "vue";
 import {store} from "../state/store.js";
+import {onMac} from "./keys.js";
 
 const FADE = 90;
 const SETTLE = 260;
@@ -17,7 +18,7 @@ let byBrowser = browserFull();
 let following = false;
 if (byBrowser) store.wide = true;
 
-export const FULLSCREEN_KEYS = /Mac|iPhone|iPad/.test(navigator.platform) ? "⌘⇧Enter" : "Ctrl+Shift+Enter";
+export const FULLSCREEN_KEYS = onMac ? "⌘⇧Enter" : "Ctrl+Shift+Enter";
 export const switching = ref(false);
 export const drawnWide = ref(store.wide);
 export const armed = ref(false);

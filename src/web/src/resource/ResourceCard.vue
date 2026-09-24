@@ -8,6 +8,11 @@ import {meta} from "../state/store.js";
 import {computed} from "vue";
 
 const props = defineProps({resource: Object});
+const startsWhen = (start) => {
+    if (!start) return "run by hand";
+    if (start.startsWith("trigger:")) return `starts when trigger ${start.slice(8)} fires`;
+    return `starts when a ${start.replace(".completed", " is finished").replace(".created", " is created")}`;
+};
 const plan = computed(() => {
     if (props.resource.type !== "plan") return null;
     const {phases = [], status = "building", current = 1} = props.resource.data;
@@ -58,11 +63,7 @@ const holds = computed(() => {
                 }}{{ resource.sections.length > 1 ? "s" : "" }}
                 <template v-if="resource.type === 'sequence'">
                     ·
-                    {{
-                        resource.data.starts_on
-                            ? `starts when a ${resource.data.starts_on.replace(".completed", " is finished").replace(".created", " is created")}`
-                            : "run by hand"
-                    }}
+                    {{ startsWhen(resource.data.starts_on) }}
                 </template>
             </span>
         </template>

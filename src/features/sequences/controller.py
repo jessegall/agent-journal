@@ -9,10 +9,36 @@ from resources.base import SECTION, SYSTEM
 
 BY_HAND = "by hand"
 VIOLET = "#a78bfa"
+MOMENTS = ("created", "completed")
+TRIGGER = "trigger"
 
 
 class Sequences(Controller):
     resource = Sequence
+
+    def create(self, title: str, abstract: str = "", brief: str = "", starts_on: str = "", **data):
+        self._check_start(starts_on)
+        return super().create(title, abstract, brief, starts_on=starts_on, **data)
+
+    def update(self, n: int, title: str | None = None, abstract: str | None = None, brief: str | None = None, outcome: str | None = None,
+               starts_on: str | None = None, **data):
+        if starts_on is None:
+            return super().update(n, title, abstract, brief, outcome, **data)
+        self._check_start(starts_on)
+        return super().update(n, title, abstract, brief, outcome, starts_on=starts_on, **data)
+
+    def _check_start(self, starts_on: str) -> None:
+        start = starts_on.strip()
+        if not start or start in self._moments():
+            return
+        kind, _, n = start.partition(":")
+        if kind == TRIGGER and n.isdigit() and not types_module.CONTROLLERS[TRIGGER](self.record, actor=SYSTEM).load(int(n)).completed:
+            return
+        self._refuse(f"starts_on {start!r} is no moment: use <type>.created or <type>.completed for a row type "
+                     f"({', '.join(sorted(t for t in resources_module.TYPES if t != 'sequence'))}), or trigger:<n> to start when trigger n fires")
+
+    def _moments(self) -> set[str]:
+        return {f"{kind}.{moment}" for kind in resources_module.TYPES if kind != "sequence" for moment in MOMENTS}
 
     def run(self, n: int, about: str = ""):
         r = self.load(int(n))
