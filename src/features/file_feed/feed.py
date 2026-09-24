@@ -8,7 +8,7 @@ from engine.files import KIND, blob_texts
 
 KEEP = 3
 KEPT = 500
-MOST_SHOWN = 100
+PAGE = 25
 MOST_ROWS = 400
 MOST_DIFFS = 2000
 NOTES = "file_feed"
@@ -81,6 +81,28 @@ class Card:
 class Feed:
     cursor: float
     edits: tuple[Card, ...]
+    older: bool
+
+
+@dataclass(frozen=True)
+class Page:
+    edits: tuple[Card, ...]
+    older: bool
+
+
+@dataclass(frozen=True)
+class FileText:
+    path: str
+    text: str
+
+
+class Side(StrEnum):
+    BEFORE = "before"
+    AFTER = "after"
+
+
+class NoSuchEdit(LookupError):
+    pass
 
 
 DIFFS: dict[tuple[str, str], Diff] = {}
@@ -95,10 +117,40 @@ def notes(record) -> list[FileEdited]:
     return [FileEdited.from_json(raw) for raw in record.state(NOTES).get("notes", [])]
 
 
-def edits_since(record, agent: int, since: float) -> Feed:
-    shown = [note for note in notes(record) if note.agent == agent and note.at > since][-MOST_SHOWN:]
+def agent_notes(record, agent: int) -> list[FileEdited]:
+    return [note for note in notes(record) if note.agent == agent]
+
+
+def edits_since(record, agent: int, since: float, last: int) -> Feed:
+    kept = agent_notes(record, agent)
+    shown = [note for note in kept if note.at > since][-last:]
+    return Feed(shown[-1].at if shown else since, cards(record, shown), bool(shown) and kept[0].at < shown[0].at)
+
+
+def edits_before(record, agent: int, before: float, last: int) -> Page:
+    kept = agent_notes(record, agent)
+    shown = [note for note in kept if note.at < before][-last:]
+    return Page(cards(record, shown), bool(shown) and kept[0].at < shown[0].at)
+
+
+def edited_file(record, agent: int, card: str, side: Side) -> FileText:
+    note = next((note for note in agent_notes(record, agent) if card_id(note) == card), None)
+    if note is None:
+        raise NoSuchEdit(f"no edit {card}")
+    sha = note.after if side == Side.AFTER else note.before
+    texts = blob_texts(record.root.parent, [sha])
+    if sha not in texts:
+        raise NoSuchEdit(f"the {side} of {card} is no longer kept")
+    return FileText(note.path, texts[sha])
+
+
+def cards(record, shown: list[FileEdited]) -> tuple[Card, ...]:
     diffed(record.root.parent, [(note.before, note.after) for note in shown])
-    return Feed(shown[-1].at if shown else since, tuple(_card(note) for note in shown if (note.before, note.after) in DIFFS))
+    return tuple(_card(note) for note in shown if (note.before, note.after) in DIFFS)
+
+
+def card_id(note: FileEdited) -> str:
+    return f"{note.path}@{note.at}"
 
 
 def diffed(project: Path, pairs: list[tuple[str, str]]) -> None:
@@ -113,7 +165,7 @@ def diffed(project: Path, pairs: list[tuple[str, str]]) -> None:
 def _card(note: FileEdited) -> Card:
     diff, kind = DIFFS[(note.before, note.after)], KINDS[note.kind]
     rows = () if kind == EditKind.DELETED else diff.rows
-    return Card(f"{note.path}@{note.at}", note.path, kind, note.at, diff.added, diff.removed, diff.first_line, diff.last_line, rows)
+    return Card(card_id(note), note.path, kind, note.at, diff.added, diff.removed, diff.first_line, diff.last_line, rows)
 
 
 def _changed(op: tuple, old: list[str], new: list[str]) -> list[DiffRow]:
