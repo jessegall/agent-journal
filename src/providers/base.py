@@ -17,6 +17,7 @@ RECENT: dict[str, tuple] = {}
 FOLDS: dict[tuple, tuple] = {}
 FOLD_CACHE = Path.home() / ".cache" / "agent-journal" / "folds"
 KEEP_EVERY = 10.0
+KEEP_TRANSCRIPT_EVERY = 300.0
 KEPT: dict[tuple, float] = {}
 
 
@@ -31,8 +32,8 @@ def kept_fold(key: tuple) -> tuple | None:
         return None
 
 
-def keep_fold(key: tuple, offset: int, state) -> None:
-    if time.monotonic() - KEPT.get(key, 0.0) < KEEP_EVERY:
+def keep_fold(key: tuple, offset: int, state, every: float = KEEP_EVERY) -> None:
+    if time.monotonic() - KEPT.get(key, 0.0) < every:
         return
     KEPT[key] = time.monotonic()
     try:
@@ -236,7 +237,9 @@ class Provider(ABC):
             size = Path(path).stat().st_size
         except (OSError, TypeError):
             return []
-        held = TRANSCRIPTS.get(str(path))
+        key = ("transcript", str(path))
+        kept = None if str(path) in TRANSCRIPTS else kept_fold(key)
+        held = TRANSCRIPTS.get(str(path)) or (kept and (kept[0], *kept[1]))
         offset, count, turns, seam = held if held and held[0] <= size else (0, 0, [], b"")
         with Path(path).open("rb") as source:
             source.seek(max(0, offset - len(seam)))
@@ -250,6 +253,7 @@ class Provider(ABC):
             turns = self.refine(turns + self.read_turns(lines, count))
             count += len(lines)
             TRANSCRIPTS[str(path)] = (offset + len(whole), count, turns, (seam + whole)[-SEAM:])
+            keep_fold(key, offset + len(whole), (count, turns, (seam + whole)[-SEAM:]), KEEP_TRANSCRIPT_EVERY)
         return turns
 
     def tail(self, path: Path, span: int = RECENT_BYTES) -> list:
