@@ -9,6 +9,7 @@ class Sequence(Shape, Resource):
         Field(default="", name="starts_on"),
         Field(default="", name="started_by"),
         Field(FLAG, False, name="system"),
+        Field(FLAG, False, name="quiet"),
         Field(default=dict, name="runs"),
     ]
     details: ClassVar[ResourceDetails] = ResourceDetails(

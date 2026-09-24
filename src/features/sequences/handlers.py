@@ -2,7 +2,7 @@ import time
 from dataclasses import dataclass
 from typing import ClassVar
 
-from engine.events import AgentReported, AnyEvent, ClockTicked, ResourceEvent
+from engine.events import AgentMessageSending, AgentReported, AnyEvent, ClockTicked, ResourceEvent
 from engine.sessions import Sessions
 from engine.transcript import IDLE
 from features.parts import AgentContext, Context, Handler
@@ -124,3 +124,10 @@ class NudgeWaitingStep(Handler):
         step = sequence.sections[run["step"] - 1]
         context.agent.say(WAITING, n=sequence.n, title=sequence.title, step=run["step"], count=len(sequence.sections),
                           name=step[SECTION.title], body=filled(context, sequence.n, key, step[SECTION.body]), about=about_flag(key))
+
+
+class HoldTextOfQuietSequences(Handler):
+    def handle(self, context: AgentContext, event: AgentMessageSending) -> None:
+        found = context.journal.sequences._in_hand()
+        if found and found[0].quiet:
+            event.stop()
