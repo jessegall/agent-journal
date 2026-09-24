@@ -4,7 +4,7 @@ import subprocess
 from dataclasses import dataclass, replace
 from pathlib import Path
 
-from engine.sessions import ACTIVE_ENV, hold_build
+from engine.sessions import ACTIVE_ENV, Sessions, hold_build
 from install import code
 from engine import runtime
 from engine.stored import read_json, write_json
@@ -120,7 +120,8 @@ def launch_spec(root: Path, cwd: Path, env: str, agent: str, args: list[str], ta
         top = checkout(cwd)
         if top:
             share_journal(top, root)
-        env = environment(top) or env
+        worked = environment(top)
+        env = Sessions(root).free(worked) if worked else env
     journal = [*entry("journal"), "--root", str(root)]
     return {"root": str(root), "cwd": str(cwd), "env": env, "agent": agent,
             "worker": entry("engine.worker"), "heal": [*journal, "heal"], "ended": [*journal, "--env", env, "ended"],
