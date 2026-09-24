@@ -73,6 +73,9 @@ const cards = (agents) =>
                 command: c.command,
                 title: c.title,
                 row: c.ref,
+                state: c.state === "running" && !c.started ? "" : c.state,
+                started: c.started,
+                ended: c.ended,
             })
         )
     );

@@ -2,18 +2,18 @@
 import TextInput from "../kit/TextInput.vue";
 import TextDisplay from "../kit/TextDisplay.vue";
 import {computed, ref} from "vue";
-import {api} from "../api/client.js";
 import Btn from "../kit/Btn.vue";
 import OptionList from "../kit/OptionList.vue";
 import {word} from "../state/store.js";
 import {sendMessage} from "../chat/outbox.js";
+import {answer, answered} from "../chat/answers.js";
 import {route} from "../route.js";
 
 const props = defineProps({resource: Object, buttonsOnly: Boolean, immediate: Boolean, tiles: Boolean});
 const emit = defineEmits(["elaborated"]);
+const question = computed(() => answered(props.resource));
 const own = ref("");
 const changing = ref(false);
-const elaborating = ref(false);
 const elaborated = ref(false);
 const capitalised = (text) => text.charAt(0).toUpperCase() + text.slice(1);
 const ELABORATE = "Elaborate on this question: ask it again with more context on each option and which you would pick, and I will choose.";
@@ -30,28 +30,27 @@ const options = computed(() =>
     })
 );
 const pick = computed(() => props.resource.data.pick || 0);
-const settled = computed(() => !!props.resource.completed && !changing.value);
+const settled = computed(() => !!question.value.completed && !changing.value);
 const chosen = computed(() =>
-    props.resource.data.chosen ? props.resource.data.chosen - 1 : options.value.findIndex((o) => o.title === props.resource.outcome)
+    question.value.data.chosen ? question.value.data.chosen - 1 : options.value.findIndex((o) => o.title === question.value.outcome)
 );
 const ownWords = computed(() => settled.value && chosen.value < 0);
 
-async function submit(text) {
+function submit(text) {
     const choice = String(text || "").trim();
     if (!choice) return;
-    if (props.resource.completed) await api.act(props.resource.type, props.resource.n, "set", {key: "outcome", value: choice});
-    else await api.act(props.resource.type, props.resource.n, word(props.resource.type, "complete"), {how: choice});
     changing.value = false;
+    own.value = "";
+    answer(props.resource, choice);
 }
 
 async function elaborate() {
-    elaborating.value = true;
+    elaborated.value = true;
+    emit("elaborated");
     try {
         await sendMessage(route.value.env, {brief: ELABORATE, about: props.resource.ref});
-        elaborated.value = true;
-        emit("elaborated");
-    } finally {
-        elaborating.value = false;
+    } catch (e) {
+        elaborated.value = false;
     }
 }
 </script>
@@ -60,20 +59,26 @@ async function elaborate() {
     <section class="options">
         <OptionList
             :options="options"
-            :chosen="resource.completed && chosen >= 0 ? options[chosen].title : ''"
-            :chosen-by="resource.data.answered_by || ''"
-            :reason="resource.data.reason || ''"
+            :chosen="question.completed && chosen >= 0 ? options[chosen].title : ''"
+            :chosen-by="question.data.answered_by || ''"
+            :reason="question.data.reason || ''"
             :suggested="pick - 1"
             :disabled="settled"
             :immediate="immediate"
             :tiles="tiles"
             @pick="(i) => submit(options[i].title)"
         />
+        <template v-if="question.unsaved">
+            <p class="unsaved">
+                Couldn't save “{{ question.unsaved }}” ·
+                <button type="button" @click="submit(question.unsaved)">Try again</button>
+            </p>
+        </template>
         <template v-if="settled">
             <template v-if="ownWords">
                 <div class="own-words">
                     <span>Your own words</span>
-                    <TextDisplay inline class="own-words-text" :text="resource.outcome" />
+                    <TextDisplay inline class="own-words-text" :text="question.outcome" />
                 </div>
             </template>
             <div class="after">
@@ -84,13 +89,7 @@ async function elaborate() {
             <form class="own" @submit.prevent="submit(own)">
                 <TextInput :value="own" class="grow" placeholder="Or choice in your own words…" @input="own = $event.target.value">
                     <template #end>
-                        <Btn
-                            small
-                            :busy="elaborating"
-                            :disabled="elaborated"
-                            title="Ask the agent for more context on this question"
-                            @click="elaborate"
-                        >
+                        <Btn small :disabled="elaborated" title="Ask the agent for more context on this question" @click="elaborate">
                             {{ elaborated ? "Asked to elaborate" : "Elaborate" }}
                         </Btn>
                         <Btn kind="primary" small @click="submit(own)">{{ capitalised(word(resource.type, "complete")) }}</Btn>
@@ -111,6 +110,22 @@ async function elaborate() {
     gap: 6px;
     margin: 12px 0;
 }
+.unsaved {
+    margin: 0;
+    color: var(--danger);
+    font-size: 12px;
+}
+
+.unsaved button {
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--text);
+    font: inherit;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
 .own-words {
     display: flex;
     flex-direction: column;

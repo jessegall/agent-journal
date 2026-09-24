@@ -151,10 +151,18 @@ def waited(port: int, seconds: float = PORT_WAIT) -> bool:
     return True
 
 
-def available(prefer: int = 0) -> int:
-    if prefer in PORTS and waited(prefer):
+def other_journal_on(port: int, root: Path) -> bool:
+    reply = identity(f"http://127.0.0.1:{port}/", 0.3)
+    return reply is not None and Path(reply.root).resolve() != root.resolve()
+
+
+def available(root: Path, prefer: int = 0) -> int:
+    other = prefer in PORTS and other_journal_on(prefer, root)
+    if prefer in PORTS and not other and waited(prefer):
         return prefer
-    if prefer:
+    if other:
+        print(f"journal: port {prefer} is another project's journal now; this viewer moves to a free port", file=sys.stderr)
+    elif prefer:
         print(f"journal: port {prefer} is still taken after {PORT_WAIT:g}s; the viewer moves, and a tab left open on it will not reach this journal", file=sys.stderr)
     for port in PORTS:
         if free(port):
@@ -194,7 +202,7 @@ def launch(root: Path, project: Path) -> tuple[str, int | None]:
     already = running(root) or elsewhere(root)
     if already:
         return already, None
-    port = available(last(root).port)
+    port = available(root, last(root).port)
     log = root / "runtime" / "viewer.log"
     log.parent.mkdir(parents=True, exist_ok=True)
     command = [*entry("journal"), "--root", str(root), "serve", "--port", str(port)]

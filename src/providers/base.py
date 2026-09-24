@@ -98,6 +98,13 @@ class WorkLinks:
     links: list[str] = field(default_factory=list)
 
 
+@dataclass
+class BackgroundTasks:
+    started: dict[str, float] = field(default_factory=dict)
+    ended: dict[str, float] = field(default_factory=dict)
+    failed: set[str] = field(default_factory=set)
+
+
 class Provider(ABC):
     tool_kinds: ClassVar[dict] = {"Bash": BashCall, "Read": ReadCall, "NotebookRead": ReadCall, "Edit": WriteCall, "MultiEdit": WriteCall, "Write": WriteCall,
                                   "NotebookEdit": WriteCall, "Grep": SearchCall, "Glob": SearchCall, "WebSearch": SearchCall, "WebFetch": FetchCall,
@@ -171,6 +178,9 @@ class Provider(ABC):
 
     def work_links(self, path: Path) -> list[str]:
         return []
+
+    def background_tasks(self, path: Path) -> BackgroundTasks:
+        return BackgroundTasks()
 
     def skill_load(self, name: str) -> str:
         return f"Skill: {name}"

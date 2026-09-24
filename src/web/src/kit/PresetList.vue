@@ -90,7 +90,7 @@ function saved(name) {
                             :title="flashed === p.key ? 'Saved' : 'Save the current layout into it'"
                             @click.stop="updated(p.key)"
                         >
-                            <Icon :name="flashed === p.key ? 'tick' : 'saveinto'" :size="12" />
+                            <Icon :name="flashed === p.key ? 'tick' : 'floppy'" :size="12" />
                         </button>
                         <button
                             type="button"

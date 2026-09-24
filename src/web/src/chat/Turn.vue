@@ -423,9 +423,17 @@ async function drop() {
     border-radius: 9px;
     background: color-mix(in srgb, var(--raised) 50%, transparent);
     color: var(--text-4);
-    font-size: 12px;
+    font-size: 11.5px;
     font-style: italic;
     line-height: 1.5;
+}
+
+.thought-text :deep(> :first-child) {
+    margin-top: 0;
+}
+
+.thought-text :deep(> :last-child) {
+    margin-bottom: 0;
 }
 
 .thread-turn {

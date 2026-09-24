@@ -3,6 +3,8 @@ import hmac
 import re
 import secrets
 import time
+import urllib.error
+import urllib.request
 import uuid
 from pathlib import Path
 
@@ -12,6 +14,7 @@ from controllers.base import CONTROLLERS, Controller
 from engine.record import Record
 from features import FEATURES
 from commands.dispatch import shaping
+from engine.manifest import manifest
 from engine.markers import MARKER
 from features.format import VIEWER
 from features.sharing.resource import SHARED_TYPES, Share
@@ -22,6 +25,7 @@ TOKEN = re.compile(r"^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-
 SPANS = {"h": 3600, "d": 86400}
 NEVER = ("", "0", "never")
 HASH_ROUNDS = 200_000
+REACH_SECONDS = 3
 SAVE_VIEWS_EVERY = 60
 UNSAVED_VIEWS: dict[int, tuple[int, float]] = {}
 UNLOCKED: dict[int, str] = {}
@@ -99,6 +103,16 @@ class Shares(Controller):
         if failed:
             raise Refused(failed)
         return self.tunnel()
+
+    def reachable(self, n: int) -> dict:
+        share = self.load(int(n))
+        try:
+            with urllib.request.urlopen(urllib.request.Request(share.abstract, method="HEAD"), timeout=REACH_SECONDS) as answer:
+                return {"reachable": answer.status < 500}
+        except urllib.error.HTTPError as error:
+            return {"reachable": error.code < 500}
+        except (OSError, ValueError):
+            return {"reachable": False}
 
     def _link(self, token: str) -> str:
         host = FEATURES["sharing"].setting(self.record, "host", "tunler.jessegall.nl")
@@ -183,7 +197,10 @@ class Shares(Controller):
                 "files": sorted(row.files), "pictures": dict(getattr(row, "pictures", {}) or {}),
                 "members": [f"{m.type}:{m.n}" for m in self._members(share, row) if f"{m.type}:{m.n}" in scope] if row.type == "collection" else [],
             }
-        return {"share": {"target": share.target, "expires": share.expires}, "rows": rows}
+        described = manifest()["types"]
+        kinds = {ref.partition(":")[0] for ref in rows}
+        return {"share": {"target": share.target, "expires": share.expires}, "rows": rows,
+                "types": {kind: described[kind] for kind in kinds if kind in described}}
 
     def _count_view(self, n: int) -> None:
         count, saved_at = UNSAVED_VIEWS.get(n, (0, 0.0))

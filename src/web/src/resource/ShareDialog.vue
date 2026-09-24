@@ -39,19 +39,19 @@ const opens = ref(null);
 const error = ref("");
 const making = ref(false);
 const made = ref(null);
-const TUNNEL = "sharing.tunnel";
 const WAIT_EVERY = 1500;
 const WAIT_FOR = 45000;
 const tunnel = ref("");
 let pause = 0;
 const message = (link) => `Here's the link to ${props.resource.title}: ${link}`;
 
-async function awaitTunnel() {
+async function awaitLink(share) {
     const until = Date.now() + WAIT_FOR;
     tunnel.value = "starting";
     while (tunnel.value === "starting") {
-        const services = await api.services().catch(() => []);
-        if (services.find((s) => s.id === TUNNEL)?.state === "ready") tunnel.value = "ready";
+        const got = await api.command("share", "reachable", {n: share.n}).catch(() => ({}));
+        if (tunnel.value !== "starting") return;
+        if (got.reachable) tunnel.value = "ready";
         else if (Date.now() > until) tunnel.value = "late";
         else await new Promise((done) => (pause = setTimeout(done, WAIT_EVERY)));
     }
@@ -83,7 +83,7 @@ async function create() {
     try {
         made.value = await api.create("share", {title: ref_.value, expires: expires.value, password: password.value});
         password.value = "";
-        awaitTunnel();
+        awaitLink(made.value);
     } catch (e) {
         error.value = e.message;
     } finally {
@@ -126,8 +126,10 @@ async function stop(share) {
                     <div class="starting">
                         <Spinner />
                         <span>
-                            Starting the tunnel…
-                            <span class="meta">The first link in a while takes a few seconds.</span>
+                            Getting the link ready…
+                            <span class="meta">
+                                It shows here as soon as it opens from outside; the first one in a while takes a few seconds.
+                            </span>
                         </span>
                     </div>
                 </template>
@@ -149,8 +151,8 @@ async function stop(share) {
                         </div>
                         <template v-if="tunnel === 'late'">
                             <p class="late">
-                                The tunnel hasn't come up yet, so the link won't open for now. It works as soon as the tunnel is up; the
-                                tunnel icon in the top bar shows when.
+                                The link doesn't open from outside yet. It may need a little longer; the tunnel icon in the top bar shows
+                                the tunnel's state.
                             </p>
                         </template>
                         <span class="meta">

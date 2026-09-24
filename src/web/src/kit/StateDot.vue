@@ -26,6 +26,11 @@ defineProps({state: {type: String, default: ""}});
     background: var(--tone-good);
 }
 
+.state-dot.failed {
+    border-color: var(--danger);
+    background: var(--danger);
+}
+
 @keyframes state-dot-pulse {
     50% {
         opacity: 0.35;

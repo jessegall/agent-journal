@@ -93,7 +93,7 @@ async function stop(shares) {
             :aria-expanded="drop"
             @click="drop = !drop"
         >
-            <Icon name="tunnel" />
+            <Icon name="broadcast" />
             <span class="tunnel-dot" />
         </button>
         <Transition name="drop">

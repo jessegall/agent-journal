@@ -8,7 +8,7 @@ from pathlib import Path
 
 from engine.transcript import AGENT, HUMAN, INJECTED, PEER, SENT, SUMMARY, SUPERSEDED, TASK, TOOL, Turn
 from providers.payload import AgentCall, AskCall, DISPLAYED, EVENTS, UsageWindow
-from providers.base import Provider, TypedRun, TypedRuns, WorkLinks, journal_hook, parsed, recent
+from providers.base import BackgroundTasks, Provider, TypedRun, TypedRuns, WorkLinks, journal_hook, parsed, recent
 from providers.payload import Dispatch, Hook, ToolCall
 from providers.claude_rows import Block, Row
 from resources.types import AgentRow
@@ -34,6 +34,9 @@ COMMAND_NAME = re.compile(r"<command-name>(.*?)</command-name>", re.S)
 COMMAND_ARGS = re.compile(r"<command-args>(.*?)</command-args>", re.S)
 TYPED_OUTPUT = re.compile(r"<(bash-stdout|bash-stderr|local-command-stdout)>(.*?)</\1>", re.S)
 KEPT_TYPED = 50
+BACKGROUNDED = re.compile(r"(?:backgrounded by user with ID|running in background with ID): (\w+)")
+TASK_ENDED = re.compile(r"<task-id>(\w+)</task-id>.*?<status>(\w+)</status>", re.S)
+TASK_OK = "completed"
 WORK_LINK = re.compile(r"https://(?:claude\.ai/(?:design|code/artifact|artifact)/|github\.com/[\w.-]+/[\w.-]+/pull/\d+|www\.figma\.com/)[^\s\"'<>)\]]*")
 KEPT_LINKS = 10
 EVALED = re.compile(r"&& eval '(.*)' < /dev/null && pwd -P", re.S)
@@ -263,6 +266,21 @@ class Claude(Provider):
             fresh = [link.rstrip(".,;)") for link in WORK_LINK.findall(block.text)]
             found.links = [*(link for link in found.links if link not in fresh), *dict.fromkeys(fresh)][-KEPT_LINKS:]
         return found
+
+    def background_tasks(self, path: Path) -> BackgroundTasks:
+        return self.folded(path, self.task_rows, BackgroundTasks)
+
+    def task_rows(self, tasks: BackgroundTasks, row: Row) -> BackgroundTasks:
+        for block in row.of_type("tool_result") if row.type == "user" else ():
+            for task in BACKGROUNDED.findall(block.result):
+                tasks.started.setdefault(task, row.at)
+        for text in [row.text or "", row.content or "", *(block.text for block in row.of_type("text"))]:
+            if "<task-notification>" in text:
+                for task, status in TASK_ENDED.findall(text):
+                    tasks.ended.setdefault(task, row.at)
+                    if status != TASK_OK:
+                        tasks.failed.add(task)
+        return tasks
 
     def typed_runs(self, path: Path) -> list[TypedRun]:
         return list(self.folded(path, self.typed_rows, TypedRuns).runs)

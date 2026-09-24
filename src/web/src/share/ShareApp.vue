@@ -12,7 +12,22 @@ const KINDS = {
     doc: {title: "Document", icon: "file", view: "document", labels: {}},
     collection: {title: "Collection", icon: "folder", view: "small", labels: {abstract: "What belongs in it"}},
     report: {title: "Report", icon: "report", view: "document", labels: {}},
+    todo: {title: "To-do", icon: "circle", view: "small", labels: {}},
+    dump: {title: "Dump", icon: "inbox", view: "document", labels: {}},
 };
+const kindOf = (type, given = {}) => ({
+    title: type.charAt(0).toUpperCase() + type.slice(1),
+    icon: "docs",
+    view: "document",
+    labels: {},
+    ...KINDS[type],
+    ...given,
+    fields: {},
+    shown_fields: [],
+    command_names: {},
+    takes_comments: false,
+    choices: {},
+});
 const data = ref(null);
 const failed = ref(false);
 
@@ -35,16 +50,9 @@ function row(ref, given) {
     };
 }
 
-function stock(rows) {
-    store.spec = {
-        priority: Object.keys(KINDS),
-        types: Object.fromEntries(
-            Object.entries(KINDS).map(([name, kind]) => [
-                name,
-                {...kind, fields: {}, shown_fields: [], command_names: {}, takes_comments: false, choices: {}},
-            ])
-        ),
-    };
+function stock(rows, types = {}) {
+    const names = [...new Set([...Object.keys(KINDS), ...Object.keys(rows).map((ref) => ref.split(":")[0])])];
+    store.spec = {priority: names, types: Object.fromEntries(names.map((name) => [name, kindOf(name, types[name])]))};
     const grouped = {};
     for (const [ref, given] of Object.entries(rows)) (grouped[ref.split(":")[0]] ||= []).push(row(ref, given));
     store.rows = grouped;
@@ -53,7 +61,7 @@ function stock(rows) {
 onMounted(async () => {
     try {
         const read = await sharedData();
-        stock(read.rows || {});
+        stock(read.rows || {}, read.types || {});
         data.value = read;
     } catch (e) {
         failed.value = true;
@@ -112,7 +120,7 @@ watch(shown, (item) => item && (document.title = item.title));
                         <ResourceBody :resource="shown" :comments="false" :links="false" read-only />
                     </template>
                     <template #foot>
-                        <footer class="foot">Shared from an agent journal. Only what was shared can be seen here.</footer>
+                        <footer class="foot">Shared from an agent journal</footer>
                     </template>
                 </DocumentPage>
             </div>

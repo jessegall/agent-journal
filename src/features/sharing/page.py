@@ -171,7 +171,7 @@ def document(title: str, body: str, expires: float, back: str = "") -> str:
         '<meta name="robots" content="noindex, nofollow">'
         f"<title>{html.escape(title)}</title><style>{STYLE}</style></head>"
         f'<body><main><header class="bar">{home}<span>{html.escape(ending(expires))}</span></header>'
-        f"{body}<footer>Shared from a journal. You can read this page; nothing else in the journal is open to you.</footer></main></body></html>"
+        f"{body}<footer>Shared from an agent journal</footer></main></body></html>"
     )
 
 
