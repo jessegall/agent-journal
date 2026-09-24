@@ -39,7 +39,7 @@ function send() {
 
 const focusInput = () => input.value.focus();
 const typing = () => !props.withoutInput && !props.waiting;
-defineExpose({focus: () => nextTick(() => typing() && focusInput())});
+defineExpose({focus: () => nextTick(() => typing() && input.value && focusInput())});
 
 const focusEntered = (el) => el === input.value && focusInput();
 </script>

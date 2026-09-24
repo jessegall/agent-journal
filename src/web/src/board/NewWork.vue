@@ -33,7 +33,6 @@ const GROW_MS = 450;
 const tall = ref(false);
 const grown = ref(false);
 let growTimer = 0;
-const CHOICES = 3;
 const START_OVER = "Start over";
 const shownDraft = ref(null);
 const FADED = 400;
@@ -57,7 +56,7 @@ const replies = computed(() => {
 });
 const boardQuestions = computed(() => (since.value ? store.board.questions.filter((q) => q.created >= since.value) : []));
 const asking = computed(() => boardQuestions.value.find((q) => !q.completed));
-const choosing = computed(() => Boolean(asking.value) && (asking.value.data.options || []).length >= CHOICES);
+const choosing = computed(() => Boolean(asking.value && asking.value.data.final));
 const confirmed = computed(() => drafts.value.length > 0 || boardQuestions.value.some((q) => q.outcome === "Yes"));
 const thinking = computed(() => (confirmed.value ? DRAFTING : UNDERSTANDING));
 const startedOver = computed(() => boardQuestions.value.find((q) => q.completed && q.outcome === START_OVER));

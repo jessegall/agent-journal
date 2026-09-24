@@ -193,6 +193,7 @@ class Question(Options, Resource):
     data_fields: ClassVar[list[Field]] = [
         Field(TEXT, "", name="reason"),
         Field(FLAG, False, name="hidden"),
+        Field(FLAG, False, name="final"),
     ]
     details: ClassVar[ResourceDetails] = ResourceDetails(
         title="Question",

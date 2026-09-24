@@ -48,7 +48,9 @@ WORKING_A_BOARD_CARD = {
     "started_by": USER,
     "steps": [
         ("Say what they mean", "Your first turn never drafts. From the first question on, narrow down what they already want: "
-                               "yes or no suits a sharp guess, and richer options suit a loose one; judge by the context. Make a real guess from their words, the board's name and the "
+                               "when their words leave the main thing open, ask about exactly that, like \"What do you want to "
+                               "share?\", and let them type; offer options only when you have real guesses worth clicking, "
+                               "never filler like Yes / Yes, but / No. Yes or no suits a sharp guess. Make a real guess from their words, the board's name and the "
                                "tickets already on it (journal ticket board <board n>); never ask what the board already says. "
                                "When their words make no sense, say so in the question, like \"I couldn't read that. Do you "
                                "mean <your guess>?\" Put one short line of why you think so in --abstract, and ask on the "
@@ -63,7 +65,7 @@ WORKING_A_BOARD_CARD = {
                                "Draft the tickets when it is clear; when it is not, go on to Offer choices."),
         ("Offer choices", "Only when two guesses did not land: ask once with three or four concise options, each a meaning "
                           "they might have, in a few words, and Start over as the last: journal board ask <board n> \"Which "
-                          "one?\" --set options='[...]'. The input closes while the options show, so they pick one; draft "
+                          "one?\" --set options='[...]' --set final=true. The input closes while the options show, so they pick one; draft "
                           "from their pick; the question is your whole turn, with no reply beside it. Start over clears the panel: give the run up with journal sequence abandon."),
         ("Draft the tickets", "First say how many tickets you will write, an educated guess on the low side: journal board "
                               "expect <board n> <count>. The panel shows that many placeholders; more fade in if you write "
