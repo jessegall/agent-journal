@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.132.1 — The dump bar opens its collection beside the chat
+
+Open the collection on the dump bar opens the collection in the side panel and keeps you on Home, as the plan card and report bars already do. Nothing to do.
+
 ## 2.132.0 — Documents and reports can carry buttons
 
 A document or report the agent writes can end with buttons, such as Accept this proposal or Change it first; pressing one sends the agent that text as your message about the document, a shortcut for typing it, and a button can still run one journal command instead. Nothing to do.
