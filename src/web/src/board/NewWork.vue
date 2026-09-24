@@ -28,7 +28,7 @@ const panel = ref(null);
 const revealed = ref([]);
 const docked = ref(false);
 const SKELETONS = 3;
-const SAID_LIMIT = 280;
+const INPUT_LIMIT = 280;
 const OPEN_TURNS = 2;
 const shownDraft = ref(null);
 const FADED = 400;
@@ -227,7 +227,7 @@ async function leave() {
                 v-model="words"
                 fill
                 :locked="adding"
-                :limit="SAID_LIMIT"
+                :limit="INPUT_LIMIT"
                 :placeholder="drafts.length ? 'Say what to change' : 'Describe the work in your own words'"
                 @send="send"
             >
