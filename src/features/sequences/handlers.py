@@ -96,8 +96,9 @@ class NudgeWaitingStep(Handler):
         if not found:
             return
         sequence, key, run = found
-        waited = int((time.time() - run["at"]) // NUDGE_EVERY)
-        if waited < 1 or asked_since(context, run["at"]) or not context.once(WAITING, f"{sequence.n}|{key}|{run['step']}|{run['at']}|{waited}"):
+        handed = run.get("stepped", run["at"])
+        waited = int((time.time() - handed) // NUDGE_EVERY)
+        if waited < 1 or asked_since(context, handed) or not context.once(WAITING, f"{sequence.n}|{key}|{run['step']}|{handed}|{waited}"):
             return
         step = sequence.sections[run["step"] - 1]
         context.agent.say(WAITING, n=sequence.n, title=sequence.title, step=run["step"], count=len(sequence.sections),

@@ -71,7 +71,11 @@ const startedOver = computed(() => boardQuestions.value.find((q) => q.completed 
 const conversation = computed(() =>
     [
         ...lines.value,
-        ...(resumed.value ? asked.value.map((m) => ({id: m.ref, mine: true, at: m.created, text: m.brief || m.title})) : []),
+        ...(resumed.value
+            ? asked.value
+                  .filter((m) => !lines.value.some((line) => line.id === m.data.idempotency))
+                  .map((m) => ({id: m.ref, mine: true, at: m.created, text: m.brief || m.title}))
+            : []),
         ...replies.value.map((c) => ({id: c.ref, mine: false, typed: true, at: c.created, text: quoted(c.brief || c.title).text})),
         ...boardQuestions.value
             .filter((q) => q.completed)
@@ -127,11 +131,8 @@ const note = computed(() => {
 const cardRect = (n) => document.querySelector(`.pick[data-ticket="${n}"]`)?.getBoundingClientRect();
 const toggle = (n) => (picked.value = picked.value.includes(n) ? picked.value.filter((p) => p !== n) : [...picked.value, n]);
 const drop = (tickets) => Promise.all(tickets.map((t) => api.act("ticket", t.n, "delete", {why: "not picked in New work"})));
-const say = (mine, text) =>
-    (lines.value = [
-        ...lines.value,
-        {id: `line-${lines.value.length}`, mine, text, typed: !mine, at: (conversation.value.at(-1)?.at || 0) + 0.001},
-    ]);
+const say = (mine, text, id = `line-${lines.value.length}`) =>
+    (lines.value = [...lines.value, {id, mine, text, typed: !mine, at: (conversation.value.at(-1)?.at || 0) + 0.001}]);
 
 function onKey(e) {
     if (!props.open || shownDraft.value) return;
@@ -176,7 +177,8 @@ watch(
 );
 
 async function send(text) {
-    say(true, text);
+    const id = crypto.randomUUID();
+    say(true, text, id);
     clearInterval(exampleTimer);
     lastSent.value = PENDING;
     if (asking.value) {
@@ -186,7 +188,7 @@ async function send(text) {
         return;
     }
     lastAsked.value = text;
-    await ask(text);
+    await ask(text, id);
 }
 
 function filed(text, id) {
@@ -196,8 +198,7 @@ function filed(text, id) {
     return api.requestWork(props.board.n, text, id);
 }
 
-async function ask(text) {
-    const id = crypto.randomUUID();
+async function ask(text, id = crypto.randomUUID()) {
     const session = sessions;
     inFlight = filed(text, id);
     sent.value = [...sent.value, id];
@@ -326,7 +327,7 @@ function startAnew() {
                 :closable="!docked"
                 @close="finish"
                 :locked="adding"
-                :limit="INPUT_LIMIT"
+                :limit="docked ? 0 : INPUT_LIMIT"
                 :without-input="choosing"
                 :waiting="writing"
                 :echo="echo"
