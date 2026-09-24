@@ -34,6 +34,16 @@ const CHOICES = 3;
 const START_OVER = "Start over";
 const shownDraft = ref(null);
 const FADED = 400;
+const EXAMPLES = [
+    "I want people to sign in before they can change anything",
+    "Let someone invite a teammate to this project",
+    "Show who changed a card and when",
+    "The board gets slow once there are many cards",
+    "A weekly summary of what moved",
+];
+const EXAMPLE_MS = 3200;
+const example = ref(0);
+let exampleTimer = 0;
 const UNDERSTANDING = ["Reading what you wrote", "Working out what you mean", "Checking it against the board", "Making a guess"];
 const DRAFTING = ["Looking at what is already there", "Splitting the work", "Weighing what comes first", "Writing the tickets"];
 
@@ -120,8 +130,14 @@ watch(
     {immediate: true}
 );
 
-onMounted(() => window.addEventListener("keydown", onKey));
-onUnmounted(() => window.removeEventListener("keydown", onKey));
+onMounted(() => {
+    window.addEventListener("keydown", onKey);
+    exampleTimer = setInterval(() => (example.value = (example.value + 1) % EXAMPLES.length), EXAMPLE_MS);
+});
+onUnmounted(() => {
+    window.removeEventListener("keydown", onKey);
+    clearInterval(exampleTimer);
+});
 
 watch(
     () => props.open,
@@ -282,6 +298,12 @@ async function leave() {
                     <p class="context">
                         Say it in a sentence. I say back what I think you mean, you confirm, and then I draft the tickets.
                     </p>
+                    <div class="examples">
+                        <span class="examples-label">For example</span>
+                        <Transition name="example" mode="out-in">
+                            <em :key="example" class="example">“{{ EXAMPLES[example] }}”</em>
+                        </Transition>
+                    </div>
                 </template>
                 <template v-if="asking">
                     <AskedQuestion :question="asking" />
@@ -461,6 +483,42 @@ kbd {
     color: var(--text-3);
     font-size: 13px;
     line-height: 20px;
+}
+
+.examples {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-top: 10px;
+}
+
+.examples-label {
+    color: var(--text-4);
+    font-size: 11px;
+    letter-spacing: 0.02em;
+}
+
+.example {
+    color: var(--text-2);
+    font-size: 14px;
+    line-height: 20px;
+}
+
+.example-enter-active,
+.example-leave-active {
+    transition:
+        opacity 0.35s ease,
+        transform 0.35s ease;
+}
+
+.example-enter-from {
+    opacity: 0;
+    transform: translateY(6px);
+}
+
+.example-leave-to {
+    opacity: 0;
+    transform: translateY(-6px);
 }
 
 .prompt {
