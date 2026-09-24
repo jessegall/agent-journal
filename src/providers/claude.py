@@ -552,12 +552,13 @@ class ClaudeDriver(Driver):
 
     def _handed(self, line: str) -> bool:
         root = self.record.root
+        pid = Sessions(root).read(self.session).pid
         try:
-            if not self.record.delivery.get("channel", True) or time.time() - runtime.channel_alive(root).stat().st_mtime > self.LISTENING:
+            if not pid or not self.record.delivery.get("channel", True) or time.time() - runtime.channel_alive(root, pid).stat().st_mtime > self.LISTENING:
                 return False
             if not self._delivering():
                 return False
-            with runtime.channel_queue(root).open("a") as queue:
+            with runtime.channel_queue(root, pid).open("a") as queue:
                 queue.write(json.dumps({"content": line, "meta": {"from": "journal"}}) + "\n")
             handed = runtime.session_file(root, self.session, HANDED)
             held = Handed.from_json(read_json(handed, {}))

@@ -24,12 +24,12 @@ def restarting(root: Path) -> Path:
     return folder(root) / "restarting"
 
 
-def channel_queue(root: Path) -> Path:
-    return folder(root) / "channel.jsonl"
+def channel_queue(root: Path, pid: int) -> Path:
+    return folder(root) / "channels" / f"{pid}.jsonl"
 
 
-def channel_alive(root: Path) -> Path:
-    return folder(root) / "channel.on"
+def channel_alive(root: Path, pid: int) -> Path:
+    return folder(root) / "channels" / f"{pid}.on"
 
 
 def profiles(root: Path) -> Path:

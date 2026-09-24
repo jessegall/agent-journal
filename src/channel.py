@@ -8,7 +8,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from engine import runtime  # noqa: E402
-from engine.sessions import ACTIVE_ENV  # noqa: E402
+from engine.sessions import ACTIVE_ENV, agent_pid  # noqa: E402
 from engine.fields import Loaded  # noqa: E402
 
 PROTOCOL = "2025-06-18"
@@ -75,8 +75,8 @@ def renewed(root: Path, began: Path) -> bool:
     return build(root) != began and build(root).is_file()
 
 
-def push(root: Path) -> None:
-    f = queue(root)
+def push(root: Path, pid: int) -> None:
+    f = queue(root, pid)
     at = start(f)
     began = build(root)
     while True:
@@ -86,7 +86,7 @@ def push(root: Path) -> None:
             os.environ[READ_AT] = str(at)
             os.execv(sys.executable, sys.orig_argv)
         try:
-            alive(root).touch()
+            alive(root, pid).touch()
             lines, at = fresh_lines(f, at)
             texts = contents(lines)
             if texts:
@@ -115,9 +115,10 @@ def answer(asked: Asked) -> dict | None:
 
 def main(argv: list[str]) -> int:
     root = Path(argv[0]) if argv else Path.cwd() / ".journal"
-    queue(root).parent.mkdir(parents=True, exist_ok=True)
+    pid = agent_pid(os.getppid())
+    queue(root, pid).parent.mkdir(parents=True, exist_ok=True)
     if launched():
-        threading.Thread(target=push, args=(root,), daemon=True).start()
+        threading.Thread(target=push, args=(root, pid), daemon=True).start()
     for line in sys.stdin:
         try:
             asked = Asked.from_json(json.loads(line))

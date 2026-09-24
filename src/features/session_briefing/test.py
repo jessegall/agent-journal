@@ -152,8 +152,10 @@ def test_lines_are_typed_once_the_channel_stops_delivering_them(tmp_path):
     from engine import runtime
     from providers import DRIVERS
     record = fresh()
+    from engine.sessions import Sessions
     driver = DRIVERS["claude"](record, "claude-1")
-    alive = runtime.channel_alive(record.root)
+    Sessions(record.root).write("claude-1", pid=4242)
+    alive = runtime.channel_alive(record.root, 4242)
     alive.parent.mkdir(parents=True, exist_ok=True)
     alive.touch()
     transcript = tmp_path / "t.jsonl"
