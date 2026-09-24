@@ -67,7 +67,9 @@ const drafts = computed(() =>
 );
 const answered = (at) => replies.value.some((c) => c.created >= at) || boardQuestions.value.some((q) => q.created >= at);
 const writing = computed(() => Boolean(lastSent.value) && !answered(lastSent.value));
-const latest = computed(() => conversation.value.slice(conversation.value.findLastIndex((line) => line.mine)));
+const lastMine = computed(() => conversation.value.findLastIndex((line) => line.mine));
+const latest = computed(() => conversation.value.slice(lastMine.value + 1));
+const echo = computed(() => (docked.value || words.value || lastMine.value < 0 ? "" : conversation.value[lastMine.value].text));
 const turn = computed(() => drafts.value.find((t) => !revealed.value.includes(t.n)));
 const cards = computed(() => {
     const ahead = writing.value ? Math.max(SKELETONS - drafts.value.length, 1) : 0;
@@ -252,6 +254,7 @@ async function leave() {
                 :locked="adding"
                 :limit="INPUT_LIMIT"
                 :without-input="choosing || writing"
+                :echo="echo"
                 :placeholder="drafts.length ? 'Say what to change' : 'Describe the work in your own words'"
                 @send="send"
             >
@@ -271,8 +274,11 @@ async function leave() {
                     <template v-if="line.record">
                         <span class="record">{{ line.text }}</span>
                     </template>
-                    <template v-else>
+                    <template v-else-if="docked">
                         <ChatLine :text="line.text" :mine="line.mine" :typed="line.typed" />
+                    </template>
+                    <template v-else>
+                        <p class="prompt">{{ line.text }}</p>
                     </template>
                 </template>
                 <template v-if="asking">
@@ -446,6 +452,14 @@ kbd {
 .pick-leave-to {
     opacity: 0;
     transform: scale(0.98);
+}
+
+.prompt {
+    margin: 0;
+    color: var(--text);
+    font-size: 17px;
+    font-weight: 500;
+    line-height: 26px;
 }
 
 .record {
