@@ -3,6 +3,7 @@ import sys
 import time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
+from urllib.parse import quote, unquote
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from features.sharing.page import PICTURES, Page, document, ended, missing  # noqa: E402
@@ -29,7 +30,7 @@ class ShareHandler(BaseHTTPRequestHandler):
         self.do_GET()
 
     def do_GET(self) -> None:
-        parts = [p for p in self.path.split("?", 1)[0].split("/") if p]
+        parts = [unquote(p) for p in self.path.split("?", 1)[0].split("/") if p]
         if len(parts) < 2 or parts[0] != "s":
             return self.page(404, missing())
         share = self.shares._by_token(parts[1])
@@ -53,7 +54,8 @@ class ShareHandler(BaseHTTPRequestHandler):
             return self.page(404, missing())
         page = Page(share.token, scope)
         row = self.shares._shared_row(share, ref)
-        body = page.collection(row, self.shares._members(share, row)) if row.type == "collection" else page.row(row)
+        members = [m for m in self.shares._members(share, row) if f"{m.type}:{m.n}" in scope] if row.type == "collection" else []
+        body = page.collection(row, members) if row.type == "collection" else page.row(row)
         back = "" if ref == share.target else f"/s/{share.token}"
         self.page(200, document(row.title, body, share.expires, back))
 
@@ -65,7 +67,7 @@ class ShareHandler(BaseHTTPRequestHandler):
             return self.page(404, missing())
         kind = mimetypes.guess_type(found.name)[0] or "application/octet-stream"
         inline = found.suffix.lower() in PICTURES
-        headers = {"Content-Type": kind, "Content-Disposition": f'{"inline" if inline else "attachment"}; filename="{found.name}"'}
+        headers = {"Content-Type": kind, "Content-Disposition": f"{'inline' if inline else 'attachment'}; filename*=UTF-8''{quote(found.name)}"}
         self.send(200, found.read_bytes(), headers)
 
     def page(self, code: int, text: str) -> None:

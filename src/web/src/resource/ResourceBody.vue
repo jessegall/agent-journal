@@ -28,6 +28,7 @@ import Links from "./Links.vue";
 import Asked from "./Asked.vue";
 import SequenceRuns from "./SequenceRuns.vue";
 import SequenceSteps from "./SequenceSteps.vue";
+import ShareButton from "./ShareButton.vue";
 import CheckResult from "./CheckResult.vue";
 import Buttons from "./Buttons.vue";
 import RuleControls from "./RuleControls.vue";
@@ -218,6 +219,9 @@ const chaptered = computed(
                 <span class="controls-end">
                     <template v-if="state && !resource.data.system">
                         <AttachFiles :resource="resource" />
+                    </template>
+                    <template v-if="['doc', 'collection'].includes(resource.type) && !resource.data.system">
+                        <ShareButton :resource="resource" />
                     </template>
                     <CommentToggle :resource="resource" />
                 </span>

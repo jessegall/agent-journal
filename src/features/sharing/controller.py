@@ -9,12 +9,14 @@ from controllers.base import CONTROLLERS, Controller
 from engine.record import Record
 from features import FEATURES
 from features.sharing.resource import SHARED_TYPES, Share
-from features.sharing.tunnel import subdomain
+from features.sharing.tunnel import subdomain, tunler_status
 from resources.base import SYSTEM, Refused
 
 TOKEN = re.compile(r"^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$")
 SPANS = {"h": 3600, "d": 86400}
 NEVER = ("", "0", "never")
+SAVE_VIEWS_EVERY = 60
+UNSAVED_VIEWS: dict[int, tuple[int, float]] = {}
 SHAREABLE = re.compile(r"^(?:doc|collection)[: ]\d+$")
 
 
@@ -46,6 +48,10 @@ class Shares(Controller):
         if target.type == "collection":
             lines += [f"{m.title} ({m.type} {m.n})" for m in self._loaded_members(self.record, target)]
         return lines
+
+    def tunnel(self) -> dict:
+        host = FEATURES["sharing"].setting(self.record, "host", "tunler.jessegall.nl")
+        return {**tunler_status(), "address": f"{subdomain(self.record.root)}.{host}"}
 
     def _link(self, token: str) -> str:
         host = FEATURES["sharing"].setting(self.record, "host", "tunler.jessegall.nl")
@@ -106,8 +112,12 @@ class Shares(Controller):
         return found if found.parent == folder and found.is_file() else None
 
     def _count_view(self, n: int) -> None:
-        share = self.load(n)
-        self.update(n, views=int(share.views or 0) + 1)
+        count, saved_at = UNSAVED_VIEWS.get(n, (0, 0.0))
+        if time.time() - saved_at < SAVE_VIEWS_EVERY:
+            UNSAVED_VIEWS[n] = (count + 1, saved_at)
+            return
+        UNSAVED_VIEWS[n] = (0, time.time())
+        self.update(n, views=int(self.load(n).views or 0) + count + 1)
 
 
 resources_module.register(Share)
