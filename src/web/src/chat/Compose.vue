@@ -1,6 +1,6 @@
 <script setup>
 import CountBadge from "../kit/CountBadge.vue";
-import {computed, onUnmounted, reactive, ref, watch} from "vue";
+import {computed, nextTick, onMounted, onUnmounted, reactive, ref, watch} from "vue";
 import Btn from "../kit/Btn.vue";
 import {store} from "../state/store.js";
 import Icon from "../kit/Icon.vue";
@@ -18,6 +18,7 @@ const props = defineProps({
     tools: {type: Array, default: () => []},
     note: {type: String, default: ""},
     many: {type: Object, default: null},
+    idle: {type: Object, default: null},
 });
 const emit = defineEmits(["unquote"]);
 const draft = reactive({text: "", files: [], sending: false, error: ""});
@@ -26,6 +27,31 @@ watch(writing, (is) => (store.drafting += is ? 1 : -1));
 onUnmounted(() => writing.value && (store.drafting -= 1));
 const area = ref(null);
 const kept = ref(0);
+const resting = computed(() => Boolean(props.idle) && !draft.text.trim() && !draft.files.length);
+const ready = computed(() => !draft.sending && Boolean(draft.text.trim()));
+const label = computed(() => (resting.value ? props.idle.label : props.submit));
+const measures = ref(null);
+const widths = reactive({idle: 0, submit: 0});
+
+function measure() {
+    const shown = measures.value ? [...measures.value.children] : [];
+    widths.idle = shown[0]?.offsetWidth || 0;
+    widths.submit = shown[shown.length - 1]?.offsetWidth || 0;
+}
+
+onMounted(() => nextTick(measure));
+watch(
+    () => [props.idle?.label, props.submit],
+    () => nextTick(measure)
+);
+const faceWidth = computed(() => (resting.value ? widths.idle : widths.submit) || 0);
+
+function pressed(e) {
+    if (!resting.value) return;
+    e.preventDefault();
+    use(props.idle);
+}
+
 const offering = computed(() => Boolean(props.many && draft.files.length > 1 && kept.value !== draft.files.length));
 
 async function handOver() {
@@ -148,10 +174,6 @@ async function use(tool) {
             </div>
         </Transition>
         <div class="compose-box floating">
-            <label class="compose-attach compose-corner" title="Attach files" aria-label="Attach files">
-                <Icon name="paperclip" />
-                <input type="file" multiple hidden @change="picked" />
-            </label>
             <template v-if="draft.files.length">
                 <div class="compose-files">
                     <template v-for="(f, i) in draft.files" :key="i">
@@ -178,24 +200,45 @@ async function use(tool) {
                 @paste="pasted"
             />
             <div class="compose-foot">
+                <label class="compose-attach" title="Attach files" aria-label="Attach files">
+                    <Icon name="paperclip" />
+                    <input type="file" multiple hidden @change="picked" />
+                </label>
                 <template v-for="action in tools" :key="action.icon">
-                    <button
-                        type="button"
-                        :class="['compose-attach', {labelled: action.label}]"
-                        :title="action.title"
-                        :aria-label="action.title"
-                        @click="use(action)"
-                    >
+                    <button type="button" class="compose-attach" :title="action.title" :aria-label="action.title" @click="use(action)">
                         <Icon :name="action.icon" />
-                        <template v-if="action.label">
-                            <span class="compose-attach-label">{{ action.label }}</span>
-                        </template>
                         <template v-if="action.badge">
                             <CountBadge :count="action.badge" />
                         </template>
                     </button>
                 </template>
-                <button type="submit" class="compose-send" :disabled="draft.sending || !draft.text.trim()">{{ submit }}</button>
+                <button
+                    type="submit"
+                    :class="['compose-send', {resting, ready}]"
+                    :disabled="!resting && !ready"
+                    :title="resting ? idle.title : ''"
+                    @click="pressed"
+                >
+                    <span class="compose-send-face" :style="faceWidth ? {width: `${faceWidth}px`} : null">
+                        <Transition name="swap" mode="out-in">
+                            <span :key="label" class="compose-send-label">
+                                <template v-if="resting">
+                                    <Icon :name="idle.icon" :size="13" />
+                                </template>
+                                {{ label }}
+                            </span>
+                        </Transition>
+                    </span>
+                    <span ref="measures" class="compose-send-measure" aria-hidden="true">
+                        <template v-if="idle">
+                            <span class="compose-send-label">
+                                <Icon :name="idle.icon" :size="13" />
+                                {{ idle.label }}
+                            </span>
+                        </template>
+                        <span class="compose-send-label">{{ submit }}</span>
+                    </span>
+                </button>
             </div>
         </div>
         <template v-if="draft.error">
@@ -281,14 +324,7 @@ async function use(tool) {
     display: flex;
     flex-wrap: wrap;
     gap: 6px;
-    padding: 10px 46px 4px 10px;
-}
-
-.compose-attach.compose-corner {
-    position: absolute;
-    top: 6px;
-    right: 6px;
-    z-index: 1;
+    padding: 10px 10px 4px;
 }
 
 .chip {
@@ -314,7 +350,7 @@ async function use(tool) {
     display: block;
     width: 100%;
     min-height: 74px;
-    padding: 11px 46px 4px 12px;
+    padding: 11px 12px 4px;
     border: 0;
     background: none;
     resize: none;
@@ -355,27 +391,6 @@ async function use(tool) {
     color: inherit;
 }
 
-.compose-attach.labelled {
-    width: auto;
-    gap: 7px;
-    padding: 0 11px 0 9px;
-    border: 1px solid color-mix(in srgb, var(--accent) 70%, transparent);
-    background: var(--accent-dim);
-    color: var(--accent-text);
-    font-size: 12.5px;
-    white-space: nowrap;
-}
-
-.compose-attach.labelled:hover {
-    background: color-mix(in srgb, var(--accent) 35%, var(--accent-dim));
-    color: var(--text);
-}
-
-.compose-attach.labelled .ico {
-    width: 14px;
-    height: 14px;
-}
-
 .compose-many {
     display: flex;
     flex-direction: column;
@@ -414,26 +429,90 @@ async function use(tool) {
 }
 
 .compose-send {
+    position: relative;
     margin-left: auto;
-    height: 32px;
-    padding: 0 16px;
-    border: 0;
-    border-radius: 8px;
-    background: var(--accent);
-    color: #fff;
-    font-size: 13px;
+    height: 28px;
+    padding: 0 10px;
+    border: 1px solid var(--border-2);
+    border-radius: 7px;
+    background: transparent;
+    color: var(--text-3);
+    font-size: 12.5px;
     font-weight: 500;
     cursor: pointer;
+    transition:
+        background 0.25s,
+        border-color 0.25s,
+        color 0.25s;
 }
 
-.compose-send:hover {
+.compose-send.resting:hover,
+.compose-send.resting:focus-visible {
+    border-color: color-mix(in srgb, var(--accent) 60%, var(--border-2));
+    background: var(--accent-dim);
+    color: var(--accent-text);
+}
+
+.compose-send.ready {
+    border-color: var(--accent);
+    background: var(--accent);
+    color: #fff;
+}
+
+.compose-send.ready:hover {
     filter: brightness(1.08);
 }
 
 .compose-send:disabled {
-    opacity: 0.45;
     cursor: default;
-    filter: none;
+}
+
+.compose-send-face {
+    display: inline-flex;
+    justify-content: center;
+    overflow: hidden;
+    transition: width 0.28s var(--ease);
+}
+
+.compose-send-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+}
+
+.compose-send-measure {
+    position: absolute;
+    top: 0;
+    left: 0;
+    display: flex;
+    visibility: hidden;
+    pointer-events: none;
+}
+
+.swap-enter-active,
+.swap-leave-active {
+    transition:
+        opacity 0.14s,
+        translate 0.18s var(--ease);
+}
+
+.swap-enter-from {
+    opacity: 0;
+    translate: 0 4px;
+}
+
+.swap-leave-to {
+    opacity: 0;
+    translate: 0 -4px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .compose-send-face,
+    .swap-enter-active,
+    .swap-leave-active {
+        transition: none;
+    }
 }
 
 .error {

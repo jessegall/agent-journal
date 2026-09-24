@@ -1,7 +1,7 @@
 from typing import ClassVar
 
 from resources.base import AGENT, COMMISSIONED, COMPLETED, DOCUMENT, LAZY, OPENED, PROJECT, REQUESTED, RESULTS, REVISED, SIDEBAR, SYSTEM, UNLISTED, USER, Resource, ResourceDetails
-from resources.shapes import FLAG, NUMBER, TEXT, Field, Options, Placed, Ranked, Reasoned, Shape, Traced
+from resources.shapes import FLAG, NUMBER, TEXT, Field, Options, Placed, Ranked, Reasoned, Shape, Traced, rows
 
 
 class Message(Shape, Resource):
@@ -115,6 +115,13 @@ class Doc(Shape, Resource):
 
 
 class Report(Shape, Resource):
+    data_fields: ClassVar[list[Field]] = [
+        Field(TEXT, "", name="kind"),
+        Field(NUMBER, 0, name="number"),
+        Field(NUMBER, 0, name="since"),
+        Field(NUMBER, 0, name="until"),
+        Field(rows(section=TEXT, ref=TEXT, title=TEXT, note=TEXT), list, name="items"),
+    ]
     details: ClassVar[ResourceDetails] = ResourceDetails(
         title="Report",
         abstract="What was checked and what was found, written for the user, read once",
@@ -130,6 +137,8 @@ class Report(Shape, Resource):
     command_names = {"complete": "archive"}
     closed_first = True
     view = DOCUMENT
+    indexed = ("kind", "number", "until")
+    formatted_data = {"items": ("title", "note")}
 
 
 class Fact(Reasoned, Resource):

@@ -6,14 +6,14 @@ import features
 from commands.parser import actions
 from controllers.base import Controller
 from controllers.types import CONTROLLERS
-from resources.base import ACTIONS, ACTORS, CLOSED, EVERY, OPEN, SCOPES, VIEWS, Resource
+from resources.base import ACTIONS, ACTORS, CLOSED, EVERY, OPEN, SCOPES, UPDATES, VIEWS, Resource
 from resources.types import TYPES, priority
 from engine import runtime
 from engine.version import version
 from engine.package import data
 
 
-SHOWN = {OPEN: "Open", EVERY: "All"}
+SHOWN = {OPEN: "Open", EVERY: "All", UPDATES: "Updates"}
 
 
 def tabs(kind) -> list[dict]:

@@ -13,7 +13,9 @@ const props = defineProps({
 });
 const log = ref(null);
 const sent = computed(() => rows("message").filter((m) => m.data.sent_to === props.session && m.seen[0] === "user"));
-const lines = computed(() => [...chatTurns(props.turns), ...sent.value].sort((a, b) => a.created - b.created));
+const relayed = computed(() => new Set(sent.value.map((m) => m.brief.trim())));
+const spoken = computed(() => chatTurns(props.turns).filter((t) => !(t.who === "user" && relayed.value.has(t.brief.trim()))));
+const lines = computed(() => [...spoken.value, ...sent.value].sort((a, b) => a.created - b.created));
 const send = (text) => api.create("message", {brief: text, sent_to: props.session});
 watch(
     () => lines.value.length,
@@ -40,7 +42,7 @@ watch(
 .subagent-chat {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 8px;
     flex: 1;
     min-height: 0;
 }
@@ -53,7 +55,7 @@ watch(
     min-height: 0;
     overflow-y: auto;
     overscroll-behavior: contain;
-    padding: 4px 2px;
+    padding: 0 2px;
 }
 
 .none {

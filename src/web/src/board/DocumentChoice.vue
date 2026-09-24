@@ -36,7 +36,6 @@ defineExpose({browse});
             <template v-if="!file">
                 <span class="document-choice-drop">
                     <Btn small @click.stop="browse">Choose a document</Btn>
-                    <span class="document-choice-hint">or drop or paste one here</span>
                 </span>
             </template>
             <template v-else>
@@ -119,8 +118,7 @@ defineExpose({browse});
     font-weight: 400;
 }
 
-.document-choice-line,
-.document-choice-hint {
+.document-choice-line {
     color: var(--text-3);
     font-size: 12.5px;
 }
@@ -131,11 +129,6 @@ defineExpose({browse});
     flex-direction: column;
     align-items: flex-end;
     gap: 4px;
-}
-
-.document-choice-hint {
-    color: var(--text-4);
-    font-size: 11.5px;
 }
 
 .document-choice-check {

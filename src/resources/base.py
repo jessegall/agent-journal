@@ -18,6 +18,7 @@ SMALL, WIDE, DOCUMENT = "small", "wide", "document"
 VIEWS = (SMALL, WIDE, DOCUMENT)
 USER, AGENT, SYSTEM, PLUGIN = "user", "agent", "system", "plugin"
 OPEN, CLOSED, EVERY = "open", "closed", "every"
+UPDATES = "updates"
 OPENED, COMPLETED, CLEARED = "opened", "completed", "cleared"
 CLEARINGS = (OPENED, COMPLETED, CLEARED)
 WHOM = "whom"

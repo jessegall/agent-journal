@@ -426,10 +426,11 @@ function again() {
 
 async function add() {
     adding.value = true;
-    const keep = drafts.value.map((t) => t.n).filter((n) => picked.value.includes(n));
+    const drafted = [...drafts.value];
+    const keep = drafted.map((t) => t.n).filter((n) => picked.value.includes(n));
     for (const n of keep) await api.act("ticket", n, "confirm");
-    for (const t of drafts.value.filter((d) => keep.includes(d.n) && proposed(d).length)) {
-        const only = proposed(t).filter((n) => keep.includes(n) || !drafts.value.some((d) => d.n === n));
+    for (const t of drafted.filter((d) => keep.includes(d.n) && proposed(d).length)) {
+        const only = proposed(t).filter((n) => keep.includes(n) || !drafted.some((d) => d.n === n));
         await (only.length
             ? api.act("ticket", t.n, "accept_dependencies", {only: only.join(",")})
             : api.act("ticket", t.n, "decline_dependencies"));
@@ -582,7 +583,6 @@ function startAnew() {
                                 <Icon name="paperclip" />
                                 From a document
                             </Btn>
-                            <span class="hand-note">or drop or paste one here</span>
                         </span>
                     </template>
                     <input ref="picker" type="file" hidden @change="take($event.target.files[0])" />

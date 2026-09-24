@@ -13,40 +13,45 @@ export function withWhispers(turns, nudges, session) {
     return whispers.length ? [...turns, ...whispers].sort((a, b) => a.at - b.at) : turns;
 }
 
-const hasText = (t) => (t.kind === "agent" || t.kind === "human") && t.text;
+const SPOKEN = {agent: "agent", human: "user", injected: "user"};
+const hasText = (t) => SPOKEN[t.kind] && t.text;
+
+const line = (t) => ({
+    type: "line",
+    ref: `line:${t.line}`,
+    n: t.line,
+    who: SPOKEN[t.kind],
+    title: "",
+    brief: t.text,
+    abstract: "",
+    refs: [],
+    sections: [],
+    seen: ["user", "agent"],
+    data: {},
+    created: t.at,
+    completed: 0,
+});
+
+const counted = (tools) =>
+    Object.entries(tools.reduce((all, tool) => ({...all, [tool]: (all[tool] || 0) + 1}), {}))
+        .map(([tool, times]) => (times > 1 ? `${tool} ×${times}` : tool))
+        .join(", ");
 
 export function chatTurns(entries) {
-    return entries.flatMap((t) => {
+    const out = [];
+    let run = null;
+    for (const t of entries) {
         if (hasText(t)) {
-            const who = t.kind === "human" ? "user" : "agent";
-            return [
-                {
-                    type: "line",
-                    ref: `line:${t.line}`,
-                    n: t.line,
-                    who,
-                    title: "",
-                    brief: t.text,
-                    abstract: "",
-                    refs: [],
-                    sections: [],
-                    seen: ["user", "agent"],
-                    data: {},
-                    created: t.at,
-                    completed: 0,
-                },
-            ];
+            run = null;
+            out.push(line(t));
+        } else if (t.tools && t.tools.length) {
+            if (!run) {
+                run = {type: "card", ref: `tools:${t.line}`, n: t.line, created: t.at, tools: [], data: {icon: "terminal", label: ""}};
+                out.push(run);
+            }
+            run.tools.push(...t.tools);
+            run.data = {...run.data, label: `Used ${counted(run.tools)}`};
         }
-        if (t.tools && t.tools.length)
-            return [
-                {
-                    type: "card",
-                    ref: `tools:${t.line}`,
-                    n: t.line,
-                    created: t.at,
-                    data: {icon: "terminal", label: `Used ${t.tools.join(", ")}`},
-                },
-            ];
-        return [];
-    });
+    }
+    return out;
 }
