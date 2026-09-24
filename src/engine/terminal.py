@@ -10,7 +10,7 @@ from engine import runtime
 from engine.stored import read_json, write_json
 from engine.package import CODE, entry
 from engine.fields import Loaded
-from engine.worktree import checkout, environment
+from engine.worktree import checkout, environment, share_journal
 
 RELOAD = 75
 STOP = 76
@@ -113,7 +113,10 @@ def launch_spec(root: Path, cwd: Path, env: str, agent: str, args: list[str], ta
     from providers import DRIVERS
     if not taken:
         cwd, args = DRIVERS[agent].placed(cwd, args)
-        env = environment(checkout(cwd)) or env
+        top = checkout(cwd)
+        if top:
+            share_journal(top, root)
+        env = environment(top) or env
     journal = [*entry("journal"), "--root", str(root)]
     return {"root": str(root), "cwd": str(cwd), "env": env, "agent": agent,
             "worker": entry("engine.worker"), "heal": [*journal, "heal"], "ended": [*journal, "--env", env, "ended"],

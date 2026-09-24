@@ -79,3 +79,19 @@ def git(project: Path, *args: str) -> subprocess.CompletedProcess:
         return subprocess.run(["git", *args], cwd=project, capture_output=True, text=True, timeout=60)
     except (OSError, subprocess.TimeoutExpired) as failed:
         return subprocess.CompletedProcess(["git", *args], 1, "", str(failed))
+
+
+JOURNAL_EXCLUDED = "/.journal"
+
+
+def share_journal(top: Path, root: Path) -> None:
+    journal = top / ".journal"
+    if journal.exists() or journal.is_symlink() or top.resolve() == root.resolve().parent:
+        return
+    journal.symlink_to(root.resolve(), target_is_directory=True)
+    gitdir = Path((top / ".git").read_text().split(":", 1)[1].strip())
+    exclude = (gitdir if gitdir.is_absolute() else top / gitdir).resolve().parents[1] / "info" / "exclude"
+    held = exclude.read_text() if exclude.is_file() else ""
+    if JOURNAL_EXCLUDED not in held.splitlines():
+        exclude.parent.mkdir(parents=True, exist_ok=True)
+        exclude.write_text(held + ("" if not held or held.endswith("\n") else "\n") + JOURNAL_EXCLUDED + "\n")
