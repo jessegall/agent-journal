@@ -1,5 +1,6 @@
 <script setup>
 import SectionHeading from "../kit/SectionHeading.vue";
+import SwitchCase from "../kit/SwitchCase.vue";
 import CloseButton from "../kit/CloseButton.vue";
 import {computed, reactive, ref} from "vue";
 import {api} from "../api/client.js";
@@ -28,6 +29,8 @@ import Buttons from "./Buttons.vue";
 import RuleControls from "./RuleControls.vue";
 import TextDisplay from "../kit/TextDisplay.vue";
 import ResourceCard from "./ResourceCard.vue";
+import AttachFiles from "./AttachFiles.vue";
+import {standing} from "../domain/documents.js";
 
 const props = defineProps({
     resource: Object,
@@ -81,6 +84,8 @@ async function save() {
         draft.error = e.message;
     }
 }
+const state = computed(() => (props.resource.type === "doc" ? standing(props.resource) : null));
+const outcomeShown = computed(() => !!props.resource.completed && !state.value?.said);
 const WITHOUT_DOC_CARDS = ["doc", "collection"];
 const docs = computed(() =>
     WITHOUT_DOC_CARDS.includes(props.resource.type)
@@ -100,6 +105,24 @@ const docs = computed(() =>
                     <Icon :name="kind.icon" :size="13" />
                     {{ kind.title }} {{ resource.n }}
                 </span>
+                <template v-if="state">
+                    <SwitchCase :value="state.key">
+                        <template #replaced>
+                            <button type="button" class="standing replaced" :title="state.hint" @click="peek('doc', state.by)">
+                                {{ state.label }}
+                                <Icon name="arrow" :size="10" />
+                            </button>
+                        </template>
+                        <template #default>
+                            <span :class="['standing', state.key]" :title="state.hint">
+                                <template v-if="state.key === 'final'">
+                                    <Icon name="check" :size="10" />
+                                </template>
+                                {{ state.label }}
+                            </span>
+                        </template>
+                    </SwitchCase>
+                </template>
                 <span class="age">{{ age(resource.created) }}</span>
                 <template v-if="kind.view === 'document'">
                     <DownloadLink :resource="resource" />
@@ -155,6 +178,9 @@ const docs = computed(() =>
             <div class="controls">
                 <ResourceActions :resource="resource" @edit="edit" @close="emit('close')" />
                 <span class="controls-end">
+                    <template v-if="state && !resource.data.system">
+                        <AttachFiles :resource="resource" />
+                    </template>
                     <CommentToggle :resource="resource" />
                 </span>
                 <template v-if="ranked">
@@ -238,20 +264,22 @@ const docs = computed(() =>
             </section>
         </template>
         <template v-if="resource.type !== 'message'">
-            <Sections :sections="resource.sections" />
+            <Sections :sections="resource.sections" :document="kind.view === 'document'" />
         </template>
         <template v-if="traced">
             <Trace :resource="resource" />
         </template>
-        <template v-if="resource.completed">
+        <template v-if="outcomeShown">
             <section class="block">
                 <SectionHeading>
                     {{
-                        label(
-                            resource.type,
-                            "outcome",
-                            word(resource.type, "complete").replace(/^\w/, (c) => c.toUpperCase())
-                        )
+                        state
+                            ? "Note when marked final"
+                            : label(
+                                  resource.type,
+                                  "outcome",
+                                  word(resource.type, "complete").replace(/^\w/, (c) => c.toUpperCase())
+                              )
                     }}
                 </SectionHeading>
                 <TextDisplay :text="resource.outcome || age(resource.completed)" />
@@ -349,10 +377,43 @@ const docs = computed(() =>
     display: inline-flex;
     align-items: center;
     gap: 6px;
+    white-space: nowrap;
     color: var(--accent-text);
 }
 .age {
     flex: 1;
+}
+
+.standing {
+    flex: none;
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 0 7px;
+    border: 1px solid var(--border-2);
+    border-radius: 99px;
+    color: var(--text-2);
+    font: inherit;
+    font-size: 10.5px;
+    line-height: 17px;
+    letter-spacing: 0;
+    text-transform: none;
+    background: none;
+}
+
+.standing.draft {
+    border-style: dashed;
+    color: var(--text-3);
+}
+
+.standing.replaced {
+    cursor: pointer;
+}
+
+.standing.replaced:hover {
+    border-color: var(--accent);
+    color: var(--accent-text);
 }
 .title {
     margin: 10px 0 0;
@@ -501,6 +562,7 @@ const docs = computed(() =>
 
 .controls {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     justify-content: space-between;
     gap: 10px;
@@ -508,6 +570,9 @@ const docs = computed(() =>
 
 .controls-end {
     order: 2;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
     margin-left: auto;
 }
 

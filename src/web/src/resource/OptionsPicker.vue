@@ -14,6 +14,7 @@ const own = ref("");
 const changing = ref(false);
 const elaborating = ref(false);
 const elaborated = ref(false);
+const capitalised = (text) => text.charAt(0).toUpperCase() + text.slice(1);
 const ELABORATE = "Elaborate on this question: say more about what each option means here and which you would pick, and I will choose.";
 const optionText = (option = {}) => String(option.title || option.label || option.value || "");
 const options = computed(() =>
@@ -73,17 +74,20 @@ async function elaborate() {
         </template>
         <template v-else-if="!buttonsOnly">
             <form class="own" @submit.prevent="submit(own)">
-                <TextInput :value="own" class="grow" placeholder="Or choice in your own words…" @input="own = $event.target.value" />
-                <Btn
-                    small
-                    :busy="elaborating"
-                    :disabled="elaborated"
-                    title="Ask the agent for more context on this question"
-                    @click="elaborate"
-                >
-                    {{ elaborated ? "Asked to elaborate" : "Elaborate" }}
-                </Btn>
-                <Btn kind="primary" small @click="submit(own)">{{ word(resource.type, "complete") }}</Btn>
+                <TextInput :value="own" class="grow" placeholder="Or choice in your own words…" @input="own = $event.target.value">
+                    <template #end>
+                        <Btn
+                            small
+                            :busy="elaborating"
+                            :disabled="elaborated"
+                            title="Ask the agent for more context on this question"
+                            @click="elaborate"
+                        >
+                            {{ elaborated ? "Asked to elaborate" : "Elaborate" }}
+                        </Btn>
+                        <Btn kind="primary" small @click="submit(own)">{{ capitalised(word(resource.type, "complete")) }}</Btn>
+                    </template>
+                </TextInput>
                 <template v-if="changing">
                     <Btn small @click="changing = false">Keep it</Btn>
                 </template>

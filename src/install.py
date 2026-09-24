@@ -1,3 +1,4 @@
+import fcntl
 import os
 import shutil
 import stat
@@ -212,6 +213,19 @@ def plain(text: str, secret: str) -> str:
     return text.replace(secret, "the token") if secret else text
 
 
+def counted(version: str) -> tuple:
+    return tuple(int(part) if part.isdigit() else 0 for part in str(version).split("."))
+
+
+def released(repository: str = REPOSITORY) -> str:
+    try:
+        listed = subprocess.run(["git", "ls-remote", "--tags", "--refs", repository, "v*"], capture_output=True, text=True, timeout=10)
+    except (OSError, subprocess.TimeoutExpired):
+        return ""
+    versions = [line.rsplit("/v", 1)[1] for line in listed.stdout.splitlines() if "/v" in line] if not listed.returncode else []
+    return max(versions, key=counted) if versions else ""
+
+
 def fetch(into: Path, repository: str = "", ref: str = "") -> tuple[str, str]:
     wanted = repository or os.environ.get("AGENT_JOURNAL_REPO", REPOSITORY)
     secret = token() if wanted.startswith("https://github.com/") else ""
@@ -251,21 +265,27 @@ def upgrade(project: Path, root: Path | None = None) -> list[str]:
     root = root or project / ".journal"
     mark = root / "runtime" / "upgrading"
     mark.parent.mkdir(parents=True, exist_ok=True)
-    mark.touch()
-    try:
-        return upgrading(project, root)
-    finally:
-        mark.unlink(missing_ok=True)
+    with (root / "runtime" / "upgrade.lock").open("a") as lock:
+        try:
+            fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except OSError:
+            return ["another upgrade of this journal is running; this one stepped aside"]
+        mark.touch()
+        try:
+            return upgrading(project, root)
+        finally:
+            mark.unlink(missing_ok=True)
 
 
 def upgrading(project: Path, root: Path) -> list[str]:
     done = [line for line in [keep_copy(root)] if line]
-    source, temporary = PACKAGE, None
+    source, temporary, newest = PACKAGE, None, ""
     reloaded = PACKAGE.resolve() in (root.resolve(), code(root).resolve(), (root / ARCHIVE).resolve()) and not os.environ.get("AGENT_JOURNAL_BOOTSTRAPPED")
     if reloaded:
+        newest = released(os.environ.get("AGENT_JOURNAL_REPO", REPOSITORY))
         temporary = Path(tempfile.mkdtemp())
         source = temporary / "package"
-        _, failed = fetch(source)
+        _, failed = fetch(source, ref=f"refs/tags/v{newest}" if newest else "")
         if failed:
             shutil.rmtree(temporary, ignore_errors=True)
             return [f"package not refreshed: {failed}"]
@@ -280,6 +300,9 @@ def upgrading(project: Path, root: Path) -> list[str]:
         if temporary:
             shutil.rmtree(temporary, ignore_errors=True)
     done.append(f"package refreshed: {len(changed)} changed, {len(gone)} retired")
+    installed = (code(root) / "VERSION").read_text().strip() if (code(root) / "VERSION").is_file() else ""
+    if newest and installed != newest:
+        return done + [f"package refreshed but failed to reach the release: installed {installed or 'nothing'}, not {newest}"]
     if reloaded:
         finished = subprocess.run([sys.executable, str(code(root) / "install.py"), "finish", str(project)], capture_output=True, text=True, timeout=120)
         return done + (finished.stdout.strip().splitlines() if finished.returncode == 0 else [f"package refreshed but configuration failed: {finished.stderr.strip()}"])

@@ -1,23 +1,77 @@
+import os
+import signal
 import subprocess
 import threading
 import time
 from pathlib import Path
 
-from controllers.types import Agents
+from controllers.types import Agents, Notices
+from engine import runtime
 from engine.actors import IDLE
 from engine.heal import refused
 from engine.sessions import Sessions
+from engine.state import State
 from engine.terminal import LAUNCH, relaunch
 from engine.package import entry
 from engine.version import version
 from features import FEATURES
-from features.dev_faults.developing import developing
 from features.trigger import spec
 from resources.base import SYSTEM
 from surfaces.updates import newer, stale, upstream
 
 INSTALL_WAIT = 600
 REFETCH_WAIT = 10
+
+
+def journal_repository(project: Path) -> bool:
+    return (project / "src" / "install.py").is_file() and (project / "src" / "features" / "auto_update").is_dir()
+
+
+TRIED_AGAIN_AFTER = (1800, 7200, 21600)
+FAILED_WORDS = ("not refreshed", "failed", "not built")
+
+
+def ledger(root: Path) -> State:
+    return State(runtime.folder(root) / "auto_update.json")
+
+
+def claimed(root: Path, latest: str) -> bool:
+    with ledger(root).changing() as tried:
+        last = tried.get(latest) or {}
+        wait = TRIED_AGAIN_AFTER[min(last.get("tries", 1), len(TRIED_AGAIN_AFTER)) - 1]
+        if last.get("ok") or (last and time.time() - last.get("at", 0) < wait):
+            return False
+        tried[latest] = {"at": time.time(), "tries": last.get("tries", 0) + 1, "ok": False}
+        return True
+
+
+def first_refusal(root: Path, latest: str) -> bool:
+    with ledger(root).changing() as tried:
+        if tried.get(f"refused {latest}"):
+            return False
+        tried[f"refused {latest}"] = time.time()
+        return True
+
+
+def settled(root: Path, latest: str, failed: str) -> None:
+    with ledger(root).changing() as tried:
+        tried[latest] = {**(tried.get(latest) or {}), "ok": not failed, "why": failed}
+
+
+def installed(root: Path) -> str:
+    started = subprocess.Popen([*entry("journal"), "--root", str(root), "upgrade"], cwd=root.parent, stdout=subprocess.PIPE,
+                               stderr=subprocess.STDOUT, text=True, start_new_session=True)
+    try:
+        out, _ = started.communicate(timeout=INSTALL_WAIT)
+    except subprocess.TimeoutExpired:
+        os.killpg(started.pid, signal.SIGKILL)
+        started.communicate()
+        (root / "runtime" / "upgrading").unlink(missing_ok=True)
+        return f"journal upgrade was stopped after {INSTALL_WAIT // 60} minutes"
+    lines = out.splitlines()
+    if started.returncode:
+        return next((line for line in reversed(lines) if line.strip()), f"journal upgrade failed with exit {started.returncode}")
+    return next((line for line in lines if any(word in line for word in FAILED_WORDS)), "")
 
 
 class UpdateCheck:
@@ -34,11 +88,15 @@ class UpdateCheck:
         root = Path(record.root)
         self.checked_at = time.time() - (every - REFETCH_WAIT if stale(root) else 0)
         installed, latest = version(), upstream(root)
-        if not feature.on(record) or not newer(latest, installed) or refused(root, latest):
+        if not feature.on(record) or not newer(latest, installed):
             return ""
-        if not record.state("auto_update").claim(f"tried.{latest}", time.time()):
+        if refused(root, latest):
+            if first_refusal(root, latest):
+                self.tell(feature, "failed", latest=latest, why="it would not start here, so the journal went back to the build that works; it is tried again in 12 hours")
             return ""
-        if feature.on(record, "install") and not developing(root.parent):
+        if not claimed(root, latest):
+            return ""
+        if feature.on(record, "install") and not journal_repository(root.parent):
             threading.Thread(target=self.install, args=(feature, latest), daemon=True).start()
             return f"installing {latest}"
         self.tell(feature, "newer", latest=latest, installed=installed)
@@ -49,15 +107,13 @@ class UpdateCheck:
             return
         root = Path(self.agent.record.root)
         try:
-            ran = subprocess.run([*entry("journal"), "--root", str(root), "upgrade"], cwd=root.parent, capture_output=True, text=True, timeout=INSTALL_WAIT)
-            lines = (ran.stdout + ran.stderr).splitlines() + ([] if ran.returncode == 0 else [f"journal upgrade failed with exit {ran.returncode}"])
-        except Exception as error:
-            lines = [f"package not refreshed: {error}"]
+            failed = installed(root)
         finally:
             self.installing.release()
-        failed = next((line for line in lines if "not refreshed" in line or "failed" in line), "")
+        settled(root, latest, failed)
         if failed:
             self.tell(feature, "failed", latest=latest, why=failed)
+            Notices(self.agent.record, actor=SYSTEM).create(f"The journal could not update to {latest}", brief=failed, tone="warn")
 
     def tell(self, feature, line: str, **values) -> None:
         title, brief = feature.line(line, values)

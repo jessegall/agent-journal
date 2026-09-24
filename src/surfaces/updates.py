@@ -9,14 +9,10 @@ from engine.record import Record
 from resources.base import SYSTEM
 from engine.stored import write_text
 from engine.version import version as package_version
-from install import REPOSITORY
+from install import counted, released
 
 PACKAGE = Path(__file__).resolve().parents[1]
 KIND = "update"
-
-
-def counted(version: str) -> tuple:
-    return tuple(int(part) if part.isdigit() else 0 for part in str(version).split("."))
 
 
 def newer(version: str, than: str) -> bool:
@@ -67,12 +63,8 @@ def upstream(root: Path) -> str:
 def fetched(cache: Path) -> None:
     with FETCHING:
         cache.parent.mkdir(parents=True, exist_ok=True)
-        try:
-            listed = subprocess.run(["git", "ls-remote", "--tags", "--refs", REPOSITORY, "v*"], capture_output=True, text=True, timeout=10)
-        except (OSError, subprocess.TimeoutExpired):
-            listed = None
-        released = [line.rsplit("/v", 1)[1] for line in listed.stdout.splitlines() if "/v" in line] if listed and not listed.returncode else []
-        if not released:
+        newest = released()
+        if not newest:
             cache.touch(exist_ok=True)
             return
-        write_text(cache, max(released, key=counted))
+        write_text(cache, newest)

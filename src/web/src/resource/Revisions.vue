@@ -19,7 +19,9 @@ const changed = computed(() => revisions.topChanged);
     <template v-if="revisions.latest && !revisions.comparing">
         <ResourceBody :resource="resource" :comments="false" :links="false" @close="emit('close')">
             <template #head>
-                <RevisionStrip :revisions="revisions" />
+                <template v-if="revisions.count > 1 || revisions.open">
+                    <RevisionStrip :revisions="revisions" />
+                </template>
             </template>
         </ResourceBody>
     </template>

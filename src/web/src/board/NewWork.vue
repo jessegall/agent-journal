@@ -97,7 +97,9 @@ const held = computed(() => replies.value.length > 0 && !grown.value);
 const latest = computed(() => (asking.value || held.value || !agentLine.value ? [] : [agentLine.value]));
 const agentAnswered = computed(() => Boolean(asking.value) || replies.value.length > 0);
 const dockedAt = ref(0);
-const echo = computed(() => (docked.value || words.value || lastMine.value < 0 ? "" : conversation.value[lastMine.value].text));
+const echo = computed(() =>
+    docked.value || (words.value && !writing.value) || lastMine.value < 0 ? "" : conversation.value[lastMine.value].text
+);
 const turn = computed(() => drafts.value.find((t) => !revealed.value.includes(t.n)));
 const cards = computed(() => {
     const ahead = writing.value && confirmed.value ? Math.max(store.board.expected - drafts.value.length, 0) : 0;
@@ -344,22 +346,30 @@ function startAnew() {
                         <Btn small title="Cancel" @click="finish">Cancel</Btn>
                     </div>
                 </template>
-                <template v-for="line in docked ? spoken : latest" :key="line.id">
-                    <template v-if="line.record">
-                        <span class="record">{{ line.text }}</span>
-                    </template>
-                    <template v-else-if="docked">
-                        <ChatLine :text="line.text" :mine="line.mine" :typed="line.typed && line.at > dockedAt" />
-                    </template>
-                    <template v-else>
-                        <p class="prompt">{{ line.text }}</p>
+                <template v-if="docked">
+                    <template v-for="line in spoken" :key="line.id">
+                        <template v-if="line.record">
+                            <span class="record">{{ line.text }}</span>
+                        </template>
+                        <template v-else>
+                            <ChatLine :text="line.text" :mine="line.mine" :typed="line.typed && line.at > dockedAt" />
+                        </template>
                     </template>
                 </template>
-                <template v-if="!since">
-                    <p class="context">
-                        Say it in a sentence. I say back what I think you mean, you confirm, and then I draft the tickets.
-                    </p>
+                <template v-else>
+                    <Transition name="said" mode="out-in" appear>
+                        <template v-if="latest.length">
+                            <p :key="latest[0].id" class="prompt">{{ latest[0].text }}</p>
+                        </template>
+                    </Transition>
                 </template>
+                <Transition name="fold">
+                    <template v-if="!since">
+                        <div class="context">
+                            <p>Say it in a sentence. I say back what I think you mean, you confirm, and then I draft the tickets.</p>
+                        </div>
+                    </template>
+                </Transition>
                 <Transition name="asked" mode="out-in">
                     <template v-if="asking && (grown || docked)">
                         <AskedQuestion :key="`question-${asking.n}`" :question="asking" :chat="docked" />
@@ -390,10 +400,10 @@ function startAnew() {
 <style scoped>
 .dock {
     position: absolute;
-    top: calc(50% - min(200px, 26vh));
+    top: calc(50% - min(240px, 31vh));
     left: calc(50% - min(340px, 50% - 16px));
     width: min(680px, calc(100% - 32px));
-    height: min(400px, 52vh);
+    height: min(480px, 62vh);
     transition:
         top var(--move),
         left var(--move),
@@ -402,6 +412,7 @@ function startAnew() {
 }
 
 .dock.short:not(.docked) {
+    top: calc(50% - min(200px, 26vh));
     height: min(260px, 40vh);
 }
 
@@ -539,11 +550,31 @@ function startAnew() {
 }
 
 .context {
+    display: grid;
+    grid-template-rows: 1fr;
+    animation: stage-in var(--fade) 0.55s backwards;
+}
+
+.context > p {
+    min-height: 0;
     margin: 0;
-    animation: stage-in var(--fade) 0.55s both;
+    overflow: hidden;
     color: var(--text-3);
     font-size: 13px;
     line-height: 20px;
+}
+
+.fold-leave-active {
+    transition:
+        opacity var(--fade),
+        grid-template-rows var(--move) 0.15s,
+        margin-bottom var(--move) 0.15s;
+}
+
+.fold-leave-to {
+    grid-template-rows: 0fr;
+    margin-bottom: -10px;
+    opacity: 0;
 }
 
 @keyframes stage-in {
@@ -553,25 +584,31 @@ function startAnew() {
     }
 }
 
-.asked-leave-active {
-    transition: opacity var(--fade) 0.5s;
+.asked-enter-active,
+.said-enter-active {
+    transition:
+        opacity var(--fade),
+        transform var(--move);
 }
 
-.asked-enter-active {
+.asked-leave-active,
+.said-leave-active {
     transition: opacity var(--fade);
 }
 
-.asked-enter-from {
+.asked-enter-from,
+.said-enter-from {
     opacity: 0;
+    transform: translateY(6px);
 }
 
-.asked-leave-to {
+.asked-leave-to,
+.said-leave-to {
     opacity: 0;
 }
 
 .prompt {
     margin: 0;
-    animation: stage-in var(--fade) 0.2s both;
     color: var(--text);
     font-size: 17px;
     font-weight: 500;
@@ -619,7 +656,12 @@ function startAnew() {
     .dock,
     .head,
     .work,
-    .bar-actions {
+    .bar-actions,
+    .asked-enter-active,
+    .asked-leave-active,
+    .said-enter-active,
+    .said-leave-active,
+    .fold-leave-active {
         transition-duration: 0.01ms;
         transition-delay: 0s;
     }
