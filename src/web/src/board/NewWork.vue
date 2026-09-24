@@ -86,7 +86,8 @@ const echo = computed(() => (docked.value || words.value || lastMine.value < 0 ?
 const turn = computed(() => drafts.value.find((t) => !revealed.value.includes(t.n)));
 const cards = computed(() => {
     const ahead = writing.value && confirmed.value ? Math.max(store.board.expected - drafts.value.length, 0) : 0;
-    return [...drafts.value, ...Array(ahead).fill(null)].map((ticket, order) => ({order, ticket}));
+    const slots = Array.from({length: ahead}, (_, i) => ({key: `slot-${i}`, order: drafts.value.length + i, ticket: null}));
+    return [...drafts.value.map((ticket, order) => ({key: `ticket-${ticket.n}`, order, ticket})), ...slots];
 });
 const shownDrafts = computed(() => drafts.value.filter((t) => revealed.value.includes(t.n)));
 const reveal = (n) => (revealed.value = [...revealed.value, n]);
@@ -167,7 +168,6 @@ async function send(text) {
         return api.act("question", asking.value.n, word("question", "complete"), {how: text});
     }
     lastAsked.value = text;
-    await drop(unpicked());
     await ask(text);
 }
 
@@ -188,9 +188,8 @@ function askAgain() {
     ask(lastAsked.value);
 }
 
-async function again() {
-    await drop(unpicked());
-    say(false, "What should I do differently?");
+function again() {
+    say(false, "What should the new set do differently?");
     panel.value.focus();
 }
 
@@ -277,14 +276,14 @@ function leave() {
                     <template v-if="missing.length">
                         <Btn small @click="pickMissing">Pick it too</Btn>
                     </template>
-                    <Btn small @click="again">Try another split</Btn>
+                    <Btn small @click="again">Ask for a different set</Btn>
                     <Btn kind="primary" small :busy="adding" :disabled="!picked.length" @click="add">
                         {{ picked.length ? `Add ${picked.length} to ${first}` : `Add to ${first}` }}
                     </Btn>
                 </div>
             </div>
             <TransitionGroup tag="div" name="pick" class="picks">
-                <template v-for="card in cards" :key="card.order">
+                <template v-for="card in cards" :key="card.key">
                     <Suggestion
                         :ticket="card.ticket"
                         :order="card.order"
