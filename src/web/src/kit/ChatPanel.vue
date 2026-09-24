@@ -237,10 +237,11 @@ const focusEntered = (el) => el === input.value && focusInput();
 .echo {
     align-self: flex-end;
     max-width: 80%;
-    margin: 0 12px 6px;
-    color: var(--text-2);
-    font-size: 14px;
-    line-height: 20px;
+    margin: 0 14px 8px;
+    color: var(--text-3);
+    font-size: 13px;
+    font-style: italic;
+    line-height: 18px;
     overflow-wrap: anywhere;
 }
 
