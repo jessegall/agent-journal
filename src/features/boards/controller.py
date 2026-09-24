@@ -63,6 +63,9 @@ class Boards(Controller):
     def expect(self, n: int, count: str):
         if not str(count).isdigit():
             raise Refused(f"the count is how many tickets you will draft, a whole number like 3; not {count!r}")
+        shown = self.load(int(n)).expected
+        if int(count) < shown:
+            raise Refused(f"{shown} placeholders already show; the count only grows, so draft them or leave it at {shown}")
         return self.update(int(n), expected=int(count))
 
     def meaning(self, n: int, stage: str, meaning: str = ""):

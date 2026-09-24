@@ -28,6 +28,8 @@ export const store = reactive({
         slots: null,
         roles: [],
         questions: [],
+        drafting: {},
+        expected: 0,
         planHold: "",
         loaded: false,
         lens: remembered("journal.board.lens", {plan: 0, agent: "", done: true, board: 0}),
