@@ -4,6 +4,8 @@ import {computed, inject, ref, watchEffect} from "vue";
 import {api} from "../api/client.js";
 import Btn from "../kit/Btn.vue";
 import CommentToggle from "./CommentToggle.vue";
+import ShareButton from "./ShareButton.vue";
+import SideToggle from "./SideToggle.vue";
 import DownloadLink from "./DownloadLink.vue";
 import Dot from "../kit/Dot.vue";
 import Icon from "../kit/Icon.vue";
@@ -76,6 +78,8 @@ async function run(action, body = {}) {
             <span class="grow" />
             <template v-if="!readOnly">
                 <DownloadLink :resource="resource" />
+                <ShareButton :resource="resource" />
+                <SideToggle mode="timeline" icon="clock" label="Timeline" />
                 <CommentToggle :resource="resource" />
                 <CloseButton @click="emit('close')" />
             </template>
