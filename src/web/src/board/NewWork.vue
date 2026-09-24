@@ -73,6 +73,7 @@ const drafts = computed(() =>
 );
 const answered = (at) => replies.value.some((c) => c.created >= at) || boardQuestions.value.some((q) => q.created >= at);
 const writing = computed(() => Boolean(lastSent.value) && !answered(lastSent.value));
+const spoken = computed(() => conversation.value.filter((line) => line.text));
 const lastMine = computed(() => conversation.value.findLastIndex((line) => line.mine));
 const latest = computed(() => conversation.value.slice(lastMine.value + 1));
 const echo = computed(() => (docked.value || words.value || lastMine.value < 0 ? "" : conversation.value[lastMine.value].text));
@@ -152,7 +153,10 @@ async function send(text) {
     words.value = "";
     since.value = since.value || now() - 5;
     lastSent.value = now() - 1;
-    if (asking.value) return api.act("question", asking.value.n, word("question", "complete"), {how: text});
+    if (asking.value) {
+        typedAnswer = true;
+        return api.act("question", asking.value.n, word("question", "complete"), {how: text});
+    }
     lastAsked.value = text;
     await drop(unpicked());
     await ask(text);
@@ -202,7 +206,14 @@ async function add() {
     setTimeout(() => (docked.value = false), FADED);
 }
 
-watch(asking, (current, before) => before && !current && !startedOver.value && (lastSent.value = now() - 1));
+let typedAnswer = false;
+
+watch(asking, (current, before) => {
+    if (!before || current || startedOver.value) return;
+    if (!typedAnswer) say(true, "");
+    typedAnswer = false;
+    lastSent.value = now() - 1;
+});
 
 watch(startedOver, async (q) => {
     if (!q) return;
@@ -284,7 +295,7 @@ function leave() {
                         <Btn small title="Stop and drop the drafts you did not keep" @click="leave">Cancel</Btn>
                     </div>
                 </template>
-                <template v-for="line in docked ? conversation : latest" :key="line.id">
+                <template v-for="line in docked ? spoken : latest" :key="line.id">
                     <template v-if="line.record">
                         <span class="record">{{ line.text }}</span>
                     </template>
