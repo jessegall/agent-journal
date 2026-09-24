@@ -157,12 +157,15 @@ QUESTION_SCREEN = "\x1b8\x1b[J"
 
 def asked_for(record: Record, worktree: str = "", ask=input, answering=None) -> str:
     answering = sys.stdin.isatty() if answering is None else answering
-    if not answering or "--env" in sys.argv or worktree:
+    if "--env" in sys.argv or worktree:
         return record.env
     from controllers.types import Environments
     from engine.sessions import Sessions
     from engine.worktree import linked
     names = [r["title"] for r in Environments(record, actor=SYSTEM).summaries() if not r["deleted"] and not r["completed"]]
+    if not answering:
+        sessions = Sessions(record.root)
+        return record.env if not sessions.holder(record.env) else next((name for name in names if not sessions.holder(name)), record.env)
     if not names:
         return record.env
     sessions = Sessions(record.root)
