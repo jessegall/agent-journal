@@ -1,5 +1,5 @@
 from features.sequences.controller import Sequences
-from resources.base import SYSTEM
+from resources.base import SECTION, SYSTEM
 
 FILING_A_DUMP = {
     "title": "Filing a dump",
@@ -38,20 +38,25 @@ BUILDING_A_PLAN = {
 }
 WORKING_A_BOARD_CARD = {
     "title": "Working a card from the board",
-    "brief": "A card created on a Kanban board is worked the board's way: its questions are asked and answered on the board, "
-             "never in the chat.",
+    "brief": "A card on a Kanban board is worked by clicking, not reading: the agent asks one short question with options to "
+             "pick, drafts the tickets, and says one line. It talks only about the tickets, never about rows, chips, commands "
+             "or the journal.",
     "starts_on": "ticket.created",
     "steps": [
         ("Read the card", "journal ticket show <n>: its board, stage and brief. If you drafted this card yourself, give the run "
                           "up with journal sequence abandon <this sequence> --about <ref> --why \"my own draft\"."),
-        ("Ask on the board", "Every decision only the user can make is asked on the board, never in the chat: journal board ask "
-                             "<board n> \"<question>\" --set options='[...]'. The board shows it at its top, the chat does not, and "
-                             "the answer comes back as an event; wait for it only where the work truly depends on it."),
-        ("Shape the work", "Split the card into draft tickets on the same board (journal ticket create \"<the work>\" --brief "
-                           "\"<what is wanted>\" --set board=<n> --set draft=true), name what waits on what with journal ticket "
-                           "depend, and the role that should take it with --set owner=<domain>/<role> when the project has one."),
-        ("Answer on the card", "Reply on the card in one short line: what you drafted, and which question waits on the user. The "
-                               "New work panel shows the reply and the drafts; the user picks which to keep."),
+        ("Ask one short question", "When the tickets turn on something only the user knows, ask it on the board in a few words, "
+                                   "like \"Which login first?\", with two to four options of a few words each: journal board "
+                                   "ask <board n> \"<question>\" --set options='[...]'. One question at a time, no paragraphs; "
+                                   "the board shows it and the user clicks. Wait for the answer only where the tickets depend "
+                                   "on it."),
+        ("Draft the tickets", "Draft each ticket on the same board: journal ticket create \"<the work>\" --brief \"<what is "
+                              "wanted>\" --set board=<n> --set draft=true. A title is a few words and a brief two or three "
+                              "plain sentences. Name what waits on what with journal ticket depend, and the role that should "
+                              "take it with --set owner=<domain>/<role> when the project has one."),
+        ("Say one line", "Reply on the card in one short line about the tickets, like \"Three tickets drafted, pick the ones to "
+                         "keep.\" No paragraphs, no lists, and no mention of rows, chips, numbers, commands or the journal. The "
+                         "user picks, clicks or says what to change; take their answer back to Ask one short question."),
     ],
 }
 SHIPPED = (FILING_A_DUMP, BUILDING_A_PLAN, WORKING_A_BOARD_CARD)
@@ -59,13 +64,15 @@ SHIPPED = (FILING_A_DUMP, BUILDING_A_PLAN, WORKING_A_BOARD_CARD)
 
 def ship(record) -> list[str]:
     sequences = Sequences(record, actor=SYSTEM)
-    known = {row["title"] for row in sequences.summaries() if not row["deleted"]}
-    made = []
-    for shipped in SHIPPED:
-        if shipped["title"] in known:
-            continue
-        row = sequences.create(shipped["title"], brief=shipped["brief"], starts_on=shipped["starts_on"], system=True)
-        for title, body in shipped["steps"]:
-            sequences.section(row.n, title, body)
-        made.append(shipped["title"])
-    return made
+    standing = {row["title"]: row["n"] for row in sequences.summaries() if not row["deleted"]}
+    return [shipped["title"] for shipped in SHIPPED if in_step(sequences, shipped, standing.get(shipped["title"]))]
+
+
+def in_step(sequences: Sequences, shipped: dict, n: int | None) -> bool:
+    steps = [{SECTION.title: title, SECTION.body: body} for title, body in shipped["steps"]]
+    row = sequences.load(n) if n else sequences.create(shipped["title"], starts_on=shipped["starts_on"], system=True)
+    if n and (not row.system or (row.brief, row.starts_on, row.sections) == (shipped["brief"], shipped["starts_on"], steps)):
+        return False
+    row.brief, row.starts_on, row.sections = shipped["brief"], shipped["starts_on"], steps
+    sequences.save(row, "updated")
+    return True

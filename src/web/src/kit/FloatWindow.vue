@@ -49,11 +49,11 @@ function grow(e) {
             >
                 <Icon :name="minimized ? 'window' : 'minimize'" />
             </button>
-            <button type="button" class="float-btn" title="Dock it back into the layout" @click="emit('dock')">
-                <Icon name="dock" />
-            </button>
             <button type="button" class="float-btn float-menu-btn" title="Window menu" @click.stop="emit('menu', $event)">
                 <Icon name="dots" />
+            </button>
+            <button type="button" class="float-btn" title="Dock it back into the layout" @click="emit('dock')">
+                <Icon name="dock" />
             </button>
         </div>
         <div v-show="!minimized" class="float-body"><slot /></div>

@@ -55,15 +55,13 @@ const sentence = computed(() => {
     return {head: now.slice(0, cut), tail: now.slice(cut)};
 });
 watch(line, (now, before) => (was.value = before || ""));
-const {floats, detach, front, tune} = useDetached();
+const {floats, detach, close} = useDetached();
 const floatingChat = computed(() => floats.value.find((f) => f.view === "chat"));
 const CHAT_BOX = {w: 420, h: 560, top: 96, edge: 24};
 
-function openChat() {
-    const f = floatingChat.value;
-    if (!f) return detach("chat", {x: window.innerWidth - CHAT_BOX.w - CHAT_BOX.edge, y: CHAT_BOX.top, w: CHAT_BOX.w, h: CHAT_BOX.h});
-    tune(f.id, {minimized: false});
-    front(f.id);
+function toggleChat() {
+    if (floatingChat.value) return close(floatingChat.value.id);
+    detach("chat", {x: window.innerWidth - CHAT_BOX.w - CHAT_BOX.edge, y: CHAT_BOX.top, w: CHAT_BOX.w, h: CHAT_BOX.h});
 }
 
 const bar = computed(() => barPlan(rows("plan"), !route.value.page));
@@ -128,13 +126,18 @@ async function runBar(p) {
                 @change="setAuto"
             />
             <template v-if="route.page">
-                <Btn kind="icon" title="Open the chat in a floating window" @click="openChat">
+                <Btn
+                    kind="icon"
+                    class="statusbar-square"
+                    :title="floatingChat ? 'Close the floating chat' : 'Open the chat in a floating window'"
+                    @click="toggleChat"
+                >
                     <Icon name="chat" />
                 </Btn>
             </template>
             <Btn
                 kind="icon"
-                class="statusbar-wide"
+                class="statusbar-square"
                 data-step="fullscreen"
                 :title="`${store.wide ? 'Show the sidebar and the top bar' : 'Hide the sidebar and the top bar'} (${FULLSCREEN_KEYS})`"
                 @click="store.wide = !store.wide"
@@ -284,7 +287,7 @@ async function runBar(p) {
 }
 
 .statusbar-pause.btn,
-.statusbar-wide.btn {
+.statusbar-square.btn {
     justify-content: center;
     width: 28px;
     height: 28px;
@@ -292,7 +295,7 @@ async function runBar(p) {
 }
 
 .statusbar-pause.btn :deep(.ico),
-.statusbar-wide.btn :deep(.ico) {
+.statusbar-square.btn :deep(.ico) {
     width: 15px;
     height: 15px;
 }
