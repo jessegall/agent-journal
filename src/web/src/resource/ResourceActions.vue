@@ -154,6 +154,7 @@ async function run(method) {
 <style scoped>
 .actions {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     gap: 6px;
     margin: 10px 0;

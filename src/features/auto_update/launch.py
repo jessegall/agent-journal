@@ -6,7 +6,7 @@ from controllers.types import Notices
 from engine.heal import refused
 from engine.version import version
 from features import FEATURES
-from features.dev_faults.developing import developing
+from features.auto_update.check import journal_repository
 from resources.base import SYSTEM
 from surfaces.updates import fetched, newer
 from migrations import ran
@@ -44,7 +44,7 @@ def repaired(record) -> str:
 def latest_first(record) -> str:
     root = Path(record.root)
     feature = FEATURES.get("auto_update")
-    if developing(root.parent):
+    if journal_repository(root.parent):
         return ""
     try:
         notice = repaired(record)

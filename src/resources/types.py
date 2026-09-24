@@ -111,6 +111,7 @@ class Doc(Shape, Resource):
     scope = PROJECT
     view = DOCUMENT
     indexed = ("hidden",)
+    filters = ()
 
 
 class Report(Shape, Resource):

@@ -80,8 +80,21 @@ const activity = computed(() =>
 );
 const away = ref(false);
 const planOpen = ref(true);
+let lastTop = 0;
+let planTimer = 0;
+const PLAN_SETTLE = 180;
+const PLAN_MOVE = 500;
+const NEWEST_AFTER = 1000;
+const NEWEST_AFTER_BOTTOM = 2000;
+const newestShown = ref(false);
+let newestTimer = 0;
+let leftBottomAt = 0;
+const short = ref(false);
+const SHORT_CHAT = 420;
+const sizeWatch = new ResizeObserver(([entry]) => (short.value = entry.contentRect.height < SHORT_CHAT));
 const AT_BOTTOM = 2;
 const FOLD_AT = 8;
+const FOLDED_PLAN = 32;
 const missed = ref(0);
 const settledOnce = ref(false);
 const ready = ref(false);
@@ -179,7 +192,6 @@ function toBottom(smooth = false) {
         s.scrollTop = s.scrollHeight;
     }
     away.value = false;
-    planOpen.value = true;
     missed.value = 0;
 }
 
@@ -210,6 +222,7 @@ onMounted(() => {
     watchRows();
     added = new MutationObserver(watchRows);
     if (scroller.value) added.observe(scroller.value, {childList: true});
+    if (scroller.value) sizeWatch.observe(scroller.value);
     frame = requestAnimationFrame(() => {
         frame = requestAnimationFrame(() => (rendering.value = true));
     });
@@ -220,6 +233,9 @@ useSighted(topMark, older, {root: scroller, margin: AHEAD});
 onUnmounted(() => {
     grew?.disconnect();
     added?.disconnect();
+    sizeWatch.disconnect();
+    clearTimeout(planTimer);
+    clearTimeout(newestTimer);
     cancelAnimationFrame(frame);
     clearTimeout(idleTimer);
 });
@@ -231,17 +247,60 @@ function scrolledByHand() {
     scrolledAt = Date.now();
 }
 
-function wheeled() {
+function wheeled(e) {
     markActive();
     scrolledByHand();
+    const s = scroller.value;
+    if (e.deltaY > 0 && s && s.scrollHeight - s.scrollTop - s.clientHeight <= AT_BOTTOM) settlePlan(true);
+}
+
+function followPlan(s) {
+    const gap = s.scrollHeight - s.scrollTop - s.clientHeight;
+    const down = s.scrollTop > lastTop;
+    lastTop = s.scrollTop;
+    if (gap <= AT_BOTTOM && down) settlePlan(true);
+    else if (gap > foldingRoom(s)) settlePlan(false);
+    return gap;
+}
+
+function foldingRoom(s) {
+    const dock = s.querySelector(".plan-dock");
+    return planOpen.value && dock ? Math.max(FOLD_AT, dock.offsetHeight - FOLDED_PLAN) : FOLD_AT;
+}
+
+function settlePlan(open) {
+    clearTimeout(planTimer);
+    if (open) planOpen.value = true;
+    else planTimer = setTimeout(() => (planOpen.value = false), PLAN_SETTLE);
+}
+
+watch(planOpen, (open) => open && holdBottom());
+
+watch(away, (now) => {
+    clearTimeout(newestTimer);
+    if (!now) {
+        newestShown.value = false;
+        leftBottomAt = Date.now();
+        return;
+    }
+    const wait = Date.now() - leftBottomAt < NEWEST_AFTER_BOTTOM ? NEWEST_AFTER_BOTTOM : NEWEST_AFTER;
+    newestTimer = setTimeout(() => (newestShown.value = away.value), wait);
+});
+
+function holdBottom() {
+    const s = scroller.value;
+    const dock = s?.querySelector(".plan-dock");
+    if (!dock) return;
+    const pin = new ResizeObserver(() => planOpen.value && (s.scrollTop = s.scrollHeight));
+    pin.observe(dock);
+    setTimeout(() => pin.disconnect(), PLAN_MOVE);
 }
 
 function watchScroll() {
     const s = scroller.value;
-    if (!s || Date.now() - glidedAt < GLIDE) return;
-    const gap = s.scrollHeight - s.scrollTop - s.clientHeight;
-    if (gap <= AT_BOTTOM) planOpen.value = true;
-    else if (gap > FOLD_AT) planOpen.value = false;
+    if (!s) return;
+    const gap = followPlan(s);
+    if (Date.now() - glidedAt < GLIDE) return;
     const far = gap > 40;
     if (far && !away.value && !store.focus && Date.now() - scrolledAt > BY_HAND) {
         toBottom();
@@ -373,7 +432,7 @@ watch(
             <div :class="['thread-write', {hidden: feeding}]">
                 <Transition name="rise">
                     <button
-                        v-if="away"
+                        v-if="away && newestShown"
                         type="button"
                         :class="['thread-down', {'over-plan': planCard}]"
                         :title="missed ? `${missed} arrived while you were reading` : 'Back to the newest'"
@@ -434,7 +493,7 @@ watch(
                             />
                         </TransitionGroup>
                         <Transition name="plancard">
-                            <PlanCard v-if="planCard" :key="planCard.n" :plan="planCard" :folded="!planOpen" />
+                            <PlanCard v-if="planCard" :key="planCard.n" :plan="planCard" :folded="short || !planOpen" />
                         </Transition>
                         <Transition name="status">
                             <div

@@ -15,6 +15,7 @@ const bar = (ref, direction) => {
     return {
         key: `${direction}${ref}`,
         ref,
+        direction,
         icon: meta(type).icon,
         title: `${r ? r.title : `${meta(type).title} ${n}`}${part ? ` · ${/^\d/.test(part) ? `lines ${part}` : part}` : ""}`,
         age: r ? age(r.updated || r.created) : "",
@@ -29,6 +30,13 @@ const rows = computed(() => {
     ];
     return listed.filter((row, i) => listed.findIndex((other) => other.ref === row.ref) === i);
 });
+const DIRECTIONS = [
+    {key: "to", title: "Links to"},
+    {key: "from", title: "Linked from"},
+];
+const groups = computed(() =>
+    DIRECTIONS.map((d) => ({...d, rows: rows.value.filter((r) => r.direction === d.key)})).filter((d) => d.rows.length)
+);
 const open = (ref) => {
     const {type, n, part} = refParts(ref);
     peek(type, n, 0, part ? encodeURIComponent(part) : "");
@@ -37,16 +45,18 @@ const open = (ref) => {
 
 <template>
     <template v-if="rows.length">
-        <section class="links">
-            <SectionHeading>Resources</SectionHeading>
-            <template v-for="r in rows" :key="r.key">
-                <button type="button" class="bar" @click="open(r.ref)">
-                    <Icon :name="r.icon" :size="13" />
-                    <span class="bar-title">{{ r.title }}</span>
-                    <span class="bar-age">{{ r.age }}</span>
-                </button>
-            </template>
-        </section>
+        <template v-for="g in groups" :key="g.key">
+            <section class="links">
+                <SectionHeading>{{ g.title }}</SectionHeading>
+                <template v-for="r in g.rows" :key="r.key">
+                    <button type="button" class="bar" @click="open(r.ref)">
+                        <Icon :name="r.icon" :size="13" />
+                        <span class="bar-title">{{ r.title }}</span>
+                        <span class="bar-age">{{ r.age }}</span>
+                    </button>
+                </template>
+            </section>
+        </template>
     </template>
 </template>
 

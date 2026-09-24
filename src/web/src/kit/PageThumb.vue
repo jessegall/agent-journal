@@ -1,0 +1,65 @@
+<script setup>
+import {computed} from "vue";
+
+const props = defineProps({lines: {type: Number, default: 0}, draft: Boolean, clipped: Boolean, fresh: Boolean});
+const WIDTHS = [16, 12, 15, 9, 14, 11, 13];
+const shown = computed(() => WIDTHS.slice(0, Math.min(Math.max(props.lines, 1), WIDTHS.length)));
+</script>
+
+<template>
+    <svg :class="['page-thumb', {draft}]" viewBox="0 0 32 40" width="32" height="40" aria-hidden="true">
+        <path class="page-thumb-sheet" d="M5 1h16l9 9v27a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2z" />
+        <path class="page-thumb-fold" d="M21 1v7a2 2 0 0 0 2 2h7z" />
+        <template v-for="(w, i) in shown" :key="i">
+            <rect class="page-thumb-line" x="8" :y="14 + i * 3.4" :width="w" height="1.5" rx="0.75" />
+        </template>
+        <template v-if="clipped">
+            <path class="page-thumb-clip" d="M9.5 -1.5v9a2.3 2.3 0 0 0 4.6 0v-7.2a1.5 1.5 0 0 0-3 0v6.4" />
+        </template>
+        <template v-if="fresh">
+            <circle class="page-thumb-fresh" cx="30" cy="3" r="2.6" />
+        </template>
+    </svg>
+</template>
+
+<style scoped>
+.page-thumb {
+    flex: none;
+    overflow: visible;
+}
+
+.page-thumb-sheet {
+    fill: var(--raised);
+    stroke: var(--text-4);
+    stroke-width: 1.1;
+    transition: stroke 0.15s;
+}
+
+.page-thumb-fold {
+    fill: var(--border-2);
+    stroke: var(--text-4);
+    stroke-width: 1.1;
+    stroke-linejoin: round;
+}
+
+.page-thumb.draft .page-thumb-sheet {
+    stroke-dasharray: 2.6 2.2;
+}
+
+.page-thumb-line {
+    fill: var(--text-4);
+}
+
+.page-thumb-clip {
+    fill: none;
+    stroke: var(--text-2);
+    stroke-width: 1.2;
+    stroke-linecap: round;
+}
+
+.page-thumb-fresh {
+    fill: var(--accent);
+    stroke: var(--bg);
+    stroke-width: 1.5;
+}
+</style>

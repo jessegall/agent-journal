@@ -219,9 +219,25 @@ def test_a_hook_during_an_upgrade_waits_for_the_server_instead_of_failing(tmp_pa
     assert not (tmp_path / "runtime" / "hook-failures.log").exists(), "no failure is logged for a server that was only restarting"
 
 
-def test_the_version_files_older_installs_read_carry_the_release():
+def test_the_release_is_read_from_version_files_and_tags_and_installed_by_its_tag(tmp_path):
+    import subprocess
     from pathlib import Path
     from engine.version import version
+    from install import fetch, released
     repository = Path(__file__).resolve().parents[3]
     assert [(repository / name).read_text().strip() for name in ("VERSION", "src/VERSION")] == [version(), version()], \
         "installs before 2.120.0 find a release through these files; newer ones read the release tags"
+    origin = tmp_path / "origin"
+    origin.mkdir()
+    git = lambda *args: subprocess.run(["git", "-c", "user.name=t", "-c", "user.email=t@t", *args], cwd=origin, capture_output=True, check=True, timeout=30)
+    git("init", "-q")
+    for version in ("2.9.0", "2.10.0"):
+        (origin / "VERSION").write_text(version)
+        git("add", "-A")
+        git("commit", "-qm", version)
+        git("tag", f"v{version}")
+    (origin / "VERSION").write_text("2.11.0-unreleased")
+    git("commit", "-qam", "work after the release")
+    assert released(str(origin)) == "2.10.0", "the newest release is chosen by version, not by name"
+    _, failed = fetch(tmp_path / "copy", str(origin), f"refs/tags/v{released(str(origin))}")
+    assert (failed, (tmp_path / "copy" / "VERSION").read_text()) == ("", "2.10.0"), "the release tag is installed, not the commits after it"

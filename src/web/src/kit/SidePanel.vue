@@ -92,6 +92,12 @@ const {shown, close, closed} = closing(emit, props);
     overflow-y: auto;
 }
 
+@media (max-width: 640px) {
+    .panel.page {
+        width: 100vw;
+    }
+}
+
 .side-enter-active,
 .side-leave-active {
     transition:

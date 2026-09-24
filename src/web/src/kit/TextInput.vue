@@ -11,8 +11,8 @@ defineExpose({focus: () => input.value && input.value.focus()});
 </script>
 
 <template>
-    <template v-if="label || icon">
-        <label :class="['text-field', {large}, attrs.class]" :style="attrs.style">
+    <template v-if="label || icon || $slots.end">
+        <label :class="['text-field', {large, ended: $slots.end}, attrs.class]" :style="attrs.style">
             <template v-if="icon">
                 <Icon :name="icon" :size="13" class="text-field-icon" />
             </template>
@@ -20,6 +20,9 @@ defineExpose({focus: () => input.value && input.value.focus()});
                 <span class="text-field-label">{{ label }}</span>
             </template>
             <input ref="input" class="text-field-input" spellcheck="false" v-bind="inputAttrs" />
+            <template v-if="$slots.end">
+                <span class="text-field-end"><slot name="end" /></span>
+            </template>
         </label>
     </template>
     <template v-else>
@@ -66,6 +69,22 @@ defineExpose({focus: () => input.value && input.value.focus()});
     padding: 0 14px;
     border-radius: 10px;
     background: var(--side);
+}
+
+.text-field.ended {
+    height: 36px;
+    padding-right: 4px;
+}
+
+.text-field-end {
+    flex: none;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.text-field-end :deep(.btn) {
+    height: 26px;
 }
 
 .text-field-icon {

@@ -2,7 +2,7 @@
 import EmptyState from "../kit/EmptyState.vue";
 import TabBar from "../kit/TabBar.vue";
 import {useSighted} from "../composables/scrollback.js";
-import {computed, onUnmounted, ref} from "vue";
+import {computed, onUnmounted, ref, watch} from "vue";
 import {api} from "../api/client.js";
 import Btn from "../kit/Btn.vue";
 import Icon from "../kit/Icon.vue";
@@ -15,6 +15,9 @@ import RowGroups from "../resource/RowGroups.vue";
 import ResourceCard from "../resource/ResourceCard.vue";
 import CheckCard from "../resource/CheckCard.vue";
 import NewResource from "../resource/NewResource.vue";
+import TextInput from "../kit/TextInput.vue";
+import Segmented from "../kit/Segmented.vue";
+import DocumentLibrary from "./DocumentLibrary.vue";
 
 const props = defineProps({type: String});
 const kind = computed(() => meta(props.type));
@@ -28,6 +31,28 @@ const COUNTS = {
     every: () => counted(props.type, "all"),
 };
 const filters = computed(() => (kind.value.filters || []).map((f) => ({...f, count: (COUNTS[f.shows] || COUNTS.every)()})));
+const library = computed(() => props.type === "doc");
+const query = ref("");
+const order = ref("recent");
+const ORDERS = [
+    {key: "recent", label: "Newest"},
+    {key: "title", label: "A to Z"},
+];
+const search = ref(null);
+watch(
+    library,
+    async (on) => {
+        while (on && paging.more[props.type] && (await earlier(props.type)));
+    },
+    {immediate: true}
+);
+const TYPING = ["INPUT", "TEXTAREA", "SELECT"];
+function slash(event) {
+    if (!library.value || event.key !== "/" || TYPING.includes(event.target.tagName) || event.target.isContentEditable) return;
+    event.preventDefault();
+    search.value?.focus();
+}
+window.addEventListener("keydown", slash);
 const end = ref(null);
 const scrolled = ref(false);
 const moved = () => (scrolled.value = true);
@@ -37,6 +62,7 @@ window.addEventListener("touchmove", moved, {passive: true});
 onUnmounted(() => {
     window.removeEventListener("wheel", moved);
     window.removeEventListener("touchmove", moved);
+    window.removeEventListener("keydown", slash);
 });
 const listed = computed(() =>
     [...(kind.value.filters?.length ? SHOWS[filter.value] || SHOWS.open : SHOWS.every)()]
@@ -66,8 +92,24 @@ const startNew = () => (props.type === "board" ? go(route.value.env, "kanban", 0
 
 <template>
     <section class="index">
-        <div class="bar">
-            <TabBar v-model="filter" :tabs="filters" />
+        <div :class="['bar', {library}]">
+            <template v-if="library">
+                <TextInput
+                    ref="search"
+                    class="search"
+                    icon="search"
+                    type="search"
+                    :value="query"
+                    placeholder="Search titles, text and files"
+                    aria-label="Find a document"
+                    @input="query = $event.target.value"
+                    @keydown.esc="query = ''"
+                />
+                <Segmented class="order" :options="ORDERS" :value="order" @pick="order = $event" />
+            </template>
+            <template v-else>
+                <TabBar v-model="filter" :tabs="filters" />
+            </template>
             <template v-if="kind.view === 'document'">
                 <span class="sep" />
                 <a class="flat" :href="`#/${route.env}/files`">Files</a>
@@ -76,7 +118,7 @@ const startNew = () => (props.type === "board" ? go(route.value.env, "kanban", 0
             <template v-if="kind.created_in_viewer">
                 <Btn kind="primary" @click="startNew">
                     <Icon name="plus" :size="12" />
-                    New {{ kind.title.toLowerCase() }}
+                    <span class="new-word">New {{ kind.title.toLowerCase() }}</span>
                 </Btn>
             </template>
         </div>
@@ -95,7 +137,10 @@ const startNew = () => (props.type === "board" ? go(route.value.env, "kanban", 0
                 }}{{ filter !== "open" || !all.length ? " yet" : "" }}.
             </EmptyState>
         </template>
-        <SwitchCase :value="kind.listed_as_cards ? 'document' : kind.view">
+        <SwitchCase :value="library ? 'library' : kind.listed_as_cards ? 'document' : kind.view">
+            <template #library>
+                <DocumentLibrary :docs="listed" :query="query" :order="order" @open="(d) => select(d.n)" @clear="query = ''" />
+            </template>
             <template #document>
                 <div class="cards">
                     <template v-for="r in listed" :key="r.n">
@@ -153,6 +198,27 @@ const startNew = () => (props.type === "board" ? go(route.value.env, "kanban", 0
 
 .grow {
     flex: 1;
+}
+
+.search {
+    flex: 0 1 460px;
+}
+
+.order {
+    flex: none;
+}
+
+@media (max-width: 640px) {
+    .bar.library {
+        gap: 8px;
+        padding: 0 10px;
+    }
+
+    .bar.library .order,
+    .bar.library .sep,
+    .bar.library .new-word {
+        display: none;
+    }
 }
 
 .empty {

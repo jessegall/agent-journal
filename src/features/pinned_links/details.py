@@ -22,7 +22,9 @@ class PinnedLinksDetails(FeatureDetails):
         The same goes for what a subagent makes: when you dispatch one to produce something the
         user will open - a design, a prototype, a report, a page - tell it in the dispatch to end
         its report with the link or the row, and pin that as soon as it reports, before you say
-        anything else about its work.
+        anything else about its work. Work a subagent builds straight into the viewer has no link
+        of its own: pin it anyway, with the viewer address of the page it changed, so the user can
+        open and review it.
     """
 
     lines = [

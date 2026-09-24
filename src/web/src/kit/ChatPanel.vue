@@ -87,7 +87,7 @@ const focusEntered = (el) => el === input.value && focusInput();
         </div>
         <div class="echo-slot">
             <Transition name="echo">
-                <template v-if="echo && !waiting">
+                <template v-if="echo">
                     <p :key="echo" class="echo">{{ echo }}</p>
                 </template>
             </Transition>
@@ -98,7 +98,7 @@ const focusEntered = (el) => el === input.value && focusInput();
                     <form :class="['compose', {locked, waiting}]" @submit.prevent="send">
                         <Transition name="swap" mode="out-in" @after-enter="focusEntered">
                             <template v-if="waiting">
-                                <span class="sent-line">{{ words }}</span>
+                                <span class="resting">{{ placeholder }}</span>
                             </template>
                             <template v-else>
                                 <textarea
@@ -114,10 +114,12 @@ const focusEntered = (el) => el === input.value && focusInput();
                                 />
                             </template>
                         </Transition>
-                        <template v-if="limit">
-                            <span class="left">{{ limit - words.length }}</span>
-                        </template>
-                        <Btn kind="primary" small :disabled="locked || !words.trim()" @click="send">{{ action }}</Btn>
+                        <span class="tail">
+                            <template v-if="limit">
+                                <span class="left">{{ limit - words.length }}</span>
+                            </template>
+                            <Btn kind="primary" small :disabled="locked || waiting || !words.trim()" @click="send">{{ action }}</Btn>
+                        </span>
                     </form>
                 </template>
             </Transition>
@@ -179,6 +181,7 @@ const focusEntered = (el) => el === input.value && focusInput();
     border-radius: 10px;
     background: var(--side);
     transition:
+        opacity var(--fade),
         background var(--fade),
         border-color var(--fade);
 }
@@ -187,8 +190,16 @@ const focusEntered = (el) => el === input.value && focusInput();
     border-color: var(--accent);
 }
 
+.tail {
+    display: flex;
+    flex: none;
+    align-items: center;
+    gap: 10px;
+    height: 32px;
+    transition: opacity var(--fade);
+}
+
 .left {
-    align-self: center;
     color: var(--text-4);
     font-size: 11px;
     font-variant-numeric: tabular-nums;
@@ -281,7 +292,9 @@ const focusEntered = (el) => el === input.value && focusInput();
 }
 
 .echo-enter-active {
-    transition: opacity var(--fade) 0.5s;
+    transition:
+        opacity var(--fade) 0.1s,
+        transform var(--move) 0.1s;
 }
 
 .echo-leave-active {
@@ -290,6 +303,7 @@ const focusEntered = (el) => el === input.value && focusInput();
 
 .echo-enter-from {
     opacity: 0;
+    transform: translateY(8px);
 }
 
 .echo-leave-to {
@@ -326,28 +340,22 @@ const focusEntered = (el) => el === input.value && focusInput();
     opacity: 0;
 }
 
-.compose .left,
-.compose > :deep(.btn) {
-    transition: opacity var(--fade);
-}
-
 .compose.waiting {
-    border-color: transparent;
-    background: transparent;
+    border-color: var(--border);
+    opacity: 0.55;
 }
 
-.compose.waiting .left,
-.compose.waiting > :deep(.btn) {
+.compose.waiting .tail {
     opacity: 0;
     pointer-events: none;
 }
 
-.sent-line {
+.resting {
     flex: 1;
     min-width: 0;
     height: 32px;
     overflow: hidden;
-    color: var(--text-3);
+    color: var(--text-4);
     font-size: 14px;
     line-height: 32px;
     white-space: nowrap;

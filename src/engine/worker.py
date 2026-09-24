@@ -55,13 +55,11 @@ def checks(seat: Seat) -> tuple:
 
 
 def run_checks(seat: Seat, driver, kept: tuple) -> None:
-    try:
-        if driver:
-            driver.pump()
-        for check in kept:
-            check.tick()
-    except Exception:
-        threw(seat.root, seat.env, "a worker check")
+    for step in ([driver.pump] if driver else []) + [check.tick for check in kept]:
+        try:
+            step()
+        except Exception:
+            threw(seat.root, seat.env, f"a worker check: {type(getattr(step, '__self__', step)).__name__}")
 
 
 def press(root: Path, session: str, keys: bytes) -> None:

@@ -13,15 +13,17 @@ class UpdatesDetails(FeatureDetails):
     abstract = "A newer journal is installed by itself, or the agent is told to install it"
 
     help = """
-        Every five minutes the supervisor beside each session compares the version published
-        on GitHub with the one installed, so updates keep coming while the server is down.
+        Every five minutes each session's worker compares the newest release tag on GitHub with
+        the one installed, and a launch checks once before the agent starts, so updates keep
+        coming while the server is down.
 
-        With install on, a newer version is installed in the background, once per version, and
-        the server reloads itself; with it off, or when installing fails, you are told to
-        run journal upgrade. A journal being developed never installs itself.
+        With install on, the newest release is installed in the background, one install per
+        journal at a time, and the session reloads itself. A failed install is filed as a notice
+        and tried again after 30 minutes, then 2 hours, then 6; with install off you are told to
+        run journal upgrade. The journal's own repository never installs itself.
 
-        A build that cannot start its supervisor or its server is set aside: the journal goes
-        back to the last build that worked and never installs that version again.
+        A build that cannot start its worker or its server is set aside: the journal goes
+        back to the last build that worked.
 
         A new build reaches a running session by itself: the server and the supervisor reload,
         and the channel restarts in place. When a release changes how the agent itself is

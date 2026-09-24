@@ -153,6 +153,21 @@ watch(
     padding: 36px 32px 8px;
 }
 
+@media (max-width: 640px) {
+    .document-body :deep(.body) {
+        padding: 20px 18px 40px;
+    }
+
+    .document-body :deep(.body) > .head {
+        margin: -20px -18px 0;
+        padding: 20px 18px 8px;
+    }
+
+    .document-links {
+        padding: 0 18px 40px;
+    }
+}
+
 .document-aside {
     position: absolute;
     inset: 0 0 0 auto;
