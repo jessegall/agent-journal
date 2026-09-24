@@ -349,12 +349,14 @@ def started(record: Record, project: Path, agent: str, env: str, args: list[str]
 
 
 def ended(ctx) -> str:
+    from engine.sessions import Sessions
     from features.clean_slate.slate import put_back
     from engine.stop import ask
     from engine.typist import live
     put_back(ctx["record"])
-    if not live(ctx["record"].root):
-        ask(ctx["record"].root)
+    root = ctx["record"].root
+    if not live(root) and not Sessions(root).running():
+        ask(root)
     return ""
 
 

@@ -147,6 +147,9 @@ class Sessions:
     def all(self) -> dict[str, SessionRecord]:
         return {p.parent.name: SessionRecord.from_json(read_json(p, {})) for p in sorted(runtime.sessions(self.root).glob("*/session.json"))}
 
+    def running(self) -> list[str]:
+        return [name for name, s in self.all().items() if s.pid and alive(s.pid)]
+
     def holder(self, env: str) -> str:
         return next(iter(self.holders(env)), "")
 

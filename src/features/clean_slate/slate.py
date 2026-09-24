@@ -4,6 +4,7 @@ import subprocess
 from pathlib import Path
 
 from engine.record import Record
+from engine.sessions import Sessions
 from engine.wording import plural
 from engine.stored import read_json, write_json
 from providers import PROVIDERS
@@ -78,6 +79,8 @@ def set_aside(record: Record, project: Path, agent: str) -> str:
 
 
 def put_back(record: Record) -> int:
+    if Sessions(record.root).running():
+        return 0
     entries = moved(record)
     for m in entries:
         kept_at, home = Path(m["to"]), Path(m["from"])
