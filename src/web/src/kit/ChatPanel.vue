@@ -46,11 +46,13 @@ const focusEntered = (el) => el === input.value && focusInput();
 
 <template>
     <div :class="['chat', {fill}]">
-        <template v-if="closable">
-            <button type="button" class="close" title="Cancel" @click="emit('close')">
-                <Icon name="close" />
-            </button>
-        </template>
+        <Transition name="close-fade">
+            <template v-if="closable">
+                <button type="button" class="close" title="Cancel" @click="emit('close')">
+                    <Icon name="close" />
+                </button>
+            </template>
+        </Transition>
         <template v-if="head">
             <slot name="head" />
         </template>
@@ -191,6 +193,16 @@ const focusEntered = (el) => el === input.value && focusInput();
     background: none;
     color: var(--text-3);
     cursor: pointer;
+}
+
+.close-fade-enter-active,
+.close-fade-leave-active {
+    transition: opacity var(--fade);
+}
+
+.close-fade-enter-from,
+.close-fade-leave-to {
+    opacity: 0;
 }
 
 .close:hover {
