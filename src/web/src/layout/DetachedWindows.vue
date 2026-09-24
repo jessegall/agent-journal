@@ -46,12 +46,14 @@ function away(id) {
                 :title="views[f.view].title"
                 :icon="views[f.view].icon"
                 :landing="f.landing"
+                :minimized="!!f.minimized"
                 :colors="schemeColors(f.scheme, layout.scheme)"
                 @front="front(f.id)"
                 @move="(to) => move(f.id, to)"
                 @size="(to) => size(f.id, to)"
                 @dock="dock(f.id)"
                 @menu="(e) => toggleMenu(e, f.id)"
+                @minimize="(minimized) => tune(f.id, {minimized})"
             >
                 <HomeView
                     :view="f.view"

@@ -53,6 +53,8 @@ const shapes = {
     rows: '<rect x="2.5" y="3" width="11" height="10" rx="1.5"/><path d="M2.5 8h11"/>',
     tab: '<path d="M2.5 5.5h11V13h-11zM2.5 5.5V3h5v2.5"/>',
     float: '<rect x="5.5" y="5.5" width="8" height="7.5" rx="1"/><path d="M2.5 10.5V3h8"/>',
+    minimize: '<path d="M4 8h8"/>',
+    window: '<rect x="3.5" y="3.5" width="9" height="9" rx="1.5"/>',
     dock: '<rect x="2.5" y="3" width="11" height="10" rx="1.5"/><path d="M8 5.5V10M5.8 7.8 8 10l2.2-2.2"/>',
     restore: '<path d="M3 8a5 5 0 1 0 1.5-3.55"/><path d="M3 2.75V5h2.25"/>',
     caret: '<path d="M5 6.5l3 3 3-3"/>',

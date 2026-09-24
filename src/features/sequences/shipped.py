@@ -59,7 +59,7 @@ SHIPPED = (FILING_A_DUMP, BUILDING_A_PLAN, WORKING_A_BOARD_CARD)
 
 def ship(record) -> list[str]:
     sequences = Sequences(record, actor=SYSTEM)
-    known = {row["title"] for row in sequences.summaries()}
+    known = {row["title"] for row in sequences.summaries() if not row["deleted"]}
     made = []
     for shipped in SHIPPED:
         if shipped["title"] in known:
