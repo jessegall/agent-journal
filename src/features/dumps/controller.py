@@ -12,6 +12,7 @@ from resources.base import AGENT, SYSTEM, Refused
 TEXT = "text"
 LOG_KEPT = 20
 OFFERED = 4
+OWN_WORDS = -2
 
 
 class Dumps(Controller):
@@ -96,32 +97,43 @@ class Dumps(Controller):
         except ValueError:
             self._refuse("options is a JSON list of {label} or {label, type, n, action}")
         steps = []
-        for option in (Button.from_payload(o) for o in (given[:OFFERED] if isinstance(given, list) else []) if isinstance(o, dict)):
-            if not option.label:
+        for raw in (o for o in (given[:OFFERED] if isinstance(given, list) else []) if isinstance(o, dict)):
+            option, label = Button.from_payload(raw), str(raw.get("label") or "").strip()
+            if not label:
                 continue
             action = one(self.record, option.to_json()) if option.action else {}
             if option.action and not action:
-                self._refuse(f"{option.label}: {option.type} {option.action} is not a command")
-            steps.append(action if action else {"label": option.label})
+                self._refuse(f"{label}: {option.type} {option.action} is not a command")
+            steps.append({**action, "label": label} if action else {"label": label})
         if not steps:
             self._refuse("offer at least one next step with a label")
         return self.update(r.n, options=steps, chosen={})
 
     def choose(self, n: int, pick: int):
-        if self.actor == AGENT:
-            self._refuse("only the user chooses what a dump does next")
-        r = self.load(int(n))
+        r = self._choosing(n)
         options = r.data.get("options") or []
         if not str(pick).lstrip("-").isdigit() or int(pick) >= len(options):
             self._refuse(f"dump {r.n} has no option {pick}: pick is the number of an offered step, or -1 for You decide")
-        if r.completed and not r.data.get("confirmed"):
-            self.confirm(r.n)
         step = options[int(pick)] if int(pick) >= 0 else {"label": "You decide"}
         if step.get("action"):
             controller = CONTROLLERS[step["type"]](self.record, actor=self.actor)
             numbers = [step["n"]] if "n" in step else []
             controller.action(step["action"])(*numbers, **(step.get("body") or {}))
         return self.update(r.n, chosen={"label": step["label"], "pick": int(pick), ENTRY.at: time.time()})
+
+    def direct(self, n: int, how: str):
+        if not how.strip():
+            self._refuse("say what should happen next: journal dump direct <n> \"<what to do>\"")
+        r = self._choosing(n)
+        return self.update(r.n, chosen={"label": how.strip(), "pick": OWN_WORDS, ENTRY.at: time.time()})
+
+    def _choosing(self, n: int):
+        if self.actor == AGENT:
+            self._refuse("only the user chooses what a dump does next")
+        r = self.load(int(n))
+        if r.completed and not r.data.get("confirmed"):
+            self.confirm(r.n)
+        return r
 
     def leave(self, n: int, ref: str):
         dump = self.load(int(n))

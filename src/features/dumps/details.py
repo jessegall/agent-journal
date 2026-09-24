@@ -64,6 +64,14 @@ class DumpsDetails(FeatureDetails):
             brief="what the dump made is now in the journal. Carry that step out, and log it on the dump.",
         ),
         Line(
+            name="directed",
+            title="the user said what to do with dump {{n}}",
+            brief="""
+                in their words: {{how}}. What the dump made is now in the journal. Do that, and log each
+                step on the dump.
+            """,
+        ),
+        Line(
             name="decide",
             title="the user left dump {{n}} to you - finish it",
             brief="""

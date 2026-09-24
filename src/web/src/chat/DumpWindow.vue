@@ -1,4 +1,5 @@
 <script setup>
+import DumpAnswer from "./DumpAnswer.vue";
 import DumpFiles from "./DumpFiles.vue";
 import TextDisplay from "../kit/TextDisplay.vue";
 import DumpMadeRow from "./DumpMadeRow.vue";
@@ -15,7 +16,7 @@ import {useNow} from "../composables/now.js";
 
 const draft = reactive({text: "", files: [], sending: false, error: "", over: false});
 const more = reactive({open: false, text: "", files: [], sending: false, error: ""});
-const reply = reactive({text: "", sending: false});
+const reply = reactive({sending: false});
 const chosen = ref(0);
 const composing = ref(false);
 const switching = ref(false);
@@ -239,11 +240,9 @@ async function act(action, body = {}) {
 }
 
 async function answer(text) {
-    if (!text.trim()) return;
     reply.sending = true;
     try {
-        await act("answer", {text: text.trim()});
-        reply.text = "";
+        await act("answer", {text});
     } finally {
         reply.sending = false;
     }
@@ -477,17 +476,7 @@ function leave(m) {
                                     </template>
                                 </div>
                             </template>
-                            <div class="dump-answer">
-                                <textarea
-                                    v-model="reply.text"
-                                    rows="1"
-                                    :placeholder="guesses.length ? 'Or say it in your own words' : 'Your answer'"
-                                    @keydown.enter.exact.prevent="answer(reply.text)"
-                                />
-                                <Btn kind="primary" small :disabled="reply.sending || !reply.text.trim()" @click="answer(reply.text)">
-                                    Answer
-                                </Btn>
-                            </div>
+                            <DumpAnswer :placeholder="guesses.length ? 'Or say it in your own words' : 'Your answer'" :send="answer" />
                         </div>
                     </template>
                     <template v-if="phase === 'choosing'">
@@ -496,6 +485,12 @@ function leave(m) {
                             :options="steps"
                             color="var(--created)"
                             @pick="(i) => act('choose', {pick: i === options.length ? -1 : i})"
+                        />
+                        <DumpAnswer
+                            class="dump-steps"
+                            placeholder="Or say what should happen next, in your own words"
+                            action="Send"
+                            :send="(how) => act('direct', {how})"
                         />
                     </template>
                     <template v-if="phase === 'offering'">
@@ -1091,22 +1086,6 @@ textarea {
 .dump-chip:hover {
     border-color: var(--accent);
     color: var(--text);
-}
-
-.dump-answer {
-    display: flex;
-    align-items: flex-end;
-    gap: 8px;
-}
-
-.dump-answer textarea {
-    flex: 1;
-    min-height: 34px;
-    padding: 8px 10px;
-    border: 1px solid var(--border-2);
-    border-radius: 8px;
-    background: var(--bg);
-    font-size: 12.5px;
 }
 
 .dump-steps {

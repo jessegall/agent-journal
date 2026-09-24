@@ -133,13 +133,18 @@ def test_a_finished_dump_offers_next_steps_and_you_decide_hands_it_to_the_agent(
     agent, user = CONTROLLERS["dump"](record, actor=AGENT), CONTROLLERS["dump"](record, actor=USER)
     agent.filed(dump.n, "text", "a to-do", f"{Todos(record, actor=AGENT).create('book the room').ref}")
     assert "not a command" in refused(lambda: agent.offer(dump.n, '[{"label": "Fly", "type": "todo", "action": "fly"}]')), "an unknown action is refused"
-    agent.offer(dump.n, '[{"label": "Book it today"}, {"label": "Leave it"}]')
+    agent.offer(dump.n, '[{"label": "Book it today"}, {"label": "Leave it"}, {"label": "Make a plan for the autoscaler and the deployment framework"}]')
+    assert agent.load(dump.n).data["options"][2]["label"] == "Make a plan for the autoscaler and the deployment framework", \
+        "an offered step keeps its whole label"
     assert refused(lambda: agent.choose(dump.n, 0)) == "only the user chooses what a dump does next", "the agent cannot choose"
     user.choose(dump.n, 0)
     assert (nudges(record)[-1], bool(agent.load(dump.n).data["confirmed"])) == \
         (f"the user chose Book it today for dump {dump.n}", True), "a choice adds what it made to the journal and tells the agent"
     user.choose(dump.n, -1)
     assert nudges(record)[-1] == f"the user left dump {dump.n} to you - finish it", "You decide hands the rest to the agent"
+    user.direct(dump.n, "Only find out why eight hosts are down")
+    assert nudges(record)[-1] == f"the user said what to do with dump {dump.n}", "the user's own words are the next step"
+    assert "Only find out why eight hosts are down" in agent.load(dump.n).data["chosen"]["label"]
 
 
 def test_pasted_text_splits_into_parts_and_a_question_carries_guesses():
