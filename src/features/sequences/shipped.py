@@ -214,9 +214,9 @@ WRITING_AN_UPDATE = {
         ("Write the update", "journal report recap \"<one or two plain sentences: what got done, what is under way, what "
                              "waits on the user>\" writes the report with those rows in that order. Give every row under "
                              "need and doing a short note of what it waits on or what is being done now: journal report "
-                             "note <report n> <ref> \"<line>\". Add a row the list missed with journal report item <report "
-                             "n> <section> <ref> \"<title>\", and take out one that is only noise with journal report drop "
-                             "<report n> <ref>. Then journal sequence next <this sequence> --about <ref>."),
+                             "note <report n> <row> \"<line>\". Add a row the list missed with journal report item <report "
+                             "n> <section> <row> \"<title>\", and take out one that is only noise with journal report drop "
+                             "<report n> <row>. Then journal sequence next <this sequence> --about <ref>."),
         ("Answer with it", "Reply in one short line, then the report's reference on a line of its own, like report 98, so "
                            "the chat shows it as a card the user opens. Finish with journal sequence next <this sequence> "
                            "--about <ref>."),
