@@ -13,11 +13,16 @@ const props = defineProps({
     active: Boolean,
     paused: Boolean,
     order: Number,
+    speed: {type: Number, default: 1},
+    hurry: Boolean,
 });
 const emit = defineEmits(["toggle", "revealed", "more"]);
 const TITLE_MS = 900;
 const ABSTRACT_MS = 1600;
+const HURRIED = 20;
 const {type, wait} = useTyping();
+const rate = () => (props.hurry ? HURRIED : props.speed);
+const pause = (ms) => wait(ms / rate());
 const shown = reactive({started: false, title: 0, owner: false, abstract: 0, done: false});
 const title = computed(() => (props.ticket ? props.ticket.title : ""));
 const abstract = computed(() => (props.ticket ? props.ticket.abstract : ""));
@@ -64,13 +69,21 @@ const toggle = () => shown.done && !editing.value && emit("toggle");
 
 async function reveal() {
     shown.started = true;
-    await wait(200);
-    await type(title.value, TITLE_MS, (at) => (shown.title = at));
-    await wait(120);
+    await pause(200);
+    await type(
+        title.value,
+        () => TITLE_MS / rate(),
+        (at) => (shown.title = at)
+    );
+    await pause(120);
     shown.owner = true;
-    await wait(160);
-    await type(abstract.value, ABSTRACT_MS, (at) => (shown.abstract = at));
-    await wait(200);
+    await pause(160);
+    await type(
+        abstract.value,
+        () => ABSTRACT_MS / rate(),
+        (at) => (shown.abstract = at)
+    );
+    await pause(200);
     shown.done = true;
     emit("revealed");
 }

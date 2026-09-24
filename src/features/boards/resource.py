@@ -20,6 +20,7 @@ class Board(Shape, Resource):
         Field(NUMBER, 0, name="expected"),
         Field(default=dict, name="drafting"),
         Field(default=dict, name="building"),
+        Field(default=dict, name="added"),
     ]
     type = "board"
     icon = "board"

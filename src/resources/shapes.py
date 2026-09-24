@@ -20,6 +20,13 @@ def typed(value):
 LEVELS = {"low": 50, "default": 100, "high": 150, "critical": 200}
 
 
+def priority_level(value) -> int | None:
+    level = str(value).lower()
+    if level in LEVELS:
+        return LEVELS[level]
+    return int(level) if level.lstrip("-").isdigit() else None
+
+
 def rows(**columns: str) -> dict:
     return {"rows": columns}
 

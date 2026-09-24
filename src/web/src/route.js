@@ -44,7 +44,15 @@ function opening(stack, sub = "") {
     location.replace(`#${path}${stack.length ? `?open=${stack.map(entry).join(",")}` : ""}${sub ? `&sub=${sub}` : ""}`);
 }
 
+const inChat = {};
+
+export function openInChat(type, open) {
+    inChat[type] = open;
+    return () => inChat[type] === open && delete inChat[type];
+}
+
 export function peek(type, n, comment = 0, sub = "") {
+    if (!comment && !sub && inChat[type]?.(n)) return;
     const stack = route.value.stack;
     const at = stack.findIndex((open) => open.type === type && open.n === n);
     opening([...(at < 0 ? stack : stack.slice(0, at)), {type, n, comment}], sub);

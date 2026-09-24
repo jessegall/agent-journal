@@ -1,4 +1,5 @@
 <script setup>
+import StateDot from "./StateDot.vue";
 import {computed, useAttrs} from "vue";
 import Icon from "./Icon.vue";
 import TextDisplay from "./TextDisplay.vue";
@@ -15,6 +16,7 @@ const props = defineProps({
     card: {type: String, default: ""},
     command: {type: String, default: ""},
     title: {type: String, default: ""},
+    state: {type: String, default: ""},
 });
 
 const attrs = useAttrs();
@@ -31,6 +33,9 @@ const tint = computed(() => (shade.value ? {"--mark": shade.value} : {}));
             <TextDisplay :text="label" inline />
             <template v-if="name">
                 <strong>{{ name }}</strong>
+            </template>
+            <template v-if="state">
+                <StateDot :state="state" :title="state === 'done' ? 'Ended' : 'Still running'" />
             </template>
         </span>
         <template v-if="detail">

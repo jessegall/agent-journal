@@ -24,7 +24,7 @@ from features.tickets.resource import Ticket
 from controllers.types import Agents, Questions
 from features.plans.controller import READY, Plans
 from resources.base import AGENT, SYSTEM, Refused, Resource
-from resources.shapes import LEVELS, rank_before
+from resources.shapes import LEVELS, priority_level, rank_before
 
 
 PROPOSED, CONFIRMED = "proposed", "confirmed"
@@ -112,7 +112,7 @@ class Tickets(Controller):
     def _card(self, ticket, stage: str, stages: list, sessions: dict, running: int) -> Card:
         extras = [extra(self.record, ticket) for extra in CARD_EXTRAS]
         state = self._runtime(ticket, sessions, running)
-        return Card(ticket.n, ticket.title, LEVELS["default"], stage, reason=state.text, state=state.kind, session=state.session, assigned=ticket.owner, targets=[s for s in stages if s != stage],
+        return Card(ticket.n, ticket.title, int(ticket.priority or LEVELS["default"]), stage, reason=state.text, state=state.kind, session=state.session, assigned=ticket.owner, targets=[s for s in stages if s != stage],
                     updated=ticket.updated, completed=ticket.completed, type=self.type,
                     actions=[*self._actions(ticket, state.session), *(action for more in extras for action in more.actions)],
                     link=next((more.link for more in extras if more.link), ""),
@@ -189,11 +189,19 @@ class Tickets(Controller):
     def _live_state(self, row) -> CardState:
         if row.asking:
             return CardState("you", "waiting for you")
+        if not float(row.at or 0):
+            return CardState("running", "starting")
         quiet = time.time() - float(row.at)
         if row.status != IDLE and quiet > SILENT_AFTER:
             return CardState("you", f"silent for {int(quiet // 60)}m")
         step = f"{row.tool} {Path(row.file).name}".strip() if row.tool else row.status
         return CardState("running", step, age=ago(quiet))
+
+    def priority(self, n: int, value: str):
+        level = priority_level(value)
+        if level is None:
+            self._refuse(f"a priority is a number or one of {', '.join(LEVELS)}")
+        return self.update(int(n), priority=level)
 
     def bind(self, n: int):
         ticket = self.load(int(n))

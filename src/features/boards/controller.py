@@ -123,6 +123,13 @@ class Boards(Controller):
             raise Refused(f"nothing was asked on board {board.n} to answer")
         return Messages(self.record, actor=self.actor, session=self.session, agent=self.agent).comment(int(asked[-1].split(":")[1]), line.strip())
 
+    def added(self, n: int, tickets: str):
+        board = self.load(int(n))
+        numbers = [int(t) for t in str(tickets).replace(",", " ").split() if t.isdigit()]
+        if not numbers:
+            raise Refused("name the tickets that were added, like \"12, 13\"")
+        return self.update(board.n, added={"tickets": numbers, "at": time.time()})
+
     def _drafting(self, n: int):
         board = self.load(int(n))
         if not board.drafting.get("since"):

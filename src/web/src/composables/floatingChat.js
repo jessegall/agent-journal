@@ -12,5 +12,7 @@ export function useFloatingChat() {
         detach("chat", {x: window.innerWidth - CHAT_BOX.w - CHAT_BOX.edge, y: CHAT_BOX.top, w: CHAT_BOX.w, h: CHAT_BOX.h});
     }
 
-    return {floatingChat, toggleChat};
+    const openChat = () => floatingChat.value || toggleChat();
+
+    return {floatingChat, toggleChat, openChat};
 }

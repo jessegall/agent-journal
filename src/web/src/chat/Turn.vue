@@ -1,5 +1,6 @@
 <script setup>
 import TextDisplay from "../kit/TextDisplay.vue";
+import ReplyTool from "./ReplyTool.vue";
 import {computed, nextTick, onMounted, ref, watch} from "vue";
 import {api} from "../api/client.js";
 import Icon from "../kit/Icon.vue";
@@ -203,6 +204,9 @@ async function drop() {
         <template #thought>
             <div class="thread-turn thought" :data-ref="turn.ref">
                 <TextDisplay class="thought-text" :text="turn.title" />
+                <div class="thread-tools">
+                    <ReplyTool title="Reply to this thought, quoting it" @reply="emit('reply', {text: words.text, ref: turn.ref})" />
+                </div>
             </div>
         </template>
         <template #compacted>
@@ -319,14 +323,7 @@ async function drop() {
                     </template>
                     <template v-else>
                         <button type="button" class="thread-tool" title="React to this" @click.stop="picking = true">React</button>
-                        <button
-                            type="button"
-                            class="thread-tool"
-                            title="Reply to this, quoting it"
-                            @click.stop="emit('reply', {text: words.text, ref: turn.ref})"
-                        >
-                            Reply
-                        </button>
+                        <ReplyTool @reply="emit('reply', {text: words.text, ref: turn.ref})" />
                         <button
                             type="button"
                             class="thread-tool"

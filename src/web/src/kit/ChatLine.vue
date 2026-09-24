@@ -1,5 +1,5 @@
 <script setup>
-import {computed, onUnmounted, ref} from "vue";
+import {computed, onUnmounted, ref, watch} from "vue";
 import {useReveal} from "../composables/reveal.js";
 
 const props = defineProps({
@@ -8,10 +8,35 @@ const props = defineProps({
     typed: Boolean,
     thinking: Boolean,
     notes: {type: Array, default: () => []},
+    shuffled: Boolean,
 });
 const NOTE_MS = 2400;
-const noteAt = ref(0);
-const flipping = setInterval(() => (noteAt.value = (noteAt.value + 1) % Math.max(1, props.notes.length)), NOTE_MS);
+const order = ref([]);
+const step = ref(0);
+const noteAt = computed(() => order.value[step.value] ?? 0);
+
+function arrange(avoid = "") {
+    const at = props.notes.map((_, i) => i);
+    for (let i = at.length - 1; props.shuffled && i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [at[i], at[j]] = [at[j], at[i]];
+    }
+    if (at.length > 1 && props.notes[at[0]] === avoid) at.push(at.shift());
+    order.value = at;
+    step.value = 0;
+}
+
+function flip() {
+    if (step.value + 1 < order.value.length) return (step.value += 1);
+    arrange(props.notes[noteAt.value]);
+}
+
+watch(
+    () => props.notes,
+    (notes, before) => arrange(before ? before[noteAt.value] : ""),
+    {immediate: true}
+);
+const flipping = setInterval(flip, NOTE_MS);
 onUnmounted(() => clearInterval(flipping));
 const count = useReveal(props.typed ? props.text.length : 0);
 const shown = computed(() => (props.typed && count.value < props.text.length ? props.text.slice(0, count.value) : props.text));
@@ -35,7 +60,7 @@ const writing = computed(() => props.typed && count.value < props.text.length);
                     <i />
                     <template v-if="notes.length">
                         <Transition name="note" mode="out-in">
-                            <span :key="noteAt" class="note">{{ notes[noteAt] }}</span>
+                            <span :key="`${step}-${notes[noteAt]}`" class="note">{{ notes[noteAt] }}</span>
                         </Transition>
                     </template>
                 </div>

@@ -37,11 +37,11 @@ const cards = computed(() => (props.type ? waiting.value : notifications.value))
 
 async function open(r) {
     if (props.type) {
-        if (!focusTurn(r.ref, {instant: true})) peek(r.type, r.n);
+        if (r.type === "question" || !focusTurn(r.ref, {instant: true})) peek(r.type, r.n);
         return;
     }
     if (!r.data.kept) await api.act(r.type, r.n, "set", {key: "kept", value: "true"});
-    if (!focusTurn(r.ref)) peek(r.type, r.n);
+    if (r.type === "question" || !focusTurn(r.ref)) peek(r.type, r.n);
 }
 
 async function dismiss(r) {
