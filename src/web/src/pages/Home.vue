@@ -406,6 +406,7 @@ watch(
                                     :level="levelOf(pane)"
                                     :flush="!!pane.flush"
                                     :feed="pane.feed || null"
+                                    :hidden="pane.hide || []"
                                     @feed="(feed) => replace(tuned(layout, id, {feed}))"
                                 />
                             </template>
@@ -448,6 +449,8 @@ watch(
                     :width="widthOf(menuPane)"
                     :schemes="menuPane ? windowSchemes(menuPane.scheme, layout.scheme) : []"
                     :levels="menuPane && menuPane.active === 'terminal' ? levelChoices(menuPane) : []"
+                    :chat="!!menuPane && menuPane.active === 'chat'"
+                    :hidden="(menuPane && menuPane.hide) || []"
                     :flushable="!!(menuPane && menuPane.active && views[menuPane.active].canFlush)"
                     :flush="!!(menuPane && menuPane.flush)"
                     :others="menuOthers"
@@ -463,6 +466,7 @@ watch(
                     @scheme="(id, scheme) => replace(tuned(layout, id, {scheme}))"
                     @flush="(id, flush) => replace(tuned(layout, id, {flush}))"
                     @verbosity="(id, verbosity) => replace(tuned(layout, id, {verbosity}))"
+                    @hide="(id, hide) => replace(tuned(layout, id, {hide}))"
                 />
             </template>
             <template v-if="drag">

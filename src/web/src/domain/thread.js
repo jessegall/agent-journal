@@ -1,5 +1,6 @@
 import {meta} from "../state/store.js";
 import {words} from "../text/words.js";
+import {shownIn} from "./chatShown.js";
 
 const PROMISED_WITHIN = 5;
 
@@ -56,6 +57,7 @@ const visitorComments = (comments) =>
                 icon: "bubble",
                 label: `${c.data.visitor} commented on ${c.refs[0].replace(":", " ")}`,
                 row: c.refs[0],
+                visitor: true,
             })
         );
 
@@ -129,7 +131,7 @@ const promisedFor = (p, m) =>
 
 const delivered = (p, m) => Object.keys(m.data.files || {}).length >= Object.keys(p.data.files).length;
 
-export function threadTurns(rows, pending, env, older = false) {
+export function threadTurns(rows, pending, env, older = false, hidden = []) {
     const keys = new Map();
     const live = rows.message.filter((m) => !m.deleted);
     const floor = older && live.length ? Math.min(...live.map((m) => m.created)) : 0;
@@ -150,6 +152,7 @@ export function threadTurns(rows, pending, env, older = false) {
         ...pending.filter((p) => !live.some((m) => promisedFor(p, m) && delivered(p, m))),
     ]
         .filter((t) => t.created >= floor)
+        .filter(shownIn(hidden))
         .sort((a, b) => a.created - b.created);
     return {turns: grouped(mergedReplies(turns)), keys};
 }

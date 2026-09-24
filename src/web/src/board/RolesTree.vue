@@ -46,9 +46,14 @@ const flip = (set, key) => (set.has(key) ? set.delete(key) : set.add(key));
                     </button>
                     <template v-if="opened.has(role.name)">
                         <template v-for="ticket in role.tickets" :key="`${role.name}-${ticket.n}`">
-                            <button type="button" class="role-ticket" @click="peek('ticket', ticket.n)">
-                                #{{ ticket.n }} {{ ticket.title }}
-                            </button>
+                            <div class="role-work">
+                                <button type="button" class="role-ticket" @click="peek('ticket', ticket.n)">
+                                    #{{ ticket.n }} {{ ticket.title }}
+                                </button>
+                                <template v-if="ticket.env">
+                                    <a class="role-chat" :href="`#/${ticket.env}`" title="Open this agent's chat">chat</a>
+                                </template>
+                            </div>
                         </template>
                     </template>
                 </template>
@@ -100,6 +105,22 @@ const flip = (set, key) => (set.has(key) ? set.delete(key) : set.add(key));
 .role-count {
     color: var(--text-3);
     font-size: 11.5px;
+}
+
+.role-work {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+}
+
+.role-chat {
+    color: var(--accent-text);
+    font-size: 11.5px;
+    text-decoration: none;
+}
+
+.role-chat:hover {
+    text-decoration: underline;
 }
 
 .role-ticket {

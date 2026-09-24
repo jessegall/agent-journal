@@ -35,11 +35,12 @@ def global_ahead(record, domain: Domain, role: Role) -> tuple[str, int] | None:
     return env, row.n
 
 
-def next_in_line(record, domain: str, role: str, env: str, n: int) -> None:
+def next_in_line(record, domain: str, role: str, env: str, n: int) -> list[tuple[str, object]]:
     from controllers.types import Todos
     waiting = [(e, r) for e, r in everywhere(record.root, domain, role) if r.data.get(WAITS_FOR) == f"{env}:{n}"]
     for e, r in waiting:
         Todos(Record(record.root, e), actor=SYSTEM).unblock(r.n)
+    return waiting
 
 
 BROWSER = "browser"

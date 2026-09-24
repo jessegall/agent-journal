@@ -26,6 +26,11 @@ def test_the_organization_is_read_from_domain_and_role_files_and_refuses_what_do
     write(home / "roles" / "developer" / "role.toml", 'cardinality = "everywhere"\n')
     with pytest.raises(Refused, match="cardinality is one of"):
         organization(tmp_path)
+    write(home / "roles" / "developer" / "role.toml", 'runs = "agent"\n')
+    assert organization(tmp_path).domain("engineering").role("developer").runs == "agent", "a role can run as a full agent of its own"
+    write(home / "roles" / "developer" / "role.toml", 'runs = "daemon"\n')
+    with pytest.raises(Refused, match="runs is agent"):
+        organization(tmp_path)
     assert organization(tmp_path / "elsewhere").text().startswith("no organization yet"), "a project without the folder has an empty organization"
 
 
@@ -83,7 +88,7 @@ def test_the_board_counts_each_role_by_the_tickets_where_its_work_is_in_hand():
     tickets = Tickets(record, actor=AGENT)
     tickets._running = lambda: [SimpleNamespace(n=7, title="Search", work_environment="ticket-7")]
     roles = {role["name"]: role["tickets"] for role in tickets._roles()}
-    assert roles == {"engineering/developer": [{"n": 7, "title": "Search"}], "engineering/lead": []}, roles
+    assert roles == {"engineering/developer": [{"n": 7, "title": "Search", "env": ""}], "engineering/lead": []}, roles
 
 
 def test_a_global_role_takes_one_task_at_a_time_across_every_environment():
@@ -106,3 +111,24 @@ def test_a_global_role_takes_one_task_at_a_time_across_every_environment():
         "the deployer runs once per journal: a second ticket's task waits for the first, wherever it is"
     Todos(first_env, actor=AGENT).complete(first["todo"], "deployed")
     assert not Todos(second_env, actor=AGENT).load(second["todo"]).blocked, "and starts once the first is done"
+
+
+def test_a_role_that_runs_as_an_agent_is_started_in_the_tickets_worktree(monkeypatch):
+    import features
+    from controllers.types import Todos
+    from engine.record import Record
+    from resources.base import AGENT
+    from tests.conftest import fresh
+    features.load()
+    record = fresh()
+    home = record.root.parent / "agentic-organization" / "domains" / "engineering"
+    write(home / "domain.toml", 'title = "Engineering"\nlead = "developer"\n')
+    write(home / "roles" / "developer" / "role.toml", 'title = "Developer"\ncardinality = "plural"\nruns = "agent"\n')
+    launched = []
+    monkeypatch.setattr("engine.terminal.detached", lambda root, cwd, place, agent, args: launched.append((place, args)))
+    ticket = Record(record.root, "ticket-5")
+    given = COMMANDS["todo"]["delegate"](Todos(ticket, actor=AGENT), "Build search", "engineering")
+    place, args = launched[0]
+    assert (given["agent"], place, "--worktree" in args and args[args.index("--worktree") + 1]) == ("ticket-5-developer-1", "ticket-5-developer-1", "ticket-5"), \
+        "a full-agent role gets an environment of its own, working in the ticket's worktree"
+    assert Todos(ticket, actor=AGENT).load(given["todo"]).data["role_environment"] == "ticket-5-developer-1" and "Nothing to dispatch" in given["brief"]

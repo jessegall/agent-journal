@@ -5,6 +5,8 @@ import {rows} from "../sync/rows.js";
 import ResourceBody from "./ResourceBody.vue";
 import Comments from "./Comments.vue";
 import PlanTimelinePanel from "./PlanTimelinePanel.vue";
+import SequenceRuns from "./SequenceRuns.vue";
+import {useBeingWritten} from "../composables/sequenceRuns.js";
 import Links from "./Links.vue";
 import Highlight from "./Highlight.vue";
 
@@ -24,7 +26,7 @@ const count = computed(() => rows("comment").filter((c) => c.refs.includes(props
 const talking = ref(props.focus > 0);
 const shifted = ref(talking.value);
 const panel = ref(talking.value);
-watch(quote, (q) => q && (talking.value = true));
+watch(quote, (q) => q && !running.value && (talking.value = true));
 watch(
     () => props.focus,
     (focus) => focus && (talking.value = true),
@@ -47,8 +49,26 @@ function panelLeft() {
 }
 
 const aside = ref("comments");
+const running = useBeingWritten(() => props.resource);
+const page = ref(null);
+const SIDE_BY_SIDE = 720;
+
+watch(
+    () => running.value && !props.readOnly,
+    (on) => {
+        if (on) {
+            aside.value = "running";
+            if (page.value?.clientWidth > SIDE_BY_SIDE) talking.value = true;
+        } else if (aside.value === "running") {
+            talking.value = false;
+            aside.value = "comments";
+        }
+    },
+    {immediate: true, flush: "post"}
+);
 
 function toggle(mode = "comments") {
+    if (running.value && mode === "comments") return;
     if (talking.value && aside.value === mode) {
         talking.value = false;
         return;
@@ -57,7 +77,7 @@ function toggle(mode = "comments") {
     talking.value = true;
 }
 
-provide("talk", {talking, count, aside, toggle, say: (text) => (quote.value = text)});
+provide("talk", {talking, count, aside, running, toggle, say: (text) => (quote.value = text)});
 const body = ref(null);
 const LIT_FOR = 2500;
 
@@ -89,7 +109,7 @@ watch(
 </script>
 
 <template>
-    <div :class="['document', {shifted}]">
+    <div ref="page" :class="['document', {shifted}]">
         <div ref="body" class="document-body">
             <Highlight :off="!!resource.data?.system || readOnly" @quote="quote = $event">
                 <slot>
@@ -105,7 +125,10 @@ watch(
         </div>
         <Transition name="aside" @after-leave="panelLeft">
             <aside v-if="panel && !readOnly" class="document-aside">
-                <template v-if="aside === 'timeline'">
+                <template v-if="aside === 'running'">
+                    <SequenceRuns class="running-panel" :resource="resource" panel />
+                </template>
+                <template v-else-if="aside === 'timeline'">
                     <PlanTimelinePanel :plan="resource" />
                 </template>
                 <template v-else>
@@ -214,6 +237,13 @@ watch(
         width: 100%;
         border-left: 0;
     }
+}
+
+.document-aside > .running-panel {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
 }
 
 .document-aside > :deep(.comments) {

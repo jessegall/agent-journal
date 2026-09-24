@@ -45,6 +45,7 @@ const props = defineProps({
     readOnly: Boolean,
 });
 const fileUrl = inject("fileUrl", (type, n, name) => api.fileUrl(type, n, name));
+const talk = inject("talk", null);
 const emit = defineEmits(["close"]);
 const kind = computed(() => meta(props.resource.type));
 const files = computed(() => Object.entries(props.resource.data.files || {}));
@@ -357,7 +358,9 @@ const chaptered = computed(
         </template>
         <template v-if="!readOnly">
             <Asked :resource="resource" />
-            <SequenceRuns :resource="resource" />
+            <template v-if="!talk?.running.value">
+                <SequenceRuns :resource="resource" />
+            </template>
         </template>
         <slot />
         <template v-if="docs.length">

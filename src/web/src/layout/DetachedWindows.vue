@@ -69,6 +69,7 @@ function away(id) {
                     :level="levelOf(f)"
                     :flush="!!f.flush"
                     :feed="f.feed || null"
+                    :hidden="f.hide || []"
                     @feed="(feed) => tune(f.id, {feed})"
                 />
             </FloatWindow>
@@ -82,7 +83,10 @@ function away(id) {
             :all="menuAll"
             :schemes="menuSchemes"
             :levels="menuLevels"
+            :chat="menuFloat.view === 'chat'"
+            :hidden="menuFloat.hide || []"
             @verbosity="(id, verbosity) => tune(id, {verbosity})"
+            @hide="(id, hide) => tune(id, {hide})"
             :flushable="menuFlushable"
             :flush="!!menuFloat.flush"
             @flush="(id, flush) => tune(id, {flush})"

@@ -8,6 +8,8 @@ from resources.base import Refused
 FOLDER = "agentic-organization"
 WORKTREE, PLURAL, GLOBAL = "worktree", "plural", "global"
 CARDINALITIES = (WORKTREE, PLURAL, GLOBAL)
+AGENT, SUBAGENT = "agent", "subagent"
+RUNS = (AGENT, SUBAGENT)
 
 
 @dataclass(frozen=True)
@@ -23,6 +25,7 @@ class Role(Loaded):
     inputs: list = field(default_factory=list)
     outputs: list = field(default_factory=list)
     cardinality: str = WORKTREE
+    runs: str = SUBAGENT
     model: str = ""
 
 
@@ -61,7 +64,7 @@ class Organization:
     def text(self) -> str:
         if not self.domains:
             return f"no organization yet: add {FOLDER}/domains/<domain>/domain.toml and roles/<role>/role.toml"
-        return "\n".join(f"{d.name}: {d.title or d.name}, led by {d.lead or 'nobody'}\n" + "\n".join(f"  {r.name}: {r.title or r.name} ({r.cardinality})" for r in d.roles)
+        return "\n".join(f"{d.name}: {d.title or d.name}, led by {d.lead or 'nobody'}\n" + "\n".join(f"  {r.name}: {r.title or r.name} ({r.cardinality}, runs as {'a full agent' if r.runs == AGENT else 'a subagent'})" for r in d.roles)
                          for d in self.domains)
 
 
@@ -76,6 +79,8 @@ def role_of(path: Path) -> Role:
     role = Role.from_json({**parsed(path), "name": path.parent.name})
     if role.cardinality not in CARDINALITIES:
         raise Refused(f"{path}: cardinality is one of {', '.join(CARDINALITIES)}, not {role.cardinality!r}")
+    if role.runs not in RUNS:
+        raise Refused(f"{path}: runs is {AGENT} (a full agent of its own) or {SUBAGENT}, not {role.runs!r}")
     return role
 
 
