@@ -94,6 +94,7 @@ const topMark = ref(null);
 const AHEAD = "200px 0px 0px 0px";
 const scrolledUp = ref(false);
 const NEAR_TOP = 200;
+const GLIDE = 450;
 let prepending = false;
 
 async function older() {
@@ -164,8 +165,16 @@ watch(turns, (list) => {
     pending.value = pending.value.filter((p) => listed.has(p.ref));
 });
 
-function toBottom() {
-    if (scroller.value) scroller.value.scrollTop = scroller.value.scrollHeight;
+let glidedAt = 0;
+
+function toBottom(smooth = false) {
+    const s = scroller.value;
+    if (s && smooth) {
+        glidedAt = Date.now();
+        s.scrollTo({top: s.scrollHeight, behavior: "smooth"});
+    } else if (s) {
+        s.scrollTop = s.scrollHeight;
+    }
     away.value = false;
     missed.value = 0;
 }
@@ -178,12 +187,12 @@ watch(
 watch(
     () => store.dumping || pane.value === "terminal",
     (away) => {
-        if (!away) nextTick(() => requestAnimationFrame(toBottom));
+        if (!away) nextTick(() => requestAnimationFrame(() => toBottom()));
     }
 );
 
 function settled() {
-    if (!stillReading() && !away.value && !store.focus) toBottom();
+    if (!stillReading() && !away.value && !store.focus) toBottom(settledOnce.value);
 }
 
 let grew = null;
@@ -225,7 +234,7 @@ function wheeled() {
 
 function watchScroll() {
     const s = scroller.value;
-    if (!s) return;
+    if (!s || Date.now() - glidedAt < GLIDE) return;
     const far = s.scrollHeight - s.scrollTop - s.clientHeight > 40;
     if (far && !away.value && !store.focus && Date.now() - scrolledAt > BY_HAND) {
         toBottom();
@@ -322,7 +331,7 @@ async function pin(text, about = "") {
 
 watch(busy, async () => {
     await nextTick();
-    if (!stillReading()) toBottom();
+    if (!stillReading()) toBottom(settledOnce.value);
 });
 
 watch(
@@ -338,7 +347,7 @@ watch(
         }
         if (prepending) return;
         if (stillReading()) missed.value += Math.max(0, n - (before || 0));
-        else toBottom();
+        else toBottom(settledOnce.value);
         if (n && !settledOnce.value) setTimeout(() => (settledOnce.value = true), 300);
     },
     {immediate: true}
