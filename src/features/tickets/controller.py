@@ -349,7 +349,10 @@ class Tickets(Controller):
         return (f"You work {ticket.ref}, {ticket.title}, in this environment and its worktree. {ticket.brief}\n"
                 f"Draft a plan for it with journal plan create and link it with journal ticket update {ticket.n} --set plan=<n>. "
                 f"Decide whether it waits for the user's approval: work that is risky, reaches outside the project or touches production "
-                f"waits (journal plan ready and say so in the chat); other work starts at once. Hand domain work out with journal todo delegate.")
+                f"waits (journal plan ready and say so in the chat); other work starts at once. Hand domain work out with journal todo delegate."
+                + (f" Its owner is the {ticket.owner} domain: hand its work to that domain's lead first." if ticket.owner else "")
+                + "".join(f" It came from {ref}: read that request and the questions answered on it before you plan."
+                          for ref in ticket.refs if ref.startswith("message:")))
 
     @internal
     def start_queued(self) -> None:
