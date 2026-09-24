@@ -16,7 +16,7 @@ from features import FEATURES
 from commands.dispatch import shaping
 from engine.manifest import manifest
 from engine.markers import MARKER
-from features.format import VIEWER
+from features.format import VIEWER, formatted
 from features.sharing.resource import SHARED_TYPES, Share
 from features.sharing.tunnel import log_in, subdomain, tunler_status
 from features.sharing.visitors import AGREEMENT, UNAGREED, count_sent, index_comment, visitor_name, visitor_text
@@ -241,7 +241,16 @@ class Shares(Controller):
         kinds = {ref.partition(":")[0] for ref in rows}
         return {"share": {"target": share.target, "expires": share.expires, "comments": bool(share.comments)}, "rows": rows,
                 "comments": self._visitor_comments(share, scope) if share.comments else [],
+                "timeline": self._timeline(share, scope),
                 "types": {kind: described[kind] for kind in kinds if kind in described}}
+
+    def _timeline(self, share, scope: set[str]) -> list[dict]:
+        kind, _, n = share.target.partition(":")
+        if kind != "plan":
+            return []
+        record = self._home(share)
+        return [{**moment, "text": scoped(formatted(moment["text"], record, VIEWER), scope)}
+                for moment in CONTROLLERS["plan"](record, actor=SYSTEM).timeline(int(n)) if f"todo:{moment['todo']}" in scope]
 
     def _count_view(self, n: int) -> None:
         count, saved_at = UNSAVED_VIEWS.get(n, (0, 0.0))
