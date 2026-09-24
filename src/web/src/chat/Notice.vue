@@ -1,7 +1,7 @@
 <script setup>
 import Btn from "../kit/Btn.vue";
 import CloseButton from "../kit/CloseButton.vue";
-import {ref} from "vue";
+import {onMounted, ref} from "vue";
 import {api} from "../api/client.js";
 import {route} from "../route.js";
 
@@ -29,8 +29,12 @@ async function permit(allow) {
     }
 }
 
+const ARMED_AFTER = 1500;
+const armed = ref(false);
+onMounted(() => setTimeout(() => (armed.value = true), ARMED_AFTER));
+
 async function close() {
-    await api.act("notice", props.notice.n, "close");
+    if (armed.value) await api.act("notice", props.notice.n, "close");
 }
 </script>
 
@@ -48,11 +52,15 @@ async function close() {
         <template v-else-if="notice.data.action && notice.data.session">
             <Btn small :busy="forcing" :disabled="forcing" @click="force">Force now</Btn>
         </template>
-        <CloseButton title="Close this" @click="close" />
+        <CloseButton :class="{unarmed: !armed}" title="Close this" @click="close" />
     </div>
 </template>
 
 <style scoped>
+.unarmed {
+    pointer-events: none;
+}
+
 .chat-notice {
     --tone: #4fc3d7;
 

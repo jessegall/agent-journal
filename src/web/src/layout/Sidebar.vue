@@ -24,7 +24,8 @@ const fold = (key) => {
     folded[key] = !folded[key];
 };
 const {sections: groups} = useNavigation();
-const live = (name) => name === route.value.env && store.agents.some((a) => a.data.status && a.data.status !== "stopped");
+usePoll(...polled.online);
+const live = (name) => store.online.some((agent) => agent.environment === name);
 
 const tip = ref(null);
 

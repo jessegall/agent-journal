@@ -56,6 +56,8 @@ def refresh(source: Path, target: Path) -> tuple[set, set]:
     wanted = package_files(source)
     if "install.py" not in {rel.as_posix() for rel in wanted}:
         raise OSError(f"{source} holds no journal package; nothing was changed")
+    if (source / "web").is_dir() and not (source / "web" / "dist" / "index.html").is_file():
+        raise OSError(f"{source / 'web' / 'dist'} holds no finished viewer build, perhaps one still running; nothing was changed")
     existing = package_files(target, left=())
     gone = existing - wanted
     changed = {rel for rel in wanted if not (target / rel).is_file() or (source / rel).read_bytes() != (target / rel).read_bytes()}
