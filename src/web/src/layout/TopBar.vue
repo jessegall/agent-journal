@@ -45,16 +45,14 @@ const {floatingChat, toggleChat} = useFloatingChat();
             </template>
         </div>
         <div class="top-tools">
-            <template v-if="route.page">
-                <button
-                    type="button"
-                    :class="['icon-btn', {on: floatingChat}]"
-                    :title="floatingChat ? 'Close the floating chat' : 'Open the chat in a floating window'"
-                    @click="toggleChat"
-                >
-                    <Icon name="chat" />
-                </button>
-            </template>
+            <button
+                type="button"
+                :class="['icon-btn', {on: floatingChat}]"
+                :title="floatingChat ? 'Close the floating chat' : 'Open the chat in a floating window'"
+                @click="toggleChat"
+            >
+                <Icon name="chat" />
+            </button>
             <a class="icon-btn" :href="`#/${route.env}/search`" title="Search"><Icon name="search" /></a>
             <div ref="wrap" class="drop-wrap">
                 <button type="button" :class="['icon-btn', {on: drop}]" title="Notifications" :aria-expanded="drop" @click="drop = !drop">
