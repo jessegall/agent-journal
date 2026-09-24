@@ -39,6 +39,7 @@ watch(drop, (open) => open && checkTunnel());
 
 const tunnel = computed(() => services.value.find((s) => s.id === TUNNEL));
 const state = computed(() => {
+    if (!openShares.value.length && !waitingShares.value.length) return {key: "idle", word: "Nothing shared"};
     if (!openShares.value.length) return {key: "waiting", word: "Waiting for you"};
     if (tunnelStatus.value && !tunnelStatus.value.installed) return {key: "down", word: "tunler isn't installed"};
     if (tunnelStatus.value && !tunnelStatus.value.logged_in) return {key: "down", word: "tunler isn't logged in"};
@@ -48,6 +49,8 @@ const state = computed(() => {
     return {key: "down", word: tunnel.value.why || "Not running"};
 });
 const address = computed(() => tunnelStatus.value?.address || openShares.value[0]?.abstract.replace(/^https:\/\/([^/]+).*$/, "$1") || "");
+
+const inspect = () => window.open(tunnel.value.url, "_blank", "noopener");
 
 function open(share) {
     const [type, n] = itemOf(share).ref.split(":");
@@ -168,8 +171,14 @@ async function stop(shares) {
                 <template v-if="error">
                     <p class="tunnel-error">{{ error }}</p>
                 </template>
+                <template v-if="!openShares.length && !waitingShares.length">
+                    <p class="tunnel-empty">Nothing is shared right now. Share a document, report, collection or plan from its page.</p>
+                </template>
                 <div class="tunnel-foot">
                     <span class="meta">The tunnel closes by itself when the last link ends.</span>
+                    <template v-if="tunnel && tunnel.url">
+                        <Btn small title="See every request that came through the tunnel" @click="inspect">Request inspector</Btn>
+                    </template>
                     <template v-if="openShares.length > 1">
                         <Btn small kind="danger" :busy="stopping === -1" @click="stop(openShares)">Stop every share</Btn>
                     </template>
@@ -182,6 +191,13 @@ async function stop(shares) {
 <style scoped>
 .drop-wrap {
     position: relative;
+}
+
+.tunnel-empty {
+    margin: 0;
+    padding: 12px 16px;
+    color: var(--text-3);
+    font-size: 12.5px;
 }
 
 .icon-btn {

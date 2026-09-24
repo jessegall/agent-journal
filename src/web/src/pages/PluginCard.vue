@@ -106,7 +106,7 @@ function pick(event) {
 
         <template v-if="menu">
             <MenuPanel :anchor="more" align="end" :min-width="190" @click.stop @close="menu = false">
-                <MenuItem @click="pick('upgrade')">Check for an upgrade</MenuItem>
+                <MenuItem @click="pick('upgrade')">Check for updates</MenuItem>
                 <MenuItem @click="pick('setup')">Run setup again</MenuItem>
                 <MenuItem class="danger" @click="pick('remove')">Remove</MenuItem>
             </MenuPanel>

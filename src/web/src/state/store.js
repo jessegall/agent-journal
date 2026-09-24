@@ -58,3 +58,4 @@ export const agent = computed(
 export const feedOn = computed(() => !store.settings || store.settings.features.file_feed !== false);
 export const boardOn = computed(() => !store.settings || store.settings.features.kanban !== false);
 export const autoOn = computed(() => !!(store.settings && store.settings.features["work_tracking.auto"]));
+export const sharingOn = computed(() => !store.settings || store.settings.features.sharing !== false);

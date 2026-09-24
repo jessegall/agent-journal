@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.150.0 — The sharing menu is always there, and plugin upgrades report truly
+
+The sharing button stays in the top bar whenever sharing is on, says so when nothing is shared, and opens tunler's request inspector. A plugin install or upgrade waits as long as it takes, so one that succeeds slowly is no longer reported as failed, and the plugin menu says Check for updates. A text setting's box sits under its setting at full width. The empty notifications menu says No notifications, centred. A long command's divider runs edge to edge. A running service keeps its port instead of being handed a new one on every check. Nothing to do.
+
 ## 2.149.0 — A plugin's chat mark opens its page
 
 A plugin can point the mark it puts in the chat at one of its dashboard pages, with --open <dashboard>/<page> on journal plugin raise or "open" in its answer, and clicking the mark opens that page in a side panel. Code Commandments will use it to open an explanation of the sin it found. The share dialog's list toggle just says Show or Hide. Nothing to do.
