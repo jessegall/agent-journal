@@ -1,7 +1,7 @@
 from typing import ClassVar
 
 from resources.base import PROJECT, USER, WIDE, Resource, ResourceDetails
-from resources.shapes import LIST, Field, Shape
+from resources.shapes import LIST, NUMBER, Field, Shape
 
 START, REVIEW, DONE = "start", "review", "done"
 MEANINGS = (START, REVIEW, DONE)
@@ -17,6 +17,7 @@ class Board(Shape, Resource):
     data_fields: ClassVar[list[Field]] = [
         Field(LIST, list, name="stages"),
         Field(default=dict, name="meanings"),
+        Field(NUMBER, 0, name="expected"),
     ]
     type = "board"
     icon = "board"

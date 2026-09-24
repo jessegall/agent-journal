@@ -46,8 +46,14 @@ class Boards(Controller):
         board = self.load(int(n))
         made = Messages(self.record, actor=self.actor, session=self.session, agent=self.agent).create(
             titled(text), brief=text.strip(), about=board.ref, new_work=True, idempotency=idempotency)
+        self.update(board.n, expected=0)
         self.record.emit("message", made.n, REQUESTED, self.actor)
         return made
+
+    def expect(self, n: int, count: str):
+        if not str(count).isdigit():
+            raise Refused(f"the count is how many tickets you will draft, a whole number like 3; not {count!r}")
+        return self.update(int(n), expected=int(count))
 
     def meaning(self, n: int, stage: str, meaning: str = ""):
         board = self.load(int(n))

@@ -63,7 +63,9 @@ WORKING_A_BOARD_CARD = {
                           "they might have, in a few words, and Start over as the last: journal board ask <board n> \"Which "
                           "one?\" --set options='[...]'. The input closes while the options show, so they pick one; draft "
                           "from their pick; the question is your whole turn, with no reply beside it. Start over clears the panel: give the run up with journal sequence abandon."),
-        ("Draft the tickets", "Draft each ticket on the same board: journal ticket create \"<the work>\" --abstract \"<one "
+        ("Draft the tickets", "First say how many tickets you will write, an educated guess on the low side: journal board "
+                              "expect <board n> <count>. The panel shows that many placeholders; more fade in if you write "
+                              "more, and none is ever taken away. Then draft each ticket on the same board: journal ticket create \"<the work>\" --abstract \"<one "
                               "line>\" --brief \"<the deeper explanation>\" --set board=<n> --set draft=true. A title is a few "
                               "words, the abstract one line of at most 140 characters shown on the card, and the brief a few "
                               "plain sentences shown under More info. Name what waits on what with journal ticket depend, and "

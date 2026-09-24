@@ -19,6 +19,9 @@ class BoardsDetails(FeatureDetails):
         journal board request <n> "<what is wanted>" asks for tickets on the board, as the New work panel does: it files the words
         as a message and starts the sequence Working a card from the board, whose steps say how to answer it.
 
+        journal board expect <n> <count> says how many tickets you are about to draft, so the New work panel shows that many
+        placeholders; guess low, since more fade in and none is taken away.
+
         journal board ask <n> "<question>" --set options='[...]' asks the user a question about the board: the New work
         panel shows it, and it stays out of the board itself, the chat, the Questions page and your nudges. The answer comes back as an event.
     """
