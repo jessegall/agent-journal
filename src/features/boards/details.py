@@ -17,7 +17,10 @@ class BoardsDetails(FeatureDetails):
         its board: journal ticket move <n> "<stage>".
 
         journal board request <n> "<what is wanted>" asks for tickets on the board, as the New work panel does: it files the words
-        as a message and starts the sequence Working a card from the board, whose steps say how to answer it.
+        as a message and starts the sequence Exploring a request. journal board score <n> <1-5> rates how well
+        you understand the request after each answer and hands you the step for that score; at 4 you may settle the scope
+        with one more question, at 5 the sequence Drafting the board's cards starts, and after five ratings below 4 the panel
+        says you do not know what they want and offers to start over.
 
         journal board revise <n> "<the change>" is what the panel sends once drafts show: it files the words as a message and
         starts the sequence Revising the board's drafts, which changes only the cards they named.

@@ -1,14 +1,8 @@
-from controllers.types import Environments, Features
-from engine.record import Record
 from engine.seats import terminal_of
 from engine.sessions import Sessions
 from engine.stop import ask_session
-from features.organization.files import AGENT, Domain, Role
-from features.permission_prompts.feature import prompted
-from resources.base import SYSTEM
-
-QUIET_FOR_ROLES = ("dev_faults",)
-PROVIDER = "claude"
+from features.organization.files import AGENT, Role
+from features.tickets.launch import start_agent_in
 
 
 def role_environment(env: str, role: Role, n: int) -> str:
@@ -22,21 +16,10 @@ def kickoff(env: str, role: Role, n: int, brief: str) -> str:
 
 
 def start_role_agent(record, role: Role, n: int, brief: str) -> str:
-    from engine.terminal import detached
-    from providers import DRIVERS
     if role.runs != AGENT:
         return ""
-    name = role_environment(record.env, role, n)
-    environments = Environments(record, actor=SYSTEM)
-    if not environments._titled(name):
-        environments.create(name, abstract=f"Where {role.title or role.name} works on to-do {n} of {record.env}", owner=f"todo:{n}")
-    place = Record(record.root, name)
-    prompted(place)
-    for feature in QUIET_FOR_ROLES:
-        Features(place, actor=SYSTEM).switch(feature, False)
-    driver = DRIVERS[PROVIDER]
-    detached(record.root, record.root.parent, name, PROVIDER, driver.prompted(driver.within([*driver.AUTO_ARGS], record.env), kickoff(record.env, role, n, brief)))
-    return name
+    return start_agent_in(record, role_environment(record.env, role, n), record.env, f"Where {role.title or role.name} works on to-do {n} of {record.env}",
+                          f"todo:{n}", kickoff(record.env, role, n, brief))
 
 
 def stop_role_agent(record, name: str) -> None:

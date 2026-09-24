@@ -1,9 +1,9 @@
 from resources.base import AGENT, Refused
 from features.parts import ActionInterceptor, Context
 from features.sequences.controller import Sequences
-from features.sequences.shipped import BUILDING_A_BOARD, DRAFTING_FROM_A_DOCUMENT, REVISING_THE_DRAFTS, WORKING_A_BOARD_CARD
+from features.sequences.shipped import BUILDING_A_BOARD, DRAFTING, DRAFTING_FROM_A_DOCUMENT, EXPLORATION, REVISING_THE_DRAFTS
 
-BOARD_SEQUENCES = {shipped["title"] for shipped in (WORKING_A_BOARD_CARD, REVISING_THE_DRAFTS, DRAFTING_FROM_A_DOCUMENT, BUILDING_A_BOARD)}
+BOARD_SEQUENCES = {shipped["title"] for shipped in (EXPLORATION, DRAFTING, REVISING_THE_DRAFTS, DRAFTING_FROM_A_DOCUMENT, BUILDING_A_BOARD)}
 HELD = ("plan", "question")
 
 

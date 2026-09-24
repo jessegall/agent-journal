@@ -29,7 +29,10 @@ const phases = computed(() =>
     props.resource.data.phases.map((p, i) => ({
         ...p,
         i: i + 1,
-        rows: p.todos.map((n) => rows("todo").find((t) => t.n === n)).filter(Boolean),
+        rows: [
+            ...p.todos.map((n) => rows("todo").find((t) => t.n === n)),
+            ...(p.tickets || []).map((n) => rows("ticket").find((t) => t.n === n)),
+        ].filter(Boolean),
     }))
 );
 watchEffect(() => {
@@ -142,15 +145,20 @@ async function run(action, body = {}) {
                     <template v-if="p.when">
                         <div class="when">complete when {{ p.when }}</div>
                     </template>
-                    <template v-for="t in p.rows" :key="t.n">
+                    <template v-for="t in p.rows" :key="`${t.type}-${t.n}`">
                         <div class="line">
-                            <button type="button" :class="['row', {completed: t.completed}]" @click="peek('todo', t.n)">
-                                <Dot :kind="state(t)" />
+                            <button type="button" :class="['row', {completed: t.completed}]" @click="peek(t.type, t.n)">
+                                <template v-if="t.type === 'ticket'">
+                                    <Icon class="ticket-mark" name="ticket" :size="12" />
+                                </template>
+                                <template v-else>
+                                    <Dot :kind="state(t)" />
+                                </template>
                                 <span class="rn">#{{ t.n }}</span>
                                 <span class="rt">{{ t.title }}</span>
                             </button>
                             <template v-if="talk">
-                                <button type="button" class="say" title="Comment on this to-do" @click="talk.say(`#${t.n} ${t.title}`)">
+                                <button type="button" class="say" title="Comment on this row" @click="talk.say(`#${t.n} ${t.title}`)">
                                     <Icon name="bubble" :size="12" />
                                 </button>
                             </template>

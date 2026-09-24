@@ -4,13 +4,13 @@ from typing import ClassVar
 from engine.events import AgentReported, AnyEvent, ResourceEvent
 from features.plans.controller import ACTIVE, APPROVED, BUILDING, DEPTHS, DRAFT, PARKED, PHASES, READY, WAITING
 from features.plans.progress import catch_up
-from features.plans.resource import PHASE
+from features.plans.resource import PHASE, rows_of
 from features.work_tracking.auto import automatic
 from features.parts import AgentContext, Context, Handler
 from resources.base import AGENT, USER
 
 WRITTEN = ("created", "updated", "linked")
-ADVANCES = {("todo", "completed"), ("plan", "updated"), ("agent", "reported")}
+ADVANCES = {("todo", "completed"), ("ticket", "completed"), ("plan", "updated"), ("agent", "reported")}
 
 
 @dataclass(frozen=True)
@@ -58,7 +58,7 @@ class GuideBuilding(Handler):
         if plan.status != BUILDING or not agent:
             return
         stage = plan.stage or PHASES
-        filled = bool(plan.phases) and all(p[PHASE.todos] for p in plan.phases)
+        filled = bool(plan.phases) and all(rows_of(p) for p in plan.phases)
         line = "ready" if stage != PHASES and filled else stage
         speaking = context.speaking_to(agent)
         if speaking.once("planned", f"{plan.n}:{line}"):

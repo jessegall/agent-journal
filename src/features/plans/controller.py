@@ -6,7 +6,7 @@ import controllers.types as types_module
 import resources.types as resources_module
 from controllers.base import Controller
 from controllers.types import Docs
-from features.plans.resource import PHASE, Plan
+from features.plans.resource import PHASE, Plan, rows_of
 from resources.base import AGENT, SECTION, Refused, check_title
 
 LOGGED = re.compile(r"\d{4}-\d{2}-\d{2} \d{2}:\d{2}")
@@ -91,22 +91,30 @@ class Plans(Controller):
         return self.save(r, "updated", phase=int(p))
 
     def place(self, n: int, p: int, todos: list, move: bool = False, off: bool = False):
+        return self._placed(n, p, PHASE.todos, "todo", todos, move, off)
+
+    def tickets(self, n: int, p: int, tickets: list, move: bool = False, off: bool = False):
+        return self._placed(n, p, PHASE.tickets, "ticket", tickets, move, off)
+
+    def _placed(self, n: int, p: int, key: str, kind: str, numbers: list, move: bool, off: bool):
         r = self.load(n)
         phase = self._phase(r, p)
-        for t in (int(x) for x in todos):
-            elsewhere = next((i + 1 for i, ph in enumerate(r.phases) if t in ph[PHASE.todos]), 0)
+        for ph in r.phases:
+            ph.setdefault(key, [])
+        for t in (int(x) for x in numbers):
+            elsewhere = next((i + 1 for i, ph in enumerate(r.phases) if t in ph[key]), 0)
             if off:
-                phase[PHASE.todos] = [x for x in phase[PHASE.todos] if x != t]
+                phase[key] = [x for x in phase[key] if x != t]
                 continue
             if elsewhere and elsewhere != int(p) and not move:
-                self._refuse(f"todo {t} already sits in phase {elsewhere} of plan {n}; --move takes it out of there")
+                self._refuse(f"{kind} {t} already sits in phase {elsewhere} of plan {n}; --move takes it out of there")
             for ph in r.phases:
-                ph[PHASE.todos] = [x for x in ph[PHASE.todos] if x != t]
-            phase[PHASE.todos].append(t)
-        for t in todos:
-            ref = f"todo:{int(t)}"
+                ph[key] = [x for x in ph[key] if x != t]
+            phase[key].append(t)
+        for t in numbers:
+            ref = f"{kind}:{int(t)}"
             r.refs = [x for x in r.refs if x != ref] if off else r.refs + [ref] * (ref not in r.refs)
-        return self.save(r, "linked", phase=int(p), todos=[int(t) for t in todos], off=off)
+        return self.save(r, "linked", phase=int(p), **{key: [int(t) for t in numbers]}, off=off)
 
     def build(self, n: int):
         return self._status(self.load(n), BUILDING, READY, DRAFT)
@@ -114,8 +122,8 @@ class Plans(Controller):
     def ready(self, n: int):
         r = self.load(n)
         for i, ph in enumerate(r.phases, 1):
-            if not ph[PHASE.todos]:
-                self._refuse(f"plan {n} cannot be ready: phase {i} has no to-dos")
+            if not rows_of(ph):
+                self._refuse(f"plan {n} cannot be ready: phase {i} has no to-dos or tickets")
         return self._status(r, READY, BUILDING, DRAFT)
 
     def approve(self, n: int):
@@ -127,10 +135,16 @@ class Plans(Controller):
         if r.status in (DRAFT, READY):
             self._refuse(f"plan {n} waits for the user to approve it")
         self._allowed(r, ACTIVE, APPROVED, PARKED)
+        first_start = r.status == APPROVED
         for other in self._every():
             if other.n != r.n and other.status in RUNNING:
                 self._status(other, PARKED, *RUNNING, parked_for=r.n)
-        return self._status(r, ACTIVE, APPROVED, PARKED)
+        started = self._status(r, ACTIVE, APPROVED, PARKED)
+        from features.plans.worker import start_phase_tickets, start_worker
+        if first_start:
+            start_worker(self.record, started)
+        start_phase_tickets(self.record, started)
+        return started
 
     def dismiss(self, n: int):
         return self.update(int(n), dismissed=True)

@@ -34,8 +34,8 @@ def test_a_request_opens_a_session_that_cancel_closes():
     drafting = boards.load(board.n).drafting
     assert (made.refs, drafting["idempotency"], drafting["since"]) == ([board.ref], "panel-1", made.created), \
         "the request is a message about the board, and the board remembers the session so the panel can resume it"
-    assert any(n.startswith("sequence ") and "Understand the request" in n for n in nudges(record)), \
-        "the request starts the board card sequence at its first step"
+    assert any(n.startswith("sequence ") and "Read the request" in n for n in nudges(record)), \
+        "the request starts the exploring sequence at its first step"
     more = boards.follow_up(board.n, "Also by mail")
     assert boards.load(board.n).drafting["asked"] == [made.ref, more.ref], "a follow-up joins the request, so a cancel covers it too"
     drafter = Tickets(record, actor=AGENT)
@@ -152,3 +152,33 @@ def test_added_cards_make_the_agent_offer_to_place_them():
     board = Boards(record, actor=USER).create("Refactor To Go")
     Boards(record, actor=USER).added(board.n, "3, 4")
     assert any(n.startswith("the user added 2 cards to board") for n in nudges(record)), "the agent is told to offer placing the added cards"
+
+
+def test_the_agent_scores_its_understanding_and_drafting_starts_at_four():
+    features.load()
+    record = fresh()
+    ship(record)
+    report(record, "working", "PreToolUse")
+    boards, agent = Boards(record, actor=USER), Boards(record, actor=AGENT)
+    board = boards.create("Shared Journal")
+    boards.request(board.n, "I want to share")
+    assert "1 to 5" in refused(lambda: agent.score(board.n, "7")), "a score is 1 to 5"
+    agent.score(board.n, "2")
+    drafting = boards.load(board.n).drafting
+    assert (drafting["phase"], drafting["score"], drafting["turns"]) == ("exploring", 2, 1), "the score and the turn are kept on the board"
+    assert any("Pin it down (score 2)" in n for n in nudges(record)), "the score hands the step for it"
+    agent.score(board.n, "4")
+    assert boards.load(board.n).drafting["phase"] == "exploring" and any("Settle the scope (score 4)" in n for n in nudges(record)), \
+        "at four it may settle the scope first"
+    agent.score(board.n, "5")
+    assert boards.load(board.n).drafting["phase"] == "drafting", "at five it moves on"
+    assert any("Guess the count" in n for n in nudges(record)), "and the drafting sequence starts"
+    assert "past exploring" in refused(lambda: agent.score(board.n, "3")), "no more scores once drafting"
+    agent.expect(board.n, "2")
+    Tickets(record, actor=AGENT).create("Share a link", abstract="Share a link", board=board.n, draft=True)
+    assert "draft the rest" in refused(lambda: agent.say(board.n, "Done.")), "it cannot finish with fewer cards than it guessed"
+    boards.request(board.n, "Something vague")
+    for _ in range(5):
+        agent.score(board.n, "1")
+    drafting = boards.load(board.n).drafting
+    assert (drafting["phase"], drafting["score"], drafting["turns"]) == ("lost", 0, 5), "five turns below four: it gives up and the score resets"

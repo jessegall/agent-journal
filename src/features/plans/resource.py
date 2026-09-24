@@ -3,7 +3,11 @@ from typing import ClassVar
 from resources.base import DOCUMENT, SIDEBAR, Resource, ResourceDetails
 from resources.shapes import FLAG, Field, Shape, names
 
-PHASE = names("title", "when", "checkpoint", "brief", "todos")
+PHASE = names("title", "when", "checkpoint", "brief", "todos", "tickets")
+
+
+def rows_of(phase: dict) -> list:
+    return [*phase[PHASE.todos], *phase.get(PHASE.tickets, [])]
 
 
 class Plan(Shape, Resource):

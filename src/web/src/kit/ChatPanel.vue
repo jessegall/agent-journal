@@ -97,7 +97,7 @@ const focusEntered = (el) => el === input.value && focusInput();
                 <slot name="attached" />
             </div>
         </template>
-        <div class="compose-slot">
+        <div :class="['compose-slot', {waiting}]">
             <Transition name="input-step" @after-enter="() => typing() && focusInput()">
                 <template v-if="!withoutInput">
                     <form :class="['compose', {locked, waiting}]" @submit.prevent="send">
@@ -327,6 +327,28 @@ const focusEntered = (el) => el === input.value && focusInput();
     display: grid;
     flex: none;
     min-height: 60px;
+    max-height: 240px;
+    transition:
+        min-height 0.6s var(--ease),
+        max-height 0.6s var(--ease),
+        opacity 0.4s ease,
+        transform 0.6s var(--ease),
+        filter 0.6s ease;
+}
+
+.compose-slot.waiting {
+    min-height: 0;
+    max-height: 0;
+    opacity: 0;
+    transform: translateY(10px) scale(0.98);
+    filter: blur(2px);
+    pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .compose-slot {
+        transition: opacity 0.2s ease;
+    }
 }
 
 .compose-slot > .compose {

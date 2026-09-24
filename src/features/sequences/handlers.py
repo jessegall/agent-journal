@@ -103,7 +103,7 @@ class HandStepToAgent(Handler):
             return
         sequence, key, run = found
         speaking = context.speaking_to(agent)
-        if speaking.once(STEP, f"{sequence.n}|{key}|{run['step']}|{run['at']}"):
+        if speaking.once(STEP, f"{sequence.n}|{key}|{run['step']}|{run.get('stepped', run['at'])}"):
             steps = context.journal.sequences._steps(sequence)
             part = steps[run["step"] - 1]
             speaking.agent.say(STEP, n=sequence.n, title=sequence.title, step=run["step"], count=len(steps),

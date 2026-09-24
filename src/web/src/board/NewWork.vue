@@ -54,60 +54,117 @@ const EXAMPLES = [
 const EXAMPLE_MS = 6000;
 const example = ref(0);
 let exampleTimer = 0;
-const UNDERSTANDING = [
+const UNSURE = [
     "Reading what you wrote",
-    "Working out what you mean",
-    "Looking at the board's name",
-    "Reading the board's brief",
-    "Going through the cards already here",
-    "Looking for a card that covers this",
-    "Thinking about who would use it",
-    "Picturing what you would see",
-    "Finding the words that matter",
-    "Checking what the project already does",
-    "Looking at what was built lately",
-    "Thinking about what it is for",
-    "Sorting out what is new and what is not",
-    "Finding the three likeliest readings",
-    "Making each reading different",
-    "Keeping the most likely one first",
-    "Weighing a smaller version",
-    "Weighing a larger version",
-    "Putting each one in plain words",
-    "Writing a line under each",
-    "Checking nothing is left out",
-    "Leaving out what you did not ask for",
-    "Making a guess",
-    "Checking the guess against the board",
-    "Getting the choices ready",
+    "Taking in your words",
+    "Looking for the heart of it",
+    "Reading it once more, slowly",
+    "Finding where to begin",
+    "Listening for what you need",
+    "Getting a first sense of it",
+    "Noting the words that matter",
+    "Looking at the board for context",
+    "Seeing who this is for",
+    "Sorting the ask from the detail",
+    "Working out the kind of work",
+    "Checking what the board already has",
+    "Looking for the problem behind it",
+    "Picturing what you have in mind",
+    "Starting from your own words",
+    "Gathering the first clues",
+    "Holding off on guesses",
+    "Finding the question to ask",
+    "Getting my bearings",
 ];
-const NARROWING = [
-    "Taking in your pick",
-    "Settling what you chose",
-    "Finding what decides the tickets most",
-    "Thinking about what you would see first",
-    "Picturing how you would use it",
-    "Looking for the hard part",
-    "Finding where it could go two ways",
-    "Thinking about who does what",
-    "Looking at what it touches",
-    "Thinking about what it needs first",
-    "Checking the cards already on the board",
-    "Looking for what is already built",
-    "Weighing a simple version",
-    "Weighing a fuller version",
-    "Thinking of an example for each",
-    "Keeping it about what you see",
-    "Leaving out how it is built",
-    "Making the options differ",
-    "Writing a line under each",
-    "Checking each example is real",
-    "Putting the question in plain words",
-    "Keeping the question short",
-    "Checking it against your first pick",
-    "Making sure one question is enough",
-    "Getting the next question ready",
+const UNDERSTANDING = [
+    "Still working out what you mean",
+    "Trying another reading",
+    "Looking for what I missed",
+    "Weighing two ways to read it",
+    "Asking myself what you'd expect",
+    "Checking my guess against your words",
+    "Finding the part I'm unsure of",
+    "Looking for a clearer angle",
+    "Working out what done looks like",
+    "Thinking about who uses it",
+    "Trying to see it your way",
+    "Figuring out the scope",
+    "Separating the wish from the must",
+    "Looking for an example to hold on to",
+    "Reading between the lines",
+    "Tracing it back to the problem",
+    "Finding the one question that helps",
+    "Setting my first guess aside",
+    "Seeing what's still open",
+    "Getting closer",
 ];
+const PINNING = [
+    "Pinning it down",
+    "Narrowing it to what matters",
+    "Drawing the edges",
+    "Deciding what's in and what's out",
+    "Checking the parts fit together",
+    "Naming the pieces",
+    "Settling the open questions",
+    "Finding the smallest useful version",
+    "Lining up the details",
+    "Checking it against the board",
+    "Ruling out what it isn't",
+    "Firming up the scope",
+    "Choosing between two readings",
+    "Tightening the wording",
+    "Checking what depends on what",
+    "Spotting what's still vague",
+    "Matching it to what exists",
+    "Holding the shape steady",
+    "Closing the last gaps",
+    "Almost there",
+];
+const CONCRETE = [
+    "Making it concrete",
+    "Turning it into steps",
+    "Picturing the finished thing",
+    "Working out the first piece",
+    "Sketching how it splits",
+    "Checking each piece stands alone",
+    "Giving each part a name",
+    "Deciding the order",
+    "Thinking about how you'd check it",
+    "Writing down what done means",
+    "Putting numbers on it",
+    "Finding where it touches the code",
+    "Weighing the size of each part",
+    "Checking nothing is missing",
+    "Keeping the steps small",
+    "Looking for the risky bit",
+    "Getting the shape right",
+    "Checking it reads plainly",
+    "Getting the first draft ready",
+    "Nearly ready to draft",
+];
+const SCOPING = [
+    "Settling the scope",
+    "Nearly there",
+    "Weighing how big the first version is",
+    "Deciding what can wait",
+    "Finding the first useful slice",
+    "Checking it isn't too broad",
+    "Drawing the line for version one",
+    "Sorting now from later",
+    "Keeping the first step small",
+    "Checking the scope with you in mind",
+    "Deciding where it stops",
+    "Trimming what isn't needed yet",
+    "Picking what matters most",
+    "Checking one question is worth asking",
+    "Choosing between broad and narrow",
+    "Keeping it to what you asked",
+    "Looking at the size of it",
+    "Marking what comes after",
+    "Getting ready to draft",
+    "One last check before drafting",
+];
+const EXPLORING = [UNSURE, UNDERSTANDING, PINNING, CONCRETE, SCOPING];
 const DRAFTING = [
     "Looking at what is already there",
     "Deciding what can ship on its own",
@@ -176,8 +233,16 @@ const answeredQuestions = computed(() => boardQuestions.value.filter((q) => q.co
 const TYPING_FASTEST = 4;
 const typingSpeed = computed(() => Math.min(TYPING_FASTEST, 1 + Math.max(0, drafts.value.length - 1) * 0.3));
 const allDrafted = computed(() => drafts.value.length > 0 && drafts.value.length >= store.board.expected);
+const drafting = computed(() => (since.value && store.board.drafting) || {});
+const phase = computed(() => drafting.value.phase || "");
+const lost = computed(() => phase.value === "lost");
+const scored = computed(() => (phase.value === "exploring" ? drafting.value.score || 0 : answeredQuestions.value ? 2 : 0));
 const thinking = computed(() =>
-    allDrafted.value ? REVISING : confirmed.value ? DRAFTING : answeredQuestions.value ? NARROWING : UNDERSTANDING
+    allDrafted.value
+        ? REVISING
+        : confirmed.value || phase.value === "drafting"
+          ? DRAFTING
+          : EXPLORING[Math.min(scored.value, EXPLORING.length - 1)]
 );
 const startedOver = computed(() => boardQuestions.value.find((q) => q.completed && q.outcome === START_OVER));
 const conversation = computed(() =>
@@ -216,6 +281,7 @@ const views = computed(() => [
 ]);
 const answered = (at) => replies.value.some((c) => c.created >= at) || boardQuestions.value.some((q) => q.created >= at);
 const writing = computed(() => Boolean(lastSent.value) && !answered(lastSent.value));
+const agentsTurn = computed(() => writing.value && !asking.value && !lost.value);
 const spoken = computed(() => conversation.value.filter((line) => line.text));
 const lastMine = computed(() => conversation.value.findLastIndex((line) => line.mine));
 const agentLine = computed(() => conversation.value.findLast((line) => !line.mine && !line.record && line.text));
@@ -301,7 +367,7 @@ watch([() => store.board.drafting.picks?.at || 0, since], ([at]) => {
 });
 
 watch(
-    () => drafts.value.length >= 1 || replies.value.length >= OPEN_TURNS || reading.value,
+    () => drafts.value.length >= 1 || replies.value.length >= OPEN_TURNS || reading.value || phase.value === "drafting",
     (dock) => dock && ((dockedAt.value = conversation.value.at(-1)?.at || 0), (docked.value = true)),
     {immediate: true}
 );
@@ -449,6 +515,14 @@ async function add() {
     finish();
 }
 
+function startOver() {
+    Promise.resolve(inFlight).finally(() => api.cancelWork(props.board.n));
+    startAnew();
+    greet();
+    showExamples();
+    nextTick(() => panel.value.focus());
+}
+
 function finish() {
     emit("close");
     Promise.resolve(inFlight).finally(() => api.cancelWork(props.board.n));
@@ -555,7 +629,7 @@ function startAnew() {
                 </template>
             </TransitionGroup>
         </div>
-        <div :class="['dock', {docked, short: !tall, reading}]">
+        <div :class="['dock', {docked, short: !tall && !lost, reading, thinking: agentsTurn}]">
             <ChatPanel
                 ref="panel"
                 v-model="words"
@@ -564,8 +638,8 @@ function startAnew() {
                 @close="finish"
                 :locked="adding"
                 :limit="docked ? 0 : INPUT_LIMIT"
-                :without-input="choosing"
-                :waiting="writing"
+                :without-input="choosing || lost"
+                :waiting="agentsTurn"
                 :echo="echo"
                 :hint="since ? '' : `“${EXAMPLES[example]}”`"
                 :placeholder="
@@ -634,6 +708,17 @@ function startAnew() {
                     <template v-if="asking && (grown || docked)">
                         <AskedQuestion :key="`question-${asking.n}`" :question="asking" :chat="docked" />
                     </template>
+                    <template v-else-if="lost">
+                        <div key="lost" class="lost">
+                            <ChatLine
+                                text="I still don't know what you want. Let's start over: say it again in other words, or give me an example."
+                            />
+                            <Btn kind="primary" small @click="startOver">
+                                <Icon name="restore" :size="12" />
+                                Start over
+                            </Btn>
+                        </div>
+                    </template>
                     <template v-else-if="writing || asking">
                         <ChatLine key="thinking" thinking shuffled :notes="thinking" />
                     </template>
@@ -691,6 +776,22 @@ function startAnew() {
 
 .dock.short:not(.docked) {
     height: min(260px, 40vh);
+}
+
+.dock:not(.docked) {
+    transition-duration: 0.7s;
+}
+
+.dock.thinking:not(.docked) {
+    left: calc(50% - min(300px, 50% - 28px));
+    width: min(600px, calc(100% - 56px));
+}
+
+.lost {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
 }
 
 .dock.docked {

@@ -4,6 +4,7 @@ from features.work_tracking.auto import automatic
 from resources.base import SYSTEM
 from resources.shapes import LEVELS
 from features.plans.resource import PHASE
+from features.plans.worker import start_phase_tickets
 
 
 def running(record) -> list:
@@ -35,8 +36,9 @@ def status_after(last: bool, waits: bool) -> str:
 
 
 def phase_complete(record, phase: dict) -> bool:
-    todos = Todos(record, actor=SYSTEM)
-    return all(todos.load(n).completed for n in phase[PHASE.todos])
+    from features.tickets.controller import Tickets
+    todos, tickets = Todos(record, actor=SYSTEM), Tickets(record, actor=SYSTEM)
+    return all(todos.load(n).completed for n in phase[PHASE.todos]) and all(tickets.load(n).completed for n in phase.get(PHASE.tickets, []))
 
 
 def step(record, plan) -> bool:
@@ -52,6 +54,8 @@ def step(record, plan) -> bool:
     plans.save(plan, "updated", phase=i, complete=True, status=plan.status, passed=bool(phase[PHASE.checkpoint]) and not waits)
     if last:
         plans.complete(plan.n, how="every row in every phase is done")
+    elif not waits:
+        start_phase_tickets(record, plan)
     return not (last or waits)
 
 

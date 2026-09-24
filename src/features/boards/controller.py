@@ -5,7 +5,7 @@ import resources.types as resources_module
 from controllers.base import Controller, internal
 from controllers.types import Messages, Questions
 from features.boards.resource import DONE, MEANINGS, Board
-from resources.base import COMMISSIONED, REQUESTED, REVISED, Refused, Resource, titled
+from resources.base import COMMISSIONED, REQUESTED, REVISED, SYSTEM, Refused, Resource, titled
 
 
 STAGES = ("To do", "Doing", "Review", "Done")
@@ -13,6 +13,8 @@ START_OVER = "Start over"
 CANCEL_HOLDS = 600
 BUILD_LOG = 40
 SECTION_STATES = ("now", "read", "out", "asked")
+EXPLORING, DRAFTING_PHASE, LOST = "exploring", "drafting", "lost"
+KNOWS_AT, READY_AT, MOST_TURNS = 4, 5, 5
 
 
 
@@ -68,8 +70,7 @@ class Boards(Controller):
         for about in board.drafting.get("asked") or []:
             sequences.give_up(about, why="The request on the board was cancelled")
         tickets = Tickets(self.record, actor=self.actor, session=self.session, agent=self.agent)
-        since = board.drafting.get("since")
-        for left in [t for t in tickets._standing() if since and t.draft and int(t.board) == board.n and t.created >= since]:
+        for left in self._drafts(board) if board.drafting.get("since") else []:
             tickets.delete(left.n, why="The request on the board was cancelled")
 
     def request(self, n: int, text: str, idempotency: str = ""):
@@ -121,6 +122,9 @@ class Boards(Controller):
         asked = board.drafting.get("asked") or []
         if not asked:
             raise Refused(f"nothing was asked on board {board.n} to answer")
+        drafted = len(self._drafts(board))
+        if board.drafting.get("phase") == DRAFTING_PHASE and drafted < board.expected:
+            raise Refused(f"you guessed {board.expected} cards and drafted {drafted}: draft the rest before you say you are done")
         return Messages(self.record, actor=self.actor, session=self.session, agent=self.agent).comment(int(asked[-1].split(":")[1]), line.strip())
 
     def added(self, n: int, tickets: str):
@@ -129,6 +133,11 @@ class Boards(Controller):
         if not numbers:
             raise Refused("name the tickets that were added, like \"12, 13\"")
         return self.update(board.n, added={"tickets": numbers, "at": time.time()})
+
+    def _drafts(self, board) -> list:
+        from features.tickets.controller import Tickets
+        since = board.drafting.get("since", 0)
+        return [t for t in Tickets(self.record, actor=SYSTEM)._standing() if t.draft and int(t.board) == board.n and t.created >= since]
 
     def _drafting(self, n: int):
         board = self.load(int(n))
@@ -139,9 +148,34 @@ class Boards(Controller):
     def _opened(self, board, moment: str, text: str, idempotency: str, **data):
         self.cancel(board.n)
         made = self._filed(board, text, idempotency, **data)
-        self.update(board.n, expected=0, drafting={"since": made.created, "idempotency": made.idempotency, "asked": [made.ref]})
+        self.update(board.n, expected=0, drafting={"since": made.created, "idempotency": made.idempotency, "asked": [made.ref],
+                                                  "phase": EXPLORING, "score": 0, "turns": 0})
         self.record.emit("message", made.n, moment, self.actor)
         return made
+
+    def score(self, n: int, score: str):
+        from features.sequences.controller import Sequences
+        from features.sequences.drafting import DRAFTING
+        from features.sequences.exploration import EXPLORATION
+        board = self._drafting(n)
+        if not str(score).isdigit() or not 1 <= int(score) <= 5:
+            raise Refused(f"the score is how well you understand what they want, a whole number from 1 to 5; not {score!r}")
+        if board.drafting.get("phase", EXPLORING) != EXPLORING:
+            raise Refused(f"board {board.n} is past exploring: the request is {board.drafting.get('phase')}")
+        about, turns, rated = board.drafting["asked"][0], int(board.drafting.get("turns", 0)) + 1, int(score)
+        sequences = Sequences(self.record, actor=self.actor, session=self.session, agent=self.agent)
+        exploring = sequences._titled(EXPLORATION["title"])
+        if rated >= READY_AT or (rated >= KNOWS_AT and turns >= MOST_TURNS):
+            sequences._finish(exploring.n, about)
+            sequences.run(sequences._titled(DRAFTING["title"]).n, about=about)
+            phase = DRAFTING_PHASE
+        elif turns >= MOST_TURNS:
+            sequences._finish(exploring.n, about)
+            phase, rated = LOST, 0
+        else:
+            sequences._jump(exploring.n, about, rated + 1)
+            phase = EXPLORING
+        return self.update(board.n, drafting={**board.drafting, "phase": phase, "score": rated, "turns": turns})
 
     def expect(self, n: int, count: str):
         if not str(count).isdigit():
