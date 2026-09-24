@@ -1,5 +1,6 @@
 <script setup>
 import {computed, onMounted, onUnmounted, ref} from "vue";
+import {useOutside} from "../composables/outside.js";
 
 defineOptions({inheritAttrs: false});
 const props = defineProps({
@@ -65,6 +66,7 @@ const KEYS = {ArrowDown: () => step(1), ArrowUp: () => step(-1), Escape: () => e
 const onKey = (e) => KEYS[e.key] && (e.preventDefault(), KEYS[e.key]());
 const measure = () => panel.value && (drawn.value = {w: panel.value.offsetWidth, h: panel.value.scrollHeight});
 const watcher = new ResizeObserver(measure);
+useOutside(panel, (e) => props.anchor && !props.anchor.contains(e.target) && emit("close"));
 const moved = (a, b) => Math.abs(a.left - b.left) > 1 || Math.abs(a.top - b.top) > 1;
 let frame = 0;
 let opened = null;

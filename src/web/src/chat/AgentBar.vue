@@ -19,7 +19,6 @@ import {span} from "../format/time.js";
 import {agent, feedOn, store} from "../state/store.js";
 import {polled} from "../sync/polled.js";
 import {usePoll} from "../poll.js";
-import {useOutside} from "../composables/outside.js";
 
 usePoll(...polled.agents);
 
@@ -91,7 +90,6 @@ function openSession(row) {
     peek("agent", agent.value.n, 0, row.session);
 }
 const anchor = ref(null);
-const drop = ref(null);
 const dropHeight = Math.round(window.innerHeight * 0.6);
 function toggle(key, e) {
     e.stopPropagation();
@@ -116,7 +114,6 @@ function openSkills() {
     open.value = "";
     go(route.value.env, "skills");
 }
-useOutside(drop, () => (open.value = ""));
 </script>
 
 <template>
@@ -312,7 +309,6 @@ useOutside(drop, () => (open.value = ""));
         </template>
         <template v-if="open && anchor && (data || open === 'appoint')">
             <MenuPanel
-                ref="drop"
                 :anchor="anchor"
                 :min-width="open === 'presets' ? 360 : 320"
                 :max-width="open === 'presets' ? 360 : 380"

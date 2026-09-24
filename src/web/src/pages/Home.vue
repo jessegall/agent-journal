@@ -333,8 +333,12 @@ const moveTab = (from, to) => {
 };
 const shutPane = (id) => layout.value.panes[id] && apply(paneClosed(layout.value, id));
 
+const pageOpened = Date.now() / 1000;
 watch(
-    () => open("question").map((q) => q.n),
+    () =>
+        open("question")
+            .filter((q) => q.created > pageOpened)
+            .map((q) => q.n),
     (now, before) => {
         if (!now.some((n) => !(before || []).includes(n))) return;
         const at = holding(layout.value, "question");

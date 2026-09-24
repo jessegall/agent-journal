@@ -32,9 +32,8 @@ watch(talking, (on) => {
     else shifted.value = false;
 });
 
-function shiftedDone(event) {
-    if (event.propertyName === "transform" && talking.value) panel.value = true;
-}
+const SHIFT_MS = 280;
+watch(shifted, (on) => on && setTimeout(() => talking.value && (panel.value = true), SHIFT_MS));
 
 function panelLeft() {
     if (talking.value) panel.value = true;
@@ -74,7 +73,7 @@ watch(
 
 <template>
     <div :class="['document', {shifted}]">
-        <div ref="body" class="document-body" @transitionend.self="shiftedDone">
+        <div ref="body" class="document-body">
             <Highlight :off="!!resource.data?.system" @quote="quote = $event">
                 <slot>
                     <ResourceBody :resource="resource" :comments="false" :links="false" @close="emit('close')" />
@@ -95,6 +94,7 @@ watch(
 <style scoped>
 .document {
     --comments-width: clamp(280px, 34%, 400px);
+    container-type: inline-size;
     position: relative;
     height: 100%;
     overflow: hidden;
@@ -108,11 +108,11 @@ watch(
     overflow-y: auto;
     overscroll-behavior: contain;
     animation: curtain-left 0.32s cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
-    transition: transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
+    transition: padding-right 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 .document.shifted .document-body {
-    transform: translateX(calc(var(--comments-width) / -2));
+    padding-right: var(--comments-width);
 }
 
 @keyframes curtain-left {
@@ -170,6 +170,7 @@ watch(
 
 .document-aside {
     position: absolute;
+    z-index: 3;
     inset: 0 0 0 auto;
     width: var(--comments-width);
     display: flex;
@@ -177,6 +178,17 @@ watch(
     min-height: 0;
     border-left: 1px solid var(--border);
     background: var(--side);
+}
+
+@container (max-width: 720px) {
+    .document.shifted .document-body {
+        padding-right: 0;
+    }
+
+    .document-aside {
+        width: 100%;
+        border-left: 0;
+    }
 }
 
 .document-aside > :deep(.comments) {
