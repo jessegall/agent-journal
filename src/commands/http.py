@@ -26,7 +26,7 @@ from surfaces.control import force as force_session, pause as pause_session, res
 from features.skill_loading.catalogue import SKILL, always, catalogue, set_keywords, skills
 from features.skill_loading.required import load_now
 from engine.files import found_files
-from features.file_feed.feed import edits_since, notes
+from features.file_feed.feed import PAGE, NoSuchEdit, Side, edited_file, edits_before, edits_since, notes
 from features.terminal.log import lines as terminal_lines
 from controllers.base import LAST, networked
 from controllers.types import Agents, CONTROLLERS, Environments, Features, Nudges, Plugins
@@ -191,6 +191,19 @@ class FindQuery(Loaded):
 @dataclass(frozen=True)
 class EditsQuery(Loaded):
     since: float = 0.0
+    last: int = PAGE
+
+
+@dataclass(frozen=True)
+class OlderEditsQuery(Loaded):
+    before: float
+    last: int = PAGE
+
+
+@dataclass(frozen=True)
+class EditedFileQuery(Loaded):
+    id: str
+    side: str = Side.AFTER
 
 
 @dataclass(frozen=True)
@@ -621,7 +634,25 @@ def get_transcript(req: Request) -> Reply:
 
 @route("GET", "/api/{env}/agent/{n}/edits")
 def get_edits(req: Request) -> Reply:
-    return Reply(200, asdict(edits_since(req.record(), int(req.params["n"]), req.query_as(EditsQuery).since)))
+    asked = req.query_as(EditsQuery)
+    return Reply(200, asdict(edits_since(req.record(), int(req.params["n"]), asked.since, asked.last)))
+
+
+@route("GET", "/api/{env}/agent/{n}/edits/older")
+def get_older_edits(req: Request) -> Reply:
+    asked = req.query_as(OlderEditsQuery)
+    return Reply(200, asdict(edits_before(req.record(), int(req.params["n"]), asked.before, asked.last)))
+
+
+@route("GET", "/api/{env}/agent/{n}/edits/file")
+def get_edited_file(req: Request) -> Reply:
+    asked = req.query_as(EditedFileQuery)
+    if asked.side not in Side:
+        raise Refused(f"side is {Side.BEFORE} or {Side.AFTER}")
+    try:
+        return Reply(200, asdict(edited_file(req.record(), int(req.params["n"]), asked.id, Side(asked.side))))
+    except NoSuchEdit as error:
+        raise Missing(str(error)) from error
 
 
 @route("GET", "/api/{env}/agent/{n}/terminal")
