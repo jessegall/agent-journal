@@ -1,3 +1,4 @@
+import time
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -7,6 +8,9 @@ from providers import PROVIDERS
 from engine.fields import Loaded
 
 THINKING = "thinking"
+THOUGHTS = "thoughts"
+KEPT_THOUGHTS = 60
+THOUGHT_CHARS = 1200
 TURN_STARTS = ("UserPromptSubmit", "SessionEnd")
 
 
@@ -33,8 +37,18 @@ class FollowThinking(Handler):
             thought = text if what == THINKING else ""
         if event.hook in TURN_STARTS:
             thought = ""
-        if thought != (row.data.get(THINKING) or ""):
-            context.journal.agents.stamp(row.n, **{THINKING: thought})
+        kept = [text for what, text in found if what == THINKING and text.strip()]
+        changes = {THINKING: thought} if thought != (row.data.get(THINKING) or "") else {}
+        if kept and not quiet(context):
+            now = time.time()
+            changes[THOUGHTS] = [*(row.data.get(THOUGHTS) or []), *({"at": now, "text": text[:THOUGHT_CHARS]} for text in kept)][-KEPT_THOUGHTS:]
+        if changes:
+            context.journal.agents.stamp(row.n, **changes)
+
+
+def quiet(context: AgentContext) -> bool:
+    found = context.journal.sequences._in_hand()
+    return bool(found and found[0].quiet)
 
 
 class ClearOnMessage(Handler):

@@ -25,3 +25,5 @@ def test_the_latest_thought_shows_live_and_never_becomes_a_chat_message(tmp_path
     for event in ("PostToolUse", "UserPromptSubmit"):
         hook(event)
     assert (thought(), Messages(record, actor="system").all()) == ("", []), "the next turn clears it, and no thought ever becomes a chat message"
+    kept = [t["text"] for t in Agents(record, actor="system").by_session("claude-1").data["thoughts"]]
+    assert kept == ["First", "Second", "Third"], "every finished thought is kept on the agent, for the chat to show in small italic lines"

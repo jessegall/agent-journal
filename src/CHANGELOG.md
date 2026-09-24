@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.130.0 — The agent's thoughts stay in the chat
+
+Each thought the agent finishes stays in the chat as a small italic line, set apart from its messages, instead of only flickering in the working line; none are kept while it works a board in its panel. They show when the provider records the thinking text. Nothing to do.
+
 ## 2.129.0 — Board work stays in its panel
 
 While the agent works a New work card, revises drafts, drafts from a document or builds a board from one, what it writes stays in that panel instead of also showing in the chat; its replies to your messages still come through. Nothing to do.
