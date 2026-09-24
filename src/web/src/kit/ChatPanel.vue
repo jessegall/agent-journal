@@ -37,20 +37,10 @@ function send() {
     emit("send", words.value.trim());
 }
 
-const sent = ref(null);
-const SLIDE_MS = 450;
 const focusInput = () => input.value.focus();
 const typing = () => !props.withoutInput && !props.waiting;
 defineExpose({focus: () => nextTick(() => typing() && focusInput())});
 
-watch(sent, (words) => {
-    if (!words) return;
-    const shift = words.getBoundingClientRect().left - words.parentElement.getBoundingClientRect().left;
-    words.animate([{transform: `translateX(${-shift}px)`}, {transform: "none"}], {
-        duration: SLIDE_MS,
-        easing: "cubic-bezier(0.2, 0.9, 0.25, 1)",
-    });
-});
 watch(
     () => props.waiting,
     (waiting) => waiting || nextTick(() => typing() && focusInput())
@@ -93,21 +83,21 @@ watch(
             <Transition name="input-step" @after-enter="focusInput">
                 <template v-if="!withoutInput">
                     <form :class="['compose', {locked, waiting}]" @submit.prevent="send">
-                        <template v-if="waiting">
-                            <span class="sent-line">
-                                <span ref="sent" class="sent-words">{{ echo }}</span>
-                            </span>
-                        </template>
-                        <template v-else>
-                            <input
-                                ref="input"
-                                v-model="words"
-                                :placeholder="placeholder"
-                                :disabled="locked"
-                                :maxlength="limit"
-                                spellcheck="false"
-                            />
-                        </template>
+                        <Transition name="swap" mode="out-in">
+                            <template v-if="waiting">
+                                <span class="sent-line">{{ echo }}</span>
+                            </template>
+                            <template v-else>
+                                <input
+                                    ref="input"
+                                    v-model="words"
+                                    :placeholder="placeholder"
+                                    :disabled="locked"
+                                    :maxlength="limit"
+                                    spellcheck="false"
+                                />
+                            </template>
+                        </Transition>
                         <template v-if="limit">
                             <span class="left">{{ limit - words.length }}</span>
                         </template>
@@ -255,9 +245,7 @@ watch(
 }
 
 .echo-enter-active {
-    transition:
-        opacity 0.45s ease,
-        transform 0.6s cubic-bezier(0.2, 0.9, 0.25, 1);
+    transition: opacity 0.4s ease 0.25s;
 }
 
 .echo-leave-active {
@@ -266,7 +254,6 @@ watch(
 
 .echo-enter-from {
     opacity: 0;
-    transform: translateY(48px);
 }
 
 .echo-leave-to {
@@ -316,19 +303,10 @@ watch(
     transition: opacity 0.3s ease;
 }
 
-.compose.waiting {
-    border-color: transparent;
-    background: transparent;
-}
-
 .compose.waiting .left,
 .compose.waiting > :deep(.btn) {
     opacity: 0;
     pointer-events: none;
-}
-
-.compose input {
-    animation: input-in 0.35s ease both;
 }
 
 .sent-line {
@@ -336,25 +314,21 @@ watch(
     min-width: 0;
     height: 32px;
     overflow: hidden;
-    color: var(--text-2);
+    color: var(--text-3);
     font-size: 14px;
     line-height: 32px;
-    text-align: right;
     white-space: nowrap;
-}
-
-.sent-words {
-    display: inline-block;
-    max-width: 100%;
-    overflow: hidden;
     text-overflow: ellipsis;
-    vertical-align: top;
 }
 
-@keyframes input-in {
-    from {
-        opacity: 0;
-    }
+.swap-enter-active,
+.swap-leave-active {
+    transition: opacity 0.25s ease;
+}
+
+.swap-enter-from,
+.swap-leave-to {
+    opacity: 0;
 }
 
 .compose.locked {
