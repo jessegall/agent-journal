@@ -81,7 +81,7 @@ class HandStepToAgent(Handler):
 
 
 def asked_since(context: AgentContext, at: float) -> bool:
-    return any(not row["completed"] and not row["deleted"] and row["created"] >= at for row in context.journal.questions.summaries())
+    return any(not row["completed"] and not row["deleted"] and row["updated"] >= at for row in context.journal.questions.summaries())
 
 
 class NudgeWaitingStep(Handler):
