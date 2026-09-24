@@ -27,7 +27,7 @@ class TicketsDetails(FeatureDetails):
         of at most 200 characters about the tickets, never naming rows, chips or commands: the panel shows the reply and the drafts as cards, and
         the user picks the ones to keep. When a decision is the
         user's, ask it on the board, never in the chat: journal board ask <n> "<question>" with its options
-        as --set options=…; the panel and the board show it, keep the drafts waiting, and you hear the answer as an event.
+        as --set options=…; the New work panel shows it, keep the drafts waiting, and you hear the answer as an event.
         A draft cannot start; only the user confirms it.
 
         journal ticket depend <n> <other> says ticket n waits on ticket other. From the agent it is only a proposal, shown on
