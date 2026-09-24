@@ -118,46 +118,12 @@ const proposed = (ticket) =>
     Object.entries(ticket.data.dependencies || {})
         .filter(([, stance]) => stance === "proposed")
         .map(([ref]) => Number(ref.split(":")[1]));
-const droppedLinks = ref([]);
-const linkKey = (ticket, n) => `${ticket}>${n}`;
-const onBoard = computed(() => store.board.lanes.flatMap((lane) => lane.cards));
-function placed(n) {
-    const draft = drafts.value.find((d) => d.n === n);
-    if (draft) return {title: draft.title, where: "", draft: true};
-    const card = onBoard.value.find((c) => c.n === n);
-    return card ? {title: card.title, where: card.lane, draft: false} : {title: `ticket ${n}`, where: "another board", draft: false};
-}
-function linkState(ticket, n, draft) {
-    if (droppedLinks.value.includes(linkKey(ticket, n))) return "dropped";
-    return draft && !picked.value.includes(n) ? "unpicked" : "kept";
-}
-const links = (ticket) => proposed(ticket).map((n) => ({n, ...placed(n), state: linkState(ticket.n, n, placed(n).draft)}));
-const toggleLink = (ticket, n) => {
-    const key = linkKey(ticket, n);
-    droppedLinks.value = droppedLinks.value.includes(key) ? droppedLinks.value.filter((k) => k !== key) : [...droppedLinks.value, key];
-};
-const missing = computed(() =>
-    drafts.value
-        .filter((t) => picked.value.includes(t.n))
-        .flatMap((t) =>
-            links(t)
-                .filter((l) => l.state === "unpicked")
-                .map((l) => ({title: t.title, needs: l.title, n: l.n}))
-        )
-);
-const missingNote = computed(() => {
-    const [first, ...more] = missing.value;
-    const also = more.length ? ` ${more.length} more ${more.length === 1 ? "needs" : "need"} a card you did not pick.` : "";
-    return `“${first.title}” needs “${first.needs}” first, which you did not pick.${also}`;
-});
 const note = computed(() => {
     if (asking.value) return "Pick one above, or type your own.";
     if (writing.value && !picked.value.length) return `${drafts.value.length} drafted so far. Click a card to keep it.`;
-    if (missing.value.length) return missingNote.value;
     if (!picked.value.length) return "Click a card to keep it.";
     return props.starts ? `They go to ${first.value}; their agents start as room frees up.` : `They go to ${first.value}, ready to start.`;
 });
-const pickMissing = () => (picked.value = [...new Set([...picked.value, ...missing.value.map((m) => m.n)])]);
 const cardRect = (n) => document.querySelector(`.pick[data-ticket="${n}"]`)?.getBoundingClientRect();
 const toggle = (n) => (picked.value = picked.value.includes(n) ? picked.value.filter((p) => p !== n) : [...picked.value, n]);
 const drop = (tickets) => Promise.all(tickets.map((t) => api.act("ticket", t.n, "delete", {why: "not picked in New work"})));
@@ -257,10 +223,8 @@ async function add() {
     adding.value = true;
     const keep = drafts.value.map((t) => t.n).filter((n) => picked.value.includes(n));
     for (const n of keep) await api.act("ticket", n, "confirm");
-    for (const t of drafts.value.filter((d) => keep.includes(d.n) && links(d).length)) {
-        const only = links(t)
-            .filter((l) => l.state === "kept")
-            .map((l) => l.n);
+    for (const t of drafts.value.filter((d) => keep.includes(d.n) && proposed(d).length)) {
+        const only = proposed(t).filter((n) => keep.includes(n) || !drafts.value.some((d) => d.n === n));
         await (only.length
             ? api.act("ticket", t.n, "accept_dependencies", {only: only.join(",")})
             : api.act("ticket", t.n, "decline_dependencies"));
@@ -324,7 +288,6 @@ function startAnew() {
     since.value = 0;
     lastSent.value = 0;
     picked.value = [];
-    droppedLinks.value = [];
 }
 </script>
 
@@ -334,9 +297,6 @@ function startAnew() {
             <div class="bar">
                 <span class="note">{{ note }}</span>
                 <div :class="['bar-actions', {on: shownDrafts.length}]">
-                    <template v-if="missing.length">
-                        <Btn small @click="pickMissing">Pick it too</Btn>
-                    </template>
                     <Btn small @click="again">Ask for a different set</Btn>
                     <Btn kind="primary" small :busy="adding" :disabled="!picked.length" @click="add">
                         {{ picked.length ? `Add ${picked.length} to ${first}` : `Add to ${first}` }}
@@ -351,9 +311,7 @@ function startAnew() {
                         :active="Boolean(card.ticket) && card.ticket === turn"
                         :paused="Boolean(asking)"
                         :picked="Boolean(card.ticket) && picked.includes(card.ticket.n)"
-                        :links="card.ticket ? links(card.ticket) : []"
                         @toggle="toggle(card.ticket.n)"
-                        @link="(n) => toggleLink(card.ticket.n, n)"
                         @revealed="reveal(card.ticket.n)"
                         @more="(from) => (shownDraft = {ticket: card.ticket, from})"
                     />
@@ -419,11 +377,9 @@ function startAnew() {
             <DraftDetail
                 :ticket="shownDraft.ticket"
                 :from="shownDraft.from"
-                :links="links(shownDraft.ticket)"
                 :picked="picked.includes(shownDraft.ticket.n)"
                 :measure="() => cardRect(shownDraft.ticket.n)"
                 @keep="toggle(shownDraft.ticket.n)"
-                @link="(n) => toggleLink(shownDraft.ticket.n, n)"
                 @close="shownDraft = null"
             />
         </template>
