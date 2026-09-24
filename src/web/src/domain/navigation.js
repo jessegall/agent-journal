@@ -1,6 +1,8 @@
 export const SIDEBAR = "sidebar";
 
 export const PAGES = {
+    "": {title: "Home", icon: "home", text: ""},
+    kanban: {title: "Board", icon: "board", text: ""},
     resources: {title: "Resources", icon: "tiles", text: "Every kind of record the journal keeps, and its setup"},
     skills: {title: "Skills", icon: "book", text: "The instructions the agent loads for each kind of work"},
     organization: {title: "Organization", icon: "agents", text: "The project's domains and the roles under them"},

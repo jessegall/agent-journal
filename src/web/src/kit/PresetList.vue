@@ -6,7 +6,7 @@ import LayoutThumb from "./LayoutThumb.vue";
 import MenuItem from "./MenuItem.vue";
 
 defineProps({presets: {type: Array, required: true}, savable: Boolean});
-const emit = defineEmits(["pick", "save", "rename", "remove"]);
+const emit = defineEmits(["pick", "save", "rename", "remove", "update"]);
 const editing = ref("");
 const naming = ref(false);
 
@@ -31,7 +31,13 @@ function saved(name) {
                 </div>
             </template>
             <template v-else>
-                <MenuItem class="preset" :on="p.current" :aria-current="p.current" @click="emit('pick', p.key)">
+                <MenuItem
+                    class="preset"
+                    :on="p.current"
+                    :aria-current="p.current"
+                    :title="`${p.name}: ${p.text}`"
+                    @click="emit('pick', p.key)"
+                >
                     <LayoutThumb :cells="p.cells" />
                     <span class="preset-body">
                         <span class="preset-name">{{ p.name }}</span>
@@ -40,6 +46,14 @@ function saved(name) {
                 </MenuItem>
                 <template v-if="p.saved">
                     <span class="preset-tools">
+                        <button
+                            type="button"
+                            class="preset-tool"
+                            title="Update it with the current layout"
+                            @click.stop="emit('update', p.key)"
+                        >
+                            <Icon name="restore" :size="12" />
+                        </button>
                         <button type="button" class="preset-tool" title="Rename" @click.stop="editing = p.key">
                             <Icon name="pencil" :size="12" />
                         </button>
@@ -105,11 +119,17 @@ function saved(name) {
     font-size: 12.5px;
 }
 
+.preset-name,
+.preset-text {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
 .preset-text {
     color: var(--text-3);
     font-size: 11.5px;
     line-height: 1.35;
-    text-wrap: pretty;
 }
 
 .preset-tools {

@@ -111,6 +111,7 @@ DIFFS: dict[tuple[str, str], Diff] = {}
 def noted(record, edit: FileEdited) -> None:
     with record.state(NOTES).changing() as held:
         held["notes"] = [*held.get("notes", []), asdict(edit)][-KEPT:]
+    diffed(record.root.parent, [(edit.before, edit.after)])
 
 
 def notes(record) -> list[FileEdited]:

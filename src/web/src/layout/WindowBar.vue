@@ -1,6 +1,6 @@
 <script setup>
 import Icon from "../kit/Icon.vue";
-import {pageTitle} from "../composables/pageTitle.js";
+import PageJump from "./PageJump.vue";
 import {armed, drawnWide, switching} from "../platform/fullscreen.js";
 import JournalTabs from "./JournalTabs.vue";
 
@@ -16,7 +16,7 @@ const forward = () => history.forward();
         <button type="button" class="window-bar-btn" title="Forward" :tabindex="drawnWide ? 0 : -1" @click="forward">
             <Icon name="arrow" :size="13" />
         </button>
-        <span class="window-bar-title">{{ pageTitle }}</span>
+        <PageJump />
         <template v-if="armed">
             <span class="window-bar-hint">Click anywhere to go full screen again</span>
         </template>
@@ -60,12 +60,6 @@ const forward = () => history.forward();
 .window-bar-btn:hover {
     background: var(--hover);
     color: var(--text);
-}
-
-.window-bar-title {
-    margin-left: 6px;
-    color: var(--text-3);
-    font-size: 11.5px;
 }
 
 .window-bar-hint {

@@ -1,6 +1,6 @@
 import {computed} from "vue";
 import {PAGES, RESOURCE_GROUPS, SIDEBAR} from "../domain/navigation.js";
-import {counted, types} from "../state/store.js";
+import {boardOn, counted, types} from "../state/store.js";
 
 const countOf = (t) => counted(t.name, t.needs_attention ? "unread" : "open");
 
@@ -26,11 +26,20 @@ export function useNavigation() {
             links: [...listed.value.filter((t) => t.listed_under === g.key).map(typeLink), ...g.pages.map(pageLink)],
         })).filter((g) => g.links.length)
     );
-    const everywhere = computed(() => [
-        ...sidebar.value,
-        pageLink("plugins"),
-        pageLink("resources"),
-        ...groups.value.flatMap((g) => g.links),
+    const daily = (scope) => sidebar.value.filter((link) => link.scope === scope);
+    const sections = computed(() => [
+        {key: "environment", label: "Environment", links: [pageLink(""), ...daily("environment")]},
+        {
+            key: "project",
+            label: "Project",
+            links: [
+                ...(boardOn.value ? [{...pageLink("kanban"), count: counted("todo")}] : []),
+                ...daily("project"),
+                pageLink("plugins"),
+                pageLink("resources"),
+            ],
+        },
     ]);
-    return {sidebar, groups, everywhere};
+    const everywhere = computed(() => [...sections.value.flatMap((s) => s.links), ...groups.value.flatMap((g) => g.links)]);
+    return {sections, groups, everywhere};
 }

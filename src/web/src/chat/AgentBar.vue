@@ -314,8 +314,8 @@ useOutside(drop, () => (open.value = ""));
             <MenuPanel
                 ref="drop"
                 :anchor="anchor"
-                :min-width="320"
-                :max-width="380"
+                :min-width="open === 'presets' ? 360 : 320"
+                :max-width="open === 'presets' ? 360 : 380"
                 :max-height="dropHeight"
                 @click.stop
                 @close="open = ''"
@@ -351,6 +351,7 @@ useOutside(drop, () => (open.value = ""));
                                     @pick="pickPreset"
                                     @save="views.saveLayout"
                                     @rename="views.renamePreset"
+                                    @update="views.updatePreset"
                                     @remove="views.removePreset"
                                 />
                                 <span class="bar-line" />

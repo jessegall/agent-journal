@@ -152,10 +152,7 @@ async function pauseOrResume(paused) {
     await (paused ? api.resumeAgent(agent.value.title) : api.pauseAgent(agent.value.title));
 }
 const commands = computed(() => {
-    const pages = [
-        {page: "", label: "Home", icon: "home"},
-        ...everywhere.value.map((link) => ({page: link.page, label: link.title, icon: link.icon})),
-    ];
+    const pages = everywhere.value.map((link) => ({page: link.page, label: link.title, icon: link.icon}));
     const rows = pages.map((p, n) => ({
         label: `Go to ${p.label}`,
         keys: p.label,

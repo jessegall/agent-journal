@@ -5,6 +5,7 @@ import PSection from "./PSection.vue";
 import {computed, onMounted, onUnmounted, ref, watch} from "vue";
 import {api} from "../api/client.js";
 import Dot from "../kit/Dot.vue";
+import Btn from "../kit/Btn.vue";
 import Icon from "../kit/Icon.vue";
 import Switch from "../kit/Switch.vue";
 import Toast from "../kit/Toast.vue";
@@ -90,8 +91,8 @@ async function runBar(p) {
             </component>
         </span>
         <template v-if="state !== 'stopped'">
-            <button
-                type="button"
+            <Btn
+                kind="icon"
                 :class="['statusbar-pause', {paused}]"
                 :title="paused ? 'Resume: tell the agent to carry on' : 'Pause: stop the agent\'s turn and hold the journal\'s nudges'"
                 @click="pauseOrResume"
@@ -100,7 +101,7 @@ async function runBar(p) {
                 <template v-if="wanted !== null">
                     <Spinner class="statusbar-pause-spin" />
                 </template>
-            </button>
+            </Btn>
         </template>
         <span class="statusbar-tools">
             <Switch
@@ -111,15 +112,15 @@ async function runBar(p) {
                 "
                 @change="setAuto"
             />
-            <button
-                type="button"
+            <Btn
+                kind="icon"
                 class="statusbar-wide"
                 data-step="fullscreen"
                 :title="`${store.wide ? 'Show the sidebar and the top bar' : 'Hide the sidebar and the top bar'} (${FULLSCREEN_KEYS})`"
                 @click="store.wide = !store.wide"
             >
                 <Icon :name="store.wide ? 'narrow' : 'wide'" />
-            </button>
+            </Btn>
         </span>
     </div>
     <Transition name="planbar">
@@ -262,48 +263,34 @@ async function runBar(p) {
     transform: translateY(-5px);
 }
 
-.statusbar-wide,
-.statusbar-pause {
-    display: inline-flex;
-    align-items: center;
-    padding: 2px;
-    border: 0;
-    border-radius: 6px;
-    background: none;
-    color: var(--text-3);
-    cursor: pointer;
+.statusbar-pause.btn,
+.statusbar-wide.btn {
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+}
+
+.statusbar-pause.btn :deep(.ico),
+.statusbar-wide.btn :deep(.ico) {
+    width: 15px;
+    height: 15px;
 }
 
 .statusbar-pause {
     position: relative;
     flex: none;
-    justify-content: center;
-    width: 26px;
-    height: 26px;
     margin-right: 8px;
-    transition:
-        background 0.15s,
-        color 0.15s;
-}
-
-.statusbar-pause:hover {
-    background: var(--hover);
-    color: var(--text);
-}
-
-.statusbar-pause-spin {
-    position: absolute;
-    right: -2px;
-    bottom: -2px;
 }
 
 .statusbar-pause.paused {
     color: var(--accent-text);
 }
 
-.statusbar-wide:hover,
-.statusbar-pause:hover {
-    color: var(--text-1);
+.statusbar-pause-spin {
+    position: absolute;
+    right: -2px;
+    bottom: -2px;
 }
 
 .statusbar-tools {
