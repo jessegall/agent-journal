@@ -1,5 +1,6 @@
 import difflib
 import time
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 from functools import cache
 from pathlib import Path
@@ -74,15 +75,47 @@ class FoundFile:
 INDEXES: dict[Path, Indexed] = {}
 HASHED: dict[Path, Hashed] = {}
 UNTRACKED: dict[Path, tuple[str, ...]] = {}
+REPOSITORIES: dict[Path, tuple[float, tuple[Path, ...]]] = {}
 MOST_FOUND = 50
+RESCAN_SECONDS = 300
+REPOSITORY_DEPTH = 2
+SKIPPED = {"node_modules", "vendor", "dist", "build"}
 
 
 @cache
+def repositories(project: Path) -> tuple[Path, ...]:
+    held = REPOSITORIES.get(project)
+    if held and time.time() - held[0] < RESCAN_SECONDS:
+        return held[1]
+    found = (project,) if (project / ".git").exists() else tuple(sorted(nested_repositories(project, REPOSITORY_DEPTH)))
+    REPOSITORIES[project] = (time.time(), found)
+    return found
+
+
+def nested_repositories(folder: Path, depth: int) -> list[Path]:
+    if depth == 0:
+        return []
+    try:
+        children = [child for child in folder.iterdir() if child.is_dir() and not child.name.startswith(".") and child.name not in SKIPPED]
+    except OSError:
+        return []
+    return [found for child in children for found in ([child] if (child / ".git").exists() else nested_repositories(child, depth - 1))]
+
+
+def prefixed(project: Path, repository: Path, paths: dict) -> dict:
+    prefix = "" if repository == project else f"{repository.relative_to(project).as_posix()}/"
+    return {f"{prefix}{path}": value for path, value in paths.items()}
+
+
 def index_file(project: Path) -> Path:
     return project / git(["rev-parse", "--git-path", "index"], project).strip()
 
 
 def tracked(project: Path) -> dict:
+    return {path: sha for repository in repositories(project) for path, sha in prefixed(project, repository, tracked_in(repository)).items()}
+
+
+def tracked_in(project: Path) -> dict:
     try:
         stamp = index_file(project).stat().st_mtime_ns
     except OSError:
@@ -113,25 +146,43 @@ def hashed(project: Path, paths: list[str]) -> dict:
 
 
 def blobs(record, project: Path) -> dict:
-    tree = dict(tracked(project))
+    marks = internal(record, project)
+    found = repositories(project)
+    with ThreadPoolExecutor(max_workers=len(found) or 1) as pool:
+        trees = list(pool.map(blobs_in, found))
+    tree = {path: sha for repository, held in zip(found, trees) for path, sha in prefixed(project, repository, held).items()}
+    return {path: sha for path, sha in tree.items() if not journals_own(path, marks)}
+
+
+def blobs_in(project: Path) -> dict:
+    tree = dict(tracked_in(project))
     dirty = list(dict.fromkeys(p for p in git(["ls-files", "-m", "-o", "-d", "--exclude-standard", "-z"], project).split("\0") if p))
     present = [p for p in dirty if (project / p).is_file()]
     UNTRACKED[project] = tuple(p for p in present if p not in tree)
     for path in set(dirty) - set(present):
         tree.pop(path, None)
     tree.update(hashed(project, present))
-    marks = internal(record, project)
-    return {path: sha for path, sha in tree.items() if not journals_own(path, marks)}
+    return tree
 
 
 def blob_texts(project: Path, shas: list[str]) -> dict[str, str]:
-    return {EMPTY_BLOB: "", **git_objects(project, [sha for sha in dict.fromkeys(shas) if sha != EMPTY_BLOB])}
+    texts = {EMPTY_BLOB: ""}
+    for repository in repositories(project):
+        wanted = [sha for sha in dict.fromkeys(shas) if sha not in texts]
+        if not wanted:
+            break
+        texts.update(git_objects(repository, wanted))
+    return texts
 
 
 def project_paths(project: Path) -> set[str]:
+    return {path for repository in repositories(project) for path in prefixed(project, repository, dict.fromkeys(paths_in(repository)))}
+
+
+def paths_in(project: Path) -> set[str]:
     if project not in UNTRACKED:
         UNTRACKED[project] = tuple(p for p in git(["ls-files", "-o", "--exclude-standard", "-z"], project).split("\0") if p)
-    return {*tracked(project), *UNTRACKED[project]}
+    return {*tracked_in(project), *UNTRACKED[project]}
 
 
 def found_files(project: Path, needle: str) -> list[FoundFile]:

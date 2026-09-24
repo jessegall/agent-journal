@@ -79,3 +79,20 @@ def test_older_edits_page_back_and_an_edit_gives_its_whole_file():
     assert (len(older.edits), older.older) == (1, False), "the page before it holds the rest"
     whole = edited_file(project.record, project.agent, older.edits[0].id, Side.AFTER)
     assert (whole.path, whole.text) == ("a.py", "1\n"), "an edit gives the file as it stood after it"
+
+
+def test_a_project_folder_of_repositories_feeds_the_edits_of_each():
+    record = fresh()
+    project = record.root.parent
+    for name in ("api", "site"):
+        (project / name).mkdir()
+        (project / name / "main.py").write_text("one\ntwo\n")
+        for command in (["init", "-q"], ["add", "-A"], ["-c", "user.name=t", "-c", "user.email=t@t", "commit", "-qm", "start"]):
+            subprocess.run(["git", *command], cwd=project / name, capture_output=True, timeout=10)
+    agent = Agents(record, actor="system").by_session("claude-1").n
+    announce(record, agent)
+    (project / "site" / "main.py").write_text("one\nTWO\nthree\n")
+    (project / "api" / "new.py").write_text("fresh\n")
+    announce(record, agent)
+    cards = {card.path: (card.kind, card.added, card.removed) for card in edits_since(record, agent, 0, PAGE).edits}
+    assert cards == {"site/main.py": ("edit", 2, 1), "api/new.py": ("new", 1, 0)}, cards

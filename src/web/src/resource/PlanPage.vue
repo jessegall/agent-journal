@@ -181,6 +181,9 @@ async function run(action, body = {}) {
     gap: 12px;
     color: var(--text-3);
     font-size: 11.5px;
+}
+.kind,
+.status {
     text-transform: uppercase;
     letter-spacing: 0.04em;
 }

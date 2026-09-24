@@ -45,6 +45,26 @@ const WAIT_EVERY = 1500;
 const WAIT_FOR = 45000;
 const tunnel = ref("");
 let pause = 0;
+const listed = ref(false);
+const NOUNS = {todo: "to-do", doc: "document"};
+const nounOf = (type) => NOUNS[type] || KINDS[type] || type;
+const summary = computed(() => {
+    if (!opens.value || !opens.value.length) return null;
+    const [first, ...rest] = opens.value;
+    const named = /^(.*) \((\w+) (\d+)\)$/.exec(first);
+    const files = rest.filter((line) => line.startsWith("its "));
+    const types = rest.filter((line) => !line.startsWith("its ")).map((line) => (/\((\w+) \d+\)$/.exec(line) || [])[1] || "");
+    const noun = new Set(types).size === 1 ? nounOf(types[0]) : "item";
+    const members = types.length ? [`its ${types.length} ${noun}${types.length === 1 ? "" : "s"}`] : [];
+    return {
+        title: named ? named[1] : first,
+        ref: named ? ` (${nounOf(named[2])} ${named[3]})` : "",
+        tail: `${[...files, ...members]
+            .map((part) => ` and ${part}`)
+            .join("")
+            .replace(" and its ", ", its ")}, and nothing else.`,
+    };
+});
 const message = (link) => `Here's the link to ${props.resource.title}: ${link}`;
 
 async function awaitLink(share) {
@@ -123,7 +143,7 @@ async function stop(share) {
 </script>
 
 <template>
-    <Dialog small title="Share" @close="emit('close')">
+    <Dialog small fixed title="Share" @close="emit('close')">
         <div class="share">
             <template v-if="blocked">
                 <TunnelProblem :status="tunnelStatus" @ready="loggedIn" />
@@ -134,9 +154,7 @@ async function stop(share) {
                         <Spinner />
                         <span>
                             Getting the link ready…
-                            <span class="meta">
-                                It shows here as soon as it opens from outside; the first one in a while takes a few seconds.
-                            </span>
+                            <span class="meta">Usually a few seconds.</span>
                         </span>
                     </div>
                 </template>
@@ -157,10 +175,7 @@ async function stop(share) {
                             />
                         </div>
                         <template v-if="tunnel === 'late'">
-                            <p class="late">
-                                The link doesn't open from outside yet. It may need a little longer; the tunnel icon in the top bar shows
-                                the tunnel's state.
-                            </p>
+                            <p class="late">It doesn't open from outside yet; give it a moment.</p>
                         </template>
                         <span class="meta">
                             {{ endsOf(made) === "never ends" ? "It never ends" : `It ${endsOf(made)}` }} · you can stop it here at any time
@@ -169,55 +184,53 @@ async function stop(share) {
                 </template>
             </template>
             <template v-else>
-                <section class="part">
-                    <span class="label">They will be able to view:</span>
-                    <template v-if="opens === null">
-                        <p class="quiet">Working out what the link opens…</p>
-                    </template>
-                    <template v-else>
-                        <ul class="opens">
-                            <template v-for="line in opens" :key="line">
-                                <li>{{ line }}</li>
-                            </template>
-                        </ul>
-                        <p class="quiet">Nothing else in the journal can be reached through the link.</p>
-                    </template>
-                </section>
-                <section class="part">
-                    <span class="label">The link ends after</span>
-                    <Segmented :options="EXPIRES" :value="expires" @pick="(key) => (expires = key)" />
-                </section>
-                <section class="part">
-                    <span class="label">
-                        Password
-                        <span class="optional">(optional)</span>
-                    </span>
-                    <TextInput
-                        class="password"
-                        type="password"
-                        autocomplete="new-password"
-                        :value="password"
-                        placeholder="Leave empty for no password"
-                        @input="password = $event.target.value"
-                    />
-                    <template v-if="password">
-                        <p class="quiet">Visitors get their browser's login prompt: any name, this password.</p>
-                    </template>
-                </section>
-                <section class="part comments-part">
-                    <span class="label">Visitors can comment</span>
-                    <Switch :on="comments" title="Let visitors comment under a name of their own" @change="comments = $event" />
-                </section>
-                <template v-if="comments">
-                    <p class="quiet">
-                        Their comments show up here under the name they give. The agent treats them as someone else's words, never yours.
-                    </p>
+                <template v-if="opens === null">
+                    <p class="quiet">Working out what the link opens…</p>
                 </template>
-                <div class="actions">
-                    <Btn kind="primary" :busy="making" :disabled="!opens || !opens.length || blocked" @click="create">
-                        <Icon name="share" :size="12" />
-                        Create link
-                    </Btn>
+                <template v-else-if="summary">
+                    <div class="opens">
+                        <p class="opens-line">
+                            <span>The link opens</span>
+                            <strong>{{ summary.title }}</strong>
+                            <span class="ref">{{ summary.ref }}</span>
+                            <span>{{ summary.tail }}</span>
+                            <template v-if="opens.length > 1">
+                                <Btn kind="icon" small class="show" @click="listed = !listed">{{ listed ? "Hide them" : "Show them" }}</Btn>
+                            </template>
+                        </p>
+                        <template v-if="listed">
+                            <ul class="opens-list">
+                                <template v-for="line in opens.slice(1)" :key="line">
+                                    <li>{{ line }}</li>
+                                </template>
+                            </ul>
+                        </template>
+                    </div>
+                </template>
+                <div class="rows">
+                    <div class="row">
+                        <span class="label">Ends after</span>
+                        <Segmented :options="EXPIRES" :value="expires" @pick="(key) => (expires = key)" />
+                    </div>
+                    <div class="row">
+                        <span class="label">Password</span>
+                        <TextInput
+                            class="password"
+                            type="password"
+                            autocomplete="new-password"
+                            :value="password"
+                            placeholder="None"
+                            aria-label="Password"
+                            @input="password = $event.target.value"
+                        />
+                    </div>
+                    <template v-if="password">
+                        <p class="quiet hint">Visitors enter any name and this password.</p>
+                    </template>
+                    <div class="row">
+                        <span class="label">Visitors can comment</span>
+                        <Switch :on="comments" title="Let visitors comment under a name of their own" @change="comments = $event" />
+                    </div>
                 </div>
             </template>
             <template v-if="error">
@@ -265,6 +278,12 @@ async function stop(share) {
                 </section>
             </template>
         </div>
+        <template v-if="!made" #foot>
+            <Btn kind="primary" :busy="making" :disabled="!opens || !opens.length || blocked" @click="create">
+                <Icon name="share" :size="12" />
+                Create link
+            </Btn>
+        </template>
     </Dialog>
 </template>
 
@@ -272,7 +291,73 @@ async function stop(share) {
 .share {
     display: flex;
     flex-direction: column;
-    gap: 18px;
+    gap: 16px;
+}
+
+.opens-line {
+    margin: 0;
+    color: var(--text-2);
+    font-size: 13px;
+    line-height: 1.55;
+}
+
+.opens-line strong {
+    margin-left: 0.3em;
+    color: var(--text);
+    font-weight: 500;
+}
+
+.ref {
+    color: var(--text-3);
+}
+
+.show.btn,
+.show.btn:hover {
+    height: auto;
+    margin-left: 6px;
+    padding: 0;
+    background: none;
+    color: var(--accent-text);
+    font-size: 12.5px;
+    vertical-align: baseline;
+}
+
+.opens-list {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin: 8px 0 0;
+    padding: 0 0 0 14px;
+    color: var(--text-3);
+    font-size: 12.5px;
+    line-height: 1.45;
+}
+
+.rows {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding-top: 14px;
+    border-top: 1px solid var(--border);
+}
+
+.row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px 12px;
+    min-height: 30px;
+}
+
+.row .password {
+    flex: 0 1 200px;
+    min-width: 0;
+}
+
+.hint {
+    margin-top: -4px;
+    text-align: right;
 }
 
 .part {
@@ -287,38 +372,11 @@ async function stop(share) {
     font-weight: 500;
 }
 
-.opens {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    margin: 0;
-    padding: 10px 12px;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    background: var(--raised);
-    list-style: none;
-}
-
-.opens li {
-    color: var(--text);
-    font-size: 13px;
-    line-height: 1.45;
-}
-
-.opens li + li {
-    color: var(--text-2);
-}
-
 .quiet,
 .meta {
     margin: 0;
     color: var(--text-3);
     font-size: 12px;
-}
-
-.actions {
-    display: flex;
-    justify-content: flex-end;
 }
 
 .made {
@@ -405,17 +463,6 @@ async function stop(share) {
     flex-direction: column;
     gap: 1px;
     min-width: 0;
-}
-
-.optional {
-    color: var(--text-4);
-    font-weight: 400;
-}
-
-.comments-part {
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
 }
 
 .password {
