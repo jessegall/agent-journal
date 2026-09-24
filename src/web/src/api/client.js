@@ -44,6 +44,14 @@ export class ApiClient {
         return this.get("/changelog");
     }
 
+    checkForUpdate() {
+        return this.post("/update/check", {});
+    }
+
+    update() {
+        return this.post("/update", {});
+    }
+
     manifest() {
         return this.get("/manifest");
     }

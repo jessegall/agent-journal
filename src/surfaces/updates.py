@@ -62,9 +62,26 @@ def upstream(root: Path) -> str:
 
 def fetched(cache: Path) -> None:
     with FETCHING:
-        cache.parent.mkdir(parents=True, exist_ok=True)
-        newest = released()
-        if not newest:
-            cache.touch(exist_ok=True)
-            return
-        write_text(cache, newest)
+        kept_newest(cache)
+
+
+def kept_newest(cache: Path) -> None:
+    cache.parent.mkdir(parents=True, exist_ok=True)
+    newest = released()
+    if not newest:
+        cache.touch(exist_ok=True)
+        return
+    write_text(cache, newest)
+
+
+def check_now(root: Path) -> None:
+    if not FETCHING.acquire(blocking=False):
+        return
+
+    def check() -> None:
+        try:
+            kept_newest(root / "runtime" / "upstream.cache")
+        finally:
+            FETCHING.release()
+
+    threading.Thread(target=check, daemon=True).start()

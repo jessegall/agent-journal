@@ -27,6 +27,7 @@ const LINES = [
     {key: "20", label: "20"},
 ];
 
+const limited = (key) => key === "collapse" && Number(props.options.lines) > 0;
 const set = (patch) => emit("options", {...props.options, ...patch});
 const sized = (by) => set({size: Math.max(SIZES[0], Math.min(SIZES[SIZES.length - 1], props.options.size + by))});
 const toggle = (e) => (anchor.value = anchor.value ? null : e.currentTarget);
@@ -50,7 +51,14 @@ function expand() {
         <template v-if="anchor">
             <MenuPanel :anchor="anchor" :min-width="250" :max-width="300" @click.stop @close="anchor = null">
                 <template v-for="t in TOGGLES" :key="t.key">
-                    <ToggleItem :on="!!options[t.key]" :icon="t.icon" @click="set({[t.key]: !options[t.key]})">{{ t.label }}</ToggleItem>
+                    <ToggleItem
+                        :on="!!options[t.key] && !limited(t.key)"
+                        :icon="t.icon"
+                        :disabled="limited(t.key)"
+                        @click="set({[t.key]: !options[t.key]})"
+                    >
+                        {{ t.label }}
+                    </ToggleItem>
                 </template>
                 <span class="feed-bar-line" />
                 <MenuItem @click="expand">

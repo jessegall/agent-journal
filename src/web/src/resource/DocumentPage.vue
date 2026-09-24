@@ -7,7 +7,12 @@ import Comments from "./Comments.vue";
 import Links from "./Links.vue";
 import Highlight from "./Highlight.vue";
 
-const props = defineProps({resource: Object, focus: {type: Number, default: 0}, shown: {type: Array, default: () => []}});
+const props = defineProps({
+    resource: Object,
+    focus: {type: Number, default: 0},
+    shown: {type: Array, default: () => []},
+    readOnly: Boolean,
+});
 const emit = defineEmits(["close"]);
 const quote = ref("");
 const shownAlready = computed(() => [
@@ -74,17 +79,20 @@ watch(
 <template>
     <div :class="['document', {shifted}]">
         <div ref="body" class="document-body">
-            <Highlight :off="!!resource.data?.system" @quote="quote = $event">
+            <Highlight :off="!!resource.data?.system || readOnly" @quote="quote = $event">
                 <slot>
-                    <ResourceBody :resource="resource" :comments="false" :links="false" @close="emit('close')" />
+                    <ResourceBody :resource="resource" :comments="false" :links="false" :read-only="readOnly" @close="emit('close')" />
                 </slot>
-                <div class="document-links">
-                    <Links :resource="resource" :except="shownAlready" />
-                </div>
+                <template v-if="!readOnly">
+                    <div class="document-links">
+                        <Links :resource="resource" :except="shownAlready" />
+                    </div>
+                </template>
+                <slot name="foot" />
             </Highlight>
         </div>
         <Transition name="aside" @after-leave="panelLeft">
-            <aside v-if="panel" class="document-aside">
+            <aside v-if="panel && !readOnly" class="document-aside">
                 <Comments :resource="resource" :quote="quote" :focus="props.focus" @sent="quote = ''" />
             </aside>
         </Transition>

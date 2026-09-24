@@ -48,6 +48,7 @@ async function pick(level) {
 .prio-wrap {
     position: relative;
     display: inline-flex;
+    margin-left: -9px;
 }
 
 .prio-btn {

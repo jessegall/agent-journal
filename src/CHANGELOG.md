@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.142.0 — Update from the changelog, and shares drawn by the inspector itself
+
+The changelog you open from the sidebar footer checks for a newer version the moment it opens and offers Update to install it; the page reloads when it's done. A shared link now renders the journal's own inspector and collection views in a read-only mode, so a shared document looks exactly as it does in the journal. After Create link, the share dialog waits for the tunnel to be up before showing the link, and Copy with message copies a ready line with the item's title. In a to-do, the priority row lines up with the rest, and a line limit in the file feed turns Collapse big files off. Nothing to do.
+
 ## 2.141.0 — Shared pages look like the journal
 
 A shared link now opens a page drawn by the journal's own components: chapters with the chapter picker, code blocks, tables, pictures and links between the items of the share, in light or dark as the visitor's system prefers. It still reaches nothing else: the page reads only that share's data, and references outside the share read as plain words. The share dialog has an optional password and lists links the agent made under Waiting for you, with Accept and Deny; reports have the Share button too. Saved layouts download as a .json file and Import a layout opens a file picker. The activity sidebar shows events only. The version lives in one file at the root of the repository. journal todo find answers in a fraction of a millisecond instead of a third of a second. Nothing to do.

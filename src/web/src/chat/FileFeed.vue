@@ -45,7 +45,8 @@ const listed = computed(() => {
 });
 const sizing = computed(() => ({"--diff-size": SIZES[view.value.size][0], "--diff-line": SIZES[view.value.size][1]}));
 
-const foldedOf = (c) => folds.value[c.id] ?? (view.value.headers || (view.value.collapse && c.added + c.removed > BIG));
+const foldedOf = (c) =>
+    folds.value[c.id] ?? (view.value.headers || (view.value.collapse && !Number(view.value.lines) && c.added + c.removed > BIG));
 const fold = (c) => (folds.value = {...folds.value, [c.id]: !foldedOf(c)});
 const expand = () => (folds.value = Object.fromEntries(cards.value.map((c) => [c.id, false])));
 

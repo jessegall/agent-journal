@@ -154,7 +154,12 @@ async function stop(shares) {
                                     </template>
                                     {{ share.abstract.replace(/^https:\/\/[^/]+/, "") }}
                                 </span>
-                                <CopyButton :text="share.abstract" />
+                                <CopyButton :text="share.abstract" hint="Copy the link" />
+                                <CopyButton
+                                    :text="`Here's the link to ${itemOf(share).title}: ${share.abstract}`"
+                                    icon="chat"
+                                    hint="Copy it with a line saying what it is"
+                                />
                                 <Btn small kind="danger" :busy="stopping === share.n" @click="stop([share])">Stop sharing</Btn>
                             </div>
                         </div>

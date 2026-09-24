@@ -1,6 +1,6 @@
 <script setup>
 import EmptyState from "../kit/EmptyState.vue";
-import {computed, reactive, ref, watchEffect} from "vue";
+import {computed, inject, reactive, ref, watchEffect} from "vue";
 import {api} from "../api/client.js";
 import Icon from "../kit/Icon.vue";
 import {peek} from "../route.js";
@@ -11,7 +11,8 @@ import ResourceBody from "./ResourceBody.vue";
 import ResourceRow from "./ResourceRow.vue";
 import TabBar from "../kit/TabBar.vue";
 
-const props = defineProps({resource: Object});
+const props = defineProps({resource: Object, readOnly: Boolean});
+const fileUrl = inject("fileUrl", (type, n, name) => api.fileUrl(type, n, name));
 const emit = defineEmits(["close"]);
 const fetched = reactive({});
 const loading = new Set();
@@ -30,7 +31,7 @@ async function load(ref) {
 }
 
 const refs = computed(() => props.resource.refs || []);
-watchEffect(() => refs.value.filter((ref) => !byRef(ref)).forEach(load));
+watchEffect(() => !props.readOnly && refs.value.filter((ref) => !byRef(ref)).forEach(load));
 
 const members = computed(() =>
     refs.value
@@ -55,7 +56,7 @@ const picture = (r) => Object.keys(r.data?.pictures || {})[0] || "";
 </script>
 
 <template>
-    <ResourceBody :resource="resource" :comments="false" :links="false" @close="emit('close')">
+    <ResourceBody :resource="resource" :comments="false" :links="false" :read-only="readOnly" @close="emit('close')">
         <template v-if="todos.length">
             <TabBar v-model="tab" class="tabs" :tabs="tabs" />
         </template>
@@ -77,7 +78,7 @@ const picture = (r) => Object.keys(r.data?.pictures || {})[0] || "";
                 <template v-for="r in cards" :key="r.ref">
                     <button type="button" class="card" @click="peek(r.type, r.n)">
                         <template v-if="picture(r)">
-                            <img class="thumb" :src="api.fileUrl(r.type, r.n, picture(r))" :alt="picture(r)" loading="lazy" />
+                            <img class="thumb" :src="fileUrl(r.type, r.n, picture(r))" :alt="picture(r)" loading="lazy" />
                         </template>
                         <span class="kind">
                             <Icon :name="meta(r.type).icon" :size="12" />

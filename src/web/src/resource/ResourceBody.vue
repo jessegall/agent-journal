@@ -3,7 +3,7 @@ import Folded from "../kit/Folded.vue";
 import SectionHeading from "../kit/SectionHeading.vue";
 import SwitchCase from "../kit/SwitchCase.vue";
 import CloseButton from "../kit/CloseButton.vue";
-import {computed, nextTick, reactive, ref} from "vue";
+import {computed, inject, nextTick, reactive, ref} from "vue";
 import {api} from "../api/client.js";
 import Btn from "../kit/Btn.vue";
 import CommentToggle from "./CommentToggle.vue";
@@ -42,7 +42,9 @@ const props = defineProps({
     comments: {type: Boolean, default: true},
     commentComposer: {type: Boolean, default: true},
     links: {type: Boolean, default: true},
+    readOnly: Boolean,
 });
+const fileUrl = inject("fileUrl", (type, n, name) => api.fileUrl(type, n, name));
 const emit = defineEmits(["close"]);
 const kind = computed(() => meta(props.resource.type));
 const files = computed(() => Object.entries(props.resource.data.files || {}));
@@ -125,7 +127,7 @@ const chaptered = computed(
                     <Icon :name="kind.icon" :size="13" />
                     {{ isUpdate(resource) ? updateLabel(resource) : `${kind.title} ${resource.n}` }}
                 </span>
-                <template v-if="state">
+                <template v-if="state && !readOnly">
                     <SwitchCase :value="state.key">
                         <template #replaced>
                             <button type="button" class="standing replaced" :title="state.hint" @click="peek('doc', state.by)">
@@ -149,7 +151,7 @@ const chaptered = computed(
                         System
                     </span>
                 </template>
-                <template v-if="writing && kind.view === 'document'">
+                <template v-if="writing && kind.view === 'document' && !readOnly">
                     <button type="button" class="writing-now" title="Go to what the agent is writing" @click="follow">
                         <span class="writing-dot" />
                         Agent writing
@@ -160,12 +162,14 @@ const chaptered = computed(
                 </template>
                 <span class="age">{{ age(resource.created) }}</span>
                 <slot name="tools" />
-                <template v-if="kind.view === 'document'">
-                    <DownloadLink :resource="resource" />
+                <template v-if="!readOnly">
+                    <template v-if="kind.view === 'document'">
+                        <DownloadLink :resource="resource" />
+                    </template>
+                    <CloseButton @click="emit('close')" />
                 </template>
-                <CloseButton @click="emit('close')" />
             </div>
-            <template v-if="resource.data?.template">
+            <template v-if="resource.data?.template && !readOnly">
                 <button type="button" class="from" @click="peek('template', Number(template))">
                     <Icon name="docs" :size="11" />
                     Made from template {{ template }}
@@ -213,7 +217,7 @@ const chaptered = computed(
         <template v-if="resource.deleted">
             <p class="waits">This was deleted.</p>
         </template>
-        <template v-else-if="!editing">
+        <template v-else-if="!editing && !readOnly">
             <div class="controls">
                 <ResourceActions :resource="resource" @edit="edit" @close="emit('close')" />
                 <span class="controls-end">
@@ -251,7 +255,7 @@ const chaptered = computed(
         <template v-if="resource.type === 'check'">
             <CheckResult :resource="resource" />
         </template>
-        <template v-if="buttons.length">
+        <template v-if="buttons.length && !readOnly">
             <Buttons :resource="resource" />
         </template>
         <template v-if="fieldsShown">
@@ -339,7 +343,7 @@ const chaptered = computed(
             <section class="block">
                 <SectionHeading>Files</SectionHeading>
                 <template v-for="[name, description] in files" :key="name">
-                    <a class="file" :href="api.fileUrl(resource.type, resource.n, name)" target="_blank" :title="name">
+                    <a class="file" :href="fileUrl(resource.type, resource.n, name)" target="_blank" :title="name">
                         <Icon name="clip" :size="13" />
                         <span class="file-text">
                             <span class="file-name">{{ name }}</span>
@@ -351,8 +355,10 @@ const chaptered = computed(
                 </template>
             </section>
         </template>
-        <Asked :resource="resource" />
-        <SequenceRuns :resource="resource" />
+        <template v-if="!readOnly">
+            <Asked :resource="resource" />
+            <SequenceRuns :resource="resource" />
+        </template>
         <slot />
         <template v-if="docs.length">
             <section class="linked-docs">
@@ -364,11 +370,13 @@ const chaptered = computed(
                 </div>
             </section>
         </template>
-        <template v-if="links">
+        <template v-if="links && !readOnly">
             <Links :resource="resource" :except="docs.map((d) => d.ref)" />
         </template>
-        <footer class="foot">seen by {{ seenBy }}</footer>
-        <template v-if="comments && kind?.takes_comments">
+        <template v-if="!readOnly">
+            <footer class="foot">seen by {{ seenBy }}</footer>
+        </template>
+        <template v-if="comments && kind?.takes_comments && !readOnly">
             <Comments :resource="resource" :compose="commentComposer" />
         </template>
     </article>
