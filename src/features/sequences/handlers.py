@@ -1,7 +1,8 @@
+import time
 from dataclasses import dataclass
 from typing import ClassVar
 
-from engine.events import AgentReported, AnyEvent, ResourceEvent
+from engine.events import AgentReported, AnyEvent, ClockTicked, ResourceEvent
 from engine.transcript import IDLE
 from features.parts import AgentContext, Context, Handler
 from features.sequences.controller import BY_HAND
@@ -11,6 +12,8 @@ from resources.types import TYPES
 
 STEP = "step"
 UNFINISHED = "unfinished"
+WAITING = "waiting"
+NUDGE_EVERY = 120
 
 
 @dataclass(frozen=True)
@@ -75,3 +78,17 @@ class HandStepToAgent(Handler):
             part = sequence.sections[run["step"] - 1]
             speaking.agent.say(STEP, n=sequence.n, title=sequence.title, step=run["step"], count=len(sequence.sections),
                                name=part[SECTION.title], body=part[SECTION.body], about=about_flag(key))
+
+
+class NudgeWaitingStep(Handler):
+    def handle(self, context: AgentContext, event: ClockTicked) -> None:
+        found = context.journal.sequences._in_hand()
+        if not found:
+            return
+        sequence, key, run = found
+        waited = int((time.time() - run["at"]) // NUDGE_EVERY)
+        if waited < 1 or not context.once(WAITING, f"{sequence.n}|{key}|{run['step']}|{run['at']}|{waited}"):
+            return
+        step = sequence.sections[run["step"] - 1]
+        context.agent.say(WAITING, n=sequence.n, title=sequence.title, step=run["step"], count=len(sequence.sections),
+                          name=step[SECTION.title], body=step[SECTION.body], about=about_flag(key))

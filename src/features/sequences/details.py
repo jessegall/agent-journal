@@ -1,5 +1,5 @@
 from features.base import FeatureDetails, Line
-from features.sequences.handlers import STEP, UNFINISHED
+from features.sequences.handlers import STEP, UNFINISHED, WAITING
 
 
 class SequencesDetails(FeatureDetails):
@@ -45,6 +45,14 @@ class SequencesDetails(FeatureDetails):
             brief="""
                 finish the step and journal sequence next {{n}}{{about}}; if it no longer applies,
                 journal sequence abandon {{n}}{{about}} --why "<why>"
+            """,
+        ),
+        Line(
+            name=WAITING,
+            title="sequence {{n}}, {{title}}: step {{step}} of {{count}} has waited two minutes - {{name}}",
+            brief="""
+                the user is waiting on this step; do it now. {{body}} When it is done: journal sequence next
+                {{n}}{{about}}
             """,
         ),
         Line(

@@ -43,7 +43,8 @@ WORKING_A_BOARD_CARD = {
     "brief": "A request typed into a board's New work panel becomes draft tickets for one feature. The panel is a place of "
              "clicking, not reading: you say in a few words what you think they want to build, they click the reading that "
              "fits or type their own, and after two such rounds you draft. Every turn is one question or one short line, "
-             "never a paragraph. You talk only about the feature and its tickets, never about rows, chips, numbers, commands "
+             "never a paragraph. Every answer to a request goes to the board, never to the chat: a question with "
+             "options while you work out the feature, and the one-line reply on the card at the end. You talk only about the feature and its tickets, never about rows, chips, numbers, commands "
              "or the journal. Use judgment at every step: the board's name, its brief and the cards already on it carry "
              "meaning, and each step is done the way that fits this request rather than to the letter.",
     "starts_on": "message.requested",

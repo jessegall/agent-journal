@@ -7,6 +7,7 @@ from resources.base import REQUESTED, Refused, Resource, titled
 
 
 STAGES = ("To do", "Doing", "Review", "Done")
+START_OVER = "Start over"
 
 
 
@@ -42,8 +43,17 @@ class Boards(Controller):
         asking = Questions(self.record, actor=self.actor, session=self.session, agent=self.agent)
         return asking.create(question, abstract, about=board.ref, hidden=True, **data)
 
+    def cancel(self, n: int):
+        board = self.load(int(n))
+        asking = Questions(self.record, actor=self.actor, session=self.session, agent=self.agent)
+        for open_question in asking.about(board.ref):
+            if not open_question.completed:
+                asking.complete(open_question.n, how=START_OVER)
+        return board
+
     def request(self, n: int, text: str, idempotency: str = ""):
         board = self.load(int(n))
+        self.cancel(board.n)
         made = Messages(self.record, actor=self.actor, session=self.session, agent=self.agent).create(
             titled(text), brief=text.strip(), about=board.ref, new_work=True, idempotency=idempotency)
         self.update(board.n, expected=0)
