@@ -120,15 +120,6 @@ const html = computed(() => {
     color: var(--accent-text);
 }
 
-.md :deep(.row-pill) {
-    padding: 0 4px;
-    border: 1px solid var(--border-2);
-    border-radius: 5px;
-    color: var(--text-2);
-    text-decoration: none;
-    white-space: nowrap;
-}
-
 .md :deep(.file-pill) {
     display: inline-flex;
     align-items: center;

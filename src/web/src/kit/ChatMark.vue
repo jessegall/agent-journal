@@ -98,16 +98,13 @@ button.mark:hover {
     line-height: inherit;
 }
 
-
 .head strong {
     color: var(--text-2);
     font-weight: 500;
 }
 
 .mark .detail :deep(.row-pill) {
-    padding: 0 5px;
     font-family: inherit;
-    font-size: inherit;
     line-height: inherit;
 }
 
