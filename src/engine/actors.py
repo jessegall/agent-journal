@@ -112,8 +112,10 @@ class Agent(Actor):
         landed = self.driver.send(line, groups=groups, yielding=render(yielding, self.record)[0] if yielding else "")
         if typed:
             landed = self.driver.type_in(render(typed, self.record)[0]) and landed
+        if not landed:
+            return ""
         for e in self.pending:
-            if landed and TYPES[e.type].stamped_when_notified:
+            if TYPES[e.type].stamped_when_notified:
                 CONTROLLERS[e.type](self.record, actor=SYSTEM).stamp(e.n, delivered=time.time())
             self.notified(e)
         self.pending = []

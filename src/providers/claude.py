@@ -257,10 +257,10 @@ class Claude(Provider):
         return list({link.partition("?")[0]: link for link in reversed(newest)}.values())[::-1]
 
     def link_rows(self, found: WorkLinks, row: Row) -> WorkLinks:
-        if row.type != "user":
+        if row.type != "assistant":
             return found
-        for block in row.of_type("tool_result"):
-            fresh = [link.rstrip(".,;") for link in WORK_LINK.findall(block.result)]
+        for block in row.of_type("text"):
+            fresh = [link.rstrip(".,;)") for link in WORK_LINK.findall(block.text)]
             found.links = [*(link for link in found.links if link not in fresh), *dict.fromkeys(fresh)][-KEPT_LINKS:]
         return found
 

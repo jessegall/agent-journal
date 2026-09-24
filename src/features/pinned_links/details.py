@@ -25,6 +25,10 @@ class PinnedLinksDetails(FeatureDetails):
         anything else about its work. Work a subagent builds straight into the viewer has no link
         of its own: pin it anyway, with the viewer address of the page it changed, so the user can
         open and review it.
+
+        A subagent that is lent an environment pins its own links the same way, with journal --env
+        <name> --agent <its id> notice create: they show over its chat in the inspector, beside the
+        links it wrote, and stay out of the main chat's pins.
     """
 
     lines = [

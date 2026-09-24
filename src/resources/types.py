@@ -1,6 +1,6 @@
 from typing import ClassVar
 
-from resources.base import AGENT, COMMISSIONED, COMPLETED, DOCUMENT, LAZY, OPENED, PROJECT, REQUESTED, RESULTS, REVISED, SIDEBAR, SYSTEM, UNLISTED, USER, Resource, ResourceDetails
+from resources.base import AGENT, CLOSED, COMMISSIONED, COMPLETED, DOCUMENT, LAZY, OPEN, OPENED, PROJECT, REQUESTED, RESULTS, REVISED, SIDEBAR, SYSTEM, UNLISTED, UPDATES, USER, Resource, ResourceDetails
 from resources.shapes import FLAG, NUMBER, TEXT, Field, Options, Placed, Ranked, Reasoned, Shape, Traced, rows
 
 
@@ -137,6 +137,7 @@ class Report(Shape, Resource):
     command_names = {"complete": "archive"}
     closed_first = True
     view = DOCUMENT
+    filters = (OPEN, UPDATES, CLOSED)
     indexed = ("kind", "number", "until")
     formatted_data = {"items": ("title", "note")}
 

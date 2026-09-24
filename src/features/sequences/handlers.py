@@ -27,6 +27,26 @@ def about_flag(key: str) -> str:
     return "" if about == BY_HAND else f" --about {about}"
 
 
+def filled(context: Context, n: int, key: str, body: str) -> str:
+    about = key.split("|", 1)[1]
+    text = body.replace("<this sequence>", str(n))
+    if about == BY_HAND:
+        return text
+    board = board_of(context, about)
+    text = text.replace("<ref>", about)
+    return text.replace("<board n>", str(board)) if board else text
+
+
+def board_of(context: Context, about: str) -> int:
+    kind, _, n = about.partition(":")
+    if kind == "board":
+        return int(n)
+    if kind != "message" or not n.isdigit():
+        return 0
+    refs = context.journal.messages.load(int(n)).refs
+    return next((int(ref.split(":")[1]) for ref in refs if ref.startswith("board:")), 0)
+
+
 class StartOnMoment(Handler):
     def handle(self, context: Context, event: AnyEvent) -> None:
         if event.type == "sequence" or event.type not in TYPES:
@@ -83,7 +103,7 @@ class HandStepToAgent(Handler):
         if speaking.once(STEP, f"{sequence.n}|{key}|{run['step']}|{run['at']}"):
             part = sequence.sections[run["step"] - 1]
             speaking.agent.say(STEP, n=sequence.n, title=sequence.title, step=run["step"], count=len(sequence.sections),
-                               name=part[SECTION.title], body=part[SECTION.body], about=about_flag(key))
+                               name=part[SECTION.title], body=filled(context, sequence.n, key, part[SECTION.body]), about=about_flag(key))
 
 
 def asked_since(context: AgentContext, at: float) -> bool:
@@ -102,4 +122,4 @@ class NudgeWaitingStep(Handler):
             return
         step = sequence.sections[run["step"] - 1]
         context.agent.say(WAITING, n=sequence.n, title=sequence.title, step=run["step"], count=len(sequence.sections),
-                          name=step[SECTION.title], body=step[SECTION.body], about=about_flag(key))
+                          name=step[SECTION.title], body=filled(context, sequence.n, key, step[SECTION.body]), about=about_flag(key))

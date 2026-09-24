@@ -6,6 +6,7 @@ from resources.shapes import LIST, TEXT, Field, Shape
 MESSAGE, NUDGE, INSTRUCT, DENY, START = "message", "nudge", "instruct", "deny", "start"
 DOES = (MESSAGE, NUDGE, INSTRUCT, DENY, START)
 FIRED = "fired"
+FROM_USER = "user"
 
 
 class Trigger(Shape, Resource):
@@ -28,4 +29,4 @@ class Trigger(Shape, Resource):
     notified = (USER,)
     labels = {"brief": "What it says", "outcome": "Why retired", "words": "Words", "words_in": "Where they count", "does": "What it does", "text": "What it sends"}
     shown_fields = ("words", "words_in", "does", "text")
-    choices = {"does": list(DOES), "words_in": ["text", "commands", "both", "everything"]}
+    choices = {"does": list(DOES), "words_in": ["text", "commands", "both", "everything", FROM_USER]}

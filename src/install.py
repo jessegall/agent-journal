@@ -327,6 +327,7 @@ def finish(project: Path, root: Path) -> list[str]:
     done += configure(project, root)
     ran = migrate(root)
     done.append(f"migrations run: {', '.join(ran)}" if ran else "record already in shape")
+    done.append(ship_sequences(root))
     moved = retire(root)
     if moved:
         done.append(f"package moved into {SRC}/: {moved} files out of the record")
@@ -419,11 +420,13 @@ def package() -> dict:
     from engine.package import point
     from engine.sessions import held_builds
     from features.journal_laws.policy import brief
+    from features.sequences.shipped import ship
     from migrations import run as migrate
+    from migrations import shipped
     from providers import PROVIDERS
     from providers.base import LIBRARY
     from skills import LINKED, publish
-    return {"served": served, "point": point, "held_builds": held_builds, "brief": brief, "migrate": migrate, "PROVIDERS": PROVIDERS,
+    return {"served": served, "point": point, "held_builds": held_builds, "brief": brief, "migrate": migrate, "ship_sequences": lambda root: shipped(root, ship, "system sequences"), "PROVIDERS": PROVIDERS,
             "LIBRARY": LIBRARY, "LINKED": LINKED, "publish": publish}
 
 

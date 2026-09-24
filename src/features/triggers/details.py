@@ -15,7 +15,7 @@ class TriggersDetails(FeatureDetails):
     help = f"""
         journal trigger create "<what it is for>" --set words="git push,force" --set
         does=nudge --set text="<what to say>" writes one. words_in says where the words are
-        matched: text, commands, both (the default) or everything.
+        matched: text, commands, both (the default), everything, or user for only what the user writes.
 
         does is one of {', '.join(DOES)}. A message reaches the chat as if the user wrote it, a
         nudge and an instruction are said to you alone, and a deny refuses the tool call

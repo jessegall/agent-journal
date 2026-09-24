@@ -15,6 +15,8 @@ import Revisions from "./Revisions.vue";
 import CollectionPage from "./CollectionPage.vue";
 import AgentPage from "./AgentPage.vue";
 import Comments from "./Comments.vue";
+import UpdateReport from "./UpdateReport.vue";
+import {isUpdate} from "../domain/updates.js";
 
 const props = defineProps({type: String, n: Number, depth: {type: Number, default: 0}, over: Boolean, leaving: Boolean});
 const emit = defineEmits(["gone"]);
@@ -45,6 +47,8 @@ const WIDTHS = {small: "normal", wide: "wide"};
 const panelWidth = computed(() => WIDTHS[shape.value] || "page");
 const panel = computed(() => (["small", "wide"].includes(shape.value) ? "inspector" : shape.value));
 const close = () => (route.value.open ? unpeek() : go(route.value.env, props.type));
+const stepTo = (n) => (route.value.open ? swap("report", n) : go(route.value.env, "report", n));
+const allUpdates = () => (location.hash = `#/${route.value.env}/report?sub=updates`);
 const swapping = ref(false);
 let settle = 0;
 watch(
@@ -122,6 +126,11 @@ watch(
                         <DocumentPage :resource="resource" :focus="focusComment" @close="close">
                             <template v-if="resource.data.revisions">
                                 <Revisions :resource="resource" @close="close" />
+                            </template>
+                            <template v-else-if="isUpdate(resource)">
+                                <ResourceBody :resource="resource" :comments="false" :links="false" @close="close">
+                                    <UpdateReport :resource="resource" @step="stepTo" @all="allUpdates" />
+                                </ResourceBody>
                             </template>
                         </DocumentPage>
                     </template>

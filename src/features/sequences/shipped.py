@@ -1,4 +1,6 @@
 from features.sequences.controller import Sequences
+from features.triggers.controller import Triggers
+from features.triggers.resource import FROM_USER, START
 from resources.base import SECTION, SYSTEM, USER
 
 FILING_A_DUMP = {
@@ -168,7 +170,8 @@ BUILDING_A_BOARD = {
 DRAFTING_FROM_A_DOCUMENT = {
     "title": "Drafting tickets from a document",
     "brief": "The user handed a document to a board's New work panel. Read it whole and draft one ticket per piece of work "
-             "it describes, each saying where in the document it came from, for the user to pick. There are no rounds of "
+             "it describes, each saying where in the document it came from, for the user to pick. Only tickets on this "
+             "board: never a plan, a doc or a to-do made from it. There are no rounds of "
              "questions first: the document is the answer to them. Ask only what the document leaves open, on the board. "
              "You talk only about the work and its tickets, never about rows, commands or the journal. An answer of Start "
              "over means they closed the panel: the run is given up for you, so write nothing more to the board.",
@@ -196,7 +199,31 @@ DRAFTING_FROM_A_DOCUMENT = {
                          "sequence next <this sequence> --about <ref>."),
     ],
 }
-SHIPPED = (FILING_A_DUMP, BUILDING_A_PLAN, WORKING_A_BOARD_CARD, REVISING_THE_DRAFTS, BUILDING_A_BOARD, DRAFTING_FROM_A_DOCUMENT)
+WRITING_AN_UPDATE = {
+    "title": "Writing an update",
+    "brief": "The user asked for an update or a TLDR. Write an update report on what happened since they last opened "
+             "one, and answer with it. You talk about the work, never about rows, commands or the journal.",
+    "starts_on": "",
+    "started_by": "",
+    "words": ("give me an update", "an update please", "any updates", "status update", "tldr", "tl;dr", "catch me up",
+              "what happened since"),
+    "steps": [
+        ("See what changed", "journal report changes lists what happened since the user last opened an update, under need, "
+                             "done, doing, plans, commits and also. Read any row you do not remember before you sum it "
+                             "up. Then journal sequence next <this sequence> --about <ref>."),
+        ("Write the update", "journal report recap \"<one or two plain sentences: what got done, what is under way, what "
+                             "waits on the user>\" writes the report with those rows in that order. Give every row under "
+                             "need and doing a short note of what it waits on or what is being done now: journal report "
+                             "note <report n> <ref> \"<line>\". Add a row the list missed with journal report item <report "
+                             "n> <section> <ref> \"<title>\", and take out one that is only noise with journal report drop "
+                             "<report n> <ref>. Then journal sequence next <this sequence> --about <ref>."),
+        ("Answer with it", "Reply in one short line, then the report's reference on a line of its own, like report 98, so "
+                           "the chat shows it as a card the user opens. Finish with journal sequence next <this sequence> "
+                           "--about <ref>."),
+    ],
+}
+SHIPPED = (FILING_A_DUMP, BUILDING_A_PLAN, WORKING_A_BOARD_CARD, REVISING_THE_DRAFTS, BUILDING_A_BOARD, DRAFTING_FROM_A_DOCUMENT,
+           WRITING_AN_UPDATE)
 
 
 def ship(record) -> list[str]:
@@ -205,7 +232,15 @@ def ship(record) -> list[str]:
     return [shipped["title"] for shipped in SHIPPED if in_step(sequences, shipped, standing.get(shipped["title"]))]
 
 
+def watched(record, shipped: dict) -> str:
+    triggers = Triggers(record, actor=SYSTEM)
+    row = next((t for t in triggers._every() if t.title == shipped["title"] and not t.deleted), None) or triggers.create(
+        shipped["title"], brief=f"Starts the sequence {shipped['title']}", words=list(shipped["words"]), words_in=FROM_USER, does=START)
+    return f"trigger:{row.n}"
+
+
 def in_step(sequences: Sequences, shipped: dict, n: int | None) -> bool:
+    shipped = {**shipped, "starts_on": watched(sequences.record, shipped)} if shipped.get("words") else shipped
     steps = [{SECTION.title: title, SECTION.body: body} for title, body in shipped["steps"]]
     row = sequences.load(n) if n else sequences.create(shipped["title"], starts_on=shipped["starts_on"], system=True)
     shape = (shipped["brief"], shipped["starts_on"], shipped["started_by"], steps)

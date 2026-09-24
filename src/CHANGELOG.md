@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.126.0 — Messages reach an idle Codex agent, and asking for an update writes an update report
+
+A Codex agent that sat idle through a restart or an upgrade no longer holds every chat message until someone types in its terminal: each agent is found by its process, a message waiting for an agent idle at its prompt is typed in after half a minute, a live idle agent is no longer marked stopped after an hour, and a message whose typing fails stays waiting instead of being marked delivered. Asking the agent for an update or a TLDR writes an update report of what happened since you last opened one, shown in the chat as a card that opens over the chat window; earlier updates are under Updates on the Reports page. Sequence steps name the board they are about, so board work lands on the board you opened; while a board is being worked the agent makes no plan or chat question of its own; every upgrade brings the system sequences in line. A subagent's links show as pins over its chat, and it can pin its own. Nothing to do.
+
 ## 2.125.0 — One quiet chat button, accept every proposed wait at once, and the subagent chat shows the whole conversation
 
 The chat composer has one button in Send's place: a quiet Dump files while the field is empty, turning into Send once you type, with the paperclip back at the bottom left. Adding cards from New work now also takes the waits between the cards you added, and a board column with several proposed waits has Accept all waits in its header. Question cards in the chat take the full width. A subagent's chat shows what it wrote and every message sent to it, with each run of tool calls folded into one line. The hint beside From a document is gone. Nothing to do.

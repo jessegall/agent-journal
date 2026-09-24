@@ -4,7 +4,7 @@ from typing import ClassVar
 from engine.events import AgentMessageSent, ResourceEvent
 from features.parts import AgentContext, Context, Handler, ToolInterceptor
 from features.recital import COMMANDS, mentioned, searched
-from features.triggers.resource import DENY, FIRED, INSTRUCT, MESSAGE, NUDGE, START
+from features.triggers.resource import DENY, FIRED, FROM_USER, INSTRUCT, MESSAGE, NUDGE, START
 from resources.base import SYSTEM, USER
 
 WATCHING = "watching"
@@ -12,9 +12,9 @@ CHAT_DENIED = "caught a denied word in the agent's message"
 DONE = {MESSAGE: "sent a message", NUDGE: "nudged the agent", INSTRUCT: "instructed the agent", DENY: "denied the call", START: "started its sequence"}
 
 
-def firing(context, text_of) -> list:
+def firing(context, text_of, from_user: bool = False) -> list:
     return [row for row in context.journal.acting(SYSTEM).triggers._standing()
-            if mentioned(row.words, text_of(str(row.words_in or "both")))]
+            if (from_user or row.words_in != FROM_USER) and mentioned(row.words, text_of(str(row.words_in or "both")))]
 
 
 def fire(context, agent, row, done: str = "") -> None:
@@ -62,6 +62,6 @@ class WatchWhatTheUserWrites(Handler):
         agent = context.journal.acting(SYSTEM).agents.primary()
         message = context.journal.messages.load(event.n)
         text = f"{message.title} {message.brief}"
-        for row in firing(context, lambda scope: "" if scope == COMMANDS else text):
+        for row in firing(context, lambda scope: "" if scope == COMMANDS else text, from_user=True):
             if agent and row.does != DENY:
                 fire(context, agent, row)

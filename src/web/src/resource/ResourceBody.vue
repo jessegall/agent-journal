@@ -14,6 +14,7 @@ import {age} from "../format/time.js";
 import {label, meta, word} from "../state/store.js";
 import ResourceActions from "./ResourceActions.vue";
 import Sections from "./Sections.vue";
+import {isUpdate, updateLabel} from "../domain/updates.js";
 import OptionsPicker from "./OptionsPicker.vue";
 import StageMeanings from "./StageMeanings.vue";
 import Priority from "./Priority.vue";
@@ -103,7 +104,7 @@ const docs = computed(() =>
             <div class="top">
                 <span class="kind">
                     <Icon :name="kind.icon" :size="13" />
-                    {{ kind.title }} {{ resource.n }}
+                    {{ isUpdate(resource) ? updateLabel(resource) : `${kind.title} ${resource.n}` }}
                 </span>
                 <template v-if="state">
                     <SwitchCase :value="state.key">

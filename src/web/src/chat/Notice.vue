@@ -5,7 +5,7 @@ import {onMounted, ref} from "vue";
 import {api} from "../api/client.js";
 import {route} from "../route.js";
 
-const props = defineProps({notice: Object});
+const props = defineProps({notice: Object, fixed: Boolean});
 
 const forcing = ref(false);
 
@@ -52,7 +52,9 @@ async function close() {
         <template v-else-if="notice.data.action && notice.data.session">
             <Btn small :busy="forcing" :disabled="forcing" @click="force">Force now</Btn>
         </template>
-        <CloseButton :class="{unarmed: !armed}" title="Close this" @click="close" />
+        <template v-if="!fixed">
+            <CloseButton :class="{unarmed: !armed}" title="Close this" @click="close" />
+        </template>
     </div>
 </template>
 
