@@ -10,7 +10,7 @@ import AgentStrip from "../board/AgentStrip.vue";
 import Lane from "../board/Lane.vue";
 import Switch from "../kit/Switch.vue";
 import TabBar from "../kit/TabBar.vue";
-import FirstBoard from "../board/FirstBoard.vue";
+import NewBoard from "../board/NewBoard.vue";
 import NewWork from "../board/NewWork.vue";
 import BoardMenu from "../board/BoardMenu.vue";
 import {remember, remembered} from "../composables/remembered.js";
@@ -41,20 +41,20 @@ const current = computed(() => boards.value.find((board) => board.n === store.bo
 const meaningOf = (key) => (tickets.value ? current.value && current.value.data.meanings[key] : TODO_MEANINGS[key]) || "";
 const finder = ref(null);
 const writingWork = ref(false);
-const firstBoard = ref(false);
+const newBoard = ref(false);
 const FIRST_BOARD_SEEN = "board.first-board-seen";
 const workStage = ref("");
 const newWork = (stage = "") => (tickets.value ? ((workStage.value = stage), (writingWork.value = true)) : (adding.value = "todo"));
 const toast = ref(null);
 const undo = () => toast.value && toast.value.action && (toast.value.action(), (toast.value = null));
 const KEYS = {"/": () => finder.value.focus(), n: newWork, z: (e) => (e.metaKey || e.ctrlKey) && undo()};
-const openFlow = () => writingWork.value || firstBoard.value;
+const openFlow = () => writingWork.value || newBoard.value;
 const onKey = (e) =>
     KEYS[e.key] && !e.target.closest("input,textarea,[contenteditable]") && !openFlow() && (e.preventDefault(), KEYS[e.key](e));
 onMounted(async () => {
     window.addEventListener("keydown", onKey);
     const known = (await loadRows("board")).filter((board) => !board.completed && !board.deleted);
-    firstBoard.value = !known.length && !remembered(FIRST_BOARD_SEEN, false);
+    newBoard.value = !known.length && !remembered(FIRST_BOARD_SEEN, false);
     settle(known);
 });
 
@@ -94,13 +94,13 @@ async function restore(board) {
     }
 }
 
-function leaveFirstBoard() {
-    firstBoard.value = false;
+function leaveNewBoard() {
+    newBoard.value = false;
     remember(FIRST_BOARD_SEEN, true);
 }
 
 function boardMade(n) {
-    leaveFirstBoard();
+    leaveNewBoard();
     lens({board: n});
 }
 onUnmounted(() => window.removeEventListener("keydown", onKey));
@@ -251,7 +251,7 @@ const ask = usePoll(
         <header class="bar">
             <h2>Board</h2>
             <TabBar v-model="shown" :tabs="tabs">
-                <button type="button" class="tool" title="New board" @click="firstBoard = true"><Icon name="plus" /></button>
+                <button type="button" class="tool" title="New board" @click="newBoard = true"><Icon name="plus" /></button>
             </TabBar>
             <template v-if="current || archived.length">
                 <Btn ref="boardMenuOpener" kind="icon" title="Board settings" @click.stop="boardMenu = !boardMenu">
@@ -332,7 +332,7 @@ const ask = usePoll(
         <template v-if="asking">
             <ShiftPrompt :ask="asking" @send="(words) => shift(asking.card, asking.lane, words)" @close="asking = null" />
         </template>
-        <FirstBoard :open="firstBoard" :first="!boards.length" @close="leaveFirstBoard" @made="boardMade" />
+        <NewBoard :open="newBoard" @close="leaveNewBoard" @made="boardMade" />
         <template v-if="tickets && current">
             <NewWork
                 :open="writingWork"

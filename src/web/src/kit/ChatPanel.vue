@@ -47,7 +47,7 @@ const focusEntered = (el) => el === input.value && focusInput();
 <template>
     <div :class="['chat', {fill}]">
         <template v-if="closable">
-            <button type="button" class="close" title="Cancel and start over" @click="emit('close')">
+            <button type="button" class="close" title="Cancel" @click="emit('close')">
                 <Icon name="close" />
             </button>
         </template>
@@ -71,11 +71,13 @@ const focusEntered = (el) => el === input.value && focusInput();
                 </template>
             </Transition>
         </div>
-        <Transition name="echo">
-            <template v-if="echo && !waiting">
-                <p :key="echo" class="echo">{{ echo }}</p>
-            </template>
-        </Transition>
+        <div class="echo-slot">
+            <Transition name="echo">
+                <template v-if="echo && !waiting">
+                    <p :key="echo" class="echo">{{ echo }}</p>
+                </template>
+            </Transition>
+        </div>
         <div class="compose-slot">
             <Transition name="input-step" @after-enter="() => typing() && focusInput()">
                 <template v-if="!withoutInput">
@@ -234,6 +236,17 @@ const focusEntered = (el) => el === input.value && focusInput();
     }
 }
 
+.echo-slot {
+    display: flex;
+    flex: none;
+    justify-content: flex-end;
+    min-height: 26px;
+}
+
+.chat:has(.close) .lines {
+    padding-right: 48px;
+}
+
 .echo {
     align-self: flex-end;
     max-width: 80%;
@@ -277,7 +290,7 @@ const focusEntered = (el) => el === input.value && focusInput();
 .input-step-enter-active {
     transition:
         opacity 0.4s ease,
-        transform 0.45s cubic-bezier(0.2, 0.9, 0.25, 1);
+        transform 0.45s var(--ease);
 }
 
 .input-step-leave-active {

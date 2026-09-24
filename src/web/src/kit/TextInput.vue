@@ -1,17 +1,19 @@
 <script setup>
-import {ref} from "vue";
+import {computed, ref, useAttrs} from "vue";
 
 defineOptions({inheritAttrs: false});
 defineProps({label: {type: String, default: ""}, large: Boolean});
+const attrs = useAttrs();
+const inputAttrs = computed(() => Object.fromEntries(Object.entries(attrs).filter(([key]) => key !== "class" && key !== "style")));
 const input = ref(null);
 defineExpose({focus: () => input.value && input.value.focus()});
 </script>
 
 <template>
     <template v-if="label">
-        <label :class="['text-field', {large}]">
+        <label :class="['text-field', {large}, attrs.class]" :style="attrs.style">
             <span class="text-field-label">{{ label }}</span>
-            <input ref="input" class="text-field-input" spellcheck="false" v-bind="$attrs" />
+            <input ref="input" class="text-field-input" spellcheck="false" v-bind="inputAttrs" />
         </label>
     </template>
     <template v-else>
