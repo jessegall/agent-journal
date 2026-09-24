@@ -1,25 +1,9 @@
 <script setup>
-import {ref, watch} from "vue";
-import {api} from "../api/client.js";
 import LinkCard from "../kit/LinkCard.vue";
+import {kindOf, useAgentLinks} from "../composables/agentLinks.js";
 
 const props = defineProps({agent: {type: Number, required: true}, session: {type: String, default: ""}});
-const KINDS = [
-    [/claude\.ai\/design\//, "Design"],
-    [/claude\.ai\/(code\/)?artifact\//, "Page"],
-    [/github\.com\/.+\/pull\//, "Pull request"],
-    [/figma\.com\//, "Figma"],
-];
-const links = ref([]);
-const kindOf = (href) => (KINDS.find(([pattern]) => pattern.test(href)) || [null, "Link"])[1];
-
-watch(
-    () => [props.agent, props.session],
-    async () => {
-        links.value = (await api.agentLinks(props.agent, props.session).catch(() => ({links: []}))).links;
-    },
-    {immediate: true}
-);
+const links = useAgentLinks(() => [props.agent, props.session]);
 </script>
 
 <template>

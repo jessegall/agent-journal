@@ -35,6 +35,7 @@ OUTPUT_WAIT = 5.0
 TYPING_HOLD = 10.0
 
 SILENT_AFTER = 120.0
+FORCE_AFTER = 30.0
 PROBE_WAIT = 5.0
 
 
@@ -336,7 +337,7 @@ class Engine(Seat):
         return f"controlled: {queued.label}"
 
     def deliver(self) -> str:
-        if self.agent.driver.last_report() is None:
+        if self.agent.driver.last_report() is None and not self.idle_without_report():
             return "waiting for the agent's first report"
         count = 0
         for actor in self.actors:
@@ -363,6 +364,10 @@ class Engine(Seat):
             self.noted(line, ran.DELIVERED)
             return f"typed {waiting} in one line"
         return f"delivered {count}" if count else ""
+
+    def idle_without_report(self) -> bool:
+        driver = self.agent.driver
+        return driver.at_prompt() and driver.quiet_for() >= FORCE_AFTER
 
     def nudge(self) -> str:
         if self.agent.state() != IDLE:

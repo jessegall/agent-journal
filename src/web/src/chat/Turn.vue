@@ -13,6 +13,7 @@ import Buttons from "../resource/Buttons.vue";
 import OptionsPicker from "../resource/OptionsPicker.vue";
 import Attachments from "./Attachments.vue";
 import MadeCard from "./MadeCard.vue";
+import {openUpdate} from "./updateView.js";
 import {peek, peekChip, peekRef, route} from "../route.js";
 import {quoted} from "../format/quote.js";
 import {clock} from "../format/time.js";
@@ -33,6 +34,14 @@ const FOLD_AT = 420;
 const PEER_FOLD_AT = 140;
 const PEER_KEEP = 96;
 const text = ref(null);
+
+function chipOrUpdate(e) {
+    const update = e.target.closest("[data-update]");
+    if (!update) return peekChip(e);
+    e.preventDefault();
+    e.stopPropagation();
+    openUpdate(Number(update.dataset.update), update);
+}
 
 function shaped() {
     const el = bubble.value;
@@ -277,7 +286,7 @@ async function drop() {
                         <p class="thread-ask">{{ turn.title }}</p>
                     </template>
                     <Folded :at="between ? PEER_FOLD_AT : FOLD_AT" :keep="between ? PEER_KEEP : 320">
-                        <div ref="text" class="thread-text" @click="peekChip" v-html="html" />
+                        <div ref="text" class="thread-text" @click="chipOrUpdate" v-html="html" />
                     </Folded>
                     <template v-if="turn.type === 'question'">
                         <template v-if="turn.abstract">

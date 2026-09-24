@@ -20,7 +20,7 @@ defineProps({
     floating: Boolean,
 });
 const emit = defineEmits(["feed"]);
-const notices = computed(() => open("notice"));
+const notices = computed(() => open("notice").filter((notice) => !notice.data.agent));
 const feedKey = computed(() => (agent.value ? `${agent.value.n}:${agent.value.data.transcript}` : ""));
 </script>
 

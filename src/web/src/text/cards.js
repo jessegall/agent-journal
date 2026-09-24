@@ -1,6 +1,8 @@
 import {escape, register} from "./index.js";
 import {rows} from "../sync/rows.js";
 import {words} from "./words.js";
+import {age} from "../format/time.js";
+import {isUpdate, updateCounts, updateLabel} from "../domain/updates.js";
 import "./cards.css";
 
 const MARKED = /^\[\[chip ([a-z]+):(\d+)\|([^\]]*)\]\][.:]?$/m;
@@ -14,8 +16,16 @@ function alone(text, context) {
     return kind ? {at: plain.index, length: plain[0].length, type: kind.name, n: Number(plain[2]), label: plain[0]} : null;
 }
 
+function updateCard(row) {
+    const facts = updateCounts(row)
+        .map((c) => `${c.n} ${escape(c.label)}`)
+        .join(" · ");
+    return `<a class="row-card update-card" href="#" data-peek="report:${row.n}" data-update="${row.n}"><span class="update-card-head"><span>${escape(updateLabel(row))}</span><span>${escape(age(row.created))}</span></span><span class="row-card-title">${escape(words(row.title))}</span>${row.abstract ? `<span class="update-card-lead">${escape(words(row.abstract))}</span>` : ""}${facts ? `<span class="update-card-facts">${facts}</span>` : ""}</a>`;
+}
+
 function card(type, n, label, context) {
     const row = rows(type).find((r) => r.n === n);
+    if (isUpdate(row)) return updateCard(row);
     const kind = context.types.find((t) => t.name === type);
     const title = words(row ? row.title : label);
     const line = row ? words(row.abstract || String(row.brief || "").split("\n")[0]).slice(0, 160) : "";

@@ -17,6 +17,8 @@ import {polled} from "../sync/polled.js";
 import {earlier, paging, rows} from "../sync/rows.js";
 import DumpWindow from "./DumpWindow.vue";
 import TerminalWindow from "./TerminalWindow.vue";
+import UpdateOverlay from "./UpdateOverlay.vue";
+import {updateView} from "./updateView.js";
 import FileFeed from "./FileFeed.vue";
 import Compose from "./Compose.vue";
 import Turn from "./Turn.vue";
@@ -32,6 +34,7 @@ const IDLE = 30000;
 const scroller = ref(null);
 const props = defineProps({view: {type: String, default: ""}});
 const pane = computed(() => props.view || store.pane);
+const threadRoot = ref(null);
 const dumpHere = computed(() => store.dumping && !props.view);
 const terminalOpen = computed(() => pane.value === "terminal" && !dumpHere.value);
 const chatOpen = computed(() => pane.value !== "terminal" && !dumpHere.value);
@@ -436,13 +439,16 @@ watch(
 </script>
 
 <template>
-    <div class="thread">
+    <div ref="threadRoot" class="thread">
         <Transition name="dump">
             <DumpWindow v-if="dumpHere" />
         </Transition>
         <Transition name="terminal">
             <TerminalWindow v-if="terminalOpen" />
         </Transition>
+        <template v-if="updateView.n && threadRoot?.contains(updateView.from)">
+            <UpdateOverlay :key="updateView.n" />
+        </template>
         <template v-if="chatOpen">
             <div :class="['thread-write', {hidden: feeding}]">
                 <Transition name="rise">

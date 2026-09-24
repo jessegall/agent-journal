@@ -14,7 +14,7 @@ import {levelChoices, levelOf} from "../domain/verbosity.js";
 import {usePaneLayout} from "../composables/paneLayout.js";
 
 const {views} = useHomeViews();
-const notices = computed(() => open("notice"));
+const notices = computed(() => open("notice").filter((notice) => !notice.data.agent));
 const {drawn, landing, move, size, tune, front, close, dock, sendAway, bringBack} = useDetached();
 const menu = ref(null);
 const toast = ref(null);

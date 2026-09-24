@@ -19,19 +19,33 @@ import TextInput from "../kit/TextInput.vue";
 import Segmented from "../kit/Segmented.vue";
 import DocumentLibrary from "./DocumentLibrary.vue";
 import {useSlashFocus} from "../composables/slashFocus.js";
+import {isUpdate} from "../domain/updates.js";
 
 const props = defineProps({type: String});
 const kind = computed(() => meta(props.type));
 const filter = ref("open");
 const adding = ref(false);
 const all = computed(() => rows(props.type).filter((r) => !r.deleted));
-const SHOWS = {open: () => open(props.type), closed: () => all.value.filter((r) => r.completed), every: () => all.value};
+const splits = computed(() => (kind.value.filters || []).some((f) => f.shows === "updates"));
+const updates = computed(() => all.value.filter(isUpdate));
+const SHOWS = {
+    open: () => (splits.value ? open(props.type).filter((r) => !isUpdate(r)) : open(props.type)),
+    updates: () => updates.value,
+    closed: () => all.value.filter((r) => r.completed),
+    every: () => all.value,
+};
 const COUNTS = {
-    open: () => counted(props.type, "open"),
+    open: () => counted(props.type, "open") - (splits.value ? updates.value.filter((r) => !r.completed).length : 0),
+    updates: () => updates.value.length,
     closed: () => counted(props.type, "all") - counted(props.type, "open"),
     every: () => counted(props.type, "all"),
 };
 const filters = computed(() => (kind.value.filters || []).map((f) => ({...f, count: (COUNTS[f.shows] || COUNTS.every)()})));
+watch(
+    () => [route.value.sub, props.type],
+    ([sub]) => (filter.value = filters.value.some((f) => f.key === sub) ? sub : "open"),
+    {immediate: true}
+);
 const library = computed(() => props.type === "doc");
 const query = ref("");
 const order = ref("recent");

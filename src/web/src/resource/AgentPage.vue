@@ -116,7 +116,9 @@ useSighted(topMark, earlier, {root: scroller, margin: "400px 0px"});
                 <CommentToggle :resource="resource" />
                 <CloseButton @click="emit('close')" />
             </header>
-            <AgentLinks :agent="resource.n" :session="session || ''" />
+            <template v-if="!picked">
+                <AgentLinks :agent="resource.n" />
+            </template>
             <template v-if="picked">
                 <h2 class="title">{{ picked.task }}</h2>
                 <p class="session">subagent {{ picked.session }} of session {{ resource.title }}</p>
@@ -213,7 +215,7 @@ useSighted(topMark, earlier, {root: scroller, margin: "400px 0px"});
         </template>
         <template v-if="tab === 'chat' && picked">
             <section class="block chat-block">
-                <SubagentChat :turns="turns" :session="picked.session" :task="picked.task" />
+                <SubagentChat :turns="turns" :agent="resource.n" :session="picked.session" :task="picked.task" />
             </section>
         </template>
         <template v-if="tab === 'tasks' && picked">

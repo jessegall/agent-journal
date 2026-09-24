@@ -1,12 +1,13 @@
 import features
 from controllers.types import Questions
 from features.boards.controller import START_OVER, Boards
+from features.plans.controller import Plans
 from features.sequences.controller import Sequences
 from features.sequences.shipped import ship
 from features.tickets.controller import Tickets
 from resources.base import AGENT, USER
 from tests.conftest import fresh, refused
-from tests.kit import nudges, report
+from tests.kit import Nudges, nudges, report
 
 
 def test_a_board_question_is_seen_only_on_its_board():
@@ -111,3 +112,19 @@ def test_a_document_handed_to_new_work_starts_drafting_from_it(tmp_path):
     assert [(part["title"], part["state"], part["drafts"]) for part in boards.load(board.n).drafting["outline"]] == \
         [("Background", "", 0), ("Who can invite", "read", 2)], "the panel lists the sections and how far the reading got"
     assert "no section" in refused(lambda: agent.progress(board.n, "Pricing", "now")), "only a section of the outline is marked"
+
+
+def test_a_board_request_names_its_board_and_keeps_the_work_on_it():
+    features.load()
+    record = fresh()
+    ship(record)
+    report(record, "working", "PreToolUse")
+    boards = Boards(record, actor=USER)
+    Boards(record, actor=USER).create("Old board")
+    board = boards.create("Shared Journal")
+    boards.request(board.n, "I want to share")
+    steps = [n.brief for n in Nudges(record).all() if n.title.startswith("sequence ")]
+    assert any(f"journal board show {board.n}" in step and "<board n>" not in step for step in steps), "the step names the board it is about"
+    assert "on its board" in refused(lambda: Plans(record, actor=AGENT).create("Sharing")), "no plan of its own while the board sequence runs"
+    assert "on its board" in refused(lambda: Questions(record, actor=AGENT).create("Which one?")), "no chat question either"
+    assert Boards(record, actor=AGENT).ask(board.n, "Which one?", options=[{"title": "A"}]).hidden, "the board's own question goes through"

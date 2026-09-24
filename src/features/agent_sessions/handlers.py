@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from typing import ClassVar
 
 from engine.events import AgentChanged, AgentReported, ResourceCreated, ResourceEvent
-from engine.sessions import Sessions
+from engine.sessions import Sessions, live
 from features.parts import AgentContext, Context, Handler, OnAgentUpdated
 from providers import PROVIDERS
 
@@ -65,8 +65,9 @@ class MarkSilentStopped(Handler):
     def handle(self, context: AgentContext, event: AgentReported) -> None:
         agents = context.journal.agents
         silent = time.time() - context.settings.quiet * MINUTE
+        sessions = Sessions(context.record.root)
         for row in agents._every():
-            if row.status and row.status != STOPPED and float(row.at) < silent:
+            if row.status and row.status != STOPPED and float(row.at) < silent and not live(sessions.read(row.title)):
                 agents.stamp(row.n, status=STOPPED)
 
 

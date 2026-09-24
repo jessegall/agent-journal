@@ -1,0 +1,18 @@
+from resources.base import AGENT, Refused
+from features.parts import ActionInterceptor, Context
+from features.sequences.controller import Sequences
+from features.sequences.shipped import BUILDING_A_BOARD, DRAFTING_FROM_A_DOCUMENT, REVISING_THE_DRAFTS, WORKING_A_BOARD_CARD
+
+BOARD_SEQUENCES = {shipped["title"] for shipped in (WORKING_A_BOARD_CARD, REVISING_THE_DRAFTS, DRAFTING_FROM_A_DOCUMENT, BUILDING_A_BOARD)}
+HELD = ("plan", "question")
+
+
+class BoardWorkStaysOnTheBoard(ActionInterceptor):
+    def intercept(self, feature_context: Context, controller, **args):
+        if controller.actor != AGENT or controller.type not in HELD or args.get("hidden"):
+            return None
+        found = Sequences(controller.record, actor=controller.actor)._in_hand()
+        if found and found[0].title in BOARD_SEQUENCES:
+            raise Refused(f"the sequence {found[0].title} is running: the work goes on its board, so ask with journal board ask "
+                          f"and draft tickets with journal ticket create; no {controller.type} of its own")
+        return None

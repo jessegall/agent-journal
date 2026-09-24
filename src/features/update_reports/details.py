@@ -1,0 +1,25 @@
+from features.base import FeatureDetails
+
+
+class UpdateReportsDetails(FeatureDetails):
+    name = "update_reports"
+    when = "the user asks for an update, a TLDR or what happened while they were away"
+    keywords = ("update", "tldr", "recap")
+
+    title = "Update reports"
+
+    abstract = "When the user asks for an update, the agent writes a report of what happened since they last looked, shown in the chat as a card"
+
+    help = """
+        An update report sums up what happened since the user last opened one: what waits on them,
+        what got done, what is under way, which plans moved, the commits, and what else changed.
+        The sequence Writing an update starts by itself when the user asks for one.
+
+        journal report changes lists those rows under need, done, doing, plans, commits and also.
+        journal report recap "<one or two sentences>" writes the update with them, in that order;
+        its sentence is the first thing the user reads, so say what got done, what is under way and
+        what waits on them. Then journal report note <n> <ref> "<line>" gives a row a short note,
+        journal report item <n> <section> <ref> "<title>" adds one the list missed, and journal
+        report drop <n> <ref> takes out noise. Answer with the report's reference on a line of its
+        own, like report 98: the chat shows it as a card that opens over the chat.
+    """

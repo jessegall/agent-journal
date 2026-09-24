@@ -6,6 +6,7 @@ import ProgressBar from "../kit/ProgressBar.vue";
 import {age} from "../format/time.js";
 import {meta} from "../state/store.js";
 import {computed} from "vue";
+import {isUpdate, updateCounts, updateLabel} from "../domain/updates.js";
 
 const props = defineProps({resource: Object});
 const startsWhen = (start) => {
@@ -18,6 +19,16 @@ const plan = computed(() => {
     const {phases = [], status = "building", current = 1} = props.resource.data;
     return {total: phases.length, finished: status === "done" ? phases.length : Math.max(0, current - 1), status};
 });
+const update = computed(() =>
+    isUpdate(props.resource)
+        ? {
+              label: updateLabel(props.resource),
+              facts: updateCounts(props.resource)
+                  .map((c) => `${c.n} ${c.label}`)
+                  .join(" · "),
+          }
+        : null
+);
 const holds = computed(() => {
     if (props.resource.type !== "collection") return [];
     const counted = {};
@@ -33,7 +44,7 @@ const holds = computed(() => {
     <button type="button" :class="['card', {completed: resource.completed}]">
         <span class="head">
             <Icon :name="meta(resource.type).icon" :size="14" />
-            <span class="n">{{ meta(resource.type).title }} {{ resource.n }}</span>
+            <span class="n">{{ update ? update.label : `${meta(resource.type).title} ${resource.n}` }}</span>
             <template v-if="resource.data.system">
                 <Chip title="Ships with the journal; it cannot be removed">System</Chip>
             </template>
@@ -46,6 +57,9 @@ const holds = computed(() => {
         </template>
         <template v-else>
             <TextDisplay inline class="abstract" :text="resource.abstract || resource.brief" />
+        </template>
+        <template v-if="update && update.facts">
+            <span class="parts">{{ update.facts }}</span>
         </template>
         <template v-if="holds.length">
             <span class="holds">

@@ -54,6 +54,7 @@ class Driver(ABC):
         self.fd = fd
         self.born = time.time()
         self.held: list[str] = []
+        self.failed = False
         self.yielding: list[str] = []
         self.waiting = lambda: False
         self.groups: dict[tuple, dict] = {}
@@ -167,8 +168,9 @@ class Driver(ABC):
             self.yielding.append(joined(yielding))
         for key, numbers in (groups or {}).items():
             self.groups.setdefault(key, {}).update(dict.fromkeys(numbers))
+        self.failed = False
         self.pump()
-        return True
+        return not self.failed
 
     def ready(self) -> bool:
         return not (self.held or self.yielding or self.groups) and time.time() - self.sent_at >= BETWEEN
@@ -182,8 +184,8 @@ class Driver(ABC):
         line = (f"the journal held back {len(self.held)} lines at once and dropped them - that many is a fault, not news" if len(self.held) > FLOOD
                 else "; ".join(dict.fromkeys(self.held + counted(self.groups))))
         self.held, self.groups, self.sent_at = [], {}, time.time()
-        self.deliver(line)
-        return line
+        self.failed = not self.deliver(line)
+        return "" if self.failed else line
 
     def deliver(self, text: str) -> bool:
         line = joined(text)
@@ -283,7 +285,10 @@ class Driver(ABC):
         return max(rows, key=lambda r: float(r.at)).fork() if rows else None
 
     def owns(self, row) -> bool:
-        return False
+        from engine.sessions import Sessions
+        sessions = Sessions(self.record.root)
+        mine = sessions.read(self.session).pid
+        return bool(mine) and sessions.read(row.title).pid == mine
 
     def quiet_for(self) -> float:
         try:
