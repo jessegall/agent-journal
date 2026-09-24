@@ -1,5 +1,5 @@
 <script setup>
-import {nextTick, onMounted, onUnmounted, ref, useSlots, watch} from "vue";
+import {nextTick, onMounted, onUnmounted, ref, useSlots} from "vue";
 import Btn from "./Btn.vue";
 import Icon from "./Icon.vue";
 
@@ -41,10 +41,7 @@ const focusInput = () => input.value.focus();
 const typing = () => !props.withoutInput && !props.waiting;
 defineExpose({focus: () => nextTick(() => typing() && focusInput())});
 
-watch(
-    () => props.waiting,
-    (waiting) => waiting || nextTick(() => typing() && focusInput())
-);
+const focusEntered = (el) => el === input.value && focusInput();
 </script>
 
 <template>
@@ -83,7 +80,7 @@ watch(
             <Transition name="input-step" @after-enter="focusInput">
                 <template v-if="!withoutInput">
                     <form :class="['compose', {locked, waiting}]" @submit.prevent="send">
-                        <Transition name="swap" mode="out-in">
+                        <Transition name="swap" mode="out-in" @after-enter="focusEntered">
                             <template v-if="waiting">
                                 <span class="sent-line">{{ echo }}</span>
                             </template>
