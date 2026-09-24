@@ -1,8 +1,8 @@
 <script setup>
-import {ref} from "vue";
+import {computed, ref} from "vue";
 import Console from "../kit/Console.vue";
 
-defineProps({
+const props = defineProps({
     commands: {type: Array, default: () => []},
     queued: {type: Array, default: () => []},
     outputs: {type: Object, default: () => ({})},
@@ -17,6 +17,9 @@ function toggle(at) {
     opened.value = next;
 }
 
+const JOURNAL_CALL = /^(cd\s+\S+\s*&&\s*)?\S*journal\s/;
+const shown = computed(() => props.commands.filter((c) => !(c.tool === "Bash" && JOURNAL_CALL.test(c.command.trim()))));
+
 const line = (c) =>
     ["Bash", "Typed", "Journal"].includes(c.tool)
         ? c.command
@@ -25,7 +28,7 @@ const line = (c) =>
 
 <template>
     <Console>
-        <template v-for="c in commands" :key="c.at">
+        <template v-for="c in shown" :key="c.at">
             <div :class="['log-line', {running: !c.done, shell: c.tool === 'Bash', noted: c.tool === 'Journal'}]">
                 <span class="log-mark">{{ c.tool === "Bash" ? "$" : c.tool === "Journal" ? "#" : "›" }}</span>
                 <span class="log-text">{{ line(c) }}</span>
@@ -42,7 +45,7 @@ const line = (c) =>
             <div class="log-line shell queued" title="Waiting to be typed into the agent's terminal">
                 <span class="log-mark">$</span>
                 <span class="log-text">{{ q.command }}</span>
-                <span class="log-state">pending</span>
+                <span class="log-state">pending · ⌃↵ or</span>
                 <button type="button" class="log-now" title="Interrupt the agent and run this command now" @click="emit('now', q.command)">
                     Run now
                 </button>
