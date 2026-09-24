@@ -9,7 +9,7 @@ from engine import typist
 from resources.base import SYSTEM
 from engine.wording import counted
 from engine import runtime
-from engine.worktree import environment, opened
+from engine.worktree import environment, linked, main_checkout, opened
 
 ENTER_AFTER = 0.3
 MARK = "[journal]"
@@ -114,7 +114,11 @@ class Driver(ABC):
             return project, args
         if environment(Path(name)) != name:
             raise SystemExit(f"journal: {name!r} cannot name a worktree; use one plain word, without a colon or a slash")
-        return opened(project, project.joinpath(*cls.WORKTREES, name), cls.branch(name)), cls.unworktreed(args)
+        anchor = main_checkout(project)
+        made = linked(anchor).get(name)
+        if made and made.resolve() != anchor.joinpath(*cls.WORKTREES, name).resolve():
+            return made, cls.unworktreed(args)
+        return opened(anchor, anchor.joinpath(*cls.WORKTREES, name), cls.branch(name)), cls.unworktreed(args)
 
     @classmethod
     def prompted(cls, args: list[str], prompt: str) -> list[str]:

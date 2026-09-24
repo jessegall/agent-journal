@@ -5,6 +5,7 @@ from features.parts import AgentContext, ToolInterceptor
 
 
 class LinkWorktreeJournal(ToolInterceptor):
+    before_checks = True
     def intercept(self, context: AgentContext, call) -> str:
         cwd = getattr(context.hook, "cwd", "")
         top = checkout(Path(cwd)) if cwd else None

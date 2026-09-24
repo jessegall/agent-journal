@@ -138,6 +138,7 @@ class ToolInterceptor:
     refuses: ClassVar[bool] = True
     limit: ClassVar[str] = ""
     steps_aside: ClassVar[str] = ""
+    before_checks: ClassVar[bool] = False
 
     def intercept(self, context: "AgentContext", call) -> str:
         raise NotImplementedError
@@ -234,7 +235,7 @@ class AgentHooks:
         feature = self.feature
 
         def policy(provider, record, hook, session) -> str:
-            if hook.tool.loads_skill:
+            if hook.tool.loads_skill and not interceptor.before_checks:
                 return ""
             row = Agents(record, actor=SYSTEM)._shared(session)
             if not feature.enabled(record) or not wanted(interceptor, feature, record, row, timed=False):
@@ -243,6 +244,9 @@ class AgentHooks:
             refused = interceptor.intercept(context, hook.tool) or ""
             return limited(context, interceptor, refused) if interceptor.limit else refused
         policy.feature = feature
+        if interceptor.before_checks:
+            POLICIES.insert(0, policy)
+            return
         (POLICIES if interceptor.refuses else AFTERWARDS).append(policy)
 
     def canceler(self, canceler: Canceler) -> None:

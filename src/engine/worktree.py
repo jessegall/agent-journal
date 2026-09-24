@@ -27,15 +27,24 @@ def environment(top: Path | None) -> str:
         return ""
 
 
-def linked(project: Path) -> set[str]:
+def linked(project: Path) -> dict[str, Path]:
     listed = git(project, "worktree", "list", "--porcelain")
     folders = [line.split(" ", 1)[1] for line in listed.stdout.splitlines() if line.startswith("worktree ")] if not listed.returncode else []
-    return {Path(folder).name for folder in folders[1:]}
+    return {Path(folder).name: Path(folder) for folder in folders[1:]}
+
+
+def main_checkout(start: Path) -> Path:
+    common = git(start, "rev-parse", "--path-format=absolute", "--git-common-dir")
+    return Path(common.stdout.strip()).parent if not common.returncode and common.stdout.strip() else start
 
 
 def opened(project: Path, folder: Path, branch: str) -> Path:
     kept = f"{KEPT}/{folder.name}"
-    if not folder.is_dir():
+    git(project, "worktree", "prune")
+    registered = folder.resolve() in {path.resolve() for path in linked(project).values()}
+    if folder.is_dir() and not registered:
+        raise SystemExit(f"journal: {folder} is a folder but not a worktree of this project; move it away and launch again")
+    if not registered:
         known = present(project, f"refs/heads/{branch}")
         start = () if known or not present(project, kept) else (kept,)
         made = git(project, "worktree", "add", str(folder), *((branch,) if known else ("-b", branch, *start)))
@@ -66,10 +75,18 @@ def present(project: Path, ref: str) -> bool:
     return git(project, "rev-parse", "--verify", "--quiet", ref).returncode == 0
 
 
+def matched(project: Path, pattern: str) -> list[Path]:
+    try:
+        found = list(project.glob(pattern.strip("/")))
+    except (NotImplementedError, ValueError):
+        return []
+    return [file for path in found for file in ([path] if path.is_file() else (p for p in path.rglob("*") if p.is_file()))]
+
+
 def included(project: Path, folder: Path) -> None:
     listed = project / INCLUDED
     patterns = [line.strip() for line in listed.read_text().splitlines() if line.strip() and not line.startswith("#")] if listed.is_file() else []
-    for found in (path for pattern in patterns for path in project.glob(pattern) if path.is_file()):
+    for found in (path for pattern in patterns for path in matched(project, pattern)):
         copy = folder / found.relative_to(project)
         if not copy.exists():
             copy.parent.mkdir(parents=True, exist_ok=True)
