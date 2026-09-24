@@ -138,13 +138,6 @@ async function ask(text) {
     sent.value = [...sent.value, message.id];
 }
 
-async function stop() {
-    lastSent.value = 0;
-    say(false, "Stopped. Say what you would like instead.");
-    await ask("Stop drafting tickets for my last request; I will say what I want instead.");
-    panel.value.focus();
-}
-
 function askAgain() {
     stalled.value = false;
     lastSent.value = now() - 1;
@@ -172,19 +165,30 @@ async function add() {
     );
     await drop(unpicked());
     adding.value = false;
+    startAnew();
+    emit("added", keep.length);
+    emit("close");
+    setTimeout(() => (docked.value = false), FADED);
+}
+
+function startAnew() {
+    words.value = "";
     lines.value = [];
     sent.value = [];
     since.value = 0;
     lastSent.value = 0;
     picked.value = [];
-    emit("added", keep.length);
+}
+
+async function leave() {
+    await drop(unpicked());
+    startAnew();
     emit("close");
-    setTimeout(() => (docked.value = false), FADED);
 }
 </script>
 
 <template>
-    <FocusStage :open="open" leave="Back to the board" glow spread :docked="docked" @close="emit('close')">
+    <FocusStage :open="open" leave="Back to the board" glow spread :docked="docked" @close="leave">
         <div :class="['work', {on: docked}]">
             <div class="bar">
                 <span class="note">{{ note }}</span>
@@ -249,15 +253,7 @@ async function add() {
                 </template>
                 <template v-if="stalled">
                     <ChatLine text="No answer yet. The agent may be busy with other work." />
-                </template>
-                <template #actions>
-                    <div :class="['choose', {on: writing}]">
-                        <span class="note">{{ asking ? "The agent needs your answer." : "The agent is writing tickets." }}</span>
-                        <template v-if="stalled">
-                            <Btn small @click="askAgain">Ask again</Btn>
-                        </template>
-                        <Btn small @click="stop">Stop</Btn>
-                    </div>
+                    <Btn small @click="askAgain">Ask again</Btn>
                 </template>
             </ChatPanel>
         </div>
@@ -417,32 +413,6 @@ kbd {
 .pick-leave-to {
     opacity: 0;
     transform: scale(0.98);
-}
-
-.choose {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 0 8px 0 16px;
-    opacity: 0;
-    visibility: hidden;
-    transform: translateY(4px);
-    transition:
-        opacity 0.25s,
-        transform 0.25s cubic-bezier(0.2, 0.9, 0.25, 1),
-        visibility 0s 0.25s;
-}
-
-.choose.on {
-    opacity: 1;
-    visibility: visible;
-    transform: none;
-    transition:
-        opacity 0.25s,
-        transform 0.25s cubic-bezier(0.2, 0.9, 0.25, 1),
-        visibility 0s;
 }
 
 .record {
