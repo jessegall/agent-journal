@@ -130,7 +130,14 @@ class Driver(ABC):
 
     @classmethod
     def within(cls, args: list[str], name: str) -> list[str]:
-        return args if not cls.WORKTREE or cls.worktree(args) else [*args, cls.WORKTREE[0], name]
+        if not cls.WORKTREE or cls.worktree(args):
+            return args
+        bare = next((i for i, arg in enumerate(args) if arg in cls.WORKTREE), None)
+        return [*args[:bare + 1], name, *args[bare + 1:]] if bare is not None else [*args, cls.WORKTREE[0], name]
+
+    @classmethod
+    def asks_worktree(cls, args: list[str]) -> bool:
+        return any(arg in cls.WORKTREE or arg.partition("=")[0] in cls.WORKTREE for arg in args)
 
     @classmethod
     def unresumed(cls, args: list[str]) -> list[str]:

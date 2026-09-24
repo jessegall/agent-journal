@@ -20,8 +20,14 @@ class PlansDetails(FeatureDetails):
         it goes on).
 
         Then journal plan stage <n> todos, file the rows and put each under its phase with
-        journal plan todos <n> <phase> <rows...>. When every phase has rows, journal plan ready
-        <n> hands it to the user.
+        journal plan todos <n> <phase> <rows...>, or board tickets with journal plan tickets <n>
+        <phase> <tickets...>. When every phase has rows, journal plan ready <n> hands it to the user.
+
+        A plan whose phases hold tickets gets a worker agent of its own when it first starts, in its
+        own environment and worktree, and the journal starts each phase's tickets once the phase
+        before is done. The environment's own agent stays a co-assistant: asked how a plan is going,
+        it answers from journal plan progress <n>, which gives the phase it is in, the state of that
+        phase's rows and tickets, and what happened last.
 
         Only the user approves a plan, and then you start it with journal plan start <n>; only the user continues it past a checkpoint; with the auto
         feature on, checkpoints are passed without waiting.

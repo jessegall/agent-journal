@@ -255,3 +255,5 @@ def test_a_phase_can_hold_board_tickets_and_moves_on_when_they_close(monkeypatch
     tickets.complete(first.n, how="merged", yes=True)
     catch_up(record)
     assert plans.load(plan.n).current == 2 and started[-1] == second.n, "once its tickets close, the next phase's tickets start"
+    assert "now phase 2, Ship: 0 of 1 done" in plans.progress(plan.n) and f"ticket {second.n} Share" in plans.progress(plan.n), \
+        "journal plan progress says where the plan stands, the current phase's rows included"

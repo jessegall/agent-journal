@@ -194,3 +194,50 @@ def test_continuing_names_the_folders_latest_conversation(tmp_path, monkeypatch)
         os.utime(folder / f"{name}.jsonl", (0, 1_000_000 - age))
     assert (ClaudeDriver.continued(["-c"], project), ClaudeDriver.continued(["--resume"], project), ClaudeDriver.continued([], tmp_path / "elsewhere")) == \
         ("newer", "", ""), "--continue names the folder's latest conversation, so it goes back to that conversation's environment"
+
+
+def test_a_bare_worktree_flag_is_named_after_the_chosen_environment():
+    from providers import DRIVERS
+    claude = DRIVERS["claude"]
+    assert claude.within(["--worktree", "--continue"], "feature-x") == ["--worktree", "feature-x", "--continue"], \
+        "a --worktree given without a name takes the environment chosen in the boot menu"
+    assert claude.within(["--worktree", "mine"], "feature-x") == ["--worktree", "mine"], "a named worktree is kept"
+    assert claude.asks_worktree(["--worktree"]) and not claude.asks_worktree(["--continue"])
+
+
+def test_a_worktree_links_the_projects_journal_even_when_git_brings_old_journal_files(tmp_path):
+    import subprocess
+    from engine.worktree import share_journal
+    record = fresh()
+    project = record.root.resolve().parent
+    git = lambda *args, where=project: subprocess.run(["git", "-c", "user.email=t@t", "-c", "user.name=t", *args], cwd=where, check=True,
+                                                      capture_output=True, text=True, timeout=30).stdout
+    git("init", "-q")
+    (project / ".gitignore").write_text("/.claude/worktrees/\n")
+    (record.root / "README.md").write_text("an old journal, committed long ago")
+    git("add", ".gitignore")
+    git("add", "-f", ".journal/README.md")
+    git("commit", "-q", "-m", "start")
+    worktree = project / ".claude" / "worktrees" / "wt"
+    git("worktree", "add", "-q", str(worktree))
+    assert (worktree / ".journal" / "README.md").is_file(), "the checkout brings the committed journal files"
+    share_journal(worktree, record.root)
+    assert (worktree / ".journal").is_symlink() and (worktree / ".journal").resolve() == record.root.resolve(), \
+        "committed journal files are not a journal: the worktree still gets the project's own"
+    assert git("status", "--porcelain", where=worktree) == "", "and git sees no change in the worktree"
+    share_journal(worktree, record.root)
+    assert (worktree / ".journal").resolve() == record.root.resolve(), "linking again changes nothing"
+    (worktree / ".journal").unlink()
+    (worktree / ".journal").symlink_to(tmp_path / "gone")
+    share_journal(worktree, record.root)
+    assert (worktree / ".journal").resolve() == record.root.resolve(), "a link to a journal that is gone is replaced"
+    (worktree / ".journal").unlink()
+    git("update-index", "--no-skip-worktree", ".journal/README.md", where=worktree)
+    git("checkout", "--", ".journal/README.md", where=worktree)
+    share_journal(worktree, record.root)
+    assert (worktree / ".journal").resolve() == record.root.resolve(), "committed files checked out again do not win either"
+    own = project / ".claude" / "worktrees" / "own"
+    git("worktree", "add", "-q", str(own))
+    (own / ".journal" / "environments").mkdir()
+    share_journal(own, record.root)
+    assert not (own / ".journal").is_symlink(), "a worktree with a journal record of its own keeps it"

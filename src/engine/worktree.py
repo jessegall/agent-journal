@@ -115,6 +115,7 @@ def git(project: Path, *args: str) -> subprocess.CompletedProcess:
 
 
 SHARED = (".journal", ".claude/settings.local.json")
+JOURNAL_MARKS = ("environments", "journal.pyz")
 SHARED_IF_IGNORED = (".codex/hooks.json",)
 SHARED_IN = (".claude/skills", ".agents/skills")
 
@@ -128,9 +129,20 @@ def share_journal(top: Path, root: Path) -> None:
         *(Path(folder) / entry.name for folder in SHARED_IN if (project / folder).is_dir() for entry in sorted((project / folder).iterdir())),
     ])
     excluded(top, [f"/{path}" for path in wanted])
+    cleared(top, Path(SHARED[0]))
     for path in wanted:
         linked_to(top / path, (project / path).resolve())
     unshared(top, project, set(wanted))
+
+
+def cleared(top: Path, path: Path) -> None:
+    place = top / path
+    if place.is_symlink() or not place.is_dir() or any((place / mark).exists() for mark in JOURNAL_MARKS):
+        return
+    tracked = [name for name in git(top, "ls-files", "-z", "--", str(path)).stdout.split("\0") if name]
+    if tracked:
+        git(top, "update-index", "--skip-worktree", "--", *tracked)
+    shutil.rmtree(place)
 
 
 def belongs(top: Path, project: Path) -> bool:
