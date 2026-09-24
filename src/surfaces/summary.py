@@ -2,7 +2,7 @@ import threading
 import time
 from pathlib import Path
 
-from controllers.types import Agents, Environments, Messages, Questions, Todos, Works
+from controllers.types import Agents, Environments, Messages, Notices, Questions, Todos, Works
 from features.suggestions.controller import Suggestions
 from features.plans.controller import Plans
 from engine.manifest import manifest
@@ -33,10 +33,13 @@ def environment(record: Record) -> dict:
     agent = Agents(record, actor=SYSTEM).primary()
     shelf = Works(record, actor=SYSTEM)
     works = [row for row in shelf.summaries() if not row["deleted"]]
-    current = next((shelf.load(row["n"]) for row in works if not row["completed"]), None)
-    last = shelf.load(works[-1]["n"]) if works else None
+    held = [shelf.load(row["n"]) for row in works if not row["completed"]]
+    current = next((w for w in held if not w.parked), None) or next(iter(held), None)
+    finished = [row for row in works if row["completed"]]
+    last = shelf.load(max(finished, key=lambda row: row["completed"])["n"]) if finished else None
     todos = {row["n"]: bool(row["completed"]) for row in Todos(record, actor=SYSTEM).summaries() if not row["deleted"]}
-    work = lambda w: {"n": w.n, "title": w.title, "todo": w.todo} if w else None
+    work = lambda w: {"n": w.n, "title": w.title, "todo": w.todo, "parked": bool(w.parked), "awaiting": w.awaiting,
+                      "completed": w.completed} if w else None
     return {
         "name": record.env,
         "agent": {"status": agent.status or "stopped", "provider": agent.provider, "model": agent.model, "context": agent.context,
@@ -50,6 +53,7 @@ def environment(record: Record) -> dict:
             "questions": len(Questions(record, actor=SYSTEM)._standing()),
             "todos": len([n for n, done in todos.items() if not done]),
             "suggestions": len(Suggestions(record, actor=SYSTEM)._standing()),
+            "prompts": sum(n.data.get("action") == "permission" for n in Notices(record, actor=SYSTEM)._standing()),
         },
     }
 
