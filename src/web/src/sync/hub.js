@@ -25,6 +25,7 @@ export const STATE_WORDS = {
 };
 
 export const COUNTS = [
+    {key: "prompts", page: "", icon: "lock", one: "permission waits on you", many: "permissions wait on you", hot: true},
     {key: "questions", page: "question", icon: "help", one: "question waiting", many: "questions waiting", hot: true},
     {key: "messages", page: "message", icon: "mail", one: "unread message", many: "unread messages", hot: true},
     {key: "suggestions", page: "suggestion", icon: "bulb", one: "suggestion to review", many: "suggestions to review", hot: true},
@@ -69,13 +70,17 @@ export function journalState(j) {
     return lead ? envState(lead) : "stopped";
 }
 
+function workCaption(work) {
+    const state = work.awaiting ? `waiting: ${work.awaiting}` : work.parked ? "parked" : "";
+    return [state, work.todo ? `to-do ${work.todo}` : "work without a to-do"].filter(Boolean).join(" · ");
+}
+
 export function focusOf(e) {
-    if (e.work)
-        return {title: e.work.title, caption: e.work.todo ? `to-do ${e.work.todo}` : "work without a to-do", current: true, known: true};
+    if (e.work) return {title: e.work.title, caption: workCaption(e.work), current: true, known: true};
     if (e.last)
         return {
             title: e.last.title,
-            caption: e.last.todo ? `last finished · to-do ${e.last.todo}` : "last finished",
+            caption: [`finished ${ago(e.last.completed)}`, e.last.todo ? `to-do ${e.last.todo}` : ""].filter(Boolean).join(" · "),
             current: false,
             known: true,
         };
