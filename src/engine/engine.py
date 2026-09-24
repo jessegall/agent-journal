@@ -5,15 +5,13 @@ from pathlib import Path
 
 from controllers.types import CONTROLLERS, Agents, Messages
 import features
-from engine import bus, chat, runtime
+from engine import bus, chat, ran, runtime
 from engine.actors import Actor, Agent, BUSY, IDLE, STOPPED, System, User, WORKING, spoken_data
 from engine.drivers import AGENT_COMMAND
 from engine.inputs import BACKGROUND, FORCE, PAUSE, PERMIT, RESUME, SHELL, take, waiting_commands
 from surfaces.control import CARRY_ON, RESUMED, delivered
 from engine.record import Record
 from engine.watch import STEADY_AFTER, steady, threw
-from features.status_bar.commands import RING
-from features.status_bar.runs import NOTED, TYPED, CommandRun
 from providers import PROVIDERS
 from resources.base import AGENT, SYSTEM, USER, VIEW_ONLY, Event, titled
 from resources.types import TYPES, priority
@@ -227,15 +225,12 @@ class Engine(Seat):
             self.typed(row, [queued.value])
         return f"typed in the terminal: {queued.value}" if typed else ""
 
-    def typed(self, row, commands: list[str], tool: str = TYPED) -> None:
-        if not commands:
-            return
-        now = time.time()
-        runs = [CommandRun(command=command, tool=tool, at=now, done=now).to_json() for command in commands]
-        Agents(self.record, actor=SYSTEM).update(row.n, commands=[*row.commands, *runs][-RING:])
+    def typed(self, row, commands: list[str]) -> None:
+        for command in commands:
+            ran.announce(self.record, row.n, ran.TYPED, command)
 
     def noted(self, line: str) -> None:
-        self.typed(Agents(self.record, actor=SYSTEM).by_session(self.agent.driver.session), [line], NOTED)
+        ran.announce(self.record, Agents(self.record, actor=SYSTEM).by_session(self.agent.driver.session).n, ran.NOTED, line)
 
     def held(self, line: str) -> str:
         self.agent.driver.stop_turn()

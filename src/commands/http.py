@@ -27,7 +27,7 @@ from features.skill_loading.catalogue import SKILL, always, catalogue, set_keywo
 from features.skill_loading.required import load_now
 from engine.files import found_files
 from features.file_feed.feed import edits_since, notes
-from features.status_bar.outputs import outputs
+from features.terminal.log import lines as terminal_lines
 from controllers.base import LAST, networked
 from controllers.types import Agents, CONTROLLERS, Environments, Features, Nudges, Plugins
 from features.browser_control.controller import Asks
@@ -624,10 +624,10 @@ def get_edits(req: Request) -> Reply:
     return Reply(200, asdict(edits_since(req.record(), int(req.params["n"]), req.query_as(EditsQuery).since)))
 
 
-@route("GET", "/api/{env}/agent/{n}/outputs")
-def get_outputs(req: Request) -> Reply:
+@route("GET", "/api/{env}/agent/{n}/terminal")
+def get_terminal(req: Request) -> Reply:
     record = req.record()
-    return Reply(200, {"outputs": outputs(record, Agents(record, actor=USER).load(int(req.params["n"])).title)})
+    return Reply(200, {"lines": terminal_lines(record, Agents(record, actor=USER).load(int(req.params["n"])).title)})
 
 
 @route("GET", "/api/{env}/agent/{n}/subagent/{session}/transcript")
