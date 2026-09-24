@@ -11,6 +11,7 @@ DAMAGED = "damaged"
 DRAFT_OF = "draft_of"
 
 INDEX = "index.json"
+CHANGES = "changes.log"
 PACKED = "packed"
 ARCHIVE = "zip"
 
@@ -24,7 +25,7 @@ INDEXED: dict[str, dict] = {}
 STAMPED: dict[str, "Stamped"] = {}
 STAMPS_FRESH = 60.0
 WRITTEN: dict[str, float] = {}
-FLUSH_ROWS, FLUSH_SECONDS = 50, 30.0
+FLUSH_ROWS, FLUSH_SECONDS = 200, 300.0
 OPEN: dict[str, tuple] = {}
 
 
@@ -56,6 +57,7 @@ class Stamped:
     checked: float
     stamps: dict
     inodes: dict
+    noted: int
 
 class Stored:
     @internal
@@ -73,6 +75,33 @@ class Stored:
         write_text(p, r.dump())
         if self.resource.own_folder:
             os.utime(self._folder())
+        else:
+            self._note(r.n)
+
+    def _note(self, n: int) -> None:
+        with (self._folder() / CHANGES).open("a") as changes:
+            changes.write(f"{n}\n")
+
+    @staticmethod
+    def _noted_end(folder: Path) -> int:
+        try:
+            return (folder / CHANGES).stat().st_size
+        except OSError:
+            return 0
+
+    def _noted(self, folder: Path, since: int) -> tuple[set[int], int]:
+        try:
+            with (folder / CHANGES).open("rb") as changes:
+                changes.seek(0, os.SEEK_END)
+                end = changes.tell()
+                if end <= since:
+                    return set(), end
+                changes.seek(since)
+                read = changes.read(end - since).decode()
+        except OSError:
+            return set(), 0
+        whole = read[:read.rfind("\n") + 1]
+        return {int(line) for line in whole.splitlines() if line.isdigit()}, since + len(whole.encode())
 
     @internal
     def numbers(self) -> list[int]:
@@ -135,6 +164,11 @@ class Stored:
             fresh = held and now - held.checked < STAMPS_FRESH
             if fresh and held.mark == mark:
                 return held.stamps
+            if fresh:
+                changed, noted = self._noted(folder, held.noted)
+                if changed:
+                    return self._restamped(folder, mark, held, changed, noted)
+            noted = self._noted_end(folder)
             stamps, inodes = {}, {}
             for e in os.scandir(folder):
                 if not (e.name.endswith(".md") and e.name[:-3].isdigit()):
@@ -146,7 +180,7 @@ class Stored:
                 else:
                     found = e.stat()
                     stamps[n] = f"{found.st_mtime_ns}-{found.st_size}"
-            STAMPED[str(folder)] = Stamped(mark, held.checked if fresh else now, stamps, inodes)
+            STAMPED[str(folder)] = Stamped(mark, held.checked if fresh else now, stamps, inodes, noted)
             return stamps
         stamps = {}
         for e in os.scandir(folder):
@@ -159,13 +193,28 @@ class Stored:
             stamps[int(e.name)] = f"{found.st_mtime_ns}-{found.st_size}"
         return stamps
 
+    def _restamped(self, folder: Path, mark: int, held: Stamped, changed: set[int], noted: int) -> dict[int, str]:
+        stamps, inodes = dict(held.stamps), dict(held.inodes)
+        for n in changed:
+            try:
+                found = self.path(n).stat()
+            except OSError:
+                stamps.pop(n, None)
+                inodes.pop(n, None)
+                continue
+            stamps[n], inodes[n] = f"{found.st_mtime_ns}-{found.st_size}", found.st_ino
+        STAMPED[str(folder)] = Stamped(mark, held.checked, stamps, inodes, noted)
+        return stamps
+
     def _indexed(self, folder: Path) -> tuple[list[dict], bool]:
         stamps = self._stamps(folder)
         known = INDEXED.get(str(folder)) or {int(n): row for n, row in (read_json(folder / INDEX) or {}).items()}
+        needed = {"files", PART_OF, DRAFT_OF, OWNER, *self.resource.indexed}
         rows = {}
         for n, stamp in stamps.items():
-            if known.get(n, {}).get("stamp") == stamp and (known[n].get(DAMAGED) or all(k in known[n] for k in ("files", PART_OF, DRAFT_OF, OWNER, *self.resource.indexed))):
-                rows[n] = known[n]
+            row = known.get(n)
+            if row is not None and row.get("stamp") == stamp and (DAMAGED in row or needed <= row.keys()):
+                rows[n] = row
                 continue
             try:
                 r = self.load(n)
@@ -240,6 +289,8 @@ class Stored:
         self.path(n).unlink(missing_ok=True)
         if self.resource.own_folder and folder.is_dir():
             os.utime(folder)
+        elif folder.is_dir():
+            self._note(n)
         packed = self._packed()
         if n in packed:
             write_json(folder / PACKED / INDEX, {k: row for k, row in packed.items() if k != n})

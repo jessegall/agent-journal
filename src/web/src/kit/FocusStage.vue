@@ -7,6 +7,7 @@ const props = defineProps({
     glow: Boolean,
     spread: Boolean,
     docked: Boolean,
+    page: Boolean,
     escapes: {type: Boolean, default: true},
 });
 const emit = defineEmits(["close"]);
@@ -18,7 +19,7 @@ onUnmounted(() => window.removeEventListener("keydown", onKey));
 <template>
     <Teleport to="body">
         <Transition name="focus-stage">
-            <div v-show="open" :class="['focus-stage', {spread, docked}]">
+            <div v-show="open" :class="['focus-stage', {spread, docked, page}]">
                 <div class="veil" />
                 <template v-if="glow">
                     <div class="glow" />
@@ -123,6 +124,30 @@ kbd {
     padding: 0;
 }
 
+.page {
+    align-items: flex-start;
+    padding: 12vh 16px 48px;
+    overflow-y: auto;
+}
+
+.page .veil {
+    position: fixed;
+    background: var(--bg);
+    backdrop-filter: none;
+}
+
+.page .leave {
+    position: fixed;
+    z-index: 1;
+}
+
+.page .body {
+    justify-content: flex-start;
+    gap: 22px;
+    width: min(1040px, 100%);
+    height: auto;
+}
+
 .spread .body {
     width: 100%;
 }
@@ -145,6 +170,11 @@ kbd {
 .focus-stage-enter-from .body,
 .focus-stage-leave-to .body {
     transform: translateY(24px);
+}
+
+.focus-stage-enter-from.page .body,
+.focus-stage-leave-to.page .body {
+    transform: translateY(8px);
 }
 
 .focus-stage-enter-from.spread .body,

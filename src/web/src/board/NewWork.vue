@@ -98,6 +98,7 @@ let stallTimer = 0;
 watch(writing, (on) => {
     clearTimeout(stallTimer);
     stalled.value = false;
+    if (!on) words.value = "";
     if (on) stallTimer = setTimeout(() => (stalled.value = writing.value && !drafts.value.length), STALLED_AFTER);
 });
 const first = computed(() => props.stage || props.board.data.stages[0]);
@@ -160,7 +161,6 @@ watch(
 
 async function send(text) {
     say(true, text);
-    words.value = "";
     since.value = since.value || now() - 5;
     lastSent.value = now() - 1;
     if (asking.value) {

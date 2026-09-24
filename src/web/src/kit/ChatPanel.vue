@@ -82,7 +82,7 @@ const focusEntered = (el) => el === input.value && focusInput();
                     <form :class="['compose', {locked, waiting}]" @submit.prevent="send">
                         <Transition name="swap" mode="out-in" @after-enter="focusEntered">
                             <template v-if="waiting">
-                                <span class="sent-line">{{ echo }}</span>
+                                <span class="sent-line">{{ words }}</span>
                             </template>
                             <template v-else>
                                 <input
