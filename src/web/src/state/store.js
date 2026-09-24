@@ -9,6 +9,7 @@ export const store = reactive({
     dumpFiles: [],
     pane: "chat",
     skill: "",
+    pluginPage: null,
     identity: null,
     rows: {},
     counts: {},

@@ -25,6 +25,7 @@ class Posting(Loaded):
     tone: str = ""
     link: str = ""
     event: str = ""
+    open: str = ""
 
     @classmethod
     def of(cls, value, key: str = "title") -> "Posting":
@@ -70,16 +71,18 @@ def raised(record, plugin: str, session: str, asked: Posting) -> None:
                 collapsed=event.collapsed)
     if event.card:
         card = event.card
-        carded(record, session, plugin, Look(card.label if card.label else title, card.icon, card.tone if card.tone else event.tone, card.color), asked.brief)
+        carded(record, session, plugin, Look(card.label if card.label else title, card.icon, card.tone if card.tone else event.tone, card.color), asked.brief,
+               asked.open)
 
 
-def carded(record, session: str, plugin: str, look: Look, brief: str) -> None:
+def carded(record, session: str, plugin: str, look: Look, brief: str, page: str = "") -> None:
     agents = Agents(record, actor=SYSTEM)
     agent = next((r for r in agents._every() if r.title == session), None) if session else agents.primary()
     if not agent:
         return
     agents.card(agent.n, plugin=plugin, label=look.label if look.label else plugin, icon=look.icon if look.icon else "bell", tone=look.tone,
-                color=look.color if COLOR.match(look.color) else "", detail=next((line.strip(" •-") for line in brief.splitlines() if line.strip()), ""))
+                color=look.color if COLOR.match(look.color) else "", detail=next((line.strip(" •-") for line in brief.splitlines() if line.strip()), ""),
+                page=page)
 
 
 def settled(record, plugin: str, values: dict) -> None:

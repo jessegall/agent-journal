@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.149.0 — A plugin's chat mark opens its page
+
+A plugin can point the mark it puts in the chat at one of its dashboard pages, with --open <dashboard>/<page> on journal plugin raise or "open" in its answer, and clicking the mark opens that page in a side panel. Code Commandments will use it to open an explanation of the sin it found. The share dialog's list toggle just says Show or Hide. Nothing to do.
+
 ## 2.148.0 — A project folder of repositories, and a calmer share dialog
 
 A project whose folder is not a git repository itself but holds several, like one folder per app, now has a file feed: every repository inside it is tracked, and edits show with the repository's folder in front of the path. The share dialog says in one line what the link opens, with the list folded away, and keeps a fixed height. It no longer shows in capitals when opened from a plan. Updating the journal restarts the share server and its tunnel, so a shared link never serves the old build. Ticket cards no longer offer Assign to: a ticket's own agent works out the roles it needs. After the agent was relaunched in the same conversation, the journal's lines reached it typed into the terminal instead of through the channel; they go through the channel again. Nothing to do.

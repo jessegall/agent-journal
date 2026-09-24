@@ -167,8 +167,10 @@ def test_a_chosen_setting_reaches_the_plugins_commands():
     viewed = shaped(Agents(record, actor=SYSTEM).primary(), record, VIEWER)["data"]["cards"][-1]["detail"]
     assert "[[file src/A.php" in viewed, f"its words pass the formatters like any brief, so a file is a chip: {viewed}"
     from features.plugins.commands import Raise
-    Raise().run(None, plugins, "typed", "sin-found", "again at src/B.php:3")
+    Raise().run(None, plugins, "typed", "sin-found", "again at src/B.php:3", open="sins/sin/deep-nesting/src/B.php")
     assert heard[-1] == "again at src/B.php:3", "journal plugin raise, from the queue, raises the same declared event"
+    assert Agents(record, actor=SYSTEM).primary().data["cards"][-1]["page"] == "sins/sin/deep-nesting/src/B.php", \
+        "and a raise that names a dashboard page gives its card that page to open"
     assert "declares no event" in refused(lambda: Raise().run(None, plugins, "typed", "made-up", "")), "and refuses one it does not declare"
     off()
     assert apply(record, FEATURES["plugins"].journal, "typed", "", {"raise": {"event": "made-up"}}) == [], "an event the manifest does not declare is refused"

@@ -39,7 +39,8 @@ class PluginsDetails(FeatureDetails):
         manifest declares, with the same card and activity item as an answer that raises it. An event is declared as
         "events": {"<name>": {"title": "...", "tone": "...", "card": {"label", "icon", "color", "collapsed"}}}: the card
         shows it in the chat, and "collapsed": true makes its item in the activity list start folded to its title, opening
-        on a click.
+        on a click. A raise can name one of its dashboard pages, --open <dashboard>/<page> or "open" in an answer's raise,
+        and clicking its card in the chat opens that page in a side panel.
 
         A plugin shows its output as a dashboard: "dashboards": [{"name": "<id>", "title": "<Title>"}] in its manifest, and a
         JSON file it writes to $JOURNAL_PLUGIN_DATA/dashboards/<id>.json whenever its output changes. The viewer lists each

@@ -185,6 +185,11 @@ async function react(face) {
 async function drop() {
     await api.act(props.turn.type, props.turn.n, "delete", {why: "deleted from the viewer"});
 }
+
+function markClick(data) {
+    if (data.page) return {click: () => (store.pluginPage = {plugin: data.name, open: data.page})};
+    return data.row ? {click: () => peekRef(data.row)} : {};
+}
 </script>
 
 <template>
@@ -217,7 +222,7 @@ async function drop() {
         </template>
         <template #card>
             <div class="thread-turn card" :data-ref="turn.ref">
-                <ChatMark v-bind="turn.data" :at="turn.created" v-on="turn.data.row ? {click: () => peekRef(turn.data.row)} : {}" />
+                <ChatMark v-bind="turn.data" :at="turn.created" v-on="markClick(turn.data)" />
             </div>
         </template>
         <template #group>
