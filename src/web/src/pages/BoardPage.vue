@@ -13,6 +13,7 @@ import TabBar from "../kit/TabBar.vue";
 import NewBoard from "../board/NewBoard.vue";
 import NewWork from "../board/NewWork.vue";
 import BoardMenu from "../board/BoardMenu.vue";
+import BuildStrip from "../board/BuildStrip.vue";
 import {remember, remembered} from "../composables/remembered.js";
 import {load as loadRows, patched, rows} from "../sync/rows.js";
 import NotePrompt from "../board/NotePrompt.vue";
@@ -38,6 +39,9 @@ const chosenBoard = computed(() => store.board.lens.board);
 const slots = computed(() => store.board.slots);
 const TODO_MEANINGS = {doing: "start", asked: "review", done: "done"};
 const current = computed(() => boards.value.find((board) => board.n === store.board.lens.board));
+const building = computed(() => tickets.value && current.value && (current.value.data.building || {}).since);
+const ticketCount = computed(() => (store.board.lanes || []).reduce((sum, lane) => sum + lane.cards.length, 0));
+const removed = (n) => settle(boards.value.filter((board) => board.n !== n));
 const meaningOf = (key) => (tickets.value ? current.value && current.value.data.meanings[key] : TODO_MEANINGS[key]) || "";
 const finder = ref(null);
 const writingWork = ref(false);
@@ -300,6 +304,9 @@ const ask = usePoll(
         </template>
         <template v-else>
             <AgentStrip />
+            <template v-if="building">
+                <BuildStrip :board="current" :tickets="ticketCount" @removed="removed" @refused="refuse" />
+            </template>
             <template v-if="tickets && slots">
                 <AgentSlots :slots="slots" :only="only" @only="(state) => (only = only === state ? '' : state)" />
             </template>

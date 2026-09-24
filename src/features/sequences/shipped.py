@@ -132,7 +132,34 @@ REVISING_THE_DRAFTS = {
                          "journal sequence next <this sequence> --about <ref>."),
     ],
 }
-SHIPPED = (FILING_A_DUMP, BUILDING_A_PLAN, WORKING_A_BOARD_CARD, REVISING_THE_DRAFTS)
+BUILDING_A_BOARD = {
+    "title": "Building a board from a document",
+    "brief": "The user handed a document to a new board, and you set the board up from it: its stages, its name when they left "
+             "it to you, and a ticket for every piece of work in the stage the document puts it in. The board fills while "
+             "they watch, so log each move in plain words. They may write to you meanwhile: answer, and when they ask you to "
+             "stop, finish at once with journal board built. When they remove the board the run is given up for you; write "
+             "nothing more to it.",
+    "starts_on": "board.commissioned",
+    "started_by": USER,
+    "steps": [
+        ("Read the document", "journal board show <board n> names the document under building, with the user's note under "
+                              "steer; journal board paths <board n> gives its path. Read all of it before you write anything. "
+                              "Then journal sequence next <this sequence> --about <ref>."),
+        ("Set the stages", "Choose three to six stages from how the document describes progress, such as shipped, in testing, "
+                           "next and later, and add each in order with journal board stage <board n> \"<stage>\" [start|review|"
+                           "done]. When building says name_it, name the board for what the document is about with journal "
+                           "board update <board n> --title \"<name>\". Log each with journal board log <board n> \"<what you "
+                           "did and why>\". Then journal sequence next <this sequence> --about <ref>."),
+        ("File the tickets", "For every piece of work: journal ticket create \"<title>\" --brief \"<what the document says "
+                             "about it>\" --set board=<board n> --set stage=\"<stage>\" --set source=\"<document>\" --set "
+                             "source_id=\"<section and page>\". Go section by section and log each one with journal board log, "
+                             "saying where you put things and why when it is not obvious. Then journal sequence next <this "
+                             "sequence> --about <ref>."),
+        ("Finish", "journal board built <board n> \"<one line: how many stages and tickets, and what you left out and why>\". "
+                   "The user keeps the board or removes it. Finish with journal sequence next <this sequence> --about <ref>."),
+    ],
+}
+SHIPPED = (FILING_A_DUMP, BUILDING_A_PLAN, WORKING_A_BOARD_CARD, REVISING_THE_DRAFTS, BUILDING_A_BOARD)
 
 
 def ship(record) -> list[str]:

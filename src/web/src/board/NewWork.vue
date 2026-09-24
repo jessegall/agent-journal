@@ -94,7 +94,7 @@ const spoken = computed(() => conversation.value.filter((line) => line.text));
 const lastMine = computed(() => conversation.value.findLastIndex((line) => line.mine));
 const agentLine = computed(() => conversation.value.findLast((line) => !line.mine && !line.record && line.text));
 const held = computed(() => replies.value.length > 0 && !grown.value);
-const latest = computed(() => (asking.value || held.value || !agentLine.value ? [] : [agentLine.value]));
+const latest = computed(() => ((asking.value && grown.value) || held.value || !agentLine.value ? [] : [agentLine.value]));
 const agentAnswered = computed(() => Boolean(asking.value) || replies.value.length > 0);
 const dockedAt = ref(0);
 const echo = computed(() =>
@@ -374,7 +374,7 @@ function startAnew() {
                     <template v-if="asking && (grown || docked)">
                         <AskedQuestion :key="`question-${asking.n}`" :question="asking" :chat="docked" />
                     </template>
-                    <template v-else-if="writing && !asking">
+                    <template v-else-if="writing || asking">
                         <ChatLine key="thinking" thinking :notes="thinking" />
                     </template>
                 </Transition>
@@ -400,10 +400,10 @@ function startAnew() {
 <style scoped>
 .dock {
     position: absolute;
-    top: calc(50% - min(240px, 31vh));
+    top: calc(50% - min(200px, 26vh));
     left: calc(50% - min(340px, 50% - 16px));
     width: min(680px, calc(100% - 32px));
-    height: min(480px, 62vh);
+    height: min(400px, 52vh);
     transition:
         top var(--move),
         left var(--move),
@@ -412,7 +412,6 @@ function startAnew() {
 }
 
 .dock.short:not(.docked) {
-    top: calc(50% - min(200px, 26vh));
     height: min(260px, 40vh);
 }
 
@@ -633,6 +632,11 @@ function startAnew() {
 }
 
 @media (max-width: 760px) {
+    .dock:not(.docked, .short) {
+        top: calc(50% - min(280px, 36vh));
+        height: min(560px, 72vh);
+    }
+
     .dock.docked {
         top: 50%;
         left: 12px;

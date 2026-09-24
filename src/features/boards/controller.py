@@ -5,12 +5,13 @@ import resources.types as resources_module
 from controllers.base import Controller, internal
 from controllers.types import Messages, Questions
 from features.boards.resource import DONE, MEANINGS, Board
-from resources.base import REQUESTED, REVISED, Refused, Resource, titled
+from resources.base import COMMISSIONED, REQUESTED, REVISED, Refused, Resource, titled
 
 
 STAGES = ("To do", "Doing", "Review", "Done")
 START_OVER = "Start over"
 CANCEL_HOLDS = 600
+BUILD_LOG = 40
 
 
 
@@ -102,6 +103,45 @@ class Boards(Controller):
     def _filed(self, board, text: str, idempotency: str):
         return Messages(self.record, actor=self.actor, session=self.session, agent=self.agent).create(
             titled(text), brief=text.strip(), about=board.ref, new_work=True, idempotency=idempotency)
+
+    def build(self, n: int, name: str = "", steer: str = ""):
+        board = self.load(int(n))
+        if not board.files:
+            raise Refused(f"board {board.n} holds no document to build from; attach one first")
+        if name.strip():
+            self.update(board.n, title=name.strip())
+        self.update(board.n, building={"since": time.time(), "document": next(iter(board.files)), "steer": steer.strip(),
+                                       "name_it": not name.strip(), "log": []})
+        self.record.emit("board", board.n, COMMISSIONED, self.actor)
+        return self.load(board.n)
+
+    def log(self, n: int, line: str):
+        board = self._being_built(n)
+        entry = {"at": time.time(), "text": line.strip()}
+        return self.update(board.n, building={**board.building, "log": [*board.building["log"], entry][-BUILD_LOG:]})
+
+    def built(self, n: int, summary: str):
+        board = self._being_built(n)
+        return self.update(board.n, building={**board.building, "done": time.time(), "summary": summary.strip()})
+
+    def keep(self, n: int):
+        return self.update(self.load(int(n)).n, building={})
+
+    def discard(self, n: int, why: str = "The user removed the board built from a document"):
+        from features.sequences.controller import Sequences
+        from features.tickets.controller import Tickets
+        board = self.load(int(n))
+        Sequences(self.record, actor=self.actor, session=self.session, agent=self.agent).give_up(board.ref, why=why)
+        tickets = Tickets(self.record, actor=self.actor, session=self.session, agent=self.agent)
+        for ticket in [t for t in tickets._standing() if int(t.board) == board.n]:
+            tickets.delete(ticket.n, why=why)
+        return self.delete(board.n, why=why)
+
+    def _being_built(self, n: int):
+        board = self.load(int(n))
+        if not board.building.get("since") or board.building.get("done"):
+            raise Refused(f"board {board.n} is not being built from a document")
+        return board
 
     def meaning(self, n: int, stage: str, meaning: str = ""):
         board = self.load(int(n))

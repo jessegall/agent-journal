@@ -18,6 +18,7 @@ import NewResource from "../resource/NewResource.vue";
 import TextInput from "../kit/TextInput.vue";
 import Segmented from "../kit/Segmented.vue";
 import DocumentLibrary from "./DocumentLibrary.vue";
+import {useSlashFocus} from "../composables/slashFocus.js";
 
 const props = defineProps({type: String});
 const kind = computed(() => meta(props.type));
@@ -46,13 +47,7 @@ watch(
     },
     {immediate: true}
 );
-const TYPING = ["INPUT", "TEXTAREA", "SELECT"];
-function slash(event) {
-    if (!library.value || event.key !== "/" || TYPING.includes(event.target.tagName) || event.target.isContentEditable) return;
-    event.preventDefault();
-    search.value?.focus();
-}
-window.addEventListener("keydown", slash);
+useSlashFocus(search, () => library.value);
 const end = ref(null);
 const scrolled = ref(false);
 const moved = () => (scrolled.value = true);
@@ -62,7 +57,6 @@ window.addEventListener("touchmove", moved, {passive: true});
 onUnmounted(() => {
     window.removeEventListener("wheel", moved);
     window.removeEventListener("touchmove", moved);
-    window.removeEventListener("keydown", slash);
 });
 const listed = computed(() =>
     [...(kind.value.filters?.length ? SHOWS[filter.value] || SHOWS.open : SHOWS.every)()]

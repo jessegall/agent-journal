@@ -7,16 +7,11 @@ import SectionHeading from "../kit/SectionHeading.vue";
 import DocumentRow from "../resource/DocumentRow.vue";
 import {found, standing, words} from "../domain/documents.js";
 import {rows} from "../sync/rows.js";
+import {ageGroups} from "../format/time.js";
 
 const props = defineProps({docs: Array, query: {type: String, default: ""}, order: {type: String, default: "recent"}});
 const emit = defineEmits(["open", "clear"]);
 const LOOSE = "loose";
-const DAY = 86400;
-const AGES = [
-    {title: "Last 7 days", within: 7 * DAY},
-    {title: "Last 30 days", within: 30 * DAY},
-    {title: "Older", within: Infinity},
-];
 const NAME_AT_MOST = 34;
 const shelf = ref("");
 const refs = computed(() => new Set(props.docs.map((d) => d.ref)));
@@ -59,14 +54,7 @@ const hits = computed(() =>
         .filter((h) => h.hit)
         .sort((a, b) => b.hit.score - a.hit.score)
 );
-const groups = computed(() => {
-    if (props.order === "title") return [{title: "", list: sorted.value}];
-    const now = Date.now() / 1000;
-    return AGES.map((g, i) => ({
-        title: g.title,
-        list: sorted.value.filter((d) => now - changed(d) < g.within && (i === 0 || now - changed(d) >= AGES[i - 1].within)),
-    })).filter((g) => g.list.length);
-});
+const groups = computed(() => (props.order === "title" ? [{title: "", list: sorted.value}] : ageGroups(sorted.value, changed)));
 const shelfName = (d) => (shelf.value ? "" : homeOf.value[d.ref] || "");
 </script>
 

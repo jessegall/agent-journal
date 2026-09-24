@@ -41,3 +41,17 @@ export function stopwatch(seconds) {
     const secs = Math.max(0, Math.round(seconds || 0));
     return secs < 60 ? `${secs}s` : `${Math.floor(secs / 60)}m ${secs % 60}s`;
 }
+
+const DAY = 86400;
+const AGES = [
+    {title: "Last 7 days", within: 7 * DAY},
+    {title: "Last 30 days", within: 30 * DAY},
+    {title: "Older", within: Infinity},
+];
+
+export function ageGroups(list, when) {
+    const now = Date.now() / 1000;
+    const groups = AGES.map((g) => ({title: g.title, list: []}));
+    for (const item of list) groups[AGES.findIndex((g) => now - when(item) < g.within)].list.push(item);
+    return groups.filter((g) => g.list.length);
+}

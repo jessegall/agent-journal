@@ -28,6 +28,7 @@ const field = ref(null);
 const chosen = ref("");
 const extension = ref(null);
 const stopping = ref(false);
+const fixedOpen = ref(false);
 const feature = computed(() => features.value.find((f) => f.name === chosen.value) || null);
 
 const delivers = (how) => {
@@ -48,8 +49,8 @@ const viewerRows = computed(() =>
         {
             key: "away",
             kind: "switch",
-            title: "Show the While you were away card",
-            text: "After a minute or more away from this tab, a card lists what the agent did meanwhile.",
+            title: "While you were away card",
+            text: "When you come back to this tab, a card lists what the agent did meanwhile.",
             on: viewerOn("away"),
             changed: !viewerOn("away"),
             set: (v) => saveViewerSetting("away", v),
@@ -57,8 +58,8 @@ const viewerRows = computed(() =>
         {
             key: "tour",
             kind: "switch",
-            title: "Show the Home tour",
-            text: "A few short steps on Home that point at the view icons, the pane menu, presets and detaching. It turns itself off once you finish or skip it.",
+            title: "Home tour",
+            text: "A few short steps that show you around Home. Turns off once you finish or skip it.",
             on: !viewerSetting("tour_seen", false),
             changed: false,
             set: (v) => saveViewerSetting("tour_seen", !v),
@@ -72,15 +73,15 @@ const journalRows = computed(() =>
             key: "color",
             kind: "color",
             title: "Project color",
-            text: "The band across the viewer that tells this project apart from other open journals. It starts as a color picked from the project name.",
+            text: "The colored band that tells this project apart from other open journals.",
             keywords: "colour band identity",
             changed: Boolean(store.identity && store.identity.custom_color),
         },
         {
             key: "channel",
             kind: "switch",
-            title: "Send lines to the agent through the channel",
-            text: "The agent reads them mid-turn, with nothing wrapped around them. When this is off, the engine types them into the terminal instead.",
+            title: "Send lines through the channel",
+            text: "The agent reads your lines mid-turn. When off, they are typed into its terminal instead.",
             keywords: "delivery",
             on: delivers("channel"),
             changed: !delivers("channel"),
@@ -90,7 +91,7 @@ const journalRows = computed(() =>
             key: "extension",
             kind: "extension",
             title: "Chrome extension",
-            text: "Floats the chat over any page, points at elements, sends pictures and lets the agent drive the tab. It is served from this exact journal version.",
+            text: "Puts the chat on any web page and lets the agent see and use the tab.",
             keywords: "browser download",
         },
     ].map(worded)
@@ -114,7 +115,7 @@ const featureRows = computed(() =>
 const stopRow = {
     key: "stop",
     title: "Stop the journal",
-    text: "Closes the viewer, ends the engine and every service a plugin runs; the agent's terminal stops with them. Nothing on the record is touched. Start it again with journal claude.",
+    text: "Closes the viewer, the engine and every plugin service. Nothing is deleted; journal claude starts it again.",
     words: "stop the journal shut down quit engine viewer",
 };
 
@@ -237,15 +238,11 @@ onUnmounted(() => window.removeEventListener("keydown", onKey));
                     </ListBox>
                 </template>
 
-                <template v-if="sections.features.length || sections.fixed.length">
-                    <ListBox
-                        sticky
-                        :title="`Features on ${route.env}`"
-                        :count="sections.features.length + sections.fixed.length"
-                        lead="Open a feature to see what it does, when it runs and what it can say to the agent."
-                    >
-                        <template v-for="row in [...sections.features, ...sections.fixed]" :key="row.key">
+                <template v-if="sections.features.length">
+                    <ListBox sticky :title="`Features on ${route.env}`" :count="sections.features.length">
+                        <template v-for="row in sections.features" :key="row.key">
                             <SettingRow
+                                compact
                                 :title="row.title"
                                 :text="row.text"
                                 :tag="row.changed ? 'Changed' : ''"
@@ -256,12 +253,33 @@ onUnmounted(() => window.removeEventListener("keydown", onKey));
                                     <span>Runs {{ row.when }}</span>
                                 </template>
                                 <template #control>
-                                    <template v-if="row.feature.fixed">
-                                        <span class="settings-note">Always on</span>
-                                    </template>
-                                    <template v-else>
-                                        <Switch :on="row.on" @change="(v) => flip(row.key, v)" />
-                                    </template>
+                                    <Switch :on="row.on" @change="(v) => flip(row.key, v)" />
+                                </template>
+                            </SettingRow>
+                        </template>
+                    </ListBox>
+                </template>
+
+                <template v-if="sections.fixed.length">
+                    <ListBox
+                        sticky
+                        folds
+                        title="Always on"
+                        :count="sections.fixed.length"
+                        :open="fixedOpen || Boolean(query)"
+                        @toggle="fixedOpen = !fixedOpen"
+                    >
+                        <template v-for="row in sections.fixed" :key="row.key">
+                            <SettingRow
+                                compact
+                                :title="row.title"
+                                :text="row.text"
+                                :tag="row.changed ? 'Changed' : ''"
+                                opens
+                                @open="chosen = row.key"
+                            >
+                                <template v-if="row.when">
+                                    <span>Runs {{ row.when }}</span>
                                 </template>
                             </SettingRow>
                         </template>
@@ -269,7 +287,7 @@ onUnmounted(() => window.removeEventListener("keydown", onKey));
                 </template>
 
                 <template v-if="sections.stop.length">
-                    <ListBox sticky title="Stop">
+                    <ListBox sticky title="Shut down">
                         <SettingRow :title="stopRow.title" :text="stopRow.text">
                             <template #control>
                                 <Btn kind="danger" small :disabled="stopping" @click="stop">{{ stopping ? "Stopping" : "Stop" }}</Btn>
@@ -304,12 +322,6 @@ onUnmounted(() => window.removeEventListener("keydown", onKey));
 .settings-find {
     flex: 1 1 260px;
     max-width: 440px;
-}
-
-.settings-note {
-    color: var(--text-3);
-    font-size: 12px;
-    white-space: nowrap;
 }
 
 .settings-link {
