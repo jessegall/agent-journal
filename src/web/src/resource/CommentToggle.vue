@@ -9,6 +9,15 @@ const system = () => Boolean(props.resource && props.resource.data && props.reso
 
 <template>
     <template v-if="talk && !system()">
-        <SideToggle mode="comments" icon="bubble" label="Comments" :count="talk.count.value" />
+        <template v-if="talk.running.value">
+            <SideToggle mode="running" icon="play" label="Being written" />
+        </template>
+        <SideToggle
+            mode="comments"
+            icon="bubble"
+            label="Comments"
+            :count="talk.count.value"
+            :off="talk.running.value ? 'Comments open when the agent has finished writing' : ''"
+        />
     </template>
 </template>

@@ -3,8 +3,11 @@ import {computed, ref} from "vue";
 import Icon from "../kit/Icon.vue";
 import ChoiceList from "../kit/ChoiceList.vue";
 import MenuItem from "../kit/MenuItem.vue";
+import MenuLabel from "../kit/MenuLabel.vue";
 import MenuPanel from "../kit/MenuPanel.vue";
 import SwitchCase from "../kit/SwitchCase.vue";
+import ToggleItem from "../kit/ToggleItem.vue";
+import {shownChoices, toggled} from "../domain/chatShown.js";
 import {useOutside} from "../composables/outside.js";
 import {go, route} from "../route.js";
 
@@ -22,6 +25,8 @@ const props = defineProps({
     levels: {type: Array, default: () => []},
     flushable: Boolean,
     flush: Boolean,
+    chat: Boolean,
+    hidden: {type: Array, default: () => []},
 });
 const emit = defineEmits([
     "close",
@@ -37,11 +42,15 @@ const emit = defineEmits([
     "scheme",
     "flush",
     "verbosity",
+    "hide",
 ]);
 const menu = ref(null);
 const list = ref("");
 const mode = computed(() => list.value || (props.floating ? "floating" : "pane"));
+const choices = computed(() => shownChoices(props.hidden));
 useOutside(menu, () => emit("close"));
+
+const hide = (list) => emit("hide", props.pane, list);
 
 function openAll() {
     emit("close");
@@ -84,6 +93,30 @@ function pick(event, ...args) {
                         </template>
                     </MenuItem>
                 </template>
+            </template>
+            <template #shown>
+                <MenuItem class="pane-menu-back" @click="list = ''">
+                    <Icon name="back" :size="14" />
+                    Show in chat
+                </MenuItem>
+                <template v-for="group in choices" :key="group.title">
+                    <MenuLabel>{{ group.title }}</MenuLabel>
+                    <template v-for="kind in group.kinds" :key="kind.key">
+                        <ToggleItem
+                            :class="{'pane-menu-off': !kind.on}"
+                            :on="kind.on"
+                            :icon="kind.icon"
+                            @click="hide(toggled(hidden, kind.key))"
+                        >
+                            {{ kind.label }}
+                        </ToggleItem>
+                    </template>
+                </template>
+                <span class="pane-menu-line" />
+                <MenuItem :disabled="!hidden.length" @click="hide([])">
+                    <Icon name="restore" :size="14" />
+                    Show everything
+                </MenuItem>
             </template>
             <template #schemes>
                 <MenuItem class="pane-menu-back" @click="list = ''">
@@ -140,7 +173,7 @@ function pick(event, ...args) {
                 </MenuItem>
             </template>
         </SwitchCase>
-        <template v-if="!list && (all || schemes.length || flushable || levels.length)">
+        <template v-if="!list && (all || schemes.length || flushable || levels.length || chat)">
             <span class="pane-menu-line" />
             <template v-if="flushable">
                 <MenuItem @click="pick('flush', !flush)">
@@ -153,6 +186,16 @@ function pick(event, ...args) {
                     <Icon name="list" :size="14" />
                     Verbosity
                     <span class="pane-menu-more">›</span>
+                </MenuItem>
+            </template>
+            <template v-if="chat">
+                <MenuItem @click="list = 'shown'">
+                    <Icon name="eye" :size="14" />
+                    Show in chat
+                    <template v-if="hidden.length">
+                        <span class="pane-menu-note">{{ hidden.length }} hidden</span>
+                    </template>
+                    <span :class="['pane-menu-more', {near: hidden.length}]">›</span>
                 </MenuItem>
             </template>
             <template v-if="schemes.length">
@@ -175,6 +218,21 @@ function pick(event, ...args) {
 <style scoped>
 .pane-menu-more {
     margin-left: auto;
+    color: var(--text-4);
+}
+
+.pane-menu-more.near {
+    margin-left: 6px;
+}
+
+.pane-menu-note {
+    margin-left: auto;
+    color: var(--text-4);
+    font-size: 11px;
+    font-variant-numeric: tabular-nums;
+}
+
+.menu-item.pane-menu-off {
     color: var(--text-4);
 }
 

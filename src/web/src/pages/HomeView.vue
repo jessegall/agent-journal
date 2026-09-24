@@ -16,6 +16,7 @@ defineProps({
     view: {type: String, required: true},
     flush: Boolean,
     feed: {type: Object, default: null},
+    hidden: {type: Array, default: () => []},
     level: {type: String, default: DEFAULT_LEVEL},
     floating: Boolean,
 });
@@ -29,7 +30,7 @@ const feedKey = computed(() => (agent.value ? `${agent.value.n}:${agent.value.da
         <SwitchCase :value="view">
             <template #chat>
                 <PinnedNotices :notices="notices" :without-toggle="floating" />
-                <Thread view="chat" />
+                <Thread view="chat" :hidden="hidden" />
             </template>
             <template #feed>
                 <template v-if="agent">

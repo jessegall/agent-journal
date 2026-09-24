@@ -38,7 +38,7 @@ usePoll(...polled.agents);
 
 const IDLE = 30000;
 const scroller = ref(null);
-const props = defineProps({view: {type: String, default: ""}});
+const props = defineProps({view: {type: String, default: ""}, hidden: {type: Array, default: () => []}});
 const pane = computed(() => props.view || store.pane);
 const threadRoot = ref(null);
 const askHere = (n) => !!threadRoot.value?.offsetParent && (openQuestion(n, threadRoot.value), true);
@@ -198,7 +198,8 @@ const thread = computed(() => {
         },
         pending.value,
         route.value.env,
-        !!paging.more.message
+        !!paging.more.message,
+        props.hidden
     );
     made.keys.forEach((placeholder, ref) => link(ref, placeholder));
     return made;

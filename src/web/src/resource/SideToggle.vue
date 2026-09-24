@@ -8,13 +8,20 @@ const props = defineProps({
     icon: {type: String, required: true},
     label: {type: String, required: true},
     count: {type: Number, default: 0},
+    off: {type: String, default: ""},
 });
 const talk = inject("talk", null);
 </script>
 
 <template>
     <template v-if="talk">
-        <Btn small :class="['side-toggle', {on: talk.talking.value && talk.aside.value === mode}]" @click="talk.toggle(mode)">
+        <Btn
+            small
+            :class="['side-toggle', {on: talk.talking.value && talk.aside.value === mode}]"
+            :disabled="!!off"
+            :title="off || undefined"
+            @click="talk.toggle(mode)"
+        >
             <Icon :name="icon" :size="12" />
             {{ label }}
             <template v-if="count">
