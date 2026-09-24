@@ -7,11 +7,17 @@ import {agent} from "../state/store.js";
 import Thread from "../chat/Thread.vue";
 import PinnedNotices from "../chat/PinnedNotices.vue";
 import FileFeed from "../chat/FileFeed.vue";
+import {DEFAULT_LEVEL} from "../domain/verbosity.js";
 import TerminalWindow from "../chat/TerminalWindow.vue";
 import RailWaiting from "./RailWaiting.vue";
 import RailTodos from "./RailTodos.vue";
 
-defineProps({view: {type: String, required: true}, flush: Boolean, feed: {type: Object, default: null}});
+defineProps({
+    view: {type: String, required: true},
+    flush: Boolean,
+    feed: {type: Object, default: null},
+    level: {type: String, default: DEFAULT_LEVEL},
+});
 const emit = defineEmits(["feed"]);
 const notices = computed(() => open("notice"));
 const feedKey = computed(() => (agent.value ? `${agent.value.n}:${agent.value.data.transcript}` : ""));
@@ -32,7 +38,7 @@ const feedKey = computed(() => (agent.value ? `${agent.value.n}:${agent.value.da
                     <EmptyState title="No agent yet">The file feed shows an agent's edits as it makes them.</EmptyState>
                 </template>
             </template>
-            <template #terminal><TerminalWindow /></template>
+            <template #terminal><TerminalWindow :key="level" :level="level" /></template>
             <template #question><RailWaiting type="question" /></template>
             <template #suggestion><RailWaiting type="suggestion" /></template>
             <template #todos><RailTodos /></template>

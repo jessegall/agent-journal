@@ -178,9 +178,8 @@ def handle(provider, root: Path, env: str, hook) -> dict:
     wrote = hook.event == "PostToolUse" and commands.writes(hook)
     agents.saw(row.n, {"hook": hook.event, "tool": hook.tool.name, "file": hook.tool.paths[0] if hook.tool.paths else "", "session": hook.session, "size": hook.tool.result_size, "skill": hook.tool.loaded_skill, "cause": AGENT},
                status=provider.status(hook) or row.status or IDLE, **provider.facts(row, hook, root), **commands.shell(row, hook), wrote=wrote)
-    shell = provider.shell_command(hook.tool) if hook.event == "PostToolUse" else None
-    if shell is not None:
-        bus.defer(lambda: ran.announce(record, row.n, ran.SHELL, shell, hook.tool.output))
+    if hook.event == "PostToolUse":
+        bus.defer(lambda: ran.tool_ran(record, row.n, provider, hook.tool))
     if wrote:
         bus.defer(lambda: files.announce(record, row.n))
     if hook.event == "PreToolUse":

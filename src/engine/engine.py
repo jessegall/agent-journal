@@ -252,10 +252,10 @@ class Engine(Seat):
                 ran.announce(self.record, row.n, ran.TYPED, run.command, run.output, at=run.at)
             self.echoed_at = run.at
 
-    def noted(self, line: str) -> None:
+    def noted(self, line: str, tool: str = ran.NOTED) -> None:
         row = self.agent.driver.last_report()
         if row is not None:
-            ran.announce(self.record, row.n, ran.NOTED, line)
+            ran.announce(self.record, row.n, tool, line)
 
     def held(self, line: str) -> str:
         self.agent.driver.stop_turn()
@@ -357,8 +357,10 @@ class Engine(Seat):
                 actor.notify(e)
                 count += 1
         waiting = len(self.agent.pending)
-        if self.agent.flush():
+        line = self.agent.flush()
+        if line:
             self.typed_at = time.time()
+            self.noted(line, ran.DELIVERED)
             return f"typed {waiting} in one line"
         return f"delivered {count}" if count else ""
 
@@ -373,6 +375,7 @@ class Engine(Seat):
             return "nothing owed"
         self.agent.driver.send(line)
         self.typed_at = time.time()
+        self.noted(line, ran.DELIVERED)
         return f"typed: {line[:60]}"
 
     def waiting(self) -> bool:
