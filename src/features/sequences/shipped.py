@@ -10,23 +10,23 @@ FILING_A_DUMP = {
     "starts_on": "dump.created",
     "started_by": "",
     "steps": [
-        ("Read everything", "journal dump items <n> lists what was dropped; read every item in full. When the pasted text holds "
-                            "several things, such as a summary, a transcript and a link, split it with journal dump split <n> "
+        ("Read everything", "journal dump items <dump n> lists what was dropped; read every item in full. When the pasted text holds "
+                            "several things, such as a summary, a transcript and a link, split it with journal dump split <dump n> "
                             "\"Summary, Transcript, Link\". Name its collection for what the pile is about with journal dump name "
-                            "<n> \"<name>\"."),
+                            "<dump n> \"<name>\"."),
         ("File by subject", "Sort the pile by concern: one document per subject, never one big document, even when a single "
                             "transcript or note covers several. Name each for what it is about, never after the file it came "
                             "in. Decide the shape yourself: where a summary, meeting notes, the decisions or the action items "
                             "would help, write them without being asked and list them with --added; action items become to-dos. "
                             "An image goes with the document it belongs to. Never make a plan or start work: that is a "
                             "suggestion for the end. Everything you file is in the journal at once, in the dump's collection. "
-                            "Log each step with journal dump log <n> \"<short title>\" --detail \"<what and why>\", with "
+                            "Log each step with journal dump log <dump n> \"<short title>\" --detail \"<what and why>\", with "
                             "--making \"<type>, <title>\" before a row exists and --on <type:n> once it does. Record journal "
-                            "dump note, then journal dump filed <n> <item> \"<what you did>\" \"<ref, ref>\" --added \"<ref>\" or "
-                            "journal dump failed. Ask only what you cannot tell, with journal dump ask <n> \"<question>\" "
+                            "dump note, then journal dump filed <dump n> <item> \"<what you did>\" \"<ref, ref>\" --added \"<ref>\" or "
+                            "journal dump failed. Ask only what you cannot tell, with journal dump ask <dump n> \"<question>\" "
                             "--guesses \"<one>|<two>\"."),
         ("Sum up and suggest", "Once every item is filed the dump closes. Sum up what you filed and where with journal dump "
-                               "offer <n> '[...]' --summary \"<two or three plain lines>\". Suggest up to four next steps only "
+                               "offer <dump n> '[...]' --summary \"<two or three plain lines>\". Suggest up to four next steps only "
                                "where one is worth taking, each a question with a button: {\"ask\": \"<question>\", \"label\": "
                                "\"<button>\"}; use '[]' when there is nothing to suggest. The user takes or leaves each one."),
     ],
@@ -38,11 +38,11 @@ BUILDING_A_PLAN = {
     "started_by": "",
     "steps": [
         ("Name the goal", "Settle with the user what is true when the plan is done, and set it as the plan's goal."),
-        ("Add the phases", "Add every phase in order with journal plan phase <n> \"<title>\" --when \"<complete when>\", and "
+        ("Add the phases", "Add every phase in order with journal plan phase <plan n> \"<title>\" --when \"<complete when>\", and "
                            "--checkpoint where the user should look before it goes on."),
-        ("File the rows", "journal plan stage <n> todos, then file the to-dos and put each under its phase with journal plan "
-                          "todos <n> <phase> <rows>."),
-        ("Hand it over", "When every phase has rows, journal plan ready <n>. Only the user approves it; you start it when "
+        ("File the rows", "journal plan stage <plan n> todos, then file the to-dos and put each under its phase with journal plan "
+                          "todos <plan n> <phase> <rows>."),
+        ("Hand it over", "When every phase has rows, journal plan ready <plan n>. Only the user approves it; you start it when "
                          "they have."),
     ],
 }
