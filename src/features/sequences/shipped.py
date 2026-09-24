@@ -54,11 +54,12 @@ WORKING_A_BOARD_CARD = {
                                "board whether that is it: journal board ask <board n> \"Do you mean <the work>?\" --abstract "
                                "\"<why you think so>\" --set "
                                "options='[{\"title\": \"Yes\"}, {\"title\": \"No\"}]'. The question is your whole turn: do not "
-                               "reply to their message as well. Draft only once you are sure what they want in enough detail to "
-                               "write the tickets: a yes to a broad guess, like sharing the journal, is not enough, so your "
-                               "second turn asks one short follow-up about what they want from it, the same way. After their "
-                               "second answer, go on to Draft the tickets when it is clear; when it is not, go on to Offer "
-                               "choices."),
+                               "reply to their message as well. Always take two rounds before drafting, never start after the "
+                               "first answer. Your second turn narrows it down with a question that need not be yes or no: "
+                               "options that each carry a short line under them, like Yes with what that means, Yes, but with "
+                               "the other reading, and No with where you would go instead (--set options='[{\"title\": "
+                               "\"Yes\", \"text\": \"<what that means>\"}, ...]'). After their second answer, go on to "
+                               "Draft the tickets when it is clear; when it is not, go on to Offer choices."),
         ("Offer choices", "Only when two guesses did not land: ask once with three or four concise options, each a meaning "
                           "they might have, in a few words, and Start over as the last: journal board ask <board n> \"Which "
                           "one?\" --set options='[...]'. The input closes while the options show, so they pick one; draft "
