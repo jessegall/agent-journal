@@ -18,7 +18,7 @@ import Folded from "../kit/Folded.vue";
 import PlanCritique from "./PlanCritique.vue";
 import ProgressBar from "../kit/ProgressBar.vue";
 
-const props = defineProps({resource: Object, readOnly: Boolean});
+const props = defineProps({resource: Object, readOnly: Boolean, pinProgress: Boolean});
 const emit = defineEmits(["close"]);
 const error = ref("");
 const critiquing = ref(false);
@@ -89,7 +89,10 @@ async function run(action, body = {}) {
             <TextDisplay class="goal" :text="resource.data.goal" />
         </template>
         <template v-if="planned.length">
-            <div class="overall">
+            <div :class="['overall', {pinned: pinProgress}]">
+                <template v-if="pinProgress">
+                    <span class="pinned-title">{{ resource.title }}</span>
+                </template>
                 <ProgressBar :value="finished" :max="planned.length" :busy="building" />
                 <span class="overall-figure">{{ finished }} of {{ planned.length }} done</span>
             </div>
@@ -283,6 +286,51 @@ async function run(action, body = {}) {
     flex: none;
     color: var(--text-3);
     font-size: 12px;
+}
+
+.overall.pinned {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    margin: 0 0 8px;
+    padding: 12px 0;
+    background: var(--bg);
+    container-type: scroll-state;
+}
+
+.pinned-title {
+    display: none;
+    flex: 0 1 auto;
+    min-width: 0;
+    max-width: 45%;
+    overflow: hidden;
+    color: var(--text);
+    font-size: 13px;
+    font-weight: 600;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.overall.pinned::after {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    left: 0;
+    height: 14px;
+    background: linear-gradient(to bottom, var(--bg), transparent);
+    content: "";
+    opacity: 0;
+    pointer-events: none;
+}
+
+@container scroll-state(stuck: top) {
+    .pinned-title {
+        display: block;
+    }
+
+    .overall.pinned::after {
+        opacity: 1;
+    }
 }
 
 .actions {

@@ -8,7 +8,6 @@ import EmptyState from "../kit/EmptyState.vue";
 import Icon from "../kit/Icon.vue";
 import PageBar from "../kit/PageBar.vue";
 import PlaceholderCard from "../kit/PlaceholderCard.vue";
-import StateDot from "../kit/StateDot.vue";
 import TextInput from "../kit/TextInput.vue";
 import PluginCard from "./PluginCard.vue";
 import PluginDashboard from "./PluginDashboard.vue";
@@ -21,14 +20,13 @@ import {polled} from "../sync/polled.js";
 import {rows} from "../sync/rows.js";
 import {usePoll} from "../poll.js";
 import {sendMessage} from "../chat/outbox.js";
-import {isFailing, isRunning} from "../domain/services.js";
 
 usePoll(...polled.pages);
 
 const source = ref("");
 const guide = ref(false);
 const making = ref(false);
-const servicesFor = ref(null);
+const servicesFor = ref("");
 const repository = ref("");
 const wish = ref("");
 const asked = ref(false);
@@ -69,9 +67,6 @@ const plugins = computed(() =>
         }))
 );
 const services = ref([]);
-const running = computed(() => services.value.filter(isRunning).length);
-const failing = computed(() => services.value.filter(isFailing).length);
-const tally = computed(() => (failing.value ? "failed" : running.value ? "done" : ""));
 const reading = ref("");
 const logged = ref("");
 const EVERY = 3000;
@@ -243,11 +238,6 @@ async function askAgent() {
                     </Btn>
                 </template>
             </TextInput>
-            <Btn class="services-open" @click="servicesFor = ''">
-                <StateDot :state="tally" />
-                Services
-                <span class="services-count">{{ running }} of {{ services.length }} running</span>
-            </Btn>
         </PageBar>
 
         <div class="body">
@@ -290,8 +280,8 @@ async function askAgent() {
             </div>
         </div>
 
-        <template v-if="servicesFor !== null">
-            <ServicesPanel :services="services" :plugins="plugins" :focus="servicesFor" @refresh="look()" @close="servicesFor = null" />
+        <template v-if="servicesFor">
+            <ServicesPanel :plugin="servicesFor" @close="servicesFor = ''" />
         </template>
         <template v-if="making">
             <Dialog title="Make a new plugin" small @close="making = false">
@@ -420,16 +410,6 @@ async function askAgent() {
 .install {
     flex: 1 1 360px;
     max-width: 640px;
-}
-
-.services-open {
-    gap: 8px;
-    margin-left: auto;
-}
-
-.services-count {
-    color: var(--text-3);
-    font-variant-numeric: tabular-nums;
 }
 
 .body {
@@ -606,10 +586,6 @@ async function askAgent() {
     .install {
         flex-basis: 100%;
         max-width: none;
-    }
-
-    .services-open {
-        margin-left: 0;
     }
 
     .body {

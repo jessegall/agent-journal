@@ -1,5 +1,5 @@
 from features.hosting.apps import app_here
-from features.organization.delegation import brief, missing, queued_behind
+from features.organization.delegation import WAITS_FOR, brief, global_ahead, missing, queued_behind
 from features.organization.files import organization
 from features.parts import ActionInterceptor, Command, Context
 
@@ -21,9 +21,14 @@ class Delegate(Command):
         if lacking:
             todos._refuse(f"{chosen.name} needs {', '.join(lacking)} named in the task or --given")
         ahead = queued_behind(todos, found, chosen)
+        queued = global_ahead(context.record, found, chosen)
         row = todos.create(task, brief=given, domain=found.name, role=chosen.name)
         if ahead:
             todos.after(row.n, ahead.n)
+        if queued:
+            env, first = queued
+            todos.update(row.n, **{WAITS_FOR: f"{env}:{first}"})
+            todos.block(row.n, f"{chosen.title or chosen.name} runs once per journal: to-do {first} in {env} goes first")
         text = brief(found, chosen, row.n, task, given, app_here(context.record))
         return {"todo": row.n, "waits": ahead.n if ahead else 0, "brief": text, "out": text}
 

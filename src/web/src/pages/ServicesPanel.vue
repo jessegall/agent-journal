@@ -1,5 +1,6 @@
 <script setup>
-import {computed, nextTick, onMounted, ref} from "vue";
+import {computed, ref} from "vue";
+import {api} from "../api/client.js";
 import Btn from "../kit/Btn.vue";
 import Console from "../kit/Console.vue";
 import EmptyState from "../kit/EmptyState.vue";
@@ -9,52 +10,58 @@ import StatTile from "../kit/StatTile.vue";
 import StateDot from "../kit/StateDot.vue";
 import {span} from "../format/time.js";
 import {store} from "../state/store.js";
+import {rows} from "../sync/rows.js";
+import {usePoll} from "../poll.js";
 import {useNow} from "../composables/now.js";
 import {dotOf, isFailing, isRunning, stateWord} from "../domain/services.js";
 import {useServiceAction, useServiceLog} from "../composables/service.js";
 
-const props = defineProps({
-    services: {type: Array, required: true},
-    plugins: {type: Array, required: true},
-    focus: {type: String, default: ""},
-});
-const emit = defineEmits(["close", "refresh"]);
+const props = defineProps({plugin: {type: String, default: ""}});
+const emit = defineEmits(["close"]);
+
+const EVERY = 2000;
+const all = ref([]);
+const look = usePoll(
+    "services-panel",
+    () => api.services(),
+    EVERY,
+    (got) => (all.value = got || [])
+);
+const services = computed(() => (props.plugin ? all.value.filter((s) => s.plugin === props.plugin) : all.value));
+const installed = computed(() => rows("plugin").filter((p) => !p.completed && !p.deleted));
 
 const now = useNow();
-const {error, set, busy, working} = useServiceAction(() => emit("refresh"));
+const {error, set, busy, working} = useServiceAction(() => look());
 const {reading, log, read} = useServiceLog();
 const toggle = (s) => (isRunning(s) ? "down" : "up");
 
+const feature = (name) => (store.spec && store.spec.features ? store.spec.features[name] : null);
+const installedAs = (name) => installed.value.find((p) => (p.data.manifest || {}).name === name);
+const titleOf = (name) => (feature(name) || installedAs(name) || {}).title || name;
+const title = computed(() => (props.plugin ? `${titleOf(props.plugin)} services` : "Services"));
+const abstract = computed(() =>
+    props.plugin ? "What this plugin keeps running." : "The processes the journal and its plugins keep running."
+);
+
 const groups = computed(() => {
-    const owners = [...new Set(props.services.map((s) => s.plugin))];
-    const feature = (name) => (store.spec && store.spec.features ? store.spec.features[name] : null);
-    const plugin = (name) => props.plugins.find((p) => p.name === name);
-    const titleOf = (name) => (feature(name) || plugin(name) || {}).title || name;
+    const owners = [...new Set(services.value.map((s) => s.plugin))];
     return owners
         .map((name) => ({
             name,
             title: titleOf(name),
             kind: feature(name) ? "Part of the journal" : "Plugin",
-            services: props.services.filter((s) => s.plugin === name),
+            services: services.value.filter((s) => s.plugin === name),
         }))
         .sort((a, b) => Number(Boolean(feature(a.name))) - Number(Boolean(feature(b.name))));
 });
-const running = computed(() => props.services.filter(isRunning).length);
-const failing = computed(() => props.services.filter(isFailing).length);
-const stopped = computed(() => props.services.length - running.value - failing.value);
-
-const body = ref(null);
-
-onMounted(async () => {
-    await nextTick();
-    const focused = body.value && body.value.querySelector(".group.focused");
-    if (focused) focused.scrollIntoView({block: "start", behavior: "smooth"});
-});
+const running = computed(() => services.value.filter(isRunning).length);
+const failing = computed(() => services.value.filter(isFailing).length);
+const stopped = computed(() => services.value.length - running.value - failing.value);
 </script>
 
 <template>
-    <SidePanel title="Services" abstract="The processes the journal and its plugins keep running." @close="emit('close')">
-        <div ref="body" class="services">
+    <SidePanel :title="title" :abstract="abstract" @close="emit('close')">
+        <div class="services">
             <div class="tally">
                 <StatTile label="Running" :value="running" tone="good" />
                 <StatTile label="Stopped" :value="stopped" />
@@ -64,14 +71,18 @@ onMounted(async () => {
                 <p class="error">{{ error }}</p>
             </template>
             <template v-if="!services.length">
-                <EmptyState title="Nothing runs yet">No plugin or feature on this project declares a service.</EmptyState>
+                <EmptyState title="Nothing runs yet">
+                    {{ plugin ? "This plugin declares no service." : "No plugin or feature on this project declares a service." }}
+                </EmptyState>
             </template>
             <template v-for="group in groups" :key="group.name">
-                <section :class="['group', {focused: group.name === focus}]">
-                    <SectionHeading>
-                        {{ group.title }}
-                        <span class="kind">{{ group.kind }}</span>
-                    </SectionHeading>
+                <section class="group">
+                    <template v-if="!plugin">
+                        <SectionHeading>
+                            {{ group.title }}
+                            <span class="kind">{{ group.kind }}</span>
+                        </SectionHeading>
+                    </template>
                     <template v-for="s in group.services" :key="s.id">
                         <article :class="['service', {failing: isFailing(s)}]">
                             <header class="service-head">
@@ -136,7 +147,6 @@ onMounted(async () => {
     display: flex;
     flex-direction: column;
     gap: 8px;
-    scroll-margin-top: 12px;
 }
 
 .kind {
@@ -145,11 +155,6 @@ onMounted(async () => {
     font-weight: 500;
     letter-spacing: 0;
     text-transform: none;
-}
-
-.group.focused .service {
-    border-color: color-mix(in srgb, var(--accent) 55%, var(--border-2));
-    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 14%, transparent);
 }
 
 .service {

@@ -6,8 +6,8 @@ from engine.fields import Loaded
 from resources.base import Refused
 
 FOLDER = "agentic-organization"
-WORKTREE, PLURAL = "worktree", "plural"
-CARDINALITIES = (WORKTREE, PLURAL)
+WORKTREE, PLURAL, GLOBAL = "worktree", "plural", "global"
+CARDINALITIES = (WORKTREE, PLURAL, GLOBAL)
 
 
 @dataclass(frozen=True)

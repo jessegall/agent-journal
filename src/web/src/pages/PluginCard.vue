@@ -64,7 +64,7 @@ function pick(event) {
             <div class="runs">
                 <span class="label">Runs</span>
                 <template v-for="s in services" :key="s.id">
-                    <button type="button" :class="['run', {failing: isFailing(s)}]" title="Open in services" @click="emit('services')">
+                    <button type="button" :class="['run', {failing: isFailing(s)}]" title="Show its services" @click="emit('services')">
                         <StateDot :state="dotOf(s)" />
                         <span class="run-name">{{ s.service }}</span>
                         <span class="run-state">

@@ -8,6 +8,7 @@ const props = defineProps({
     follow: {type: Boolean, default: false},
     fixed: {type: Boolean, default: false},
     small: Boolean,
+    tall: Boolean,
     closable: {type: Boolean, default: true},
 });
 const emit = defineEmits(["close", "dismiss"]);
@@ -29,7 +30,7 @@ onUnmounted(() => watcher.disconnect());
 <template>
     <Transition name="dialog" appear @after-leave="closed">
         <div v-if="shown" class="dialog" @click.self="closable && close()">
-            <section :class="['dialog-panel', {fixed, small}]">
+            <section :class="['dialog-panel', {fixed, small, tall}]">
                 <header class="dialog-head">
                     <h3>{{ title }}</h3>
                     <template v-if="closable">
@@ -82,6 +83,10 @@ onUnmounted(() => watcher.disconnect());
 
 .dialog-panel.fixed.small {
     height: min(320px, 100%);
+}
+
+.dialog-panel.fixed.small.tall {
+    height: min(500px, 100%);
 }
 
 .dialog-panel.fixed .dialog-body {

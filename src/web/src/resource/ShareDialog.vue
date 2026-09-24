@@ -3,11 +3,14 @@ import {computed, onMounted, onUnmounted, ref} from "vue";
 import {api} from "../api/client.js";
 import Btn from "../kit/Btn.vue";
 import CopyButton from "../kit/CopyButton.vue";
+import EmptyState from "../kit/EmptyState.vue";
 import Dialog from "../kit/Dialog.vue";
 import Icon from "../kit/Icon.vue";
 import Segmented from "../kit/Segmented.vue";
 import Spinner from "../kit/Spinner.vue";
 import Switch from "../kit/Switch.vue";
+import SwitchCase from "../kit/SwitchCase.vue";
+import TabBar from "../kit/TabBar.vue";
 import TextInput from "../kit/TextInput.vue";
 import {
     KINDS,
@@ -42,7 +45,7 @@ const error = ref("");
 const making = ref(false);
 const made = ref(null);
 const WAIT_EVERY = 1500;
-const WAIT_FOR = 45000;
+const WAIT_FOR = 30000;
 const tunnel = ref("");
 let pause = 0;
 const listed = ref(false);
@@ -85,7 +88,11 @@ onUnmounted(() => {
 });
 const stopping = ref(0);
 const open = sharesOf(ref_.value);
-const others = computed(() => open.value.filter((share) => share.n !== made.value?.n));
+const tab = ref(waiting.value.length ? "open" : "new");
+const tabs = computed(() => [
+    {key: "new", title: "New link"},
+    {key: "open", title: "Open links", count: open.value.length + waiting.value.length},
+]);
 const loggedIn = (status) => (tunnelStatus.value = status);
 const blocked = computed(() => tunnelStatus.value && (!tunnelStatus.value.installed || !tunnelStatus.value.logged_in));
 
@@ -118,6 +125,15 @@ async function create() {
     }
 }
 
+function checkAgain() {
+    if (made.value) awaitLink(made.value);
+}
+
+function another() {
+    tunnel.value = "";
+    made.value = null;
+}
+
 async function approve(share) {
     stopping.value = share.n;
     try {
@@ -143,146 +159,184 @@ async function stop(share) {
 </script>
 
 <template>
-    <Dialog small fixed title="Share" @close="emit('close')">
+    <Dialog small fixed tall title="Share" @close="emit('close')">
         <div class="share">
-            <template v-if="blocked">
-                <TunnelProblem :status="tunnelStatus" @ready="loggedIn" />
-            </template>
-            <template v-if="made">
-                <template v-if="tunnel === 'starting'">
-                    <div class="starting">
-                        <Spinner />
-                        <span>
-                            Getting the link ready…
-                            <span class="meta">Usually a few seconds.</span>
-                        </span>
-                    </div>
-                </template>
-                <template v-else>
-                    <div class="made">
-                        <span class="made-head">
-                            <Icon name="tick" :size="12" />
-                            Anyone with this link can view it
-                        </span>
-                        <div class="link-row">
-                            <input class="link" :value="made.abstract" readonly @focus="$event.target.select()" />
-                            <CopyButton :text="made.abstract" label="Copy" />
-                            <CopyButton
-                                :text="message(made.abstract)"
-                                icon="chat"
-                                label="Copy with message"
-                                hint="Copy it with a line saying what it is"
-                            />
-                        </div>
-                        <template v-if="tunnel === 'late'">
-                            <p class="late">It doesn't open from outside yet; give it a moment.</p>
+            <div class="tabs-row">
+                <TabBar v-model="tab" :tabs="tabs" />
+            </div>
+            <Transition name="pane" mode="out-in">
+                <div :key="tab" class="pane">
+                    <SwitchCase :value="tab">
+                        <template #new>
+                            <template v-if="blocked">
+                                <TunnelProblem :status="tunnelStatus" @ready="loggedIn" />
+                            </template>
+                            <template v-if="made">
+                                <SwitchCase :value="tunnel">
+                                    <template #starting>
+                                        <div class="starting">
+                                            <Spinner />
+                                            <span>
+                                                Getting the link ready…
+                                                <span class="meta">Usually a few seconds.</span>
+                                            </span>
+                                        </div>
+                                    </template>
+                                    <template #default>
+                                        <div class="made">
+                                            <template v-if="tunnel === 'late'">
+                                                <span class="made-head late">
+                                                    <Icon name="warn" :size="12" />
+                                                    The link isn't reachable yet
+                                                </span>
+                                            </template>
+                                            <template v-else>
+                                                <span class="made-head">
+                                                    <Icon name="tick" :size="12" />
+                                                    Anyone with this link can view it
+                                                </span>
+                                            </template>
+                                            <div class="link-row">
+                                                <input class="link" :value="made.abstract" readonly @focus="$event.target.select()" />
+                                                <CopyButton :text="made.abstract" label="Copy" />
+                                                <CopyButton
+                                                    :text="message(made.abstract)"
+                                                    icon="chat"
+                                                    label="Copy with message"
+                                                    hint="Copy it with a line saying what it is"
+                                                />
+                                            </div>
+                                            <template v-if="tunnel === 'late'">
+                                                <div class="late-row">
+                                                    <span class="meta">It was made, but it doesn't open from outside yet.</span>
+                                                    <Btn small @click="checkAgain">Check again</Btn>
+                                                </div>
+                                            </template>
+                                            <span class="meta">
+                                                {{ endsOf(made) === "never ends" ? "It never ends" : `It ${endsOf(made)}` }} · stop it under
+                                                Open links
+                                            </span>
+                                        </div>
+                                    </template>
+                                </SwitchCase>
+                            </template>
+                            <template v-else>
+                                <template v-if="opens === null">
+                                    <p class="quiet">Working out what the link opens…</p>
+                                </template>
+                                <template v-else-if="summary">
+                                    <div class="opens">
+                                        <p class="opens-line">
+                                            <span>The link opens</span>
+                                            <strong>{{ summary.title }}</strong>
+                                            <span class="ref">{{ summary.ref }}</span>
+                                            <span>{{ summary.tail }}</span>
+                                            <template v-if="opens.length > 1">
+                                                <Btn kind="icon" small class="show" @click="listed = !listed">
+                                                    {{ listed ? "Hide" : "Show" }}
+                                                </Btn>
+                                            </template>
+                                        </p>
+                                        <template v-if="listed">
+                                            <ul class="opens-list">
+                                                <template v-for="line in opens.slice(1)" :key="line">
+                                                    <li>{{ line }}</li>
+                                                </template>
+                                            </ul>
+                                        </template>
+                                    </div>
+                                </template>
+                                <div class="rows">
+                                    <div class="row">
+                                        <span class="label">Ends after</span>
+                                        <Segmented :options="EXPIRES" :value="expires" @pick="(key) => (expires = key)" />
+                                    </div>
+                                    <div class="row">
+                                        <span class="label">Password</span>
+                                        <TextInput
+                                            class="password"
+                                            type="password"
+                                            autocomplete="new-password"
+                                            :value="password"
+                                            placeholder="None"
+                                            aria-label="Password"
+                                            @input="password = $event.target.value"
+                                        />
+                                    </div>
+                                    <template v-if="password">
+                                        <p class="quiet hint">Visitors enter any name and this password.</p>
+                                    </template>
+                                    <div class="row">
+                                        <span class="label">Visitors can comment</span>
+                                        <Switch
+                                            :on="comments"
+                                            title="Let visitors comment under a name of their own"
+                                            @change="comments = $event"
+                                        />
+                                    </div>
+                                </div>
+                            </template>
                         </template>
-                        <span class="meta">
-                            {{ endsOf(made) === "never ends" ? "It never ends" : `It ${endsOf(made)}` }} · you can stop it here at any time
-                        </span>
-                    </div>
-                </template>
+                        <template #open>
+                            <template v-if="!open.length && !waiting.length">
+                                <EmptyState title="No open links">Links you make to this {{ kind }} show here until they end.</EmptyState>
+                            </template>
+                            <div class="open-shares">
+                                <template v-for="share in waiting" :key="share.n">
+                                    <div class="open-share waiting">
+                                        <div class="open-share-main">
+                                            <span class="waiting-line">
+                                                The agent wants to share this {{ kind }}
+                                                <template v-if="locked(share)">
+                                                    <Icon class="lock" name="lock" :size="11" title="Has a password" />
+                                                </template>
+                                            </span>
+                                            <span class="meta">{{ endsOf(share) }} once accepted · no link works until then</span>
+                                        </div>
+                                        <Btn small kind="primary" :busy="stopping === share.n" @click="approve(share)">Accept</Btn>
+                                        <Btn small @click="stop(share)">Deny</Btn>
+                                    </div>
+                                </template>
+                                <template v-for="share in open" :key="share.n">
+                                    <div class="open-share">
+                                        <div class="open-share-main">
+                                            <span class="open-link" :title="share.abstract">
+                                                <template v-if="locked(share)">
+                                                    <Icon class="lock" name="lock" :size="11" title="Has a password" />
+                                                </template>
+                                                {{ share.abstract.replace(/^https:\/\/[^/]+/, "") }}
+                                            </span>
+                                            <span class="meta">{{ viewsOf(share) }} · {{ endsOf(share) }}</span>
+                                        </div>
+                                        <CopyButton :text="share.abstract" hint="Copy the link" />
+                                        <CopyButton
+                                            :text="message(share.abstract)"
+                                            icon="chat"
+                                            hint="Copy it with a line saying what it is"
+                                        />
+                                        <Btn small kind="danger" :busy="stopping === share.n" @click="stop(share)">Stop sharing</Btn>
+                                    </div>
+                                </template>
+                            </div>
+                        </template>
+                    </SwitchCase>
+                    <template v-if="error">
+                        <p class="error">{{ error }}</p>
+                    </template>
+                </div>
+            </Transition>
+        </div>
+        <template v-if="tab === 'new'" #foot>
+            <template v-if="made">
+                <Btn @click="another">Make another</Btn>
+                <Btn kind="primary" @click="emit('close')">Done</Btn>
             </template>
             <template v-else>
-                <template v-if="opens === null">
-                    <p class="quiet">Working out what the link opens…</p>
-                </template>
-                <template v-else-if="summary">
-                    <div class="opens">
-                        <p class="opens-line">
-                            <span>The link opens</span>
-                            <strong>{{ summary.title }}</strong>
-                            <span class="ref">{{ summary.ref }}</span>
-                            <span>{{ summary.tail }}</span>
-                            <template v-if="opens.length > 1">
-                                <Btn kind="icon" small class="show" @click="listed = !listed">{{ listed ? "Hide" : "Show" }}</Btn>
-                            </template>
-                        </p>
-                        <template v-if="listed">
-                            <ul class="opens-list">
-                                <template v-for="line in opens.slice(1)" :key="line">
-                                    <li>{{ line }}</li>
-                                </template>
-                            </ul>
-                        </template>
-                    </div>
-                </template>
-                <div class="rows">
-                    <div class="row">
-                        <span class="label">Ends after</span>
-                        <Segmented :options="EXPIRES" :value="expires" @pick="(key) => (expires = key)" />
-                    </div>
-                    <div class="row">
-                        <span class="label">Password</span>
-                        <TextInput
-                            class="password"
-                            type="password"
-                            autocomplete="new-password"
-                            :value="password"
-                            placeholder="None"
-                            aria-label="Password"
-                            @input="password = $event.target.value"
-                        />
-                    </div>
-                    <template v-if="password">
-                        <p class="quiet hint">Visitors enter any name and this password.</p>
-                    </template>
-                    <div class="row">
-                        <span class="label">Visitors can comment</span>
-                        <Switch :on="comments" title="Let visitors comment under a name of their own" @change="comments = $event" />
-                    </div>
-                </div>
+                <Btn kind="primary" :busy="making" :disabled="!opens || !opens.length || blocked" @click="create">
+                    <Icon name="share" :size="12" />
+                    Create link
+                </Btn>
             </template>
-            <template v-if="error">
-                <p class="error">{{ error }}</p>
-            </template>
-            <template v-if="waiting.length">
-                <section class="part open-shares">
-                    <span class="label">Waiting for you</span>
-                    <template v-for="share in waiting" :key="share.n">
-                        <div class="open-share waiting">
-                            <div class="open-share-main">
-                                <span class="waiting-line">
-                                    The agent wants to share this {{ kind }}
-                                    <template v-if="locked(share)">
-                                        <Icon class="lock" name="lock" :size="11" title="Has a password" />
-                                    </template>
-                                </span>
-                                <span class="meta">{{ endsOf(share) }} once accepted · no link works until then</span>
-                            </div>
-                            <Btn small kind="primary" :busy="stopping === share.n" @click="approve(share)">Accept</Btn>
-                            <Btn small @click="stop(share)">Deny</Btn>
-                        </div>
-                    </template>
-                </section>
-            </template>
-            <template v-if="others.length">
-                <section class="part open-shares">
-                    <span class="label">Open links to this {{ kind }}</span>
-                    <template v-for="share in others" :key="share.n">
-                        <div class="open-share">
-                            <div class="open-share-main">
-                                <span class="open-link" :title="share.abstract">
-                                    <template v-if="locked(share)">
-                                        <Icon class="lock" name="lock" :size="11" title="Has a password" />
-                                    </template>
-                                    {{ share.abstract.replace(/^https:\/\/[^/]+/, "") }}
-                                </span>
-                                <span class="meta">{{ viewsOf(share) }} · {{ endsOf(share) }}</span>
-                            </div>
-                            <CopyButton :text="share.abstract" hint="Copy the link" />
-                            <CopyButton :text="message(share.abstract)" icon="chat" hint="Copy it with a line saying what it is" />
-                            <Btn small kind="danger" :busy="stopping === share.n" @click="stop(share)">Stop sharing</Btn>
-                        </div>
-                    </template>
-                </section>
-            </template>
-        </div>
-        <template v-if="!made" #foot>
-            <Btn kind="primary" :busy="making" :disabled="!opens || !opens.length || blocked" @click="create">
-                <Icon name="share" :size="12" />
-                Create link
-            </Btn>
         </template>
     </Dialog>
 </template>
@@ -290,8 +344,63 @@ async function stop(share) {
 <style scoped>
 .share {
     display: flex;
+    flex: 1;
     flex-direction: column;
     gap: 16px;
+    min-height: 0;
+}
+
+.tabs-row {
+    flex: none;
+    border-bottom: 1px solid var(--border);
+}
+
+.tabs-row :deep(.tab) {
+    padding-bottom: 8px;
+    margin-bottom: -1px;
+}
+
+.pane {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 16px;
+    min-height: 0;
+}
+
+.pane-enter-active,
+.pane-leave-active {
+    transition:
+        opacity 0.16s ease,
+        transform 0.16s ease;
+}
+
+.pane-enter-from {
+    opacity: 0;
+    transform: translateY(4px);
+}
+
+.pane-leave-to {
+    opacity: 0;
+    transform: translateY(-4px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .pane-enter-active,
+    .pane-leave-active {
+        transition: none;
+    }
+}
+
+.made-head.late {
+    color: var(--tone-warn);
+}
+
+.late-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
 }
 
 .opens-line {
@@ -331,6 +440,8 @@ async function stop(share) {
     color: var(--text-3);
     font-size: 12.5px;
     line-height: 1.45;
+    max-height: 120px;
+    overflow-y: auto;
 }
 
 .rows {
@@ -447,8 +558,12 @@ async function stop(share) {
 }
 
 .open-shares {
-    padding-top: 14px;
-    border-top: 1px solid var(--border);
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 10px;
+    min-height: 0;
+    overflow-y: auto;
 }
 
 .open-share {

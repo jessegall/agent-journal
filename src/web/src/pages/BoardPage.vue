@@ -6,6 +6,7 @@ import Icon from "../kit/Icon.vue";
 import Toast from "../kit/Toast.vue";
 import AgentDrawer from "../board/AgentDrawer.vue";
 import AgentSlots from "../board/AgentSlots.vue";
+import RolesTree from "../board/RolesTree.vue";
 import AgentStrip from "../board/AgentStrip.vue";
 import Lane from "../board/Lane.vue";
 import Switch from "../kit/Switch.vue";
@@ -309,6 +310,9 @@ const ask = usePoll(
             </template>
             <template v-if="tickets && slots">
                 <AgentSlots :slots="slots" :only="only" @only="(state) => (only = only === state ? '' : state)" />
+            </template>
+            <template v-if="tickets && store.board.roles.length">
+                <RolesTree :roles="store.board.roles" />
             </template>
             <template v-if="planHold">
                 <p class="hold">{{ planHold }}</p>

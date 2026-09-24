@@ -11,6 +11,7 @@ import SwitchCase from "../kit/SwitchCase.vue";
 import TabBar from "../kit/TabBar.vue";
 import TextInput from "../kit/TextInput.vue";
 import FeaturePanel from "./FeaturePanel.vue";
+import ServicesPanel from "./ServicesPanel.vue";
 import SettingsEnvironments from "./SettingsEnvironments.vue";
 import Section from "./Section.vue";
 import {changed, features, flip, haystack, isOn, matches, whenWords} from "./featureSettings.js";
@@ -26,6 +27,7 @@ const query = ref("");
 const filter = ref("all");
 const field = ref(null);
 const chosen = ref("");
+const services = ref(false);
 const extension = ref(null);
 const stopping = ref(false);
 const fixedOpen = ref(false);
@@ -93,6 +95,13 @@ const journalRows = computed(() =>
             title: "Chrome extension",
             text: "Puts the chat on any web page and lets the agent see and use the tab.",
             keywords: "browser download",
+        },
+        {
+            key: "services",
+            kind: "services",
+            title: "Services",
+            text: "The processes the journal and its plugins keep running: start, stop, restart and read their logs.",
+            keywords: "processes server tunnel plugin log restart",
         },
     ].map(worded)
 );
@@ -212,7 +221,13 @@ onUnmounted(() => window.removeEventListener("keydown", onKey));
                 <template v-if="sections.journal.length">
                     <ListBox sticky title="This journal" :count="sections.journal.length">
                         <template v-for="row in sections.journal" :key="row.key">
-                            <SettingRow :title="row.title" :text="row.text" :tag="row.changed ? 'Changed' : ''">
+                            <SettingRow
+                                :title="row.title"
+                                :text="row.text"
+                                :tag="row.changed ? 'Changed' : ''"
+                                :opens="row.kind === 'services'"
+                                @open="services = true"
+                            >
                                 <template #control>
                                     <SwitchCase :value="row.kind">
                                         <template #switch>
@@ -308,6 +323,9 @@ onUnmounted(() => window.removeEventListener("keydown", onKey));
 
         <template v-if="feature">
             <FeaturePanel :feature="feature" @close="chosen = ''" />
+        </template>
+        <template v-if="services">
+            <ServicesPanel @close="services = false" />
         </template>
     </section>
 </template>
