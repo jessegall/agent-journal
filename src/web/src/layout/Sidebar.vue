@@ -7,7 +7,7 @@ import FoldGroup from "../kit/FoldGroup.vue";
 import Icon from "../kit/Icon.vue";
 import {ink, project, tint} from "../identity.js";
 import {route} from "../route.js";
-import {boardOn, counted, store} from "../state/store.js";
+import {store} from "../state/store.js";
 import {useNavigation} from "../composables/navigation.js";
 import {polled} from "../sync/polled.js";
 import {rows} from "../sync/rows.js";
@@ -23,22 +23,7 @@ const folded = reactive({});
 const fold = (key) => {
     folded[key] = !folded[key];
 };
-const {sidebar} = useNavigation();
-const daily = (scope) => sidebar.value.filter((link) => link.scope === scope);
-const plain = (key, title, icon, count = 0) => ({key, page: key, title, icon, count, hot: false});
-const groups = computed(() => [
-    {key: "environment", label: "Environment", links: [plain("", "Home", "home"), ...daily("environment")]},
-    {
-        key: "project",
-        label: "Project",
-        links: [
-            ...(boardOn.value ? [plain("kanban", "Board", "board", counted("todo"))] : []),
-            ...daily("project"),
-            plain("plugins", "Plugins", "plug"),
-            plain("resources", "Resources", "tiles"),
-        ],
-    },
-]);
+const {sections: groups} = useNavigation();
 const live = (name) => name === route.value.env && store.agents.some((a) => a.data.status && a.data.status !== "stopped");
 
 const tip = ref(null);

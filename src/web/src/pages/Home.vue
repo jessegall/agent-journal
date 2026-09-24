@@ -163,6 +163,10 @@ function saveLayout(name) {
     ]);
 }
 
+const updatePreset = (key) =>
+    keepPresets(
+        savedPresets.value.map((p) => (p.key === key ? {...p, shape: snapshot(layout.value), scheme: layout.value.scheme || ""} : p))
+    );
 const renamePreset = (key, name) => keepPresets(savedPresets.value.map((p) => (p.key === key ? {...p, name} : p)));
 const removePreset = (key) => keepPresets(savedPresets.value.filter((p) => p.key !== key));
 
@@ -197,6 +201,7 @@ provide("views", {
     preset: applyPreset,
     saveLayout,
     renamePreset,
+    updatePreset,
     removePreset,
     schemes: computed(() => schemeChoices(layout.value.scheme)),
     scheme: (key) => replace(schemed(layout.value, key)),

@@ -4,6 +4,7 @@ import {onMac} from "./keys.js";
 
 const FADE = 90;
 const SETTLE = 260;
+const OWN_CHANGE = 1500;
 
 let entered = false;
 let leaving = false;
@@ -16,6 +17,7 @@ const browserFull = () =>
 
 let byBrowser = browserFull();
 let following = false;
+let ownChange = 0;
 if (byBrowser) store.wide = true;
 
 export const FULLSCREEN_KEYS = onMac ? "⌘⇧Enter" : "Ctrl+Shift+Enter";
@@ -43,6 +45,7 @@ function enter() {
 }
 
 function followBrowser() {
+    if (leaving || document.fullscreenElement || performance.now() - ownChange < OWN_CHANGE) return;
     const now = browserFull();
     if (now === byBrowser) return;
     byBrowser = now;
@@ -86,6 +89,7 @@ export function followFullscreen() {
     window.addEventListener("pagehide", () => (leaving = true));
     window.addEventListener("pageshow", () => (leaving = false));
     document.addEventListener("fullscreenchange", () => {
+        ownChange = performance.now();
         if (switching.value) settle();
         if (document.fullscreenElement) return;
         if (entered && store.wide && !leaving) store.wide = false;
