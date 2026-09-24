@@ -1,3 +1,5 @@
+import fcntl
+import os
 import shutil
 import subprocess
 from pathlib import Path
@@ -82,33 +84,82 @@ def git(project: Path, *args: str) -> subprocess.CompletedProcess:
 
 
 SHARED = (".journal", ".claude/settings.local.json")
+SHARED_IF_IGNORED = (".codex/hooks.json",)
 SHARED_IN = (".claude/skills", ".agents/skills")
 
 
 def share_journal(top: Path, root: Path) -> None:
     project = root.resolve().parent
-    if top.resolve() == project:
+    if top.resolve() == project or not belongs(top, project):
         return
-    wanted = [Path(path) for path in SHARED] + \
-             [Path(folder) / entry.name for folder in SHARED_IN if (project / folder).is_dir() for entry in sorted((project / folder).iterdir())]
-    made = [path for path in wanted if linked_to(top / path, (project / path).resolve())]
-    if made:
-        excluded(top, [f"/{path}" for path in made])
+    wanted = [Path(path) for path in SHARED] + ignored(project, [
+        *(Path(path) for path in SHARED_IF_IGNORED if (project / path).exists()),
+        *(Path(folder) / entry.name for folder in SHARED_IN if (project / folder).is_dir() for entry in sorted((project / folder).iterdir())),
+    ])
+    excluded(top, [f"/{path}" for path in wanted])
+    for path in wanted:
+        linked_to(top / path, (project / path).resolve())
+    unshared(top, project, set(wanted))
 
 
-def linked_to(place: Path, target: Path) -> bool:
-    if place.exists() or place.is_symlink() or not target.exists():
+def belongs(top: Path, project: Path) -> bool:
+    try:
+        gitdir = Path((top / ".git").read_text().split(":", 1)[1].strip())
+        gitdir = gitdir if gitdir.is_absolute() else top / gitdir
+        common = (gitdir / "commondir").read_text().strip()
+    except (OSError, IndexError):
         return False
+    return (gitdir / common).resolve() == (project / ".git").resolve()
+
+
+def ignored(project: Path, paths: list[Path]) -> list[Path]:
+    if not paths:
+        return []
+    asked = subprocess.run(["git", "-C", str(project), "check-ignore", "--verbose", "--stdin"], input="\n".join(map(str, paths)),
+                           capture_output=True, text=True, timeout=30)
+    managed = tuple(f"/{folder}/" for folder in SHARED_IN)
+    named = {path for source, path in (line.split("\t", 1) for line in asked.stdout.splitlines() if "\t" in line)
+             if not (source.split(":", 2)[0].endswith("info/exclude") and source.split(":", 2)[2].startswith(managed))}
+    return [path for path in paths if str(path) in named]
+
+
+def linked_to(place: Path, target: Path) -> None:
+    if not target.exists() or place.is_symlink() and place.resolve() == target:
+        return
+    if place.exists() and not place.is_symlink():
+        return
     place.parent.mkdir(parents=True, exist_ok=True)
-    place.symlink_to(target, target_is_directory=target.is_dir())
-    return True
+    if place.is_symlink():
+        place.unlink()
+    try:
+        place.symlink_to(target, target_is_directory=target.is_dir())
+    except FileExistsError:
+        return
+
+
+def unshared(top: Path, project: Path, wanted: set[Path]) -> None:
+    for folder in SHARED_IN:
+        here = top / folder
+        if not here.is_dir():
+            continue
+        for entry in here.iterdir():
+            path = Path(folder) / entry.name
+            if entry.is_symlink() and path not in wanted and project.resolve() in Path(os.readlink(entry)).parents:
+                entry.unlink()
 
 
 def excluded(top: Path, patterns: list[str]) -> None:
     gitdir = Path((top / ".git").read_text().split(":", 1)[1].strip())
     exclude = (gitdir if gitdir.is_absolute() else top / gitdir).resolve().parents[1] / "info" / "exclude"
-    held = exclude.read_text() if exclude.is_file() else ""
-    missing = [pattern for pattern in patterns if pattern not in held.splitlines()]
-    if missing:
-        exclude.parent.mkdir(parents=True, exist_ok=True)
-        exclude.write_text(held + ("" if not held or held.endswith("\n") else "\n") + "".join(f"{pattern}\n" for pattern in missing))
+    exclude.parent.mkdir(parents=True, exist_ok=True)
+    with (exclude.parent / "exclude.lock").open("w") as lock:
+        fcntl.flock(lock, fcntl.LOCK_EX)
+        held = exclude.read_text().splitlines() if exclude.is_file() else []
+        managed = tuple(f"/{folder}/" for folder in SHARED_IN)
+        kept = [line for line in held if not line.startswith(managed) or line in patterns]
+        lines = kept + [pattern for pattern in patterns if pattern not in kept]
+        if lines == held:
+            return
+        written = exclude.with_suffix(".new")
+        written.write_text("".join(f"{line}\n" for line in lines))
+        os.replace(written, exclude)

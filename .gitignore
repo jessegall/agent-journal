@@ -48,6 +48,8 @@ __pycache__/
 /.agents/skills/journal*
 /.agents/skills/style-*
 /.claude/skills/journal*
+/.claude/skills/commandments*
+/.agents/skills/commandments*
 /.claude/skills/style-*
 /.codex/skills/journal*
 .venv/

@@ -10,30 +10,42 @@ def linked(feature, record, cwd: Path) -> None:
     LinkWorktreeJournal().intercept(Context.of(feature, record, hook=hook), hook.tool)
 
 
-def test_a_linked_worktree_without_a_journal_is_linked_to_the_projects_and_kept_out_of_git(tmp_path):
+def test_a_worktree_shares_the_projects_journal_skills_and_hooks_without_git_seeing_them(tmp_path):
+    import subprocess
+    import threading
+    from engine.worktree import share_journal
     record = fresh()
-    main = tmp_path / "main"
-    (main / ".git" / "worktrees" / "wt").mkdir(parents=True)
-    worktree = tmp_path / "wt"
-    (worktree / "src").mkdir(parents=True)
-    (worktree / ".git").write_text(f"gitdir: {main / '.git' / 'worktrees' / 'wt'}\n")
     project = record.root.resolve().parent
-    (project / ".claude" / "skills" / "journal").mkdir(parents=True, exist_ok=True)
+    git = lambda *args, where=project: subprocess.run(["git", "-c", "user.email=t@t", "-c", "user.name=t", *args], cwd=where, check=True,
+                                                      capture_output=True, text=True, timeout=30).stdout
+    git("init", "-q")
+    (project / ".gitignore").write_text("/.journal\n/.claude/worktrees/\n/.claude/skills/journal*\n/.claude/settings.local.json\n")
+    (project / ".claude" / "skills" / "journal").mkdir(parents=True)
+    (project / ".claude" / "skills" / "mine").mkdir()
+    (project / ".claude" / "skills" / "mine" / "SKILL.md").write_text("mine")
     (project / ".claude" / "settings.local.json").write_text("{}")
-    feature = FEATURES["worktrees"]
-    for _ in range(2):
-        linked(feature, record, worktree / "src")
-    link = worktree / ".journal"
-    assert (link.is_symlink(), link.resolve() == record.root.resolve()) == (True, True), "the worktree writes the project's record"
-    assert (main / ".git" / "info" / "exclude").read_text().splitlines().count("/.journal") == 1, "git never sees the link, and the line is written once"
-    assert ((worktree / ".claude" / "skills" / "journal").is_symlink(), (worktree / ".claude" / "settings.local.json").is_symlink()) == (True, True), \
-        "the worktree's agent gets the project's journal skills and hooks, which git never checks out"
-    own = tmp_path / "other"
-    (own / ".journal").mkdir(parents=True)
-    (own / ".git").write_text(f"gitdir: {main / '.git' / 'worktrees' / 'other'}\n")
-    linked(feature, record, own)
-    assert (own / ".journal").is_symlink() is False, "a worktree with a journal of its own is left alone"
-
+    git("add", ".gitignore")
+    git("commit", "-q", "-m", "start")
+    worktree = project / ".claude" / "worktrees" / "wt"
+    git("worktree", "add", "-q", str(worktree))
+    runs = [threading.Thread(target=share_journal, args=(worktree, record.root)) for _ in range(4)]
+    for run in runs:
+        run.start()
+    for run in runs:
+        run.join()
+    linked = [worktree / ".journal", worktree / ".claude" / "skills" / "journal", worktree / ".claude" / "settings.local.json"]
+    assert all(path.is_symlink() for path in linked) and (worktree / ".journal").resolve() == record.root.resolve(), \
+        "the worktree's agent gets the project's journal, its skills and its hooks, even when four hooks link at once"
+    assert (git("status", "--porcelain", where=worktree), "?? .claude/skills/mine/SKILL.md" in git("status", "--porcelain", "--untracked-files=all")) == ("", True), \
+        "git sees none of the links, and a skill of the project's own that git tracks stays visible in the main checkout"
+    assert not (worktree / ".claude" / "skills" / "mine").exists(), "only what the main checkout ignores is shared"
+    other = tmp_path / "other"
+    other.mkdir()
+    git("init", "-q", where=other)
+    git("commit", "-q", "--allow-empty", "-m", "start", where=other)
+    git("worktree", "add", "-q", str(tmp_path / "other-wt"), where=other)
+    share_journal(tmp_path / "other-wt", record.root)
+    assert not (tmp_path / "other-wt" / ".journal").exists(), "another repository's worktree is never linked to this journal"
 
 def worktree_of(tmp_path, name: str):
     main = tmp_path / "main"
