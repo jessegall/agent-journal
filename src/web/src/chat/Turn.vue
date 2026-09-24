@@ -200,6 +200,11 @@ async function drop() {
                 />
             </div>
         </template>
+        <template #thought>
+            <div class="thread-turn thought" :data-ref="turn.ref">
+                <TextDisplay class="thought-text" :text="turn.title" />
+            </div>
+        </template>
         <template #compacted>
             <div class="thread-turn compacted" :data-ref="turn.ref">
                 <ChatMark icon="activity" tone="warn" label="The agent compacted its context" :at="turn.created" />
@@ -392,6 +397,17 @@ async function drop() {
 </template>
 
 <style scoped>
+.thread-turn.thought {
+    max-width: 88%;
+}
+
+.thought-text {
+    color: var(--text-4);
+    font-size: 12.5px;
+    font-style: italic;
+    line-height: 1.5;
+}
+
 .thread-turn {
     position: relative;
     display: flex;

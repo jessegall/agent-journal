@@ -55,6 +55,8 @@ const loads = (agents) => sessions(agents).flatMap((a) => (a.data.skill_loads ||
 const compactions = (agents) =>
     sessions(agents).flatMap((a) => (a.data.compactions || []).map((m) => mark("compacted", a, m.at, "Context compacted")));
 
+const thoughts = (agents) => sessions(agents).flatMap((a) => (a.data.thoughts || []).map((t) => mark("thought", a, t.at, t.text)));
+
 const whispers = (agents) =>
     sessions(agents).flatMap((a) => (a.data.whispers || []).map((w) => mark("whisper", a, w.at, w.title, {row: w.ref})));
 
@@ -126,6 +128,7 @@ export function threadTurns(rows, pending, env, older = false) {
         ...compactions(rows.agent || []),
         ...subagents(rows.agent || []),
         ...whispers(rows.agent || []),
+        ...thoughts(rows.agent || []),
         ...cards(rows.agent || []),
         ...madeByAgent(rows.doc || [], env),
         ...pending.filter((p) => !live.some((m) => promisedFor(p, m) && delivered(p, m))),
