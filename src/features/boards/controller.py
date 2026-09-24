@@ -1,6 +1,7 @@
 import controllers.types as types_module
 import resources.types as resources_module
 from controllers.base import Controller, internal
+from controllers.types import Questions
 from features.boards.resource import DONE, MEANINGS, Board
 from resources.base import Refused, Resource
 
@@ -35,6 +36,11 @@ class Boards(Controller):
     def stage(self, n: int, name: str, meaning: str = ""):
         board = self.load(int(n))
         return self.update(board.n, stages=[*board.stages, name.strip()], meanings=with_meaning(board.meanings, name.strip(), meaning))
+
+    def ask(self, n: int, question: str, abstract: str = "", **data):
+        board = self.load(int(n))
+        asking = Questions(self.record, actor=self.actor, session=self.session, agent=self.agent)
+        return asking.create(question, abstract, about=board.ref, hidden=True, **data)
 
     def meaning(self, n: int, stage: str, meaning: str = ""):
         board = self.load(int(n))

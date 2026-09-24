@@ -44,8 +44,8 @@ WORKING_A_BOARD_CARD = {
     "steps": [
         ("Read the card", "journal ticket show <n>: its board, stage and brief. If you drafted this card yourself, give the run "
                           "up with journal sequence abandon <this sequence> --about <ref> --why \"my own draft\"."),
-        ("Ask on the board", "Every decision only the user can make is asked on the board, never in the chat: journal question ask "
-                             "\"<question>\" --set about=board:<board n> --set options='[...]'. The board shows it on the card and "
+        ("Ask on the board", "Every decision only the user can make is asked on the board, never in the chat: journal board ask "
+                             "<board n> \"<question>\" --set options='[...]'. The board shows it at its top, the chat does not, and "
                              "the answer comes back as an event; wait for it only where the work truly depends on it."),
         ("Shape the work", "Split the card into draft tickets on the same board (journal ticket create \"<the work>\" --brief "
                            "\"<what is wanted>\" --set board=<n> --set draft=true), name what waits on what with journal ticket "

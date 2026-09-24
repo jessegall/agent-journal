@@ -39,9 +39,7 @@ const chosenBoard = computed(() => store.board.lens.board);
 const slots = computed(() => store.board.slots);
 const TODO_MEANINGS = {doing: "start", asked: "review", done: "done"};
 const current = computed(() => boards.value.find((board) => board.n === store.board.lens.board));
-const boardQuestion = computed(
-    () => current.value && rows("question").find((q) => !q.deleted && !q.completed && q.refs.includes(current.value.ref))
-);
+const boardQuestion = computed(() => store.board.questions.find((q) => !q.completed));
 const meaningOf = (key) => (tickets.value ? current.value && current.value.data.meanings[key] : TODO_MEANINGS[key]) || "";
 const finder = ref(null);
 const writingWork = ref(false);
@@ -161,6 +159,7 @@ function take(got) {
         agents: got.agents,
         slots: got.slots,
         roles: got.roles || [],
+        questions: got.questions || [],
         planHold: got.plan_hold,
         loaded: true,
     });

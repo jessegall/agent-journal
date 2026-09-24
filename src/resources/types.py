@@ -191,6 +191,7 @@ class Reminder(Shape, Resource):
 class Question(Options, Resource):
     data_fields: ClassVar[list[Field]] = [
         Field(TEXT, "", name="reason"),
+        Field(FLAG, False, name="hidden"),
     ]
     details: ClassVar[ResourceDetails] = ResourceDetails(
         title="Question",
@@ -207,6 +208,8 @@ class Question(Options, Resource):
     icon = "help"
     command_names = {"complete": "answer", "create": "ask"}
     labels = {"outcome": "Answer", "abstract": "Context"}
+    indexed = ("hidden",)
+    hidden_listed = False
 
 
 class Suggestion(Options, Resource):
