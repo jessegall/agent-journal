@@ -52,6 +52,14 @@ def journal_hook(text: str) -> bool:
     return LEGACY in text or ("/hook.sh " in text and "/.journal" in text)
 
 
+KEPT_ENDED = 20
+
+
+def recent(rows: list[dict]) -> list[dict]:
+    late = {id(row) for row in [row for row in rows if not row.get("running")][-KEPT_ENDED:]}
+    return [row for row in rows if row.get("running") or id(row) in late]
+
+
 def parsed(line: str):
     try:
         return json.loads(line)

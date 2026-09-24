@@ -8,7 +8,7 @@ from pathlib import Path
 
 from engine.transcript import AGENT, HUMAN, INJECTED, PEER, SENT, SUMMARY, SUPERSEDED, TASK, TOOL, Turn
 from providers.payload import AgentCall, AskCall, DISPLAYED, EVENTS, UsageWindow
-from providers.base import Provider, TypedRun, TypedRuns, WorkLinks, journal_hook, parsed
+from providers.base import Provider, TypedRun, TypedRuns, WorkLinks, journal_hook, parsed, recent
 from providers.payload import Dispatch, Hook, ToolCall
 from providers.claude_rows import Block, Row
 from resources.types import AgentRow
@@ -458,8 +458,8 @@ class Claude(Provider):
                              "ended": monitor_end(finished, notified, done, deadline),
                              "status": monitor_status(finished, notified, status)})
         return {AgentRow.skills: self.loaded(held.window), AgentRow.shells: len(shells), AgentRow.subagents: len(subagents),
-                AgentRow.monitors: len(monitors), AgentRow.shell_rows: shells, AgentRow.subagent_rows: subagents,
-                AgentRow.monitor_rows: monitors}
+                AgentRow.monitors: len(monitors), AgentRow.shell_rows: recent(shells), AgentRow.subagent_rows: recent(subagents),
+                AgentRow.monitor_rows: recent(monitors)}
 
     def stop_instruction(self, task: str) -> str:
         return f"run TaskStop with task_id {task} now"

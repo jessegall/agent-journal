@@ -19,7 +19,7 @@ from urllib.parse import quote
 import features
 from surfaces.appoint import appoint, online
 from surfaces.package import archive as extension_archive, info as extension_info
-from surfaces.summary import summarize
+from surfaces.summary import lately_summarized
 from surfaces.color import identity, set_color
 from surfaces.updates import newer, upstream
 from surfaces.control import force as force_session, pause as pause_session, resume as resume_session, options as control_options, permit, relaunch, request as control_session, shell
@@ -285,7 +285,7 @@ def post_identity(req: Request) -> Reply:
 
 @route("GET", "/api/summary")
 def get_summary(req: Request) -> Reply:
-    return Reply(200, summarize(req.root))
+    return Reply(200, lately_summarized(req.root))
 
 
 @route("GET", "/api/agents")

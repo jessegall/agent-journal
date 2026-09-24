@@ -28,7 +28,7 @@ class Todos(Controller):
     def tasks(self, agent: str) -> list[dict]:
         from controllers.works import Works
         works = {int(w.todo): w for w in Works(self.record, actor=SYSTEM)._standing() if w.todo}
-        rows = [r for r in self._every() if r.assigned == agent]
+        rows = [self.load(row["n"]) for row in self.summaries() if row.get("assigned") == agent and not row["deleted"]]
         return [{"n": r.n, "title": r.title, "hidden": bool(r.hidden), "state": task_state(r, works)} for r in rows]
 
     def report(self, n: int, how: str):
