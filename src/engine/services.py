@@ -186,7 +186,6 @@ class Manager:
         self.crashes: dict = {}
         self.seen: dict = {}
         self.waiting: dict = {}
-        self.marks: dict = {}
 
     def tick(self) -> list[str]:
         started = []
@@ -224,12 +223,12 @@ class Manager:
         if asked.want == DOWN:
             self.stop(sid, current)
             return False
-        if asked.nonce > self.marks.get(sid, 0.0):
-            self.marks[sid] = asked.nonce
+        if asked.nonce > current.nonce:
             self.remove(sid)
             self.crashes.pop(sid, None)
             self.waiting.pop(sid, None)
-            current = ServiceState()
+            current = ServiceState(nonce=asked.nonce)
+            current.write(spec.status)
         if self.living(current.keeper) and current.state not in RESTING:
             return False
         if spec.blocked:

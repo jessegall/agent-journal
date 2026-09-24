@@ -65,6 +65,7 @@ class ServiceState:
     started: float = 0.0
     ready_at: float = 0.0
     last_exit: int = 0
+    nonce: float = 0.0
 
     @classmethod
     def read(cls, path: Path) -> "ServiceState":
