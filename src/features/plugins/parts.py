@@ -51,7 +51,7 @@ class PluginChatRules(TextFormatter):
 
 def placed(record, row) -> tuple:
     name = called(row)
-    return name, folder(record.root, name), environment(record.root, name, declared(row), row.token, chosen=settings_of(row).chosen)
+    return name, folder(record.root, name), environment(record.root, name, declared(row), row.token, chosen=settings_of(row).chosen, env=record.env)
 
 
 class AskPluginsToRefuse(ToolInterceptor):

@@ -56,7 +56,7 @@ class Todo(Ranked, Placed, Resource):
                     "updated.after": "To-do waits on another", "updated.priority": "To-do priority set", "updated.start": "To-do started"}
     start_heading = "TO-DOS waiting — delayed work, not an instruction to start any of it"
     start_as_count = True
-    icon = "circle"
+    icon = "ring"
     listed_under = SIDEBAR
     command_names = {"complete": "done"}
     labels = {"outcome": "How"}

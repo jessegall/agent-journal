@@ -3,7 +3,7 @@ from typing import ClassVar
 
 from engine.fields import Loaded
 
-from resources.base import PROJECT, USER, Resource, ResourceDetails
+from resources.base import PROJECT, SIDEBAR, USER, Resource, ResourceDetails
 from resources.shapes import NUMBER, TEXT, Field, Shape
 
 
@@ -57,7 +57,8 @@ class Check(Shape, Resource):
         Field(default=list, name="runs"),
     ]
     type = "check"
-    icon = "check"
+    icon = "checkbox"
+    listed_under = SIDEBAR
     scope = PROJECT
     command_names = {"complete": "retire"}
     notified = (USER,)

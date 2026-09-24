@@ -149,7 +149,7 @@ class Host:
         payload = of(record, event, plugin, where)
         if its_own(event, plugin, payload.get("resource")):
             return True, 0
-        env = environment(record.root, plugin, manifest, row.token, chosen=settings_of(row).chosen)
+        env = environment(record.root, plugin, manifest, row.token, chosen=settings_of(row).chosen, env=record.env)
         for handler in handlers:
             if handler.post:
                 ok, reply = post(fill(handler.post, self.places(record, row)), payload, row.token)
