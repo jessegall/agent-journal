@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import {COUNTED, EVENTS} from "./cadence.js";
 
+const LABELS = {percent: "% of context", uses: "tool calls", minutes: "minutes", idle: "at rest", worked: "after work", start: "at start"};
+
 defineProps<{f: unknown}>();
 defineEmits<{marks: [unknown, unknown]; every: [unknown, unknown]; unit: [unknown, unknown]}>();
 </script>
@@ -12,7 +14,7 @@ defineEmits<{marks: [unknown, unknown]; every: [unknown, unknown]; unit: [unknow
             <input class="field marks" :value="f.when.at.join(', ')" @change="$emit('marks', f, $event.target.value)" />
         </template>
         <template v-else-if="f.when.on">
-            <span class="word">on</span>
+            <span class="word">when</span>
         </template>
         <template v-else>
             <span class="word">every</span>
@@ -27,7 +29,7 @@ defineEmits<{marks: [unknown, unknown]; every: [unknown, unknown]; unit: [unknow
                     :class="['segment', {on: f.when.on ? f.when.on === u : f.when.unit === u}]"
                     @click="$emit('unit', f, u)"
                 >
-                    {{ u }}
+                    {{ LABELS[u] }}
                 </button>
             </template>
         </span>
@@ -81,6 +83,8 @@ defineEmits<{marks: [unknown, unknown]; every: [unknown, unknown]; unit: [unknow
 
 .segments {
     display: inline-flex;
+    flex-wrap: wrap;
+    max-width: 100%;
     padding: 2px;
     border: 1px solid var(--border-2);
     border-radius: 7px;
@@ -96,6 +100,7 @@ defineEmits<{marks: [unknown, unknown]; every: [unknown, unknown]; unit: [unknow
     color: var(--text-3);
     font: inherit;
     font-size: 11.5px;
+    white-space: nowrap;
     cursor: pointer;
     transition:
         background 0.12s ease,

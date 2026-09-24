@@ -12,8 +12,6 @@ import {away} from "./platform/visibility.js";
 import {store} from "./state/store.js";
 import {boot} from "./sync/boot.js";
 import {polled} from "./sync/polled.js";
-import {reload} from "./sync/rows.js";
-import {listen} from "./sync/stream.js";
 import Sidebar from "./layout/Sidebar.vue";
 import TopBar from "./layout/TopBar.vue";
 import StatusBar from "./layout/StatusBar.vue";
@@ -163,10 +161,7 @@ onMounted(boot);
 watch(() => `${route.value.env}/${route.value.page}/${route.value.n}`, closeOverlays);
 watch(
     () => route.value.env,
-    async () => {
-        await reload();
-        listen();
-    }
+    (now, before) => before && now !== before && location.reload()
 );
 </script>
 

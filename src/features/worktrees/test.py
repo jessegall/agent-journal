@@ -158,6 +158,9 @@ def test_journal_claude_with_a_worktree_makes_it_itself_and_starts_claude_inside
         subprocess.run(["git", "log", "-1", "--format=%s"], cwd=cwd, capture_output=True, text=True, timeout=30).stdout, \
         "a worktree removed with its branch comes back with the work its last launch recorded"
     assert ClaudeDriver.placed(project, ["-c"]) == (project, ["-c"]), "without a worktree Claude starts in the project"
+    named, rest = ClaudeDriver.placed(project, ["-w", "--dangerously-skip-permissions"])
+    assert (named.parent, rest) == (project / ".claude" / "worktrees", ["--dangerously-skip-permissions"]), \
+        "a bare -w gets a name from the journal, so the worktree and its links exist before Claude starts"
     from engine.worktree import environment
     assert environment(project / ".claude" / "worktrees" / "main") == "", "a worktree named main never joins the project's own environment"
     for name in ("a:b", "a/b"):

@@ -54,10 +54,9 @@ async function skipPrompts(skip) {
                 <Switch :on="on(feature.name, feature.default)" @change="(v) => flip(feature.name, v)" />
             </template>
         </template>
-        <p class="help">{{ feature.help }}</p>
         <template v-if="feature.when">
             <section class="block">
-                <h3>When it speaks</h3>
+                <h3>When it runs</h3>
                 <UList :f="feature" @marks="marks" @every="every" @unit="unit" />
             </section>
         </template>
@@ -154,6 +153,12 @@ async function skipPrompts(skip) {
                 </template>
             </template>
         </SwitchCase>
+        <template v-if="feature.help">
+            <section class="block">
+                <h3>How it works</h3>
+                <p class="help">{{ feature.help }}</p>
+            </section>
+        </template>
         <template v-if="feature.lines.length">
             <section class="block">
                 <h3>What it can say to the agent</h3>
