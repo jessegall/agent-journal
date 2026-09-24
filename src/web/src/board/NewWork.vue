@@ -27,7 +27,6 @@ const adding = ref(false);
 const panel = ref(null);
 const revealed = ref([]);
 const docked = ref(false);
-const SKELETONS = 3;
 const INPUT_LIMIT = 280;
 const OPEN_TURNS = 2;
 const CHOICES = 3;
@@ -79,7 +78,7 @@ const latest = computed(() => conversation.value.slice(lastMine.value + 1));
 const echo = computed(() => (docked.value || words.value || lastMine.value < 0 ? "" : conversation.value[lastMine.value].text));
 const turn = computed(() => drafts.value.find((t) => !revealed.value.includes(t.n)));
 const cards = computed(() => {
-    const ahead = writing.value ? Math.max(SKELETONS - drafts.value.length, 1) : 0;
+    const ahead = writing.value && confirmed.value ? Math.max(props.board.data.expected - drafts.value.length, 0) : 0;
     return [...drafts.value, ...Array(ahead).fill(null)].map((ticket, order) => ({order, ticket}));
 });
 const shownDrafts = computed(() => drafts.value.filter((t) => revealed.value.includes(t.n)));
