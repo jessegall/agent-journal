@@ -36,7 +36,10 @@ class PluginsDetails(FeatureDetails):
         outlives upgrades, never in the plugin's own folder or the project. A plugin writes back
         by calling the journal itself, or by appending journal commands to the file at $JOURNAL_QUEUE, one per line, which the
         host drains a few at a time. journal plugin raise <plugin> <event> "<brief>" in that file raises one of the events its
-        manifest declares, with the same card and activity item as an answer that raises it.
+        manifest declares, with the same card and activity item as an answer that raises it. An event is declared as
+        "events": {"<name>": {"title": "...", "tone": "...", "card": {"label", "icon", "color", "collapsed"}}}: the card
+        shows it in the chat, and "collapsed": true makes its item in the activity list start folded to its title, opening
+        on a click.
 
         A plugin shows its output as a dashboard: "dashboards": [{"name": "<id>", "title": "<Title>"}] in its manifest, and a
         JSON file it writes to $JOURNAL_PLUGIN_DATA/dashboards/<id>.json whenever its output changes. The viewer lists each

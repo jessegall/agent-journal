@@ -43,7 +43,8 @@ const items = computed(() =>
 );
 const toggled = ref(new Set());
 const newsworthy = (e) => raised(e) || e.type === "notification";
-const expanded = (e) => newsworthy(e) !== toggled.value.has(e.id);
+const opensAtFirst = (e) => newsworthy(e) && !(raised(e) && e.data.collapsed);
+const expanded = (e) => opensAtFirst(e) !== toggled.value.has(e.id);
 function toggle(e) {
     const next = new Set(toggled.value);
     next.has(e.id) ? next.delete(e.id) : next.add(e.id);

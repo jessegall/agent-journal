@@ -13,7 +13,7 @@ import {remember, remembered} from "../composables/remembered.js";
 
 const {loaded, running, online, stopped, needs, tally, refresh, forget} = useHub();
 const opened = reactive(new Set(remembered("journal.hub.open", [])));
-const showStopped = ref(remembered("journal.hub.stopped", false));
+const stoppedFolded = ref(remembered("journal.hub.stopped.folded", false));
 
 function toggle(j) {
     if (opened.has(j.root)) opened.delete(j.root);
@@ -22,8 +22,8 @@ function toggle(j) {
 }
 
 function toggleStopped() {
-    showStopped.value = !showStopped.value;
-    remember("journal.hub.stopped", showStopped.value);
+    stoppedFolded.value = !stoppedFolded.value;
+    remember("journal.hub.stopped.folded", stoppedFolded.value);
 }
 </script>
 
@@ -70,7 +70,7 @@ function toggleStopped() {
         </ListBox>
 
         <template v-if="stopped.length">
-            <ListBox title="Stopped" :count="stopped.length" folds :open="showStopped" @toggle="toggleStopped">
+            <ListBox title="Stopped" :count="stopped.length" folds :open="!stoppedFolded" @toggle="toggleStopped">
                 <template v-for="j in stopped" :key="j.root">
                     <ListRow :kind="stoppedNote(j)" :title="j.project" :text="`Start it with journal claude in ${projectPath(j)}`">
                         <template v-if="!j.running" #end>

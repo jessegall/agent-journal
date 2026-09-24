@@ -9,6 +9,14 @@ let leaving = false;
 let fading = 0;
 let settling = 0;
 
+const DISPLAY = window.matchMedia("(display-mode: fullscreen)");
+const browserFull = () =>
+    !document.fullscreenElement && (DISPLAY.matches || (window.innerHeight === screen.height && window.innerWidth === screen.width));
+
+let byBrowser = browserFull();
+let following = false;
+if (byBrowser) store.wide = true;
+
 export const FULLSCREEN_KEYS = /Mac|iPhone|iPad/.test(navigator.platform) ? "⌘⇧Enter" : "Ctrl+Shift+Enter";
 export const switching = ref(false);
 export const drawnWide = ref(store.wide);
@@ -21,7 +29,6 @@ function settle() {
 
 function resize(on) {
     drawnWide.value = on;
-    if (on) enter();
     if (!on && document.fullscreenElement) document.exitFullscreen().catch(() => {});
     settle();
 }
@@ -34,8 +41,17 @@ function enter() {
         .catch(() => {});
 }
 
+function followBrowser() {
+    const now = browserFull();
+    if (now === byBrowser) return;
+    byBrowser = now;
+    armed.value = armed.value && !now;
+    following = store.wide !== now;
+    store.wide = now;
+}
+
 function rearm() {
-    if (!store.wide || document.fullscreenElement || !document.documentElement.requestFullscreen) return;
+    if (!store.wide || byBrowser || document.fullscreenElement || !document.documentElement.requestFullscreen) return;
     armed.value = true;
     const once = () => {
         armed.value = false;
@@ -51,6 +67,8 @@ export function followFullscreen() {
     watch(
         () => store.wide,
         (on) => {
+            if (on && !following) enter();
+            following = false;
             switching.value = true;
             clearTimeout(settling);
             clearTimeout(fading);
@@ -58,7 +76,11 @@ export function followFullscreen() {
         }
     );
     rearm();
-    window.addEventListener("resize", () => switching.value && settle());
+    window.addEventListener("resize", () => {
+        followBrowser();
+        if (switching.value) settle();
+    });
+    DISPLAY.addEventListener("change", followBrowser);
     window.addEventListener("beforeunload", () => (leaving = true));
     window.addEventListener("pagehide", () => (leaving = true));
     window.addEventListener("pageshow", () => (leaving = false));

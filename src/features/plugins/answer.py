@@ -66,7 +66,8 @@ def raised(record, plugin: str, session: str, asked: Posting) -> None:
     if not event:
         raise Refused(f"{plugin} declares no event {name}")
     title = event.title if event.title else name
-    record.emit("plugin", row.n, RAISED, PLUGIN, event=f"{plugin}.{name}", title=title, tone=event.tone, brief=asked.brief, plugin=plugin)
+    record.emit("plugin", row.n, RAISED, PLUGIN, event=f"{plugin}.{name}", title=title, tone=event.tone, brief=asked.brief, plugin=plugin,
+                collapsed=event.collapsed)
     if event.card:
         card = event.card
         carded(record, session, plugin, Look(card.label if card.label else title, card.icon, card.tone if card.tone else event.tone, card.color), asked.brief)

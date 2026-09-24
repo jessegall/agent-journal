@@ -65,7 +65,7 @@ def read(folder: Path, version: str = "") -> Manifest:
     checked["events"] = shaped(name, given.get("events") or {}, "events", ("title", "tone", "card"), ("title",))
     for event, fields in checked["events"].items():
         if "card" in fields:
-            shaped(name, {event: fields["card"]}, "events.card", ("label", "color", "icon"), ())
+            shaped(name, {event: fields["card"]}, "events.card", ("label", "color", "icon", "collapsed"), ())
         if fields.get("tone", "") not in TONES:
             raise Refused(f"plugin.json: events.{event}.tone is one of {', '.join(t for t in TONES if t)}")
     checked["load"] = loads(given.get("load") or {}, checked["events"])
