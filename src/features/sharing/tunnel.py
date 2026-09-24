@@ -1,4 +1,5 @@
 import json
+import os
 import re
 import secrets
 import shutil
@@ -51,3 +52,23 @@ def asked_status() -> dict:
         told = {}
     return {"installed": True, "logged_in": bool(told.get("logged_in") and told.get("auth_ok")), "account": told.get("email", ""),
             "host": told.get("host", "")}
+
+
+LOGIN_SECONDS = 30
+
+
+def log_in(host: str, email: str, password: str) -> str:
+    command = tunler()
+    if not command:
+        return "tunler isn't installed on this machine"
+    try:
+        done = subprocess.run([command, "login", email, f"--host={host}"], capture_output=True, text=True, timeout=LOGIN_SECONDS,
+                              env={**os.environ, "TUNLER_PASSWORD": password}, stdin=subprocess.DEVNULL)
+    except (OSError, subprocess.TimeoutExpired) as error:
+        return f"tunler login did not finish: {error}"
+    KEPT_STATUS.clear()
+    if done.returncode == 0:
+        return ""
+    output = (done.stderr or done.stdout).strip()
+    return output.splitlines()[-1] if output else "tunler refused the login"
+

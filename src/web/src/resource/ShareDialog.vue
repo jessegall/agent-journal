@@ -26,6 +26,7 @@ const made = ref(null);
 const stopping = ref(0);
 const open = sharesOf(ref_.value);
 const others = computed(() => open.value.filter((share) => share.n !== made.value?.n));
+const loggedIn = (status) => (tunnelStatus.value = status);
 const blocked = computed(() => tunnelStatus.value && (!tunnelStatus.value.installed || !tunnelStatus.value.logged_in));
 
 onMounted(async () => {
@@ -67,7 +68,7 @@ async function stop(share) {
     <Dialog small title="Share" @close="emit('close')">
         <div class="share">
             <template v-if="blocked">
-                <TunnelProblem :status="tunnelStatus" />
+                <TunnelProblem :status="tunnelStatus" @ready="loggedIn" />
             </template>
             <template v-if="made">
                 <div class="made">

@@ -1,9 +1,9 @@
 from typing import ClassVar
 
 from resources.base import PROJECT, Resource, ResourceDetails
-from resources.shapes import NUMBER, TEXT, Field, Shape
+from resources.shapes import FLAG, NUMBER, TEXT, Field, Shape
 
-SHARED_TYPES = ("doc", "collection")
+SHARED_TYPES = ("doc", "report", "collection")
 
 
 class Share(Shape, Resource):
@@ -17,9 +17,11 @@ class Share(Shape, Resource):
         Field(TEXT, name="token"),
         Field(NUMBER, default=0, name="expires"),
         Field(NUMBER, default=0, name="views"),
+        Field(FLAG, False, name="approved"),
+        Field(TEXT, name="password"),
     ]
     type = "share"
     icon = "share"
     scope = PROJECT
-    indexed = ("target", "token", "expires")
+    indexed = ("target", "token", "expires", "approved")
     command_names = {"complete": "stop"}
