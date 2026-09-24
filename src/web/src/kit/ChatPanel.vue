@@ -1,5 +1,5 @@
 <script setup>
-import {nextTick, onMounted, onUnmounted, ref, useSlots} from "vue";
+import {nextTick, onMounted, onUnmounted, ref, useSlots, watch} from "vue";
 import Btn from "./Btn.vue";
 import Icon from "./Icon.vue";
 
@@ -36,6 +36,17 @@ function send() {
     if (props.locked || !words.value.trim()) return;
     emit("send", words.value.trim());
 }
+
+const MOST_LINES = 8;
+
+function grow() {
+    const box = input.value;
+    if (!box) return;
+    box.style.height = "auto";
+    box.style.height = `${Math.min(box.scrollHeight, MOST_LINES * parseFloat(getComputedStyle(box).lineHeight))}px`;
+}
+
+watch(words, () => nextTick(grow));
 
 const focusInput = () => input.value.focus();
 const typing = () => !props.withoutInput && !props.waiting;
@@ -89,13 +100,16 @@ const focusEntered = (el) => el === input.value && focusInput();
                                 <span class="sent-line">{{ words }}</span>
                             </template>
                             <template v-else>
-                                <input
+                                <textarea
                                     ref="input"
                                     v-model="words"
+                                    rows="1"
                                     :placeholder="placeholder"
                                     :disabled="locked"
-                                    :maxlength="limit"
+                                    :maxlength="limit || null"
                                     spellcheck="false"
+                                    @input="grow"
+                                    @keydown.enter.exact="!$event.isComposing && ($event.preventDefault(), send())"
                                 />
                             </template>
                         </Transition>
@@ -156,7 +170,7 @@ const focusEntered = (el) => el === input.value && focusInput();
 
 .compose {
     display: flex;
-    align-items: center;
+    align-items: flex-end;
     gap: 10px;
     margin: 8px;
     padding: 5px 5px 5px 12px;
@@ -173,6 +187,7 @@ const focusEntered = (el) => el === input.value && focusInput();
 }
 
 .left {
+    align-self: center;
     color: var(--text-4);
     font-size: 11px;
     font-variant-numeric: tabular-nums;
@@ -281,16 +296,14 @@ const focusEntered = (el) => el === input.value && focusInput();
 }
 
 .compose-slot {
-    position: relative;
+    display: grid;
     flex: none;
-    height: 60px;
+    min-height: 60px;
 }
 
 .compose-slot > .compose {
-    position: absolute;
-    right: 0;
-    bottom: 0;
-    left: 0;
+    grid-area: 1 / 1;
+    align-self: end;
 }
 
 .input-step-enter-active {
@@ -354,19 +367,22 @@ const focusEntered = (el) => el === input.value && focusInput();
     opacity: 0.5;
 }
 
-.compose input {
+.compose textarea {
     flex: 1;
     min-width: 0;
     height: 32px;
+    padding: 6px 0;
     border: 0;
     outline: 0;
     background: none;
     color: var(--text);
     font: inherit;
     font-size: 14px;
+    line-height: 20px;
+    resize: none;
 }
 
-.compose input::placeholder {
+.compose textarea::placeholder {
     color: var(--text-4);
 }
 </style>

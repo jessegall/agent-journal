@@ -51,7 +51,7 @@ class Sequences(Controller):
         key = self._key(about)
         if key not in r.runs:
             self._refuse(f"sequence {r.n} is not running{' about ' + about if about else ''}: journal sequence run {r.n} starts it")
-        run = {**r.runs[key], "step": r.runs[key]["step"] + 1}
+        run = {**r.runs[key], "step": r.runs[key]["step"] + 1, "stepped": time.time()}
         runs = {k: v for k, v in r.runs.items() if k != key}
         going = run["step"] <= len(r.sections)
         self._mark(r, "Sequence moved on" if going else "Sequence finished", about, run["step"] if going else 0)

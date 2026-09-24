@@ -83,3 +83,24 @@ def test_a_step_goes_to_the_agent_holding_the_environment_not_the_newest():
     CONTROLLERS["dump"](record, actor=USER).create("Standup", brief="notes")
     handed = [n.data.get("session") for n in CONTROLLERS["nudge"](record).all() if n.title.startswith(f"sequence {filing['n']}")]
     assert handed and set(handed) == {"holder"}, f"the step goes to the agent holding the environment, not the newest agent row: {handed}"
+
+
+def test_a_step_is_called_late_only_once_it_has_waited_since_it_was_handed():
+    import time
+    from tests.kit import tick
+    features.load()
+    record = fresh()
+    report(record, "working", "PreToolUse")
+    sequences = CONTROLLERS["sequence"](record, actor=AGENT)
+    made = sequences.create("Two steps")
+    sequences.section(made.n, "First", "do the first")
+    sequences.section(made.n, "Second", "do the second")
+    sequences.run(made.n)
+    key = next(iter(sequences.load(made.n).runs))
+    sequences.update(made.n, runs={key: {"step": 1, "at": time.time() - 600}})
+    late = lambda: [n for n in nudges(record) if "waited" in n]
+    tick(record)
+    assert len(late()) == 1, "a step handed ten minutes ago is called late"
+    sequences.next(made.n)
+    tick(record)
+    assert len(late()) == 1, "the next step, handed just now, is not called late though the run began long ago"
