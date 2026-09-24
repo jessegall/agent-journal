@@ -17,11 +17,14 @@ export const fresh = () => ({
 
 const shaped = (tabs, active = tabs[0]) => ({tabs, active});
 
+export const FULL = "full";
+export const CONTAINED = "contained";
+
 export const DEFAULT_SHAPE = split("row", 0.7, shaped(["chat"]), shaped(PANEL_VIEWS));
 
 export const PRESETS = [
     {key: "default", name: "Default", text: "Chat, with the side panels beside it", shape: DEFAULT_SHAPE},
-    {key: "zen", name: "Zen", text: "Only the chat, nothing else", shape: shaped(["chat"])},
+    {key: "zen", name: "Zen", text: "Only the chat, nothing else", shape: {...shaped(["chat"]), width: CONTAINED}},
     {
         key: "hacker",
         name: "Hacker",
@@ -48,6 +51,13 @@ export function thumbnail(shape, box = {x: 0, y: 0, w: 1, h: 1}) {
     const [a, b] = halves(shape, box);
     return [...thumbnail(shape.a, a), ...thumbnail(shape.b, b)];
 }
+
+const KEPT = ["tabs", "active", "width", "scheme", "flush"];
+
+export const snapshot = (layout, node = layout.tree) =>
+    node.dir
+        ? split(node.dir, node.r, snapshot(layout, node.a), snapshot(layout, node.b))
+        : Object.fromEntries(KEPT.map((key) => [key, (layout.panes[node.id] || {})[key]]).filter(([, v]) => v !== undefined));
 
 export const shapeViews = (shape) => (shape.dir ? [...shapeViews(shape.a), ...shapeViews(shape.b)] : shape.tabs);
 
@@ -155,10 +165,17 @@ export function valid(layout) {
     return [...views, ...loose].every((v) => VIEWS.includes(v)) && new Set(views).size === views.length;
 }
 
-const kept = (layout, tree, panes, next) => ({tree, panes, next, floats: [...floating(layout)], away: [...elsewhere(layout)]});
+const kept = (layout, tree, panes, next) => ({
+    tree,
+    panes,
+    next,
+    floats: [...floating(layout)],
+    away: [...elsewhere(layout)],
+    scheme: layout.scheme || "",
+});
 
 function draft(layout) {
-    const panes = Object.fromEntries(Object.entries(layout.panes).map(([id, p]) => [id, {tabs: [...p.tabs], active: p.active}]));
+    const panes = Object.fromEntries(Object.entries(layout.panes).map(([id, p]) => [id, {...p, tabs: [...p.tabs]}]));
     return {layout: kept(layout, layout.tree, panes, layout.next), born: {}, dying: {}};
 }
 
@@ -175,6 +192,25 @@ export function unfloated(layout, id) {
 export function fronted(layout, id) {
     const f = floating(layout).find((x) => x.id === id);
     return f ? {...unfloated(layout, id), floats: [...floating(layout).filter((x) => x.id !== id), f]} : layout;
+}
+
+export const widthOf = (pane) => (pane && pane.width) || FULL;
+
+export const schemed = (layout, scheme) => ({...kept(layout, layout.tree, layout.panes, layout.next), scheme});
+
+export function tuned(layout, id, patch) {
+    const change = draft(layout);
+    if (change.layout.panes[id]) Object.assign(change.layout.panes[id], patch);
+    return change.layout;
+}
+
+export function ordered(layout, id, view, before) {
+    const pane = layout.panes[id];
+    if (!pane || !pane.tabs.includes(view)) return layout;
+    const rest = pane.tabs.filter((v) => v !== view);
+    const at = rest.indexOf(before);
+    rest.splice(at < 0 ? rest.length : at, 0, view);
+    return tuned(layout, id, {tabs: rest, active: view});
 }
 
 export function reshaped(layout, id, box) {
@@ -289,7 +325,7 @@ export function arranged(layout, shape) {
             id = change.layout.next++;
             added.push(id);
         } else used.add(id);
-        change.layout.panes[id] = {tabs: [...node.tabs], active: node.active};
+        change.layout.panes[id] = {...(layout.panes[id] || {}), ...node, tabs: [...node.tabs], width: node.width || FULL};
         return leaf(id);
     };
     change.layout.tree = build(shape);

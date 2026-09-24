@@ -1,35 +1,22 @@
 <script setup>
 import ShellPicker from "./ShellPicker.vue";
-import {framed} from "../platform/view.js";
+import {framed, soloFloat} from "../platform/view.js";
 import {computed, onMounted, onUnmounted, reactive, ref} from "vue";
 import {api} from "../api/client.js";
 import Icon from "../kit/Icon.vue";
 import AgentBar from "../chat/AgentBar.vue";
 import Thread from "../chat/Thread.vue";
 import {go, route} from "../route.js";
-import {detach, tellShell} from "../platform/extension.js";
+import {dragShell, tellShell} from "../platform/extension.js";
 import {store} from "../state/store.js";
 import {rows} from "../sync/rows.js";
 import {usePoll} from "../poll.js";
-import {follow} from "../composables/pointer.js";
 
-const props = defineProps({floating: Boolean});
 const JOURNALS_EVERY = 20000;
 const shell = reactive({hosted: false, shut: false, journals: false, envs: false, driving: false, drivingUrl: ""});
 const journals = ref([]);
 const project = computed(() => (store.spec && store.spec.project) || "journal");
 const environments = computed(() => rows("environment").map((e) => e.title));
-const windowStyle = computed(() =>
-    props.floating
-        ? {
-              left: `${store.chatWindow.x}px`,
-              top: `${store.chatWindow.y}px`,
-              width: `${store.chatWindow.w}px`,
-              height: `${store.chatWindow.h}px`,
-          }
-        : null
-);
-
 function toShell(op, extra) {
     if (framed) tellShell(op, extra || {});
 }
@@ -48,38 +35,13 @@ window.addEventListener("message", fromShell);
 onUnmounted(() => window.removeEventListener("message", fromShell));
 toShell("hello");
 
-function drag(e) {
-    if (e.button || e.target.closest("button, .shell-menu")) return;
-    e.preventDefault();
-    const from = {px: e.clientX, py: e.clientY, x: store.chatWindow.x, y: store.chatWindow.y};
-    if (!props.floating) toShell("drag", {sx: e.screenX, sy: e.screenY});
-    follow(
-        e,
-        (ev) => {
-            if (!props.floating) return toShell("dragmove", {sx: ev.screenX, sy: ev.screenY});
-            store.chatWindow.x = Math.min(Math.max(-store.chatWindow.w + 90, from.x + ev.clientX - from.px), window.innerWidth - 90);
-            store.chatWindow.y = Math.min(Math.max(0, from.y + ev.clientY - from.py), window.innerHeight - 40);
-        },
-        () => !props.floating && toShell("dragend")
-    );
-}
-
-function resize(e) {
-    e.preventDefault();
-    const from = {px: e.clientX, py: e.clientY, w: store.chatWindow.w, h: store.chatWindow.h};
-    follow(e, (ev) => {
-        store.chatWindow.w = Math.max(320, Math.min(from.w + ev.clientX - from.px, window.innerWidth - 24));
-        store.chatWindow.h = Math.max(260, Math.min(from.h + ev.clientY - from.py, window.innerHeight - 24));
-    });
-}
-
 function drive(on) {
     toShell("drive", {on});
 }
 
 function fold() {
     shell.shut = !shell.shut;
-    if (!props.floating) toShell(shell.shut ? "shut" : "open");
+    toShell(shell.shut ? "shut" : "open");
 }
 
 function pick(name) {
@@ -113,16 +75,15 @@ onMounted(() => document.addEventListener("mousedown", outside));
 onUnmounted(() => document.removeEventListener("mousedown", outside));
 
 function close() {
-    if (props.floating) detach(false);
-    else if (framed) toShell("close");
+    if (framed) toShell("close");
     else window.close();
 }
 </script>
 
 <template>
-    <div :class="['chat-window', {floating, shut: shell.shut}]" :style="windowStyle">
-        <template v-if="shell.hosted || floating">
-            <div class="shell-bar" @pointerdown="drag">
+    <div :class="['chat-window', {shut: shell.shut}]">
+        <template v-if="shell.hosted">
+            <div class="shell-bar" @pointerdown="dragShell">
                 <span class="shell-dot" />
                 <span class="shell-name">
                     <ShellPicker
@@ -130,7 +91,7 @@ function close() {
                         title="Switch journal"
                         :open="shell.journals"
                         :options="journals.map((journal) => ({key: journal.port, label: journal.project, on: journal.current, journal}))"
-                        @toggle="(shell.journals = !shell.journals), (shell.envs = false)"
+                        @toggle="((shell.journals = !shell.journals), (shell.envs = false))"
                         @pick="pickJournal($event.journal)"
                     />
                     <span class="shell-sep">·</span>
@@ -139,7 +100,7 @@ function close() {
                         title="Switch environment"
                         :open="shell.envs"
                         :options="environments.map((name) => ({key: name, label: name, on: name === route.env}))"
-                        @toggle="(shell.envs = !shell.envs), (shell.journals = false)"
+                        @toggle="((shell.envs = !shell.envs), (shell.journals = false))"
                         @pick="pick($event.key)"
                     />
                 </span>
@@ -151,6 +112,11 @@ function close() {
                         @click="drive(true)"
                     >
                         <Icon name="wheel" />
+                    </button>
+                </template>
+                <template v-if="soloFloat">
+                    <button type="button" class="shell-btn" title="Dock it back into the layout" @click="toShell('dock')">
+                        <Icon name="dock" />
                     </button>
                 </template>
                 <button type="button" class="shell-btn" :title="shell.shut ? 'Restore' : 'Minimize'" @click="fold">
@@ -166,12 +132,9 @@ function close() {
                 <button type="button" class="shell-driving-stop" @click="drive(false)">Stop</button>
             </div>
         </template>
-        <AgentBar standalone />
+        <AgentBar />
         <template v-if="!shell.shut">
             <Thread />
-        </template>
-        <template v-if="floating && !shell.shut">
-            <span class="shell-grip" @pointerdown="resize" />
         </template>
     </div>
 </template>
@@ -182,42 +145,6 @@ function close() {
     flex-direction: column;
     height: 100vh;
     background: var(--bg);
-}
-
-.chat-window.floating {
-    position: fixed;
-    z-index: 90;
-    min-width: 320px;
-    min-height: 260px;
-    overflow: hidden;
-    border: 1px solid var(--border-2);
-    border-radius: 12px;
-    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
-}
-
-.chat-window.floating.shut {
-    min-height: 0;
-    height: auto !important;
-}
-
-.shell-grip {
-    position: absolute;
-    right: 2px;
-    bottom: 2px;
-    width: 14px;
-    height: 14px;
-    cursor: nwse-resize;
-}
-
-.shell-grip::after {
-    content: "";
-    position: absolute;
-    right: 3px;
-    bottom: 3px;
-    width: 7px;
-    height: 7px;
-    border-right: 2px solid var(--text-3);
-    border-bottom: 2px solid var(--text-3);
 }
 
 .chat-window > :deep(.thread) {

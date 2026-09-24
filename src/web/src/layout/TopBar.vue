@@ -7,25 +7,10 @@ import {route} from "../route.js";
 import {unreadByUser} from "../domain/records.js";
 import {meta, store, types} from "../state/store.js";
 import {useOutside} from "../composables/outside.js";
+import {activityShown, toggleActivity} from "../actions/panels.js";
+import {narrow} from "../platform/view.js";
+import {pageTitle as title} from "../composables/pageTitle.js";
 
-const PAGES = {
-    settings: "Settings",
-    search: "Search",
-    files: "Files",
-    commit: "Commit",
-    skills: "Skills",
-    services: "Services",
-    about: "About",
-    plugins: "Plugins",
-    page: "Plugin",
-    hub: "Hub",
-    file: "File",
-    kanban: "Board",
-    organization: "Organization",
-};
-const title = computed(() =>
-    !route.value.page ? "Home" : PAGES[route.value.page] || (meta(route.value.page) ? `${meta(route.value.page).title}s` : route.value.page)
-);
 const waiting = computed(() => types.value.filter((t) => t.needs_attention).flatMap((t) => unreadByUser(t.name)).length);
 const drop = ref(false);
 const wrap = ref(null);
@@ -36,6 +21,11 @@ const full = computed(() => route.value.page === "kanban");
 <template>
     <div class="top">
         <div class="crumb">
+            <template v-if="narrow">
+                <button type="button" class="icon-btn" title="Open the menu" @click="store.sideOpen = !store.sideOpen">
+                    <Icon name="list" />
+                </button>
+            </template>
             <template v-if="full">
                 <a class="icon-btn back" :href="`#/${route.env}`" title="Back to Home"><Icon name="back" /></a>
             </template>
@@ -65,9 +55,9 @@ const full = computed(() => route.value.page === "kanban");
             <template v-if="!full">
                 <button
                     type="button"
-                    :class="['icon-btn', {on: store.activity}]"
-                    :title="store.activity ? 'Hide Activity' : 'Show Activity'"
-                    @click="store.activity = !store.activity"
+                    :class="['icon-btn', {on: activityShown()}]"
+                    :title="activityShown() ? 'Hide Activity' : 'Show Activity'"
+                    @click="toggleActivity"
                 >
                     <Icon name="activity" />
                 </button>

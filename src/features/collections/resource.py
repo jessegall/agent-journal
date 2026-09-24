@@ -1,6 +1,6 @@
 from typing import ClassVar
 
-from resources.base import Resource, ResourceDetails
+from resources.base import SIDEBAR, Resource, ResourceDetails
 from resources.shapes import Shape
 
 
@@ -17,6 +17,7 @@ class Collection(Shape, Resource):
     event_labels = {"created": "Collection made", "completed": "Collection closed"}
     status_labels = {"add": "collecting", "remove": "taking out of a collection"}
     icon = "folder"
+    listed_under = SIDEBAR
     listed_as_cards = True
     command_names = {"complete": "close"}
     labels = {"abstract": "What belongs in it"}

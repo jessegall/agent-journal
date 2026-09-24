@@ -41,7 +41,7 @@ const entry = (open) => `${open.type}:${open.n}${open.comment ? `:${open.comment
 
 function opening(stack, sub = "") {
     const [path] = location.hash.replace(/^#/, "").split("?");
-    location.hash = `#${path}${stack.length ? `?open=${stack.map(entry).join(",")}` : ""}${sub ? `&sub=${sub}` : ""}`;
+    location.replace(`#${path}${stack.length ? `?open=${stack.map(entry).join(",")}` : ""}${sub ? `&sub=${sub}` : ""}`);
 }
 
 export function peek(type, n, comment = 0, sub = "") {
@@ -73,7 +73,7 @@ export function showSession(sub) {
     if (sub) params.set("sub", sub);
     else params.delete("sub");
     const rest = params.toString().replace(/%3A/g, ":");
-    location.hash = `#${path}${rest ? `?${rest}` : ""}`;
+    location.replace(`#${path}${rest ? `?${rest}` : ""}`);
 }
 
 export function unpeek() {

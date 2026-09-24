@@ -15,6 +15,7 @@ export function waitsFor(works) {
 }
 
 export function stateOf(agent, works) {
+    if (agent && agent.data.paused) return "paused";
     const reported = agent ? agent.data.status : "stopped";
     return REPORTED.includes(reported) ? reported : waitsFor(works) ? "waiting" : currentWork(works) ? "working" : "busy";
 }
@@ -30,7 +31,7 @@ export function queued(todos, auto, questions = []) {
     return auto && open.some((t) => !t.data.blocked && !t.data.assigned && !asked(t) && !waits(t));
 }
 
-const WORDS = {working: "Working", busy: "Busy", compacting: "Busy"};
+const WORDS = {working: "Working", busy: "Busy", compacting: "Busy", paused: "Paused"};
 
 export function wordOf(state) {
     return WORDS[state] || "Idle";
@@ -43,6 +44,7 @@ export function lineOf(agent, works, auto = false) {
     if (state === "waiting") return waitsFor(works);
     const current = currentWork(works);
     if (current) return named(current);
+    if (state === "paused") return "held until you resume it";
     if (state === "idle") return phrase(auto ? "auto" : "idle", agent.data.at);
     return phrase("bearings", agent.data.at);
 }

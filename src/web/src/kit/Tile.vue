@@ -2,20 +2,29 @@
 defineProps({
     href: {type: String, default: ""},
     label: {type: String, default: ""},
-    tone: {type: String, default: ""},
     wide: Boolean,
 });
 </script>
 
 <template>
-    <article :class="['tile', tone, {wide}]">
+    <article :class="['tile', {wide}]">
         <div class="tile-main">
             <template v-if="href">
                 <a class="tile-cover" :href="href" :aria-label="label" />
             </template>
+            <template v-if="$slots.head">
+                <div class="tile-head">
+                    <slot name="head" />
+                </div>
+            </template>
             <div class="tile-body">
                 <slot />
             </div>
+            <template v-if="$slots.foot">
+                <div class="tile-foot">
+                    <slot name="foot" />
+                </div>
+            </template>
         </div>
         <template v-if="$slots.more">
             <div class="tile-more">
@@ -31,26 +40,9 @@ defineProps({
     display: flex;
     flex-direction: column;
     min-width: 0;
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    background: var(--raised);
-    overflow: hidden;
-    transition:
-        border-color 0.15s,
-        background 0.15s;
-}
-
-.tile:has(.tile-cover:hover) {
-    border-color: var(--border-3);
-    background: var(--hover);
-}
-
-.tile.live {
-    box-shadow: inset 0 2px 0 var(--progress);
-}
-
-.tile.quiet {
-    opacity: 0.6;
+    border-right: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    background: var(--bg);
 }
 
 .tile.wide {
@@ -59,13 +51,19 @@ defineProps({
 
 .tile-main {
     position: relative;
+    display: flex;
     flex: 1;
+    flex-direction: column;
+    transition: background 0.15s;
+}
+
+.tile-main:has(> .tile-cover:hover) {
+    background: var(--raised);
 }
 
 .tile-cover {
     position: absolute;
     inset: 0;
-    border-radius: inherit;
 }
 
 .tile-cover:focus-visible {
@@ -73,23 +71,52 @@ defineProps({
     outline-offset: -2px;
 }
 
-.tile-body {
+.tile-head,
+.tile-body,
+.tile-foot {
     position: relative;
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
-    height: 100%;
-    padding: 16px 18px 14px;
     pointer-events: none;
 }
 
+.tile-head :deep(a),
+.tile-head :deep(button),
 .tile-body :deep(a),
-.tile-body :deep(button) {
+.tile-body :deep(button),
+.tile-foot :deep(a),
+.tile-foot :deep(button) {
     pointer-events: auto;
 }
 
-.tile-more {
+.tile-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 40px;
+    padding: 0 10px 0 16px;
+    border-bottom: 1px solid var(--line);
+}
+
+.tile-body {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 12px;
+    padding: 12px 16px 14px;
+}
+
+.tile-foot {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 14px;
+    min-height: 34px;
+    padding: 4px 10px 4px 16px;
     border-top: 1px solid var(--line);
+    font-size: 11.5px;
+}
+
+.tile-more {
+    border-top: 1px solid var(--border);
     background: var(--bg-2);
 }
 </style>

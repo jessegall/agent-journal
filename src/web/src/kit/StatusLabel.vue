@@ -1,28 +1,23 @@
 <script setup>
-import {computed} from "vue";
 import Dot from "./Dot.vue";
 
-const TONES = {
-    working: "var(--progress)",
-    busy: "var(--progress)",
-    compacting: "var(--parked)",
-    waiting: "var(--tone-warn)",
-    idle: "var(--text-3)",
-    stopped: "var(--text-4)",
-};
 const LIT = ["working", "busy", "compacting", "waiting"];
 
-const props = defineProps({
+defineProps({
     state: {type: String, required: true},
     note: {type: String, default: ""},
-    size: {type: Number, default: 8},
+    size: {type: Number, default: 7},
 });
-const lit = computed(() => LIT.includes(props.state));
 </script>
 
 <template>
-    <span :class="['status-label', state]" :style="{'--tone': TONES[state] || TONES.idle}">
-        <Dot :kind="state" :size="size" :glow="lit" :solid="state === 'idle'" :pulsing="state === 'working'" />
+    <span :class="['status-label', state, {lit: LIT.includes(state)}]">
+        <template v-if="state === 'stopped'">
+            <Dot kind="struck" :size="size" />
+        </template>
+        <template v-else>
+            <Dot :kind="state" :size="size" solid :pulsing="state === 'working'" />
+        </template>
         <span class="status-word"><slot /></span>
         <template v-if="note">
             <span class="status-note">{{ note }}</span>
@@ -32,22 +27,25 @@ const lit = computed(() => LIT.includes(props.state));
 
 <style scoped>
 .status-label {
+    --tone: var(--text-4);
     display: inline-flex;
     align-items: center;
-    gap: 8px;
+    gap: 7px;
     min-width: 0;
-    font-size: 12.5px;
     white-space: nowrap;
 }
 
-.status-word {
-    color: var(--tone);
-    font-weight: 500;
+.status-label.lit {
+    --tone: var(--accent);
 }
 
-.status-label.idle .status-word,
-.status-label.stopped .status-word {
+.status-word {
     color: var(--text-2);
+}
+
+.status-label.lit .status-word {
+    color: var(--text);
+    font-weight: 500;
 }
 
 .status-note {

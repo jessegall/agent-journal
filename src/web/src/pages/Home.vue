@@ -1,7 +1,6 @@
 <script setup>
 import {computed, onMounted, onUnmounted, provide, ref, watch} from "vue";
 import {open} from "../domain/records.js";
-import {route} from "../route.js";
 import ThreadSkeleton from "../chat/ThreadSkeleton.vue";
 import AgentBar from "../chat/AgentBar.vue";
 import HomeView from "./HomeView.vue";
@@ -9,19 +8,20 @@ import PaneMenu from "./PaneMenu.vue";
 import Btn from "../kit/Btn.vue";
 import DragGhost from "../kit/DragGhost.vue";
 import DropCompass from "../kit/DropCompass.vue";
-import FloatWindow from "../kit/FloatWindow.vue";
 import Icon from "../kit/Icon.vue";
 import PaneGrid from "../kit/PaneGrid.vue";
 import PaneTabs from "../kit/PaneTabs.vue";
 import SplitOffer from "../kit/SplitOffer.vue";
 import TourStep from "../kit/TourStep.vue";
-import Toast from "../kit/Toast.vue";
 import {useHomeViews} from "../composables/homeViews.js";
 import {usePaneLayout} from "../composables/paneLayout.js";
 import {usePaneDrag} from "../composables/paneDrag.js";
-import {openViewTab, useViewTabs} from "../composables/viewTabs.js";
+import {useDetached} from "../composables/detached.js";
 import {clamp} from "../format/number.js";
+import {FULLSCREEN_KEYS} from "../platform/fullscreen.js";
 import {useTour} from "../composables/tour.js";
+import {saveViewerSetting, viewerSetting} from "../composables/viewerSetting.js";
+import {schemeChoices, schemeColors, windowSchemes} from "../domain/schemes.js";
 import {
     AGENT_VIEWS,
     DEFAULT_SHAPE,
@@ -29,22 +29,19 @@ import {
     activated,
     aimAt,
     arranged,
-    broughtBack,
-    floated,
-    forgotten,
-    fronted,
     holding,
-    landed,
     leaves,
     matches,
     paneClosed,
+    ordered,
     placed,
-    reshaped,
-    sentAway,
     shapeViews,
+    snapshot,
     tabClosed,
     thumbnail,
-    unfloated,
+    schemed,
+    tuned,
+    widthOf,
 } from "../domain/panes.js";
 
 const ready = ref(false);
@@ -57,31 +54,46 @@ onMounted(() => {
 onUnmounted(() => cancelAnimationFrame(frame));
 
 const {views, usable} = useHomeViews();
-const {layout, measured, panes, open: opened, apply, replace, resize} = usePaneLayout();
+const {layout, measured, panes, open: opened, apply, replace, resize, stage} = usePaneLayout();
+const {floats, detach, bringBack} = useDetached();
 const grid = ref(null);
+watch(grid, (g) => (stage.value = g ? g.element : null));
+onUnmounted(() => (stage.value = null));
 const offer = ref(null);
 const menu = ref(null);
-const toast = ref(null);
-const landing = ref({});
-const LAND = 280;
-const MIN_W = 260;
-const MIN_H = 180;
 
 const area = () => {
     const el = grid.value && grid.value.element;
     return el ? el.getBoundingClientRect() : null;
 };
-const floats = computed(() => layout.value.floats || []);
 const away = computed(() => layout.value.away || []);
-const over = (box, f, x, y) => x >= box.left + f.x && x <= box.left + f.x + f.w && y >= box.top + f.y && y <= box.top + f.y + f.h;
+const over = (f, x, y) => x >= f.x && x <= f.x + f.w && y >= f.y && y <= f.y + f.h;
+
+function tabSpot(x, y, grip) {
+    const row = grip.from !== null && document.elementFromPoint(x, y)?.closest("[data-tabs-of]");
+    if (!row) return null;
+    const tabs = [...row.querySelectorAll("[data-tab]")];
+    const at = tabs.findIndex((t) => {
+        const r = t.getBoundingClientRect();
+        return x < r.left + r.width / 2;
+    });
+    const index = at < 0 ? tabs.length : at;
+    return {id: Number(row.dataset.tabsOf), zone: "tabs", index, before: at < 0 ? null : tabs[at].dataset.tab};
+}
 
 function aim(x, y, grip) {
     const box = area();
-    if (!box || floats.value.some((f) => over(box, f, x, y))) return null;
-    return aimAt(layout.value, box, x, y, grip.from);
+    if (!box || floats.value.some((f) => over(f, x, y))) return null;
+    return tabSpot(x, y, grip) || aimAt(layout.value, box, x, y, grip.from);
 }
 
 function land(grip, target) {
+    if (target.zone === "tabs" && grip.from === target.id) return replace(ordered(layout.value, target.id, grip.view, target.before));
+    if (target.zone === "tabs") {
+        const change = placed(layout.value, grip.view, target.id, "center", grip.from);
+        change.layout = ordered(change.layout, target.id, grip.view, target.before);
+        return apply(change);
+    }
     const pane = layout.value.panes[target.id];
     if (target.zone === "center" && pane.tabs.includes(grip.view)) return apply(activated(layout.value, target.id, grip.view));
     if (target.zone === "center" && grip.from === null && pane.tabs.length) {
@@ -133,75 +145,38 @@ function floatPane(id) {
     const r = measured.value.rects[id];
     const w = clamp(r.w * box.width * 0.8, 320, 440);
     const h = clamp(r.h * box.height * 0.7, 240, 380);
-    const x = clamp(r.x * box.width + 40, 8, box.width - w - 8);
-    const y = clamp(r.y * box.height + 48, 8, box.height - h - 8);
-    replace(floated(layout.value, pane.active, {x, y, w, h}));
+    detach(pane.active, {x: box.left + r.x * box.width + 40, y: box.top + r.y * box.height + 48, w, h});
 }
-
-function moveFloat(id, to) {
-    const box = area();
-    const f = floats.value.find((x) => x.id === id);
-    if (!box || !f) return;
-    replace(reshaped(layout.value, id, {x: clamp(to.x, 0, box.width - f.w), y: clamp(to.y, 0, box.height - 40)}));
-}
-
-function sizeFloat(id, to) {
-    const box = area();
-    const f = floats.value.find((x) => x.id === id);
-    if (!box || !f) return;
-    replace(reshaped(layout.value, id, {w: clamp(to.w, MIN_W, box.width - f.x), h: clamp(to.h, MIN_H, box.height - f.y)}));
-}
-
-function frontFloat(id) {
-    const last = floats.value[floats.value.length - 1];
-    if (last && last.id !== id) replace(fronted(layout.value, id));
-}
-
-function dockFloat(id) {
-    const change = landed(layout.value, id);
-    const box = area();
-    if (!change || !box) return;
-    apply(change);
-    const r = measured.value.rects[change.target];
-    landing.value = {...landing.value, [id]: {x: r.x * box.width, y: r.y * box.height, w: r.w * box.width, h: r.h * box.height}};
-    setTimeout(() => {
-        const rest = {...landing.value};
-        delete rest[id];
-        landing.value = rest;
-        replace(unfloated(layout.value, id));
-    }, LAND);
-}
-
-function sendAway(id) {
-    const f = floats.value.find((x) => x.id === id);
-    if (!f) return;
-    openViewTab(route.value.env, f.view, id);
-    replace(sentAway(layout.value, id));
-    toast.value = {text: `${views.value[f.view].title} opened in another tab`, label: "Bring back", action: () => bringBack(id)};
-}
-
-const tabs = useViewTabs({
-    dock: (id) => replace(broughtBack(layout.value, id)),
-    closed: (id) => replace(forgotten(layout.value, id)),
-});
-
-function bringBack(id) {
-    tabs.recall(id);
-    replace(broughtBack(layout.value, id));
-}
-
-const shown = computed(() => floats.value.map((f) => ({...f, ...(landing.value[f.id] || {}), landing: !!landing.value[f.id]})));
 
 const lifted = (key) => (drag.value && drag.value.from === null && drag.value.view === key) || (offer.value && offer.value.view === key);
 
+const paneColors = (pane) => schemeColors(pane && pane.scheme, layout.value.scheme);
+
+const savedPresets = computed(() => viewerSetting("presets", []));
+const everyPreset = computed(() => [...PRESETS, ...savedPresets.value.map((p) => ({...p, text: "Saved layout", saved: true}))]);
+const keepPresets = (list) => saveViewerSetting("presets", list);
+
+function saveLayout(name) {
+    keepPresets([
+        ...savedPresets.value,
+        {key: `saved-${Date.now()}`, name, shape: snapshot(layout.value), scheme: layout.value.scheme || ""},
+    ]);
+}
+
+const renamePreset = (key, name) => keepPresets(savedPresets.value.map((p) => (p.key === key ? {...p, name} : p)));
+const removePreset = (key) => keepPresets(savedPresets.value.filter((p) => p.key !== key));
+
 const presets = computed(() =>
-    PRESETS.filter((p) => shapeViews(p.shape).every((v) => usable.value.includes(v))).map((p) => ({
-        key: p.key,
-        name: p.name,
-        text: p.text,
-        cells: thumbnail(p.shape),
-        current: matches(layout.value, p.shape),
-    }))
+    everyPreset.value
+        .filter((p) => shapeViews(p.shape).every((v) => usable.value.includes(v)))
+        .map((p) => ({
+            key: p.key,
+            name: p.name,
+            text: p.text,
+            cells: thumbnail(p.shape),
+            current: matches(layout.value, p.shape),
+            saved: !!p.saved,
+        }))
 );
 
 provide("views", {
@@ -220,6 +195,11 @@ provide("views", {
     back: bringBack,
     presets,
     preset: applyPreset,
+    saveLayout,
+    renamePreset,
+    removePreset,
+    schemes: computed(() => schemeChoices(layout.value.scheme)),
+    scheme: (key) => replace(schemed(layout.value, key)),
 });
 
 function tabsOf(id, pane) {
@@ -238,10 +218,8 @@ function tabsOf(id, pane) {
 
 const grabTab = (e, id, key) => grab(e, {view: key, from: id, click: () => apply(activated(layout.value, id, key))});
 
-const menuPane = computed(() => menu.value && !menu.value.floating && layout.value.panes[menu.value.id]);
-const menuOpen = computed(
-    () => !!menu.value && (menu.value.floating ? floats.value.some((f) => f.id === menu.value.id) : !!menuPane.value)
-);
+const menuPane = computed(() => menu.value && layout.value.panes[menu.value.id]);
+const menuOpen = computed(() => !!menuPane.value);
 const menuOthers = computed(() =>
     menuPane.value
         ? leaves(layout.value.tree)
@@ -257,9 +235,8 @@ const menuOthers = computed(() =>
         : []
 );
 
-function toggleMenu(e, id, floating = false) {
-    const same = menu.value && menu.value.id === id && menu.value.floating === floating;
-    menu.value = same ? null : {id, anchor: e.currentTarget, floating};
+function toggleMenu(e, id) {
+    menu.value = menu.value && menu.value.id === id ? null : {id, anchor: e.currentTarget};
 }
 
 const aimed = computed(() => (drag.value && drag.value.target) || null);
@@ -268,6 +245,7 @@ const ghostHint = computed(() => {
     const target = aimed.value;
     if (!target) return "";
     const pane = layout.value.panes[target.id];
+    if (target.zone === "tabs") return drag.value.from === target.id ? "Move here" : "Add as tab here";
     if (target.zone !== "center") return `Split ${{left: "left", right: "right", top: "above", bottom: "below"}[target.zone]}`;
     if (!pane.tabs.length) return "Open here";
     return drag.value.from === null && !pane.tabs.includes(drag.value.view) ? "Split or add" : "Add as tab";
@@ -280,8 +258,11 @@ const offerText = (id) => {
 };
 
 function applyPreset(key) {
-    const preset = PRESETS.find((p) => p.key === key);
-    if (preset) apply(arranged(layout.value, preset.shape));
+    const preset = everyPreset.value.find((p) => p.key === key);
+    if (!preset) return;
+    const change = arranged(layout.value, preset.shape);
+    if (preset.scheme !== undefined) change.layout.scheme = preset.scheme;
+    apply(change);
 }
 
 const TOUR = [
@@ -306,7 +287,12 @@ const TOUR = [
         target: '.menu-panel [data-step="detach"]',
         menu: true,
         title: "Detach a view",
-        text: "Detach opens this view in a window of its own. Move it, dock it back, or open it in another tab.",
+        text: "Detach opens this view in a window of its own that stays on screen on every page, and in other tabs with the extension. Dock it back from its menu.",
+    },
+    {
+        target: '[data-step="fullscreen"]',
+        title: "Full screen",
+        text: `This button, or ${FULLSCREEN_KEYS}, hides the sidebar and the top bar so the panes fill the screen. Esc brings them back.`,
     },
 ];
 
@@ -314,7 +300,7 @@ function tourMenu() {
     const ids = leaves(layout.value.tree);
     const id = ids.find((at) => layout.value.panes[at] && layout.value.panes[at].active) ?? ids[0];
     const button = document.querySelector(`[data-pane-menu="${id}"]`);
-    if (button) menu.value = {id, anchor: button, floating: false};
+    if (button) menu.value = {id, anchor: button};
 }
 
 const {
@@ -323,7 +309,7 @@ const {
     next: tourNext,
     end: tourEnd,
 } = useTour(TOUR, {
-    isOpen: () => !!menu.value && !menu.value.floating,
+    isOpen: () => !!menu.value,
     open: tourMenu,
     close: () => (menu.value = null),
 });
@@ -354,17 +340,19 @@ watch(
         </template>
         <template v-else>
             <AgentBar />
-            <PaneGrid ref="grid" :panes="panes" :splits="measured.splits" @resize="resize">
+            <PaneGrid ref="grid" :panes="panes" :splits="measured.splits" :colors="paneColors" @resize="resize">
                 <template #pane="{id, pane, state}">
                     <PaneTabs
                         :tabs="tabsOf(id, pane)"
+                        :data-tabs-of="id"
+                        :insert-at="aimed && aimed.zone === 'tabs' && aimed.id === id ? aimed.index : -1"
                         @grab="(e, key) => grabTab(e, id, key)"
                         @pick="(key) => apply(activated(layout, id, key))"
                         @close="(key) => apply(tabClosed(layout, id, key))"
                     >
                         <button
                             type="button"
-                            :class="['pane-menu-btn', {on: menu && !menu.floating && menu.id === id}]"
+                            :class="['pane-menu-btn', {on: menu && menu.id === id}]"
                             :data-pane-menu="id"
                             title="Pane menu"
                             @click.stop="toggleMenu($event, id)"
@@ -372,9 +360,9 @@ watch(
                             <Icon name="dots" />
                         </button>
                     </PaneTabs>
-                    <div class="pane-body">
+                    <div :class="['pane-body', widthOf(pane)]">
                         <template v-if="pane.active">
-                            <HomeView :view="pane.active" />
+                            <HomeView :view="pane.active" :flush="!!pane.flush" />
                         </template>
                         <template v-else>
                             <div class="pane-empty">
@@ -395,37 +383,21 @@ watch(
                             <SplitOffer :text="offerText(id)" @pick="answer" />
                         </template>
                     </div>
-                    <template v-if="aimed && aimed.id === id && state === 'live'">
+                    <template v-if="aimed && aimed.id === id && aimed.zone !== 'tabs' && state === 'live'">
                         <DropCompass :zone="aimed.zone" />
                     </template>
                 </template>
-                <TransitionGroup name="float">
-                    <template v-for="f in shown" :key="f.id">
-                        <FloatWindow
-                            :x="f.x"
-                            :y="f.y"
-                            :w="f.w"
-                            :h="f.h"
-                            :title="views[f.view].title"
-                            :icon="views[f.view].icon"
-                            :landing="f.landing"
-                            @front="frontFloat(f.id)"
-                            @move="(to) => moveFloat(f.id, to)"
-                            @size="(to) => sizeFloat(f.id, to)"
-                            @dock="dockFloat(f.id)"
-                            @menu="(e) => toggleMenu(e, f.id, true)"
-                        >
-                            <HomeView :view="f.view" />
-                        </FloatWindow>
-                    </template>
-                </TransitionGroup>
             </PaneGrid>
             <template v-if="menuOpen">
                 <PaneMenu
                     :pane="menu.id"
                     :anchor="menu.anchor"
-                    :floating="menu.floating"
                     :title="menuPane && menuPane.active ? views[menuPane.active].title : ''"
+                    :all="menuPane && menuPane.active ? views[menuPane.active].all : null"
+                    :width="widthOf(menuPane)"
+                    :schemes="menuPane ? windowSchemes(menuPane.scheme, layout.scheme) : []"
+                    :flushable="!!(menuPane && menuPane.active && views[menuPane.active].canFlush)"
+                    :flush="!!(menuPane && menuPane.flush)"
                     :others="menuOthers"
                     :splittable="!!menuPane && (menuPane.tabs.length > 1 || (menuPane.tabs.length > 0 && !!free()))"
                     :closable="!!menuPane && (leaves(layout.tree).length > 1 || menuPane.tabs.length > 0)"
@@ -435,15 +407,14 @@ watch(
                     @float="floatPane"
                     @shut="shutPane"
                     @reset="apply(arranged(layout, DEFAULT_SHAPE))"
-                    @dock="dockFloat"
-                    @away="sendAway"
-                    @unfloat="(id) => replace(unfloated(layout, id))"
+                    @width="(id, width) => replace(tuned(layout, id, {width}))"
+                    @scheme="(id, scheme) => replace(tuned(layout, id, {scheme}))"
+                    @flush="(id, flush) => replace(tuned(layout, id, {flush}))"
                 />
             </template>
             <template v-if="drag">
                 <DragGhost :x="drag.x" :y="drag.y" :icon="views[drag.view].icon" :title="views[drag.view].title" :hint="ghostHint" />
             </template>
-            <Toast :toast="toast" @done="toast = null" />
             <template v-if="tourNow && tourRect">
                 <TourStep
                     :rect="tourRect"
@@ -480,6 +451,12 @@ watch(
     min-height: 0;
     display: flex;
     flex-direction: column;
+}
+
+.pane-body.contained > * {
+    align-self: center;
+    width: 100%;
+    max-width: 880px;
 }
 
 .pane-menu-btn {
@@ -542,29 +519,5 @@ watch(
     justify-content: center;
     gap: 6px;
     max-width: 480px;
-}
-
-.float-enter-active,
-.float-leave-active {
-    transition:
-        opacity 0.22s ease,
-        transform 0.22s var(--ease);
-}
-
-.float-enter-from {
-    opacity: 0;
-    transform: translateY(8px) scale(0.97);
-}
-
-.float-leave-to {
-    opacity: 0;
-    transform: scale(0.97);
-}
-
-@media (prefers-reduced-motion: reduce) {
-    .float-enter-active,
-    .float-leave-active {
-        transition: none;
-    }
 }
 </style>

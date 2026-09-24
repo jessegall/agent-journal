@@ -163,37 +163,43 @@ async function inject(file, mode) {
   }
 }
 
-// FOLLOWING YOU FROM TAB TO TAB. Detaching in the viewer hands the chat to this extension: the flag
-// says the chat is loose, and every page you open gets the window automatically — but only where
-// the user has granted the permission to touch other pages, which they do from the popup. Without
-// the grant the flag still works for Alt+J, and the popup says what is missing.
+// EVERY PAGE, OR ONLY THE ONES ASKED FOR. A window reaches other pages only where the user granted
+// the permission to touch them, which they do from the popup.
 async function everywhere() {
   return chrome.permissions.contains({ origins: ["<all_urls>"] }).catch(() => false);
 }
 
-//: THE WINDOW OPENS WHERE YOU PRESSED THE BUTTON. Detaching in the viewer used to set the flag and
-//: leave the user to open the window themselves, which is two gestures for one intention.
-async function follow(on, tabId) {
-  // detaching in the viewer is opening the window: it is open, everywhere, from that moment
-  await keep({ following: !!on, chatOpen: !!on });
-  if (tabId) {
-    try {
-      if (on) {
-        await chrome.scripting.executeScript({ target: { tabId }, files: ["chat.js"] });
-      } else {
-        await chrome.scripting.executeScript({
-          target: { tabId },
-          func: () => { const el = document.getElementById("__journal-chat-window"); if (el) el.remove(); },
-        });
-      }
-    } catch (e) { /* a page the extension may not touch keeps the flag and nothing else */ }
-  }
+// DETACHED VIEWS, HELD HERE. The viewer hands a detached window to the extension, which draws it
+// in every tab it may touch until the viewer takes it back. A window put back from outside the
+// viewer is listed as docking, so the viewer docks it the next time it says hello.
+async function heldWindows() {
+  return (await kept("held", {})).held || [];
+}
+
+async function docking() {
+  return (await kept("docking", {})).docking || [];
+}
+
+async function run(tabId, mode) {
+  await chrome.scripting.executeScript({ target: { tabId }, func: (m) => { window.__journalRun = m; }, args: [mode] });
+  await chrome.scripting.executeScript({ target: { tabId }, files: ["chat.js"] });
+}
+
+async function hold(msg, tab) {
+  const url = tab && tab.url ? new URL(tab.url).origin : "";
+  const held = (await heldWindows()).filter((h) => h.id !== msg.id);
+  const boxes = (await kept("boxes", {})).boxes || {};
+  if (msg.box) boxes[msg.id] = msg.box;
+  await keep({ held: [...held, { id: msg.id, view: msg.view, env: msg.env || "", url }], boxes });
+  if (tab && tab.id) { try { await run(tab.id, "sync"); } catch (e) { /* the other tabs still get it */ } }
   return { ok: true, everywhere: await everywhere() };
 }
 
-async function following() {
-  const got = await kept("following", {});
-  return !!(got && got.following);
+async function release(msg) {
+  const held = (await heldWindows()).filter((h) => h.id !== msg.id);
+  const later = msg.dock ? [...new Set([...(await docking()), msg.id])] : await docking();
+  await keep({ held, docking: later });
+  return { ok: true };
 }
 
 // ONE WINDOW, EVERY TAB. Open is a single state: opened anywhere, it is open — a reload, a tab you
@@ -216,19 +222,12 @@ async function mayTouch(url) {
 
 async function openOn(tabId, url) {
   if (!tabId || !url || !/^https?:/.test(url)) return;
-  const follow = await following();
-  // the journal's own page has the chat on it — unless the user detached it, and then the window is where it lives
-  if (!follow && (url.startsWith("http://127.0.0.1") || url.startsWith("http://localhost"))) return;
-  const left = (await chatOpen()) && ((await everywhere()) || (await mayTouch(url)));
-  if (!follow && !left) return;
-  if ((await tabState(tabId)).closed) return;    // this tab said no; the others carry on
-  try {
-    // CHAT.JS TOGGLES. Run on a tab that already has the window it takes the window DOWN — and says
-    // closed, which closes every tab's. Switching back to a tab was doing exactly that. So: look first.
-    const [has] = await chrome.scripting.executeScript({ target: { tabId }, func: () => !!document.getElementById("__journal-chat-window") });
-    if (has && has.result) return;
-    await chrome.scripting.executeScript({ target: { tabId }, files: ["chat.js"] });
-  } catch (e) { /* a page the extension may not touch is not an error worth saying twice */ }
+  const journal = url.startsWith("http://127.0.0.1") || url.startsWith("http://localhost");
+  if (!journal && !(await everywhere()) && !(await mayTouch(url))) return;
+  // the journal's own page has the chat on it; the chat opened by hand is for every other page
+  const chat = !journal && (await chatOpen()) && !(await tabState(tabId)).closed;
+  if (!chat && !(await heldWindows()).length) return;
+  try { await run(tabId, chat ? "open" : "sync"); } catch (e) { /* a page the extension may not touch is not an error worth saying twice */ }
 }
 
 chrome.tabs.onUpdated.addListener((tabId, info, tab) => {
@@ -257,11 +256,12 @@ chrome.runtime.onMessage.addListener((msg, sender, reply) => {
     // chat.js says when it opened or closed on a page, so the window comes back after a reload
     // opened by hand in this tab: the window is open everywhere again, and this tab's "no" is lifted
     opened: async () => { await setTabState(sender.tab && sender.tab.id, { closed: false }); await rememberOpen(true); return { ok: true }; },
-    // closed in this tab: this tab only. Putting the chat back on the journal's page (attach) is the
-    // one close that reaches every tab, and it comes through `follow`.
+    // closed in this tab: this tab only
     closed: () => setTabState(sender.tab && sender.tab.id, { closed: true }).then(() => ({ ok: true })),
-    follow: () => follow(msg.on, sender.tab && sender.tab.id),
-    following: async () => ({ on: await following(), everywhere: await everywhere() }),
+    hold: () => hold(msg, sender.tab),
+    release: () => release(msg),
+    holding: async () => ({ held: (await heldWindows()).map((h) => h.id), docking: await docking() }),
+    docked: async () => { await keep({ docking: (await docking()).filter((id) => !(msg.ids || []).includes(id)) }); return { ok: true }; },
     "outbox-get": async () => ({ value: (await kept("outbox", {})).outbox || [] }),
     "outbox-set": async () => { await keep({ outbox: Array.isArray(msg.value) ? msg.value : [] }); return { ok: true }; },
     where: async () => {

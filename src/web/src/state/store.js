@@ -32,24 +32,17 @@ export const store = reactive({
         lens: remembered("journal.board.lens", {plan: 0, agent: "", done: true, board: 0}),
     },
     focus: "",
-    detached: false,
-    extension: {here: false, holding: false, pending: false, everywhere: false},
-    chatWindow: remembered("journal.window", {
-        x: Math.max(16, window.innerWidth - 468),
-        y: 84,
-        w: 440,
-        h: Math.min(680, Math.max(360, window.innerHeight - 140)),
-    }),
+    extension: {here: false, held: []},
+    sideOpen: false,
+    activityOpen: false,
 });
 
 kept("journal.activity", () => store.activity);
 kept("journal.wide", () => store.wide);
 kept("journal.side.mini", () => store.sideMini);
 kept("journal.board.lens", () => store.board.lens);
-kept("journal.window", () => store.chatWindow);
 
 export const types = computed(() => (store.spec ? store.spec.priority.map((t) => ({name: t, ...store.spec.types[t]})) : []));
-export const navTypes = (scope) => types.value.filter((t) => t.in_sidebar && t.scope === scope);
 export const meta = (type) => store.spec.types[type];
 export const word = (type, method) => meta(type).command_names[method] || method;
 export const label = (type, field, fallback) => meta(type).labels[field] || fallback;

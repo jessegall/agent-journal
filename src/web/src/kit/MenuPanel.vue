@@ -1,5 +1,5 @@
 <script setup>
-import {computed, onMounted, ref} from "vue";
+import {computed, onMounted, onUnmounted, ref} from "vue";
 
 defineOptions({inheritAttrs: false});
 const props = defineProps({
@@ -13,16 +13,44 @@ const panel = ref(null);
 const px = (value) => (value ? `${value}px` : undefined);
 const size = computed(() => ({minWidth: px(props.minWidth), maxWidth: px(props.maxWidth), maxHeight: px(props.maxHeight)}));
 const EDGE = 8;
-const side = (edge) => (props.align === "auto" ? (edge.left + edge.right < window.innerWidth ? "left" : "right") : props.align);
+const GAP = 4;
+const drawn = ref({w: 0, h: 0});
+const viewport = () => ({left: 0, top: 0, right: window.innerWidth, bottom: window.innerHeight});
+const windowOf = (anchor) => {
+    const win = anchor.closest(".pane, .float-window");
+    return win ? win.getBoundingClientRect() : viewport();
+};
+const clampTo = (value, low, high) => Math.max(low, Math.min(high, value));
 const within = (limit, room) => `${Math.max(0, limit ? Math.min(limit, room) : room)}px`;
+
+function room(bounds, edge) {
+    return {
+        below: bounds.bottom - edge.bottom - GAP - EDGE,
+        above: edge.top - bounds.top - GAP - EDGE,
+        across: bounds.right - bounds.left - 2 * EDGE,
+    };
+}
+
+function fitting(edge) {
+    const own = windowOf(props.anchor);
+    const space = room(own, edge);
+    const fits = drawn.value.w <= space.across && drawn.value.h <= Math.max(space.below, space.above);
+    return fits ? own : viewport();
+}
+
 const place = computed(() => {
     if (!props.anchor) return size.value;
     const edge = props.anchor.getBoundingClientRect();
-    const top = edge.bottom + 4;
-    const fits = {...size.value, top: `${top}px`, maxHeight: within(props.maxHeight, window.innerHeight - top - EDGE)};
-    if (side(edge) === "left")
-        return {...fits, left: `${edge.left}px`, maxWidth: within(props.maxWidth, window.innerWidth - edge.left - EDGE)};
-    return {...fits, right: `${window.innerWidth - edge.right}px`, maxWidth: within(props.maxWidth, edge.right - EDGE)};
+    const bounds = fitting(edge);
+    const space = room(bounds, edge);
+    const {w, h} = drawn.value;
+    const leftward = props.align === "auto" ? edge.left + edge.right > bounds.left + bounds.right : props.align === "right";
+    const x = clampTo(leftward ? edge.right - w : edge.left, bounds.left + EDGE, Math.max(bounds.left + EDGE, bounds.right - w - EDGE));
+    const up = h > space.below && space.above > space.below;
+    const vertical = up
+        ? {bottom: `${window.innerHeight - edge.top + GAP}px`, maxHeight: within(props.maxHeight, space.above)}
+        : {top: `${edge.bottom + GAP}px`, maxHeight: within(props.maxHeight, space.below)};
+    return {...size.value, ...vertical, left: `${x}px`, maxWidth: within(props.maxWidth, window.innerWidth - x - EDGE)};
 });
 const emit = defineEmits(["close"]);
 const items = () => [...panel.value.querySelectorAll("button:not(:disabled)")];
@@ -35,7 +63,14 @@ function step(by) {
 
 const KEYS = {ArrowDown: () => step(1), ArrowUp: () => step(-1), Escape: () => emit("close")};
 const onKey = (e) => KEYS[e.key] && (e.preventDefault(), KEYS[e.key]());
-onMounted(() => items()[0] && items()[0].focus());
+const measure = () => panel.value && (drawn.value = {w: panel.value.offsetWidth, h: panel.value.scrollHeight});
+const watcher = new ResizeObserver(measure);
+onMounted(() => {
+    measure();
+    if (panel.value) watcher.observe(panel.value);
+    if (items()[0]) items()[0].focus();
+});
+onUnmounted(() => watcher.disconnect());
 defineExpose({element: panel});
 </script>
 

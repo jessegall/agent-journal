@@ -1,4 +1,5 @@
 const PROVIDERS = {claude: "Claude Code", codex: "Codex"};
+export const PROVIDER_CHOICES = Object.entries(PROVIDERS).map(([key, label]) => ({key, label}));
 const FAMILY = /opus|sonnet|haiku|fable|gpt[-\w.]*/i;
 
 export function providerName(provider, fallback = "agent") {

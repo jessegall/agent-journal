@@ -1,66 +1,88 @@
 <script setup>
 defineProps({
-    title: {type: String, default: ""},
+    title: {type: String, required: true},
     count: {type: [Number, String], default: ""},
-    tone: {type: String, default: ""},
+    folds: Boolean,
+    open: {type: Boolean, default: true},
 });
+const emit = defineEmits(["toggle"]);
 </script>
 
 <template>
-    <section :class="['list-box', tone]">
-        <template v-if="title">
-            <header class="list-box-head">
-                <span class="list-box-title">{{ title }}</span>
-                <template v-if="count !== ''">
-                    <span class="list-box-count">{{ count }}</span>
-                </template>
-            </header>
+    <section class="list-box">
+        <component
+            :is="folds ? 'button' : 'header'"
+            :type="folds ? 'button' : undefined"
+            :class="['list-box-head', {folds}]"
+            :aria-expanded="folds ? open : undefined"
+            @click="folds && emit('toggle')"
+        >
+            <span class="list-box-title">{{ title }}</span>
+            <template v-if="count !== ''">
+                <span class="list-box-count">{{ count }}</span>
+            </template>
+            <template v-if="folds">
+                <span :class="['list-box-mark', {shut: !open}]" />
+            </template>
+        </component>
+        <template v-if="open">
+            <div class="list-box-rows">
+                <slot />
+            </div>
         </template>
-        <div class="list-box-rows">
-            <slot />
-        </div>
     </section>
 </template>
 
 <style scoped>
-.list-box {
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    background: var(--raised);
-    overflow: hidden;
-}
-
-.list-box.warn {
-    border-color: color-mix(in srgb, var(--tone-warn) 30%, var(--border));
-    box-shadow: inset 3px 0 0 var(--tone-warn);
-}
-
 .list-box-head {
     display: flex;
-    align-items: baseline;
+    align-items: center;
     gap: 8px;
-    padding: 12px 18px 4px;
+    width: 100%;
+    height: 34px;
+    padding: 0 16px;
+    border: 0;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg-2);
+    color: var(--text-3);
+    font: inherit;
+    font-size: 11.5px;
+    letter-spacing: 0.03em;
+    text-align: left;
+}
+
+.list-box-head.folds {
+    cursor: pointer;
+}
+
+.list-box-head.folds:hover {
+    color: var(--text-2);
 }
 
 .list-box-title {
     color: var(--text-2);
-    font-size: 11.5px;
-    font-weight: 600;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-}
-
-.list-box.warn .list-box-title {
-    color: var(--tone-warn);
 }
 
 .list-box-count {
-    color: var(--text-3);
-    font-size: 11.5px;
     font-variant-numeric: tabular-nums;
 }
 
-.list-box-rows > :deep(* + *) {
-    border-top: 1px solid var(--line);
+.list-box-mark {
+    width: 5px;
+    height: 5px;
+    margin: 0 2px 0 auto;
+    border-right: 1.5px solid currentColor;
+    border-bottom: 1.5px solid currentColor;
+    opacity: 0.7;
+    transform: rotate(45deg);
+    transition: transform 0.15s;
+}
+
+.list-box-mark.shut {
+    transform: rotate(-45deg);
+}
+
+.list-box-rows > :deep(*) {
+    border-bottom: 1px solid var(--border);
 }
 </style>

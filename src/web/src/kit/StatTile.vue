@@ -5,7 +5,6 @@ defineProps({
     note: {type: String, default: ""},
     tone: {type: String, default: ""},
     opens: Boolean,
-    flat: Boolean,
 });
 const emit = defineEmits(["open"]);
 </script>
@@ -14,7 +13,7 @@ const emit = defineEmits(["open"]);
     <component
         :is="opens ? 'button' : 'div'"
         :type="opens ? 'button' : undefined"
-        :class="['stat', tone, {opens, flat}]"
+        :class="['stat', tone, {opens}]"
         @click="opens && emit('open')"
     >
         <span class="stat-value">{{ value }}</span>
@@ -41,12 +40,6 @@ const emit = defineEmits(["open"]);
     text-align: left;
 }
 
-.stat.flat {
-    padding: 16px 20px 15px;
-    border: 0;
-    border-radius: 0;
-}
-
 .stat.opens {
     cursor: pointer;
 }
@@ -64,14 +57,6 @@ const emit = defineEmits(["open"]);
 
 .stat.good .stat-value {
     color: var(--tone-good, var(--green));
-}
-
-.stat.progress .stat-value {
-    color: var(--progress);
-}
-
-.stat.muted .stat-value {
-    color: var(--text-4);
 }
 
 .stat.warn .stat-value {

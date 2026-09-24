@@ -9,6 +9,7 @@ defineProps({
     value: {type: Number, default: 0},
     max: {type: Number, default: 100},
     busy: Boolean,
+    tone: {type: String, default: ""},
 });
 </script>
 
@@ -23,7 +24,7 @@ defineProps({
                 <span class="meter-figure">{{ figure }}</span>
             </template>
         </div>
-        <ProgressBar :value="value" :max="max" :busy="busy" thin />
+        <ProgressBar :value="value" :max="max" :busy="busy" :tone="tone" thin />
         <template v-if="detail || $slots.default">
             <div class="meter-foot">
                 <span class="meter-detail">{{ detail }}</span>
@@ -51,9 +52,9 @@ defineProps({
 .meter-label {
     flex: none;
     color: var(--text-3);
-    font-size: 11px;
-    font-weight: 500;
-    letter-spacing: 0.04em;
+    font-size: 10.5px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
     text-transform: uppercase;
 }
 

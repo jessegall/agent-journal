@@ -1,6 +1,8 @@
 <script setup>
-import {chatOnly, soloView} from "./platform/view.js";
-import ExtensionSection from "./ExtensionSection.vue";
+import {chatOnly, narrow, soloView} from "./platform/view.js";
+import DetachedWindows from "./layout/DetachedWindows.vue";
+import WindowBar from "./layout/WindowBar.vue";
+import {activityShown, closeOverlays} from "./actions/panels.js";
 
 import {computed, onMounted, onUnmounted, ref, watch, watchEffect} from "vue";
 import {route} from "./route.js";
@@ -26,6 +28,7 @@ import PluginPage from "./pages/PluginPage.vue";
 import PluginsPage from "./pages/PluginsPage.vue";
 import BoardPage from "./pages/BoardPage.vue";
 import OrganizationPage from "./pages/OrganizationPage.vue";
+import ResourcesPage from "./pages/ResourcesPage.vue";
 import ServicesPage from "./pages/ServicesPage.vue";
 import SkillsPage from "./pages/SkillsPage.vue";
 import AboutPage from "./pages/AboutPage.vue";
@@ -43,7 +46,7 @@ import UpgradeBand from "./layout/UpgradeBand.vue";
 import ThreadSkeleton from "./chat/ThreadSkeleton.vue";
 import IdentityBand from "./layout/IdentityBand.vue";
 import {usePoll} from "./poll.js";
-import {followFullscreen} from "./platform/fullscreen.js";
+import {drawnWide, followFullscreen, switching} from "./platform/fullscreen.js";
 
 usePoll(...polled.events);
 
@@ -63,6 +66,7 @@ const page = computed(() =>
                 "file",
                 "kanban",
                 "organization",
+                "resources",
                 "about",
             ].includes(route.value.page)
           ? route.value.page
@@ -96,6 +100,7 @@ const depthOf = (layer) => (layer.leaving ? 0 : visibleLayers.value.length - 1 -
 const gone = (key) => (layers.value = layers.value.filter((layer) => !(layer.key === key && layer.leaving)));
 
 const quick = ref(false);
+const quickOpening = ref("menu");
 let pointed = false;
 const sawPointer = () => (pointed = true);
 const sawKeyMove = (e) => {
@@ -115,14 +120,28 @@ function onSpace(e) {
         if (el.matches("button,a[href],[role=button],[tabindex]") && !pointed) return;
     }
     e.preventDefault();
+    quickOpening.value = "menu";
     quick.value = true;
 }
+function onOpenFile(e) {
+    if (e.key.toLowerCase() !== "o" || !(e.metaKey || e.ctrlKey) || e.shiftKey || e.altKey) return;
+    e.preventDefault();
+    if (quick.value && quickMenu.value) return quickMenu.value.findInProject();
+    quickOpening.value = "project";
+    quick.value = true;
+}
+function escapeClaimed(e) {
+    if (e.defaultPrevented || quick.value || document.querySelector(".menu-panel, .dialog, .tour-card")) return true;
+    const el = document.activeElement;
+    return !!el && (el.isContentEditable || (el.matches("input, textarea") && !!el.value));
+}
+
 function onWide(e) {
-    if (e.key === "Escape" && store.wide) {
+    if (e.key === "Escape" && store.wide && !escapeClaimed(e)) {
         store.wide = false;
         return;
     }
-    if (e.key.toLowerCase() === "f" && e.shiftKey && (e.metaKey || e.ctrlKey)) {
+    if (e.key === "Enter" && e.shiftKey && (e.metaKey || e.ctrlKey)) {
         e.preventDefault();
         store.wide = !store.wide;
     }
@@ -131,14 +150,17 @@ window.addEventListener("pointerdown", sawPointer, true);
 window.addEventListener("keydown", sawKeyMove, true);
 window.addEventListener("keydown", onSpace);
 window.addEventListener("keydown", onWide);
+window.addEventListener("keydown", onOpenFile);
 onUnmounted(() => {
     window.removeEventListener("pointerdown", sawPointer, true);
     window.removeEventListener("keydown", sawKeyMove, true);
     window.removeEventListener("keydown", onSpace);
     window.removeEventListener("keydown", onWide);
+    window.removeEventListener("keydown", onOpenFile);
 });
 
 onMounted(boot);
+watch(() => `${route.value.env}/${route.value.page}/${route.value.n}`, closeOverlays);
 watch(
     () => route.value.env,
     async () => {
@@ -146,7 +168,6 @@ watch(
         listen();
     }
 );
-const chatFloats = computed(() => store.detached && !store.extension.holding && !store.extension.pending);
 </script>
 
 <template>
@@ -164,7 +185,8 @@ const chatFloats = computed(() => store.detached && !store.extension.holding && 
     <template v-else-if="store.spec">
         <div class="viewer">
             <IdentityBand />
-            <div :class="['app', {wide: store.wide, mini: store.sideMini, full}]">
+            <WindowBar />
+            <div :class="['app', {wide: drawnWide, mini: store.sideMini, full, switching, narrow, 'side-open': narrow && store.sideOpen}]">
                 <div class="rail"><Sidebar /></div>
                 <div class="main">
                     <div class="bar"><TopBar /></div>
@@ -186,6 +208,7 @@ const chatFloats = computed(() => store.detached && !store.extension.holding && 
                                 <template #plugins><PluginsPage /></template>
                                 <template #kanban><BoardPage /></template>
                                 <template #organization><OrganizationPage /></template>
+                                <template #resources><ResourcesPage /></template>
                                 <template #page><PluginPage /></template>
                                 <template #hub><HubPage /></template>
                                 <template #file><FilePage /></template>
@@ -195,8 +218,11 @@ const chatFloats = computed(() => store.detached && !store.extension.holding && 
                     </Transition>
                 </div>
                 <Transition name="column">
-                    <Activity v-if="store.activity && !store.wide && !full" />
+                    <Activity v-if="activityShown() && !drawnWide && !full" />
                 </Transition>
+                <template v-if="narrow && (store.sideOpen || store.activityOpen)">
+                    <div class="narrow-scrim" @click="closeOverlays" />
+                </template>
                 <template v-for="layer in layers" :key="layer.key">
                     <Reader
                         :type="layer.type"
@@ -209,7 +235,7 @@ const chatFloats = computed(() => store.detached && !store.extension.holding && 
                 </template>
                 <Lightbox />
                 <Transition name="quick">
-                    <QuickMenu v-if="quick" ref="quickMenu" @close="quick = false" />
+                    <QuickMenu v-if="quick" ref="quickMenu" :opening="quickOpening" @close="quick = false" />
                 </Transition>
                 <template v-if="away.open">
                     <AwayCard />
@@ -218,9 +244,7 @@ const chatFloats = computed(() => store.detached && !store.extension.holding && 
                     <SkillPanel />
                 </template>
                 <ProjectFlash />
-                <template v-if="chatFloats">
-                    <ExtensionSection :extension="store.extension" />
-                </template>
+                <DetachedWindows />
             </div>
         </div>
     </template>
@@ -347,5 +371,57 @@ const chatFloats = computed(() => store.detached && !store.extension.holding && 
 .quick-enter-from :deep(.quick-menu),
 .quick-leave-to :deep(.quick-menu) {
     transform: translate(-50%, -8px) scale(0.98);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    .app :deep(:is(.pane-body, .float-body)) {
+        transition: opacity 0.12s ease-out;
+    }
+
+    .app.switching :deep(:is(.pane-body, .float-body)) {
+        opacity: 0;
+        transition: opacity 0.08s ease-in;
+    }
+}
+
+.narrow-scrim {
+    position: fixed;
+    inset: 0;
+    z-index: 55;
+    background: rgba(0, 0, 0, 0.5);
+}
+
+.app.narrow .rail {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 60;
+    margin-left: 0;
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateX(-100%);
+    transition: transform 0.22s var(--ease);
+}
+
+.app.narrow.side-open .rail {
+    transform: none;
+    box-shadow: 12px 0 32px rgba(0, 0, 0, 0.45);
+}
+
+.app.narrow :deep(.activity-dock) {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 60;
+    width: min(340px, 88vw);
+    box-shadow: -12px 0 32px rgba(0, 0, 0, 0.45);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .app.narrow .rail {
+        transition: none;
+    }
 }
 </style>

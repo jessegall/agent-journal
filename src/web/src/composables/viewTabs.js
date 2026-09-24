@@ -6,10 +6,9 @@ export function openViewTab(env, view, id) {
     window.open(`${location.origin}/?view=${view}&float=${id}#/${env}`, `journal-view-${id}`);
 }
 
-export function useViewTabs(handlers) {
+export function listenViewTabs(handlers) {
     const channel = new BroadcastChannel(CHANNEL);
     channel.onmessage = (e) => e.data && handlers[e.data.kind] && handlers[e.data.kind](e.data.id);
-    onUnmounted(() => channel.close());
     return {recall: (id) => channel.postMessage({kind: "recall", id})};
 }
 

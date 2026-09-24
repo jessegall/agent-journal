@@ -23,7 +23,7 @@ const color = computed(() => COLOR[props.kind] || COLOR.open);
 
 <template>
     <template v-if="solid">
-        <span class="solid" :style="{'--size': `${size}px`}" role="img" :aria-label="kind" />
+        <span :class="['solid', {pulsing}]" :style="{'--size': `${size}px`}" role="img" :aria-label="kind" />
     </template>
     <template v-else-if="glow">
         <span :class="['glow', {pulsing}]" :style="{'--size': `${size}px`}" role="img" :aria-label="kind" />
@@ -71,6 +71,16 @@ const color = computed(() => COLOR[props.kind] || COLOR.open);
     animation: pulse 1.2s ease-in-out infinite;
 }
 
+.solid.pulsing {
+    animation: breathe 2.4s ease-in-out infinite;
+}
+
+@keyframes breathe {
+    50% {
+        opacity: 0.4;
+    }
+}
+
 @keyframes pulse {
     50% {
         box-shadow: 0 0 0 calc(var(--size) * 2 / 3) color-mix(in srgb, var(--tone) 9%, transparent);
@@ -78,7 +88,8 @@ const color = computed(() => COLOR[props.kind] || COLOR.open);
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .glow.pulsing {
+    .glow.pulsing,
+    .solid.pulsing {
         animation: none;
     }
 }

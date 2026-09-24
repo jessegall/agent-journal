@@ -10,6 +10,7 @@ const props = defineProps({
     title: {type: String, required: true},
     icon: {type: String, required: true},
     landing: Boolean,
+    colors: {type: Object, default: () => ({})},
 });
 const emit = defineEmits(["move", "size", "front", "dock", "menu"]);
 
@@ -30,7 +31,7 @@ function grow(e) {
 <template>
     <div
         :class="['float-window', {landing}]"
-        :style="{left: `${x}px`, top: `${y}px`, width: `${w}px`, height: `${h}px`}"
+        :style="{left: `${x}px`, top: `${y}px`, width: `${w}px`, height: `${h}px`, ...colors}"
         role="dialog"
         :aria-label="title"
         @pointerdown="emit('front')"

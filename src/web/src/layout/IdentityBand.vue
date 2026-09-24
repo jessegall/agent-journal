@@ -1,8 +1,8 @@
 <script setup>
 import {many, tint} from "../identity.js";
 import {usePoll} from "../poll.js";
-import {store} from "../state/store.js";
 import {polled} from "../sync/polled.js";
+import {drawnWide} from "../platform/fullscreen.js";
 
 usePoll(...polled.online);
 usePoll(...polled.journals);
@@ -10,7 +10,7 @@ usePoll(...polled.journals);
 
 <template>
     <template v-if="many">
-        <div :class="['identity-band', {thin: store.wide}]" :style="{background: tint}" />
+        <div :class="['identity-band', {hidden: drawnWide}]" :style="{background: tint}" />
     </template>
 </template>
 
@@ -21,7 +21,7 @@ usePoll(...polled.journals);
     transition: height 0.26s var(--ease);
 }
 
-.identity-band.thin {
-    height: 2px;
+.identity-band.hidden {
+    height: 0;
 }
 </style>
