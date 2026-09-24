@@ -31,6 +31,7 @@ def emit_clock(record: Record, session: str) -> None:
 TICK = 1.0
 STAMPED = "stamped"
 SETTLE, STEP = 3.0, 0.1
+OUTPUT_WAIT = 5.0
 TYPING_HOLD = 10.0
 
 SILENT_AFTER = 120.0
@@ -71,6 +72,7 @@ class Engine(Seat):
         self.carry_on = False
         self.paused = False
         self.held_at = 0.0
+        self.echoed_at = time.time()
         self.why = ""
         self.clean = 0
 
@@ -87,6 +89,7 @@ class Engine(Seat):
         self.relay()
         self.relay_peers()
         self.ran()
+        self.echoed()
         if not self.agent.driver.DISPLAY_HOOK:
             self.announce_written()
         self.why = (self.permitted() or self.pausing() or self.backgrounded() or self.probe() or self.forced() or self.typing() or self.shelled()
@@ -226,8 +229,27 @@ class Engine(Seat):
         return f"typed in the terminal: {queued.value}" if typed else ""
 
     def typed(self, row, commands: list[str]) -> None:
+        provider = PROVIDERS.get(row.provider)
+        if provider and provider.echoes_typed:
+            return
         for command in commands:
             ran.announce(self.record, row.n, ran.TYPED, command)
+
+    def echoed(self) -> None:
+        row = self.agent.driver.last_report()
+        provider = PROVIDERS.get(row.provider) if row else None
+        if not provider or not provider.echoes_typed or not row.transcript:
+            return
+        for run in provider().typed_runs(Path(row.transcript)):
+            if run.at <= self.echoed_at:
+                continue
+            if run.output is None and time.time() - run.at < OUTPUT_WAIT:
+                return
+            if run.output is None:
+                ran.announce(self.record, row.n, ran.TYPED, run.command, at=run.at)
+            else:
+                ran.announce(self.record, row.n, ran.TYPED, run.command, run.output, at=run.at)
+            self.echoed_at = run.at
 
     def noted(self, line: str) -> None:
         ran.announce(self.record, Agents(self.record, actor=SYSTEM).by_session(self.agent.driver.session).n, ran.NOTED, line)

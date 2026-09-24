@@ -8,7 +8,7 @@ from pathlib import Path
 
 from engine.transcript import AGENT, HUMAN, INJECTED, PEER, SENT, SUMMARY, SUPERSEDED, TASK, TOOL, Turn
 from providers.payload import AgentCall, AskCall, DISPLAYED, EVENTS, UsageWindow
-from providers.base import Provider, journal_hook, parsed
+from providers.base import Provider, TypedRun, TypedRuns, journal_hook, parsed
 from providers.payload import Dispatch, Hook, ToolCall
 from providers.claude_rows import Block, Row
 from resources.types import AgentRow
@@ -30,6 +30,10 @@ MOVED_ON = 4
 TYPED_FOR = 300
 CHANNEL_MARK = '<channel source="journal"'
 BASH_INPUT = re.compile(r"^<bash-input>(.*)</bash-input>$", re.S)
+COMMAND_NAME = re.compile(r"<command-name>(.*?)</command-name>", re.S)
+COMMAND_ARGS = re.compile(r"<command-args>(.*?)</command-args>", re.S)
+TYPED_OUTPUT = re.compile(r"<(bash-stdout|bash-stderr|local-command-stdout)>(.*?)</\1>", re.S)
+KEPT_TYPED = 50
 EVALED = re.compile(r"&& eval '(.*)' < /dev/null && pwd -P", re.S)
 RECORD_FILES = ("Read(./.journal/environments/*/*/*.md)", "Read(./.journal/project/*/*.md)")
 STATUS_HOME = (".journal", "claude-status")
@@ -71,6 +75,17 @@ SPEAKERS = {SUMMARY: SUMMARY, HUMAN: "user", AGENT: "agent"}
 ORIGINS = {"peer": PEER, "task-notification": TASK}
 
 
+def typed_command(text: str) -> str | None:
+    shell = BASH_INPUT.match(text)
+    if shell:
+        return f"!{shell[1]}"
+    name = COMMAND_NAME.search(text)
+    if not name:
+        return None
+    args = COMMAND_ARGS.search(text)
+    return f"{name[1]} {args[1]}".strip() if args else name[1]
+
+
 def monitor_end(finished: bool, notified: bool, done: float, deadline: float) -> float:
     if not finished:
         return 0.0
@@ -86,6 +101,7 @@ def monitor_status(finished: bool, notified: bool, status: str) -> str:
 class Claude(Provider):
     name = "claude"
     sleeping_tools = ("ScheduleWakeup",)
+    echoes_typed = True
     tool_kinds = {**Provider.tool_kinds, "AskUserQuestion": AskCall}
     question_tools = frozenset({"AskUserQuestion"})
     briefing_file = "CLAUDE.md"
@@ -226,6 +242,21 @@ class Claude(Provider):
 
     def row_of(self, raw: dict) -> Row:
         return Row.from_payload(raw)
+
+    def typed_runs(self, path: Path) -> list[TypedRun]:
+        return list(self.folded(path, self.typed_rows, TypedRuns).runs)
+
+    def typed_rows(self, typed: TypedRuns, row: Row) -> TypedRuns:
+        if row.type != "user" or row.text is None:
+            return typed
+        command = typed_command(row.text)
+        if command is not None:
+            typed.runs = [*typed.runs, TypedRun(row.at, command)][-KEPT_TYPED:]
+            return typed
+        printed = [text.strip() for _, text in TYPED_OUTPUT.findall(row.text) if text.strip()]
+        if typed.runs and typed.runs[-1].output is None and TYPED_OUTPUT.search(row.text):
+            typed.runs[-1].output = "\n".join(printed)
+        return typed
 
     def shell_runs(self, path: Path) -> list[tuple[float, str]]:
         found = ((row.at, BASH_INPUT.match(row.text)) for row in self.recent(path) if row.type == "user" and row.text is not None)
