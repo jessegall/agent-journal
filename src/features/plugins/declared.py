@@ -105,6 +105,7 @@ class Card(Loaded):
     icon: str = ""
     tone: str = ""
     color: str = ""
+    collapsed: bool = False
 
 
 @dataclass(frozen=True)
@@ -114,6 +115,10 @@ class DeclaredEvent(Loaded):
     title: str = ""
     tone: str = ""
     card: Card | None = None
+
+    @property
+    def collapsed(self) -> bool:
+        return self.card is not None and self.card.collapsed
 
 
 @dataclass(frozen=True)

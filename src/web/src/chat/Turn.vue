@@ -859,16 +859,19 @@ button.thread-pill:hover {
     align-items: center;
     gap: 3px;
     padding: 1px 6px;
-    border: 1px solid var(--border);
+    border: 1px solid transparent;
     border-radius: 20px;
-    background: var(--raised);
+    background: transparent;
     font-size: 12px;
     line-height: 18px;
     cursor: pointer;
+    transition:
+        background 0.15s,
+        border-color 0.15s;
 }
 
 .thread-face:hover {
-    border-color: var(--text-3);
+    background: var(--hover);
 }
 
 .thread-face.mine {
