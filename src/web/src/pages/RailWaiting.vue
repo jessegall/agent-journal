@@ -63,7 +63,7 @@ async function dismiss(r) {
     <template v-if="!cards.length">
         <div class="home-rail-empty">
             <Icon name="todos" />
-            <p>{{ type ? "Nothing waiting on you." : "No highlights to review." }}</p>
+            <p>{{ type ? "Nothing waiting on you." : "No notifications." }}</p>
         </div>
     </template>
     <template v-else>
@@ -127,7 +127,7 @@ async function dismiss(r) {
     flex-direction: column;
     align-items: center;
     gap: 7px;
-    padding: 34px 18px 0;
+    padding: 26px 18px;
     text-align: center;
     color: var(--text-3);
 }

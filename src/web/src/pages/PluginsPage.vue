@@ -128,9 +128,7 @@ async function install() {
     follow(name, skipped);
     try {
         const upgrading = shown.value.upgrading;
-        const said = upgrading
-            ? await api.act("plugin", upgrading, "upgrade", {yes: true, again: shown.value.current})
-            : await api.command("plugin", "install", {source: source.value, yes: true});
+        const said = upgrading ? await api.upgradePlugin(upgrading, shown.value.current) : await api.installPlugin(source.value);
         outcome.value = {ok: true, text: typeof said === "string" ? said : `${shown.value.title} is up to date.`};
         if (!upgrading) source.value = "";
         if (!upgrading && said && said.n) {

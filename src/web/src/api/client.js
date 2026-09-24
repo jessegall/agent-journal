@@ -1,5 +1,5 @@
 import {route} from "../route.js";
-import {transport} from "./transport.js";
+import {LONG_WAIT_MS, transport} from "./transport.js";
 
 const encoded = (value) => encodeURIComponent(value);
 
@@ -32,8 +32,8 @@ export class ApiClient {
         return transport.request("GET", this.url(path));
     }
 
-    post(path, body = {}) {
-        return transport.request("POST", this.url(path), body);
+    post(path, body = {}, wait = 0) {
+        return transport.request("POST", this.url(path), body, wait);
     }
 
     here(path) {
@@ -166,6 +166,14 @@ export class ApiClient {
 
     act(type, n, action, body = {}) {
         return this.post(this.here(`/${type}/${n}/${action}`), body);
+    }
+
+    installPlugin(source) {
+        return this.post(this.here("/plugin/install"), {source, yes: true}, LONG_WAIT_MS);
+    }
+
+    upgradePlugin(n, again) {
+        return this.post(this.here(`/plugin/${n}/upgrade`), {yes: true, again}, LONG_WAIT_MS);
     }
 
     planTimeline(n) {

@@ -81,7 +81,7 @@ async function skipPrompts(skip) {
             <section class="block">
                 <h3>Settings</h3>
                 <template v-for="setting in feature.settings.filter((s) => s.kind !== 'map')" :key="setting.name">
-                    <div class="row">
+                    <div :class="['row', {stacked: !['switch', 'number'].includes(setting.kind)}]">
                         <span class="text">
                             <span class="title">{{ setting.title }}</span>
                             <template v-if="setting.abstract">
@@ -245,6 +245,17 @@ h3 {
     color: var(--text);
     font: inherit;
     font-size: 12.5px;
+}
+
+.row.stacked {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+}
+
+.row.stacked .amount,
+.row.stacked .field {
+    width: 100%;
 }
 
 .field.wide {

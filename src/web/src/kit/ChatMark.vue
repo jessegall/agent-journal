@@ -133,7 +133,8 @@ button.mark:hover {
 }
 
 .mark.console .head {
-    padding-bottom: 3px;
+    margin: 0 -9px;
+    padding: 0 9px 3px;
     border-bottom: 1px solid var(--border-2);
 }
 

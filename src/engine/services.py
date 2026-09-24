@@ -97,9 +97,9 @@ def free(port: int) -> bool:
 def allocate(root: Path, sid: str, wants, taken: set[int]) -> tuple[int, str]:
     if isinstance(wants, int):
         return (wants, "") if free(wants) or status(root, sid).port == wants else (wants, f"port {wants} is in use")
-    before = status(root, sid).port
-    if before and before not in taken and free(before):
-        return before, ""
+    held = status(root, sid)
+    if held.port and held.port not in taken and (free(held.port) or held.state in ("ready", "starting")):
+        return held.port, ""
     for port in PORTS:
         if port not in taken and free(port):
             return port, ""

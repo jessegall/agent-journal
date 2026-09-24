@@ -30,7 +30,9 @@ def share_services(root: Path, taken: set) -> list:
                          **files_for(root, SERVER))]
     command = tunler()
     if command:
-        specs.append(ServiceSpec(id=TUNNEL, plugin="sharing", service="tunnel", cwd=str(Path(root).parent),
-                                 run=[command, str(port), f"--domain={subdomain(root)}", "--inspect=0"], env={BUILD: f"{current_build(root)}:{port}"},
-                                 **files_for(root, TUNNEL)))
+        inspector, _ = allocate(root, TUNNEL, None, taken)
+        taken.add(inspector)
+        specs.append(ServiceSpec(id=TUNNEL, plugin="sharing", service="tunnel", cwd=str(Path(root).parent), port=inspector, url=f"http://127.0.0.1:{inspector}",
+                                 run=[command, str(port), f"--domain={subdomain(root)}", f"--inspect={inspector}"],
+                                 env={BUILD: f"{current_build(root)}:{port}:{inspector}"}, **files_for(root, TUNNEL)))
     return specs
