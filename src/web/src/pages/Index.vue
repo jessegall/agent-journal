@@ -60,6 +60,8 @@ async function select(n) {
     adding.value = false;
     go(route.value.env, props.type, n);
 }
+
+const startNew = () => (props.type === "board" ? go(route.value.env, "kanban", 0, "new") : (adding.value = true));
 </script>
 
 <template>
@@ -72,7 +74,7 @@ async function select(n) {
             </template>
             <span class="grow" />
             <template v-if="kind.created_in_viewer">
-                <Btn kind="primary" @click="adding = true">
+                <Btn kind="primary" @click="startNew">
                     <Icon name="plus" :size="12" />
                     New {{ kind.title.toLowerCase() }}
                 </Btn>

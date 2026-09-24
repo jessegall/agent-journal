@@ -3,6 +3,8 @@ import {computed, ref} from "vue";
 import FloatWindow from "../kit/FloatWindow.vue";
 import Toast from "../kit/Toast.vue";
 import HomeView from "../pages/HomeView.vue";
+import PinsToggle from "../chat/PinsToggle.vue";
+import {open} from "../domain/records.js";
 import PaneMenu from "../pages/PaneMenu.vue";
 import {useHomeViews} from "../composables/homeViews.js";
 import {useDetached} from "../composables/detached.js";
@@ -12,6 +14,7 @@ import {levelChoices, levelOf} from "../domain/verbosity.js";
 import {usePaneLayout} from "../composables/paneLayout.js";
 
 const {views} = useHomeViews();
+const notices = computed(() => open("notice"));
 const {drawn, landing, move, size, tune, front, close, dock, sendAway, bringBack} = useDetached();
 const menu = ref(null);
 const toast = ref(null);
@@ -55,7 +58,13 @@ function away(id) {
                 @menu="(e) => toggleMenu(e, f.id)"
                 @minimize="(minimized) => tune(f.id, {minimized})"
             >
+                <template #head>
+                    <template v-if="f.view === 'chat'">
+                        <PinsToggle :notices="notices" inline />
+                    </template>
+                </template>
                 <HomeView
+                    floating
                     :view="f.view"
                     :level="levelOf(f)"
                     :flush="!!f.flush"
