@@ -1,8 +1,11 @@
 <script setup>
+import {computed} from "vue";
 import FlipCard from "../kit/FlipCard.vue";
 import TextDisplay from "../kit/TextDisplay.vue";
 
-defineProps({ticket: {type: Object, required: true}, from: {type: Object, required: true}});
+const props = defineProps({ticket: {type: Object, required: true}, from: {type: Object, required: true}});
+const risk = computed(() => (props.ticket.brief.match(/^Risk:\s*(.+)$/im) || [])[1] || "");
+const waits = computed(() => Boolean(risk.value) && !/^none\b/i.test(risk.value));
 const emit = defineEmits(["close"]);
 </script>
 
@@ -14,6 +17,9 @@ const emit = defineEmits(["close"]);
         </template>
         <template #back>
             <h3 class="title">{{ ticket.title }}</h3>
+            <template v-if="waits">
+                <p class="approval">Waits for your approval before it starts</p>
+            </template>
             <TextDisplay class="brief" :text="ticket.brief" />
         </template>
     </FlipCard>
@@ -33,6 +39,12 @@ const emit = defineEmits(["close"]);
     color: var(--text-2);
     font-size: 15px;
     line-height: 23px;
+}
+
+.approval {
+    margin: 0 0 12px;
+    color: var(--warn, #e0b060);
+    font-size: 13px;
 }
 
 .brief {

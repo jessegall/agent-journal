@@ -50,7 +50,12 @@ const EXAMPLE_MS = 6000;
 const example = ref(0);
 let exampleTimer = 0;
 const UNDERSTANDING = ["Reading what you wrote", "Working out what you mean", "Checking it against the board", "Making a guess"];
-const DRAFTING = ["Looking at what is already there", "Splitting the work", "Weighing what comes first", "Writing the tickets"];
+const DRAFTING = [
+    "Looking at what is already there",
+    "Deciding what can ship on its own",
+    "Weighing what comes first",
+    "Writing the tickets",
+];
 
 const asked = computed(() => rows("message").filter((m) => sent.value.includes(m.data.idempotency)));
 const replies = computed(() => {
@@ -121,7 +126,7 @@ const note = computed(() => {
     if (writing.value && !picked.value.length) return `${drafts.value.length} drafted so far. Click a card to keep it.`;
     if (missing.value.length) return `#${missing.value[0].ticket} waits on #${missing.value[0].waitsOn}, which you did not pick.`;
     if (!picked.value.length) return "Click a card to keep it.";
-    return props.starts ? `They go to ${first.value}, and their agents start.` : `They go to ${first.value}, ready to start.`;
+    return props.starts ? `They go to ${first.value}; their agents start as room frees up.` : `They go to ${first.value}, ready to start.`;
 });
 const pickMissing = () => (picked.value = [...new Set([...picked.value, ...missing.value.map((m) => m.waitsOn)])]);
 const toggle = (n) => (picked.value = picked.value.includes(n) ? picked.value.filter((p) => p !== n) : [...picked.value, n]);
@@ -212,17 +217,12 @@ function again() {
 
 async function add() {
     adding.value = true;
-    const keep = picked.value;
+    const keep = drafts.value.map((t) => t.n).filter((n) => picked.value.includes(n));
     const dropped = unpicked().map((t) => t.n);
-    await Promise.all(keep.map((n) => api.act("ticket", n, "confirm")));
-    if (first.value !== props.board.data.stages[0]) await Promise.all(keep.map((n) => api.moveTicket(n, first.value)));
-    await Promise.all(
-        drafts.value
-            .filter((t) => keep.includes(t.n) && waitsOn(t).length)
-            .map((t) =>
-                api.act("ticket", t.n, waitsOn(t).some((n) => dropped.includes(n)) ? "decline_dependencies" : "accept_dependencies")
-            )
-    );
+    for (const n of keep) await api.act("ticket", n, "confirm");
+    for (const t of drafts.value.filter((d) => keep.includes(d.n) && waitsOn(d).length))
+        await api.act("ticket", t.n, waitsOn(t).some((n) => dropped.includes(n)) ? "decline_dependencies" : "accept_dependencies");
+    if (props.starts || first.value !== props.board.data.stages[0]) for (const n of keep) await api.moveTicket(n, first.value);
     adding.value = false;
     emit("added", keep.length);
     finish();
