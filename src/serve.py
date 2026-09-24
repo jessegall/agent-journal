@@ -18,7 +18,7 @@ from engine import runtime  # noqa: E402
 from engine.stop import asked  # noqa: E402
 from engine.viewer import elsewhere, heartbeat, remember  # noqa: E402
 from engine.engines import Children  # noqa: E402
-from controllers.types import warm, warm_record  # noqa: E402
+from controllers.types import read_transcripts, warm, warm_record  # noqa: E402
 from engine.hooks import default_env, replay  # noqa: E402
 from engine.record import Record  # noqa: E402
 from engine.package import CODE, ZIPPED, entry
@@ -173,6 +173,7 @@ def run(root: Path, port: int = 8430) -> None:
     threading.Thread(target=watch_stop, args=(root, server, halting, time.time() - LATE_STOP), daemon=True).start()
     warm_record(Record(root, default_env(root)))
     warm_viewer(root, default_env(root))
+    read_transcripts(root)
     gc.freeze()
     threading.Thread(target=freeze_caches, args=(halting,), daemon=True).start()
     threading.Thread(target=replay, args=(root,), daemon=True).start()
