@@ -298,7 +298,6 @@ function leave() {
                         Say it in a sentence. I say back what I think you mean, you confirm, and then I draft the tickets.
                     </p>
                     <div class="examples">
-                        <span class="examples-label">For example</span>
                         <Transition name="example" mode="out-in">
                             <em :key="example" class="example">“{{ EXAMPLES[example] }}”</em>
                         </Transition>
@@ -479,6 +478,7 @@ kbd {
 
 .context {
     margin: 0;
+    animation: stage-in 0.5s 0.55s ease both;
     color: var(--text-3);
     font-size: 13px;
     line-height: 20px;
@@ -487,20 +487,21 @@ kbd {
 .examples {
     display: flex;
     flex-direction: column;
-    gap: 4px;
-    margin-top: 10px;
-}
-
-.examples-label {
-    color: var(--text-4);
-    font-size: 11px;
-    letter-spacing: 0.02em;
+    margin-top: 14px;
+    animation: stage-in 0.6s 1.1s ease both;
 }
 
 .example {
     color: var(--text-2);
     font-size: 14px;
     line-height: 20px;
+}
+
+@keyframes stage-in {
+    from {
+        opacity: 0;
+        transform: translateY(6px);
+    }
 }
 
 .example-enter-active,
@@ -522,6 +523,7 @@ kbd {
 
 .prompt {
     margin: 0;
+    animation: stage-in 0.5s 0.2s ease both;
     color: var(--text);
     font-size: 17px;
     font-weight: 500;
