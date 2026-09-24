@@ -1,16 +1,32 @@
 <script setup>
+import {onBeforeUpdate, onUpdated, ref} from "vue";
 import TextDisplay from "../kit/TextDisplay.vue";
 
-defineProps({sections: Array, document: Boolean});
+defineProps({sections: Array, document: Boolean, writing: {type: String, default: ""}});
+const root = ref(null);
+const BLOCKS = "h3, p, li, pre, blockquote, table";
+const FADE_FOR = 2600;
+let before = new Set();
+const blocks = () => [...(root.value?.querySelectorAll(BLOCKS) || [])];
+
+onBeforeUpdate(() => (before = new Set(blocks().map((el) => el.textContent))));
+onUpdated(() => {
+    for (const el of blocks().filter((el) => !before.has(el.textContent))) {
+        el.classList.add("fresh");
+        setTimeout(() => el.classList.remove("fresh"), FADE_FOR);
+    }
+});
 </script>
 
 <template>
-    <template v-for="s in sections" :key="s.title">
-        <section :class="['section', {reading: document}]">
-            <h3>{{ s.title }}</h3>
-            <TextDisplay :text="s.body" />
-        </section>
-    </template>
+    <div ref="root" class="sections">
+        <template v-for="s in sections" :key="s.title">
+            <section :class="['section', {reading: document, writing: writing && writing === s.title}]">
+                <h3>{{ s.title }}</h3>
+                <TextDisplay :text="s.body" />
+            </section>
+        </template>
+    </div>
 </template>
 
 <style scoped>
@@ -34,5 +50,53 @@ h3 {
     margin-bottom: 8px;
     font-size: 15px;
     letter-spacing: -0.005em;
+}
+
+.sections :deep(.fresh) {
+    animation: arrive 2.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+@keyframes arrive {
+    0% {
+        opacity: 0;
+        filter: blur(3px);
+        transform: translateY(4px);
+        background-color: color-mix(in srgb, var(--accent) 16%, transparent);
+    }
+
+    25% {
+        opacity: 1;
+        filter: none;
+        transform: none;
+    }
+
+    100% {
+        background-color: transparent;
+    }
+}
+
+.section.writing :deep(.md > :last-child)::after {
+    content: "";
+    display: inline-block;
+    width: 2px;
+    height: 1.05em;
+    margin-left: 3px;
+    vertical-align: -0.15em;
+    border-radius: 1px;
+    background: var(--accent-text);
+    animation: caret 1.1s steps(1) infinite;
+}
+
+@keyframes caret {
+    50% {
+        opacity: 0;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .sections :deep(.fresh),
+    .section.writing :deep(.md > :last-child)::after {
+        animation: none;
+    }
 }
 </style>

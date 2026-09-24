@@ -29,6 +29,7 @@ const FACES = ["👍", "❤️", "🎉", "😄", "👀", "🙏", "👎", "💔",
 const props = defineProps({turn: Object});
 const emit = defineEmits(["reply", "edit", "grew", "pin"]);
 const picking = ref(false);
+const unfolded = ref(false);
 const bubble = ref(null);
 const LONG = 6;
 const FOLD_AT = 420;
@@ -217,6 +218,24 @@ async function drop() {
         <template #card>
             <div class="thread-turn card" :data-ref="turn.ref">
                 <ChatMark v-bind="turn.data" :at="turn.created" v-on="turn.data.row ? {click: () => peekRef(turn.data.row)} : {}" />
+            </div>
+        </template>
+        <template #group>
+            <div class="thread-turn group" :data-ref="turn.ref">
+                <ChatMark
+                    :icon="turn.icon"
+                    :label="turn.title"
+                    :at="turn.created"
+                    :title="unfolded ? 'Fold them back into one line' : 'Show each of them'"
+                    @click="unfolded = !unfolded"
+                />
+                <template v-if="unfolded">
+                    <div class="thread-group">
+                        <template v-for="t in turn.turns" :key="t.ref">
+                            <Turn :turn="t" @reply="emit('reply', $event)" @pin="emit('pin', $event)" />
+                        </template>
+                    </div>
+                </template>
             </div>
         </template>
         <template #whisper>
@@ -432,6 +451,20 @@ async function drop() {
     color: var(--text-3);
     font-size: 12px;
     line-height: 1.5;
+}
+
+.thread-turn.group,
+.thread-group > .thread-turn {
+    max-width: 100%;
+}
+
+.thread-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin: 6px 0 2px 14px;
+    padding-left: 12px;
+    border-left: 1px solid var(--border);
 }
 
 .thread-turn.receipt {

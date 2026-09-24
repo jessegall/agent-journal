@@ -3,7 +3,7 @@ import Folded from "../kit/Folded.vue";
 import SectionHeading from "../kit/SectionHeading.vue";
 import SwitchCase from "../kit/SwitchCase.vue";
 import CloseButton from "../kit/CloseButton.vue";
-import {computed, reactive, ref} from "vue";
+import {computed, nextTick, reactive, ref} from "vue";
 import {api} from "../api/client.js";
 import Btn from "../kit/Btn.vue";
 import CommentToggle from "./CommentToggle.vue";
@@ -16,6 +16,7 @@ import {label, meta, word} from "../state/store.js";
 import ResourceActions from "./ResourceActions.vue";
 import Sections from "./Sections.vue";
 import Chapters from "./Chapters.vue";
+import {useWriting} from "../composables/writing.js";
 import {isUpdate, updateLabel} from "../domain/updates.js";
 import OptionsPicker from "./OptionsPicker.vue";
 import StageMeanings from "./StageMeanings.vue";
@@ -100,6 +101,16 @@ const docs = computed(() =>
 );
 const PAGE = Math.round(window.innerHeight * 0.9);
 const page = ref(null);
+const writing = useWriting(() => props.resource.ref);
+
+async function follow() {
+    const parts = [...(page.value?.querySelectorAll(".section.reading") || [])];
+    const part = parts.find((el) => el.querySelector("h3")?.textContent.trim() === writing.value?.section) || parts.at(-1);
+    if (!part) return;
+    part.closest(".folded-body")?.dispatchEvent(new Event("reveal"));
+    await nextTick();
+    part.scrollIntoView({block: "center", behavior: "smooth"});
+}
 const chaptered = computed(
     () => kind.value.view === "document" && props.resource.type !== "message" && props.resource.sections.length >= 2
 );
@@ -130,6 +141,15 @@ const chaptered = computed(
                             </span>
                         </template>
                     </SwitchCase>
+                </template>
+                <template v-if="writing && kind.view === 'document'">
+                    <button type="button" class="writing-now" title="Go to what the agent is writing" @click="follow">
+                        <span class="writing-dot" />
+                        Agent writing
+                        <template v-if="writing.section">
+                            <span class="writing-where">{{ writing.section }}</span>
+                        </template>
+                    </button>
                 </template>
                 <span class="age">{{ age(resource.created) }}</span>
                 <slot name="tools" />
@@ -276,8 +296,8 @@ const chaptered = computed(
             </section>
         </template>
         <template v-if="resource.type !== 'message' && kind.view === 'document'">
-            <Folded :at="PAGE" :keep="PAGE">
-                <Sections :sections="resource.sections" document />
+            <Folded :key="resource.n" :at="PAGE" :keep="PAGE">
+                <Sections :sections="resource.sections" :writing="writing?.section || ''" document />
             </Folded>
         </template>
         <template v-else-if="resource.type !== 'message'">
@@ -399,6 +419,57 @@ const chaptered = computed(
 }
 .age {
     flex: 1;
+}
+
+.writing-now {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+    max-width: 280px;
+    padding: 0 8px 0 7px;
+    border: 1px solid color-mix(in srgb, var(--accent) 45%, transparent);
+    border-radius: 99px;
+    background: color-mix(in srgb, var(--accent) 12%, transparent);
+    color: var(--accent-text);
+    font: inherit;
+    font-size: 10.5px;
+    line-height: 17px;
+    letter-spacing: 0;
+    text-transform: none;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.writing-now:hover {
+    background: color-mix(in srgb, var(--accent) 22%, transparent);
+}
+
+.writing-dot {
+    flex: none;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--accent-text);
+    animation: writing-pulse 1.4s ease-in-out infinite;
+}
+
+.writing-where {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: var(--text-2);
+}
+
+.writing-where::before {
+    content: "· ";
+}
+
+@keyframes writing-pulse {
+    50% {
+        opacity: 0.35;
+        transform: scale(0.7);
+    }
 }
 
 .standing {

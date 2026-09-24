@@ -135,7 +135,52 @@ export function threadTurns(rows, pending, env, older = false) {
     ]
         .filter((t) => t.created >= floor)
         .sort((a, b) => a.created - b.created);
-    return {turns: mergedReplies(turns), keys};
+    return {turns: grouped(mergedReplies(turns)), keys};
+}
+
+const GROUP_FROM = 4;
+const GROUPS = {
+    skill: () => ({key: "skill", icon: "book", label: (n) => `${n} skills loaded`}),
+    whisper: () => ({key: "whisper", icon: "rules", label: (n) => `${n} rules and facts recalled`}),
+    subagent: () => ({key: "subagent", icon: "agents", label: (n) => `${n} subagent updates`}),
+    card: (t) => ({key: `card:${t.data.icon}:${t.data.label}`, icon: t.data.icon, label: (n) => `${n} × ${t.data.label}`}),
+};
+const groupOf = (t) => (GROUPS[t.type] ? GROUPS[t.type](t) : null);
+
+function folded(run) {
+    const group = groupOf(run[0]);
+    const last = run[run.length - 1];
+    return {
+        ref: `group:${run[0].ref}`,
+        type: "group",
+        who: "agent",
+        created: last.created,
+        seen: ["agent"],
+        refs: [],
+        data: {},
+        sections: [],
+        title: group.label(run.length),
+        brief: "",
+        icon: group.icon,
+        turns: run,
+    };
+}
+
+function grouped(turns) {
+    const out = [];
+    let run = [];
+    const close = () => {
+        out.push(...(run.length >= GROUP_FROM ? [folded(run)] : run));
+        run = [];
+    };
+    for (const turn of turns) {
+        const key = groupOf(turn)?.key;
+        if (!key || (run.length && groupOf(run[0]).key !== key)) close();
+        if (key) run.push(turn);
+        else out.push(turn);
+    }
+    close();
+    return out;
 }
 
 const SAME_REPLY_WITHIN = 120;

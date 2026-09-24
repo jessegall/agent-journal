@@ -12,7 +12,7 @@ import {fresh} from "../format/time.js";
 
 const props = defineProps({agent: {type: Number, required: true}, flush: Boolean, options: {type: Object, default: null}});
 const emit = defineEmits(["options"]);
-const DEFAULTS = {headers: false, collapse: true, editsOnly: false, removals: true, capped: false, columns: false, size: 0};
+const DEFAULTS = {flush: false, headers: false, collapse: true, editsOnly: false, removals: true, capped: false, columns: false, size: 0};
 const BIG = 40;
 const TOP = 80;
 const SIZES = {"-1": ["10.5px", "17px"], 0: ["11.5px", "19px"], 1: ["13px", "21px"]};
@@ -24,6 +24,7 @@ const {cards, ready, latest, older, loadOlder} = useFileFeed(props.agent, follow
 const now = useNow();
 const empty = computed(() => ready.value && !cards.value.length);
 const view = computed(() => ({...DEFAULTS, ...(props.options || {})}));
+const flushed = computed(() => props.flush || view.value.flush);
 const filter = ref("");
 const folds = ref({});
 const wholes = ref({});
@@ -69,13 +70,13 @@ function onScroll(e) {
 </script>
 
 <template>
-    <div :class="['file-feed', {flush}]" :style="sizing">
+    <div :class="['file-feed', {flush: flushed}]" :style="sizing">
         <FeedBar :options="view" :filter="filter" @options="emit('options', $event)" @filter="filter = $event" @expand="expand" />
         <div ref="scroller" class="file-feed-scroll" @scroll.passive="onScroll" @wheel.passive="wheeled">
             <div class="file-feed-flow">
                 <template v-for="c in listed" :key="c.id">
                     <DiffCard
-                        :flush="flush"
+                        :flush="flushed"
                         :folded="foldedOf(c)"
                         :edits-only="view.editsOnly"
                         :hide-removals="!view.removals"
