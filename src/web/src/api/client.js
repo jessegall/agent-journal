@@ -184,6 +184,10 @@ export class ApiClient {
         return this.act("board", board, "cancel");
     }
 
+    reviseWork(board, text, idempotency) {
+        return this.act("board", board, "revise", {text, idempotency});
+    }
+
     requestWork(board, text, idempotency) {
         return this.act("board", board, "request", {text, idempotency});
     }

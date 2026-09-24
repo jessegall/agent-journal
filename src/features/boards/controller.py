@@ -3,7 +3,7 @@ import resources.types as resources_module
 from controllers.base import Controller, internal
 from controllers.types import Messages, Questions
 from features.boards.resource import DONE, MEANINGS, Board
-from resources.base import REQUESTED, Refused, Resource, titled
+from resources.base import REQUESTED, REVISED, Refused, Resource, titled
 
 
 STAGES = ("To do", "Doing", "Review", "Done")
@@ -67,6 +67,13 @@ class Boards(Controller):
         if int(count) < shown:
             raise Refused(f"{shown} placeholders already show; the count only grows, so draft them or leave it at {shown}")
         return self.update(int(n), expected=int(count))
+
+    def revise(self, n: int, text: str, idempotency: str = ""):
+        board = self.load(int(n))
+        made = Messages(self.record, actor=self.actor, session=self.session, agent=self.agent).create(
+            titled(text), brief=text.strip(), about=board.ref, new_work=True, idempotency=idempotency)
+        self.record.emit("message", made.n, REVISED, self.actor)
+        return made
 
     def meaning(self, n: int, stage: str, meaning: str = ""):
         board = self.load(int(n))

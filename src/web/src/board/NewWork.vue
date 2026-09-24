@@ -184,6 +184,11 @@ async function send(text) {
 }
 
 async function ask(text) {
+    if (drafts.value.length) {
+        const id = crypto.randomUUID();
+        sent.value = [...sent.value, id];
+        return api.reviseWork(props.board.n, text, id);
+    }
     if (sent.value.length) {
         const message = await sendMessage(route.value.env, {brief: text, about: props.board.ref, newWork: true});
         sent.value = [...sent.value, message.id];
