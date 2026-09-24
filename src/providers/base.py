@@ -72,6 +72,18 @@ class Decision(Loaded):
     decision: str = ""
 
 
+@dataclass
+class TypedRun:
+    at: float
+    command: str
+    output: str | None = None
+
+
+@dataclass
+class TypedRuns:
+    runs: list[TypedRun] = field(default_factory=list)
+
+
 class Provider(ABC):
     tool_kinds: ClassVar[dict] = {"Bash": BashCall, "Read": ReadCall, "NotebookRead": ReadCall, "Edit": WriteCall, "MultiEdit": WriteCall, "Write": WriteCall,
                                   "NotebookEdit": WriteCall, "Grep": SearchCall, "Glob": SearchCall, "WebSearch": SearchCall, "WebFetch": FetchCall,
@@ -83,6 +95,7 @@ class Provider(ABC):
     link_skills = False
     retired_skill_homes = ()
     sleeping_tools = ()
+    echoes_typed = False
     controls = {"groups": [], "note": "This CLI does not expose model controls."}
 
     @classmethod
@@ -135,6 +148,9 @@ class Provider(ABC):
         return command
 
     def shell_runs(self, path: Path) -> list[tuple[float, str]]:
+        return []
+
+    def typed_runs(self, path: Path) -> list[TypedRun]:
         return []
 
     def skill_load(self, name: str) -> str:
