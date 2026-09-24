@@ -391,6 +391,10 @@ async function drop() {
 }
 
 .thread-turn.peer .thread-bubble {
+    --pill-text: var(--text-4);
+    --pill-border: var(--border);
+    --pill-size: 0.92em;
+
     padding: 7px 10px;
     border-color: #1d1e22;
     background: none;
@@ -419,14 +423,6 @@ async function drop() {
 
 .thread-receipt :deep(p) {
     margin: 0;
-}
-
-.thread-receipt :deep(.row-pill) {
-    padding: 0 4px;
-    border: 1px solid var(--border-2);
-    border-radius: 5px;
-    color: var(--text-2);
-    text-decoration: none;
 }
 
 .thread-turn > .thread-from {
@@ -617,20 +613,6 @@ button.thread-pill:hover {
 }
 
 .thread-text :deep(a) {
-    color: var(--accent-text);
-}
-
-.thread-text :deep(.row-pill) {
-    padding: 0 4px;
-    border: 1px solid var(--border-2);
-    border-radius: 5px;
-    color: var(--text-2);
-    text-decoration: none;
-    white-space: nowrap;
-}
-
-.thread-text :deep(.row-pill:hover) {
-    border-color: var(--accent);
     color: var(--accent-text);
 }
 
