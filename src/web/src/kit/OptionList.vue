@@ -15,11 +15,15 @@ const props = defineProps({
 });
 const emit = defineEmits(["pick"]);
 const holding = ref(-1);
+const pressed = ref(-1);
 let timer = 0;
 const held = computed(() => Number(store.settings?.ask_questions?.hold ?? HOLD_SECONDS) * 1000);
 
 function choose(i) {
-    if (props.immediate) return emit("pick", i);
+    if (props.immediate) {
+        pressed.value = i;
+        return emit("pick", i);
+    }
     clearTimeout(timer);
     if (holding.value === i) {
         holding.value = -1;
@@ -44,7 +48,15 @@ onUnmounted(save);
         <template v-for="(o, i) in options" :key="i">
             <button
                 type="button"
-                :class="['option', {suggested: i === suggested && !disabled, chosen: chosen && chosen === o.title, holding: holding === i}]"
+                :class="[
+                    'option',
+                    {
+                        suggested: i === suggested && !disabled,
+                        chosen: chosen && chosen === o.title,
+                        holding: holding === i,
+                        pressed: pressed === i,
+                    },
+                ]"
                 :disabled="disabled"
                 @click="choose(i)"
             >
@@ -99,6 +111,22 @@ onUnmounted(save);
 .option:hover:not(:disabled),
 .option.holding {
     border-color: var(--tone);
+}
+
+.option {
+    transition:
+        transform 0.12s ease,
+        border-color 0.2s ease,
+        background 0.2s ease;
+}
+
+.option:active:not(:disabled) {
+    transform: scale(0.98);
+}
+
+.option.pressed {
+    border-color: var(--tone);
+    background: color-mix(in srgb, var(--tone) 16%, var(--raised));
 }
 
 .option.suggested {

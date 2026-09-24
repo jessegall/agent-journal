@@ -324,9 +324,11 @@ function leave() {
                         Say it in a sentence. I say back what I think you mean, you confirm, and then I draft the tickets.
                     </p>
                 </template>
-                <template v-if="asking && (grown || docked)">
-                    <AskedQuestion :question="asking" :chat="docked" />
-                </template>
+                <Transition name="asked">
+                    <template v-if="asking && (grown || docked)">
+                        <AskedQuestion :key="asking.n" :question="asking" :chat="docked" />
+                    </template>
+                </Transition>
                 <template v-if="writing && !asking">
                     <ChatLine thinking :notes="thinking" />
                 </template>
@@ -514,6 +516,14 @@ kbd {
         opacity: 0;
         transform: translateY(6px);
     }
+}
+
+.asked-leave-active {
+    transition: opacity 0.6s ease;
+}
+
+.asked-leave-to {
+    opacity: 0;
 }
 
 .prompt {
