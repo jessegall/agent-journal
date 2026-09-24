@@ -229,6 +229,8 @@ function markClick(data) {
             <div class="thread-turn group" :data-ref="turn.ref">
                 <ChatMark
                     :icon="turn.icon"
+                    :tone="turn.data.tone"
+                    :color="turn.data.color"
                     :label="turn.title"
                     :at="turn.created"
                     :title="unfolded ? 'Fold them back into one line' : 'Show each of them'"
