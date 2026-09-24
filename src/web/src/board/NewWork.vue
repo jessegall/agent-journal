@@ -49,12 +49,113 @@ const EXAMPLES = [
 const EXAMPLE_MS = 6000;
 const example = ref(0);
 let exampleTimer = 0;
-const UNDERSTANDING = ["Reading what you wrote", "Working out what you mean", "Checking it against the board", "Making a guess"];
+const UNDERSTANDING = [
+    "Reading what you wrote",
+    "Working out what you mean",
+    "Looking at the board's name",
+    "Reading the board's brief",
+    "Going through the cards already here",
+    "Looking for a card that covers this",
+    "Thinking about who would use it",
+    "Picturing what you would see",
+    "Finding the words that matter",
+    "Checking what the project already does",
+    "Looking at what was built lately",
+    "Thinking about what it is for",
+    "Sorting out what is new and what is not",
+    "Finding the three likeliest readings",
+    "Making each reading different",
+    "Keeping the most likely one first",
+    "Weighing a smaller version",
+    "Weighing a larger version",
+    "Putting each one in plain words",
+    "Writing a line under each",
+    "Checking nothing is left out",
+    "Leaving out what you did not ask for",
+    "Making a guess",
+    "Checking the guess against the board",
+    "Getting the choices ready",
+];
+const NARROWING = [
+    "Taking in your pick",
+    "Settling what you chose",
+    "Finding what decides the tickets most",
+    "Thinking about what you would see first",
+    "Picturing how you would use it",
+    "Looking for the hard part",
+    "Finding where it could go two ways",
+    "Thinking about who does what",
+    "Looking at what it touches",
+    "Thinking about what it needs first",
+    "Checking the cards already on the board",
+    "Looking for what is already built",
+    "Weighing a simple version",
+    "Weighing a fuller version",
+    "Thinking of an example for each",
+    "Keeping it about what you see",
+    "Leaving out how it is built",
+    "Making the options differ",
+    "Writing a line under each",
+    "Checking each example is real",
+    "Putting the question in plain words",
+    "Keeping the question short",
+    "Checking it against your first pick",
+    "Making sure one question is enough",
+    "Getting the next question ready",
+];
 const DRAFTING = [
     "Looking at what is already there",
     "Deciding what can ship on its own",
+    "Splitting it into pieces",
+    "Keeping each piece small enough",
+    "Checking each piece stands alone",
     "Weighing what comes first",
+    "Finding what waits on what",
+    "Naming each ticket",
+    "Writing a line for each card",
+    "Writing what each one does",
+    "Writing why each one matters",
+    "Writing what each one touches",
+    "Writing when each one is done",
+    "Checking for risk outside the project",
+    "Linking what was read for it",
+    "Checking the cards on other boards",
+    "Making sure nothing is drafted twice",
+    "Leaving out what you did not ask for",
+    "Keeping the steps inside the tickets",
+    "Putting them in the order they run",
+    "Checking the count",
+    "Reading the drafts again",
+    "Tidying the wording",
     "Writing the tickets",
+    "Getting the drafts ready to pick",
+];
+const REVISING = [
+    "Reading your change",
+    "Finding the cards it is about",
+    "Leaving the other cards alone",
+    "Checking what you asked to drop",
+    "Checking what you asked to add",
+    "Rewording the card",
+    "Changing the line on the card",
+    "Changing what the card says it does",
+    "Checking the order still holds",
+    "Checking what waits on what",
+    "Making the new card fit the others",
+    "Keeping the change small",
+    "Checking nothing else moved",
+    "Reading the drafts again",
+    "Checking the count",
+    "Tidying the wording",
+    "Checking the change against your words",
+    "Making sure it reads plainly",
+    "Checking no card says it twice",
+    "Checking the new card stands alone",
+    "Keeping the steps inside the tickets",
+    "Linking what was read for it",
+    "Checking for risk outside the project",
+    "Writing one line about it",
+    "Getting the drafts back to you",
 ];
 
 const asked = computed(() => rows("message").filter((m) => sent.value.includes(m.data.idempotency)));
@@ -66,7 +167,11 @@ const boardQuestions = computed(() => (since.value ? store.board.questions.filte
 const asking = computed(() => boardQuestions.value.find((q) => !q.completed));
 const choosing = computed(() => Boolean(asking.value && asking.value.data.final));
 const confirmed = computed(() => drafts.value.length > 0 || store.board.expected > 0);
-const thinking = computed(() => (confirmed.value ? DRAFTING : UNDERSTANDING));
+const answeredQuestions = computed(() => boardQuestions.value.filter((q) => q.completed && q.outcome !== START_OVER).length);
+const allDrafted = computed(() => drafts.value.length > 0 && drafts.value.length >= store.board.expected);
+const thinking = computed(() =>
+    allDrafted.value ? REVISING : confirmed.value ? DRAFTING : answeredQuestions.value ? NARROWING : UNDERSTANDING
+);
 const startedOver = computed(() => boardQuestions.value.find((q) => q.completed && q.outcome === START_OVER));
 const conversation = computed(() =>
     [
