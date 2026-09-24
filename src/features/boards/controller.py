@@ -21,7 +21,7 @@ class Boards(Controller):
     resource = Board
 
     def create(self, title: str, abstract: str = "", brief: str = "", **data):
-        opening = {} if data.get("stages") else {"stages": list(STAGES), "meanings": {STAGES[-1]: DONE}}
+        opening = {} if "stages" in data else {"stages": list(STAGES), "meanings": {STAGES[-1]: DONE}}
         return super().create(title, abstract, brief, **{**opening, **data})
 
     @internal
