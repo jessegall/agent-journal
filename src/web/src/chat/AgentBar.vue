@@ -349,6 +349,8 @@ function openSkills() {
                                     @rename="views.renamePreset"
                                     @update="views.updatePreset"
                                     @remove="views.removePreset"
+                                    @share="views.sharePreset"
+                                    @import="views.importPreset"
                                 />
                                 <span class="bar-line" />
                                 <MenuItem @click="schemesOpen = true">

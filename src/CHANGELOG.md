@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.138.0 — Writing a document runs its own sequence, and layouts can be shared
+
+When the agent starts a document or a report, the system sequence Writing a document or Writing a report carries it through: every chapter laid out first, then written one at a time where you can watch, then buttons for your next step where one fits, then the answer. It starts only when no other sequence is running, so filing a dump never starts one per document. A saved layout keeps each window's file feed settings and detail level, has a share button that copies it as JSON, and Import a layout takes such JSON back. Saving shows a green tick. The file feed's View menu is one list with an icon for every option and Lines at the bottom. A chapter still being written shows shimmering skeleton lines that give way to its text as it arrives. Sharing has its first part: journal share create doc:<n> or collection:<n> makes a read-only link through tunler that opens that item and nothing else, served by a small share server on this machine alone; the Share button follows. Nothing to do.
+
 ## 2.137.0 — Sequences read as steps, and the file feed shows the first lines of each file
 
 The file feed's View menu can show up to 5, 10 or 20 lines of each file; a file cut short ends with a line such as "27 more lines" that opens it. The menu keeps what each file shows on top and how the feed is laid out below, with Flush, Always two columns and Limit card height beside their icons. "Created" and "deleted" are small tinted words beside the file name, and the change counts line up from card to card. A sequence reads as a numbered track of steps, starting from what starts it; system sequences carry a locked System badge, and your own sequences are edited step by step, with each step's title and what to do, moved up or down, removed or added, and saved all at once. An invalid priority on a to-do or a ticket is refused the same way for both. Nothing to do.

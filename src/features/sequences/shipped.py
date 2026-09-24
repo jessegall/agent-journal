@@ -1,7 +1,7 @@
 from features.sequences.controller import Sequences
 from features.triggers.controller import Triggers
 from features.triggers.resource import FROM_USER, START
-from resources.base import SECTION, SYSTEM, USER
+from resources.base import AGENT, SECTION, SYSTEM, USER
 
 FILING_A_DUMP = {
     "title": "Filing a dump",
@@ -228,28 +228,51 @@ WRITING_AN_UPDATE = {
 }
 WRITING_A_DOCUMENT = {
     "title": "Writing a document",
-    "brief": "The user asked for a document. Open it first and fill it chapter by chapter, so the user can watch it being "
-             "written in its inspector, then answer with it.",
-    "starts_on": "",
-    "started_by": "",
-    "words": ("write a document", "write a doc", "write it up", "write up a", "write a proposal", "document this",
-              "put it in a document"),
+    "brief": "You started a document. Lay out its chapters first, write them one at a time so the user can follow along in "
+             "its inspector, offer the user a next step as buttons where one fits, then answer with it.",
+    "starts_on": "doc.created",
+    "started_by": AGENT,
+    "only_when_idle": True,
     "steps": [
-        ("Open the document", "Before any research, journal doc create \"<what it is about>\" --brief \"<one line on what "
-                              "it answers>\", then journal doc section <doc n> \"<chapter>\" \"Being written.\" for every "
-                              "chapter you plan, in order. Put the document's reference on a line of its own in the chat, "
-                              "like `doc 41`, so the user can open it and watch. Then journal sequence next <this sequence> "
-                              "--about <ref>."),
-        ("Write each chapter", "Read what a chapter needs, then write it with journal doc section <doc n> \"<chapter>\" "
-                               "\"<body>\", one chapter at a time and in order, so the user sees each one appear. Cut a "
-                               "chapter that turned out empty with journal doc cut <doc n> \"<chapter>\". Then journal "
-                               "sequence next <this sequence> --about <ref>."),
+        ("Lay out the chapters", "Put every chapter you plan on the document before writing any of them: journal doc section "
+                                 "<doc n> \"<chapter>\" \"Being written.\" for each, in order. Put the document's reference "
+                                 "on a line of its own in the chat, like `doc 41`, so the user can open it and watch. Then "
+                                 "journal sequence next <this sequence> --about <ref>."),
+        ("Write each chapter", "Write the chapters one at a time and in order with journal doc section <doc n> \"<chapter>\" "
+                               "\"<body>\"; the user sees each one appear where you are. Cut a chapter that turned out "
+                               "empty with journal doc cut <doc n> \"<chapter>\". Then journal sequence next <this sequence> "
+                               "--about <ref>."),
+        ("Offer the next step", "If the document asks the user to decide or approve something, give it buttons: journal doc "
+                                "update <doc n> --set buttons='[{\"label\": \"Accept this proposal\", \"say\": \"I accept "
+                                "this proposal\"}, {\"label\": \"Change it first\", \"say\": \"I want changes first\"}]'. "
+                                "A button with say sends those words to you as the user's message; one naming a type, n "
+                                "and action runs that command. Skip this when nothing waits on the user. Then journal "
+                                "sequence next <this sequence> --about <ref>."),
         ("Answer with it", "Say in one or two plain lines what the document concludes, then its reference on a line of its "
                            "own, like `doc 41`. Finish with journal sequence next <this sequence> --about <ref>."),
     ],
 }
+WRITING_A_REPORT = {
+    "title": "Writing a report",
+    "brief": "You started a report. Write its findings part by part, offer the user a next step as buttons where one fits, "
+             "then answer with it.",
+    "starts_on": "report.created",
+    "started_by": AGENT,
+    "only_when_idle": True,
+    "steps": [
+        ("Write the findings", "Lead with the answer in the report's brief, then write each part with journal report section "
+                               "<report n> \"<part>\" \"<body>\": the evidence, what was already sound, what remains "
+                               "uncertain. Then journal sequence next <this sequence> --about <ref>."),
+        ("Offer the next step", "If the report leads to something the user should decide, give it buttons: journal report "
+                                "update <report n> --set buttons='[{\"label\": \"<the step>\", \"say\": \"<the words it "
+                                "sends>\"}]'. Skip this when nothing waits on the user. Then journal sequence next <this "
+                                "sequence> --about <ref>."),
+        ("Answer with it", "Say in one or two plain lines what the report found, then its reference on a line of its own, "
+                           "like `report 98`. Finish with journal sequence next <this sequence> --about <ref>."),
+    ],
+}
 SHIPPED = (FILING_A_DUMP, BUILDING_A_PLAN, WORKING_A_BOARD_CARD, REVISING_THE_DRAFTS, BUILDING_A_BOARD, DRAFTING_FROM_A_DOCUMENT,
-           WRITING_AN_UPDATE, WRITING_A_DOCUMENT)
+           WRITING_AN_UPDATE, WRITING_A_DOCUMENT, WRITING_A_REPORT)
 
 
 def ship(record) -> list[str]:
@@ -268,13 +291,23 @@ def watched(record, shipped: dict) -> str:
     return f"trigger:{row.n}"
 
 
+def unwatched(record, shipped: dict) -> None:
+    triggers = Triggers(record, actor=SYSTEM)
+    for row in triggers._every():
+        if row.title == shipped["title"] and row.system and not row.deleted:
+            triggers.delete(row.n, why=f"{shipped['title']} now starts on {shipped['starts_on']}")
+
+
 def in_step(sequences: Sequences, shipped: dict, n: int | None) -> bool:
+    if not shipped.get("words"):
+        unwatched(sequences.record, shipped)
     shipped = {**shipped, "starts_on": watched(sequences.record, shipped)} if shipped.get("words") else shipped
     steps = [{SECTION.title: title, SECTION.body: body} for title, body in shipped["steps"]]
+    idle = shipped.get("only_when_idle", False)
     row = sequences.load(n) if n else sequences.create(shipped["title"], starts_on=shipped["starts_on"], system=True)
-    shape = (shipped["brief"], shipped["starts_on"], shipped["started_by"], steps)
-    if n and (not row.system or (row.brief, row.starts_on, row.started_by, row.sections) == shape):
+    shape = (shipped["brief"], shipped["starts_on"], shipped["started_by"], idle, steps)
+    if n and (not row.system or (row.brief, row.starts_on, row.started_by, row.only_when_idle, row.sections) == shape):
         return False
-    row.brief, row.starts_on, row.started_by, row.sections = shape
+    row.brief, row.starts_on, row.started_by, row.only_when_idle, row.sections = shape
     sequences.save(row, "updated")
     return True

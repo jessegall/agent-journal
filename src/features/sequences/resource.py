@@ -9,6 +9,7 @@ class Sequence(Shape, Resource):
         Field(default="", name="starts_on"),
         Field(default="", name="started_by"),
         Field(FLAG, False, name="system"),
+        Field(FLAG, False, name="only_when_idle"),
         Field(default=dict, name="runs"),
     ]
     details: ClassVar[ResourceDetails] = ResourceDetails(
@@ -23,7 +24,7 @@ class Sequence(Shape, Resource):
     type = "sequence"
     listed_under = SIDEBAR
     event_labels = {"created": "Sequence written", "updated": "Sequence moved on", "completed": "Sequence retired"}
-    indexed = ("starts_on", "started_by")
+    indexed = ("starts_on", "started_by", "only_when_idle")
     progress = ("runs", "abandoned")
     labels = {"brief": "What it is for"}
     icon = "list"

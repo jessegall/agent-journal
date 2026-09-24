@@ -52,7 +52,7 @@ export function thumbnail(shape, box = {x: 0, y: 0, w: 1, h: 1}) {
     return [...thumbnail(shape.a, a), ...thumbnail(shape.b, b)];
 }
 
-const KEPT = ["tabs", "active", "width", "scheme", "flush"];
+const KEPT = ["tabs", "active", "width", "scheme", "flush", "feed", "verbosity"];
 
 export const snapshot = (layout, node = layout.tree) =>
     node.dir

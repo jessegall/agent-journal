@@ -6,9 +6,44 @@ import LayoutThumb from "./LayoutThumb.vue";
 import MenuItem from "./MenuItem.vue";
 
 defineProps({presets: {type: Array, required: true}, savable: Boolean});
-const emit = defineEmits(["pick", "save", "rename", "remove", "update"]);
+const emit = defineEmits(["pick", "save", "rename", "remove", "update", "share", "import"]);
 const editing = ref("");
 const naming = ref(false);
+const flashed = ref("");
+const FLASH = 1600;
+let flashing = 0;
+
+function flash(key) {
+    flashed.value = key;
+    clearTimeout(flashing);
+    flashing = setTimeout(() => (flashed.value = ""), FLASH);
+}
+
+const importing = ref(false);
+const unreadable = ref(false);
+
+function updated(key) {
+    emit("update", key);
+    flash(key);
+}
+
+function shared(key) {
+    emit("share", key);
+    flash(`share:${key}`);
+}
+
+function imported(text) {
+    try {
+        const preset = JSON.parse(text);
+        if (typeof preset.name !== "string" || typeof preset.shape !== "object") throw new Error("not a layout");
+        importing.value = false;
+        unreadable.value = false;
+        emit("import", preset);
+        flash("import");
+    } catch (e) {
+        unreadable.value = true;
+    }
+}
 
 function renamed(key, name) {
     editing.value = "";
@@ -18,6 +53,7 @@ function renamed(key, name) {
 function saved(name) {
     naming.value = false;
     emit("save", name);
+    flash("new");
 }
 </script>
 
@@ -48,11 +84,19 @@ function saved(name) {
                     <span class="preset-tools">
                         <button
                             type="button"
-                            class="preset-tool"
-                            title="Update it with the current layout"
-                            @click.stop="emit('update', p.key)"
+                            :class="['preset-tool', {done: flashed === p.key}]"
+                            :title="flashed === p.key ? 'Saved' : 'Save the current layout into it'"
+                            @click.stop="updated(p.key)"
                         >
-                            <Icon name="restore" :size="12" />
+                            <Icon :name="flashed === p.key ? 'tick' : 'saveinto'" :size="12" />
+                        </button>
+                        <button
+                            type="button"
+                            :class="['preset-tool', {done: flashed === `share:${p.key}`}]"
+                            :title="flashed === `share:${p.key}` ? 'Copied' : 'Copy it to share'"
+                            @click.stop="shared(p.key)"
+                        >
+                            <Icon :name="flashed === `share:${p.key}` ? 'tick' : 'share'" :size="12" />
                         </button>
                         <button type="button" class="preset-tool" title="Rename" @click.stop="editing = p.key">
                             <Icon name="pencil" :size="12" />
@@ -73,9 +117,24 @@ function saved(name) {
             </div>
         </template>
         <template v-else>
-            <MenuItem @click="naming = true">
-                <Icon name="plus" :size="14" />
-                Save layout
+            <MenuItem :class="{done: flashed === 'new'}" @click="naming = true">
+                <Icon :name="flashed === 'new' ? 'tick' : 'plus'" :size="14" />
+                {{ flashed === "new" ? "Saved" : "Save layout" }}
+            </MenuItem>
+        </template>
+        <template v-if="importing">
+            <div class="preset-save">
+                <Icon name="download" :size="14" />
+                <InlineName placeholder="Paste a shared layout" @done="imported" @cancel="importing = unreadable = false" />
+            </div>
+            <template v-if="unreadable">
+                <p class="preset-unreadable">That isn't a shared layout. Copy it again with its share button.</p>
+            </template>
+        </template>
+        <template v-else>
+            <MenuItem :class="{done: flashed === 'import'}" @click="importing = true">
+                <Icon :name="flashed === 'import' ? 'tick' : 'download'" :size="14" />
+                {{ flashed === "import" ? "Imported" : "Import a layout" }}
             </MenuItem>
         </template>
     </template>
@@ -171,5 +230,16 @@ function saved(name) {
     gap: 8px;
     padding: 4px 8px;
     color: var(--text-3);
+}
+
+.preset-unreadable {
+    margin: 2px 8px 6px 30px;
+    color: var(--tone-warn);
+    font-size: 12px;
+}
+
+.preset-tool.done,
+.menu-item.done {
+    color: var(--tone-good);
 }
 </style>

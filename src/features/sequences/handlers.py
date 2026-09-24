@@ -61,6 +61,8 @@ class StartOnMoment(Handler):
                 continue
             if row.get("started_by") and row["started_by"] != event.actor:
                 continue
+            if row.get("only_when_idle") and sequences._in_hand():
+                continue
             sequences.run(row["n"], about=f"{event.type}:{event.n}")
 
 
