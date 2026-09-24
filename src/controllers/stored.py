@@ -302,7 +302,7 @@ class Stored:
         months: dict[str, list[dict]] = {}
         for row in chosen:
             months.setdefault(time.strftime("%Y-%m", time.localtime(row["updated"])), []).append(row)
-        with self.record.locked():
+        with self.record.locked(self.resource.scope):
             for month, rows in months.items():
                 self._packed_into(folder, f"{month}.zip", rows)
         return len(chosen)

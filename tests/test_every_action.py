@@ -151,3 +151,28 @@ def test_a_row_is_changed_only_by_those_its_resource_names_for_its_author():
             except Refused:
                 continue
     assert (guarded, changed) != ([], []) and changed == [], "the agent answers what the user wrote and records what each part became; it never rewrites or deletes it"
+
+
+def test_project_rows_made_at_once_from_two_environments_never_share_a_number():
+    import threading
+    from engine.record import Record
+    from resources.base import PROJECT
+    features.load()
+    root = fresh().root
+    for type_, resource in TYPES.items():
+        if resource.scope != PROJECT:
+            continue
+        made = []
+
+        def make(env: str, i: int) -> None:
+            try:
+                made.append(CONTROLLERS[type_](Record(root, env), actor=USER).create(f"Row {env} {i}", brief="why", **needed(type_)).n)
+            except (Refused, ValueError, TypeError):
+                return
+
+        runs = [threading.Thread(target=make, args=(env, i)) for env in ("east", "west") for i in range(4)]
+        for run in runs:
+            run.start()
+        for run in runs:
+            run.join()
+        assert len(made) == len(set(made)), f"{type_} rows made at once from two environments share a number: {sorted(made)}"
