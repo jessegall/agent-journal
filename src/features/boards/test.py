@@ -130,17 +130,16 @@ def test_a_board_request_names_its_board_and_keeps_the_work_on_it():
     assert Boards(record, actor=AGENT).ask(board.n, "Which one?", options=[{"title": "A"}]).hidden, "the board's own question goes through"
 
 
-
-def test_the_agent_s_text_stays_out_of_the_chat_while_a_board_sequence_runs():
-    from engine import chat
+def test_the_agent_answers_in_the_new_work_panel_with_board_say():
     features.load()
     record = fresh()
     ship(record)
     report(record, "working", "PreToolUse")
-    row = CONTROLLERS["agent"](record, actor=SYSTEM).by_session("claude-1")
-    said = lambda: [m.brief for m in Messages(record, actor=SYSTEM).all() if m.seen[:1] == ["agent"]]
-    chat.send(record, row, "Before the board")
-    board = Boards(record, actor=USER).create("Shared Journal")
-    Boards(record, actor=USER).request(board.n, "I want to share")
-    chat.send(record, row, "Reading the board before I ask")
-    assert said() == ["Before the board"], "while a board sequence runs, the agent's text stays in its panel, out of the chat"
+    boards = Boards(record, actor=USER)
+    board = boards.create("Shared Journal")
+    made = boards.request(board.n, "I want to share")
+    agent = Boards(record, actor=AGENT)
+    agent.say(board.n, "Three tickets drafted. Pick the ones to keep.")
+    assert [c.brief for c in Messages(record, actor=USER).comments(made.n)] == ["Three tickets drafted. Pick the ones to keep."], \
+        "a board say line lands on the request, where the New work panel shows it"
+    assert "short line" in refused(lambda: agent.say(board.n, "x" * 300)), "the panel takes one short line"

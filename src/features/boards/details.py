@@ -30,4 +30,7 @@ class BoardsDetails(FeatureDetails):
 
         journal board ask <n> "<question>" --set options='[...]' asks the user a question about the board: the New work
         panel shows it, and it stays out of the board itself, the chat, the Questions page and your nudges. The answer comes back as an event.
+
+        Everything you write goes to the chat; the New work panel gets words only through its command. journal board say <n>
+        "<line>" puts one short line in the panel, at most 200 characters, answering what was asked there.
     """

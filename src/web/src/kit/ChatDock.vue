@@ -94,6 +94,12 @@ defineExpose({card});
     visibility: hidden;
 }
 
+@container (max-width: 300px) {
+    .chat-dock-head :slotted(.chat-dock-acts) {
+        display: none;
+    }
+}
+
 @media (prefers-reduced-motion: reduce) {
     .chat-dock.dock-enter-active,
     .chat-dock.dock-leave-active,

@@ -6,10 +6,11 @@ import json
 import time
 
 from features.dumps.resource import ENTRY, ITEM, Dump
-from resources.base import AGENT, Refused, titled
+from resources.base import AGENT, SYSTEM, Refused, titled
 
 TEXT = "text"
 LOG_KEPT = 20
+ANSWER = 600
 OFFERED = 4
 OWN_WORDS = -2
 
@@ -142,6 +143,9 @@ class Dumps(Controller):
             self._refuse("name the parts of the pasted text, comma separated, none named like a dropped file")
         return self.update(r.n, parts=found)
 
+    def dismiss(self, n: int):
+        return self.update(int(n), dismissed=True)
+
     def name(self, n: int, title: str):
         if not title.strip():
             raise Refused("say the name")
@@ -212,6 +216,20 @@ class Dumps(Controller):
             raise Refused(f"dump {r.n} is closed")
         entries = [*(r.data.get("log") or []), {ENTRY.at: time.time(), ENTRY.text: status.strip(), ENTRY.on: on.strip(), ENTRY.making: making.strip(), ENTRY.detail: detail.strip()}]
         return self.update(r.n, log=entries[-LOG_KEPT:])
+
+    def say(self, n: int, text: str):
+        r = self.load(int(n))
+        if not text.strip():
+            raise Refused("say the answer: journal dump say <n> \"<text>\"")
+        if len(text.strip()) > ANSWER:
+            raise Refused(f"an answer in the dump is at most {ANSWER} characters; this one is {len(text.strip())}")
+        entry = {ENTRY.at: time.time(), ENTRY.text: text.strip(), ENTRY.on: "", ENTRY.making: "", ENTRY.detail: "", "answer": True}
+        made = self.update(r.n, log=[*(r.data.get("log") or []), entry][-LOG_KEPT:])
+        agents = types_module.CONTROLLERS["agent"](self.record, actor=SYSTEM)
+        row = agents.primary()
+        if row:
+            agents.card(row.n, label=f"Answered in dump {r.n}", icon="inbox", row=r.ref)
+        return made
 
     def ask(self, n: int, question: str, guesses: str = ""):
         r = self.load(int(n))

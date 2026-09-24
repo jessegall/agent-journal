@@ -116,6 +116,13 @@ class Boards(Controller):
             raise Refused(f"name drafts on board {board.n}, like \"12, 13\"; not {stray or tickets!r}")
         return numbers
 
+    def say(self, n: int, line: str):
+        board = self._drafting(n)
+        asked = board.drafting.get("asked") or []
+        if not asked:
+            raise Refused(f"nothing was asked on board {board.n} to answer")
+        return Messages(self.record, actor=self.actor, session=self.session, agent=self.agent).comment(int(asked[-1].split(":")[1]), line.strip())
+
     def _drafting(self, n: int):
         board = self.load(int(n))
         if not board.drafting.get("since"):

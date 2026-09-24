@@ -147,6 +147,9 @@ def test_a_filed_dump_is_summed_up_with_suggestions_the_user_takes_or_leaves():
     user.direct(dump.n, "Where did the room booking go?")
     asked = [m for m in Messages(record, actor=USER)._standing() if dump.ref in m.refs]
     assert [m.brief for m in asked] == ["Where did the room booking go?"], "the user's own words reach the agent and the chat as a message about the dump"
+    agent.say(dump.n, "It is under Meetings, as Room booking for Thursday.")
+    assert agent.load(dump.n).data["log"][-1]["answer"], "an answer in the dump lands in its chat"
+    assert CONTROLLERS["agent"](record).primary().data["cards"][-1]["label"] == f"Answered in dump {dump.n}", "the chat marks that it was answered in the dump"
     agent.log(dump.n, "Booked the room", detail="Room 4, Thursday")
     assert agent.load(dump.n).data["log"][-1]["text"] == "Booked the room", "the agent logs what it does after the summary"
 

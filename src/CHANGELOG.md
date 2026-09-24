@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.131.0 — Panels get words by command, and the chat keeps bars for a filed dump and every new report
+
+Everything the agent writes goes to the chat; a board's New work panel gets a line only through journal board say, at most 200 characters, and a dump's chat an answer only through journal dump say, which leaves a small mark in the chat. The quiet mode of 2.129.0 is gone. A filed dump leaves a bar at the bottom of the chat that opens its collection, and any new report gets a bar like the update's, opening in the side panel. The bars fit a narrow chat, their buttons stepping aside so the close stays in reach. The agent's thoughts show as muted cards with the same formatting as chat messages. Nothing to do.
+
 ## 2.130.0 — The agent's thoughts stay in the chat
 
 Each thought the agent finishes stays in the chat as a small italic line, set apart from its messages, instead of only flickering in the working line; none are kept while it works a board in its panel. They show when the provider records the thinking text. Nothing to do.

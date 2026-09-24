@@ -18,8 +18,9 @@ import {earlier, paging, rows} from "../sync/rows.js";
 import DumpWindow from "./DumpWindow.vue";
 import TerminalWindow from "./TerminalWindow.vue";
 import UpdateOverlay from "./UpdateOverlay.vue";
-import UpdateDock from "./UpdateDock.vue";
-import {dockedUpdate} from "../domain/updates.js";
+import ReportDock from "./ReportDock.vue";
+import DumpDock from "./DumpDock.vue";
+import {dockedDump, dockedReport} from "../domain/docks.js";
 import {updateView} from "./updateView.js";
 import FileFeed from "./FileFeed.vue";
 import Compose from "./Compose.vue";
@@ -93,7 +94,9 @@ function unedit() {
 const busy = computed(() => !!agent.value && ["working", "compacting"].includes(agent.value.data.status));
 const waiting = computed(() => waitsFor(rows("work")));
 const planCard = computed(() => cardPlan(rows("plan")));
-const updateDock = computed(() => dockedUpdate(rows("report")));
+const reportDock = computed(() => dockedReport(rows("report")));
+const dumpDock = computed(() => (store.dumping ? null : dockedDump(rows("dump"))));
+const dockCount = computed(() => [dumpDock.value, reportDock.value, planCard.value].filter(Boolean).length);
 const thought = computed(() => (agent.value && agent.value.data.thinking) || "");
 const helping = computed(() => ((agent.value && agent.value.data.subagent_rows) || []).filter((sub) => sub.running).at(-1));
 const activity = computed(() =>
@@ -458,7 +461,8 @@ watch(
                     <button
                         v-if="away && newestShown"
                         type="button"
-                        :class="['thread-down', {'over-plan': planCard || updateDock, 'over-two': planCard && updateDock}]"
+                        :class="['thread-down', {'over-docks': dockCount}]"
+                        :style="{'--docks': dockCount}"
                         :title="missed ? `${missed} arrived while you were reading` : 'Back to the newest'"
                         @click="toBottom"
                     >
@@ -518,9 +522,12 @@ watch(
                                 @grew="settled"
                             />
                         </TransitionGroup>
-                        <div :class="['chat-docks', {docked: planCard || updateDock}]">
+                        <div :class="['chat-docks', {docked: dockCount}]">
                             <Transition name="dock">
-                                <UpdateDock v-if="updateDock" :key="updateDock.n" :report="updateDock" :folded="short || !planOpen" />
+                                <DumpDock v-if="dumpDock" :key="dumpDock.n" :dump="dumpDock" :folded="short || !planOpen" />
+                            </Transition>
+                            <Transition name="dock">
+                                <ReportDock v-if="reportDock" :key="reportDock.n" :report="reportDock" :folded="short || !planOpen" />
                             </Transition>
                             <Transition name="dock">
                                 <PlanCard v-if="planCard" :key="planCard.n" :plan="planCard" :folded="short || !planOpen" />
@@ -811,12 +818,8 @@ watch(
     margin-top: auto;
 }
 
-.thread-down.over-plan {
-    bottom: calc(100% + 62px);
-}
-
-.thread-down.over-two {
-    bottom: calc(100% + 104px);
+.thread-down.over-docks {
+    bottom: calc(100% + 20px + var(--docks) * 42px);
 }
 
 .thread-down:hover {
