@@ -16,6 +16,13 @@ class SequencesDetails(FeatureDetails):
         executing: steps in order, handed to you one at a time. Its parts are its steps,
         the title naming the step and the body saying what to do.
 
+        Write sequences for the project you work in. When the user describes a routine ("every time
+        we deploy, first ..."), or you find yourself doing the same steps a second time (a release, a
+        review, setting up a new feature), write it down as a sequence: one step per thing to do,
+        each saying exactly what to run or check, and set how it starts, by a row's moment or by a
+        trigger on the words that mean it is time. Tell the user in one line that you wrote it, so
+        they can change it; a sequence that only you know about helps no one.
+
         journal sequence create "<name>" --brief "<what it is for>" writes one, and journal
         sequence section <n> "<step>" "<what to do>" adds each step. journal sequence run <n>
         --about <ref> hands you the first step; journal sequence next <n> --about <ref>

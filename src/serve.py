@@ -149,6 +149,13 @@ def freeze_caches(halting: threading.Event) -> None:
         gc.freeze()
 
 
+def warm_commands() -> None:
+    from commands.cli import served
+    from commands.parser import parser
+    for noun in sorted(served()):
+        parser(noun)
+
+
 def warm_viewer(root: Path, env: str) -> None:
     from commands.parser import parser
     from controllers.types import CONTROLLERS
@@ -170,6 +177,7 @@ def run(root: Path, port: int = 8430) -> None:
     threading.Thread(target=freeze_caches, args=(halting,), daemon=True).start()
     threading.Thread(target=replay, args=(root,), daemon=True).start()
     threading.Thread(target=warm, args=(root,), daemon=True).start()
+    threading.Thread(target=warm_commands, daemon=True).start()
     engines = threading.Event()
     children = Children(root)
     threading.Thread(target=children.run, args=(engines,), daemon=True).start()

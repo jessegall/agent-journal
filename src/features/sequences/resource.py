@@ -1,6 +1,6 @@
 from typing import ClassVar
 
-from resources.base import DOCUMENT, PROJECT, Resource, ResourceDetails
+from resources.base import DOCUMENT, PROJECT, SIDEBAR, Resource, ResourceDetails
 from resources.shapes import FLAG, Field, Shape
 
 
@@ -20,6 +20,7 @@ class Sequence(Shape, Resource):
               "A system sequence ships with the journal and cannot be removed."),
     )
     type = "sequence"
+    listed_under = SIDEBAR
     event_labels = {"created": "Sequence written", "updated": "Sequence moved on", "completed": "Sequence retired"}
     indexed = ("starts_on",)
     progress = ("runs", "abandoned")
