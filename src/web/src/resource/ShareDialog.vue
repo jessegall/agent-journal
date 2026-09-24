@@ -1,11 +1,12 @@
 <script setup>
-import {computed, onMounted, ref} from "vue";
+import {computed, onMounted, onUnmounted, ref} from "vue";
 import {api} from "../api/client.js";
 import Btn from "../kit/Btn.vue";
 import CopyButton from "../kit/CopyButton.vue";
 import Dialog from "../kit/Dialog.vue";
 import Icon from "../kit/Icon.vue";
 import Segmented from "../kit/Segmented.vue";
+import Spinner from "../kit/Spinner.vue";
 import TextInput from "../kit/TextInput.vue";
 import {
     KINDS,
@@ -38,6 +39,28 @@ const opens = ref(null);
 const error = ref("");
 const making = ref(false);
 const made = ref(null);
+const TUNNEL = "sharing.tunnel";
+const WAIT_EVERY = 1500;
+const WAIT_FOR = 45000;
+const tunnel = ref("");
+let pause = 0;
+const message = (link) => `Here's the link to ${props.resource.title}: ${link}`;
+
+async function awaitTunnel() {
+    const until = Date.now() + WAIT_FOR;
+    tunnel.value = "starting";
+    while (tunnel.value === "starting") {
+        const services = await api.services().catch(() => []);
+        if (services.find((s) => s.id === TUNNEL)?.state === "ready") tunnel.value = "ready";
+        else if (Date.now() > until) tunnel.value = "late";
+        else await new Promise((done) => (pause = setTimeout(done, WAIT_EVERY)));
+    }
+}
+
+onUnmounted(() => {
+    clearTimeout(pause);
+    tunnel.value = "closed";
+});
 const stopping = ref(0);
 const open = sharesOf(ref_.value);
 const others = computed(() => open.value.filter((share) => share.n !== made.value?.n));
@@ -60,6 +83,7 @@ async function create() {
     try {
         made.value = await api.create("share", {title: ref_.value, expires: expires.value, password: password.value});
         password.value = "";
+        awaitTunnel();
     } catch (e) {
         error.value = e.message;
     } finally {
@@ -98,19 +122,42 @@ async function stop(share) {
                 <TunnelProblem :status="tunnelStatus" @ready="loggedIn" />
             </template>
             <template v-if="made">
-                <div class="made">
-                    <span class="made-head">
-                        <Icon name="tick" :size="12" />
-                        Anyone with this link can view it
-                    </span>
-                    <div class="link-row">
-                        <input class="link" :value="made.abstract" readonly @focus="$event.target.select()" />
-                        <CopyButton :text="made.abstract" label="Copy" />
+                <template v-if="tunnel === 'starting'">
+                    <div class="starting">
+                        <Spinner />
+                        <span>
+                            Starting the tunnel…
+                            <span class="meta">The first link in a while takes a few seconds.</span>
+                        </span>
                     </div>
-                    <span class="meta">
-                        {{ endsOf(made) === "never ends" ? "It never ends" : `It ${endsOf(made)}` }} · you can stop it here at any time
-                    </span>
-                </div>
+                </template>
+                <template v-else>
+                    <div class="made">
+                        <span class="made-head">
+                            <Icon name="tick" :size="12" />
+                            Anyone with this link can view it
+                        </span>
+                        <div class="link-row">
+                            <input class="link" :value="made.abstract" readonly @focus="$event.target.select()" />
+                            <CopyButton :text="made.abstract" label="Copy" />
+                            <CopyButton
+                                :text="message(made.abstract)"
+                                icon="chat"
+                                label="Copy with message"
+                                hint="Copy it with a line saying what it is"
+                            />
+                        </div>
+                        <template v-if="tunnel === 'late'">
+                            <p class="late">
+                                The tunnel hasn't come up yet, so the link won't open for now. It works as soon as the tunnel is up; the
+                                tunnel icon in the top bar shows when.
+                            </p>
+                        </template>
+                        <span class="meta">
+                            {{ endsOf(made) === "never ends" ? "It never ends" : `It ${endsOf(made)}` }} · you can stop it here at any time
+                        </span>
+                    </div>
+                </template>
             </template>
             <template v-else>
                 <section class="part">
@@ -192,7 +239,8 @@ async function stop(share) {
                                 </span>
                                 <span class="meta">{{ viewsOf(share) }} · {{ endsOf(share) }}</span>
                             </div>
-                            <CopyButton :text="share.abstract" />
+                            <CopyButton :text="share.abstract" hint="Copy the link" />
+                            <CopyButton :text="message(share.abstract)" icon="chat" hint="Copy it with a line saying what it is" />
                             <Btn small kind="danger" :busy="stopping === share.n" @click="stop(share)">Stop sharing</Btn>
                         </div>
                     </template>
@@ -272,7 +320,36 @@ async function stop(share) {
 
 .link-row {
     display: flex;
+    flex-wrap: wrap;
     gap: 6px;
+}
+
+.link-row .link {
+    flex: 1 1 220px;
+}
+
+.starting {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--raised);
+    color: var(--text);
+    font-size: 13px;
+}
+
+.starting .meta {
+    display: block;
+    margin-top: 2px;
+}
+
+.late {
+    margin: 0;
+    color: var(--tone-warn);
+    font-size: 12px;
+    line-height: 1.5;
 }
 
 .link {

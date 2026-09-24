@@ -45,7 +45,7 @@ body {
     font-size: 14px;
 }
 
-body .share-scroll .md :not(pre) > code {
+body .share-app .md :not(pre) > code {
     white-space: normal;
     overflow-wrap: anywhere;
 }

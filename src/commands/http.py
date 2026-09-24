@@ -263,9 +263,33 @@ def get_manifest(req: Request) -> Reply:
 @route("GET", "/api/changelog")
 def get_changelog(req: Request) -> Reply:
     from engine.version import version
+    from features.auto_update.check import journal_repository
     from install import code
+    from surfaces.updates import FETCHING, newer
     log = code(req.root) / "CHANGELOG.md"
-    return Reply(200, {"version": version(), "changelog": log.read_text()}) if log.is_file() else Reply(404, {"error": "this install carries no changelog"})
+    if not log.is_file():
+        return Reply(404, {"error": "this install carries no changelog"})
+    cache = req.root / "runtime" / "upstream.cache"
+    latest = cache.read_text().strip() if cache.is_file() else ""
+    return Reply(200, {"version": version(), "changelog": log.read_text(), "latest": latest, "newer": newer(latest, version()),
+                       "checking": FETCHING.locked(), "updating": (req.root / "runtime" / "upgrading").exists(),
+                       "repository": journal_repository(req.root.parent)})
+
+
+@route("POST", "/api/update/check")
+def post_update_check(req: Request) -> Reply:
+    from surfaces.updates import check_now
+    check_now(req.root)
+    return Reply(200, {"checking": True})
+
+
+@route("POST", "/api/update")
+def post_update(req: Request) -> Reply:
+    from features.auto_update.check import installed, journal_repository
+    if journal_repository(req.root.parent):
+        raise Refused("this is the journal's own repository: it updates from its own code, not from a release")
+    threading.Thread(target=installed, args=(req.root,), daemon=True).start()
+    return Reply(200, {"updating": True})
 
 
 @route("GET", "/api/identity")

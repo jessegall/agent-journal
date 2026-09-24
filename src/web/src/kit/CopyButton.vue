@@ -2,7 +2,12 @@
 import {onUnmounted, ref} from "vue";
 import Icon from "./Icon.vue";
 
-const props = defineProps({text: {type: String, required: true}, label: {type: String, default: ""}});
+const props = defineProps({
+    text: {type: String, required: true},
+    label: {type: String, default: ""},
+    icon: {type: String, default: "copy"},
+    hint: {type: String, default: "Copy"},
+});
 const FLASH = 1500;
 const copied = ref(false);
 let timer = 0;
@@ -18,8 +23,8 @@ onUnmounted(() => clearTimeout(timer));
 </script>
 
 <template>
-    <button type="button" :class="['copy-button', {copied, labelled: label}]" :title="copied ? 'Copied' : 'Copy'" @click.stop="copy">
-        <Icon :name="copied ? 'tick' : 'copy'" :size="12" />
+    <button type="button" :class="['copy-button', {copied, labelled: label}]" :title="copied ? 'Copied' : hint" @click.stop="copy">
+        <Icon :name="copied ? 'tick' : icon" :size="12" />
         <template v-if="label">
             <span>{{ copied ? "Copied" : label }}</span>
         </template>
