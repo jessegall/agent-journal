@@ -14,7 +14,7 @@ class DumpsDetails(FeatureDetails):
         A dump holds pasted text and dropped files; each is an item. Sort the pile by subject:
         one document per subject, named for what it is about, never after the file it came in.
         Record journal dump note <n> <item> "<what it is>", then journal dump filed <n> <item>
-        "<what it did>" "<ref, ref>" --added "<ref>" for what you wrote unasked, or journal dump
+        "<what it did>" --refs "<ref, ref>" --added "<ref>" for what you wrote unasked, listed in refs too, or journal dump
         failed <n> <item> "<why>". What you file is in the journal at once, in the dump's
         collection. journal dump name <n> "<name>" names that collection for what the items are
         about, and journal dump log <n> "<status>" tells the user what you are doing;

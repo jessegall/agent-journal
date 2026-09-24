@@ -1,36 +1,14 @@
 <script setup>
-import {ref} from "vue";
-import SwitchCase from "../kit/SwitchCase.vue";
 import ActivityEvents from "./ActivityEvents.vue";
-import ActivityFiles from "./ActivityFiles.vue";
-
-const TABS = [
-    ["events", "Activity"],
-    ["files", "Files"],
-];
-const tab = ref("events");
 </script>
 
 <template>
     <aside class="activity-dock">
         <div class="activity-panel">
-            <div class="activity-head" role="tablist">
-                <template v-for="[name, label] in TABS" :key="name">
-                    <button
-                        type="button"
-                        role="tab"
-                        :aria-selected="tab === name"
-                        :class="['activity-tab', {on: tab === name}]"
-                        @click="tab = name"
-                    >
-                        {{ label }}
-                    </button>
-                </template>
+            <div class="activity-head">
+                <span class="activity-tab on">Activity</span>
             </div>
-            <SwitchCase :value="tab">
-                <template #files><ActivityFiles /></template>
-                <template #default><ActivityEvents /></template>
-            </SwitchCase>
+            <ActivityEvents />
         </div>
     </aside>
 </template>

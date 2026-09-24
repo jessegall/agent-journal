@@ -11,6 +11,9 @@ import resources.types as resources_module
 from controllers.base import CONTROLLERS, Controller
 from engine.record import Record
 from features import FEATURES
+from commands.dispatch import shaping
+from engine.markers import MARKER
+from features.format import VIEWER
 from features.sharing.resource import SHARED_TYPES, Share
 from features.sharing.tunnel import log_in, subdomain, tunler_status
 from resources.base import AGENT, SYSTEM, USER, Refused
@@ -33,6 +36,10 @@ def hashed(password: str) -> str:
 def matches(password: str, kept: str) -> bool:
     salt, _, digest = kept.partition("$")
     return hmac.compare_digest(hashlib.pbkdf2_hmac("sha256", password.encode(), bytes.fromhex(salt), HASH_ROUNDS).hex(), digest)
+
+
+def scoped(text: str, scope: set[str]) -> str:
+    return MARKER.sub(lambda m: m.group(0) if m.group(1) == "chip" and m.group(2) in scope else m.group(3), text or "")
 
 
 def until(expires: str) -> float:
@@ -161,6 +168,22 @@ class Shares(Controller):
             return False
         UNLOCKED[share.n] = password
         return True
+
+    def _shared_data(self, share) -> dict:
+        scope = self._scope(share)
+        record = self._home(share)
+        rows = {}
+        for ref in scope:
+            row = self._shared_row(share, ref)
+            shaped = shaping(row, record, VIEWER)
+            rows[ref] = {
+                "type": row.type, "n": row.n, "created": row.created, "updated": row.updated,
+                "title": row.title, "abstract": scoped(shaped.get("abstract", ""), scope), "brief": scoped(shaped.get("brief", ""), scope),
+                "sections": [{"title": s.get("title", ""), "body": scoped(s.get("body", ""), scope)} for s in shaped.get("sections") or []],
+                "files": sorted(row.files), "pictures": dict(getattr(row, "pictures", {}) or {}),
+                "members": [f"{m.type}:{m.n}" for m in self._members(share, row) if f"{m.type}:{m.n}" in scope] if row.type == "collection" else [],
+            }
+        return {"share": {"target": share.target, "expires": share.expires}, "rows": rows}
 
     def _count_view(self, n: int) -> None:
         count, saved_at = UNSAVED_VIEWS.get(n, (0, 0.0))

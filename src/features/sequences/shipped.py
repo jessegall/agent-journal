@@ -25,7 +25,7 @@ FILING_A_DUMP = {
                             "suggestion for the end. Everything you file is in the journal at once, in the dump's collection. "
                             "Log each step with journal dump log <dump n> \"<short title>\" --detail \"<what and why>\", with "
                             "--making \"<type>, <title>\" before a row exists and --on <type:n> once it does. File each item as soon as you "
-                            "have what it needs, one at a time: journal dump filed <dump n> <item> \"<what you did>\" \"<ref, ref>\" --added \"<ref>\" or "
+                            "have what it needs, one at a time: journal dump filed <dump n> <item> \"<what you did>\" --refs \"<ref, ref>\" --added \"<ref>\" (every added row also in refs) or "
                             "journal dump failed. Ask only what you cannot tell, with journal dump ask <dump n> \"<question>\" "
                             "--guesses \"<one>|<two>\"."),
         ("Sum up and suggest", "Once every item is filed the dump closes. Sum up what you filed and where with journal dump "

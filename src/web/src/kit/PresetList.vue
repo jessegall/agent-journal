@@ -19,7 +19,7 @@ function flash(key) {
     flashing = setTimeout(() => (flashed.value = ""), FLASH);
 }
 
-const importing = ref(false);
+const picker = ref(null);
 const unreadable = ref(false);
 
 function updated(key) {
@@ -32,15 +32,17 @@ function shared(key) {
     flash(`share:${key}`);
 }
 
-function imported(text) {
+async function imported(e) {
+    const file = e.target.files[0];
+    e.target.value = "";
+    if (!file) return;
     try {
-        const preset = JSON.parse(text);
+        const preset = JSON.parse(await file.text());
         if (typeof preset.name !== "string" || typeof preset.shape !== "object") throw new Error("not a layout");
-        importing.value = false;
         unreadable.value = false;
         emit("import", preset);
         flash("import");
-    } catch (e) {
+    } catch (error) {
         unreadable.value = true;
     }
 }
@@ -93,10 +95,10 @@ function saved(name) {
                         <button
                             type="button"
                             :class="['preset-tool', {done: flashed === `share:${p.key}`}]"
-                            :title="flashed === `share:${p.key}` ? 'Copied' : 'Copy it to share'"
+                            :title="flashed === `share:${p.key}` ? 'Downloaded' : 'Download it as a file to share'"
                             @click.stop="shared(p.key)"
                         >
-                            <Icon :name="flashed === `share:${p.key}` ? 'tick' : 'share'" :size="12" />
+                            <Icon :name="flashed === `share:${p.key}` ? 'tick' : 'download'" :size="12" />
                         </button>
                         <button type="button" class="preset-tool" title="Rename" @click.stop="editing = p.key">
                             <Icon name="pencil" :size="12" />
@@ -122,20 +124,13 @@ function saved(name) {
                 {{ flashed === "new" ? "Saved" : "Save layout" }}
             </MenuItem>
         </template>
-        <template v-if="importing">
-            <div class="preset-save">
-                <Icon name="download" :size="14" />
-                <InlineName placeholder="Paste a shared layout" @done="imported" @cancel="importing = unreadable = false" />
-            </div>
-            <template v-if="unreadable">
-                <p class="preset-unreadable">That isn't a shared layout. Copy it again with its share button.</p>
-            </template>
-        </template>
-        <template v-else>
-            <MenuItem :class="{done: flashed === 'import'}" @click="importing = true">
-                <Icon :name="flashed === 'import' ? 'tick' : 'download'" :size="14" />
-                {{ flashed === "import" ? "Imported" : "Import a layout" }}
-            </MenuItem>
+        <input ref="picker" class="preset-picker" type="file" accept=".json,application/json" @change="imported" />
+        <MenuItem :class="{done: flashed === 'import'}" @click="picker.click()">
+            <Icon :name="flashed === 'import' ? 'tick' : 'share'" :size="14" />
+            {{ flashed === "import" ? "Imported" : "Import a layout" }}
+        </MenuItem>
+        <template v-if="unreadable">
+            <p class="preset-unreadable">That file isn't a saved layout. Download one with a layout's download button.</p>
         </template>
     </template>
 </template>
@@ -230,6 +225,10 @@ function saved(name) {
     gap: 8px;
     padding: 4px 8px;
     color: var(--text-3);
+}
+
+.preset-picker {
+    display: none;
 }
 
 .preset-unreadable {
