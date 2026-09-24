@@ -9,7 +9,8 @@ from engine.text import paragraphs
 TITLE_MAX = 80
 ABSTRACT_MAX = 200
 VIEW_ONLY = ("kept",)
-ACTIONS = ("created", "updated", "deleted", "linked", "commented", "completed", "reopened", "stamped", "reported", "raised", "dispatched", "returned", "fired")
+REQUESTED = "requested"
+ACTIONS = ("created", "updated", "deleted", "linked", "commented", "completed", "reopened", "stamped", "reported", "raised", "dispatched", "returned", "fired", REQUESTED)
 RAISED = "raised"
 SMALL, WIDE, DOCUMENT = "small", "wide", "document"
 VIEWS = (SMALL, WIDE, DOCUMENT)
@@ -130,6 +131,7 @@ class Resource:
     closed_first: ClassVar[bool] = False
     listed_open: ClassVar[bool] = False    # its open rows are a working list: a listing carries every one of them
     hidden_listed: ClassVar[bool] = True
+    moments: ClassVar[tuple] = ("created", "completed")   # what a sequence can start on
     scope: ClassVar[str] = ENVIRONMENT   # whose it is: one environment's, or the whole project's
     notified: ClassVar[tuple] = (USER, AGENT)   # who is told of its events, besides the actor
     typed_as_title: ClassVar[bool] = False            # typed to the agent as its title, not as "type n action"

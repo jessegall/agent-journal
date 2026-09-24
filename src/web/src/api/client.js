@@ -180,6 +180,10 @@ export class ApiClient {
         return this.act("todo", n, "shift", {lane, why: why || "", how: how || ""});
     }
 
+    requestWork(board, text, idempotency) {
+        return this.act("board", board, "request", {text, idempotency});
+    }
+
     ticketBoard(n) {
         return this.act("ticket", n, "board");
     }
