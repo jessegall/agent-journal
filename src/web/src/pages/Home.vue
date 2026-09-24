@@ -4,6 +4,8 @@ import {open} from "../domain/records.js";
 import ThreadSkeleton from "../chat/ThreadSkeleton.vue";
 import AgentBar from "../chat/AgentBar.vue";
 import HomeView from "./HomeView.vue";
+import DumpWindow from "../chat/DumpWindow.vue";
+import {store} from "../state/store.js";
 import PaneMenu from "./PaneMenu.vue";
 import Btn from "../kit/Btn.vue";
 import DragGhost from "../kit/DragGhost.vue";
@@ -346,60 +348,67 @@ watch(
         </template>
         <template v-else>
             <AgentBar />
-            <PaneGrid ref="grid" :panes="panes" :splits="measured.splits" :colors="paneColors" @resize="resize">
-                <template #pane="{id, pane, state}">
-                    <PaneTabs
-                        :tabs="tabsOf(id, pane)"
-                        :data-tabs-of="id"
-                        :insert-at="aimed && aimed.zone === 'tabs' && aimed.id === id ? aimed.index : -1"
-                        @grab="(e, key) => grabTab(e, id, key)"
-                        @pick="(key) => apply(activated(layout, id, key))"
-                        @close="(key) => apply(tabClosed(layout, id, key))"
-                    >
-                        <button
-                            type="button"
-                            :class="['pane-menu-btn', {on: menu && menu.id === id}]"
-                            :data-pane-menu="id"
-                            title="Pane menu"
-                            @click.stop="toggleMenu($event, id)"
+            <div class="home-panes">
+                <PaneGrid ref="grid" :panes="panes" :splits="measured.splits" :colors="paneColors" @resize="resize">
+                    <template #pane="{id, pane, state}">
+                        <PaneTabs
+                            :tabs="tabsOf(id, pane)"
+                            :data-tabs-of="id"
+                            :insert-at="aimed && aimed.zone === 'tabs' && aimed.id === id ? aimed.index : -1"
+                            @grab="(e, key) => grabTab(e, id, key)"
+                            @pick="(key) => apply(activated(layout, id, key))"
+                            @close="(key) => apply(tabClosed(layout, id, key))"
                         >
-                            <Icon name="dots" />
-                        </button>
-                    </PaneTabs>
-                    <div :class="['pane-body', widthOf(pane)]">
-                        <template v-if="pane.active">
-                            <HomeView
-                                :view="pane.active"
-                                :level="levelOf(pane)"
-                                :flush="!!pane.flush"
-                                :feed="pane.feed || null"
-                                @feed="(feed) => replace(tuned(layout, id, {feed}))"
-                            />
-                        </template>
-                        <template v-else>
-                            <div class="pane-empty">
-                                <p class="pane-empty-title">No views open</p>
-                                <p class="pane-empty-text">Open one here, or drag one in from the icons in the agent bar above.</p>
-                                <div class="pane-empty-views">
-                                    <template v-for="key in usable.filter((v) => !opened.has(v))" :key="key">
-                                        <Btn @click="apply(placed(layout, key, id, 'center'))">
-                                            <Icon :name="views[key].icon" :size="13" />
-                                            {{ views[key].title }}
-                                        </Btn>
-                                    </template>
+                            <button
+                                type="button"
+                                :class="['pane-menu-btn', {on: menu && menu.id === id}]"
+                                :data-pane-menu="id"
+                                title="Pane menu"
+                                @click.stop="toggleMenu($event, id)"
+                            >
+                                <Icon name="dots" />
+                            </button>
+                        </PaneTabs>
+                        <div :class="['pane-body', widthOf(pane)]">
+                            <template v-if="pane.active">
+                                <HomeView
+                                    :view="pane.active"
+                                    :level="levelOf(pane)"
+                                    :flush="!!pane.flush"
+                                    :feed="pane.feed || null"
+                                    @feed="(feed) => replace(tuned(layout, id, {feed}))"
+                                />
+                            </template>
+                            <template v-else>
+                                <div class="pane-empty">
+                                    <p class="pane-empty-title">No views open</p>
+                                    <p class="pane-empty-text">Open one here, or drag one in from the icons in the agent bar above.</p>
+                                    <div class="pane-empty-views">
+                                        <template v-for="key in usable.filter((v) => !opened.has(v))" :key="key">
+                                            <Btn @click="apply(placed(layout, key, id, 'center'))">
+                                                <Icon :name="views[key].icon" :size="13" />
+                                                {{ views[key].title }}
+                                            </Btn>
+                                        </template>
+                                    </div>
+                                    <Btn @click="apply(arranged(layout, DEFAULT_SHAPE))">Reset layout</Btn>
                                 </div>
-                                <Btn @click="apply(arranged(layout, DEFAULT_SHAPE))">Reset layout</Btn>
-                            </div>
+                            </template>
+                            <template v-if="offer && offer.id === id">
+                                <SplitOffer :text="offerText(id)" @pick="answer" />
+                            </template>
+                        </div>
+                        <template v-if="aimed && aimed.id === id && aimed.zone !== 'tabs' && state === 'live'">
+                            <DropCompass :zone="aimed.zone" />
                         </template>
-                        <template v-if="offer && offer.id === id">
-                            <SplitOffer :text="offerText(id)" @pick="answer" />
-                        </template>
-                    </div>
-                    <template v-if="aimed && aimed.id === id && aimed.zone !== 'tabs' && state === 'live'">
-                        <DropCompass :zone="aimed.zone" />
                     </template>
-                </template>
-            </PaneGrid>
+                </PaneGrid>
+                <Transition name="home-dump">
+                    <div v-if="store.dumping" class="home-dump">
+                        <DumpWindow />
+                    </div>
+                </Transition>
+            </div>
             <template v-if="menuOpen">
                 <PaneMenu
                     :pane="menu.id"
@@ -451,6 +460,48 @@ watch(
     display: flex;
     flex-direction: column;
     min-height: 0;
+}
+
+.home-panes {
+    position: relative;
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.home-dump {
+    position: absolute;
+    inset: 0;
+    z-index: 5;
+    display: flex;
+    flex-direction: column;
+    background: var(--bg);
+}
+
+.home-dump-enter-active,
+.home-dump-leave-active {
+    transition:
+        opacity 0.3s var(--ease),
+        transform 0.4s var(--ease);
+}
+
+.home-dump-enter-from,
+.home-dump-leave-to {
+    opacity: 0;
+    transform: scale(0.99);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .home-dump-enter-active,
+    .home-dump-leave-active {
+        transition: opacity 0.2s;
+    }
+
+    .home-dump-enter-from,
+    .home-dump-leave-to {
+        transform: none;
+    }
 }
 
 .home-loading {

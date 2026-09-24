@@ -48,29 +48,25 @@ def test_the_agent_is_told_when_a_dump_arrives_and_when_more_is_dropped_on_it(tm
     assert not [n for n in nudges(record) if "the agent's own" in n], "a dump the agent made is not announced to it"
 
 
-def test_what_a_dump_makes_stays_inside_it_until_the_user_confirms_it():
+def test_what_a_dump_files_is_in_the_journal_at_once_and_removing_it_takes_out_only_what_it_made():
     record = fresh()
     earlier = Docs(record, actor=AGENT).create("An older doc")
     dump = CONTROLLERS["dump"](record, actor=USER).create("Launch notes", brief="notes")
-    collections, docs = CONTROLLERS["collection"](record, actor=USER), Docs(record, actor=USER)
+    collections, docs, todos = CONTROLLERS["collection"](record, actor=USER), Docs(record, actor=USER), Todos(record, actor=USER)
     agent = CONTROLLERS["dump"](record, actor=AGENT)
     doc, task = Docs(record, actor=AGENT).create("The launch"), Todos(record, actor=AGENT).create("book the room")
-    agent.filed(dump.n, "text", "a doc and a to-do, and the older doc extended", f"{doc.ref}, {task.ref}, {earlier.ref}")
+    agent.filed(dump.n, "text", "a doc and a to-do, and the older doc extended", f"{doc.ref}, {task.ref}, {earlier.ref}", added=task.ref)
     made = collections.load(agent._collection(agent.load(dump.n)))
     assert collections.members(made.n) == [f"dump {dump.n}  Dump {dump.n}", "doc 2  The launch", "todo 1  book the room", "doc 1  An older doc"], \
         "the dump's collection holds everything it filed"
-    assert ([c.n for c in collections.all()], [d.n for d in docs.all()], [t.n for t in Todos(record, actor=USER).all()]) == ([], [earlier.n], []), \
-        "until confirmed, what it made is listed nowhere; a row it only extended stays listed"
-    assert refused(lambda: agent.confirm(dump.n)) == "only the user confirms a dump: they do it in the dump window", "the agent cannot confirm"
-    user = CONTROLLERS["dump"](record, actor=USER)
-    user.leave(dump.n, doc.ref)
-    user.leave(dump.n, task.ref)
-    user.keep(dump.n, doc.ref)
-    assert user.load(dump.n).data["left_out"] == {task.ref: "book the room"}, "a row left out can be put back until the dump is confirmed"
-    user.confirm(dump.n)
-    assert ([c.n for c in collections.all()], sorted(d.n for d in docs.all()), bool(Todos(record, actor=USER).load(task.n).deleted)) == \
-        ([made.n], [earlier.n, doc.n], True), "confirmed, it all appears at once, less what the user left out"
-    assert "user" not in docs.load(doc.n).seen, "what it releases is still unread, so the user is told of it"
+    assert ([c.n for c in collections.all()], sorted(d.n for d in docs.all()), [t.n for t in todos.all()]) == ([made.n], [earlier.n, doc.n], [task.n]), \
+        "what it files is listed at once, with nothing to confirm"
+    assert agent.load(dump.n).data["items"]["text"]["added"] == [task.ref], "the agent marks what it wrote without being asked"
+    assert refused(lambda: agent.remove(dump.n)) == "only the user removes what a dump filed", "the agent cannot remove it"
+    removed = CONTROLLERS["dump"](record, actor=USER).remove(dump.n)
+    assert ([c.n for c in collections.all()], [d.n for d in docs.all()], [t.n for t in todos.all()]) == ([], [earlier.n], []), \
+        "removing takes out the collection and all it made, and keeps a row it only extended"
+    assert (bool(removed.completed), removed.data["removed_refs"]) == (True, [doc.ref, task.ref]), "the dump closes and says what it took out"
 
 
 def test_one_dump_is_worked_at_a_time_its_log_is_kept_and_filing_asks_for_the_next_step():
@@ -90,7 +86,7 @@ def test_one_dump_is_worked_at_a_time_its_log_is_kept_and_filing_asks_for_the_ne
     assert [e["text"] for e in agent.load(dump.n).data["log"]] == ["reading the note"], "the log keeps what the agent said it is doing"
     assert refused(lambda: agent.log(dump.n, " ")) == "say what you are doing", "a log entry needs words"
     agent.failed(dump.n, "text", "nothing in it to keep")
-    assert f"dump {dump.n} is filed (0 filed, 1 failed) - offer the user what to do next" in nudges(record), "closing the dump asks for the next steps"
+    assert f"dump {dump.n} is filed (0 filed, 1 failed) - sum it up for the user" in nudges(record), "closing the dump asks for a summary"
     assert nudges(record)[-1] == f"dump {later.n} has 1 item to file - journal dump items {later.n}", "and hands over the next one"
     CONTROLLERS["dump"](record, actor=USER).reopen(dump.n, "more to add")
     assert agent._in_hand().n == later.n, "a reopened dump joins the back of the queue, behind the one being filed"
@@ -125,7 +121,7 @@ def test_an_idle_agent_is_told_to_carry_on_filing_even_with_auto_off():
         "an agent resting with a dump unfinished is told once to carry on, auto mode or not"
 
 
-def test_a_finished_dump_offers_next_steps_and_you_decide_hands_it_to_the_agent():
+def test_a_filed_dump_is_summed_up_with_suggestions_the_user_takes_or_leaves():
     from tests.kit import nudges, report
     record = fresh()
     report(record, "working", "PreToolUse")
@@ -133,18 +129,23 @@ def test_a_finished_dump_offers_next_steps_and_you_decide_hands_it_to_the_agent(
     agent, user = CONTROLLERS["dump"](record, actor=AGENT), CONTROLLERS["dump"](record, actor=USER)
     agent.filed(dump.n, "text", "a to-do", f"{Todos(record, actor=AGENT).create('book the room').ref}")
     assert "not a command" in refused(lambda: agent.offer(dump.n, '[{"label": "Fly", "type": "todo", "action": "fly"}]')), "an unknown action is refused"
-    agent.offer(dump.n, '[{"label": "Book it today"}, {"label": "Leave it"}, {"label": "Make a plan for the autoscaler and the deployment framework"}]')
-    assert agent.load(dump.n).data["options"][2]["label"] == "Make a plan for the autoscaler and the deployment framework", \
-        "an offered step keeps its whole label"
+    assert refused(lambda: agent.offer(dump.n, "[]")).startswith("sum up what you filed"), "an offer carries a summary or a step"
+    agent.offer(dump.n, '[{"ask": "Book the room today?", "label": "Book it"}, {"label": "Make a plan for the autoscaler and the deployment framework"}]',
+                summary="Filed one to-do.")
+    offered = agent.load(dump.n).data
+    assert (offered["summary"], offered["options"][0]["ask"], offered["options"][1]["label"]) == \
+        ("Filed one to-do.", "Book the room today?", "Make a plan for the autoscaler and the deployment framework"), \
+        "the summary and each suggestion are kept whole"
     assert refused(lambda: agent.choose(dump.n, 0)) == "only the user chooses what a dump does next", "the agent cannot choose"
     user.choose(dump.n, 0)
-    assert (nudges(record)[-1], bool(agent.load(dump.n).data["confirmed"])) == \
-        (f"the user chose Book it today for dump {dump.n}", True), "a choice adds what it made to the journal and tells the agent"
-    user.choose(dump.n, -1)
-    assert nudges(record)[-1] == f"the user left dump {dump.n} to you - finish it", "You decide hands the rest to the agent"
-    user.direct(dump.n, "Only find out why eight hosts are down")
-    assert nudges(record)[-1] == f"the user said what to do with dump {dump.n}", "the user's own words are the next step"
-    assert "Only find out why eight hosts are down" in agent.load(dump.n).data["chosen"]["label"]
+    assert nudges(record)[-1] == f"the user chose Book it for dump {dump.n}", "taking a suggestion tells the agent"
+    assert "already taken" in refused(lambda: user.choose(dump.n, 0)), "a suggestion is taken once"
+    user.decline(dump.n, 1)
+    assert (list(agent.load(dump.n).data["taken"]), agent.load(dump.n).data["declined"]) == (["0"], [1]), "what was taken and left is kept"
+    user.direct(dump.n, "Where did the room booking go?")
+    assert nudges(record)[-1] == f"the user said what to do with dump {dump.n}", "the user's own words reach the agent"
+    agent.log(dump.n, "Booked the room", detail="Room 4, Thursday")
+    assert agent.load(dump.n).data["log"][-1]["text"] == "Booked the room", "the agent logs what it does after the summary"
 
 
 def test_pasted_text_splits_into_parts_and_a_question_carries_guesses():

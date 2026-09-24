@@ -1,6 +1,7 @@
 <script setup>
 import CountBadge from "../kit/CountBadge.vue";
 import {computed, onUnmounted, reactive, ref, watch} from "vue";
+import Btn from "../kit/Btn.vue";
 import {store} from "../state/store.js";
 import Icon from "../kit/Icon.vue";
 import TextDisplay from "../kit/TextDisplay.vue";
@@ -16,6 +17,7 @@ const props = defineProps({
     down: Function,
     tools: {type: Array, default: () => []},
     note: {type: String, default: ""},
+    many: {type: Object, default: null},
 });
 const emit = defineEmits(["unquote"]);
 const draft = reactive({text: "", files: [], sending: false, error: ""});
@@ -23,8 +25,20 @@ const writing = computed(() => !!draft.text.trim());
 watch(writing, (is) => (store.drafting += is ? 1 : -1));
 onUnmounted(() => writing.value && (store.drafting -= 1));
 const area = ref(null);
-const attachment = {attachment: true, icon: "paperclip"};
-const actions = computed(() => [attachment, ...props.tools]);
+const kept = ref(0);
+const offering = computed(() => Boolean(props.many && draft.files.length > 1 && kept.value !== draft.files.length));
+
+async function handOver() {
+    const files = draft.files;
+    draft.files = [];
+    draft.error = "";
+    try {
+        await props.many.take(files);
+    } catch (e) {
+        draft.error = e.message;
+        draft.files = files;
+    }
+}
 
 watch(
     () => props.quote,
@@ -120,7 +134,24 @@ async function use(tool) {
                 <button type="button" class="compose-quote-x" title="Not a reply after all" @click="emit('unquote')">×</button>
             </div>
         </template>
+        <Transition name="note">
+            <div v-if="offering" class="compose-many">
+                <p class="compose-many-title">
+                    <Icon :name="many.icon" :size="13" />
+                    {{ many.title(draft.files.length) }}
+                </p>
+                <p class="compose-many-text">{{ many.text }}</p>
+                <div class="compose-many-row">
+                    <Btn kind="primary" small @click="handOver">{{ many.action }}</Btn>
+                    <Btn small @click="kept = draft.files.length">Just send them</Btn>
+                </div>
+            </div>
+        </Transition>
         <div class="compose-box floating">
+            <label class="compose-attach compose-corner" title="Attach files" aria-label="Attach files">
+                <Icon name="paperclip" />
+                <input type="file" multiple hidden @change="picked" />
+            </label>
             <template v-if="draft.files.length">
                 <div class="compose-files">
                     <template v-for="(f, i) in draft.files" :key="i">
@@ -147,21 +178,22 @@ async function use(tool) {
                 @paste="pasted"
             />
             <div class="compose-foot">
-                <template v-for="action in actions" :key="action.icon">
-                    <template v-if="action.attachment">
-                        <label class="compose-attach" title="Attach files" aria-label="Attach files">
-                            <Icon name="paperclip" />
-                            <input type="file" multiple hidden @change="picked" />
-                        </label>
-                    </template>
-                    <template v-else>
-                        <button type="button" class="compose-attach" :title="action.title" :aria-label="action.title" @click="use(action)">
-                            <Icon :name="action.icon" />
-                            <template v-if="action.badge">
-                                <CountBadge :count="action.badge" />
-                            </template>
-                        </button>
-                    </template>
+                <template v-for="action in tools" :key="action.icon">
+                    <button
+                        type="button"
+                        :class="['compose-attach', {labelled: action.label}]"
+                        :title="action.title"
+                        :aria-label="action.title"
+                        @click="use(action)"
+                    >
+                        <Icon :name="action.icon" />
+                        <template v-if="action.label">
+                            <span class="compose-attach-label">{{ action.label }}</span>
+                        </template>
+                        <template v-if="action.badge">
+                            <CountBadge :count="action.badge" />
+                        </template>
+                    </button>
                 </template>
                 <button type="submit" class="compose-send" :disabled="draft.sending || !draft.text.trim()">{{ submit }}</button>
             </div>
@@ -249,7 +281,14 @@ async function use(tool) {
     display: flex;
     flex-wrap: wrap;
     gap: 6px;
-    padding: 10px 10px 4px;
+    padding: 10px 46px 4px 10px;
+}
+
+.compose-attach.compose-corner {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    z-index: 1;
 }
 
 .chip {
@@ -275,7 +314,7 @@ async function use(tool) {
     display: block;
     width: 100%;
     min-height: 74px;
-    padding: 11px 12px 4px;
+    padding: 11px 46px 4px 12px;
     border: 0;
     background: none;
     resize: none;
@@ -314,6 +353,64 @@ async function use(tool) {
     width: 18px;
     height: 18px;
     color: inherit;
+}
+
+.compose-attach.labelled {
+    width: auto;
+    gap: 7px;
+    padding: 0 11px 0 9px;
+    border: 1px solid color-mix(in srgb, var(--accent) 70%, transparent);
+    background: var(--accent-dim);
+    color: var(--accent-text);
+    font-size: 12.5px;
+    white-space: nowrap;
+}
+
+.compose-attach.labelled:hover {
+    background: color-mix(in srgb, var(--accent) 35%, var(--accent-dim));
+    color: var(--text);
+}
+
+.compose-attach.labelled .ico {
+    width: 14px;
+    height: 14px;
+}
+
+.compose-many {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 8px;
+    padding: 12px 14px;
+    border: 1px solid color-mix(in srgb, var(--accent) 55%, transparent);
+    border-radius: 12px;
+    background: color-mix(in srgb, var(--accent) 8%, var(--bg));
+}
+
+.compose-many-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+    font-size: 13.5px;
+    font-weight: 500;
+    color: var(--text);
+}
+
+.compose-many-title .ico {
+    color: var(--accent-text);
+}
+
+.compose-many-text {
+    margin: 0;
+    font-size: 12.5px;
+    color: var(--text-3);
+    text-wrap: pretty;
+}
+
+.compose-many-row {
+    display: flex;
+    gap: 6px;
 }
 
 .compose-send {

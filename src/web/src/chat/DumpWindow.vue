@@ -1,70 +1,84 @@
 <script setup>
-import DumpAnswer from "./DumpAnswer.vue";
-import DumpFiles from "./DumpFiles.vue";
-import TextDisplay from "../kit/TextDisplay.vue";
-import DumpMadeRow from "./DumpMadeRow.vue";
-import {computed, reactive, ref, watch} from "vue";
+import {computed, nextTick, reactive, ref, watch} from "vue";
 import {api} from "../api/client.js";
 import {store} from "../state/store.js";
 import {rows} from "../sync/rows.js";
-import Icon from "../kit/Icon.vue";
-import Btn from "../kit/Btn.vue";
-import Spinner from "../kit/Spinner.vue";
-import OptionList from "../kit/OptionList.vue";
-import {age} from "../format/time.js";
+import {peekRef} from "../route.js";
 import {useNow} from "../composables/now.js";
+import {age} from "../format/time.js";
+import Btn from "../kit/Btn.vue";
+import Icon from "../kit/Icon.vue";
+import InlineName from "../kit/InlineName.vue";
+import FileSlip from "../kit/FileSlip.vue";
+import ProgressBar from "../kit/ProgressBar.vue";
+import DumpAnswer from "./DumpAnswer.vue";
+import DumpFiles from "./DumpFiles.vue";
+import DumpMadeRow from "./DumpMadeRow.vue";
+import DumpReport from "./DumpReport.vue";
+import {TEXT_ITEM, fileKind, itemLabel, plural} from "./dumpPile.js";
+
+const QUIET_AFTER = 180;
+const SUMMING_FOR = 120;
+const EARLIER = 4;
+const READ = {waiting: -1, reading: 0.35, filed: 1, failed: 1};
 
 const draft = reactive({text: "", files: [], sending: false, error: "", over: false});
-const more = reactive({open: false, text: "", files: [], sending: false, error: ""});
-const reply = reactive({sending: false});
-const chosen = ref(0);
-const composing = ref(false);
-const switching = ref(false);
-const stopping = ref(false);
 const opened = ref("");
+const litItem = ref("");
+const litRef = ref("");
+const merging = ref(null);
+const confirming = ref("");
+const renamingCollection = ref(false);
+const taking = ref(-1);
+const fetched = reactive({});
+const narr = ref(null);
 
-const joined = (d) => d.data?.queued_at || d.created;
-const open = computed(() =>
-    rows("dump")
-        .filter((d) => !d.deleted && !d.completed)
-        .sort((a, b) => joined(b) - joined(a) || b.n - a.n)
-);
-const inHand = computed(() => open.value[open.value.length - 1] || null);
-const unconfirmed = computed(() =>
-    rows("dump")
-        .filter((d) => !d.deleted && d.completed && !d.data?.confirmed)
-        .sort((a, b) => b.n - a.n)
-);
-const dump = computed(() =>
-    composing.value ? null : rows("dump").find((d) => d.n === chosen.value) || inHand.value || unconfirmed.value[0] || null
-);
 watch(
-    dump,
-    (d) => {
-        if (d && !chosen.value) chosen.value = d.n;
+    () => store.dumpFiles,
+    (files) => {
+        if (!files.length) return;
+        draft.files.push(...files);
+        store.dumpFiles = [];
+        store.dumpShown = 0;
     },
     {immediate: true}
 );
-watch(chosen, () => {
-    opened.value = "";
-    stopping.value = false;
-    more.open = false;
-});
 
-const label = (name) => (name === "text" ? "Pasted text" : name.startsWith("added-") ? "Added note" : name);
-const names = (d) => [...(d.brief?.trim() ? d.data?.parts || ["text"] : []), ...Object.keys(d.data?.files || {}).sort()];
-const ITEM_STATES = {waiting: "waiting", reading: "reading", filed: "filed", failed: "not filed"};
+const every = computed(() => rows("dump").filter((d) => !d.deleted));
+const joined = (d) => d.data?.queued_at || d.created;
+const inHand = computed(() => every.value.filter((d) => !d.completed).sort((a, b) => joined(a) - joined(b) || a.n - b.n)[0] || null);
+const dump = computed(() => every.value.find((d) => d.n === store.dumpShown) || null);
+const earlier = computed(() => [...every.value].sort((a, b) => b.n - a.n).slice(0, EARLIER));
+watch(
+    () => store.dumpShown,
+    () => {
+        opened.value = "";
+        merging.value = null;
+        confirming.value = "";
+        renamingCollection.value = false;
+    }
+);
+
+const names = (d) => [...(d.brief?.trim() ? d.data?.parts || [TEXT_ITEM] : []), ...Object.keys(d.data?.files || {}).sort()];
 const items = computed(() =>
     dump.value
         ? names(dump.value).map((name) => {
               const item = (dump.value.data.items || {})[name] || {};
               const state = item.failed ? "failed" : item.outcome ? "filed" : item.insight ? "reading" : "waiting";
-              return {name, state, note: item.failed || item.outcome || item.insight || "", refs: item.refs || []};
+              return {
+                  name,
+                  label: itemLabel(name),
+                  state,
+                  note: item.failed || item.outcome || item.insight || "",
+                  refs: item.refs || [],
+                  added: item.added || [],
+              };
           })
         : []
 );
 const settled = computed(() => items.value.filter((i) => i.state === "filed" || i.state === "failed").length);
-const filed = computed(() => items.value.filter((i) => i.state === "filed").length);
+
+const now = useNow(3000);
 const working = computed(() => Boolean(dump.value && !dump.value.completed));
 const queued = computed(() => Boolean(working.value && inHand.value && inHand.value.n !== dump.value.n));
 const log = computed(() => dump.value?.data?.log || []);
@@ -72,46 +86,26 @@ const latest = computed(() => log.value[log.value.length - 1] || null);
 const started = computed(() => Boolean(log.value.length || items.value.some((i) => i.state !== "waiting")));
 const asked = computed(() => (working.value && dump.value.data?.question?.text) || "");
 const guesses = computed(() => (asked.value && dump.value.data.question.guesses) || []);
-
-const now = useNow(3000);
-const QUIET_AFTER = 180;
-const OFFERING_FOR = 60;
-const quietFor = computed(() => (working.value && started.value && !queued.value ? now.value - (dump.value.updated || 0) : 0));
-const quiet = computed(() => quietFor.value > QUIET_AFTER && !asked.value);
-
-const confirmed = computed(() => Boolean(dump.value?.data?.confirmed));
-const stopped = computed(() => Boolean(dump.value?.data?.stopped));
-const options = computed(() => dump.value?.data?.options || []);
-const choice = computed(() => dump.value?.data?.chosen || {});
-const leftOut = computed(() => dump.value?.data?.left_out || {});
-const offering = computed(() =>
-    Boolean(
-        dump.value?.completed &&
-        !stopped.value &&
-        !confirmed.value &&
-        !options.value.length &&
-        now.value - dump.value.completed < OFFERING_FOR
-    )
+const quiet = computed(
+    () => working.value && started.value && !queued.value && !asked.value && now.value - (dump.value.updated || 0) > QUIET_AFTER
 );
-const added = computed(() => Boolean(dump.value?.completed && confirmed.value));
-const choosing = computed(() => Boolean(dump.value?.completed && !stopped.value && !added.value && !offering.value));
+const removed = computed(() => Boolean(dump.value?.data?.removed));
+const stopped = computed(() => Boolean(dump.value?.data?.stopped));
 
 const phase = computed(() => {
     if (!dump.value) return "";
-    if (added.value) return "added";
+    if (removed.value) return "removed";
     if (stopped.value) return "stopped";
-    if (offering.value) return "offering";
-    if (choosing.value) return "choosing";
+    if (dump.value.completed) return "done";
     if (queued.value) return "queued";
     if (asked.value) return "asking";
     if (quiet.value) return "quiet";
     return started.value ? "filing" : "waiting";
 });
 const PILLS = {
-    added: "Added",
+    removed: "Removed",
     stopped: "Stopped",
-    offering: "Filing",
-    choosing: "Filed",
+    done: "Filed",
     queued: "Queued",
     asking: "Needs you",
     quiet: "Quiet",
@@ -119,171 +113,174 @@ const PILLS = {
     waiting: "Filing",
 };
 const TONES = {
-    added: "done",
-    stopped: "stopped",
-    offering: "live",
-    choosing: "done",
+    removed: "idle",
+    stopped: "idle",
+    done: "done",
     queued: "idle",
     asking: "needs",
     quiet: "needs",
     filing: "live",
     waiting: "live",
 };
-const BAND_ICONS = {asking: "help", quiet: "clock", queued: "clock", stopped: "close", added: "check", choosing: "check"};
 
-const filedRefs = computed(() => [...new Set(items.value.flatMap((i) => i.refs))]);
+const named = computed(() => Boolean(dump.value && dump.value.title !== `Dump ${dump.value.n}`));
+const collection = computed(() => (named.value ? dump.value.title : ""));
+const hasCollection = computed(() => Boolean(dump.value?.refs?.some((r) => r.startsWith("collection:"))));
+
+const typeTitle = (type) => store.spec?.types?.[type]?.title || type;
+const filedRefs = computed(() => [...new Set(items.value.flatMap((i) => i.refs))].filter((r) => !r.startsWith("collection:")));
 const writing = computed(() => (working.value && latest.value?.on && !filedRefs.value.includes(latest.value.on) ? latest.value.on : ""));
-const making = computed(() => (working.value && !asked.value && latest.value?.making) || "");
-const drafts = reactive({});
-const madeRefs = computed(() =>
-    [...filedRefs.value, ...(writing.value ? [writing.value] : [])].filter((ref) => !ref.startsWith("collection:"))
-);
-const typeOf = (type) => store.spec?.types?.[type] || {};
-const madeFrom = (ref) => {
-    const from = items.value.find((i) => i.refs.includes(ref));
-    return from ? `Made from ${label(from.name)}` : "Made from the whole dump";
-};
-const made = computed(() =>
-    madeRefs.value
+const making = computed(() => (working.value && !asked.value && !writing.value && latest.value?.making) || "");
+const madeRefs = computed(() => [...filedRefs.value, ...(writing.value ? [writing.value] : [])]);
+const made = computed(() => [
+    ...madeRefs.value
         .map((ref) => {
             const [type, n] = ref.split(":");
-            const row = rows(type).find((r) => r.n === Number(n)) || drafts[ref];
-            return {ref, type, n: Number(n), row, writing: ref === writing.value, left: ref in leftOut.value, from: madeFrom(ref)};
+            const row = rows(type).find((r) => r.n === Number(n)) || fetched[ref] || null;
+            return {
+                ref,
+                type,
+                n: Number(n),
+                row,
+                writing: ref === writing.value,
+                from: items.value.filter((i) => i.refs.includes(ref)).map((i) => i.label),
+                added: items.value.some((i) => i.added.includes(ref)),
+                kind: typeTitle(type),
+                place: `${typeTitle(type)}s`,
+            };
         })
-        .filter((m) => !m.row?.deleted)
-);
-const kept = computed(() => made.value.filter((m) => !m.left));
+        .filter((m) => !m.row?.deleted),
+    ...(making.value
+        ? [
+              {
+                  ref: `making:${making.value}`,
+                  making: making.value.split(",").slice(1).join(",").trim() || making.value,
+                  writing: true,
+                  from: [],
+              },
+          ]
+        : []),
+]);
+const filedRows = computed(() => made.value.filter((m) => m.row && !m.writing));
 
-async function fetchDrafts() {
+async function fetchMade() {
     for (const ref of madeRefs.value) {
         const [type, n] = ref.split(":");
         if (rows(type).some((r) => r.n === Number(n))) continue;
         try {
-            drafts[ref] = await api.show(type, Number(n));
+            fetched[ref] = await api.show(type, Number(n));
         } catch {
-            delete drafts[ref];
+            delete fetched[ref];
         }
     }
 }
-watch([madeRefs, now], fetchDrafts, {immediate: true});
+watch([madeRefs, now], fetchMade, {immediate: true});
 
-const plural = (n, one, many) => `${n} ${n === 1 ? one : many}`;
-const kindOf = (type, n) => {
-    const title = (typeOf(type).title || type).toLowerCase();
-    return n === 1 ? title : `${title}s`;
-};
-const summary = computed(() => {
+const lines = computed(() => {
     const by = {};
-    for (const m of kept.value) (by[m.type] = by[m.type] || []).push(`${m.type} ${m.n}`);
-    const lines = Object.entries(by).map(([type, refs]) => ({
-        label: `${refs.length} ${kindOf(type, refs.length)}`,
-        value: refs.join(", "),
+    for (const m of filedRows.value) (by[m.type] = by[m.type] || []).push(m);
+    return Object.entries(by).map(([type, list]) => {
+        const word = typeTitle(type).toLowerCase();
+        const own = list.filter((m) => m.added).length;
+        return `${plural(list.length, word, `${word}s`)}${own ? `, ${own} of them written by the agent without being asked` : ""}`;
+    });
+});
+const reportTitle = computed(() =>
+    filedRows.value.length
+        ? `Done. Filed ${plural(filedRows.value.length, "thing", "things")}${collection.value ? ` in “${collection.value}”` : ""}:`
+        : "Done. Nothing was filed."
+);
+const summary = computed(() => dump.value?.data?.summary || "");
+const options = computed(() => dump.value?.data?.options || []);
+const suggestions = computed(() => {
+    const taken = dump.value?.data?.taken || {};
+    const left = dump.value?.data?.declined || [];
+    return options.value.map((o, pick) => ({
+        pick,
+        label: o.label,
+        ask: o.ask || "",
+        state: taken[pick] ? "taken" : left.includes(pick) ? "left" : "",
+        busy: taking.value === pick,
     }));
-    const gone = Object.values(leftOut.value);
-    return gone.length ? [...lines, {label: `${gone.length} left out`, value: gone.join(", "), dim: true}] : lines;
+});
+const summing = computed(
+    () => phase.value === "done" && !summary.value && !options.value.length && now.value - dump.value.completed < SUMMING_FOR
+);
+
+const timeline = computed(() => {
+    const d = dump.value;
+    if (!d) return [];
+    const said = (d.data?.said || []).map((s) => ({at: s.at, mine: true, text: s.label}));
+    const answers = (d.data?.answers || []).map((a) => ({at: a.at, mine: true, text: a.answer}));
+    const taken = Object.values(d.data?.taken || {}).map((c) => ({at: c.at, mine: true, text: c.label}));
+    const agent = log.value.map((e) => ({at: e.at, mine: false, text: e.text, detail: e.detail}));
+    return [...agent, ...said, ...answers, ...taken].sort((a, b) => a.at - b.at);
+});
+const current = computed(() => (phase.value === "filing" ? [...timeline.value].reverse().find((line) => !line.mine) || null : null));
+const thinking = computed(() => {
+    if (phase.value === "waiting") return "Waiting for the agent to pick this up";
+    if (phase.value === "queued") return `Waiting in line behind dump ${inHand.value.n}`;
+    if (phase.value === "quiet")
+        return `No update for ${Math.round((now.value - dump.value.updated) / 60)} min; the agent may be busy elsewhere`;
+    if (phase.value === "filing" && !log.value.length) return "Reading the pile";
+    if (summing.value) return "Summing up";
+    return "";
 });
 
-const band = computed(() => {
-    const total = items.value.length;
+watch(
+    () => [store.dumpShown, timeline.value.length, thinking.value],
+    async () => {
+        await nextTick();
+        if (narr.value) narr.value.scrollTop = narr.value.scrollHeight;
+    }
+);
+
+const note = computed(() => {
+    const n = filedRows.value.length;
     switch (phase.value) {
-        case "asking":
-            return {text: asked.value};
-        case "quiet":
-            return {
-                text: `No update for ${Math.round(quietFor.value / 60)} min. The agent may be busy elsewhere.`,
-                note: latest.value ? `Last thing it said: ${latest.value.text}. Filing carries on without this page open.` : "",
-            };
-        case "queued":
-            return {
-                text: `Waiting in line. Dump ${inHand.value.n} is being filed first.`,
-                note: "One dump is worked at a time. Nothing here is read yet.",
-            };
+        case "removed":
+            return `Removed. The collection and the ${plural(dump.value.data.removed_refs?.length || 0, "thing", "things")} it held are gone. What you dropped is still on dump ${dump.value.n}.`;
         case "stopped":
-            return {
-                text: `Stopped. ${filed.value} of ${total} items were filed; ${total - filed.value} were left out.`,
-                note: kept.value.length ? "What it did make is still below and can still be added." : "",
-            };
-        case "added":
-            return {
-                text: kept.value.length
-                    ? `Done. ${plural(kept.value.length, "thing is", "things are")} in the journal now.`
-                    : "Done. Nothing was added to the journal.",
-                note: !choice.value.label
-                    ? ""
-                    : choice.value.pick < 0
-                      ? "You left it to the agent. It is finishing on its own."
-                      : `You chose: ${choice.value.label}. The agent is on it now.`,
-            };
-        case "choosing":
-            return {
-                text: `${filed.value < total ? `${filed.value} of ${total} items` : total === 1 ? "The item is" : `All ${total} items`} filed. ${plural(kept.value.length, "thing", "things")} made.`,
-                note: "None of it is in the journal yet. Pick what happens next and it all goes in at once.",
-            };
-        case "offering":
-            return {text: "Filed. Working out what could come next…"};
-        case "waiting":
-            return {text: "Sent. Waiting for the agent to pick this up."};
+            return `Stopped. ${plural(n, "thing was", "things were")} filed and stay in the collection; the rest of the pile was not read.`;
+        case "done":
+            return `${plural(n, "thing", "things")} filed. Rename or merge anything; it changes in the journal right away.`;
         default:
-            return {
-                text: latest.value?.text || "Reading what you dropped",
-                detail: latest.value?.detail || "",
-                age: latest.value ? age(latest.value.at) : "",
-            };
+            return `${plural(n, "thing", "things")} filed so far. Each goes into the collection as soon as it is written.`;
     }
 });
-const spinning = computed(() => ["filing", "offering", "waiting"].includes(phase.value));
-const trail = computed(() => (["filing", "offering"].includes(phase.value) ? log.value.slice(-4, -1).reverse() : []));
-const progress = computed(() => (items.value.length ? settled.value / items.value.length : 0));
+
+const shown = computed(() => (removed.value ? [] : made.value));
 
 async function act(action, body = {}) {
     return api.act("dump", dump.value.n, action, body);
 }
 
-async function answer(text) {
-    reply.sending = true;
-    try {
-        await act("answer", {text});
-    } finally {
-        reply.sending = false;
-    }
+function attach(list) {
+    draft.files = [...draft.files, ...Array.from(list || [])];
 }
 
-function attach(into, list) {
-    into.files = [...into.files, ...Array.from(list || [])];
-}
-
-function pastedInto(into, e) {
+function pasted(e) {
     const files = Array.from(e.clipboardData?.files || []);
     if (!files.length) return;
     e.preventDefault();
-    attach(into, files);
+    attach(files);
 }
 
-function dropFiles(into, e) {
+function dropped(e) {
     draft.over = false;
-    attach(into, e.dataTransfer?.files);
+    if (!dump.value) attach(e.dataTransfer?.files);
 }
-
-const composeFoot = computed(() => {
-    const text = draft.text.trim();
-    const count = draft.files.length;
-    if (!text && !count)
-        return "The agent works out what each thing is and files it: docs, plans, to-dos. You only get asked if it truly can't tell.";
-    if (!count) return "Just text. The agent will split it itself.";
-    return `${plural(count, "file", "files")}${text ? " and some text. The agent will split the text itself." : ". The agent will work out what they are."}`;
-});
 
 async function send() {
     const text = draft.text.trim();
-    if (!text && !draft.files.length) return;
+    if ((!text && !draft.files.length) || draft.sending) return;
     draft.sending = true;
     draft.error = "";
     try {
         const row = await api.create("dump", text ? {brief: text} : {title: draft.files[0].name.slice(0, 80), brief: ""});
         for (const file of draft.files) await api.upload("dump", row.n, file);
         Object.assign(draft, {text: "", files: []});
-        chosen.value = row.n;
-        composing.value = false;
+        store.dumpShown = row.n;
     } catch (e) {
         draft.error = e.message;
     } finally {
@@ -291,386 +288,341 @@ async function send() {
     }
 }
 
-async function addMore() {
-    const text = more.text.trim();
-    if (!text && !more.files.length) return;
-    more.sending = true;
-    more.error = "";
+async function answer(text) {
+    await act("answer", {text});
+}
+
+async function say(how) {
+    await act("direct", {how});
+}
+
+async function take(pick) {
+    taking.value = pick;
     try {
-        const n = dump.value.n;
-        if (dump.value.completed) await act("reopen", {why: "more was added"});
-        const files = [...(text ? [new File([text], `added-${Date.now()}.md`, {type: "text/markdown"})] : []), ...more.files];
-        for (const file of files) await api.upload("dump", n, file);
-        Object.assign(more, {text: "", files: [], open: false});
-    } catch (e) {
-        more.error = e.message;
+        await act("choose", {pick});
     } finally {
-        more.sending = false;
+        taking.value = -1;
     }
 }
 
-async function stop() {
-    await act("stop");
-    stopping.value = false;
+async function leave(pick) {
+    await act("decline", {pick});
 }
 
-const steps = computed(() => [
-    ...options.value.map((o) => ({title: o.label})),
-    {title: "You decide", description: "The agent finishes everything on its own"},
-]);
-const foot = computed(() => {
-    if (phase.value === "choosing") return {text: `${plural(kept.value.length, "thing goes", "things go")} in`};
-    if (working.value) return {text: queued.value ? "Take out of the queue" : "Stop filing", run: () => (stopping.value = true)};
-    return {text: "New dump", run: () => (composing.value = true)};
-});
-
-const others = computed(() =>
-    rows("dump")
-        .filter((d) => !d.deleted && (!d.completed || !d.data?.confirmed || d.n === dump.value?.n))
-        .sort((a, b) => b.n - a.n)
-);
-const switchable = computed(() => others.value.length > 1 || (!dump.value && others.value.length > 0));
-
-function pillOf(d) {
-    if (d.completed) return d.data?.confirmed ? "added" : d.data?.stopped ? "stopped" : "choosing";
-    if (inHand.value?.n !== d.n) return "queued";
-    return d.data?.question?.text ? "asking" : "filing";
+async function renameCollection(title) {
+    renamingCollection.value = false;
+    if (title !== collection.value) await act("name", {title});
 }
 
-function pick(n) {
-    chosen.value = n;
-    composing.value = false;
-    switching.value = false;
+async function renameRow(m, title) {
+    await api.act(m.type, m.n, "update", {title});
+    if (fetched[m.ref]) fetched[m.ref] = await api.show(m.type, m.n);
 }
 
-function fresh() {
-    composing.value = true;
-    switching.value = false;
+function select(m) {
+    const picked = new Set(merging.value);
+    if (picked.has(m.ref)) picked.delete(m.ref);
+    else picked.add(m.ref);
+    merging.value = picked;
+}
+
+async function merge() {
+    const picked = filedRows.value.filter((m) => merging.value.has(m.ref));
+    merging.value = null;
+    const list = picked.map((m) => `“${m.row.title}” (${m.ref})`).join(" and ");
+    await say(`Merge ${list} into one document, named for both, and file it where the first one is.`);
+}
+
+async function confirmed() {
+    const what = confirming.value;
+    confirming.value = "";
+    await act(what);
 }
 
 function toggle(m) {
-    if (m.writing || m.left || !m.row) return;
     opened.value = opened.value === m.ref ? "" : m.ref;
 }
 
-function leave(m) {
-    opened.value = "";
-    act("leave", {ref: m.ref});
-}
+const pillOf = (d) => {
+    if (d.data?.removed) return "removed";
+    if (d.data?.stopped) return "stopped";
+    if (d.completed) return "done";
+    return inHand.value?.n === d.n ? "filing" : "queued";
+};
 </script>
 
 <template>
-    <section class="dump">
+    <section
+        :class="['dump', {over: draft.over}]"
+        @dragover.prevent="!dump && (draft.over = true)"
+        @dragleave.self="draft.over = false"
+        @drop.prevent="dropped"
+    >
         <header class="dump-head">
             <Icon name="inbox" :size="14" />
-            <span class="dump-switch">
-                <button type="button" class="dump-title" :disabled="!switchable" @click="switching = !switching">
-                    <span class="dump-title-text">{{ dump ? `Dump ${dump.n} · ${dump.title}` : "New dump" }}</span>
-                    <template v-if="switchable">
-                        <Icon name="down" :size="12" />
-                    </template>
-                </button>
-                <template v-if="switching">
-                    <div class="dump-menu">
-                        <template v-for="d in others" :key="d.n">
-                            <button type="button" :class="['dump-menu-row', {current: d.n === dump?.n}]" @click="pick(d.n)">
-                                <span class="dump-menu-title">Dump {{ d.n }} · {{ d.title }}</span>
-                                <span :class="['dump-pill', TONES[pillOf(d)]]">{{ PILLS[pillOf(d)] }}</span>
-                            </button>
-                        </template>
-                        <span class="dump-menu-rule" />
-                        <button type="button" class="dump-menu-row" @click="fresh">
-                            <Icon name="plus" :size="12" />
-                            New dump
-                        </button>
-                    </div>
+            <template v-if="dump">
+                <span class="dump-title">Dump {{ dump.n }}</span>
+                <template v-if="renamingCollection">
+                    <InlineName class="dump-rename" :value="collection" @done="renameCollection" @cancel="renamingCollection = false" />
                 </template>
-            </span>
-            <template v-if="phase">
+                <template v-else-if="collection">
+                    <button type="button" class="dump-collection" title="Rename the collection" @click="renamingCollection = true">
+                        <span class="dump-collection-name">{{ collection }}</span>
+                        <Icon name="pencil" :size="11" />
+                    </button>
+                </template>
                 <span :class="['dump-pill', TONES[phase]]">{{ PILLS[phase] }}</span>
+            </template>
+            <template v-else>
+                <span class="dump-title">New dump</span>
             </template>
             <span class="grow" />
             <template v-if="dump">
-                <button type="button" class="dump-square" title="Start a new dump" @click="fresh">
-                    <Icon name="plus" :size="12" />
-                </button>
+                <Btn small @click="store.dumpShown = 0">New dump</Btn>
             </template>
             <Btn small @click="store.dumping = false">Back to chat</Btn>
         </header>
 
         <template v-if="!dump">
-            <div class="dump-compose">
-                <div
-                    :class="['dump-drop', {over: draft.over, ready: draft.text.trim() || draft.files.length}]"
-                    @dragover.prevent="draft.over = true"
-                    @dragleave="draft.over = false"
-                    @drop.prevent="dropFiles(draft, $event)"
-                >
-                    <textarea
-                        v-model="draft.text"
-                        placeholder="Paste anything: a transcript, notes, a chat, links. Drop files anywhere in this box."
-                        @paste="pastedInto(draft, $event)"
-                    />
-                    <template v-if="draft.files.length">
-                        <DumpFiles :files="draft.files" @remove="draft.files.splice($event, 1)" />
-                    </template>
-                    <div class="dump-row">
-                        <label class="dump-quiet">
-                            <Icon name="paperclip" :size="13" />
-                            Add files
-                            <input type="file" multiple hidden @change="attach(draft, $event.target.files)" />
-                        </label>
-                        <span class="grow" />
-                        <template v-if="draft.error">
-                            <span class="dump-error">{{ draft.error }}</span>
+            <div class="dump-start">
+                <div class="dump-start-panel">
+                    <p class="dump-prompt">Throw it all in.</p>
+                    <div :class="['dump-compose', {lit: draft.files.length}]" @paste="pasted">
+                        <template v-if="draft.files.length">
+                            <span class="dump-eyebrow">The pile · {{ plural(draft.files.length, "file", "files") }}</span>
+                            <DumpFiles :files="draft.files" @remove="(i) => draft.files.splice(i, 1)" />
                         </template>
-                        <Btn kind="primary" small :disabled="draft.sending || (!draft.text.trim() && !draft.files.length)" @click="send">
-                            {{ draft.sending ? "Dumping…" : "Dump" }}
-                        </Btn>
+                        <textarea
+                            v-model="draft.text"
+                            rows="2"
+                            :placeholder="
+                                draft.files.length ? 'Anything I should know before I sort it? Optional' : 'Type or paste anything'
+                            "
+                            @keydown.meta.enter.prevent="send"
+                            @keydown.ctrl.enter.prevent="send"
+                        />
+                        <div class="dump-row">
+                            <label class="dump-add">
+                                <Icon name="paperclip" :size="13" />
+                                {{ draft.files.length ? "Add more" : "Add files" }}
+                                <input type="file" multiple hidden @change="(e) => (attach(e.target.files), (e.target.value = ''))" />
+                            </label>
+                            <span class="grow" />
+                            <template v-if="draft.error">
+                                <span class="dump-error">{{ draft.error }}</span>
+                            </template>
+                            <Btn
+                                kind="primary"
+                                small
+                                :busy="draft.sending"
+                                :disabled="!draft.text.trim() && !draft.files.length"
+                                @click="send"
+                            >
+                                Sort and file it
+                            </Btn>
+                        </div>
                     </div>
+                    <template v-if="!draft.files.length">
+                        <label class="dump-lane">
+                            <Icon name="file" :size="20" />
+                            <span class="dump-lane-title">Drop as many files as you like</span>
+                            <span class="dump-lane-meta">transcripts · notes · documents · screenshots · links</span>
+                            <input type="file" multiple hidden @change="(e) => (attach(e.target.files), (e.target.value = ''))" />
+                        </label>
+                    </template>
+                    <p class="dump-context">
+                        Mixed is fine. I sort it by subject, one document per subject with a proper name, and file each one straight into a
+                        new collection. Rename or merge anything afterwards, or remove the whole collection.
+                    </p>
+                    <template v-if="earlier.length">
+                        <div class="dump-earlier">
+                            <span class="dump-eyebrow">Earlier dumps</span>
+                            <template v-for="d in earlier" :key="d.n">
+                                <button type="button" class="dump-earlier-row" @click="store.dumpShown = d.n">
+                                    <span class="dump-earlier-title">
+                                        Dump {{ d.n }}
+                                        <template v-if="d.title !== `Dump ${d.n}`">· {{ d.title }}</template>
+                                    </span>
+                                    <span :class="['dump-pill', TONES[pillOf(d)]]">{{ PILLS[pillOf(d)] }}</span>
+                                </button>
+                            </template>
+                        </div>
+                    </template>
                 </div>
-                <p class="dump-compose-foot">{{ composeFoot }}</p>
+                <template v-if="draft.over">
+                    <div class="dump-drop">
+                        <div class="dump-drop-lane">
+                            <Icon name="file" :size="20" />
+                            <span class="dump-lane-title">Let go to add them to the pile</span>
+                            <span class="dump-lane-meta">sorted by subject, filed into a new collection</span>
+                        </div>
+                    </div>
+                </template>
             </div>
         </template>
 
         <template v-else>
-            <div class="dump-body">
-                <div :class="['dump-band', TONES[phase]]">
-                    <div class="dump-band-line">
-                        <template v-if="spinning">
-                            <Spinner />
-                        </template>
-                        <template v-else>
-                            <span :class="['dump-band-icon', TONES[phase]]">
-                                <Icon :name="BAND_ICONS[phase]" :size="14" />
-                            </span>
-                        </template>
-                        <Transition name="dump-fade" mode="out-in">
-                            <span :key="band.text" class="dump-band-text">{{ band.text }}</span>
-                        </Transition>
-                        <template v-if="band.age">
-                            <span class="dump-band-age">{{ band.age }}</span>
+            <div class="dump-work">
+                <aside class="dump-rail">
+                    <span class="dump-eyebrow">The pile</span>
+                    <div class="dump-pile" @mouseleave="litItem = ''">
+                        <template v-for="item in items" :key="item.name">
+                            <FileSlip
+                                :file="{name: item.label}"
+                                :kind="fileKind(item.name)"
+                                :state="item.state"
+                                :read="READ[item.state]"
+                                :meta="
+                                    item.state === 'filed'
+                                        ? `→ ${plural(item.refs.filter((r) => !r.startsWith('collection:')).length, 'thing', 'things')}`
+                                        : item.state === 'failed'
+                                          ? 'not filed'
+                                          : item.state
+                                "
+                                :lit="litItem === item.name || item.refs.includes(litRef)"
+                                :title="item.note"
+                                @mouseenter="litItem = item.name"
+                            />
                         </template>
                     </div>
-                    <template v-if="band.detail">
-                        <p class="dump-band-detail">{{ band.detail }}</p>
-                    </template>
-                    <template v-if="band.note">
-                        <p class="dump-band-note">{{ band.note }}</p>
-                    </template>
-                    <template v-if="trail.length">
-                        <TransitionGroup name="dump-fade" tag="div" class="dump-trail">
-                            <span v-for="entry in trail" :key="entry.at">
-                                {{ entry.detail ? `${entry.text} · ${entry.detail}` : entry.text }}
-                            </span>
-                        </TransitionGroup>
-                    </template>
-                    <template v-if="phase === 'asking'">
+                    <ProgressBar thin :value="settled" :max="Math.max(1, items.length)" />
+                    <span class="dump-eyebrow">What I'm doing</span>
+                    <div ref="narr" class="dump-narr">
+                        <template v-for="(line, i) in timeline" :key="i">
+                            <div :class="['dump-line', {mine: line.mine, now: line === current}]">
+                                <template v-if="line.mine">{{ line.text }}</template>
+                                <template v-else>
+                                    <span class="dump-line-head">
+                                        <span class="dump-line-title">{{ line.text }}</span>
+                                        <template v-if="line === current">
+                                            <span class="dump-dots">
+                                                <i />
+                                                <i />
+                                                <i />
+                                            </span>
+                                        </template>
+                                        <span class="dump-line-age">{{ age(line.at) }}</span>
+                                    </span>
+                                    <template v-if="line.detail">
+                                        <span class="dump-line-detail">{{ line.detail }}</span>
+                                    </template>
+                                </template>
+                            </div>
+                        </template>
+                        <template v-if="thinking">
+                            <p class="dump-thinking">
+                                <span class="dump-dots">
+                                    <i />
+                                    <i />
+                                    <i />
+                                </span>
+                                {{ thinking }}
+                            </p>
+                        </template>
+                    </div>
+                    <template v-if="asked">
                         <div class="dump-ask">
+                            <p class="dump-ask-q">{{ asked }}</p>
                             <template v-if="guesses.length">
-                                <div class="dump-chips">
-                                    <template v-for="guess in guesses" :key="guess">
-                                        <button type="button" class="dump-chip" :disabled="reply.sending" @click="answer(guess)">
-                                            {{ guess }}
-                                        </button>
+                                <div class="dump-guesses">
+                                    <template v-for="g in guesses" :key="g">
+                                        <Btn small @click="answer(g)">{{ g }}</Btn>
                                     </template>
                                 </div>
                             </template>
                             <DumpAnswer :placeholder="guesses.length ? 'Or say it in your own words' : 'Your answer'" :send="answer" />
                         </div>
                     </template>
-                    <template v-if="phase === 'choosing'">
-                        <OptionList
-                            class="dump-steps"
-                            :options="steps"
-                            color="var(--created)"
-                            @pick="(i) => act('choose', {pick: i === options.length ? -1 : i})"
-                        />
-                        <DumpAnswer
-                            class="dump-steps"
-                            placeholder="Or say what should happen next, in your own words"
-                            action="Send"
-                            :send="(how) => act('direct', {how})"
-                        />
+                    <template v-else-if="!removed">
+                        <DumpAnswer placeholder="Ask about what I filed" action="Send" :send="say" />
                     </template>
-                    <template v-if="phase === 'offering'">
-                        <div class="dump-steps">
-                            <template v-for="i in 3" :key="i">
-                                <span class="dump-step-ghost" />
+                </aside>
+
+                <div class="dump-main">
+                    <p class="dump-note">{{ note }}</p>
+                    <div class="dump-docs" @mouseleave="litRef = ''">
+                        <template v-if="phase === 'done'">
+                            <DumpReport
+                                :title="reportTitle"
+                                :lines="lines"
+                                :summary="summary"
+                                :suggestions="suggestions"
+                                :summing="summing"
+                                @take="take"
+                                @leave="leave"
+                            />
+                        </template>
+                        <template v-for="m in shown" :key="m.ref">
+                            <DumpMadeRow
+                                :made="m"
+                                :open="opened === m.ref"
+                                :lit="litRef === m.ref || (!!litItem && items.some((i) => i.name === litItem && i.refs.includes(m.ref)))"
+                                :selecting="!!merging"
+                                :selected="!!merging && merging.has(m.ref)"
+                                @mouseenter="litRef = m.ref"
+                                @toggle="toggle(m)"
+                                @peek="peekRef(m.ref)"
+                                @rename="(title) => renameRow(m, title)"
+                                @merge="merging = new Set([m.ref])"
+                                @select="select(m)"
+                            />
+                        </template>
+                    </div>
+                    <template v-if="merging">
+                        <div class="dump-float">
+                            <template v-if="merging.size < 2">1 picked · pick one more to merge with it</template>
+                            <template v-else>
+                                {{ merging.size }} picked
+                                <Btn kind="primary" small @click="merge">Merge into one document</Btn>
                             </template>
+                            <Btn small @click="merging = null">Cancel</Btn>
                         </div>
                     </template>
-                    <template v-if="phase === 'stopped' && kept.length">
-                        <div class="dump-steps">
-                            <button type="button" class="dump-step primary" @click="act('confirm')">
-                                Add {{ plural(kept.length, "thing", "things") }} to the journal
-                            </button>
-                        </div>
-                    </template>
-                    <template v-if="phase === 'quiet'">
-                        <div class="dump-row indent">
-                            <Btn small @click="store.dumping = false">Back to chat</Btn>
-                        </div>
-                    </template>
-                    <template v-if="!['added', 'queued', 'choosing'].includes(phase)">
-                        <div class="dump-progress">
-                            <span class="dump-track">
-                                <span class="dump-fill" :style="{width: `${Math.max(progress, 0.04) * 100}%`}" />
+                    <footer class="dump-foot">
+                        <template v-if="confirming === 'remove'">
+                            <span class="dump-confirm">
+                                Remove the collection and the {{ plural(filedRows.length, "thing", "things") }} in it? What you dropped is
+                                not touched.
                             </span>
-                            <span class="dump-count">{{ settled }} of {{ items.length }} filed</span>
-                        </div>
-                    </template>
-                </div>
-
-                <template v-if="stopping">
-                    <div class="dump-confirm">
-                        <span>
-                            {{
-                                queued
-                                    ? "Take this dump out of the queue? Nothing in it gets filed."
-                                    : `Stop now? ${plural(items.length - settled, "item has", "items have")} not been read yet and will be left out.`
-                            }}
-                        </span>
-                        <div class="dump-row">
+                            <Btn small @click="confirming = ''">Keep it</Btn>
+                            <Btn kind="danger" small @click="confirmed">Remove</Btn>
+                        </template>
+                        <template v-else-if="confirming === 'stop'">
+                            <span class="dump-confirm">Stop filing? What is filed stays; the rest of the pile is not read.</span>
+                            <Btn small @click="confirming = ''">Keep filing</Btn>
+                            <Btn kind="danger" small @click="confirmed">Stop</Btn>
+                        </template>
+                        <template v-else>
+                            <Icon name="inbox" :size="13" />
+                            <span class="dump-foot-label">Collection</span>
+                            <span class="dump-foot-name">{{ collection || (removed ? "Removed" : "Not named yet") }}</span>
+                            <span class="dump-foot-label">· {{ plural(filedRows.length, "thing", "things") }}</span>
                             <span class="grow" />
-                            <Btn small @click="stopping = false">{{ queued ? "Keep it queued" : "Keep filing" }}</Btn>
-                            <button type="button" class="dump-danger" @click="stop">{{ queued ? "Remove" : "Stop" }}</button>
-                        </div>
-                    </div>
-                </template>
-
-                <div class="dump-columns">
-                    <div class="dump-made">
-                        <template v-if="made.length || making">
-                            <div class="dump-section">
-                                <div class="dump-heading">
-                                    <span>{{ working || phase === "offering" ? "Made so far" : "Made" }} · {{ kept.length }}</span>
-                                    <span class="grow" />
-                                    <template v-if="!added">
-                                        <span class="dump-hint">Click a row to look inside</span>
-                                    </template>
-                                </div>
-                                <TransitionGroup name="dump-pop" tag="div" class="dump-rows">
-                                    <template v-for="m in made" :key="m.ref">
-                                        <DumpMadeRow
-                                            :made="m"
-                                            :row="m.row"
-                                            :icon="typeOf(m.type).icon || 'file'"
-                                            :open="opened === m.ref"
-                                            :added="added"
-                                            @toggle="toggle(m)"
-                                            @keep="act('keep', {ref: m.ref})"
-                                            @leave="leave(m)"
-                                            @close="opened = ''"
-                                        />
-                                    </template>
-                                    <template v-if="making">
-                                        <DumpMadeRow key="making" :making="making" />
-                                    </template>
-                                </TransitionGroup>
-                            </div>
-                        </template>
-
-                        <template v-if="added && summary.length">
-                            <div class="dump-section">
-                                <div class="dump-heading">In the journal now</div>
-                                <template v-for="line in summary" :key="line.label">
-                                    <div :class="['dump-summary-row', {dim: line.dim}]">
-                                        <span class="dump-summary-label">{{ line.label }}</span>
-                                        <span class="grow" />
-                                        <span class="dump-summary-value">{{ line.value }}</span>
-                                    </div>
-                                </template>
-                            </div>
-                        </template>
-                    </div>
-
-                    <template v-if="items.length && !added">
-                        <div class="dump-dropped">
-                            <div class="dump-heading">You dropped · {{ items.length }}</div>
-                            <template v-for="item in items" :key="item.name">
-                                <div :class="['dump-item', item.state, {quiet}]">
-                                    <span class="dump-dot" />
-                                    <span class="dump-item-text">
-                                        <span class="dump-item-head">
-                                            <span class="dump-item-name">{{ label(item.name) }}</span>
-                                            <span class="dump-item-state">
-                                                {{ quiet && item.state === "reading" ? "was being read" : ITEM_STATES[item.state] }}
-                                            </span>
-                                        </span>
-                                        <template v-if="item.note">
-                                            <span class="dump-item-note">{{ item.note }}</span>
-                                        </template>
-                                    </span>
-                                </div>
+                            <template v-if="working">
+                                <Btn small @click="confirming = 'stop'">Stop filing</Btn>
                             </template>
-                        </div>
-                    </template>
+                            <template v-if="hasCollection && !removed">
+                                <Btn small :disabled="!filedRows.length && working" @click="confirming = 'remove'">
+                                    Remove the collection
+                                </Btn>
+                            </template>
+                        </template>
+                    </footer>
                 </div>
-
-                <template v-if="more.open">
-                    <div class="dump-more" @dragover.prevent @drop.prevent="dropFiles(more, $event)">
-                        <textarea
-                            v-model="more.text"
-                            placeholder="Something you forgot. Paste it or drop files here."
-                            @paste="pastedInto(more, $event)"
-                        />
-                        <template v-if="more.files.length">
-                            <DumpFiles :files="more.files" @remove="more.files.splice($event, 1)" />
-                        </template>
-                        <div class="dump-row">
-                            <label class="dump-quiet">
-                                <Icon name="paperclip" :size="13" />
-                                Add a file
-                                <input type="file" multiple hidden @change="attach(more, $event.target.files)" />
-                            </label>
-                            <span class="grow" />
-                            <template v-if="more.error">
-                                <span class="dump-error">{{ more.error }}</span>
-                            </template>
-                            <Btn small @click="more.open = false">Cancel</Btn>
-                            <Btn
-                                kind="primary"
-                                small
-                                :disabled="more.sending || (!more.text.trim() && !more.files.length)"
-                                @click="addMore"
-                            >
-                                {{ more.sending ? "Adding…" : "Add" }}
-                            </Btn>
-                        </div>
-                    </div>
-                </template>
             </div>
-
-            <template v-if="added">
-                <div class="dump-finish">
-                    <button type="button" class="dump-finish-button" @click="store.dumping = false">
-                        <Icon name="check" :size="14" />
-                        Dump filed · Back to chat
-                    </button>
-                </div>
-            </template>
-            <footer class="dump-foot">
-                <button type="button" class="dump-quiet" @click="more.open = true">
-                    <Icon name="plus" :size="12" />
-                    {{ added ? "Add more to this dump" : "Add more" }}
-                </button>
-                <span class="grow" />
-                <button type="button" :class="['dump-foot-right', {still: !foot.run}]" :disabled="!foot.run" @click="foot.run?.()">
-                    {{ foot.text }}
-                </button>
-            </footer>
         </template>
     </section>
 </template>
 
 <style scoped>
 .dump {
+    position: relative;
     display: flex;
     flex-direction: column;
     height: 100%;
     min-height: 0;
     background: var(--bg);
+    container-type: inline-size;
 }
 
 .grow {
@@ -678,195 +630,163 @@ function leave(m) {
 }
 
 .dump-head {
-    position: relative;
     display: flex;
     flex: none;
     align-items: center;
-    gap: 10px;
-    padding: 12px 16px;
+    gap: 9px;
+    min-height: 44px;
+    padding: 6px 12px 6px 16px;
     border-bottom: 1px solid var(--border);
     color: var(--text-3);
 }
 
-.dump-switch {
-    position: relative;
-    display: flex;
-    min-width: 0;
-}
-
-.dump-title {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    min-width: 0;
-    padding: 0;
-    border: none;
-    background: none;
-    color: var(--text);
-    font: inherit;
-    font-size: 13px;
-    font-weight: 500;
-    cursor: pointer;
-}
-
-.dump-title:disabled {
-    cursor: default;
-}
-
-.dump-title:not(:disabled):hover {
+.dump-head > :deep(.ico) {
     color: var(--accent-text);
 }
 
-.dump-title-text,
-.dump-menu-title {
-    overflow: hidden;
+.dump-title {
+    font-size: 13px;
+    color: var(--text);
     white-space: nowrap;
-    text-overflow: ellipsis;
 }
 
-.dump-menu {
-    position: absolute;
-    top: 28px;
-    left: -24px;
-    z-index: 20;
-    display: flex;
-    flex-direction: column;
-    gap: 1px;
-    width: 300px;
-    padding: 4px;
-    border: 1px solid var(--border-2);
-    border-radius: 8px;
-    background: var(--raised);
-    box-shadow: 0 10px 30px rgb(0 0 0 / 50%);
-    animation: dump-rise 0.16s ease-out;
-}
-
-.dump-menu-row {
-    display: flex;
+.dump-collection {
+    display: inline-flex;
     align-items: center;
-    gap: 8px;
-    width: 100%;
-    padding: 6px 8px;
-    border: none;
+    gap: 6px;
+    min-width: 0;
+    padding: 2px 6px;
+    border: 0;
     border-radius: 6px;
     background: none;
     color: var(--text-2);
     font: inherit;
     font-size: 13px;
-    text-align: left;
     cursor: pointer;
 }
 
-.dump-menu-row .dump-menu-title {
-    flex: 1;
+.dump-collection-name {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
-.dump-menu-row:hover,
-.dump-menu-row.current {
+.dump-collection :deep(.ico) {
+    opacity: 0;
+    transition: opacity 0.15s;
+}
+
+.dump-collection:hover {
     background: var(--hover);
     color: var(--text);
 }
 
-.dump-menu-rule {
-    height: 1px;
-    margin: 3px 0;
-    background: var(--border);
+.dump-collection:hover :deep(.ico) {
+    opacity: 1;
+}
+
+.dump-rename {
+    max-width: 360px;
 }
 
 .dump-pill {
     flex: none;
-    padding: 1px 7px;
-    border-radius: 999px;
+    height: 20px;
+    padding: 0 8px;
+    border-radius: 10px;
+    background: var(--sel);
+    font-size: 11px;
+    line-height: 20px;
+    color: var(--text-2);
+}
+
+.dump-pill.live {
     background: var(--accent-dim);
     color: var(--accent-text);
-    font-size: 11px;
-    white-space: nowrap;
 }
 
 .dump-pill.done {
-    background: color-mix(in srgb, var(--created) 16%, transparent);
-    color: var(--created);
+    background: color-mix(in srgb, var(--tone-good) 14%, transparent);
+    color: var(--tone-good);
 }
 
 .dump-pill.needs {
-    background: color-mix(in srgb, var(--blocking) 16%, transparent);
-    color: var(--blocking);
+    background: color-mix(in srgb, var(--tone-warn) 14%, transparent);
+    color: var(--tone-warn);
 }
 
-.dump-pill.stopped {
-    background: color-mix(in srgb, var(--danger) 16%, transparent);
-    color: var(--danger);
+.dump-eyebrow {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--text-4);
 }
 
-.dump-pill.idle {
-    background: var(--hover);
-    color: var(--text-2);
+.dump-start {
+    position: relative;
+    display: grid;
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    place-items: center;
 }
 
-.dump-square {
+.dump-start-panel {
     display: flex;
-    flex: none;
-    align-items: center;
-    justify-content: center;
-    width: 24px;
-    height: 24px;
-    border: 1px solid var(--border-2);
-    border-radius: 7px;
-    background: transparent;
-    color: var(--text-2);
-    cursor: pointer;
+    flex-direction: column;
+    gap: 16px;
+    width: min(620px, calc(100% - 40px));
+    padding: 24px 0;
 }
 
-.dump-square:hover {
-    background: var(--hover);
+.dump-prompt {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 500;
+    letter-spacing: -0.012em;
+    color: var(--text);
 }
 
 .dump-compose {
     display: flex;
-    flex: 1;
     flex-direction: column;
-    min-height: 0;
-    padding: 18px 16px 20px;
-}
-
-.dump-drop {
-    display: flex;
-    flex: 1;
-    flex-direction: column;
-    gap: 12px;
-    padding: 14px;
-    border: 1px dashed var(--border-2);
+    gap: 10px;
+    padding: 12px 12px 10px 14px;
+    border: 1px solid var(--border-2);
     border-radius: 12px;
     background: var(--raised);
-    transition: border-color 0.12s ease;
+    transition:
+        border-color 0.2s,
+        box-shadow 0.2s;
 }
 
-.dump-drop.over,
-.dump-drop.ready {
-    border: 1px solid var(--accent);
+.dump-compose:focus-within,
+.dump-compose.lit {
+    border-color: color-mix(in srgb, var(--accent) 60%, var(--border-2));
 }
 
-.dump-drop textarea {
-    flex: 1;
-    min-height: 180px;
+.dump-compose.lit {
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 16%, transparent);
 }
 
-textarea {
-    border: none;
+.dump-compose textarea {
+    width: 100%;
+    min-height: 22px;
+    padding: 0;
+    border: 0;
+    outline: 0;
     background: transparent;
     color: var(--text);
     font: inherit;
     font-size: 14px;
-    line-height: 1.55;
+    line-height: 1.5;
     resize: none;
-    outline: none;
 }
 
-.dump-compose-foot {
-    margin: 12px 2px 0;
+.dump-compose textarea::placeholder {
     color: var(--text-4);
-    font-size: 12px;
-    line-height: 1.5;
 }
 
 .dump-row {
@@ -875,613 +795,375 @@ textarea {
     gap: 8px;
 }
 
-.dump-row.indent {
-    margin-left: 23px;
-}
-
-.dump-quiet {
+.dump-add {
     display: inline-flex;
     align-items: center;
-    gap: 5px;
-    padding: 0;
-    border: none;
-    background: none;
-    color: var(--text-2);
-    font: inherit;
+    gap: 7px;
+    padding: 4px 6px;
+    border-radius: 6px;
+    color: var(--text-3);
     font-size: 12.5px;
     cursor: pointer;
 }
 
-.dump-quiet:hover {
+.dump-add:hover {
     color: var(--text);
 }
 
 .dump-error {
-    color: var(--danger);
     font-size: 12px;
-}
-
-.dump-body {
-    display: flex;
-    flex: 1;
-    flex-direction: column;
-    gap: 16px;
-    min-height: 0;
-    padding: 18px 16px 22px;
-    overflow-y: auto;
-}
-
-.dump-band {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    padding: 12px 13px;
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    background: var(--raised);
-    transition:
-        border-color 0.3s ease,
-        background 0.3s ease;
-}
-
-.dump-band.live {
-    border-color: color-mix(in srgb, var(--accent) 35%, var(--border));
-    background: color-mix(in srgb, var(--accent) 3%, var(--raised));
-}
-
-.dump-band.needs {
-    border-color: color-mix(in srgb, var(--blocking) 35%, var(--border));
-    background: color-mix(in srgb, var(--blocking) 3%, var(--raised));
-}
-
-.dump-band.done {
-    border-color: color-mix(in srgb, var(--created) 30%, var(--border));
-}
-
-.dump-band.stopped {
-    border-color: color-mix(in srgb, var(--danger) 25%, var(--border));
-    background: color-mix(in srgb, var(--danger) 3%, var(--raised));
-}
-
-.dump-band-line {
-    display: flex;
-    align-items: flex-start;
-    gap: 9px;
-}
-
-.dump-band-line :deep(.spinner) {
-    flex: none;
-    margin-top: 4px;
-}
-
-.dump-band-icon {
-    display: flex;
-    flex: none;
-    margin-top: 2px;
-    color: var(--created);
-}
-
-.dump-band-icon.needs {
-    color: var(--blocking);
-}
-
-.dump-band-icon.idle {
-    color: var(--text-3);
-}
-
-.dump-band-icon.stopped {
     color: var(--danger);
 }
 
-.dump-band-text {
-    flex: 1;
-    min-width: 0;
-    color: var(--text);
-    font-size: 13.5px;
-    font-weight: 500;
-    line-height: 1.5;
-}
-
-.dump-band-age {
-    flex: none;
-    margin-top: 2px;
-    color: var(--text-3);
-    font-size: 11.5px;
-    font-variant-numeric: tabular-nums;
-}
-
-.dump-band-detail {
-    margin: -4px 0 0 23px;
-    color: var(--text-2);
-    font-size: 12.5px;
-    line-height: 1.5;
-}
-
-.dump-finish {
-    flex: none;
-    padding: 12px 16px 0;
-    border-top: 1px solid var(--line);
-}
-
-.dump-finish-button {
+.dump-lane,
+.dump-drop-lane {
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 8px;
-    width: 100%;
-    height: 38px;
-    border: 1px solid var(--created);
-    border-radius: 9px;
-    background: color-mix(in srgb, var(--created) 16%, var(--raised));
-    color: var(--text);
-    font: inherit;
+    gap: 6px;
+    height: 118px;
+    border: 1px dashed var(--border-3);
+    border-radius: 12px;
+    color: var(--text-3);
+    cursor: pointer;
+    transition:
+        border-color 0.2s,
+        background 0.2s;
+}
+
+.dump-lane:hover {
+    border-color: var(--text-4);
+    background: color-mix(in srgb, var(--text) 2%, transparent);
+}
+
+.dump-lane-title {
     font-size: 13px;
-    font-weight: 500;
-    cursor: pointer;
-}
-
-.dump-finish-button:hover {
-    background: color-mix(in srgb, var(--created) 24%, var(--raised));
-}
-
-.dump-finish + .dump-foot {
-    border-top: none;
-}
-
-.dump-band-note {
-    margin: 0 0 0 23px;
-    color: var(--text-3);
-    font-size: 12px;
-    line-height: 1.5;
-}
-
-.dump-trail {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    padding-left: 23px;
-}
-
-.dump-trail span {
-    overflow: hidden;
-    color: var(--text-3);
-    font-size: 12px;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-}
-
-.dump-trail span:nth-child(2) {
-    opacity: 0.8;
-}
-
-.dump-trail span:nth-child(3) {
-    opacity: 0.6;
-}
-
-.dump-ask {
-    display: flex;
-    flex-direction: column;
-    gap: 9px;
-    margin-left: 23px;
-}
-
-.dump-chips {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-}
-
-.dump-chip {
-    height: 24px;
-    padding: 0 9px;
-    border: 1px solid var(--border-2);
-    border-radius: 7px;
-    background: var(--bg);
     color: var(--text-2);
-    font: inherit;
-    font-size: 12px;
-    cursor: pointer;
 }
 
-.dump-chip:hover {
-    border-color: var(--accent);
+.dump-lane-meta {
+    font: 11px var(--mono);
+    color: var(--text-4);
+}
+
+.dump-drop {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    background: color-mix(in srgb, var(--bg) 80%, transparent);
+    pointer-events: none;
+}
+
+.dump-drop-lane {
+    width: min(560px, 86%);
+    height: 160px;
+    border: 1.5px dashed var(--accent);
+    background: color-mix(in srgb, var(--accent) 9%, transparent);
+    color: var(--accent-text);
+}
+
+.dump-drop-lane .dump-lane-title {
     color: var(--text);
 }
 
-.dump-steps {
+.dump-drop-lane .dump-lane-meta {
+    color: var(--accent-text);
+}
+
+.dump-context {
+    margin: 0;
+    font-size: 13px;
+    color: var(--text-3);
+    text-wrap: pretty;
+}
+
+.dump-earlier {
     display: flex;
     flex-direction: column;
-    gap: 6px;
-    margin-left: 23px;
+    gap: 2px;
 }
 
-.dump-step {
-    padding: 7px 12px;
-    border: 1px solid var(--border-2);
-    border-radius: 8px;
-    background: var(--bg);
-    color: var(--text);
+.dump-earlier .dump-eyebrow {
+    padding: 0 8px 4px;
+}
+
+.dump-earlier-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 7px 8px;
+    border: 0;
+    border-radius: 7px;
+    background: none;
+    color: var(--text-2);
     font: inherit;
     font-size: 12.5px;
     text-align: left;
     cursor: pointer;
 }
 
-.dump-step:hover {
-    border-color: var(--border-3);
+.dump-earlier-row:hover {
     background: var(--hover);
-}
-
-.dump-step.primary {
-    border-color: var(--accent);
-    background: var(--accent-dim);
-    color: var(--accent-text);
-}
-
-.dump-step-ghost {
-    height: 31px;
-    border-radius: 8px;
-    background: var(--hover);
-}
-
-.dump-step-ghost:nth-child(2) {
-    opacity: 0.8;
-}
-
-.dump-step-ghost:nth-child(3) {
-    opacity: 0.6;
-}
-
-.dump-progress {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.dump-track {
-    flex: 1;
-    height: 3px;
-    overflow: hidden;
-    border-radius: 2px;
-    background: var(--border);
-}
-
-.dump-fill {
-    display: block;
-    height: 100%;
-    border-radius: 2px;
-    background: var(--accent);
-    transition: width 0.4s ease;
-}
-
-.dump-band.needs .dump-fill,
-.dump-band.stopped .dump-fill {
-    background: color-mix(in srgb, var(--accent) 45%, var(--border));
-}
-
-.dump-count {
-    flex: none;
-    color: var(--text-3);
-    font-size: 11.5px;
-    font-variant-numeric: tabular-nums;
-}
-
-.dump-confirm {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    padding: 12px 13px;
-    border: 1px solid color-mix(in srgb, var(--danger) 35%, var(--border));
-    border-radius: 10px;
-    background: color-mix(in srgb, var(--danger) 4%, var(--bg));
     color: var(--text);
-    font-size: 13px;
+}
+
+.dump-earlier-title {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.dump-work {
+    display: grid;
+    flex: 1;
+    grid-template-columns: 262px minmax(0, 1fr);
+    min-height: 0;
+}
+
+.dump-rail {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+    min-height: 0;
+    padding: 16px 16px 14px 18px;
+    overflow: hidden;
+    border-right: 1px solid var(--border);
+}
+
+.dump-pile {
+    display: flex;
+    flex: none;
+    flex-direction: column;
+    gap: 7px;
+    max-height: 45%;
+    overflow-y: auto;
+}
+
+.dump-narr {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 14px;
+    min-height: 0;
+    padding-right: 2px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+}
+
+.dump-line {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    font-size: 12.5px;
     line-height: 1.5;
-    animation: dump-rise 0.18s ease-out;
+    color: var(--text-3);
 }
 
-.dump-danger {
-    height: 24px;
-    padding: 0 9px;
-    border: 1px solid var(--danger);
-    border-radius: 7px;
-    background: transparent;
-    color: var(--danger);
-    font: inherit;
-    font-size: 12px;
-    cursor: pointer;
-}
-
-.dump-danger:hover {
-    background: color-mix(in srgb, var(--danger) 12%, transparent);
-}
-
-.dump-columns {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: flex-start;
-    gap: 22px;
-}
-
-.dump-made {
-    display: flex;
-    flex: 2 1 470px;
-    flex-direction: column;
-    gap: 16px;
-    min-width: 0;
-}
-
-.dump-made:empty {
-    display: none;
-}
-
-.dump-dropped,
-.dump-section {
-    display: flex;
-    flex-direction: column;
-    min-width: 0;
-}
-
-.dump-dropped {
-    flex: 1 1 300px;
-}
-
-.dump-heading {
+.dump-line-head {
     display: flex;
     align-items: baseline;
     gap: 8px;
-    padding-bottom: 6px;
-    color: var(--text-4);
-    font-size: 10.5px;
+}
+
+.dump-line-title {
+    flex: 1;
+    min-width: 0;
     font-weight: 500;
-    letter-spacing: 0.09em;
-    text-transform: uppercase;
+    color: var(--text-2);
 }
 
-.dump-hint {
-    font-size: 11px;
-    font-weight: 400;
-    letter-spacing: 0;
-    text-transform: none;
+.dump-line.now .dump-line-title {
+    color: var(--text);
 }
 
-.dump-rows {
+.dump-line-age {
+    flex: none;
+    font: 10.5px var(--mono);
+    color: var(--text-4);
+}
+
+.dump-line-detail {
+    color: var(--text-3);
+    text-wrap: pretty;
+}
+
+.dump-line.mine {
+    align-self: flex-end;
+    max-width: 88%;
+    padding: 6px 10px;
+    border-radius: 12px 12px 4px 12px;
+    background: var(--sel);
+    color: var(--text);
+}
+
+.dump-thinking {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+    font-size: 12.5px;
+    color: var(--text-3);
+}
+
+.dump-dots {
+    display: inline-flex;
+    gap: 3px;
+}
+
+.dump-dots i {
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: var(--accent-text);
+    opacity: 0.5;
+    animation: dump-dot 1.2s ease-in-out infinite;
+}
+
+.dump-dots i:nth-child(2) {
+    animation-delay: 0.15s;
+}
+
+.dump-dots i:nth-child(3) {
+    animation-delay: 0.3s;
+}
+
+.dump-ask {
     display: flex;
     flex-direction: column;
+    gap: 8px;
+    padding: 10px;
+    border: 1px solid color-mix(in srgb, var(--tone-warn) 35%, transparent);
+    border-radius: 10px;
+    background: color-mix(in srgb, var(--tone-warn) 6%, transparent);
+}
+
+.dump-ask-q {
+    margin: 0;
+    font-size: 13px;
+    color: var(--text);
+}
+
+.dump-guesses {
+    display: flex;
+    flex-wrap: wrap;
     gap: 6px;
 }
 
-.dump-made-title,
-.dump-lead,
-.dump-small {
-    height: 22px;
-    padding: 0 9px;
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    background: transparent;
-    color: var(--text-2);
-    font: inherit;
-    font-size: 11.5px;
-    cursor: pointer;
-}
-
-.dump-small:hover {
-    color: var(--text);
-}
-
-.dump-small.leave:hover {
-    border-color: var(--danger);
-    color: var(--danger);
-}
-
-.dump-summary-row {
+.dump-main {
+    position: relative;
     display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 6px 2px;
-}
-
-.dump-summary-row + .dump-summary-row,
-.dump-item + .dump-item {
-    border-top: 1px solid var(--line);
-}
-
-.dump-summary-label {
-    color: var(--text-2);
-    font-size: 12.5px;
-}
-
-.dump-summary-value {
+    flex-direction: column;
     min-width: 0;
-    overflow: hidden;
-    color: var(--accent-text);
-    font-size: 12px;
-    white-space: nowrap;
-    text-overflow: ellipsis;
+    min-height: 0;
 }
 
-.dump-summary-row.dim span {
-    color: var(--text-4);
-}
-
-.dump-item {
-    display: flex;
-    align-items: flex-start;
-    gap: 9px;
-    padding: 8px 2px;
-}
-
-.dump-dot {
+.dump-note {
     flex: none;
-    width: 6px;
-    height: 6px;
-    margin-top: 6px;
-    border-radius: 50%;
-    background: var(--text-4);
+    margin: 0;
+    padding: 16px 20px 10px;
+    font-size: 12.5px;
+    color: var(--text-3);
 }
 
-.dump-item.reading .dump-dot {
-    background: var(--accent);
-    animation: dump-pulse 1.4s ease-in-out infinite;
-}
-
-.dump-item.reading.quiet .dump-dot {
-    background: var(--blocking);
-    animation: none;
-}
-
-.dump-item.filed .dump-dot {
-    background: var(--created);
-}
-
-.dump-item.failed .dump-dot {
-    background: var(--danger);
-}
-
-.dump-item-text {
+.dump-docs {
     display: flex;
     flex: 1;
     flex-direction: column;
-    gap: 2px;
-    min-width: 0;
-}
-
-.dump-item-head {
-    display: flex;
-    align-items: baseline;
-    gap: 8px;
-}
-
-.dump-item-name {
-    overflow: hidden;
-    color: var(--text);
-    font-size: 12.5px;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-}
-
-.dump-item.waiting .dump-item-name {
-    color: var(--text-2);
-}
-
-.dump-item-state {
-    flex: none;
-    color: var(--text-4);
-    font-size: 11.5px;
-}
-
-.dump-item.reading .dump-item-state {
-    color: var(--accent-text);
-}
-
-.dump-item.reading.quiet .dump-item-state {
-    color: var(--blocking);
-}
-
-.dump-item.filed .dump-item-state {
-    color: var(--created);
-}
-
-.dump-item-note {
-    color: var(--text-3);
-    font-size: 12px;
-}
-
-.dump-more {
-    display: flex;
-    flex-direction: column;
     gap: 10px;
-    padding: 12px;
-    border: 1px dashed var(--accent);
-    border-radius: 10px;
-    background: var(--raised);
-    animation: dump-rise 0.18s ease-out;
+    min-height: 0;
+    padding: 4px 20px 20px;
+    overflow-y: auto;
 }
 
-.dump-more textarea {
-    min-height: 64px;
-    font-size: 13px;
+.dump-float {
+    position: absolute;
+    left: 50%;
+    bottom: 70px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 8px 7px 14px;
+    border: 1px solid var(--border-3);
+    border-radius: 12px;
+    background: var(--raised);
+    box-shadow: 0 16px 40px rgb(0 0 0 / 0.45);
+    font-size: 12.5px;
+    color: var(--text-2);
+    white-space: nowrap;
+    translate: -50% 0;
 }
 
 .dump-foot {
     display: flex;
     flex: none;
     align-items: center;
-    gap: 10px;
-    padding: 12px 16px;
-    border-top: 1px solid var(--line);
-    background: var(--bg);
+    gap: 8px;
+    min-height: 52px;
+    padding: 10px 20px;
+    border-top: 1px solid var(--border);
+    color: var(--text-3);
 }
 
-.dump-foot-right {
-    padding: 0;
-    border: none;
-    background: none;
-    color: var(--text-4);
-    font: inherit;
-    font-size: 12px;
-    cursor: pointer;
+.dump-foot > :deep(.ico) {
+    color: var(--accent-text);
 }
 
-.dump-foot-right:not(.still):hover {
+.dump-foot-label {
+    font-size: 12.5px;
+    white-space: nowrap;
+}
+
+.dump-foot-name {
+    min-width: 0;
+    overflow: hidden;
+    font-size: 13px;
     color: var(--text);
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
-.dump-foot-right.still {
-    cursor: default;
+.dump-confirm {
+    flex: 1;
+    font-size: 12.5px;
+    color: var(--text-2);
 }
 
-.dump-pop-enter-active {
-    animation: dump-rise 0.3s cubic-bezier(0.2, 1.1, 0.4, 1);
-}
-
-.dump-fade-enter-active,
-.dump-fade-leave-active {
-    transition: opacity 0.2s ease;
-}
-
-.dump-fade-enter-from,
-.dump-fade-leave-to {
-    opacity: 0;
-}
-
-@keyframes dump-rise {
-    from {
-        opacity: 0;
-        transform: translateY(7px) scale(0.985);
-    }
-
-    to {
-        opacity: 1;
-        transform: none;
-    }
-}
-
-@keyframes dump-fadein {
-    from {
-        opacity: 0;
-    }
-
-    to {
-        opacity: 1;
-    }
-}
-
-@keyframes dump-pulse {
+@keyframes dump-dot {
     50% {
-        opacity: 0.28;
+        opacity: 1;
+        translate: 0 -2px;
+    }
+}
+
+@container (max-width: 640px) {
+    .dump-work {
+        grid-template-columns: minmax(0, 1fr);
+        grid-template-rows: auto minmax(0, 1fr);
+    }
+
+    .dump-rail {
+        max-height: 42cqh;
+        border-right: 0;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .dump-pile {
+        flex-direction: row;
+        max-height: none;
+        overflow-x: auto;
+    }
+
+    .dump-pile > * {
+        flex: 0 0 200px;
     }
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .dump-pop-enter-active,
-    .dump-menu,
-    .dump-more,
-    .dump-confirm {
-        animation: dump-fadein 0.2s ease-out;
-    }
-
-    .dump-item.reading .dump-dot {
+    .dump-dots i {
         animation: none;
     }
 }

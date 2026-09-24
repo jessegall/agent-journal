@@ -39,6 +39,13 @@ def test_a_request_opens_a_session_that_cancel_closes():
     assert boards.load(board.n).drafting["asked"] == [made.ref, more.ref], "a follow-up joins the request, so a cancel covers it too"
     drafter = Tickets(record, actor=AGENT)
     kept, stray = (drafter.create(t, abstract=t, board=board.n, draft=True) for t in ("Share a link", "Invite by mail"))
+    planner = Boards(record, actor=AGENT)
+    planner.group(board.n, "First release", f"{kept.n}, #{stray.n}")
+    planner.pick(board.n, str(stray.n))
+    drafting = boards.load(board.n).drafting
+    assert (drafting["groups"], drafting["picks"]["tickets"]) == ({"First release": [kept.n, stray.n]}, [stray.n]), \
+        "the agent names groups of drafts and picks drafts for the user"
+    assert "name drafts" in refused(lambda: planner.pick(board.n, "999")), "only drafts on the board are picked"
     Tickets(record, actor=USER).confirm(kept.n)
     boards.cancel(board.n)
     assert "since" not in boards.load(board.n).drafting, "cancel ends the session"
@@ -81,3 +88,26 @@ def test_a_board_is_built_from_a_document_and_removed_whole(tmp_path):
     boards.discard(board.n)
     assert not [t for t in Tickets(record, actor=USER)._standing() if t.board == board.n], "removing the board removes its tickets"
     assert not any(board.ref in key for s in Sequences(record, actor=USER).all(last=0) for key in s.runs), "and gives up the build"
+
+
+def test_a_document_handed_to_new_work_starts_drafting_from_it(tmp_path):
+    features.load()
+    record = fresh()
+    ship(record)
+    report(record, "working", "PreToolUse")
+    boards = Boards(record, actor=USER)
+    board = boards.create("Product")
+    assert "no file" in refused(lambda: boards.hand(board.n, "spec.md")), "only a document the board holds is handed over"
+    spec = tmp_path / "spec.md"
+    spec.write_text("# Invites\n")
+    boards.attach(board.n, str(spec))
+    made = boards.hand(board.n, "spec.md", "Only the first release", idempotency="panel-2")
+    assert (made.data["document"], made.brief, boards.load(board.n).drafting["asked"]) == ("spec.md", "Only the first release", [made.ref]), \
+        "the request carries its document and opens a drafting session the panel can cancel"
+    assert any(n.startswith("sequence ") and "Read the document" in n for n in nudges(record)), "it starts drafting from the document"
+    agent = Boards(record, actor=AGENT)
+    agent.outline(board.n, "Background|Who can invite")
+    agent.progress(board.n, "Who can invite", "read", drafts="2")
+    assert [(part["title"], part["state"], part["drafts"]) for part in boards.load(board.n).drafting["outline"]] == \
+        [("Background", "", 0), ("Who can invite", "read", 2)], "the panel lists the sections and how far the reading got"
+    assert "no section" in refused(lambda: agent.progress(board.n, "Pricing", "now")), "only a section of the outline is marked"

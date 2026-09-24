@@ -1,280 +1,329 @@
 <script setup>
+import {computed, ref} from "vue";
 import Btn from "../kit/Btn.vue";
 import Icon from "../kit/Icon.vue";
+import InlineName from "../kit/InlineName.vue";
 import TextDisplay from "../kit/TextDisplay.vue";
 
-defineProps({
-    made: {type: Object, default: null},
-    row: {type: Object, default: null},
-    making: {type: String, default: ""},
-    icon: {type: String, default: "file"},
-    open: {type: Boolean, default: false},
-    added: {type: Boolean, default: false},
+const props = defineProps({
+    made: {type: Object, required: true},
+    open: Boolean,
+    lit: Boolean,
+    selecting: Boolean,
+    selected: Boolean,
 });
-const emit = defineEmits(["toggle", "keep", "leave", "close"]);
+const emit = defineEmits(["toggle", "peek", "rename", "merge", "select"]);
+const renaming = ref(false);
+const forming = computed(() => props.made.writing || !props.made.row);
+const title = computed(() => props.made.row?.title || props.made.making || props.made.ref);
+const gist = computed(() => props.made.row?.abstract || "");
+const text = computed(() => props.made.row?.brief || "");
+
+function clicked() {
+    if (renaming.value || forming.value) return;
+    emit(props.selecting ? "select" : "toggle");
+}
+
+function renamed(name) {
+    renaming.value = false;
+    if (name !== title.value) emit("rename", name);
+}
 </script>
 
 <template>
-    <template v-if="making">
-        <div class="dump-made-row writing">
-            <span class="dump-shimmer" />
-            <span class="dump-made-head">
-                <span class="dump-made-icon" />
-                <span class="dump-made-text">
-                    <span class="dump-made-title">Processing · {{ making }}</span>
-                    <span class="dump-bone" />
-                </span>
-            </span>
-        </div>
-    </template>
-    <template v-else>
-        <div :class="['dump-made-row', {writing: made.writing, open, left: made.left}]">
-            <template v-if="made.writing">
-                <span class="dump-shimmer" />
-            </template>
-            <button type="button" class="dump-made-head" @click="emit('toggle')">
-                <span class="dump-made-icon"><Icon :name="icon" :size="12" /></span>
-                <span class="dump-made-text">
-                    <span class="dump-made-title">{{ row?.title || `${made.type} ${made.n}` }}</span>
-                    <template v-if="row?.abstract">
-                        <TextDisplay inline class="dump-made-line" :text="row.abstract" />
-                    </template>
-                </span>
-                <template v-if="!made.left">
-                    <span class="dump-tag">{{ made.type }} {{ made.n }}</span>
+    <div :class="['dump-doc', {forming, open, lit, selecting, selected}]" @click="clicked">
+        <template v-if="selecting">
+            <span class="dump-doc-box">
+                <template v-if="selected">
+                    <Icon name="check" :size="10" />
                 </template>
-            </button>
-            <template v-if="made.left">
-                <button type="button" class="dump-put-back" @click="emit('keep')">Left out · Put back</button>
+            </span>
+        </template>
+        <span class="dump-doc-sheet" />
+        <div class="dump-doc-main">
+            <p class="dump-doc-name">
+                <template v-if="renaming">
+                    <InlineName :value="title" @done="renamed" @cancel="renaming = false" />
+                </template>
+                <template v-else>
+                    {{ title }}
+                    <template v-if="forming">
+                        <span class="dump-doc-caret" />
+                    </template>
+                </template>
+            </p>
+            <template v-if="gist">
+                <p class="dump-doc-gist">{{ gist }}</p>
             </template>
-            <template v-if="open && row">
-                <div class="dump-made-open">
-                    <template v-if="row.brief">
-                        <TextDisplay class="dump-lead" :text="row.brief" />
-                    </template>
-                    <template v-for="s in row.sections || []" :key="s.title">
-                        <div class="dump-part">
-                            <span class="dump-part-label">{{ s.title }}</span>
-                            <TextDisplay inline class="dump-part-text" :text="s.body" />
-                        </div>
-                    </template>
-                    <div class="dump-made-foot">
-                        <span class="dump-from">{{ made.from }}</span>
-                        <template v-if="!added">
-                            <Btn small kind="danger" title="Drop this and keep it out of the journal" @click="emit('leave')">Leave out</Btn>
+            <template v-if="!forming">
+                <div class="dump-doc-meta">
+                    <template v-if="made.from.length">
+                        <span class="dump-doc-label">From</span>
+                        <template v-for="from in made.from" :key="from">
+                            <span class="dump-doc-chip">
+                                <Icon name="file" :size="10" />
+                                <span class="dump-doc-chip-name">{{ from }}</span>
+                            </span>
                         </template>
-                        <Btn small @click="emit('close')">Close</Btn>
-                    </div>
+                    </template>
+                    <span class="dump-doc-in">
+                        <span class="dump-doc-sep" />
+                        <span class="dump-doc-label">Filed in</span>
+                        <span class="dump-doc-place">{{ made.place }}</span>
+                    </span>
+                </div>
+            </template>
+            <template v-if="open && text">
+                <TextDisplay class="dump-doc-text" :text="text" />
+            </template>
+        </div>
+        <div class="dump-doc-side">
+            <span :class="['dump-doc-pill', {live: forming}]">{{ forming ? "Writing" : made.kind }}</span>
+            <template v-if="made.added">
+                <span class="dump-doc-added">I added this</span>
+            </template>
+            <template v-if="!forming && !selecting && !renaming">
+                <div class="dump-doc-acts" @click.stop>
+                    <Btn small @click="emit('peek')">Open</Btn>
+                    <Btn small @click="renaming = true">Rename</Btn>
+                    <Btn small @click="emit('merge')">Merge</Btn>
                 </div>
             </template>
         </div>
-    </template>
+    </div>
 </template>
 
 <style scoped>
-.dump-made-row {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    border: 1px solid var(--border);
-    border-radius: 9px;
+.dump-doc {
+    display: grid;
+    grid-template-columns: 24px minmax(0, 1fr) auto;
+    gap: 12px;
+    padding: 12px 14px 11px;
+    border: 1px solid var(--border-2);
+    border-radius: 12px;
     background: var(--raised);
+    cursor: pointer;
+    animation: dump-doc-arrive 0.5s var(--ease) both;
+    transition:
+        border-color 0.25s,
+        background 0.25s,
+        box-shadow 0.25s;
 }
 
-.dump-made-row.writing {
-    border-color: color-mix(in srgb, var(--accent) 45%, var(--border));
-}
-
-.dump-made-row.open {
+.dump-doc:hover {
     border-color: var(--border-3);
 }
 
-.dump-made-row.left .dump-made-head {
-    opacity: 0.45;
+.dump-doc.forming {
+    border-color: color-mix(in srgb, var(--accent) 45%, var(--border-2));
     cursor: default;
 }
 
-.dump-shimmer {
-    position: absolute;
-    inset: 0;
-    border-radius: 9px;
-    background: linear-gradient(100deg, transparent 18%, color-mix(in srgb, var(--accent) 18%, transparent) 50%, transparent 82%);
-    background-size: 200% 100%;
-    pointer-events: none;
-    animation: dump-shim 1.8s ease-in-out infinite;
-    display: none;
+.dump-doc.lit {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 16%, transparent);
 }
 
-.dump-made-head {
+.dump-doc.selecting {
+    grid-template-columns: 16px 24px minmax(0, 1fr) auto;
+}
+
+.dump-doc.selected {
+    border-color: var(--accent);
+    background: color-mix(in srgb, var(--accent) 9%, var(--raised));
+}
+
+.dump-doc-box {
+    display: grid;
+    place-items: center;
+    width: 16px;
+    height: 16px;
+    margin-top: 4px;
+    border: 1.5px solid var(--border-3);
+    border-radius: 4px;
+    color: #fff;
+}
+
+.selected .dump-doc-box {
+    border-color: var(--accent);
+    background: var(--accent);
+}
+
+.dump-doc-sheet {
+    width: 24px;
+    height: 30px;
+    margin-top: 2px;
+    border-radius: 3px;
+    background-color: color-mix(in srgb, var(--tone-good) 20%, var(--sel));
+    background-image: repeating-linear-gradient(to bottom, transparent 0 4px, var(--border-3) 4px 5px);
+    background-size: calc(100% - 8px) calc(100% - 13px);
+    background-position: 4px 8px;
+    background-repeat: no-repeat;
+    clip-path: polygon(0 0, 70% 0, 100% 20%, 100% 100%, 0 100%);
+}
+
+.forming .dump-doc-sheet {
+    background-color: var(--sel);
+}
+
+.lit .dump-doc-sheet,
+.selected .dump-doc-sheet {
+    background-color: var(--accent-dim);
+}
+
+.dump-doc-main {
+    min-width: 0;
+}
+
+.dump-doc-name {
     display: flex;
     align-items: center;
-    gap: 10px;
-    width: 100%;
-    min-height: 40px;
-    padding: 8px 10px;
-    border: none;
-    background: transparent;
-    color: inherit;
-    font: inherit;
-    cursor: pointer;
+    margin: 0;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text);
 }
 
-.dump-made-row.writing .dump-made-head {
-    cursor: default;
+.dump-doc-caret {
+    display: inline-block;
+    width: 1.5px;
+    height: 1em;
+    margin-left: 2px;
+    background: var(--accent-text);
+    animation: dump-doc-blink 1.05s steps(1) infinite;
 }
 
-.dump-made-icon {
+.dump-doc-gist {
+    margin: 2px 0 0;
+    font-size: 12.5px;
+    color: var(--text-3);
+    text-wrap: pretty;
+}
+
+.dump-doc-meta {
     display: flex;
-    flex: none;
+    flex-wrap: wrap;
     align-items: center;
-    justify-content: center;
-    width: 22px;
-    height: 22px;
-    border-radius: 6px;
+    gap: 6px;
+    margin-top: 8px;
+}
+
+.dump-doc-label {
+    font-size: 11.5px;
+    color: var(--text-4);
+}
+
+.dump-doc-chip {
+    display: inline-flex;
+    max-width: 260px;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 8px 3px 6px;
+    border: 1px solid var(--border-2);
+    border-radius: 7px;
+    background: var(--bg);
+    font: 11px var(--mono);
+    color: var(--text-2);
+}
+
+.dump-doc-chip-name {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.dump-doc-chip :deep(.ico) {
+    color: var(--accent-text);
+}
+
+.dump-doc-in {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+}
+
+.dump-doc-sep {
+    width: 1px;
+    height: 14px;
+    margin: 0 4px;
+    background: var(--border-2);
+}
+
+.dump-doc-place {
+    font: 11.5px var(--mono);
+    color: var(--text-2);
+}
+
+.dump-doc-text {
+    max-height: 240px;
+    margin-top: 10px;
+    padding-top: 10px;
+    overflow-y: auto;
+    border-top: 1px solid var(--border);
+    font-size: 13px;
+    color: var(--text-2);
+}
+
+.dump-doc-side {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 7px;
+}
+
+.dump-doc-pill {
+    height: 20px;
+    padding: 0 8px;
+    border-radius: 10px;
+    background: var(--sel);
+    font-size: 11px;
+    line-height: 20px;
+    color: var(--text-2);
+    white-space: nowrap;
+}
+
+.dump-doc-pill.live {
     background: var(--accent-dim);
     color: var(--accent-text);
 }
 
-.dump-made-text {
-    display: flex;
-    flex: 1;
-    flex-direction: column;
-    gap: 1px;
-    min-width: 0;
-    text-align: left;
-}
-
-.dump-made-line {
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    color: var(--text-3);
-    font-size: 11.5px;
-}
-
-.dump-made-title {
-    color: var(--text);
-    font-size: 12.5px;
-}
-
-.dump-made-row.writing .dump-made-title {
-    color: var(--accent-text);
-}
-
-.dump-made-row.left .dump-made-title {
-    text-decoration: line-through;
-}
-
-.dump-bone {
-    display: block;
-    width: 58%;
-    height: 7px;
-    margin-top: 3px;
-    border-radius: 3px;
-    background: var(--border);
-}
-
-.dump-tag {
-    flex: none;
-    color: var(--text-4);
-    font-size: 10px;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-}
-
-.dump-put-back {
-    position: absolute;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    display: flex;
-    align-items: center;
-    padding: 0 10px;
-    border: none;
-    background: none;
-    color: var(--text-3);
-    font: inherit;
+.dump-doc-added {
     font-size: 11px;
-    cursor: pointer;
-}
-
-.dump-put-back:hover {
-    color: var(--text);
-}
-
-.dump-made-open {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    padding: 0 12px 12px;
-    border-top: 1px solid var(--line);
-    background: var(--bg);
-    animation: dump-fadein 0.2s ease-out;
-}
-
-.dump-part-text {
-    display: -webkit-box;
-    overflow: hidden;
-    color: var(--text-2);
-    font-size: 12.5px;
-    line-height: 1.55;
-    white-space: pre-line;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 4;
-}
-
-.dump-lead {
-    margin: 10px 0 0;
-    -webkit-line-clamp: 6;
-}
-
-.dump-part {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-}
-
-.dump-part-label {
-    color: var(--text-4);
-    font-size: 10.5px;
-    letter-spacing: 0.09em;
-    text-transform: uppercase;
-}
-
-.dump-from {
-    min-width: 0;
-    overflow: hidden;
-    color: var(--text-4);
-    font-size: 11.5px;
+    color: var(--accent-text);
     white-space: nowrap;
-    text-overflow: ellipsis;
-    flex: 1;
 }
 
-.dump-made-foot {
+.dump-doc-acts {
     display: flex;
-    align-items: center;
-    gap: 8px;
+    gap: 4px;
+    opacity: 0;
+    transition: opacity 0.2s;
 }
 
-@keyframes dump-shim {
-    from {
-        background-position: 130% 0;
-    }
-
-    to {
-        background-position: -30% 0;
-    }
+.dump-doc:hover .dump-doc-acts,
+.dump-doc:focus-within .dump-doc-acts {
+    opacity: 1;
 }
 
-@keyframes dump-fadein {
+@keyframes dump-doc-arrive {
     from {
         opacity: 0;
+        translate: 0 8px;
     }
+}
 
-    to {
-        opacity: 1;
+@keyframes dump-doc-blink {
+    50% {
+        opacity: 0;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .dump-doc,
+    .dump-doc-caret {
+        animation: none;
     }
 }
 </style>

@@ -21,6 +21,7 @@ const {type, wait} = useTyping();
 const shown = reactive({started: false, title: 0, owner: false, abstract: 0, done: false});
 const title = computed(() => (props.ticket ? props.ticket.title : ""));
 const abstract = computed(() => (props.ticket ? props.ticket.abstract : ""));
+const origin = computed(() => (props.ticket && props.ticket.data.source !== "user" && props.ticket.data.source_id) || "");
 const owner = computed(() => {
     const name = props.ticket ? props.ticket.data.owner : "";
     return name ? (store.board.roles.find((role) => role.name === name) || {title: name}).title : "";
@@ -127,6 +128,9 @@ async function save(field, text) {
                 <span class="owner">For {{ owner }}</span>
             </template>
         </SkeletonLine>
+        <template v-if="shown.done && origin">
+            <span class="origin" :title="`From ${ticket.data.source}`">{{ origin }}</span>
+        </template>
         <template v-if="shown.done">
             <Btn small class="more" @click.stop="(e) => emit('more', e.currentTarget.closest('.pick').getBoundingClientRect())">
                 More info
@@ -136,6 +140,15 @@ async function save(field, text) {
 </template>
 
 <style scoped>
+.origin {
+    overflow: hidden;
+    color: var(--text-4);
+    font-family: var(--mono);
+    font-size: 11px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
 .pick {
     display: flex;
     flex-direction: column;

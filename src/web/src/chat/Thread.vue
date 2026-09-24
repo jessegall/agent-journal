@@ -32,8 +32,9 @@ const IDLE = 30000;
 const scroller = ref(null);
 const props = defineProps({view: {type: String, default: ""}});
 const pane = computed(() => props.view || store.pane);
-const terminalOpen = computed(() => pane.value === "terminal" && !store.dumping);
-const chatOpen = computed(() => pane.value !== "terminal" && !store.dumping);
+const dumpHere = computed(() => store.dumping && !props.view);
+const terminalOpen = computed(() => pane.value === "terminal" && !dumpHere.value);
+const chatOpen = computed(() => pane.value !== "terminal" && !dumpHere.value);
 const feeding = computed(() => pane.value === "feed" && feedOn.value && Boolean(agent.value));
 const feedKey = computed(() => (agent.value ? `${agent.value.n}:${agent.value.data.transcript}` : ""));
 const quote = ref({text: "", ref: ""});
@@ -44,18 +45,34 @@ const pageTools = chatOnly
           {icon: "camera", title: "Send a picture of an element on the page", go: () => point("shot")},
       ]
     : [];
-const dumpsInProgress = computed(() => rows("dump").filter((d) => !d.deleted && (!d.completed || !d.data?.confirmed)).length);
+const dumps = computed(() => rows("dump").filter((d) => !d.deleted));
+const dumpFiling = computed(() => dumps.value.filter((d) => !d.completed).sort((a, b) => a.n - b.n)[0] || null);
+
+function openDump(n = 0) {
+    store.pane = "chat";
+    store.dumpShown = n;
+    store.dumping = true;
+}
+
 const composeTools = computed(() => [
     ...pageTools,
     {
         icon: "inbox",
-        title: dumpsInProgress.value
-            ? `Dumps: ${dumpsInProgress.value} still filing or waiting for you`
-            : "New dump: drop text and files for the agent to file",
-        badge: dumpsInProgress.value,
-        go: () => ((store.pane = "chat"), (store.dumping = true)),
+        label: dumpFiling.value ? `Dump ${dumpFiling.value.n} · filing` : "Dump files",
+        title: "Throw in a pile of files and notes: the agent sorts them by subject and files them into a collection",
+        go: () => openDump(dumpFiling.value?.n || 0),
     },
 ]);
+const dumpOffer = {
+    icon: "inbox",
+    title: (n) => `${n} files. Dump them instead?`,
+    text: "The dump reads them together and files each subject as its own document with a proper name, in a new collection you can remove in one step.",
+    action: "Dump them",
+    take: (files) => {
+        store.dumpFiles = files;
+        openDump(0);
+    },
+};
 
 function point(kind) {
     tellExtension(kind);
@@ -201,7 +218,7 @@ watch(
 );
 
 watch(
-    () => store.dumping || pane.value === "terminal",
+    () => dumpHere.value || pane.value === "terminal",
     (away) => {
         if (!away) nextTick(() => requestAnimationFrame(() => toBottom()));
     }
@@ -423,7 +440,7 @@ watch(
 <template>
     <div class="thread">
         <Transition name="dump">
-            <DumpWindow v-if="store.dumping" />
+            <DumpWindow v-if="dumpHere" />
         </Transition>
         <Transition name="terminal">
             <TerminalWindow v-if="terminalOpen" />
@@ -458,6 +475,7 @@ watch(
                     :up="editLast"
                     :down="unedit"
                     :tools="composeTools"
+                    :many="dumpOffer"
                 />
             </div>
             <template v-if="!ready">
