@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.133.1 — Triggers have their own icon
+
+A trigger shows a lightning bolt, in its chat mark and in lists, instead of the flag plans use. Nothing to do.
+
 ## 2.133.0 — One reply answers several messages, and long documents open one screen tall
 
 The agent can answer several of your messages with one reply, [!reply:12,13] or journal message reply 12,13, quoting each; if it still sends the same answer twice in a row, the chat shows it once with both quotes. A long document opens one screen tall with Show more at its foot. The hint that points out a window's menu is remembered per environment and shows once per window. Nothing to do.

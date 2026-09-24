@@ -4,7 +4,7 @@ from typing import ClassVar
 from engine.events import AgentMessageSent, ResourceEvent
 from features.parts import AgentContext, Context, Handler, ToolInterceptor
 from features.recital import COMMANDS, mentioned, searched
-from features.triggers.resource import DENY, FIRED, FROM_USER, INSTRUCT, MESSAGE, NUDGE, START
+from features.triggers.resource import DENY, FIRED, FROM_USER, INSTRUCT, MESSAGE, NUDGE, START, Trigger
 from resources.base import SYSTEM, USER
 
 WATCHING = "watching"
@@ -18,7 +18,7 @@ def firing(context, text_of, from_user: bool = False) -> list:
 
 
 def fire(context, agent, row, done: str = "") -> None:
-    context.journal.acting(SYSTEM).agents.card(agent.n, label=f"Trigger {row.title} {done or DONE[row.does]}", icon="flag",
+    context.journal.acting(SYSTEM).agents.card(agent.n, label=f"Trigger {row.title} {done or DONE[row.does]}", icon=Trigger.icon,
                                                tone="danger" if row.does == DENY else "note", title=row.text or row.brief, ref=row.ref)
     if row.does == MESSAGE:
         context.journal.acting(USER).messages.create(row.title, brief=row.brief or row.text)

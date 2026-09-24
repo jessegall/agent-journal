@@ -23,7 +23,7 @@ class Trigger(Shape, Resource):
         Field(FLAG, False, name="system"),
     ]
     type = "trigger"
-    icon = "flag"
+    icon = "bolt"
     scope = PROJECT
     created_in_viewer = True
     command_names = {"complete": "retire"}
