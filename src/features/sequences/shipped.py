@@ -48,13 +48,13 @@ WORKING_A_BOARD_CARD = {
     "steps": [
         ("Say what they mean", "Your first turn never drafts. Say in a few words what you think they want and ask on the "
                                "board whether that is it: journal board ask <board n> \"Do you mean <the work>?\" --set "
-                               "options='[{\"title\": \"Yes\"}, {\"title\": \"No\"}]', then reply to their message in one "
-                               "short line. Yes goes on to Draft the tickets. No or new words: say your better guess the "
+                               "options='[{\"title\": \"Yes\"}, {\"title\": \"No\"}]'. The question is your whole turn: do not "
+                               "reply to their message as well. Yes goes on to Draft the tickets. No or new words: say your better guess the "
                                "same way once more, and a yes then goes on to Draft the tickets."),
         ("Offer choices", "Only when two guesses did not land: ask once with three or four concise options, each a meaning "
                           "they might have, in a few words, and Start over as the last: journal board ask <board n> \"Which "
                           "one?\" --set options='[...]'. The input closes while the options show, so they pick one; draft "
-                          "from their pick. Start over clears the panel: give the run up with journal sequence abandon."),
+                          "from their pick; the question is your whole turn, with no reply beside it. Start over clears the panel: give the run up with journal sequence abandon."),
         ("Draft the tickets", "Draft each ticket on the same board: journal ticket create \"<the work>\" --abstract \"<one "
                               "line>\" --brief \"<the deeper explanation>\" --set board=<n> --set draft=true. A title is a few "
                               "words, the abstract one line of at most 140 characters shown on the card, and the brief a few "

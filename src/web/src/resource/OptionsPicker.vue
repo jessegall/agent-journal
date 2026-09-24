@@ -9,7 +9,7 @@ import {word} from "../state/store.js";
 import {sendMessage} from "../chat/outbox.js";
 import {route} from "../route.js";
 
-const props = defineProps({resource: Object});
+const props = defineProps({resource: Object, buttonsOnly: Boolean});
 const own = ref("");
 const changing = ref(false);
 const elaborating = ref(false);
@@ -70,7 +70,7 @@ async function elaborate() {
                 <Btn small @click="changing = true">Change choice</Btn>
             </div>
         </template>
-        <template v-else>
+        <template v-else-if="!buttonsOnly">
             <form class="own" @submit.prevent="submit(own)">
                 <TextInput :value="own" class="grow" placeholder="Or choice in your own words…" @input="own = $event.target.value" />
                 <Btn
