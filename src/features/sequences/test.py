@@ -23,11 +23,11 @@ def test_a_sequence_hands_its_steps_one_at_a_time_and_starts_on_its_moment():
     sequences.next(filing["n"], about=dump.ref)
     sequences.next(filing["n"], about=dump.ref)
     assert sequences.load(filing["n"]).runs == {}, "the last step ends it"
-    marks = [(c["label"], c["color"]) for c in CONTROLLERS["agent"](record).primary().data["cards"]]
-    shipped_as = f"sequence {filing['n']}"
-    assert [label for label, _ in marks] == [f"Sequence started {shipped_as}", f"Sequence moved on {shipped_as}", f"Sequence moved on {shipped_as}",
-                                             f"Sequence finished {shipped_as}"] and {c for _, c in marks} == {"#a78bfa"}, \
-        f"the chat shows a violet one-line mark for a shipped sequence as it starts, moves on and finishes: {marks}"
+    cards = CONTROLLERS["agent"](record).primary().data["cards"]
+    marks = [(c["label"], c["color"]) for c in cards]
+    assert [label for label, _ in marks] == ["Sequence started", "Sequence moved on", "Sequence moved on", "Sequence finished"] \
+        and {c for _, c in marks} == {"#a78bfa"} and all(c["detail"].startswith("Filing a dump") for c in cards), \
+        f"the chat shows a violet mark for a shipped sequence as it starts, moves on and finishes, its name under it: {marks}"
     first = CONTROLLERS["dump"](record, actor=USER).create("Planning", brief="notes")
     CONTROLLERS["dump"](record, actor=USER).create("Review", brief="notes")
     assert steps()[-1] == f"sequence {filing['n']}, Filing a dump, step 1 of 3 - Read everything" and len(steps()) == 4, \

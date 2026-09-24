@@ -112,6 +112,22 @@ class Sequences(Controller):
         self._mark(r, "Sequence moved on" if going else "Sequence finished", about, run["step"] if going else 0)
         return self.update(r.n, runs={**runs, key: run} if going else runs)
 
+    def _jump(self, n: int, about: str, step: int):
+        r = self.load(int(n))
+        key = self._key(about)
+        if key not in r.runs:
+            self._refuse(f"sequence {r.n} is not running{' about ' + about if about else ''}")
+        self._mark(r, "Sequence moved on", about, step)
+        return self.update(r.n, runs={**r.runs, key: {**r.runs[key], "step": step, "stepped": time.time(), "titles": self._titles(r)}})
+
+    def _finish(self, n: int, about: str):
+        r = self.load(int(n))
+        key = self._key(about)
+        if key not in r.runs:
+            return r
+        self._mark(r, "Sequence finished", about, 0)
+        return self.update(r.n, runs={k: v for k, v in r.runs.items() if k != key})
+
     def _in_hand(self):
         live = [self.load(row["n"]) for row in self.summaries() if not row["completed"] and not row["deleted"]]
         mine = [(run["at"], sequence, key, run) for sequence in live for key, run in sequence.runs.items()
@@ -141,11 +157,8 @@ class Sequences(Controller):
         row = agents.primary()
         if not row:
             return
-        if r.system:
-            agents.card(row.n, label=f"{label} sequence {r.n}", icon=self.resource.icon, color=VIOLET)
-            return
-        parts = [f"sequence {r.n} {r.title}", f"step {step}, {self._steps(r)[step - 1][SECTION.title]}" if step else "", f"about {about.replace(':', ' ')}" if about.strip() else "", why]
-        agents.card(row.n, label=label, icon=self.resource.icon, color=VIOLET, detail=" · ".join(p for p in parts if p))
+        parts = [r.title, f"step {step}, {self._steps(r)[step - 1][SECTION.title]}" if step else "", f"about {about.replace(':', ' ')}" if about.strip() else "", why]
+        agents.card(row.n, label=label, icon=self.resource.icon, color=VIOLET, detail=" · ".join(p for p in parts if p), ref=r.ref)
 
     def _key(self, about: str) -> str:
         return f"{self.record.env}|{about.strip() or BY_HAND}"

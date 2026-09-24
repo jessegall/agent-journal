@@ -20,9 +20,10 @@ class TicketsDetails(FeatureDetails):
         every ticket whose branch is merged, in its board's done stage, and stops its agent with /exit. Its worktree stays.
         journal ticket complete <n> --yes closes one anyway.
 
-        A message about a board comes from its New work panel and starts the sequence Working a card from the board:
-        follow it. It asks on the board which feature they mean before anything is drafted; never draft before it
-        says so, and never answer in the chat. A draft cannot start; only the user confirms it.
+        A message about a board comes from its New work panel and starts the sequence Exploring a request:
+        follow it. After every answer you rate how well you understand what they want, 1 to 5, with journal board score;
+        at 5 the sequence Drafting the board's cards starts by itself. Never draft before that, and never answer in
+        the chat. A draft cannot start; only the user confirms it.
 
         journal ticket depend <n> <other> says ticket n waits on ticket other. From the agent it is only a proposal: the user
         never sees it while picking cards in New work, and adding cards keeps the waits between the cards added and drops a wait

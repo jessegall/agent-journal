@@ -81,13 +81,14 @@ RESTART_GRACE = 15
 
 def unanswered(root: Path, env: str) -> None:
     f = runtime.folder(root) / "hook-failures.log"
-    if not f.is_file():
+    try:
+        logged = f.read_text(errors="replace")
+    except FileNotFoundError:
         return
     started = runtime.STARTED[0]
     marked = runtime.restarting(root)
     since = min(started - RESTART_GRACE, float(marked.read_text() or started)) if marked.is_file() else started - RESTART_GRACE
-    lines = [line for line in f.read_text(errors="replace").splitlines()
-             if len(line.split()) > 2 and not since <= float(line.split()[0]) <= started]
+    lines = [line for line in logged.splitlines() if len(line.split()) > 2 and not since <= float(line.split()[0]) <= started]
     f.unlink(missing_ok=True)
     if not lines:
         return

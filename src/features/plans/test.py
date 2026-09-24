@@ -2,7 +2,12 @@ from dataclasses import dataclass
 
 import pytest
 
+import features
+
 from features.plans.controller import Plans  # noqa: E402
+from features.boards.controller import Boards
+from features.plans.progress import catch_up
+from features.tickets.controller import Tickets
 from controllers.types import Agents, Todos, Works
 from engine.record import Record
 from features.work_tracking.next import next, ready
@@ -44,7 +49,7 @@ def test_writing_a_plan_lays_out_phases_and_advances_through_them_to_done(env):
     assert (by_agent.phases(plan.n)[1]["title"], by_agent.phases(plan.n)[1]["checkpoint"]) == ("Second, reworded", True), \
         "rephrase changes what it is given"
     assert ("80" in refused(lambda: by_agent.phase(plan.n, "x" * 81))) is True, "a phase title past 80 characters is refused"
-    assert refused(lambda: by_agent.ready(plan.n)) == "plan 1 cannot be ready: phase 1 has no to-dos", "ready refuses while a phase is empty"
+    assert refused(lambda: by_agent.ready(plan.n)) == "plan 1 cannot be ready: phase 1 has no to-dos or tickets", "ready refuses while a phase is empty"
     by_agent.place(plan.n, 1, [rows[0], rows[1]])
     by_agent.place(plan.n, 2, [rows[2]])
     by_agent.place(plan.n, 3, [rows[3], rows[4]])
@@ -225,3 +230,28 @@ def test_a_row_struck_while_its_plan_is_unapproved_leaves_the_plan_and_stays_onc
     by_user.approve(approved.n)
     todos.strike(row, "dropped later")
     assert row in by_agent.load(approved.n).phases[0]["todos"], "once approved, a struck row stays in its phase"
+
+
+def test_a_phase_can_hold_board_tickets_and_moves_on_when_they_close(monkeypatch):
+    features.load()
+    record = fresh()
+    started = []
+    monkeypatch.setattr(Tickets, "start", lambda self, n, agent=None: started.append(n))
+    monkeypatch.setattr("features.plans.worker.start_agent_in", lambda record, name, worktree, abstract, owner, prompt: started.append(name))
+    board = Boards(record, actor=USER).create("Product")
+    tickets = Tickets(record, actor=USER)
+    first, second = (tickets.create(title, board=board.n) for title in ("Search", "Share"))
+    plans = Plans(record, actor=AGENT)
+    plan = plans.create("Launch", goal="it ships")
+    plans.phase(plan.n, "Build", when="both built")
+    plans.phase(plan.n, "Ship", when="shipped")
+    plans.tickets(plan.n, 1, [first.n])
+    plans.tickets(plan.n, 2, [second.n])
+    plans.ready(plan.n)
+    Plans(record, actor=USER).approve(plan.n)
+    plans.start(plan.n)
+    assert plans.load(plan.n).current == 1 and f"ticket:{first.n}" in plans.load(plan.n).refs, "a phase holds tickets and the plan links them"
+    assert started == [f"plan-{plan.n}", first.n], "starting the plan starts its worker agent and the first phase's tickets"
+    tickets.complete(first.n, how="merged", yes=True)
+    catch_up(record)
+    assert plans.load(plan.n).current == 2 and started[-1] == second.n, "once its tickets close, the next phase's tickets start"

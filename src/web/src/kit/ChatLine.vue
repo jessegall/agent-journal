@@ -10,7 +10,8 @@ const props = defineProps({
     notes: {type: Array, default: () => []},
     shuffled: Boolean,
 });
-const NOTE_MS = 2400;
+const NOTE_SOONEST = 3000;
+const NOTE_LATEST = 7000;
 const order = ref([]);
 const step = ref(0);
 const noteAt = computed(() => order.value[step.value] ?? 0);
@@ -36,8 +37,10 @@ watch(
     (notes, before) => arrange(before ? before[noteAt.value] : ""),
     {immediate: true}
 );
-const flipping = setInterval(flip, NOTE_MS);
-onUnmounted(() => clearInterval(flipping));
+let flipping = 0;
+const later = () => (flipping = setTimeout(() => (flip(), later()), NOTE_SOONEST + Math.random() * (NOTE_LATEST - NOTE_SOONEST)));
+later();
+onUnmounted(() => clearTimeout(flipping));
 const count = useReveal(props.typed ? props.text.length : 0);
 const shown = computed(() => (props.typed && count.value < props.text.length ? props.text.slice(0, count.value) : props.text));
 const writing = computed(() => props.typed && count.value < props.text.length);
