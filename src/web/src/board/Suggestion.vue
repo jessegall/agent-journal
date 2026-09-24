@@ -12,14 +12,13 @@ const emit = defineEmits(["toggle", "revealed", "more"]);
 const TITLE_MS = 900;
 const ABSTRACT_MS = 1600;
 const {type, wait} = useTyping();
-const shown = reactive({started: false, title: 0, owner: false, abstract: 0, waits: false, done: false});
+const shown = reactive({started: false, title: 0, owner: false, abstract: 0, done: false});
 const title = computed(() => (props.ticket ? props.ticket.title : ""));
 const abstract = computed(() => (props.ticket ? props.ticket.abstract : ""));
 const owner = computed(() => {
     const name = props.ticket ? props.ticket.data.owner : "";
     return name ? (store.board.roles.find((role) => role.name === name) || {title: name}).title : "";
 });
-const waits = computed(() => Object.keys((props.ticket && props.ticket.data.dependencies) || {}).map((ref) => `#${ref.split(":")[1]}`));
 const stage = computed(() => {
     if (shown.done) return "done";
     if (shown.started) return "writing";
@@ -64,7 +63,6 @@ async function reveal() {
     shown.owner = true;
     await wait(160);
     await type(abstract.value, ABSTRACT_MS, (at) => (shown.abstract = at));
-    shown.waits = true;
     await wait(200);
     shown.done = true;
     emit("revealed");
@@ -127,12 +125,6 @@ async function save(field, text) {
                 More info
             </Btn>
         </template>
-        <template v-if="shown.waits && waits.length">
-            <span class="waits">
-                Waits on
-                <b>{{ waits.join(", ") }}</b>
-            </span>
-        </template>
     </div>
 </template>
 
@@ -143,7 +135,7 @@ async function save(field, text) {
     gap: 8px;
     height: 100%;
     overflow: hidden;
-    padding: 16px 16px 14px;
+    padding: 14px 14px 12px;
     border: 1px solid var(--border-2);
     border-radius: 13px;
     background: rgba(28, 29, 33, 0.96);
@@ -199,7 +191,6 @@ async function save(field, text) {
 
 .line-title {
     order: 1;
-    min-height: 60px;
 }
 
 .line-owner {
@@ -209,7 +200,6 @@ async function save(field, text) {
 
 .line-abstract {
     order: 3;
-    min-height: 100px;
 }
 
 .tag {
@@ -273,9 +263,9 @@ async function save(field, text) {
 }
 
 .pick-title {
-    font-size: 15px;
+    font-size: 14px;
     font-weight: 500;
-    line-height: 20px;
+    line-height: 19px;
     overflow-wrap: anywhere;
 }
 
@@ -288,29 +278,15 @@ async function save(field, text) {
 
 .pick-abstract {
     color: var(--text-2);
-    line-height: 20px;
+    font-size: 12.5px;
+    line-height: 18px;
     overflow-wrap: anywhere;
 }
 
 .more {
     order: 5;
     align-self: flex-start;
-}
-
-.waits {
-    order: 4;
     margin-top: auto;
-    overflow: hidden;
-    color: var(--text-3);
-    font-size: 12px;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    animation: fade-in 0.2s both;
-}
-
-.waits b {
-    color: var(--accent-text);
-    font-weight: 500;
 }
 
 .faded {
