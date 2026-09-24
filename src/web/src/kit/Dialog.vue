@@ -3,7 +3,12 @@ import CloseButton from "./CloseButton.vue";
 import {onUnmounted, ref, watch} from "vue";
 import {closing} from "./closing.js";
 
-const props = defineProps({title: {type: String, default: ""}, follow: {type: Boolean, default: false}, fixed: {type: Boolean, default: false}});
+const props = defineProps({
+    title: {type: String, default: ""},
+    follow: {type: Boolean, default: false},
+    fixed: {type: Boolean, default: false},
+    small: Boolean,
+});
 const emit = defineEmits(["close", "dismiss"]);
 const {shown, close, closed} = closing(emit);
 const body = ref(null);
@@ -23,7 +28,7 @@ onUnmounted(() => watcher.disconnect());
 <template>
     <Transition name="dialog" appear @after-leave="closed">
         <div v-if="shown" class="dialog" @click.self="close">
-            <section :class="['dialog-panel', {fixed}]">
+            <section :class="['dialog-panel', {fixed, small}]">
                 <header class="dialog-head">
                     <h3>{{ title }}</h3>
                     <CloseButton @click="close" />
@@ -66,6 +71,14 @@ onUnmounted(() => watcher.disconnect());
 
 .dialog-panel.fixed {
     height: min(640px, 100%);
+}
+
+.dialog-panel.small {
+    width: min(440px, 100%);
+}
+
+.dialog-panel.fixed.small {
+    height: min(320px, 100%);
 }
 
 .dialog-panel.fixed .dialog-body {

@@ -1,6 +1,6 @@
 from typing import ClassVar
 
-from resources.base import DOCUMENT, Resource, ResourceDetails
+from resources.base import DOCUMENT, SIDEBAR, Resource, ResourceDetails
 from resources.shapes import Field, Shape, names
 
 PHASE = names("title", "when", "checkpoint", "brief", "todos")
@@ -29,5 +29,6 @@ class Plan(Shape, Resource):
     needs_attention = True
     lists_completed_unread = True
     icon = "flag"
+    listed_under = SIDEBAR
     command_names = {"complete": "finish", "place": "todos", "resume": "continue"}
     view = DOCUMENT

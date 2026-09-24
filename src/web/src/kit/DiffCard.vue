@@ -8,6 +8,7 @@ const props = defineProps({
     removed: {type: Number, required: true},
     ago: {type: String, required: true},
     rows: {type: Array, required: true},
+    flush: Boolean,
     half: Boolean,
     entering: Boolean,
     fresh: {type: String, default: ""},
@@ -44,7 +45,7 @@ onUnmounted(() => sized && sized.disconnect());
 </script>
 
 <template>
-    <section :class="['diff-card', {half, gone, entering}]">
+    <section :class="['diff-card', {half, gone, entering, flush}]">
         <header class="diff-card-head">
             <span class="diff-card-path" :title="path">
                 <span class="diff-card-dir">{{ dir }}</span>
@@ -88,6 +89,12 @@ onUnmounted(() => sized && sized.disconnect());
 
 .diff-card.half {
     width: calc(50% - 5px);
+}
+
+.diff-card.flush {
+    width: 100%;
+    border-width: 0 0 1px;
+    border-radius: 0;
 }
 
 .diff-card.entering {

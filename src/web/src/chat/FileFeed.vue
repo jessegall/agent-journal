@@ -8,7 +8,7 @@ import {useFollow} from "../composables/follow.js";
 import {useNow} from "../composables/now.js";
 import {fresh} from "../format/time.js";
 
-const props = defineProps({agent: {type: Number, required: true}});
+const props = defineProps({agent: {type: Number, required: true}, flush: Boolean});
 
 const scroller = ref(null);
 const follow = useFollow(scroller);
@@ -19,11 +19,12 @@ const empty = computed(() => ready.value && !cards.value.length);
 </script>
 
 <template>
-    <div class="file-feed">
+    <div :class="['file-feed', {flush}]">
         <div ref="scroller" class="file-feed-scroll" @scroll.passive="scrolled" @wheel.passive="wheeled">
             <div class="file-feed-flow">
                 <template v-for="c in cards" :key="c.id">
                     <DiffCard
+                        :flush="flush"
                         :path="c.path"
                         :kind="c.kind"
                         :added="c.added"
@@ -67,5 +68,10 @@ const empty = computed(() => ready.value && !cards.value.length);
     align-items: flex-start;
     gap: 10px;
     padding: 16px 14px;
+}
+
+.file-feed.flush .file-feed-flow {
+    gap: 0;
+    padding: 0;
 }
 </style>

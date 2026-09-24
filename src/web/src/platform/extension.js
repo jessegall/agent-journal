@@ -1,3 +1,4 @@
+import {follow} from "../composables/pointer.js";
 import {store} from "../state/store.js";
 
 export function tellExtension(kind, extra = {}) {
@@ -8,44 +9,55 @@ export function tellShell(op, extra = {}) {
     window.parent.postMessage({source: "journal-page", kind: "shell", op, ...extra}, "*");
 }
 
+export function dragShell(e) {
+    if (e.button || e.target.closest("button, .shell-menu")) return;
+    e.preventDefault();
+    tellShell("drag", {sx: e.screenX, sy: e.screenY});
+    follow(
+        e,
+        (ev) => tellShell("dragmove", {sx: ev.screenX, sy: ev.screenY}),
+        () => tellShell("dragend")
+    );
+}
+
+const docks = new Set();
+const without = (id) => store.extension.held.filter((x) => x !== id);
+
+function dockAll(ids) {
+    if (!ids.length) return;
+    docks.forEach((dock) => ids.forEach(dock));
+    tellExtension("docked", {ids});
+}
+
 function answered(e) {
     if (e.source !== window || e.origin !== window.location.origin || !e.data || e.data.source !== "journal-extension") return;
-    if (e.data.kind === "here") {
+    const {kind, id} = e.data;
+    if (kind === "here") {
         store.extension.here = true;
-        store.extension.holding = !!e.data.holding;
-        store.detached = store.detached || store.extension.holding;
+        store.extension.held = e.data.held || [];
+        dockAll(e.data.docking || []);
     }
-    if (e.data.kind === "detached") {
-        store.extension.pending = false;
-        store.extension.holding = true;
-        store.extension.everywhere = e.data.everywhere !== false;
-        store.detached = true;
-    }
-    if (e.data.kind === "attached") {
-        store.extension.pending = false;
-        store.extension.holding = false;
-        store.detached = false;
-    }
-    if (e.data.kind === "failed") {
-        store.extension.pending = false;
-        store.extension.holding = false;
+    if (kind === "holding") store.extension.held = e.data.held || [];
+    if (kind === "failed") store.extension.held = without(id);
+    if (kind === "released" && store.extension.held.includes(id)) {
+        store.extension.held = without(id);
+        dockAll([id]);
     }
 }
 
 window.addEventListener("message", answered);
 tellExtension("hello");
 
-export function detach(on) {
-    if (on) {
-        store.detached = true;
-        if (store.extension.here) {
-            store.extension.pending = true;
-            tellExtension("detach");
-        }
-    } else {
-        store.detached = false;
-        store.extension.pending = false;
-        if (store.extension.here && store.extension.holding) tellExtension("attach");
-        store.extension.holding = false;
-    }
+export function whenPutBack(dock) {
+    docks.add(dock);
+}
+
+export function hand(f, env) {
+    store.extension.held = [...without(f.id), f.id];
+    tellExtension("hold", {id: f.id, view: f.view, env, box: {x: f.x, y: f.y, w: f.w, h: f.h}});
+}
+
+export function takeBack(id) {
+    store.extension.held = without(id);
+    if (store.extension.here) tellExtension("release", {id});
 }

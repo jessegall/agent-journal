@@ -30,30 +30,33 @@ defineProps({
     gap: 5px;
     min-width: 0;
     color: var(--text-3);
-    font-size: 12px;
     white-space: nowrap;
 }
 
-.icon-count.hot {
-    color: var(--tone-warn);
-}
-
-.icon-count.link:hover {
-    color: var(--text);
+.icon-count .ico {
+    opacity: 0.65;
 }
 
 .icon-count-n {
     font-variant-numeric: tabular-nums;
+}
+
+.icon-count.hot .icon-count-n {
+    color: var(--accent-text);
     font-weight: 500;
 }
 
 .icon-count-label {
     overflow: hidden;
-    color: var(--text-2);
     text-overflow: ellipsis;
 }
 
+.icon-count.link:hover,
 .icon-count.link:hover .icon-count-label {
     color: var(--text);
+}
+
+.icon-count.link:hover .ico {
+    opacity: 1;
 }
 </style>

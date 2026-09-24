@@ -1,20 +1,29 @@
 <script setup>
 import Icon from "./Icon.vue";
 
-defineProps({tabs: {type: Array, required: true}});
+defineProps({tabs: {type: Array, required: true}, insertAt: {type: Number, default: -1}});
 const emit = defineEmits(["pick", "close", "grab"]);
 </script>
 
 <template>
     <div class="pane-tabs">
         <div class="pane-tabs-row" role="tablist">
-            <template v-for="t in tabs" :key="t.key">
+            <template v-for="(t, i) in tabs" :key="t.key">
                 <div
                     role="tab"
                     tabindex="0"
                     :title="t.title"
                     :aria-selected="t.on"
-                    :class="['pane-tab', {on: t.on, lifting: t.lifting}]"
+                    :class="[
+                        'pane-tab',
+                        {
+                            on: t.on,
+                            lifting: t.lifting,
+                            'insert-before': insertAt === i,
+                            'insert-after': insertAt === tabs.length && i === tabs.length - 1,
+                        },
+                    ]"
+                    :data-tab="t.key"
                     @pointerdown="emit('grab', $event, t.key)"
                     @keydown.enter.prevent="emit('pick', t.key)"
                     @keydown.space.prevent="emit('pick', t.key)"
@@ -61,6 +70,7 @@ const emit = defineEmits(["pick", "close", "grab"]);
 }
 
 .pane-tab {
+    position: relative;
     flex: none;
     display: inline-flex;
     align-items: center;
@@ -110,6 +120,25 @@ const emit = defineEmits(["pick", "close", "grab"]);
     color: var(--accent-text);
 }
 
+.pane-tab.insert-before::before,
+.pane-tab.insert-after::after {
+    content: "";
+    position: absolute;
+    top: 7px;
+    bottom: 7px;
+    width: 2px;
+    border-radius: 1px;
+    background: var(--accent);
+}
+
+.pane-tab.insert-before::before {
+    left: -7px;
+}
+
+.pane-tab.insert-after::after {
+    right: -7px;
+}
+
 .pane-tab-x {
     display: grid;
     place-items: center;
@@ -132,11 +161,16 @@ const emit = defineEmits(["pick", "close", "grab"]);
         color 0.15s;
 }
 
-.pane-tab.on .pane-tab-x,
-.pane-tab:hover .pane-tab-x {
+.pane-tab:hover .pane-tab-x,
+.pane-tab:focus-visible .pane-tab-x,
+.pane-tab-x:focus-visible {
     width: 14px;
     margin-left: -2px;
     opacity: 1;
+}
+
+.pane-tab:hover .pane-tab-x {
+    transition-delay: 0.5s, 0.5s, 0.5s, 0s, 0s;
 }
 
 .pane-tab-x:hover {

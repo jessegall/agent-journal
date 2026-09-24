@@ -1,19 +1,17 @@
 <script setup>
 import {computed} from "vue";
 import SwitchCase from "../kit/SwitchCase.vue";
-import Btn from "../kit/Btn.vue";
 import EmptyState from "../kit/EmptyState.vue";
 import {open} from "../domain/records.js";
-import {detach} from "../platform/extension.js";
-import {agent, store} from "../state/store.js";
+import {agent} from "../state/store.js";
 import Thread from "../chat/Thread.vue";
-import Notice from "../chat/Notice.vue";
+import PinnedNotices from "../chat/PinnedNotices.vue";
 import FileFeed from "../chat/FileFeed.vue";
 import TerminalWindow from "../chat/TerminalWindow.vue";
 import RailWaiting from "./RailWaiting.vue";
 import RailTodos from "./RailTodos.vue";
 
-defineProps({view: {type: String, required: true}});
+defineProps({view: {type: String, required: true}, flush: Boolean});
 const notices = computed(() => open("notice"));
 const feedKey = computed(() => (agent.value ? `${agent.value.n}:${agent.value.data.transcript}` : ""));
 </script>
@@ -22,30 +20,12 @@ const feedKey = computed(() => (agent.value ? `${agent.value.n}:${agent.value.da
     <div :class="['home-view', view]">
         <SwitchCase :value="view">
             <template #chat>
-                <TransitionGroup name="act">
-                    <template v-for="x in notices" :key="x.n">
-                        <Notice :notice="x" />
-                    </template>
-                </TransitionGroup>
-                <template v-if="store.detached">
-                    <div class="home-away">
-                        <p>
-                            {{
-                                store.extension.holding
-                                    ? "The chat is following you through the extension."
-                                    : "The chat is floating over this page."
-                            }}
-                        </p>
-                        <Btn @click="detach(false)">Put it back here</Btn>
-                    </div>
-                </template>
-                <template v-else>
-                    <Thread view="chat" />
-                </template>
+                <PinnedNotices :notices="notices" />
+                <Thread view="chat" />
             </template>
             <template #feed>
                 <template v-if="agent">
-                    <FileFeed :key="feedKey" :agent="agent.n" />
+                    <FileFeed :key="feedKey" :agent="agent.n" :flush="flush" />
                 </template>
                 <template v-else>
                     <EmptyState title="No agent yet">The file feed shows an agent's edits as it makes them.</EmptyState>
@@ -104,19 +84,5 @@ const feedKey = computed(() => (agent.value ? `${agent.value.n}:${agent.value.da
 
 .home-view:is(.waiting, .question, .suggestion, .todos) {
     overflow-y: auto;
-}
-
-.home-away {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    color: var(--text-3);
-}
-
-.home-away p {
-    margin: 0;
 }
 </style>

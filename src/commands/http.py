@@ -399,6 +399,9 @@ def post_settings(req: Request) -> Reply:
             record.set_setting(key, {**{n: o for n, o in record.features.items() if "." in n},
                                      **{n: o for n, o in asked.items() if "." in n}})
             continue
+        if key == Record.viewer and isinstance(value, dict):
+            record.set_setting(key, {**record.viewer, **value})
+            continue
         record.set_setting(key, value)
     after = switches(record)
     aliases = renamed()

@@ -8,7 +8,6 @@ export const viewerSetting = (key, fallback) => viewer()[key] ?? fallback;
 export const settingsLoaded = () => Boolean(store.settings);
 
 export async function saveViewerSetting(key, value) {
-    const next = {...viewer(), [key]: value};
-    if (store.settings) store.settings = {...store.settings, viewer: next};
-    await api.saveSettings({viewer: next});
+    if (store.settings) store.settings = {...store.settings, viewer: {...viewer(), [key]: value}};
+    await api.saveSettings({viewer: {[key]: value}});
 }

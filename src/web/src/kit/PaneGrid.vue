@@ -3,7 +3,11 @@ import {ref} from "vue";
 import ResizeHandle from "./ResizeHandle.vue";
 import {percent, percentBox} from "../format/number.js";
 
-defineProps({panes: {type: Array, required: true}, splits: {type: Array, required: true}});
+const props = defineProps({
+    panes: {type: Array, required: true},
+    splits: {type: Array, required: true},
+    colors: {type: Function, default: null},
+});
 const emit = defineEmits(["resize"]);
 const area = ref(null);
 const live = ref(false);
@@ -37,7 +41,10 @@ defineExpose({element: area});
 <template>
     <div ref="area" :class="['pane-grid', {live}]">
         <template v-for="p in panes" :key="p.id">
-            <section :class="['pane', p.state, {after: p.rect.x > EDGE, below: p.rect.y > EDGE}]" :style="percentBox(p.rect)">
+            <section
+                :class="['pane', p.state, {after: p.rect.x > EDGE, below: p.rect.y > EDGE}]"
+                :style="{...percentBox(p.rect), ...(props.colors ? props.colors(p.pane) : {})}"
+            >
                 <slot name="pane" v-bind="p" />
             </section>
         </template>

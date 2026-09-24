@@ -39,9 +39,6 @@ async function setDelivery(how, value) {
 
 const viewerOn = (key) => (store.settings?.viewer || {})[key] !== false;
 
-async function setViewer(key, value) {
-    await api.saveSettings({viewer: {...(store.settings?.viewer || {}), [key]: value}});
-}
 const OPENED = "journal.settings.opened";
 const opened = ref(remembered(OPENED, []));
 const open = (key) => opened.value.includes(key);
@@ -96,7 +93,7 @@ const switches = [
         label: "Show While you were away",
         help: "After a minute or more away from this tab, a card lists what the agent did meanwhile",
         on: () => viewerOn("away"),
-        set: (v) => setViewer("away", v),
+        set: (v) => saveViewerSetting("away", v),
     },
     {
         key: "tour",

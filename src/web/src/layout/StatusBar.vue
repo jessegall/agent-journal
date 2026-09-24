@@ -1,4 +1,5 @@
 <script setup>
+import {FULLSCREEN_KEYS} from "../platform/fullscreen.js";
 import PSection from "./PSection.vue";
 
 import {computed, onMounted, onUnmounted, ref, watch} from "vue";
@@ -6,7 +7,9 @@ import {api} from "../api/client.js";
 import Dot from "../kit/Dot.vue";
 import Icon from "../kit/Icon.vue";
 import Switch from "../kit/Switch.vue";
-import {go, peek, route} from "../route.js";
+import Toast from "../kit/Toast.vue";
+import Spinner from "../kit/Spinner.vue";
+import {peek, route} from "../route.js";
 import {agent, autoOn, store} from "../state/store.js";
 import {polled} from "../sync/polled.js";
 import {rows} from "../sync/rows.js";
@@ -19,12 +22,28 @@ usePoll(...polled.agents);
 
 const current = computed(() => currentWork(rows("work")));
 const state = computed(() => stateOf(agent.value, rows("work")));
+const toast = ref(null);
+
+const wanted = ref(null);
+const paused = computed(() => wanted.value ?? state.value === "paused");
+watch(
+    () => state.value === "paused",
+    (now) => wanted.value === now && (wanted.value = null)
+);
+
+async function pauseOrResume() {
+    const next = !paused.value;
+    wanted.value = next;
+    try {
+        await (next ? api.pauseAgent(agent.value.title) : api.resumeAgent(agent.value.title));
+    } catch (e) {
+        wanted.value = null;
+        toast.value = {text: e.message};
+    }
+}
 const waiting = computed(() => queued(rows("todo"), autoOn.value, rows("question")));
 const line = computed(() => lineOf(agent.value, rows("work"), waiting.value));
-function inspect() {
-    if (current.value) peek("work", current.value.n);
-    else go(route.value.env);
-}
+const inspect = () => peek("work", current.value.n);
 const was = ref("");
 const sentence = computed(() => {
     const now = line.value;
@@ -34,7 +53,7 @@ const sentence = computed(() => {
     return {head: now.slice(0, cut), tail: now.slice(cut)};
 });
 watch(line, (now, before) => (was.value = before || ""));
-const bar = computed(() => barPlan(rows("plan"), !route.value.page && !store.detached));
+const bar = computed(() => barPlan(rows("plan"), !route.value.page));
 const others = computed(() => otherPlans(rows("plan")));
 const error = ref("");
 
@@ -49,11 +68,17 @@ async function runBar(p) {
 </script>
 
 <template>
-    <div class="statusbar" @click.self="inspect">
+    <div class="statusbar">
         <Dot :class="['statusbar-dot', {live: state !== 'stopped'}]" kind="started" solid :size="8" />
-        <button type="button" class="statusbar-text" @click="inspect">
+        <span class="statusbar-text">
             <b>{{ wordOf(state) }}</b>
-            <span class="statusbar-roll">
+            <component
+                :is="current ? 'button' : 'span'"
+                :type="current ? 'button' : null"
+                :class="['statusbar-roll', {link: current}]"
+                :title="current ? 'Open this work' : null"
+                @click="current && inspect()"
+            >
                 <template v-if="sentence.head">
                     <span class="statusbar-head">{{ sentence.head }}</span>
                 </template>
@@ -62,8 +87,21 @@ async function runBar(p) {
                         <span :key="sentence.tail" class="statusbar-line">{{ sentence.tail }}</span>
                     </Transition>
                 </span>
-            </span>
-        </button>
+            </component>
+        </span>
+        <template v-if="state !== 'stopped'">
+            <button
+                type="button"
+                :class="['statusbar-pause', {paused}]"
+                :title="paused ? 'Resume: tell the agent to carry on' : 'Pause: stop the agent\'s turn and hold the journal\'s nudges'"
+                @click="pauseOrResume"
+            >
+                <Icon :name="paused ? 'resume' : 'pause'" />
+                <template v-if="wanted !== null">
+                    <Spinner class="statusbar-pause-spin" />
+                </template>
+            </button>
+        </template>
         <span class="statusbar-tools">
             <Switch
                 :on="autoOn"
@@ -76,7 +114,8 @@ async function runBar(p) {
             <button
                 type="button"
                 class="statusbar-wide"
-                :title="store.wide ? 'Show the sidebar and the top bar' : 'Hide the sidebar and the top bar'"
+                data-step="fullscreen"
+                :title="`${store.wide ? 'Show the sidebar and the top bar' : 'Hide the sidebar and the top bar'} (${FULLSCREEN_KEYS})`"
                 @click="store.wide = !store.wide"
             >
                 <Icon :name="store.wide ? 'narrow' : 'wide'" />
@@ -95,6 +134,7 @@ async function runBar(p) {
             @failed="error = $event"
         />
     </Transition>
+    <Toast :toast="toast" @done="toast = null" />
 </template>
 
 <style scoped>
@@ -132,12 +172,7 @@ async function runBar(p) {
     white-space: nowrap;
     margin: 0 -7px;
     padding: 3px 7px;
-    border: none;
-    border-radius: 7px;
-    background: transparent;
     color: var(--text);
-    text-align: left;
-    cursor: pointer;
 }
 
 .statusbar-text b {
@@ -159,6 +194,28 @@ async function runBar(p) {
     text-decoration-color: color-mix(in srgb, var(--text-3) 55%, transparent);
     text-decoration-thickness: 1px;
     text-underline-offset: 4px;
+}
+
+.statusbar-roll.link {
+    margin: -2px -5px;
+    padding: 2px 5px;
+    border: 0;
+    border-radius: 6px;
+    background: none;
+    font: inherit;
+    font-size: 13px;
+    text-align: left;
+    cursor: pointer;
+    transition:
+        background 0.15s,
+        color 0.15s,
+        text-decoration-color 0.15s;
+}
+
+.statusbar-roll.link:hover {
+    background: var(--hover);
+    color: var(--text);
+    text-decoration-color: var(--text-2);
 }
 
 .statusbar-head {
@@ -205,7 +262,8 @@ async function runBar(p) {
     transform: translateY(-5px);
 }
 
-.statusbar-wide {
+.statusbar-wide,
+.statusbar-pause {
     display: inline-flex;
     align-items: center;
     padding: 2px;
@@ -216,7 +274,35 @@ async function runBar(p) {
     cursor: pointer;
 }
 
-.statusbar-wide:hover {
+.statusbar-pause {
+    position: relative;
+    flex: none;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    margin-right: 8px;
+    transition:
+        background 0.15s,
+        color 0.15s;
+}
+
+.statusbar-pause:hover {
+    background: var(--hover);
+    color: var(--text);
+}
+
+.statusbar-pause-spin {
+    position: absolute;
+    right: -2px;
+    bottom: -2px;
+}
+
+.statusbar-pause.paused {
+    color: var(--accent-text);
+}
+
+.statusbar-wide:hover,
+.statusbar-pause:hover {
     color: var(--text-1);
 }
 

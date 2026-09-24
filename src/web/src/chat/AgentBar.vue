@@ -1,10 +1,12 @@
 <script setup>
-import {chatOnly, framed} from "../platform/view.js";
-import {computed, inject, ref} from "vue";
+import {computed, inject, ref, watch} from "vue";
 import {modelFamily, pendingChoice, providerName} from "../agents.js";
 import Icon from "../kit/Icon.vue";
 import MenuPanel from "../kit/MenuPanel.vue";
 import PresetList from "../kit/PresetList.vue";
+import ChoiceList from "../kit/ChoiceList.vue";
+import MenuItem from "../kit/MenuItem.vue";
+import MenuSlide from "../kit/MenuSlide.vue";
 import Spinner from "../kit/Spinner.vue";
 import CrewList from "./CrewList.vue";
 import AgentAppoint from "./AgentAppoint.vue";
@@ -14,7 +16,6 @@ import "./drop.css";
 import SwitchCase from "../kit/SwitchCase.vue";
 import {go, peek, route} from "../route.js";
 import {span} from "../format/time.js";
-import {detach} from "../platform/extension.js";
 import {agent, feedOn, store} from "../state/store.js";
 import {polled} from "../sync/polled.js";
 import {usePoll} from "../poll.js";
@@ -22,9 +23,9 @@ import {useOutside} from "../composables/outside.js";
 
 usePoll(...polled.agents);
 
-const props = defineProps({standalone: Boolean});
 const open = ref("");
-const alone = computed(() => props.standalone || framed || chatOnly);
+const schemesOpen = ref(false);
+watch(open, () => (schemesOpen.value = false));
 const data = computed(() => (agent.value && agent.value.data.status !== "stopped" ? agent.value.data : null));
 const family = computed(() => modelFamily(data.value && data.value.model));
 const name = computed(() => providerName(data.value && data.value.provider));
@@ -98,6 +99,11 @@ function toggle(key, e) {
     anchor.value = e.currentTarget;
 }
 const CONTROLS = ["model", "effort", "context"];
+function pickScheme(key) {
+    open.value = "";
+    views.scheme(key);
+}
+
 function pickPreset(key) {
     open.value = "";
     views.preset(key);
@@ -211,6 +217,18 @@ useOutside(drop, () => (open.value = ""));
                     <Icon name="reminders" />
                     {{ data.started ? span(Date.now() / 1000 - data.started) : "just started" }}
                 </span>
+                <template v-for="c in activityCounts" :key="c.key">
+                    <button
+                        type="button"
+                        :class="['agent-fact', 'agent-count', `agent-activity-${c.key}`, {none: !c.n, open: open === c.key}]"
+                        :title="c.title"
+                        :aria-expanded="open === c.key"
+                        @click="toggle(c.key, $event)"
+                    >
+                        <Icon :name="c.icon" />
+                        {{ c.n }}
+                    </button>
+                </template>
                 <template v-if="data.branch && data.branch_url">
                     <a
                         class="agent-fact agent-count"
@@ -232,19 +250,6 @@ useOutside(drop, () => (open.value = ""));
         </div>
         <template v-if="data">
             <div class="agent-actions">
-                <template v-for="c in activityCounts" :key="c.key">
-                    <button
-                        type="button"
-                        :class="['agent-fact', 'agent-count', `agent-activity-${c.key}`, {none: !c.n, open: open === c.key}]"
-                        :title="c.title"
-                        :aria-expanded="open === c.key"
-                        @click="toggle(c.key, $event)"
-                    >
-                        <Icon :name="c.icon" />
-                        {{ c.n }}
-                    </button>
-                </template>
-                <span class="agent-divider" />
                 <template v-if="views">
                     <template v-for="x in views.away.value" :key="x.id">
                         <button
@@ -303,17 +308,6 @@ useOutside(drop, () => (open.value = ""));
                         </template>
                     </div>
                 </template>
-                <template v-if="!alone">
-                    <button
-                        type="button"
-                        :class="['agent-pane', 'agent-detach', {on: store.detached}]"
-                        :title="store.detached ? 'Put the chat back on the page' : 'Detach the chat into its own window'"
-                        :aria-pressed="store.detached"
-                        @click="detach(!store.detached)"
-                    >
-                        <Icon name="sidepanel" />
-                    </button>
-                </template>
             </div>
         </template>
         <template v-if="open && anchor && (data || open === 'appoint')">
@@ -349,7 +343,31 @@ useOutside(drop, () => (open.value = ""));
                         <AgentControls :control="open" :agent="agent" @done="open = ''" />
                     </template>
                     <template #presets>
-                        <PresetList :presets="views.presets.value" @pick="pickPreset" />
+                        <MenuSlide :second="schemesOpen">
+                            <template #first>
+                                <PresetList
+                                    :presets="views.presets.value"
+                                    savable
+                                    @pick="pickPreset"
+                                    @save="views.saveLayout"
+                                    @rename="views.renamePreset"
+                                    @remove="views.removePreset"
+                                />
+                                <span class="bar-line" />
+                                <MenuItem @click="schemesOpen = true">
+                                    <Icon name="palette" :size="14" />
+                                    Colour schemes
+                                    <span class="bar-more">›</span>
+                                </MenuItem>
+                            </template>
+                            <template #second>
+                                <MenuItem class="bar-back" @click="schemesOpen = false">
+                                    <Icon name="back" :size="14" />
+                                    Colour schemes
+                                </MenuItem>
+                                <ChoiceList :choices="views.schemes.value" @pick="pickScheme" />
+                            </template>
+                        </MenuSlide>
                     </template>
                     <template #usage>
                         <AgentUsage :usage="usage" />
@@ -394,7 +412,7 @@ useOutside(drop, () => (open.value = ""));
     align-items: center;
     gap: 10px;
     height: 34px;
-    padding: 0 16px;
+    padding: 0 16px 0 14px;
     font-size: 11.5px;
     color: var(--text-3);
     border-bottom: 1px solid var(--border);
@@ -455,7 +473,6 @@ useOutside(drop, () => (open.value = ""));
     z-index: 1;
     left: 0;
     margin-left: 0;
-    padding-right: 10px;
     background: #111215;
     box-shadow: 8px 0 8px -6px #111215;
 }
@@ -520,11 +537,7 @@ useOutside(drop, () => (open.value = ""));
 
 .agent-actions .agent-presets {
     gap: 5px;
-    margin-right: 2px;
-}
-
-.agent-detach.on {
-    color: var(--accent-text);
+    padding-right: 2px;
 }
 
 .agent-divider {
@@ -639,6 +652,21 @@ useOutside(drop, () => (open.value = ""));
     .agent-views-divider {
         transition: none;
     }
+}
+
+.bar-line {
+    height: 1px;
+    margin: 4px 2px;
+    background: var(--border);
+}
+
+.bar-more {
+    margin-left: auto;
+    color: var(--text-4);
+}
+
+.bar-back {
+    color: var(--text-3);
 }
 
 .bar-foot {

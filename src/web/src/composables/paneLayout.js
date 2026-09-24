@@ -1,4 +1,4 @@
-import {computed, onUnmounted, ref, watch} from "vue";
+import {computed, effectScope, ref, watch} from "vue";
 import {fresh, leaves, measure, opened, resized, valid} from "../domain/panes.js";
 import {saveViewerSetting, settingsLoaded, viewerSetting} from "./viewerSetting.js";
 
@@ -6,12 +6,11 @@ const KEY = "layout";
 const SAVE_AFTER = 500;
 const FOLD = 380;
 
-export function usePaneLayout() {
+function shared() {
     const stored = () => viewerSetting(KEY, null);
     const layout = ref(valid(stored()) ? stored() : fresh());
     const born = ref({});
     const dying = ref({});
-    const timers = new Set();
     let loaded = settingsLoaded();
     let mine = JSON.stringify(layout.value);
     let saving = 0;
@@ -25,11 +24,6 @@ export function usePaneLayout() {
         layout.value = got;
         mine = text;
     });
-
-    function later(ms, run) {
-        const t = setTimeout(() => (timers.delete(t), run()), ms);
-        timers.add(t);
-    }
 
     function keep() {
         mine = JSON.stringify(layout.value);
@@ -51,7 +45,7 @@ export function usePaneLayout() {
         if (!change) return;
         layout.value = change.layout;
         dying.value = {...dying.value, ...change.dying};
-        Object.keys(change.dying).forEach((id) => later(FOLD, () => forget(id)));
+        Object.keys(change.dying).forEach((id) => setTimeout(() => forget(id), FOLD));
         if (Object.keys(change.born).length) {
             born.value = {...born.value, ...change.born};
             requestAnimationFrame(() => requestAnimationFrame(() => (born.value = {})));
@@ -84,10 +78,13 @@ export function usePaneLayout() {
         return [...live, ...gone].sort((a, b) => a.id - b.id);
     });
     const open = computed(() => opened(layout.value));
+    const stage = ref(null);
+    return {layout, measured, panes, open, apply, replace, resize, stage};
+}
 
-    onUnmounted(() => {
-        timers.forEach(clearTimeout);
-        clearTimeout(saving);
-    });
-    return {layout, measured, panes, open, apply, replace, resize};
+let one = null;
+
+export function usePaneLayout() {
+    one = one || effectScope(true).run(shared);
+    return one;
 }
