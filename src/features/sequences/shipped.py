@@ -47,7 +47,8 @@ WORKING_A_BOARD_CARD = {
     "starts_on": "message.requested",
     "started_by": USER,
     "steps": [
-        ("Say what they mean", "Your first turn never drafts. Make a real guess from their words, the board's name and the "
+        ("Say what they mean", "Your first turn never drafts. From the first question on, narrow down what they already want: "
+                               "yes or no suits a sharp guess, and richer options suit a loose one; judge by the context. Make a real guess from their words, the board's name and the "
                                "tickets already on it (journal ticket board <board n>); never ask what the board already says. "
                                "When their words make no sense, say so in the question, like \"I couldn't read that. Do you "
                                "mean <your guess>?\" Put one short line of why you think so in --abstract, and ask on the "
