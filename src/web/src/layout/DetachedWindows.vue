@@ -91,7 +91,7 @@ function away(id) {
 .detached {
     position: fixed;
     inset: 0;
-    z-index: 30;
+    z-index: 70;
     pointer-events: none;
 }
 

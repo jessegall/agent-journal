@@ -21,10 +21,10 @@ class TicketsDetails(FeatureDetails):
         journal ticket complete <n> --yes closes one anyway.
 
         A message about a board comes from the board's New work panel and asks for tickets on it: split the work into a few
-        tickets and draft each with journal ticket create "<the work>" --brief "<what is wanted>" --set board=<n> --set
-        draft=true, naming any ticket one waits on with journal ticket depend, and the role that should take it with --set
+        tickets and draft each with journal ticket create "<the work>" --abstract "<one line, at most 140 characters>"
+        --brief "<the deeper explanation>" --set board=<n> --set draft=true, naming any ticket one waits on with journal ticket depend, and the role that should take it with --set
         owner=<domain>/<role> when the project's agent organization has one. Then reply to the message in one short line
-        about the tickets, never naming rows, chips or commands: the panel shows the reply and the drafts as cards, and
+        of at most 200 characters about the tickets, never naming rows, chips or commands: the panel shows the reply and the drafts as cards, and
         the user picks the ones to keep. When a decision is the
         user's, ask it on the board, never in the chat: journal board ask <n> "<question>" with its options
         as --set options=…; the panel and the board show it, keep the drafts waiting, and you hear the answer as an event.

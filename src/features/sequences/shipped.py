@@ -45,18 +45,20 @@ WORKING_A_BOARD_CARD = {
     "steps": [
         ("Read the card", "journal ticket show <n>: its board, stage and brief. If you drafted this card yourself, give the run "
                           "up with journal sequence abandon <this sequence> --about <ref> --why \"my own draft\"."),
-        ("Ask one short question", "When the tickets turn on something only the user knows, ask it on the board in a few words, "
-                                   "like \"Which login first?\", with two to four options of a few words each: journal board "
-                                   "ask <board n> \"<question>\" --set options='[...]'. One question at a time, no paragraphs; "
-                                   "the board shows it and the user clicks. Wait for the answer only where the tickets depend "
-                                   "on it."),
-        ("Draft the tickets", "Draft each ticket on the same board: journal ticket create \"<the work>\" --brief \"<what is "
-                              "wanted>\" --set board=<n> --set draft=true. A title is a few words and a brief two or three "
-                              "plain sentences. Name what waits on what with journal ticket depend, and the role that should "
+        ("Clarify in two turns", "Only when you are unsure what the user means, ask on the board in a few words, like \"Which "
+                                 "login first?\", with two to four options of a few words each: journal board ask <board n> "
+                                 "\"<question>\" --set options='[...]'. You have two turns at most: after the first answer you may "
+                                 "suggest one or two directions. Still unsure after two turns, ask once more with exactly three "
+                                 "options, each a meaning you think they have (\"Did you mean…?\"), and draft from their pick. One "
+                                 "question at a time, no paragraphs."),
+        ("Draft the tickets", "Draft each ticket on the same board: journal ticket create \"<the work>\" --abstract \"<one "
+                              "line>\" --brief \"<the deeper explanation>\" --set board=<n> --set draft=true. A title is a few "
+                              "words, the abstract one line of at most 140 characters shown on the card, and the brief a few "
+                              "plain sentences shown under More info. Name what waits on what with journal ticket depend, and the role that should "
                               "take it with --set owner=<domain>/<role> when the project has one."),
-        ("Say one line", "Reply on the card in one short line about the tickets, like \"Three tickets drafted, pick the ones to "
+        ("Say one line", "Reply on the card in one short line of at most 200 characters about the tickets, like \"Three tickets drafted, pick the ones to "
                          "keep.\" No paragraphs, no lists, and no mention of rows, chips, numbers, commands or the journal. The "
-                         "user picks, clicks or says what to change; take their answer back to Ask one short question."),
+                         "user picks, clicks or says what to change; take their answer back to Clarify in two turns."),
     ],
 }
 SHIPPED = (FILING_A_DUMP, BUILDING_A_PLAN, WORKING_A_BOARD_CARD)

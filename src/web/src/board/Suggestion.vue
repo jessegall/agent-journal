@@ -5,15 +5,16 @@ import {useTyping} from "../composables/reveal.js";
 import {store} from "../state/store.js";
 import InlineEdit from "../kit/InlineEdit.vue";
 import SkeletonLine from "../kit/SkeletonLine.vue";
+import Btn from "../kit/Btn.vue";
 
 const props = defineProps({ticket: {type: Object, default: null}, picked: Boolean, active: Boolean, paused: Boolean, order: Number});
-const emit = defineEmits(["toggle", "revealed"]);
+const emit = defineEmits(["toggle", "revealed", "more"]);
 const TITLE_MS = 900;
-const BRIEF_MS = 2000;
+const ABSTRACT_MS = 1600;
 const {type, wait} = useTyping();
-const shown = reactive({started: false, title: 0, owner: false, brief: 0, waits: false, done: false});
+const shown = reactive({started: false, title: 0, owner: false, abstract: 0, waits: false, done: false});
 const title = computed(() => (props.ticket ? props.ticket.title : ""));
-const brief = computed(() => (props.ticket ? props.ticket.brief : ""));
+const abstract = computed(() => (props.ticket ? props.ticket.abstract : ""));
 const owner = computed(() => {
     const name = props.ticket ? props.ticket.data.owner : "";
     return name ? (store.board.roles.find((role) => role.name === name) || {title: name}).title : "";
@@ -40,9 +41,9 @@ const fields = computed(() => [
         ],
     },
     {
-        name: "brief",
-        text: shown.done ? brief.value : brief.value.slice(0, shown.brief),
-        typed: shown.brief,
+        name: "abstract",
+        text: shown.done ? abstract.value : abstract.value.slice(0, shown.abstract),
+        typed: shown.abstract,
         caret: stage.value === "writing" && shown.owner,
         bars: [
             {width: "100%", height: 9},
@@ -62,7 +63,7 @@ async function reveal() {
     await wait(120);
     shown.owner = true;
     await wait(160);
-    await type(brief.value, BRIEF_MS, (at) => (shown.brief = at));
+    await type(abstract.value, ABSTRACT_MS, (at) => (shown.abstract = at));
     shown.waits = true;
     await wait(200);
     shown.done = true;
@@ -87,7 +88,7 @@ async function save(field, text) {
         role="button"
         tabindex="0"
         :aria-pressed="picked"
-        :title="shown.done ? 'Click to keep it; double-click its title or brief to change them' : ''"
+        :title="shown.done ? 'Click to keep it; double-click its title or line to change them' : ''"
         @click="toggle"
         @keydown.space.prevent="toggle"
         @keydown.enter.prevent="toggle"
@@ -121,6 +122,11 @@ async function save(field, text) {
                 <span class="owner">For {{ owner }}</span>
             </template>
         </SkeletonLine>
+        <template v-if="shown.done">
+            <Btn small class="more" @click.stop="(e) => emit('more', e.currentTarget.closest('.pick').getBoundingClientRect())">
+                More info
+            </Btn>
+        </template>
         <template v-if="shown.waits && waits.length">
             <span class="waits">
                 Waits on
@@ -135,7 +141,7 @@ async function save(field, text) {
     display: flex;
     flex-direction: column;
     gap: 8px;
-    height: 200px;
+    height: 100%;
     overflow: hidden;
     padding: 16px 16px 14px;
     border: 1px solid var(--border-2);
@@ -193,7 +199,7 @@ async function save(field, text) {
 
 .line-title {
     order: 1;
-    height: 40px;
+    min-height: 60px;
 }
 
 .line-owner {
@@ -201,9 +207,9 @@ async function save(field, text) {
     height: 16px;
 }
 
-.line-brief {
+.line-abstract {
     order: 3;
-    height: 40px;
+    min-height: 100px;
 }
 
 .tag {
@@ -267,13 +273,10 @@ async function save(field, text) {
 }
 
 .pick-title {
-    display: -webkit-box;
-    overflow: hidden;
     font-size: 15px;
     font-weight: 500;
     line-height: 20px;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 2;
+    overflow-wrap: anywhere;
 }
 
 .owner {
@@ -283,13 +286,15 @@ async function save(field, text) {
     animation: fade-in 0.16s both;
 }
 
-.pick-brief {
-    display: -webkit-box;
-    overflow: hidden;
+.pick-abstract {
     color: var(--text-2);
     line-height: 20px;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 2;
+    overflow-wrap: anywhere;
+}
+
+.more {
+    order: 5;
+    align-self: flex-start;
 }
 
 .waits {

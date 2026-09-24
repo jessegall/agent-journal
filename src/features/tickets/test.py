@@ -172,7 +172,7 @@ def test_a_drafted_ticket_waits_for_the_user_to_confirm_it_before_it_can_start()
     from tests.conftest import refused
     record = fresh()
     board = Boards(record, actor=USER).create("Features", stages=["Ideas", "Building"], meanings={"Building": "start"})
-    drafted = Tickets(record, actor=AGENT).create("Dark mode", board=board.n, draft=True)
+    drafted = Tickets(record, actor=AGENT).create("Dark mode", abstract="A dark theme for the viewer", board=board.n, draft=True)
     assert ("is a draft" in refused(lambda: Tickets(record, actor=USER).move(drafted.n, "Building")), Tickets(record).load(drafted.n).stage) == \
         (True, "Ideas"), "a draft cannot start, and stays where it was"
     assert "only the user confirms" in refused(lambda: Tickets(record, actor=AGENT).confirm(drafted.n)), "the agent cannot confirm its own draft"

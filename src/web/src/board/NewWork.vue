@@ -12,6 +12,7 @@ import {store} from "../state/store.js";
 import {rows} from "../sync/rows.js";
 import Suggestion from "./Suggestion.vue";
 import AskedQuestion from "./AskedQuestion.vue";
+import DraftDetail from "./DraftDetail.vue";
 
 const props = defineProps({open: Boolean, board: Object, stage: {type: String, default: ""}, starts: Boolean});
 const emit = defineEmits(["close", "added"]);
@@ -27,6 +28,9 @@ const panel = ref(null);
 const revealed = ref([]);
 const docked = ref(false);
 const SKELETONS = 3;
+const SAID_LIMIT = 280;
+const OPEN_TURNS = 2;
+const shownDraft = ref(null);
 const FADED = 400;
 const THINKING = [
     "Reading the board",
@@ -106,8 +110,8 @@ function onKey(e) {
 }
 
 watch(
-    () => drafts.value.length,
-    (count) => count && (docked.value = true),
+    () => drafts.value.length >= 1 || replies.value.length + boardQuestions.value.length >= OPEN_TURNS,
+    (dock) => dock && (docked.value = true),
     {immediate: true}
 );
 
@@ -212,6 +216,7 @@ async function leave() {
                         :picked="Boolean(card.ticket) && picked.includes(card.ticket.n)"
                         @toggle="toggle(card.ticket.n)"
                         @revealed="reveal(card.ticket.n)"
+                        @more="(from) => (shownDraft = {ticket: card.ticket, from})"
                     />
                 </template>
             </TransitionGroup>
@@ -222,6 +227,7 @@ async function leave() {
                 v-model="words"
                 fill
                 :locked="adding"
+                :limit="SAID_LIMIT"
                 :placeholder="drafts.length ? 'Say what to change' : 'Describe the work in your own words'"
                 @send="send"
             >
@@ -257,6 +263,9 @@ async function leave() {
                 </template>
             </ChatPanel>
         </div>
+        <template v-if="shownDraft">
+            <DraftDetail :ticket="shownDraft.ticket" :from="shownDraft.from" @close="shownDraft = null" />
+        </template>
     </FocusStage>
 </template>
 
@@ -391,7 +400,7 @@ kbd {
     display: grid;
     flex: 1 1 auto;
     grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-    grid-auto-rows: 200px;
+    grid-auto-rows: 320px;
     align-content: start;
     gap: 14px;
     min-height: 0;
