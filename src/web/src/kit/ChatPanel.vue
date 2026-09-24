@@ -242,11 +242,11 @@ const focusEntered = (el) => el === input.value && focusInput();
 }
 
 .echo-enter-active {
-    transition: opacity 0.4s ease 0.25s;
+    transition: opacity 0.7s ease 0.5s;
 }
 
 .echo-leave-active {
-    transition: opacity 0.25s ease;
+    transition: opacity 0.45s ease;
 }
 
 .echo-enter-from {
@@ -289,9 +289,20 @@ const focusEntered = (el) => el === input.value && focusInput();
     opacity: 0;
 }
 
+.compose {
+    transition:
+        background 0.5s ease,
+        border-color 0.5s ease;
+}
+
 .compose .left,
 .compose > :deep(.btn) {
-    transition: opacity 0.3s ease;
+    transition: opacity 0.5s ease;
+}
+
+.compose.waiting {
+    border-color: transparent;
+    background: transparent;
 }
 
 .compose.waiting .left,
@@ -314,7 +325,7 @@ const focusEntered = (el) => el === input.value && focusInput();
 
 .swap-enter-active,
 .swap-leave-active {
-    transition: opacity 0.25s ease;
+    transition: opacity 0.5s ease;
 }
 
 .swap-enter-from,
