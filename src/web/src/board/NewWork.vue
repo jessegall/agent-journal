@@ -34,13 +34,8 @@ const CHOICES = 3;
 const START_OVER = "Start over";
 const shownDraft = ref(null);
 const FADED = 400;
-const THINKING = [
-    "Reading the board",
-    "Looking at what is already there",
-    "Splitting the work",
-    "Weighing what comes first",
-    "Writing the tickets",
-];
+const UNDERSTANDING = ["Reading what you wrote", "Working out what you mean", "Checking it against the board", "Making a guess"];
+const DRAFTING = ["Looking at what is already there", "Splitting the work", "Weighing what comes first", "Writing the tickets"];
 
 const asked = computed(() => rows("message").filter((m) => sent.value.includes(m.data.idempotency)));
 const replies = computed(() => {
@@ -50,6 +45,8 @@ const replies = computed(() => {
 const boardQuestions = computed(() => (since.value ? store.board.questions.filter((q) => q.created >= since.value) : []));
 const asking = computed(() => boardQuestions.value.find((q) => !q.completed));
 const choosing = computed(() => Boolean(asking.value) && (asking.value.data.options || []).length >= CHOICES);
+const confirmed = computed(() => drafts.value.length > 0 || boardQuestions.value.some((q) => q.outcome === "Yes"));
+const thinking = computed(() => (confirmed.value ? DRAFTING : UNDERSTANDING));
 const startedOver = computed(() => boardQuestions.value.find((q) => q.completed && q.outcome === START_OVER));
 const conversation = computed(() =>
     [
@@ -290,7 +287,7 @@ async function leave() {
                     <AskedQuestion :question="asking" />
                 </template>
                 <template v-if="writing && !asking">
-                    <ChatLine thinking :notes="THINKING" />
+                    <ChatLine thinking :notes="thinking" />
                 </template>
                 <template v-if="stalled">
                     <ChatLine text="No answer yet. The agent may be busy with other work." />
