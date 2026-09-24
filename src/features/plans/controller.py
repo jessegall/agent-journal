@@ -161,6 +161,22 @@ class Plans(Controller):
     def abandon(self, n: int, why: str = ""):
         return self._status(self.load(n), ABANDONED, BUILDING, DRAFT, READY, APPROVED, ACTIVE, WAITING, PARKED, why=why)
 
+    def progress(self, n: int) -> str:
+        from controllers.types import Todos
+        from features.tickets.controller import Tickets
+        r = self.load(int(n))
+        todos, tickets = Todos(self.record, actor=self.actor), Tickets(self.record, actor=self.actor)
+        lines = [f"plan {r.n}, {r.title}: {r.status}, phase {r.current} of {len(r.phases)}"]
+        for i, phase in enumerate(r.phases, 1):
+            rows = [todos.load(t) for t in phase[PHASE.todos]] + [tickets.load(t) for t in phase.get(PHASE.tickets, [])]
+            closed = sum(1 for row in rows if row.completed)
+            lines.append(f"{'now ' if i == r.current else ''}phase {i}, {phase[PHASE.title]}: {closed} of {len(rows)} done")
+            if i == r.current:
+                lines += [f"  {row.type} {row.n} {row.title}: {'done' if row.completed else row.data.get('stage') or row.data.get('status') or 'open'}"
+                          for row in rows]
+        lines += [f"lately: {moment['kind']} to-do {moment['todo']}, {moment['title']}" for moment in self.timeline(r.n)[-3:]]
+        return "\n".join(lines)
+
     def timeline(self, n: int) -> list[dict]:
         from controllers.types import Todos, Works
         r = self.load(int(n))

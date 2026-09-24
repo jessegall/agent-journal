@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.153.0 — A worktree always gets the project's journal
+
+A worktree now always shares the project's journal. A project that once committed journal files to git no longer gets those stale files in each worktree instead: they are hidden from git there and the project's journal is linked in their place, and a regression test covers it, including links run twice, dangling old links and files checked out again. journal claude --worktree without a name now names the worktree after the environment you chose. journal plan progress <n> says where a plan stands, for the environment's agent to answer how it is going. Nothing to do.
+
 ## 2.152.0 — New work explores before it drafts, and plans run their tickets
 
 New work first explores what you want: after each of your answers the agent rates how well it understands, 1 to 5, and each rating hands it the right next question: find the feature, pin it down, make it concrete, and at 4 an optional question about scope. At 5 the panel switches to the draft view at once and the cards appear as they are written; the agent guesses how many first and cannot finish with fewer. After five ratings below 4 it says it still does not know and offers to start over. A refresh picks up where it was. While the agent thinks, the panel narrows and its input folds away, with waiting lines that fit the moment and change at random. A plan's phases can hold board tickets: starting the plan starts a worker agent of its own and the first phase's tickets, and each next phase's tickets start once the ones before are closed. The chat window can choose which kinds of marks it shows, sequence marks name their sequence, and a document being written shows its progress in the side panel with Comments closed until it is done. Nothing to do.

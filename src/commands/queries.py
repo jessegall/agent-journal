@@ -320,7 +320,7 @@ def supervise(ctx, agent: str) -> str:
     resumed = driver.conversation(args) or driver.continued(args, project)
     env = (Sessions(record.root).environment(resumed) if resumed else "") or asked_for(record, driver.worktree(args), ask, answering)
     here = Record(record.root, env)
-    args = driver.within(args, env) if env in linked(project) else args
+    args = driver.within(args, env) if env in linked(project) or driver.asks_worktree(args) else args
     put_back(here)
     clear(record.root)
     try:
