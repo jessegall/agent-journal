@@ -1,15 +1,16 @@
 import re
 
 REPLY = "reply"
+AWAIT = "await"
 RUNS = {REPLY: "message reply {n} {text}", "log": "work log {text} --n {n}", "end": "work end {n} --how {text}",
         "todo": "todo create {name} --brief {text}", "fact": "fact create {name} --brief {text}",
-        "rule": "rule create {name} --brief {text}"}
+        "rule": "rule create {name} --brief {text}", AWAIT: "work await {text}"}
 RETIRED = ("discovery", "correction", "blocked", "info")
 VALUE = r'(?:"[^"]*"|\([^)]*\)|[^,\]\s]+)'
 EXTRA = r'\s*,\s*[a-z_]+=' + VALUE
 ARGUMENT = r'(?::[0-9]+|="[^"]*")?(?:' + EXTRA + r')*'
 REPLIED = re.compile(r"\bjournal\s+message\s+reply\s+(\d+)")
-CARRIED = re.compile(r'^[ \t]*(?:>\s?)?(?:\*\*)?\[!([a-z]+)(?::([0-9]+(?:,[0-9]+)*)|="([^"]*)")((?:' + EXTRA + r')*)\]', re.M)
+CARRIED = re.compile(r'^[ \t]*(?:>\s?)?(?:\*\*)?\[!([a-z]+)(?::([0-9]+(?:,[0-9]+)*)|="([^"]*)")?((?:' + EXTRA + r')*)\]', re.M)
 NAMED = re.compile(r'([a-z_]+)=(' + VALUE + r')')
 SETTING = re.compile(r"--set ([a-z_]+)=")
 INTERNAL = re.compile(r"^[ \t]*(?:\*\*)?\[!internal\]", re.M)
@@ -42,6 +43,10 @@ def stripped(text: str, settings: dict) -> str:
 
 def internal(text: str) -> bool:
     return bool(INTERNAL.search(text))
+
+
+def waits(text: str) -> bool:
+    return any(name == AWAIT for name, *_ in CARRIED.findall(text))
 
 
 def replies(text: str) -> bool:

@@ -116,9 +116,6 @@ useSighted(topMark, earlier, {root: scroller, margin: "400px 0px"});
                 <CommentToggle :resource="resource" />
                 <CloseButton @click="emit('close')" />
             </header>
-            <template v-if="!picked">
-                <AgentLinks :agent="resource.n" />
-            </template>
             <template v-if="picked">
                 <h2 class="title">{{ picked.task }}</h2>
                 <p class="session">subagent {{ picked.session }} of session {{ resource.title }}</p>
@@ -189,9 +186,7 @@ useSighted(topMark, earlier, {root: scroller, margin: "400px 0px"});
                     empty="No skill loaded in this window"
                     @pick="() => go(route.env, 'skills')"
                 />
-                <template v-if="picked">
-                    <AgentLinks :agent="resource.n" :session="picked.session" compact />
-                </template>
+                <AgentLinks :agent="resource.n" :session="picked ? picked.session : ''" />
             </div>
             <TabBar v-model="tab" class="agent-tabs" :tabs="tabs">
                 <template v-if="tab === 'transcript'">

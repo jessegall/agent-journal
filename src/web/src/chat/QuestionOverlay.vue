@@ -4,6 +4,7 @@ import TextDisplay from "../kit/TextDisplay.vue";
 import OptionsPicker from "../resource/OptionsPicker.vue";
 import {EASE, still} from "../composables/hydrate.js";
 import {closeQuestion, questionView} from "./questionView.js";
+import {answered} from "./answers.js";
 import {holding, rows} from "../sync/rows.js";
 import {route} from "../route.js";
 
@@ -13,7 +14,7 @@ const veil = ref(null);
 const card = ref(null);
 const inner = ref(null);
 const n = questionView.n;
-const question = computed(() => rows("question").find((q) => q.n === n) || null);
+const question = computed(() => answered(rows("question").find((q) => q.n === n) || null));
 const leaving = ref(false);
 const kept = ref(null);
 const shown = computed(() => (leaving.value ? kept.value : question.value || kept.value));

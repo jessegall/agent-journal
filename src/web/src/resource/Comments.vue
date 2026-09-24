@@ -10,6 +10,7 @@ import {quoted, withQuote} from "../format/quote.js";
 import {age} from "../format/time.js";
 import {rows} from "../sync/rows.js";
 import {markPassage, passageIn} from "../composables/passage.js";
+import {usePromised} from "../composables/promised.js";
 import Compose from "../chat/Compose.vue";
 
 const props = defineProps({
@@ -22,7 +23,11 @@ const props = defineProps({
 const emit = defineEmits(["sent"]);
 const talk = inject("talk", null);
 const list = ref(null);
-const alive = computed(() => rows("comment").filter((c) => !c.deleted));
+const {pending, promise, change, keep, link, keyOf} = usePromised();
+const saved = computed(() => rows("comment").filter((c) => !c.deleted));
+const unsaved = computed(() => pending.value.filter((p) => !p.written || !saved.value.some((c) => c.ref === p.written)));
+watch(unsaved, keep);
+const alive = computed(() => [...saved.value, ...unsaved.value]);
 const thread = computed(() => alive.value.filter((c) => c.refs.includes(props.resource.ref)).map((c) => ({...c, ...quoted(c.brief)})));
 const answers = computed(() => {
     const by = {};
@@ -90,30 +95,41 @@ async function remove(c) {
     await api.act("comment", c.n, "delete", {why: "deleted from the viewer"});
 }
 
-const replying = reactive({n: 0, text: "", error: "", busy: false});
+const replying = reactive({n: 0, text: ""});
 
 function reply(c) {
-    Object.assign(replying, {n: c.n, text: "", error: "", busy: false});
+    Object.assign(replying, {n: c.n, text: ""});
 }
 
-async function answer() {
-    if (!replying.text.trim()) return;
-    replying.busy = true;
+async function post(made) {
+    change(made, {failed: false});
     try {
-        await api.act("comment", replying.n, "comment", {text: replying.text.trim()});
-        replying.n = 0;
+        const written = await api.act(made.target.type, made.target.n, "comment", {text: made.brief});
+        link(`comment:${written.n}`, made.ref);
+        change(made, {written: `comment:${written.n}`});
     } catch (e) {
-        replying.error = e.message;
-    } finally {
-        replying.busy = false;
+        change(made, {failed: true});
     }
 }
 
+function comment(target, refs, brief) {
+    const made = promise({type: "comment", brief, refs, target});
+    post(made);
+    return made;
+}
+
+function answer() {
+    const text = replying.text.trim();
+    if (!text) return;
+    comment({type: "comment", n: replying.n}, [`comment:${replying.n}`], text);
+    Object.assign(replying, {n: 0, text: ""});
+}
+
 async function send(text) {
-    const written = await api.act(props.resource.type, props.resource.n, "comment", {text: withQuote(props.quote, text)});
+    const made = comment({type: props.resource.type, n: props.resource.n}, [props.resource.ref], withQuote(props.quote, text));
     emit("sent");
     await nextTick();
-    const row = document.querySelector(`[data-comment="${written.n}"]`);
+    const row = list.value?.querySelector(`[data-comment="${made.ref}"]`);
     if (row) row.scrollIntoView({behavior: "smooth", block: "nearest"});
 }
 </script>
@@ -142,10 +158,10 @@ async function send(text) {
                 <template v-if="groups.length > 1 || !talk">
                     <SectionHeading>{{ group.title }}</SectionHeading>
                 </template>
-                <template v-for="c in group.rows" :key="c.n">
+                <template v-for="c in group.rows" :key="keyOf(c)">
                     <article
-                        :class="['comment', {focused: c.n === props.focus, handled: c.completed}]"
-                        :data-comment="c.n"
+                        :class="['comment', {focused: c.n && c.n === props.focus, handled: c.completed, failed: c.failed}]"
+                        :data-comment="c.pending ? c.ref : c.n"
                         @mouseenter="hover(c)"
                         @mouseleave="hover(null)"
                     >
@@ -158,7 +174,7 @@ async function send(text) {
                             </span>
                             <span class="name">{{ who(c) }}</span>
                             <span class="when">{{ age(c.created) }}</span>
-                            <span class="tools">
+                            <span v-if="!c.pending" class="tools">
                                 <button type="button" class="tool" title="Edit this comment" @click="edit(c)">
                                     <Icon name="pencil" :size="12" />
                                 </button>
@@ -172,7 +188,7 @@ async function send(text) {
                                 {{ plain(c.quote) }}
                             </button>
                         </template>
-                        <template v-if="editing.n === c.n">
+                        <template v-if="editing.n && editing.n === c.n">
                             <textarea v-model="editing.text" rows="3" @keydown.esc="editing.n = 0" @keydown.meta.enter.prevent="save" />
                             <span class="edit-row">
                                 <Btn kind="primary" small @click="save">Save</Btn>
@@ -185,6 +201,12 @@ async function send(text) {
                         <template v-else>
                             <TextDisplay class="said" :text="c.text" />
                         </template>
+                        <template v-if="c.failed">
+                            <p class="unsaved">
+                                Couldn't save ·
+                                <button type="button" @click="post(c)">Try again</button>
+                            </p>
+                        </template>
                         <template v-if="c.completed">
                             <div class="handled-note">
                                 <Icon name="check" :size="12" />
@@ -196,8 +218,8 @@ async function send(text) {
                         </template>
                         <template v-if="answersTo(c).length">
                             <div class="answers">
-                                <template v-for="a in answersTo(c)" :key="a.n">
-                                    <div class="answer" :data-comment="a.n">
+                                <template v-for="a in answersTo(c)" :key="keyOf(a)">
+                                    <div :class="['answer', {failed: a.failed}]" :data-comment="a.pending ? a.ref : a.n">
                                         <header class="byline">
                                             <span :class="['mark', 'small', a.seen[0]]">
                                                 <template v-if="a.seen[0] === 'agent'">
@@ -209,11 +231,17 @@ async function send(text) {
                                             <span class="when">{{ age(a.created) }}</span>
                                         </header>
                                         <TextDisplay class="said" :text="a.brief" />
+                                        <template v-if="a.failed">
+                                            <p class="unsaved">
+                                                Couldn't save ·
+                                                <button type="button" @click="post(a)">Try again</button>
+                                            </p>
+                                        </template>
                                     </div>
                                 </template>
                             </div>
                         </template>
-                        <template v-if="replying.n === c.n">
+                        <template v-if="replying.n && replying.n === c.n">
                             <div class="reply-box">
                                 <textarea
                                     v-model="replying.text"
@@ -224,15 +252,12 @@ async function send(text) {
                                     @keydown.enter.exact.prevent="answer"
                                 />
                                 <span class="edit-row">
-                                    <Btn kind="primary" small :busy="replying.busy" @click="answer">Reply</Btn>
+                                    <Btn kind="primary" small @click="answer">Reply</Btn>
                                     <Btn small @click="replying.n = 0">Cancel</Btn>
-                                    <template v-if="replying.error">
-                                        <span class="error">{{ replying.error }}</span>
-                                    </template>
                                 </span>
                             </div>
                         </template>
-                        <template v-else>
+                        <template v-else-if="!c.pending">
                             <button type="button" class="comment-reply-open" @click="reply(c)">
                                 <Icon name="reply" :size="11" />
                                 Reply
@@ -405,6 +430,27 @@ async function send(text) {
 .tool:hover {
     background: var(--hover);
     color: var(--text);
+}
+
+.unsaved {
+    margin: 0;
+    color: var(--danger);
+    font-size: 12px;
+}
+
+.unsaved button {
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--text);
+    font: inherit;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.comment.failed,
+.answer.failed .said {
+    border-color: color-mix(in srgb, var(--danger) 40%, transparent);
 }
 
 .comment-quote {

@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.143.0 — Long commands show how they ended, and answers land at once
+
+A command moved to the background has one mark in the chat that times it while it runs, then shows how long it took: a green dot and wash when it ends well, a red one when it fails. The new `[!await]` tag says what the agent waits for without a line in the chat. Answering a question or leaving a comment shows in the viewer at once. The agent page's top links take less room, thought boxes are tighter, a preset is saved with a floppy icon, and the sharing button in the top bar has a broadcast icon. A shared collection shows its items again, the share dialog checks the new link answers before showing it, and shared pages just say "Shared from an agent journal". A journal whose port is held by another project's journal moves to a free one at once. Nothing to do.
+
 ## 2.142.0 — Update from the changelog, and shares drawn by the inspector itself
 
 The changelog you open from the sidebar footer checks for a newer version the moment it opens and offers Update to install it; the page reloads when it's done. A shared link now renders the journal's own inspector and collection views in a read-only mode, so a shared document looks exactly as it does in the journal. After Create link, the share dialog waits for the tunnel to be up before showing the link, and Copy with message copies a ready line with the item's title. In a to-do, the priority row lines up with the rest, and a line limit in the file feed turns Collapse big files off. Nothing to do.

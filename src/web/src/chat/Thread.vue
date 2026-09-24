@@ -6,6 +6,7 @@ import {computed, nextTick, onMounted, onUnmounted, ref, watch} from "vue";
 import {api} from "../api/client.js";
 import {markSeen} from "../sync/seen.js";
 import {sendMessage, token} from "./outbox.js";
+import {usePromised} from "../composables/promised.js";
 import Icon from "../kit/Icon.vue";
 import {openInChat, route} from "../route.js";
 import {quoted, withQuote} from "../format/quote.js";
@@ -175,8 +176,8 @@ async function loaded() {
     ]);
 }
 const reading = ref({inside: false, moved: 0});
-const pending = ref([]);
-const linked = new Map();
+const revoke = (p) => Object.values(p.data.previews || {}).forEach(URL.revokeObjectURL);
+const {pending, promise, drop, keep, link, keyOf} = usePromised(revoke);
 const boardRequests = computed(
     () =>
         new Set(
@@ -199,17 +200,11 @@ const thread = computed(() => {
         route.value.env,
         !!paging.more.message
     );
-    made.keys.forEach((placeholder, ref) => linked.set(ref, placeholder));
+    made.keys.forEach((placeholder, ref) => link(ref, placeholder));
     return made;
 });
 const turns = computed(() => thread.value.turns);
-watch(turns, (list) => {
-    const listed = new Set(list.map((t) => t.ref));
-    const replaced = pending.value.filter((p) => !listed.has(p.ref));
-    if (!replaced.length) return;
-    replaced.forEach((p) => Object.values(p.data.previews).forEach(URL.revokeObjectURL));
-    pending.value = pending.value.filter((p) => listed.has(p.ref));
-});
+watch(turns, keep);
 
 let glidedAt = 0;
 
@@ -368,16 +363,11 @@ async function post(text, files) {
     try {
         await sendMessage(route.value.env, {brief: body, about}, files, id);
     } catch (e) {
-        pending.value = pending.value.filter((p) => p.ref !== placeholder.ref);
-        Object.values(placeholder.data.previews).forEach(URL.revokeObjectURL);
+        drop(placeholder);
         throw e;
     }
     await nextTick();
     toBottom(true);
-}
-
-function keyOf(t) {
-    return linked.get(t.ref) || t.ref;
 }
 
 function measured(url) {
@@ -389,36 +379,18 @@ function measured(url) {
     });
 }
 
-let promises = 0;
-
 async function promised(body, files, idempotency) {
-    promises += 1;
     const previews = Object.fromEntries(files.map((f) => [f.name, URL.createObjectURL(f)]));
     const pictures = {};
     for (const f of files) {
         const size = f.type.startsWith("image/") ? await measured(previews[f.name]) : null;
         if (size) pictures[f.name] = size;
     }
-    const turn = {
-        ref: `pending:${promises}`,
+    return promise({
         type: "message",
-        n: 0,
-        title: "",
         brief: body,
-        abstract: "",
-        refs: [],
-        seen: ["user"],
-        sections: [],
         data: {files: Object.fromEntries(files.map((f) => [f.name, ""])), previews, pictures, idempotency},
-        created: Date.now() / 1000,
-        updated: 0,
-        deleted: 0,
-        completed: 0,
-        who: "user",
-        pending: true,
-    };
-    pending.value = [...pending.value, turn];
-    return turn;
+    });
 }
 
 async function pin(text, about = "") {

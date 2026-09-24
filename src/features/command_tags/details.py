@@ -25,6 +25,10 @@ class TagsDetails(FeatureDetails):
         message that narrates what you do next, like "Checking the build next";
         anything the user should read goes out without it.
 
+        [!await] <what you wait for> runs journal work await with the rest of the turn and keeps
+        it out of the chat, which already shows what the work waits on: use it instead of a
+        work await command followed by a note.
+
         tags.runs maps a tag to the command it stands for, so [!reply:12] runs
         journal message reply 12 with the turn as its text ([!reply:12,13] answers both messages with one reply), and [!todo="the title"] files a
         to-do with that title and the turn as its brief. [!fact="the claim"] and [!rule="the ruling"]
