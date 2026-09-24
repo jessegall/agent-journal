@@ -17,12 +17,17 @@ def test_a_linked_worktree_without_a_journal_is_linked_to_the_projects_and_kept_
     worktree = tmp_path / "wt"
     (worktree / "src").mkdir(parents=True)
     (worktree / ".git").write_text(f"gitdir: {main / '.git' / 'worktrees' / 'wt'}\n")
+    project = record.root.resolve().parent
+    (project / ".claude" / "skills" / "journal").mkdir(parents=True, exist_ok=True)
+    (project / ".claude" / "settings.local.json").write_text("{}")
     feature = FEATURES["worktrees"]
     for _ in range(2):
         linked(feature, record, worktree / "src")
     link = worktree / ".journal"
     assert (link.is_symlink(), link.resolve() == record.root.resolve()) == (True, True), "the worktree writes the project's record"
     assert (main / ".git" / "info" / "exclude").read_text().splitlines().count("/.journal") == 1, "git never sees the link, and the line is written once"
+    assert ((worktree / ".claude" / "skills" / "journal").is_symlink(), (worktree / ".claude" / "settings.local.json").is_symlink()) == (True, True), \
+        "the worktree's agent gets the project's journal skills and hooks, which git never checks out"
     own = tmp_path / "other"
     (own / ".journal").mkdir(parents=True)
     (own / ".git").write_text(f"gitdir: {main / '.git' / 'worktrees' / 'other'}\n")
