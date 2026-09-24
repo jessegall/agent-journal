@@ -132,6 +132,15 @@ class ToolFinished(AgentReported):
 
 
 @dataclass(frozen=True)
+class CommandRan(AgentEvent):
+    on: ClassVar[str] = "agent.command.ran"
+    at: float = 0.0
+    tool: str = ""
+    command: str = ""
+    output: str = ""
+
+
+@dataclass(frozen=True)
 class FileEdited(AgentEvent):
     on: ClassVar[str] = "file.edit"
     at: float = 0.0

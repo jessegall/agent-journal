@@ -326,8 +326,8 @@ export class ApiClient {
         return this.get(this.here(`/agent/${agent}/edits${query({since})}`));
     }
 
-    outputs(agent) {
-        return this.get(this.here(`/agent/${agent}/outputs`));
+    terminal(agent) {
+        return this.get(this.here(`/agent/${agent}/terminal`));
     }
 
     stream() {

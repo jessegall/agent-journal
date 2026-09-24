@@ -1,11 +1,10 @@
 <script setup>
-import {computed, ref} from "vue";
+import {ref} from "vue";
 import Console from "../kit/Console.vue";
 
-const props = defineProps({
-    commands: {type: Array, default: () => []},
+defineProps({
+    lines: {type: Array, default: () => []},
     queued: {type: Array, default: () => []},
-    outputs: {type: Object, default: () => ({})},
 });
 const emit = defineEmits(["now"]);
 
@@ -17,28 +16,22 @@ function toggle(at) {
     opened.value = next;
 }
 
-const JOURNAL_CALL = /^(cd\s+\S+\s*&&\s*)?\S*journal\s/;
-const shown = computed(() => props.commands.filter((c) => !(c.tool === "Bash" && JOURNAL_CALL.test(c.command.trim()))));
-
-const line = (c) =>
-    ["Bash", "Typed", "Journal"].includes(c.tool)
-        ? c.command
-        : `${c.tool.replace(/^mcp__/, "").replaceAll("__", " · ")} ${c.subject && c.subject !== c.command ? c.subject : ""}`.trim();
+const MARKS = {Bash: "$", Journal: "#"};
 </script>
 
 <template>
     <Console>
-        <template v-for="c in shown" :key="c.at">
-            <div :class="['log-line', {running: !c.done, shell: c.tool === 'Bash', noted: c.tool === 'Journal'}]">
-                <span class="log-mark">{{ c.tool === "Bash" ? "$" : c.tool === "Journal" ? "#" : "›" }}</span>
-                <span class="log-text">{{ line(c) }}</span>
+        <template v-for="c in lines" :key="c.at">
+            <div :class="['log-line', {shell: c.tool === 'Bash', noted: c.tool === 'Journal'}]">
+                <span class="log-mark">{{ MARKS[c.tool] || "›" }}</span>
+                <span class="log-text">{{ c.command }}</span>
             </div>
-            <template v-if="outputs[String(c.at)]">
+            <template v-if="c.output">
                 <pre
                     :class="['log-output', {open: opened.has(c.at)}]"
                     :title="opened.has(c.at) ? 'Click to fold the output' : 'Click to show the whole output'"
                     @click="toggle(c.at)"
-                    >{{ outputs[String(c.at)] }}</pre>
+                    >{{ c.output }}</pre>
             </template>
         </template>
         <template v-for="q in queued" :key="q.at">
@@ -95,17 +88,9 @@ const line = (c) =>
     color: var(--text);
 }
 
-.log-line.running {
-    color: var(--text);
-}
-
 .log-mark {
     flex: none;
     color: var(--text-4);
-}
-
-.log-line.running .log-mark {
-    color: var(--accent-text);
 }
 
 .log-output {

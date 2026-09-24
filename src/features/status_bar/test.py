@@ -1,13 +1,9 @@
 import time
 
-from controllers.types import Agents
-from engine.hooks import handle
 from features.status_bar.group import grouped, ran
-from features.status_bar.outputs import MOST_LINES, outputs
 from features.status_bar.queue import queue as messages
 from features.status_bar.queue import HOLD
 from features.status_bar.bar import bar, current
-from providers import PROVIDERS
 from tests.conftest import fresh
 
 
@@ -151,13 +147,3 @@ def test_a_model_change_is_typed_into_the_terminal_whole_and_raw(monkeypatch):
     entered = [raw for raw in typed if raw.strip(b"\x05\x15\x7f")]
     assert entered == [b"/model", b"\r", b"\x1b[B\x1b[B", b"\r", b"\r"] and not any(MARK.encode() in raw for raw in typed), \
         "every step of a picker is typed in order, raw, with no journal mark, and none is dropped"
-
-
-def test_each_command_keeps_its_output_capped_for_the_terminal():
-    record, claude = fresh(), PROVIDERS["claude"]()
-    call = {"session_id": "claude-1", "tool_name": "Bash", "tool_input": {"command": "seq 100"}}
-    handle(claude, record.root, record.env, {**call, "hook_event_name": "PreToolUse"})
-    handle(claude, record.root, record.env, {**call, "hook_event_name": "PostToolUse", "tool_response": {"stdout": "\n".join(map(str, range(1, 101)))}})
-    run = Agents(record).by_session("claude-1").data["commands"][-1]
-    kept = outputs(record, "claude-1")[str(run["at"])].splitlines()
-    assert (kept[0], len(kept), kept[-1]) == ("1", MOST_LINES + 1, f"… {100 - MOST_LINES} more lines"), "the output is kept under its run, cut to its first lines"

@@ -3,12 +3,11 @@ import {computed, ref} from "vue";
 import {api} from "../api/client.js";
 import TextInput from "../kit/TextInput.vue";
 import {agent} from "../state/store.js";
-import {useCommandOutputs} from "../composables/commandOutputs.js";
+import {useTerminal} from "../composables/terminal.js";
 import CommandLog from "./CommandLog.vue";
 
-const commands = computed(() => (agent.value && agent.value.data.commands) || []);
 const queued = computed(() => (agent.value && agent.value.data.queued_commands) || []);
-const outputs = useCommandOutputs();
+const lines = useTerminal();
 const command = ref("");
 const input = ref(null);
 
@@ -34,7 +33,7 @@ async function send(line, now) {
 <template>
     <section class="terminal" @click="focusInput">
         <div class="terminal-body">
-            <CommandLog :commands="commands" :queued="queued" :outputs="outputs" @now="(line) => send(line, true)" />
+            <CommandLog :lines="lines" :queued="queued" @now="(line) => send(line, true)" />
         </div>
         <template v-if="agent">
             <form class="terminal-run" @submit.prevent="send(command, false)">
