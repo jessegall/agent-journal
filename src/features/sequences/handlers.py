@@ -32,8 +32,9 @@ def filled(context: Context, n: int, key: str, body: str) -> str:
     text = body.replace("<this sequence>", str(n))
     if about == BY_HAND:
         return text
+    kind, _, number = about.partition(":")
     board = board_of(context, about)
-    text = text.replace("<ref>", about)
+    text = text.replace("<ref>", about).replace(f"<{kind} n>", number)
     return text.replace("<board n>", str(board)) if board else text
 
 

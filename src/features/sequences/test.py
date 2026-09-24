@@ -2,7 +2,7 @@ import features
 from controllers.types import CONTROLLERS
 from resources.base import AGENT, USER
 from tests.conftest import fresh, refused
-from tests.kit import nudges, report
+from tests.kit import Nudges, nudges, report
 
 
 def test_a_sequence_hands_its_steps_one_at_a_time_and_starts_on_its_moment():
@@ -16,6 +16,8 @@ def test_a_sequence_hands_its_steps_one_at_a_time_and_starts_on_its_moment():
     dump = CONTROLLERS["dump"](record, actor=USER).create("Standup", brief="notes")
     steps = lambda: [n for n in nudges(record) if n.startswith(f"sequence {filing['n']}")]
     assert steps() == [f"sequence {filing['n']}, Filing a dump, step 1 of 3 - Read everything"], "a dump starts the sequence about it"
+    handed = next(n.brief for n in Nudges(record).all() if n.title.startswith(f"sequence {filing['n']}"))
+    assert f"journal dump items {dump.n}" in handed and "<dump n>" not in handed, "the step names the dump it is about"
     sequences.next(filing["n"], about=dump.ref)
     assert steps()[-1] == f"sequence {filing['n']}, Filing a dump, step 2 of 3 - File by subject", "done hands the next step"
     sequences.next(filing["n"], about=dump.ref)
