@@ -84,15 +84,6 @@ export async function holding(type, numbers) {
 
 watch(() => `${route.value.env}/${route.value.page}/${route.value.open ? route.value.open.type : ""}`, forget);
 watch(
-    () => route.value.env,
-    () => {
-        loaded.clear();
-        absent.clear();
-        store.rows = {};
-        if (store.booted) refresh([...watchedTypes], false);
-    }
-);
-watch(
     () => store.booted,
     (booted) =>
         booted &&

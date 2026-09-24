@@ -49,3 +49,62 @@ export function marks(f, value) {
         .filter((n) => n > 0 && n <= 100);
     if (at.length) setTrigger(f, {unit: "percent", at});
 }
+
+const UNIT_WORDS = {percent: "% of the context window", uses: "tool calls", minutes: "minutes"};
+const EVENT_WORDS = {
+    idle: "each time the agent comes to rest",
+    worked: "when the agent comes to rest after working",
+    start: "when a session starts",
+};
+
+const listed = (numbers) => (numbers.length > 1 ? `${numbers.slice(0, -1).join(", ")} and ${numbers.at(-1)}` : String(numbers[0]));
+
+export function whenWords(when) {
+    if (!when) return "";
+    if (when.on) return EVENT_WORDS[when.on] || when.on;
+    if (when.at) return `at ${listed(when.at)}${UNIT_WORDS.percent}`;
+    return when.unit === "percent"
+        ? `every ${when.every}${UNIT_WORDS.percent}`
+        : `every ${when.every} ${UNIT_WORDS[when.unit] || when.unit}`;
+}
+
+const sameTrigger = (a, b) => JSON.stringify(a, Object.keys(a).sort()) === JSON.stringify(b, Object.keys(b).sort());
+
+function cadenceChanged(name, declared) {
+    const set = saved("triggers");
+    return name in set && !sameTrigger(set[name], declared || {});
+}
+
+function settingChanged(f, setting) {
+    const set = saved(f.name);
+    return setting.name in set && JSON.stringify(set[setting.name]) !== JSON.stringify(setting.default);
+}
+
+export function changed(f) {
+    if (!f.fixed && on(f.name, f.default) !== f.default) return true;
+    if (cadenceChanged(f.name, f.trigger)) return true;
+    if (f.parts.some((part) => on(part.name, part.default) !== part.default || cadenceChanged(part.name, part.trigger))) return true;
+    return (f.settings || []).some((setting) => settingChanged(f, setting));
+}
+
+export const isOn = (f) => f.fixed || on(f.name, f.default);
+
+export function haystack(f) {
+    return [
+        f.title,
+        f.abstract,
+        f.help,
+        ...(f.keywords || []),
+        ...f.parts.map((part) => `${part.title} ${part.abstract || ""}`),
+        ...(f.settings || []).map((setting) => setting.title),
+    ]
+        .join(" ")
+        .toLowerCase();
+}
+
+export const matches = (text, query) =>
+    query
+        .toLowerCase()
+        .split(/\s+/)
+        .filter(Boolean)
+        .every((word) => text.toLowerCase().includes(word));

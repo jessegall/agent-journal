@@ -9,7 +9,7 @@ from engine import typist
 from resources.base import SYSTEM
 from engine.wording import counted
 from engine import runtime
-from engine.worktree import environment, linked, main_checkout, opened
+from engine.worktree import environment, linked, main_checkout, opened, unused_name
 
 ENTER_AFTER = 0.3
 MARK = "[journal]"
@@ -101,15 +101,14 @@ class Driver(ABC):
     @classmethod
     def unworktreed(cls, args: list[str]) -> list[str]:
         name = cls.worktree(args)
-        if not name:
-            return args
-        joined = {f"{flag}={name}" for flag in cls.WORKTREE}
+        joined = {f"{flag}={name}" for flag in cls.WORKTREE} if name else set()
         return [arg for i, arg in enumerate(args)
-                if arg not in cls.WORKTREE and arg not in joined and not (arg == name and i and args[i - 1] in cls.WORKTREE)]
+                if arg not in cls.WORKTREE and arg not in joined and not (name and arg == name and i and args[i - 1] in cls.WORKTREE)]
 
     @classmethod
     def placed(cls, project: Path, args: list[str]) -> tuple[Path, list[str]]:
-        name = cls.worktree(args)
+        given = cls.worktree(args)
+        name = given or (unused_name(main_checkout(project)) if any(arg in cls.WORKTREE for arg in args) else "")
         if not name:
             return project, args
         if environment(Path(name)) != name:

@@ -1,32 +1,32 @@
 <script setup>
-import SettingsGroup from "./SettingsGroup.vue";
-import FeaturePanel from "./FeaturePanel.vue";
-import {features, flip, on} from "./featureSettings.js";
-
-import Section from "./Section.vue";
-
-import {computed, onMounted, ref} from "vue";
+import {computed, onMounted, onUnmounted, ref} from "vue";
 import {api} from "../api/client.js";
 import Btn from "../kit/Btn.vue";
+import EmptyState from "../kit/EmptyState.vue";
+import ListBox from "../kit/ListBox.vue";
+import PageBar from "../kit/PageBar.vue";
+import SettingRow from "../kit/SettingRow.vue";
 import Switch from "../kit/Switch.vue";
+import SwitchCase from "../kit/SwitchCase.vue";
+import TabBar from "../kit/TabBar.vue";
+import TextInput from "../kit/TextInput.vue";
+import FeaturePanel from "./FeaturePanel.vue";
+import Section from "./Section.vue";
+import {changed, features, flip, haystack, isOn, matches, whenWords} from "./featureSettings.js";
 import {saveViewerSetting, viewerSetting} from "../composables/viewerSetting.js";
 import {route} from "../route.js";
-import {remember, remembered} from "../composables/remembered.js";
 import {store} from "../state/store.js";
 import {rows} from "../sync/rows.js";
 
+const query = ref("");
+const filter = ref("all");
+const field = ref(null);
 const chosen = ref("");
-const feature = computed(() => features.value.find((f) => f.name === chosen.value) || null);
+const extension = ref(null);
 const stopping = ref(false);
-
-async function stop() {
-    stopping.value = true;
-    try {
-        await api.stop();
-    } catch (e) {
-        stopping.value = false;
-    }
-}
+const removing = ref({});
+const sweeping = ref({});
+const feature = computed(() => features.value.find((f) => f.name === chosen.value) || null);
 
 const delivers = (how) => {
     const set = (store.settings && store.settings.delivery) || {};
@@ -39,26 +39,131 @@ async function setDelivery(how, value) {
 
 const viewerOn = (key) => (store.settings?.viewer || {})[key] !== false;
 
-const OPENED = "journal.settings.opened";
-const opened = ref(remembered(OPENED, []));
-const open = (key) => opened.value.includes(key);
+const worded = (row) => ({...row, words: `${row.title} ${row.text} ${row.keywords || ""}`});
 
-function fold(key) {
-    opened.value = open(key) ? opened.value.filter((k) => k !== key) : [...opened.value, key];
-    remember(OPENED, opened.value);
+const viewerRows = computed(() =>
+    [
+        {
+            key: "away",
+            kind: "switch",
+            title: "Show the While you were away card",
+            text: "After a minute or more away from this tab, a card lists what the agent did meanwhile.",
+            on: viewerOn("away"),
+            changed: !viewerOn("away"),
+            set: (v) => saveViewerSetting("away", v),
+        },
+        {
+            key: "tour",
+            kind: "switch",
+            title: "Show the Home tour",
+            text: "A few short steps on Home that point at the view icons, the pane menu, presets and detaching. It turns itself off once you finish or skip it.",
+            on: !viewerSetting("tour_seen", false),
+            changed: false,
+            set: (v) => saveViewerSetting("tour_seen", !v),
+        },
+    ].map(worded)
+);
+
+const journalRows = computed(() =>
+    [
+        {
+            key: "color",
+            kind: "color",
+            title: "Project color",
+            text: "The band across the viewer that tells this project apart from other open journals. It starts as a color picked from the project name.",
+            keywords: "colour band identity",
+            changed: Boolean(store.identity && store.identity.custom_color),
+        },
+        {
+            key: "channel",
+            kind: "switch",
+            title: "Send lines to the agent through the channel",
+            text: "The agent reads them mid-turn, with nothing wrapped around them. When this is off, the engine types them into the terminal instead.",
+            keywords: "delivery",
+            on: delivers("channel"),
+            changed: !delivers("channel"),
+            set: (v) => setDelivery("channel", v),
+        },
+        {
+            key: "extension",
+            kind: "extension",
+            title: "Chrome extension",
+            text: "Floats the chat over any page, points at elements, sends pictures and lets the agent drive the tab. It is served from this exact journal version.",
+            keywords: "browser download",
+        },
+    ].map(worded)
+);
+
+const featureRows = computed(() =>
+    [...features.value]
+        .sort((a, b) => a.title.localeCompare(b.title))
+        .map((f) => ({
+            key: f.name,
+            feature: f,
+            title: f.title,
+            text: f.abstract,
+            words: haystack(f),
+            on: f.fixed ? undefined : isOn(f),
+            changed: changed(f),
+            when: isOn(f) ? whenWords(f.when) : "",
+        }))
+);
+
+const envRows = computed(() =>
+    rows("environment")
+        .filter((e) => !e.completed)
+        .map((e) => ({
+            key: String(e.n),
+            env: e,
+            title: e.title,
+            text: sweeping.value[e.n] || removing.value[e.n] || (e.title === route.value.env ? "The environment you are in" : ""),
+            words: `${e.title} environment sweep remove`,
+        }))
+);
+
+const stopRow = {
+    key: "stop",
+    title: "Stop the journal",
+    text: "Closes the viewer, ends the engine and every service a plugin runs; the agent's terminal stops with them. Nothing on the record is touched. Start it again with journal claude.",
+    words: "stop the journal shut down quit engine viewer",
+};
+
+const passes = (row) =>
+    matches(row.words, query.value) && (filter.value === "all" || (filter.value === "changed" ? row.changed : row.on === false));
+const shown = (list) => list.filter(passes);
+const everything = computed(() => [...viewerRows.value, ...journalRows.value, ...featureRows.value]);
+const filters = computed(() => [
+    {key: "all", title: "All"},
+    {key: "changed", title: "Changed", count: everything.value.filter((row) => row.changed).length},
+    {key: "off", title: "Off", count: everything.value.filter((row) => row.on === false).length},
+]);
+const sections = computed(() => ({
+    viewer: shown(viewerRows.value),
+    journal: shown(journalRows.value),
+    features: shown(featureRows.value).filter((row) => !row.feature.fixed),
+    fixed: shown(featureRows.value).filter((row) => row.feature.fixed),
+    envs: shown(envRows.value),
+    stop: shown([stopRow]),
+}));
+const nothing = computed(() => Object.values(sections.value).every((list) => !list.length));
+
+function showAll() {
+    query.value = "";
+    filter.value = "all";
 }
-const envs = computed(() => rows("environment").filter((e) => !e.completed));
-const extension = ref(null);
 
-onMounted(async () => {
-    extension.value = await api.extension();
-});
+async function stop() {
+    stopping.value = true;
+    try {
+        await api.stop();
+    } catch (e) {
+        stopping.value = false;
+    }
+}
 
 async function saveColor(color) {
     store.identity = await api.saveIdentity({color});
 }
-
-const removing = ref({});
 
 async function remove(e) {
     try {
@@ -69,153 +174,142 @@ async function remove(e) {
     }
 }
 
-const sweeping = ref({});
-
 async function sweep(e) {
     const reply = await api.act("environment", e.n, "sweep", sweeping.value[e.n] ? {yes: true} : {});
     sweeping.value = {...sweeping.value, [e.n]: sweeping.value[e.n] ? "" : reply};
 }
 
-const switches = [
-    {
-        key: "delivery",
-        title: "Delivery",
-        lead: "How the engine gets a line to the agent. With the channel off it types into the terminal.",
-        label: "Use the channel",
-        help: "The agent reads it mid-turn, with nothing wrapped around it",
-        on: () => delivers("channel"),
-        set: (v) => setDelivery("channel", v),
-    },
-    {
-        key: "viewer",
-        title: "Viewer",
-        lead: "What this page does on its own.",
-        label: "Show While you were away",
-        help: "After a minute or more away from this tab, a card lists what the agent did meanwhile",
-        on: () => viewerOn("away"),
-        set: (v) => saveViewerSetting("away", v),
-    },
-    {
-        key: "tour",
-        title: "Home tour",
-        lead: "A few short steps on Home that point at the view icons, the pane menu, presets and detaching.",
-        label: "Show the Home tour",
-        help: "It shows the next time Home opens, and turns itself off once you finish or skip it",
-        on: () => !viewerSetting("tour_seen", false),
-        set: (v) => saveViewerSetting("tour_seen", !v),
-    },
-];
+function onKey(e) {
+    if (e.key !== "/" || e.target.closest("input,textarea,[contenteditable]")) return;
+    e.preventDefault();
+    field.value && field.value.focus();
+}
+
+onMounted(async () => {
+    window.addEventListener("keydown", onKey);
+    extension.value = await api.extension();
+});
+onUnmounted(() => window.removeEventListener("keydown", onKey));
 </script>
 
 <template>
     <section class="settings">
-        <SettingsGroup :shut="!open('project-identity')" @fold="fold('project-identity')">
-            <template #title>Project identity</template>
-            <template #lead>The band across the viewer distinguishes this project from other open journals.</template>
-            <div class="row">
-                <span class="text">
-                    <span class="title">Color</span>
-                    <span class="help">Defaults to a stable color chosen from the project name.</span>
-                </span>
-                <Section @save-color="saveColor" />
-            </div>
-        </SettingsGroup>
-        <SettingsGroup :shut="!open('chrome-extension')" @fold="fold('chrome-extension')">
-            <template #title>Chrome extension</template>
-            <template #lead>Float the chat over any page, point at elements, send pictures, and let the agent drive the tab.</template>
-            <div class="row">
-                <span class="text">
-                    <span class="title">Agent journal for Chrome</span>
-                    <span class="help">The unpacked extension is served from this exact journal version.</span>
-                </span>
-                <template v-if="extension && extension.available">
-                    <span class="control">
-                        <template v-if="extension.store">
-                            <a class="download" :href="extension.store" target="_blank" rel="noopener">Add to Chrome</a>
+        <PageBar>
+            <TextInput
+                ref="field"
+                class="settings-find"
+                icon="search"
+                :value="query"
+                placeholder="Find a setting"
+                aria-label="Find a setting"
+                @input="query = $event.target.value"
+                @keydown.esc="query = ''"
+            />
+            <TabBar v-model="filter" :tabs="filters" />
+        </PageBar>
+
+        <template v-if="sections.viewer.length">
+            <ListBox title="This viewer" :count="sections.viewer.length">
+                <template v-for="row in sections.viewer" :key="row.key">
+                    <SettingRow :title="row.title" :text="row.text" :tag="row.changed ? 'Changed' : ''">
+                        <template #control>
+                            <Switch :on="row.on" @change="row.set" />
                         </template>
-                        <a class="download" :href="api.extensionZip()">Download</a>
-                    </span>
+                    </SettingRow>
                 </template>
-            </div>
-        </SettingsGroup>
-        <SettingsGroup :shut="!open('features-on')" @fold="fold('features-on')">
-            <template #title>Features on {{ route.env }}</template>
-            <template #lead>Open a feature to see what it does, when it speaks and what it says.</template>
-            <div class="features">
-                <template v-for="f in features" :key="f.name">
-                    <div class="feature" role="button" tabindex="0" @click="chosen = f.name" @keydown.enter="chosen = f.name">
-                        <span class="text">
-                            <span class="title">{{ f.title }}</span>
-                            <span class="help clamp">{{ f.abstract }}</span>
-                        </span>
-                        <span class="control" @click.stop>
-                            <template v-if="f.fixed">
-                                <span class="note">Always on</span>
+            </ListBox>
+        </template>
+
+        <template v-if="sections.journal.length">
+            <ListBox title="This journal" :count="sections.journal.length">
+                <template v-for="row in sections.journal" :key="row.key">
+                    <SettingRow :title="row.title" :text="row.text" :tag="row.changed ? 'Changed' : ''">
+                        <template #control>
+                            <SwitchCase :value="row.kind">
+                                <template #switch>
+                                    <Switch :on="row.on" @change="row.set" />
+                                </template>
+                                <template #color>
+                                    <Section @save-color="saveColor" />
+                                </template>
+                                <template #extension>
+                                    <template v-if="extension && extension.available">
+                                        <template v-if="extension.store">
+                                            <a class="settings-link" :href="extension.store" target="_blank" rel="noopener">
+                                                Add to Chrome
+                                            </a>
+                                        </template>
+                                        <a class="settings-link" :href="api.extensionZip()">Download</a>
+                                    </template>
+                                </template>
+                            </SwitchCase>
+                        </template>
+                    </SettingRow>
+                </template>
+            </ListBox>
+        </template>
+
+        <template v-if="sections.features.length || sections.fixed.length">
+            <ListBox
+                :title="`Features on ${route.env}`"
+                :count="sections.features.length + sections.fixed.length"
+                lead="Open a feature to see what it does, when it runs and what it can say to the agent."
+            >
+                <template v-for="row in [...sections.features, ...sections.fixed]" :key="row.key">
+                    <SettingRow :title="row.title" :text="row.text" :tag="row.changed ? 'Changed' : ''" opens @open="chosen = row.key">
+                        <template v-if="row.when">
+                            <span>Runs {{ row.when }}</span>
+                        </template>
+                        <template #control>
+                            <template v-if="row.feature.fixed">
+                                <span class="settings-note">Always on</span>
                             </template>
                             <template v-else>
-                                <Switch :on="on(f.name, f.default)" @change="(v) => flip(f.name, v)" />
+                                <Switch :on="row.on" @change="(v) => flip(row.key, v)" />
                             </template>
-                        </span>
-                    </div>
+                        </template>
+                    </SettingRow>
                 </template>
-            </div>
-        </SettingsGroup>
-        <template v-for="group in switches" :key="group.key">
-            <SettingsGroup :shut="!open(group.key)" @fold="fold(group.key)">
-                <template #title>{{ group.title }}</template>
-                <template #lead>{{ group.lead }}</template>
-                <div class="row">
-                    <span class="text">
-                        <span class="title">{{ group.label }}</span>
-                        <span class="help">{{ group.help }}</span>
-                    </span>
-                    <span class="control">
-                        <Switch :on="group.on()" @change="group.set" />
-                    </span>
-                </div>
-            </SettingsGroup>
+            </ListBox>
         </template>
-        <SettingsGroup :shut="!open('environments')" @fold="fold('environments')">
-            <template #title>Environments</template>
-            <template #lead>
-                Removing one packs its record into the attic, and journal environment unarchive with its name brings it back. Sweeping one
-                packs its messages, comments, reactions, notifications and closed rows into the attic and keeps what is still true.
-            </template>
-            <template v-for="e in envs" :key="e.n">
-                <div class="row">
-                    <span class="text">
-                        <span class="title">{{ e.title }}</span>
-                    </span>
-                    <span class="control">
-                        <Btn small @click="sweep(e)">{{ sweeping[e.n] ? "Sweep now" : "Sweep" }}</Btn>
-                        <Btn kind="danger" small :disabled="e.title === route.env" @click="remove(e)">
-                            {{ removing[e.n] ? "Remove anyway" : "Remove" }}
-                        </Btn>
-                    </span>
-                </div>
-                <template v-if="sweeping[e.n]">
-                    <p class="lead">{{ sweeping[e.n] }}</p>
+
+        <template v-if="sections.envs.length">
+            <ListBox
+                title="Environments"
+                :count="sections.envs.length"
+                lead="Sweep packs an environment's messages, comments, reactions, notifications and closed rows into the attic and keeps what is still true. Remove packs its whole record into the attic; journal environment unarchive with its name brings it back."
+            >
+                <template v-for="row in sections.envs" :key="row.key">
+                    <SettingRow :title="row.title" :text="row.text">
+                        <template #control>
+                            <Btn small @click="sweep(row.env)">{{ sweeping[row.env.n] ? "Sweep now" : "Sweep" }}</Btn>
+                            <Btn kind="danger" small :disabled="row.env.title === route.env" @click="remove(row.env)">
+                                {{ removing[row.env.n] ? "Remove anyway" : "Remove" }}
+                            </Btn>
+                        </template>
+                    </SettingRow>
                 </template>
-                <template v-if="removing[e.n]">
-                    <p class="lead">{{ removing[e.n] }}</p>
-                </template>
-            </template>
-        </SettingsGroup>
-        <SettingsGroup :shut="!open('stop')" @fold="fold('stop')">
-            <template #title>Stop</template>
-            <template #lead>
-                This closes the viewer, ends the engine and takes down every service a plugin runs. The agent's terminal stops with them.
-                Nothing on the record is touched; start it again with journal claude.
-            </template>
-            <div class="row">
-                <span class="text">
-                    <span class="title">Stop the journal</span>
-                </span>
-                <span class="control">
-                    <Btn kind="danger" small :disabled="stopping" @click="stop">{{ stopping ? "Stopping…" : "Stop" }}</Btn>
-                </span>
-            </div>
-        </SettingsGroup>
+            </ListBox>
+        </template>
+
+        <template v-if="sections.stop.length">
+            <ListBox title="Stop">
+                <SettingRow :title="stopRow.title" :text="stopRow.text">
+                    <template #control>
+                        <Btn kind="danger" small :disabled="stopping" @click="stop">{{ stopping ? "Stopping" : "Stop" }}</Btn>
+                    </template>
+                </SettingRow>
+            </ListBox>
+        </template>
+
+        <template v-if="nothing">
+            <EmptyState class="settings-empty" title="No setting matches">
+                Try other words, or
+                <button type="button" class="settings-reset" @click="showAll">show every setting</button>
+                .
+            </EmptyState>
+        </template>
+
         <template v-if="feature">
             <FeaturePanel :feature="feature" @close="chosen = ''" />
         </template>
@@ -224,185 +318,46 @@ const switches = [
 
 <style scoped>
 .settings {
-    max-width: 720px;
-    padding: 22px 28px 60px;
-}
-
-.lead {
-    margin: 0;
-    color: var(--text-3);
-    font-size: 12.5px;
-}
-
-.features {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 8px;
-    padding: 4px 0 8px;
-}
-
-.feature {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 11px 14px;
-    border: 1px solid var(--border);
-    border-radius: 9px;
-    background: var(--raised);
-    cursor: pointer;
-    transition:
-        border-color 0.15s,
-        background 0.15s;
-}
-
-.feature:hover {
-    border-color: var(--border-3);
-    background: var(--hover);
-}
-
-.feature .text {
-    flex: 1;
-    min-width: 0;
-}
-
-.clamp {
-    display: -webkit-box;
-    overflow: hidden;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-}
-
-.row {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    min-height: 52px;
-    padding: 10px 0;
-    border-bottom: 1px solid var(--border);
-}
-
-.text {
-    flex: 1 1 auto;
-    min-width: 0;
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    padding-bottom: 48px;
 }
 
-.names {
-    width: 280px;
-    padding: 6px 8px;
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    background: var(--bg-2);
-    color: var(--text);
-    font-size: 13px;
+.settings-find {
+    flex: 1 1 260px;
+    max-width: 440px;
 }
 
-.part {
-    padding-left: 20px;
-    border-left: 2px solid var(--border);
-    margin-left: 2px;
-}
-
-.part .title {
-    font-weight: 400;
-    color: var(--text-2);
-}
-
-.title {
-    font-weight: 500;
-}
-
-.help {
-    color: var(--text-2);
-    font-size: 12.5px;
-}
-
-.slot {
-    color: var(--accent-text);
-}
-
-.note {
+.settings-note {
     color: var(--text-3);
     font-size: 12px;
+    white-space: nowrap;
 }
 
-.control {
-    flex: none;
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    gap: 8px;
-    min-width: 96px;
+.settings-link {
+    color: var(--accent-text);
+    font-size: 12.5px;
+    white-space: nowrap;
 }
 
-.days,
-.names {
-    height: 30px;
-    padding: 0 10px;
-    border: 1px solid var(--border-2);
-    border-radius: 8px;
-    background: var(--bg-2);
+.settings-link:hover {
     color: var(--text);
-    font-size: 12.5px;
-    transition:
-        border-color 0.12s ease,
-        background 0.12s ease;
 }
 
-.days:hover,
-.names:hover {
-    border-color: var(--border);
+.settings-empty {
+    padding: 32px 16px;
 }
 
-.days:focus,
-.names:focus {
-    outline: none;
-    border-color: var(--progress);
-    background: var(--raised);
-}
-
-.days {
-    width: 64px;
-    text-align: right;
-}
-
-.unit {
-    color: var(--text-3);
-    font-size: 12.5px;
-}
-
-.none {
-    margin: 0;
-    color: var(--text-3);
-    font-size: 12.5px;
-}
-
-.download {
-    height: 28px;
-    padding: 4px 10px;
-    border: 1px solid var(--border-2);
-    border-radius: 6px;
-    color: var(--text);
-    text-decoration: none;
-}
-
-.download:hover {
-    background: var(--hover);
-}
-
-.color-control {
-    min-width: 116px;
-}
-
-.color {
-    width: 34px;
-    height: 28px;
-    padding: 2px;
-    border: 1px solid var(--border-2);
-    border-radius: 6px;
-    background: var(--raised);
+.settings-reset {
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--accent-text);
+    font: inherit;
     cursor: pointer;
+}
+
+.settings-reset:hover {
+    color: var(--text);
 }
 </style>

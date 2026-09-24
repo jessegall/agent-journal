@@ -1,5 +1,6 @@
 import fcntl
 import os
+import random
 import shutil
 import subprocess
 from pathlib import Path
@@ -27,6 +28,17 @@ def environment(top: Path | None) -> str:
     except Refused:
         return ""
     return "" if name == DEFAULT_ENV else name
+
+
+NAME_WORDS = (("amber", "brisk", "calm", "deft", "eager", "fond", "gentle", "hardy", "keen", "lucid", "mellow", "nimble", "quiet", "rapid", "steady", "vivid"),
+              ("otter", "heron", "maple", "cedar", "falcon", "harbor", "lantern", "meadow", "orchid", "pebble", "quartz", "river", "sparrow", "thistle", "willow", "zephyr"))
+
+
+def unused_name(project: Path) -> str:
+    taken = set(linked(project))
+    names = [f"{first}-{second}" for first in NAME_WORDS[0] for second in NAME_WORDS[1]]
+    random.shuffle(names)
+    return next((name for name in names if name not in taken), f"worktree-{len(taken) + 1}")
 
 
 def linked(project: Path) -> dict[str, Path]:

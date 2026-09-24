@@ -2,6 +2,7 @@
 defineProps({
     title: {type: String, required: true},
     count: {type: [Number, String], default: ""},
+    lead: {type: String, default: ""},
     folds: Boolean,
     open: {type: Boolean, default: true},
 });
@@ -27,6 +28,9 @@ const emit = defineEmits(["toggle"]);
         </component>
         <template v-if="open">
             <div class="list-box-rows">
+                <template v-if="lead">
+                    <p class="list-box-lead">{{ lead }}</p>
+                </template>
                 <slot />
             </div>
         </template>
@@ -80,6 +84,14 @@ const emit = defineEmits(["toggle"]);
 
 .list-box-mark.shut {
     transform: rotate(-45deg);
+}
+
+.list-box-lead {
+    margin: 0;
+    padding: 10px 16px;
+    color: var(--text-3);
+    font-size: 12px;
+    line-height: 1.45;
 }
 
 .list-box-rows > :deep(*) {
