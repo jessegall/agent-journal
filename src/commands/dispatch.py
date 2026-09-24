@@ -222,11 +222,17 @@ def guarded(reply: Reply, root: Path, env: str, where: str) -> Reply:
 
 
 def represented(got, record=None):
-    if got is None:
-        return {"ok": True}
+    return {"ok": True} if got is None else rendered(got, record)
+
+
+def rendered(got, record):
+    if hasattr(got, "ref"):
+        return shaped(got, record)
     if isinstance(got, list):
-        return [shaped(item, record) if hasattr(item, "ref") else item for item in got]
-    return shaped(got, record) if hasattr(got, "ref") else got
+        return [rendered(item, record) for item in got]
+    if isinstance(got, dict):
+        return {key: rendered(value, record) for key, value in got.items()}
+    return got
 
 
 def static(path: str) -> Reply:

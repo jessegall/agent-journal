@@ -8,6 +8,7 @@ import FocusStage from "../kit/FocusStage.vue";
 import {sendMessage} from "../chat/outbox.js";
 import {quoted} from "../format/quote.js";
 import {route} from "../route.js";
+import {store} from "../state/store.js";
 import {rows} from "../sync/rows.js";
 import Suggestion from "./Suggestion.vue";
 import AskedQuestion from "./AskedQuestion.vue";
@@ -40,9 +41,7 @@ const replies = computed(() => {
     const refs = asked.value.map((m) => m.ref);
     return rows("comment").filter((c) => c.refs.some((ref) => refs.includes(ref)));
 });
-const boardQuestions = computed(() =>
-    since.value ? rows("question").filter((q) => !q.deleted && q.refs.includes(props.board.ref) && q.created >= since.value) : []
-);
+const boardQuestions = computed(() => (since.value ? store.board.questions.filter((q) => q.created >= since.value) : []));
 const asking = computed(() => boardQuestions.value.find((q) => !q.completed));
 const conversation = computed(() =>
     [

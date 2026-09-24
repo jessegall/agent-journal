@@ -21,7 +21,7 @@ from features.kanban.board import BoardLanes, Card
 from features.kanban.lanes import Lane
 from features.tickets.details import TicketsDetails
 from features.tickets.resource import Ticket
-from controllers.types import Agents
+from controllers.types import Agents, Questions
 from features.plans.controller import READY, Plans
 from resources.base import AGENT, SYSTEM, Refused, Resource
 from resources.shapes import LEVELS, rank_before
@@ -89,7 +89,8 @@ class Tickets(Controller):
         running = self._running()
         lanes = BoardLanes([(Lane(stage, stage), [self._card(r, stage, stages, sessions, len(running)) for r in tickets if r.stage == stage])
                             for stage in stages], [])
-        return {**lanes.shaped(), "slots": asdict(self._slots(running, sessions)), "roles": self._roles()}
+        asked = Questions(self.record, actor=self.actor).about(Boards(self.record, actor=self.actor).load(int(n)).ref)
+        return {**lanes.shaped(), "slots": asdict(self._slots(running, sessions)), "roles": self._roles(), "questions": asked}
 
     def _roles(self) -> list:
         from features.organization.files import organization

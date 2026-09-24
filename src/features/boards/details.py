@@ -15,4 +15,7 @@ class BoardsDetails(FeatureDetails):
         whole project. journal board stage <n> "<stage>" adds a stage, and journal board meaning <n> "<stage>" <meaning> marks
         it as one of {', '.join(MEANINGS)}: the journal acts on a stage only once it is marked. A ticket sits in one stage of
         its board: journal ticket move <n> "<stage>".
+
+        journal board ask <n> "<question>" --set options='[...]' asks the user a question about the board: the board shows
+        it at its top, and it stays out of the chat, the Questions page and your nudges. The answer comes back as an event.
     """

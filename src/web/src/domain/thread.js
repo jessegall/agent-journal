@@ -121,7 +121,7 @@ export function threadTurns(rows, pending, env, older = false) {
         ...live.filter((m) => !pending.some((p) => promisedFor(p, m) && !delivered(p, m))).map((m) => ({...m, who: m.seen[0]})),
         ...live.filter((m) => m.seen[0] === "user" && m.completed && filed(m).length && !acknowledged(m, rows)).map(receipt),
         ...rows.comment.filter((c) => !c.deleted && hasParent(c)).map((c) => ({...c, who: c.seen[0]})),
-        ...rows.question.filter((q) => !q.deleted && !q.refs.some((ref) => ref.startsWith("board:"))).map((q) => ({...q, who: "agent"})),
+        ...rows.question.filter((q) => !q.deleted).map((q) => ({...q, who: "agent"})),
         ...loads(rows.agent || []),
         ...compactions(rows.agent || []),
         ...subagents(rows.agent || []),
