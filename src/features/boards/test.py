@@ -1,11 +1,11 @@
 import features
-from controllers.types import Questions
+from controllers.types import CONTROLLERS, Messages, Questions
 from features.boards.controller import START_OVER, Boards
 from features.plans.controller import Plans
 from features.sequences.controller import Sequences
 from features.sequences.shipped import ship
 from features.tickets.controller import Tickets
-from resources.base import AGENT, USER
+from resources.base import AGENT, SYSTEM, USER
 from tests.conftest import fresh, refused
 from tests.kit import Nudges, nudges, report
 
@@ -128,3 +128,19 @@ def test_a_board_request_names_its_board_and_keeps_the_work_on_it():
     assert "on its board" in refused(lambda: Plans(record, actor=AGENT).create("Sharing")), "no plan of its own while the board sequence runs"
     assert "on its board" in refused(lambda: Questions(record, actor=AGENT).create("Which one?")), "no chat question either"
     assert Boards(record, actor=AGENT).ask(board.n, "Which one?", options=[{"title": "A"}]).hidden, "the board's own question goes through"
+
+
+
+def test_the_agent_s_text_stays_out_of_the_chat_while_a_board_sequence_runs():
+    from engine import chat
+    features.load()
+    record = fresh()
+    ship(record)
+    report(record, "working", "PreToolUse")
+    row = CONTROLLERS["agent"](record, actor=SYSTEM).by_session("claude-1")
+    said = lambda: [m.brief for m in Messages(record, actor=SYSTEM).all() if m.seen[:1] == ["agent"]]
+    chat.send(record, row, "Before the board")
+    board = Boards(record, actor=USER).create("Shared Journal")
+    Boards(record, actor=USER).request(board.n, "I want to share")
+    chat.send(record, row, "Reading the board before I ask")
+    assert said() == ["Before the board"], "while a board sequence runs, the agent's text stays in its panel, out of the chat"

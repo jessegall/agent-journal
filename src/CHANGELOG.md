@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.129.0 — Board work stays in its panel
+
+While the agent works a New work card, revises drafts, drafts from a document or builds a board from one, what it writes stays in that panel instead of also showing in the chat; its replies to your messages still come through. Nothing to do.
+
 ## 2.128.0 — A dump takes more files while it files, is worked one file at a time, and what you type there reaches the chat
 
 While a dump is filing you can drop, paste or add more files; they join the pile and the agent reads them next. The agent works the pile one file at a time, and a file it has read shows as read in the pile before it is filed. What you type in the dump's box reaches the agent as a chat message about the dump. The dump's status line follows its sequence step, documents the agent added unasked say Added by the agent, and sequence steps name the dump or plan they are about. After a commit the agent is reminded, at most once an hour, that it may post an update. Nothing to do.
