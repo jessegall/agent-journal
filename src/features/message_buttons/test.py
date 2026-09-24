@@ -31,3 +31,14 @@ def test_a_button_names_a_type_and_action_and_what_would_not_run_is_dropped():
     later = rows.create("buttons put on afterwards")
     rows.update(later.n, buttons=[{"label": "Go", "type": "plan", "n": 1, "action": "detonate"}, start])
     assert rows.load(later.n).data["buttons"] == [start], "buttons added after the message was written are cleaned the same way"
+
+
+def test_a_document_carries_buttons_that_say_something_for_the_user():
+    import features
+    from controllers.types import Docs
+    features.load()
+    record = fresh()
+    buttons = [{"label": "Accept this proposal", "say": "I accept this proposal"}, {"label": "Go", "type": "plan", "n": 1, "action": "detonate"}]
+    doc = Docs(record, actor=AGENT).create("A proposal", buttons=buttons)
+    assert Docs(record, actor=AGENT).load(doc.n).data["buttons"] == [{"label": "Accept this proposal", "say": "I accept this proposal"}], \
+        "a say button is kept on a document, and one that would not run is dropped"
