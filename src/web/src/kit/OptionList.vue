@@ -124,6 +124,11 @@ onUnmounted(save);
     transform: scale(0.98);
 }
 
+.options:has(.pressed) .option:not(.pressed) {
+    opacity: 0;
+    transition: opacity 0.25s ease;
+}
+
 .option.pressed {
     border-color: var(--tone);
     background: color-mix(in srgb, var(--tone) 16%, var(--raised));

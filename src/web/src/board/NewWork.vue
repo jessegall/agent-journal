@@ -204,10 +204,9 @@ async function add() {
     );
     await drop(unpicked());
     adding.value = false;
-    startAnew();
     emit("added", keep.length);
     emit("close");
-    setTimeout(() => (docked.value = false), FADED);
+    setTimeout(startAnew, FADED);
 }
 
 let typedAnswer = false;
@@ -229,11 +228,13 @@ watch(startedOver, async (q) => {
     if (!q) return;
     await drop(unpicked());
     startAnew();
-    docked.value = false;
     say(false, `What do you want to get done on ${props.board.title}?`);
 });
 
 function startAnew() {
+    docked.value = false;
+    revealed.value = [];
+    stalled.value = false;
     tall.value = false;
     grown.value = false;
     words.value = "";
@@ -248,9 +249,9 @@ function leave() {
     const dropped = unpicked();
     const open = asking.value;
     emit("close");
-    startAnew();
     drop(dropped);
     if (open) api.cancelWork(props.board.n);
+    setTimeout(startAnew, FADED);
 }
 </script>
 
