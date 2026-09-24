@@ -36,7 +36,25 @@ BUILDING_A_PLAN = {
                          "they have."),
     ],
 }
-SHIPPED = (FILING_A_DUMP, BUILDING_A_PLAN)
+WORKING_A_BOARD_CARD = {
+    "title": "Working a card from the board",
+    "brief": "A card created on a Kanban board is worked the board's way: its questions are asked and answered on the board, "
+             "never in the chat.",
+    "starts_on": "ticket.created",
+    "steps": [
+        ("Read the card", "journal ticket show <n>: its board, stage and brief. If you drafted this card yourself, give the run "
+                          "up with journal sequence abandon <this sequence> --about <ref> --why \"my own draft\"."),
+        ("Ask on the board", "Every decision only the user can make is asked on the board, never in the chat: journal question ask "
+                             "\"<question>\" --set about=board:<board n> --set options='[...]'. The board shows it on the card and "
+                             "the answer comes back as an event; wait for it only where the work truly depends on it."),
+        ("Shape the work", "Split the card into draft tickets on the same board (journal ticket create \"<the work>\" --brief "
+                           "\"<what is wanted>\" --set board=<n> --set draft=true), name what waits on what with journal ticket "
+                           "depend, and the role that should take it with --set owner=<domain>/<role> when the project has one."),
+        ("Answer on the card", "Reply on the card in one short line: what you drafted, and which question waits on the user. The "
+                               "New work panel shows the reply and the drafts; the user picks which to keep."),
+    ],
+}
+SHIPPED = (FILING_A_DUMP, BUILDING_A_PLAN, WORKING_A_BOARD_CARD)
 
 
 def ship(record) -> list[str]:
