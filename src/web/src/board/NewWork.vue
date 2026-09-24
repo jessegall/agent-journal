@@ -1,5 +1,5 @@
 <script setup>
-import {computed, onMounted, onUnmounted, ref, watch} from "vue";
+import {computed, nextTick, onMounted, onUnmounted, ref, watch} from "vue";
 import {api} from "../api/client.js";
 import Btn from "../kit/Btn.vue";
 import ChatLine from "../kit/ChatLine.vue";
@@ -58,7 +58,7 @@ const replies = computed(() => {
 const boardQuestions = computed(() => (since.value ? store.board.questions.filter((q) => q.created >= since.value) : []));
 const asking = computed(() => boardQuestions.value.findLast((q) => !q.completed));
 const choosing = computed(() => Boolean(asking.value && asking.value.data.final));
-const confirmed = computed(() => drafts.value.length > 0 || boardQuestions.value.some((q) => q.outcome === "Yes"));
+const confirmed = computed(() => drafts.value.length > 0 || store.board.expected > 0);
 const thinking = computed(() => (confirmed.value ? DRAFTING : UNDERSTANDING));
 const startedOver = computed(() => boardQuestions.value.find((q) => q.completed && q.outcome === START_OVER));
 const conversation = computed(() =>
@@ -73,7 +73,8 @@ const conversation = computed(() =>
 );
 const drafts = computed(() =>
     rows("ticket").filter(
-        (t) => t.data.draft && Number(t.data.board) === props.board.n && t.created >= since.value && !t.deleted && !t.completed
+        (t) =>
+            since.value && t.data.draft && Number(t.data.board) === props.board.n && t.created >= since.value && !t.deleted && !t.completed
     )
 );
 const answered = (at) => replies.value.some((c) => c.created >= at) || boardQuestions.value.some((q) => q.created >= at);
@@ -84,7 +85,7 @@ const latest = computed(() => conversation.value.slice(lastMine.value + 1));
 const echo = computed(() => (docked.value || words.value || lastMine.value < 0 ? "" : conversation.value[lastMine.value].text));
 const turn = computed(() => drafts.value.find((t) => !revealed.value.includes(t.n)));
 const cards = computed(() => {
-    const ahead = writing.value && confirmed.value ? Math.max(props.board.data.expected - drafts.value.length, 0) : 0;
+    const ahead = writing.value && confirmed.value ? Math.max(store.board.expected - drafts.value.length, 0) : 0;
     return [...drafts.value, ...Array(ahead).fill(null)].map((ticket, order) => ({order, ticket}));
 });
 const shownDrafts = computed(() => drafts.value.filter((t) => revealed.value.includes(t.n)));
@@ -111,7 +112,7 @@ const missing = computed(() =>
         )
 );
 const note = computed(() => {
-    if (asking.value) return "The agent needs your answer in the chat.";
+    if (asking.value) return "Pick one above, or type your own.";
     if (writing.value && !picked.value.length) return `${drafts.value.length} drafted so far. Click a card to keep it.`;
     if (missing.value.length) return `#${missing.value[0].ticket} waits on #${missing.value[0].waitsOn}, which you did not pick.`;
     if (!picked.value.length) return "Click a card to keep it.";
@@ -150,8 +151,8 @@ watch(
     (open) => {
         if (!open) return;
         if (!lines.value.length) say(false, `What do you want to get done on ${props.board.title}?`);
-        if (!since.value && props.board.data.drafting.since) resume(props.board.data.drafting);
-        panel.value.focus();
+        if (!since.value && store.board.drafting.since) resume(store.board.drafting);
+        nextTick(() => panel.value.focus());
     },
     {immediate: true}
 );

@@ -77,7 +77,7 @@ const focusEntered = (el) => el === input.value && focusInput();
             </template>
         </Transition>
         <div class="compose-slot">
-            <Transition name="input-step" @after-enter="focusInput">
+            <Transition name="input-step" @after-enter="() => typing() && focusInput()">
                 <template v-if="!withoutInput">
                     <form :class="['compose', {locked, waiting}]" @submit.prevent="send">
                         <Transition name="swap" mode="out-in" @after-enter="focusEntered">

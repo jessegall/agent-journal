@@ -89,8 +89,10 @@ class Tickets(Controller):
         running = self._running()
         lanes = BoardLanes([(Lane(stage, stage), [self._card(r, stage, stages, sessions, len(running)) for r in tickets if r.stage == stage])
                             for stage in stages], [])
-        asked = Questions(self.record, actor=self.actor).about(Boards(self.record, actor=self.actor).load(int(n)).ref)
-        return {**lanes.shaped(), "slots": asdict(self._slots(running, sessions)), "roles": self._roles(), "questions": asked}
+        board = Boards(self.record, actor=self.actor).load(int(n))
+        asked = Questions(self.record, actor=self.actor).about(board.ref)
+        return {**lanes.shaped(), "slots": asdict(self._slots(running, sessions)), "roles": self._roles(), "questions": asked,
+                "drafting": board.drafting, "expected": board.expected}
 
     def _roles(self) -> list:
         from features.organization.files import organization

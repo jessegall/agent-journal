@@ -158,6 +158,8 @@ function take(got) {
         slots: got.slots,
         roles: got.roles || [],
         questions: got.questions || [],
+        drafting: got.drafting || {},
+        expected: got.expected || 0,
         planHold: got.plan_hold,
         loaded: true,
     });
@@ -218,7 +220,7 @@ provide("board", {move, moving, refresh, meaningOf, newWork, watchAgent, askNote
 const lens = (change) => (store.board.lens = {...store.board.lens, ...change});
 watch(() => [store.board.lens.plan, store.board.lens.agent, store.board.lens.board], refresh);
 watch(
-    () => current.value && current.value.data.drafting && current.value.data.drafting.since,
+    () => store.board.drafting.since,
     (drafting) => drafting && tickets.value && (writingWork.value = true),
     {immediate: true}
 );
