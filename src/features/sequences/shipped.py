@@ -46,8 +46,12 @@ WORKING_A_BOARD_CARD = {
     "starts_on": "message.requested",
     "started_by": USER,
     "steps": [
-        ("Say what they mean", "Your first turn never drafts. Say in a few words what you think they want and ask on the "
-                               "board whether that is it: journal board ask <board n> \"Do you mean <the work>?\" --set "
+        ("Say what they mean", "Your first turn never drafts. Make a real guess from their words, the board's name and the "
+                               "tickets already on it (journal ticket board <board n>); never ask what the board already says. "
+                               "When their words make no sense, say so in the question, like \"I couldn't read that. Do you "
+                               "mean <your guess>?\" Put one short line of why you think so in --abstract, and ask on the "
+                               "board whether that is it: journal board ask <board n> \"Do you mean <the work>?\" --abstract "
+                               "\"<why you think so>\" --set "
                                "options='[{\"title\": \"Yes\"}, {\"title\": \"No\"}]'. The question is your whole turn: do not "
                                "reply to their message as well. Yes goes on to Draft the tickets. No or new words: say your better guess the "
                                "same way once more, and a yes then goes on to Draft the tickets."),
