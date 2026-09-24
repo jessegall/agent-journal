@@ -26,7 +26,7 @@ class TagsDetails(FeatureDetails):
         anything the user should read goes out without it.
 
         tags.runs maps a tag to the command it stands for, so [!reply:12] runs
-        journal message reply 12 with the turn as its text, and [!todo="the title"] files a
+        journal message reply 12 with the turn as its text ([!reply:12,13] answers both messages with one reply), and [!todo="the title"] files a
         to-do with that title and the turn as its brief. [!fact="the claim"] and [!rule="the ruling"]
         file a fact or a rule the same way.
 

@@ -135,5 +135,33 @@ export function threadTurns(rows, pending, env, older = false) {
     ]
         .filter((t) => t.created >= floor)
         .sort((a, b) => a.created - b.created);
-    return {turns, keys};
+    return {turns: mergedReplies(turns), keys};
+}
+
+const SAME_REPLY_WITHIN = 120;
+const answerOf = (t) =>
+    (t.brief || "")
+        .split("\n")
+        .filter((line) => !line.startsWith(">"))
+        .join("\n")
+        .trim();
+const quotesOf = (t) =>
+    (t.brief || "")
+        .split("\n")
+        .filter((line) => line.startsWith(">"))
+        .join("\n");
+const agentReply = (t) => t.type === "comment" && t.who === "agent";
+
+function mergedReplies(turns) {
+    const out = [];
+    for (const turn of turns) {
+        const last = out[out.length - 1];
+        const same = last && agentReply(turn) && agentReply(last) && turn.created - last.created < SAME_REPLY_WITHIN;
+        if (same && answerOf(turn) && answerOf(turn) === answerOf(last)) {
+            out[out.length - 1] = {...last, brief: `${quotesOf(last)}\n>\n${quotesOf(turn)}\n\n${answerOf(turn)}`};
+            continue;
+        }
+        out.push(turn);
+    }
+    return out;
 }
