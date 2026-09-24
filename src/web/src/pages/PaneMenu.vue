@@ -19,10 +19,25 @@ const props = defineProps({
     all: {type: Object, default: null},
     width: {type: String, default: ""},
     schemes: {type: Array, default: () => []},
+    levels: {type: Array, default: () => []},
     flushable: Boolean,
     flush: Boolean,
 });
-const emit = defineEmits(["close", "split", "move", "float", "shut", "reset", "dock", "away", "unfloat", "width", "scheme", "flush"]);
+const emit = defineEmits([
+    "close",
+    "split",
+    "move",
+    "float",
+    "shut",
+    "reset",
+    "dock",
+    "away",
+    "unfloat",
+    "width",
+    "scheme",
+    "flush",
+    "verbosity",
+]);
 const menu = ref(null);
 const list = ref("");
 const mode = computed(() => list.value || (props.floating ? "floating" : "pane"));
@@ -52,6 +67,21 @@ function pick(event, ...args) {
                     <MenuItem @click="pick('move', o.id)">
                         <Icon :name="o.icon" :size="14" />
                         {{ o.label }}
+                    </MenuItem>
+                </template>
+            </template>
+            <template #levels>
+                <MenuItem class="pane-menu-back" @click="list = ''">
+                    <Icon name="back" :size="14" />
+                    Verbosity
+                </MenuItem>
+                <template v-for="l in levels" :key="l.value">
+                    <MenuItem :aria-current="l.current" @click="pick('verbosity', l.value)">
+                        <Icon :name="l.icon" :size="14" />
+                        {{ l.label }}
+                        <template v-if="l.current">
+                            <span class="pane-menu-dot" />
+                        </template>
                     </MenuItem>
                 </template>
             </template>
@@ -110,12 +140,19 @@ function pick(event, ...args) {
                 </MenuItem>
             </template>
         </SwitchCase>
-        <template v-if="!list && (all || schemes.length || flushable)">
+        <template v-if="!list && (all || schemes.length || flushable || levels.length)">
             <span class="pane-menu-line" />
             <template v-if="flushable">
                 <MenuItem @click="pick('flush', !flush)">
                     <Icon :name="flush ? 'narrow' : 'wide'" :size="14" />
                     {{ flush ? "Inset" : "Flush" }}
+                </MenuItem>
+            </template>
+            <template v-if="levels.length">
+                <MenuItem @click="list = 'levels'">
+                    <Icon name="list" :size="14" />
+                    Verbosity
+                    <span class="pane-menu-more">›</span>
                 </MenuItem>
             </template>
             <template v-if="schemes.length">
@@ -139,6 +176,15 @@ function pick(event, ...args) {
 .pane-menu-more {
     margin-left: auto;
     color: var(--text-4);
+}
+
+.pane-menu-dot {
+    flex: none;
+    width: 6px;
+    height: 6px;
+    margin-left: auto;
+    border-radius: 50%;
+    background: var(--text-2);
 }
 
 .pane-menu-back {

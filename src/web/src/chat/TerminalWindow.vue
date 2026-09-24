@@ -4,6 +4,7 @@ import {api} from "../api/client.js";
 import TextInput from "../kit/TextInput.vue";
 import {agent} from "../state/store.js";
 import {useTerminal} from "../composables/terminal.js";
+import {DEFAULT_LEVEL} from "../domain/verbosity.js";
 import CommandLog from "./CommandLog.vue";
 
 const listed = computed(() => (agent.value && agent.value.data.queued_commands) || []);
@@ -15,7 +16,8 @@ watch(
     () => agent.value && agent.value.updated,
     () => (sending.value = sending.value.filter((s) => !s.sent))
 );
-const lines = useTerminal();
+const props = defineProps({level: {type: String, default: DEFAULT_LEVEL}});
+const lines = useTerminal(props.level);
 const command = ref("");
 const input = ref(null);
 

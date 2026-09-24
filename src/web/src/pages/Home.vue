@@ -22,6 +22,7 @@ import {FULLSCREEN_KEYS} from "../platform/fullscreen.js";
 import {useTour} from "../composables/tour.js";
 import {saveViewerSetting, viewerSetting} from "../composables/viewerSetting.js";
 import {schemeChoices, schemeColors, windowSchemes} from "../domain/schemes.js";
+import {levelChoices, levelOf} from "../domain/verbosity.js";
 import {
     AGENT_VIEWS,
     DEFAULT_SHAPE,
@@ -369,6 +370,7 @@ watch(
                         <template v-if="pane.active">
                             <HomeView
                                 :view="pane.active"
+                                :level="levelOf(pane)"
                                 :flush="!!pane.flush"
                                 :feed="pane.feed || null"
                                 @feed="(feed) => replace(tuned(layout, id, {feed}))"
@@ -406,6 +408,7 @@ watch(
                     :all="menuPane && menuPane.active ? views[menuPane.active].all : null"
                     :width="widthOf(menuPane)"
                     :schemes="menuPane ? windowSchemes(menuPane.scheme, layout.scheme) : []"
+                    :levels="menuPane && menuPane.active === 'terminal' ? levelChoices(menuPane) : []"
                     :flushable="!!(menuPane && menuPane.active && views[menuPane.active].canFlush)"
                     :flush="!!(menuPane && menuPane.flush)"
                     :others="menuOthers"
@@ -420,6 +423,7 @@ watch(
                     @width="(id, width) => replace(tuned(layout, id, {width}))"
                     @scheme="(id, scheme) => replace(tuned(layout, id, {scheme}))"
                     @flush="(id, flush) => replace(tuned(layout, id, {flush}))"
+                    @verbosity="(id, verbosity) => replace(tuned(layout, id, {verbosity}))"
                 />
             </template>
             <template v-if="drag">

@@ -27,7 +27,7 @@ from features.skill_loading.catalogue import SKILL, always, catalogue, set_keywo
 from features.skill_loading.required import load_now
 from engine.files import found_files
 from features.file_feed.feed import PAGE, NoSuchEdit, Side, edited_file, edits_before, edits_since, notes
-from features.terminal.log import lines as terminal_lines
+from features.terminal.log import EVERYTHING, LEVELS as TERMINAL_LEVELS, lines as terminal_lines
 from controllers.base import LAST, networked
 from controllers.types import Agents, CONTROLLERS, Environments, Features, Nudges, Plugins
 from features.browser_control.controller import Asks
@@ -187,6 +187,11 @@ class TranscriptQuery(Loaded):
 @dataclass(frozen=True)
 class FindQuery(Loaded):
     q: str = ""
+
+
+@dataclass(frozen=True)
+class TerminalQuery(Loaded):
+    level: str = EVERYTHING
 
 
 @dataclass(frozen=True)
@@ -681,8 +686,11 @@ def get_edited_file(req: Request) -> Reply:
 
 @route("GET", "/api/{env}/agent/{n}/terminal")
 def get_terminal(req: Request) -> Reply:
+    level = req.query_as(TerminalQuery).level
+    if level not in TERMINAL_LEVELS:
+        raise Refused(f"level is one of {', '.join(TERMINAL_LEVELS)}")
     record = req.record()
-    return Reply(200, {"lines": terminal_lines(record, Agents(record, actor=USER).load(int(req.params["n"])).title)})
+    return Reply(200, {"lines": terminal_lines(record, Agents(record, actor=USER).load(int(req.params["n"])).title, level)})
 
 
 @route("GET", "/api/{env}/agent/{n}/subagent/{session}/transcript")

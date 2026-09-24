@@ -8,6 +8,7 @@ import {useHomeViews} from "../composables/homeViews.js";
 import {useDetached} from "../composables/detached.js";
 import {route} from "../route.js";
 import {schemeColors, windowSchemes} from "../domain/schemes.js";
+import {levelChoices, levelOf} from "../domain/verbosity.js";
 import {usePaneLayout} from "../composables/paneLayout.js";
 
 const {views} = useHomeViews();
@@ -21,6 +22,7 @@ const menuFloat = computed(() => menu.value && drawn.value.find((f) => f.id === 
 const {layout} = usePaneLayout();
 const menuSchemes = computed(() => (menuFloat.value ? windowSchemes(menuFloat.value.scheme, layout.value.scheme) : []));
 const menuFlushable = computed(() => !!(menuFloat.value && views.value[menuFloat.value.view].canFlush));
+const menuLevels = computed(() => (menuFloat.value && menuFloat.value.view === "terminal" ? levelChoices(menuFloat.value) : []));
 const menuAll = computed(() => (menuFloat.value && views.value[menuFloat.value.view].all) || null);
 
 function toggleMenu(e, id) {
@@ -51,7 +53,13 @@ function away(id) {
                 @dock="dock(f.id)"
                 @menu="(e) => toggleMenu(e, f.id)"
             >
-                <HomeView :view="f.view" :flush="!!f.flush" :feed="f.feed || null" @feed="(feed) => tune(f.id, {feed})" />
+                <HomeView
+                    :view="f.view"
+                    :level="levelOf(f)"
+                    :flush="!!f.flush"
+                    :feed="f.feed || null"
+                    @feed="(feed) => tune(f.id, {feed})"
+                />
             </FloatWindow>
         </template>
     </TransitionGroup>
@@ -62,6 +70,8 @@ function away(id) {
             floating
             :all="menuAll"
             :schemes="menuSchemes"
+            :levels="menuLevels"
+            @verbosity="(id, verbosity) => tune(id, {verbosity})"
             :flushable="menuFlushable"
             :flush="!!menuFloat.flush"
             @flush="(id, flush) => tune(id, {flush})"
