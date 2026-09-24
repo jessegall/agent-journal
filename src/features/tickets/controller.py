@@ -73,6 +73,8 @@ class Tickets(Controller):
         known = self._from_source(source, data.get("source_id"))
         if known:
             return self.update(known.n, title=title, abstract=abstract or None, brief=brief or None)
+        if data.get("draft") and self.actor == AGENT and Boards(self.record, actor=self.actor).cancelled_lately(data["board"]):
+            self._refuse(f"the request on board {data['board']} was cancelled, so stop drafting")
         opening = self._stages(data.get("board"))[:1]
         return super().create(title, abstract, brief, source=source, **{**dict(zip(["stage"], opening)), **data})
 
@@ -289,18 +291,19 @@ class Tickets(Controller):
         stance = PROPOSED if self.actor == AGENT else CONFIRMED
         return self.update(ticket.n, dependencies={**ticket.dependencies, other.ref: stance})
 
-    def accept_dependencies(self, n: int):
-        return self._decide_dependencies(n, keep=True)
+    def accept_dependencies(self, n: int, only: str = ""):
+        return self._decide_dependencies(n, kept=lambda ref: not only or ref.split(":")[-1] in only.split(","))
 
     def decline_dependencies(self, n: int):
-        return self._decide_dependencies(n, keep=False)
+        return self._decide_dependencies(n, kept=lambda ref: False)
 
-    def _decide_dependencies(self, n: int, keep: bool):
+    def _decide_dependencies(self, n: int, kept):
         if self.actor == AGENT:
             self._refuse(f"only the user accepts or declines a {self.type}'s proposed dependencies")
         ticket = self.load(int(n))
-        decided = {ref: CONFIRMED for ref, stance in ticket.dependencies.items() if stance == CONFIRMED or keep}
-        return self.update(ticket.n, dependencies=decided)
+        proposed = [ref for ref, stance in ticket.dependencies.items() if stance == PROPOSED]
+        decided = {ref: CONFIRMED for ref in ticket.dependencies if ref not in proposed or kept(ref)}
+        return self.update(ticket.n, dependencies=decided, declined=[r for r in [*ticket.declined, *proposed] if r not in decided])
 
     def _reached(self, ticket) -> set:
         seen, waiting = set(), [ticket]
@@ -351,6 +354,7 @@ class Tickets(Controller):
                 f"Decide whether it waits for the user's approval: work that is risky, reaches outside the project or touches production "
                 f"waits (journal plan ready and say so in the chat); other work starts at once. Hand domain work out with journal todo delegate."
                 + (f" Its owner is the {ticket.owner} domain: hand its work to that domain's lead first." if ticket.owner else "")
+                + (f" The user declined its proposed wait on {', '.join(ticket.declined)}: do not wait for them." if ticket.declined else "")
                 + "".join(f" It came from {ref}: read that request and the questions answered on it before you plan."
                           for ref in ticket.refs if ref.startswith("message:")))
 

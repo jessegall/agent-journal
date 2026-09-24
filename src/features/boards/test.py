@@ -1,6 +1,7 @@
 import features
 from controllers.types import Questions
 from features.boards.controller import START_OVER, Boards
+from features.sequences.controller import Sequences
 from features.sequences.shipped import ship
 from features.tickets.controller import Tickets
 from resources.base import AGENT, USER
@@ -34,8 +35,14 @@ def test_a_request_opens_a_session_that_cancel_closes():
         "the request is a message about the board, and the board remembers the session so the panel can resume it"
     assert any(n.startswith("sequence ") and "Understand the request" in n for n in nudges(record)), \
         "the request starts the board card sequence at its first step"
+    drafter = Tickets(record, actor=AGENT)
+    kept, stray = (drafter.create(t, abstract=t, board=board.n, draft=True) for t in ("Share a link", "Invite by mail"))
+    Tickets(record, actor=USER).confirm(kept.n)
     boards.cancel(board.n)
-    assert boards.load(board.n).drafting == {}, "cancel ends the session"
+    assert "since" not in boards.load(board.n).drafting, "cancel ends the session"
+    assert [t.n for t in drafter._standing() if t.board == board.n] == [kept.n], "cancel deletes the drafts nobody added"
+    assert not any(made.ref in key for s in Sequences(record, actor=USER).all(last=0) for key in s.runs), "cancel gives up the running sequence"
+    assert "stop drafting" in refused(lambda: drafter.create("Late", abstract="Late", board=board.n, draft=True)), "a draft after cancel is refused"
 
 
 def test_the_agent_says_how_many_drafts_are_coming():

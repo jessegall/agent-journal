@@ -6,9 +6,17 @@ import {store} from "../state/store.js";
 import InlineEdit from "../kit/InlineEdit.vue";
 import SkeletonLine from "../kit/SkeletonLine.vue";
 import Btn from "../kit/Btn.vue";
+import DraftLinks from "./DraftLinks.vue";
 
-const props = defineProps({ticket: {type: Object, default: null}, picked: Boolean, active: Boolean, paused: Boolean, order: Number});
-const emit = defineEmits(["toggle", "revealed", "more"]);
+const props = defineProps({
+    ticket: {type: Object, default: null},
+    picked: Boolean,
+    active: Boolean,
+    paused: Boolean,
+    order: Number,
+    links: {type: Array, default: () => []},
+});
+const emit = defineEmits(["toggle", "revealed", "more", "link"]);
 const TITLE_MS = 900;
 const ABSTRACT_MS = 1600;
 const {type, wait} = useTyping();
@@ -86,6 +94,7 @@ async function save(field, text) {
         role="button"
         tabindex="0"
         :aria-pressed="picked"
+        :data-ticket="ticket ? ticket.n : null"
         :title="shown.done ? 'Click to keep it; double-click its title or line to change them' : ''"
         @click="toggle"
         @keydown.space.prevent="toggle"
@@ -120,6 +129,9 @@ async function save(field, text) {
                 <span class="owner">For {{ owner }}</span>
             </template>
         </SkeletonLine>
+        <template v-if="shown.done && links.length">
+            <DraftLinks :links="links" @toggle="(n) => emit('link', n)" />
+        </template>
         <template v-if="shown.done">
             <Btn small class="more" @click.stop="(e) => emit('more', e.currentTarget.closest('.pick').getBoundingClientRect())">
                 More info
@@ -134,7 +146,6 @@ async function save(field, text) {
     flex-direction: column;
     gap: 8px;
     height: 100%;
-    overflow: hidden;
     padding: 14px 14px 12px;
     border: 1px solid var(--border-2);
     border-radius: 13px;

@@ -29,6 +29,7 @@ class Ticket(Placed, Resource):
         Field(FLAG, False, name="queued"),
         Field(FLAG, False, name="draft"),
         Field(default=dict, name="dependencies"),
+        Field(default=list, name="declined"),
         Field(FLAG, False, name="hosted"),
         Field(NUMBER, 0.0, name="idle_since"),
     ]

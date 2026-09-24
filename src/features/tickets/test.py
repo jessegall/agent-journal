@@ -196,8 +196,13 @@ def test_a_ticket_waits_on_a_confirmed_dependency_and_starts_when_it_closes(monk
     assert user.load(ui.n).dependencies == {api.ref: "proposed"}, "the agent only proposes a dependency"
     user.decline_dependencies(ui.n)
     assert user.load(ui.n).dependencies == {}, "a declined proposal is gone and holds nothing"
+    docs = user.create("Its docs", board=board.n)
     agent.depend(ui.n, api.n)
-    user.accept_dependencies(ui.n)
+    agent.depend(ui.n, docs.n)
+    user.accept_dependencies(ui.n, only=str(api.n))
+    kept = user.load(ui.n)
+    assert (kept.dependencies, kept.declined) == ({api.ref: "confirmed"}, [docs.ref]), "only the links the user kept hold"
+    assert f"declined its proposed wait on {docs.ref}" in user._kickoff(kept), "the ticket's agent hears which wait was declined"
     assert "would wait on itself" in refused(lambda: user.depend(api.n, ui.n)), "a cycle is refused"
     user.move(ui.n, "Building")
     assert (launched, user.load(ui.n).queued) == ([], True), "a ticket waiting on an open one does not start"
@@ -230,7 +235,7 @@ def test_a_plan_waiting_for_approval_is_read_and_approved_from_its_card():
 
 
 def test_drafts_carry_one_line_and_the_agent_answers_the_panel_briefly():
-    from features.tickets.limits import CARD_LINE, PANEL_REPLY
+    from features.tickets.limits import CARD_LINE, CARD_TITLE, PANEL_REPLY
     from controllers.types import Messages
     from tests.conftest import refused
     record = fresh()
@@ -239,7 +244,9 @@ def test_drafts_carry_one_line_and_the_agent_answers_the_panel_briefly():
     assert "one line" in refused(lambda: drafting.create("Sign in", board=board.n, draft=True)), "a draft without its one line is refused"
     assert "one line" in refused(lambda: drafting.create("Sign in", abstract="x" * (CARD_LINE + 1), board=board.n, draft=True)), \
         "a line too long for the card is refused"
-    assert drafting.create("Sign in", abstract="Everyone signs in", board=board.n, draft=True).abstract == "Everyone signs in"
+    made = drafting.create("Sign in", abstract="Everyone signs in", board=board.n, draft=True)
+    assert "one line" in refused(lambda: drafting.update(made.n, abstract="x" * (CARD_LINE + 1))), "an edit keeps the line short too"
+    assert "title" in refused(lambda: drafting.update(made.n, title="t" * (CARD_TITLE + 1))), "a title too long for the card is refused"
     request = Boards(record, actor=USER).request(board.n, "I want to share")
     agent = Messages(record, actor=AGENT)
     assert "shorter" in refused(lambda: agent.reply(request.n, "y" * (PANEL_REPLY + 1))), "a reply the panel cannot show whole is refused"

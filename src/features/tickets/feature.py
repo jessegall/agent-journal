@@ -15,4 +15,5 @@ class TicketsFeature(Feature):
         journal.events.handler(LookAfterTicketBranches())
         journal.events.handler(HoldTicketKnowledge())
         journal.commands.intercept("create", DraftsCarryOneLine())
+        journal.commands.intercept("update", DraftsCarryOneLine())
         journal.commands.intercept("create", PanelRepliesStayShort())

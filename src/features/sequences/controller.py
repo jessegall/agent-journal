@@ -2,7 +2,7 @@ import time
 
 import controllers.types as types_module
 import resources.types as resources_module
-from controllers.base import Controller
+from controllers.base import Controller, internal
 from controllers.types import Agents
 from features.sequences.resource import Sequence
 from resources.base import SECTION, SYSTEM
@@ -74,6 +74,12 @@ class Sequences(Controller):
         left = {"about": key, "step": r.runs[key]["step"], "why": why.strip(), "at": time.time()}
         self._mark(r, "Sequence abandoned", about, 0, why.strip())
         return self.update(r.n, runs=runs, abandoned=[*(r.data.get("abandoned") or []), left])
+
+    @internal
+    def give_up(self, about: str, why: str) -> None:
+        for sequence in self.all(last=0):
+            if self._key(about) in sequence.runs:
+                self.abandon(sequence.n, about=about, why=why)
 
     def _mark(self, r, label: str, about: str, step: int, why: str = "") -> None:
         agents = Agents(self.record, actor=SYSTEM)

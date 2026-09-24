@@ -5,16 +5,18 @@ const props = defineProps({
     from: {type: Object, required: true},
     width: {type: Number, default: 460},
     height: {type: Number, default: 380},
+    measure: {type: Function, default: null},
 });
 const emit = defineEmits(["close"]);
 const MOVE_MS = 380;
 const FLIP_MS = 550;
 const centred = ref(false);
+const home = ref(props.from);
 const flipped = ref(false);
 const timers = [];
 const later = (ms, fn) => timers.push(setTimeout(fn, ms));
 const box = computed(() => {
-    if (!centred.value) return {left: props.from.left, top: props.from.top, width: props.from.width, height: props.from.height};
+    if (!centred.value) return {left: home.value.left, top: home.value.top, width: home.value.width, height: home.value.height};
     const width = Math.min(props.width, window.innerWidth - 32);
     const height = Math.min(props.height, window.innerHeight - 32);
     return {left: (window.innerWidth - width) / 2, top: (window.innerHeight - height) / 2, width, height};
@@ -22,6 +24,7 @@ const box = computed(() => {
 const px = (b) => ({left: `${b.left}px`, top: `${b.top}px`, width: `${b.width}px`, height: `${b.height}px`});
 
 function close() {
+    home.value = (props.measure && props.measure()) || home.value;
     flipped.value = false;
     later(FLIP_MS * 0.6, () => (centred.value = false));
     later(FLIP_MS * 0.6 + MOVE_MS, () => emit("close"));

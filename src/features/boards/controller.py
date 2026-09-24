@@ -1,3 +1,5 @@
+import time
+
 import controllers.types as types_module
 import resources.types as resources_module
 from controllers.base import Controller, internal
@@ -8,6 +10,7 @@ from resources.base import REQUESTED, REVISED, Refused, Resource, titled
 
 STAGES = ("To do", "Doing", "Review", "Done")
 START_OVER = "Start over"
+CANCEL_HOLDS = 600
 
 
 
@@ -49,14 +52,29 @@ class Boards(Controller):
         for open_question in asking.about(board.ref):
             if not open_question.completed:
                 asking.complete(open_question.n, how=START_OVER, reason="The request on the board was cancelled")
-        return self.update(board.n, drafting={})
+        self._stop_drafting(board)
+        return self.update(board.n, drafting={"cancelled": time.time()} if board.drafting.get("since") else {})
+
+    @internal
+    def cancelled_lately(self, n: int) -> bool:
+        return time.time() - self.load(int(n)).drafting.get("cancelled", 0) < CANCEL_HOLDS
+
+    def _stop_drafting(self, board) -> None:
+        from features.sequences.controller import Sequences
+        from features.tickets.controller import Tickets
+        sequences = Sequences(self.record, actor=self.actor, session=self.session, agent=self.agent)
+        for about in board.drafting.get("asked") or []:
+            sequences.give_up(about, why="The request on the board was cancelled")
+        tickets = Tickets(self.record, actor=self.actor, session=self.session, agent=self.agent)
+        since = board.drafting.get("since")
+        for left in [t for t in tickets._standing() if since and t.draft and int(t.board) == board.n and t.created >= since]:
+            tickets.delete(left.n, why="The request on the board was cancelled")
 
     def request(self, n: int, text: str, idempotency: str = ""):
         board = self.load(int(n))
         self.cancel(board.n)
-        made = Messages(self.record, actor=self.actor, session=self.session, agent=self.agent).create(
-            titled(text), brief=text.strip(), about=board.ref, new_work=True, idempotency=idempotency)
-        self.update(board.n, expected=0, drafting={"since": made.created, "idempotency": made.idempotency})
+        made = self._filed(board, text, idempotency)
+        self.update(board.n, expected=0, drafting={"since": made.created, "idempotency": made.idempotency, "asked": [made.ref]})
         self.record.emit("message", made.n, REQUESTED, self.actor)
         return made
 
@@ -70,10 +88,15 @@ class Boards(Controller):
 
     def revise(self, n: int, text: str, idempotency: str = ""):
         board = self.load(int(n))
-        made = Messages(self.record, actor=self.actor, session=self.session, agent=self.agent).create(
-            titled(text), brief=text.strip(), about=board.ref, new_work=True, idempotency=idempotency)
+        made = self._filed(board, text, idempotency)
+        if board.drafting:
+            self.update(board.n, drafting={**board.drafting, "asked": [*(board.drafting.get("asked") or []), made.ref]})
         self.record.emit("message", made.n, REVISED, self.actor)
         return made
+
+    def _filed(self, board, text: str, idempotency: str):
+        return Messages(self.record, actor=self.actor, session=self.session, agent=self.agent).create(
+            titled(text), brief=text.strip(), about=board.ref, new_work=True, idempotency=idempotency)
 
     def meaning(self, n: int, stage: str, meaning: str = ""):
         board = self.load(int(n))
