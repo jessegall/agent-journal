@@ -88,9 +88,11 @@ button.mark:hover {
 
 .head {
     display: flex;
+    flex-wrap: wrap;
     align-items: baseline;
     gap: 5px;
-    white-space: nowrap;
+    min-width: 0;
+    overflow-wrap: anywhere;
 }
 
 .head :deep(.md) {
@@ -128,11 +130,9 @@ button.mark:hover {
 
 .mark .detail {
     grid-column: 1 / -1;
-    overflow: hidden;
     color: color-mix(in srgb, var(--text-3) 80%, transparent);
     font-size: 10px;
     line-height: 1.4;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    overflow-wrap: anywhere;
 }
 </style>
