@@ -81,17 +81,34 @@ def git(project: Path, *args: str) -> subprocess.CompletedProcess:
         return subprocess.CompletedProcess(["git", *args], 1, "", str(failed))
 
 
-JOURNAL_EXCLUDED = "/.journal"
+SHARED = (".journal", ".claude/settings.local.json")
+SHARED_IN = (".claude/skills", ".agents/skills")
 
 
 def share_journal(top: Path, root: Path) -> None:
-    journal = top / ".journal"
-    if journal.exists() or journal.is_symlink() or top.resolve() == root.resolve().parent:
+    project = root.resolve().parent
+    if top.resolve() == project:
         return
-    journal.symlink_to(root.resolve(), target_is_directory=True)
+    wanted = [Path(path) for path in SHARED] + \
+             [Path(folder) / entry.name for folder in SHARED_IN if (project / folder).is_dir() for entry in sorted((project / folder).iterdir())]
+    made = [path for path in wanted if linked_to(top / path, (project / path).resolve())]
+    if made:
+        excluded(top, [f"/{path}" for path in made])
+
+
+def linked_to(place: Path, target: Path) -> bool:
+    if place.exists() or place.is_symlink() or not target.exists():
+        return False
+    place.parent.mkdir(parents=True, exist_ok=True)
+    place.symlink_to(target, target_is_directory=target.is_dir())
+    return True
+
+
+def excluded(top: Path, patterns: list[str]) -> None:
     gitdir = Path((top / ".git").read_text().split(":", 1)[1].strip())
     exclude = (gitdir if gitdir.is_absolute() else top / gitdir).resolve().parents[1] / "info" / "exclude"
     held = exclude.read_text() if exclude.is_file() else ""
-    if JOURNAL_EXCLUDED not in held.splitlines():
+    missing = [pattern for pattern in patterns if pattern not in held.splitlines()]
+    if missing:
         exclude.parent.mkdir(parents=True, exist_ok=True)
-        exclude.write_text(held + ("" if not held or held.endswith("\n") else "\n") + JOURNAL_EXCLUDED + "\n")
+        exclude.write_text(held + ("" if not held or held.endswith("\n") else "\n") + "".join(f"{pattern}\n" for pattern in missing))
