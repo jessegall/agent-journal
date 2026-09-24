@@ -53,7 +53,7 @@ defineExpose({focus: () => nextTick(() => input.value.focus())});
         </template>
         <Transition name="echo">
             <template v-if="echo">
-                <p :key="echo" class="echo">{{ echo }}</p>
+                <p :key="echo" :class="['echo', {low: withoutInput}]">{{ echo }}</p>
             </template>
         </Transition>
         <div class="compose-slot">
@@ -151,12 +151,15 @@ defineExpose({focus: () => nextTick(() => input.value.focus())});
     font-size: 14px;
     line-height: 20px;
     overflow-wrap: anywhere;
+    transition: transform 0.26s cubic-bezier(0.2, 0.9, 0.25, 1);
+}
+
+.echo.low {
+    transform: translateY(60px);
 }
 
 .echo-enter-active {
-    transition:
-        transform 0.42s cubic-bezier(0.2, 0.9, 0.25, 1),
-        opacity 0.3s ease;
+    transition: opacity 0.3s ease;
 }
 
 .echo-leave-active {
@@ -164,8 +167,7 @@ defineExpose({focus: () => nextTick(() => input.value.focus())});
 }
 
 .echo-enter-from {
-    opacity: 0.3;
-    transform: translateY(52px);
+    opacity: 0;
 }
 
 .echo-leave-to {

@@ -37,7 +37,7 @@ defineProps({question: {type: Object, required: true}});
 }
 
 .context {
-    margin: 0 0 6px;
+    margin: 10px 0 8px;
     color: var(--text-2);
     font-size: 13px;
     line-height: 1.5;
