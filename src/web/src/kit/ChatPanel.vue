@@ -33,7 +33,8 @@ function send() {
     emit("send", words.value.trim());
 }
 
-defineExpose({focus: () => nextTick(() => input.value.focus())});
+const focusInput = () => input.value.focus();
+defineExpose({focus: () => nextTick(() => props.withoutInput || focusInput())});
 </script>
 
 <template>
@@ -57,7 +58,7 @@ defineExpose({focus: () => nextTick(() => input.value.focus())});
             </template>
         </Transition>
         <div class="compose-slot">
-            <Transition name="input-step">
+            <Transition name="input-step" @after-enter="focusInput">
                 <template v-if="!withoutInput">
                     <form :class="['compose', {locked}]" @submit.prevent="send">
                         <input
