@@ -159,7 +159,7 @@ defineExpose({focus: () => nextTick(() => input.value.focus())});
 }
 
 .echo-enter-active {
-    transition: opacity 0.3s ease;
+    transition: opacity 0.45s ease;
 }
 
 .echo-leave-active {

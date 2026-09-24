@@ -9,7 +9,7 @@ import {word} from "../state/store.js";
 import {sendMessage} from "../chat/outbox.js";
 import {route} from "../route.js";
 
-const props = defineProps({resource: Object, buttonsOnly: Boolean});
+const props = defineProps({resource: Object, buttonsOnly: Boolean, immediate: Boolean});
 const own = ref("");
 const changing = ref(false);
 const elaborating = ref(false);
@@ -57,6 +57,7 @@ async function elaborate() {
             :reason="resource.data.reason || ''"
             :suggested="pick - 1"
             :disabled="settled"
+            :immediate="immediate"
             @pick="(i) => submit(options[i].title)"
         />
         <template v-if="settled">

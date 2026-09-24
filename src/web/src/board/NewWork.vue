@@ -149,8 +149,8 @@ watch(
 );
 
 async function send(text) {
-    words.value = "";
     say(true, text);
+    words.value = "";
     since.value = since.value || now() - 5;
     lastSent.value = now() - 1;
     if (asking.value) return api.act("question", asking.value.n, word("question", "complete"), {how: text});

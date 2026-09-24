@@ -11,6 +11,7 @@ const props = defineProps({
     color: {type: String, default: "var(--accent)"},
     chosenBy: {type: String, default: ""},
     reason: {type: String, default: ""},
+    immediate: Boolean,
 });
 const emit = defineEmits(["pick"]);
 const holding = ref(-1);
@@ -18,6 +19,7 @@ let timer = 0;
 const held = computed(() => Number(store.settings?.ask_questions?.hold ?? HOLD_SECONDS) * 1000);
 
 function choose(i) {
+    if (props.immediate) return emit("pick", i);
     clearTimeout(timer);
     if (holding.value === i) {
         holding.value = -1;

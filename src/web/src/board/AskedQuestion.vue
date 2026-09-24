@@ -13,7 +13,7 @@ defineProps({question: {type: Object, required: true}, chat: Boolean});
         <template v-if="question.abstract">
             <p class="context">{{ question.abstract }}</p>
         </template>
-        <OptionsPicker :resource="question" buttons-only />
+        <OptionsPicker :resource="question" buttons-only :immediate="!chat" />
     </div>
 </template>
 
