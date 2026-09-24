@@ -21,6 +21,7 @@ const held = computed(() => Number(store.settings?.ask_questions?.hold ?? HOLD_S
 
 function choose(i) {
     if (props.immediate) {
+        if (pressed.value >= 0) return;
         pressed.value = i;
         return emit("pick", i);
     }
@@ -126,7 +127,8 @@ onUnmounted(save);
 
 .options:has(.pressed) .option:not(.pressed) {
     opacity: 0;
-    transition: opacity 0.25s ease;
+    pointer-events: none;
+    transition: opacity 0.5s ease;
 }
 
 .option.pressed {

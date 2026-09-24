@@ -145,10 +145,10 @@ async function save(field, text) {
     font-size: 13px;
     text-align: left;
     cursor: default;
-    animation: rise 0.32s cubic-bezier(0.2, 0.9, 0.25, 1) both;
+    animation: rise 0.32s var(--ease) both;
     transition:
         border-color 0.2s,
-        transform 0.25s cubic-bezier(0.2, 0.9, 0.25, 1);
+        transform 0.25s var(--ease);
 }
 
 .pick.order-1 {

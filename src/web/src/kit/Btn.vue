@@ -1,11 +1,11 @@
 <script setup>
 import Spinner from "./Spinner.vue";
 
-defineProps({kind: {type: String, default: "ghost"}, small: Boolean, busy: Boolean});
+defineProps({kind: {type: String, default: "ghost"}, small: Boolean, large: Boolean, busy: Boolean});
 </script>
 
 <template>
-    <button type="button" :class="['btn', kind, {small, busy}]" :aria-busy="busy" :disabled="busy">
+    <button type="button" :class="['btn', kind, {small, large, busy}]" :aria-busy="busy" :disabled="busy">
         <span :class="['btn-label', {hidden: busy}]"><slot /></span>
         <template v-if="busy">
             <Spinner class="btn-spinner" />
@@ -80,5 +80,17 @@ defineProps({kind: {type: String, default: "ghost"}, small: Boolean, busy: Boole
     height: 24px;
     padding: 0 9px;
     font-size: 12px;
+}
+
+.btn.large {
+    height: 36px;
+    padding: 0 14px;
+    font-size: 13.5px;
+}
+
+.btn:disabled:not(.busy) {
+    opacity: 0.45;
+    cursor: default;
+    pointer-events: none;
 }
 </style>

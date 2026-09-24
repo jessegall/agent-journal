@@ -34,6 +34,8 @@ const tall = ref(false);
 const resumed = ref(false);
 const grown = ref(false);
 let growTimer = 0;
+let resetTimer = 0;
+let typedAnswer = false;
 const START_OVER = "Start over";
 const shownDraft = ref(null);
 const FADED = 400;
@@ -44,7 +46,7 @@ const EXAMPLES = [
     "The board gets slow once there are many cards",
     "A weekly summary of what moved",
 ];
-const EXAMPLE_MS = 3200;
+const EXAMPLE_MS = 6000;
 const example = ref(0);
 let exampleTimer = 0;
 const UNDERSTANDING = ["Reading what you wrote", "Working out what you mean", "Checking it against the board", "Making a guess"];
@@ -56,7 +58,7 @@ const replies = computed(() => {
     return rows("comment").filter((c) => c.refs.some((ref) => refs.includes(ref)));
 });
 const boardQuestions = computed(() => (since.value ? store.board.questions.filter((q) => q.created >= since.value) : []));
-const asking = computed(() => boardQuestions.value.findLast((q) => !q.completed));
+const asking = computed(() => boardQuestions.value.find((q) => !q.completed));
 const choosing = computed(() => Boolean(asking.value && asking.value.data.final));
 const confirmed = computed(() => drafts.value.length > 0 || store.board.expected > 0);
 const thinking = computed(() => (confirmed.value ? DRAFTING : UNDERSTANDING));
@@ -81,7 +83,8 @@ const answered = (at) => replies.value.some((c) => c.created >= at) || boardQues
 const writing = computed(() => Boolean(lastSent.value) && !answered(lastSent.value));
 const spoken = computed(() => conversation.value.filter((line) => line.text));
 const lastMine = computed(() => conversation.value.findLastIndex((line) => line.mine));
-const latest = computed(() => conversation.value.slice(lastMine.value + 1));
+const agentLine = computed(() => conversation.value.findLast((line) => !line.mine && !line.record && line.text));
+const latest = computed(() => (asking.value || !agentLine.value ? [] : [agentLine.value]));
 const echo = computed(() => (docked.value || words.value || lastMine.value < 0 ? "" : conversation.value[lastMine.value].text));
 const turn = computed(() => drafts.value.find((t) => !revealed.value.includes(t.n)));
 const cards = computed(() => {
@@ -138,22 +141,30 @@ watch(
     {immediate: true}
 );
 
-onMounted(() => {
-    window.addEventListener("keydown", onKey);
-    exampleTimer = setInterval(() => (example.value = (example.value + 1) % EXAMPLES.length), EXAMPLE_MS);
-});
+onMounted(() => window.addEventListener("keydown", onKey));
 onUnmounted(() => {
     window.removeEventListener("keydown", onKey);
     clearInterval(exampleTimer);
     clearTimeout(growTimer);
+    clearTimeout(resetTimer);
 });
+
+const greet = () => say(false, `What do you want to get done on ${props.board.title}?`);
+
+function showExamples() {
+    clearInterval(exampleTimer);
+    example.value = 0;
+    exampleTimer = setInterval(() => (example.value = (example.value + 1) % EXAMPLES.length), EXAMPLE_MS);
+}
 
 watch(
     () => props.open,
     (open) => {
-        if (!open) return;
-        if (!lines.value.length) say(false, `What do you want to get done on ${props.board.title}?`);
+        if (!open) return clearInterval(exampleTimer);
+        if (resetTimer) (clearTimeout(resetTimer), (resetTimer = 0), startAnew());
+        if (!lines.value.length) greet();
         if (!since.value && store.board.drafting.since) resume(store.board.drafting);
+        if (!since.value) showExamples();
         nextTick(() => panel.value.focus());
     },
     {immediate: true}
@@ -161,6 +172,7 @@ watch(
 
 async function send(text) {
     say(true, text);
+    clearInterval(exampleTimer);
     since.value = since.value || now() - 5;
     lastSent.value = now() - 1;
     if (asking.value) {
@@ -206,34 +218,38 @@ async function add() {
                 api.act("ticket", t.n, waitsOn(t).some((n) => dropped.includes(n)) ? "decline_dependencies" : "accept_dependencies")
             )
     );
-    await drop(unpicked());
     adding.value = false;
-    api.cancelWork(props.board.n);
     emit("added", keep.length);
-    emit("close");
-    setTimeout(startAnew, FADED);
+    finish();
 }
 
-let typedAnswer = false;
-
-watch(asking, (question) => {
-    if (!question || tall.value) return;
-    tall.value = true;
-    growTimer = setTimeout(() => (grown.value = true), GROW_MS);
-});
+function finish() {
+    const dropped = unpicked();
+    emit("close");
+    drop(dropped);
+    api.cancelWork(props.board.n);
+    resetTimer = setTimeout(() => ((resetTimer = 0), startAnew()), FADED);
+}
 
 watch(asking, (current, before) => {
+    if (current && !tall.value) {
+        tall.value = true;
+        growTimer = setTimeout(() => (grown.value = true), GROW_MS);
+    }
     if (!before || current || startedOver.value) return;
     if (!typedAnswer) say(true, "");
     typedAnswer = false;
     lastSent.value = now() - 1;
 });
 
+watch(choosing, (final) => final && (words.value = ""));
+
 watch(startedOver, async (q) => {
     if (!q) return;
     await drop(unpicked());
     startAnew();
-    say(false, `What do you want to get done on ${props.board.title}?`);
+    greet();
+    showExamples();
 });
 
 function resume(drafting) {
@@ -244,6 +260,8 @@ function resume(drafting) {
 }
 
 function startAnew() {
+    clearTimeout(growTimer);
+    typedAnswer = false;
     resumed.value = false;
     docked.value = false;
     revealed.value = [];
@@ -256,14 +274,6 @@ function startAnew() {
     since.value = 0;
     lastSent.value = 0;
     picked.value = [];
-}
-
-function leave() {
-    const dropped = unpicked();
-    emit("close");
-    drop(dropped);
-    api.cancelWork(props.board.n);
-    setTimeout(startAnew, FADED);
 }
 </script>
 
@@ -303,7 +313,7 @@ function leave() {
                 v-model="words"
                 fill
                 :closable="!docked"
-                @close="leave"
+                @close="finish"
                 :locked="adding"
                 :limit="INPUT_LIMIT"
                 :without-input="choosing"
@@ -319,7 +329,7 @@ function leave() {
                             New work
                             <span class="head-board">{{ board.title }}</span>
                         </span>
-                        <Btn small title="Stop and drop the drafts you did not keep" @click="leave">Cancel</Btn>
+                        <Btn small title="Cancel" @click="finish">Cancel</Btn>
                     </div>
                 </template>
                 <template v-for="line in docked ? spoken : latest" :key="line.id">
@@ -338,14 +348,14 @@ function leave() {
                         Say it in a sentence. I say back what I think you mean, you confirm, and then I draft the tickets.
                     </p>
                 </template>
-                <Transition name="asked">
+                <Transition name="asked" mode="out-in">
                     <template v-if="asking && (grown || docked)">
-                        <AskedQuestion :key="asking.n" :question="asking" :chat="docked" />
+                        <AskedQuestion :key="`question-${asking.n}`" :question="asking" :chat="docked" />
+                    </template>
+                    <template v-else-if="writing && !asking">
+                        <ChatLine key="thinking" thinking :notes="thinking" />
                     </template>
                 </Transition>
-                <template v-if="writing && !asking">
-                    <ChatLine thinking :notes="thinking" />
-                </template>
                 <template v-if="stalled">
                     <ChatLine text="No answer yet. The agent may be busy with other work." />
                     <Btn small @click="askAgain">Ask again</Btn>
@@ -366,10 +376,10 @@ function leave() {
     width: min(680px, calc(100% - 32px));
     height: min(400px, 52vh);
     transition:
-        top 0.45s cubic-bezier(0.2, 0.9, 0.25, 1),
-        left 0.45s cubic-bezier(0.2, 0.9, 0.25, 1),
-        width 0.45s cubic-bezier(0.2, 0.9, 0.25, 1),
-        height 0.45s cubic-bezier(0.2, 0.9, 0.25, 1);
+        top 0.45s var(--ease),
+        left 0.45s var(--ease),
+        width 0.45s var(--ease),
+        height 0.45s var(--ease);
 }
 
 .dock.short:not(.docked) {
@@ -394,7 +404,7 @@ function leave() {
     border-bottom: 1px solid transparent;
     opacity: 0;
     transition:
-        height 0.45s cubic-bezier(0.2, 0.9, 0.25, 1),
+        height 0.45s var(--ease),
         opacity 0.2s,
         border-color 0.2s;
 }
@@ -404,7 +414,7 @@ function leave() {
     border-bottom-color: var(--border);
     opacity: 1;
     transition:
-        height 0.45s cubic-bezier(0.2, 0.9, 0.25, 1),
+        height 0.45s var(--ease),
         opacity 0.3s 0.2s,
         border-color 0.3s 0.2s;
 }
@@ -424,14 +434,6 @@ function leave() {
     font-weight: 400;
 }
 
-kbd {
-    padding: 1px 5px;
-    border: 1px solid var(--border-2);
-    border-radius: 4px;
-    font: inherit;
-    font-size: 10.5px;
-}
-
 .work {
     position: absolute;
     top: 20px;
@@ -445,8 +447,8 @@ kbd {
     pointer-events: none;
     transform: translateX(16px);
     transition:
-        opacity 0.3s cubic-bezier(0.2, 0.9, 0.25, 1),
-        transform 0.45s cubic-bezier(0.2, 0.9, 0.25, 1);
+        opacity 0.3s var(--ease),
+        transform 0.45s var(--ease);
 }
 
 .work.on {
@@ -454,8 +456,8 @@ kbd {
     pointer-events: auto;
     transform: none;
     transition:
-        opacity 0.45s cubic-bezier(0.2, 0.9, 0.25, 1) 0.08s,
-        transform 0.45s cubic-bezier(0.2, 0.9, 0.25, 1) 0.08s;
+        opacity 0.45s var(--ease) 0.08s,
+        transform 0.45s var(--ease) 0.08s;
 }
 
 .bar {
@@ -480,7 +482,7 @@ kbd {
     transform: translateY(3px);
     transition:
         opacity 0.25s,
-        transform 0.25s cubic-bezier(0.2, 0.9, 0.25, 1);
+        transform 0.25s var(--ease);
 }
 
 .bar-actions.on {
@@ -503,7 +505,7 @@ kbd {
 }
 
 .pick-move {
-    transition: transform 0.35s cubic-bezier(0.2, 0.9, 0.25, 1);
+    transition: transform 0.35s var(--ease);
 }
 
 .pick-leave-active {
@@ -533,7 +535,15 @@ kbd {
 }
 
 .asked-leave-active {
+    transition: opacity 0.6s ease 0.5s;
+}
+
+.asked-enter-active {
     transition: opacity 0.6s ease;
+}
+
+.asked-enter-from {
+    opacity: 0;
 }
 
 .asked-leave-to {

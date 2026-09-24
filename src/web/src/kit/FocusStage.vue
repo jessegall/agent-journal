@@ -66,8 +66,8 @@ onUnmounted(() => window.removeEventListener("keydown", onKey));
     background: radial-gradient(ellipse at center, rgba(94, 100, 201, 0.14), transparent 60%);
     pointer-events: none;
     transition:
-        opacity 0.45s cubic-bezier(0.2, 0.9, 0.25, 1),
-        transform 0.45s cubic-bezier(0.2, 0.9, 0.25, 1);
+        opacity 0.45s var(--ease),
+        transform 0.45s var(--ease);
 }
 
 .docked .glow {
@@ -159,7 +159,7 @@ kbd {
 
 .focus-stage-enter-active .body,
 .focus-stage-leave-active .body {
-    transition: transform 0.45s cubic-bezier(0.2, 0.9, 0.25, 1);
+    transition: transform 0.45s var(--ease);
 }
 
 .focus-stage-enter-from,
