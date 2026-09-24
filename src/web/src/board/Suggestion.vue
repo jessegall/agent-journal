@@ -6,7 +6,6 @@ import {store} from "../state/store.js";
 import InlineEdit from "../kit/InlineEdit.vue";
 import SkeletonLine from "../kit/SkeletonLine.vue";
 import Btn from "../kit/Btn.vue";
-import DraftLinks from "./DraftLinks.vue";
 
 const props = defineProps({
     ticket: {type: Object, default: null},
@@ -14,9 +13,8 @@ const props = defineProps({
     active: Boolean,
     paused: Boolean,
     order: Number,
-    links: {type: Array, default: () => []},
 });
-const emit = defineEmits(["toggle", "revealed", "more", "link"]);
+const emit = defineEmits(["toggle", "revealed", "more"]);
 const TITLE_MS = 900;
 const ABSTRACT_MS = 1600;
 const {type, wait} = useTyping();
@@ -129,9 +127,6 @@ async function save(field, text) {
                 <span class="owner">For {{ owner }}</span>
             </template>
         </SkeletonLine>
-        <template v-if="shown.done && links.length">
-            <DraftLinks :links="links" @toggle="(n) => emit('link', n)" />
-        </template>
         <template v-if="shown.done">
             <Btn small class="more" @click.stop="(e) => emit('more', e.currentTarget.closest('.pick').getBoundingClientRect())">
                 More info

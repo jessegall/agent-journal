@@ -24,9 +24,10 @@ class TicketsDetails(FeatureDetails):
         follow it. It asks on the board which feature they mean before anything is drafted; never draft before it
         says so, and never answer in the chat. A draft cannot start; only the user confirms it.
 
-        journal ticket depend <n> <other> says ticket n waits on ticket other. From the agent it is only a proposal, shown on
-        the card until the user accepts or declines it (journal ticket accept_dependencies <n> / decline_dependencies <n>, or a
-        button for each); from the user it holds at once, and a declined proposal holds nothing. A ticket waiting on an open
+        journal ticket depend <n> <other> says ticket n waits on ticket other. From the agent it is only a proposal: the user
+        never sees it while picking cards in New work, and adding cards keeps the waits between the cards added and drops a wait
+        on a card left out (journal ticket accept_dependencies <n> / decline_dependencies <n> decide it by hand); from the user
+        it holds at once, and a declined proposal holds nothing. A ticket waiting on an open
         one queues instead of starting, and the minute sweep starts it once the other closes. A dependency that would make a
         cycle is refused.
 
