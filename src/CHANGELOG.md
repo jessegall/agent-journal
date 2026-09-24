@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.141.0 — Shared pages look like the journal
+
+A shared link now opens a page drawn by the journal's own components: chapters with the chapter picker, code blocks, tables, pictures and links between the items of the share, in light or dark as the visitor's system prefers. It still reaches nothing else: the page reads only that share's data, and references outside the share read as plain words. The share dialog has an optional password and lists links the agent made under Waiting for you, with Accept and Deny; reports have the Share button too. Saved layouts download as a .json file and Import a layout opens a file picker. The activity sidebar shows events only. The version lives in one file at the root of the repository. journal todo find answers in a fraction of a millisecond instead of a third of a second. Nothing to do.
+
 ## 2.140.0 — Links the agent makes wait for you, and shares can have a password
 
 A link the agent makes stays closed until you press Accept on the card it posts in the chat; Deny ends it. Links you make yourself open at once. A share can carry a password: visitors are asked for it by their browser, and it is kept only as a hash. Reports can be shared like documents and collections. When tunler isn't logged in, the share dialog asks for your email and tunler password and logs it in, instead of pointing at a terminal. Nothing to do.

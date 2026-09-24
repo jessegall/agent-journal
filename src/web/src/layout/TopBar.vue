@@ -4,7 +4,7 @@ import {computed, onUnmounted, ref} from "vue";
 import Icon from "../kit/Icon.vue";
 import RailWaiting from "../pages/RailWaiting.vue";
 import ShareTunnel from "./ShareTunnel.vue";
-import {openShares} from "../composables/shares.js";
+import {openShares, waitingShares} from "../composables/shares.js";
 import {route} from "../route.js";
 import {unreadByUser} from "../domain/records.js";
 import {meta, store, types} from "../state/store.js";
@@ -55,7 +55,7 @@ const {floatingChat, toggleChat} = useFloatingChat();
             >
                 <Icon name="chat" />
             </button>
-            <template v-if="openShares.length">
+            <template v-if="openShares.length || waitingShares.length">
                 <ShareTunnel />
             </template>
             <a class="icon-btn" :href="`#/${route.env}/search`" title="Search"><Icon name="search" /></a>

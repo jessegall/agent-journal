@@ -174,7 +174,16 @@ const updatePreset = (key) =>
     );
 const sharePreset = (key) => {
     const preset = savedPresets.value.find((p) => p.key === key);
-    if (preset) navigator.clipboard.writeText(JSON.stringify({name: preset.name, shape: preset.shape, scheme: preset.scheme || ""}));
+    if (!preset) return;
+    const file = new Blob([JSON.stringify({name: preset.name, shape: preset.shape, scheme: preset.scheme || ""}, null, 2)], {
+        type: "application/json",
+    });
+    const link = Object.assign(document.createElement("a"), {
+        href: URL.createObjectURL(file),
+        download: `${preset.name.replace(/[^\w-]+/g, "-")}.layout.json`,
+    });
+    link.click();
+    URL.revokeObjectURL(link.href);
 };
 const importPreset = (preset) =>
     keepPresets([...savedPresets.value, {key: `saved-${Date.now()}`, name: preset.name, shape: preset.shape, scheme: preset.scheme || ""}]);

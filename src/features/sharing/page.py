@@ -12,6 +12,7 @@ LINK = re.compile(r"\[([^\]]+)\]\((https?://[^)\s]+)\)")
 URL = re.compile(r"(?<![\"'=>])\bhttps?://[^\s<>\"']+[^\s<>\"'.,;:)]")
 LIST_ITEM = re.compile(r"^\s*(?:[-*]|(\d+)\.)\s+(.*)$")
 HEADING = re.compile(r"^(#{1,4})\s+(.*)$")
+FENCES = ("```", "~~~")
 PICTURES = (".png", ".jpg", ".jpeg", ".gif", ".webp")
 
 
@@ -53,9 +54,9 @@ class Page:
         out, lines, i = [], text.replace("\r", "").split("\n"), 0
         while i < len(lines):
             line = lines[i]
-            if line.startswith("```"):
-                body, i = [], i + 1
-                while i < len(lines) and not lines[i].startswith("```"):
+            if line.startswith(FENCES):
+                fence, body, i = line[:3], [], i + 1
+                while i < len(lines) and not lines[i].startswith(fence):
                     body.append(lines[i])
                     i += 1
                 out.append(f"<pre><code>{html.escape(chr(10).join(body))}</code></pre>")
@@ -96,7 +97,7 @@ class Page:
                 out.append("<table>" + "".join(f"<tr>{r}</tr>" for r in rows) + "</table>")
                 continue
             paragraph = []
-            while i < len(lines) and lines[i].strip() and not (lines[i].startswith(("```", ">")) or HEADING.match(lines[i]) or LIST_ITEM.match(lines[i])):
+            while i < len(lines) and lines[i].strip() and not (lines[i].startswith((*FENCES, ">")) or HEADING.match(lines[i]) or LIST_ITEM.match(lines[i])):
                 paragraph.append(lines[i].strip())
                 i += 1
             out.append(f"<p>{self.inline(' '.join(paragraph))}</p>")

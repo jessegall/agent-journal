@@ -322,10 +322,10 @@ class Controller(Stored, Files, Links):
     def find(self, name: str) -> Resource:
         if str(name).isdigit():
             return self.load(int(name))
-        hits = [r for r in self._every() if name.lower() in r.title.lower()]
+        hits = [row["n"] for row in self.summaries() if not row["deleted"] and name.lower() in row["title"].lower()]
         if len(hits) != 1:
             raise Refused(f"{'no' if not hits else len(hits)} {self.type}{'' if len(hits) == 1 else 's'} match {name!r}" + ("; say more of the title" if len(hits) > 1 else ""))
-        return hits[0]
+        return self.load(hits[0])
 
 
 def register(*classes) -> None:

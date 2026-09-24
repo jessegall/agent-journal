@@ -220,7 +220,7 @@ const chaptered = computed(
                     <template v-if="state && !resource.data.system">
                         <AttachFiles :resource="resource" />
                     </template>
-                    <template v-if="['doc', 'collection'].includes(resource.type) && !resource.data.system">
+                    <template v-if="['doc', 'collection', 'report'].includes(resource.type) && !resource.data.system">
                         <ShareButton :resource="resource" />
                     </template>
                     <CommentToggle :resource="resource" />

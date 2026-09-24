@@ -1,3 +1,4 @@
+import json
 import mimetypes
 import sys
 from base64 import b64decode
@@ -7,7 +8,13 @@ from pathlib import Path
 from urllib.parse import quote, unquote
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+from engine.package import data  # noqa: E402
 from features.sharing.page import PICTURES, Page, document, ended, missing  # noqa: E402
+
+APP_DIR = data("web", "dist")
+APP_PAGE = "share.html"
+APP_HEADERS = {"Content-Security-Policy": "default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; "
+                                          "font-src 'self'; connect-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'"}
 
 HEADERS = {
     "Content-Security-Policy": "default-src 'none'; style-src 'unsafe-inline'; img-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'",
@@ -42,6 +49,17 @@ class ShareHandler(BaseHTTPRequestHandler):
         if not self.shares._unlocked(share, self.password()):
             return self.send(401, b"", {"WWW-Authenticate": 'Basic realm="Shared page", charset="UTF-8"'})
         rest = parts[2:]
+        app = APP_DIR / APP_PAGE
+        if not rest and app.is_file():
+            if not self.path.split("?", 1)[0].endswith("/"):
+                return self.send(301, b"", {"Location": f"/s/{share.token}/"})
+            self.shares._count_view(share.n)
+            return self.send(200, app.read_bytes(), {"Content-Type": "text/html; charset=utf-8", **APP_HEADERS})
+        if rest == ["data.json"]:
+            body = json.dumps(self.shares._shared_data(share)).encode()
+            return self.send(200, body, {"Content-Type": "application/json", **APP_HEADERS})
+        if rest[:1] == ["assets"] and len(rest) == 2:
+            return self.asset(rest[1])
         if not rest:
             self.shares._count_view(share.n)
             return self.shown(share, share.target)
@@ -81,6 +99,13 @@ class ShareHandler(BaseHTTPRequestHandler):
         inline = found.suffix.lower() in PICTURES
         headers = {"Content-Type": kind, "Content-Disposition": f"{'inline' if inline else 'attachment'}; filename*=UTF-8''{quote(found.name)}"}
         self.send(200, found.read_bytes(), headers)
+
+    def asset(self, name: str) -> None:
+        found = (APP_DIR / "assets" / name).resolve()
+        if found.parent != (APP_DIR / "assets").resolve() or not found.is_file():
+            return self.page(404, missing())
+        kind = mimetypes.guess_type(found.name)[0] or "application/octet-stream"
+        self.send(200, found.read_bytes(), {"Content-Type": kind, "Cache-Control": "public, max-age=31536000, immutable", **APP_HEADERS})
 
     def page(self, code: int, text: str) -> None:
         self.send(code, text.encode(), {"Content-Type": "text/html; charset=utf-8"})

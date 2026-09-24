@@ -6,7 +6,19 @@ import CopyButton from "../kit/CopyButton.vue";
 import Dialog from "../kit/Dialog.vue";
 import Icon from "../kit/Icon.vue";
 import Segmented from "../kit/Segmented.vue";
-import {checkTunnel, endsOf, sharesOf, stopShare, tunnelStatus, viewsOf} from "../composables/shares.js";
+import TextInput from "../kit/TextInput.vue";
+import {
+    KINDS,
+    approveShare,
+    checkTunnel,
+    endsOf,
+    locked,
+    sharesOf,
+    stopShare,
+    tunnelStatus,
+    viewsOf,
+    waitingOf,
+} from "../composables/shares.js";
 import TunnelProblem from "./TunnelProblem.vue";
 
 const props = defineProps({resource: {type: Object, required: true}});
@@ -19,6 +31,9 @@ const EXPIRES = [
     {key: "never", label: "Never"},
 ];
 const expires = ref("7d");
+const password = ref("");
+const waiting = waitingOf(ref_.value);
+const kind = computed(() => KINDS[props.resource.type] || props.resource.type);
 const opens = ref(null);
 const error = ref("");
 const making = ref(false);
@@ -43,11 +58,23 @@ async function create() {
     making.value = true;
     error.value = "";
     try {
-        made.value = await api.create("share", {title: ref_.value, expires: expires.value});
+        made.value = await api.create("share", {title: ref_.value, expires: expires.value, password: password.value});
+        password.value = "";
     } catch (e) {
         error.value = e.message;
     } finally {
         making.value = false;
+    }
+}
+
+async function approve(share) {
+    stopping.value = share.n;
+    try {
+        await approveShare(share);
+    } catch (e) {
+        error.value = e.message;
+    } finally {
+        stopping.value = 0;
     }
 }
 
@@ -104,6 +131,23 @@ async function stop(share) {
                     <span class="label">The link ends after</span>
                     <Segmented :options="EXPIRES" :value="expires" @pick="(key) => (expires = key)" />
                 </section>
+                <section class="part">
+                    <span class="label">
+                        Password
+                        <span class="optional">(optional)</span>
+                    </span>
+                    <TextInput
+                        class="password"
+                        type="password"
+                        autocomplete="new-password"
+                        :value="password"
+                        placeholder="Leave empty for no password"
+                        @input="password = $event.target.value"
+                    />
+                    <template v-if="password">
+                        <p class="quiet">Visitors get their browser's login prompt: any name, this password.</p>
+                    </template>
+                </section>
                 <div class="actions">
                     <Btn kind="primary" :busy="making" :disabled="!opens || !opens.length || blocked" @click="create">
                         <Icon name="share" :size="12" />
@@ -114,13 +158,38 @@ async function stop(share) {
             <template v-if="error">
                 <p class="error">{{ error }}</p>
             </template>
+            <template v-if="waiting.length">
+                <section class="part open-shares">
+                    <span class="label">Waiting for you</span>
+                    <template v-for="share in waiting" :key="share.n">
+                        <div class="open-share waiting">
+                            <div class="open-share-main">
+                                <span class="waiting-line">
+                                    The agent wants to share this {{ kind }}
+                                    <template v-if="locked(share)">
+                                        <Icon class="lock" name="lock" :size="11" title="Has a password" />
+                                    </template>
+                                </span>
+                                <span class="meta">{{ endsOf(share) }} once accepted · no link works until then</span>
+                            </div>
+                            <Btn small kind="primary" :busy="stopping === share.n" @click="approve(share)">Accept</Btn>
+                            <Btn small @click="stop(share)">Deny</Btn>
+                        </div>
+                    </template>
+                </section>
+            </template>
             <template v-if="others.length">
                 <section class="part open-shares">
-                    <span class="label">Open links to this {{ resource.type === "doc" ? "document" : "collection" }}</span>
+                    <span class="label">Open links to this {{ kind }}</span>
                     <template v-for="share in others" :key="share.n">
                         <div class="open-share">
                             <div class="open-share-main">
-                                <span class="open-link" :title="share.abstract">{{ share.abstract.replace(/^https:\/\/[^/]+/, "") }}</span>
+                                <span class="open-link" :title="share.abstract">
+                                    <template v-if="locked(share)">
+                                        <Icon class="lock" name="lock" :size="11" title="Has a password" />
+                                    </template>
+                                    {{ share.abstract.replace(/^https:\/\/[^/]+/, "") }}
+                                </span>
                                 <span class="meta">{{ viewsOf(share) }} · {{ endsOf(share) }}</span>
                             </div>
                             <CopyButton :text="share.abstract" />
@@ -241,6 +310,36 @@ async function stop(share) {
     flex-direction: column;
     gap: 1px;
     min-width: 0;
+}
+
+.optional {
+    color: var(--text-4);
+    font-weight: 400;
+}
+
+.password {
+    max-width: 280px;
+}
+
+.lock {
+    flex: none;
+    margin-right: 4px;
+    color: var(--text-3);
+    vertical-align: -1px;
+}
+
+.waiting-line {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--text);
+    font-size: 13px;
+}
+
+.open-share.waiting {
+    padding: 8px 10px;
+    border: 1px dashed color-mix(in srgb, var(--accent) 45%, transparent);
+    border-radius: 8px;
 }
 
 .open-link {

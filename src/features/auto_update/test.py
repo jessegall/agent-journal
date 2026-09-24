@@ -225,8 +225,8 @@ def test_the_release_is_read_from_version_files_and_tags_and_installed_by_its_ta
     from engine.version import version
     from install import fetch, released
     repository = Path(__file__).resolve().parents[3]
-    assert [(repository / name).read_text().strip() for name in ("VERSION", "src/VERSION")] == [version(), version()], \
-        "installs before 2.120.0 find a release through these files; newer ones read the release tags"
+    assert ((repository / "VERSION").read_text().strip(), (repository / "src" / "VERSION").exists()) == (version(), False), \
+        "the release is kept in the root VERSION file alone; installs copy it into the package"
     origin = tmp_path / "origin"
     origin.mkdir()
     git = lambda *args: subprocess.run(["git", "-c", "user.name=t", "-c", "user.email=t@t", *args], cwd=origin, capture_output=True, check=True, timeout=30)

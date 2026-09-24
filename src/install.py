@@ -17,7 +17,8 @@ from pathlib import Path
 
 PACKAGE = Path(__file__).resolve().parent
 PACKAGE_DIRS = ("commands", "controllers", "engine", "extension", "features", "migrations", "providers", "resources", "skills", "surfaces")
-PACKAGE_FILES = ("VERSION", "CHANGELOG.md", "__main__.py", "channel.py", "claude-status.sh", "hook.sh", "install.py", "output_cap.sh", "journal.py", "serve.py", "supervisor.py", "skills.py")
+VERSION = "VERSION"
+PACKAGE_FILES = ("CHANGELOG.md", "__main__.py", "channel.py", "claude-status.sh", "hook.sh", "install.py", "output_cap.sh", "journal.py", "serve.py", "supervisor.py", "skills.py")
 PACKAGE_TREES = (*PACKAGE_DIRS, "web/dist")
 LEFT_BEHIND = (".DS_Store", "test.py")
 RETIRED = ("hook.py", "support")
@@ -50,6 +51,10 @@ def packaged(source: Path) -> Path:
     return source / SRC if (source / SRC / "install.py").is_file() else source
 
 
+def version_file(package: Path) -> Path:
+    return package / VERSION if (package / VERSION).is_file() else package.parent / VERSION
+
+
 def refresh(source: Path, target: Path) -> tuple[set, set]:
     source, target = packaged(source).resolve(), target.resolve()
     if source == target:
@@ -76,6 +81,10 @@ def refresh(source: Path, target: Path) -> tuple[set, set]:
         destination.parent.mkdir(parents=True, exist_ok=True)
         destination.unlink(missing_ok=True)
         shutil.copy2(source / rel, destination)
+    release, installed = version_file(source), target / VERSION
+    if release.is_file() and (not installed.is_file() or installed.read_bytes() != release.read_bytes()):
+        shutil.copy2(release, installed)
+        changed.add(Path(VERSION))
     return changed, gone
 
 
@@ -244,7 +253,7 @@ def fetch(into: Path, repository: str = "", ref: str = "") -> tuple[str, str]:
 def keep_copy(root: Path) -> str:
     if not (root / "environments").is_dir():
         return ""
-    version = (code(root) / "VERSION").read_text().strip() if (code(root) / "VERSION").is_file() else "unknown"
+    version = (code(root) / VERSION).read_text().strip() if (code(root) / VERSION).is_file() else "unknown"
     attic = root / "attic"
     attic.mkdir(parents=True, exist_ok=True)
     copy = attic / f"before-{version}-{int(time.time())}.tar.gz"
@@ -300,7 +309,7 @@ def upgrading(project: Path, root: Path) -> list[str]:
         if temporary:
             shutil.rmtree(temporary, ignore_errors=True)
     done.append(f"package refreshed: {len(changed)} changed, {len(gone)} retired")
-    installed = (code(root) / "VERSION").read_text().strip() if (code(root) / "VERSION").is_file() else ""
+    installed = (code(root) / VERSION).read_text().strip() if (code(root) / VERSION).is_file() else ""
     if newest and installed != newest:
         return done + [f"package refreshed but failed to reach the release: installed {installed or 'nothing'}, not {newest}"]
     if reloaded:
@@ -351,7 +360,7 @@ def pack(root: Path) -> str:
     if not (src / "__main__.py").is_file():
         return f"the Python is already in {ARCHIVE}"
     digest = hashlib.sha256(b"".join(f.relative_to(src).as_posix().encode() + f.read_bytes() for f in files)).hexdigest()[:10]
-    version = (src / "VERSION").read_text().strip() if (src / "VERSION").is_file() else "0"
+    version = (src / VERSION).read_text().strip() if (src / VERSION).is_file() else "0"
     target = root / f"journal-{version}-{digest}.pyz"
     if not target.is_file():
         built = target.with_suffix(".new")
