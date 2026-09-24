@@ -80,7 +80,9 @@ function renamed(name) {
         <div class="dump-doc-side">
             <span :class="['dump-doc-pill', {live: forming}]">{{ forming ? "Writing" : made.kind }}</span>
             <template v-if="made.added">
-                <span class="dump-doc-added">I added this</span>
+                <span class="dump-doc-added" title="You did not ask for this one; the agent wrote it because it helps">
+                    Added by the agent
+                </span>
             </template>
             <template v-if="!forming && !selecting && !renaming">
                 <div class="dump-doc-acts" @click.stop>

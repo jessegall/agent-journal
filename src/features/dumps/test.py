@@ -1,4 +1,4 @@
-from controllers.types import CONTROLLERS, Docs, Todos
+from controllers.types import CONTROLLERS, Docs, Messages, Todos
 from resources.base import AGENT, USER
 from tests.conftest import fresh, refused
 
@@ -30,6 +30,8 @@ def test_a_dump_is_read_and_filed_item_by_item_and_closes_when_every_item_is_set
     agent.failed(dump.n, "notes.md", "the file is empty")
     closed = agent.load(dump.n)
     assert (bool(closed.completed), closed.outcome) == (True, "1 filed, 1 failed"), "the last settled item closes the dump"
+    assert refused(lambda: dumps.attach(dump.n, str(dropped))) == f"dump {dump.n} is already filed: start a new dump for more", \
+        "more can be dropped only while a dump is still filing"
 
 
 def test_the_agent_is_told_when_a_dump_arrives_and_when_more_is_dropped_on_it(tmp_path):
@@ -143,7 +145,8 @@ def test_a_filed_dump_is_summed_up_with_suggestions_the_user_takes_or_leaves():
     user.decline(dump.n, 1)
     assert (list(agent.load(dump.n).data["taken"]), agent.load(dump.n).data["declined"]) == (["0"], [1]), "what was taken and left is kept"
     user.direct(dump.n, "Where did the room booking go?")
-    assert nudges(record)[-1] == f"the user said what to do with dump {dump.n}", "the user's own words reach the agent"
+    asked = [m for m in Messages(record, actor=USER)._standing() if dump.ref in m.refs]
+    assert [m.brief for m in asked] == ["Where did the room booking go?"], "the user's own words reach the agent and the chat as a message about the dump"
     agent.log(dump.n, "Booked the room", detail="Room 4, Thursday")
     assert agent.load(dump.n).data["log"][-1]["text"] == "Booked the room", "the agent logs what it does after the summary"
 

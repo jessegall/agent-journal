@@ -16,9 +16,9 @@ const props = defineProps({
 });
 const log = ref(null);
 const sent = computed(() => rows("message").filter((m) => m.data.sent_to === props.session && m.seen[0] === "user"));
-const relayed = computed(() => new Set(sent.value.map((m) => m.brief.trim())));
-const spoken = computed(() => chatTurns(props.turns).filter((t) => !(t.who === "user" && relayed.value.has(t.brief.trim()))));
-const lines = computed(() => [...spoken.value, ...sent.value].sort((a, b) => a.created - b.created));
+const sentTexts = computed(() => new Set(sent.value.map((m) => m.brief.trim())));
+const transcriptLines = computed(() => chatTurns(props.turns).filter((t) => !(t.who === "user" && sentTexts.value.has(t.brief.trim()))));
+const lines = computed(() => [...transcriptLines.value, ...sent.value].sort((a, b) => a.created - b.created));
 const links = useAgentLinks(() => [props.agent, props.session]);
 const linkPins = computed(() =>
     links.value.map((href) => ({

@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.128.0 — A dump takes more files while it files, is worked one file at a time, and what you type there reaches the chat
+
+While a dump is filing you can drop, paste or add more files; they join the pile and the agent reads them next. The agent works the pile one file at a time, and a file it has read shows as read in the pile before it is filed. What you type in the dump's box reaches the agent as a chat message about the dump. The dump's status line follows its sequence step, documents the agent added unasked say Added by the agent, and sequence steps name the dump or plan they are about. After a commit the agent is reminded, at most once an hour, that it may post an update. Nothing to do.
+
 ## 2.127.0 — The latest update is pinned at the bottom of the chat, and a window's menu is pointed out once
 
 The newest update report sits in a bar at the bottom of the chat, above the plan card, with a short summary; it folds when you scroll up, opens the report over the chat, and a × puts it away. The report over the chat keeps its header at the top while you scroll and has a button that moves it to the side panel. The first time you click into a window whose menu you have never opened, its menu button is pointed out once. System sequences show as one line in the chat, and the trigger that starts Writing an update is locked like the sequence, with its words shown on the sequence's page. The journal no longer interrupts a Codex agent while an approval question is on its screen. Nothing to do.

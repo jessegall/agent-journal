@@ -10,7 +10,9 @@ FILING_A_DUMP = {
     "starts_on": "dump.created",
     "started_by": "",
     "steps": [
-        ("Read everything", "journal dump items <dump n> lists what was dropped; read every item in full. When the pasted text holds "
+        ("Read everything", "journal dump items <dump n> lists what was dropped. Go through the items one at a time: read an item in "
+                            "full and at once record what it is with journal dump note <dump n> <item> \"<what it is>\", so the pile "
+                            "shows it as read, before you open the next. When the pasted text holds "
                             "several things, such as a summary, a transcript and a link, split it with journal dump split <dump n> "
                             "\"Summary, Transcript, Link\". Name its collection for what the pile is about with journal dump name "
                             "<dump n> \"<name>\"."),
@@ -21,8 +23,8 @@ FILING_A_DUMP = {
                             "An image goes with the document it belongs to. Never make a plan or start work: that is a "
                             "suggestion for the end. Everything you file is in the journal at once, in the dump's collection. "
                             "Log each step with journal dump log <dump n> \"<short title>\" --detail \"<what and why>\", with "
-                            "--making \"<type>, <title>\" before a row exists and --on <type:n> once it does. Record journal "
-                            "dump note, then journal dump filed <dump n> <item> \"<what you did>\" \"<ref, ref>\" --added \"<ref>\" or "
+                            "--making \"<type>, <title>\" before a row exists and --on <type:n> once it does. File each item as soon as you "
+                            "have what it needs, one at a time: journal dump filed <dump n> <item> \"<what you did>\" \"<ref, ref>\" --added \"<ref>\" or "
                             "journal dump failed. Ask only what you cannot tell, with journal dump ask <dump n> \"<question>\" "
                             "--guesses \"<one>|<two>\"."),
         ("Sum up and suggest", "Once every item is filed the dump closes. Sum up what you filed and where with journal dump "

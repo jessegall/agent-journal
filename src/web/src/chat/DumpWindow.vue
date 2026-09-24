@@ -3,7 +3,7 @@ import {computed, nextTick, reactive, ref, watch} from "vue";
 import {api} from "../api/client.js";
 import {store} from "../state/store.js";
 import {rows} from "../sync/rows.js";
-import {peekRef} from "../route.js";
+import {peekRef, route} from "../route.js";
 import {useNow} from "../composables/now.js";
 import {age} from "../format/time.js";
 import Btn from "../kit/Btn.vue";
@@ -20,7 +20,7 @@ import {TEXT_ITEM, fileKind, itemLabel, plural} from "./dumpPile.js";
 const QUIET_AFTER = 180;
 const SUMMING_FOR = 120;
 const EARLIER = 4;
-const READ = {waiting: -1, reading: 0.35, filed: 1, failed: 1};
+const READ = {waiting: -1, read: 0.6, filed: 1, failed: 1};
 
 const draft = reactive({text: "", files: [], sending: false, error: "", over: false});
 const opened = ref("");
@@ -64,7 +64,7 @@ const items = computed(() =>
     dump.value
         ? names(dump.value).map((name) => {
               const item = (dump.value.data.items || {})[name] || {};
-              const state = item.failed ? "failed" : item.outcome ? "filed" : item.insight ? "reading" : "waiting";
+              const state = item.failed ? "failed" : item.outcome ? "filed" : item.insight ? "read" : "waiting";
               return {
                   name,
                   label: itemLabel(name),
@@ -210,15 +210,23 @@ const summing = computed(
 const timeline = computed(() => {
     const d = dump.value;
     if (!d) return [];
-    const said = (d.data?.said || []).map((s) => ({at: s.at, mine: true, text: s.label}));
+    const directions = (d.data?.said || []).map((s) => ({at: s.at, mine: true, text: s.label}));
     const answers = (d.data?.answers || []).map((a) => ({at: a.at, mine: true, text: a.answer}));
     const taken = Object.values(d.data?.taken || {}).map((c) => ({at: c.at, mine: true, text: c.label}));
     const agent = log.value.map((e) => ({at: e.at, mine: false, text: e.text, detail: e.detail}));
-    return [...agent, ...said, ...answers, ...taken].sort((a, b) => a.at - b.at);
+    return [...agent, ...directions, ...answers, ...taken].sort((a, b) => a.at - b.at);
 });
 const current = computed(() => (phase.value === "filing" ? [...timeline.value].reverse().find((line) => !line.mine) || null : null));
+const step = computed(() => {
+    const key = dump.value && `${route.value.env}|dump:${dump.value.n}`;
+    const running = key && rows("sequence").find((sequence) => sequence.data.runs && sequence.data.runs[key]);
+    if (!running) return "";
+    const at = running.data.runs[key].step;
+    return `Step ${at} of ${running.sections.length}: ${running.sections[at - 1].title}`;
+});
 const thinking = computed(() => {
-    if (phase.value === "waiting") return "Waiting for the agent to pick this up";
+    if (step.value && (phase.value === "waiting" || (phase.value === "filing" && !log.value.length))) return step.value;
+    if (phase.value === "waiting") return "Waiting for the agent";
     if (phase.value === "queued") return `Waiting in line behind dump ${inHand.value.n}`;
     if (phase.value === "quiet")
         return `No update for ${Math.round((now.value - dump.value.updated) / 60)} min; the agent may be busy elsewhere`;
@@ -266,9 +274,37 @@ function pasted(e) {
     attach(files);
 }
 
+const more = reactive({names: [], error: ""});
+
+async function addMore(list) {
+    const files = Array.from(list || []);
+    if (!files.length || !working.value) return;
+    const n = dump.value.n;
+    more.error = "";
+    more.names = [...more.names, ...files.map((f) => f.name)];
+    try {
+        for (const file of files) await api.upload("dump", n, file);
+    } catch (e) {
+        more.error = e.message;
+    } finally {
+        more.names = more.names.filter((name) => !files.some((f) => f.name === name));
+    }
+}
+
+function pastedMore(e) {
+    const files = Array.from(e.clipboardData?.files || []);
+    if (!files.length || !working.value) return;
+    e.preventDefault();
+    addMore(files);
+}
+
+const droppable = computed(() => !dump.value || working.value);
+const adding = computed(() => [...new Set(more.names)].filter((name) => !items.value.some((i) => i.name === name)));
+
 function dropped(e) {
     draft.over = false;
     if (!dump.value) attach(e.dataTransfer?.files);
+    else addMore(e.dataTransfer?.files);
 }
 
 async function send() {
@@ -354,7 +390,7 @@ const pillOf = (d) => {
 <template>
     <section
         :class="['dump', {over: draft.over}]"
-        @dragover.prevent="!dump && (draft.over = true)"
+        @dragover.prevent="droppable && (draft.over = true)"
         @dragleave.self="draft.over = false"
         @drop.prevent="dropped"
     >
@@ -449,15 +485,6 @@ const pillOf = (d) => {
                         </div>
                     </template>
                 </div>
-                <template v-if="draft.over">
-                    <div class="dump-drop">
-                        <div class="dump-drop-lane">
-                            <Icon name="file" :size="20" />
-                            <span class="dump-lane-title">Let go to add them to the pile</span>
-                            <span class="dump-lane-meta">sorted by subject, filed into a new collection</span>
-                        </div>
-                    </div>
-                </template>
             </div>
         </template>
 
@@ -484,7 +511,20 @@ const pillOf = (d) => {
                                 @mouseenter="litItem = item.name"
                             />
                         </template>
+                        <template v-for="name in adding" :key="`adding-${name}`">
+                            <FileSlip :file="{name}" :kind="fileKind(name)" state="waiting" meta="adding…" />
+                        </template>
                     </div>
+                    <template v-if="working">
+                        <label class="dump-add dump-add-more">
+                            <Icon name="paperclip" :size="13" />
+                            Add more files
+                            <input type="file" multiple hidden @change="(e) => (addMore(e.target.files), (e.target.value = ''))" />
+                        </label>
+                    </template>
+                    <template v-if="more.error">
+                        <span class="dump-error">{{ more.error }}</span>
+                    </template>
                     <ProgressBar thin :value="settled" :max="Math.max(1, items.length)" />
                     <span class="dump-eyebrow">What I'm doing</span>
                     <div ref="narr" class="dump-narr">
@@ -534,7 +574,12 @@ const pillOf = (d) => {
                         </div>
                     </template>
                     <template v-else-if="!removed">
-                        <DumpAnswer placeholder="Ask about what I filed" action="Send" :send="say" />
+                        <DumpAnswer
+                            :placeholder="working ? 'Ask, or paste more files' : 'Ask about what I filed'"
+                            action="Send"
+                            :send="say"
+                            @paste="pastedMore"
+                        />
                     </template>
                 </aside>
 
@@ -608,6 +653,18 @@ const pillOf = (d) => {
                             </template>
                         </template>
                     </footer>
+                </div>
+            </div>
+        </template>
+
+        <template v-if="draft.over">
+            <div class="dump-drop">
+                <div class="dump-drop-lane">
+                    <Icon name="file" :size="20" />
+                    <span class="dump-lane-title">Let go to add them to the pile</span>
+                    <span class="dump-lane-meta">
+                        {{ dump ? "they join the pile, and the agent reads them next" : "sorted by subject, filed into a new collection" }}
+                    </span>
                 </div>
             </div>
         </template>
@@ -806,6 +863,11 @@ const pillOf = (d) => {
     cursor: pointer;
 }
 
+.dump-add-more {
+    align-self: flex-start;
+    margin: -2px 0 0 -6px;
+}
+
 .dump-add:hover {
     color: var(--text);
 }
@@ -849,7 +911,8 @@ const pillOf = (d) => {
 
 .dump-drop {
     position: absolute;
-    inset: 0;
+    inset: 44px 0 0;
+    z-index: 4;
     display: grid;
     place-items: center;
     background: color-mix(in srgb, var(--bg) 80%, transparent);

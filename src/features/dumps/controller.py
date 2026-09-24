@@ -6,7 +6,7 @@ import json
 import time
 
 from features.dumps.resource import ENTRY, ITEM, Dump
-from resources.base import AGENT, Refused
+from resources.base import AGENT, Refused, titled
 
 TEXT = "text"
 LOG_KEPT = 20
@@ -22,6 +22,11 @@ class Dumps(Controller):
             dump = super().create(f"Dump {(self.numbers() or [0])[-1] + 1}", abstract, brief, queued_at=time.time(), **data)
         self._collect(dump, [dump.ref])
         return self.load(dump.n)
+
+    def attach(self, n: int, path: str, description: str = ""):
+        if self.load(int(n)).completed:
+            self._refuse(f"dump {n} is already filed: start a new dump for more")
+        return super().attach(n, path, description)
 
     def _collections(self):
         return CONTROLLERS["collection"](self.record, actor=self.actor)
@@ -119,6 +124,8 @@ class Dumps(Controller):
             self._refuse("say what should happen next: journal dump direct <n> \"<what to do>\"")
         r = self._choosing(n)
         said = {"label": how.strip(), "pick": OWN_WORDS, ENTRY.at: time.time()}
+        types_module.CONTROLLERS["message"](self.record, actor=self.actor, session=self.session, agent=self.agent).create(
+            titled(how), brief=how.strip(), about=r.ref)
         return self.update(r.n, chosen=said, said=[*(r.data.get("said") or []), said][-LOG_KEPT:])
 
     def _choosing(self, n: int):

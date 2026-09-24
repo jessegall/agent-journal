@@ -69,13 +69,6 @@ class DumpsDetails(FeatureDetails):
             brief="carry that step out, and log it on the dump.",
         ),
         Line(
-            name="directed",
-            title="the user said what to do with dump {{n}}",
-            brief="""
-                in their words: {{how}}. Answer it or do it, and log each step on the dump.
-            """,
-        ),
-        Line(
             name="decide",
             title="the user left dump {{n}} to you - finish it",
             brief="""
