@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.137.0 — Sequences read as steps, and the file feed shows the first lines of each file
+
+The file feed's View menu can show up to 5, 10 or 20 lines of each file; a file cut short ends with a line such as "27 more lines" that opens it. The menu keeps what each file shows on top and how the feed is laid out below, with Flush, Always two columns and Limit card height beside their icons. "Created" and "deleted" are small tinted words beside the file name, and the change counts line up from card to card. A sequence reads as a numbered track of steps, starting from what starts it; system sequences carry a locked System badge, and your own sequences are edited step by step, with each step's title and what to do, moved up or down, removed or added, and saved all at once. An invalid priority on a to-do or a ticket is refused the same way for both. Nothing to do.
+
 ## 2.136.0 — Runs of chat marks fold into one, and documents show their comments and their writer
 
 Four or more marks of the same kind in a row, such as skill loads, rules and facts the agent was reminded of, subagent updates or the same card repeated, show as one mark like "4 rules and facts recalled" that unfolds them, indented, on a click. A window keeps the tab you picked through a reload: only a question asked while the page is open switches a window to Questions. Menus close when you click outside them. The file feed's View menu has Flush, as lines. Comments on a document are easier to use: hovering one lights up its passage, clicking the quote jumps to it, replies nest under their comment with a reply box right there, and the document moves aside for the comments instead of sliding off. While an agent writes a document, its page says so, marks the section being written, and new text fades in. Nothing to do.

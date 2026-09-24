@@ -198,10 +198,7 @@ class Tickets(Controller):
         return CardState("running", step, age=ago(quiet))
 
     def priority(self, n: int, value: str):
-        level = priority_level(value)
-        if level is None:
-            self._refuse(f"a priority is a number or one of {', '.join(LEVELS)}")
-        return self.update(int(n), priority=level)
+        return self.update(int(n), priority=priority_level(value))
 
     def bind(self, n: int):
         ticket = self.load(int(n))

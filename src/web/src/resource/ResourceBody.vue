@@ -27,7 +27,7 @@ import Comments from "./Comments.vue";
 import Links from "./Links.vue";
 import Asked from "./Asked.vue";
 import SequenceRuns from "./SequenceRuns.vue";
-import StartsOn from "./StartsOn.vue";
+import SequenceSteps from "./SequenceSteps.vue";
 import CheckResult from "./CheckResult.vue";
 import Buttons from "./Buttons.vue";
 import RuleControls from "./RuleControls.vue";
@@ -112,7 +112,7 @@ async function follow() {
     part.scrollIntoView({block: "center", behavior: "smooth"});
 }
 const chaptered = computed(
-    () => kind.value.view === "document" && props.resource.type !== "message" && props.resource.sections.length >= 2
+    () => kind.value.view === "document" && !["message", "sequence"].includes(props.resource.type) && props.resource.sections.length >= 2
 );
 </script>
 
@@ -141,6 +141,12 @@ const chaptered = computed(
                             </span>
                         </template>
                     </SwitchCase>
+                </template>
+                <template v-if="resource.data.system">
+                    <span class="standing system" title="Ships with the journal; it can be read but not changed">
+                        <Icon name="lock" :size="10" />
+                        System
+                    </span>
                 </template>
                 <template v-if="writing && kind.view === 'document'">
                     <button type="button" class="writing-now" title="Go to what the agent is writing" @click="follow">
@@ -295,7 +301,10 @@ const chaptered = computed(
                 <TextDisplay :text="resource.brief" />
             </section>
         </template>
-        <template v-if="resource.type !== 'message' && kind.view === 'document'">
+        <template v-if="resource.type === 'sequence'">
+            <SequenceSteps :resource="resource" />
+        </template>
+        <template v-else-if="resource.type !== 'message' && kind.view === 'document'">
             <Folded :key="resource.n" :at="PAGE" :keep="PAGE">
                 <Sections :sections="resource.sections" :writing="writing?.section || ''" document />
             </Folded>
@@ -340,9 +349,6 @@ const chaptered = computed(
         </template>
         <Asked :resource="resource" />
         <SequenceRuns :resource="resource" />
-        <template v-if="resource.type === 'sequence' && !resource.completed">
-            <StartsOn :resource="resource" />
-        </template>
         <slot />
         <template v-if="docs.length">
             <section class="linked-docs">
@@ -418,7 +424,8 @@ const chaptered = computed(
     color: var(--accent-text);
 }
 .age {
-    flex: 1;
+    flex: 1 0 auto;
+    white-space: nowrap;
 }
 
 .writing-now {
