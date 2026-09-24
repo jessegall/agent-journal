@@ -12,6 +12,7 @@ const props = defineProps({
     withoutInput: Boolean,
     echo: String,
     closable: Boolean,
+    hint: String,
 });
 const emit = defineEmits(["send", "close"]);
 const words = defineModel({type: String, default: ""});
@@ -59,6 +60,13 @@ defineExpose({focus: () => nextTick(() => props.withoutInput || focusInput())});
                 <slot name="actions" />
             </div>
         </template>
+        <div class="hint-row">
+            <Transition name="hint" mode="out-in">
+                <template v-if="hint">
+                    <em :key="hint" class="hint">{{ hint }}</em>
+                </template>
+            </Transition>
+        </div>
         <Transition name="echo">
             <template v-if="echo">
                 <p :key="echo" :class="['echo', {low: withoutInput}]">{{ echo }}</p>
@@ -174,6 +182,44 @@ defineExpose({focus: () => nextTick(() => props.withoutInput || focusInput())});
     color: var(--text);
 }
 
+.hint-row {
+    flex: none;
+    min-height: 0;
+    margin: 0 20px;
+    animation: hint-in 0.6s 1.1s ease both;
+}
+
+.hint {
+    display: block;
+    margin-bottom: 6px;
+    color: var(--text-4);
+    font-size: 13px;
+    line-height: 18px;
+}
+
+.hint-enter-active,
+.hint-leave-active {
+    transition:
+        opacity 0.35s ease,
+        transform 0.35s ease;
+}
+
+.hint-enter-from {
+    opacity: 0;
+    transform: translateY(4px);
+}
+
+.hint-leave-to {
+    opacity: 0;
+    transform: translateY(-4px);
+}
+
+@keyframes hint-in {
+    from {
+        opacity: 0;
+    }
+}
+
 .echo {
     align-self: flex-end;
     max-width: 80%;
@@ -182,7 +228,7 @@ defineExpose({focus: () => nextTick(() => props.withoutInput || focusInput())});
     font-size: 14px;
     line-height: 20px;
     overflow-wrap: anywhere;
-    transition: transform 0.26s cubic-bezier(0.2, 0.9, 0.25, 1);
+    transition: transform 0.45s cubic-bezier(0.2, 0.9, 0.25, 1);
 }
 
 .echo.low {
@@ -190,7 +236,9 @@ defineExpose({focus: () => nextTick(() => props.withoutInput || focusInput())});
 }
 
 .echo-enter-active {
-    transition: opacity 0.45s ease;
+    transition:
+        opacity 0.5s ease 0.35s,
+        transform 0.6s cubic-bezier(0.2, 0.9, 0.25, 1) 0.35s;
 }
 
 .echo-leave-active {
@@ -199,6 +247,7 @@ defineExpose({focus: () => nextTick(() => props.withoutInput || focusInput())});
 
 .echo-enter-from {
     opacity: 0;
+    transform: translateY(80px);
 }
 
 .echo-leave-to {
@@ -218,17 +267,22 @@ defineExpose({focus: () => nextTick(() => props.withoutInput || focusInput())});
     left: 0;
 }
 
-.input-step-enter-active,
+.input-step-enter-active {
+    transition:
+        opacity 0.4s ease,
+        transform 0.45s cubic-bezier(0.2, 0.9, 0.25, 1);
+}
+
 .input-step-leave-active {
     transition:
-        opacity 0.22s ease,
-        transform 0.26s cubic-bezier(0.2, 0.9, 0.25, 1);
+        opacity 0.35s ease,
+        transform 0.4s ease;
 }
 
 .input-step-enter-from,
 .input-step-leave-to {
     opacity: 0;
-    transform: translateY(14px);
+    transform: translateY(20px);
 }
 
 .compose.locked {

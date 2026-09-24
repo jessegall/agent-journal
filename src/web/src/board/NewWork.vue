@@ -270,6 +270,7 @@ function leave() {
                 :limit="INPUT_LIMIT"
                 :without-input="choosing || writing"
                 :echo="echo"
+                :hint="since ? '' : `“${EXAMPLES[example]}”`"
                 :placeholder="drafts.length ? 'Say what to change' : 'Describe the work in your own words'"
                 @send="send"
             >
@@ -297,11 +298,6 @@ function leave() {
                     <p class="context">
                         Say it in a sentence. I say back what I think you mean, you confirm, and then I draft the tickets.
                     </p>
-                    <div class="examples">
-                        <Transition name="example" mode="out-in">
-                            <em :key="example" class="example">“{{ EXAMPLES[example] }}”</em>
-                        </Transition>
-                    </div>
                 </template>
                 <template v-if="asking">
                     <AskedQuestion :question="asking" :chat="docked" />
@@ -484,41 +480,11 @@ kbd {
     line-height: 20px;
 }
 
-.examples {
-    display: flex;
-    flex-direction: column;
-    margin-top: 14px;
-    animation: stage-in 0.6s 1.1s ease both;
-}
-
-.example {
-    color: var(--text-2);
-    font-size: 14px;
-    line-height: 20px;
-}
-
 @keyframes stage-in {
     from {
         opacity: 0;
         transform: translateY(6px);
     }
-}
-
-.example-enter-active,
-.example-leave-active {
-    transition:
-        opacity 0.35s ease,
-        transform 0.35s ease;
-}
-
-.example-enter-from {
-    opacity: 0;
-    transform: translateY(6px);
-}
-
-.example-leave-to {
-    opacity: 0;
-    transform: translateY(-6px);
 }
 
 .prompt {
