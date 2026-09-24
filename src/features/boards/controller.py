@@ -48,7 +48,7 @@ class Boards(Controller):
         asking = Questions(self.record, actor=self.actor, session=self.session, agent=self.agent)
         for open_question in asking.about(board.ref):
             if not open_question.completed:
-                asking.complete(open_question.n, how=START_OVER)
+                asking.complete(open_question.n, how=START_OVER, reason="The request on the board was cancelled")
         return board
 
     def request(self, n: int, text: str, idempotency: str = ""):
