@@ -292,12 +292,6 @@ watch(
     opacity: 0;
 }
 
-.compose {
-    transition:
-        background 0.35s ease,
-        border-color 0.35s ease;
-}
-
 .compose .left,
 .compose > :deep(.btn) {
     transition: opacity 0.3s ease;
