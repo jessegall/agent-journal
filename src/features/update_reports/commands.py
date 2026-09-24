@@ -75,3 +75,10 @@ class Drop(Command):
         if ref not in {i["ref"] for i in items}:
             raise Refused(f"update report {r.n} has no row {ref}")
         return reports.stamp(r.n, items=[i for i in items if i["ref"] != ref])
+
+
+class Dismiss(Command):
+    name = "dismiss"
+
+    def run(self, context: Context, reports, n: int):
+        return reports.update(update_of(reports, n).n, dismissed=True)

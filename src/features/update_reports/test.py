@@ -44,9 +44,12 @@ def test_notes_items_and_drops_change_only_an_update():
                                                          ("commits", "")], "rows keep the order of the sections"
     reports.action("drop")(update.n, "plan:3")
     assert [i["ref"] for i in reports.load(update.n).data["items"]] == [f"todo:{done.n}", "commit:20b9ce1"], "a dropped row is gone"
+    Reports(record, actor=USER).action("dismiss")(update.n)
+    assert reports.load(update.n).data["dismissed"] is True, "the user takes an update out of the chat's dock"
 
     plain = reports.create("Why the updater gets stuck", brief="it installs main")
     assert "is not an update" in refused(lambda: reports.action("note")(plain.n, "todo:1", "a note")), "only an update takes rows"
+    assert "is not an update" in refused(lambda: reports.action("dismiss")(plain.n)), "and only an update is docked to dismiss"
     assert "sections are" in refused(lambda: reports.action("item")(update.n, "later", "todo:1", "a row")), "a row goes under a known section"
     assert "has no row" in refused(lambda: reports.action("note")(update.n, "todo:999", "a note")), "a note names a row that is there"
 

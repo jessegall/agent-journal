@@ -1,5 +1,5 @@
 <script setup>
-import {computed, ref} from "vue";
+import {computed, ref, watch} from "vue";
 import {api} from "../api/client.js";
 import Btn from "../kit/Btn.vue";
 import ChoiceList from "../kit/ChoiceList.vue";
@@ -16,8 +16,16 @@ const moment = computed(() => props.resource.data.starts_on || BY_HAND);
 const fired = computed(() => TRIGGERED.exec(moment.value));
 const chosenType = computed(() => (fired.value ? "" : moment.value.split(".")[0]));
 const chosenAction = computed(() => moment.value.split(".")[1] || "created");
+const trigger = ref(null);
+watch(
+    () => fired.value && fired.value[1],
+    async (n) => (trigger.value = n ? await api.show("trigger", Number(n)).catch(() => null) : null),
+    {immediate: true}
+);
+const heard = computed(() => (trigger.value ? trigger.value.data.words.map((w) => `“${w}”`).join(", ") : ""));
 const sentence = computed(() => {
     if (moment.value === BY_HAND) return "Runs only when you or the agent start it.";
+    if (fired.value && heard.value) return `Starts by itself when you write ${heard.value} (trigger ${fired.value[1]}).`;
     if (fired.value) return `Starts by itself when trigger ${fired.value[1]} fires.`;
     return `Starts by itself when a ${(meta(chosenType.value).title || chosenType.value).toLowerCase()} ${MOMENTS[chosenAction.value]}.`;
 });

@@ -86,6 +86,9 @@ class Sequences(Controller):
         row = agents.primary()
         if not row:
             return
+        if r.system:
+            agents.card(row.n, label=f"{label} sequence {r.n}", icon=self.resource.icon, color=VIOLET)
+            return
         parts = [f"sequence {r.n} {r.title}", f"step {step}, {r.sections[step - 1][SECTION.title]}" if step else "", f"about {about.replace(':', ' ')}" if about.strip() else "", why]
         agents.card(row.n, label=label, icon=self.resource.icon, color=VIOLET, detail=" · ".join(p for p in parts if p))
 

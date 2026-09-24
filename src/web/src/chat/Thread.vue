@@ -18,6 +18,8 @@ import {earlier, paging, rows} from "../sync/rows.js";
 import DumpWindow from "./DumpWindow.vue";
 import TerminalWindow from "./TerminalWindow.vue";
 import UpdateOverlay from "./UpdateOverlay.vue";
+import UpdateDock from "./UpdateDock.vue";
+import {dockedUpdate} from "../domain/updates.js";
 import {updateView} from "./updateView.js";
 import FileFeed from "./FileFeed.vue";
 import Compose from "./Compose.vue";
@@ -91,6 +93,7 @@ function unedit() {
 const busy = computed(() => !!agent.value && ["working", "compacting"].includes(agent.value.data.status));
 const waiting = computed(() => waitsFor(rows("work")));
 const planCard = computed(() => cardPlan(rows("plan")));
+const updateDock = computed(() => dockedUpdate(rows("report")));
 const thought = computed(() => (agent.value && agent.value.data.thinking) || "");
 const helping = computed(() => ((agent.value && agent.value.data.subagent_rows) || []).filter((sub) => sub.running).at(-1));
 const activity = computed(() =>
@@ -282,7 +285,7 @@ function followPlan(s) {
 }
 
 function foldingRoom(s) {
-    const dock = s.querySelector(".plan-dock");
+    const dock = s.querySelector(".chat-docks");
     return planOpen.value && dock ? Math.max(FOLD_AT, dock.offsetHeight - FOLDED_PLAN) : FOLD_AT;
 }
 
@@ -307,7 +310,7 @@ watch(away, (now) => {
 
 function holdBottom() {
     const s = scroller.value;
-    const dock = s?.querySelector(".plan-dock");
+    const dock = s?.querySelector(".chat-docks");
     if (!dock) return;
     const pin = new ResizeObserver(() => planOpen.value && (s.scrollTop = s.scrollHeight));
     pin.observe(dock);
@@ -455,7 +458,7 @@ watch(
                     <button
                         v-if="away && newestShown"
                         type="button"
-                        :class="['thread-down', {'over-plan': planCard}]"
+                        :class="['thread-down', {'over-plan': planCard || updateDock, 'over-two': planCard && updateDock}]"
                         :title="missed ? `${missed} arrived while you were reading` : 'Back to the newest'"
                         @click="toBottom"
                     >
@@ -515,9 +518,14 @@ watch(
                                 @grew="settled"
                             />
                         </TransitionGroup>
-                        <Transition name="plancard">
-                            <PlanCard v-if="planCard" :key="planCard.n" :plan="planCard" :folded="short || !planOpen" />
-                        </Transition>
+                        <div :class="['chat-docks', {docked: planCard || updateDock}]">
+                            <Transition name="dock">
+                                <UpdateDock v-if="updateDock" :key="updateDock.n" :report="updateDock" :folded="short || !planOpen" />
+                            </Transition>
+                            <Transition name="dock">
+                                <PlanCard v-if="planCard" :key="planCard.n" :plan="planCard" :folded="short || !planOpen" />
+                            </Transition>
+                        </div>
                         <Transition name="status">
                             <div
                                 v-if="busy || waiting"
@@ -788,8 +796,27 @@ watch(
     box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
 }
 
+.chat-docks {
+    position: sticky;
+    bottom: 0;
+    z-index: 2;
+    display: flex;
+    flex: none;
+    flex-direction: column;
+    gap: 6px;
+    width: 100%;
+}
+
+.chat-docks.docked {
+    margin-top: auto;
+}
+
 .thread-down.over-plan {
     bottom: calc(100% + 62px);
+}
+
+.thread-down.over-two {
+    bottom: calc(100% + 104px);
 }
 
 .thread-down:hover {

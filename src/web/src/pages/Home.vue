@@ -7,6 +7,8 @@ import HomeView from "./HomeView.vue";
 import DumpWindow from "../chat/DumpWindow.vue";
 import {store} from "../state/store.js";
 import PaneMenu from "./PaneMenu.vue";
+import HintBubble from "../kit/HintBubble.vue";
+import {useMenuHint} from "../composables/menuHint.js";
 import Btn from "../kit/Btn.vue";
 import DragGhost from "../kit/DragGhost.vue";
 import DropCompass from "../kit/DropCompass.vue";
@@ -245,6 +247,7 @@ const menuOthers = computed(() =>
 
 function toggleMenu(e, id) {
     menu.value = menu.value && menu.value.id === id ? null : {id, anchor: e.currentTarget};
+    if (menu.value) menuSeen(layout.value.panes[id] && layout.value.panes[id].active);
 }
 
 const aimed = computed(() => (drag.value && drag.value.target) || null);
@@ -322,6 +325,7 @@ const {
     close: () => (menu.value = null),
 });
 const tourNow = computed(() => TOUR[tourStep.value] || null);
+const {hinted, focus: focusWindow, opened: menuSeen} = useMenuHint(() => tourStep.value >= 0);
 
 const moveTab = (from, to) => {
     const pane = layout.value.panes[from];
@@ -359,17 +363,22 @@ watch(
                             @pick="(key) => apply(activated(layout, id, key))"
                             @close="(key) => apply(tabClosed(layout, id, key))"
                         >
-                            <button
-                                type="button"
-                                :class="['pane-menu-btn', {on: menu && menu.id === id}]"
-                                :data-pane-menu="id"
-                                title="Pane menu"
-                                @click.stop="toggleMenu($event, id)"
-                            >
-                                <Icon name="dots" />
-                            </button>
+                            <span class="pane-menu-anchor">
+                                <button
+                                    type="button"
+                                    :class="['pane-menu-btn', {on: menu && menu.id === id, hinted: hinted === id}]"
+                                    :data-pane-menu="id"
+                                    title="Pane menu"
+                                    @click.stop="toggleMenu($event, id)"
+                                >
+                                    <Icon name="dots" />
+                                </button>
+                                <template v-if="hinted === id">
+                                    <HintBubble text="More for this window here: detach it, split it, dock it and more." />
+                                </template>
+                            </span>
                         </PaneTabs>
-                        <div :class="['pane-body', widthOf(pane)]">
+                        <div :class="['pane-body', widthOf(pane)]" @pointerdown="focusWindow(id, pane.active)">
                             <template v-if="pane.active">
                                 <HomeView
                                     :view="pane.active"
@@ -522,6 +531,30 @@ watch(
     align-self: center;
     width: 100%;
     max-width: 880px;
+}
+
+.pane-menu-anchor {
+    position: relative;
+    display: grid;
+    align-self: center;
+}
+
+.pane-menu-btn.hinted {
+    color: var(--accent-text);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 45%, transparent);
+    animation: menu-hint 1.6s var(--ease) infinite;
+}
+
+@keyframes menu-hint {
+    50% {
+        box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 20%, transparent);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .pane-menu-btn.hinted {
+        animation: none;
+    }
 }
 
 .pane-menu-btn {

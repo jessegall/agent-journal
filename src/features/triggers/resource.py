@@ -1,7 +1,7 @@
 from typing import ClassVar
 
 from resources.base import PROJECT, USER, Resource, ResourceDetails
-from resources.shapes import LIST, TEXT, Field, Shape
+from resources.shapes import FLAG, LIST, TEXT, Field, Shape
 
 MESSAGE, NUDGE, INSTRUCT, DENY, START = "message", "nudge", "instruct", "deny", "start"
 DOES = (MESSAGE, NUDGE, INSTRUCT, DENY, START)
@@ -20,6 +20,7 @@ class Trigger(Shape, Resource):
         Field(TEXT, "both", name="words_in"),
         Field(TEXT, NUDGE, name="does"),
         Field(TEXT, name="text"),
+        Field(FLAG, False, name="system"),
     ]
     type = "trigger"
     icon = "flag"

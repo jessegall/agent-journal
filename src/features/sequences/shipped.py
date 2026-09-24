@@ -217,9 +217,10 @@ WRITING_AN_UPDATE = {
                              "note <report n> <row> \"<line>\". Add a row the list missed with journal report item <report "
                              "n> <section> <row> \"<title>\", and take out one that is only noise with journal report drop "
                              "<report n> <row>. Then journal sequence next <this sequence> --about <ref>."),
-        ("Answer with it", "Reply in one short line, then the report's reference on a line of its own, like report 98, so "
-                           "the chat shows it as a card the user opens. Finish with journal sequence next <this sequence> "
-                           "--about <ref>."),
+        ("Answer with it", "Reply in one short line that says the update is pinned at the bottom of the chat, like \"Here's "
+                           "the update; I pinned it at the bottom of the chat.\", then the report's reference on a line of "
+                           "its own, like `report 98`, so the chat shows it as a card the user opens. Finish with journal "
+                           "sequence next <this sequence> --about <ref>."),
     ],
 }
 SHIPPED = (FILING_A_DUMP, BUILDING_A_PLAN, WORKING_A_BOARD_CARD, REVISING_THE_DRAFTS, BUILDING_A_BOARD, DRAFTING_FROM_A_DOCUMENT,
@@ -235,7 +236,10 @@ def ship(record) -> list[str]:
 def watched(record, shipped: dict) -> str:
     triggers = Triggers(record, actor=SYSTEM)
     row = next((t for t in triggers._every() if t.title == shipped["title"] and not t.deleted), None) or triggers.create(
-        shipped["title"], brief=f"Starts the sequence {shipped['title']}", words=list(shipped["words"]), words_in=FROM_USER, does=START)
+        shipped["title"], brief=f"Starts the sequence {shipped['title']}", words=list(shipped["words"]), words_in=FROM_USER, does=START,
+        system=True)
+    if not row.system:
+        triggers.update(row.n, system=True)
     return f"trigger:{row.n}"
 
 

@@ -1,12 +1,13 @@
 <script setup>
 import {computed, nextTick, onMounted, onUnmounted, ref} from "vue";
+import Icon from "../kit/Icon.vue";
 import ResourceBody from "../resource/ResourceBody.vue";
 import UpdateReport from "../resource/UpdateReport.vue";
 import {EASE, hydrate, still} from "../composables/hydrate.js";
 import {closeUpdate, updateView} from "./updateView.js";
 import {markSeen} from "../sync/seen.js";
 import {rows} from "../sync/rows.js";
-import {route} from "../route.js";
+import {peek, route} from "../route.js";
 
 const FULL = "inset(0px 0px 0px 0px round 0px)";
 const LEADS = ".body > .head, .body > .abstract, .body > .controls";
@@ -71,7 +72,7 @@ function done() {
 
 async function shrink() {
     if (busy) return;
-    const to = card();
+    const to = updateView.from?.isConnected ? updateView.from : card();
     if (still() || !to) return done();
     busy = true;
     await scroller.value.animate([{opacity: 1}, {opacity: 0}], {duration: 90, easing: "ease-in", fill: "forwards"}).finished;
@@ -100,6 +101,14 @@ async function step(n) {
     hydrate(scroller.value, {also: LEADS});
 }
 
+async function toPanel() {
+    if (busy) return;
+    busy = true;
+    peek("report", shown.value);
+    if (!still()) await layer.value.animate([{opacity: 1}, {opacity: 0}], {duration: 220, easing: EASE, fill: "forwards"}).finished;
+    done();
+}
+
 function all() {
     done();
     location.hash = `#/${route.value.env}/report?sub=updates`;
@@ -119,6 +128,11 @@ onUnmounted(() => window.removeEventListener("keydown", onKey));
         <div ref="scroller" class="update-scroll">
             <template v-if="report">
                 <ResourceBody :resource="report" :comments="false" :links="false" @close="shrink">
+                    <template #tools>
+                        <button type="button" class="to-panel" title="Open in the side panel" @click="toPanel">
+                            <Icon name="sidepanel" />
+                        </button>
+                    </template>
                     <UpdateReport :resource="report" @step="step" @all="all" />
                 </ResourceBody>
             </template>
@@ -140,6 +154,24 @@ onUnmounted(() => window.removeEventListener("keydown", onKey));
     white-space: nowrap;
 }
 
+.to-panel {
+    display: grid;
+    place-items: center;
+    width: 26px;
+    height: 26px;
+    padding: 0;
+    border: 0;
+    border-radius: 6px;
+    background: none;
+    color: var(--text-3);
+    cursor: pointer;
+}
+
+.to-panel:hover {
+    background: var(--hover);
+    color: var(--text);
+}
+
 .update-ghost {
     position: absolute;
     pointer-events: none;
@@ -150,7 +182,7 @@ onUnmounted(() => window.removeEventListener("keydown", onKey));
     min-height: 0;
     overflow-y: auto;
     overscroll-behavior: contain;
-    padding: 8px 16px 32px;
+    padding: 0 16px 32px;
 }
 
 @media (max-width: 760px) {

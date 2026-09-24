@@ -125,6 +125,7 @@ const docs = computed(() =>
                     </SwitchCase>
                 </template>
                 <span class="age">{{ age(resource.created) }}</span>
+                <slot name="tools" />
                 <template v-if="kind.view === 'document'">
                     <DownloadLink :resource="resource" />
                 </template>
