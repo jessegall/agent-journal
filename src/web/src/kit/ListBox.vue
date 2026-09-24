@@ -4,6 +4,7 @@ defineProps({
     count: {type: [Number, String], default: ""},
     lead: {type: String, default: ""},
     folds: Boolean,
+    sticky: Boolean,
     open: {type: Boolean, default: true},
 });
 const emit = defineEmits(["toggle"]);
@@ -14,7 +15,7 @@ const emit = defineEmits(["toggle"]);
         <component
             :is="folds ? 'button' : 'header'"
             :type="folds ? 'button' : undefined"
-            :class="['list-box-head', {folds}]"
+            :class="['list-box-head', {folds, sticky}]"
             :aria-expanded="folds ? open : undefined"
             @click="folds && emit('toggle')"
         >
@@ -53,6 +54,12 @@ const emit = defineEmits(["toggle"]);
     font-size: 11.5px;
     letter-spacing: 0.03em;
     text-align: left;
+}
+
+.list-box-head.sticky {
+    position: sticky;
+    z-index: 1;
+    top: var(--page-bar-height, 0px);
 }
 
 .list-box-head.folds {
