@@ -4,6 +4,7 @@ import shutil
 import subprocess
 from pathlib import Path
 
+from engine.runtime import DEFAULT_ENV
 from resources.base import Refused, check_title
 
 INCLUDED = ".worktreeinclude"
@@ -22,9 +23,10 @@ def checkout(start: Path) -> Path | None:
 
 def environment(top: Path | None) -> str:
     try:
-        return check_title(top.name) if top else ""
+        name = check_title(top.name) if top else ""
     except Refused:
         return ""
+    return "" if name == DEFAULT_ENV else name
 
 
 def linked(project: Path) -> dict[str, Path]:

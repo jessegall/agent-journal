@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from typing import ClassVar
 
 from engine.events import AgentReported, AnyEvent, ClockTicked, ResourceEvent
+from engine.sessions import Sessions
 from engine.transcript import IDLE
 from features.parts import AgentContext, Context, Handler
 from features.sequences.controller import BY_HAND
@@ -66,9 +67,14 @@ class RemindUnfinished(Handler):
             context.agent.say(UNFINISHED, n=sequence.n, title=sequence.title, step=run["step"], count=len(sequence.sections), about=about_flag(key))
 
 
+def working_agent(context: Context):
+    holder = Sessions(context.record.root).holder(context.record.env)
+    return (context.journal.agents._titled(holder) if holder else None) or context.journal.agents.primary()
+
+
 class HandStepToAgent(Handler):
     def handle(self, context: Context, event: SequenceMoved) -> None:
-        agent = context.journal.agents.primary()
+        agent = working_agent(context)
         found = context.journal.sequences._in_hand() if event.action == "updated" and agent else None
         if not found:
             return
