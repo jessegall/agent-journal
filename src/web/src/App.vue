@@ -189,9 +189,7 @@ watch(
                 <div class="main">
                     <div class="bar"><TopBar /></div>
                     <UpgradeBand />
-                    <template v-if="!full">
-                        <StatusBar />
-                    </template>
+                    <StatusBar />
                     <Transition name="page" mode="out-in">
                         <div :key="route.page || 'home'" class="page">
                             <SwitchCase :value="page">

@@ -10,9 +10,10 @@ const props = defineProps({
     title: {type: String, required: true},
     icon: {type: String, required: true},
     landing: Boolean,
+    minimized: Boolean,
     colors: {type: Object, default: () => ({})},
 });
-const emit = defineEmits(["move", "size", "front", "dock", "menu"]);
+const emit = defineEmits(["move", "size", "front", "dock", "menu", "minimize"]);
 
 function drag(e) {
     if (e.button || e.target.closest("button")) return;
@@ -30,8 +31,8 @@ function grow(e) {
 
 <template>
     <div
-        :class="['float-window', {landing}]"
-        :style="{left: `${x}px`, top: `${y}px`, width: `${w}px`, height: `${h}px`, ...colors}"
+        :class="['float-window', {landing, minimized}]"
+        :style="{left: `${x}px`, top: `${y}px`, width: `${w}px`, height: minimized ? 'auto' : `${h}px`, ...colors}"
         role="dialog"
         :aria-label="title"
         @pointerdown="emit('front')"
@@ -41,6 +42,14 @@ function grow(e) {
             <span class="float-title">{{ title }}</span>
             <span class="float-tag">floating</span>
             <span class="float-space" />
+            <button
+                type="button"
+                class="float-btn"
+                :title="minimized ? 'Show the whole window' : 'Show only this bar'"
+                @click="emit('minimize', !minimized)"
+            >
+                <Icon :name="minimized ? 'window' : 'minimize'" />
+            </button>
             <button type="button" class="float-btn" title="Dock it back into the layout" @click="emit('dock')">
                 <Icon name="dock" />
             </button>
@@ -48,8 +57,10 @@ function grow(e) {
                 <Icon name="dots" />
             </button>
         </div>
-        <div class="float-body"><slot /></div>
-        <span class="float-grip" title="Resize" @pointerdown="grow" />
+        <div v-show="!minimized" class="float-body"><slot /></div>
+        <template v-if="!minimized">
+            <span class="float-grip" title="Resize" @pointerdown="grow" />
+        </template>
     </div>
 </template>
 
@@ -92,6 +103,10 @@ function grow(e) {
     color: var(--text);
     cursor: grab;
     touch-action: none;
+}
+
+.float-window.minimized .float-bar {
+    border-bottom: none;
 }
 
 .float-tag {

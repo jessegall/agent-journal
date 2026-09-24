@@ -16,6 +16,7 @@ import {polled} from "../sync/polled.js";
 import {rows} from "../sync/rows.js";
 import {barPlan, currentWork, lineOf, otherPlans, queued, stateOf, wordOf} from "./statusline.js";
 import {usePoll} from "../poll.js";
+import {useDetached} from "../composables/detached.js";
 import {runPlan, setAuto} from "../actions/work.js";
 
 usePoll(...polled.bar);
@@ -54,6 +55,17 @@ const sentence = computed(() => {
     return {head: now.slice(0, cut), tail: now.slice(cut)};
 });
 watch(line, (now, before) => (was.value = before || ""));
+const {floats, detach, front, tune} = useDetached();
+const floatingChat = computed(() => floats.value.find((f) => f.view === "chat"));
+const CHAT_BOX = {w: 420, h: 560, top: 96, edge: 24};
+
+function openChat() {
+    const f = floatingChat.value;
+    if (!f) return detach("chat", {x: window.innerWidth - CHAT_BOX.w - CHAT_BOX.edge, y: CHAT_BOX.top, w: CHAT_BOX.w, h: CHAT_BOX.h});
+    tune(f.id, {minimized: false});
+    front(f.id);
+}
+
 const bar = computed(() => barPlan(rows("plan"), !route.value.page));
 const others = computed(() => otherPlans(rows("plan")));
 const error = ref("");
@@ -115,6 +127,11 @@ async function runBar(p) {
                 "
                 @change="setAuto"
             />
+            <template v-if="route.page">
+                <Btn kind="icon" title="Open the chat in a floating window" @click="openChat">
+                    <Icon name="chat" />
+                </Btn>
+            </template>
             <Btn
                 kind="icon"
                 class="statusbar-wide"
