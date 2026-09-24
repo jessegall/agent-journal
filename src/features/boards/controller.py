@@ -49,14 +49,14 @@ class Boards(Controller):
         for open_question in asking.about(board.ref):
             if not open_question.completed:
                 asking.complete(open_question.n, how=START_OVER, reason="The request on the board was cancelled")
-        return board
+        return self.update(board.n, drafting={})
 
     def request(self, n: int, text: str, idempotency: str = ""):
         board = self.load(int(n))
         self.cancel(board.n)
         made = Messages(self.record, actor=self.actor, session=self.session, agent=self.agent).create(
             titled(text), brief=text.strip(), about=board.ref, new_work=True, idempotency=idempotency)
-        self.update(board.n, expected=0)
+        self.update(board.n, expected=0, drafting={"since": made.created, "idempotency": made.idempotency})
         self.record.emit("message", made.n, REQUESTED, self.actor)
         return made
 

@@ -31,6 +31,7 @@ const INPUT_LIMIT = 280;
 const OPEN_TURNS = 2;
 const GROW_MS = 450;
 const tall = ref(false);
+const resumed = ref(false);
 const grown = ref(false);
 let growTimer = 0;
 const START_OVER = "Start over";
@@ -63,6 +64,7 @@ const startedOver = computed(() => boardQuestions.value.find((q) => q.completed 
 const conversation = computed(() =>
     [
         ...lines.value,
+        ...(resumed.value ? asked.value.map((m) => ({id: m.ref, mine: true, at: m.created, text: m.brief || m.title})) : []),
         ...replies.value.map((c) => ({id: c.ref, mine: false, typed: true, at: c.created, text: quoted(c.brief || c.title).text})),
         ...boardQuestions.value
             .filter((q) => q.completed)
@@ -148,8 +150,10 @@ watch(
     (open) => {
         if (!open) return;
         if (!lines.value.length) say(false, `What do you want to get done on ${props.board.title}?`);
+        if (!since.value && props.board.data.drafting.since) resume(props.board.data.drafting);
         panel.value.focus();
-    }
+    },
+    {immediate: true}
 );
 
 async function send(text) {
@@ -204,6 +208,7 @@ async function add() {
     );
     await drop(unpicked());
     adding.value = false;
+    api.cancelWork(props.board.n);
     emit("added", keep.length);
     emit("close");
     setTimeout(startAnew, FADED);
@@ -231,7 +236,15 @@ watch(startedOver, async (q) => {
     say(false, `What do you want to get done on ${props.board.title}?`);
 });
 
+function resume(drafting) {
+    resumed.value = true;
+    since.value = drafting.since - 5;
+    sent.value = [drafting.idempotency];
+    lastSent.value = drafting.since;
+}
+
 function startAnew() {
+    resumed.value = false;
     docked.value = false;
     revealed.value = [];
     stalled.value = false;
@@ -247,10 +260,9 @@ function startAnew() {
 
 function leave() {
     const dropped = unpicked();
-    const open = asking.value;
     emit("close");
     drop(dropped);
-    if (open) api.cancelWork(props.board.n);
+    api.cancelWork(props.board.n);
     setTimeout(startAnew, FADED);
 }
 </script>

@@ -227,3 +227,20 @@ def test_a_plan_waiting_for_approval_is_read_and_approved_from_its_card():
     assert "only the user" in refused(lambda: Tickets(record, actor=AGENT).approve_plan(ticket.n)), "only the user approves a ticket's plan"
     tickets.approve_plan(ticket.n)
     assert plans.load(plan.n).status == APPROVED, "approving from the card approves the plan in the ticket's own environment"
+
+
+def test_drafts_carry_one_line_and_the_agent_answers_the_panel_briefly():
+    from features.tickets.limits import CARD_LINE, PANEL_REPLY
+    from controllers.types import Messages
+    from tests.conftest import refused
+    record = fresh()
+    board = Boards(record, actor=USER).create("Shared Journal")
+    drafting = Tickets(record, actor=AGENT)
+    assert "one line" in refused(lambda: drafting.create("Sign in", board=board.n, draft=True)), "a draft without its one line is refused"
+    assert "one line" in refused(lambda: drafting.create("Sign in", abstract="x" * (CARD_LINE + 1), board=board.n, draft=True)), \
+        "a line too long for the card is refused"
+    assert drafting.create("Sign in", abstract="Everyone signs in", board=board.n, draft=True).abstract == "Everyone signs in"
+    request = Boards(record, actor=USER).request(board.n, "I want to share")
+    agent = Messages(record, actor=AGENT)
+    assert "shorter" in refused(lambda: agent.reply(request.n, "y" * (PANEL_REPLY + 1))), "a reply the panel cannot show whole is refused"
+    assert agent.reply(request.n, "Five tickets drafted, pick the ones to keep.").brief.endswith("pick the ones to keep."), "a short reply goes through"
