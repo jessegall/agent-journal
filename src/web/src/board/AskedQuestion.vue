@@ -11,7 +11,7 @@ defineProps({question: {type: Object, required: true}});
         <template v-if="question.abstract">
             <p class="context">{{ question.abstract }}</p>
         </template>
-        <OptionsPicker :resource="question" />
+        <OptionsPicker :resource="question" buttons-only />
     </div>
 </template>
 

@@ -8,7 +8,7 @@ import FocusStage from "../kit/FocusStage.vue";
 import {sendMessage} from "../chat/outbox.js";
 import {quoted} from "../format/quote.js";
 import {route} from "../route.js";
-import {store} from "../state/store.js";
+import {store, word} from "../state/store.js";
 import {rows} from "../sync/rows.js";
 import Suggestion from "./Suggestion.vue";
 import AskedQuestion from "./AskedQuestion.vue";
@@ -65,7 +65,9 @@ const drafts = computed(() =>
         (t) => t.data.draft && Number(t.data.board) === props.board.n && t.created >= since.value && !t.deleted && !t.completed
     )
 );
-const writing = computed(() => Boolean(lastSent.value) && !replies.value.some((c) => c.created >= lastSent.value));
+const answered = (at) => replies.value.some((c) => c.created >= at) || boardQuestions.value.some((q) => q.created >= at);
+const writing = computed(() => Boolean(lastSent.value) && !answered(lastSent.value));
+const latest = computed(() => conversation.value.slice(conversation.value.findLastIndex((line) => line.mine)));
 const turn = computed(() => drafts.value.find((t) => !revealed.value.includes(t.n)));
 const cards = computed(() => {
     const ahead = writing.value ? Math.max(SKELETONS - drafts.value.length, 1) : 0;
@@ -134,6 +136,7 @@ watch(
 async function send(text) {
     words.value = "";
     say(true, text);
+    if (asking.value) return api.act("question", asking.value.n, word("question", "complete"), {how: text});
     since.value = since.value || now() - 5;
     lastSent.value = now() - 1;
     lastAsked.value = text;
@@ -262,7 +265,7 @@ async function leave() {
                         </Btn>
                     </div>
                 </template>
-                <template v-for="line in conversation" :key="line.id">
+                <template v-for="line in docked ? conversation : latest" :key="line.id">
                     <template v-if="line.record">
                         <span class="record">{{ line.text }}</span>
                     </template>
