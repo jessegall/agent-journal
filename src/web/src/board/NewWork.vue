@@ -136,9 +136,9 @@ watch(
 async function send(text) {
     words.value = "";
     say(true, text);
-    if (asking.value) return api.act("question", asking.value.n, word("question", "complete"), {how: text});
     since.value = since.value || now() - 5;
     lastSent.value = now() - 1;
+    if (asking.value) return api.act("question", asking.value.n, word("question", "complete"), {how: text});
     lastAsked.value = text;
     await drop(unpicked());
     await ask(text);
@@ -187,6 +187,8 @@ async function add() {
     emit("close");
     setTimeout(() => (docked.value = false), FADED);
 }
+
+watch(asking, (current, before) => before && !current && !startedOver.value && (lastSent.value = now() - 1));
 
 watch(startedOver, async (q) => {
     if (!q) return;
@@ -249,7 +251,7 @@ async function leave() {
                 fill
                 :locked="adding"
                 :limit="INPUT_LIMIT"
-                :without-input="choosing"
+                :without-input="choosing || writing"
                 :placeholder="drafts.length ? 'Say what to change' : 'Describe the work in your own words'"
                 @send="send"
             >

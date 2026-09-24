@@ -50,15 +50,24 @@ defineExpose({focus: () => nextTick(() => input.value.focus())});
                 <slot name="actions" />
             </div>
         </template>
-        <template v-if="!withoutInput">
-            <form :class="['compose', {locked}]" @submit.prevent="send">
-                <input ref="input" v-model="words" :placeholder="placeholder" :disabled="locked" :maxlength="limit" spellcheck="false" />
-                <template v-if="limit">
-                    <span class="left">{{ limit - words.length }}</span>
-                </template>
-                <Btn kind="primary" small :disabled="locked || !words.trim()" @click="send">{{ action }}</Btn>
-            </form>
-        </template>
+        <Transition name="input-step">
+            <template v-if="!withoutInput">
+                <form :class="['compose', {locked}]" @submit.prevent="send">
+                    <input
+                        ref="input"
+                        v-model="words"
+                        :placeholder="placeholder"
+                        :disabled="locked"
+                        :maxlength="limit"
+                        spellcheck="false"
+                    />
+                    <template v-if="limit">
+                        <span class="left">{{ limit - words.length }}</span>
+                    </template>
+                    <Btn kind="primary" small :disabled="locked || !words.trim()" @click="send">{{ action }}</Btn>
+                </form>
+            </template>
+        </Transition>
     </div>
 </template>
 
@@ -124,6 +133,19 @@ defineExpose({focus: () => nextTick(() => input.value.focus())});
     color: var(--text-4);
     font-size: 11px;
     font-variant-numeric: tabular-nums;
+}
+
+.input-step-enter-active,
+.input-step-leave-active {
+    transition:
+        opacity 0.22s ease,
+        transform 0.26s cubic-bezier(0.2, 0.9, 0.25, 1);
+}
+
+.input-step-enter-from,
+.input-step-leave-to {
+    opacity: 0;
+    transform: translateY(10px);
 }
 
 .compose.locked {
