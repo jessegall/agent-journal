@@ -147,3 +147,18 @@ def test_a_model_change_is_typed_into_the_terminal_whole_and_raw(monkeypatch):
     entered = [raw for raw in typed if raw.strip(b"\x05\x15\x7f")]
     assert entered == [b"/model", b"\r", b"\x1b[B\x1b[B", b"\r", b"\r"] and not any(MARK.encode() in raw for raw in typed), \
         "every step of a picker is typed in order, raw, with no journal mark, and none is dropped"
+
+
+def test_a_paused_agent_and_its_subagents_have_every_tool_call_refused():
+    from controllers.types import Agents
+    from engine.hooks import PAUSED, handle
+    from providers import PROVIDERS
+    record, claude = fresh(), PROVIDERS["claude"]()
+    call = {"session_id": "claude-1", "tool_name": "Bash", "tool_input": {"command": "ls"}, "hook_event_name": "PreToolUse"}
+    handle(claude, record.root, record.env, call)
+    agents = Agents(record)
+    agents.update(agents.by_session("claude-1").n, paused=time.time())
+    refused = lambda asked: handle(claude, record.root, record.env, asked).get("reason")
+    assert (refused(call), refused({**call, "agent_id": "sub-1"})) == (PAUSED, PAUSED), "the agent and its subagents stand still while paused"
+    agents.update(agents.by_session("claude-1").n, paused=0)
+    assert refused(call) != PAUSED, "resuming lets tool calls through again"

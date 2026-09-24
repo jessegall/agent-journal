@@ -19,6 +19,7 @@ POLICIES: list = []
 AFTERWARDS: list = []
 CANCELERS: dict[str, list] = {}
 DISPATCHING, LONG_COMMAND = "agent.dispatching", "agent.command.long"
+PAUSED = "The user paused the agent: wait, and carry on only once you are resumed."
 CANCELABLE = (DISPATCHING, LONG_COMMAND)
 
 
@@ -173,7 +174,7 @@ def handle(provider, root: Path, env: str, hook) -> dict:
             agents.update(row.n, asking=provider.asking(hook))
         if hook.event != "PreToolUse":
             return {}
-        why = gated(provider, record, hook, row.title)
+        why = PAUSED if row.paused else gated(provider, record, hook, row.title)
         return {} if why is None else provider.blocking(why)
     wrote = hook.event == "PostToolUse" and commands.writes(hook)
     agents.saw(row.n, {"hook": hook.event, "tool": hook.tool.name, "file": hook.tool.paths[0] if hook.tool.paths else "", "session": hook.session, "size": hook.tool.result_size, "skill": hook.tool.loaded_skill, "cause": AGENT},
@@ -182,6 +183,8 @@ def handle(provider, root: Path, env: str, hook) -> dict:
         bus.defer(lambda: ran.tool_ran(record, row.n, provider, hook.tool))
     if wrote:
         bus.defer(lambda: files.announce(record, row.n))
+    if hook.event == "PreToolUse" and row.paused:
+        return provider.blocking(PAUSED)
     if hook.event == "PreToolUse":
         why = gated(provider, record, hook, row.title)
         return {} if why is None else provider.blocking(f"{why}{alongside(hook)}")
