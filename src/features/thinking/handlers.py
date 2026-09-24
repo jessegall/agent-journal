@@ -39,16 +39,12 @@ class FollowThinking(Handler):
             thought = ""
         kept = [text for what, text in found if what == THINKING and text.strip()]
         changes = {THINKING: thought} if thought != (row.data.get(THINKING) or "") else {}
-        if kept and not quiet(context):
+        if kept:
             now = time.time()
             changes[THOUGHTS] = [*(row.data.get(THOUGHTS) or []), *({"at": now, "text": text[:THOUGHT_CHARS]} for text in kept)][-KEPT_THOUGHTS:]
         if changes:
             context.journal.agents.stamp(row.n, **changes)
 
-
-def quiet(context: AgentContext) -> bool:
-    found = context.journal.sequences._in_hand()
-    return bool(found and found[0].quiet)
 
 
 class ClearOnMessage(Handler):

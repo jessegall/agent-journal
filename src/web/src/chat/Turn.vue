@@ -402,8 +402,12 @@ async function drop() {
 }
 
 .thought-text {
+    padding: 7px 11px;
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    background: color-mix(in srgb, var(--raised) 50%, transparent);
     color: var(--text-4);
-    font-size: 12.5px;
+    font-size: 12px;
     font-style: italic;
     line-height: 1.5;
 }

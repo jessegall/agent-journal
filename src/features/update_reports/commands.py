@@ -81,4 +81,4 @@ class Dismiss(Command):
     name = "dismiss"
 
     def run(self, context: Context, reports, n: int):
-        return reports.update(update_of(reports, n).n, dismissed=True)
+        return reports.update(int(n), dismissed=True)

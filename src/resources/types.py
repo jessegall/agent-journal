@@ -316,7 +316,7 @@ class AgentRow(Shape, Resource):
     )
     type = "agent"
     takes_comments = False
-    formatted_data = {"cards": ("label", "detail"), "subagent_rows": ("task",)}
+    formatted_data = {"cards": ("label", "detail"), "subagent_rows": ("task",), "thoughts": ("text",)}
     event_labels = {"reported": "Agent reported", "updated": "Agent updated"}
     icon = "bot"
     in_sidebar = False

@@ -52,8 +52,3 @@ export function carriedOver(r, reports) {
 export const refLabel = (ref) => (ref.startsWith("commit:") ? ref.slice(7, 14) : ref.replace(/^todo:/, "to-do ").replace(":", " "));
 
 export const commitHref = (ref, env) => (ref.startsWith("commit:") ? `#/${env}/commit/${ref.slice(7)}` : "");
-
-export function dockedUpdate(reports) {
-    const newest = reports.filter((r) => isUpdate(r) && !r.deleted).sort((a, b) => b.data.number - a.data.number)[0];
-    return newest && !newest.completed && !newest.data.dismissed ? newest : null;
-}

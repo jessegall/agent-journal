@@ -52,7 +52,7 @@ async function start() {
             <span class="plan-card-size" data-fades>
                 {{ parked ? stoppedOf(plan, rows("todo")) : sizeOf(plan) }}
             </span>
-            <span class="plan-card-acts" data-fades>
+            <span class="plan-card-acts chat-dock-acts" data-fades>
                 <template v-if="othersLine(others)">
                     <span class="plan-card-more">
                         <button type="button" :class="['plan-card-others', {on: listing}]" @click.stop="listing = !listing">

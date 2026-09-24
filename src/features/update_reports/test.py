@@ -49,7 +49,8 @@ def test_notes_items_and_drops_change_only_an_update():
 
     plain = reports.create("Why the updater gets stuck", brief="it installs main")
     assert "is not an update" in refused(lambda: reports.action("note")(plain.n, "todo:1", "a note")), "only an update takes rows"
-    assert "is not an update" in refused(lambda: reports.action("dismiss")(plain.n)), "and only an update is docked to dismiss"
+    Reports(record, actor=USER).action("dismiss")(plain.n)
+    assert reports.load(plain.n).data["dismissed"] is True, "any report is taken out of the dock the same way"
     assert "sections are" in refused(lambda: reports.action("item")(update.n, "later", "todo:1", "a row")), "a row goes under a known section"
     assert "has no row" in refused(lambda: reports.action("note")(update.n, "todo:999", "a note")), "a note names a row that is there"
 

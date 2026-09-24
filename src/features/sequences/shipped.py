@@ -5,7 +5,8 @@ from resources.base import SECTION, SYSTEM, USER
 
 FILING_A_DUMP = {
     "title": "Filing a dump",
-    "brief": "What the agent does with a pile a user drops in a dump: sort it by subject, file each subject straight into the "
+    "brief": "When the user writes in the dump, answer there with journal dump say <dump n> \"<text>\", never in the chat. "
+             "What the agent does with a pile a user drops in a dump: sort it by subject, file each subject straight into the "
              "dump's collection, then sum up and suggest.",
     "starts_on": "dump.created",
     "started_by": "",
@@ -49,7 +50,6 @@ BUILDING_A_PLAN = {
     ],
 }
 WORKING_A_BOARD_CARD = {
-    "quiet": True,
     "title": "Working a card from the board",
     "brief": "A request typed into a board's New work panel becomes draft tickets for one feature. The panel is a place of "
              "clicking, not reading: you ask which feature they mean, they click one of your readings or type their own, "
@@ -114,16 +114,15 @@ WORKING_A_BOARD_CARD = {
                               "already on any board: journal ticket depend <the ticket that waits> <the ticket it needs first>. "
                               "When the project has an organization (journal ticket organization), name the domain that "
                               "answers for it with --set owner=<domain>; its lead picks the roles. Do not reply to their "
-                              "message until every ticket is drafted: your one-line reply is what tells the panel drafting is "
+                              "message until every ticket is drafted: your one line said with journal board say is what tells the panel drafting is "
                               "done. Then offer two to four groups they can pick at once, such as what the first release needs or one subject: journal board group <board n> \"<name>\" \"<ticket>, <ticket>\". When every ticket is drafted: journal sequence next <this sequence> --about <ref>."),
-        ("Say one line", "Reply to their message in one short line of at most 200 characters about the tickets, like "
+        ("Say one line", "Say it in the panel in one short line with journal board say <board n> \"<line>\", of at most 200 characters about the tickets, like "
                          "\"Five tickets drafted. Pick the ones to keep.\" No paragraphs, no lists, and no ticket numbers "
-                         "such as #12, rows, chips, commands or the journal. The reply tells the panel you are done, and the "
+                         "such as #12, rows, chips, commands or the journal. The line tells the panel you are done, and the "
                          "user picks the ones to keep. Finish with journal sequence next <this sequence> --about <ref>."),
     ],
 }
 REVISING_THE_DRAFTS = {
-    "quiet": True,
     "title": "Revising the board's drafts",
     "brief": "The user typed a change in a board's New work panel while its drafts show. Change only what they asked for, "
              "keep every other draft as it is, and say one line. Never start over and never ask round one again.",
@@ -139,13 +138,12 @@ REVISING_THE_DRAFTS = {
                               "For a card they asked to add, first raise the count to the total the panel should show: journal "
                               "board expect <board n> <count>, then journal ticket create as in drafting. When they ask you to choose cards for them, check the ones you would keep: journal board pick <board n> \"<ticket>, <ticket>\". When every change is "
                               "made: journal sequence next <this sequence> --about <ref>."),
-        ("Say one line", "Reply to their message in one short line of at most 200 characters about what changed, like \"Made the "
+        ("Say one line", "Say it in the panel in one short line with journal board say <board n> \"<line>\", of at most 200 characters about what changed, like \"Made the "
                          "sign-in card smaller and added one for invites.\" No paragraphs and no ticket numbers. Finish with "
                          "journal sequence next <this sequence> --about <ref>."),
     ],
 }
 BUILDING_A_BOARD = {
-    "quiet": True,
     "title": "Building a board from a document",
     "brief": "The user handed a document to a new board, and you set the board up from it: its stages, its name when they left "
              "it to you, and a ticket for every piece of work in the stage the document puts it in. The board fills while "
@@ -173,7 +171,6 @@ BUILDING_A_BOARD = {
     ],
 }
 DRAFTING_FROM_A_DOCUMENT = {
-    "quiet": True,
     "title": "Drafting tickets from a document",
     "brief": "The user handed a document to a board's New work panel. Read it whole and draft one ticket per piece of work "
              "it describes, each saying where in the document it came from, for the user to pick. Only tickets on this "
@@ -200,7 +197,7 @@ DRAFTING_FROM_A_DOCUMENT = {
                               "it on the board with journal board ask <board n> \"<question>\" --set options='[...]' and "
                               "change the draft when it is answered. Then offer two to four groups they can pick at once, such as what the first release needs or one subject: journal board group <board n> \"<name>\" \"<ticket>, <ticket>\". When every ticket is drafted: journal sequence next "
                               "<this sequence> --about <ref>."),
-        ("Say one line", "Reply to their message in one short line of at most 200 characters, like \"7 drafts from 6 "
+        ("Say one line", "Say it in the panel in one short line with journal board say <board n> \"<line>\", of at most 200 characters, like \"7 drafts from 6 "
                          "sections; I left out the background.\" No lists and no ticket numbers. Finish with journal "
                          "sequence next <this sequence> --about <ref>."),
     ],
@@ -253,9 +250,9 @@ def in_step(sequences: Sequences, shipped: dict, n: int | None) -> bool:
     shipped = {**shipped, "starts_on": watched(sequences.record, shipped)} if shipped.get("words") else shipped
     steps = [{SECTION.title: title, SECTION.body: body} for title, body in shipped["steps"]]
     row = sequences.load(n) if n else sequences.create(shipped["title"], starts_on=shipped["starts_on"], system=True)
-    shape = (shipped["brief"], shipped["starts_on"], shipped["started_by"], steps, shipped.get("quiet", False))
-    if n and (not row.system or (row.brief, row.starts_on, row.started_by, row.sections, row.quiet) == shape):
+    shape = (shipped["brief"], shipped["starts_on"], shipped["started_by"], steps)
+    if n and (not row.system or (row.brief, row.starts_on, row.started_by, row.sections) == shape):
         return False
-    row.brief, row.starts_on, row.started_by, row.sections, row.quiet = shape
+    row.brief, row.starts_on, row.started_by, row.sections = shape
     sequences.save(row, "updated")
     return True

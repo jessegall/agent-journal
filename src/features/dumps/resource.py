@@ -1,7 +1,7 @@
 from typing import ClassVar
 
 from resources.base import DOCUMENT, Resource, ResourceDetails
-from resources.shapes import Field, Shape, names
+from resources.shapes import FLAG, Field, Shape, names
 
 ITEM = names("insight", "outcome", "refs", "failed", "added")
 ENTRY = names("at", "text", "on", "making", "detail")
@@ -11,6 +11,7 @@ class Dump(Shape, Resource):
     data_fields: ClassVar[list[Field]] = [
         Field(default=dict, name="items"),
         Field(default=list, name="log"),
+        Field(FLAG, False, name="dismissed"),
     ]
     details: ClassVar[ResourceDetails] = ResourceDetails(
         title="Dump",

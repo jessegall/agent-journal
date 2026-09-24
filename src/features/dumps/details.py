@@ -19,6 +19,9 @@ class DumpsDetails(FeatureDetails):
         collection. journal dump name <n> "<name>" names that collection for what the items are
         about, and journal dump log <n> "<status>" tells the user what you are doing;
         journal dump ask <n> "<question>" asks the user in the dump window, and they answer there.
+        What the user writes in the dump reaches you as a message about it: answer there with
+        journal dump say <n> "<text>" (at most 600 characters), never in the chat; the chat
+        shows a small mark that you answered in the dump.
         One dump is worked at a time; the next waits until it closes. journal dump items <n> lists where every item stands, and the dump
         closes by itself once every item is filed or failed.
     """
