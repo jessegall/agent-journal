@@ -28,8 +28,8 @@ class PromptFiling(Handler):
         chosen = dump.data.get("chosen") or {}
         if speaking and chosen and speaking.once("dump choice", f"{dump.n}:{chosen.get('at')}"):
             if int(chosen.get("pick", -1)) == OWN_WORDS:
-                speaking.agent.say("directed", n=dump.n, how=chosen["label"])
-            elif int(chosen.get("pick", -1)) < 0:
+                return
+            if int(chosen.get("pick", -1)) < 0:
                 speaking.agent.say("decide", n=dump.n)
             else:
                 speaking.agent.say("chose", n=dump.n, label=chosen["label"])

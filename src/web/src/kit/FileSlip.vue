@@ -77,6 +77,14 @@ const extension = computed(() => props.kind || props.file.name.split(".").pop())
     color: var(--tone-good);
 }
 
+.file-slip.read .file-slip-meta {
+    color: var(--accent-text);
+}
+
+.file-slip.read .file-slip-meta::before {
+    content: "✓ read · ";
+}
+
 .file-slip.failed .file-slip-meta {
     color: var(--danger);
 }

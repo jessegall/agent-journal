@@ -13,14 +13,14 @@ export function withWhispers(turns, nudges, session) {
     return whispers.length ? [...turns, ...whispers].sort((a, b) => a.at - b.at) : turns;
 }
 
-const SPOKEN = {agent: "agent", human: "user", injected: "user"};
-const hasText = (t) => SPOKEN[t.kind] && t.text;
+const SPEAKERS = {agent: "agent", human: "user", injected: "user"};
+const hasText = (t) => SPEAKERS[t.kind] && t.text;
 
 const line = (t) => ({
     type: "line",
     ref: `line:${t.line}`,
     n: t.line,
-    who: SPOKEN[t.kind],
+    who: SPEAKERS[t.kind],
     title: "",
     brief: t.text,
     abstract: "",

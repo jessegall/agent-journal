@@ -1,4 +1,4 @@
-from features.base import FeatureDetails
+from features.base import FeatureDetails, Line
 
 
 class UpdateReportsDetails(FeatureDetails):
@@ -22,4 +22,20 @@ class UpdateReportsDetails(FeatureDetails):
         journal report item <n> <section> <ref> "<title>" adds one the list missed, and journal
         report drop <n> <ref> takes out noise. Answer with the report's reference on a line of its
         own, like `report 98`: the chat shows it as a card that opens over the chat.
+
+        You may also write one on your own when a meaningful piece of work has landed, such as a
+        feature finished or a release out, so the user can catch up without asking; it is pinned at
+        the bottom of the chat. After a commit you are reminded of this at most once an hour, and
+        never while an update the user has not read is still waiting.
     """
+
+    lines = [
+        Line(
+            name="offer",
+            title="you committed work - if a meaningful piece landed, write an update",
+            brief="""
+                journal report changes, then journal report recap "<one or two sentences>"; it is
+                pinned at the bottom of the chat. Skip it when the work is small.
+            """,
+        ),
+    ]
