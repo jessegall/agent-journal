@@ -12,7 +12,8 @@ class FactsDetails(FeatureDetails):
     abstract = "What is true about the environment, said again to the agent as the window fills"
 
     help = """
-        When you learn something about this environment that a later session would get wrong without, write it as a fact:
+        A fact belongs to this environment. When you learn something about it that a later session would get wrong without,
+        write it as a fact:
         journal fact create "<the claim>" --brief "<why it is true, where it shows>". It is handed back at every quarter of the
         context. When it stops being true, strike it with journal fact strike <n> --how "<what changed>".
 

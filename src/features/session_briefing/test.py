@@ -174,6 +174,10 @@ def test_lines_are_typed_once_the_channel_stops_delivering_them(tmp_path):
             *({"type": "assistant", "timestamp": stamp(), "message": {"content": "working"}} for _ in range(4)))
     assert driver._handed("todo 7 next") is True, "a line that reached the agent inside a tool result keeps the channel in use"
     time.sleep(0.01)
+    written({"type": "queue-operation", "operation": "enqueue", "timestamp": stamp(), "content": '<channel source="journal" from="journal">\ntodo 7 next\n</channel>'},
+            *({"type": "assistant", "timestamp": stamp(), "message": {"content": "working"}} for _ in range(4)))
+    assert driver._handed("todo 9 next") is True, "a line queued while the agent works, as a queue operation, keeps the channel in use"
+    time.sleep(0.01)
     written(*({"type": "assistant", "timestamp": stamp(), "message": {"content": "working"}} for _ in range(4)))
     assert driver._handed("work 1 open") is False, "a line the agent never received, while it kept working, sends the next lines to the terminal"
     assert driver._handed("todo 6 next") is False, "and keeps typing them for a while rather than losing more"

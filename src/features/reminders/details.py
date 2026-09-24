@@ -12,7 +12,8 @@ class RemindersDetails(FeatureDetails):
     abstract = "The standing reminders said again to the agent when it comes to rest after work"
 
     help = """
-        When you keep forgetting to do something you already know, write a reminder: journal reminder create "<what to do>".
+        A reminder belongs to this environment. When you keep forgetting to do something you already know, write a
+        reminder: journal reminder create "<what to do>".
         It is said again every quarter of the context window, so a long session hears it about four times; Settings can change
         the cadence to every n percent, uses or minutes, or to idle, worked or start.
 

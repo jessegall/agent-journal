@@ -573,6 +573,8 @@ class ClaudeDriver(Driver):
     def _channel_text(row: Row) -> str:
         if row.type == "attachment":
             return row.prompt
+        if row.type == "queue-operation":
+            return row.content
         if row.type != "user":
             return ""
         return row.text if row.text is not None else "\n".join(block.result for block in row.of_type("tool_result"))
