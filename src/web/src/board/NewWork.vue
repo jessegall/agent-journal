@@ -29,6 +29,10 @@ const revealed = ref([]);
 const docked = ref(false);
 const INPUT_LIMIT = 280;
 const OPEN_TURNS = 2;
+const GROW_MS = 450;
+const tall = ref(false);
+const grown = ref(false);
+let growTimer = 0;
 const CHOICES = 3;
 const START_OVER = "Start over";
 const shownDraft = ref(null);
@@ -137,6 +141,7 @@ onMounted(() => {
 onUnmounted(() => {
     window.removeEventListener("keydown", onKey);
     clearInterval(exampleTimer);
+    clearTimeout(growTimer);
 });
 
 watch(
@@ -208,6 +213,12 @@ async function add() {
 
 let typedAnswer = false;
 
+watch(asking, (question) => {
+    if (!question || tall.value) return;
+    tall.value = true;
+    growTimer = setTimeout(() => (grown.value = true), GROW_MS);
+});
+
 watch(asking, (current, before) => {
     if (!before || current || startedOver.value) return;
     if (!typedAnswer) say(true, "");
@@ -224,6 +235,8 @@ watch(startedOver, async (q) => {
 });
 
 function startAnew() {
+    tall.value = false;
+    grown.value = false;
     words.value = "";
     lines.value = [];
     sent.value = [];
@@ -270,7 +283,7 @@ function leave() {
                 </template>
             </TransitionGroup>
         </div>
-        <div :class="['dock', {docked}]">
+        <div :class="['dock', {docked, short: !tall}]">
             <ChatPanel
                 ref="panel"
                 v-model="words"
@@ -311,7 +324,7 @@ function leave() {
                         Say it in a sentence. I say back what I think you mean, you confirm, and then I draft the tickets.
                     </p>
                 </template>
-                <template v-if="asking">
+                <template v-if="asking && (grown || docked)">
                     <AskedQuestion :question="asking" :chat="docked" />
                 </template>
                 <template v-if="writing && !asking">
@@ -341,6 +354,10 @@ function leave() {
         left 0.45s cubic-bezier(0.2, 0.9, 0.25, 1),
         width 0.45s cubic-bezier(0.2, 0.9, 0.25, 1),
         height 0.45s cubic-bezier(0.2, 0.9, 0.25, 1);
+}
+
+.dock.short:not(.docked) {
+    height: min(260px, 40vh);
 }
 
 .dock.docked {
