@@ -1,6 +1,7 @@
 import time
 
 import surfaces.control
+from controllers.types import Agents
 from tests.conftest import fresh
 from tests.kit import nudges, report, tick
 
@@ -120,3 +121,15 @@ def test_a_long_command_is_an_event_a_feature_can_cancel_and_a_move_shows_in_the
     tick(record)
     cards = [c["label"] for c in Agents(record, actor=SYSTEM).by_session("claude-1").data.get("cards") or []]
     assert moved == ["claude-1"] and cards == ["Moved a long command to the background"], (moved, cards)
+
+
+def test_a_long_command_keeps_one_chat_mark_whose_dot_turns_green():
+    record = fresh()
+    report(record, "working", "PreToolUse")
+    agents = Agents(record, actor="system")
+    row = agents.by_session("claude-1")
+    agents.card(row.n, key="command:1", label="Moved a long command to the background", state="running")
+    agents.card(row.n, key="command:1", state="done")
+    cards = agents.load(row.n).data["cards"]
+    assert [(c["label"], c["state"]) for c in cards] == [("Moved a long command to the background", "done")], \
+        "the end updates the one mark instead of adding a second"

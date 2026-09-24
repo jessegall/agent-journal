@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.134.0 — Earlier questions open over the chat, and added cards get placed
+
+Clicking an earlier question in the chat blurs the chat and brings the question up over it to answer in place; answering, Escape or a click outside brings the chat back where it was. After cards are added from New work, the floating chat opens and the agent offers to set their priority and move them into columns. Tickets have a priority. Long commands show one mark with a status dot that pulses while running and turns green when done. Thoughts in the chat can be replied to. New work's waiting lines are shuffled and its cards type faster the more there are. A ticket whose agent has not reported yet reads starting instead of silent for years. Codex scripts that start several subagents at once show every one of them, named by task or by Codex's own nickname. Nothing to do.
+
 ## 2.133.2 — The presets menu changes height smoothly
 
 Opening Colour schemes in the Presets menu shrinks the menu smoothly to the shorter list as it slides in, and going back grows it the same way, instead of snapping. Nothing to do.

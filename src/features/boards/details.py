@@ -1,4 +1,4 @@
-from features.base import FeatureDetails
+from features.base import FeatureDetails, Line
 from features.boards.resource import MEANINGS
 
 
@@ -34,3 +34,17 @@ class BoardsDetails(FeatureDetails):
         Everything you write goes to the chat; the New work panel gets words only through its command. journal board say <n>
         "<line>" puts one short line in the panel, at most 200 characters, answering what was asked there.
     """
+
+    lines = [
+        Line(
+            name="added",
+            title="the user added {{count}} cards to board {{n}}, {{title}}",
+            brief="""
+                they are {{tickets}}. Say in the chat, in one or two plain lines, what you added, and offer to set their
+                priorities and move them into their columns: journal message create "<your lines>" --set
+                buttons='[{"label": "Prioritize them", "say": "Yes, set their priorities and move them into their columns"},
+                {"label": "Not now", "say": "Not now"}]'. When they say yes, set each with journal ticket priority <n>
+                low|default|high|critical and journal ticket move <n> "<stage>".
+            """,
+        ),
+    ]

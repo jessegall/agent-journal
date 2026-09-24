@@ -19,8 +19,8 @@ SKILL_LOOP = re.compile(r"for\s+\w+\s+in\s+([^;]+);\s*do")
 TAIL_BYTES = 262144
 WINDOW_LABELS = {300: "5h", 1440: "1d", 10080: "7d"}
 SPAWN_IN_SCRIPT = re.compile(r"tools\.\w*spawn_agent\(")
-SCRIPT_FIELD = r"{}:\s*\"([^\"]*)\""
-SPAWNED = re.compile(r'"agent_id":"([^"]+)"')
+SCRIPT_FIELD = r"\b{}:\s*\"([^\"]*)\""
+SPAWNED = re.compile(r'"agent_id":"([^"]+)"(?:,"nickname":"([^"]*)")?')
 TASK_EVENTS = re.compile(r'"type":"(task_started|task_complete)"')
 
 
@@ -33,9 +33,9 @@ class CodexShell(BashCall):
         return cls(name, given, response, command=" ".join(command) if isinstance(command, list) else str(command), printed=printed)
 
 
-def script_field(text: str, key: str, missing: str) -> str:
-    found = re.search(SCRIPT_FIELD.format(key), text)
-    return found[1] if found and found[1] else missing
+def script_field(text: str, key: str, index: int) -> str:
+    values = re.findall(SCRIPT_FIELD.format(key), text)
+    return values[index] if index < len(values) else ""
 
 
 @dataclass(frozen=True)
@@ -272,6 +272,15 @@ class Codex(Provider):
         running = not events or events[-1] == "task_started"
         return running, 0.0 if running or not found else found.stat().st_mtime
 
+    def spawned(self, path: Path, script: str, output: str, at: float) -> list[dict]:
+        rows = []
+        for index, found in enumerate(SPAWNED.finditer(output)):
+            running, ended = self.subagent_state(path, found[1])
+            rows.append({"task": script_field(script, "task_name", index) or found[2] or "subagent", "type": script_field(script, "agent_type", index),
+                         "model": script_field(script, "model", index), "session": found[1], "running": running, "at": at, "ended": ended,
+                         "status": "" if running else "finished"})
+        return rows
+
     def crew(self, path: Path) -> dict:
         rows = [row for _, row in self.entries(path)]
         uses = [use for row in rows for use in self.tool_uses(row)]
@@ -286,19 +295,15 @@ class Codex(Provider):
             if row.type == "response_item":
                 name, key, text = payload.name, payload.key, payload.argument_text
                 if name == "exec" and SPAWN_IN_SCRIPT.search(text):
-                    spawning[key] = {"task": script_field(text, "task_name", "subagent"), "type": script_field(text, "agent_type", ""),
-                                     "model": script_field(text, "model", "")}
+                    spawning[key] = text
                 elif name.endswith("spawn_agent"):
                     asked = Spawned.from_json(arguments_of(payload.arguments))
                     subagent_rows.append({"task": asked.task_name, "model": asked.model})
                 elif name.rsplit(".", 1)[-1] in ("exec", "exec_command", "shell", "shell_command"):
                     pending[key] = text
-                spawned = spawning.pop(key, None) if payload.type == "custom_tool_call_output" else None
-                found = SPAWNED.search(payload.output) if spawned else None
-                if found:
-                    running, ended = self.subagent_state(path, found.group(1))
-                    subagent_rows.append({**spawned, "session": found.group(1), "running": running, "at": row.at,
-                                          "ended": ended, "status": "" if running else "finished"})
+                script = spawning.pop(key, None) if payload.type == "custom_tool_call_output" else None
+                if script:
+                    subagent_rows += self.spawned(path, script, payload.output, row.at)
                 if payload.type == "custom_tool_call_output" and payload.output.startswith("Script running with cell ID"):
                     shells += 1
                     command = pending.get(key, "")

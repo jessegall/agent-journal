@@ -143,3 +143,12 @@ def test_the_agent_answers_in_the_new_work_panel_with_board_say():
     assert [c.brief for c in Messages(record, actor=USER).comments(made.n)] == ["Three tickets drafted. Pick the ones to keep."], \
         "a board say line lands on the request, where the New work panel shows it"
     assert "short line" in refused(lambda: agent.say(board.n, "x" * 300)), "the panel takes one short line"
+
+
+def test_added_cards_make_the_agent_offer_to_place_them():
+    features.load()
+    record = fresh()
+    report(record, "working", "PreToolUse")
+    board = Boards(record, actor=USER).create("Refactor To Go")
+    Boards(record, actor=USER).added(board.n, "3, 4")
+    assert any(n.startswith("the user added 2 cards to board") for n in nudges(record)), "the agent is told to offer placing the added cards"

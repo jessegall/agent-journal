@@ -18,6 +18,24 @@ defineProps({state: {type: String, default: ""}});
 .state-dot.running {
     border-color: var(--progress);
     background: var(--progress);
+    animation: state-dot-pulse 1.6s ease-in-out infinite;
+}
+
+.state-dot.done {
+    border-color: var(--tone-good);
+    background: var(--tone-good);
+}
+
+@keyframes state-dot-pulse {
+    50% {
+        opacity: 0.35;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .state-dot.running {
+        animation: none;
+    }
 }
 
 .state-dot.you {

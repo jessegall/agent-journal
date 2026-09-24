@@ -24,12 +24,12 @@ export function useTyping() {
     async function type(text, ms, show) {
         if (still) return show(text.length);
         const words = text.match(/\S+\s*/g) || [];
-        const pace = ms / Math.max(1, text.length);
+        const pace = () => (typeof ms === "function" ? ms() : ms) / Math.max(1, text.length);
         let at = 0;
         for (const word of words) {
             at += word.length;
             show(at);
-            await wait(word.length * pace * (0.4 + Math.random() * 1.2) + (/[.,;:!?]\s*$/.test(word) ? 140 : 0));
+            await wait(word.length * pace() * (0.4 + Math.random() * 1.2) + (/[.,;:!?]\s*$/.test(word) ? pace() * 8 : 0));
         }
     }
 

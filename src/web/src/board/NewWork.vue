@@ -11,6 +11,7 @@ import Segmented from "../kit/Segmented.vue";
 import {quoted} from "../format/quote.js";
 import {store, word} from "../state/store.js";
 import {rows} from "../sync/rows.js";
+import {useFloatingChat} from "../composables/floatingChat.js";
 import Suggestion from "./Suggestion.vue";
 import AskedQuestion from "./AskedQuestion.vue";
 import DraftDetail from "./DraftDetail.vue";
@@ -172,6 +173,8 @@ const asking = computed(() => boardQuestions.value.find((q) => !q.completed));
 const choosing = computed(() => Boolean(asking.value && asking.value.data.final));
 const confirmed = computed(() => drafts.value.length > 0 || store.board.expected > 0);
 const answeredQuestions = computed(() => boardQuestions.value.filter((q) => q.completed && q.outcome !== START_OVER).length);
+const TYPING_FASTEST = 4;
+const typingSpeed = computed(() => Math.min(TYPING_FASTEST, 1 + Math.max(0, drafts.value.length - 1) * 0.3));
 const allDrafted = computed(() => drafts.value.length > 0 && drafts.value.length >= store.board.expected);
 const thinking = computed(() =>
     allDrafted.value ? REVISING : confirmed.value ? DRAFTING : answeredQuestions.value ? NARROWING : UNDERSTANDING
@@ -303,6 +306,7 @@ watch(
     {immediate: true}
 );
 
+const {openChat} = useFloatingChat();
 const LISTENERS = {keydown: onKey, dragover: (e) => hovering(e), drop: (e) => dropped(e), paste: (e) => pastedFile(e)};
 onMounted(() => Object.entries(LISTENERS).forEach(([event, listener]) => window.addEventListener(event, listener)));
 onUnmounted(() => {
@@ -436,6 +440,10 @@ async function add() {
             : api.act("ticket", t.n, "decline_dependencies"));
     }
     if (props.starts || first.value !== props.board.data.stages[0]) for (const n of keep) await api.moveTicket(n, first.value);
+    if (keep.length) {
+        await api.act("board", props.board.n, "added", {tickets: keep.join(",")});
+        openChat();
+    }
     adding.value = false;
     emit("added", keep.length);
     finish();
@@ -534,6 +542,8 @@ function startAnew() {
                         :order="card.order"
                         :active="Boolean(card.ticket) && card.ticket === turn"
                         :paused="Boolean(asking)"
+                        :speed="typingSpeed"
+                        :hurry="drafts.length > 0 && !writing"
                         :picked="Boolean(card.ticket) && picked.includes(card.ticket.n)"
                         @toggle="toggle(card.ticket.n)"
                         @revealed="reveal(card.ticket.n)"
@@ -625,7 +635,7 @@ function startAnew() {
                         <AskedQuestion :key="`question-${asking.n}`" :question="asking" :chat="docked" />
                     </template>
                     <template v-else-if="writing || asking">
-                        <ChatLine key="thinking" thinking :notes="thinking" />
+                        <ChatLine key="thinking" thinking shuffled :notes="thinking" />
                     </template>
                 </Transition>
                 <template v-if="stalled">

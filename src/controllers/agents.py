@@ -33,7 +33,11 @@ class Agents(Controller):
     @internal
     def card(self, n: int, **card):
         row = self.load(int(n))
-        return self.update(row.n, cards=[*(row.data.get("cards") or []), {"at": time.time(), **card}][-KEPT_CARDS:])
+        cards = row.data.get("cards") or []
+        key = card.get("key")
+        if key and any(kept.get("key") == key for kept in cards):
+            return self.update(row.n, cards=[{**kept, **card} if kept.get("key") == key else kept for kept in cards])
+        return self.update(row.n, cards=[*cards, {"at": time.time(), **card}][-KEPT_CARDS:])
 
     def stop_task(self, n: int, task: str, description: str = ""):
         if not task.strip():

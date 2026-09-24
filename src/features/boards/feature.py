@@ -1,6 +1,7 @@
 from features.base import Feature
 from features.boards.controller import Boards
 from features.boards.details import BoardsDetails
+from features.boards.handlers import OfferToPlaceAddedCards
 from features.boards.limits import BoardWorkStaysOnTheBoard
 from features.journal import Journal
 
@@ -12,3 +13,4 @@ class BoardsFeature(Feature):
 
     def register(self, journal: Journal) -> None:
         journal.commands.intercept("create", BoardWorkStaysOnTheBoard())
+        journal.events.handler(OfferToPlaceAddedCards())

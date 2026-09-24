@@ -7,7 +7,7 @@ import {api} from "../api/client.js";
 import {markSeen} from "../sync/seen.js";
 import {sendMessage, token} from "./outbox.js";
 import Icon from "../kit/Icon.vue";
-import {route} from "../route.js";
+import {openInChat, route} from "../route.js";
 import {quoted, withQuote} from "../format/quote.js";
 import {chatOnly, laidOut} from "../platform/view.js";
 import {threadTurns} from "../domain/thread.js";
@@ -22,6 +22,8 @@ import ReportDock from "./ReportDock.vue";
 import DumpDock from "./DumpDock.vue";
 import {dockedDump, dockedReport} from "../domain/docks.js";
 import {updateView} from "./updateView.js";
+import QuestionOverlay from "./QuestionOverlay.vue";
+import {openQuestion, questionView} from "./questionView.js";
 import FileFeed from "./FileFeed.vue";
 import Compose from "./Compose.vue";
 import Turn from "./Turn.vue";
@@ -38,6 +40,10 @@ const scroller = ref(null);
 const props = defineProps({view: {type: String, default: ""}});
 const pane = computed(() => props.view || store.pane);
 const threadRoot = ref(null);
+const askHere = (n) => !!threadRoot.value?.offsetParent && (openQuestion(n, threadRoot.value), true);
+let unask = () => {};
+onMounted(() => (unask = openInChat("question", askHere)));
+onUnmounted(() => unask());
 const dumpHere = computed(() => store.dumping && !props.view);
 const terminalOpen = computed(() => pane.value === "terminal" && !dumpHere.value);
 const chatOpen = computed(() => pane.value !== "terminal" && !dumpHere.value);
@@ -452,6 +458,9 @@ watch(
         <Transition name="terminal">
             <TerminalWindow v-if="terminalOpen" />
         </Transition>
+        <template v-if="questionView.n && questionView.owner === threadRoot">
+            <QuestionOverlay :key="questionView.n" />
+        </template>
         <template v-if="updateView.n && threadRoot?.contains(updateView.from)">
             <UpdateOverlay :key="updateView.n" />
         </template>
