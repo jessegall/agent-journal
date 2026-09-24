@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.140.0 — Links the agent makes wait for you, and shares can have a password
+
+A link the agent makes stays closed until you press Accept on the card it posts in the chat; Deny ends it. Links you make yourself open at once. A share can carry a password: visitors are asked for it by their browser, and it is kept only as a hash. Reports can be shared like documents and collections. When tunler isn't logged in, the share dialog asks for your email and tunler password and logs it in, instead of pointing at a terminal. Nothing to do.
+
 ## 2.139.0 — Share a document or collection through tunler
 
 Documents and collections have a Share button. Its dialog says exactly what the visitor will be able to open, lets you pick when the link ends (1 day, 7 days, 30 days or never) and gives you the link with Copy. The link opens that item, read-only, and nothing else: a small share server on this machine answers share links only, references to anything outside the share read as plain words, and the journal's own viewer is never exposed. The journal runs one tunler tunnel per project on a random subdomain of tunler.jessegall.nl while any share is open, and closes it when the last one ends. A tunnel icon in the top bar shows it and lists every open share with Copy and Stop sharing. A security audit (report 45) checked it live and fixed four problems before release. In the file feed, Cmd-click (Ctrl on Windows) on a file's name opens it, and created and deleted sit centred. Log tunler in once with tunler login.

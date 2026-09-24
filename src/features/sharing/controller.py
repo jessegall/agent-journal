@@ -1,4 +1,7 @@
+import hashlib
+import hmac
 import re
+import secrets
 import time
 import uuid
 from pathlib import Path
@@ -9,15 +12,27 @@ from controllers.base import CONTROLLERS, Controller
 from engine.record import Record
 from features import FEATURES
 from features.sharing.resource import SHARED_TYPES, Share
-from features.sharing.tunnel import subdomain, tunler_status
-from resources.base import SYSTEM, Refused
+from features.sharing.tunnel import log_in, subdomain, tunler_status
+from resources.base import AGENT, SYSTEM, USER, Refused
 
 TOKEN = re.compile(r"^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$")
 SPANS = {"h": 3600, "d": 86400}
 NEVER = ("", "0", "never")
+HASH_ROUNDS = 200_000
 SAVE_VIEWS_EVERY = 60
 UNSAVED_VIEWS: dict[int, tuple[int, float]] = {}
-SHAREABLE = re.compile(r"^(?:doc|collection)[: ]\d+$")
+UNLOCKED: dict[int, str] = {}
+SHAREABLE = re.compile(r"^(?:doc|report|collection)[: ]\d+$")
+
+
+def hashed(password: str) -> str:
+    salt = secrets.token_hex(16)
+    return f"{salt}${hashlib.pbkdf2_hmac('sha256', password.encode(), bytes.fromhex(salt), HASH_ROUNDS).hex()}"
+
+
+def matches(password: str, kept: str) -> bool:
+    salt, _, digest = kept.partition("$")
+    return hmac.compare_digest(hashlib.pbkdf2_hmac("sha256", password.encode(), bytes.fromhex(salt), HASH_ROUNDS).hex(), digest)
 
 
 def until(expires: str) -> float:
@@ -32,13 +47,32 @@ def until(expires: str) -> float:
 class Shares(Controller):
     resource = Share
 
-    def create(self, title: str, abstract: str = "", brief: str = "", expires: str = "7d", **data):
+    def create(self, title: str, abstract: str = "", brief: str = "", expires: str = "7d", password: str = "", **data):
         if not SHAREABLE.match(title.strip()):
             return super().create(title, abstract, brief, **data)
         target = self._target(title)
         token = str(uuid.uuid4())
-        return super().create(f"Share of {target.type} {target.n}", abstract=self._link(token), brief="\n".join(self.opens(title)),
-                              target=f"{target.type}:{target.n}", token=token, expires=until(expires), **data)
+        made = super().create(f"Share of {target.type} {target.n}", abstract=self._link(token), brief="\n".join(self.opens(title)),
+                              target=f"{target.type}:{target.n}", token=token, expires=until(expires), approved=self.actor == USER,
+                              password=hashed(password) if password else "", **data)
+        if not made.approved:
+            self._ask_to_open(made, target)
+        return made
+
+    def approve(self, n: int):
+        if self.actor != USER:
+            raise Refused("only the user opens a share: it waits for their Accept in the chat")
+        return self.update(int(n), approved=True)
+
+    def _ask_to_open(self, share, target) -> None:
+        opens = "\n".join(f"- {line}" for line in share.brief.splitlines())
+        CONTROLLERS["message"](self.record, actor=AGENT).create(
+            f"The agent wants to share {target.type} {target.n}",
+            brief=f"The agent made a link to share {target.title} ({target.type} {target.n}). Nothing opens until you accept it.\n\n"
+                  f"Whoever has the link will be able to view:\n{opens}\n\n{share.abstract}",
+            buttons=[{"label": "Accept", "type": "share", "n": share.n, "action": "approve"},
+                     {"label": "Deny", "type": "share", "n": share.n, "action": "stop"}],
+        )
 
     def opens(self, ref: str) -> list[str]:
         target = self._target(ref)
@@ -53,6 +87,12 @@ class Shares(Controller):
         host = FEATURES["sharing"].setting(self.record, "host", "tunler.jessegall.nl")
         return {**tunler_status(), "address": f"{subdomain(self.record.root)}.{host}"}
 
+    def login(self, email: str, password: str) -> dict:
+        failed = log_in(FEATURES["sharing"].setting(self.record, "host", "tunler.jessegall.nl"), email.strip(), password)
+        if failed:
+            raise Refused(failed)
+        return self.tunnel()
+
     def _link(self, token: str) -> str:
         host = FEATURES["sharing"].setting(self.record, "host", "tunler.jessegall.nl")
         return f"https://{subdomain(self.record.root)}.{host}/s/{token}"
@@ -60,7 +100,7 @@ class Shares(Controller):
     def _target(self, ref: str):
         kind, _, number = str(ref).strip().replace(" ", ":", 1).partition(":")
         if kind not in SHARED_TYPES or not number.isdigit():
-            raise Refused(f"only a document or a collection can be shared: write it as doc:12 or collection:3, not {ref!r}")
+            raise Refused(f"only a document, a report or a collection can be shared: write it as doc:12, report:4 or collection:3, not {ref!r}")
         row = CONTROLLERS[kind](self.record, actor=SYSTEM).load(int(number))
         if row.deleted:
             raise Refused(f"{kind} {number} is deleted")
@@ -110,6 +150,17 @@ class Shares(Controller):
         folder = self._home(share).folder(row.type, row.scope).joinpath(f"{row.n:03d}").resolve()
         found = folder.joinpath(name).resolve()
         return found if found.parent == folder and found.is_file() else None
+
+    def _unlocked(self, share, password: str) -> bool:
+        if not share.password:
+            return True
+        known = UNLOCKED.get(share.n)
+        if known and hmac.compare_digest(known, password):
+            return True
+        if not matches(password, share.password):
+            return False
+        UNLOCKED[share.n] = password
+        return True
 
     def _count_view(self, n: int) -> None:
         count, saved_at = UNSAVED_VIEWS.get(n, (0, 0.0))

@@ -1,5 +1,6 @@
 import mimetypes
 import sys
+from base64 import b64decode
 import time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -34,10 +35,12 @@ class ShareHandler(BaseHTTPRequestHandler):
         if len(parts) < 2 or parts[0] != "s":
             return self.page(404, missing())
         share = self.shares._by_token(parts[1])
-        if share is None:
+        if share is None or not share.approved:
             return self.page(404, missing())
         if share.completed or (share.expires and share.expires < time.time()):
             return self.page(410, ended())
+        if not self.shares._unlocked(share, self.password()):
+            return self.send(401, b"", {"WWW-Authenticate": 'Basic realm="Shared page", charset="UTF-8"'})
         rest = parts[2:]
         if not rest:
             self.shares._count_view(share.n)
@@ -47,6 +50,15 @@ class ShareHandler(BaseHTTPRequestHandler):
         if len(rest) == 2:
             return self.shown(share, f"{rest[0]}:{rest[1]}")
         return self.page(404, missing())
+
+    def password(self) -> str:
+        given = self.headers.get("Authorization", "")
+        if not given.startswith("Basic "):
+            return ""
+        try:
+            return b64decode(given[6:]).decode().partition(":")[2]
+        except (ValueError, UnicodeDecodeError):
+            return ""
 
     def shown(self, share, ref: str) -> None:
         scope = self.shares._scope(share)

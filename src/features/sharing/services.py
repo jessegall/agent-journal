@@ -16,7 +16,7 @@ SERVER, TUNNEL = "sharing.server", "sharing.tunnel"
 def open_shares(root: Path) -> list:
     now = time.time()
     shares = Shares(Record(root, runtime.env(root)), actor=SYSTEM)
-    return [row for row in shares.summaries() if row.get("token") and not row["completed"] and not row["deleted"]
+    return [row for row in shares.summaries() if row.get("token") and row.get("approved") and not row["completed"] and not row["deleted"]
             and not (row.get("expires") and row["expires"] < now)]
 
 
