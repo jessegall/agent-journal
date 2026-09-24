@@ -18,7 +18,6 @@ const browserFull = () =>
 let byBrowser = browserFull();
 let following = false;
 let ownChange = 0;
-if (byBrowser) store.wide = true;
 
 export const FULLSCREEN_KEYS = onMac ? "⌘⇧Enter" : "Ctrl+Shift+Enter";
 export const switching = ref(false);
