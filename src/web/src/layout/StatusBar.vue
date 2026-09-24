@@ -109,6 +109,7 @@ async function runBar(p) {
             <Switch
                 :on="autoOn"
                 word="auto"
+                labelled
                 :title="
                     autoOn ? 'The agent works through the to-do list without asking' : 'The agent asks before picking up the next to-do'
                 "

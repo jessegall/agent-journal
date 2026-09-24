@@ -218,11 +218,14 @@ def check_title(title: str) -> str:
     return flat
 
 
+UNTITLED = "untitled"
+
+
 def titled(text: str) -> str:
     lines = text.splitlines()
     line = " ".join(next((l for l in lines if l.strip() and not l.startswith(">")), text).split()).replace(":", " -")
     if len(line) <= TITLE_MAX:
-        return line or "untitled"
+        return line or UNTITLED
     cut = line[:TITLE_MAX - 1]
     return f"{(cut[:cut.rindex(' ')] if ' ' in cut else cut).rstrip(' -,.;')}…"
 
