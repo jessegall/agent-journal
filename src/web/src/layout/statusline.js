@@ -122,13 +122,13 @@ export function leadingPlan(plans) {
 }
 
 export function cardPlan(plans) {
-    const lead = leadingPlan(plans);
+    const lead = leadingPlan(plans.filter((plan) => !plan.data.dismissed));
     return lead && !RUNNING.includes(lead.data.status) ? lead : null;
 }
 
-export function barPlan(plans, home) {
+export function barPlan(plans) {
     const lead = leadingPlan(plans);
-    return lead && (RUNNING.includes(lead.data.status) || !home) ? lead : null;
+    return lead && RUNNING.includes(lead.data.status) ? lead : null;
 }
 
 export function otherPlans(plans) {
