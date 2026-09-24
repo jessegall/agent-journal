@@ -78,7 +78,8 @@ class Engine(Seat):
 
     def start(self) -> None:
         features.load(self.record.root)
-        self.paused = bool(Agents(self.record, actor=SYSTEM).by_session(self.agent.driver.session).paused)
+        row = self.agent.driver.last_report()
+        self.paused = row is not None and bool(row.paused)
         self.running = True
 
     def stop(self) -> None:
@@ -252,7 +253,9 @@ class Engine(Seat):
             self.echoed_at = run.at
 
     def noted(self, line: str) -> None:
-        ran.announce(self.record, Agents(self.record, actor=SYSTEM).by_session(self.agent.driver.session).n, ran.NOTED, line)
+        row = self.agent.driver.last_report()
+        if row is not None:
+            ran.announce(self.record, row.n, ran.NOTED, line)
 
     def held(self, line: str) -> str:
         self.agent.driver.stop_turn()
