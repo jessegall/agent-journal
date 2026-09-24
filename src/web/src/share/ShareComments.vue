@@ -1,86 +1,33 @@
 <script setup>
-import {computed, ref} from "vue";
-import {sendComment} from "../api/shared.js";
-import Btn from "../kit/Btn.vue";
-import TextInput from "../kit/TextInput.vue";
-import {remember, remembered} from "../composables/remembered.js";
 import {age} from "../format/time.js";
 
-const NAME_KEY = "shared-comment-name";
-const props = defineProps({about: {type: String, required: true}, comments: {type: Array, default: () => []}});
-const name = ref(remembered(NAME_KEY, ""));
-const naming = ref(!name.value);
-const draft = ref("");
-const sending = ref(false);
-const error = ref("");
-const sent = ref([]);
-const shown = computed(() =>
-    [...props.comments, ...sent.value.filter((c) => !props.comments.some((known) => known.n === c.n))]
-        .filter((c) => c.about === props.about)
-        .sort((a, b) => a.created - b.created)
-);
+defineProps({comments: {type: Array, default: () => []}});
 
-async function send() {
-    const text = draft.value.trim();
-    if (!text || !name.value.trim() || sending.value) return;
-    error.value = "";
-    sending.value = true;
-    const waiting = {n: -Date.now(), about: props.about, name: name.value.trim(), text, created: Date.now() / 1000, waiting: true};
-    sent.value = [...sent.value, waiting];
-    draft.value = "";
-    try {
-        const made = await sendComment(props.about, name.value.trim(), text);
-        remember(NAME_KEY, made.name);
-        name.value = made.name;
-        naming.value = false;
-        sent.value = sent.value.map((c) => (c.n === waiting.n ? made : c));
-    } catch (e) {
-        sent.value = sent.value.filter((c) => c.n !== waiting.n);
-        draft.value = text;
-        error.value = e.message;
-    } finally {
-        sending.value = false;
-    }
-}
+const hue = (name) => [...name].reduce((sum, ch) => (sum * 31 + ch.charCodeAt(0)) % 360, 7);
 </script>
 
 <template>
     <div class="body">
-        <section class="share-comments" aria-label="Comments">
-            <h2 class="heading">Comments</h2>
-            <template v-for="c in shown" :key="c.n">
-                <article :class="['comment', {waiting: c.waiting}]">
-                    <header class="who">
-                        <span class="mark">{{ c.name.slice(0, 1) }}</span>
-                        <span class="name">{{ c.name }}</span>
-                        <span class="when">{{ c.waiting ? "sending" : age(c.created) }}</span>
-                    </header>
-                    <p class="text">{{ c.text }}</p>
+        <section id="share-comments" class="share-comments" aria-label="Comments">
+            <h2 class="heading">
+                Comments
+                <span class="count">{{ comments.length }}</span>
+            </h2>
+            <template v-if="!comments.length">
+                <p class="empty">No comments yet. Leave the first one with the bar at the bottom.</p>
+            </template>
+            <template v-for="c in comments" :key="c.n">
+                <article :class="['comment', {waiting: c.waiting}]" :style="{'--hue': hue(c.name)}">
+                    <span class="mark">{{ c.name.slice(0, 1) }}</span>
+                    <div class="said">
+                        <header class="who">
+                            <span class="name">{{ c.name }}</span>
+                            <span class="when">{{ c.waiting ? "sending" : age(c.created) }}</span>
+                        </header>
+                        <p class="text">{{ c.text }}</p>
+                    </div>
                 </article>
             </template>
-            <form class="write" @submit.prevent="send">
-                <template v-if="naming">
-                    <TextInput
-                        :value="name"
-                        label="Your name"
-                        maxlength="40"
-                        autocomplete="name"
-                        placeholder="Shown with your comment"
-                        @input="name = $event.target.value"
-                    />
-                </template>
-                <template v-else>
-                    <p class="as">
-                        Commenting as {{ name }}
-                        <button type="button" class="change" @click="naming = true">Change</button>
-                    </p>
-                </template>
-                <textarea v-model="draft" rows="3" maxlength="2000" placeholder="Leave a comment" @keydown.meta.enter.prevent="send" />
-                <div class="actions">
-                    <span class="error">{{ error }}</span>
-                    <Btn kind="primary" small :busy="sending" :disabled="!draft.trim() || !name.trim()" @click="send">Send</Btn>
-                </div>
-            </form>
         </section>
     </div>
 </template>
@@ -89,50 +36,80 @@ async function send() {
 .share-comments {
     display: flex;
     flex-direction: column;
-    gap: 12px;
-    padding-top: 20px;
+    gap: 16px;
+    padding-top: 24px;
     border-top: 1px solid var(--border);
+    scroll-margin-top: 24px;
 }
 
 .heading {
+    display: flex;
+    align-items: center;
+    gap: 8px;
     margin: 0;
-    color: var(--text-2);
-    font-size: 13px;
+    color: var(--text);
+    font-size: 14px;
     font-weight: 600;
+}
+
+.count {
+    min-width: 20px;
+    padding: 1px 6px;
+    border-radius: 9px;
+    background: var(--raised);
+    color: var(--text-3);
+    font-size: 11.5px;
+    font-weight: 500;
+    text-align: center;
+}
+
+.empty {
+    margin: 0;
+    color: var(--text-3);
+    font-size: 13px;
 }
 
 .comment {
     display: flex;
-    flex-direction: column;
-    gap: 6px;
+    gap: 12px;
 }
 
 .comment.waiting {
     opacity: 0.6;
 }
 
+.mark {
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: oklch(0.45 0.09 var(--hue));
+    color: #fff;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.said {
+    display: flex;
+    flex: 1;
+    min-width: 0;
+    flex-direction: column;
+    gap: 3px;
+}
+
 .who {
     display: flex;
-    align-items: center;
+    align-items: baseline;
     gap: 8px;
     font-size: 12.5px;
 }
 
-.mark {
-    display: grid;
-    place-items: center;
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    background: var(--raised);
-    color: var(--text-2);
-    font-size: 11px;
-    text-transform: uppercase;
-}
-
 .name {
     color: var(--text);
-    font-weight: 500;
+    font-weight: 600;
 }
 
 .when {
@@ -140,62 +117,11 @@ async function send() {
 }
 
 .text {
-    margin: 0 0 0 28px;
+    margin: 0;
     color: var(--text);
     font-size: 14px;
     line-height: 1.55;
     white-space: pre-wrap;
     overflow-wrap: anywhere;
-}
-
-.write {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-
-.as {
-    margin: 0;
-    color: var(--text-3);
-    font-size: 12.5px;
-}
-
-.change {
-    padding: 0;
-    border: 0;
-    background: none;
-    color: var(--accent-text);
-    font: inherit;
-    cursor: pointer;
-}
-
-textarea {
-    width: 100%;
-    box-sizing: border-box;
-    padding: 10px 12px;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    background: var(--raised);
-    color: var(--text);
-    font: inherit;
-    font-size: 14px;
-    resize: vertical;
-}
-
-textarea:focus {
-    border-color: var(--accent);
-    outline: none;
-}
-
-.actions {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.error {
-    flex: 1;
-    color: var(--danger);
-    font-size: 12px;
 }
 </style>

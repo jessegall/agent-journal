@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.151.0 — Shared pages look their part, and the board shows who works on what
+
+Shared pages are redone: a strip on top says what is shared and whether you can comment, each kind has its own colour, a shared plan keeps its progress bar in view while scrolling, and when comments are on, a comment bar stays at the bottom of the page. The share dialog is taller and never scrolls, with New link and Open links tabs, and it stops waiting for a new link after 30 seconds with Check again. Services open from Settings, and a plugin card opens only its own. The board shows its domains and roles, each role with a spinner and how many tickets it works on, folding open to those tickets. A role can be global, running once per journal: a second ticket's task for it waits for the first, in any environment. An install that lost its version number updates itself again. Nothing to do.
+
 ## 2.150.0 — The sharing menu is always there, and plugin upgrades report truly
 
 The sharing button stays in the top bar whenever sharing is on, says so when nothing is shared, and opens tunler's request inspector. A plugin install or upgrade waits as long as it takes, so one that succeeds slowly is no longer reported as failed, and the plugin menu says Check for updates. A text setting's box sits under its setting at full width. The empty notifications menu says No notifications, centred. A long command's divider runs edge to edge. A running service keeps its port instead of being handed a new one on every check. Nothing to do.

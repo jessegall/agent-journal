@@ -21,7 +21,7 @@ from features.kanban.board import BoardLanes, Card
 from features.kanban.lanes import Lane
 from features.tickets.details import TicketsDetails
 from features.tickets.resource import Ticket
-from controllers.types import Agents, Questions
+from controllers.types import Agents, Questions, Todos
 from features.plans.controller import READY, Plans
 from resources.base import AGENT, SYSTEM, Refused, Resource
 from resources.shapes import LEVELS, priority_level, rank_before
@@ -102,7 +102,21 @@ class Tickets(Controller):
             found = organization(self.record.root.parent)
         except Refused:
             return []
-        return [{"name": f"{domain.name}/{role.name}", "title": role.title or role.name} for domain in found.domains for role in domain.roles]
+        working = self._role_work()
+        return [{"name": f"{domain.name}/{role.name}", "title": role.title or role.name, "domain": domain.name, "domain_title": domain.title or domain.name,
+                 "tickets": working.get((domain.name, role.name), [])} for domain in found.domains for role in domain.roles]
+
+    def _role_work(self) -> dict:
+        working: dict = {}
+        for ticket in self._running():
+            todos = Todos(Record(self.record.root, ticket.work_environment), actor=SYSTEM)
+            for row in todos.summaries():
+                if row["completed"] or row["deleted"]:
+                    continue
+                todo = todos.load(row["n"])
+                if todo.data.get("role") and todo.data.get("status") == "started":
+                    working.setdefault((todo.data["domain"], todo.data["role"]), []).append({"n": ticket.n, "title": ticket.title})
+        return working
 
     def _slots(self, running: list, sessions: dict) -> Slots:
         kinds = [self._runtime(ticket, sessions, len(running)).kind for ticket in self._standing()]

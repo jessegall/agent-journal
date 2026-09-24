@@ -8,7 +8,14 @@ const BY_HAND = "by hand";
 
 const runsOf = (s) =>
     Object.entries(s.data.runs || {})
-        .map(([key, run]) => ({sequence: s, env: key.split("|")[0], about: key.split("|").slice(1).join("|"), step: run.step, at: run.at}))
+        .map(([key, run]) => ({
+            sequence: s,
+            env: key.split("|")[0],
+            about: key.split("|").slice(1).join("|"),
+            step: run.step,
+            at: run.at,
+            titles: run.titles || s.sections.map((part) => part.title),
+        }))
         .filter((r) => r.env === route.value.env);
 const inHand = computed(() =>
     rows("sequence")
@@ -47,13 +54,13 @@ function open(ref) {
                         </template>
                         <span class="grow" />
                         <span class="run-count">
-                            {{ r.waiting ? "waiting its turn" : `step ${r.step} of ${r.sequence.sections.length}` }}
+                            {{ r.waiting ? "waiting its turn" : `step ${r.step} of ${r.titles.length}` }}
                         </span>
                     </div>
                     <ol class="steps">
-                        <template v-for="(s, i) in r.sequence.sections" :key="s.title">
+                        <template v-for="(title, i) in r.titles" :key="`${i}-${title}`">
                             <li :class="{done: i + 1 < r.step, current: !r.waiting && i + 1 === r.step}">
-                                {{ s.title }}
+                                {{ title }}
                             </li>
                         </template>
                     </ol>

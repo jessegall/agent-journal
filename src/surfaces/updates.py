@@ -16,7 +16,7 @@ KIND = "update"
 
 
 def newer(version: str, than: str) -> bool:
-    return bool(version and than) and counted(version) > counted(than)
+    return bool(version) and (not than or than == "0" or counted(version) > counted(than))
 
 
 def announce(root: Path, version: str = "") -> str:

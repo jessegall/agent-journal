@@ -77,6 +77,9 @@ class Sequences(Controller):
             steps += inner[first - 1:last]
         return steps
 
+    def _titles(self, r) -> list[str]:
+        return [part[SECTION.title] for part in self._steps(r)]
+
     def _check_start(self, starts_on: str) -> None:
         start = starts_on.strip()
         if not start or start in self._moments():
@@ -95,16 +98,17 @@ class Sequences(Controller):
         if not self._steps(r):
             self._refuse(f"sequence {r.n} has no steps: journal sequence section {r.n} \"<step>\" \"<what to do>\"")
         self._mark(r, "Sequence started", about, 1)
-        return self.update(r.n, runs={**r.runs, self._key(about): {"step": 1, "at": time.time()}})
+        return self.update(r.n, runs={**r.runs, self._key(about): {"step": 1, "at": time.time(), "titles": self._titles(r)}})
 
     def next(self, n: int, about: str = ""):
         r = self.load(int(n))
         key = self._key(about)
         if key not in r.runs:
             self._refuse(f"sequence {r.n} is not running{' about ' + about if about else ''}: journal sequence run {r.n} starts it")
-        run = {**r.runs[key], "step": r.runs[key]["step"] + 1, "stepped": time.time()}
+        titles = self._titles(r)
+        run = {**r.runs[key], "step": r.runs[key]["step"] + 1, "stepped": time.time(), "titles": titles}
         runs = {k: v for k, v in r.runs.items() if k != key}
-        going = run["step"] <= len(self._steps(r))
+        going = run["step"] <= len(titles)
         self._mark(r, "Sequence moved on" if going else "Sequence finished", about, run["step"] if going else 0)
         return self.update(r.n, runs={**runs, key: run} if going else runs)
 

@@ -3,10 +3,14 @@ import {sharedData} from "../api/shared.js";
 import {computed, provide, ref, watch} from "vue";
 import {usePoll} from "../poll.js";
 import Icon from "../kit/Icon.vue";
+import {counted} from "../format/number.js";
+import {narrow} from "../platform/view.js";
 import CollectionPage from "../resource/CollectionPage.vue";
 import DocumentPage from "../resource/DocumentPage.vue";
 import PlanPage from "../resource/PlanPage.vue";
+import CommentBar from "./CommentBar.vue";
 import ShareComments from "./ShareComments.vue";
+import ShareStrip from "./ShareStrip.vue";
 import PlanTimeline from "../resource/PlanTimeline.vue";
 import ResourceBody from "../resource/ResourceBody.vue";
 import {peek, route} from "../route.js";
@@ -33,6 +37,22 @@ const kindOf = (type, given = {}) => ({
     takes_comments: false,
     choices: {},
 });
+const LOOKS = {
+    doc: {noun: "document", icon: "docs"},
+    report: {noun: "report", icon: "reports"},
+    collection: {noun: "collection", icon: "folder"},
+    plan: {noun: "plan", icon: "plan"},
+};
+const WORDS_PER_MINUTE = 220;
+const reading = (r) => {
+    const words = [r.abstract, r.brief, ...(r.sections || []).map((section) => section.body)].join(" ").split(/\s+/).filter(Boolean).length;
+    const sections = (r.sections || []).length;
+    return [`${Math.max(1, Math.round(words / WORDS_PER_MINUTE))} min read`, ...(sections ? [counted(sections, "section")] : [])];
+};
+const FACTS = {
+    plan: (r) => [counted((r.data.phases || []).length, "phase"), counted(r.refs.length, "to-do")],
+    collection: (r) => [counted(r.refs.length, "item")],
+};
 const REFRESH_MS = 20000;
 const data = ref(null);
 const failed = ref(false);
@@ -83,26 +103,48 @@ const shownRef = computed(() => {
     const asked = open ? `${open.type}:${open.n}` : "";
     return data.value?.rows[asked] ? asked : data.value?.share.target;
 });
-const shown = computed(() => {
-    const [type, n] = (shownRef.value || ":").split(":");
+const rowOf = (ref) => {
+    const [type, n] = (ref || ":").split(":");
     return (store.rows[type] || []).find((r) => r.n === Number(n)) || null;
+};
+const shown = computed(() => rowOf(shownRef.value));
+const target = computed(() => rowOf(data.value?.share.target));
+const kind = computed(() => target.value?.type || "");
+const look = computed(() => LOOKS[kind.value] || {noun: kind.value, icon: "docs"});
+const facts = computed(() => (target.value ? (FACTS[kind.value] || reading)(target.value) : []));
+const sideline = computed(() => timeline.value.length > 0 && !narrow.value);
+const sent = ref([]);
+const thread = computed(() => {
+    const known = data.value?.comments || [];
+    return [...known, ...sent.value.filter((c) => !known.some((k) => k.n === c.n))]
+        .filter((c) => c.about === shownRef.value)
+        .sort((a, b) => a.created - b.created);
 });
+const read = ref(0);
+const timelineOpen = ref(false);
+
+function follow(e) {
+    const box = e.target;
+    if (!box.classList?.contains("document-body")) return;
+    read.value = box.scrollTop / Math.max(1, box.scrollHeight - box.clientHeight);
+}
+
+function showThread() {
+    document.getElementById("share-comments")?.scrollIntoView({behavior: "smooth", block: "start"});
+}
 const timeline = computed(() => (shown.value?.type === "plan" ? data.value?.timeline || [] : []));
 const away = computed(() => shownRef.value !== data.value?.share.target);
-const home = computed(() => data.value?.rows[data.value.share.target]);
 const ends = computed(() => {
     const at = data.value?.share.expires;
-    const kind = data.value?.share.comments ? "Read and comment" : "View only";
-    if (!at) return kind;
-    const day = new Date(at * 1000).toLocaleDateString(undefined, {day: "numeric", month: "long", year: "numeric"});
-    return `${kind} · this link ends ${day}`;
+    return at ? new Date(at * 1000).toLocaleDateString(undefined, {day: "numeric", month: "long", year: "numeric"}) : "";
 });
 
 watch(shown, (item) => item && (document.title = item.title));
+watch(shownRef, () => (read.value = 0));
 </script>
 
 <template>
-    <div class="share-app">
+    <div :class="['share-app', `kind-${kind}`]">
         <template v-if="failed">
             <main class="gone">
                 <Icon name="lock" :size="18" />
@@ -111,37 +153,61 @@ watch(shown, (item) => item && (document.title = item.title));
             </main>
         </template>
         <template v-else-if="shown">
-            <div class="strip">
-                <template v-if="away && home">
-                    <a class="back" href="#">
-                        <Icon name="back" :size="12" />
-                        {{ home.title }}
-                    </a>
-                </template>
-                <span class="view-only">
-                    <Icon name="lock" :size="11" />
-                    {{ ends }}
-                </span>
-            </div>
-            <div :class="['view', {aside: timeline.length}]">
-                <DocumentPage :key="shownRef" :resource="shown" read-only>
-                    <template v-if="shown.type === 'collection'">
-                        <CollectionPage :resource="shown" read-only />
-                    </template>
-                    <template v-else-if="shown.type === 'plan'">
-                        <PlanPage :resource="shown" read-only />
-                    </template>
-                    <template v-else>
-                        <ResourceBody :resource="shown" :comments="false" :links="false" read-only />
-                    </template>
+            <ShareStrip
+                :icon="look.icon"
+                :noun="look.noun"
+                :facts="facts"
+                :back="away ? target.title : ''"
+                :comments="data.share.comments"
+                :ends="ends"
+                :read="['doc', 'report'].includes(kind) ? read : -1"
+            />
+            <div :class="['view', {aside: sideline}]">
+                <div class="reading" @scroll.capture="follow">
+                    <DocumentPage :key="shownRef" :resource="shown" read-only>
+                        <template v-if="shown.type === 'collection'">
+                            <CollectionPage :resource="shown" read-only />
+                        </template>
+                        <template v-else-if="shown.type === 'plan'">
+                            <PlanPage :resource="shown" read-only pin-progress />
+                        </template>
+                        <template v-else>
+                            <ResourceBody :resource="shown" :comments="false" :links="false" read-only />
+                        </template>
+                        <template v-if="timeline.length && narrow">
+                            <div class="body">
+                                <section class="inline-timeline">
+                                    <button
+                                        type="button"
+                                        class="timeline-fold"
+                                        :aria-expanded="timelineOpen"
+                                        @click="timelineOpen = !timelineOpen"
+                                    >
+                                        <span class="timeline-heading">Timeline</span>
+                                        <span class="timeline-count">{{ counted(timeline.length, "event") }}</span>
+                                        <span class="timeline-toggle">{{ timelineOpen ? "Hide" : "Show" }}</span>
+                                    </button>
+                                    <template v-if="timelineOpen">
+                                        <PlanTimeline :items="timeline" @open="(n) => peek('todo', n)" />
+                                    </template>
+                                </section>
+                            </div>
+                        </template>
+                        <template v-if="data.share.comments">
+                            <ShareComments :comments="thread" />
+                        </template>
+                        <template #foot>
+                            <footer class="foot">
+                                Shared from an agent journal
+                                <template v-if="ends">· This link ends {{ ends }}</template>
+                            </footer>
+                        </template>
+                    </DocumentPage>
                     <template v-if="data.share.comments">
-                        <ShareComments :about="shownRef" :comments="data.comments" />
+                        <CommentBar :key="shownRef" v-model:sent="sent" :about="shownRef" :count="thread.length" @show="showThread" />
                     </template>
-                    <template #foot>
-                        <footer class="foot">Shared from an agent journal</footer>
-                    </template>
-                </DocumentPage>
-                <template v-if="timeline.length">
+                </div>
+                <template v-if="sideline">
                     <aside class="share-timeline">
                         <h2 class="timeline-heading">Timeline</h2>
                         <PlanTimeline :items="timeline" @open="(n) => peek('todo', n)" />
@@ -160,50 +226,41 @@ watch(shown, (item) => item && (document.title = item.title));
 
 <style scoped>
 .share-app {
+    --kind: var(--accent);
     display: flex;
     flex-direction: column;
     height: 100%;
     background: var(--bg);
 }
 
-.strip {
-    flex: none;
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 4px 12px;
-    padding: 7px 18px;
-    border-bottom: 1px solid var(--border);
-    background: var(--side);
-    color: var(--text-3);
-    font-size: 11.5px;
+.kind-report {
+    --kind: var(--tone-commit);
 }
 
-.back {
-    display: inline-flex;
-    max-width: 100%;
-    min-width: 0;
-    align-items: center;
-    gap: 6px;
-    overflow: hidden;
-    color: var(--text-2);
-    text-overflow: ellipsis;
-    white-space: nowrap;
+.kind-collection {
+    --kind: var(--tone-warn);
 }
 
-.back:hover {
-    color: var(--text);
-}
-
-.view-only {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    margin-left: auto;
+.kind-plan {
+    --kind: var(--progress);
 }
 
 .view {
     flex: 1;
+    min-height: 0;
+}
+
+.reading {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-width: 0;
+    min-height: 0;
+}
+
+.reading > .document {
+    flex: 1;
+    height: auto;
     min-height: 0;
 }
 
@@ -213,26 +270,58 @@ watch(shown, (item) => item && (document.title = item.title));
 }
 
 .share-timeline {
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
     padding: 36px 24px 40px;
     border-left: 1px solid var(--border);
     background: var(--side);
+}
+
+.inline-timeline {
+    margin-bottom: 8px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--side);
+}
+
+.timeline-fold {
+    display: flex;
+    width: 100%;
+    align-items: baseline;
+    gap: 8px;
+    padding: 14px 16px;
+    border: 0;
+    background: none;
+    color: var(--text);
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+.timeline-fold .timeline-heading {
+    margin: 0;
+}
+
+.timeline-count {
+    flex: 1;
+    color: var(--text-3);
+    font-size: 12.5px;
+}
+
+.timeline-toggle {
+    color: var(--accent-text);
+    font-size: 12.5px;
+}
+
+.inline-timeline > :not(.timeline-fold) {
+    padding: 0 16px 12px;
 }
 
 .timeline-heading {
     margin: 0 0 6px;
     font-size: 13px;
     font-weight: 600;
-}
-
-@media (max-width: 900px) {
-    .view.aside {
-        display: block;
-    }
-
-    .share-timeline {
-        border-top: 1px solid var(--border);
-        border-left: 0;
-    }
 }
 
 .foot {
