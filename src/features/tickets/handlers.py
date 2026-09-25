@@ -12,7 +12,6 @@ from features.tickets.details import TicketsDetails
 from resources.base import SYSTEM, Refused
 
 CHECK_AFTER = 300
-ONE_OFF = ("ticket_replied",)
 LOOK_AGAIN = 900
 
 
@@ -46,8 +45,8 @@ class LookAfterTicketBranches(Handler):
                 context.agent.whisper(permission, ticket=ticket.n, title=ticket.title)
         boards = tickets._orchestrating()
         for ticket in [t for t in tickets._standing() if t.work_environment and t.board and int(t.board) in boards]:
-            for kind, key, values in tickets._calls(ticket):
-                if context.once(kind, f"{ticket.ref}|{key}" + ("" if kind in ONE_OFF else f"|{reminder(context)}")):
+            for kind, key, values, every in tickets._calls(ticket):
+                if context.once(kind, f"{ticket.ref}|{key}" + (f"|{int(time.time() // (max(1, every) * 60))}" if every else "")):
                     context.agent.whisper(kind, ticket=ticket.n, title=ticket.title, **values)
         self.check_on_board(context, tickets)
         self.look_at_tickets(context, tickets)

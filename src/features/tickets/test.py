@@ -335,6 +335,8 @@ def test_a_plan_waiting_for_approval_is_read_and_approved_from_its_card(monkeypa
     from controllers.types import Works
     waiting = Works(Record(record.root, "ticket-1"), actor=AGENT)
     waiting.update(waiting.create("the theme").n, awaiting="the user's pick of theme")
+    running = Works(Record(record.root, "ticket-1"), actor=AGENT, agent="sub-1")
+    running.update(running.create("the long run").n, awaiting="the parity run over Chronos")
     plan = plans.create("Dark mode plan", goal="a dark theme")
     plans.phase(plan.n, "Build it", when="it is built")
     plans.stage(plan.n, "todos")
@@ -393,6 +395,8 @@ def test_a_plan_waiting_for_approval_is_read_and_approved_from_its_card(monkeypa
     monkeypatch.setattr(time, "time", lambda: started + 120 + 300)
     tick(record)
     assert asked_count() == 2, "while the question still waits, the orchestrator is reminded every five minutes, not every minute"
+    assert nudges(record).count(f"ticket {ticket.n}, Dark mode, is waiting - the parity run over Chronos") == 1, \
+        "an agent waiting on its own run is announced once, not every five minutes"
     told = []
     monkeypatch.setattr(Tickets, "tell", lambda self, n, note: told.append((n, note)))
     Environments(record, actor=SYSTEM).create("ticket-1", owner=ticket.ref)
