@@ -146,10 +146,11 @@ def test_a_filed_dump_is_summed_up_with_suggestions_the_user_takes_or_leaves():
     assert (list(agent.load(dump.n).data["taken"]), agent.load(dump.n).data["declined"]) == (["0"], [1]), "what was taken and left is kept"
     user.direct(dump.n, "Where did the room booking go?")
     asked = [m for m in Messages(record, actor=USER)._standing() if dump.ref in m.refs]
-    assert [m.brief for m in asked] == ["Where did the room booking go?"], "the user's own words reach the agent and the chat as a message about the dump"
+    assert [(m.brief, m.data["window"]) for m in asked] == [("Where did the room booking go?", dump.ref)], \
+        "the user's own words reach the agent as a message written in the dump's window, which the main chat leaves out"
     agent.say(dump.n, "It is under Meetings, as Room booking for Thursday.")
     assert agent.load(dump.n).data["log"][-1]["answer"], "an answer in the dump lands in its chat"
-    assert CONTROLLERS["agent"](record).primary().data["cards"][-1]["label"] == f"Answered in dump {dump.n}", "the chat marks that it was answered in the dump"
+    assert not [c for c in CONTROLLERS["agent"](record).primary().data.get("cards") or [] if "dump" in c["label"]], "and nothing about it reaches the main chat"
     agent.log(dump.n, "Booked the room", detail="Room 4, Thursday")
     assert agent.load(dump.n).data["log"][-1]["text"] == "Booked the room", "the agent logs what it does after the summary"
 

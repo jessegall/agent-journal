@@ -2,7 +2,7 @@ import time
 from dataclasses import dataclass
 from typing import ClassVar
 
-from engine.events import AgentMessageSent, AgentReported, AnyEvent, ClockTicked, ResourceEvent
+from engine.events import AgentMessageSending, AgentReported, AnyEvent, ClockTicked, ResourceEvent
 from engine.sessions import Sessions
 from engine.transcript import IDLE
 from features.parts import AgentContext, Context, Handler
@@ -127,10 +127,11 @@ def chat_rule(sequence) -> str:
 
 
 class KeepOutOfTheChat(Handler):
-    def handle(self, context: AgentContext, event: AgentMessageSent) -> None:
+    def handle(self, context: AgentContext, event: AgentMessageSending) -> None:
         found = context.journal.sequences._in_hand()
         if not found or not found[0].talks_in or not event.text.strip():
             return
+        event.stop()
         sequence, key, run = found
         if context.once(IN_CHAT, f"{sequence.n}|{key}|{run['at']}"):
             context.agent.whisper(IN_CHAT, title=sequence.title, place=sequence.talks_in)

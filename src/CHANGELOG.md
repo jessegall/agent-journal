@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.182.0 — A window's own chat stays in that window
+
+What you write in the dump's chat or the board's New work panel is kept to that window: the agent still hears it, but the main chat no longer shows it, and the dump no longer puts an "Answered in dump" mark in the main chat. While the agent follows a sequence that talks in a window, what it writes is kept out of the main chat too, and it is told once to answer in the window instead; anything you must know outside it, it sends as a message. The sequence's own mark in the chat still shows that it is busy there. Nothing to do.
+
 ## 2.181.2 — Parked and blocked work named every time
 
 Each time the agent ends work or closes a to-do it is told which work is parked and asked whether it can continue it, and each closed to-do asks about every to-do blocked on something outside whether it still is; a to-do waiting on another is left out. Before, parked work was named at most every ten minutes and blocked to-dos every fifth closed to-do; now a minute's pause only keeps a burst of closes from repeating it. Nothing to do.
