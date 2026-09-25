@@ -2,7 +2,7 @@ import time
 from dataclasses import dataclass
 from typing import ClassVar
 
-from engine.events import AgentReported, AnyEvent, ClockTicked, ResourceEvent
+from engine.events import AgentMessageSent, AgentReported, AnyEvent, ClockTicked, ResourceEvent
 from engine.sessions import Sessions
 from engine.transcript import IDLE
 from features.parts import AgentContext, Context, Handler
@@ -12,6 +12,7 @@ from resources.base import SECTION
 from resources.types import TYPES
 
 STEP = "step"
+IN_CHAT = "in_chat"
 UNFINISHED = "unfinished"
 WAITING = "waiting"
 NUDGE_EVERY = 120
@@ -109,7 +110,22 @@ class HandStepToAgent(Handler):
             steps = context.journal.sequences._steps(sequence)
             part = steps[run["step"] - 1]
             speaking.agent.say(STEP, n=sequence.n, title=sequence.title, step=run["step"], count=len(steps),
-                               name=part[SECTION.title], body=filled(context, sequence.n, key, part[SECTION.body]), about=about_flag(key))
+                               name=part[SECTION.title], body=filled(context, sequence.n, key, part[SECTION.body]), about=about_flag(key),
+                               chat_rule=chat_rule(sequence))
+
+
+def chat_rule(sequence) -> str:
+    return f" Write nothing in the chat while this runs: the user is in {sequence.talks_in}." if sequence.talks_in else ""
+
+
+class KeepOutOfTheChat(Handler):
+    def handle(self, context: AgentContext, event: AgentMessageSent) -> None:
+        found = context.journal.sequences._in_hand()
+        if not found or not found[0].talks_in or not event.text.strip():
+            return
+        sequence, key, run = found
+        if context.once(IN_CHAT, f"{sequence.n}|{key}|{run['at']}"):
+            context.agent.whisper(IN_CHAT, title=sequence.title, place=sequence.talks_in)
 
 
 def asked_since(context: AgentContext, at: float) -> bool:

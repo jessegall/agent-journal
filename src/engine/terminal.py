@@ -64,8 +64,10 @@ def launching(root: Path, cwd: Path, env: str, agent: str, args: list[str], conv
     from features.work_tracking.auto import launch_args
     driver = DRIVERS[agent]
     command = driver.command(driver, driver.resumed(launch_args(Record(root, env), agent, args), conversation), cwd)
+    provider = PROVIDERS[agent]()
+    inherited = {name: value for name, value in os.environ.items() if name not in provider.session_markers}
     return {"command": command, "args": args, "launch": LAUNCH, "exit": "" if driver.worktree(args) else driver.EXIT,
-            "environ": agent_environment(env=env, capped={**output_cap(root, env, PROVIDERS[agent]()), **session_named(PROVIDERS[agent]())})}
+            "environ": agent_environment(inherited, env=env, capped={**output_cap(root, env, provider), **session_named(provider)})}
 
 
 @dataclass(frozen=True)

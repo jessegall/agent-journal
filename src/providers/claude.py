@@ -1,4 +1,5 @@
 import json
+import os
 import re
 import shutil
 import time
@@ -180,7 +181,7 @@ class Claude(Provider):
         known = read_json(f, {})
         servers = known.get("mcpServers") or {}
         words = command.split()
-        servers["journal"] = {"command": "python3", "args": [str(Path(words[3]) / "journal.py"), "-m", "channel", words[3]]}
+        servers[SERVER] = {"command": "python3", "args": [str(Path(words[3]) / "journal.py"), "-m", "channel", words[3]]}
         write_text(f, json.dumps({**known, "mcpServers": servers}, indent=2) + "\n")
 
     def wire(self, project: Path, command: str) -> Path:
@@ -248,6 +249,8 @@ class Claude(Provider):
         return hook.source == "compact"
 
     session_variable = "CLAUDE_CODE_SESSION_ID"
+    session_markers = ("CLAUDECODE", "CLAUDE_PID", "CLAUDE_CODE_ENTRYPOINT", "CLAUDE_CODE_EXECPATH", "CLAUDE_CODE_CHILD_SESSION",
+                       "CLAUDE_CODE_SESSION_ID", "CLAUDE_CODE_SESSION_ATTENDED", "CLAUDE_CODE_MESSAGING_SOCKET", "CLAUDE_CODE_MESSAGING_TOKEN")
 
     def shell_wrapper(self, script: Path) -> dict:
         return {"CLAUDE_CODE_SHELL_PREFIX": str(script)}
@@ -540,6 +543,13 @@ CONFIRM_WAIT = 4.0
 CONFIRM_POLL = 0.25
 
 
+SERVER = "journal"
+
+
+def claude_state() -> Path:
+    return Path(os.environ.get("CLAUDE_CONFIG_DIR") or Path.home()) / ".claude.json"
+
+
 class ClaudeDriver(Driver):
     DISPLAY_HOOK = True
     SHELL = "!"
@@ -551,13 +561,24 @@ class ClaudeDriver(Driver):
     WORKTREES = (".claude", "worktrees")
     EXIT = "/exit"
     TAKES_OURS = ("--settings", json.dumps({"crossSessionInbound": "accept"}))
-    CHANNEL = ("--dangerously-load-development-channels", "server:journal")
+    CHANNEL = ("--dangerously-load-development-channels", f"server:{SERVER}")
     LISTENING = 15.0
     MOVE_TO_BACKGROUND = b"\x02"
     name = "claude"
 
     def command(self, args: list[str], cwd: Path | None = None) -> list[str]:
         return ["claude", *(() if self.TAKES_OURS[0] in args else self.TAKES_OURS), *self.CHANNEL, *args]
+
+    @classmethod
+    def trusted(cls, folder: Path) -> None:
+        state = claude_state()
+        known = read_json(state, {})
+        projects = known.get("projects") or {}
+        entry = projects.get(str(folder.resolve())) or {}
+        approved = entry.get("enabledMcpjsonServers") or []
+        wanted = {**entry, "hasTrustDialogAccepted": True, "enabledMcpjsonServers": approved if SERVER in approved else [*approved, SERVER]}
+        if wanted != entry:
+            write_json(state, {**known, "projects": {**projects, str(folder.resolve()): wanted}}, indent=2)
 
     @classmethod
     def latest(cls, project: Path) -> str:

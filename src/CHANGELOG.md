@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.156.0 — Ticket agents start on their own and stay out of the chat
+
+A ticket's agent no longer stops at start: the worktree it opens is recorded as trusted in Claude's settings with the journal's server approved, so Claude asks nothing about it, and an agent launched from inside a Claude session no longer inherits that session's markers, which had turned its transcript off and kept the skill gate shut. An agent whose environment belongs to a ticket, a plan or a role works in the background: no hello line and no browser tab. The New work sequences and Filing a dump tell the agent on every step to write nothing in the chat, and say so once if it does; journal board log posts progress lines to the New work panel, which shows them and says No answer yet only after real silence; each step of those sequences has twenty status lines of its own, sounding surer as the agent understands more; offering groups is its own drafting step, and a group offered after the cards were added no longer fails. The panel fades its content out before it changes width, skeleton lines keep small gaps, and Pick this ticket in More info closes the detail. Chat mark groups take their marks' colour. Nothing to do.
+
 ## 2.155.0 — A sequence already running is never started over
 
 A trigger or a moment that fires again while its sequence is running about the same row no longer starts it over at step 1; the run carries on where it is, and starting it again by hand is refused with the step it is at. Only the Sequence started mark in the chat names what the run is about; the marks after it leave the chip out. Nothing to do.

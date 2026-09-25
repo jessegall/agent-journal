@@ -1,7 +1,7 @@
 from engine import viewer
 from engine.events import AgentChanged
 from features import trigger
-from features.parts import AgentContext, Handler
+from features.parts import AgentContext, Handler, in_background
 
 WRITTEN = ("created", "updated", "reported")
 
@@ -9,7 +9,7 @@ WRITTEN = ("created", "updated", "reported")
 class ShowViewerTab(Handler):
     def handle(self, context: AgentContext, event: AgentChanged) -> None:
         row = context.agent.row
-        if event.action not in WRITTEN or row.event != "SessionStart" or row.parent:
+        if event.action not in WRITTEN or row.event != "SessionStart" or row.parent or in_background(context.record):
             return
         if trigger.last(context.record, row.title, context.feature.name).viewer_opened:
             return

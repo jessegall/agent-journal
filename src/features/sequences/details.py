@@ -1,5 +1,5 @@
 from features.base import FeatureDetails, Line
-from features.sequences.handlers import STEP, UNFINISHED, WAITING
+from features.sequences.handlers import IN_CHAT, STEP, UNFINISHED, WAITING
 
 
 class SequencesDetails(FeatureDetails):
@@ -43,6 +43,11 @@ class SequencesDetails(FeatureDetails):
 
     lines = [
         Line(
+            name=IN_CHAT,
+            title="you wrote in the chat during {{title}}",
+            brief="the user is in {{place}} and does not read the chat while it runs; say it there, or not at all",
+        ),
+        Line(
             name=UNFINISHED,
             title="sequence {{n}}, {{title}}, is still at step {{step}} of {{count}} - carry on with it",
             brief="""
@@ -61,6 +66,6 @@ class SequencesDetails(FeatureDetails):
         Line(
             name=STEP,
             title="sequence {{n}}, {{title}}, step {{step}} of {{count}} - {{name}}",
-            brief="{{body}} When it is done: journal sequence next {{n}}{{about}}",
+            brief="{{body}}{{chat_rule}} When it is done: journal sequence next {{n}}{{about}}",
         ),
     ]

@@ -116,9 +116,14 @@ class Driver(ABC):
             raise SystemExit(f"journal: {name!r} cannot name a worktree; use one plain word, without a colon or a slash")
         anchor = main_checkout(project)
         made = linked(anchor).get(name)
-        if made and made.resolve() != anchor.joinpath(*cls.WORKTREES, name).resolve():
-            return made, cls.unworktreed(args)
-        return opened(anchor, anchor.joinpath(*cls.WORKTREES, name), cls.branch(name)), cls.unworktreed(args)
+        if not made or made.resolve() == anchor.joinpath(*cls.WORKTREES, name).resolve():
+            made = opened(anchor, anchor.joinpath(*cls.WORKTREES, name), cls.branch(name))
+        cls.trusted(made)
+        return made, cls.unworktreed(args)
+
+    @classmethod
+    def trusted(cls, folder: Path) -> None:
+        return None
 
     @classmethod
     def prompted(cls, args: list[str], prompt: str) -> list[str]:
