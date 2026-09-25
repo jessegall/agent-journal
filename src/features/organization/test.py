@@ -45,6 +45,8 @@ def test_a_task_is_delegated_to_a_role_queues_behind_its_own_and_is_reported_aga
     write(home / "domain.toml", 'title = "Engineering"\nlead = "lead"\n')
     write(home / "roles" / "lead" / "role.toml", 'title = "Engineering lead"\n')
     write(home / "roles" / "developer" / "role.toml", 'title = "Developer"\ninputs = ["acceptance"]\noutputs = ["tests"]\nmodel = "sonnet"\n')
+    write(home / "roles" / "developer" / "AGENTS.md", "Write tests first.\n")
+    write(home / "skills" / "review" / "SKILL.md", "Review before merging.\n")
     todos = Todos(record, actor=AGENT)
     delegate = lambda *args, **kwargs: COMMANDS["todo"]["delegate"](todos, *args, **kwargs)
     assert "needs acceptance" in refused(lambda: delegate("Build dark mode", "engineering", role="developer")), "a task must carry its role's inputs"
@@ -52,6 +54,8 @@ def test_a_task_is_delegated_to_a_role_queues_behind_its_own_and_is_reported_aga
     second = delegate("Build search", "engineering", role="developer", given="acceptance: results in 100ms")
     assert (first["waits"], second["waits"], "You are Developer in Engineering." in first["brief"], "with model sonnet" in first["brief"]) == (0, first["todo"], True, True), \
         "a role one of a kind per ticket takes its tasks one after another, and each comes with its lead's brief"
+    assert (str(home / "roles" / "developer" / "AGENTS.md") in first["brief"], str(home / "skills" / "review" / "SKILL.md") in first["brief"]) == (True, True), \
+        "the brief points at the role's AGENTS.md and at the skills of its role and domain"
     reporter = Todos(record, actor=AGENT, agent="a1")
     assert "does not mention tests" in refused(lambda: reporter.report(first["todo"], "built it")), "a report must cover the role's outputs"
     assert reporter.report(first["todo"], "built it; tests pass").data["reported"]["how"] == "built it; tests pass"
