@@ -187,7 +187,7 @@ class Tickets(Controller):
         return Plans(Record(self.record.root, ticket.work_environment), actor=self.actor)
 
     def approve_plan(self, n: int):
-        return self._decide_plan(n, READY, "approve", Plans.approve, "is approved by the orchestrator: start it now with journal plan start {plan}.")
+        return self._decide_plan(n, READY, "approve", Plans.approve, "")
 
     def continue_plan(self, n: int):
         return self._decide_plan(n, WAITING, "continue", Plans.resume, "is past its checkpoint: carry on with its next phase.")
@@ -203,8 +203,11 @@ class Tickets(Controller):
             self._refuse(f"only the user may {word} the plan of {self.type} {ticket.n}, or the agent orchestrating its board when "
                          f"orchestrator_approves_plans is set; never the agent that wrote it")
         act(Plans(Record(self.record.root, ticket.work_environment), actor=SYSTEM), int(ticket.plan))
-        if self.agent_session(ticket.n):
-            self.tell(ticket.n, f"Your plan {ticket.plan} " + told.format(plan=ticket.plan))
+        if told and self.agent_session(ticket.n):
+            try:
+                self.tell(ticket.n, f"Your plan {ticket.plan} " + told.format(plan=ticket.plan))
+            except Refused:
+                pass
         return ticket
 
     def _plan_status(self, ticket) -> str:
