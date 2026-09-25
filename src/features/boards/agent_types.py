@@ -35,7 +35,7 @@ def steps_of(sequence: dict) -> str:
 
 AGENT_TYPES = (
     AgentType(FILLER, "Fills a board with the cards that reach the user's goal, following the board's sequences. Dispatch it for a New work "
-              "request on a board.", "Bash, Read", "filler_model",
+              "request on a board.", "Bash, Read, Grep, Glob", "filler_model",
               "You fill one board and do nothing else. The journal command is on your PATH: run it as journal --agent board-filler "
               "<noun> <word>. Every sequence you follow is written out below, so you know each step before the journal hands it to "
               "you and never read a sequence back. journal board score and journal sequence next each answer with your next step, "

@@ -101,8 +101,12 @@ class Tickets(Controller):
             return self.update(known.n, title=title, abstract=abstract or None, brief=brief or None)
         if data.get("draft") and self.actor == AGENT and Boards(self.record, actor=self.actor).cancelled_lately(data["board"]):
             self._refuse(f"the request on board {data['board']} was cancelled, so stop drafting")
+        after = [word.strip() for word in str(data.pop("after", "") or "").split(",") if word.strip()]
         opening = self._stages(data.get("board"))[:1]
-        return super().create(title, abstract, brief, source=source, **{**dict(zip(["stage"], opening)), **data})
+        made = super().create(title, abstract, brief, source=source, **{**dict(zip(["stage"], opening)), **data})
+        for other in after:
+            made = self.depend(made.n, int(other))
+        return made
 
     @internal
     def save(self, r: Resource, action: str, **event) -> Resource:
