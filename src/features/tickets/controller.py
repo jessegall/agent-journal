@@ -131,7 +131,10 @@ class Tickets(Controller):
     def _slots(self, running: list, sessions: dict) -> Slots:
         kinds = [self._runtime(ticket, sessions, len(running)).kind for ticket in self._standing()]
         return Slots([{"n": ticket.n, "title": ticket.title, "board": int(ticket.board)} for ticket in running],
-                     int(TicketsDetails.values(self.record).running), kinds.count("queued"), kinds.count("you"))
+                     self._limit(), kinds.count("queued"), kinds.count("you"))
+
+    def _limit(self) -> int:
+        return max(0, int(TicketsDetails.values(self.record).running))
 
     def _card(self, ticket, stage: str, stages: list, sessions: dict, running: int) -> Card:
         extras = [extra(self.record, ticket) for extra in CARD_EXTRAS]
@@ -296,7 +299,8 @@ class Tickets(Controller):
             return CardState("blocked", f"waiting on {', '.join(ref.replace(':', ' ') for ref in waits)}")
         if ticket.queued:
             position = ordinal(self._queue().index(ticket.n) + 1)
-            return CardState("queued", f"{position} in the queue, starts when one of {TicketsDetails.values(self.record).running} agents finishes")
+            return CardState("queued", f"{position} in the queue, starts when one of {self._limit()} agents finishes" if self._limit()
+                             else f"{position} in the queue, starts with the next minute's check")
         return CardState("stopped", "stopped")
 
     def _live_state(self, row) -> CardState:
@@ -539,7 +543,7 @@ class Tickets(Controller):
                 return self._hand_to_plan(ticket)
             if self._live(ticket):
                 return ticket
-            if self._waiting_on(ticket) or len({r.work_environment for r in self._running()}) >= int(TicketsDetails.values(self.record).running):
+            if self._waiting_on(ticket) or 0 < self._limit() <= len({r.work_environment for r in self._running()}):
                 return self.update(ticket.n, queued=True, queued_at=ticket.queued_at or time.time())
             driver, place = DRIVERS[ticket.agent], ticket.work_environment
             earlier = Sessions(self.record.root).last(place, ticket.agent)

@@ -145,6 +145,10 @@ def test_moving_a_ticket_to_its_start_stage_launches_its_agent_once_in_its_workt
     Sessions(record.root).unbind("claude-7")
     tickets.start_queued()
     assert (tickets.load(second.n).queued, launched[-1][0]) == (False, f"ticket-{second.n}"), "when a slot frees, the queued ticket starts"
+    record.set_setting("tickets", {"running": 0})
+    third = tickets.create("Share", board=board.n)
+    assert (tickets.move(third.n, "Building").queued, launched[-1][0]) == (False, f"ticket-{third.n}"), \
+        "with no limit, every started ticket gets its agent at once"
     import time
     record.set_setting("tickets", {"running": 5})
     tickets.update(ticket.n, launched=time.time() - 120)
