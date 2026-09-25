@@ -13,7 +13,7 @@ import {store, word} from "../state/store.js";
 import {rows} from "../sync/rows.js";
 import {useFloatingChat} from "../composables/floatingChat.js";
 import {useStepAbout} from "../composables/sequenceRuns.js";
-import {FIRST_STEP, STEP_LINES} from "./stepLines.js";
+import {FIRST_STEP, PICKED_LINES, STEP_LINES} from "./stepLines.js";
 import Suggestion from "./Suggestion.vue";
 import AskedQuestion from "./AskedQuestion.vue";
 import DraftDetail from "./DraftDetail.vue";
@@ -75,9 +75,12 @@ const step = useStepAbout(() => drafting.value.asked || []);
 const stepAt = ref(0);
 watch(step, () => (stepAt.value = Date.now() / 1000), {immediate: true});
 const progress = computed(() => (drafting.value.log || []).at(-1));
-const thinking = computed(() =>
-    progress.value && progress.value.at > stepAt.value ? [progress.value.text] : STEP_LINES[step.value] || STEP_LINES[FIRST_STEP]
-);
+const pickedSince = computed(() => boardQuestions.value.some((q) => q.completed > stepAt.value && q.outcome !== START_OVER));
+const thinking = computed(() => {
+    if (progress.value && progress.value.at > stepAt.value) return [progress.value.text];
+    if (pickedSince.value) return PICKED_LINES;
+    return STEP_LINES[step.value] || STEP_LINES[FIRST_STEP];
+});
 const startedOver = computed(() => boardQuestions.value.find((q) => q.completed && q.outcome === START_OVER));
 const conversation = computed(() =>
     [

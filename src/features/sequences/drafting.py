@@ -9,11 +9,11 @@ DRAFTING = {
     "started_by": "",
     "talks_in": PANEL,
     "steps": [
-        ("Guess the count", "Before your first card, guess how many you will write, on the low side: journal board expect "
-                            "<board n> <count>. The panel shows that many placeholders. You may not finish with fewer cards "
+        ("Guess the count", "Before your first card, guess how many you will write, at least 6 and preferably 8: journal board "
+                            "expect <board n> <count>. The panel shows that many placeholders. You may not finish with fewer cards "
                             "than you guessed. Then journal sequence next <this sequence> --about <ref>."),
-        ("Draft the cards", "Most requests are one card. Draft one card per piece of work that can be built, reviewed and "
-                            "merged on its own branch; the steps inside it go in its brief. Draft them in the order they "
+        ("Draft the cards", "Draft at least 6 cards, preferably 8, as many as the request logically holds: one card per piece of "
+                            "work that can be built, reviewed and merged on its own branch; the steps inside it go in its brief. Draft them in the order they "
                             "should run: journal ticket create \"<the work>\" --abstract \"<one line>\" --brief \"<the card's "
                             "back>\" --set about=<ref> --set board=<n> --set draft=true --set source=user. The title names the work "
                             "in a few words; the abstract is one line of at most 140 characters; the brief has five short "
