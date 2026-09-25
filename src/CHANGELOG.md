@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.178.0 — A worktree across a folder of repositories
+
+Started with a worktree in a folder that holds several git repositories, such as worldwatchmarket, the journal makes one working folder, .claude/worktrees/<name>, with a worktree of every repository in it on the same branch, worktree-<name>, and links the folder's own files (CLAUDE.md, AGENTS.md, skills, the journal) in. A folder that is a repository with others inside it gets its own worktree with theirs placed in it. Leaving it keeps each repository's work, as for any worktree. Tickets on such a folder come next. Nothing to do.
+
 ## 2.177.0 — A shared link shows a proper preview
 
 A share link pasted into Slack, WhatsApp or anywhere else that previews links now shows the shared item's title, its one-line abstract and a picture: its first attached image, or a card in the project's colour. The ask-questions skill now shows the right form for answering a question yourself: journal question answer <n> --how "<choice>" --set reason="<why>". Nothing to do.
