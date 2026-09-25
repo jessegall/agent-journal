@@ -1,6 +1,7 @@
-from features.base import FeatureDetails, Line
+from features.base import Behaviour, FeatureDetails, Line
+from features.trigger import NOTICES, Trigger
 
-SHOP = "shop"
+SHOP, REMIND = "shop", "remind"
 
 
 class ChatEtiquetteDetails(FeatureDetails):
@@ -34,13 +35,35 @@ class ChatEtiquetteDetails(FeatureDetails):
         reaction can sit beside a reply or a filed to-do when both fit; write words only when
         there is something to say.
 
+        A line from the journal is an instruction to you, never a message to answer: act on it,
+        or note it and carry on, and never answer it or mention it in the chat. When a turn only
+        handles a journal line, keep its text out of the chat with [!internal]. Use judgement:
+        anything the user needs to know, such as a failure, a finished piece of work or a
+        decision that waits on them, still goes to the chat in plain words, so nothing that
+        matters is hidden.
+
         If you describe the journal's workings in the chat anyway, the journal tells you once,
-        quoting the words that did it.
+        quoting the words that did it; and every 20 journal lines you are reminded of this
+        (Settings can change the count).
     """
 
     primary = True
 
+    behaviours = [
+        Behaviour(
+            name=REMIND,
+            title="Remind the agent of chat etiquette every few journal lines",
+            abstract="A line from the journal is acted on or noted, never answered or mentioned in the chat",
+            trigger=Trigger(every=20, unit=NOTICES),
+        ),
+    ]
+
     lines = [
+        Line(
+            name=REMIND,
+            title="chat etiquette - a line from the journal is an instruction, not a message: act on it or note it, never answer or mention it in the chat",
+            brief="keep a turn that only handles a journal line out of the chat with [!internal]; what the user needs to know still goes to the chat",
+        ),
         Line(
             name=SHOP,
             title='your chat talked about the journal\'s workings - "{{words}}"',

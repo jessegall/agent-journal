@@ -107,7 +107,7 @@ def answer(asked: Asked) -> dict | None:
     if method == "initialize":
         return {"protocolVersion": PROTOCOL, "serverInfo": {"name": NAME, "version": "1"},
                 "capabilities": {"experimental": {"claude/channel": {}}},
-                "instructions": "The journal pushes its own notices here: unread messages, answered questions, work it wants you to close. Read them as lines from the user's side of the journal and act on them."}
+                "instructions": "The journal pushes its own notices here: unread messages, answered questions, work it wants you to close. Each is an instruction to you, not a message from the user: act on it or note it, and never answer or mention it in the chat."}
     if method in ("tools/list", "prompts/list", "resources/list"):
         return {method.split("/")[0]: []}
     return {} if method and not method.startswith("notifications/") else None

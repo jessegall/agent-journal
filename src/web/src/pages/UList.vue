@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import {COUNTED, EVENTS} from "./cadence.js";
 
-const LABELS = {percent: "% of context", uses: "tool calls", minutes: "minutes", idle: "at rest", worked: "after work", start: "at start"};
+const LABELS = {percent: "% of context", uses: "tool calls", minutes: "minutes", idle: "at rest", worked: "after work", start: "at start", notices: "journal lines"};
 
 defineProps<{f: unknown}>();
 defineEmits<{marks: [unknown, unknown]; every: [unknown, unknown]; unit: [unknown, unknown]}>();
