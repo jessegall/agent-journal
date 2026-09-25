@@ -55,8 +55,12 @@ async function draft() {
                             <p class="description">No agent in this domain is working right now.</p>
                         </template>
                         <template v-for="agent in domain.working" :key="`${agent.role}.${agent.n}.${agent.env}`">
-                            <button type="button" class="working-row" @click="peek('ticket', agent.n)">
-                                <ListRow :kind="agent.role_title" :title="`Ticket ${agent.n}`" :text="agent.env || agent.worktree">
+                            <button type="button" class="working-row" @click="agent.plan ? peek('plan', agent.plan) : peek('ticket', agent.n)">
+                                <ListRow
+                                    :kind="agent.role_title"
+                                    :title="agent.plan ? `For plan ${agent.plan}` : `Ticket ${agent.n}`"
+                                    :text="agent.env || agent.worktree"
+                                >
                                     {{ agent.title }}
                                 </ListRow>
                             </button>

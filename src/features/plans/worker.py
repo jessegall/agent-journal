@@ -1,5 +1,5 @@
 from features.plans.resource import PHASE
-from features.tickets.launch import start_agent_in
+from features.tickets.launch import PROVIDER, start_agent_in
 from resources.base import Refused, SYSTEM
 
 
@@ -27,7 +27,11 @@ def kickoff(plan) -> str:
 def start_worker(record, plan) -> str:
     if not any(phase.get(PHASE.tickets) for phase in plan.phases):
         return ""
+    from features.plans.controller import Plans
+    from providers import DRIVERS
     name = worker_environment(plan)
+    if plan.worktree == SHARED:
+        Plans(record, actor=SYSTEM).update(plan.n, branch=DRIVERS[PROVIDER].branch(name))
     return start_agent_in(record, name, name, f"Where the worker agent of plan {plan.n} orchestrates it", plan.ref, kickoff(plan))
 
 

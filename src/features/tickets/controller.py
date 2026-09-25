@@ -114,15 +114,17 @@ class Tickets(Controller):
 
     def _role_work(self) -> dict:
         working: dict = {}
-        for ticket in self._running():
-            todos = Todos(Record(self.record.root, ticket.work_environment), actor=SYSTEM)
+        for place, ticket in {ticket.work_environment: ticket for ticket in self._running()}.items():
+            plan = self._plan_owner(place)
+            shown = {"plan": plan, "title": self._plans_here().load(plan).title} if plan else {"plan": 0, "title": ticket.title}
+            todos = Todos(Record(self.record.root, place), actor=SYSTEM)
             for row in todos.summaries():
                 if row["completed"] or row["deleted"]:
                     continue
                 todo = todos.load(row["n"])
                 if todo.data.get("role") and todo.data.get("status") == "started":
                     working.setdefault((todo.data["domain"], todo.data["role"]), []).append(
-                        {"n": ticket.n, "title": ticket.title, "env": todo.data.get("role_environment", ""), "worktree": ticket.work_environment})
+                        {"n": ticket.n, **shown, "env": todo.data.get("role_environment", ""), "worktree": place})
         return working
 
     def _slots(self, running: list, sessions: dict) -> Slots:
@@ -321,9 +323,25 @@ class Tickets(Controller):
         ticket = self.load(int(n))
         return self.update(ticket.n, work_environment=name, base=ticket.base or tip(self.record.root.parent, self._into(ticket)))
 
+    def _plan_owner(self, name: str) -> int:
+        place = Environments(self.record, actor=SYSTEM)._titled(name) if name else None
+        owner = str(place.owner) if place else ""
+        return int(owner.split(":")[1]) if owner.startswith("plan:") else 0
+
     def _in_plan_worktree(self, ticket) -> bool:
-        place = Environments(self.record, actor=SYSTEM)._titled(ticket.work_environment) if ticket.work_environment else None
-        return bool(place and str(place.owner).startswith("plan:"))
+        return bool(self._plan_owner(ticket.work_environment))
+
+    def _plans_here(self) -> Plans:
+        return Plans(self.record, actor=SYSTEM)
+
+    def _close_plan_worktree(self, place: str) -> None:
+        if any(r.work_environment == place for r in self._standing()):
+            return
+        for env in Environments(self.record, actor=SYSTEM)._every():
+            session = Sessions(self.record.root).holder(env.title) if env.title == place or env.launched_from == place else ""
+            if session:
+                ask_session(self.record.root, terminal_of(self.record.root, session))
+        self._plans_here().update(self._plan_owner(place), merged=time.time())
 
     def _hand_to_plan(self, ticket):
         try:
@@ -392,6 +410,8 @@ class Tickets(Controller):
                 continue
             if finished:
                 self.update(ticket.n, stage=finished[0])
+        for place in {ticket.work_environment for ticket in merged if self._in_plan_worktree(ticket)}:
+            self._close_plan_worktree(place)
         return merged
 
     def _branch(self, ticket) -> str:

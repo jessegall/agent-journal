@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.171.0 — A plan's one worktree, from start to merge
+
+An agent working for a whole plan is listed in its domain as working for that plan, and opens the plan. The plan inspector names a shared plan's branch and whether it is merged yet. Once that branch is merged, the plan's tickets close together, and the plan's agent and the role agents it started are stopped; the worktree stays. Nothing to do.
+
 ## 2.170.0 — One worktree for a whole plan
 
 A plan whose phases hold tickets can keep them all in one worktree: switch on One worktree for the whole plan in its inspector (or journal plan update <n> --set worktree=shared). The plan's own agent is then handed each ticket as its phase starts and does them one after another on the plan's branch, instead of each ticket getting an agent and a worktree of its own; the tickets close together once that branch is merged. A role with cardinality plan keeps one agent for the whole plan and is handed each next task. Nothing to do.
