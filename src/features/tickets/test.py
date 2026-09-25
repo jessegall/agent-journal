@@ -264,6 +264,8 @@ def test_a_started_ticket_closes_when_its_branch_is_merged_and_not_before(monkey
     site("switch", "-q", trunk)
     assert (sorted(spanning.bases), across.close_merged()) == (["chronos", "site"], []), \
         "a ticket across repositories keeps a base for each, and stays open while the one it changed is unmerged"
+    assert [(repo["name"], repo["state"]) for repo in across._repository_states(across.load(spanning.n))] == [("chronos", "untouched"), ("site", "changed")], \
+        "its card names each repository and where its branch stands"
     assert across.merge(spanning.n).completed and "site work" in site("log", "-1", "--format=%s").stdout, \
         "journal ticket merge merges each repository it changed, skips the untouched one, and closes it"
 

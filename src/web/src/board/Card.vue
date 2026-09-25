@@ -13,6 +13,7 @@ import {store} from "../state/store.js";
 import CardMenu from "./CardMenu.vue";
 
 const props = defineProps({card: Object});
+const REPOSITORY_WORDS = {merged: "merged", changed: "changed", untouched: "no changes"};
 const board = inject("board");
 const drag = useCardDrag();
 const menu = ref(false);
@@ -162,6 +163,15 @@ function begin(event) {
         <template v-else-if="ticketPlan">
             <Chip @click.stop="peekThere(ticketPlan.env, 'plan', ticketPlan.n)">Plan {{ ticketPlan.n }}</Chip>
         </template>
+        <template v-if="card.repositories && card.repositories.length">
+            <span class="repositories">
+                <template v-for="repo in card.repositories" :key="repo.name">
+                    <Chip :tone="repo.state === 'changed' ? 'accent' : ''" :title="`${repo.name} on ${repo.branch}: ${REPOSITORY_WORDS[repo.state]}`">
+                        {{ repo.name }} · {{ REPOSITORY_WORDS[repo.state] }}
+                    </Chip>
+                </template>
+            </span>
+        </template>
         <template v-if="menu">
             <CardMenu :card="card" :anchor="opener" @close="closeMenu" />
         </template>
@@ -169,6 +179,12 @@ function begin(event) {
 </template>
 
 <style scoped>
+.repositories {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
 .card {
     position: relative;
     transition: margin-top 0.18s cubic-bezier(0.2, 0.9, 0.25, 1);

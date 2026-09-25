@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.180.0 — A ticket card shows each repository
+
+On a folder of repositories, a started ticket's card on the board shows a chip for each repository: merged, changed (highlighted) or no changes, with its branch on hover. Nothing to do.
+
 ## 2.179.0 — Tickets across a folder of repositories
 
 On a folder of repositories, a started ticket branches every repository from its board's branch and keeps where each started. It closes once every repository it changed is merged, and journal ticket merge merges them one by one, skipping those it left alone and stopping at the first conflict with the repository named. A board's branch missing from one of them, or a ticket started off it, names the repository too. Nothing to do.
