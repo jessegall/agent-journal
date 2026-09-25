@@ -10,10 +10,14 @@ from resources.base import Refused, check_title
 
 INCLUDED = ".worktreeinclude"
 BRANCHED = "worktree-"
+WORKTREES = (".claude", "worktrees")
 KEPT = "refs/journal/worktrees"
 
 
 def checkout(start: Path) -> Path | None:
+    spanning = next((here for here in (start, *start.parents) if here.parent.parts[-2:] == WORKTREES and not (here / ".git").exists()), None)
+    if spanning:
+        return spanning
     for here in (start, *start.parents):
         marker = here / ".git"
         if marker.is_dir():
@@ -204,7 +208,7 @@ SHARED_IN = (".claude/skills", ".agents/skills")
 
 def share_journal(top: Path, root: Path) -> None:
     project = root.resolve().parent
-    if top.resolve() == project or not belongs(top, project):
+    if top.resolve() == project or not (top / ".git").is_file() or not belongs(top, project):
         return
     skills = [Path(folder) / entry.name for folder in SHARED_IN if (project / folder).is_dir() for entry in sorted((project / folder).iterdir())]
     hooks = [Path(path) for path in SHARED_IF_IGNORED if (project / path).exists()]

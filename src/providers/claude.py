@@ -16,6 +16,7 @@ from resources.types import AgentRow
 from engine.stored import read_json, tail, write_json, write_text
 from engine import runtime
 from engine.sessions import Sessions
+from engine.worktree import WORKTREES
 from engine.drivers import ANSI, CHOICE, Driver
 from engine.fields import Loaded
 
@@ -559,7 +560,7 @@ class ClaudeDriver(Driver):
     SKIP_ARGS = ("--dangerously-skip-permissions",)
     RESUMING = {"--resume": 1, "-r": 1, "--continue": 0, "-c": 0}
     WORKTREE = ("--worktree", "-w")
-    WORKTREES = (".claude", "worktrees")
+    WORKTREES = WORKTREES
     EXIT = "/exit"
     TAKES_OURS = ("--settings", json.dumps({"crossSessionInbound": "accept"}))
     CHANNEL = ("--dangerously-load-development-channels", f"server:{SERVER}")
