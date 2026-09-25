@@ -484,8 +484,7 @@ function markClick(data) {
 }
 
 .thread-turn.has-update {
-    align-self: stretch;
-    max-width: none;
+    width: min(78%, calc(100% - var(--turn-gutter)));
 }
 
 .thread-update {

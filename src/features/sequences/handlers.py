@@ -6,7 +6,9 @@ from typing import ClassVar
 from engine.events import AgentMessageSending, AgentReported, AnyEvent, ClockTicked, ResourceEvent
 from engine.sessions import Sessions
 from engine.transcript import IDLE
+from features.journal import waiting
 from features.parts import AgentContext, Context, Handler, ToolInterceptor
+from features.work_tracking.details import WorkDetails
 from features.sequences.controller import BY_HAND
 from features.triggers.controller import Triggers
 from features.triggers.resource import FIRED, START
@@ -114,7 +116,7 @@ class RemindUnfinished(Handler):
             return
         sequence, key, run = found
         left = context.journal.sequences._left(sequence, run)
-        context.once(UNFINISHED, f"{sequence.n}|{key}|{run['step']}|{int(time.time() // MINUTE)}", lambda: context.agent.say(
+        context.once(UNFINISHED, f"{sequence.n}|{key}|{run['step']}|{int(time.time() // (pace(context) * MINUTE))}", lambda: context.agent.say(
             UNFINISHED, n=sequence.n, title=sequence.title, step=run["step"], count=len(context.journal.sequences._steps(sequence)),
             about=about_flag(key), left="; ".join(left)))
 
@@ -165,6 +167,12 @@ class KeepOutOfTheChat(Handler):
             context.agent.whisper(IN_CHAT, title=sequence.title, place=sequence.talks_in)
 
 
+def pace(context: AgentContext) -> int:
+    if waiting(context.record, context.agent.row):
+        return minutes(WorkDetails.values(context.record).ask_awaiting_every)
+    return minutes(context.settings.nudge_every)
+
+
 def minutes(value) -> int:
     return max(1, int(value)) if str(value).strip().isdigit() else 1
 
@@ -181,7 +189,7 @@ class NudgeWaitingStep(Handler):
             return
         sequence, key, run = found
         handed = run.get("stepped", run["at"])
-        waited = int((time.time() - handed) // (minutes(context.settings.nudge_every) * MINUTE))
+        waited = int((time.time() - handed) // (pace(context) * MINUTE))
         if waited < 1 or asked_since(context, handed, {sequence.ref, key.split("|", 1)[1]}):
             return
         steps = context.journal.sequences._steps(sequence)

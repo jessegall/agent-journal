@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.189.2 — A step waiting on something is nudged less often
+
+While an agent's work waits on something it named, such as a test run a subagent is doing, its sequence step is nudged and reminded at the pace of that wait (every five minutes, work.ask_awaiting_every) instead of every minute. An update card standing alone in the chat is as wide as a message may be, not the whole chat. Nothing to do.
+
 ## 2.189.1 — Long transcripts read quickly
 
 Reading an agent's transcript again after it grew took time that grew with the square of its length, because every message of the user was checked against a copy of everything before it; a 72,000-turn transcript now takes 17 ms instead of 144, which speeds up the family tree and every inspector chat and transcript. Nothing to do.
