@@ -10,6 +10,8 @@ function query(fields) {
     return query.toString() ? `?${query}` : "";
 }
 
+const NO_ENV = "the page does not know its environment yet";
+
 export class ApiClient {
     constructor({env = () => route.value.env, base = ""} = {}) {
         this.env = env;
@@ -29,15 +31,15 @@ export class ApiClient {
     }
 
     get(path) {
-        return transport.request("GET", this.url(path));
+        return path === NO_ENV ? Promise.reject(new Error(NO_ENV)) : transport.request("GET", this.url(path));
     }
 
     post(path, body = {}, wait = 0) {
-        return transport.request("POST", this.url(path), body, wait);
+        return path === NO_ENV ? Promise.reject(new Error(NO_ENV)) : transport.request("POST", this.url(path), body, wait);
     }
 
     here(path) {
-        return `/${this.env()}${path}`;
+        return this.env() ? `/${this.env()}${path}` : NO_ENV;
     }
 
     changelog() {
