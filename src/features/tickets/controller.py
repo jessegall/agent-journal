@@ -120,7 +120,7 @@ class Tickets(Controller):
                 todo = todos.load(row["n"])
                 if todo.data.get("role") and todo.data.get("status") == "started":
                     working.setdefault((todo.data["domain"], todo.data["role"]), []).append(
-                        {"n": ticket.n, "title": ticket.title, "env": todo.data.get("role_environment", "")})
+                        {"n": ticket.n, "title": ticket.title, "env": todo.data.get("role_environment", ""), "worktree": ticket.work_environment})
         return working
 
     def _slots(self, running: list, sessions: dict) -> Slots:

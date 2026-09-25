@@ -9,6 +9,7 @@ export const polled = {
     bar: ["bar", () => api.bar(), 500, (got) => Array.isArray(got && got.queue) && (store.bar = got)],
     agents: ["agents", () => api.agents(LIVE), 1000, (got) => (store.agents = got)],
     pages: ["pages", () => api.pages(), 5000, (got) => (store.pages = got)],
+    organization: ["organization", () => api.organization(), 10000, (got) => (store.organization = got)],
     online: ["online", () => api.onlineAgents(), 5000, (got) => (store.online = got)],
     journals: ["journals", () => api.journals(), 10000, (got) => (store.journals = got)],
     manifest: ["manifest", () => api.manifest(), 30000, (got) => (store.spec = got)],

@@ -1,19 +1,23 @@
 <script setup>
-import {onMounted, ref} from "vue";
-import {api} from "../api/client.js";
+import {computed, ref} from "vue";
 import {sendMessage} from "../chat/outbox.js";
 import Btn from "../kit/Btn.vue";
 import EmptyState from "../kit/EmptyState.vue";
+import ListRow from "../kit/ListRow.vue";
 import SectionHeading from "../kit/SectionHeading.vue";
 import RoleCard from "../organization/RoleCard.vue";
-import {route} from "../route.js";
+import {peek, route} from "../route.js";
+import {store} from "../state/store.js";
+import {polled} from "../sync/polled.js";
+import {usePoll} from "../poll.js";
 
-const domains = ref(null);
+usePoll(...polled.organization);
+const domains = computed(() => store.organization && store.organization.domains);
+const opened = computed(() => (typeof route.value.n === "string" ? route.value.n : ""));
+const shown = computed(() => (domains.value || []).filter((domain) => !opened.value || domain.name === opened.value));
 const asked = ref(false);
 const DRAFT =
     "Draft an agent organization for this project: its domains and the roles under each, as agentic-organization/domains/<domain>/domain.toml and roles/<role>/role.toml. Look at the code to see what the project needs, and ask me what is unclear.";
-
-onMounted(async () => (domains.value = (await api.organization()).domains));
 
 async function draft() {
     await sendMessage(route.value.env, {brief: DRAFT});
@@ -35,11 +39,29 @@ async function draft() {
                 <Btn kind="primary" small class="draft" @click="draft">Ask the agent to draft one</Btn>
             </template>
         </template>
-        <template v-for="domain in domains || []" :key="domain.name">
+        <template v-if="opened">
+            <a class="back" :href="`#/${route.env}/organization`">All domains</a>
+        </template>
+        <template v-for="domain in shown" :key="domain.name">
             <section class="domain">
                 <SectionHeading>{{ domain.title || domain.name }}</SectionHeading>
                 <template v-if="domain.description">
                     <p class="description">{{ domain.description }}</p>
+                </template>
+                <template v-if="opened">
+                    <div class="working">
+                        <h3 class="working-title">Working now</h3>
+                        <template v-if="!domain.working.length">
+                            <p class="description">No agent in this domain is working right now.</p>
+                        </template>
+                        <template v-for="agent in domain.working" :key="`${agent.role}.${agent.n}.${agent.env}`">
+                            <button type="button" class="working-row" @click="peek('ticket', agent.n)">
+                                <ListRow :kind="agent.role_title" :title="`Ticket ${agent.n}`" :text="agent.env || agent.worktree">
+                                    {{ agent.title }}
+                                </ListRow>
+                            </button>
+                        </template>
+                    </div>
                 </template>
                 <div class="roles">
                     <template v-for="role in domain.roles" :key="role.name">
@@ -81,5 +103,39 @@ async function draft() {
 
 .draft {
     align-self: flex-start;
+}
+
+.back {
+    align-self: flex-start;
+    color: var(--text-2);
+    font-size: 12px;
+    text-decoration: none;
+}
+
+.back:hover {
+    color: var(--text);
+}
+
+.working {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.working-title {
+    margin: 4px 0 0;
+    color: var(--text-2);
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.working-row {
+    padding: 0;
+    border: 0;
+    background: none;
+    color: inherit;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
 }
 </style>
