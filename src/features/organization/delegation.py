@@ -46,10 +46,18 @@ def next_in_line(record, domain: str, role: str, env: str, n: int) -> list[tuple
 BROWSER = "browser"
 
 
+def guidance(domain: Domain, role: Role) -> list[str]:
+    guides = [path for path in (role.guide, domain.guide) if path]
+    skills = [*role.skill_files, *domain.skill_files]
+    return [f"Read your instructions first: {', '.join(guides)}" if guides else "",
+            f"Skills for your role and domain, read each before you use it: {', '.join(skills)}" if skills else ""]
+
+
 def brief(domain: Domain, role: Role, n: int, task: str, given: str, app: str = "") -> str:
     parts = [f"Dispatch this with model {role.model}, as its own job." if role.model else "",f"You are {role.title or role.name} in {domain.title or domain.name}.", role.description,
              f"You answer for: {role.responsible}" if role.responsible else "", f"Not yours: {role.not_responsible}" if role.not_responsible else "",
              f"Skills to load: {', '.join(role.skills)}" if role.skills else "", f"Tools you may use: {', '.join(role.tools)}" if role.tools else "",
+             *guidance(domain, role),
              f"The task, to-do {n}: {task}", given,
              f"Open the ticket's app at {app} with your browser tool to see and check what you change." if app and BROWSER in role.tools else "",
              f"Report with journal todo report {n} \"<what you did>\", covering: {', '.join(role.outputs)}" if role.outputs

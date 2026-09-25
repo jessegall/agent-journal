@@ -11,6 +11,8 @@ CARDINALITIES = (WORKTREE, PLURAL, GLOBAL)
 AGENT, SUBAGENT = "agent", "subagent"
 RUNS = (AGENT, SUBAGENT)
 
+GUIDE, SKILL_FILE = "AGENTS.md", "SKILL.md"
+
 
 @dataclass(frozen=True)
 class Role(Loaded):
@@ -27,6 +29,8 @@ class Role(Loaded):
     cardinality: str = WORKTREE
     runs: str = SUBAGENT
     model: str = ""
+    guide: str = ""
+    skill_files: tuple = ()
 
 
 @dataclass(frozen=True)
@@ -39,6 +43,8 @@ class Domain(Loaded):
     not_responsible: str = ""
     lead: str = ""
     roles: tuple = ()
+    guide: str = ""
+    skill_files: tuple = ()
 
     def role(self, name: str) -> Role:
         found = next((role for role in self.roles if role.name == name), None)
@@ -75,8 +81,17 @@ def parsed(path: Path) -> dict:
         raise Refused(f"{path} cannot be read: {broken}") from broken
 
 
+def guide_in(folder: Path) -> str:
+    found = folder / GUIDE
+    return str(found) if found.is_file() else ""
+
+
+def skills_in(folder: Path) -> tuple:
+    return tuple(str(found) for found in sorted(folder.glob(f"skills/*/{SKILL_FILE}")))
+
+
 def role_of(path: Path) -> Role:
-    role = Role.from_json({**parsed(path), "name": path.parent.name})
+    role = replace(Role.from_json({**parsed(path), "name": path.parent.name}), guide=guide_in(path.parent), skill_files=skills_in(path.parent))
     if role.cardinality not in CARDINALITIES:
         raise Refused(f"{path}: cardinality is one of {', '.join(CARDINALITIES)}, not {role.cardinality!r}")
     if role.runs not in RUNS:
@@ -86,7 +101,8 @@ def role_of(path: Path) -> Role:
 
 def domain_of(path: Path) -> Domain:
     roles = tuple(role_of(found) for found in sorted(path.parent.glob("roles/*/role.toml")))
-    domain = replace(Domain.from_json({**parsed(path), "name": path.parent.name}), roles=roles)
+    domain = replace(Domain.from_json({**parsed(path), "name": path.parent.name}), roles=roles, guide=guide_in(path.parent),
+                     skill_files=skills_in(path.parent))
     if domain.lead and domain.lead not in {role.name for role in roles}:
         raise Refused(f"{path}: its lead {domain.lead!r} is not one of its roles")
     return domain
