@@ -250,3 +250,10 @@ def test_a_typed_line_left_in_the_input_box_is_sent_again(monkeypatch):
     monkeypatch.setattr(driver, "_wrote", lambda raw: pressed.append(raw) or True)
     assert not driver.type_in("stuck for good") and pressed.count(b"\r") == 1 + engine.drivers.RESUBMITS, \
         "a line that never leaves the input box is pressed a few times at most and reported as not sent"
+    claude = DRIVERS["claude"](record, "claude-8")
+    monkeypatch.setattr(claude, "last_printed", lambda: "done\n❯ ")
+    assert claude.at_prompt(), "the silence probe still reads Claude's prompt: the input-box mark never replaces the prompt pattern"
+    codex = DRIVERS["codex"](record, "codex-9")
+    monkeypatch.setattr(codex, "_wrote", lambda raw: True)
+    monkeypatch.setattr(codex, "clear_input", lambda: None)
+    assert codex.run_command("/status"), "a driver without an input-box mark types a command and returns at once"
