@@ -364,9 +364,12 @@ class Tickets(Controller):
         merged = [r for r in self._standing() if r.work_environment and self._merged(r)]
         for ticket in merged:
             finished = [stage for stage, meaning in (Boards(self.record, actor=self.actor).load(int(ticket.board)).meanings.items() if ticket.board else ()) if meaning == DONE]
+            try:
+                self.complete(ticket.n, how=f"its branch {self._branch(ticket)} was merged")
+            except Refused:
+                continue
             if finished:
                 self.update(ticket.n, stage=finished[0])
-            self.complete(ticket.n, how=f"its branch {self._branch(ticket)} was merged")
         return merged
 
     def _branch(self, ticket) -> str:
@@ -485,13 +488,13 @@ class Tickets(Controller):
             args = driver.within([*driver.AUTO_ARGS], place)
             project = self.record.root.parent
             fresh = not present(project, f"refs/heads/{self._branch(ticket)}")
-            base = tip(project, into) if fresh or not ticket.base else ticket.base
+            ticket = self.update(ticket.n, base=tip(project, into) if fresh or not ticket.base else ticket.base)
             if into != "HEAD":
-                branched(project, self._branch(ticket), into)
+                branched(project, self._branch(ticket), ticket.base)
             detached(self.record.root, project, place, ticket.agent,
                      driver.prompted(driver.resumed(args, earlier), CARRY_ON.format(ref=ticket.ref)) if earlier
                      else driver.prompted(args, self._kickoff(ticket)))
-            return self.update(ticket.n, base=base, queued=False, queued_at=0.0, launched=time.time())
+            return self.update(ticket.n, queued=False, queued_at=0.0, launched=time.time())
 
     def _kickoff(self, ticket) -> str:
         into = self._into(ticket)

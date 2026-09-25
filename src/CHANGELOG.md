@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.165.1 — A starting ticket is never taken for merged
+
+A ticket's new start commit is saved before its branch is made, so a minute check running at the same moment can no longer read the old one and take a ticket that just started for merged; and a ticket moves to its board's done stage only once it has really closed. Nothing to do.
+
 ## 2.165.0 — An orchestrator passes its tickets' plan checkpoints
 
 On a board whose orchestrator approves plans, it is told when a ticket's plan stops at a checkpoint and may let it go on with journal ticket continue_plan <n>, so a board no longer waits for the user overnight; approving and continuing share one set of checks, and the ticket's agent is told either way. The five-minute check-in stays quiet while the orchestrator's work is parked. Nothing to do.
