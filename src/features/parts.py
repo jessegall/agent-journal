@@ -5,7 +5,7 @@ from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, ClassVar, get_type_hints
 
 from controllers.base import COMMANDS, HANDLERS
-from controllers.types import Agents
+from controllers.types import Agents, Environments
 from engine import bus
 from engine.events import AgentChanged, AgentEvent
 from engine.hooks import AFTERWARDS, CANCELERS, POLICIES
@@ -162,6 +162,11 @@ class Command:
 class ActionInterceptor:
     def intercept(self, context: Context, controller, **args):
         raise NotImplementedError
+
+
+def in_background(record) -> bool:
+    row = Environments(record, actor=SYSTEM)._titled(record.env)
+    return bool(row and row.owner)
 
 
 def agent_row(record, n: int):

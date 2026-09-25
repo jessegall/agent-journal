@@ -79,6 +79,19 @@ def test_a_new_session_is_greeted_in_its_terminal_even_before_its_engine_starts(
     engine.deliver()
     assert [t for t in typed if t[0]] == [(f"the journal is ready on {record.env} — say hello in the chat, so the journal's messages reach you", True)], \
         "the greeting is typed into the terminal at once, never marked read as history"
+    from controllers.types import Environments
+    from engine.record import Record
+    Environments(record, actor="system").create("ticket-5", owner="ticket:5")
+    ticket = Record(record.root, "ticket-5")
+    ticket_agents = Agents(ticket, actor="system")
+    ticket_agents.saw(ticket_agents.by_session("claude-5").n, {"hook": "SessionStart"}, event="SessionStart", status="idle")
+    engine = Engine(ticket, DRIVERS["claude"](ticket, "claude-98"))
+    engine.agent.driver.last_report = lambda: SimpleNamespace(title="claude-5", at=time.time())
+    quiet = []
+    engine.agent.driver.send = lambda text="", **rest: quiet.append(text) or True
+    engine.agent.driver.type_in = lambda text: quiet.append(text) or True
+    engine.deliver()
+    assert not [text for text in quiet if "say hello" in text], "an agent working in the background, such as a ticket's, is never asked to say hello"
 
 
 def test_a_restarted_engine_knows_its_session_before_the_agent_acts_again():

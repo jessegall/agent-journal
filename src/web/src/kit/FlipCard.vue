@@ -30,6 +30,8 @@ function close() {
     later(FLIP_MS * 0.6 + MOVE_MS, () => emit("close"));
 }
 
+defineExpose({close});
+
 function key(e) {
     if (e.key !== "Escape") return;
     e.stopImmediatePropagation();

@@ -2,7 +2,7 @@ import re
 
 from features.sequences.controller import Sequences
 from features.sequences.drafting import DRAFTING
-from features.sequences.exploration import EXPLORATION
+from features.sequences.exploration import EXPLORATION, PANEL
 from features.triggers.controller import Triggers
 from features.triggers.resource import FROM_USER, START
 from resources.base import AGENT, SECTION, SYSTEM, USER
@@ -20,6 +20,7 @@ FILING_A_DUMP = {
              "What the agent does with a pile a user drops in a dump: sort it by subject, file each subject straight into the "
              "dump's collection, then sum up and suggest.",
     "starts_on": "dump.created",
+    "talks_in": "the dump window",
     "started_by": "",
     "steps": [
         ("Read everything", "journal dump items <dump n> lists what was dropped. Go through the items one at a time: read an item in "
@@ -66,6 +67,7 @@ REVISING_THE_DRAFTS = {
              "keep every other draft as it is, and say one line. Never start over and never ask round one again.",
     "starts_on": "message.revised",
     "started_by": USER,
+    "talks_in": PANEL,
     "steps": [
         ("Read the change", "Read their words and the drafts made for this request on the board. Work out which cards the "
                             "change is about. When it is unclear, ask one short question on the board with the cards it might "
@@ -127,7 +129,7 @@ DRAFTING_FROM_A_DOCUMENT = {
         ("Draft the tickets", "Say how many you will draft, on the low side: journal board expect <board n> <count>. Then, "
                               "section by section, one ticket per piece that can be built, reviewed and merged on its own: "
                               "journal ticket create \"<the work>\" --abstract \"<one line>\" --brief \"<What, Why, Touches, Done "
-                              "when, Risk>\" --about <ref> --set board=<board n> --set draft=true --set source=\"<document>\" "
+                              "when, Risk>\" --set about=<ref> --set board=<board n> --set draft=true --set source=\"<document>\" "
                               "--set source_id=\"<section and page, like §4 · p.4>\". Before each section, journal board progress "
                               "<board n> \"<section>\" now; after it, journal board progress <board n> \"<section>\" read "
                               "--drafts <how many it gave>, or out when it holds no work. Leave out background and context, and "
@@ -261,9 +263,9 @@ def in_step(sequences: Sequences, shipped: dict, n: int | None) -> bool:
     steps = [{SECTION.title: title, SECTION.body: TITLED.sub(lambda named: f"sequence:{numbers[named[1]]}", body)} for title, body in shipped["steps"]]
     idle = shipped.get("only_when_idle", False)
     row = sequences.load(n) if n else sequences.create(shipped["title"], starts_on=shipped["starts_on"], system=True)
-    shape = (shipped["brief"], shipped["starts_on"], shipped["started_by"], idle, steps)
-    if n and (not row.system or (row.brief, row.starts_on, row.started_by, row.only_when_idle, row.sections) == shape):
+    shape = (shipped["brief"], shipped["starts_on"], shipped["started_by"], idle, shipped.get("talks_in", ""), steps)
+    if n and (not row.system or (row.brief, row.starts_on, row.started_by, row.only_when_idle, row.talks_in, row.sections) == shape):
         return False
-    row.brief, row.starts_on, row.started_by, row.only_when_idle, row.sections = shape
+    row.brief, row.starts_on, row.started_by, row.only_when_idle, row.talks_in, row.sections = shape
     sequences.save(row, "updated")
     return True

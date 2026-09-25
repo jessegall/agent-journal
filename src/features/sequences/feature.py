@@ -2,7 +2,7 @@ from features.base import Feature
 from features.journal import Journal
 from features.sequences.controller import Sequences
 from features.sequences.details import SequencesDetails
-from features.sequences.handlers import EndWithItsRow, HandStepToAgent, NudgeWaitingStep, RemindUnfinished, StartOnMoment
+from features.sequences.handlers import EndWithItsRow, HandStepToAgent, KeepOutOfTheChat, NudgeWaitingStep, RemindUnfinished, StartOnMoment
 
 __all__ = ["Sequences"]
 
@@ -14,5 +14,6 @@ class SequencesFeature(Feature):
         journal.events.handler(StartOnMoment())
         journal.events.handler(EndWithItsRow())
         journal.events.handler(HandStepToAgent())
+        journal.events.handler(KeepOutOfTheChat())
         journal.events.handler(RemindUnfinished())
         journal.events.handler(NudgeWaitingStep())

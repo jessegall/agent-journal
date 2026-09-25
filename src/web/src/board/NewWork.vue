@@ -72,7 +72,12 @@ const drafting = computed(() => (since.value && store.board.drafting) || {});
 const phase = computed(() => drafting.value.phase || "");
 const lost = computed(() => phase.value === "lost");
 const step = useStepAbout(() => drafting.value.asked || []);
-const thinking = computed(() => STEP_LINES[step.value] || STEP_LINES[FIRST_STEP]);
+const stepAt = ref(0);
+watch(step, () => (stepAt.value = Date.now() / 1000), {immediate: true});
+const progress = computed(() => (drafting.value.log || []).at(-1));
+const thinking = computed(() =>
+    progress.value && progress.value.at > stepAt.value ? [progress.value.text] : STEP_LINES[step.value] || STEP_LINES[FIRST_STEP]
+);
 const startedOver = computed(() => boardQuestions.value.find((q) => q.completed && q.outcome === START_OVER));
 const conversation = computed(() =>
     [
@@ -111,6 +116,18 @@ const views = computed(() => [
 const answered = (at) => replies.value.some((c) => c.created >= at) || boardQuestions.value.some((q) => q.created >= at);
 const writing = computed(() => Boolean(lastSent.value) && !answered(lastSent.value));
 const agentsTurn = computed(() => writing.value && !asking.value && !lost.value);
+const RESIZE_FADE = 220;
+const RESIZE_MS = 700;
+const narrow = ref(agentsTurn.value);
+const hushed = ref(false);
+let resizing = [];
+watch(agentsTurn, (on) => {
+    resizing.forEach(clearTimeout);
+    if (docked.value) return ((narrow.value = on), (hushed.value = false));
+    hushed.value = true;
+    resizing = [setTimeout(() => (narrow.value = on), RESIZE_FADE), setTimeout(() => (hushed.value = false), RESIZE_FADE + RESIZE_MS)];
+});
+onUnmounted(() => resizing.forEach(clearTimeout));
 const spoken = computed(() => conversation.value.filter((line) => line.text));
 const lastMine = computed(() => conversation.value.findLastIndex((line) => line.mine));
 const agentLine = computed(() => conversation.value.findLast((line) => !line.mine && !line.record && line.text));
@@ -136,7 +153,7 @@ const stalled = ref(false);
 const lastAsked = ref("");
 let stallTimer = 0;
 watch(writing, (on) => on || (words.value = ""));
-watch([writing, asking, () => drafts.value.length], ([on]) => {
+watch([writing, asking, () => drafts.value.length, progress], ([on]) => {
     clearTimeout(stallTimer);
     stalled.value = false;
     if (on) stallTimer = setTimeout(() => (stalled.value = writing.value && !asking.value), STALLED_AFTER);
@@ -493,7 +510,7 @@ function startAnew() {
                 </template>
             </TransitionGroup>
         </div>
-        <div :class="['dock', {docked, short: !tall && !lost, reading, thinking: agentsTurn}]" :style="{'--need': `${need}px`}">
+        <div :class="['dock', {docked, short: !tall && !lost, reading, thinking: narrow, hushed}]" :style="{'--need': `${need}px`}">
             <ChatPanel
                 ref="panel"
                 v-model="words"
@@ -504,7 +521,7 @@ function startAnew() {
                 :locked="adding"
                 :limit="docked ? 0 : INPUT_LIMIT"
                 :without-input="choosing || lost"
-                :waiting="agentsTurn"
+                :waiting="narrow"
                 :echo="echo"
                 :hint="since ? '' : `“${EXAMPLES[example]}”`"
                 :placeholder="
@@ -644,6 +661,22 @@ function startAnew() {
 
 .dock.short:not(.docked) {
     --least: min(260px, 40vh);
+}
+
+.dock :deep(.chat > :not(.compose-slot)) {
+    transition: opacity 0.22s ease;
+}
+
+.dock :deep(.compose) {
+    transition:
+        opacity 0.22s ease,
+        background var(--fade),
+        border-color var(--fade);
+}
+
+.dock.hushed :deep(.chat > :not(.compose-slot)),
+.dock.hushed :deep(.compose) {
+    opacity: 0;
 }
 
 .dock:not(.docked) :deep(.lines > *) {

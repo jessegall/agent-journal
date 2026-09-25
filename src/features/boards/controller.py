@@ -100,7 +100,9 @@ class Boards(Controller):
         return self.update(board.n, drafting={**board.drafting, "outline": marked})
 
     def group(self, n: int, name: str, tickets: str):
-        board = self._drafting(n)
+        board = self.load(int(n))
+        if not board.drafting.get("since"):
+            return board
         groups = {**(board.drafting.get("groups") or {}), name.strip(): self._drafted(board, tickets)}
         return self.update(board.n, drafting={**board.drafting, "groups": groups})
 
@@ -214,9 +216,12 @@ class Boards(Controller):
         return self.load(board.n)
 
     def log(self, n: int, line: str):
-        board = self._being_built(n)
+        board = self.load(int(n))
         entry = {"at": time.time(), "text": line.strip()}
-        return self.update(board.n, building={**board.building, "log": [*board.building["log"], entry][-BUILD_LOG:]})
+        if self._building(board) or not board.drafting.get("since"):
+            board = self._being_built(n)
+            return self.update(board.n, building={**board.building, "log": [*board.building["log"], entry][-BUILD_LOG:]})
+        return self.update(board.n, drafting={**board.drafting, "log": [*(board.drafting.get("log") or []), entry][-BUILD_LOG:]})
 
     def built(self, n: int, summary: str):
         board = self._being_built(n)
@@ -235,9 +240,12 @@ class Boards(Controller):
             tickets.delete(ticket.n, why=why)
         return self.delete(board.n, why=why)
 
+    def _building(self, board) -> bool:
+        return bool(board.building.get("since")) and not board.building.get("done")
+
     def _being_built(self, n: int):
         board = self.load(int(n))
-        if not board.building.get("since") or board.building.get("done"):
+        if not self._building(board):
             raise Refused(f"board {board.n} is not being built from a document")
         return board
 

@@ -163,6 +163,7 @@ class Provider(ABC):
         return tool.command if isinstance(tool, BashCall) else None
 
     session_variable: ClassVar[str] = ""
+    session_markers: ClassVar[tuple[str, ...]] = ()
 
     def shell_wrapper(self, script: Path) -> dict:
         return {}

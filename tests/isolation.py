@@ -55,6 +55,7 @@ def claimed() -> Path:
 
 def settle() -> None:
     os.environ[HOME] = str(home())
+    os.environ["CLAUDE_CONFIG_DIR"] = str(home())
     os.environ.setdefault("JOURNAL_ENV", "main")
     for away in ("CLAUDE_CODE_MESSAGING_SOCKET", "JOURNAL_ROOT", "AGENT_JOURNAL_ROOT"):
         os.environ.pop(away, None)

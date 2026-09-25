@@ -30,7 +30,10 @@ defineProps({filled: Boolean, still: Boolean, bars: {type: Array, default: () =>
     display: flex;
     flex-direction: column;
     justify-content: space-around;
+    gap: 5px;
     height: 100%;
+    padding: 2px 0;
+    box-sizing: border-box;
     transition: opacity 0.18s;
 }
 

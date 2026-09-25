@@ -1,5 +1,5 @@
 <script setup>
-import {computed} from "vue";
+import {computed, ref} from "vue";
 import FlipCard from "../kit/FlipCard.vue";
 import TextDisplay from "../kit/TextDisplay.vue";
 import Btn from "../kit/Btn.vue";
@@ -13,10 +13,17 @@ const props = defineProps({
 const risk = computed(() => (props.ticket.brief.match(/^Risk:\s*(.+)$/im) || [])[1] || "");
 const waits = computed(() => Boolean(risk.value) && !/^none\b/i.test(risk.value));
 const emit = defineEmits(["close", "keep"]);
+const card = ref(null);
+
+function keep() {
+    const picking = !props.picked;
+    emit("keep");
+    if (picking) card.value.close();
+}
 </script>
 
 <template>
-    <FlipCard :from="from" :measure="measure" @close="emit('close')">
+    <FlipCard ref="card" :from="from" :measure="measure" @close="emit('close')">
         <template #front>
             <h3 class="title">{{ ticket.title }}</h3>
             <p class="line">{{ ticket.abstract }}</p>
@@ -29,7 +36,7 @@ const emit = defineEmits(["close", "keep"]);
             <TextDisplay class="brief" :text="ticket.brief" />
         </template>
         <template #foot>
-            <Btn :kind="picked ? 'ghost' : 'primary'" small :title="picked ? 'Click to unpick it' : ''" @click="emit('keep')">
+            <Btn :kind="picked ? 'ghost' : 'primary'" small :title="picked ? 'Click to unpick it' : ''" @click="keep">
                 {{ picked ? "✓ Picked" : "Pick this ticket" }}
             </Btn>
         </template>

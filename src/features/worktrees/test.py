@@ -118,7 +118,7 @@ def test_a_restarted_worker_keeps_the_seat_its_terminal_moved_to():
         "a new build restarts the worker, and the terminal stays where it was moved"
 
 
-def test_journal_claude_with_a_worktree_makes_it_itself_and_starts_claude_inside_it(tmp_path):
+def test_journal_claude_with_a_worktree_makes_it_itself_and_starts_claude_inside_it(tmp_path, monkeypatch):
     import subprocess
     import pytest
     from providers.claude import ClaudeDriver
@@ -130,7 +130,14 @@ def test_journal_claude_with_a_worktree_makes_it_itself_and_starts_claude_inside
     (project / ".worktreeinclude").write_text("/.env\nconfig/\n")
     (project / "config").mkdir()
     (project / "config" / "local.toml").write_text("x = 1\n")
+    import json
+    monkeypatch.setenv("CLAUDE_CONFIG_DIR", str(tmp_path / "claude"))
+    state = tmp_path / "claude" / ".claude.json"
+    trust = lambda folder: json.loads(state.read_text())["projects"].get(str(folder.resolve()))
     cwd, args = ClaudeDriver.placed(project, ["--dangerously-skip-permissions", "--worktree=feature-q", "--resume", "c1"])
+    assert trust(cwd) == {"hasTrustDialogAccepted": True, "enabledMcpjsonServers": ["journal"]}, \
+        "a new worktree is trusted with the journal's server approved, so Claude asks nothing at start, even with no state file yet"
+    assert trust(project) is None, "the project itself is left to Claude"
     assert (cwd, args) == (project / ".claude" / "worktrees" / "feature-q", ["--dangerously-skip-permissions", "--resume", "c1"]), \
         "Claude starts inside the worktree without a worktree of its own to clean up"
     assert ((cwd / ".env").read_text(), subprocess.run(["git", "branch", "--show-current"], cwd=cwd, capture_output=True, text=True, timeout=30).stdout.strip()) == \
@@ -144,9 +151,19 @@ def test_journal_claude_with_a_worktree_makes_it_itself_and_starts_claude_inside
     (project / ".claude" / "worktrees" / "stray").mkdir()
     with pytest.raises(SystemExit):
         ClaudeDriver.placed(project, ["-w", "stray"])
+    assert trust(project / ".claude" / "worktrees" / "stray") is None, "a refused launch trusts nothing"
     subprocess.run(["git", "worktree", "add", "-q", "-b", "hotfix", str(tmp_path / "hotfix")], cwd=project, check=True, timeout=30)
+    known = json.loads(state.read_text())
+    known["numStartups"] = 7
+    known["projects"][str((tmp_path / "hotfix").resolve())] = {"allowedTools": ["Bash"], "enabledMcpjsonServers": ["other"]}
+    state.write_text(json.dumps(known))
     assert ClaudeDriver.placed(project, ["-w", "hotfix"])[0] == tmp_path / "hotfix", "a worktree made by hand is launched where it is"
+    assert (trust(tmp_path / "hotfix"), json.loads(state.read_text())["numStartups"], trust(cwd)["enabledMcpjsonServers"]) == \
+        ({"allowedTools": ["Bash"], "enabledMcpjsonServers": ["other", "journal"], "hasTrustDialogAccepted": True}, 7, ["journal"]), \
+        "what Claude already keeps for the folder, its other servers and every other project stay as they were"
+    before = (state.read_bytes(), state.stat().st_mtime_ns)
     assert ClaudeDriver.placed(project, ["-w", "feature-q"]) == (cwd, []), "an existing worktree is reused"
+    assert (state.read_bytes(), state.stat().st_mtime_ns) == before, "a folder already trusted is not written again"
     git = ["git", "-c", "user.email=t@t", "-c", "user.name=t"]
     subprocess.run([*git, "commit", "-q", "--allow-empty", "-m", "work in the worktree"], cwd=cwd, check=True, timeout=30)
     from commands.queries import kept_work
