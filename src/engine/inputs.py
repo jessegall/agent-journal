@@ -59,7 +59,7 @@ def queue(root: Path, session: str, keys: tuple, label: str, action: str = "", p
     return queued
 
 
-def take(root: Path, sessions: set[str], action: str = "") -> Input | None:
+def take(root: Path, sessions: set[str], action: str = "", among: tuple = ()) -> Input | None:
     folder = Path(root) / "runtime" / "inputs"
     for path in sorted(folder.glob("*.json")):
         raw = read_json(path)
@@ -70,11 +70,15 @@ def take(root: Path, sessions: set[str], action: str = "") -> Input | None:
         if not queued.lasting and time.time() - queued.at > STALE:
             path.unlink(missing_ok=True)
             continue
-        if queued.session not in sessions or pressed(queued.action) != pressed(action):
+        if queued.session not in sessions or not wanted(queued, action, among):
             continue
         path.unlink(missing_ok=True)
         return queued
     return None
+
+
+def wanted(queued: Input, action: str, among: tuple) -> bool:
+    return queued.action in among if among else pressed(queued.action) == pressed(action)
 
 
 def pressed(action) -> str:

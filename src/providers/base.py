@@ -117,6 +117,7 @@ class Provider(ABC):
     retired_skill_homes = ()
     sleeping_tools = ()
     echoes_typed = False
+    applies_at_once = ()
     controls = {"groups": [], "note": "This CLI does not expose model controls."}
 
     @classmethod

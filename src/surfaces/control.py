@@ -131,5 +131,6 @@ def request(root: Path, env: str, session: str, action: str, value: str) -> dict
     agents = Agents(record, actor=SYSTEM)
     row = agents.by_session(session)
     agents.update(row.n, pending={**row.pending, action: {"value": value, "at": queued.at}})
-    Notices(record, actor=SYSTEM).create(f"Setting {action} to {selected['label'].lower()} — waiting for the agent", tone="note", session=session, action=action)
+    waits = "" if action in PROVIDERS[found.provider].applies_at_once else " — waiting for the agent"
+    Notices(record, actor=SYSTEM).create(f"Setting {action} to {selected['label'].lower()}{waits}", tone="note", session=session, action=action)
     return queued.for_viewer

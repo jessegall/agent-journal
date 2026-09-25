@@ -147,6 +147,12 @@ def test_a_model_change_is_typed_into_the_terminal_whole_and_raw(monkeypatch):
     entered = [raw for raw in typed if raw.strip(b"\x05\x15\x7f")]
     assert entered == [b"/model", b"\r", b"\x1b[B\x1b[B", b"\r", b"\r"] and not any(MARK.encode() in raw for raw in typed), \
         "every step of a picker is typed in order, raw, with no journal mark, and none is dropped"
+    monkeypatch.setattr(control, "choice", lambda provider, action, value, model: {"label": value, "command": f"/{action} {value}"})
+    monkeypatch.setattr(engine.agent, "state", lambda: "busy")
+    control.request(record.root, record.env, "claude-1", "model", "haiku")
+    control.request(record.root, record.env, "claude-1", "effort", "low")
+    engine.controlled_at = 0.0
+    assert (engine.control(), engine.control()) == ("controlled: low", ""), "Claude's effort is typed while it works; a model waits for its turn to end"
 
 
 def test_a_paused_agent_and_its_subagents_have_every_tool_call_refused():
