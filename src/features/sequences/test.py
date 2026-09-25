@@ -221,6 +221,8 @@ def test_a_step_not_taken_up_holds_journal_commands_but_not_the_ones_that_answer
     assert "take it up with journal sequence follow" in refused("journal todo create 'other work'"), "a journal write waits for the step"
     assert "take it up" in refused(f"journal sequence follow {made.n}\n  journal todo create 'other work'"), \
         "a write on a later line of the same command waits too, whatever else the command does"
+    assert "take it up" not in refused(f"journal sequence follow {made.n}; journal plan progress 3; journal todo all"), \
+        "reading the journal is never held, so the step can be taken up alongside a read"
     assert "take it up" not in refused(f"journal sequence follow {made.n}") and "take it up" not in refused("journal message reply 3 'on it'"), \
         "taking the step up and answering the user are never held"
     sequences.follow(made.n)
