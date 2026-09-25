@@ -1,5 +1,6 @@
 from features.base import Feature
 from features.journal import Journal
+from features.work_tracking.auto import steered
 from features.work_tracking.commands import AwaitWork, LogWork, ParkWork, ResumeWork
 from features.work_tracking.details import WorkDetails
 from features.work_tracking.handlers import (AskStillAwaiting, ClearWaitOnActivity, NameRepeatedChecks, CloseWork, CountEdits, EndWorkWithTodo, HoldUntilDeclared, AskStillBlocked, NameParkedOnTodoDone, UnblockWaitingRows, UnblockWhenPlanFinishes, OfferNextRow, OfferNextRowOnTheClock, OpenWork, RemindOpenWork, ResetEditsOnLog,
@@ -9,6 +10,12 @@ from features.work_tracking.interceptors import RefuseHeldWrites
 
 class WorkFeature(Feature):
     details = WorkDetails
+
+    def chosen(self, record, key: str) -> bool:
+        return super().chosen(record, key) or (key == "auto" and bool(steered(record)))
+
+    def settings_view(self, record) -> dict:
+        return {"steered": steered(record)}
 
     def register(self, journal: Journal) -> None:
         journal.commands.add("work", LogWork())

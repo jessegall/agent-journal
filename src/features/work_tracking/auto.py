@@ -1,10 +1,21 @@
 import time
 
-from controllers.types import Works
+from controllers.types import Environments, Works
 from providers import DRIVERS
 from resources.base import SYSTEM
 
 AUTO = "work_tracking.auto"
+
+
+OWNERS: dict = {}
+
+
+def steered(record) -> str:
+    key = (str(record.root), record.env)
+    if key not in OWNERS:
+        place = Environments(record, actor=SYSTEM)._titled(record.env)
+        OWNERS[key] = str(place.owner) if place else ""
+    return OWNERS[key]
 
 
 def automatic(record) -> bool:

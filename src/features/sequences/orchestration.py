@@ -12,7 +12,8 @@ ORCHESTRATION = {
                            "the order the tickets must run in, the waits between them, and which are queued, running or done."),
         ("Set the board up", "Ask the user which branch the work lands on if you do not know it, and set it: journal board update "
                              "<board n> --set branch=<branch>. Tickets then branch from it and close once merged into it. Take "
-                             "on plan approval: journal board update <board n> --set orchestrator_approves_plans=true."),
+                             "on what the user lets you decide while your auto mode is on: journal board update <board n> --set "
+                             "orchestrator_approves_plans=true --set orchestrator_accepts_waits=true --set orchestrator_confirms_drafts=true."),
         ("Start the tickets", "Move every ticket into the board's start stage, in the order they must run: journal ticket move "
                               "<n> \"<start stage>\". Each agent starts in its own worktree; beyond the running limit, and behind "
                               "the tickets they wait on, they queue and start as slots free."),

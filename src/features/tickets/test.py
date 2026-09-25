@@ -285,6 +285,8 @@ def test_a_ticket_waits_on_a_confirmed_dependency_and_starts_when_it_closes(monk
     assert "only the user" in refused(lambda: agent.accept_dependencies(docs.n, why="docs follow the API")), "an agent never decides a proposal"
     monkeypatch.setattr(Tickets, "_orchestrating", lambda self: [board.n])
     monkeypatch.setattr("features.work_tracking.auto.automatic", lambda record: True)
+    assert "orchestrator_accepts_waits" in refused(lambda: agent.accept_dependencies(docs.n, why="x")), "only where the board lets its orchestrator decide"
+    Boards(record, actor=USER).update(board.n, orchestrator_accepts_waits=True)
     assert "say why" in refused(lambda: agent.accept_dependencies(docs.n)), "the board's orchestrator gives its reason"
     agent.accept_dependencies(docs.n, why="the docs describe the API")
     assert (user.load(docs.n).dependencies, "as the board's orchestrator, under auto mode: the docs describe the API" in user.comments(docs.n)[0].brief) == \
@@ -315,7 +317,8 @@ def test_a_plan_waiting_for_approval_is_read_and_approved_from_its_card(monkeypa
     assert ([action["label"] for action in card["actions"]], card["state"]) == (["Approve plan", "Read plan"], "you"), \
         "a plan waiting for approval puts Approve plan and Read plan on its ticket's card, and the card waits on the user"
     assert "only the user" in refused(lambda: Tickets(record, actor=AGENT).approve_plan(ticket.n)), "only the user approves a ticket's plan"
-    Boards(record, actor=USER).update(board.n, orchestrator_approves_plans=True)
+    Boards(record, actor=USER).update(board.n, orchestrator_approves_plans=True, orchestrator_confirms_drafts=True)
+    monkeypatch.setattr("features.work_tracking.auto.automatic", lambda record: True)
     import features
     from features.sequences.shipped import ship
     from tests.kit import nudges, report, tick
@@ -338,12 +341,15 @@ def test_a_plan_waiting_for_approval_is_read_and_approved_from_its_card(monkeypa
     assert plans.load(plan.n).status == APPROVED, "the orchestrator, the agent on the board's own environment, approves it"
     from features.plans.controller import ACTIVE, WAITING
     Plans(Record(record.root, "ticket-1"), actor=SYSTEM).update(plan.n, status=WAITING)
+    drafted = tickets.create("A drafted card", board=board.n, draft=True, abstract="One more card")
     import time
     started = time.time()
     monkeypatch.setattr(time, "time", lambda: started + 120)
     tick(record)
     assert any(f"the plan of ticket {ticket.n}" in line and "stopped at a checkpoint" in line for line in nudges(record)), \
         "a ticket's plan that stops at a checkpoint is handed to the orchestrator too"
+    assert any(f"ticket {drafted.n}, A drafted card, is a draft waiting for you" in line for line in nudges(record)), \
+        "under auto mode the orchestrator is told when a proposal it may decide waits"
     monkeypatch.setattr(Tickets, "agent_session", lambda self, n: "claude-t1")
     monkeypatch.setattr(Tickets, "tell", lambda self, n, note: (_ for _ in ()).throw(Refused("the note stayed in its input box")))
     Tickets(record, actor=AGENT).continue_plan(ticket.n)

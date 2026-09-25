@@ -42,6 +42,12 @@ def test_on_idle_with_auto_enabled_and_nothing_open_the_next_row_is_offered():
     record.features = {**record.features, "work_tracking.auto": True}
     idle(record)
     assert nudges(record) == ["todo 1 next"], "auto on: the next row is offered once per idle stretch"
+    from controllers.types import Environments
+    from engine.record import Record
+    from features.work_tracking.auto import automatic
+    Environments(record, actor=USER).create("ticket-3", owner="ticket:3")
+    assert (automatic(Record(record.root, "ticket-3")), automatic(Record(record.root, "spare"))) == (True, False), \
+        "a ticket's environment is always in auto mode, with no switch to turn it off"
     record.set_setting("permission_prompts", {"skip": False})
     assert launch_args(record, "claude", ["--model", "sonnet"]) == ["--permission-mode", "auto", "--model", "sonnet"], \
         "auto launches Claude with its automatic approval mode"

@@ -37,6 +37,7 @@ HANDED = ("{ref}, {title}, is yours to do in this worktree, after the tickets yo
           "ticket show {n}, commit it on this branch, and say when it is done.")
 MOST_RESTARTS = 1
 REVIEWED_BY_SUBAGENT = "subagent"
+PLANS, WAITS, DRAFTS = "orchestrator_approves_plans", "orchestrator_accepts_waits", "orchestrator_confirms_drafts"
 SCREEN_LINES, SCREEN_BYTES = 40, 32768
 NEEDS_A_LOOK = ("you", "stopped")
 
@@ -203,9 +204,9 @@ class Tickets(Controller):
         if self.actor != AGENT:
             act(self._plans(ticket), int(ticket.plan))
             return ticket
-        if not self._orchestrated(ticket) or int(ticket.board) not in self._orchestrating():
-            self._refuse(f"only the user may {word} the plan of {self.type} {ticket.n}, or the agent orchestrating its board when "
-                         f"orchestrator_approves_plans is set; never the agent that wrote it")
+        if not self._orchestrator_may(ticket, PLANS) or int(ticket.board) not in self._orchestrating():
+            self._refuse(f"only the user may {word} the plan of {self.type} {ticket.n}, or the agent orchestrating its board while its "
+                         f"auto mode is on and the board has {PLANS} set; never the agent that wrote it")
         act(Plans(Record(self.record.root, ticket.work_environment), actor=SYSTEM), int(ticket.plan))
         if told and self.agent_session(ticket.n):
             try:
@@ -248,7 +249,7 @@ class Tickets(Controller):
     def _awaiting_orchestrator(self) -> list:
         boards = self._orchestrating()
         return [ticket for ticket in self._standing() if ticket.work_environment and ticket.board and int(ticket.board) in boards
-                and self._orchestrated(ticket) and self._plan_status(ticket) in (READY, WAITING)]
+                and self._orchestrator_may(ticket, PLANS) and self._plan_status(ticket) in (READY, WAITING)]
 
     def _review(self, ticket) -> str:
         read = f"journal --env {ticket.work_environment} plan read {ticket.plan}"
@@ -256,8 +257,15 @@ class Tickets(Controller):
             return f"Dispatch a reviewer subagent to check it against the ticket's card; it reads it with {read}."
         return f"Review it yourself against the ticket's card: {read}."
 
-    def _orchestrated(self, ticket) -> bool:
-        return bool(ticket.board) and Boards(self.record, actor=SYSTEM).load(int(ticket.board)).orchestrator_approves_plans
+    def _orchestrator_may(self, ticket, permission: str) -> bool:
+        from features.work_tracking.auto import automatic
+        return bool(ticket.board) and bool(getattr(Boards(self.record, actor=SYSTEM).load(int(ticket.board)), permission)) and automatic(self.record)
+
+    def _awaiting_decisions(self) -> list:
+        boards = self._orchestrating()
+        on_board = [ticket for ticket in self._standing() if ticket.board and int(ticket.board) in boards]
+        return [(ticket, WAITS) for ticket in on_board if PROPOSED in ticket.dependencies.values() and self._orchestrator_may(ticket, WAITS)] + \
+               [(ticket, DRAFTS) for ticket in on_board if ticket.draft and self._orchestrator_may(ticket, DRAFTS)]
 
     def _runtime(self, ticket, sessions: dict, running: int) -> CardState:
         if ticket.completed:
@@ -471,7 +479,7 @@ class Tickets(Controller):
 
     def _decide_dependencies(self, n: int, kept, done: str, why: str):
         ticket = self.load(int(n))
-        self._as_orchestrator(ticket, f"accepts or declines a {self.type}'s proposed dependencies", done, why)
+        self._as_orchestrator(ticket, WAITS, f"accepts or declines a {self.type}'s proposed dependencies", done, why)
         proposed = [ref for ref, stance in ticket.dependencies.items() if stance == PROPOSED]
         decided = {ref: CONFIRMED for ref in ticket.dependencies if ref not in proposed or kept(ref)}
         return self.update(ticket.n, dependencies=decided, declined=[r for r in [*ticket.declined, *proposed] if r not in decided])
@@ -504,15 +512,14 @@ class Tickets(Controller):
 
     def confirm(self, n: int, why: str = ""):
         ticket = self.load(int(n))
-        self._as_orchestrator(ticket, f"confirms a drafted {self.type}, with its button or in the viewer", "Confirmed the draft", why)
+        self._as_orchestrator(ticket, DRAFTS, f"confirms a drafted {self.type}, with its button or in the viewer", "Confirmed the draft", why)
         return self.update(ticket.n, draft=False)
 
-    def _as_orchestrator(self, ticket, gate: str, done: str, why: str) -> None:
-        from features.work_tracking.auto import automatic
+    def _as_orchestrator(self, ticket, permission: str, gate: str, done: str, why: str) -> None:
         if self.actor != AGENT:
             return
-        if not (ticket.board and int(ticket.board) in self._orchestrating() and automatic(self.record)):
-            self._refuse(f"only the user {gate}, or the agent orchestrating its board while auto mode is on")
+        if not (ticket.board and int(ticket.board) in self._orchestrating() and self._orchestrator_may(ticket, permission)):
+            self._refuse(f"only the user {gate}, or the agent orchestrating its board while its auto mode is on and the board has {permission} set")
         if not why.strip():
             self._refuse("say why, as the board's orchestrator: --why \"<reason>\"")
         self.comment(ticket.n, f"{done} as the board's orchestrator, under auto mode: {why.strip()}")
