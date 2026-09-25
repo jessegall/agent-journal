@@ -7,6 +7,8 @@ const props = defineProps({
     panes: {type: Array, required: true},
     splits: {type: Array, required: true},
     colors: {type: Function, default: null},
+    stacked: Boolean,
+    rank: {type: Function, default: null},
 });
 const emit = defineEmits(["resize"]);
 const area = ref(null);
@@ -35,20 +37,24 @@ function ratio(s) {
     };
 }
 
+const reading = (p) => Math.round(p.rect.y * 1000) * 1000 + Math.round(p.rect.x * 1000);
+const stackOrder = (p) => ({order: (props.rank ? props.rank(p) : 0) * 1e6 + reading(p)});
+const placed = (p) => (props.stacked ? stackOrder(p) : percentBox(p.rect));
+
 defineExpose({element: area});
 </script>
 
 <template>
-    <div ref="area" :class="['pane-grid', {live}]">
+    <div ref="area" :class="['pane-grid', {live, stacked}]">
         <template v-for="p in panes" :key="p.id">
             <section
                 :class="['pane', p.state, {after: p.rect.x > EDGE, below: p.rect.y > EDGE}]"
-                :style="{...percentBox(p.rect), ...(props.colors ? props.colors(p.pane) : {})}"
+                :style="{...placed(p), ...(props.colors ? props.colors(p.pane) : {})}"
             >
                 <slot name="pane" v-bind="p" />
             </section>
         </template>
-        <template v-for="s in splits" :key="s.path">
+        <template v-for="s in stacked ? [] : splits" :key="s.path">
             <ResizeHandle
                 class="pane-split"
                 :axis="s.dir === 'row' ? 'x' : 'y'"
@@ -86,6 +92,30 @@ defineExpose({element: area});
         width 0.26s var(--ease),
         height 0.26s var(--ease),
         opacity 0.22s ease;
+}
+
+.pane-grid.stacked {
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scroll-snap-type: y proximity;
+}
+
+.pane-grid.stacked .pane {
+    position: relative;
+    flex: none;
+    width: 100%;
+    height: 100%;
+    border-top: 0;
+    border-bottom: 1px solid var(--border);
+    border-left: 0;
+    scroll-snap-align: start;
+    transition: opacity 0.22s ease;
+}
+
+.pane-grid.stacked .pane.dying {
+    display: none;
 }
 
 .pane.after {

@@ -4,6 +4,10 @@ Newest first. Each entry is what changed, what it makes possible, and what to do
 `journal upgrade` prints the entries since the version you had; a session started on a
 newer version than the last one it saw is handed the same.
 
+## 2.181.1 — Home stacks its panes on a phone
+
+On a screen 700 px wide or narrower, Home stacks a layout's panes at full width, the chat first, instead of squeezing them side by side; each pane is one screen high and scrolls inside itself. Desktop is unchanged. Nothing to do.
+
 ## 2.181.0 — An Orchestrator layout for watching every agent
 
 Home's layout presets have Orchestrator: the chat with the main agent on the left third, and on the right an Agents at work grid with one small window per agent a ticket or a plan runs. Each window says which ticket or plan it is, whether it is working, waiting for you, stuck or stopped, what it is doing right now, and its plan's phase and step; clicking one opens that agent over the page. The grid fills and empties as agents start and finish. Nothing to do.
