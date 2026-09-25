@@ -317,10 +317,14 @@ class Engine(Seat):
         return self.control(stopped=True) or "forced: stopped the turn, nothing was waiting"
 
     def control(self, stopped: bool = False) -> str:
-        if not stopped and (self.agent.state() != IDLE or time.time() - self.controlled_at < TICK):
+        if not stopped and time.time() - self.controlled_at < TICK:
             return ""
         last = self.agent.driver.last_report()
-        queued = take(self.record.root, self.names())
+        at_once = PROVIDERS[self.agent.driver.name].applies_at_once if self.agent.driver.name in PROVIDERS else ()
+        idle = stopped or self.agent.state() == IDLE
+        if not idle and (not at_once or (last and last.data.get("asking"))):
+            return ""
+        queued = take(self.record.root, self.names()) if idle else take(self.record.root, self.names(), among=at_once)
         if not queued:
             return ""
         self.agent.driver.press(queued.keys)
